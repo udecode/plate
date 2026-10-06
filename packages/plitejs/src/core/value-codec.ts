@@ -301,16 +301,23 @@ export const snapshotEditorJsonValue = <T>(value: T, label: string): T => {
           if (Array.isArray(input)) {
             const items = getEditorJsonArrayItems(input) ?? invalid();
 
-            return freezeOwnedJsonValue(items.map((item) => clone(item, seen)));
+            const cloned = items.map((item) => clone(item, seen));
+            rememberFrozenJsonValue(input, items);
+            return isOwnedJsonValue(input)
+              ? input
+              : freezeOwnedJsonValue(cloned);
           }
 
           const entries = getEditorJsonRecordEntries(input) ?? invalid();
 
-          return freezeOwnedJsonValue(
-            Object.fromEntries(
-              entries.map(([key, item]) => [key, clone(item, seen)])
-            )
+          const cloned = Object.fromEntries(
+            entries.map(([key, item]) => [key, clone(item, seen)])
           );
+          rememberFrozenJsonValue(
+            input,
+            entries.map(([, item]) => item)
+          );
+          return isOwnedJsonValue(input) ? input : freezeOwnedJsonValue(cloned);
         } finally {
           seen.delete(input);
         }

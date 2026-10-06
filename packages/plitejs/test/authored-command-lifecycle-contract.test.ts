@@ -7,9 +7,9 @@ import {
   defineEditorSchema,
   property,
   schema,
-} from 'plitejs';
-import { authored } from 'plitejs/authored';
-import { history } from 'plitejs/history';
+} from '../src';
+import { authored } from '../src/authored';
+import { history } from '../src/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -168,8 +168,12 @@ describe('authored command lifecycles', () => {
     const view = createEditorView(source, { authored: markup });
 
     view.update.selection.set(point(0, 1));
-    view.update.text.deleteBackward();
-    view.update.text.deleteBackward();
+    view.update({ tags: 'native-text-input' }, (tx) =>
+      tx.text.deleteBackward()
+    );
+    view.update({ tags: 'native-text-input' }, (tx) =>
+      tx.text.deleteBackward()
+    );
 
     assert.deepEqual(source.read.children(), [
       paragraph('First'),

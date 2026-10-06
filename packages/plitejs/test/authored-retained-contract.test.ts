@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  ContentSlice,
   createEditor,
   createEditorView,
   defineEditorSchema,
@@ -9,10 +10,8 @@ import {
   NodeApi,
   SelectionApi,
   schema,
-} from 'plitejs';
-import { authored } from 'plitejs/authored';
-import { history } from 'plitejs/history';
-
+} from '../src';
+import { authored } from '../src/authored';
 import { authoredPositionSpans } from '../src/authored/positions';
 import { records } from '../src/authored/record-tree';
 import { readAuthoredRetainedContent } from '../src/authored/retained';
@@ -23,7 +22,11 @@ import {
   type AuthoredState,
 } from '../src/authored/state';
 import { createAuthoredFragmentView } from '../src/core/authored-fragment-view';
-import { readAuthoredViewFragments } from '../src/core/authored-runtime';
+import {
+  readAuthoredViewFragments,
+  updateAuthoredFragment,
+} from '../src/core/authored-runtime';
+import { history } from '../src/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -320,7 +323,7 @@ describe('native retained counterparts', () => {
       { type: 'quote', children: [paragraph('EYFgh')] },
     ];
     assert.deepEqual(source.read.children(), accepted);
-    assert.deepEqual(view.read.children(), [paragraph('Agh')]);
+    assert.deepEqual(view.read.children(), [paragraph('AXYgh')]);
     assert.equal(
       source.update.authored.decide({
         action: 'reject',
@@ -330,7 +333,7 @@ describe('native retained counterparts', () => {
     );
     assert.deepEqual(view.read.children(), accepted);
     source.api.history.undo();
-    assert.deepEqual(view.read.children(), [paragraph('Agh')]);
+    assert.deepEqual(view.read.children(), [paragraph('AXYgh')]);
     source.api.history.redo();
     assert.deepEqual(view.read.children(), accepted);
   });
@@ -446,7 +449,7 @@ describe('native retained counterparts', () => {
     editor.update.text.insert('Y', { at: { path: [1, 0], offset: 1 } });
     const accepted = [paragraph('ABXcd'), paragraph('EYFgh')];
     assert.deepEqual(editor.read.children(), accepted);
-    assert.deepEqual(view.read.children(), [paragraph('Agh')]);
+    assert.deepEqual(view.read.children(), [paragraph('AXYgh')]);
     assert.equal(
       editor.update.authored.decide({
         action: 'reject',
@@ -456,7 +459,7 @@ describe('native retained counterparts', () => {
     );
     assert.deepEqual(view.read.children(), accepted);
     editor.api.history.undo();
-    assert.deepEqual(view.read.children(), [paragraph('Agh')]);
+    assert.deepEqual(view.read.children(), [paragraph('AXYgh')]);
     editor.api.history.redo();
     assert.deepEqual(view.read.children(), accepted);
   });
@@ -632,17 +635,23 @@ describe('native retained counterparts', () => {
     const view = createEditorView(editor, { authored: markup });
     view.update.nodes.remove({ at: [0, 1] });
     const { id } = editor.read.authored.changes().items[0];
-    const check = (text: string) => {
+    const check = (live: string) => {
       const fragments = readAuthoredViewFragments(view, id);
-      assert.equal(fragments.length, 1);
-      const [fragment] = fragments;
-      assert.ok(fragment.kind !== 'properties');
-      assert.equal(NodeApi.string(fragment.slice.content[0]), text);
-      assert.deepEqual(view.read.children(), [paragraph('AB')]);
+      assert.equal(
+        fragments
+          .flatMap((fragment) =>
+            fragment.kind === 'properties'
+              ? []
+              : fragment.slice.content.map(NodeApi.string)
+          )
+          .join(''),
+        'XYZ'
+      );
+      assert.equal(view.read.text.string([]), live);
     };
-    check('XYZ');
+    check('AB');
     editor.update.text.insert('!', { at: { path: [0, 1, 0], offset: 1 } });
-    check('X!YZ');
+    check('A!B');
   });
 
   it('publishes retained snapshots in version order when an earlier observer edits again', () => {
@@ -661,7 +670,9 @@ describe('native retained counterparts', () => {
     const stopSource = source.subscribeCommit((commit) => {
       if (nested || !commit.changed.has('text')) return;
       nested = true;
-      source.update.text.insert('Y', { at: point(11) });
+      source.update.text.delete({
+        at: { anchor: point(11), focus: point(12) },
+      });
     });
     const before = source.read.runtime.snapshot().version;
     const seen: Array<{ text: string; version: number }> = [];
@@ -671,10 +682,10 @@ describe('native retained counterparts', () => {
         version: commit.version,
       })
     );
-    source.update.text.insert('X', { at: point(10) });
+    source.update.text.delete({ at: { anchor: point(12), focus: point(13) } });
     assert.deepEqual(seen, [
-      { text: 'midXdle', version: before + 1 },
-      { text: 'midXYdle', version: before + 2 },
+      { text: 'middl', version: before + 1 },
+      { text: 'midd', version: before + 2 },
     ]);
     stop();
     stopSource();
@@ -707,14 +718,14 @@ describe('native retained counterparts', () => {
     assert.deepEqual(snapshots, []);
     first();
     first();
-    source.update.text.insert('X', { at: point(10) });
+    source.update.text.delete({ at: { anchor: point(12), focus: point(13) } });
     assert.equal(calls, 1);
-    assert.deepEqual(snapshots, ['midXdle']);
+    assert.deepEqual(snapshots, ['middl']);
     second();
     snapshotSubscription();
     const resumed = fragment.subscribeCommit(listener);
     second();
-    source.update.text.insert('Y', { at: point(11) });
+    source.update.text.delete({ at: { anchor: point(11), focus: point(12) } });
     assert.equal(calls, 2);
     resumed();
   });
@@ -785,9 +796,9 @@ describe('native retained counterparts', () => {
     });
     assert.equal(view.anchor.restore(saved).resolve(), null);
     editor.update.text.insert('X', { at: point(10) });
-    assert.deepEqual(retained.read.children(), [paragraph('midXdle')]);
+    assert.deepEqual(retained.read.children(), [paragraph('mid')]);
     assert.equal(retained.key([0, 0]), retainedTextKey);
-    assert.deepEqual(anchor.resolve(), { anchor: point(1), focus: point(6) });
+    assert.deepEqual(anchor.resolve(), { anchor: point(1), focus: point(3) });
     assert.deepEqual(acceptedAnchor.resolve(), {
       anchor: point(8),
       focus: point(13),
@@ -834,7 +845,7 @@ describe('native retained counterparts', () => {
     editor.update.text.insert('X', { at: point(10) });
     assert.equal(commits.length, 1);
     assert.deepEqual(commits[0].before.children, [paragraph('middle')]);
-    assert.deepEqual(commits[0].after.children, [paragraph('midXdle')]);
+    assert.deepEqual(commits[0].after.children, [paragraph('mid')]);
     assert.deepEqual(
       commits[0].changes.apply({ children: commits[0].before.children })
         .children,
@@ -939,23 +950,23 @@ describe('native retained counterparts', () => {
         { deletion: 'drop' }
       );
       tx.text.insert('X', { at: point(10) });
-      assert.deepEqual(anchor.resolve(), { anchor: point(1), focus: point(6) });
+      assert.deepEqual(anchor.resolve(), { anchor: point(1), focus: point(3) });
     });
-    assert.deepEqual(anchor?.resolve(), { anchor: point(1), focus: point(6) });
+    assert.deepEqual(anchor?.resolve(), { anchor: point(1), focus: point(3) });
     anchor?.release();
     const before = retained.read.children();
     assert.throws(
       () =>
         editor.update((tx) => {
           anchor = retained.anchor(
-            { anchor: point(1), focus: point(6) },
+            { anchor: point(1), focus: point(3) },
             { deletion: 'drop' }
           );
           tx.text.insert('Y', { at: point(10) });
           assert.deepEqual(retained.read.children(), before);
           assert.deepEqual(anchor.resolve(), {
             anchor: point(1),
-            focus: point(7),
+            focus: point(3),
           });
           throw new Error('Abort retained read');
         }),
@@ -1084,7 +1095,7 @@ describe('native retained counterparts', () => {
     assert.deepEqual(view.read.children(), [paragraph('DE')]);
   });
 
-  it('keeps a later accepted insertion between retained origins in its original fragment', () => {
+  it('keeps later accepted text separate from the retained origins around it', () => {
     const editor = createEditor({
       plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('ABCD')],
@@ -1096,14 +1107,16 @@ describe('native retained counterparts', () => {
     editor.update.text.insert('Z', { at: point(2) });
     const fragments = readAuthoredViewFragments(view, id);
     assert.deepEqual(
-      fragments.flatMap((fragment) =>
-        fragment.kind === 'properties'
-          ? []
-          : fragment.slice.content.map(NodeApi.string)
-      ),
-      ['BZxyC']
+      fragments
+        .flatMap((fragment) =>
+          fragment.kind === 'properties'
+            ? []
+            : fragment.slice.content.map(NodeApi.string)
+        )
+        .join(''),
+      'BxyC'
     );
-    assert.deepEqual(view.read.children(), [paragraph('AD')]);
+    assert.deepEqual(view.read.children(), [paragraph('AZD')]);
     assert.equal(
       editor.update.authored.decide({
         action: 'reject',
@@ -1123,11 +1136,17 @@ describe('native retained counterparts', () => {
     view.update.text.delete({ at: { anchor: point(6), focus: point(12) } });
     const { id } = editor.read.authored.changes().items[0];
     editor.update.text.insert('X', { at: point(9) });
-    const [fragment] = readAuthoredViewFragments(view, id);
-    assert.equal(fragment.kind, 'delete');
-    if (fragment.kind === 'properties') assert.fail();
-    assert.deepEqual(fragment.slice.content, [paragraph('midXdle')]);
-    assert.deepEqual(view.read.children(), [paragraph('Start  end')]);
+    assert.equal(
+      readAuthoredViewFragments(view, id)
+        .flatMap((fragment) =>
+          fragment.kind === 'properties'
+            ? []
+            : fragment.slice.content.map(NodeApi.string)
+        )
+        .join(''),
+      'middle'
+    );
+    assert.deepEqual(view.read.children(), [paragraph('Start X end')]);
   });
 
   it('clips a counterpart when its accepted content is partly or fully deleted', () => {
@@ -1166,8 +1185,13 @@ describe('native retained counterparts', () => {
           : fragment.slice.content.map((node) => NodeApi.string(node)).join('')
       )
       .join('');
-    assert.equal(text, 'XBZC');
-    assert.deepEqual(view.read.children(), [paragraph('AD')]);
+    assert.equal(text, 'XBC');
+    assert.deepEqual(view.read.children(), [paragraph('AZD')]);
+    editor.update.authored.decide({
+      action: 'reject',
+      selection: editor.read.authored.select({ ids: [id] }),
+    });
+    assert.deepEqual(view.read.children(), [paragraph('AXBZCD')]);
   });
 
   it('combines property amendments and suppresses their complete undo', () => {
@@ -1635,5 +1659,222 @@ describe('native retained counterparts', () => {
     );
     assert.deepEqual(contents(editor.read.getField(authoredState)), []);
     assert.deepEqual(editor.read.children(), [paragraph('Preserved')]);
+  });
+  it('keeps independent retained block replacements and breaks through review and history', async () => {
+    for (const intent of ['edit', 'propose'] as const) {
+      const source = createEditor({
+        plugins: [history(), authored({ authorId: 'alice' })],
+        initialValue: [paragraph('Only'), paragraph('Survive')],
+      });
+      const view = createEditorView(source, { authored: markup });
+      view.update.nodes.remove({ at: [0] });
+      const deletion = source.read.authored.changes({ status: 'pending' })
+        .items[0].id;
+      view.api.authored.setView({ intent, projection: 'markup' });
+      const retained = createAuthoredFragmentView(
+        view,
+        readAuthoredViewFragments(view, deletion)[0]
+      );
+      const result = updateAuthoredFragment(
+        retained,
+        (tx) => {
+          tx.selection.set({ anchor: point(1), focus: point(3) });
+          tx.text.delete();
+          tx.marks.add('bold', true);
+          tx.text.insert('X');
+          tx.break.insert();
+        },
+        { tags: ['history-push'] }
+      );
+      assert.equal(result?.fragmentId, null);
+      assert.deepEqual(view.read.children().map(NodeApi.string), [
+        'X',
+        '',
+        'Survive',
+      ]);
+      assert.deepEqual(result?.selection, {
+        affinity: 'backward',
+        kind: 'text',
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
+      });
+      assert.equal(
+        (view.read.children()[0].children[0] as { bold?: boolean }).bold,
+        true
+      );
+      await view.api.history.undo();
+      assert.deepEqual(view.read.children().map(NodeApi.string), ['Survive']);
+      await view.api.history.redo();
+      assert.deepEqual(view.read.children().map(NodeApi.string), [
+        'X',
+        '',
+        'Survive',
+      ]);
+      const restored = createEditor({
+        plugins: [authored({ authorId: 'alice' })],
+        initialValue: JSON.parse(JSON.stringify(source.read.value())),
+      });
+      const restoredView = createEditorView(restored, { authored: markup });
+      assert.equal(
+        restored.update.authored.decide({
+          action: 'reject',
+          selection: restored.read.authored.select({ ids: [deletion] }),
+        }).status,
+        'applied'
+      );
+      const remaining = intent === 'edit' ? 'Oy' : 'Only';
+      assert.deepEqual(restoredView.read.children().map(NodeApi.string), [
+        'X',
+        '',
+        remaining,
+        'Survive',
+      ]);
+      assert.deepEqual(
+        restored.read.children().map(NodeApi.string),
+        intent === 'edit'
+          ? ['X', '', remaining, 'Survive']
+          : ['Only', 'Survive']
+      );
+    }
+  });
+  it('inserts independent retained content in its named root', () => {
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: {
+        children: [paragraph('Main')],
+        roots: { note: [paragraph('Only'), paragraph('B')] },
+      },
+    });
+    const view = createEditorView(source, { root: 'note', authored: markup });
+    view.update.nodes.remove({ at: [0] });
+    const deletion = source.read.authored.changes({ status: 'pending' })
+      .items[0].id;
+    view.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    const retained = createAuthoredFragmentView(
+      view,
+      readAuthoredViewFragments(view, deletion)[0]
+    );
+    const result = updateAuthoredFragment(retained, (tx) =>
+      tx.text.insert('X', { at: point(2) })
+    );
+    assert.deepEqual(source.read.children(), [paragraph('Main')]);
+    assert.deepEqual(view.read.children(), [paragraph('X'), paragraph('B')]);
+    assert.equal(result?.fragmentId, null);
+    assert.equal(
+      source.update.authored.decide({
+        action: 'reject',
+        selection: source.read.authored.select({ ids: [deletion] }),
+      }).status,
+      'applied'
+    );
+    assert.deepEqual(view.read.children(), [
+      paragraph('X'),
+      paragraph('Only'),
+      paragraph('B'),
+    ]);
+    assert.deepEqual(source.read.root('note'), view.read.children());
+  });
+  it('formats retained whole-block text without inserting a carrier', () => {
+    for (const intent of ['edit', 'propose'] as const) {
+      const source = createEditor({
+        plugins: [authored({ authorId: 'alice', automaticFormatting: 'edit' })],
+        initialValue: [paragraph('Only'), paragraph('Survive')],
+      });
+      const view = createEditorView(source, { authored: markup });
+      view.update.nodes.remove({ at: [0] });
+      const deletion = source.read.authored.changes({ status: 'pending' })
+        .items[0].id;
+      view.api.authored.setView({ intent, projection: 'markup' });
+      const retained = createAuthoredFragmentView(
+        view,
+        readAuthoredViewFragments(view, deletion)[0]
+      );
+      updateAuthoredFragment(retained, (tx) => {
+        tx.selection.set({ anchor: point(1), focus: point(3) });
+        tx.marks.add('bold', true);
+      });
+      assert.deepEqual(view.read.children(), [paragraph('Survive')]);
+      source.update.authored.decide({
+        action: 'reject',
+        selection: source.read.authored.select({ ids: [deletion] }),
+      });
+      assert.deepEqual(source.read.children(), [
+        {
+          type: 'paragraph',
+          children: [{ text: 'O' }, { text: 'nl', bold: true }, { text: 'y' }],
+        },
+        paragraph('Survive'),
+      ]);
+    }
+  });
+  it('preserves pasted owned roots when lifting retained block input', async () => {
+    for (const intent of ['edit', 'propose'] as const) {
+      const source = createEditor({
+        plugins: [
+          history(),
+          RootedAuthoredSchema,
+          authored({ authorId: 'alice' }),
+        ],
+        initialValue: [paragraph('Only'), paragraph('Survive')],
+      });
+      const view = createEditorView(source, { authored: markup });
+      view.update.nodes.remove({ at: [0] });
+      const deletion = source.read.authored.changes({ status: 'pending' })
+        .items[0].id;
+      view.api.authored.setView({ intent, projection: 'markup' });
+      const retained = createAuthoredFragmentView(
+        view,
+        readAuthoredViewFragments(view, deletion)[0]
+      );
+      updateAuthoredFragment(
+        retained,
+        (tx) => {
+          tx.slice.replace(
+            ContentSlice.fromJSON({
+              content: [rootedPortal('pasted')],
+              openStart: 0,
+              openEnd: 0,
+              roots: { pasted: [paragraph('Payload')] },
+            }),
+            { at: [0] }
+          );
+        },
+        { tags: ['history-push'] }
+      );
+      const portal = view.read
+        .children()
+        .find((node) => node.type === 'rooted-portal')!;
+      assert.ok(portal);
+      const root = (portal.childRoots as { body: string }).body;
+      assert.deepEqual(view.read.root(root), [paragraph('Payload')]);
+      await view.api.history.undo();
+      assert.deepEqual(view.read.children(), [paragraph('Survive')]);
+      await view.api.history.redo();
+      const restored = createEditor({
+        plugins: [RootedAuthoredSchema, authored({ authorId: 'alice' })],
+        initialValue: JSON.parse(JSON.stringify(source.read.value())),
+      });
+      restored.update.authored.decide({
+        action: 'reject',
+        selection: restored.read.authored.select({ ids: [deletion] }),
+      });
+      const restoredView = createEditorView(restored, { authored: markup });
+      assert.deepEqual(restoredView.read.root(root), [paragraph('Payload')]);
+      assert.deepEqual(restoredView.read.children(), [
+        portal,
+        paragraph('Only'),
+        paragraph('Survive'),
+      ]);
+      restored.update.authored.decide({
+        action: 'accept',
+        selection: restored.read.authored.select({ status: 'pending' }),
+      });
+      assert.deepEqual(restored.read.root(root), [paragraph('Payload')]);
+      assert.deepEqual(restored.read.children(), [
+        portal,
+        paragraph('Only'),
+        paragraph('Survive'),
+      ]);
+    }
   });
 });

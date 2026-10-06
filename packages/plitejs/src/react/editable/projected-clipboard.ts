@@ -4,10 +4,11 @@ import {
   type Descendant,
   NodeApi,
   RangeApi,
-  SelectionApi,
 } from '../..';
-import { createAuthoredFragmentView } from '../../core/authored-fragment-view';
-import { readAuthoredViewFragments } from '../../core/authored-runtime';
+import {
+  readAuthoredTarget,
+  readAuthoredViewFragments,
+} from '../../core/authored-runtime';
 import { rewriteContentRootReferences } from '../../core/content-slice-roots';
 import { exportContentSlice } from '../../core/editor-read-execution';
 import {
@@ -155,10 +156,7 @@ export const getProjectedViewSelectionSlice = (
     if (segment.fragment && (!fragment || fragment.kind === 'properties')) {
       return null;
     }
-    const current = fragment
-      ? createAuthoredFragmentView(editor, fragment)
-      : editor;
-    const slice = current.read((state) => {
+    const slice = readAuthoredTarget(editor, fragment ?? null, (state) => {
       const rootChildren = {
         [segment.root]: readRootChildren(state, segment.root),
       };
@@ -174,21 +172,16 @@ export const getProjectedViewSelectionSlice = (
       );
       if (!anchor || !focus) return null;
       if (RangeApi.isCollapsed({ anchor, focus })) {
-        const paths = segment.nodes.flatMap((node) => {
+        const hasVoid = segment.nodes.some((node) => {
           const element = !node.text && state.nodes.get(node.path)?.[0];
-          return element &&
+          return (
+            element &&
             NodeApi.isElement(element) &&
             state.schema.isVoid(element)
-            ? [node.path]
-            : [];
+          );
         });
-        const [first, ...rest] = paths;
-        return first
-          ? state.slice.get({
-              at: SelectionApi.nodes([first, ...rest], {
-                root: segment.root === 'main' ? undefined : segment.root,
-              }),
-            })
+        return hasVoid
+          ? state.slice.get({ at: { anchor, focus } })
           : ContentSlice.empty;
       }
       return state.slice.get({ at: { anchor, focus } });
@@ -206,7 +199,7 @@ export const getProjectedViewSelectionSlice = (
       rootNamesBySource.set(sourceKey, rootNames);
     }
     const mapped = remapProjectedSourceSlice(
-      current,
+      editor,
       slice,
       rootNames,
       reservedRoots

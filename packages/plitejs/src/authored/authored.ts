@@ -7,12 +7,15 @@ import {
   getAuthoredViewCommit,
   EMPTY_AUTHORED_FRAGMENT_SLOTS,
   registerAuthoredRuntime,
+  type NativeAuthoredViewEdit,
+  type NativeAuthoredTarget,
   type NativeAuthoredFragment,
   type NativeAuthoredRenderSegment,
 } from '../core/authored-runtime';
 import { ChangeDraft } from '../core/change/builder';
 import { DocumentChange } from '../core/change/document-change';
 import { DocumentIndex } from '../core/change/document-index';
+import type { RootChangeJson } from '../core/change/root-change';
 import type { JsonEditorValue } from '../core/change/tokens';
 import { createEditorCommit } from '../core/commit';
 import {
@@ -33,12 +36,14 @@ import { definePlugin } from '../core/plugin';
 import { profileCoreDuration } from '../core/profiling';
 import {
   getActiveEditorTransaction,
+  readTransactionSpecSteps,
   getActiveDocumentChangeBuilder,
   getActiveTransactionDocumentChange,
   isBuildingTransactionSpec,
   setTransactionPublicationChange,
   setTransactionDocumentProjection,
   withEditorDocumentProjection,
+  withEditorUpdateRootScope,
   notifyEditorViewState,
   subscribeEditorViewState,
   getCurrentSelection,
@@ -51,6 +56,7 @@ import {
   getLastCommit,
 } from '../core/public-state';
 import { constructCanonicalDocumentChange } from '../core/representation';
+import { mapDetachedSelectionThroughChange } from '../core/selection-protocol';
 import { createEditorEffect } from '../core/transaction-values';
 import { txOnly, type TxOnlyMethod } from '../core/tx-only';
 import { snapshotEditorJsonValue } from '../core/value-codec';
@@ -59,14 +65,17 @@ import type {
   EditorDocumentValue,
   Plugin,
   EditorUpdateTransaction,
+  EditorUpdateTag,
   EditorCommit,
   EditorSnapshot,
+  EditorStateView,
   NodeKey,
   Selection,
   Value,
   ValueOf,
 } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
+import type { Point } from '../interfaces/point';
 import { RangeApi, type Range } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
@@ -95,6 +104,7 @@ import {
   projectAuthoredDocument,
   projectAuthoredReview,
 } from './format';
+import { classifyAuthoredFormatting } from './formatting';
 import {
   authoredFragmentIndexNodeKeys,
   authoredFragmentBucket,
@@ -103,11 +113,22 @@ import {
   type AuthoredFragmentIndex,
 } from './fragment-index';
 import { authoredHistoryEffect } from './history';
+import { matchingAuthoredIntervals } from './intervals';
+import {
+  isolateAuthoredInsertion,
+  liftAuthoredFragmentInsertion,
+} from './isolate';
 import {
   readAuthoredFragmentProjection,
+  readAuthoredFragmentBounds,
   inheritAuthoredFragmentProjection,
   readAuthoredMarkupFragments,
 } from './markup';
+import {
+  authoredPositionAt,
+  resolveAuthoredPosition,
+  type AuthoredPosition,
+} from './positions';
 import { createEditorAuthoredProjectionContext } from './projection-context';
 import {
   readAuthoredChange,
@@ -117,7 +138,6 @@ import {
 } from './read';
 import { readRecord, records } from './record-tree';
 import { composeAuthoredRenderSegments } from './render';
-import { protectAuthoredRetainedContent } from './retained';
 import {
   captureAuthoredSelection,
   resolveAuthoredSelection,
@@ -125,6 +145,10 @@ import {
 } from './selection';
 import {
   authoredOperationEffect,
+  authoredRebaseDependants,
+  authoredOriginOperation,
+  authoredDependants,
+  isIndependentAuthoredChange,
   authoredState,
   compactAuthoredContent,
   emptyAuthoredState,
@@ -146,6 +170,7 @@ import {
   type AuthoredState,
 } from './state';
 import {
+  invertAuthoredSteps,
   captureAuthoredChange,
   authoredRootNodes,
   type AuthoredInsertion,
@@ -154,6 +179,7 @@ import {
   mapAuthoredChange,
   type AuthoredPositionRoots,
   authoredEditTarget,
+  coalesceAuthoredReplacements,
   partitionAuthoredTextEdit,
   partitionAuthoredStructuralEdit,
 } from './steps';
@@ -284,14 +310,64 @@ type DirectAuthoredMappingInput = Omit<
   target: 'accepted' | 'proposed';
 };
 
-const mapDirectAuthoredChange = (input: DirectAuthoredMappingInput) => {
-  const { target: _target, ...mapping } = input;
-
-  return mapAuthoredChange({
-    ...mapping,
+const mapDirectAuthoredChange = (input: DirectAuthoredMappingInput) =>
+  mapAuthoredChange({
+    ...input,
     acceptedEdit: true,
     direction: 'forward',
   });
+
+const canReplayIndependently = (
+  capture: Pick<
+    ReturnType<typeof captureAuthoredChange>,
+    'structuralDependencies' | 'steps'
+  >,
+  state: AuthoredState,
+  projection?: { positions: AuthoredPositionRoots; value: JsonEditorValue }
+) => {
+  if (
+    !capture.structuralDependencies.every((id) => {
+      const status = readRecord(state.changes, id)?.status;
+      return status !== 'pending' && status !== 'conflicted';
+    })
+  ) {
+    return false;
+  }
+  if (!projection) return true;
+  return capture.steps.every((frame) =>
+    frame.targets.every((target) => {
+      const section = (
+        target.root === 'main'
+          ? frame.forward.primary
+          : frame.forward.roots?.[target.root]
+      )?.[target.section];
+      if (
+        !section?.replacement?.length ||
+        section.replacement.some((token) => token.kind !== 'text')
+      ) {
+        return true;
+      }
+      const positions = readRecord(
+        projection.positions,
+        target.root
+      )?.positions;
+      if (!positions) return false;
+      const from = resolveAuthoredPosition(
+        positions,
+        target.from,
+        target.association ?? 'right',
+        'collapse'
+      );
+      return (
+        from !== null &&
+        DocumentIndex.fromValue(
+          authoredRootNodes(projection.value, target.root)
+        )
+          .openContextAt(from)
+          .some((context) => context.kind === 'text')
+      );
+    })
+  );
 };
 
 const RUNTIMES = new WeakMap<Editor, AuthoredRuntime>();
@@ -301,9 +377,105 @@ export const isAuthoredEditor = <TEditor extends Editor>(
   editor: TEditor
 ): editor is TEditor & AuthoredEditor<ValueOf<TEditor>> =>
   RUNTIMES.has(getEditorRuntimeOwner(editor));
+type NativeDeletion = Readonly<{
+  root: string;
+  beforeCaret: number;
+  afterCaret: number;
+  direction: 'backward' | 'forward';
+}>;
+type AuthoredViewState = {
+  composition: { changeId: string | null } | null;
+  policy: AuthoredView;
+  deletion?: NativeDeletion & {
+    authorId: string;
+    changeId: string;
+    commit: EditorCommit;
+    policy: AuthoredView;
+  };
+};
+const nativeDeletion = (
+  change: DocumentChange,
+  value: JsonEditorValue,
+  selection: Selection,
+  after: JsonEditorValue,
+  afterSelection: Selection
+): NativeDeletion | null => {
+  if (
+    !selection ||
+    !SelectionApi.isText(selection) ||
+    !RangeApi.isCollapsed(selection) ||
+    !afterSelection ||
+    !SelectionApi.isText(afterSelection) ||
+    !RangeApi.isCollapsed(afterSelection) ||
+    (afterSelection.anchor.root ?? 'main') !==
+      (selection.anchor.root ?? 'main') ||
+    change.createRoots.size ||
+    change.deleteRoots.size
+  ) {
+    return null;
+  }
+  const json = change.toJSON();
+  const roots = [
+    ...(json.primary ? [['main', json.primary] as const] : []),
+    ...Object.entries(json.roots ?? {}),
+  ];
+  let result: NativeDeletion | null = null;
+  for (const [root, sections] of roots) {
+    const index = DocumentIndex.fromValue(authoredRootNodes(value, root));
+    let position = 0;
+    for (const section of sections) {
+      if (section.properties) return null;
+      if (section.replacement) {
+        if ((selection.anchor.root ?? 'main') !== root) return null;
+        const emptyTextBoundaries =
+          section.length === 0 &&
+          section.replacement.length > 0 &&
+          section.replacement.length % 2 === 0 &&
+          section.replacement.every((token, i) =>
+            i % 2 === 0
+              ? token.kind === 'open' &&
+                token.nodeKind === 'text' &&
+                Object.keys(token.props).length === 0
+              : token.kind === 'close' && token.nodeKind === 'text'
+          );
+        if (emptyTextBoundaries) continue;
+        if (
+          result ||
+          section.replacement.length ||
+          !section.length ||
+          (selection.anchor.root ?? 'main') !== root
+        ) {
+          return null;
+        }
+        const caret = index.positionAt(selection.anchor);
+        const to = position + section.length;
+        if (caret !== position && caret !== to) return null;
+        result = {
+          root,
+          beforeCaret: caret,
+          afterCaret: DocumentIndex.fromValue(
+            authoredRootNodes(after, root)
+          ).positionAt(afterSelection.anchor),
+          direction: caret === to ? 'backward' : 'forward',
+        };
+      }
+      position += section.length;
+    }
+  }
+  if (
+    result &&
+    change.mapPosition(result.beforeCaret, {
+      ...(result.root === 'main' ? {} : { root: result.root }),
+      association: 'forward',
+    }) !== result.afterCaret
+  ) {
+    return null;
+  }
+  return result;
+};
 const VIEWS = new WeakMap<
   ReturnType<typeof getEditorRuntime>,
-  { composition: { changeId: string | null } | null; policy: AuthoredView }
+  AuthoredViewState
 >();
 const PENDING_VIEWS = new WeakMap<
   ReturnType<typeof getEditorRuntime>,
@@ -333,7 +505,7 @@ const authoredViewState = (editor: Editor) => {
   const runtime = getEditorRuntime(editor);
   const existing = VIEWS.get(runtime);
   if (existing) return existing;
-  const view = {
+  const view: AuthoredViewState = {
     composition: null,
     policy: Object.freeze({ ...DEFAULT_VIEW }),
   };
@@ -564,6 +736,10 @@ const readAuthoredViewProjection = (
           } else {
             const mapped = mapDirectAuthoredChange({
               state,
+              independent: canReplayIndependently(captured, state, {
+                positions: live.projectedPositions,
+                value: live.projected,
+              }),
               changeId,
               operationId,
               positions: live.projectedPositions,
@@ -709,7 +885,12 @@ const setAuthoredView = (editor: Editor, value: AuthoredView) => {
     );
   }
   if (live.active) {
-    throw new Error('Change authored view policy outside an editor update.');
+    const key = getEditorRuntime(editor);
+    if (VIEWS.has(key)) {
+      throw new Error('Change authored view policy outside an editor update.');
+    }
+    VIEWS.set(key, { composition: null, policy: Object.freeze({ ...value }) });
+    return;
   }
   if (editor.read.view.isComposing()) {
     PENDING_VIEWS.set(getEditorRuntime(editor), Object.freeze({ ...value }));
@@ -724,6 +905,7 @@ const setAuthoredView = (editor: Editor, value: AuthoredView) => {
   ) {
     return;
   }
+  authoredViewState(editor).deletion = undefined;
   authoredViewState(editor).policy = Object.freeze({ ...value });
   notifyEditorViewState(editor, 'authored');
 };
@@ -945,7 +1127,10 @@ const emitAuthoredOperation = (
   operation: AuthoredOperation
 ) => {
   const state = tx.getField(authoredState);
-  const changeIds = authoredOperationChangeIds(operation);
+  const changeIds = [...authoredOperationChangeIds(operation)];
+  for (const child of authoredRebaseDependants(state, changeIds)) {
+    changeIds.push(child.id);
+  }
   const retained = new Map<string, AuthoredEdit>();
   for (const changeId of changeIds) {
     const change = readRecord(state.changes, changeId);
@@ -1043,6 +1228,18 @@ const undoAuthoredEdit = (
   prepareAuthoredReview(live);
   const state = tx.getField(authoredState);
   const record = readRecord(state.changes, operation.changeId);
+  const dependants = operation.proposal
+    ? authoredDependants(state, operation.changeId).filter(
+        (change) =>
+          change.status !== 'rejected' &&
+          !isIndependentAuthoredChange(state, change)
+      )
+    : [];
+  if (dependants.length) {
+    throw new AuthoredMappingConflictError(
+      dependants.map((change) => change.id)
+    );
+  }
   if (
     authorId !== operation.authorId ||
     !record ||
@@ -1132,6 +1329,53 @@ const undoAuthoredEdit = (
     );
     return;
   }
+  if (
+    operation.steps.every((step) =>
+      step.targets.every((target) => target.insertedContent !== undefined)
+    )
+  ) {
+    const next: AuthoredEdit = snapshotEditorJsonValue(
+      {
+        authorId,
+        changeId,
+        clock: state.clock + 1,
+        dependencies: operation.dependencies,
+        id,
+        inverseOf: operation.id,
+        kind: 'edit',
+        parents: state.frontier,
+        proposal: operation.proposal,
+        ...(operation.directFormatting
+          ? { directFormatting: true as const }
+          : {}),
+        ...(operation.independent ? { independent: true as const } : {}),
+        steps: invertAuthoredSteps(operation.steps),
+        replica: live.replica,
+        seen: state.vector,
+        sequence,
+        time: Date.now(),
+      },
+      'Authored history compensation'
+    );
+    const reduced = reduceAuthoredOperation(state, next);
+    const projected = projectAuthoredOperation({
+      editor: live.source,
+      operation: next,
+      previous: state,
+      projection: before,
+      schema,
+      state: reduced,
+    });
+    stageAuthoredProjection(live, projected);
+    active.applyingDecision = true;
+    try {
+      tx.changes.apply(projected.acceptedChange);
+      emitAuthoredOperation(live, tx, next);
+    } finally {
+      active.applyingDecision = false;
+    }
+    return;
+  }
   const mapped = mapAuthoredChange({
     state,
     captureAs: { changeId, operationId: id },
@@ -1207,6 +1451,7 @@ const undoAuthoredEdit = (
       kind: 'edit',
       parents: state.frontier,
       proposal: operation.proposal,
+      ...(operation.independent ? { independent: true as const } : {}),
       steps: captured.steps,
       replica: live.replica,
       seen: state.vector,
@@ -1481,6 +1726,834 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           commits: WeakMap<Editor, EditorCommit>;
         }
       >();
+      const readTargetFragment = (
+        parent: Editor,
+        target: NativeAuthoredTarget
+      ) =>
+        target
+          ? (readAuthoredMarkupFragments(
+              target.changeId,
+              readAuthoredViewProjection(live, parent, 'accepted'),
+              readAuthoredViewProjection(live, parent, 'proposed')
+            ).find((fragment) => fragment.id === target.id) ?? null)
+          : null;
+      const readTarget = <T>(
+        parent: Editor,
+        target: NativeAuthoredTarget,
+        read: (state: EditorStateView) => T
+      ): T | null => {
+        const fragment = readTargetFragment(parent, target);
+        const projection = fragment
+          ? readAuthoredFragmentProjection(
+              fragment,
+              source.read.getField(authoredState)
+            )
+          : target
+            ? null
+            : readAuthoredViewProjection(live, parent);
+        if (!projection) return null;
+        return withEditorDocumentProjection(
+          source,
+          projection.value as EditorDocumentValue,
+          () => read(getEditorStateView(source)),
+          {
+            root: fragment?.root ?? parent.read.view.root() ?? 'main',
+            selection: null,
+          }
+        );
+      };
+      const capturePoint = (
+        parent: Editor,
+        target: NativeAuthoredTarget,
+        initialPoint: Point,
+        association: 'backward' | 'forward'
+      ) => {
+        const initial = readAuthoredViewProjection(live, parent);
+        const initialFragment = readTargetFragment(parent, target);
+        const initialProjection = initialFragment
+          ? readAuthoredFragmentProjection(initialFragment, initial.state)
+          : target
+            ? null
+            : initial;
+        if (!initialProjection) return null;
+        const root =
+          initialPoint.root ??
+          initialFragment?.root ??
+          parent.read.view.root() ??
+          'main';
+        const captured = captureAuthoredSelection(
+          SelectionApi.text(
+            { anchor: initialPoint, focus: initialPoint },
+            { affinity: association }
+          ),
+          root,
+          initialProjection.positions,
+          initialProjection.value
+        );
+        if (!captured) return null;
+        const { documentId } = initial.state;
+        return {
+          resolve: () => {
+            const current = readAuthoredViewProjection(live, parent);
+            if (current.state.documentId !== documentId) return null;
+            const accepted = readAuthoredViewProjection(
+              live,
+              parent,
+              'accepted'
+            );
+            const proposed = readAuthoredViewProjection(
+              live,
+              parent,
+              'proposed'
+            );
+            const endpoint = captured.points[0];
+            const positions = readRecord(current.positions, root)?.positions;
+            const resolve = (projection: AuthoredRangeProjection) => {
+              const selection = resolveAuthoredSelection(
+                captured,
+                projection.positions,
+                projection.value,
+                current.state
+              );
+              return selection && RangeApi.isRange(selection)
+                ? selection.anchor
+                : null;
+            };
+            if (
+              !target &&
+              positions &&
+              resolveAuthoredPosition(
+                positions,
+                endpoint.position,
+                endpoint.association,
+                'detach'
+              ) !== null
+            ) {
+              const point = resolve(current);
+              if (point) return { target: null, point };
+            }
+            const changes = new Set<string>(target ? [target.changeId] : []);
+            for (const side of [
+              endpoint.position.left,
+              endpoint.position.right,
+            ]) {
+              if (!side) continue;
+              for (const { value: id } of matchingAuthoredIntervals(
+                readRecord(fragmentIndex().origins, side.origin),
+                side.offset,
+                side.offset
+              )) {
+                changes.add(id);
+              }
+              const operation = authoredOriginOperation(
+                current.state,
+                side.origin
+              );
+              if (operation?.kind === 'edit') {
+                changes.add(operation.changeId);
+                operation.dependencies.forEach((id) => changes.add(id));
+              }
+            }
+            for (const id of changes) {
+              const fragments = readAuthoredMarkupFragments(
+                id,
+                accepted,
+                proposed
+              );
+              for (const fragment of association === 'forward'
+                ? fragments.toReversed()
+                : fragments) {
+                if (fragment.kind === 'properties' || fragment.root !== root) {
+                  continue;
+                }
+                const projection = readAuthoredFragmentProjection(
+                  fragment,
+                  current.state
+                );
+                const bounds = readAuthoredFragmentBounds(fragment);
+                if (!projection || !bounds) continue;
+                const point = resolve(projection);
+                if (!point) continue;
+                const offset = DocumentIndex.fromValue(
+                  authoredRootNodes(projection.value, root)
+                ).positionAt(point);
+                if (bounds.from <= offset && offset <= bounds.to) {
+                  return {
+                    target: { changeId: fragment.changeId, id: fragment.id },
+                    point,
+                  };
+                }
+              }
+            }
+            const point = resolve(current);
+            return point ? { target: null, point } : null;
+          },
+        };
+      };
+      const updateViews = (
+        parent: Editor,
+        edits: readonly NativeAuthoredViewEdit[],
+        updateOptions?: { tags?: readonly EditorUpdateTag[] }
+      ) => {
+        if (
+          parent.read.view.isReadOnly() ||
+          getEditorRuntimeOwner(parent) !== source
+        ) {
+          return null;
+        }
+        const state = source.read.getField(authoredState);
+        const authorId = currentAuthorId(live);
+        if (!authorId) return null;
+        if (edits.length === 1 && !edits[0].target) {
+          let changed = false;
+          parent.update((tx) => {
+            for (const tag of updateOptions?.tags ?? []) tx.tags.add(tag);
+            edits[0].update(tx);
+            changed = !getActiveTransactionDocumentChange(source).empty;
+          });
+          const selection = parent.read.selection();
+          return [
+            {
+              changed,
+              fragmentId: null,
+              selection: selection ? SelectionApi.text(selection) : null,
+            },
+          ];
+        }
+        const { intent } = authoredView(parent);
+        const prepared = edits.flatMap(({ target, update }, resultIndex) => {
+          const fragment = readTargetFragment(parent, target);
+          if (
+            target &&
+            (!fragment ||
+              fragment.kind !== 'delete' ||
+              readRecord(state.changes, fragment.changeId)?.status !==
+                'pending')
+          ) {
+            throw new Error('Projected edit has a stale retained target.');
+          }
+          const binding = fragment
+            ? {
+                documentId: state.documentId,
+                fragment,
+                parent,
+                requireMarkupParent: true,
+              }
+            : undefined;
+          const projection = binding
+            ? readBoundFragmentProjection(
+                binding,
+                readAuthoredViewProjection(live, parent, 'accepted'),
+                readAuthoredViewProjection(live, parent, 'proposed'),
+                live
+              )
+            : readAuthoredViewProjection(
+                live,
+                parent,
+                authoredView(parent).projection === 'accepted'
+                  ? 'accepted'
+                  : 'proposed'
+              );
+          if (!projection) {
+            throw new Error('Projected edit target is unavailable.');
+          }
+          const bounds = fragment && readAuthoredFragmentBounds(fragment);
+          const rootPositions =
+            binding &&
+            readRecord(projection.positions, binding.fragment.root)?.positions;
+          const contentPosition = (
+            position: AuthoredPosition
+          ): AuthoredPosition => {
+            if (!bounds || !rootPositions) return position;
+            const endpoint = (side: 'left' | 'right') => {
+              const point = position[side];
+              if (!point) return null;
+              const local = resolveAuthoredPosition(
+                rootPositions,
+                {
+                  left: side === 'left' ? point : null,
+                  right: side === 'right' ? point : null,
+                },
+                side
+              );
+              if (local === null) return point;
+              return side === 'left'
+                ? bounds.from < local && local <= bounds.to
+                  ? point
+                  : null
+                : bounds.from <= local && local < bounds.to
+                  ? point
+                  : null;
+            };
+            const left = endpoint('left');
+            const right = endpoint('right');
+            return left || right ? { left, right } : position;
+          };
+          schema.assertDocument(projection.value);
+          const spec = withEditorDocumentProjection(
+            source,
+            projection.value,
+            () =>
+              withEditorUpdateRootScope(
+                source,
+                fragment?.root ?? parent.read.view.root(),
+                () => getEditorStateView(source).transaction(update)
+              ),
+            {
+              root: fragment?.root ?? parent.read.view.root() ?? 'main',
+              selection: null,
+            }
+          );
+          if (spec.effects.length) {
+            throw new Error(
+              'Projected content edits cannot publish unrelated effects.'
+            );
+          }
+          let { changes } = spec;
+          const specSteps = readTransactionSpecSteps(spec);
+          const formattingOnly =
+            live.options.automaticFormatting === 'edit' &&
+            classifyAuthoredFormatting(
+              captureAuthoredChange({
+                state,
+                change: changes,
+                steps: specSteps,
+                changeId: 'classification',
+                operationId: 'classification',
+                positions: projection.positions,
+                value: projection.value,
+                schema: getCompiledEditorSchemaFromApi(schema),
+              }).steps,
+              'classification'
+            )?.onlyFormatting;
+          if (binding && intent === 'propose' && !formattingOnly) {
+            const retainDeleted = (
+              sections: RootChangeJson
+            ): RootChangeJson => {
+              const joined = coalesceAuthoredReplacements(sections);
+              return joined.flatMap((section) =>
+                section.replacement
+                  ? [
+                      ...(section.replacement.length
+                        ? [{ length: 0, replacement: section.replacement }]
+                        : []),
+                      ...(section.length ? [{ length: section.length }] : []),
+                    ]
+                  : [section]
+              );
+            };
+            const json = changes.toJSON();
+            changes = DocumentChange.fromJSON({
+              ...json,
+              ...(json.primary ? { primary: retainDeleted(json.primary) } : {}),
+              ...(json.roots
+                ? {
+                    roots: Object.fromEntries(
+                      Object.entries(json.roots).map(([root, sections]) => [
+                        root,
+                        retainDeleted(sections),
+                      ])
+                    ),
+                  }
+                : {}),
+            });
+          }
+          const item = {
+            binding,
+            projection,
+            spec,
+            changes,
+            specSteps,
+            contentPosition,
+            resultIndex,
+            carrier: null as {
+              root: string;
+              changeId: string;
+              position: AuthoredPosition;
+            } | null,
+          };
+          const projected = readAuthoredViewProjection(
+            live,
+            parent,
+            'proposed'
+          );
+          if (!binding || !fragment || !bounds || !rootPositions) return [item];
+          const lifted = liftAuthoredFragmentInsertion({
+            change: changes,
+            fragment,
+            value: projection.value,
+            projected: projected.value,
+          });
+          if (!lifted) return [item];
+          const carrierDraft = new ChangeDraft(projected.value).apply(
+            lifted.insertion
+          );
+          const correction = constructCanonicalDocumentChange(
+            source,
+            carrierDraft.after,
+            lifted.insertion,
+            {
+              before: projected.value,
+              indexedBefore: carrierDraft.indexedBefore,
+              indexedAfter: carrierDraft.indexedAfter,
+            }
+          );
+          const carrierChange = lifted.insertion.compose(
+            correction,
+            projected.value
+          );
+          const selection = correction.empty
+            ? lifted.selection
+            : mapDetachedSelectionThroughChange(
+                schema,
+                lifted.selection,
+                correction,
+                carrierDraft.after as EditorDocumentValue,
+                new ChangeDraft(carrierDraft.after).apply(correction)
+                  .after as EditorDocumentValue,
+                fragment.root
+              );
+          const carrierSpec = parent.read((current) =>
+            current.transaction((tx) => {
+              tx.changes.apply(carrierChange);
+              tx.selection.set(selection);
+            })
+          );
+          const position = authoredPositionAt(rootPositions, bounds.from);
+          return [
+            { ...item, changes: lifted.removal },
+            {
+              ...item,
+              binding: undefined,
+              projection: projected,
+              changes: carrierSpec.changes,
+              spec: {
+                ...carrierSpec,
+                tags: spec.tags,
+                annotations: spec.annotations,
+              },
+              specSteps: readTransactionSpecSteps(carrierSpec),
+              contentPosition: (capturedPosition: AuthoredPosition) =>
+                capturedPosition,
+              carrier: {
+                root: fragment.root,
+                changeId: binding.fragment.changeId,
+                position: { left: null, right: position.right },
+              },
+            },
+          ];
+        });
+        const results = prepared.map(({ binding, spec, changes }) => ({
+          changed: !changes.empty,
+          fragmentId: binding?.fragment.id ?? null,
+          selection: spec.selection?.value ?? null,
+        }));
+        const output = () => {
+          const grouped: typeof results = [];
+          for (const [index, item] of prepared.entries()) {
+            const result = results[index];
+            grouped[item.resultIndex] = {
+              ...result,
+              changed:
+                result.changed || grouped[item.resultIndex]?.changed || false,
+            };
+          }
+          return grouped;
+        };
+        if (!results.some((result) => result.changed)) {
+          const last = prepared.at(-1);
+          if (last?.spec.selection) {
+            const captured = captureAuthoredSelection(
+              last.spec.selection.value,
+              last.binding?.fragment.root ?? last.spec.selection.root ?? 'main',
+              last.projection.positions,
+              last.projection.value
+            );
+            const projection = readAuthoredViewProjection(live, parent);
+            const selection = resolveAuthoredSelection(
+              captured,
+              projection.positions,
+              projection.value,
+              state
+            );
+            parent.update((tx) => tx.selection.set(selection));
+          }
+          return output();
+        }
+        const changeId = crypto.randomUUID();
+        const apply = (tx: EditorUpdateTransaction) => {
+          for (const tag of [
+            ...(updateOptions?.tags ?? []),
+            ...prepared.flatMap((item) => item.spec.tags),
+          ]) {
+            tx.tags.add(tag);
+          }
+          prepareAuthoredReview(live);
+          const active = getDefined(live.active);
+          active.view = parent;
+          let currentProjection = {
+            accepted: live.accepted,
+            acceptedPositions: live.acceptedPositions,
+            projected: live.projected,
+            projectedPositions: live.projectedPositions,
+          };
+          const selections: Array<AuthoredViewSelection | null | undefined> =
+            [];
+          for (const [index, item] of prepared.entries()) {
+            const { binding, projection, spec, changes } = item;
+            for (const annotation of spec.annotations) {
+              tx.annotations.set(annotation.type, annotation.value);
+            }
+            if (changes.empty) continue;
+            const initial = tx.getField(authoredState);
+            const partitions =
+              !binding && !item.carrier && intent === 'propose'
+                ? (partitionAuthoredTextEdit(
+                    changes,
+                    projection.positions,
+                    initial,
+                    authorId,
+                    projection.value
+                  ) ??
+                  partitionAuthoredStructuralEdit(
+                    changes,
+                    projection.positions,
+                    initial,
+                    authorId,
+                    projection.value
+                  ))
+                : null;
+            const draft = new ChangeDraft(projection.value);
+            let { positions } = projection;
+            for (const part of partitions ?? [
+              { change: changes, changeId: null },
+            ]) {
+              const current = tx.getField(authoredState);
+              const sequence =
+                (readRecord(current.vector, live.replica) ?? 0) + 1;
+              const id = `${live.replica}:${sequence}`;
+              const target =
+                !binding &&
+                !item.carrier &&
+                intent === 'propose' &&
+                !part.changeId
+                  ? authoredEditTarget(part.change, positions, current, {
+                      adjacentDeletions: false,
+                      amendDeletions: false,
+                      authorId,
+                    })
+                  : null;
+              const own = target ? readRecord(current.changes, target) : null;
+              const amendment =
+                own?.authorId === authorId && own.status === 'pending'
+                  ? own.id
+                  : null;
+              let proposalId =
+                intent === 'edit'
+                  ? crypto.randomUUID()
+                  : (part.changeId ?? amendment ?? changeId);
+              const isolated =
+                !binding && !item.carrier && !part.changeId && !amendment
+                  ? isolateAuthoredInsertion({
+                      value: draft.value,
+                      accepted: currentProjection.accepted,
+                      acceptedPositions: currentProjection.acceptedPositions,
+                      positions,
+                      change: part.change,
+                      changeId: proposalId,
+                      operationId: id,
+                      state: current,
+                      schema: getCompiledEditorSchemaFromApi(schema),
+                      schemaApi: schema,
+                    })
+                  : null;
+              const step = isolated?.change ?? part.change;
+              let captured = captureAuthoredChange({
+                schema: getCompiledEditorSchemaFromApi(schema),
+                state: current,
+                change: step,
+                changeId: proposalId,
+                operationId: id,
+                positions,
+                value: draft.value,
+                ...(!partitions && changes === spec.changes && !isolated
+                  ? { steps: item.specSteps }
+                  : {}),
+                ...(isolated ? { afterPositions: isolated.positions } : {}),
+              });
+              const formatting =
+                live.options.automaticFormatting === 'edit'
+                  ? classifyAuthoredFormatting(captured.steps, id)
+                  : null;
+              const proposing =
+                intent === 'propose' && !formatting?.onlyFormatting;
+              if (!proposing && readRecord(current.changes, proposalId)) {
+                proposalId = crypto.randomUUID();
+                captured = captureAuthoredChange({
+                  schema: getCompiledEditorSchemaFromApi(schema),
+                  state: current,
+                  change: step,
+                  changeId: proposalId,
+                  operationId: id,
+                  positions,
+                  value: draft.value,
+                  ...(!partitions && changes === spec.changes && !isolated
+                    ? { steps: item.specSteps }
+                    : {}),
+                  ...(isolated ? { afterPositions: isolated.positions } : {}),
+                });
+              }
+              if (binding) {
+                captured = {
+                  ...captured,
+                  steps: captured.steps.map((frame) => ({
+                    ...frame,
+                    targets: frame.targets.map((frameTarget) =>
+                      frameTarget.removed.length || !frameTarget.inserted.length
+                        ? frameTarget
+                        : {
+                            ...frameTarget,
+                            association:
+                              frameTarget.association ??
+                              (!item.contentPosition(frameTarget.from).left
+                                ? 'left'
+                                : !item.contentPosition(frameTarget.from).right
+                                  ? 'right'
+                                  : null),
+                            from: item.contentPosition(frameTarget.from),
+                            to: item.contentPosition(frameTarget.to),
+                            afterFrom: item.contentPosition(
+                              frameTarget.afterFrom
+                            ),
+                            afterTo: item.contentPosition(frameTarget.afterTo),
+                          }
+                    ),
+                  })),
+                };
+              }
+              const { carrier } = item;
+              if (carrier) {
+                captured = {
+                  ...captured,
+                  steps: captured.steps.map((frame) => ({
+                    ...frame,
+                    targets: frame.targets.map((frameTarget) =>
+                      frameTarget.root === carrier.root &&
+                      !frameTarget.removed.length &&
+                      frameTarget.inserted.length
+                        ? {
+                            ...frameTarget,
+                            association: 'right' as const,
+                            from: carrier.position,
+                            to: carrier.position,
+                          }
+                        : frameTarget
+                    ),
+                  })),
+                };
+              }
+              const operation: AuthoredEdit = snapshotEditorJsonValue(
+                {
+                  authorId,
+                  changeId: proposalId,
+                  clock: current.clock + 1,
+                  dependencies: [
+                    ...new Set([
+                      ...captured.dependencies,
+                      ...(binding
+                        ? [binding.fragment.changeId]
+                        : item.carrier
+                          ? [item.carrier.changeId]
+                          : []),
+                    ]),
+                  ].sort(),
+                  id,
+                  inverseOf: null,
+                  kind: 'edit',
+                  parents: current.frontier,
+                  proposal: proposing,
+                  ...(proposing &&
+                  readRecord(current.changes, proposalId)?.status === 'pending'
+                    ? { refreshOriginal: true as const }
+                    : {}),
+                  ...((proposing ||
+                    binding ||
+                    authoredView(parent).projection !== 'accepted') &&
+                  canReplayIndependently(captured, current)
+                    ? { independent: true as const }
+                    : {}),
+                  ...(proposing && formatting
+                    ? { directFormatting: true as const }
+                    : {}),
+                  steps: captured.steps,
+                  replica: live.replica,
+                  seen: current.vector,
+                  sequence,
+                  time: Date.now(),
+                },
+                'Projected content edit'
+              );
+              const reduced = reduceAuthoredOperation(current, operation);
+              const projected = projectAuthoredOperation({
+                editor: source,
+                operation,
+                previous: current,
+                schema,
+                state: reduced,
+                projection: currentProjection,
+              });
+              stageAuthoredProjection(live, projected);
+              active.applyingDecision = true;
+              try {
+                tx.changes.apply(projected.acceptedChange);
+                emitAuthoredOperation(live, tx, operation);
+              } finally {
+                active.applyingDecision = false;
+              }
+              currentProjection = projected.projection;
+              ({ positions } = captured);
+              draft.apply(step);
+            }
+            const inserts = changes.toJSON();
+            const inserted = [
+              inserts.primary,
+              ...Object.values(inserts.roots ?? {}),
+            ].some((sections) =>
+              sections?.some((section) => section.replacement?.length)
+            );
+            if (prepared[index + 1]?.resultIndex !== item.resultIndex) {
+              const after = draft.value;
+              const selection = spec.selection?.value ?? null;
+              selections[index] = captureAuthoredSelection(
+                selection,
+                binding?.fragment.root ?? spec.selection?.root ?? 'main',
+                positions,
+                after
+              );
+              const capturedSelection = selections[index];
+              if (capturedSelection) {
+                selections[index] = {
+                  ...capturedSelection,
+                  points: capturedSelection.points.map((point) => {
+                    const position = item.contentPosition(point.position);
+                    const { left } = position;
+                    const initialPositions = readRecord(
+                      projection.positions,
+                      capturedSelection.root
+                    )?.positions;
+                    const insertedLeft =
+                      left &&
+                      initialPositions &&
+                      resolveAuthoredPosition(
+                        initialPositions,
+                        { left, right: null },
+                        'left'
+                      ) === null;
+                    return {
+                      ...point,
+                      association: insertedLeft
+                        ? ('left' as const)
+                        : point.association,
+                      position,
+                    };
+                  }),
+                };
+              }
+              if (!binding || inserted) results[index].fragmentId = null;
+            }
+          }
+          for (const [index, selection] of selections.entries()) {
+            if (selection === undefined) continue;
+            const currentState = tx.getField(authoredState);
+            const { binding } = prepared[index];
+            if (binding && results[index].fragmentId !== null && selection) {
+              const fragments = readAuthoredMarkupFragments(
+                binding.fragment.changeId,
+                {
+                  positions: currentProjection.acceptedPositions,
+                  value: currentProjection.accepted,
+                  state: currentState,
+                },
+                {
+                  positions: currentProjection.projectedPositions,
+                  value: currentProjection.projected,
+                  state: currentState,
+                }
+              );
+              let retained = false;
+              for (const fragment of selection.points[0]?.association ===
+              'right'
+                ? fragments.toReversed()
+                : fragments) {
+                if (
+                  fragment.kind === 'properties' ||
+                  fragment.root !== selection.root
+                ) {
+                  continue;
+                }
+                const projection = readAuthoredFragmentProjection(
+                  fragment,
+                  currentState
+                );
+                const bounds = readAuthoredFragmentBounds(fragment);
+                if (!projection || !bounds) continue;
+                const mapped = resolveAuthoredSelection(
+                  selection,
+                  projection.positions,
+                  projection.value,
+                  currentState
+                );
+                if (!mapped || !RangeApi.isRange(mapped)) continue;
+                const document = DocumentIndex.fromValue(
+                  authoredRootNodes(projection.value, fragment.root)
+                );
+                if (
+                  ![mapped.anchor, mapped.focus].every((point) => {
+                    const offset = document.positionAt(point);
+                    return bounds.from <= offset && offset <= bounds.to;
+                  })
+                ) {
+                  continue;
+                }
+                results[index].fragmentId = fragment.id;
+                results[index].selection = SelectionApi.text(mapped, {
+                  affinity:
+                    selection.points[0].association === 'left'
+                      ? 'backward'
+                      : 'forward',
+                });
+                retained = true;
+                break;
+              }
+              if (retained) {
+                active.historySelection = selection;
+                continue;
+              }
+              results[index].fragmentId = null;
+            }
+            const resolved = resolveAuthoredSelection(
+              selection,
+              currentProjection.projectedPositions,
+              currentProjection.projected,
+              tx.getField(authoredState)
+            );
+            results[index].selection =
+              resolved && RangeApi.isRange(resolved) && selection
+                ? SelectionApi.text(resolved, {
+                    affinity:
+                      selection.points[0].association === 'left'
+                        ? 'backward'
+                        : 'forward',
+                  })
+                : resolved;
+            active.historySelection = selection;
+          }
+        };
+        const activeTransaction = getActiveEditorTransaction(source);
+        if (activeTransaction) apply(activeTransaction);
+        else source.update(apply);
+        return output();
+      };
       const cleanup = registerAuthoredRuntime(source, {
         subscribeFragment(view, listener) {
           const binding = FRAGMENT_VIEWS.get(getEditorRuntime(view));
@@ -1501,8 +2574,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         view: authoredView,
         fragmentVersion(view) {
           return !FRAGMENT_VIEWS.has(getEditorRuntime(view)) &&
-            authoredView(view).projection === 'markup' &&
-            fragmentIndex().buckets
+            authoredView(view).projection === 'markup'
             ? source.read.getField(authoredState)
             : null;
         },
@@ -1589,95 +2661,18 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         fragmentView(view) {
           return FRAGMENT_VIEWS.get(getEditorRuntime(view)) ?? null;
         },
+        capturePoint,
+        readTarget,
+        updateViews,
         updateFragment(view, update, updateOptions) {
           const binding = FRAGMENT_VIEWS.get(getEditorRuntime(view));
-          if (
-            !binding ||
-            binding.fragment.kind !== 'delete' ||
-            binding.parent.read.view.isReadOnly()
-          ) {
-            return null;
-          }
-          const state = source.read.getField(authoredState);
-          const change = readRecord(state.changes, binding.fragment.changeId);
-          const projection = readBoundFragmentProjection(
-            binding,
-            readAuthoredViewProjection(live, binding.parent, 'accepted'),
-            readAuthoredViewProjection(live, binding.parent, 'proposed'),
-            live
-          );
-          if (!projection || change?.status !== 'pending') return null;
-          const authorId = currentAuthorId(live);
-          if (!authorId || authorId !== change.authorId) return null;
-          schema.assertDocument(projection.value as EditorDocumentValue);
-          const spec = view.read((current) => current.transaction(update));
-          const changes = protectAuthoredRetainedContent(
-            spec.changes,
-            projection,
-            change.id
-          );
-          const result = {
-            changed: !changes.empty,
-            fragmentId: binding.fragment.id,
-            selection: spec.selection?.value ?? null,
-          };
-          if (changes.empty) return result;
-          source.update(
-            { tags: [...(updateOptions?.tags ?? []), ...spec.tags] },
-            (tx) => {
-              prepareAuthoredReview(live);
-              const active = getDefined(live.active);
-              const current = tx.getField(authoredState);
-              const sequence =
-                (readRecord(current.vector, live.replica) ?? 0) + 1;
-              const id = `${live.replica}:${sequence}`;
-              const captured = captureAuthoredChange({
-                schema: getCompiledEditorSchemaFromApi(schema),
-                state: current,
-                change: changes,
-                changeId: change.id,
-                operationId: id,
-                positions: projection.positions,
-                value: projection.value,
-              });
-              active.view = binding.parent;
-              stageAuthoredProjection(live, {
-                acceptedChange: DocumentChange.empty,
-                projectedChange: DocumentChange.empty,
-                projection: {
-                  accepted: live.accepted,
-                  acceptedPositions: live.acceptedPositions,
-                  projected: live.projected,
-                  projectedPositions: live.projectedPositions,
-                },
-              });
-              emitAuthoredOperation(
-                live,
-                tx,
-                snapshotEditorJsonValue(
-                  {
-                    authorId,
-                    changeId: change.id,
-                    clock: current.clock + 1,
-                    dependencies: captured.dependencies,
-                    id,
-                    inverseOf: null,
-                    kind: 'edit',
-                    parents: current.frontier,
-                    proposal: true,
-                    retained: binding.fragment.id,
-                    steps: captured.steps,
-                    replica: live.replica,
-                    seen: current.vector,
-                    sequence,
-                    time: Date.now(),
-                  },
-                  'Retained authored edit'
-                )
-              );
-            }
-          );
-          return result;
+          return binding
+            ? (updateViews(
+                binding.parent,
+                [{ target: binding.fragment, update }],
+                updateOptions
+              )?.[0] ?? null)
+            : null;
         },
         bindFragment(view, parent, fragment, requireMarkupParent) {
           const projected = readAuthoredViewProjection(
@@ -2342,6 +3337,12 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           let nextProjectedChange = DocumentChange.empty;
           let nextAcceptedPositions = live.acceptedPositions;
           let nextProjectedPositions = live.projectedPositions;
+          let deletionCapture: {
+            view: AuthoredViewState;
+            deletion: NativeDeletion;
+            changeId: string;
+            authorId: string;
+          } | null = null;
           let compositionCapture: {
             composition: { changeId: string | null };
             changeId: string;
@@ -2356,9 +3357,9 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           return {
             finish(input) {
               active.finishing = true;
-              const { after, tx } = input;
-              let { before, change } = input;
-              const viewSelection = getCurrentSelection(source);
+              const { tx } = input;
+              let { before, change, after } = input;
+              let viewSelection = getCurrentSelection(source);
               const viewSelectionRoot = getCurrentSelectionRoot(source);
               let acceptedChange =
                 active.decision?.acceptedChange ??
@@ -2460,22 +3461,70 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                 const sequence =
                   (readRecord(state.vector, live.replica) ?? 0) + 1;
                 const operationId = `${live.replica}:${sequence}`;
+                const viewState = authoredViewState(active.view ?? source);
+                const deletion =
+                  active.automatic &&
+                  active.intent === 'propose' &&
+                  active.inputProjection === 'proposed' &&
+                  !viewState.composition &&
+                  (tx.tags.has('native-text-input') ||
+                    tx.tags.has('dom-text-input')) &&
+                  !tx.tags.has('paste') &&
+                  !tx.tags.has('historic') &&
+                  !tx.tags.has('history-push')
+                    ? nativeDeletion(
+                        change,
+                        before,
+                        resolveAuthoredSelection(
+                          active.viewSelection,
+                          projectedPositionsBase,
+                          before,
+                          state
+                        ),
+                        after,
+                        viewSelection
+                      )
+                    : null;
+                const previousDeletion = viewState.deletion;
+                const continuesDeletion =
+                  deletion &&
+                  previousDeletion &&
+                  previousDeletion.commit === getLastCommit(source) &&
+                  previousDeletion.authorId === authorId &&
+                  previousDeletion.policy === viewState.policy &&
+                  previousDeletion.root === deletion.root &&
+                  previousDeletion.direction === deletion.direction &&
+                  deletion.beforeCaret === previousDeletion.afterCaret;
+                const changedRoots = change.toJSON();
+                const restoresStructure = [
+                  changedRoots.primary ?? [],
+                  ...Object.values(changedRoots.roots ?? {}),
+                ].some((sections) =>
+                  sections.some((section) =>
+                    section.replacement?.some((token) => token.kind !== 'text')
+                  )
+                );
                 const editingTarget =
-                  active.automatic && active.inputProjection === 'proposed'
+                  active.automatic &&
+                  active.intent === 'propose' &&
+                  active.inputProjection === 'proposed'
                     ? authoredEditTarget(
                         change,
                         projectedPositionsBase,
                         state,
                         {
-                          adjacentDeletions: active.intent === 'propose',
+                          adjacentDeletions:
+                            Boolean(continuesDeletion) || restoresStructure,
                           amendDeletions: active.insertions.size === 0,
                           authorId,
                         }
                       )
                     : null;
-                const targeted = editingTarget
-                  ? readRecord(state.changes, editingTarget)
-                  : null;
+                const targeted = continuesDeletion
+                  ? readRecord(state.changes, previousDeletion.changeId)
+                  : editingTarget
+                    ? readRecord(state.changes, editingTarget)
+                    : null;
                 const owned = targeted?.authorId === authorId ? targeted : null;
                 const editingOwner = owned?.id ?? null;
                 const composition = active.automatic
@@ -2485,14 +3534,49 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                   ? readRecord(state.changes, composition.changeId)
                   : null;
                 const classificationId = active.changeId ?? crypto.randomUUID();
+                const isolated =
+                  active.automatic &&
+                  !editingOwner &&
+                  active.inputProjection === 'proposed'
+                    ? isolateAuthoredInsertion({
+                        value: before,
+                        accepted: acceptedBase,
+                        acceptedPositions: acceptedPositionsBase,
+                        positions: projectedPositionsBase,
+                        change,
+                        changeId: classificationId,
+                        operationId,
+                        state,
+                        schema: getCompiledEditorSchemaFromApi(schema),
+                        schemaApi: schema,
+                      })
+                    : null;
+                if (isolated) {
+                  schema.validateDocumentChange({
+                    before,
+                    after: isolated.after,
+                    change: isolated.change,
+                    indexedBefore: isolated.indexedBefore,
+                    indexedAfter: isolated.indexedAfter,
+                  });
+                  viewSelection = mapDetachedSelectionThroughChange(
+                    schema,
+                    viewSelection,
+                    DocumentChange.between(after, isolated.after),
+                    after,
+                    isolated.after,
+                    viewSelectionRoot
+                  );
+                  ({ change, after } = isolated);
+                }
                 const classificationCaptured = captureAuthoredChange({
-                  afterPositions: active.revertPositions,
+                  afterPositions: isolated?.positions ?? active.revertPositions,
                   restoreIdentity: active.revertPositions !== undefined,
                   schema: getCompiledEditorSchemaFromApi(schema),
                   state,
                   insertions: active.insertions,
                   change,
-                  steps: active.decision ? [change] : input.steps,
+                  steps: active.decision || isolated ? [change] : input.steps,
                   changeId: classificationId,
                   operationId,
                   positions:
@@ -2501,6 +3585,14 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                       : acceptedPositionsBase,
                   value: before,
                 });
+                const formatting =
+                  active.automatic &&
+                  live.options.automaticFormatting === 'edit'
+                    ? classifyAuthoredFormatting(
+                        classificationCaptured.steps,
+                        operationId
+                      )
+                    : null;
                 const pendingDependencies =
                   classificationCaptured.publicationDependencies.filter(
                     (identity) => {
@@ -2513,16 +3605,26 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                   );
                 const changeId =
                   active.changeId ??
-                  (compositionChange?.authorId === authorId &&
-                  compositionChange.status === 'pending'
-                    ? compositionChange.id
-                    : editingOwner &&
-                        (active.intent === 'propose' ||
-                          pendingDependencies.includes(editingOwner)) &&
-                        owned?.authorId === authorId &&
-                        owned.status === 'pending'
-                      ? owned.id
-                      : classificationId);
+                  (formatting?.onlyFormatting
+                    ? classificationId
+                    : compositionChange?.authorId === authorId &&
+                        compositionChange.status === 'pending'
+                      ? compositionChange.id
+                      : editingOwner &&
+                          (active.intent === 'propose' ||
+                            pendingDependencies.includes(editingOwner)) &&
+                          owned?.authorId === authorId &&
+                          owned.status === 'pending'
+                        ? owned.id
+                        : classificationId);
+                if (deletion) {
+                  deletionCapture = {
+                    view: viewState,
+                    deletion,
+                    changeId,
+                    authorId,
+                  };
+                }
                 const initialCaptured =
                   changeId === classificationId
                     ? classificationCaptured
@@ -2540,11 +3642,89 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                             : acceptedPositionsBase,
                         value: before,
                       });
+                if (formatting?.onlyFormatting) active.publication = 'accepted';
                 if (active.publication === 'unresolved') {
-                  active.publication =
-                    editingTarget || compositionChange?.status === 'pending'
-                      ? 'proposed'
-                      : 'accepted';
+                  active.publication = 'accepted';
+                }
+                if (
+                  (formatting &&
+                    !formatting.onlyFormatting &&
+                    active.publication === 'proposed') ||
+                  (isolated &&
+                    restoresStructure &&
+                    active.publication !== 'proposed') ||
+                  (active.publication !== 'proposed' &&
+                    initialCaptured.steps.some((step) =>
+                      step.targets.some(
+                        (target) => target.retained?.kind === 'properties'
+                      )
+                    ))
+                ) {
+                  const operation: AuthoredEdit = snapshotEditorJsonValue(
+                    {
+                      authorId,
+                      changeId,
+                      clock: state.clock + 1,
+                      dependencies: initialCaptured.dependencies,
+                      id: operationId,
+                      inverseOf: null,
+                      kind: 'edit',
+                      parents: state.frontier,
+                      proposal: active.publication === 'proposed',
+                      ...(active.automatic &&
+                      active.publication === 'proposed' &&
+                      readRecord(state.changes, changeId)?.status === 'pending'
+                        ? { refreshOriginal: true as const }
+                        : {}),
+                      ...((active.automatic ||
+                        active.publication !== 'proposed') &&
+                      canReplayIndependently(initialCaptured, state)
+                        ? { independent: true as const }
+                        : {}),
+                      ...(active.publication === 'proposed'
+                        ? { directFormatting: true as const }
+                        : {}),
+                      steps: initialCaptured.steps,
+                      replica: live.replica,
+                      seen: state.vector,
+                      sequence,
+                      time: Date.now(),
+                    },
+                    'Authored mixed formatting'
+                  );
+                  const reduced = reduceAuthoredOperation(state, operation);
+                  const mapped = projectAuthoredOperation({
+                    editor: source,
+                    operation,
+                    previous: state,
+                    state: reduced,
+                    projection: {
+                      accepted: acceptedBase,
+                      acceptedPositions: acceptedPositionsBase,
+                      projected: projectedBase,
+                      projectedPositions: projectedPositionsBase,
+                    },
+                    schema,
+                  });
+                  const { projection } = mapped;
+                  emitAuthoredOperation(live, tx, operation);
+                  nextAccepted = projection.accepted;
+                  nextAcceptedPositions = projection.acceptedPositions;
+                  nextProjected = projection.projected;
+                  nextProjectedPositions = projection.projectedPositions;
+                  ({ acceptedChange } = mapped);
+                  nextProjectedChange = mapped.projectedChange;
+                  active.historySelection = captureAuthoredSelection(
+                    viewSelection,
+                    viewSelectionRoot,
+                    initialCaptured.positions,
+                    after
+                  );
+                  if (active.inputProjection === 'proposed') {
+                    setTransactionPublicationChange(source, acceptedChange);
+                  }
+                  nextState = tx.getField(authoredState);
+                  return;
                 }
                 const proposedPublication = active.publication === 'proposed';
                 if (composition && proposedPublication) {
@@ -2592,6 +3772,25 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                         kind: 'edit',
                         parents: publicationState.frontier,
                         proposal: proposedPublication,
+                        ...(active.automatic &&
+                        proposedPublication &&
+                        readRecord(publicationState.changes, id)?.status ===
+                          'pending'
+                          ? { refreshOriginal: true as const }
+                          : {}),
+                        ...((active.automatic || !proposedPublication) &&
+                        canReplayIndependently(
+                          captured,
+                          publicationState,
+                          active.inputProjection === 'accepted'
+                            ? {
+                                positions: projectedPositionsBase,
+                                value: projectedBase,
+                              }
+                            : undefined
+                        )
+                          ? { independent: true as const }
+                          : {}),
                         steps: captured.steps,
                         replica: live.replica,
                         seen: publicationState.vector,
@@ -2676,21 +3875,19 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                     indexedAfter: applied.indexedAfter,
                     indexedBefore: applied.indexedBefore,
                   });
-                  captured = captureAuthoredChange({
-                    schema: getCompiledEditorSchemaFromApi(schema),
-                    state,
-                    change: operationChange,
-                    steps: [
-                      ...mapped.steps.map((step) =>
-                        DocumentChange.fromJSON(step.forward)
-                      ),
-                      ...(correction.empty ? [] : [correction]),
-                    ],
-                    changeId,
-                    operationId,
-                    positions: acceptedPositionsBase,
-                    value: acceptedBase,
-                  });
+                  captured = {
+                    ...initialCaptured,
+                    positions: correction.empty
+                      ? mapped.positions
+                      : captureAuthoredChange({
+                          schema: getCompiledEditorSchemaFromApi(schema),
+                          change: correction,
+                          changeId,
+                          operationId: `${operationId}:representation`,
+                          positions: mapped.positions,
+                          value: mappedDraft.after,
+                        }).positions,
+                  };
                 }
                 if (!partitions) publish(changeId, captured);
                 nextState = tx.getField(authoredState);
@@ -2720,6 +3917,10 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                   } else {
                     const projection = mapDirectAuthoredChange({
                       state,
+                      independent: canReplayIndependently(captured, state, {
+                        positions: projectedPositionsBase,
+                        value: projectedBase,
+                      }),
                       properties: {
                         editor: source,
                         state: nextState,
@@ -2986,6 +4187,19 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                 nextProjected !== live.projected
               ) {
                 renderScopes.clear();
+              }
+              if (active.view) {
+                authoredViewState(active.view).deletion = undefined;
+              }
+              if (deletionCapture) {
+                const { view, deletion, changeId, authorId } = deletionCapture;
+                view.deletion = {
+                  ...deletion,
+                  changeId,
+                  authorId,
+                  commit,
+                  policy: view.policy,
+                };
               }
               if (compositionCapture) {
                 compositionCapture.composition.changeId =

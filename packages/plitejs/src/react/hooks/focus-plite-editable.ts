@@ -10,10 +10,7 @@ import {
 } from '../editable/runtime-editor-api';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import {
-  isPliteViewSelectionCollapsed,
-  readPliteViewSelection,
-} from '../view-selection';
+import { readPliteViewSelection } from '../view-selection';
 
 type EditableFocusRequest = Readonly<{
   root: globalThis.Node;
@@ -137,7 +134,7 @@ const focusPliteEditableForRequest = <
 
   const viewSelection = readPliteViewSelection(editor);
 
-  if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
+  if (viewSelection) {
     if (element) {
       IS_FOCUSED.set(editor as unknown as Editor, true);
       setEditorFocused(editor as unknown as Editor, true);

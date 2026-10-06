@@ -6,10 +6,7 @@ import {
   getAuthoredCommitView,
   readAuthoredView,
 } from '../../core/authored-runtime';
-import {
-  assertEditorJsonValue,
-  supportsEditorValuePersistenceVersion,
-} from '../../core/value-codec';
+import { assertEditorJsonValue } from '../../core/value-codec';
 import {
   decodeEditorEffect,
   encodeEditorEffect,
@@ -825,19 +822,16 @@ export class YjsSharedEffectLog {
       );
     }
 
-    const transport = type.collabTransport;
-
-    if (!transport) return decodeEditorEffect(type, serialized);
-    if (
-      !type.persist ||
-      !supportsEditorValuePersistenceVersion(type.persist, serialized.version)
-    ) {
+    if (!type.persist || serialized.version !== type.persist.version) {
       throw new Error(
         `Unsupported Yjs shared effect "${type.key}" version ${String(
           serialized.version
         )}.`
       );
     }
+
+    const transport = type.collabTransport;
+    if (!transport) return decodeEditorEffect(type, serialized);
 
     const decode = () => {
       const value = transport.decode(

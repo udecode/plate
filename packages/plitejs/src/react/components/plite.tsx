@@ -76,7 +76,7 @@ import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect
 import {
   syncChangedTextToDOM,
   syncPliteNodePathBindingsToDOM,
-  usePliteLazyFragmentNodeRef,
+  usePliteRetainedNodeRef,
 } from '../hooks/use-plite-node-ref';
 import {
   createReactRuntimeViewEditor,
@@ -97,6 +97,7 @@ import {
   mountPliteViewSelection,
   reconcilePliteViewSelection,
   setPliteViewSelectionStoreKey,
+  writePliteViewSelection,
 } from '../view-selection';
 import {
   createPliteViewSelectionDecorationSource,
@@ -512,7 +513,7 @@ export const PliteFragment = (props: PliteFragmentProps) => {
   return <PliteFragmentView {...props} {...fragmentView} />;
 };
 
-const PliteLazyPlainRetainedText = ({
+const PlitePlainRetainedText = ({
   fragment,
   node,
   parent,
@@ -525,42 +526,7 @@ const PliteLazyPlainRetainedText = ({
   path: Path;
   readOnly: boolean;
 }) => {
-  const { getAuthoredFragmentView, mountAuthoredFragmentView } =
-    useRequiredPliteRuntimeContext();
-  const { changeId, id, root } = fragment;
-  const materialize = useCallback(() => {
-    const current = getDefined(
-      readAuthoredViewFragments(parent, changeId).find(
-        (candidate) => candidate.id === id && candidate.root === root
-      )
-    );
-    const sharedView = getAuthoredFragmentView(parent, current);
-    const release = mountAuthoredFragmentView(sharedView);
-
-    try {
-      const editor = createReactRuntimeViewEditor(sharedView, sharedView);
-      const [pliteNode, livePath] = getDefined(
-        readAuthoredFragmentRoots(current, editor.read.children())[0]
-      );
-      const nodeKey = getDefined(editor.key(pliteNode));
-
-      setPliteViewSelectionStoreKey(editor, parent);
-      return { editor, nodeKey, path: livePath, pliteNode, release };
-    } catch (error) {
-      release();
-      throw error;
-    }
-  }, [
-    changeId,
-    getAuthoredFragmentView,
-    id,
-    mountAuthoredFragmentView,
-    parent,
-    root,
-  ]);
-  const ref = usePliteLazyFragmentNodeRef(parent, fragment, materialize, {
-    readOnly,
-  });
+  const ref = usePliteRetainedNodeRef(parent, fragment, { readOnly });
 
   return (
     <span
@@ -595,7 +561,7 @@ export const PlitePlainTextFragment = (
   }
 
   return (
-    <PliteLazyPlainRetainedText
+    <PlitePlainRetainedText
       fragment={props.fragment}
       node={node}
       parent={parent}
@@ -656,6 +622,9 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
       commit: EditorCommit,
       snapshot: EditorSnapshot<ValueOf<E>>
     ) => {
+      if (commit.selectionChanged && !commit.changed.hasAny('document')) {
+        writePliteViewSelection(editor, null);
+      }
       reconcilePliteViewSelection(editor);
       const textSync = profilePliteReactDuration('dom-text-sync', () =>
         syncChangedTextToDOM(

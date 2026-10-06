@@ -49,6 +49,7 @@ The normal flow is:
 
 ```txt
 key press or command
+  -> resolve the current input target and selection
   -> optional input rule for typed patterns
   -> plugin rule lookup for the current node
   -> tx command
@@ -64,6 +65,13 @@ receives the owning plugin context plus the current `node` and `path`. Return an
 action to decide that exact leaf, or `undefined` to delegate it. Boolean
 `false` is a final decision; it does not delegate. This keeps a conditional
 merge policy from shadowing unrelated break or delete behavior.
+
+Typing, deletion, formatting, and composition use the current selection in
+the mounted editor. In markup views, that selection can include retained
+deletion text. Keep related writes in one transaction so undo and redo restore
+the text and selection together. The editor owns composition completion and
+the transition to subsequent input. See [Selection](/docs/selection#selection-in-markup-views)
+and [Authored Changes](/docs/authored-changes) for those boundaries.
 
 ## Break behavior
 

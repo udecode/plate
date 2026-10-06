@@ -7,11 +7,11 @@ import {
 } from '../../index';
 import { isRecord } from './record';
 
-const SCHEMA_METADATA_FORMAT = 2;
+const SCHEMA_METADATA_FORMAT = 3;
 const SCHEMA_METADATA_KEY = 'current';
 
 export type YjsSchemaEnvelope = Readonly<{
-  format: 2;
+  format: 3;
   identity: EditorSchemaIdentity;
 }>;
 

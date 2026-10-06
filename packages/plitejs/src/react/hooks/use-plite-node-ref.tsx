@@ -21,7 +21,7 @@ import {
 } from '../../dom/internal';
 import {
   bindDOMFragmentElement,
-  bindLazyDOMFragmentElement,
+  bindDOMRetainedElement,
 } from '../../dom/plugin/dom-fragment-view';
 import {
   EDITOR_TO_RUNTIME_ID_TO_KEY,
@@ -867,15 +867,14 @@ export const usePliteFragmentNodeRef = (
     readOnlyFragmentRoot: options.readOnly ?? true,
   });
 
-export const usePliteLazyFragmentNodeRef = (
+export const usePliteRetainedNodeRef = (
   parent: Editor,
-  fragment: { authorId: string; changeId: string; id: string; kind: string },
-  materialize: () => {
-    editor: Editor;
-    nodeKey: NodeKey;
-    path: Path;
-    pliteNode: Descendant;
-    release: () => void;
+  fragment: {
+    authorId: string;
+    changeId: string;
+    id: string;
+    kind: string;
+    root: string;
   },
   { readOnly = true }: { readOnly?: boolean } = {}
 ) => {
@@ -891,42 +890,16 @@ export const usePliteLazyFragmentNodeRef = (
       cleanupBinding();
       if (!(nextNode instanceof HTMLElement)) return;
 
-      cleanupRef.current = bindLazyDOMFragmentElement(nextNode, {
+      cleanupRef.current = bindDOMRetainedElement(nextNode, {
         authorId: fragment.authorId,
         changeId: fragment.changeId,
         fragmentId: fragment.id,
         fragmentKind: fragment.kind,
+        root: fragment.root,
         parent,
         readOnly,
-        materialize: () => {
-          const mounted = materialize();
-          const detachFragment = bindDOMFragmentElement(
-            mounted.editor,
-            nextNode,
-            { parent, readOnly }
-          );
-          const detachNode = bindPliteNodeElement({
-            editor: mounted.editor,
-            node: nextNode,
-            nodeKey: mounted.nodeKey,
-            providedPathKey: pathKey(mounted.path),
-            providedPliteNode: mounted.pliteNode,
-          });
-
-          if (detachNode) {
-            editableRuntime?.requestSelectionExportAfterDOMCommit();
-          }
-
-          return {
-            editor: mounted.editor,
-            dispose: () => {
-              detachNode?.();
-              detachFragment();
-              mounted.release();
-            },
-          };
-        },
       });
+      editableRuntime?.requestSelectionExportAfterDOMCommit();
     },
     [
       cleanupBinding,
@@ -934,8 +907,8 @@ export const usePliteLazyFragmentNodeRef = (
       fragment.authorId,
       fragment.id,
       fragment.kind,
+      fragment.root,
       fragment.changeId,
-      materialize,
       parent,
       readOnly,
     ]

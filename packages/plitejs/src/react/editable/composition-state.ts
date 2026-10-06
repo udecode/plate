@@ -9,6 +9,7 @@ import {
   type Text,
   TextApi,
 } from '../..';
+import { readAuthoredView } from '../../core/authored-runtime';
 import { getSelection, isDOMElement, isDOMNode } from '../../dom';
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
@@ -20,9 +21,10 @@ import {
 } from '../../dom/internal';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import { readPliteViewSelection } from '../view-selection';
+import { readPliteViewSelection, bindViewSelection } from '../view-selection';
 import {
   getMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntimes,
   hasMountedEditableCompositionOwner,
 } from './editable-dom-runtime';
 import type { EditableCompositionStateSetter } from './input-controller';
@@ -34,6 +36,8 @@ import type {
 } from './input-state';
 import {
   beginEditableCompositionSession,
+  readProjectedCompositionAnchor,
+  runTrackedEditableCompositionMutation,
   captureEditableCompositionRuntimeMarks,
   clearEditableCompositionRuntimeState,
   getEditableNativeGroupingInput,
@@ -42,6 +46,7 @@ import {
   restoreEditableCompositionRuntimeMarks,
   shouldMergeEditableCompositionHistory,
 } from './input-state';
+import { applyMarkupInput } from './mutation-controller';
 import type { Editor } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { writeRuntimeMarks } from './runtime-mutation-state';
@@ -176,15 +181,7 @@ const preventNoneditableComposition = ({
   readOnly: boolean;
   setComposing?: EditableCompositionStateSetter;
 }) => {
-  if (
-    !(
-      readOnly ||
-      readPliteViewSelection(editor)?.segments.parts.some(
-        (part) => part.fragment
-      )
-    ) ||
-    !ReactEditor.hasEditableTarget(editor, event.target)
-  ) {
+  if (!readOnly || !ReactEditor.hasEditableTarget(editor, event.target)) {
     return false;
   }
 
@@ -779,10 +776,45 @@ const removeUnmanagedCompositionTextNodes = ({
     });
 };
 
+export const commitProjectedCompositionInput = (
+  editor: ReactRuntimeEditor,
+  inputController: EditableInputController,
+  text: string
+) => {
+  const binding = readProjectedCompositionAnchor(inputController);
+  if (
+    !binding ||
+    !text ||
+    inputController.state.compositionSession?.modelCommitted ||
+    editor.read.view.isReadOnly() ||
+    getMountedEditableDOMRuntimes(editor).some(
+      (runtime) =>
+        runtime.inputController === inputController && runtime.readOnly
+    )
+  ) {
+    return false;
+  }
+  const selection = binding.resolve();
+  if (!selection) return false;
+  return runTrackedEditableCompositionMutation({
+    editor,
+    inputController,
+    callback: () =>
+      applyMarkupInput(
+        editor,
+        { kind: 'insert-text', text },
+        ['composition'],
+        getEditableNativeGroupingInput(inputController, true),
+        selection
+      ),
+  }).committed;
+};
+
 export const applyEditableCompositionEnd = ({
   androidInputManagerRef,
   editor,
   event,
+  forceRender,
   inputController,
   onCompositionEnd,
   readOnly = false,
@@ -794,6 +826,7 @@ export const applyEditableCompositionEnd = ({
   androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
+  forceRender?: () => void;
   inputController: EditableInputController;
   onCompositionEnd?: EditableCompositionHandler;
   readOnly?: boolean;
@@ -870,6 +903,35 @@ export const applyEditableCompositionEnd = ({
         runOwnedDOMMutation,
         scheduleTask,
         settledData: '',
+      });
+      return;
+    }
+
+    const projectedAnchor = readProjectedCompositionAnchor(inputController);
+    if (projectedAnchor) {
+      const text =
+        getCompositionEventText(event) ??
+        inputController.state.compositionSession?.text ??
+        '';
+      schedulePendingCompositionEnd({
+        commitFallback: (shouldCommit) =>
+          shouldCommit &&
+          commitProjectedCompositionInput(editor, inputController, text),
+        discardFallback: () => {
+          projectedAnchor.release();
+          clearEditableCompositionRuntimeState(editor);
+        },
+        finishComposing: () => {
+          finishComposing();
+          forceRender?.();
+          requestModelSelectionExportAfterRender();
+        },
+        inputController,
+        ownership: 'plite',
+        resolveFallbackTarget: () => null,
+        runOwnedDOMMutation,
+        scheduleTask,
+        settledData: text,
       });
       return;
     }
@@ -1022,6 +1084,22 @@ export const applyEditableCompositionStart = ({
       isCompositionEventHandled({ event, handler: onCompositionStart }) ||
       isAndroidDOMHost(event)
     ) {
+      return;
+    }
+
+    const projectedSelection = readPliteViewSelection(editor);
+    if (
+      inputController &&
+      projectedSelection &&
+      readAuthoredView(editor)?.projection === 'markup'
+    ) {
+      const binding = bindViewSelection(editor, projectedSelection);
+      if (!binding) return;
+      beginEditableCompositionSession(inputController, {
+        projectedAnchor: binding,
+      });
+      inputController.state.activeIntent = 'composition';
+      setComposing(true);
       return;
     }
 

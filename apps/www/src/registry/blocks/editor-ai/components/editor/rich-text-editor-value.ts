@@ -896,7 +896,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 2111,
                   offset: 0,
-                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                  origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                   placement: null,
                   properties: {},
                 },
@@ -907,66 +907,439 @@ export const richTextEditorValue: EditorDocumentValue = {
         changes: [
           [
             'alice',
-            1_789_665_010_655,
+            1_791_079_347_961,
             [],
-            ['46698e02-343b-4124-b006-04f709d55cf9:3'],
-            '1935a2f6-3721-419c-a60c-210ad906cf1e',
+            ['c332dae4-97b3-400a-b84d-802300431631:3'],
+            '15384687-6df7-4250-8606-9d9b5382b35d',
             'mixed',
-            ['46698e02-343b-4124-b006-04f709d55cf9:3'],
+            ['c332dae4-97b3-400a-b84d-802300431631:3'],
             [],
             1,
             'pending',
-            1_789_665_010_655,
-          ],
-          [
-            'charlie',
-            1_789_665_010_644,
-            [],
-            ['46698e02-343b-4124-b006-04f709d55cf9:2'],
-            '69612039-53dc-49cc-8ff5-ee6de67c11e3',
-            'insert',
-            ['46698e02-343b-4124-b006-04f709d55cf9:2'],
-            [],
-            1,
-            'pending',
-            1_789_665_010_644,
+            1_791_079_347_961,
+            {
+              parts: [
+                [
+                  '["c332dae4-97b3-400a-b84d-802300431631:3",1,"main",1]',
+                  {
+                    root: 'main',
+                    at: {
+                      left: {
+                        offset: 1,
+                        origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
+                      },
+                      right: {
+                        offset: 1,
+                        origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
+                      },
+                    },
+                    before: null,
+                    after: {
+                      slice: {
+                        content: [
+                          {
+                            type: 'paragraph',
+                            children: [
+                              {
+                                type: 'link',
+                                url: '/docs/suggestion',
+                                children: [
+                                  {
+                                    text: 'suggestions',
+                                  },
+                                ],
+                              },
+                            ],
+                          },
+                        ],
+                        openEnd: 1,
+                        openStart: 1,
+                      },
+                      from: 1,
+                      to: 16,
+                      positions: [
+                        [
+                          'main',
+                          {
+                            birth: null,
+                            deleted: null,
+                            present: true,
+                            spans: [
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 238,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: '15384687-6df7-4250-8606-9d9b5382b35d',
+                                length: 15,
+                                offset: 2,
+                                origin:
+                                  'c332dae4-97b3-400a-b84d-802300431631:3:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 403,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                            ],
+                          },
+                        ],
+                      ],
+                    },
+                  },
+                ],
+                [
+                  '["c332dae4-97b3-400a-b84d-802300431631:3",2,"main",1]',
+                  {
+                    root: 'main',
+                    at: {
+                      left: {
+                        offset: 2,
+                        origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
+                      },
+                      right: {
+                        offset: 282,
+                        origin:
+                          'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                      },
+                    },
+                    before: null,
+                    after: {
+                      slice: {
+                        content: [
+                          {
+                            type: 'paragraph',
+                            children: [
+                              {
+                                text: ' like this added text',
+                              },
+                            ],
+                          },
+                        ],
+                        openEnd: 1,
+                        openStart: 1,
+                      },
+                      from: 2,
+                      to: 23,
+                      positions: [
+                        [
+                          'main',
+                          {
+                            birth: null,
+                            deleted: null,
+                            present: true,
+                            spans: [
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 238,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: '15384687-6df7-4250-8606-9d9b5382b35d',
+                                length: 1,
+                                offset: 1,
+                                origin:
+                                  'c332dae4-97b3-400a-b84d-802300431631:3:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: '15384687-6df7-4250-8606-9d9b5382b35d',
+                                length: 21,
+                                offset: 17,
+                                origin:
+                                  'c332dae4-97b3-400a-b84d-802300431631:3:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 334,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 403,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                            ],
+                          },
+                        ],
+                      ],
+                    },
+                  },
+                ],
+              ],
+            },
           ],
           [
             'bob',
-            1_789_665_010_637,
+            1_791_079_347_938,
             [],
-            ['46698e02-343b-4124-b006-04f709d55cf9:1'],
-            'ca8cfc79-f4b8-4c28-ad0d-9bb59ac7949f',
+            ['c332dae4-97b3-400a-b84d-802300431631:1'],
+            '7e1a0b94-c052-45c0-b2aa-be475f1e69a2',
             'delete',
-            ['46698e02-343b-4124-b006-04f709d55cf9:1'],
+            ['c332dae4-97b3-400a-b84d-802300431631:1'],
             [],
             1,
             'pending',
-            1_789_665_010_637,
+            1_791_079_347_938,
+            {
+              parts: [
+                [
+                  '["c332dae4-97b3-400a-b84d-802300431631:1",0,"main",1]',
+                  {
+                    root: 'main',
+                    at: {
+                      left: {
+                        offset: 289,
+                        origin:
+                          'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                      },
+                      right: {
+                        offset: 289,
+                        origin:
+                          'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                      },
+                    },
+                    before: {
+                      slice: {
+                        content: [
+                          {
+                            type: 'paragraph',
+                            children: [
+                              {
+                                text: 'mark text for removal',
+                              },
+                            ],
+                          },
+                        ],
+                        openEnd: 1,
+                        openStart: 1,
+                      },
+                      from: 2,
+                      to: 23,
+                      positions: [
+                        [
+                          'main',
+                          {
+                            birth: null,
+                            deleted: null,
+                            present: true,
+                            spans: [
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 238,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 239,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 21,
+                                offset: 289,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 334,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 403,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                            ],
+                          },
+                        ],
+                      ],
+                    },
+                    after: null,
+                  },
+                ],
+              ],
+            },
+          ],
+          [
+            'charlie',
+            1_791_079_347_947,
+            [],
+            ['c332dae4-97b3-400a-b84d-802300431631:2'],
+            'b4b4910b-aae6-43d2-ae42-7d8c6a5df54e',
+            'insert',
+            ['c332dae4-97b3-400a-b84d-802300431631:2'],
+            [],
+            1,
+            'pending',
+            1_791_079_347_947,
+            {
+              parts: [
+                [
+                  '["c332dae4-97b3-400a-b84d-802300431631:2",0,"main",1]',
+                  {
+                    root: 'main',
+                    at: {
+                      left: {
+                        offset: 390,
+                        origin:
+                          'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                      },
+                      right: {
+                        offset: 390,
+                        origin:
+                          'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                      },
+                    },
+                    before: null,
+                    after: {
+                      slice: {
+                        content: [
+                          {
+                            type: 'paragraph',
+                            children: [
+                              {
+                                text: 'overlapping ',
+                              },
+                            ],
+                          },
+                        ],
+                        openEnd: 1,
+                        openStart: 1,
+                      },
+                      from: 2,
+                      to: 14,
+                      positions: [
+                        [
+                          'main',
+                          {
+                            birth: null,
+                            deleted: null,
+                            present: true,
+                            spans: [
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 238,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 347,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: 'b4b4910b-aae6-43d2-ae42-7d8c6a5df54e',
+                                length: 12,
+                                offset: 0,
+                                origin:
+                                  'c332dae4-97b3-400a-b84d-802300431631:2:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 402,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                              {
+                                birth: null,
+                                length: 1,
+                                offset: 403,
+                                origin:
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
+                                placement: null,
+                                properties: {},
+                              },
+                            ],
+                          },
+                        ],
+                      ],
+                    },
+                  },
+                ],
+              ],
+            },
           ],
         ],
-        documentId: '488acfe8-fd98-49a6-82d5-b70b69cf98fb',
+        documentId: 'eff4466d-e989-4ccc-834a-edde5c943219',
         operations: [
           [
             0,
             'bob',
-            'ca8cfc79-f4b8-4c28-ad0d-9bb59ac7949f',
+            '7e1a0b94-c052-45c0-b2aa-be475f1e69a2',
             1,
             [],
-            '46698e02-343b-4124-b006-04f709d55cf9:1',
+            'c332dae4-97b3-400a-b84d-802300431631:1',
             null,
             [],
             true,
-            '46698e02-343b-4124-b006-04f709d55cf9',
+            'c332dae4-97b3-400a-b84d-802300431631',
             [],
             1,
-            1_789_665_010_637,
+            1_791_079_347_938,
             'delete',
-            '4642e15ef79b1a6a',
-            '[[{"primary":[{"length":289},{"length":21,"replacement":[]},{"length":1801}],"version":3},[],[[null,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",289],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",310]],[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",289],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",310]],[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",289],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",289]],[],[[null,21,289,"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",null,{}]],{"from":2,"kind":"delete","slice":{"content":[{"type":"paragraph","children":[{"text":"mark text for removal"}]}],"openEnd":1,"openStart":1},"spans":[{"birth":null,"length":1,"offset":238,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":239,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}},{"birth":null,"length":21,"offset":289,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":334,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":403,"origin":"488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main","placement":null,"properties":{}}],"to":23},"main",1,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",310],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",310]]]]]]',
+            'fc08620123aebecd',
+            '[[{"primary":[{"length":289},{"length":21,"replacement":[]},{"length":1801}],"version":3},[],[[null,[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",289],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",310]],[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",289],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",310]],[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",289],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",289]],[],[[null,21,289,"eff4466d-e989-4ccc-834a-edde5c943219:base:main",null,{}]],{"from":2,"spans":[{"birth":null,"length":1,"offset":238,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":239,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":null,"length":21,"offset":289,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":334,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":403,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}}],"slice":{"content":[{"type":"paragraph","children":[{"text":"mark text for removal"}]}],"openEnd":1,"openStart":1},"to":23,"kind":"delete"},"main",1,[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",310],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",310]],null]]]]',
             {
               digest:
-                'dea1730f015ddc7d8536d8ce724dd2bd5f86df8bf36fc8c15c14398903eb0bd5',
+                'f3c0a6197a1e80173a5255c3e6b02566b7af3cd0fc424fecd9cdf58612af3dff',
               kind: 'delete',
               steps: [
                 {
@@ -978,24 +1351,24 @@ export const richTextEditorValue: EditorDocumentValue = {
                         left: {
                           offset: 289,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 289,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
                       to: {
                         left: {
                           offset: 310,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 310,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
                       root: 'main',
@@ -1006,7 +1379,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                           length: 21,
                           offset: 289,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                           placement: null,
                           properties: {},
                         },
@@ -1016,26 +1389,27 @@ export const richTextEditorValue: EditorDocumentValue = {
                         left: {
                           offset: 289,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 310,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
                       afterTo: {
                         left: {
                           offset: 289,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 310,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
+                      insertedContent: null,
                       retained: null,
                       length: 21,
                       properties: null,
@@ -1045,27 +1419,28 @@ export const richTextEditorValue: EditorDocumentValue = {
                 },
               ],
             },
+            0,
           ],
           [
             0,
             'charlie',
-            '69612039-53dc-49cc-8ff5-ee6de67c11e3',
+            'b4b4910b-aae6-43d2-ae42-7d8c6a5df54e',
             2,
             [],
-            '46698e02-343b-4124-b006-04f709d55cf9:2',
+            'c332dae4-97b3-400a-b84d-802300431631:2',
             null,
-            ['46698e02-343b-4124-b006-04f709d55cf9:1'],
+            ['c332dae4-97b3-400a-b84d-802300431631:1'],
             true,
-            '46698e02-343b-4124-b006-04f709d55cf9',
-            [['46698e02-343b-4124-b006-04f709d55cf9', 1]],
+            'c332dae4-97b3-400a-b84d-802300431631',
+            [['c332dae4-97b3-400a-b84d-802300431631', 1]],
             2,
-            1_789_665_010_644,
+            1_791_079_347_947,
             'insert',
-            'cc319607af1ba9d3',
-            '[[{"primary":[{"length":369},{"length":0,"replacement":[{"kind":"text","text":"overlapping "}]},{"length":1721}],"version":3},[],[[null,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390],["46698e02-343b-4124-b006-04f709d55cf9:2:main",0]],[["46698e02-343b-4124-b006-04f709d55cf9:2:main",12],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390]],[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390]],[["69612039-53dc-49cc-8ff5-ee6de67c11e3",12,0,"46698e02-343b-4124-b006-04f709d55cf9:2:main",null,{}]],[],null,"main",1,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",390]]]]]]',
+            '1494a3bc48f5f060',
+            '[[{"primary":[{"length":369},{"length":0,"replacement":[{"kind":"text","text":"overlapping "}]},{"length":1721}],"version":3},[],[[null,[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",390],["c332dae4-97b3-400a-b84d-802300431631:2:main",0]],[["c332dae4-97b3-400a-b84d-802300431631:2:main",12],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",390]],[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",390],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",390]],[["b4b4910b-aae6-43d2-ae42-7d8c6a5df54e",12,0,"c332dae4-97b3-400a-b84d-802300431631:2:main",null,{}]],[],null,"main",1,[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",390],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",390]],{"from":2,"spans":[{"birth":null,"length":1,"offset":238,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":347,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":"b4b4910b-aae6-43d2-ae42-7d8c6a5df54e","length":12,"offset":0,"origin":"c332dae4-97b3-400a-b84d-802300431631:2:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":402,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":403,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}}],"slice":{"content":[{"type":"paragraph","children":[{"text":"overlapping "}]}],"openEnd":1,"openStart":1},"to":14,"kind":"delete"},[{"position":{"origin":"c332dae4-97b3-400a-b84d-802300431631:2:main","offset":0},"spans":[{"birth":null,"placement":null,"properties":{},"origin":"c332dae4-97b3-400a-b84d-802300431631:2:boundary:[\\"main\\",\\"c332dae4-97b3-400a-b84d-802300431631:2:main\\",0]","offset":0,"length":2}]},{"position":{"origin":"c332dae4-97b3-400a-b84d-802300431631:2:main","offset":12},"spans":[{"birth":null,"placement":null,"properties":{},"origin":"c332dae4-97b3-400a-b84d-802300431631:2:boundary:[\\"main\\",\\"c332dae4-97b3-400a-b84d-802300431631:2:main\\",12]","offset":0,"length":2}]}]]]]]',
             {
               digest:
-                '484d072810783cf6ff13776e5bbf2523d13c907ef256f612bc7b5b81b59b5e36',
+                '9aeb753447d5db1a6f2635895b1fbeabba82751cb5743127ec329f8daf9e84c2',
               kind: 'insert',
               steps: [
                 {
@@ -1077,24 +1452,24 @@ export const richTextEditorValue: EditorDocumentValue = {
                         left: {
                           offset: 390,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 390,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
                       to: {
                         left: {
                           offset: 390,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 390,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
                       root: 'main',
@@ -1102,10 +1477,10 @@ export const richTextEditorValue: EditorDocumentValue = {
                       removed: [],
                       inserted: [
                         {
-                          birth: '69612039-53dc-49cc-8ff5-ee6de67c11e3',
+                          birth: 'b4b4910b-aae6-43d2-ae42-7d8c6a5df54e',
                           length: 12,
                           offset: 0,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:2:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:2:main',
                           placement: null,
                           properties: {},
                         },
@@ -1114,25 +1489,64 @@ export const richTextEditorValue: EditorDocumentValue = {
                         left: {
                           offset: 390,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 0,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:2:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:2:main',
                         },
                       },
                       afterTo: {
                         left: {
                           offset: 12,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:2:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:2:main',
                         },
                         right: {
                           offset: 390,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
+                      insertedContent: null,
                       retained: null,
+                      boundaries: [
+                        {
+                          position: {
+                            origin:
+                              'c332dae4-97b3-400a-b84d-802300431631:2:main',
+                            offset: 0,
+                          },
+                          spans: [
+                            {
+                              birth: null,
+                              placement: null,
+                              properties: {},
+                              origin:
+                                'c332dae4-97b3-400a-b84d-802300431631:2:boundary:["main","c332dae4-97b3-400a-b84d-802300431631:2:main",0]',
+                              offset: 0,
+                              length: 2,
+                            },
+                          ],
+                        },
+                        {
+                          position: {
+                            origin:
+                              'c332dae4-97b3-400a-b84d-802300431631:2:main',
+                            offset: 12,
+                          },
+                          spans: [
+                            {
+                              birth: null,
+                              placement: null,
+                              properties: {},
+                              origin:
+                                'c332dae4-97b3-400a-b84d-802300431631:2:boundary:["main","c332dae4-97b3-400a-b84d-802300431631:2:main",12]',
+                              offset: 0,
+                              length: 2,
+                            },
+                          ],
+                        },
+                      ],
                       length: 0,
                       properties: null,
                       textBoundary: null,
@@ -1141,27 +1555,28 @@ export const richTextEditorValue: EditorDocumentValue = {
                 },
               ],
             },
+            0,
           ],
           [
             0,
             'alice',
-            '1935a2f6-3721-419c-a60c-210ad906cf1e',
+            '15384687-6df7-4250-8606-9d9b5382b35d',
             3,
             [],
-            '46698e02-343b-4124-b006-04f709d55cf9:3',
+            'c332dae4-97b3-400a-b84d-802300431631:3',
             null,
-            ['46698e02-343b-4124-b006-04f709d55cf9:2'],
+            ['c332dae4-97b3-400a-b84d-802300431631:2'],
             true,
-            '46698e02-343b-4124-b006-04f709d55cf9',
-            [['46698e02-343b-4124-b006-04f709d55cf9', 2]],
+            'c332dae4-97b3-400a-b84d-802300431631',
+            [['c332dae4-97b3-400a-b84d-802300431631', 2]],
             3,
-            1_789_665_010_655,
+            1_791_079_347_961,
             'mixed',
-            '37b918d5c6a70919',
-            '[[{"primary":[{"length":282},{"length":0,"replacement":[{"kind":"close","nodeKind":"text"},{"kind":"open","nodeKind":"text","props":{}}]},{"length":1820}],"version":3},[],[[null,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282],["46698e02-343b-4124-b006-04f709d55cf9:3:main",0]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",2],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]],[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]],[["1935a2f6-3721-419c-a60c-210ad906cf1e",2,0,"46698e02-343b-4124-b006-04f709d55cf9:3:main",null,{}]],[],null,"main",1,[["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]]]]],[{"primary":[{"length":283},{"length":0,"replacement":[{"kind":"open","nodeKind":"element","props":{"type":"link","url":"/docs/suggestion"}},{"kind":"open","nodeKind":"text","props":{}},{"kind":"text","text":"suggestions"},{"kind":"close","nodeKind":"text"},{"kind":"close","nodeKind":"element"}]},{"length":1821}],"version":3},[],[[null,[["46698e02-343b-4124-b006-04f709d55cf9:3:main",1],["46698e02-343b-4124-b006-04f709d55cf9:3:main",2]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",17],["46698e02-343b-4124-b006-04f709d55cf9:3:main",1]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",1],["46698e02-343b-4124-b006-04f709d55cf9:3:main",1]],[["1935a2f6-3721-419c-a60c-210ad906cf1e",15,2,"46698e02-343b-4124-b006-04f709d55cf9:3:main",null,{}]],[],null,"main",1,[["46698e02-343b-4124-b006-04f709d55cf9:3:main",1],["46698e02-343b-4124-b006-04f709d55cf9:3:main",1]]]]],[{"primary":[{"length":299},{"length":0,"replacement":[{"kind":"text","text":" like this added text"}]},{"length":1820}],"version":3},[],[[null,[["46698e02-343b-4124-b006-04f709d55cf9:3:main",2],["46698e02-343b-4124-b006-04f709d55cf9:3:main",17]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",38],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]],[["46698e02-343b-4124-b006-04f709d55cf9:3:main",2],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]],[["1935a2f6-3721-419c-a60c-210ad906cf1e",21,17,"46698e02-343b-4124-b006-04f709d55cf9:3:main",null,{}]],[],null,"main",1,[["46698e02-343b-4124-b006-04f709d55cf9:3:main",2],["488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main",282]]]]]]',
+            'd169568a37016b8e',
+            '[[{"primary":[{"length":282},{"length":0,"replacement":[{"kind":"close","nodeKind":"text"},{"kind":"open","nodeKind":"text","props":{}}]},{"length":1820}],"version":3},[],[[null,[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",282],["c332dae4-97b3-400a-b84d-802300431631:3:main",0]],[["c332dae4-97b3-400a-b84d-802300431631:3:main",2],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",282]],[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",282],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",282]],[["15384687-6df7-4250-8606-9d9b5382b35d",2,0,"c332dae4-97b3-400a-b84d-802300431631:3:main",null,{}]],[],null,"main",1,[["eff4466d-e989-4ccc-834a-edde5c943219:base:main",282],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",282]],{"from":2,"spans":[{"birth":null,"length":1,"offset":238,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":239,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":"15384687-6df7-4250-8606-9d9b5382b35d","length":2,"offset":0,"origin":"c332dae4-97b3-400a-b84d-802300431631:3:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":334,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":403,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}}],"slice":{"content":[{"type":"paragraph","children":[{"text":""},{"text":""}]}],"openEnd":1,"openStart":1},"to":4,"kind":"delete"}]]],[{"primary":[{"length":283},{"length":0,"replacement":[{"kind":"open","nodeKind":"element","props":{"type":"link","url":"/docs/suggestion"}},{"kind":"open","nodeKind":"text","props":{}},{"kind":"text","text":"suggestions"},{"kind":"close","nodeKind":"text"},{"kind":"close","nodeKind":"element"}]},{"length":1821}],"version":3},[],[[null,[["c332dae4-97b3-400a-b84d-802300431631:3:main",1],["c332dae4-97b3-400a-b84d-802300431631:3:main",2]],[["c332dae4-97b3-400a-b84d-802300431631:3:main",17],["c332dae4-97b3-400a-b84d-802300431631:3:main",1]],[["c332dae4-97b3-400a-b84d-802300431631:3:main",1],["c332dae4-97b3-400a-b84d-802300431631:3:main",1]],[["15384687-6df7-4250-8606-9d9b5382b35d",15,2,"c332dae4-97b3-400a-b84d-802300431631:3:main",null,{}]],[],null,"main",1,[["c332dae4-97b3-400a-b84d-802300431631:3:main",1],["c332dae4-97b3-400a-b84d-802300431631:3:main",1]],{"from":1,"spans":[{"birth":null,"length":1,"offset":238,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":"15384687-6df7-4250-8606-9d9b5382b35d","length":15,"offset":2,"origin":"c332dae4-97b3-400a-b84d-802300431631:3:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":403,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}}],"slice":{"content":[{"type":"paragraph","children":[{"type":"link","url":"/docs/suggestion","children":[{"text":"suggestions"}]}]}],"openEnd":1,"openStart":1},"to":16,"kind":"delete"}]]],[{"primary":[{"length":299},{"length":0,"replacement":[{"kind":"text","text":" like this added text"}]},{"length":1820}],"version":3},[],[[null,[["c332dae4-97b3-400a-b84d-802300431631:3:main",2],["c332dae4-97b3-400a-b84d-802300431631:3:main",17]],[["c332dae4-97b3-400a-b84d-802300431631:3:main",38],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",282]],[["c332dae4-97b3-400a-b84d-802300431631:3:main",2],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",282]],[["15384687-6df7-4250-8606-9d9b5382b35d",21,17,"c332dae4-97b3-400a-b84d-802300431631:3:main",null,{}]],[],null,"main",1,[["c332dae4-97b3-400a-b84d-802300431631:3:main",2],["eff4466d-e989-4ccc-834a-edde5c943219:base:main",282]],{"from":2,"spans":[{"birth":null,"length":1,"offset":238,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":"15384687-6df7-4250-8606-9d9b5382b35d","length":1,"offset":1,"origin":"c332dae4-97b3-400a-b84d-802300431631:3:main","placement":null,"properties":{}},{"birth":"15384687-6df7-4250-8606-9d9b5382b35d","length":21,"offset":17,"origin":"c332dae4-97b3-400a-b84d-802300431631:3:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":334,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}},{"birth":null,"length":1,"offset":403,"origin":"eff4466d-e989-4ccc-834a-edde5c943219:base:main","placement":null,"properties":{}}],"slice":{"content":[{"type":"paragraph","children":[{"text":" like this added text"}]}],"openEnd":1,"openStart":1},"to":23,"kind":"delete"},[{"position":{"origin":"c332dae4-97b3-400a-b84d-802300431631:3:main","offset":17},"spans":[{"birth":null,"placement":null,"properties":{},"origin":"c332dae4-97b3-400a-b84d-802300431631:3:boundary:[\\"main\\",\\"c332dae4-97b3-400a-b84d-802300431631:3:main\\",17]","offset":0,"length":2}]},{"position":{"origin":"c332dae4-97b3-400a-b84d-802300431631:3:main","offset":38},"spans":[{"birth":null,"placement":null,"properties":{},"origin":"c332dae4-97b3-400a-b84d-802300431631:3:boundary:[\\"main\\",\\"c332dae4-97b3-400a-b84d-802300431631:3:main\\",38]","offset":0,"length":2}]}]]]]]',
             {
               digest:
-                '2e3c6ce4583f5f377576756488dcf61050482bec249c7af756ae4d9283408311',
+                'd11f94784de9385260e58addacdf7651d6d26a159900cf882fb13cbf0b623ea1',
               kind: 'mixed',
               steps: [
                 {
@@ -1173,24 +1588,24 @@ export const richTextEditorValue: EditorDocumentValue = {
                         left: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
                       to: {
                         left: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
                       root: 'main',
@@ -1198,10 +1613,10 @@ export const richTextEditorValue: EditorDocumentValue = {
                       removed: [],
                       inserted: [
                         {
-                          birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                          birth: '15384687-6df7-4250-8606-9d9b5382b35d',
                           length: 2,
                           offset: 0,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                           placement: null,
                           properties: {},
                         },
@@ -1210,24 +1625,25 @@ export const richTextEditorValue: EditorDocumentValue = {
                         left: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         right: {
                           offset: 0,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                       },
                       afterTo: {
                         left: {
                           offset: 2,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                         right: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
+                      insertedContent: null,
                       retained: null,
                       length: 0,
                       properties: null,
@@ -1235,15 +1651,15 @@ export const richTextEditorValue: EditorDocumentValue = {
                         position: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                         spans: [
                           {
-                            birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                            birth: '15384687-6df7-4250-8606-9d9b5382b35d',
                             length: 2,
                             offset: 0,
                             origin:
-                              '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                              'c332dae4-97b3-400a-b84d-802300431631:3:main',
                             placement: null,
                             properties: {},
                           },
@@ -1260,21 +1676,21 @@ export const richTextEditorValue: EditorDocumentValue = {
                       from: {
                         left: {
                           offset: 1,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                         right: {
                           offset: 1,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                       },
                       to: {
                         left: {
                           offset: 1,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                         right: {
                           offset: 1,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                       },
                       root: 'main',
@@ -1282,10 +1698,10 @@ export const richTextEditorValue: EditorDocumentValue = {
                       removed: [],
                       inserted: [
                         {
-                          birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                          birth: '15384687-6df7-4250-8606-9d9b5382b35d',
                           length: 15,
                           offset: 2,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                           placement: null,
                           properties: {},
                         },
@@ -1293,23 +1709,24 @@ export const richTextEditorValue: EditorDocumentValue = {
                       afterFrom: {
                         left: {
                           offset: 1,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                         right: {
                           offset: 2,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                       },
                       afterTo: {
                         left: {
                           offset: 17,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                         right: {
                           offset: 1,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                       },
+                      insertedContent: null,
                       retained: null,
                       length: 0,
                       properties: null,
@@ -1325,23 +1742,23 @@ export const richTextEditorValue: EditorDocumentValue = {
                       from: {
                         left: {
                           offset: 2,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                         right: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
                       to: {
                         left: {
                           offset: 2,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                         right: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
                       root: 'main',
@@ -1349,10 +1766,10 @@ export const richTextEditorValue: EditorDocumentValue = {
                       removed: [],
                       inserted: [
                         {
-                          birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                          birth: '15384687-6df7-4250-8606-9d9b5382b35d',
                           length: 21,
                           offset: 17,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                           placement: null,
                           properties: {},
                         },
@@ -1360,25 +1777,64 @@ export const richTextEditorValue: EditorDocumentValue = {
                       afterFrom: {
                         left: {
                           offset: 2,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                         right: {
                           offset: 17,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                       },
                       afterTo: {
                         left: {
                           offset: 38,
-                          origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                          origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                         },
                         right: {
                           offset: 282,
                           origin:
-                            '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                            'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                         },
                       },
+                      insertedContent: null,
                       retained: null,
+                      boundaries: [
+                        {
+                          position: {
+                            origin:
+                              'c332dae4-97b3-400a-b84d-802300431631:3:main',
+                            offset: 17,
+                          },
+                          spans: [
+                            {
+                              birth: null,
+                              placement: null,
+                              properties: {},
+                              origin:
+                                'c332dae4-97b3-400a-b84d-802300431631:3:boundary:["main","c332dae4-97b3-400a-b84d-802300431631:3:main",17]',
+                              offset: 0,
+                              length: 2,
+                            },
+                          ],
+                        },
+                        {
+                          position: {
+                            origin:
+                              'c332dae4-97b3-400a-b84d-802300431631:3:main',
+                            offset: 38,
+                          },
+                          spans: [
+                            {
+                              birth: null,
+                              placement: null,
+                              properties: {},
+                              origin:
+                                'c332dae4-97b3-400a-b84d-802300431631:3:boundary:["main","c332dae4-97b3-400a-b84d-802300431631:3:main",38]',
+                              offset: 0,
+                              length: 2,
+                            },
+                          ],
+                        },
+                      ],
                       length: 0,
                       properties: null,
                       textBoundary: null,
@@ -1387,6 +1843,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                 },
               ],
             },
+            0,
           ],
         ],
         projected: {
@@ -2290,7 +2747,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                 count: 1,
                 entries: [
                   [
-                    '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                    'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                     {
                       count: 1,
                       entries: [
@@ -2302,12 +2759,12 @@ export const richTextEditorValue: EditorDocumentValue = {
                               left: {
                                 offset: 289,
                                 origin:
-                                  '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                               },
                               right: {
                                 offset: 310,
                                 origin:
-                                  '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                                  'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                               },
                             },
                           },
@@ -2319,7 +2776,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                     },
                   ],
                 ],
-                first: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                first: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                 height: 1,
                 kind: 'leaf',
               },
@@ -2329,39 +2786,39 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 282,
                   offset: 0,
-                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                  origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                  birth: '15384687-6df7-4250-8606-9d9b5382b35d',
                   length: 1,
                   offset: 0,
-                  origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                  origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                  birth: '15384687-6df7-4250-8606-9d9b5382b35d',
                   length: 15,
                   offset: 2,
-                  origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                  origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                  birth: '15384687-6df7-4250-8606-9d9b5382b35d',
                   length: 1,
                   offset: 1,
-                  origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                  origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: '1935a2f6-3721-419c-a60c-210ad906cf1e',
+                  birth: '15384687-6df7-4250-8606-9d9b5382b35d',
                   length: 21,
                   offset: 17,
-                  origin: '46698e02-343b-4124-b006-04f709d55cf9:3:main',
+                  origin: 'c332dae4-97b3-400a-b84d-802300431631:3:main',
                   placement: null,
                   properties: {},
                 },
@@ -2369,7 +2826,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 7,
                   offset: 282,
-                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                  origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                   placement: null,
                   properties: {},
                 },
@@ -2377,15 +2834,15 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 80,
                   offset: 310,
-                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                  origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                   placement: null,
                   properties: {},
                 },
                 {
-                  birth: '69612039-53dc-49cc-8ff5-ee6de67c11e3',
+                  birth: 'b4b4910b-aae6-43d2-ae42-7d8c6a5df54e',
                   length: 12,
                   offset: 0,
-                  origin: '46698e02-343b-4124-b006-04f709d55cf9:2:main',
+                  origin: 'c332dae4-97b3-400a-b84d-802300431631:2:main',
                   placement: null,
                   properties: {},
                 },
@@ -2393,7 +2850,7 @@ export const richTextEditorValue: EditorDocumentValue = {
                   birth: null,
                   length: 1721,
                   offset: 390,
-                  origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                  origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                   placement: null,
                   properties: {},
                 },
@@ -2402,7 +2859,7 @@ export const richTextEditorValue: EditorDocumentValue = {
           ],
         ],
       },
-      version: 6,
+      version: 7,
     },
   },
 };
@@ -2461,7 +2918,7 @@ export const richTextEditorComments: CommentsJSON = {
       excerpt: 'overlapping',
       userId: 'bob',
       target: {
-        id: '69612039-53dc-49cc-8ff5-ee6de67c11e3',
+        id: 'b4b4910b-aae6-43d2-ae42-7d8c6a5df54e',
         type: 'change',
       },
       messages: [
@@ -2514,30 +2971,30 @@ export const richTextEditorComments: CommentsJSON = {
             anchor: {
               left: {
                 offset: 337,
-                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
               },
               right: {
                 offset: 337,
-                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
               },
             },
             content: [
               {
-                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
                 offset: 337,
                 length: 33,
               },
             ],
-            documentId: '488acfe8-fd98-49a6-82d5-b70b69cf98fb',
+            documentId: 'eff4466d-e989-4ccc-834a-edde5c943219',
             direction: 'forward',
             focus: {
               left: {
                 offset: 370,
-                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
               },
               right: {
                 offset: 370,
-                origin: '488acfe8-fd98-49a6-82d5-b70b69cf98fb:base:main',
+                origin: 'eff4466d-e989-4ccc-834a-edde5c943219:base:main',
               },
             },
             root: 'main',

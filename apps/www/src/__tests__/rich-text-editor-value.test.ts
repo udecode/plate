@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import { NodeApi } from 'platejs';
+import { NodeApi, createEditorView } from 'platejs';
 import { DefaultAuthoredPlugin, projectAuthoredReview } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor } from 'platejs/react';
@@ -66,28 +66,30 @@ describe('saved rich-text playground', () => {
       const change = snapshot.changes.find(
         (item) => item.authorId === authorId
       )!;
-      const parts = editor
+      const details = editor
         .plugin(DefaultAuthoredPlugin)
-        .read.details(change.id)?.parts;
+        .read.details(change.id);
 
-      expect(parts?.status).toBe('available');
-      if (parts?.status !== 'available') {
-        throw new Error('Missing review content.');
+      for (const parts of [details?.parts, details?.original]) {
+        expect(parts?.status).toBe('available');
+        if (parts?.status !== 'available') {
+          throw new Error('Missing review content.');
+        }
+        const content = parts.items.filter((part) => part.kind === 'content');
+
+        expect(
+          content
+            .flatMap((part) => part.before?.content.content ?? [])
+            .map((node) => NodeApi.string(node))
+            .join('')
+        ).toBe(before);
+        expect(
+          content
+            .flatMap((part) => part.after?.content.content ?? [])
+            .map((node) => NodeApi.string(node))
+            .join('')
+        ).toBe(after);
       }
-      const content = parts.items.filter((part) => part.kind === 'content');
-
-      expect(
-        content
-          .flatMap((part) => part.before?.content.content ?? [])
-          .map((node) => NodeApi.string(node))
-          .join('')
-      ).toBe(before);
-      expect(
-        content
-          .flatMap((part) => part.after?.content.content ?? [])
-          .map((node) => NodeApi.string(node))
-          .join('')
-      ).toBe(after);
     }
 
     const threads = editor.plugin(CommentsPlugin).api.getThreads();
@@ -117,6 +119,33 @@ describe('saved rich-text playground', () => {
     expect(
       restored.plugin(CommentsPlugin).api.attachment('discussion1')
     ).toEqual(attachment);
+  });
+
+  it('keeps direct text inside the saved proposed link when that proposal is rejected', () => {
+    const editor = loadExample();
+    const view = createEditorView(editor, {
+      authored: { intent: 'edit', projection: 'markup' },
+    });
+    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const change = authored.read.changes({ proposals: true, authorId: 'alice' })
+      .items[0];
+    const original = authored.read.details(change.id)?.original;
+    view.update.text.insert('X', { at: { path: [3, 1, 0], offset: 4 } });
+    expect(authored.read.details(change.id)?.original).toEqual(original);
+    const deletion = authored.read.changes({ proposals: true, authorId: 'bob' })
+      .items[0];
+    const deletionParts = authored.read.details(deletion.id)?.parts;
+    const result = authored.update.decide({
+      action: 'reject',
+      selection: authored.read.select({ ids: [change.id] }),
+    });
+    expect(result).toEqual({ status: 'applied', ids: [change.id] });
+    expect(NodeApi.string(editor.read.children()[3])).toBe(
+      'Review and refine content seamlessly. Use X or to mark text for removal. Discuss changes using comments on many text segments. You can even have annotations!'
+    );
+    expect(authored.read.details(change.id)?.original).toEqual(original);
+    editor.api.history.undo();
+    expect(authored.read.details(deletion.id)?.parts).toEqual(deletionParts);
   });
 
   it('loads independent conversations and attachments from one saved revision', async () => {

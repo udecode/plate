@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor } from 'plitejs';
-import { authored } from 'plitejs/authored';
-
+import { createEditor } from '../src';
+import { authored } from '../src/authored';
+import { encodeAuthoredOriginal } from '../src/authored/original';
 import { readRecord, records } from '../src/authored/record-tree';
 import {
   authoredState,
@@ -30,6 +30,7 @@ const logicalChanges = (state: AuthoredState) =>
     id,
     {
       ...value,
+      original: encodeAuthoredOriginal(value.original),
       operations: [...records(value.operations)],
       reviews: [...records(value.reviews)],
     },

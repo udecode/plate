@@ -141,11 +141,22 @@ export function SuggestionModeButton() {
 | `'suggesting'` | `'propose'` | 保留 `markup` 或 `proposed`。`accepted` view 会切换到 `markup`，以便显示新 proposal。 |
 | `'editing'` | `'edit'` | 保留 `accepted`、`proposed` 或 `markup`。 |
 
-编辑模式下的 markup view 会显示待处理 change，同时把对 accepted content 的普通编辑直接发布。完整包含待处理 change 的 replacement 会在同一个可撤销事务中解决这些 change，并直接发布 replacement。其他依赖待处理 content 的编辑仍可审阅，并归属于当前作者。只有需要隐藏待处理 content 时才使用 accepted projection。
+### Editing 与 Suggesting
 
-模式属于精确的已挂载 view。同一个文档的两个 view 可以使用不同模式，互不影响。
+| 操作 | Editing（编辑） | Suggesting（建议） |
+| --- | --- | --- |
+| 输入普通文字 | 直接插入正文。 | 创建新增建议。 |
+| 在待审新增文字中输入 | 插入独立正文，原建议在输入处断开。 | 本人新增建议内的输入并入原建议；他人建议内的输入创建自己的独立建议。 |
+| 删除普通正文 | 直接删除。 | 创建删除建议。 |
+| 删除待审新增文字 | 直接删除选中部分。 | 删除本人的选中部分；为他人的选中部分创建自己的删除建议。 |
+| 操作删除线文字 | 输入独立正文，或直接删除选中的删除线文字。 | 输入创建独立新增建议；重复删除不产生新建议。 |
+| 选中文字后输入 | 删除选中内容并插入正文，作为一次可撤销操作。 | 按上述删除规则处理并插入建议，作为一次可撤销操作；替换本人的新增建议会修订原建议。 |
 
-改变模式只影响后续输入。它不会接受、拒绝、删除或隐藏待处理 change，也不会新增撤销步骤。编辑模式会直接修改 accepted 内容。跨 pending content 的 replacement 只有在 selection 完整包含所有相关 change 和依赖时才直接应用。部分命中的 retained change 或依赖跨出 selection 时保持受保护。需要主动创建或修订 proposal 时，请切换到建议模式。
+Editing 对本人和他人的建议使用相同规则。局部修改只影响选中部分，不会自动接受或拒绝整条建议。拆开的部分保留原 change ID 和讨论。连续输入会合并相关操作，撤销和重做同时恢复文字与建议关联。
+
+在整个已删除区块中输入时，新内容放在原区块之前的独立区块中。换行和粘贴格式随新内容保留，接受或拒绝原删除建议不会移除这些新内容。
+
+模式属于精确的已挂载 view。同一文档的两个 view 可以使用不同模式，互不影响。切换模式只影响后续输入，保留待处理建议，不新增撤销步骤。
 
 如需只显示已接受内容，请直接为 authored view 设置 `{ intent: 'edit', projection: 'accepted' }`。
 
@@ -188,11 +199,11 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 ### 格式和区块
 
-第一条 proposal 将句子加粗，第二条插入段落。打开每个区块的讨论按钮来接受或拒绝修改。选择文本并使用**加粗**，或按 Enter 提议另一个段落。
+第一条显式 proposal 将句子加粗，第二条插入段落。打开每个区块的讨论按钮来接受或拒绝修改。选择文本并使用**加粗**来直接修改格式，或按 Enter 提议另一个段落。
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，普通编辑器命令会将文本、mark 和 node 操作记录为 proposal。
+为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。两个模式中的普通文本 mark 命令都会直接修改既有文字。新内容携带的格式跟随该内容。显式 proposal 仍可包含文本、格式和结构修改。
 
 ### Accepted、proposed 和 markup
 
@@ -210,9 +221,11 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 Snapshot 仅保存在内存中，页面重新加载后会消失。**Reload snapshot** 会从已保存的文档和 `CommentsJSON` 创建新 editor，丢弃未保存的工作，并从空的本地 undo stack 开始。待处理 change 和决定属于文档；对话独立于文档 undo 保存。
 
+打开 **All comments**，选择 **Suggestions**，展开记录查看建议内容和回复。列表也包含已结束、没有可见文字或回复的提案。
+
 ## 创建和决定 change
 
-建议模式会把普通输入和编辑器命令转换为原生 proposal。无 UI 或显式 transaction 可以通过 `tx.authored.propose()` 开始 proposal：
+建议模式按上表记录文本输入和结构修改。无 UI 或显式 transaction 可以通过 `tx.authored.propose()` 开始 proposal：
 
 ```tsx
 let changeId = '';
@@ -250,6 +263,8 @@ const result = authored.update.decide({
 const savedDocument = editor.read.value();
 const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
 ```
+
+可见效果被全部删除或 proposal 已结束后，文档仍保留提案内容。Editing 不改写这份原文；本人在 Suggesting 中修订 proposal 时会同步更新。缺少原文的旧记录会显示为不可用。
 
 按同一个应用版本和对话代次原子保存文档与 `CommentsJSON`。加载前验证关联，并使用相同的内容插件。只保存 `children` 会丢失 authored record。
 
@@ -302,7 +317,7 @@ if (result.status === 'applied') {
 }
 ```
 
-结果不是 `applied` 或抛出异常时保留输入。Comments 通过 `initialState.mutate` 授权持久化写入，只发布已提交的规范记录。接受或拒绝 change 是可撤销的文档操作；它隐藏审阅卡片，但不删除或解决讨论。Undo 恢复待处理 change，并保留消息与解决状态。解决或重新打开 thread 不进入文档 undo。
+结果不是 `applied` 或抛出异常时保留输入。Comments 通过 `initialState.mutate` 授权持久化写入，只发布已提交的规范记录。接受或拒绝 change 是可撤销的文档操作；它移除待审操作入口，但不删除提案记录或解决讨论。建议列表保留已结束和零效果的提案，包括没有回复的提案。Undo 恢复待处理 change，并保留消息与解决状态。解决或重新打开 thread 不进入文档 undo。
 
 ## API 参考
 

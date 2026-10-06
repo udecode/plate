@@ -96,6 +96,10 @@ export type AuthoredChangeReview = Readonly<{
 
 /** A coherent change summary, semantic parts, and native review provenance. */
 export type AuthoredChangeDetails = Readonly<{
+  original:
+    | Readonly<{ status: 'available'; items: readonly AuthoredChangePart[] }>
+    | Readonly<{ status: 'unavailable'; reason: 'legacy' }>
+    | null;
   change: AuthoredChange;
   parts:
     | Readonly<{
@@ -110,6 +114,7 @@ export type AuthoredChangeDetails = Readonly<{
 }>;
 
 export type AuthoredQuery = Readonly<{
+  proposals?: boolean;
   authorId?: string;
   cursor?: string;
   from?: number;
@@ -135,6 +140,7 @@ export type AuthoredSelection = Readonly<{
 }>;
 
 export type AuthoredOptions = Readonly<{
+  automaticFormatting?: 'edit' | 'inherit';
   /** Resolve the author ID for capability reads and once per write transaction. */
   authorId: string | ((editor: AnyEditor) => string | null | undefined);
   /** Retain closed content for historical reads and selective compensation. */

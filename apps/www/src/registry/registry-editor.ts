@@ -281,9 +281,11 @@ export const editorComponents: Registry['items'] = [
     name: 'comment-toolbar-button',
     registryDependencies: [
       '@plate/comment',
+      '@plate/discussion',
       '@plate/toolbar',
       'button',
       'dialog',
+      'tabs',
     ],
     title: 'Comment Toolbar Button',
     type: 'registry:component',

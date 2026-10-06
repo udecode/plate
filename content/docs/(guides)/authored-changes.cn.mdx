@@ -67,7 +67,7 @@ const historyEditor = createEditor({
 const retainedAuthored = historyEditor.plugin(RetainedAuthoredPlugin);
 ```
 
-`retainHistory` 保留选择性 revert 所需的已关闭 edit body。如果应用只需要待处理审阅和作者归属，可以省略它。
+`retainHistory` 保留选择性 revert 所需的已关闭 edit body。默认 `false` 仍会保留提案原稿；原稿不代替选择性 revert 所需的操作历史。
 
 ## 捕获 change
 
@@ -111,7 +111,7 @@ authored.api.setView({
 | `proposed` | 拟议结果，不含保留的审阅片段       |
 | `markup`   | 拟议内容，以及保留的删除和移动片段 |
 
-`intent: 'edit'` 可与任意 projection 配合使用。编辑模式下的 markup 或 proposed view 会保留待处理 content 的可见性，同时把对独立 accepted content 的编辑直接发布。完整包含待处理 change 的 replacement 会在同一个可撤销事务中解决这些 change，并直接发布。部分命中的 retained change 或依赖跨出 selection 时保持受保护；其他依赖待处理 content 的编辑仍会成为当前作者的 proposal。普通输入需要创建 proposal 时，请将 `intent: 'propose'` 与 `proposed` 或 `markup` 配合使用。
+`intent: 'edit'` 可与任意 projection 配合。在 markup 和 proposed view 中，普通输入是独立正文，包括在待审新增或删除线中输入。直接删除只移除选中内容，保留原建议身份和讨论，不决定整条建议。Suggesting 中，本人可以修改自己的待审新增；在他人的新增或任意删除线中输入会创建独立建议。完整规则见[建议](/docs/suggestion)。
 
 Intent 和 projection 属于精确 view。Selection、clipboard input、command 和 anchor 使用该 view 的坐标。同一个文档的两个已挂载 view 可以使用不同 policy。
 
@@ -125,6 +125,7 @@ const pending = authored.read.changes({
   authorId: "alice",
   limit: 50,
   status: "pending",
+  proposals: true,
 });
 const selection = authored.read.select({
   ids: pending.items.map(({ id }) => id),
@@ -153,7 +154,11 @@ if (details?.parts.status === "available") {
 }
 ```
 
-`details(id)` 返回紧凑的 change 摘要、决定历史和不可变语义 part。Content part 包含修改前后的 slice；boundary part 区分段落拆分和合并；property part 保留准确的前后值；root part 描述 root 的创建或删除。
+`details(id)` 返回紧凑的 change 摘要、决定历史、当前语义 part 和提案原稿。Content part 包含修改前后的 slice；boundary part 区分段落拆分和合并；property part 保留准确的前后值；root part 描述 root 的创建或删除。
+
+`details.original` 在原稿可读时为 `{ status: 'available', items }`；旧数据无法证明原稿时为 `{ status: 'unavailable', reason: 'legacy' }`；直接编辑为 `null`。Editing 和切换模式不改写原稿。作者再次在 Suggesting 中实际修改自己的新增建议时，原稿以当时剩余的提案内容为准更新，独立插入的文字仍不属于该提案。撤销恢复上一份原稿，重做恢复该次修改使用的同一基准。接受和拒绝处理当前剩余内容，不从原稿回填。
+
+用 `changes({ proposals: true, limit: 50 })` 按页读取所有状态的提案，包括没有可见范围或回复的记录。已结束提案的当前 `parts` 不可用时，原稿仍可独立读取。
 
 如果已关闭 change 没有保留 edit body，结果为 `parts.status: 'unavailable'` 和 `reason: 'retention'`；摘要和审阅历史仍可读取。列表和空间查询应保持紧凑，只为正在审阅的 change 请求 details。
 
@@ -172,7 +177,7 @@ if (details?.parts.status === "available") {
 
 `authored.read.preview({ action, selection })` 可在不应用决定的情况下检查接受或拒绝。Preview 返回 `applied` 表示决定在该时刻可应用；后续 `decide` 调用仍需处理结果。
 
-接受 change 可能需要包含其 dependency；拒绝 change 可能需要包含其 dependant。Editor 不会静默扩大 selection。只有审阅者为完整冲突组选择决定后，才调用 `authored.update.resolve({ action, selection })`。
+接受 change 可能需要包含其 dependency；拒绝 change 可能需要包含其 dependant。独立正文和独立文本建议在其原承载建议被接受或拒绝后继续保留；真正的结构依赖仍可能阻止决定。Editor 不会静默扩大审阅 selection。只有审阅者为完整冲突组选择决定后，才调用 `authored.update.resolve({ action, selection })`。
 
 ## 保留作者历史
 
@@ -235,6 +240,7 @@ const accepted = projectAuthoredDocument(source, {
   projection: "accepted",
 });
 const review = projectAuthoredReview(source);
+const cleanJson = JSON.stringify(accepted.document);
 const json = JSON.stringify(review.review);
 const document = parseAuthoredDocument(json);
 ```
@@ -280,17 +286,17 @@ semantic HTML 时，调用 `editor.api.html.serialize({ projection })`。两种 
 | Markdown | Plain Markdown | 不支持；保存 authored JSON |
 | Semantic HTML | Feature-mapped HTML | 不支持；保存 authored JSON |
 | Static HTML | Component-rendered HTML | 不支持；保存 authored JSON |
-| DOCX | Projected Word document | Word revision 加 canonical authored package part |
+| DOCX | Projected Word document | Word revision；显式传入 `nativeState: 'attach'` 才附加 canonical review data |
 
 DOCX review 导出会在 Word 无法表达 native construct 时报告 `lossy-content`
-或 `unsupported-content`。只有调用方授予 authored trust，且可见 Word content
+或 `unsupported-content`。提案原稿只随 `nativeState: 'attach'` 导出。`comments` 选项单独导出 Word 评论；应用仍须配套保存完整 `CommentsJSON`。只有调用方授予 authored trust，且可见 Word content
 仍与 authored part 对应时，才能恢复精确 authored data。
 
 ## 协作
 
 每个 peer 都安装 authored plugin 和 Yjs，并使用匹配的 document 与 schema identity。Plate 默认提供本地 History。
 
-Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定。Checkpoint 保留待处理工作和每个 peer 的 retained content。Retention policy 属于本地：归档 peer 可以保留已关闭 body，而另一个 peer 可以压缩它们。
+Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定。Checkpoint 保留待处理工作和每个 peer 的 retained content。Retention policy 属于本地：归档 peer 可以保留已关闭 body，而另一个 peer 可以压缩它们。提案原稿继续保留在共享 canonical document 中。所有 writer 必须支持当前 authored schema capability；接入时拒绝不兼容 writer，升级前通过 document generation 隔离旧离线客户端。
 
 设置和 compaction owner 请参阅[协作](/docs/yjs)。
 
@@ -298,7 +304,7 @@ Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定�
 
 ### `DefaultAuthoredPlugin`
 
-从 `platejs/authored` 导入标准描述符。它从 Plate editor 的 `userId` 解析作者，并使用默认 retention。`SuggestionPlugin` 和 `AIChatPlugin` 依赖此描述符。
+从 `platejs/authored` 导入标准描述符。它从 Plate editor 的 `userId` 解析作者，并使用默认 retention。它设置 `automaticFormatting: 'edit'`，让两种模式下的普通 mark 命令直接生效。显式 `tx.authored.propose(...)` 事务（包括 AI 提案）仍保留完整提案语义。`SuggestionPlugin` 和 `AIChatPlugin` 依赖此描述符。
 
 ### `authored(options)`
 
@@ -307,6 +313,7 @@ Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定�
 | 选项            | 类型                                                  | 用途                                                       |
 | --------------- | ----------------------------------------------------- | ---------------------------------------------------------- |
 | `authorId`      | `string \| ((editor) => string \| null \| undefined)` | 必填。每个 transaction 解析一次非空作者 ID。               |
+| `automaticFormatting` | `'edit' \| 'inherit'` | 普通文本 mark 命令直接生效或继承 view intent；原生默认值为 `'inherit'`。 |
 | `retainHistory` | `boolean`                                             | 保留已关闭 edit body 以执行选择性 revert。默认为 `false`。 |
 
 ### Transaction、读取和更新
@@ -319,8 +326,8 @@ Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定�
 | `authored.read.canPropose()`              | 检查当前身份是否可以创建 proposal。                                |
 | `authored.read.view()`                    | 读取当前 view 的 intent 和 projection。                            |
 | `authored.read.change(id)`                | 读取一个逻辑 change；不存在时返回 `null`。                         |
-| `authored.read.details(id)`               | 读取一条 change 的语义 part 和决定历史；不存在时返回 `null`。      |
-| `authored.read.changes(query?)`           | 按作者、状态或时间分页读取 change。                                |
+| `authored.read.details(id)`               | 读取一条 change 的当前 part、提案原稿和决定历史；不存在时返回 `null`。      |
+| `authored.read.changes(query?)`           | 可仅列出提案，并按作者、状态或时间分页读取 change。                                |
 | `authored.read.changesAt(range)`          | 读取与文本 range 相交的 change。                                   |
 | `authored.read.select(query)`             | 为决定捕获绑定 revision 的 selection。                             |
 | `authored.read.preview(decision)`         | 在不应用决定的情况下检查接受或拒绝。                               |

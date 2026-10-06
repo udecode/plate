@@ -74,6 +74,23 @@ export const authoredInsertionOrigin = (
   const previous: AuthoredTarget[] = [];
   for (const step of authoredContributionSteps(operation)) {
     for (const target of step.targets) {
+      for (const boundary of target.boundaries ?? []) {
+        let offset = 0;
+        for (const current of boundary.spans) {
+          if (
+            current.origin === span.origin &&
+            current.offset <= span.offset &&
+            span.offset < current.offset + current.length
+          ) {
+            return {
+              position: { left: boundary.position, right: boundary.position },
+              association:
+                offset + span.offset - current.offset === 0 ? 'left' : 'right',
+            };
+          }
+          offset += current.length;
+        }
+      }
       if (
         !target.inserted.some(
           (current) =>
@@ -112,28 +129,33 @@ export const resolveConcurrentAuthoredInsertion = (
   state: AuthoredState,
   positions: AuthoredPositions,
   operationId: string,
-  target: AuthoredTarget
+  target: AuthoredTarget,
+  bounds?: Readonly<{ from: number; to: number }>
 ): number | null => {
   const operation = readRecord(state.operations, operationId);
   if (!operation || target.removed.length || !target.inserted.length) {
     return null;
   }
   const left = target.from.left
-    ? resolveAuthoredPosition(
+    ? (resolveAuthoredPosition(
         positions,
         { left: target.from.left, right: null },
         'left',
         'collapse'
-      )
-    : 0;
+      ) ??
+      bounds?.from ??
+      null)
+    : (bounds?.from ?? 0);
   const right = target.from.right
-    ? resolveAuthoredPosition(
+    ? (resolveAuthoredPosition(
         positions,
         { left: null, right: target.from.right },
         'right',
         'collapse'
-      )
-    : (positions.root?.length ?? 0);
+      ) ??
+      bounds?.to ??
+      null)
+    : (bounds?.to ?? positions.root?.length ?? 0);
   if (left === null || right === null || left >= right) return null;
   const owner = (
     span: Pick<AuthoredSpan, 'origin' | 'offset'>,

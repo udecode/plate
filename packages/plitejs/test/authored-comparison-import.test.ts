@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 
-import { createEditor } from 'plitejs';
+import { compare, resolveComparison } from 'plitejs/diff';
+
+import { createEditor } from '../src';
 import {
   authored,
   projectAuthoredDocument,
   proposeAuthoredComparison,
-} from 'plitejs/authored';
-import { compare, resolveComparison } from 'plitejs/diff';
+} from '../src/authored';
 
 const paragraph = (text: string) => ({
   children: [{ text }],

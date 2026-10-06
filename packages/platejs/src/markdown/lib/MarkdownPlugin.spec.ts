@@ -74,6 +74,16 @@ describe('MarkdownPlugin', () => {
       ],
       initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
     });
+    editor.update((tx) => {
+      tx.authored.propose({ changeId: 'private-original' });
+      tx.text.insert('unpublished proposal', {
+        at: { offset: 0, path: [0, 0] },
+      });
+    });
+    editor.update.authored.decide({
+      action: 'reject',
+      selection: editor.read.authored.select({ ids: ['private-original'] }),
+    });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'proposed' },
     });
@@ -92,6 +102,9 @@ describe('MarkdownPlugin', () => {
       projection: 'proposed',
     });
 
+    expect(
+      JSON.stringify(editor.read.authored.details('private-original')?.original)
+    ).toContain('unpublished proposal');
     expect(accepted.data).toBe('Base\n');
     expect(proposed.data).toBe('Base draft\n');
     expect(accepted.diagnostics[0]?.code).toBe('authored-lossy-projection');

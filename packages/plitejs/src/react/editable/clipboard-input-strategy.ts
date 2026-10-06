@@ -377,7 +377,7 @@ export const applyEditableCut = ({
     if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
       const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
 
-      if (resolution.kind === 'ambiguous' || resolution.kind === 'retained') {
+      if (resolution.kind === 'ambiguous') {
         return clipboardResult({ command: null });
       }
       if (resolution.kind === 'stale') {

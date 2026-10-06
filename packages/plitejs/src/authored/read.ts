@@ -18,6 +18,7 @@ import {
   readAuthoredMarkupFragments,
   readAuthoredRemovalIntervals,
 } from './markup';
+import { readAuthoredOriginal } from './original';
 import { resolveAuthoredPosition, type AuthoredSpan } from './positions';
 import { readRecord, records } from './record-tree';
 import {
@@ -57,6 +58,9 @@ export const validateAuthoredQuery = (
 ) => {
   if (!query || typeof query !== 'object' || Array.isArray(query)) {
     throw new Error('Invalid authored query.');
+  }
+  if (query.proposals !== undefined && typeof query.proposals !== 'boolean') {
+    throw new Error('Invalid authored proposal filter');
   }
   if (
     query.authorId !== undefined &&
@@ -139,19 +143,9 @@ export const readAuthoredChange = (
     const operation = readRecord(state.operations, id);
     if (!operation || operation.kind !== 'edit') continue;
     for (const step of authoredContributionSteps(operation)) {
-      for (const [targetIndex, target] of step.targets.entries()) {
-        const section = (
-          'forward' in step
-            ? target.root === 'main'
-              ? step.forward.primary
-              : step.forward.roots?.[target.root]
-            : undefined
-        )?.[target.section];
-        const length =
-          section?.length ??
-          ('forward' in step ? undefined : step.targets[targetIndex].length);
-        let inserted = false;
-        for (const retained of target.inserted) {
+      for (const target of step.targets) {
+        let visibleContent = false;
+        for (const retained of [...target.inserted, ...target.removed]) {
           const fragments = [
             ...authoredContentSpans(positions, target.root, retained),
           ].toSorted(
@@ -177,9 +171,9 @@ export const readAuthoredChange = (
             }
           }
           if (visible) add(visible.root, visible.from, visible.to);
-          inserted ||= fragments.length > 0;
+          visibleContent ||= fragments.length > 0;
         }
-        if (!inserted) {
+        if (!visibleContent) {
           const root =
             authoredPositionRoot(
               positions,
@@ -189,16 +183,13 @@ export const readAuthoredChange = (
             ) ?? target.root;
           const index = readRecord(positions, root)?.positions;
           if (!index) continue;
-          add(
-            root,
-            resolveAuthoredPosition(index, target.from, 'right', 'collapse'),
-            resolveAuthoredPosition(
-              index,
-              target.to,
-              length === 0 ? 'right' : 'left',
-              'collapse'
-            )
+          const position = resolveAuthoredPosition(
+            index,
+            target.from,
+            'right',
+            'collapse'
           );
+          add(root, position, position);
         }
       }
     }
@@ -1196,6 +1187,7 @@ export const readAuthoredChangeDetails = (
         change.status === 'pending' || change.status === 'conflicted'
           ? readAuthoredReviewParts(change, accepted, proposed)
           : readParts(change, current.state, proposed),
+      original: readAuthoredOriginal(change, current.state),
       reviews: readReviews(change, current.state),
     },
     'Authored change details'

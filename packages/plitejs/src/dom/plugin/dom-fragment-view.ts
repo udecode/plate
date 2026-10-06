@@ -32,19 +32,18 @@ const PARENT_FRAGMENT_EDITORS = new WeakMap<
   DOMEditor<any>,
   Map<string, Set<DOMEditor<any>>>
 >();
-type LazyFragmentRegistration = {
+type RetainedDOMRegistration = {
+  element: HTMLElement;
+  changeId: string;
+  root: string;
   dispose: () => void;
   fragmentId: string;
-  materialize: () => DOMEditor<any>;
   parent: DOMEditor<any>;
 };
-const LAZY_FRAGMENT_ELEMENTS = new WeakMap<
-  HTMLElement,
-  LazyFragmentRegistration
->();
-const PARENT_LAZY_FRAGMENT_EDITORS = new WeakMap<
+const RETAINED_ELEMENTS = new WeakMap<HTMLElement, RetainedDOMRegistration>();
+const PARENT_RETAINED_ELEMENTS = new WeakMap<
   DOMEditor<any>,
-  Map<string, Set<LazyFragmentRegistration>>
+  Map<string, Set<RetainedDOMRegistration>>
 >();
 
 const releaseFragmentView = (editor: DOMEditor<any>) => {
@@ -65,26 +64,18 @@ export const getMountedDOMFragmentEditors = (
   const editors = [
     ...(PARENT_FRAGMENT_EDITORS.get(parent)?.get(fragmentId) ?? []),
   ];
-  const lazy = [
-    ...(PARENT_LAZY_FRAGMENT_EDITORS.get(parent)?.get(fragmentId) ?? []),
-  ];
-
-  for (const registration of lazy) {
-    editors.push(registration.materialize());
-  }
 
   return editors;
 };
 
-/** Defer a plain retained fragment's editor until DOM coordinate services need it. */
-export const bindLazyDOMFragmentElement = (
+export const bindDOMRetainedElement = (
   element: HTMLElement,
   {
     authorId,
     changeId,
     fragmentId,
     fragmentKind,
-    materialize,
+    root,
     parent,
     readOnly = true,
   }: {
@@ -92,40 +83,35 @@ export const bindLazyDOMFragmentElement = (
     changeId: string;
     fragmentId: string;
     fragmentKind: string;
-    materialize: () => {
-      dispose: () => void;
-      editor: DOMEditor<any>;
-    };
+    root: string;
     parent: AnyEditor;
     readOnly?: boolean;
   }
 ) => {
-  LAZY_FRAGMENT_ELEMENTS.get(element)?.dispose();
+  RETAINED_ELEMENTS.get(element)?.dispose();
   const fragmentParent = parent as DOMEditor<any>;
   const previousRetained = element.getAttribute('data-editor-retained');
   const previousAuthor = element.getAttribute('data-editor-authored-author');
   const previousChange = element.getAttribute('data-editor-authored-change');
   const previousContentEditable = element.getAttribute('contenteditable');
-  let mounted: ReturnType<typeof materialize> | null = null;
   let disposed = false;
   const removeFromParent = () => {
-    const fragments = PARENT_LAZY_FRAGMENT_EDITORS.get(fragmentParent);
+    const fragments = PARENT_RETAINED_ELEMENTS.get(fragmentParent);
     const registrations = fragments?.get(fragmentId);
     registrations?.delete(registration);
     if (!registrations?.size) fragments?.delete(fragmentId);
     if (!fragments?.size) {
-      PARENT_LAZY_FRAGMENT_EDITORS.delete(fragmentParent);
+      PARENT_RETAINED_ELEMENTS.delete(fragmentParent);
     }
   };
-  const registration: LazyFragmentRegistration = {
+  const registration: RetainedDOMRegistration = {
     dispose: () => {
       if (disposed) return;
       disposed = true;
-      if (LAZY_FRAGMENT_ELEMENTS.get(element) === registration) {
-        LAZY_FRAGMENT_ELEMENTS.delete(element);
+      if (RETAINED_ELEMENTS.get(element) === registration) {
+        RETAINED_ELEMENTS.delete(element);
       }
       removeFromParent();
-      mounted?.dispose();
       markDOMSyncMutationTarget(
         element,
         'attributes',
@@ -159,28 +145,21 @@ export const bindLazyDOMFragmentElement = (
         element.setAttribute('contenteditable', previousContentEditable);
       }
     },
+    element,
+    changeId,
+    root,
     fragmentId,
-    materialize: () => {
-      if (disposed) {
-        throw new Error('Cannot materialize an unmounted retained fragment.');
-      }
-      if (!mounted) {
-        mounted = materialize();
-        removeFromParent();
-      }
-      return mounted.editor;
-    },
     parent: fragmentParent,
   };
   const fragments =
-    PARENT_LAZY_FRAGMENT_EDITORS.get(fragmentParent) ??
-    new Map<string, Set<LazyFragmentRegistration>>();
+    PARENT_RETAINED_ELEMENTS.get(fragmentParent) ??
+    new Map<string, Set<RetainedDOMRegistration>>();
   const registrations =
-    fragments.get(fragmentId) ?? new Set<LazyFragmentRegistration>();
+    fragments.get(fragmentId) ?? new Set<RetainedDOMRegistration>();
   registrations.add(registration);
   fragments.set(fragmentId, registrations);
-  PARENT_LAZY_FRAGMENT_EDITORS.set(fragmentParent, fragments);
-  LAZY_FRAGMENT_ELEMENTS.set(element, registration);
+  PARENT_RETAINED_ELEMENTS.set(fragmentParent, fragments);
+  RETAINED_ELEMENTS.set(element, registration);
   if (readOnly) {
     markDOMSyncMutationTarget(
       element,
@@ -330,6 +309,51 @@ export const bindDOMFragmentElement = <V extends Value>(
   };
 };
 
+export const readDOMFragmentTarget = (node: globalThis.Node) => {
+  const element = isDOMElement(node) ? node : node.parentElement;
+  const retained =
+    element && closestShadowAware(element, '[data-editor-retained]');
+  const root = element && closestShadowAware(element, '[data-editor]');
+  if (
+    !retained ||
+    (root && root !== retained && containsShadowAware(retained, root))
+  ) {
+    return null;
+  }
+  const lazy = RETAINED_ELEMENTS.get(retained as HTMLElement);
+  if (lazy) {
+    return {
+      parent: lazy.parent,
+      target: { id: lazy.fragmentId, changeId: lazy.changeId },
+      root: lazy.root,
+    };
+  }
+  const mounted = FRAGMENT_ELEMENTS.get(retained as HTMLElement);
+  const fragment = mounted && readAuthoredFragmentView(mounted.editor);
+  return fragment
+    ? {
+        parent: fragment.parent,
+        target: {
+          id: fragment.fragment.id,
+          changeId: fragment.fragment.changeId,
+        },
+        root: fragment.fragment.root,
+      }
+    : null;
+};
+
+export const getMountedDOMFragmentElements = (
+  parent: DOMEditor<any>,
+  fragmentId: string
+): readonly HTMLElement[] => [
+  ...Array.from(
+    PARENT_FRAGMENT_EDITORS.get(parent)?.get(fragmentId) ?? []
+  ).flatMap((editor) => [...(FRAGMENT_VIEWS.get(editor)?.elements ?? [])]),
+  ...Array.from(
+    PARENT_RETAINED_ELEMENTS.get(parent)?.get(fragmentId) ?? []
+  ).map((entry) => entry.element),
+];
+
 export const readDOMFragmentEditor = (node: globalThis.Node) => {
   const element = isDOMElement(node) ? node : node.parentElement;
   const nodeElement =
@@ -353,9 +377,7 @@ export const readDOMFragmentEditor = (node: globalThis.Node) => {
     return null;
   }
   return retained
-    ? (FRAGMENT_ELEMENTS.get(retained as HTMLElement)?.editor ??
-        LAZY_FRAGMENT_ELEMENTS.get(retained as HTMLElement)?.materialize() ??
-        null)
+    ? (FRAGMENT_ELEMENTS.get(retained as HTMLElement)?.editor ?? null)
     : null;
 };
 
@@ -367,9 +389,13 @@ export const isDOMFragmentNode = <V extends Value>(
   editor: DOMEditor<V>,
   node: globalThis.Node
 ) => {
-  const fragment = readDOMFragmentEditor(node);
-  if (fragment) {
-    return fragment === editor;
+  const target = readDOMFragmentTarget(node);
+  if (target) {
+    const fragment = readAuthoredFragmentView(editor);
+    return (
+      fragment?.fragment.id === target.target.id &&
+      fragment.parent === target.parent
+    );
   }
   return readDOMFragmentParent(editor) ? false : null;
 };

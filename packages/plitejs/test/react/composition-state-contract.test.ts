@@ -1,8 +1,11 @@
+import { createEditorView, type Value } from 'plitejs';
+import { authored } from 'plitejs/authored';
 import { history } from 'plitejs/history';
 import { createEditor, type Editor } from 'plitejs/react';
 import type { CompositionEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { readAuthoredViewFragments } from '../../src/core/authored-runtime';
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
@@ -13,11 +16,13 @@ import {
   string as editorString,
 } from '../../src/internal';
 import {
+  commitProjectedCompositionInput,
   applyEditableCompositionEnd as applyEditableCompositionEndRuntime,
   applyEditableCompositionStart,
   applyEditableCompositionUpdate,
   commitChromeCompositionEndFallback,
 } from '../../src/react/editable/composition-state';
+import { createContentRootViewBoundaryGraph } from '../../src/react/editable/content-root-owners';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   type EditableCompositionStateSetter,
@@ -32,13 +37,21 @@ import {
   type EditableInputController,
   type PendingCompositionInput,
 } from '../../src/react/editable/input-state';
-import { applyModelOwnedBeforeInputMutation } from '../../src/react/editable/model-input-strategy';
+import {
+  applyEditableInput,
+  applyModelOwnedBeforeInputMutation,
+} from '../../src/react/editable/model-input-strategy';
 import {
   claimSettledCompositionInput,
   queuePendingCompositionModelInput,
 } from '../../src/react/editable/runtime-before-input-events';
 import type { AndroidInputManager } from '../../src/react/hooks/android-input-manager/android-input-manager';
+import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
+import {
+  createPliteViewSelection,
+  writePliteViewSelection,
+} from '../../src/react/view-selection';
 import { readTextSelection } from './read-text-selection';
 
 const createAndroidManager = () =>
@@ -2324,6 +2337,319 @@ describe('composition state', () => {
       expect(editorString(editor, [])).toBe('abcd');
     } finally {
       hasEditableTarget.mockRestore();
+    }
+  });
+});
+
+describe('retained composition', () => {
+  it.each([
+    { intent: 'edit', retained: true },
+    { intent: 'propose', retained: true },
+    { intent: 'propose', retained: false },
+  ] as const)(
+    'commits Chinese text once and undoes atomically in $intent (retained: $retained)',
+    ({ intent, retained }) => {
+      const initialValue: Value = [
+        { type: 'paragraph', children: [{ text: 'aABCDEFb' }] },
+      ];
+      const source = createEditor({
+        plugins: [authored({ authorId: 'alice' }), history()],
+        initialValue,
+      });
+      const editor = createReactRuntimeViewEditor(
+        createEditorView(source, {
+          authored: { intent: 'propose', projection: 'markup' },
+        })
+      );
+      const point = (offset: number) => ({ path: [0, 0], offset });
+      editor.update.text.delete({ at: { anchor: point(1), focus: point(7) } });
+      const { id } = source.read.authored.changes().items[0];
+      editor.api.authored.setView({ intent, projection: 'markup' });
+      const fragment = readAuthoredViewFragments(editor, id).find(
+        (part) => part.kind === 'delete'
+      )!;
+      writePliteViewSelection(
+        editor,
+        createPliteViewSelection(
+          createContentRootViewBoundaryGraph(editor, []),
+          {
+            anchor: retained
+              ? { fragmentId: fragment.id, point: point(2) }
+              : { point: point(1) },
+            focus: retained
+              ? { fragmentId: fragment.id, point: point(4) }
+              : { point: point(1) },
+          }
+        )
+      );
+      const tasks: Array<() => void> = [];
+      const scheduleTask: NonNullable<
+        EditableInputController['scheduleTask']
+      > = (_phase, _label, callback) => {
+        tasks.push(callback);
+        return () => {};
+      };
+      const inputController = createInputController(scheduleTask);
+      const setComposing: EditableCompositionStateSetter = (nextValue) =>
+        setEditableComposingState({
+          editor,
+          inputController,
+          nextValue,
+          setIsComposing: () => {},
+        });
+      const selectable = vi
+        .spyOn(ReactEditor, 'hasSelectableTarget')
+        .mockReturnValue(true);
+      try {
+        applyEditableCompositionStart({
+          androidInputManagerRef: { current: null },
+          editor,
+          event: createCompositionEvent(''),
+          inputController,
+          setComposing,
+        });
+        expect(source.read.text.string([])).toBe('aABCDEFb');
+        applyEditableCompositionUpdate({
+          editor,
+          event: createCompositionEvent('中文'),
+          inputController,
+          setComposing,
+        });
+        expect(
+          commitProjectedCompositionInput(editor, inputController, '中文')
+        ).toBe(true);
+        expect(
+          commitProjectedCompositionInput(editor, inputController, '中文')
+        ).toBe(false);
+        applyEditableCompositionEnd({
+          androidInputManagerRef: { current: null },
+          editor,
+          event: createCompositionEvent('中文'),
+          inputController,
+          setComposing,
+          runOwnedDOMMutation: (callback) => callback(),
+          scheduleTask,
+        });
+        tasks.shift()?.();
+        expect(editor.read.text.string([])).toBe('a中文b');
+        expect(source.read.text.string([])).toBe(
+          intent === 'edit' ? 'aAB中文EFb' : 'aABCDEFb'
+        );
+        expect(
+          source.read.authored.changes().items.find((part) => part.id === id)
+            ?.status
+        ).toBe('pending');
+        editor.api.history.undo();
+        expect(editor.read.text.string([])).toBe('ab');
+        expect(source.read.text.string([])).toBe('aABCDEFb');
+        editor.api.history.redo();
+        expect(editor.read.text.string([])).toBe('a中文b');
+      } finally {
+        selectable.mockRestore();
+      }
+    }
+  );
+  it('cancels without deleting the selected retained text', () => {
+    const initialValue: Value = [
+      { type: 'paragraph', children: [{ text: 'aABCDEFb' }] },
+    ];
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue,
+    });
+    const editor = createReactRuntimeViewEditor(
+      createEditorView(source, {
+        authored: { intent: 'propose', projection: 'markup' },
+      })
+    );
+    const point = (offset: number) => ({ path: [0, 0], offset });
+    editor.update.text.delete({ at: { anchor: point(1), focus: point(7) } });
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    const { id } = source.read.authored.changes().items[0];
+    const fragment = readAuthoredViewFragments(editor, id).find(
+      (part) => part.kind === 'delete'
+    )!;
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(createContentRootViewBoundaryGraph(editor, []), {
+        anchor: { fragmentId: fragment.id, point: point(2) },
+        focus: { fragmentId: fragment.id, point: point(4) },
+      })
+    );
+    const tasks: Array<() => void> = [];
+    const scheduleTask: NonNullable<EditableInputController['scheduleTask']> = (
+      _phase,
+      _label,
+      callback
+    ) => {
+      tasks.push(callback);
+      return () => {};
+    };
+    const inputController = createInputController(scheduleTask);
+    const setComposing: EditableCompositionStateSetter = (nextValue) =>
+      setEditableComposingState({
+        editor,
+        inputController,
+        nextValue,
+        setIsComposing: () => {},
+      });
+    const selectable = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+    try {
+      applyEditableCompositionStart({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent(''),
+        inputController,
+        setComposing,
+      });
+      applyEditableCompositionUpdate({
+        editor,
+        event: createCompositionEvent('中文'),
+        inputController,
+        setComposing,
+      });
+      const inputEvent = createCompositionEvent('中', 'a中b');
+      Object.assign(inputEvent.nativeEvent, {
+        inputType: 'insertText',
+        isComposing: true,
+      });
+      applyEditableInput({
+        androidInputManagerRef: { current: null },
+        deferredMutations: { current: [] },
+        editor,
+        event: inputEvent as never,
+        handledDOMBeforeInputRef: { current: false },
+        inputController,
+      });
+      expect(source.read.text.string([])).toBe('aABCDEFb');
+      expect(inputController.state.compositionSession?.modelCommitted).toBe(
+        false
+      );
+      applyEditableCompositionEnd({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent(''),
+        inputController,
+        setComposing,
+        runOwnedDOMMutation: (callback) => callback(),
+        scheduleTask,
+      });
+      tasks.shift()?.();
+      expect(source.read.text.string([])).toBe('aABCDEFb');
+      expect(editor.read.text.string([])).toBe('ab');
+      expect(inputController.state.compositionSession).toBeNull();
+    } finally {
+      selectable.mockRestore();
+    }
+  });
+  it('discards queued composition when its mounted host becomes read-only', () => {
+    const initialValue: Value = [
+      { type: 'paragraph', children: [{ text: 'aABCDEFb' }] },
+    ];
+    const source = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue,
+    });
+    const editor = createReactRuntimeViewEditor(
+      createEditorView(source, {
+        authored: { intent: 'propose', projection: 'markup' },
+      })
+    );
+    const point = (offset: number) => ({ path: [0, 0], offset });
+    editor.update.text.delete({ at: { anchor: point(1), focus: point(7) } });
+    editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    const { id } = source.read.authored.changes().items[0];
+    const fragment = readAuthoredViewFragments(editor, id).find(
+      (part) => part.kind === 'delete'
+    )!;
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(createContentRootViewBoundaryGraph(editor, []), {
+        anchor: { fragmentId: fragment.id, point: point(2) },
+        focus: { fragmentId: fragment.id, point: point(4) },
+      })
+    );
+    const tasks: Array<() => void> = [];
+    const scheduleTask: NonNullable<EditableInputController['scheduleTask']> = (
+      _phase,
+      _label,
+      callback
+    ) => {
+      tasks.push(callback);
+      return () => {};
+    };
+    const runtime = new EditableDOMRuntime({ editor });
+    runtime.setRoot(document.createElement('div'));
+    runtime.connect();
+    const { inputController } = runtime;
+    const setComposing: EditableCompositionStateSetter = (nextValue) =>
+      setEditableComposingState({
+        editor,
+        inputController,
+        nextValue,
+        setIsComposing: () => {},
+      });
+    const selectable = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+    try {
+      applyEditableCompositionStart({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent(''),
+        inputController,
+        setComposing,
+      });
+      applyEditableCompositionUpdate({
+        editor,
+        event: createCompositionEvent('中文'),
+        inputController,
+        setComposing,
+      });
+      const inputEvent = createCompositionEvent('中', 'a中b');
+      Object.assign(inputEvent.nativeEvent, {
+        inputType: 'insertText',
+        isComposing: true,
+      });
+      applyEditableInput({
+        androidInputManagerRef: { current: null },
+        deferredMutations: { current: [] },
+        editor,
+        event: inputEvent as never,
+        handledDOMBeforeInputRef: { current: false },
+        inputController,
+      });
+      expect(source.read.text.string([])).toBe('aABCDEFb');
+      expect(inputController.state.compositionSession?.modelCommitted).toBe(
+        false
+      );
+      applyEditableCompositionEnd({
+        androidInputManagerRef: { current: null },
+        editor,
+        event: createCompositionEvent('中文'),
+        inputController,
+        setComposing,
+        runOwnedDOMMutation: (callback) => callback(),
+        scheduleTask,
+      });
+      runtime.update({
+        readOnly: true,
+        viewportRuntime: null,
+        onComposingChange: () => {},
+        onHistoryReplay: () => {},
+        onDropResult: () => {},
+        onPasteResult: () => {},
+        onViewportBackedSelectionChange: () => {},
+      });
+      tasks.shift()?.();
+      expect(source.read.text.string([])).toBe('aABCDEFb');
+      expect(editor.read.text.string([])).toBe('ab');
+      expect(inputController.state.compositionSession).toBeNull();
+    } finally {
+      runtime.destroy();
+      selectable.mockRestore();
     }
   });
 });

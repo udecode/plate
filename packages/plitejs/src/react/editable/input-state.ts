@@ -1,6 +1,9 @@
 import type { RefObject } from 'react';
 
 import { type Path, type Range, RangeApi } from '../..';
+import { isAuthoredOperationEffect } from '../../core/authored-runtime';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
+import { getLastCommit } from '../../core/public-state';
 import type { DOMElement } from '../../dom';
 import {
   DOMRootRuntime,
@@ -8,6 +11,7 @@ import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
 } from '../../dom/internal';
+import type { bindViewSelection } from '../view-selection';
 import { createNativeGroupingId } from './input-history';
 import { type AnyEditor, setEditorMarks } from './runtime-editor-api';
 
@@ -319,9 +323,11 @@ export const beginEditableCompositionSession = (
   {
     historyMergePending = false,
     nativeAnchor = null,
+    projectedAnchor,
   }: {
     historyMergePending?: boolean;
     nativeAnchor?: unknown;
+    projectedAnchor?: NonNullable<ReturnType<typeof bindViewSelection>>;
   } = {}
 ) => {
   inputController.nativeHistoryComposition = createNativeGroupingId();
@@ -334,10 +340,28 @@ export const beginEditableCompositionSession = (
   const nativeOwned = nativeAnchor !== null;
 
   inputController.domInputRuntime.beginComposition({
-    anchor: nativeAnchor,
+    anchor: projectedAnchor
+      ? { kind: 'view-selection', binding: projectedAnchor }
+      : nativeAnchor,
+    ...(projectedAnchor ? { releaseAnchor: projectedAnchor.release } : {}),
     owner: nativeOwned ? 'native' : 'model',
     phase: nativeOwned ? 'native-composing' : 'model-composing',
   });
+};
+
+export const readProjectedCompositionAnchor = (
+  inputController: EditableInputController
+) => {
+  const epoch = inputController.domInputRuntime.compositionEpoch;
+  const anchor = epoch?.owner === 'model' ? epoch.anchor : null;
+  return anchor &&
+    typeof anchor === 'object' &&
+    'kind' in anchor &&
+    anchor.kind === 'view-selection' &&
+    'binding' in anchor
+    ? (anchor as { binding: NonNullable<ReturnType<typeof bindViewSelection>> })
+        .binding
+    : null;
 };
 
 export const shouldMergeEditableCompositionHistory = (
@@ -375,10 +399,17 @@ export const runTrackedEditableCompositionMutation = <T>({
     return { committed: false, result: callback() };
   }
 
-  const childrenBefore = editor.read((state) => state.children());
+  const owner = getEditorRuntimeOwner(editor);
+  const before = getLastCommit(owner);
   const recordCommit = () => {
+    const after = getLastCommit(owner);
     const committed =
-      editor.read((state) => state.children()) !== childrenBefore;
+      after !== before &&
+      !!after &&
+      (after.changed.hasAny('document') ||
+        after.effects.some((effect) =>
+          isAuthoredOperationEffect(owner, effect)
+        ));
 
     if (committed) markEditableCompositionModelCommitted(inputController);
 

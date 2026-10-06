@@ -1,5 +1,5 @@
 {
-  "generation": "c6f6637cae69df3f93bb9d66b78f3837d31aad79f50f8f260bc15f654038e9e5",
+  "generation": "38561f7822047e14e4e2da2e1431ce95820935b5c11e35d4454e062c70da4461",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -458,9 +458,11 @@
           "name": "comment-toolbar-button",
           "registryDependencies": [
             "@plate/comment",
+            "@plate/discussion",
             "@plate/toolbar",
             "button",
-            "dialog"
+            "dialog",
+            "tabs"
           ],
           "title": "Comment Toolbar Button",
           "type": "registry:component"
@@ -7217,9 +7219,11 @@
           "name": "comment-toolbar-button",
           "registryDependencies": [
             "@plate/comment",
+            "@plate/discussion",
             "@plate/toolbar",
             "button",
-            "dialog"
+            "dialog",
+            "tabs"
           ],
           "title": "Comment Toolbar Button",
           "type": "registry:component"

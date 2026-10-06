@@ -276,7 +276,7 @@ history head, so the next document batch is never skipped.
 
 Resolve and reopen update conversation metadata outside document undo. Replies, message edits, and explicit message or thread deletion also stay outside document history. Undoing a text deletion can restore its highlight, but never recreates an explicitly deleted conversation.
 
-Accepting or rejecting a suggestion is a document action that can be undone. These decisions preserve its discussion, including messages and resolution. A change-targeted thread follows the same Authored change ID when the pending change becomes visible again.
+Accepting or rejecting a suggestion is a document action that can be undone. These decisions preserve its discussion, including messages and resolution. A change-targeted thread follows the same Authored change ID when the pending change becomes visible again. Direct edits can split a suggestion into several portions without copying its thread. The suggestion list also keeps proposals without visible portions or replies; proposal content comes from Authored, while replies and resolution remain in Comments.
 
 For a read-only version preview, combine current retained conversations with range targets saved for that exact document revision. Do not load old conversation records over current ones. This example assumes your storage layer has verified `revision` and `currentComments`:
 

@@ -7,12 +7,11 @@ import {
   type Anchor,
   type EditorDocumentRange,
   type Range,
-} from 'plitejs';
-import { authored } from 'plitejs/authored';
-import { history } from 'plitejs/history';
-
+} from '../src';
+import { authored } from '../src/authored';
 import { hasActiveAnchors } from '../src/core/anchor-state';
 import { createEditorViewRuntime } from '../src/editor-runtime-view';
+import { history } from '../src/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',

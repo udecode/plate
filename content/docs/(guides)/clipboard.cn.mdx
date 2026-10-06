@@ -75,6 +75,8 @@ Plate 写入 plain text、HTML 与 internal Plate fragment payload。Fragment MI
 使用 `application/${clipboardFormatKey}`，避免配置不同的 editor 盲目导入彼此
 的 internal JSON。
 
+普通复制使用选中的可见内容，不携带提案原文留存或讨论记录。粘贴到另一个文档时，按目标编辑器的输入策略创建内容，不复用源文档的 change ID 或讨论身份。
+
 ## 自定义 DataTransfer format
 
 `DataTransferFormat` 把一个 browser MIME type 作为完整 payload 读取或写入。App

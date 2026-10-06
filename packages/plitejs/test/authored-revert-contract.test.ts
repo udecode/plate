@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor } from 'plitejs';
-import { authored } from 'plitejs/authored';
-import { history } from 'plitejs/history';
+import { createEditor } from '../src';
+import { authored } from '../src/authored';
+import { history } from '../src/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',

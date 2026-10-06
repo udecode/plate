@@ -91,6 +91,7 @@ import {
 } from './runtime-editor-api';
 import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
+import { canUseNativeViewSelection } from './selection-projected-dom';
 
 export {
   type ContentRootOwner,
@@ -229,11 +230,8 @@ const collapseModelSelectionForProjectedSelection = (
     focus: selection.anchor,
   };
 
-  if (RangeApi.equals(selection, range)) {
-    return;
-  }
-
   selectContentRoot(editor, range);
+  if (!editor.read.view.isReadOnly()) editor.update.marks.set(null);
 };
 
 const getRootViewEditor = ({
@@ -1257,8 +1255,9 @@ export const shouldModelOwnContentRootVerticalSelection = ({
   );
 };
 
-const moveMarkupSelection = ({
+export const resolveMarkupSelectionMovement = ({
   action,
+  boundaryAffinity,
   editor,
   extend,
   graph,
@@ -1268,6 +1267,7 @@ const moveMarkupSelection = ({
   viewSelection,
 }: {
   action: ContentRootViewSelectionAction;
+  boundaryAffinity?: 'backward' | 'forward';
   editor: ReactRuntimeEditor;
   extend: boolean;
   graph: PliteViewBoundaryGraphModel;
@@ -1275,7 +1275,7 @@ const moveMarkupSelection = ({
   preferredX?: number;
   selection: Range | null;
   viewSelection: PliteViewSelection | null;
-}): boolean => {
+}) => {
   const root = toInternalRoot(editor.read((state) => state.view.root()));
   const initial =
     viewSelection ??
@@ -1298,7 +1298,7 @@ const moveMarkupSelection = ({
           },
         })
       : null);
-  if (!initial) return false;
+  if (!initial) return null;
   const forward = action.direction === 'forward';
   let target = initial.focus;
   if (
@@ -1311,14 +1311,14 @@ const moveMarkupSelection = ({
       forward !== initial.segments.backward ? initial.focus : initial.anchor;
   } else {
     const initialNode = PliteViewBoundaryGraph.resolvePointNode(graph, target);
-    if (!initialNode) return false;
+    if (!initialNode) return null;
     const atNode = (
       current: PliteViewBoundaryGraphNode,
       offset: number
     ): PliteViewBoundaryPoint => ({
       ...(current.fragment ? { fragmentId: current.fragment.id } : {}),
       ...(current.owner ? { owner: current.owner } : {}),
-      affinity: forward ? 'backward' : 'forward',
+      affinity: boundaryAffinity ?? (forward ? 'backward' : 'forward'),
       point: rootPlitePoint({ path: current.path, offset }, current.root),
     });
     if (action.kind === 'document-boundary') {
@@ -1330,7 +1330,7 @@ const moveMarkupSelection = ({
           edge,
           forward ? 'end' : 'start'
         );
-      if (!boundary) return false;
+      if (!boundary) return null;
       target = boundary;
     } else if (action.axis === 'line' || action.axis === 'vertical') {
       const next = resolveViewBoundaryVisualMovement({
@@ -1342,7 +1342,7 @@ const moveMarkupSelection = ({
         point: target,
         preferredX,
       });
-      if (!next) return false;
+      if (!next) return null;
       target = next;
     } else if (!initialNode.text) {
       const adjacent = forward
@@ -1353,18 +1353,18 @@ const moveMarkupSelection = ({
         adjacent ?? initialNode,
         adjacent ? (forward ? 'start' : 'end') : forward ? 'end' : 'start'
       );
-      if (!boundary) return false;
+      if (!boundary) return null;
       target = boundary;
     } else {
       const entry = graph.textRunsByNode.get(initialNode.key);
-      if (!entry || !initialNode.text) return false;
+      if (!entry || !initialNode.text) return null;
       const { run } = entry;
       const offset =
         entry.offset + target.point.offset - initialNode.text.start;
       const atBoundary = forward ? offset === run.value.length : offset === 0;
       if (atBoundary) {
         const edge = forward ? run.nodes.at(-1) : run.nodes[0];
-        if (!edge?.text) return false;
+        if (!edge?.text) return null;
         const adjacent = forward
           ? PliteViewBoundaryGraph.nextNode(graph, edge)
           : PliteViewBoundaryGraph.previousNode(graph, edge);
@@ -1380,25 +1380,22 @@ const moveMarkupSelection = ({
               ? PliteViewBoundaryGraph.nextNode(graph, adjacent)
               : PliteViewBoundaryGraph.previousNode(graph, adjacent)
             : (adjacent ?? edge);
-        if (!next) return false;
-        const boundary = next.text
-          ? atNode(
-              next,
-              adjacent
-                ? forward
-                  ? next.text.start
-                  : next.text.end
-                : forward
-                  ? next.text.end
-                  : next.text.start
-            )
-          : getContentRootViewBoundaryPoint(
-              editor,
-              next,
-              forward ? 'end' : 'start'
-            );
-        if (!boundary) return false;
-        target = boundary;
+        if (!next) return null;
+        const boundary = getContentRootViewBoundaryPoint(
+          editor,
+          next,
+          next.text && adjacent
+            ? forward
+              ? 'start'
+              : 'end'
+            : forward
+              ? 'end'
+              : 'start'
+        );
+        if (!boundary) return null;
+        target = boundaryAffinity
+          ? { ...boundary, affinity: boundaryAffinity }
+          : boundary;
       } else {
         const text = forward
           ? run.value.slice(offset)
@@ -1411,7 +1408,11 @@ const moveMarkupSelection = ({
           0,
           Math.min(run.value.length, offset + (forward ? distance : -distance))
         );
-        const ordered = forward ? run.nodes : [...run.nodes].reverse();
+        const ordered =
+          (boundaryAffinity ?? (forward ? 'backward' : 'forward')) ===
+          'backward'
+            ? run.nodes
+            : [...run.nodes].reverse();
         for (const node of ordered) {
           const location = graph.textRunsByNode.get(node.key);
           if (!location || !node.text) continue;
@@ -1427,6 +1428,18 @@ const moveMarkupSelection = ({
       }
     }
   }
+  return { initial, root, target };
+};
+
+const moveMarkupSelection = (
+  options: Parameters<typeof resolveMarkupSelectionMovement>[0]
+): boolean => {
+  const resolved = resolveMarkupSelectionMovement(options);
+  if (!resolved) return false;
+  const { initial, root } = resolved;
+  let { target } = resolved;
+  const { action, editor, extend, graph, selection } = options;
+  const forward = action.direction === 'forward';
   if (target.fragmentId) {
     const node = PliteViewBoundaryGraph.resolvePointNode(graph, target);
     const adjacent =
@@ -1474,13 +1487,12 @@ const moveMarkupSelection = ({
       (part) => !part.fragment && !part.owner && part.root === root
     );
   if (extend && ordinary && !isPliteViewSelectionCollapsed(projected)) {
-    writePliteViewSelection(editor, null);
     selectContentRoot(editor, {
       anchor: projected.anchor.point,
       focus: projected.focus.point,
     });
+    writePliteViewSelection(editor, projected);
   } else if (!extend && !target.fragmentId) {
-    writePliteViewSelection(editor, docked ? projected : null);
     selectContentRoot(
       editor,
       SelectionApi.text(
@@ -1488,10 +1500,13 @@ const moveMarkupSelection = ({
         docked ? { affinity: target.affinity } : undefined
       )
     );
-  } else {
     writePliteViewSelection(editor, projected);
+  } else {
     collapseModelSelectionForProjectedSelection(editor, selection);
-    collapseNativeSelectionForProjectedSelection(editor, selection);
+    writePliteViewSelection(editor, projected);
+    if (!canUseNativeViewSelection(editor, projected)) {
+      collapseNativeSelectionForProjectedSelection(editor, selection);
+    }
   }
   return true;
 };
@@ -1661,8 +1676,8 @@ const applyContentRootViewSelectionAction = ({
       );
 
       if (hasProjectedPart) {
-        writePliteViewSelection(editor, projectedSelection);
         collapseModelSelectionForProjectedSelection(editor, selection);
+        writePliteViewSelection(editor, projectedSelection);
         collapseNativeSelectionForProjectedSelection(editor, selection);
         preventDefault?.();
 
@@ -1672,6 +1687,7 @@ const applyContentRootViewSelectionAction = ({
 
     if (viewSelection) {
       collapseModelSelectionForProjectedSelection(editor, selection);
+      writePliteViewSelection(editor, viewSelection);
       collapseNativeSelectionForProjectedSelection(editor, selection);
       preventDefault?.();
 
@@ -1721,8 +1737,8 @@ const applyContentRootViewSelectionAction = ({
     });
   }
 
-  writePliteViewSelection(editor, projectedSelection);
   collapseModelSelectionForProjectedSelection(editor, selection);
+  writePliteViewSelection(editor, projectedSelection);
   collapseNativeSelectionForProjectedSelection(editor, selection);
 
   preventDefault?.();

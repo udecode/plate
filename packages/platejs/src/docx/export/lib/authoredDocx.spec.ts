@@ -65,6 +65,16 @@ describe('authored DOCX', () => {
       plugins,
       initialValue: [{ children: [{ text: 'ABCDE' }], type: 'paragraph' }],
     });
+    editor.update((tx) => {
+      tx.authored.propose({ changeId: 'private-original' });
+      tx.text.insert('unpublished proposal', {
+        at: { offset: 0, path: [0, 0] },
+      });
+    });
+    editor.update.authored.decide({
+      action: 'reject',
+      selection: editor.read.authored.select({ ids: ['private-original'] }),
+    });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'markup' },
     });
@@ -90,6 +100,8 @@ describe('authored DOCX', () => {
     const documentXml = await zip.file('word/document.xml')!.async('string');
     const envelope = await zip.file('editor/authored.json')!.async('string');
     const contentTypes = await zip.file('[Content_Types].xml')!.async('string');
+    expect(documentXml).not.toContain('unpublished proposal');
+    expect(envelope).toContain('unpublished proposal');
     expect(documentXml).toContain('<w:ins');
     expect(documentXml).toContain('<w:del');
     expect(documentXml).toContain('<w:delText');

@@ -117,6 +117,16 @@ built-in implementation. Use `around(descriptor, handler)` from the command
 factory only when a handler must rewrite input or compose with downstream
 behavior.
 
+A prepared command retains its individual transaction steps when applied to
+the same document state. This matters when one deletion spans ordinary text
+and pending suggestions: collapsing those steps can change how retained
+content is mapped. Use the command and transaction APIs to apply the result.
+
+Composition keeps its target in the mounted view through preedit, commit, and
+completion. Completion must not insert the committed text again or leave
+subsequent typing attached to the previous target. Lifecycle tests can check
+these transitions; physical IME behavior also needs browser and device proof.
+
 ## Changes and corrections
 
 `DocumentChange` is the replay boundary. Plite corrects the affected regions

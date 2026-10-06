@@ -16,7 +16,7 @@ docs:
 
 The demo starts in Suggestion mode with a proposed insertion and deletion. Open a paragraph's discussion button to accept or reject its change, then try undo and redo. Switch to Editing to keep the pending changes visible while ordinary edits publish directly, or type in Suggestion mode to propose an edit.
 
-You can type, paste, or press Enter inside your own pending deletion. These edits remain part of that deletion. Backspace preserves the original deleted characters and removes text you added inside it. Reject restores the original content; Accept removes the entire deletion, including your additions.
+Typing inside a pending deletion creates independent content: ordinary text in Editing, or an insertion proposal in Suggesting. Deciding the deletion preserves that new content.
 
 <PackageInfo>
 
@@ -145,11 +145,22 @@ Changing the mode updates the input intent and preserves the current projection:
 | `'suggesting'` | `'propose'` | Keeps `markup` or `proposed`. An `accepted` view changes to `markup` so new proposals remain visible. |
 | `'editing'` | `'edit'` | Keeps `accepted`, `proposed`, or `markup`. |
 
-An editing markup view shows pending changes while ordinary edits to accepted content publish directly. A replacement that fully contains pending changes resolves them and publishes the replacement directly in the same undoable transaction. Other dependent edits remain reviewable with the current author. Use an accepted projection only when the view should hide pending content.
+### Editing and Suggesting
 
-Mode belongs to the exact mounted view. Two views over one document can use different modes without changing each other.
+| Action | Editing | Suggesting |
+| --- | --- | --- |
+| Type ordinary text | Insert directly. | Create an insertion proposal. |
+| Type inside a pending insertion | Insert independent ordinary text and split the surrounding suggestion. | Amend your own insertion; create a separate proposal inside another author's insertion. |
+| Delete ordinary text | Delete directly. | Create a deletion proposal. |
+| Delete proposed text | Delete the selected portion directly. | Remove the selected portion of your own insertion; propose deleting another author's insertion. |
+| Edit struck-through text | Insert independent ordinary text, or directly remove the selected deleted characters. | Create an independent insertion; repeated deletion has no effect. |
+| Replace a selection | Delete the selection and insert ordinary text in one undoable action. | Apply the deletion rules above and insert proposed text in one undoable action; replacing your own insertion amends it. |
 
-Changing the mode affects only subsequent input. It does not accept, reject, delete, or hide pending changes, and it does not add an undo step. In Editing mode, exact accepted targets edit directly. A replacement spanning pending content applies directly only when the selection fully contains every involved pending change and dependency. Partial retained or dependency-spanning selections stay protected. Switch to Suggestion mode to intentionally propose or amend reviewable work.
+Editing applies the same rules to your own and other authors' suggestions. Partial edits affect only the selection and do not accept or reject an entire suggestion. Split portions retain their original change ID and discussion. Continuous input groups related edits, and undo/redo restores the text and its suggestion associations together.
+
+Input in a wholly deleted block creates a separate block before the retained original. Enter and pasted formatting stay with the new content; reviewing the deletion does not consume that content.
+
+Mode belongs to the exact mounted view. Two views over one document can use different modes without changing each other. Changing mode affects subsequent input, preserves pending changes, and adds no undo step.
 
 To show accepted content without pending proposals, set `{ intent: 'edit', projection: 'accepted' }` directly on the authored view.
 
@@ -192,11 +203,11 @@ Clicking an element with `data-editor-authored-change` activates its change in t
 
 ### Formatting and blocks
 
-The first proposal makes a sentence bold; the second inserts a paragraph. Open each block's discussion button to accept or reject it. Select text and use **Bold**, or press Enter to propose another paragraph.
+The first explicit proposal makes a sentence bold; the second inserts a paragraph. Open each block's discussion button to accept or reject it. Select text and use **Bold** to change formatting directly, or press Enter to propose another paragraph.
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-Add [Basic Marks](/docs/basic-marks) for supported text formatting. Normal editor commands record text, mark, and node operations as proposals while the view is in suggesting mode.
+Add [Basic Marks](/docs/basic-marks) for supported text formatting. Ordinary text mark commands change existing text directly in both modes. Formatting carried by new content follows that content. An explicit proposal can still include text, formatting, and structural changes.
 
 ### Accepted, proposed, and markup
 
@@ -214,9 +225,11 @@ Open a change's discussion button and add a reply, then save a snapshot. Accept 
 
 The snapshot stays in memory and disappears when the page reloads. **Reload snapshot** creates a fresh editor from the saved document and `CommentsJSON`, discarding unsaved work and starting an empty local undo stack. Pending changes and decisions belong to the document; conversations persist separately from document undo.
 
+Open **All comments**, choose **Suggestions**, and expand a record to read the suggestion and its replies. This list also includes decided proposals and those without visible text or replies.
+
 ## Create and decide changes
 
-Suggesting mode turns ordinary input and editor commands into native proposals. A headless or explicit transaction can begin a proposal with `tx.authored.propose()`:
+Suggesting mode records text input and structural edits according to the rules above. A headless or explicit transaction can begin a proposal with `tx.authored.propose()`:
 
 ```tsx
 let changeId = '';
@@ -254,6 +267,8 @@ Save the complete value returned by `editor.read.value()`. Its `meta.authored` f
 const savedDocument = editor.read.value();
 const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
 ```
+
+The document also retains proposal content when all visible effects have been removed or the proposal has been decided. Editing leaves this original content unchanged; amendments to your own proposal in Suggesting update it. Legacy records without that content report it as unavailable.
 
 Persist the document and `CommentsJSON` atomically for the same application revision and conversation generation. Verify that association before loading, and use the same content plugins. Saving only `children` discards the authored records.
 
@@ -307,7 +322,7 @@ if (result.status === 'applied') {
 }
 ```
 
-Preserve input for non-applied results and thrown errors. Comments authorizes durable writes through `initialState.mutate` and publishes only the canonical committed record. Accepting or rejecting a change is a document action that can be undone; it hides the review card without deleting or resolving its discussion. Undo restores the pending change with its messages and resolution intact. Resolving or reopening the thread stays outside document undo.
+Preserve input for non-applied results and thrown errors. Comments authorizes durable writes through `initialState.mutate` and publishes only the canonical committed record. Accepting or rejecting a change is a document action that can be undone; it removes the pending review affordance without deleting the proposal record or resolving its discussion. The suggestion list retains decided and zero-effect proposals, including those without replies. Undo restores the pending change with its messages and resolution intact. Resolving or reopening the thread stays outside document undo.
 
 ## API Reference
 

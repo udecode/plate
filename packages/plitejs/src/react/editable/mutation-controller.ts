@@ -4,6 +4,7 @@ import {
   type EditorUpdateTransaction,
   type EditorUpdateTag,
   PathApi,
+  NodeApi,
   type Point,
   type Range,
   RangeApi,
@@ -12,16 +13,22 @@ import {
   type TransactionSpec,
 } from '../..';
 import {
+  readAuthoredTarget,
+  readAuthoredView,
+  type NativeAuthoredFragment,
   readAuthoredViewFragmentVersion,
-  updateAuthoredFragment,
+  updateAuthoredViews,
+  withAuthoredViewRead,
+  readAuthoredViewFragments,
 } from '../../core/authored-runtime';
+import { getEditorSchema } from '../../core/editor-runtime';
 import {
   getActiveEditorTransaction,
+  getCurrentMarks,
   withUpdateTagContext,
 } from '../../core/public-state';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { domCommands } from '../../dom/internal';
-import { getMountedDOMFragmentEditors } from '../../dom/plugin/dom-fragment-view';
 import { getDefined } from '../../internal/get-defined';
 import {
   ReactEditor,
@@ -29,17 +36,26 @@ import {
   toReactRuntimeEditor,
 } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
-import { rootPlitePoint } from '../view-boundary-graph';
+import { readRootChildren } from '../root-key';
+import {
+  rootPlitePoint,
+  resolvePliteViewBoundarySegmentEndpoint,
+  hasAmbiguousPliteViewBoundarySegments,
+} from '../view-boundary-graph';
 import {
   createMainRootPliteViewSelection,
   createPliteViewSelection,
+  collapsePliteViewSelection,
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
   savePliteViewSelectionHistoryEntry,
   type PliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
-import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
+import {
+  applyContentRootSelectionMoveCommand,
+  resolveMarkupSelectionMovement,
+} from './content-root-navigation';
 import {
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
@@ -64,10 +80,7 @@ import {
 import { canUseCachedCollapsedTextInsert } from './mutation-full-block-editing';
 import { applyModelOwnedHistoryIntent } from './mutation-history';
 import { withProjectedMutationRoot } from './mutation-root-scope';
-import {
-  type ProjectedSelectionTarget,
-  resolveProjectedSelectionTarget,
-} from './projected-selection-target';
+import { resolveProjectedSelectionTarget } from './projected-selection-target';
 import {
   applyTransactionSpec,
   dispatchCommand,
@@ -224,39 +237,6 @@ const deleteProjectedRanges = (
   }
 };
 
-type AuthoredEditingTransaction = EditorUpdateTransaction & {
-  authored: {
-    decide: (input: { action: 'accept'; selection: unknown }) => {
-      status: string;
-    };
-    select: (input: { ids: readonly string[] }) => unknown;
-  };
-};
-
-const prepareProjectedSelectionMutation = (
-  editor: RuntimeEditor,
-  tx: EditorUpdateTransaction,
-  target: ProjectedSelectionTarget,
-  viewSelection: PliteViewSelection
-): ProjectedSelectionTarget | null => {
-  if (!target.retained) return target;
-  if (target.retained.kind === 'blocked') return null;
-
-  const authoredTx = tx as AuthoredEditingTransaction;
-  const decision = authoredTx.authored.decide({
-    action: 'accept',
-    selection: authoredTx.authored.select({
-      ids: target.retained.acceptedChangeIds,
-    }),
-  });
-
-  if (decision.status !== 'applied') return null;
-
-  const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
-
-  return resolution.kind === 'target' ? resolution.target : null;
-};
-
 const applyProjectedViewSelectionTextCommand = ({
   editor,
   nativeInput,
@@ -290,14 +270,7 @@ const applyProjectedViewSelectionTextCommand = ({
   editor.update(() => {
     // The view wrapper would pin implicit commands to its mounted root.
     const tx = getDefined(getActiveEditorTransaction(editor));
-    const mutationTarget = prepareProjectedSelectionMutation(
-      editor,
-      tx,
-      target,
-      viewSelection
-    );
-
-    if (!mutationTarget) return;
+    const mutationTarget = target;
     if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
     deleteProjectedRanges(runtimeEditor, tx, mutationTarget.ranges);
 
@@ -353,8 +326,6 @@ const applyProjectedViewSelectionDataCommand = ({
   }
 
   const { target } = resolution;
-
-  if (target.retained) return true;
 
   const { combined, insertion, prefix } = editor.read((state) => {
     let deletion = state.transaction((tx) => {
@@ -452,14 +423,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
 
   editor.update(() => {
     const tx = getDefined(getActiveEditorTransaction(editor));
-    const mutationTarget = prepareProjectedSelectionMutation(
-      editor,
-      tx,
-      target,
-      viewSelection
-    );
-
-    if (!mutationTarget) return;
+    const mutationTarget = target;
     deleteProjectedRanges(runtimeEditor, tx, mutationTarget.ranges);
 
     tx.selection.set({
@@ -670,137 +634,467 @@ export const applyModelOwnedTransposeCharacterIntent = ({
   return true;
 };
 
-const applyRetainedViewSelectionCommand = (
+const retainedSelectionGroups = (
+  editor: RuntimeEditor,
+  previous: PliteViewSelection
+) => {
+  const groups: Array<{
+    fragment: NativeAuthoredFragment | null;
+    ranges: Range[];
+    start: Point;
+    fragmentId: string | null;
+    root: string;
+    owner: PliteViewSelection['anchor']['owner'];
+  }> = [];
+  for (const segment of previous.segments.parts) {
+    let fragment: NativeAuthoredFragment | null = null;
+    const fragmentId = segment.fragment?.id ?? null;
+    if (segment.fragment) {
+      fragment =
+        readAuthoredViewFragments(editor, segment.fragment.changeId).find(
+          (item) => item.id === fragmentId
+        ) ?? null;
+      if (!fragment || fragment.kind !== 'delete') return null;
+    }
+    const roots = readAuthoredTarget(editor, fragment, (state) => ({
+      [segment.root]: readRootChildren(state, segment.root),
+    }));
+    if (!roots) return null;
+    const anchor = resolvePliteViewBoundarySegmentEndpoint(
+      roots,
+      segment,
+      segment.start
+    );
+    const focus = resolvePliteViewBoundarySegmentEndpoint(
+      roots,
+      segment,
+      segment.end
+    );
+    if (!anchor || !focus) return null;
+    const previousGroup = groups.find(
+      (group) => group.fragmentId === fragmentId && group.root === segment.root
+    );
+    if (previousGroup) previousGroup.ranges.push({ anchor, focus });
+    else {
+      groups.push({
+        fragment,
+        ranges: [{ anchor, focus }],
+        start: anchor,
+        fragmentId,
+        root: segment.root,
+        owner: segment.owner ?? undefined,
+      });
+    }
+  }
+  return groups;
+};
+
+export const applyRetainedViewSelectionMarkCommand = (
+  editor: RuntimeEditor,
+  command: EditorCommandDescriptor,
+  input: unknown
+): boolean | undefined => {
+  if (
+    command !== editorCommands.addMark &&
+    command !== editorCommands.removeMark &&
+    command !== editorCommands.toggleMark
+  ) {
+    return undefined;
+  }
+  const previous = readPliteViewSelection(editor);
+  if (!previous?.segments.parts.some((part) => part.fragment)) return undefined;
+  if (
+    !input ||
+    typeof input !== 'object' ||
+    !('key' in input) ||
+    typeof input.key !== 'string'
+  ) {
+    return undefined;
+  }
+  if (
+    editor.read.view.isReadOnly() ||
+    hasAmbiguousPliteViewBoundarySegments(previous.segments)
+  ) {
+    return false;
+  }
+  const groups = retainedSelectionGroups(editor, previous);
+  if (!groups) return false;
+  const { key } = input;
+  const value = 'value' in input ? input.value : true;
+  const pendingMarks = withAuthoredViewRead(editor, editor, () =>
+    getCurrentMarks(editor)
+  );
+  let toggleActive: boolean | undefined;
+  if (command === editorCommands.toggleMark) {
+    toggleActive = groups.every((group) =>
+      group.ranges.every((range) =>
+        readAuthoredTarget(editor, group.fragment, (state) => {
+          if (RangeApi.isCollapsed(range) && pendingMarks !== null) {
+            return getEditorSchema(editor).isTextPropertyEqualAt(
+              key,
+              pendingMarks[key],
+              value,
+              range.anchor.path,
+              range.anchor.root ?? 'main'
+            );
+          }
+          const entries = state.nodes.toArray({
+            at: range,
+            match: NodeApi.isText,
+            voids: true,
+          });
+          return (
+            entries.length > 0 &&
+            entries.every(([node, path]) =>
+              getEditorSchema(editor).isTextPropertyEqualAt(
+                key,
+                node[key],
+                value,
+                path,
+                range.anchor.root ?? 'main'
+              )
+            )
+          );
+        })
+      )
+    );
+  }
+  let applied = false;
+  const results = updateAuthoredViews(
+    editor,
+    groups.map((group) => ({
+      target: group.fragment,
+      update: (tx) => {
+        for (const range of [...group.ranges].reverse()) {
+          tx.selection.set(range);
+          if (RangeApi.isCollapsed(range) && pendingMarks !== null) {
+            tx.marks.set(pendingMarks);
+          }
+          const owner = getEditorRuntimeOwner(editor);
+          const state = getEditorStateView(owner);
+          const evaluation = evaluateCommandWithState(
+            editor,
+            command,
+            state,
+            input
+          );
+          const result =
+            toggleActive !== undefined && evaluation.nativeEquivalent
+              ? state.transaction((draft) => {
+                  if (toggleActive) draft.marks.remove(key);
+                  else draft.marks.add(key, value);
+                  const collapse = (
+                    input as EditorCommandInput<
+                      typeof editorCommands.toggleMark
+                    >
+                  ).options?.collapse;
+                  if (collapse) {
+                    draft.selection.collapse(
+                      collapse === true ? undefined : collapse
+                    );
+                  }
+                })
+              : evaluation.result;
+          if (result) {
+            applied = true;
+            applyTransactionSpec(owner, result);
+          }
+        }
+      },
+    }))
+  );
+  const collapse = (
+    input as EditorCommandInput<typeof editorCommands.toggleMark>
+  ).options?.collapse;
+  const mapped = readPliteViewSelection(editor);
+  if (results && applied && collapse && mapped) {
+    const point = collapsePliteViewSelection(
+      mapped,
+      collapse === true ? 'anchor' : (collapse.edge ?? 'anchor')
+    );
+    const next = createPliteViewSelection(
+      createContentRootViewBoundaryGraph(editor, findContentRootOwners(editor)),
+      { anchor: point, focus: point }
+    );
+    savePliteViewSelectionHistoryEntry(editor, { undo: previous, redo: next });
+    writePliteViewSelection(editor, next);
+  }
+  return results !== null && applied;
+};
+
+export const applyMarkupInput = (
   editor: RuntimeEditor,
   command: EditableCommand,
   tags?: readonly EditorUpdateTag[],
-  nativeInput?: NativeGroupingInput
+  nativeInput?: NativeGroupingInput,
+  selectionBefore = readPliteViewSelection(editor)
 ) => {
-  const previous = readPliteViewSelection(editor);
-  if (!previous?.segments.parts.some((part) => part.fragment)) return false;
-  if (resolveProjectedSelectionTarget(editor, previous).kind === 'target') {
+  let previous = selectionBefore;
+  if (
+    command.kind === 'delete' &&
+    command.unit !== 'block' &&
+    readAuthoredViewFragmentVersion(editor)
+  ) {
+    const selection = readRuntimeSelectionRange(editor);
+    if (
+      previous
+        ? isPliteViewSelectionCollapsed(previous)
+        : selection && RangeApi.isCollapsed(selection)
+    ) {
+      const owners = findContentRootOwners(editor);
+      const graph = createContentRootViewBoundaryGraph(editor, owners);
+      const moved = resolveMarkupSelectionMovement({
+        action: {
+          kind: 'move',
+          axis:
+            command.unit === 'word'
+              ? 'word'
+              : command.unit === 'line'
+                ? 'line'
+                : 'horizontal',
+          direction: command.direction,
+        },
+        boundaryAffinity: command.direction,
+        editor: toReactRuntimeEditor(editor),
+        extend: true,
+        graph,
+        owners,
+        selection,
+        viewSelection: previous,
+      });
+      if (moved) {
+        const range = createPliteViewSelection(graph, {
+          anchor: moved.initial.focus,
+          focus: moved.target,
+        });
+        if (range.segments.parts.some((part) => part.fragment)) {
+          if (
+            readAuthoredView(editor)?.intent === 'propose' &&
+            retainedSelectionGroups(editor, range)?.every(
+              (group) =>
+                group.fragment || group.ranges.every(RangeApi.isCollapsed)
+            )
+          ) {
+            writePliteViewSelection(
+              editor,
+              createPliteViewSelection(graph, {
+                anchor: moved.target,
+                focus: moved.target,
+              })
+            );
+            return true;
+          }
+          previous = range;
+        }
+      }
+    }
+  }
+  if (!previous || readAuthoredView(editor)?.projection !== 'markup') {
     return false;
   }
-  const { fragmentId } = previous.anchor;
   if (
-    !fragmentId ||
-    previous.focus.fragmentId !== fragmentId ||
-    editor.read.view.isReadOnly()
+    command.kind === 'transpose-character' &&
+    previous.segments.parts.some((part) => part.fragment)
   ) {
     return true;
   }
-  const fragmentEditor = [
-    ...getMountedDOMFragmentEditors(toReactRuntimeEditor(editor), fragmentId),
-  ][0];
-  if (!fragmentEditor) return true;
-  const result = updateAuthoredFragment(
-    fragmentEditor,
-    (tx) => {
-      if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
-      tx.selection.set({
-        anchor: previous.anchor.point,
-        focus: previous.focus.point,
-      });
-      const owner = getEditorRuntimeOwner(fragmentEditor);
-      const run = <TCommand extends EditorCommandDescriptor>(
-        descriptor: TCommand,
-        ...input: [EditorCommandInput<TCommand>] extends [void]
-          ? [] | [input: EditorCommandInput<TCommand>]
-          : [input: EditorCommandInput<TCommand>]
-      ) => {
-        const spec = evaluateCommandWithState(
-          fragmentEditor,
-          descriptor,
-          getEditorStateView(owner),
-          ...input
-        ).result;
-        if (spec) applyTransactionSpec(owner, spec);
-      };
-      switch (command.kind) {
-        case 'insert-text': {
-          run(editorCommands.insertText, { text: command.text });
-          break;
-        }
-        case 'delete': {
-          run(editorCommands.delete, {
-            direction: command.direction,
-            unit: command.unit ?? 'character',
-          });
-          break;
-        }
-        case 'delete-both': {
-          run(editorCommands.delete, {
-            direction: 'backward',
-            unit: command.unit ?? 'character',
-          });
-          run(editorCommands.delete, {
-            direction: 'forward',
-            unit: command.unit ?? 'character',
-          });
-          break;
-        }
-        case 'delete-fragment': {
-          run(editorCommands.deleteFragment, {
-            direction: command.direction ?? 'forward',
-          });
-          break;
-        }
-        case 'insert-break': {
-          if (command.variant === 'open-line') {
-            const selection = tx.selection();
-            const block =
-              selection &&
-              RangeApi.isRange(selection) &&
-              RangeApi.isCollapsed(selection)
-                ? tx.nodes.block({ at: selection.anchor })
-                : undefined;
-            if (block) {
-              run(editorCommands.insertNodes, {
-                nodes: createDefaultParagraph(),
-                options: { at: block[1] },
+  if (
+    editor.read.view.isReadOnly() ||
+    hasAmbiguousPliteViewBoundarySegments(previous.segments)
+  ) {
+    return true;
+  }
+  const groups = retainedSelectionGroups(editor, previous);
+  if (!groups) return true;
+  const first = groups[0];
+  if (!first) return true;
+  const pendingMarks = withAuthoredViewRead(editor, editor, () =>
+    getCurrentMarks(editor)
+  );
+  const results = updateAuthoredViews(
+    editor,
+    [...groups].reverse().map((group) => ({
+      target: group.fragment,
+      update: (tx) => {
+        if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
+        const run = <TCommand extends EditorCommandDescriptor>(
+          descriptor: TCommand,
+          ...input: [EditorCommandInput<TCommand>] extends [void]
+            ? [] | [input: EditorCommandInput<TCommand>]
+            : [input: EditorCommandInput<TCommand>]
+        ) =>
+          withProjectedMutationRoot(
+            getEditorRuntimeOwner(editor),
+            group.start.root,
+            () => {
+              if (!group.fragment && groups.length === 1) {
+                dispatchCommand(editor, descriptor, ...input);
+                return;
+              }
+              const owner = getEditorRuntimeOwner(editor);
+              const spec = evaluateCommandWithState(
+                editor,
+                descriptor,
+                getEditorStateView(owner),
+                ...input
+              ).result;
+              if (spec) applyTransactionSpec(owner, spec);
+            }
+          );
+        tx.selection.set({ anchor: group.start, focus: group.start });
+        if (groups.length > 1 || group.ranges.length > 1) {
+          for (const range of [...group.ranges].reverse()) {
+            if (RangeApi.isCollapsed(range)) continue;
+            const { fragment } = group;
+            if (
+              fragment?.kind === 'delete' &&
+              (fragment.slice.openStart > 0 || fragment.slice.openEnd > 0)
+            ) {
+              tx.selection.set(range);
+              run(editorCommands.deleteFragment, { direction: 'forward' });
+            } else {
+              run(editorCommands.deleteFragment, {
+                at: range,
+                direction: 'forward',
               });
-              const start = { path: block[1].concat(0), offset: 0 };
-              tx.selection.set({ anchor: start, focus: start });
-              break;
             }
           }
-          run(
-            command.variant === 'soft'
-              ? editorCommands.insertSoftBreak
-              : editorCommands.insertBreak
-          );
-          break;
+          if (
+            group !== first ||
+            command.kind === 'delete' ||
+            command.kind === 'delete-both' ||
+            command.kind === 'delete-fragment'
+          ) {
+            return;
+          }
+        } else tx.selection.set(group.ranges[0]);
+        if (pendingMarks !== null && RangeApi.isCollapsed(group.ranges[0])) {
+          tx.marks.set(pendingMarks);
         }
-        case 'insert-data': {
-          run(domCommands.insertData, command.data);
-          break;
+        if (
+          !RangeApi.isCollapsed(group.ranges[0]) &&
+          (command.kind === 'delete' || command.kind === 'delete-both')
+        ) {
+          const direction =
+            command.kind === 'delete' ? command.direction : 'backward';
+          run(editorCommands.deleteFragment, { direction });
+          const selection = tx.selection();
+          if (
+            selection &&
+            RangeApi.isRange(selection) &&
+            RangeApi.isCollapsed(selection)
+          ) {
+            tx.selection.set(
+              SelectionApi.text(selection, { affinity: direction })
+            );
+          }
+          return;
         }
-        default: {
-          break;
+        switch (command.kind) {
+          case 'transpose-character': {
+            applyModelOwnedTransposeCharacterIntent({
+              editor,
+              selection: group.ranges[0],
+            });
+            break;
+          }
+          case 'insert-text': {
+            run(editorCommands.insertText, { text: command.text });
+            break;
+          }
+          case 'delete': {
+            run(editorCommands.delete, {
+              direction: command.direction,
+              unit: command.unit ?? 'character',
+            });
+            const selection = tx.selection();
+            if (selection && RangeApi.isRange(selection)) {
+              tx.selection.set(
+                SelectionApi.text(selection, { affinity: command.direction })
+              );
+            }
+            break;
+          }
+          case 'delete-both': {
+            run(editorCommands.delete, {
+              direction: 'backward',
+              unit: command.unit ?? 'character',
+            });
+            run(editorCommands.delete, {
+              direction: 'forward',
+              unit: command.unit ?? 'character',
+            });
+            break;
+          }
+          case 'delete-fragment': {
+            run(editorCommands.deleteFragment, {
+              direction: command.direction ?? 'forward',
+            });
+            break;
+          }
+          case 'insert-break': {
+            if (command.variant === 'open-line') {
+              const selection = tx.selection();
+              const block =
+                selection &&
+                RangeApi.isRange(selection) &&
+                RangeApi.isCollapsed(selection)
+                  ? tx.nodes.block({ at: selection.anchor })
+                  : undefined;
+              if (block) {
+                run(editorCommands.insertNodes, {
+                  nodes: createDefaultParagraph(),
+                  options: { at: block[1] },
+                });
+                const start = { path: block[1].concat(0), offset: 0 };
+                tx.selection.set({ anchor: start, focus: start });
+                break;
+              }
+            }
+            run(
+              command.variant === 'soft'
+                ? editorCommands.insertSoftBreak
+                : editorCommands.insertBreak
+            );
+            break;
+          }
+          case 'insert-data': {
+            run(domCommands.insertData, command.data);
+            break;
+          }
+          default: {
+            break;
+          }
         }
-      }
-    },
+      },
+    })),
     { tags }
   );
+  const changed = results?.some((result) => result.changed);
+  const result = results?.at(-1);
   if (result && RangeApi.isRange(result.selection)) {
     const next = createPliteViewSelection(
       createContentRootViewBoundaryGraph(editor, findContentRootOwners(editor)),
       {
         anchor: {
           ...previous.anchor,
-          fragmentId: result.fragmentId,
+          owner: first.owner,
+          affinity: result.selection.affinity ?? previous.anchor.affinity,
+          fragmentId: result.fragmentId ?? undefined,
           point: result.selection.anchor,
         },
         focus: {
           ...previous.focus,
-          fragmentId: result.fragmentId,
+          owner: first.owner,
+          affinity: result.selection.affinity ?? previous.focus.affinity,
+          fragmentId: result.fragmentId ?? undefined,
           point: result.selection.focus,
         },
       }
     );
-    if (result.changed) {
+    if (changed) {
       savePliteViewSelectionHistoryEntry(editor, {
-        undo: previous,
+        undo: selectionBefore,
         redo: next,
       });
     }
@@ -821,7 +1115,11 @@ export const applyEditableCommand = ({
     command.kind !== 'move-selection' &&
     command.kind !== 'select' &&
     command.kind !== 'select-all' &&
-    applyRetainedViewSelectionCommand(editor, command)
+    applyMarkupInput(
+      editor,
+      command,
+      command.kind === 'delete' ? ['dom-text-input'] : undefined
+    )
   ) {
     return true;
   }
@@ -1111,7 +1409,7 @@ export const focusEditableRepairTarget = (editor: ReactRuntimeEditor) => {
   try {
     const viewSelection = readPliteViewSelection(editor);
 
-    if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
+    if (viewSelection) {
       ReactEditor.assertDOMNode(editor, editor).focus({ preventScroll: true });
       return true;
     }
@@ -1148,7 +1446,7 @@ export const applyModelOwnedTextInput = ({
           : undefined;
 
         if (
-          applyRetainedViewSelectionCommand(
+          applyMarkupInput(
             editor,
             { kind: 'insert-text', text: data },
             mergeHistory ? ['composition'] : undefined,

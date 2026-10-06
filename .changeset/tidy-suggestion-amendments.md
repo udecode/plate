@@ -2,4 +2,4 @@
 'plitejs': patch
 ---
 
-Cancel an author's own proposed content when they remove or restore it, and show only the remaining text, formatting, structure, or move in suggestion reviews. Preserve cancellation through undo, redo, persistence, and collaboration, including edits spanning multiple proposals.
+Keep direct text edits independent of pending suggestions, and amend an author's own insertion only in Suggesting mode. Preserve proposal originals through decisions, saving, and reload; expose them through `details(id).original` and list proposals with `changes({ proposals: true })`.

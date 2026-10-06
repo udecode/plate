@@ -11,7 +11,7 @@ import {
   type EditorDocumentValue,
   NodeApi,
   schema,
-} from 'plitejs';
+} from '../src';
 import {
   authored,
   createAuthoredImportedRevisionChange,
@@ -22,8 +22,7 @@ import {
   projectAuthoredRange,
   projectAuthoredReview,
   type AuthoredFormatSegment,
-} from 'plitejs/authored';
-
+} from '../src/authored';
 import {
   admitAuthoredReviewDocument,
   createAuthoredReviewCheckpoint,

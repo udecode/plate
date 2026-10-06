@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, createEditorView } from 'plitejs';
-import { authored } from 'plitejs/authored';
-import { history, History } from 'plitejs/history';
-
+import { createEditor, createEditorView } from '../src';
+import { authored } from '../src/authored';
 import { readRecord, records, writeRecord } from '../src/authored/record-tree';
 import {
   authoredState,
@@ -13,6 +11,7 @@ import {
   reduceAuthoredOperation,
   type AuthoredEdit,
 } from '../src/authored/state';
+import { history, History } from '../src/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -26,7 +25,7 @@ const proposal = { intent: 'propose', projection: 'proposed' } as const;
 describe('native authored payload retention', () => {
   for (const localHistory of [false, true]) {
     for (const action of ['accepted-delete', 'rejected-insert'] as const) {
-      it(`omits ${action} content from the default canonical save${localHistory ? ' while local History owns undo' : ''}`, () => {
+      it(`retains only proposal originals for ${action} in the default canonical save${localHistory ? ' while local History owns undo' : ''}`, () => {
         const editor = createEditor({
           plugins: [
             authored({ authorId: 'alice' }),
@@ -59,7 +58,7 @@ describe('native authored payload retention', () => {
           0
         );
         const saved = JSON.stringify(editor.read.value());
-        assert.equal(saved.includes(marker), false);
+        assert.equal(saved.includes(marker), action === 'rejected-insert');
         const restored = createEditor({
           plugins: [
             authored({ authorId: 'alice', retainHistory: true }),
@@ -69,6 +68,27 @@ describe('native authored payload retention', () => {
         });
         assert.deepEqual(restored.read.children(), [paragraph('')]);
         assert.deepEqual(restored.read.authored.select({}), selection);
+        if (action === 'rejected-insert') {
+          const original = restored.read.authored.details(
+            selection.changes[0].id
+          )?.original;
+          assert.equal(original?.status, 'available');
+          if (original?.status !== 'available') assert.fail();
+          assert.deepEqual(original.items[0], {
+            kind: 'content',
+            action: 'insert',
+            before: null,
+            after: {
+              root: 'main',
+              location: null,
+              content: {
+                content: [paragraph(payload)],
+                openStart: 1,
+                openEnd: 1,
+              },
+            },
+          });
+        }
         const before = JSON.stringify(restored.read.value());
         assert.deepEqual(restored.update.authored.revert({ selection }), {
           status: 'unavailable',
@@ -93,7 +113,7 @@ describe('native authored payload retention', () => {
           if (source === editor) {
             assert.equal(
               JSON.stringify(source.read.value()).includes(marker),
-              false
+              action === 'rejected-insert'
             );
           }
           source.api.history.undo();

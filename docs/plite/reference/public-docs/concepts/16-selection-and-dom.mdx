@@ -21,14 +21,25 @@ Do not close a selection bug with only one layer unless the bug only exists in t
 
 ## Selection ownership
 
-Plite has two selection systems in a React editor:
+A React editor coordinates model selection with native selection. Markup
+views also retain the visible selection when it enters retained deletion text:
 
 | Selection        | What it means                                                                                     |
 | ---------------- | ------------------------------------------------------------------------------------------------- |
 | Model selection  | The serializable `TextSelection`, `NodeSelection`, or `null` stored by the Plite editor.          |
 | Native selection | The browser `Selection` visible in the contenteditable DOM. Only text selection projects to it. |
+| Markup selection | View-local positions across live text and retained deletion text. The model range represents the document position when the full visible selection cannot be expressed as one document range. |
 
 Most editor code should write the model selection and let Plite export the DOM/native selection. Plite imports the native selection when the browser is the current source of truth, such as user selection movement or native input.
+
+Ordinary text keeps both endpoints in its model range. Retained-text positions
+use their own content identity and offsets. Commands resolve those positions
+through the mounted editor. Retained text uses native selection when the
+complete selection consists of text fragments in the same mounted,
+nonvirtualized editable and content root, with no separate content-root owner.
+Other ranges keep their projected selection. Retained text shares the editor's
+composition and history. See [Authored Changes](../libraries/plite-authored)
+for the editing rules.
 
 ## Model selection
 

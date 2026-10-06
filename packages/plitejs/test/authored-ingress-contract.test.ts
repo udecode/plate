@@ -6,9 +6,9 @@ import {
   createEditorView,
   definePlugin,
   ElementApi,
-} from 'plitejs';
-import { authored } from 'plitejs/authored';
-import { history, History } from 'plitejs/history';
+} from '../src';
+import { authored } from '../src/authored';
+import { history, History } from '../src/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',

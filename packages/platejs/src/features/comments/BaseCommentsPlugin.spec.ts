@@ -740,6 +740,86 @@ describe('Comments persistence', () => {
     expect(savedApi.toJSON()).toEqual(stored);
   });
 
+  it('reloads a proposal with no remaining text together with its discussion and original', async () => {
+    const editor = createEditor({
+      userId: 'alice',
+      initialValue: value,
+      plugins: [
+        DefaultAuthoredPlugin,
+        BaseCommentsPlugin.configure({
+          initialState: { currentUserId: 'alice' },
+        }),
+      ],
+    });
+    editor.update((tx) => {
+      tx.authored.propose({ changeId: 'review' });
+      tx.text.insert(' proposal', { at: { path: [0, 0], offset: 5 } });
+    });
+    const original = editor.read.authored.details('review')?.original;
+    expect(original?.status).toBe('available');
+    const { api } = editor.plugin(BaseCommentsPlugin);
+    expect(
+      await api.createThread({
+        id: 'review-thread',
+        body: body('Please review'),
+        target: { type: 'change', id: 'review' },
+      })
+    ).toEqual({ status: 'applied', value: 'review-thread' });
+    const reply = await api.reply('review-thread', body('Reviewed'));
+    expect(reply.status).toBe('applied');
+    const view = createEditorView(editor, {
+      authored: { intent: 'edit', projection: 'proposed' },
+    });
+    view.update.text.delete({
+      at: {
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 14 },
+      },
+    });
+    const saved = JSON.parse(
+      JSON.stringify({ document: editor.read.value(), comments: api.toJSON() })
+    );
+    const reopened = createEditor({
+      userId: 'alice',
+      initialValue: saved.document,
+      plugins: [
+        DefaultAuthoredPlugin,
+        BaseCommentsPlugin.configure({
+          initialState: {
+            currentUserId: 'alice',
+            initialComments: saved.comments,
+          },
+        }),
+      ],
+    });
+    const restored = reopened.plugin(BaseCommentsPlugin).api;
+    expect(reopened.read.children()).toEqual(value);
+    expect(
+      reopened.read.authored
+        .changes({ proposals: true })
+        .items.map(({ id }) => id)
+    ).toEqual(['review']);
+    expect(reopened.read.authored.change('review')?.status).toBe('pending');
+    expect(reopened.read.authored.details('review')?.parts).toEqual({
+      status: 'available',
+      items: [],
+    });
+    expect(reopened.read.authored.details('review')?.original).toEqual(
+      original
+    );
+    expect(
+      restored
+        .getThread('review-thread')
+        ?.messages.map(({ body: messageBody }) => messageBody)
+    ).toEqual([body('Please review'), body('Reviewed')]);
+    expect(restored.attachment('review-thread')).toEqual({
+      type: 'change',
+      id: 'review',
+    });
+    expect(await reopened.api.history.undo()).toEqual({ status: 'empty' });
+    expect(await reopened.api.history.redo()).toEqual({ status: 'empty' });
+  });
+
   it.each([
     ['wrong kind', (saved: CommentsJSON) => ({ ...saved, kind: 'comments' })],
     ['unknown version', (saved: CommentsJSON) => ({ ...saved, version: 2 })],

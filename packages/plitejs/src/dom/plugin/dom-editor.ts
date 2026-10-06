@@ -987,6 +987,72 @@ export const getOrCreateDOMNodeKey = (
 };
 
 /** Resolve native coordinates within an exact mounted DOM root. @internal */
+export const resolveDOMLeafPoint = (
+  el: HTMLElement,
+  offset: number,
+  affinity?: 'backward' | 'forward',
+  texts: readonly Element[] = Array.from(
+    el.querySelectorAll('[data-editor-string], [data-editor-zero-width]')
+  )
+): DOMPoint | null => {
+  let domPoint: DOMPoint | undefined;
+  let { start } = getPliteTextHostBounds(el);
+
+  for (let i = 0; i < texts.length; i++) {
+    const text = texts[i];
+    const domNode = text.childNodes[0] as HTMLElement;
+
+    if (domNode == null || domNode.textContent == null) {
+      continue;
+    }
+
+    const { length } = domNode.textContent;
+    const attr = text.getAttribute('data-editor-length');
+    const trueLength = attr == null ? length : Number.parseInt(attr, 10);
+    const end = start + trueLength;
+
+    // Prefer putting the selection inside the mark placeholder to ensure
+    // composed text is displayed with the correct marks.
+    const nextText = texts[i + 1];
+    if (
+      offset === end &&
+      nextText?.hasAttribute('data-editor-mark-placeholder')
+    ) {
+      const domText = nextText.childNodes[0];
+
+      domPoint = [
+        // COMPAT: If we don't explicity set the dom point to be on the
+        // actual dom text element, chrome will put the selection behind
+        // the actual dom text element, causing
+        // domRange.getBoundingClientRect() calls on a collapsed selection
+        // to return incorrect zero values
+        // (https://bugs.chromium.org/p/chromium/issues/detail?id=435438)
+        // which will cause issues when scrolling to it.
+        isDOMText(domText) ? domText : nextText,
+        nextText.textContent?.startsWith('\uFEFF') ? 1 : 0,
+      ];
+      break;
+    }
+
+    if (
+      offset < end ||
+      (offset === end && (affinity !== 'forward' || !nextText))
+    ) {
+      const domOffset = Math.min(length, Math.max(0, offset - start));
+      domPoint = [domNode, domOffset];
+      break;
+    }
+
+    start = end;
+  }
+
+  if (!domPoint) {
+    return null;
+  }
+
+  return domPoint;
+};
+
 export const resolveDOMPointInRoot = (
   editor: DOMEditor<any>,
   point: Point,
@@ -1038,73 +1104,14 @@ export const resolveDOMPointInRoot = (
     return [textFlowPoint.node, textFlowPoint.offset];
   }
 
-  let domPoint: DOMPoint | undefined;
-
-  // For each leaf, we need to isolate its content, which means filtering
-  // to its direct text and zero-width spans. (We have to filter out any
-  // other siblings that may have been rendered alongside them.)
-  const selector = '[data-editor-string], [data-editor-zero-width]';
-  const texts = Array.from(el.querySelectorAll(selector)).filter(
-    (element) => isDOMFragmentNode(editor, element) !== false
+  return resolveDOMLeafPoint(
+    el,
+    resolvedPoint.offset,
+    affinity,
+    Array.from(
+      el.querySelectorAll('[data-editor-string], [data-editor-zero-width]')
+    ).filter((element) => isDOMFragmentNode(editor, element) !== false)
   );
-  let { start } = getPliteTextHostBounds(el);
-
-  for (let i = 0; i < texts.length; i++) {
-    const text = texts[i];
-    const domNode = text.childNodes[0] as HTMLElement;
-
-    if (domNode == null || domNode.textContent == null) {
-      continue;
-    }
-
-    const { length } = domNode.textContent;
-    const attr = text.getAttribute('data-editor-length');
-    const trueLength = attr == null ? length : Number.parseInt(attr, 10);
-    const end = start + trueLength;
-
-    // Prefer putting the selection inside the mark placeholder to ensure
-    // composed text is displayed with the correct marks.
-    const nextText = texts[i + 1];
-    if (
-      resolvedPoint.offset === end &&
-      nextText?.hasAttribute('data-editor-mark-placeholder')
-    ) {
-      const domText = nextText.childNodes[0];
-
-      domPoint = [
-        // COMPAT: If we don't explicity set the dom point to be on the
-        // actual dom text element, chrome will put the selection behind
-        // the actual dom text element, causing
-        // domRange.getBoundingClientRect() calls on a collapsed selection
-        // to return incorrect zero values
-        // (https://bugs.chromium.org/p/chromium/issues/detail?id=435438)
-        // which will cause issues when scrolling to it.
-        isDOMText(domText) ? domText : nextText,
-        nextText.textContent?.startsWith('\uFEFF') ? 1 : 0,
-      ];
-      break;
-    }
-
-    if (
-      resolvedPoint.offset < end ||
-      (resolvedPoint.offset === end && (affinity !== 'forward' || !nextText))
-    ) {
-      const offset = Math.min(
-        length,
-        Math.max(0, resolvedPoint.offset - start)
-      );
-      domPoint = [domNode, offset];
-      break;
-    }
-
-    start = end;
-  }
-
-  if (!domPoint) {
-    return null;
-  }
-
-  return domPoint;
 };
 
 const readTextToCaret = (editor: DOMEditor<any>, from: Point) => {

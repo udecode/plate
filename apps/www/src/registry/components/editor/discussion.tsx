@@ -32,6 +32,7 @@ import {
   type WrapRootProps,
   useEditor,
   useEditorRootElement,
+  useEditorReadOnly,
   useEditorSelector,
   useEditorViewState,
   usePath,
@@ -576,7 +577,7 @@ function DiscussionCard({
   onDecisionApplied,
 }: {
   item: DiscussionItem;
-  onDecisionApplied: () => void;
+  onDecisionApplied?: () => void;
 }) {
   return item.kind === 'comment' ? (
     <CommentThreadCard id={item.id} />
@@ -682,7 +683,8 @@ const formatPropertyValue = (value: unknown) => {
 };
 
 const describeSuggestionPart = (
-  part: AuthoredChangePart
+  part: AuthoredChangePart,
+  preview = contentPreview
 ): readonly string[] => {
   const { kind } = part;
 
@@ -695,8 +697,8 @@ const describeSuggestionPart = (
       ];
     }
     case 'content': {
-      const before = contentPreview(part.before);
-      const after = contentPreview(part.after);
+      const before = preview(part.before);
+      const after = preview(part.after);
       const { action } = part;
 
       switch (action) {
@@ -802,19 +804,37 @@ const describeSuggestion = (
   ];
 };
 
-function SuggestionDiscussionCard({
+export function SuggestionDiscussionCard({
   change,
   createdAt,
   onDecisionApplied,
+  onInteractionChange,
   threadIds,
 }: {
   change: AuthoredChange;
   createdAt: Date;
-  onDecisionApplied: () => void;
+  onDecisionApplied?: () => void;
+  onInteractionChange?: (blocked: boolean) => void;
   threadIds: readonly string[];
 }) {
   const editor = useEditor();
   const proposedEditor = getProposedEditor(editor);
+  const readOnly = useEditorReadOnly();
+  const [replyVersion, setReplyVersion] = React.useState(0);
+  const interactions = React.useRef(new Set<string>());
+  const [blocked, setBlocked] = React.useState(false);
+  const interactionChangeRef = React.useRef(onInteractionChange);
+  React.useEffect(() => {
+    interactionChangeRef.current = onInteractionChange;
+  }, [onInteractionChange]);
+  React.useEffect(() => () => interactionChangeRef.current?.(false), []);
+  const setInteraction = (key: string, next: boolean) => {
+    if (next) interactions.current.add(key);
+    else interactions.current.delete(key);
+    const active = interactions.current.size > 0;
+    setBlocked(active);
+    onInteractionChange?.(active);
+  };
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const user = useCommentUser(change.authorId);
   const changeKey = `${change.id}:${change.revision}`;
@@ -834,11 +854,18 @@ function SuggestionDiscussionCard({
         commit.changed.hasAny('state'),
     }
   );
-  const descriptions = describeSuggestion(
-    proposedEditor,
-    details ?? null,
-    change.kind
-  );
+  const current = details?.change ?? change;
+  const canDecide =
+    current.status === 'pending' || current.status === 'conflicted';
+  const retainedDescriptions =
+    details?.original?.status === 'available'
+      ? details.original.items.flatMap((part) =>
+          describeSuggestionPart(part, contentText)
+        )
+      : [];
+  const descriptions = retainedDescriptions.length
+    ? retainedDescriptions
+    : describeSuggestion(proposedEditor, details ?? null, change.kind);
   const setOutcome = (result: AuthoredResult) =>
     setOutcomeState({ changeKey, result });
 
@@ -846,6 +873,7 @@ function SuggestionDiscussionCard({
     action: 'accept' | 'reject',
     related: readonly string[] = []
   ) => {
+    if (readOnly || blocked || !canDecide) return;
     const authored = editor.plugin(DefaultAuthoredPlugin);
     const latest = authored.read.change(change.id);
     if (!latest) {
@@ -863,7 +891,7 @@ function SuggestionDiscussionCard({
         : authored.update.decide(input);
 
     if (result.status === 'applied' || result.status === 'unchanged') {
-      onDecisionApplied();
+      onDecisionApplied?.();
       return;
     }
     setOutcome(result);
@@ -923,29 +951,41 @@ function SuggestionDiscussionCard({
         <span className="text-xs leading-none text-muted-foreground/80">
           {formatCommentDate(createdAt)}
         </span>
-        <span className="editor-suggestion-actions pointer-events-none absolute top-0 right-0 flex gap-2 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
-          <Button
-            aria-label="Accept suggestion"
-            className="size-6 p-1 text-muted-foreground"
-            onClick={() => decide('accept')}
-            variant="ghost"
-          >
-            <CheckIcon className="size-4" />
-          </Button>
-          <Button
-            aria-label="Reject suggestion"
-            className="size-6 p-1 text-muted-foreground"
-            onClick={() => decide('reject')}
-            variant="ghost"
-          >
-            <XIcon className="size-4" />
-          </Button>
-        </span>
+        {current.status !== 'pending' && (
+          <span className="ml-auto text-xs text-muted-foreground capitalize">
+            {current.status}
+          </span>
+        )}
+        {canDecide && (
+          <span className="editor-suggestion-actions pointer-events-none ml-auto flex shrink-0 gap-1 opacity-0 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100">
+            <Button
+              aria-label="Accept suggestion"
+              disabled={readOnly || blocked}
+              className="size-6 p-1 text-muted-foreground"
+              onClick={() => decide('accept')}
+              variant="ghost"
+            >
+              <CheckIcon className="size-4" />
+            </Button>
+            <Button
+              aria-label="Reject suggestion"
+              disabled={readOnly || blocked}
+              className="size-6 p-1 text-muted-foreground"
+              onClick={() => decide('reject')}
+              variant="ghost"
+            >
+              <XIcon className="size-4" />
+            </Button>
+          </span>
+        )}
       </header>
 
       <div className="relative mt-1 mb-4 flex flex-col gap-2 pl-[32px] text-sm">
         {descriptions.map((description, index) => (
-          <p className="text-muted-foreground" key={`${index}:${description}`}>
+          <p
+            className="break-words whitespace-pre-wrap text-muted-foreground"
+            key={`${index}:${description}`}
+          >
             {description}
           </p>
         ))}
@@ -955,6 +995,7 @@ function SuggestionDiscussionCard({
             {outcome?.status === 'blocked' && relatedIds.length > 0 && (
               <div className="flex gap-2">
                 <Button
+                  disabled={readOnly || blocked}
                   onClick={() => decide('accept', relatedIds)}
                   size="sm"
                   variant="outline"
@@ -962,6 +1003,7 @@ function SuggestionDiscussionCard({
                   Accept related
                 </Button>
                 <Button
+                  disabled={readOnly || blocked}
                   onClick={() => decide('reject', relatedIds)}
                   size="sm"
                   variant="outline"
@@ -975,20 +1017,31 @@ function SuggestionDiscussionCard({
       </div>
 
       {threadIds.map((id) => (
-        <CommentThreadCard id={id} key={id} showReply={false} />
+        <CommentThreadCard
+          id={id}
+          key={id}
+          showReply={false}
+          onInteractionChange={(next) => setInteraction(id, next)}
+        />
       ))}
 
-      <CommentComposer
-        ariaLabel="Comment on suggestion"
-        onSubmit={(body) =>
-          comments.createThread({
-            body,
-            excerpt: `${change.kind} suggestion`,
-            target: { id: change.id, type: 'change' },
-          })
-        }
-        placeholder="Reply..."
-      />
+      {!readOnly && (
+        <CommentComposer
+          key={replyVersion}
+          ariaLabel="Comment on suggestion"
+          cancelLabel="Cancel reply"
+          onCancel={() => setReplyVersion((value) => value + 1)}
+          onInteractionChange={(next) => setInteraction('reply', next)}
+          onSubmit={(body) =>
+            comments.createThread({
+              body,
+              excerpt: `${change.kind} suggestion`,
+              target: { id: change.id, type: 'change' },
+            })
+          }
+          placeholder="Reply..."
+        />
+      )}
     </article>
   );
 }

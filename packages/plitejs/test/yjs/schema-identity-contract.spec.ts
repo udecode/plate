@@ -405,7 +405,7 @@ describe('plitejs/yjs schema identity contract', () => {
 
     assert.equal(root.length, 1);
     assert.deepEqual(metadata.get('current'), {
-      format: 2,
+      format: 3,
       identity: editor.read.schema.identity(),
     });
     assert.equal(
@@ -699,7 +699,7 @@ describe('plitejs/yjs schema identity contract', () => {
         revision: expectedPayloadRevision,
       });
       assert.deepEqual(metadata.get('current'), {
-        format: 2,
+        format: 3,
         identity: editor.read.schema.identity(),
       });
       assert.equal(root.length, 1);

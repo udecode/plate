@@ -43,6 +43,7 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 import {
   readPliteViewSelectionHistoryGroup,
+  subscribePliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
 import { isSelectionViewportBacked } from '../viewport-commands';
@@ -426,6 +427,12 @@ export class EditableDOMRuntime {
       adapter: this,
       afterRootMount: () => {
         this.attachNativeInputListeners();
+        this.installDisposable(
+          'markup-selection-export',
+          subscribePliteViewSelection(editor, () => {
+            this.requestSelectionExportAfterDOMCommit();
+          })
+        );
       },
       beforeRootTeardown: () => {
         runAllRuntimeSteps([

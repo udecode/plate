@@ -9,6 +9,7 @@ import {
   type TextSelection,
   type Value,
 } from '../../core';
+import { BaseBoldPlugin } from '../../features/basic-nodes';
 import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
@@ -43,6 +44,7 @@ const createEditor = (
     plugins: [
       DefaultAuthoredPlugin,
       BaseParagraphPlugin,
+      BaseBoldPlugin,
       BaseAIPlugin,
       HeadingPlugin,
       MarkdownPlugin,
@@ -838,12 +840,33 @@ describe('AIChatPlugin suggestions', () => {
     const ai = editor.plugin(AIChatPlugin);
     editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
     ai.store.set({ toolName: 'edit' });
-    ai.api.setPreview('done');
+    ai.api.setPreview('**done**');
     expect(
       editor.read.authored.changes({ status: 'pending' }).items
     ).toHaveLength(1);
     expect(editor.read.value().children).toEqual(nodes);
-    expect(editor.read.text.string([])).toBe('done');
+    expect(editor.read.children()[0].children).toEqual([
+      { text: 'done', bold: true },
+    ]);
+    const change = editor.read.authored.changes({ proposals: true }).items[0];
+    expect(change).toBeDefined();
+    expect(editor.read.authored.details(change!.id)?.original).toMatchObject({
+      status: 'available',
+      items: expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'content',
+          after: expect.objectContaining({
+            content: expect.objectContaining({
+              content: [
+                expect.objectContaining({
+                  children: [{ text: 'done', bold: true }],
+                }),
+              ],
+            }),
+          }),
+        }),
+      ]),
+    });
     expect(editor.read.authored.view()).toEqual({
       intent: 'edit',
       projection: 'markup',

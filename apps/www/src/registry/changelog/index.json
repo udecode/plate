@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-04-suggestion-originals",
+      "href": "/registry/changelog/2026-10-04-suggestion-originals.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep proposal originals accessible after text edits and review",
+      "change": {
+        "type": "source",
+        "date": "2026-10-04",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment-toolbar-button", "discussion", "editor-ai"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-02-schema-block-handles",
       "href": "/registry/changelog/2026-10-02-schema-block-handles.json",
       "status": "draft",

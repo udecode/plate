@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, createEditorView, NodeApi } from 'plitejs';
-import { authored } from 'plitejs/authored';
-import { history } from 'plitejs/history';
-
+import { createEditor, createEditorView, NodeApi } from '../src';
+import { authored } from '../src/authored';
 import { createAuthoredFragmentView } from '../src/core/authored-fragment-view';
 import {
   type NativeAuthoredRenderSegment,
@@ -14,11 +12,26 @@ import {
   subscribeAuthoredViewFragmentSlots,
   updateAuthoredFragment,
 } from '../src/core/authored-runtime';
+import { history } from '../src/history';
+import { createContentRootViewBoundaryGraph } from '../src/react/editable/content-root-owners';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
   children: [{ text }],
 });
+const renderedText = (view: ReturnType<typeof createEditorView>) => {
+  const graph = createContentRootViewBoundaryGraph(view, []);
+  const seen = new Set<object>();
+  const values: string[] = [];
+  for (const node of graph.nodes) {
+    const run = graph.textRunsByNode.get(node.key)?.run;
+    if (run && !seen.has(run)) {
+      seen.add(run);
+      values.push(run.value);
+    }
+  }
+  return values;
+};
 const markup = { intent: 'propose', projection: 'markup' } as const;
 const point = (offset: number, block = 0) => ({ path: [block, 0], offset });
 
@@ -66,7 +79,7 @@ describe('native authored fragment collection', () => {
   });
 
   for (const parent of ['source', 'view'] as const) {
-    it(`continues a later paragraph after retained history and Enter through the ${parent}`, () => {
+    it(`continues a later paragraph after retained history and Enter through the ${parent}`, async () => {
       const editor = createEditor({
         plugins: [authored({ authorId: 'alice' }), history()],
         initialValue: [
@@ -92,70 +105,37 @@ describe('native authored fragment collection', () => {
         view,
         readAuthoredViewFragments(view, deletion.id)[0]
       );
-      for (const [offset, value] of [
-        [6, 'X'],
-        [7, 'Y'],
-      ] as const) {
-        updateAuthoredFragment(
-          retained,
-          (tx) => {
-            tx.selection.set(point(offset));
-            tx.text.insert(value);
-          },
-          { tags: ['dom-text-input'] }
-        );
-      }
-      updateAuthoredFragment(retained, (tx) => {
-        tx.selection.set(point(8));
-        tx.text.deleteBackward();
-      });
-      view.api.history.undo();
-      view.api.history.redo();
-      updateAuthoredFragment(
+      const inserted = updateAuthoredFragment(
         retained,
         (tx) => {
-          tx.selection.set(point(7));
-          tx.text.insert('Z');
+          tx.selection.set(point(6));
+          tx.text.insert('X');
         },
         { tags: ['dom-text-input'] }
       );
-      updateAuthoredFragment(retained, (tx) => {
-        tx.selection.set(point(8));
-        tx.break.insert();
+      assert.equal(inserted?.fragmentId, null);
+      assert.ok(inserted?.selection);
+      view.update.selection.set(inserted.selection);
+      view.update.text.insert('Y');
+      view.update((tx) => {
+        tx.history.newBatch();
+        tx.text.deleteBackward();
       });
-      const text = (segment: NativeAuthoredRenderSegment): string =>
-        segment.kind === 'element'
-          ? segment.children.map(text).join('')
-          : NodeApi.isText(segment.node)
-            ? segment.node.text.slice(segment.start, segment.end)
-            : '';
-      const blocks = () =>
-        readAuthoredViewRenderSegments(
-          view,
-          view.read.children(),
-          'main',
-          [1]
-        ).map(text);
+      await view.api.history.undo();
+      await view.api.history.redo();
+      view.update.text.insert('Z');
+      view.update.break.insert();
+      const blocks = () => renderedText(view).slice(1, 3);
       assert.deepEqual(blocks(), [
         'Keep this redundXZ',
         'ant phrase out of the final draft.',
       ]);
-      updateAuthoredFragment(
-        retained,
-        (tx) => {
-          tx.selection.set(point(0, 1));
-          tx.text.insert('Q');
-        },
-        { tags: ['dom-text-input'] }
-      );
+      view.update.text.insert('Q');
       assert.deepEqual(blocks(), [
         'Keep this redundXZ',
         'Qant phrase out of the final draft.',
       ]);
-      assert.equal(
-        NodeApi.string(view.read.children()[1]),
-        'Keep this out of the final draft.'
-      );
+      assert.equal(NodeApi.string(view.read.children()[1]), 'Keep this XZ');
       const accepted = createEditorView(editor, {
         authored: { intent: 'edit', projection: 'accepted' },
       });
@@ -167,7 +147,7 @@ describe('native authored fragment collection', () => {
   }
 
   for (const offset of [0, 2, 5]) {
-    it(`continues live text after a retained paragraph break at offset ${offset}`, () => {
+    it(`continues live text after a retained paragraph break at offset ${offset}`, async () => {
       const editor = createEditor({
         plugins: [authored({ authorId: 'alice' }), history()],
         initialValue: [paragraph('Alpha bravo omega')],
@@ -179,50 +159,36 @@ describe('native authored fragment collection', () => {
         view,
         readAuthoredViewFragments(view, id)[0]
       );
-      updateAuthoredFragment(retained, (tx) => {
+      const inserted = updateAuthoredFragment(retained, (tx) => {
         tx.selection.set(point(offset));
         tx.text.insert('YZ');
         tx.break.insert();
       });
-      const text = (segments: readonly NativeAuthoredRenderSegment[]): string =>
-        segments
-          .map((segment) =>
-            segment.kind === 'element'
-              ? text(segment.children)
-              : NodeApi.isText(segment.node)
-                ? segment.node.text.slice(segment.start, segment.end)
-                : ''
-          )
-          .join('');
-      const blocks = () =>
-        readAuthoredViewRenderSegments(
-          view,
-          view.read.children(),
-          'main',
-          [0]
-        ).map((segment) => text([segment]));
+      assert.equal(inserted?.fragmentId, null);
+      assert.ok(inserted?.selection);
+      view.update.selection.set(inserted.selection);
+      const blocks = () => renderedText(view);
       const expected = [
         `Alpha ${'bravo'.slice(0, offset)}YZ`,
         `${'bravo'.slice(offset)} omega`,
       ];
       assert.deepEqual(blocks(), expected);
       assert.equal(editor.read.text.string([]), 'Alpha bravo omega');
-      assert.equal(view.read.text.string([]), 'Alpha  omega');
-      view.api.history.undo();
-      assert.deepEqual(blocks(), ['Alpha bravo omega']);
-      view.api.history.redo();
-      assert.deepEqual(blocks(), expected);
-      updateAuthoredFragment(retained, (tx) => {
-        tx.selection.set(point(0, 1));
-        tx.text.insert('X');
-      });
-      assert.deepEqual(retained.read.children().map(NodeApi.string), [
-        `${'bravo'.slice(0, offset)}YZ`,
-        `X${'bravo'.slice(offset)}`,
+      assert.deepEqual(view.read.children().map(NodeApi.string), [
+        'Alpha YZ',
+        ' omega',
       ]);
+      await view.api.history.undo();
+      assert.deepEqual(blocks(), ['Alpha bravo omega']);
+      await view.api.history.redo();
+      assert.deepEqual(blocks(), expected);
+      view.update.text.insert('X');
       assert.deepEqual(blocks(), [expected[0], `X${expected[1]}`]);
       assert.equal(editor.read.text.string([]), 'Alpha bravo omega');
-      assert.equal(view.read.text.string([]), 'Alpha  omega');
+      assert.deepEqual(view.read.children().map(NodeApi.string), [
+        'Alpha YZ',
+        'X omega',
+      ]);
     });
   }
 
@@ -286,7 +252,8 @@ describe('native authored fragment collection', () => {
       assert.deepEqual(labels(), ['BB', 'CC']);
       authorId = 'accepted';
       editor.update.text.insert('!', { at: point(2) });
-      assert.deepEqual(labels(), ['B!B', 'CC']);
+      assert.deepEqual(labels(), ['B', 'B', 'CC']);
+      assert.equal(view.read.text.string([]), 'A!D');
     });
 
     it(`orders retained proposals from different origins after deleting ${deletionOrder}`, () => {
@@ -391,17 +358,17 @@ describe('native authored fragment collection', () => {
         point: point(8),
       }
     );
-    editor.update.text.insert('X', { at: point(10) });
+    editor.update.text.delete({ at: { anchor: point(12), focus: point(13) } });
     assert.equal(calls, 1);
     let [fragment] = readAuthoredViewFragments(view, slots[0].changeId);
     assert.notEqual(fragment.kind, 'properties');
     if (fragment.kind === 'properties') assert.fail();
-    assert.equal(NodeApi.string(fragment.slice.content[0]), 'midXdle');
-    editor.update.text.insert('Y', { at: point(11) });
+    assert.equal(NodeApi.string(fragment.slice.content[0]), 'middl');
+    editor.update.text.delete({ at: { anchor: point(11), focus: point(12) } });
     assert.equal(calls, 2);
     [fragment] = readAuthoredViewFragments(view, slots[0].changeId);
     if (fragment.kind === 'properties') assert.fail();
-    assert.equal(NodeApi.string(fragment.slice.content[0]), 'midXYdle');
+    assert.equal(NodeApi.string(fragment.slice.content[0]), 'midd');
     stop();
   });
 
@@ -478,6 +445,46 @@ describe('native authored fragment collection', () => {
       { count: 1, status: 'pending' },
     ]);
     stop();
+  });
+
+  it('moves retained text back to its split leaf after undoing a rejection', async () => {
+    let authorId = 'bob';
+    const editor = createEditor({
+      plugins: [history(), authored({ authorId: () => authorId })],
+      initialValue: [paragraph('Before remove after')],
+    });
+    const view = createEditorView(editor, { authored: markup });
+    view.update((tx) => {
+      tx.history.skip();
+      tx.text.delete({ at: { anchor: point(7), focus: point(13) } });
+    });
+    authorId = 'alice';
+    let id = '';
+    view.update((tx) => {
+      tx.history.skip();
+      id = tx.authored.propose();
+      tx.nodes.insert([{ text: 'proposal', bold: true }], { at: point(3) });
+    });
+    const dockingPaths = () =>
+      [...NodeApi.texts(view)]
+        .filter(
+          ([, path]) =>
+            readAuthoredViewFragmentSlots(view, view.key(path)).length > 0
+        )
+        .map(([, path]) => path);
+    assert.deepEqual(dockingPaths(), [[0, 2]]);
+    assert.equal(
+      view.update.authored.decide({
+        action: 'reject',
+        selection: view.read.authored.select({ ids: [id] }),
+      }).status,
+      'applied'
+    );
+    assert.deepEqual(dockingPaths(), [[0, 0]]);
+    assert.deepEqual(await view.api.history.undo(), { status: 'applied' });
+    assert.deepEqual(dockingPaths(), [[0, 2]]);
+    assert.deepEqual(await view.api.history.redo(), { status: 'applied' });
+    assert.deepEqual(dockingPaths(), [[0, 0]]);
   });
 
   it('preserves the committed collection after an aborted proposal', () => {

@@ -111,23 +111,16 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
       initialValue: baseline,
     });
 
-    current.update((tx) => {
-      tx.history.skip();
-      tx.authored.propose();
-      tx.nodes.insert([suggestion, { text: addedText }], {
-        at: { offset: suggestionOffset, path: [3, 0] },
-      });
-    });
     current.runtime.userId = 'bob';
     current.update((tx) => {
-      const offset = addedText.length + sentenceText.indexOf(deletedText);
+      const offset = suggestionOffset + sentenceText.indexOf(deletedText);
 
       tx.history.skip();
       tx.authored.propose();
       tx.text.delete({
         at: {
-          anchor: { offset, path: [3, 2] },
-          focus: { offset: offset + deletedText.length, path: [3, 2] },
+          anchor: { offset, path: [3, 0] },
+          focus: { offset: offset + deletedText.length, path: [3, 0] },
         },
       });
     });
@@ -137,10 +130,17 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
       tx.history.skip();
       overlapChangeId = tx.authored.propose();
       tx.text.insert(overlapText, {
-        at: { offset: overlapOffset, path: [3, 4] },
+        at: { offset: overlapOffset, path: [3, 2] },
       });
     });
     current.runtime.userId = 'alice';
+    current.update((tx) => {
+      tx.history.skip();
+      tx.authored.propose();
+      tx.nodes.insert([suggestion, { text: addedText }], {
+        at: { offset: suggestionOffset, path: [3, 0] },
+      });
+    });
     const threads: CommentsJSON['threads'] = [
       {
         id: 'discussion1',

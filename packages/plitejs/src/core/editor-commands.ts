@@ -371,29 +371,26 @@ const getConsistentBlockTextMarks = (
   return expected ?? null;
 };
 
-const fillDefaultRootChild = (
-  state: CommandStateView,
+export const fillDefaultRootChild = (
+  schema: CommandStateView['schema'],
   root: string,
   text: string,
   marks: Record<string, unknown> | null,
   index = 0
 ): Descendant | null => {
-  const defaultChild = state.schema.createDefaultRootChild(
-    toPublicRoot(root),
-    index
-  );
+  const defaultChild = schema.createDefaultRootChild(toPublicRoot(root), index);
   const textNode = marks ? { ...marks, text } : { text };
 
   if (!defaultChild) return null;
   if (NodeApi.isText(defaultChild)) return textNode;
 
-  const wrapping = state.schema.findWrapping(defaultChild, textNode);
+  const wrapping = schema.findWrapping(defaultChild, textNode);
 
   if (!wrapping) return null;
 
   const child = wrapping.reduceRight<Descendant>(
     (nested, type) => ({
-      ...state.schema.create(type),
+      ...schema.create(type),
       children: [nested],
     }),
     textNode
@@ -433,7 +430,7 @@ const getFullBlockTextReplacement = (
 
   const root = range.anchor.root ?? range.focus.root ?? MAIN_ROOT_KEY;
   const replacement = fillDefaultRootChild(
-    state,
+    state.schema,
     root,
     text,
     state.marks() ?? getConsistentBlockTextMarks(state, paths),
@@ -686,7 +683,7 @@ export const editorCommands: EditorCommands = Object.freeze({
         const defaultChild = survivingPoint
           ? null
           : fillDefaultRootChild(
-              state,
+              state.schema,
               root,
               '',
               state.marks() ?? getConsistentBlockTextMarks(state, fullBlocks),
@@ -781,7 +778,7 @@ export const editorCommands: EditorCommands = Object.freeze({
                 if (LINE_BREAK_PATTERN.test(nodeReplacementText)) return null;
 
                 const replacement = fillDefaultRootChild(
-                  state,
+                  state.schema,
                   root,
                   nodeReplacementText,
                   state.marks() ?? getConsistentBlockTextMarks(state, paths),

@@ -2,9 +2,16 @@ import { afterAll, expect, it } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createEditorView } from 'platejs';
+import { DefaultAuthoredPlugin } from 'platejs/authored';
 import type { CommentMutationResult } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { createEditor, EditorRoot } from 'platejs/react';
+import {
+  createEditor,
+  EditorRoot,
+  EditorContent,
+  type Editor,
+} from 'platejs/react';
 import * as React from 'react';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -48,12 +55,10 @@ const createCommentsEditor = () =>
     ],
   });
 
-const renderButton = (
-  editor: ReturnType<typeof createCommentsEditor>,
-  readOnly = false
-) =>
+const renderButton = (editor: Editor, readOnly = false) =>
   render(
     <EditorRoot editor={editor} readOnly={readOnly}>
+      <EditorContent aria-label="Document" />
       <TooltipProvider>
         <Toolbar>
           <AllCommentsButton />
@@ -140,6 +145,10 @@ it('discovers open, resolved, and unavailable conversations in a read-only view'
     expect(view.queryByText('Resolved conversation')).toBeNull();
     expect(view.getByText('No resolved comments')).not.toBeNull();
   });
+  fireEvent.click(view.getByRole('button', { name: 'all' }));
+  fireEvent.click(view.getAllByRole('button', { name: 'Show in document' })[0]);
+  await waitFor(() => expect(view.queryByRole('dialog')).toBeNull());
+  expect(editor.read.selection()).toEqual(selection);
 });
 
 it('mounts one page and keeps dirty replies in place until cancel', async () => {
@@ -191,4 +200,138 @@ it('mounts one page and keeps dirty replies in place until cancel', async () => 
         .disabled
     ).toBe(false);
   });
+});
+
+it('finds a saved proposal without ranges or replies and keeps its original after deciding', async () => {
+  const source = createEditor({
+    userId: 'alice',
+    plugins: [DefaultAuthoredPlugin],
+    initialValue: [{ type: 'paragraph', children: [{ text: 'Base' }] }],
+  });
+  source.update((tx) => {
+    tx.authored.propose({ changeId: 'empty-proposal' });
+    tx.text.insert(' original proposal', { at: { path: [0, 0], offset: 4 } });
+  });
+  const direct = createEditorView(source, {
+    authored: { intent: 'edit', projection: 'proposed' },
+  });
+  direct.update.text.delete({
+    at: {
+      anchor: { path: [0, 0], offset: 4 },
+      focus: { path: [0, 0], offset: 22 },
+    },
+  });
+  const editor = createEditor({
+    userId: 'alice',
+    plugins: [DefaultAuthoredPlugin, CommentsPlugin],
+    initialValue: JSON.parse(JSON.stringify(source.read.value())),
+  });
+  expect(editor.read.authored.details('empty-proposal')?.parts).toEqual({
+    status: 'available',
+    items: [],
+  });
+  const view = renderButton(editor);
+  const user = userEvent.setup();
+  await user.click(view.getByRole('button', { name: 'All comments' }));
+  await user.click(view.getByRole('tab', { name: 'Suggestions' }));
+  await user.click(
+    view.getByRole('button', { name: 'alice · insert · pending' })
+  );
+  expect(view.getByText('Add “ original proposal”')).not.toBeNull();
+  expect(
+    view
+      .getByRole('button', { name: 'Show in document' })
+      .hasAttribute('disabled')
+  ).toBe(true);
+  await user.click(view.getByRole('button', { name: 'Accept suggestion' }));
+  expect(editor.read.authored.change('empty-proposal')?.status).toBe(
+    'accepted'
+  );
+  expect(editor.read.text.string([])).toBe('Base');
+  expect(view.getByText('Add “ original proposal”')).not.toBeNull();
+  expect(view.queryByRole('button', { name: 'Accept suggestion' })).toBeNull();
+});
+
+it('holds a draft through proposal pagination invalidation and protects read-only review', async () => {
+  const editor = createEditor({
+    userId: 'alice',
+    plugins: [
+      DefaultAuthoredPlugin,
+      CommentsPlugin.configure({ initialState: { currentUserId: 'alice' } }),
+    ],
+    initialValue: [{ type: 'paragraph', children: [{ text: 'Base' }] }],
+  });
+  for (let index = 0; index < 21; index++) {
+    editor.update((tx) => {
+      tx.authored.propose({ changeId: `proposal-${index}` });
+      tx.text.insert('X', { at: { path: [0, 0], offset: 0 } });
+    });
+  }
+  const view = renderButton(editor);
+  const user = userEvent.setup();
+  await user.click(view.getByRole('button', { name: 'All comments' }));
+  await user.click(view.getByRole('tab', { name: 'Suggestions' }));
+  await user.click(
+    view.getAllByRole('button', { name: 'Show in document' })[0]
+  );
+  await waitFor(() =>
+    expect(document.activeElement).toBe(
+      view.getByRole('textbox', { name: 'Document' })
+    )
+  );
+  await user.click(view.getByRole('button', { name: 'All comments' }));
+  await user.click(view.getByRole('tab', { name: 'Suggestions' }));
+  await user.click(view.getByRole('button', { name: 'Next' }));
+  expect(document.querySelectorAll('[data-all-suggestions-row]')).toHaveLength(
+    1
+  );
+  await user.click(
+    view.getByRole('button', { name: 'alice · insert · pending' })
+  );
+  const rowId = document
+    .querySelector('[data-all-suggestions-row]')
+    ?.getAttribute('data-all-suggestions-row');
+  const reply = view.getByRole('textbox', { name: 'Comment on suggestion' });
+  await user.click(reply);
+  await user.keyboard('Keep this proposal draft');
+  await act(async () => {
+    editor.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+  });
+  expect(reply.textContent).toContain('Keep this proposal draft');
+  expect(
+    document
+      .querySelector('[data-all-suggestions-row]')
+      ?.getAttribute('data-all-suggestions-row')
+  ).toBe(rowId);
+  expect(
+    view
+      .getByRole('button', { name: 'Accept suggestion' })
+      .hasAttribute('disabled')
+  ).toBe(true);
+  expect(
+    view.getByRole('button', { name: 'Previous' }).hasAttribute('disabled')
+  ).toBe(true);
+  fireEvent.keyDown(document, { key: 'Escape' });
+  expect(view.getByRole('dialog')).not.toBeNull();
+  await user.click(view.getByRole('button', { name: 'Cancel reply' }));
+  await waitFor(() =>
+    expect(
+      document.querySelectorAll('[data-all-suggestions-row]')
+    ).toHaveLength(20)
+  );
+  view.unmount();
+  const readonly = renderButton(editor, true);
+  await user.click(readonly.getByRole('button', { name: 'All comments' }));
+  await user.click(readonly.getByRole('tab', { name: 'Suggestions' }));
+  await user.click(
+    readonly.getAllByRole('button', { name: 'alice · insert · pending' })[0]
+  );
+  expect(
+    readonly
+      .getByRole('button', { name: 'Accept suggestion' })
+      .hasAttribute('disabled')
+  ).toBe(true);
+  expect(
+    readonly.queryByRole('textbox', { name: 'Comment on suggestion' })
+  ).toBeNull();
 });

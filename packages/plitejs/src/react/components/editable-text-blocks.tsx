@@ -73,7 +73,10 @@ import {
   toInternalRoot,
 } from '../editable/runtime-editor-api';
 import { readRuntimeNode } from '../editable/runtime-live-state';
-import { resolveViewBoundaryDOMPoint } from '../editable/selection-projected-dom';
+import {
+  canUseNativeViewSelection,
+  resolveViewBoundaryDOMPoint,
+} from '../editable/selection-projected-dom';
 import type { ExternalTextOptions } from '../external-text';
 import { useAuthoredFragmentSlots } from '../hooks/use-authored-fragment-slots';
 import {
@@ -1824,7 +1827,12 @@ const PliteViewSelectionCaret = ({
     React.useCallback(() => readPliteViewSelection(editor), [editor]),
     () => null
   );
-  if (!focused || !selection || !isPliteViewSelectionCollapsed(selection)) {
+  if (
+    !focused ||
+    !selection ||
+    !isPliteViewSelectionCollapsed(selection) ||
+    canUseNativeViewSelection(editor, selection)
+  ) {
     return null;
   }
   return <PliteViewSelectionCaretGeometry editableRef={editableRef} />;

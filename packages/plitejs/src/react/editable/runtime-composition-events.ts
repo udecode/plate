@@ -22,6 +22,7 @@ type CompositionHandler = (
 export const useRuntimeCompositionEvents = ({
   androidInputManagerRef,
   editor,
+  forceRender,
   inputController,
   onCompositionEnd,
   onCompositionStart,
@@ -34,6 +35,7 @@ export const useRuntimeCompositionEvents = ({
 }: {
   androidInputManagerRef: EditableEventRuntime['android']['managerRef'];
   editor: ReactRuntimeEditor;
+  forceRender: () => void;
   inputController: EditableInputController;
   onCompositionEnd?: CompositionHandler;
   onCompositionStart?: CompositionHandler;
@@ -63,6 +65,7 @@ export const useRuntimeCompositionEvents = ({
           androidInputManagerRef,
           editor,
           event,
+          forceRender,
           inputController,
           onCompositionEnd,
           readOnly,
@@ -78,6 +81,7 @@ export const useRuntimeCompositionEvents = ({
     [
       androidInputManagerRef,
       editor,
+      forceRender,
       inputController,
       onCompositionEnd,
       readOnly,

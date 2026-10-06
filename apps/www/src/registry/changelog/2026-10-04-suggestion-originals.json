@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-04-suggestion-originals",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-04-suggestion-originals.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-04",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Keep proposal originals accessible after text edits and review",
+  "targets": [
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-ai",
+      "files": [
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor-value.ts",
+        "apps/www/src/registry/blocks/editor-ai/components/editor/rich-text-editor.tsx",
+        "apps/www/src/registry/blocks/editor-ai/page.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-04-suggestion-originals",
+      "kind": "behavior",
+      "summary": "Browse pending and decided suggestions, including those without visible text or replies. Keep the suggestion text and unsent replies available while the document changes.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment-toolbar-button", "discussion", "editor-ai"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-04",
+          "entry": "2026-10-04-suggestion-originals",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

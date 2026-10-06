@@ -16,6 +16,7 @@ import type {
   EditorCommitContext,
   EditorCommitHandler,
   EditorCommand,
+  EditorCommandDescriptor,
   EditorCoreStateView,
   EditorCoreUpdateTransaction,
   EditorDocumentValue,
@@ -161,7 +162,11 @@ import {
   type NativeAuthoredTransaction,
 } from './authored-runtime';
 import { notifyEditorChangeListeners } from './change-events';
-import { ChangeDraft, type DocumentChangeStep } from './change/builder';
+import {
+  ChangeDraft,
+  PREPARED_DOCUMENT_CHANGES,
+  type DocumentChangeStep,
+} from './change/builder';
 import {
   classifyDocumentChangeRoot,
   classifyRootChangeWithRuntimeCandidates,
@@ -278,7 +283,10 @@ import {
   resolveStateFieldValue,
   restoreStateFieldHydration,
 } from './state-fields';
-import { resolveTargetRuntimeImplicitTarget } from './target-runtime';
+import {
+  resolveTargetRuntimeImplicitTarget,
+  dispatchTargetRuntimeCommand,
+} from './target-runtime';
 import {
   createEditorEffect,
   defineUpdateAnnotation,
@@ -784,6 +792,10 @@ const getReadProjection = (editor: Editor) => {
     : undefined;
 };
 
+export const hasWrittenTransactionSelection = (editor: Editor) =>
+  getTransactionSpecContext(getEditorRuntimeOwner(editor))?.selectionWritten ??
+  false;
+
 export const markTransactionSelectionWritten = (editor: Editor) => {
   const context = getTransactionSpecContext(editor);
   if (context) context.selectionWritten = true;
@@ -957,6 +969,13 @@ const PREPARED_TRANSACTION_SPECS = new WeakMap<
     document: object;
   }>
 >();
+
+export const readTransactionSpecSteps = (spec: TransactionSpec) => {
+  const prepared = PREPARED_TRANSACTION_SPECS.get(spec);
+  return prepared
+    ? PREPARED_DOCUMENT_CHANGES.get(prepared.document)?.steps
+    : undefined;
+};
 
 export const scheduleAfterCommitNotification = (
   editor: Editor,
@@ -4893,6 +4912,20 @@ const getUpdateView = <
         )
     );
   };
+  const runImplicitMarkCommand = (
+    command: EditorCommandDescriptor,
+    input: unknown,
+    apply: () => void
+  ) => {
+    if (
+      !isBuildingTransactionSpec(editor) &&
+      !hasWrittenTransactionSelection(editor) &&
+      dispatchTargetRuntimeCommand(editor, command, input) !== undefined
+    ) {
+      return;
+    }
+    runSelectionMutation(apply);
+  };
   const runSelectionMutation = <T>(fn: () => T) => {
     assertActive();
 
@@ -5642,7 +5675,9 @@ const getUpdateView = <
       Object.assign((() => state.marks()) satisfies EditorStateMarksApi<V>, {
         add: defineSemanticUpdateMethod<EditorTransactionMarksApi<V>['add']>(
           (key, value) => {
-            runSelectionMutation(() => applyAddMark(editor, key, value));
+            runImplicitMarkCommand(editorCommands.addMark, { key, value }, () =>
+              applyAddMark(editor, key, value)
+            );
           },
           (command, [key, value]) => {
             command(editorCommands.addMark, { key, value });
@@ -5652,7 +5687,9 @@ const getUpdateView = <
           EditorTransactionMarksApi<V>['remove']
         >(
           (key) => {
-            runSelectionMutation(() => applyRemoveMark(editor, key));
+            runImplicitMarkCommand(editorCommands.removeMark, { key }, () =>
+              applyRemoveMark(editor, key)
+            );
           },
           (command, [key]) => {
             command(editorCommands.removeMark, { key });
@@ -5667,9 +5704,13 @@ const getUpdateView = <
           (key, value) => {
             const nextValue = value === undefined ? true : value;
 
-            runSelectionMutation(() => {
-              applyToggleMark(editor, key, nextValue);
-            });
+            runImplicitMarkCommand(
+              editorCommands.toggleMark,
+              { key, value: nextValue },
+              () => {
+                applyToggleMark(editor, key, nextValue);
+              }
+            );
           },
           (command, [key, value = true]) => {
             command(editorCommands.toggleMark, { key, value });
@@ -8967,7 +9008,10 @@ export const setTransactionDocumentProjection = (
   snapshot.rootIndexes = {};
   snapshot.baseRuntimeIndexes = {};
   snapshot.baseSnapshots = {};
-  snapshot.builder = createEditorDocumentChangeBuilder(editor, value);
+  snapshot.builder = createEditorDocumentChangeBuilder(
+    editor,
+    getChangeValue(snapshot.roots)
+  );
   snapshot.activeChange = { change: snapshot.builder.change };
   snapshot.previousSnapshot = null;
   snapshot.previousSnapshot = getTransactionRootSnapshot(
@@ -9042,6 +9086,11 @@ export const setTransactionPublicationChange = (
   snapshot.activeChange = { change: snapshot.builder.change };
   context.selection = snapshot.selection;
   context.selectionRoot = snapshot.selectionRoot;
+  context.exitAnchorScope();
+  context.exitAnchorScope = enterAnchorScope(
+    editor,
+    getEditorDocumentValue(editor)
+  );
   if (!change.empty) {
     applyTransactionSpecDocumentChangeStep(
       editor,
@@ -9058,11 +9107,6 @@ export const setTransactionPublicationChange = (
       });
     }
   }
-  context.exitAnchorScope();
-  context.exitAnchorScope = enterAnchorScope(
-    editor,
-    getEditorDocumentValue(editor)
-  );
 };
 
 const publishTransactionDraft = (

@@ -1,6 +1,44 @@
 {
   "schemaVersion": 1,
   "components": {
+    "comment-toolbar-button": [
+      "2026-10-04-suggestion-originals",
+      "2026-09-18-comment-discovery",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies"
+    ],
+    "discussion": [
+      "2026-10-04-suggestion-originals",
+      "2026-09-18-comment-discovery",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-14-fix-comments-selection-visibility",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-03-fix-comment-anchor-history",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "editor-ai": [
+      "2026-10-04-suggestion-originals",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-13-rename-rich-text-editor",
+      "2026-09-13-suggestion-examples",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-09-02-comments-ownership",
+      "2026-08-28-rename-plate-editor",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-14-author-editor-runtime",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-13-use-runtime-keys-for-toc-docx",
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-24-decouple-suggestion-trailing-block",
+      "2026-03-28-render-url-videos-media-node"
+    ],
     "dnd": [
       "2026-10-02-schema-block-handles",
       "2026-10-01-block-move-actions",
@@ -278,12 +316,6 @@
       "2026-09-09-ai-code-drawing-context",
       "2026-08-17-flat-editor-registry"
     ],
-    "comment-toolbar-button": [
-      "2026-09-18-comment-discovery",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies"
-    ],
     "comment": [
       "2026-09-18-comment-discovery",
       "2026-09-17-comment-persistence-actions",
@@ -300,20 +332,6 @@
       "2026-08-25-base-first-registry",
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
-    ],
-    "discussion": [
-      "2026-09-18-comment-discovery",
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-14-fix-comments-selection-visibility",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-03-fix-comment-anchor-history",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry"
     ],
     "fixed-toolbar": [
       "2026-09-18-comment-discovery",
@@ -440,21 +458,6 @@
       "2026-07-26-plugin-store-state",
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
-    ],
-    "editor-ai": [
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-13-rename-rich-text-editor",
-      "2026-09-13-suggestion-examples",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-09-02-comments-ownership",
-      "2026-08-28-rename-plate-editor",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-14-author-editor-runtime",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-13-use-runtime-keys-for-toc-docx",
-      "2026-07-24-compose-markdown-footnotes",
-      "2026-07-24-decouple-suggestion-trailing-block",
-      "2026-03-28-render-url-videos-media-node"
     ],
     "discussion-demo": [
       "2026-09-17-comment-persistence-actions",

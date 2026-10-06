@@ -1,6 +1,7 @@
 import type {
   AnyEditor as Editor,
   EditorTargetRuntime,
+  EditorCommandDescriptor,
   Selection,
 } from '../interfaces/editor';
 import { getDefined } from '../internal/get-defined';
@@ -9,9 +10,15 @@ import { getEditorRuntime, type InternalEditorRuntime } from './editor-runtime';
 // A React-capable editor and its core view facade share one command runtime.
 // Keep the implicit target bridge on that runtime so either facade can execute
 // a command without making DOM ownership global to the canonical editor.
+type MountedTargetRuntime = EditorTargetRuntime & {
+  dispatchImplicitCommand?: (
+    command: EditorCommandDescriptor,
+    input: unknown
+  ) => boolean | undefined;
+};
 const TARGET_RUNTIME = new WeakMap<
   InternalEditorRuntime,
-  EditorTargetRuntime
+  MountedTargetRuntime
 >();
 const TARGET_RUNTIME_ACTIVE = new WeakSet<InternalEditorRuntime>();
 
@@ -51,9 +58,25 @@ export const resolveTargetRuntimeImplicitTarget = (
   }
 };
 
+export const dispatchTargetRuntimeCommand = (
+  editor: Editor,
+  command: EditorCommandDescriptor,
+  input: unknown
+): boolean | undefined => {
+  const key = targetRuntimeKey(editor);
+  const dispatch = TARGET_RUNTIME.get(key)?.dispatchImplicitCommand;
+  if (!dispatch || TARGET_RUNTIME_ACTIVE.has(key)) return undefined;
+  TARGET_RUNTIME_ACTIVE.add(key);
+  try {
+    return dispatch(command, input);
+  } finally {
+    TARGET_RUNTIME_ACTIVE.delete(key);
+  }
+};
+
 export const setTargetRuntime = (
   editor: Editor,
-  runtime: EditorTargetRuntime | null
+  runtime: MountedTargetRuntime | null
 ) => {
   const key = targetRuntimeKey(editor);
 

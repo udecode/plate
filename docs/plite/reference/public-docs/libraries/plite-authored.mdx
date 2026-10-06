@@ -28,7 +28,7 @@ const reviewView = createEditorView(editor, {
 });
 ```
 
-The author callback must return a nonempty author ID for every write. The application owns authentication. `retainHistory` keeps closed edit bodies for selective author-history revert.
+The author callback must return a nonempty author ID for every write. The application owns authentication. `retainHistory` keeps closed edit bodies for selective author-history revert. Proposal originals are retained independently of this option. Set `automaticFormatting: 'edit'` to apply ordinary text mark commands directly; explicit proposals still retain their formatting until reviewed.
 
 ## Views
 
@@ -40,7 +40,7 @@ The author callback must return a nonempty author ID for every write. The applic
 | `{ intent: 'propose', projection: 'proposed' }` | Show the proposed result and record input as proposals. |
 | `{ intent: 'propose', projection: 'markup' }` | Show the proposed result with retained review fragments and record input as proposals. |
 
-Call `view.api.authored.setView(policy)` to change one view. The source editor and sibling views keep their own policies and selections. In an editing proposed or markup view, a replacement that fully contains pending changes resolves them and publishes directly in the same undoable transaction. Partial retained or dependency-spanning targets stay protected; other dependent edits remain reviewable with the current author. Projection changes alone never accept or reject changes.
+Call `view.api.authored.setView(policy)` to change one view. The source editor and sibling views keep their own policies and selections. In an editing proposed or markup view, inserted text is independent ordinary content, including inside pending insertions or retained deletions. Deletion removes only the selected portion without deciding the surrounding proposal. In Suggesting, input amends your own pending insertion and creates a separate proposal inside another author's insertion. Input inside a retained deletion creates an independent insertion proposal; Backspace within existing deleted text moves the caret left without creating another proposal. Replacing a selection applies these rules in one undoable transaction. Projection changes alone never accept or reject changes.
 
 ## Propose and decide
 
@@ -95,7 +95,7 @@ const change = editor.read.authored.change(id);
 const changesAtRange = editor.read.authored.changesAt(range);
 ```
 
-`AuthoredChange` exposes stable identity, author and timestamps, revision, status, kind, dependencies, and current ranges. Use cursor paging for lists and `change(id)` for keyed readers.
+`AuthoredChange` exposes stable identity, author and timestamps, revision, status, kind, dependencies, and current ranges. Use cursor paging for lists and `change(id)` for keyed readers. Pass `proposals: true` to list only proposals, including decided proposals and those with no current ranges. Load `details(id).original` when opening a proposal: `available` supplies its semantic parts, `unavailable` identifies legacy records whose originals cannot be recovered, and `null` denotes an ordinary direct edit. Editing leaves this content unchanged; amendments to your own proposal in Suggesting update it by content identity.
 
 ## Retained author history
 
@@ -115,7 +115,7 @@ History undo and redo retain their local interaction lifetime. They can reverse 
 
 Save `editor.read.value()` as one document. The native codec validates document identity, operation identity, checkpoints, positions, retained content, and decisions on load. Unknown or malformed data fails before publication.
 
-Install `yjs` from `plitejs/yjs` on every peer to transport authored operation batches and checkpoints. The adapter preserves causal decisions, duplicate delivery idempotence, offline tails, named roots, and retained history through compaction.
+Install `yjs` from `plitejs/yjs` on every peer to transport authored operation batches and checkpoints. The adapter preserves causal decisions, duplicate delivery idempotence, offline tails, named roots, and retained history through compaction. All writers must support the current authored format and collaboration capability. The host must reject incompatible writers or isolate them in another document generation, preserving old offline work for explicit conversion.
 
 ## Format helpers
 
@@ -128,6 +128,7 @@ Install `yjs` from `plitejs/yjs` on every peer to transport authored operation b
 | `tx.authored.propose(options?)` | Start or amend a proposal in the active transaction. |
 | `read.authored.view()` | Read the current view policy. |
 | `read.authored.change(id)` | Read one keyed change. |
+| `read.authored.details(id)` | Read proposal originals, current parts, and review provenance. |
 | `read.authored.changes(query?)` | Read a cursor-paged change list. |
 | `read.authored.changesAt(range)` | Read changes intersecting a range. |
 | `read.authored.select(query)` | Capture a snapshot-bound selection. |

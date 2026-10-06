@@ -6,20 +6,21 @@ import {
   createEditorView,
   defineEditorSchema,
   definePlugin,
+  editorCommands,
   property,
   schema,
   SelectionApi,
   type EditorCommit,
-} from 'plitejs';
-import { authored } from 'plitejs/authored';
-import { History, history } from 'plitejs/history';
-
+} from '../src';
+import { authored } from '../src/authored';
+import { dispatchCommand } from '../src/core/command-registry';
 import { getEditorRuntime } from '../src/core/editor-runtime';
 import {
   applyTransactionSpec,
   setEditorComposing,
   subscribeEditorViewState,
 } from '../src/core/public-state';
+import { History, history } from '../src/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -100,97 +101,134 @@ describe('native authored views', () => {
     );
   });
 
-  it('deletes accepted inline content directly when a later proposal shares its text node', () => {
-    const inline = defineEditorSchema('authored-edit-markup-inline-delete', {
-      elements: {
-        link: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-          inline: true,
-        },
-      },
-      id: 'authored-edit-markup-inline-delete',
-      root: schema.content.not(schema.content.text()),
-      unknown: 'preserve',
-      version: 1,
-    });
-    let authorId = 'alice';
-    const leading =
-      'Review and refine content seamlessly. Use  or to mark text for removal. Discuss changes using ';
-    const trailing = ' on many text segments. You can even have annotations!';
-    const added = ' like this added text';
-    const deleted = 'mark text for removal';
-    const suggestionOffset = leading.indexOf(' or to');
-    const source = createEditor({
-      plugins: [inline, authored({ authorId: () => authorId })],
-      initialValue: [
-        {
-          type: 'paragraph',
-          children: [
-            { text: leading },
-            { type: 'link', children: [{ text: 'comments' }] },
-            { text: trailing },
+  for (const across of [false, true]) {
+    it(
+      across
+        ? 'deletes across pending inline proposals and retained text'
+        : 'deletes accepted inline content directly when a later proposal shares its text node',
+      () => {
+        const inline = defineEditorSchema(
+          'authored-edit-markup-inline-delete',
+          {
+            elements: {
+              link: {
+                content: schema.content.text({ default: 'text', min: 1 }),
+                inline: true,
+              },
+            },
+            id: 'authored-edit-markup-inline-delete',
+            root: schema.content.not(schema.content.text()),
+            unknown: 'preserve',
+            version: 1,
+          }
+        );
+        let authorId = 'alice';
+        const leading =
+          'Review and refine content seamlessly. Use  or to mark text for removal. Discuss changes using ';
+        const trailing =
+          ' on many text segments. You can even have annotations!';
+        const added = ' like this added text';
+        const deleted = 'mark text for removal';
+        const suggestionOffset = leading.indexOf(' or to');
+        const source = createEditor({
+          plugins: [inline, history(), authored({ authorId: () => authorId })],
+          initialValue: [
+            {
+              type: 'paragraph',
+              children: [
+                { text: leading },
+                { type: 'link', children: [{ text: 'comments' }] },
+                { text: trailing },
+              ],
+            },
           ],
-        },
-      ],
-    });
-    const view = createEditorView(source, { authored: proposal });
-    view.update.nodes.insert(
-      [{ type: 'link', children: [{ text: 'suggestions' }] }, { text: added }],
-      { at: { path: [0, 0], offset: suggestionOffset } }
-    );
-    authorId = 'bob';
-    const deletionOffset =
-      added.length + leading.slice(suggestionOffset).indexOf(deleted);
-    view.update.text.delete({
-      at: {
-        anchor: {
-          path: [0, 2],
-          offset: deletionOffset,
-        },
-        focus: {
-          path: [0, 2],
-          offset: deletionOffset + deleted.length,
-        },
-      },
-    });
-    authorId = 'charlie';
-    view.update.text.insert('overlapping ', {
-      at: {
-        path: [0, 4],
-        offset: trailing.indexOf('annotations'),
-      },
-    });
-    const pending = view.read.authored.changes().items.map(({ id }) => id);
+        });
+        const view = createEditorView(source, { authored: proposal });
+        view.update.nodes.insert(
+          [
+            { type: 'link', children: [{ text: 'suggestions' }] },
+            { text: added },
+          ],
+          { at: { path: [0, 0], offset: suggestionOffset } }
+        );
+        authorId = 'bob';
+        const deletionOffset =
+          added.length + leading.slice(suggestionOffset).indexOf(deleted);
+        view.update.text.delete({
+          at: {
+            anchor: {
+              path: [0, 2],
+              offset: deletionOffset,
+            },
+            focus: {
+              path: [0, 2],
+              offset: deletionOffset + deleted.length,
+            },
+          },
+        });
+        authorId = 'charlie';
+        view.update.text.insert('overlapping ', {
+          at: {
+            path: [0, 4],
+            offset: trailing.indexOf('annotations'),
+          },
+        });
+        const pending = view.read.authored.changes().items.map(({ id }) => id);
 
-    authorId = 'alice';
-    view.api.authored.setView(editingMarkup);
-    view.update.text.delete({
-      at: {
-        anchor: { path: [0, 3, 0], offset: 0 },
-        focus: { path: [0, 4], offset: 23 },
-      },
-    });
+        authorId = 'alice';
+        view.api.authored.setView(editingMarkup);
+        const beforeDeletion = view.read.text.string([]);
+        dispatchCommand(view, editorCommands.deleteFragment, {
+          at: {
+            anchor: across
+              ? { path: [0, 0], offset: 26 }
+              : { path: [0, 3, 0], offset: 0 },
+            focus: { path: [0, 4], offset: across ? 8 : 23 },
+          },
+          direction: 'backward',
+        });
 
-    const withoutPendingDeletion = `${leading.slice(
-      0,
-      leading.indexOf(deleted)
-    )}${leading.slice(leading.indexOf(deleted) + deleted.length)}`;
-    assert.equal(
-      view.read.text.string([]),
-      `${withoutPendingDeletion.slice(0, suggestionOffset)}suggestions${added}${withoutPendingDeletion.slice(suggestionOffset)} You can even have overlapping annotations!`
+        const withoutPendingDeletion = `${leading.slice(
+          0,
+          leading.indexOf(deleted)
+        )}${leading.slice(leading.indexOf(deleted) + deleted.length)}`;
+        assert.equal(
+          view.read.text.string([]),
+          across
+            ? 'Review and refine content  text segments. You can even have overlapping annotations!'
+            : `${withoutPendingDeletion.slice(0, suggestionOffset)}suggestions${added}${withoutPendingDeletion.slice(suggestionOffset)} You can even have overlapping annotations!`
+        );
+        assert.deepEqual(
+          view.read.authored
+            .changes({ status: 'pending' })
+            .items.map(({ id }) => id),
+          pending
+        );
+        view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+        assert.equal(
+          view.read.text.string([]),
+          across
+            ? 'Review and refine content mark text for removal text segments. You can even have annotations!'
+            : `${leading} You can even have annotations!`
+        );
+
+        const afterDeletion = view.read.text.string([]);
+        view.api.authored.setView(editingMarkup);
+        view.api.history.undo();
+        assert.equal(
+          source.read.text.string([]),
+          `${leading}comments${trailing}`
+        );
+        assert.equal(view.read.text.string([]), beforeDeletion);
+        view.api.history.redo();
+        view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+        assert.equal(view.read.text.string([]), afterDeletion);
+        view.api.authored.setView(editingMarkup);
+        view.update.text.insert('!', { at: point(0) });
+        assert.equal(source.read.text.string([]), `!${afterDeletion}`);
+      }
     );
-    assert.deepEqual(
-      view.read.authored
-        .changes({ status: 'pending' })
-        .items.map(({ id }) => id),
-      pending
-    );
-    view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
-    assert.equal(
-      view.read.text.string([]),
-      `${leading} You can even have annotations!`
-    );
-  });
+  }
 
   it('formats accepted content directly while pending content stays visible', () => {
     const marks = defineEditorSchema('schema:authored-edit-markup-marks', {
@@ -250,7 +288,7 @@ describe('native authored views', () => {
     ]);
   });
 
-  it('keeps edits inside owned pending content in the pending change', () => {
+  it('keeps Editing input independent inside an owned proposal', () => {
     const { source, proposed } = setup();
     proposed.update.text.insert(' draft', { at: point(4) });
     const pending = proposed.read.authored.changes().items[0];
@@ -258,13 +296,21 @@ describe('native authored views', () => {
     proposed.api.authored.setView(editingMarkup);
     proposed.update.text.insert('X', { at: point(7) });
 
-    assert.equal(source.read.text.string([]), 'Base');
+    assert.equal(source.read.text.string([]), 'BaseX');
     assert.equal(proposed.read.text.string([]), 'Base drXaft');
-    assert.equal(proposed.read.authored.changes().items.length, 1);
-    assert.equal(proposed.read.authored.change(pending.id)?.revision, 2);
+    assert.equal(
+      proposed.read.authored.changes({ proposals: true }).items.length,
+      1
+    );
+    assert.equal(proposed.read.authored.change(pending.id)?.revision, 1);
+    source.update.authored.decide({
+      action: 'reject',
+      selection: source.read.authored.select({ ids: [pending.id] }),
+    });
+    assert.equal(proposed.read.text.string([]), 'BaseX');
   });
 
-  it('attributes edits inside foreign pending content to a dependent change', () => {
+  it('attributes independent Editing input inside another author’s proposal', () => {
     let authorId = 'alice';
     const source = createEditor({
       plugins: [authored({ authorId: () => authorId })],
@@ -278,13 +324,18 @@ describe('native authored views', () => {
     view.api.authored.setView(editingMarkup);
     view.update.text.insert('X', { at: point(7) });
 
-    assert.equal(source.read.text.string([]), 'Base');
+    assert.equal(source.read.text.string([]), 'BaseX');
     assert.equal(view.read.text.string([]), 'Base drXaft');
     const changes = view.read.authored.changes().items;
     assert.equal(changes.length, 2);
     const dependent = changes.find((change) => change.id !== original.id);
     assert.equal(dependent?.authorId, 'bob');
-    assert.deepEqual(dependent?.dependencies, [original.id]);
+    assert.equal(dependent?.status, 'accepted');
+    source.update.authored.decide({
+      action: 'reject',
+      selection: source.read.authored.select({ ids: [original.id] }),
+    });
+    assert.equal(view.read.text.string([]), 'BaseX');
   });
 
   it('applies a replacement spanning accepted and pending content directly', () => {

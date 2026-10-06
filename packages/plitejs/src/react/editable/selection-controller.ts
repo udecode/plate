@@ -475,7 +475,11 @@ const importProjectedDOMSelection = ({
       : SelectionApi.text(
           {
             anchor: projectedSelection.anchor.point,
-            focus: projectedSelection.anchor.point,
+            focus:
+              projectedSelection.segments.parts.length === 1 &&
+              !projectedSelection.segments.parts[0].fragment
+                ? projectedSelection.focus.point
+                : projectedSelection.anchor.point,
           },
           isPliteViewSelectionCollapsed(projectedSelection)
             ? { affinity: projectedSelection.anchor.affinity }

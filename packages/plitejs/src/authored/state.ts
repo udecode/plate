@@ -30,6 +30,12 @@ import {
   type AuthoredIntervals,
 } from './intervals';
 import {
+  updateAuthoredOriginal,
+  encodeAuthoredOriginal,
+  decodeAuthoredOriginal,
+  type AuthoredOriginal,
+} from './original';
+import {
   authoredPositionSpans,
   decodeAuthoredPosition,
   type AuthoredPosition,
@@ -86,6 +92,9 @@ export type AuthoredEditIdentity = AuthoredStamp &
     inverseOf: string | null;
     kind: 'edit';
     proposal: boolean;
+    independent?: true;
+    directFormatting?: true;
+    refreshOriginal?: true;
     retained?: string;
   }>;
 
@@ -170,6 +179,7 @@ export const authoredOriginOperation = (
 };
 
 export type AuthoredRecord = Readonly<{
+  original?: AuthoredOriginal | null;
   authorId: string;
   createdAt: number;
   dependencies: readonly string[];
@@ -280,6 +290,42 @@ const decodeChange = (value: unknown): DocumentChangeJson => {
   return DocumentChange.fromJSON(data as DocumentChangeJson).toJSON();
 };
 
+const decodeTargetBoundaries = (
+  input: unknown
+): NonNullable<AuthoredTarget['boundaries']> => {
+  if (!Array.isArray(input)) {
+    throw new Error('Invalid authored property boundaries.');
+  }
+  const positions = new Set<string>();
+  const origins = new Set<string>();
+  return input.map((item) => {
+    const data = record(item, ['position', 'spans']);
+    const position = decodeAuthoredPosition({
+      left: data.position,
+      right: null,
+    }).left;
+    if (!position || !Array.isArray(data.spans) || data.spans.length !== 1) {
+      throw new Error('Invalid authored property boundary.');
+    }
+    const span = decodeAuthoredSpan(data.spans[0]);
+    const key = JSON.stringify([position.origin, position.offset]);
+    if (
+      positions.has(key) ||
+      origins.has(span.origin) ||
+      span.birth !== null ||
+      span.placement !== null ||
+      span.offset !== 0 ||
+      span.length !== 2 ||
+      Object.keys(span.properties).length !== 0
+    ) {
+      throw new Error('Invalid authored property boundary identity.');
+    }
+    positions.add(key);
+    origins.add(span.origin);
+    return { position, spans: [span] };
+  });
+};
+
 const decodeTargets = (
   input: unknown,
   requireContent = true
@@ -288,10 +334,16 @@ const decodeTargets = (
   return input.map((value) => {
     const data = record(value, [
       'association',
+      ...(value && typeof value === 'object' && 'boundaries' in value
+        ? ['boundaries']
+        : []),
       'afterFrom',
       'afterTo',
       'from',
       'inserted',
+      ...(value && typeof value === 'object' && 'insertedContent' in value
+        ? ['insertedContent']
+        : []),
       'removed',
       'retained',
       'root',
@@ -311,10 +363,18 @@ const decodeTargets = (
     const decoded = snapshotEditorJsonValue(
       {
         association: data.association,
+        ...(data.boundaries !== undefined
+          ? { boundaries: decodeTargetBoundaries(data.boundaries) }
+          : {}),
         afterFrom: decodeAuthoredPosition(data.afterFrom),
         afterTo: decodeAuthoredPosition(data.afterTo),
         from: decodeAuthoredPosition(data.from),
         inserted: data.inserted.map(decodeAuthoredSpan),
+        ...(data.insertedContent !== undefined
+          ? {
+              insertedContent: decodeAuthoredRetainedData(data.insertedContent),
+            }
+          : {}),
         removed: data.removed.map(decodeAuthoredSpan),
         retained: decodeAuthoredRetainedData(data.retained),
         root: decodeId(data.root),
@@ -342,6 +402,40 @@ const decodeTargets = (
       }));
       if (!jsonEqual(removed, decoded.removed)) {
         throw new Error('Authored retained content does not match its target.');
+      }
+    }
+    if (
+      decoded.insertedContent !== undefined &&
+      decoded.insertedContent !== null
+    ) {
+      const inserted = readAuthoredRetainedContent({
+        ...decoded,
+        retained: decoded.insertedContent,
+      });
+      if (!inserted) throw new Error('Invalid authored inserted content.');
+      if (inserted.kind === 'properties') {
+        if (
+          decoded.retained?.kind !== 'properties' ||
+          inserted.nodeKind !== decoded.retained.nodeKind
+        ) {
+          throw new Error('Invalid authored inserted properties.');
+        }
+        return decoded;
+      }
+      const spans = [
+        ...authoredPositionSpans(
+          inserted.positions,
+          inserted.from,
+          inserted.to
+        ),
+      ].map((entry) => ({
+        ...entry.span,
+        offset: entry.span.offset + Math.max(inserted.from - entry.from, 0),
+        length:
+          Math.min(inserted.to, entry.to) - Math.max(inserted.from, entry.from),
+      }));
+      if (!jsonEqual(spans, decoded.inserted)) {
+        throw new Error('Authored inserted content does not match its target.');
       }
     }
     return decoded;
@@ -377,7 +471,10 @@ const decodeEditIdentity = (
   if (
     data.kind !== 'edit' ||
     typeof data.proposal !== 'boolean' ||
-    data.clock === 0
+    data.clock === 0 ||
+    (data.independent !== undefined && data.independent !== true) ||
+    (data.directFormatting !== undefined && data.directFormatting !== true) ||
+    (data.refreshOriginal !== undefined && data.refreshOriginal !== true)
   ) {
     throw new Error('Invalid authored operation.');
   }
@@ -391,6 +488,13 @@ const decodeEditIdentity = (
     kind: 'edit',
     parents: decodeIds(data.parents),
     proposal: data.proposal,
+    ...(data.independent === true ? { independent: true as const } : {}),
+    ...(data.directFormatting === true
+      ? { directFormatting: true as const }
+      : {}),
+    ...(data.refreshOriginal === true
+      ? { refreshOriginal: true as const }
+      : {}),
     ...(data.retained !== undefined
       ? { retained: decodeId(data.retained) }
       : {}),
@@ -417,6 +521,15 @@ export const decodeAuthoredEdit = (value: unknown): AuthoredEdit => {
     'sequence',
     'steps',
     'time',
+    ...(value && typeof value === 'object' && 'independent' in value
+      ? ['independent']
+      : []),
+    ...(value && typeof value === 'object' && 'directFormatting' in value
+      ? ['directFormatting']
+      : []),
+    ...(value && typeof value === 'object' && 'refreshOriginal' in value
+      ? ['refreshOriginal']
+      : []),
     ...(value && typeof value === 'object' && 'retained' in value
       ? ['retained']
       : []),
@@ -456,6 +569,15 @@ const decodeCompactEdit = (input: unknown): AuthoredCompactEdit => {
     'seen',
     'sequence',
     'time',
+    ...(input && typeof input === 'object' && 'independent' in input
+      ? ['independent']
+      : []),
+    ...(input && typeof input === 'object' && 'directFormatting' in input
+      ? ['directFormatting']
+      : []),
+    ...(input && typeof input === 'object' && 'refreshOriginal' in input
+      ? ['refreshOriginal']
+      : []),
     ...(input && typeof input === 'object' && 'retained' in input
       ? ['retained']
       : []),
@@ -661,10 +783,18 @@ const encodeCheckpointTarget = (target: AuthoredTarget) =>
     target.root,
     target.section,
     encodeCheckpointPosition(target.to),
+    ...(target.insertedContent !== undefined || target.boundaries
+      ? [target.insertedContent ?? null]
+      : []),
+    ...(target.boundaries ? [target.boundaries] : []),
   ]);
 
 const decodeCheckpointTarget = (input: unknown): AuthoredTarget => {
-  const value = checkpointTuple(input, 10, 'target');
+  const value = checkpointTuple(
+    input,
+    Array.isArray(input) && [11, 12].includes(input.length) ? input.length : 10,
+    'target'
+  );
   if (!Array.isArray(value[4]) || !Array.isArray(value[5])) {
     throw new Error('Invalid authored checkpoint target spans.');
   }
@@ -681,6 +811,8 @@ const decodeCheckpointTarget = (input: unknown): AuthoredTarget => {
         root: value[7],
         section: value[8],
         to: decodeCheckpointPosition(value[9]),
+        ...(value.length >= 11 ? { insertedContent: value[10] } : {}),
+        ...(value.length === 12 ? { boundaries: value[11] } : {}),
       },
     ])[0]
   );
@@ -764,6 +896,9 @@ const encodeCheckpointEdit = (operation: AuthoredEdit) => {
     checksumAuthoredPayload(steps),
     steps,
     compactAuthoredEdit(operation).content,
+    (operation.independent ? 1 : 0) |
+      (operation.directFormatting ? 2 : 0) |
+      (operation.refreshOriginal ? 4 : 0),
   ]);
   AUTHORED_EDIT_ENCODINGS.set(operation, value);
 
@@ -781,7 +916,7 @@ const encodeCheckpointOperation = (operation: AuthoredOperation) => {
   if ('content' in operation) {
     const deferred = operation as unknown as AuthoredCompactEdit;
     const body = getDefined(AUTHORED_EDIT_BODIES.get(deferred));
-    if (body.input.length === 17) return body.input;
+    if (body.input.length >= 17) return body.input;
     const content = deferred.content.steps.length
       ? deferred.content
       : compactAuthoredEdit(materializeAuthoredEdit(operation)).content;
@@ -810,6 +945,8 @@ const decodeCheckpointEditIdentity = (
   if (typeof value[8] !== 'boolean' || !Array.isArray(value[10])) {
     throw new Error('Invalid authored checkpoint edit.');
   }
+  const flags = value.length === 18 ? integer(value[17]) : 0;
+  if (flags > 7) throw new Error('Invalid authored checkpoint edit semantics.');
   const causalEntries = value[10] as readonly unknown[];
   const clock = integer(value[3]);
   if (clock === 0) throw new Error('Invalid authored operation.');
@@ -830,6 +967,9 @@ const decodeCheckpointEditIdentity = (
     kind: 'edit',
     parents: decodeIds(value[7]),
     proposal: value[8],
+    ...(flags & 1 ? { independent: true as const } : {}),
+    ...(flags & 2 ? { directFormatting: true as const } : {}),
+    ...(flags & 4 ? { refreshOriginal: true as const } : {}),
     replica: decodeId(value[9]),
     seen,
     sequence: integer(value[11]),
@@ -844,7 +984,13 @@ const decodeDeferredCheckpointEdit = (
 ): AuthoredCompactEdit => {
   const value = checkpointTuple(
     input,
-    persistedFootprint ? 17 : encodedSteps ? 16 : 15,
+    persistedFootprint
+      ? input.length === 18
+        ? 18
+        : 17
+      : encodedSteps
+        ? 16
+        : 15,
     'checkpoint edit'
   );
   const identity = decodeCheckpointEditIdentity(value);
@@ -890,7 +1036,10 @@ const decodeDeferredCheckpointEdit = (
 const decodeFullCheckpointEdit = (input: unknown): AuthoredEdit => {
   if (
     !Array.isArray(input) ||
-    (input.length !== 15 && input.length !== 16 && input.length !== 17)
+    (input.length !== 15 &&
+      input.length !== 16 &&
+      input.length !== 17 &&
+      input.length !== 18)
   ) {
     throw new Error('Invalid authored checkpoint edit.');
   }
@@ -978,8 +1127,14 @@ export const materializeAuthoredEdit = (
 export const authoredOrderKey = (clock: number, identity: string) =>
   `${String(clock).padStart(16, '0')}:${identity}`;
 
-const encodeCheckpointRecord = (value: AuthoredRecord) =>
-  freezeOwnedJsonValue([
+const AUTHORED_RECORD_ENCODINGS = new WeakMap<
+  AuthoredRecord,
+  readonly unknown[]
+>();
+const encodeCheckpointRecord = (value: AuthoredRecord) => {
+  const previous = AUTHORED_RECORD_ENCODINGS.get(value);
+  if (previous) return previous;
+  const encoded = freezeOwnedJsonValue([
     value.authorId,
     value.createdAt,
     value.dependencies,
@@ -995,7 +1150,13 @@ const encodeCheckpointRecord = (value: AuthoredRecord) =>
     value.revision,
     value.status,
     value.updatedAt,
+    ...(value.original !== undefined
+      ? [encodeAuthoredOriginal(value.original)]
+      : []),
   ]);
+  AUTHORED_RECORD_ENCODINGS.set(value, encoded);
+  return encoded;
+};
 
 const decodeAuthoredRecord = (
   input: unknown,
@@ -1013,6 +1174,9 @@ const decodeAuthoredRecord = (
     'revision',
     'status',
     'updatedAt',
+    ...(input && typeof input === 'object' && 'original' in input
+      ? ['original']
+      : []),
   ]);
   if (
     !['delete', 'format', 'insert', 'mixed', 'structure'].includes(
@@ -1028,6 +1192,17 @@ const decodeAuthoredRecord = (
   }
   return snapshotEditorJsonValue(
     {
+      ...(data.original !== undefined
+        ? { original: decodeAuthoredOriginal(data.original) }
+        : (() => {
+            const first = readRecord(
+              operations,
+              String((data.operations as unknown[])[0])
+            );
+            return first?.kind === 'edit' && !first.proposal
+              ? { original: null }
+              : {};
+          })()),
       authorId: decodeId(data.authorId),
       createdAt: integer(data.createdAt),
       dependencies: decodeIds(data.dependencies),
@@ -1066,7 +1241,11 @@ const decodeCheckpointRecord = (
   input: unknown,
   operations: AuthoredState['operations']
 ) => {
-  const value = checkpointTuple(input, 11, 'change');
+  const value = checkpointTuple(
+    input,
+    Array.isArray(input) && input.length === 12 ? 12 : 11,
+    'change'
+  );
 
   return decodeAuthoredRecord(
     {
@@ -1081,6 +1260,7 @@ const decodeCheckpointRecord = (
       revision: value[8],
       status: value[9],
       updatedAt: value[10],
+      ...(value.length === 12 ? { original: value[11] } : {}),
     },
     operations
   );
@@ -1510,6 +1690,13 @@ const statePersistence = ownCurrentEditorValuePersistenceInput<
       tupleChanges: true,
     }),
   legacyDecoders: {
+    6: (input) =>
+      decodeDirectAuthoredState(input, {
+        detachOperationBodies: true,
+        encodedSteps: true,
+        persistedFootprints: true,
+        tupleChanges: true,
+      }),
     4: decodeAuthoredStateV5,
     5: decodeAuthoredStateV5,
     1: decodeLegacyAuthoredState,
@@ -1522,7 +1709,7 @@ const statePersistence = ownCurrentEditorValuePersistenceInput<
         tupleChanges: true,
       }),
   },
-  version: 6,
+  version: 7,
 });
 
 const DECODED_OPERATIONS = new WeakSet<object>();
@@ -1645,12 +1832,14 @@ const operationsPersistence = {
   decode: (input) =>
     decodeDirectAuthoredOperations(input, statePersistence.decode),
   legacyDecoders: {
+    5: (input) =>
+      decodeDirectAuthoredOperations(input, statePersistence.decode),
     3: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV5),
     4: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV5),
     1: decodeLegacyAuthoredOperations,
     2: (input) => decodeDirectAuthoredOperations(input, decodeAuthoredStateV2),
   },
-  version: 5,
+  version: 6,
 } satisfies EditorValuePersistence<AuthoredOperations>;
 
 export const authoredOperationEffect = defineEffect<AuthoredOperations>({
@@ -1739,6 +1928,9 @@ const compactAuthoredEdit = (operation: AuthoredEdit): AuthoredCompactEdit => {
             );
             return {
               ...target,
+              ...(target.insertedContent !== undefined
+                ? { insertedContent: null }
+                : {}),
               retained:
                 target.retained?.kind === 'properties' ? target.retained : null,
               length: section.length,
@@ -1811,17 +2003,74 @@ export const retainAuthoredContent = (
   );
 };
 
+export const isIndependentAuthoredChange = (
+  state: AuthoredState,
+  change: AuthoredRecord
+) =>
+  [...records(change.operations)].every(([, id]) => {
+    const operation = readRecord(state.operations, id);
+    return (
+      operation?.kind === 'edit' &&
+      (!operation.proposal || operation.independent)
+    );
+  });
+export const authoredRebaseDependants = (
+  state: AuthoredState,
+  ids: Iterable<string>
+) => {
+  const selected = new Set(ids);
+  const queue = [...selected];
+  const result: AuthoredRecord[] = [];
+  for (const id of queue) {
+    for (const child of authoredDependants(state, id)) {
+      if (
+        selected.has(child.id) ||
+        !isIndependentAuthoredChange(state, child)
+      ) {
+        continue;
+      }
+      selected.add(child.id);
+      queue.push(child.id);
+      result.push(child);
+    }
+  }
+  return result;
+};
+const hasPendingAuthoredAncestor = (
+  state: AuthoredState,
+  change: AuthoredRecord
+) => {
+  const visited = new Set<string>();
+  const queue = [...change.dependencies];
+  for (const id of queue) {
+    if (visited.has(id)) continue;
+    visited.add(id);
+    const parent = readRecord(state.changes, id);
+    if (!parent) continue;
+    if (parent.status === 'pending' || parent.status === 'conflicted') {
+      return true;
+    }
+    queue.push(...parent.dependencies);
+  }
+  return false;
+};
+
 export const compactAuthoredContent = (
   state: AuthoredState,
   ids: Iterable<string>
 ) => {
   let { operations } = state;
-  for (const id of ids) {
+  const selected = new Set(ids);
+  for (const child of authoredRebaseDependants(state, selected)) {
+    selected.add(child.id);
+  }
+  for (const id of selected) {
     const change = readRecord(state.changes, id);
     if (
       !change ||
       change.status === 'pending' ||
-      change.status === 'conflicted'
+      change.status === 'conflicted' ||
+      hasPendingAuthoredAncestor(state, change)
     ) {
       continue;
     }
@@ -1901,7 +2150,8 @@ export function* retainedAuthoredOperations(
 
 const reduceEdit = (
   state: AuthoredState,
-  operation: AuthoredContribution
+  operation: AuthoredContribution,
+  operations: AuthoredState['operations']
 ): AuthoredState => {
   if (operation.inverseOf) {
     const original = readRecord(state.operations, operation.inverseOf);
@@ -1926,6 +2176,15 @@ const reduceEdit = (
     throw new Error('Missing authored operation prerequisite.');
   }
   const previous = readRecord(state.changes, operation.changeId);
+  if (
+    operation.refreshOriginal &&
+    (!operation.proposal ||
+      operation.inverseOf ||
+      operation.retained ||
+      !previous)
+  ) {
+    throw new Error('Original refresh requires a proposal amendment.');
+  }
   if (
     previous &&
     (previous.authorId !== operation.authorId || !operation.proposal)
@@ -2013,8 +2272,26 @@ const reduceEdit = (
     }
   }
   const kind = changeKind(operation);
+  let originalState = state;
+  if (operation.proposal && hasAuthoredContent(operation)) {
+    originalState = { ...state, operations };
+    AUTHORED_INDEXES.set(
+      getDefined(operations),
+      indexPropertyWrites(indexAuthoredState(state), operation)
+    );
+  }
+  const original = !operation.proposal
+    ? null
+    : hasAuthoredContent(operation)
+      ? updateAuthoredOriginal(
+          previous ? previous.original : null,
+          materializeAuthoredEdit(operation),
+          originalState
+        )
+      : previous?.original;
   const next: AuthoredRecord = snapshotEditorJsonValue(
     {
+      ...(original === undefined ? {} : { original }),
       authorId: operation.authorId,
       createdAt: previous?.createdAt ?? operation.time,
       dependencies: [
@@ -2067,12 +2344,7 @@ const reduceEdit = (
   return {
     ...state,
     changes: previous?.reviews
-      ? reduceAuthoredComponent(
-          state,
-          changes,
-          writeRecord(state.operations, operation.id, operation),
-          [next.id]
-        )
+      ? reduceAuthoredComponent(state, changes, operations, [next.id])
       : changes,
     order: previous
       ? state.order
@@ -2089,7 +2361,7 @@ export const observesAuthoredOperation = (
   previous: AuthoredStamp
 ) => (readRecord(operation.seen, previous.replica) ?? 0) >= previous.sequence;
 
-const maximalAuthoredHeads = (
+export const maximalAuthoredHeads = (
   operations: AuthoredState['operations'],
   heads: readonly string[]
 ): readonly string[] => {
@@ -2412,9 +2684,12 @@ const applyAuthoredOperation = (
         throw new Error('Invalid authored causal observation.');
       }
     }
+    const operations = replay
+      ? state.operations
+      : writeRecord(state.operations, operation.id, operation);
     const next =
       operation.kind === 'edit'
-        ? reduceEdit(state, operation)
+        ? reduceEdit(state, operation, operations)
         : reduceReview(state, operation);
     const result = snapshotEditorJsonValue(
       {
@@ -2424,9 +2699,7 @@ const applyAuthoredOperation = (
           ...state.frontier.filter((head) => !operation.parents.includes(head)),
           operation.id,
         ].sort(),
-        operations: replay
-          ? state.operations
-          : writeRecord(state.operations, operation.id, operation),
+        operations,
         vector: writeRecord(
           state.vector,
           operation.replica,
@@ -2439,7 +2712,10 @@ const applyAuthoredOperation = (
       ? AUTHORED_INDEXES.get(state.operations)
       : EMPTY_AUTHORED_INDEX;
     if (previousIndex) {
-      let index = previousIndex;
+      let index =
+        (operations !== state.operations && operations
+          ? AUTHORED_INDEXES.get(operations)
+          : undefined) ?? indexPropertyWrites(previousIndex, operation);
       const changed =
         operation.kind === 'edit' &&
         !readRecord(state.changes, operation.changeId)?.reviews
@@ -2457,7 +2733,6 @@ const applyAuthoredOperation = (
           getDefined(readRecord(result.changes, identity))
         );
       }
-      index = indexPropertyWrites(index, operation);
       AUTHORED_INDEXES.set(getDefined(result.operations), index);
     }
     return result;
@@ -2469,6 +2744,10 @@ export const reduceAuthoredOperation = (
 ): AuthoredState => applyAuthoredOperation(state, operation, false);
 
 type AuthoredIndex = Readonly<{
+  proposals: RecordTree<string> | null;
+  removals: RecordTree<
+    NonNullable<AuthoredIntervals<AuthoredEditIdentity>>
+  > | null;
   deletions: RecordTree<RecordTree<AuthoredDeletion>> | null;
   authors: RecordTree<string> | null;
   authorStatuses: RecordTree<string> | null;
@@ -2482,7 +2761,7 @@ type AuthoredIndex = Readonly<{
     Readonly<{ order: string; spans: readonly AuthoredSpan[] }>
   > | null;
   compensations: RecordTree<RecordTree<AuthoredEditIdentity>> | null;
-  successors: RecordTree<readonly AuthoredSuccessor[]> | null;
+  successors: RecordTree<RecordTree<AuthoredSuccessor>> | null;
 }>;
 type AuthoredContentInterval = Readonly<{ from: number; to: number }>;
 type AuthoredSuccessorDependency = Readonly<{
@@ -2502,6 +2781,7 @@ type AuthoredDeletion = Readonly<{
   targetIndex: number;
 }>;
 export type AuthoredPropertyWrite = Readonly<{
+  direct?: boolean;
   operation: AuthoredEditIdentity;
   target: AuthoredTarget;
   modifications: readonly PropertyModificationJson[];
@@ -2511,6 +2791,8 @@ const AUTHORED_INDEXES = new WeakMap<
   AuthoredIndex
 >();
 const EMPTY_AUTHORED_INDEX: AuthoredIndex = Object.freeze({
+  proposals: null,
+  removals: null,
   deletions: null,
   authors: null,
   authorStatuses: null,
@@ -2555,6 +2837,7 @@ const indexPropertyWrites = (
     textBoundaries,
     compensations,
     deletions,
+    removals,
     successors,
   } = index;
   const identity: AuthoredEditIdentity = Object.freeze({
@@ -2567,6 +2850,7 @@ const indexPropertyWrites = (
     kind: 'edit',
     parents: operation.parents,
     proposal: operation.proposal,
+    ...(operation.directFormatting ? { directFormatting: true as const } : {}),
     replica: operation.replica,
     seen: operation.seen,
     sequence: operation.sequence,
@@ -2596,14 +2880,17 @@ const indexPropertyWrites = (
           : undefined;
       const section = sections?.[target.section];
       const facts = 'forward' in step ? undefined : step.targets[targetIndex];
-      const indexedTarget: AuthoredTarget = facts
-        ? (({
-            length: _length,
-            properties: _properties,
-            textBoundary: _boundary,
-            ...value
-          }) => value)(facts)
-        : target;
+      const indexedTarget: AuthoredTarget = {
+        ...(facts
+          ? (({
+              length: _length,
+              properties: _properties,
+              textBoundary: _boundary,
+              ...value
+            }) => value)(facts)
+          : target),
+        insertedContent: null,
+      };
       const order = `${authoredOrderKey(
         operation.clock,
         operation.id
@@ -2636,10 +2923,11 @@ const indexPropertyWrites = (
               (entry): entry is AuthoredSuccessorDependency => entry !== null
             );
         for (const origin of new Set(sources.map((source) => source.origin))) {
-          successors = writeRecord(successors, origin, [
-            ...(readRecord(successors, origin) ?? []),
-            successor,
-          ]);
+          successors = writeRecord(
+            successors,
+            origin,
+            writeRecord(readRecord(successors, origin), order, successor)
+          );
         }
       }
       if (target.removed.length && !target.inserted.length) {
@@ -2661,7 +2949,50 @@ const indexPropertyWrites = (
           });
         }
       }
+      for (const targetBoundary of target.boundaries ?? []) {
+        const key = JSON.stringify([
+          targetBoundary.position.origin,
+          targetBoundary.position.offset,
+        ]);
+        const previous = readRecord(textBoundaries, key);
+        if (!previous || order < previous.order) {
+          textBoundaries = writeRecord(textBoundaries, key, {
+            order,
+            spans: targetBoundary.spans,
+          });
+        }
+      }
       if (operation.inverseOf) continue;
+      if (
+        (section?.replacement || (facts && !facts.properties)) &&
+        target.retained?.kind !== 'move'
+      ) {
+        const inserted = steps.flatMap((frame) =>
+          frame.targets.flatMap((item) => item.inserted)
+        );
+        for (const span of target.removed.filter(
+          (candidateSpan) =>
+            !inserted.some(
+              (other) =>
+                other.origin === candidateSpan.origin &&
+                other.offset <= candidateSpan.offset &&
+                other.offset + other.length >=
+                  candidateSpan.offset + candidateSpan.length
+            )
+        )) {
+          removals = writeRecord(
+            removals,
+            span.origin,
+            writeAuthoredInterval(readRecord(removals, span.origin), {
+              from: span.offset,
+              to: span.offset + span.length,
+              id: order,
+              insertion: false,
+              value: identity,
+            })
+          );
+        }
+      }
       if (
         operation.proposal &&
         target.removed.length &&
@@ -2708,7 +3039,11 @@ const indexPropertyWrites = (
               to: content.offset + content.length,
               id: order,
               insertion: false,
-              value: write,
+              value:
+                operation.directFormatting &&
+                content.origin !== `${operation.id}:${target.root}`
+                  ? { ...write, direct: true }
+                  : write,
             })
           );
         }
@@ -2724,7 +3059,8 @@ const indexPropertyWrites = (
       }
     }
   }
-  return properties === index.properties &&
+  return removals === index.removals &&
+    properties === index.properties &&
     deletions === index.deletions &&
     textProperties === index.textProperties &&
     textBoundaries === index.textBoundaries &&
@@ -2733,6 +3069,7 @@ const indexPropertyWrites = (
     ? index
     : {
         ...index,
+        removals,
         properties,
         textProperties,
         textBoundaries,
@@ -2817,7 +3154,9 @@ export const authoredContentLineage = (
   const { successors } = indexAuthoredState(state);
   const visited = new Set<AuthoredSuccessor>();
   for (const source of queue) {
-    for (const successor of readRecord(successors, source.origin) ?? []) {
+    for (const [, successor] of records(
+      readRecord(successors, source.origin)
+    )) {
       if (visited.has(successor)) continue;
       const relevant = [...successor.removed, successor.left, successor.right]
         .filter((entry): entry is AuthoredSuccessorDependency => entry !== null)
@@ -2869,12 +3208,35 @@ export function* authoredDeletionsAt(
   }
 }
 
+const proposalPrefix = (authorId?: string, status?: AuthoredStatus) =>
+  `${JSON.stringify([authorId ?? null, status ?? null])}\u0000`;
+const proposalKeys = (change: AuthoredRecord) =>
+  [
+    proposalPrefix(),
+    proposalPrefix(change.authorId),
+    proposalPrefix(undefined, change.status),
+    proposalPrefix(change.authorId, change.status),
+  ].map((prefix) => prefix + authoredOrderKey(change.createdAt, change.id));
+
 const updateIndex = (
   index: AuthoredIndex,
   previous: AuthoredRecord | null,
   next: AuthoredRecord
 ): AuthoredIndex => {
-  let { authors, authorStatuses, dependants, statuses } = index;
+  let { authors, authorStatuses, dependants, statuses, proposals } = index;
+  const wasProposal = previous !== null && previous.original !== null;
+  const isProposal = next.original !== null;
+  const statusChanged = previous?.status !== next.status;
+  if (wasProposal && (!isProposal || statusChanged)) {
+    for (const key of proposalKeys(previous)) {
+      proposals = removeRecord(proposals, key);
+    }
+  }
+  if (isProposal && (!wasProposal || statusChanged)) {
+    for (const key of proposalKeys(next)) {
+      proposals = writeRecord(proposals, key, next.id);
+    }
+  }
   const order = authoredOrderKey(next.createdAt, next.id);
   if (!previous) {
     authors = writeRecord(authors, `${next.authorId}\u0000${order}`, next.id);
@@ -2903,7 +3265,7 @@ const updateIndex = (
       );
     }
   }
-  return { ...index, authors, authorStatuses, dependants, statuses };
+  return { ...index, authors, authorStatuses, dependants, statuses, proposals };
 };
 
 export const indexAuthoredState = (state: AuthoredState): AuthoredIndex => {
@@ -2938,6 +3300,18 @@ export const indexAuthoredState = (state: AuthoredState): AuthoredIndex => {
       authorStatuses: recordTreeFromSortedEntries(authorStatuses.sort(byKey)),
       dependants: recordTreeFromSortedEntries(dependants.sort(byKey)),
       statuses: recordTreeFromSortedEntries(statuses.sort(byKey)),
+    };
+    const proposals: Array<readonly [string, string]> = [];
+    for (const [, change] of records(state.changes)) {
+      if (change.original !== null) {
+        for (const key of proposalKeys(change)) {
+          proposals.push([key, change.id]);
+        }
+      }
+    }
+    index = {
+      ...index,
+      proposals: recordTreeFromSortedEntries(proposals.sort(byKey)),
     };
     for (const [, operation] of records(operations)) {
       index = indexPropertyWrites(index, operation);
@@ -3045,16 +3419,18 @@ export function* matchingAuthoredChanges(
   after?: string
 ) {
   const index = indexAuthoredState(state);
-  const prefix =
-    query.authorId !== undefined
+  const prefix = query.proposals
+    ? proposalPrefix(query.authorId, query.status)
+    : query.authorId !== undefined
       ? `${query.authorId}\u0000${
           query.status !== undefined ? `${query.status}\u0000` : ''
         }`
       : query.status !== undefined
         ? `${query.status}\u0000`
         : '';
-  const tree =
-    query.authorId !== undefined
+  const tree = query.proposals
+    ? index.proposals
+    : query.authorId !== undefined
       ? query.status !== undefined
         ? index.authorStatuses
         : index.authors
@@ -3203,6 +3579,9 @@ export const authoredState = defineStateField<AuthoredState>({
         }
       }
     }
+    for (const child of authoredRebaseDependants(state, retainedChanges)) {
+      retainedChanges.add(child.id);
+    }
     if (
       batch.retained.some(
         (operation) => !retainedChanges.has(operation.changeId)
@@ -3219,3 +3598,13 @@ export const authoredState = defineStateField<AuthoredState>({
     return state;
   },
 });
+
+export const authoredContentRemovals = (
+  state: AuthoredState,
+  span: AuthoredSpan
+) =>
+  matchingAuthoredIntervals(
+    readRecord(indexAuthoredState(state).removals, span.origin),
+    span.offset,
+    span.offset + span.length
+  );

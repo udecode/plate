@@ -111,7 +111,11 @@ export const projectAuthoredProperties = (input: {
           )?.properties ?? {};
       }
       if (
-        !isAuthoredEditVisible(input.state, write.operation, input.isVisible)
+        !isAuthoredEditVisible(
+          input.state,
+          write.operation,
+          write.direct ? () => true : input.isVisible
+        )
       ) {
         continue;
       }
@@ -321,8 +325,9 @@ export const authoredCausalPropertyConflicts = (input: {
               )
             );
           }))) &&
-      readRecord(input.state.changes, write.operation.changeId)?.status ===
-        'accepted' &&
+      (write.direct ||
+        readRecord(input.state.changes, write.operation.changeId)?.status ===
+          'accepted') &&
       observesAuthoredOperation(write.operation, input.proposal) &&
       isAuthoredEditVisible(input.state, write.operation, input.isVisible)
     ) {

@@ -7,18 +7,19 @@ import {
   type RootKey,
   TextApi,
 } from '../..';
-import {
-  readAuthoredFragmentView,
-  readAuthoredView,
-} from '../../core/authored-runtime';
-import { isDOMElement, isDOMText } from '../../dom';
+import { readAuthoredView } from '../../core/authored-runtime';
+import { isDOMElement, isDOMText, normalizeDOMPoint } from '../../dom';
 import { ELEMENT_TO_NODE } from '../../dom/internal';
-import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
 import {
-  getMountedDOMFragmentEditors,
-  readDOMFragmentEditor,
+  resolveDOMLeafPoint,
+  resolveDOMPointInRoot,
+} from '../../dom/plugin/dom-editor';
+import {
+  getMountedDOMFragmentElements,
+  readDOMFragmentTarget,
   readDOMFragmentParent,
 } from '../../dom/plugin/dom-fragment-view';
+import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
@@ -27,7 +28,6 @@ import {
 } from '../view-boundary-graph';
 import {
   createPliteViewSelection,
-  isPliteViewSelectionCollapsed,
   type PliteViewSelection,
 } from '../view-selection';
 import {
@@ -40,7 +40,7 @@ import {
   findContentRootOwners,
 } from './content-root-owners';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
-import { getEditorRuntime, toInternalRoot } from './runtime-editor-api';
+import { toInternalRoot } from './runtime-editor-api';
 
 type ProjectedDOMSelectionEndpoint = {
   affinity?: 'backward' | 'forward';
@@ -61,16 +61,34 @@ export const resolveViewBoundaryDOMPoint = (
   ) {
     return null;
   }
-  for (const view of boundary.fragmentId
-    ? getMountedDOMFragmentEditors(editor, boundary.fragmentId)
-    : [editor]) {
-    const point = resolveDOMPointInRoot(
-      view,
+  if (!boundary.fragmentId) {
+    return resolveDOMPointInRoot(
+      editor,
       boundary.point,
       editorElement,
       boundary.affinity
     );
-    if (point) return point;
+  }
+  for (const element of getMountedDOMFragmentElements(
+    editor,
+    boundary.fragmentId
+  )) {
+    if (editorElement && !editorElement.contains(element)) continue;
+    const hosts = element.matches('[data-editor-node="text"]')
+      ? [element]
+      : Array.from(
+          element.querySelectorAll<HTMLElement>('[data-editor-node="text"]')
+        );
+    for (const host of hosts) {
+      const path = getPliteNodePathFromDOMElement(host);
+      if (!path || !PathApi.equals(path, boundary.point.path)) continue;
+      const point = resolveDOMLeafPoint(
+        host,
+        boundary.point.offset,
+        boundary.affinity
+      );
+      if (point) return point;
+    }
   }
   return null;
 };
@@ -87,7 +105,6 @@ export const canUseNativeViewSelection = (
   return (
     !!runtime &&
     !runtime.viewportRuntime &&
-    !isPliteViewSelectionCollapsed(selection) &&
     selection.segments.parts.every(
       (part) =>
         part.root === root &&
@@ -231,17 +248,47 @@ export const resolveProjectedDOMSelectionEndpoint = ({
   const parent = editorElement
     ? getEditorFromDOMEditorElement(editorElement)
     : null;
-  const retained = node && readDOMFragmentEditor(node);
-  const fragment = retained && readAuthoredFragmentView(retained);
-  const editor = retained ?? parent;
+  const normalized = node ? normalizeDOMPoint([node, offset]) : null;
+  const retainedTarget = normalized && readDOMFragmentTarget(normalized[0]);
+  if (retainedTarget && normalized && node && editorElement && parent) {
+    const element = getDOMElementForNode(normalized[0]);
+    const host = element?.closest('[data-editor-node="text"]');
+    const leaf = element?.closest('[data-editor-leaf]');
+    const string = element?.closest(
+      '[data-editor-string], [data-editor-zero-width]'
+    );
+    const path = host && getPliteNodePathFromDOMElement(host);
+    if (path && leaf && string && retainedTarget.parent === parent) {
+      const range = editorElement.ownerDocument.createRange();
+      range.setStart(string, 0);
+      range.setEnd(normalized[0], normalized[1]);
+      const start = Number(leaf.getAttribute('data-editor-leaf-start') ?? 0);
+      const local = string.hasAttribute('data-editor-zero-width')
+        ? 0
+        : range.toString().length;
+      const { root } = retainedTarget;
+      return {
+        affinity:
+          start + local === Number(leaf.getAttribute('data-editor-leaf-end'))
+            ? ('backward' as const)
+            : ('forward' as const),
+        fragmentId: retainedTarget.target.id,
+        point: {
+          path,
+          offset: start + local,
+          ...(root === MAIN_ROOT_KEY ? {} : { root }),
+        },
+        root,
+        owner:
+          getContentRootOwnerFromTarget({ childRoot: root, target: node }) ??
+          undefined,
+      };
+    }
+  }
+  if (retainedTarget) return null;
+  const editor = parent;
 
-  if (
-    !editorElement ||
-    !editor ||
-    !node ||
-    !parent ||
-    (fragment && getEditorRuntime(fragment.parent) !== getEditorRuntime(parent))
-  ) {
+  if (!editorElement || !editor || !node || !parent) {
     return null;
   }
 
@@ -269,7 +316,7 @@ export const resolveProjectedDOMSelectionEndpoint = ({
     target: node,
   });
   const shellOwner =
-    !fragment && root === MAIN_ROOT_KEY
+    root === MAIN_ROOT_KEY
       ? owners.find(
           (candidate) =>
             candidate.ownerRoot === root &&
@@ -305,7 +352,6 @@ export const resolveProjectedDOMSelectionEndpoint = ({
       : ('forward' as const);
   return {
     affinity,
-    ...(fragment ? { fragmentId: fragment.fragment.id } : {}),
     ...(owner ? { owner } : {}),
     point: {
       ...pliteRange.anchor,
@@ -335,10 +381,11 @@ export const resolveProjectedDOMSelection = ({
       domSelection.anchorOffset ===
         domSelection.anchorNode?.textContent?.length);
   if (
+    readAuthoredView(editor)?.projection !== 'markup' &&
     domSelection.isCollapsed &&
     !possibleDock &&
     (!domSelection.anchorNode ||
-      !readDOMFragmentEditor(domSelection.anchorNode))
+      !readDOMFragmentTarget(domSelection.anchorNode))
   ) {
     return null;
   }
@@ -423,7 +470,8 @@ export const resolveProjectedDOMSelection = ({
         affinity:
           selection.focus.affinity === 'forward' ? 'backward' : 'forward',
       })?.key;
-  return !docked &&
+  return readAuthoredView(editor)?.projection !== 'markup' &&
+    !docked &&
     sameOwner &&
     !selection.segments.parts.some((segment) => segment.fragment)
     ? null

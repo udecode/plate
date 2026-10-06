@@ -29,6 +29,7 @@ import {
   continueTransactionSpec,
   enterEditorRead,
   getActiveEditorUpdateTags,
+  hasWrittenTransactionSelection,
   getActiveEditorTransaction,
   isBuildingTransactionSpec,
   isInTransaction,
@@ -36,6 +37,7 @@ import {
   isTransactionSpecContinuation,
   withTransactionSpecDraftRead,
 } from './public-state';
+import { dispatchTargetRuntimeCommand } from './target-runtime';
 
 export { defineCommand } from './command-definition';
 
@@ -432,6 +434,14 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   command: EditorCommand<Input, TEditor>,
   input: Input
 ) =>
+  (!isBuildingTransactionSpec(getEditorRuntimeOwner(editor)) &&
+  !hasWrittenTransactionSelection(getEditorRuntimeOwner(editor))
+    ? dispatchTargetRuntimeCommand(
+        editor,
+        command as EditorCommandDescriptor,
+        input
+      )
+    : undefined) ??
   applyCommandEvaluation(editor, evaluateCommandChain(editor, command, input));
 
 /**

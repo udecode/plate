@@ -1,8 +1,7 @@
 import { PathApi, type Range, RangeApi, type RootKey } from '..';
-import { createAuthoredFragmentView } from '../core/authored-fragment-view';
 import {
   readAuthoredViewFragmentVersion,
-  readAuthoredViewFragments,
+  captureAuthoredTargetPoint,
 } from '../core/authored-runtime';
 import { hasEditorRuntime } from '../core/editor-runtime';
 import { readEditorHistoryHeadIdentity } from '../core/public-state';
@@ -251,7 +250,7 @@ export const mountPliteViewSelection = (editor: object) => {
   };
 };
 
-const bindViewSelection = (
+export const bindViewSelection = (
   editor: AnyEditor,
   selection: PliteViewSelection
 ) => {
@@ -268,20 +267,13 @@ const bindViewSelection = (
           (part) => part.fragment?.id === boundary.fragmentId
         )?.fragment
       : null;
-    const fragment = descriptor
-      ? readAuthoredViewFragments(editor, descriptor.changeId).find(
-          (entry) => entry.id === descriptor.id
-        )
-      : null;
-    if (boundary.fragmentId && !fragment) return null;
-    const view = fragment
-      ? createAuthoredFragmentView(editor, fragment)
-      : editor;
-    const anchor = view.anchor(boundary.point, {
-      association,
-      deletion: 'nearest',
-    });
-    releases.push(() => anchor.release());
+    const anchor = captureAuthoredTargetPoint(
+      editor,
+      descriptor ?? null,
+      boundary.point,
+      association
+    );
+    if (!anchor) return null;
     const { owner } = boundary;
     const ownerAnchor = owner
       ? editor.anchor(owner.ownerPath, {
@@ -291,11 +283,14 @@ const bindViewSelection = (
       : null;
     if (ownerAnchor) releases.push(() => ownerAnchor.release());
     return () => {
-      const point = anchor.resolve();
+      const resolved = anchor.resolve();
+      const point = resolved?.point;
+      const fragmentId = resolved?.target?.id;
       const ownerPath = ownerAnchor?.resolve();
       if (!point || (owner && !ownerPath)) return null;
       return {
         ...boundary,
+        fragmentId,
         point,
         ...(owner && ownerPath ? { owner: { ...owner, ownerPath } } : {}),
       };
@@ -305,11 +300,19 @@ const bindViewSelection = (
     const collapsed = isPliteViewSelectionCollapsed(selection);
     const anchor = bind(
       selection.anchor,
-      collapsed || !selection.segments.backward ? 'forward' : 'backward'
+      collapsed
+        ? (selection.anchor.affinity ?? 'forward')
+        : !selection.segments.backward
+          ? 'forward'
+          : 'backward'
     );
     const focus = bind(
       selection.focus,
-      collapsed || selection.segments.backward ? 'forward' : 'backward'
+      collapsed
+        ? (selection.focus.affinity ?? 'forward')
+        : selection.segments.backward
+          ? 'forward'
+          : 'backward'
     );
     if (!anchor || !focus) {
       release();

@@ -292,6 +292,8 @@ AI keeps the current view's input policy. Accepting in Editing writes ordinary
 content. Accepting in Suggesting creates a native tracked edit for subsequent
 review. Streaming itself does not create suggestions or change the mode.
 
+Explicit `tx.authored.propose()` edits keep their formatting in the proposal. The direct-formatting policy for ordinary human commands does not publish an AI proposal's formatting ahead of its text.
+
 Copilot ghost text also stays temporary until accepted.
 
 ## Plate Plus

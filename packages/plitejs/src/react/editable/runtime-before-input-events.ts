@@ -14,6 +14,7 @@ import {
   profilePliteReactDuration,
   recordPliteReactRender,
 } from '../render-profiler';
+import { commitProjectedCompositionInput } from './composition-state';
 import { getInputEventTargetRanges } from './dom-input-event';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { completeDuplicateEditableEditingEpochCommand } from './editing-epoch-adapter';
@@ -37,6 +38,8 @@ import {
 } from './input-router';
 import {
   clearExpiredTextInputRepairEcho,
+  readProjectedCompositionAnchor,
+  recordEditableCompositionText,
   type EditableInputController,
   runTrackedEditableCompositionMutation,
   shouldMergeEditableCompositionHistory,
@@ -581,6 +584,75 @@ export const useRuntimeBeforeInputEvents = ({
           'beforeinput-has-editable-target',
           () => ReactEditor.hasEditableTarget(editor, event.target)
         );
+
+        if (
+          !readOnly &&
+          editableTarget &&
+          readProjectedCompositionAnchor(inputController)
+        ) {
+          const handled = runTrackedEditableCompositionMutation({
+            editor,
+            inputController,
+            callback: () =>
+              isDOMBeforeInputHandled(event, onDOMBeforeInput, {
+                data: event.data,
+                editor,
+                event,
+                inputType: event.inputType,
+                intent: decision.intent,
+                native: false,
+                selection: readRuntimeSelectionRange(editor),
+              }),
+          }).result;
+          if (handled) return;
+          const intermediate =
+            (event.isComposing &&
+              event.inputType !== 'insertFromComposition') ||
+            [
+              'insertCompositionText',
+              'deleteCompositionText',
+              'deleteByComposition',
+            ].includes(event.inputType);
+          if (intermediate) {
+            if (event.data !== null) {
+              recordEditableCompositionText(inputController, event.data);
+            }
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            handledDOMBeforeInputRef.current = true;
+            return;
+          }
+          if (isCompositionFinalInputType(event.inputType)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            handledDOMBeforeInputRef.current = true;
+            const text = event.data ?? '';
+            const complete = () =>
+              repair.requestEditableRepair({
+                kind: 'repair-caret',
+                forceRender: true,
+                focus: true,
+                selectionSourceTransition: {
+                  preferModelSelection: true,
+                  reason: 'model-command',
+                  selectionSource: 'model-owned',
+                },
+              });
+            const commit = () =>
+              commitProjectedCompositionInput(editor, inputController, text);
+            const pending = inputController.state.pendingCompositionEnd;
+            if (pending?.ownership === 'plite') {
+              pending.replaceWithInput({
+                commit,
+                complete,
+                data: text,
+                discard: () => {},
+                inputType: event.inputType,
+              });
+            } else if (commit()) complete();
+            return;
+          }
+        }
 
         if (!readOnly && editableTarget) {
           if (
@@ -1162,6 +1234,10 @@ export const useRuntimeBeforeInputEvents = ({
 
   const handleReactBeforeInputFallback = useCallback(
     (text: string) => {
+      if (readProjectedCompositionAnchor(inputController)) {
+        recordEditableCompositionText(inputController, text);
+        return;
+      }
       const fallbackSelection = readRuntimeSelectionRange(editor);
       const request = runTrackedEditableCompositionMutation({
         callback: () =>

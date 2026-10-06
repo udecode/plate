@@ -11,6 +11,7 @@ import type { AuthoredRangeProjection } from './anchors';
 import {
   authoredContentLocations,
   authoredOriginalLocation,
+  authoredInsertionOrigin,
 } from './counterparts';
 import {
   readAuthoredFragmentBounds,
@@ -336,6 +337,27 @@ export const composeAuthoredRenderSegments = (
       )
     ) {
       return ancestors;
+    }
+    const visited = new Set<string>();
+    let current = span;
+    while (true) {
+      const key = JSON.stringify([current.origin, current.offset]);
+      if (visited.has(key)) break;
+      visited.add(key);
+      const insertion = authoredInsertionOrigin(proposed.state, current);
+      const endpoint = insertion?.position[insertion.association];
+      if (!insertion || !endpoint) break;
+      current = {
+        ...span,
+        origin: endpoint.origin,
+        offset: endpoint.offset - (insertion.association === 'left' ? 1 : 0),
+        length: 1,
+      };
+      const anchor = authoredContentLocations(
+        proposed.positions,
+        current
+      ).next().value;
+      if (anchor?.root === root && anchor.span.placement) return ancestors;
     }
     const location = acceptedLocation(span);
     if (!location || location.root !== root) return ancestors;

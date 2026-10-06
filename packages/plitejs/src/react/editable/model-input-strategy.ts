@@ -16,7 +16,12 @@ import type {
   EditableCompositionStateSetter,
   EditableRepairRequest,
 } from './input-controller';
-import type { DOMInputRepairTarget, RepairDOMInput } from './input-state';
+import {
+  readProjectedCompositionAnchor,
+  recordEditableCompositionText,
+  type DOMInputRepairTarget,
+  type RepairDOMInput,
+} from './input-state';
 import {
   applyEditableCommand,
   applyModelOwnedDataTransferInput,
@@ -102,6 +107,14 @@ export const applyEditableInput = ({
   skipNativeTextInputRepair?: boolean;
 }): EditableInputResult => {
   if (isInputEventHandled({ event, handler: onInput })) {
+    return inputResult();
+  }
+
+  if (readProjectedCompositionAnchor(inputController)) {
+    if (event.nativeEvent.data != null) {
+      recordEditableCompositionText(inputController, event.nativeEvent.data);
+    }
+    handledDOMBeforeInputRef.current = false;
     return inputResult();
   }
 

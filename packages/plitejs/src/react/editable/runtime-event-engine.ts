@@ -261,6 +261,7 @@ export const useEditableEventRuntime = ({
   const compositionHandlers = useRuntimeCompositionEvents({
     androidInputManagerRef: eventCore.android.managerRef,
     editor,
+    forceRender: eventCore.repair.forceRender,
     inputController,
     onCompositionEnd: callbacks.onCompositionEnd,
     onCompositionStart: callbacks.onCompositionStart,

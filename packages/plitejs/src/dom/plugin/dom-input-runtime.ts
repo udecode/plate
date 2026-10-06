@@ -646,6 +646,7 @@ export class DOMInputRuntime {
   };
 
   private compositionEpochValue: CompositionEpoch | null = null;
+  private releaseCompositionAnchor: (() => void) | null = null;
 
   private currentEditingEpochValue: DOMInputEditingEpoch | null = null;
 
@@ -1169,13 +1170,17 @@ export class DOMInputRuntime {
 
   beginComposition({
     anchor = null,
+    releaseAnchor,
     owner = 'native',
     phase = 'native-composing',
   }: {
     anchor?: unknown;
+    releaseAnchor?: () => void;
     owner?: CompositionEpoch['owner'];
     phase?: CompositionEpoch['phase'];
   } = {}) {
+    this.releaseCompositionAnchor?.();
+    this.releaseCompositionAnchor = releaseAnchor ?? null;
     const id = this.nextCompositionEpochId;
 
     this.nextCompositionEpochId += 1;
@@ -1218,6 +1223,9 @@ export class DOMInputRuntime {
     } | null
   ) {
     if (!session) {
+      const release = this.releaseCompositionAnchor;
+      this.releaseCompositionAnchor = null;
+      release?.();
       this.compositionEpochValue = null;
       return;
     }
@@ -1290,6 +1298,9 @@ export class DOMInputRuntime {
   }
 
   reset() {
+    const release = this.releaseCompositionAnchor;
+    this.releaseCompositionAnchor = null;
+    release?.();
     this.compositionEpochValue = null;
     this.currentEditingEpochValue = null;
     this.currentFrameValue = null;

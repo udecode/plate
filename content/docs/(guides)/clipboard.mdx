@@ -107,6 +107,8 @@ Plate writes plain text, HTML, and an internal Plate fragment payload. The
 fragment payload uses `application/${clipboardFormatKey}`, so editors with
 different keys do not blindly import each other's internal JSON.
 
+Ordinary copying uses the selected visible content. It does not transfer retained proposal originals or discussion records. Pasting into another document creates new content under that editor's input policy, without reusing the source document's change or discussion identities.
+
 ## Custom DataTransfer formats
 
 A `DataTransferFormat` reads or writes one browser MIME type as a whole

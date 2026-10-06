@@ -40,7 +40,10 @@ import {
   type RecordTree,
 } from './record-tree';
 import { readAuthoredFragmentRenderScopes } from './render';
-import { readAuthoredRetainedContent } from './retained';
+import {
+  readAuthoredRetainedContent,
+  readAuthoredTextBoundary,
+} from './retained';
 import {
   matchingAuthoredChanges,
   authoredContributionSteps,
@@ -293,11 +296,16 @@ const indexChange = (
       throw new Error('Missing authored fragment docking node.');
     }
     if (path) {
-      const start = document.nodeRange(path).from;
+      const range = document.nodeRange(path);
+      const end = NodeApi.isText(document.node(path))
+        ? range.to
+        : range.from + 1;
       const { positions } = getDefined(readRecord(proposed.positions, root));
-      for (const entry of authoredPositionSpans(positions, start, start + 1)) {
-        const offset = entry.span.offset + start - entry.from;
-        watch(entry.span.origin, offset, offset + 1, false);
+      for (const entry of authoredPositionSpans(positions, range.from, end)) {
+        const from = Math.max(range.from, entry.from);
+        const to = Math.min(end, entry.to);
+        const offset = entry.span.offset + from - entry.from;
+        watch(entry.span.origin, offset, offset + to - from, false);
       }
     }
     bindings.push({
@@ -582,6 +590,20 @@ export const updateAuthoredFragmentIndex = (
         }
       }
       for (const target of step.targets) {
+        const section =
+          'forward' in step
+            ? (target.root === 'main'
+                ? step.forward.primary
+                : step.forward.roots?.[target.root])?.[target.section]
+            : undefined;
+        const boundary =
+          'textBoundary' in target
+            ? target.textBoundary
+            : section && readAuthoredTextBoundary(target, section);
+        if (boundary) {
+          const { origin, offset } = boundary.position;
+          overlap(origin, offset, offset + 1);
+        }
         if (!target.from.left) {
           for (const [id] of records(
             readRecord(index.boundaries, target.root)

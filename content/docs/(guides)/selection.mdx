@@ -7,8 +7,9 @@ Plate stores selection in the editor model and projects text selection to the br
 
 ## Ownership
 
-The editor model is the single selection state. Each rendering layer derives
-its presentation from that state.
+The editor model owns document selection. Each rendering layer derives its
+presentation from that state. In a markup view, the mounted editor also keeps
+the visible selection across ordinary text and retained deletion text.
 
 | Job | Owner |
 | --- | --- |
@@ -48,6 +49,22 @@ editor.update.selection.set(null);
 Use [Editor Methods](/docs/editor-methods) for editor access inside React and
 [Selection API](/docs/api/selection) for the complete query and
 validation contracts.
+
+## Selection in markup views
+
+Ordinary text selections keep their complete model range, including both
+endpoints. A selection that enters retained deletion text uses positions in
+that retained content. Its model range represents the document position; it
+does not describe the complete visible selection. Let the mounted editor
+resolve typing, deletion, and formatting at that selection.
+
+Retained text uses the native browser caret and range when the complete
+selection consists of text fragments in the same mounted, nonvirtualized
+editable and content root, with no separate content-root owner. Other ranges
+keep their projected selection. Retained text shares the editor's input,
+composition, and history. Application code should not translate retained-text
+offsets into ordinary document offsets. See [Authored Changes](/docs/authored-changes)
+for Editing and Suggesting behavior.
 
 ## Focus and native selection
 

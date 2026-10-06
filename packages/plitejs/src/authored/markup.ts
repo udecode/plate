@@ -18,10 +18,16 @@ import { getDefined } from '../internal/get-defined';
 import type { AuthoredRangeProjection } from './anchors';
 import {
   authoredContentLocations,
+  authoredInsertionOrigin,
   authoredCounterpartIntervals,
 } from './counterparts';
 import type { AuthoredFragmentOrder } from './fragment-order';
-import { resolveAuthoredPosition, type AuthoredSpan } from './positions';
+import {
+  authoredPositionAt,
+  authoredPositionSpans,
+  resolveAuthoredPosition,
+  type AuthoredSpan,
+} from './positions';
 import {
   matchingAuthoredProperties,
   restoreAuthoredProperties,
@@ -33,6 +39,10 @@ import {
 } from './retained';
 import {
   authoredOrderKey,
+  authoredContentRemovals,
+  authoredTextPropertyWrites,
+  authoredOperationPropertySteps,
+  isAuthoredEditVisible,
   hasAuthoredContent,
   materializeAuthoredEdit,
   retainedAuthoredOperations,
@@ -45,6 +55,7 @@ import {
   authoredRootNodes,
   resolveAuthoredRetainedPosition,
   mapAuthoredChange,
+  projectAuthoredTextProperties,
   type AuthoredTarget,
 } from './steps';
 
@@ -362,6 +373,82 @@ const compileAuthoredMarkupFragments = (
           to: number;
           spans: AuthoredSpan[];
         }> = [];
+        const cuts = new Map<string, Set<number>>();
+        const livePositions = readRecord(
+          proposed.positions,
+          target.root
+        )?.positions;
+        if (livePositions) {
+          const start = resolveAuthoredPosition(
+            livePositions,
+            { left: target.afterFrom.left, right: null },
+            'left',
+            'collapse'
+          );
+          const end = resolveAuthoredPosition(
+            livePositions,
+            { left: null, right: target.afterFrom.right },
+            'right',
+            'collapse'
+          );
+          if (start !== null && end !== null && start < end) {
+            for (const entry of authoredPositionSpans(
+              livePositions,
+              start,
+              end
+            )) {
+              const insertion = authoredInsertionOrigin(state, entry.span);
+              const anchor =
+                insertion?.association === 'left'
+                  ? (insertion.position.left ?? insertion.position.right)
+                  : (insertion?.position.right ?? insertion?.position.left);
+              if (!anchor) continue;
+              const at = resolveAuthoredPosition(
+                retained.positions,
+                { left: anchor, right: anchor },
+                'right',
+                'collapse'
+              );
+              if (at === null || at <= retained.from || at >= retained.to) {
+                continue;
+              }
+              const offsets = cuts.get(anchor.origin) ?? new Set<number>();
+              offsets.add(anchor.offset);
+              cuts.set(anchor.origin, offsets);
+            }
+          }
+        }
+        for (const span of target.removed) {
+          const locations = [...contentLocations(accepted, span)].sort(
+            (left, right) => left.fromOffset - right.fromOffset
+          );
+          for (let index = 1; index < locations.length; index++) {
+            const before = locations[index - 1];
+            const after = locations[index];
+            if (
+              before.toOffset === after.fromOffset &&
+              !canJoinAcceptedCounterparts(
+                {
+                  ...span,
+                  offset: before.fromOffset,
+                  length: before.toOffset - before.fromOffset,
+                },
+                {
+                  ...span,
+                  offset: after.fromOffset,
+                  length: after.toOffset - after.fromOffset,
+                },
+                accepted,
+                proposed,
+                operation
+              )
+            ) {
+              const offsets = cuts.get(span.origin) ?? new Set<number>();
+              offsets.add(after.fromOffset);
+              cuts.set(span.origin, offsets);
+            }
+          }
+        }
         let offset = 0;
         for (const span of target.removed) {
           if (
@@ -394,8 +481,39 @@ const compileAuthoredMarkupFragments = (
                       return from < to ? [{ from, to }] : [];
                     })
                   );
-            for (const interval of removed.flatMap((part) =>
-              subtractIntervals(part, claimed.get(span.origin) ?? [])
+            const directRemovals = [...authoredContentRemovals(state, span)]
+              .filter(
+                (entry) =>
+                  entry.value.changeId !== changeId &&
+                  isAuthoredEditVisible(
+                    state,
+                    entry.value,
+                    (edit) =>
+                      readRecord(state.changes, edit.changeId)?.status ===
+                      'accepted'
+                  )
+              )
+              .map((entry) => ({ from: entry.from, to: entry.to }));
+            const birth = span.birth && readRecord(state.changes, span.birth);
+            for (const interval of (birth && birth.status === 'rejected'
+              ? []
+              : removed
+            ).flatMap((part) =>
+              subtractIntervals(part, [
+                ...(claimed.get(span.origin) ?? []),
+                ...directRemovals,
+              ]).flatMap((remainder) => {
+                const boundaries = [
+                  remainder.from,
+                  ...[...(cuts.get(span.origin) ?? [])]
+                    .filter((cut) => remainder.from < cut && cut < remainder.to)
+                    .sort((a, b) => a - b),
+                  remainder.to,
+                ];
+                return boundaries
+                  .slice(1)
+                  .map((to, index) => ({ from: boundaries[index], to }));
+              })
             )) {
               const from = offset + interval.from - span.offset;
               const to = offset + interval.to - span.offset;
@@ -410,6 +528,7 @@ const compileAuthoredMarkupFragments = (
               const previous = runs.at(-1);
               if (
                 previous?.to === from &&
+                !cuts.get(span.origin)?.has(interval.from) &&
                 previous.accepted === isAccepted &&
                 (!isAccepted ||
                   canJoinAcceptedCounterparts(
@@ -475,7 +594,7 @@ const compileAuthoredMarkupFragments = (
               target.root === 'main'
                 ? { children: fragment.slice.content }
                 : {
-                    children: [],
+                    children: Object.freeze([]),
                     roots: { [target.root]: fragment.slice.content },
                   },
           };
@@ -519,6 +638,57 @@ const compileAuthoredMarkupFragments = (
             };
             projection = { state, positions: mapped.positions, value: after };
           }
+          const propertyOperations = new Set<string>();
+          for (const span of run.spans) {
+            for (const write of authoredTextPropertyWrites(state, span)) {
+              propertyOperations.add(write.value.operation.id);
+            }
+          }
+          if (propertyOperations.size) {
+            const mapped = projectAuthoredTextProperties({
+              before: projection.value,
+              change: DocumentChange.empty,
+              changeId,
+              operationId: operation.id,
+              positions: projection.positions,
+              value: projection.value,
+              properties: {
+                state,
+                isVisible: (edit) =>
+                  readRecord(state.changes, edit.changeId)?.status !==
+                  'rejected',
+              },
+              steps: [...propertyOperations].flatMap((propertyOperationId) => {
+                const op = readRecord(state.operations, propertyOperationId);
+                return op?.kind === 'edit'
+                  ? authoredOperationPropertySteps(state, op)
+                  : [];
+              }),
+            });
+            if (
+              !mapped.change.empty ||
+              mapped.positions !== projection.positions
+            ) {
+              const { after } = new ChangeDraft(projection.value).apply(
+                mapped.change
+              );
+              const nodes = authoredRootNodes(after, target.root);
+              const delta =
+                DocumentIndex.fromValue(nodes).length -
+                DocumentIndex.fromValue(fragment.slice.content).length;
+              fragment = {
+                ...fragment,
+                slice: {
+                  ...fragment.slice,
+                  content: nodes as typeof fragment.slice.content,
+                },
+                positions: getDefined(readRecord(mapped.positions, target.root))
+                  .positions,
+                to: fragment.to + delta,
+              };
+              projection = { state, positions: mapped.positions, value: after };
+            }
+          }
           const document = DocumentIndex.fromValue(fragment.slice.content);
           const anchor = document.pointAt(fragment.from, 1);
           const focus = document.pointAt(fragment.to, -1);
@@ -528,7 +698,18 @@ const compileAuthoredMarkupFragments = (
               changeId,
               id,
               kind: retained.kind,
-              ...placement(target, proposed),
+              ...placement(
+                {
+                  ...target,
+                  afterFrom: cuts.size
+                    ? authoredPositionAt(
+                        retained.positions,
+                        retained.from + run.from
+                      )
+                    : target.afterFrom,
+                },
+                proposed
+              ),
               range: anchor && focus ? { anchor, focus } : null,
               slice: fragment.slice,
             },
@@ -557,7 +738,10 @@ const compileAuthoredMarkupFragments = (
             value:
               root === 'main'
                 ? { children: fragment.slice.content }
-                : { children: [], roots: { [root]: fragment.slice.content } },
+                : {
+                    children: Object.freeze([]),
+                    roots: { [root]: fragment.slice.content },
+                  },
           });
           result.push(descriptor);
         }
@@ -565,7 +749,18 @@ const compileAuthoredMarkupFragments = (
     }
   }
   for (const operation of operations.reverse()) {
-    if (operation?.kind !== 'edit') continue;
+    if (
+      operation?.kind !== 'edit' ||
+      operation.inverseOf ||
+      !isAuthoredEditVisible(
+        state,
+        operation,
+        (edit) =>
+          readRecord(state.changes, edit.changeId)?.status !== 'rejected'
+      )
+    ) {
+      continue;
+    }
     for (const step of [...operation.steps].reverse()) {
       for (const target of step.targets) {
         const retained = readAuthoredRetainedContent(target);

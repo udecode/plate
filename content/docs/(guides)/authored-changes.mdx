@@ -68,7 +68,7 @@ const historyEditor = createEditor({
 const retainedAuthored = historyEditor.plugin(RetainedAuthoredPlugin);
 ```
 
-`retainHistory` keeps closed edit bodies needed for selective revert. Omit it when the application only needs pending review and attribution.
+`retainHistory` keeps closed edit bodies needed for selective revert. Proposal originals remain available with the default `false`; retaining an original does not preserve the operation history required for selective revert.
 
 ## Capture changes
 
@@ -160,7 +160,7 @@ authored.api.setView({
 | `proposed` | The proposed result without retained review fragments       |
 | `markup`   | Proposed content with retained deletions and move fragments |
 
-Use `intent: 'edit'` with any projection. An editing markup or proposed view keeps pending content visible while edits to independent accepted content publish directly. A replacement that fully contains pending changes resolves them and publishes directly in the same undoable transaction. Partial retained or dependency-spanning targets stay protected; other dependent edits remain proposals with the current author. Use `intent: 'propose'` with `proposed` or `markup` when ordinary input must create proposals.
+Use `intent: 'edit'` with any projection. In markup and proposed views, ordinary input is independent accepted content, including input inside pending insertions or retained deletions. Direct deletion removes only the selected content. These edits keep the proposal identity and discussion; they do not decide the whole proposal. In Suggesting mode, the author can amend their own pending insertion, while input in another author's insertion or any retained deletion creates an independent proposal. See the [editing rules](/docs/suggestion).
 
 Intent and projection belong to the exact view. Selection, clipboard input, commands, and anchors use that view's coordinates. Two mounted views over one document can use different policies.
 
@@ -174,6 +174,7 @@ const pending = authored.read.changes({
   authorId: "alice",
   limit: 50,
   status: "pending",
+  proposals: true,
 });
 const selection = authored.read.select({
   ids: pending.items.map(({ id }) => id),
@@ -202,7 +203,11 @@ if (details?.parts.status === "available") {
 }
 ```
 
-`details(id)` returns the compact change summary, decision history, and immutable semantic parts. Content parts include before and after slices. Boundary parts distinguish paragraph splits from joins. Property parts preserve exact before and after values. Root parts describe root creation or deletion.
+`details(id)` returns the compact change summary, decision history, current semantic parts, and proposal original. Content parts include before and after slices. Boundary parts distinguish paragraph splits from joins. Property parts preserve exact before and after values. Root parts describe root creation or deletion.
+
+`details.original` is `{ status: 'available', items }` for a retained proposal, `{ status: 'unavailable', reason: 'legacy' }` when old data cannot establish its original, and `null` for a direct edit. Editing and mode changes leave the original unchanged. When the author next amends their own insertion in Suggesting, the original updates from the remaining proposal content at that point. Independent inserted text stays outside the proposal. Undo restores the previous original; redo restores the same amendment baseline. Accept and reject use the remaining content, not the original.
+
+Use `changes({ proposals: true, limit: 50 })` to paginate proposals across statuses, including records without visible ranges or replies. A closed proposal can have an available original even when its current `parts` are unavailable.
 
 Closed changes without retained edit bodies return `parts.status: 'unavailable'` with `reason: 'retention'`; their summary and reviews remain readable. Keep list and spatial reads compact, and request details only for the change being reviewed.
 
@@ -221,7 +226,7 @@ Always inspect the result of `decide`, `resolve`, or `revert`:
 
 `authored.read.preview({ action, selection })` checks an accept or reject decision without applying it. An `applied` preview means the decision can apply at that moment; the later `decide` call still needs result handling.
 
-Accepting a change can require its dependencies. Rejecting one can require its dependants. The editor never expands the selection silently. Call `authored.update.resolve({ action, selection })` only after the reviewer chooses a decision for the complete conflict component.
+Accepting a change can require its dependencies. Rejecting one can require its dependants. Independent direct edits and independent text proposals survive decisions on their former carriers. Genuine structural dependencies can still block a decision. The editor never expands the review selection silently. Call `authored.update.resolve({ action, selection })` only after the reviewer chooses a decision for the complete conflict component.
 
 ## Retain author history
 
@@ -284,6 +289,7 @@ const accepted = projectAuthoredDocument(source, {
   projection: "accepted",
 });
 const review = projectAuthoredReview(source);
+const cleanJson = JSON.stringify(accepted.document);
 const json = JSON.stringify(review.review);
 const document = parseAuthoredDocument(json);
 ```
@@ -330,10 +336,10 @@ accepted or proposed content only. A successful DOCX result returns a `Blob` in
 | Markdown | Plain Markdown | Not supported; save authored JSON |
 | Semantic HTML | Feature-mapped HTML | Not supported; save authored JSON |
 | Static HTML | Component-rendered HTML | Not supported; save authored JSON |
-| DOCX | Projected Word document | Word revisions plus the canonical authored package part |
+| DOCX | Projected Word document | Word revisions; add `nativeState: 'attach'` to include canonical review data |
 
 DOCX review export reports `lossy-content` or `unsupported-content` when Word
-cannot express a native construct. The DOCX authored part restores exact data
+cannot express a native construct. Proposal originals are included only with `nativeState: 'attach'`. The `comments` option exports Word comments separately; persist the complete `CommentsJSON` alongside the document in your application. The DOCX authored part restores exact data
 only when the caller grants authored trust and the visible Word content still
 corresponds to that part.
 
@@ -341,7 +347,7 @@ corresponds to that part.
 
 Install the authored plugin and Yjs on every peer, with matching document and schema identities. Plate supplies local History by default.
 
-The Yjs adapter applies authored operations and decisions in one remote transaction. Its checkpoints preserve pending work and each peer's retained content. Retention policy is local: an archival peer can retain closed bodies while another peer compacts them.
+The Yjs adapter applies authored operations and decisions in one remote transaction. Its checkpoints preserve pending work and each peer's retained content. Retention policy is local: an archival peer can retain closed bodies while another peer compacts them. Proposal originals remain part of the shared canonical document. All writers must support the current authored schema capability; reject incompatible writers at admission and isolate old offline clients by document generation before upgrading.
 
 See [Collaboration](/docs/yjs) for setup and compaction ownership.
 
@@ -349,7 +355,7 @@ See [Collaboration](/docs/yjs) for setup and compaction ownership.
 
 ### `DefaultAuthoredPlugin`
 
-Import the standard descriptor from `platejs/authored`. It resolves the author from the Plate editor's `userId` and uses default retention. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
+Import the standard descriptor from `platejs/authored`. It resolves the author from the Plate editor's `userId` and uses default retention. It sets `automaticFormatting: 'edit'` so ordinary mark commands apply directly in either mode. Explicit `tx.authored.propose(...)` transactions, including AI proposals, retain their full proposal semantics. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
 
 ### `authored(options)`
 
@@ -358,6 +364,7 @@ Create a custom authored descriptor. Import it from `platejs/authored`.
 | Option          | Type                                                  | Purpose                                                            |
 | --------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
 | `authorId`      | `string \| ((editor) => string \| null \| undefined)` | Required. Resolve a nonempty author ID once per transaction.       |
+| `automaticFormatting` | `'edit' \| 'inherit'` | Apply ordinary text mark commands directly or inherit view intent. Native default: `'inherit'`. |
 | `retainHistory` | `boolean`                                             | Keep closed edit bodies for selective revert. Defaults to `false`. |
 
 ### Transaction, reads, and updates
@@ -370,8 +377,8 @@ After `const authored = editor.plugin(DefaultAuthoredPlugin)`, use these methods
 | `authored.read.canPropose()`              | Report whether the current identity can author proposals.                          |
 | `authored.read.view()`                    | Read this view's intent and projection.                                            |
 | `authored.read.change(id)`                | Read one logical change, or `null`.                                                |
-| `authored.read.details(id)`               | Read one change with semantic parts and decision history, or `null`.               |
-| `authored.read.changes(query?)`           | Read a page filtered by author, status, or time.                                   |
+| `authored.read.details(id)`               | Read one change with current parts, proposal original, and decision history, or `null`.               |
+| `authored.read.changes(query?)`           | Read a page filtered by proposal identity, author, status, or time.                                   |
 | `authored.read.changesAt(range)`          | Read changes intersecting a text range.                                            |
 | `authored.read.select(query)`             | Capture a revision-bound selection for a decision.                                 |
 | `authored.read.preview(decision)`         | Check an accept or reject decision without applying it.                            |

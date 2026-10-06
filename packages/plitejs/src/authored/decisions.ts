@@ -30,6 +30,8 @@ import {
 import { readRecord, records, writeRecord } from './record-tree';
 import {
   authoredDependants,
+  authoredRebaseDependants,
+  isIndependentAuthoredChange,
   isAuthoredEditVisible,
   observesAuthoredOperation,
   hasAuthoredPropertyProjection,
@@ -160,6 +162,14 @@ export const previewAuthoredDecision = (
     const change = readRecord(state.changes, identity);
     if (!change) return;
     if (input.action === 'accept') {
+      if (
+        [...records(change.operations)].every(([, id]) => {
+          const op = readRecord(state.operations, id);
+          return op?.kind === 'edit' && (!op.proposal || op.independent);
+        })
+      ) {
+        return;
+      }
       for (const dependency of change.dependencies) {
         const parent = readRecord(state.changes, dependency);
         if (parent?.status === 'accepted') continue;
@@ -168,7 +178,15 @@ export const previewAuthoredDecision = (
       }
     } else {
       for (const child of authoredDependants(state, identity)) {
-        if (child.status === 'rejected') continue;
+        if (
+          child.status === 'rejected' ||
+          [...records(child.operations)].every(([, id]) => {
+            const op = readRecord(state.operations, id);
+            return op?.kind === 'edit' && (!op.proposal || op.independent);
+          })
+        ) {
+          continue;
+        }
         if (!selected.has(child.id)) dependants.add(child.id);
         visit(child.id);
       }
@@ -233,7 +251,11 @@ export const projectAuthoredDecision = (input: {
   });
 };
 
-export const projectAuthoredSteps = (input: {
+const projectAuthoredStepsCore = (input: {
+  visibility?: {
+    accepted: ReadonlyMap<string, boolean>;
+    projected: ReadonlyMap<string, boolean>;
+  };
   editor?: Editor;
   previous?: AuthoredState;
   projection: AuthoredProjection;
@@ -263,13 +285,13 @@ export const projectAuthoredSteps = (input: {
   let { acceptedPositions } = projection;
   let { projectedPositions } = projection;
   const propertyVisibility = {
-    accepted: new Map<string, boolean>(),
-    projected: new Map<string, boolean>(),
+    accepted: new Map<string, boolean>(input.visibility?.accepted),
+    projected: new Map<string, boolean>(input.visibility?.projected),
   };
-  for (const step of documentSteps) {
-    propertyVisibility[step.target].set(
-      step.operation.id,
-      step.direction === 'forward'
+  for (const entry of documentSteps) {
+    propertyVisibility[entry.target].set(
+      entry.operation.id,
+      entry.direction === 'inverse'
     );
   }
   const mapStep = (
@@ -294,9 +316,12 @@ export const projectAuthoredSteps = (input: {
         refuseCausalOverwrite:
           target === 'accepted' &&
           operation.proposal &&
+          !operation.directFormatting &&
           direction === 'forward' &&
           readRecord(state.changes, operation.changeId)?.status !== 'accepted',
       },
+      target: target === 'projected' ? 'proposed' : 'accepted',
+      independent: operation.independent,
       acceptedEdit: !operation.proposal && direction === 'forward',
       accepted:
         target === 'projected' && input.restoreAcceptedCounterparts !== false
@@ -494,12 +519,19 @@ export const projectAuthoredSteps = (input: {
   for (let index = 0; index < documentSteps.length;) {
     const end = batchText ? applyTextBatch(index) : index;
     if (end > index) {
+      for (const entry of documentSteps.slice(index, end)) {
+        propertyVisibility[entry.target].set(entry.operation.id, true);
+      }
       index = end;
       continue;
     }
     const entry = documentSteps[index];
     index += 1;
     const { target } = entry;
+    propertyVisibility[target].set(
+      entry.operation.id,
+      entry.direction === 'forward'
+    );
     const draft = target === 'accepted' ? accepted : projected;
     const step = mapStep(
       entry,
@@ -573,6 +605,89 @@ export const projectAuthoredSteps = (input: {
       projected: projected.value as EditorDocumentValue,
       projectedPositions,
     },
+  };
+};
+
+export const projectAuthoredSteps = (
+  input: Parameters<typeof projectAuthoredStepsCore>[0]
+) => {
+  const selected = new Set(
+    input.steps
+      .filter((entry) => entry.operation.proposal)
+      .map((entry) => entry.operation.changeId)
+  );
+  const dependants = new Set(
+    authoredRebaseDependants(input.state, selected).map((change) => change.id)
+  );
+  if (!dependants.size) return projectAuthoredStepsCore(input);
+  const removals: Array<
+    Parameters<typeof projectAuthoredStepsCore>[0]['steps'][number]
+  > = [];
+  const additions: typeof removals = [];
+  const visibility = {
+    accepted: new Map<string, boolean>(),
+    projected: new Map<string, boolean>(),
+  };
+  for (const entry of input.steps) {
+    visibility[entry.target].set(
+      entry.operation.id,
+      entry.direction === 'forward'
+    );
+  }
+  for (const target of ['accepted', 'projected'] as const) {
+    for (const id of dependants) {
+      const record = getDefined(readRecord(input.state.changes, id));
+      if (
+        target === 'accepted'
+          ? record.status !== 'accepted'
+          : record.status === 'rejected'
+      ) {
+        continue;
+      }
+      for (const [, opId] of records(record.operations)) {
+        const operation = getDefined(readRecord(input.state.operations, opId));
+        if (!hasAuthoredContent(operation)) {
+          throw new Error('Missing dependent authored content');
+        }
+        const edit = materializeAuthoredEdit(operation);
+        removals.push({ operation: edit, target, direction: 'inverse' });
+        additions.push({ operation: edit, target, direction: 'forward' });
+      }
+    }
+  }
+  removals.sort(
+    (a, b) =>
+      b.operation.clock - a.operation.clock ||
+      b.operation.id.localeCompare(a.operation.id)
+  );
+  additions.sort(
+    (a, b) =>
+      a.operation.clock - b.operation.clock ||
+      a.operation.id.localeCompare(b.operation.id)
+  );
+  const before = projectAuthoredStepsCore({
+    ...input,
+    state: input.previous ?? input.state,
+    steps: removals,
+  });
+  const during = projectAuthoredStepsCore({
+    ...input,
+    projection: before.projection,
+  });
+  const after = projectAuthoredStepsCore({
+    ...input,
+    projection: during.projection,
+    visibility,
+    steps: additions,
+  });
+  return {
+    acceptedChange: before.acceptedChange
+      .compose(during.acceptedChange, input.projection.accepted)
+      .compose(after.acceptedChange, input.projection.accepted),
+    projectedChange: before.projectedChange
+      .compose(during.projectedChange, input.projection.projected)
+      .compose(after.projectedChange, input.projection.projected),
+    projection: after.projection,
   };
 };
 
@@ -650,6 +765,28 @@ export const projectAuthoredOperation = (input: {
         target,
       }))
     );
+  }
+  if (
+    hasAuthoredContent(operation) &&
+    operation.directFormatting &&
+    operation.proposal &&
+    readRecord(state.changes, operation.changeId)?.status === 'pending'
+  ) {
+    const edit = materializeAuthoredEdit(operation);
+    steps.push({
+      operation: {
+        ...edit,
+        steps: edit.steps.map((step) => ({
+          ...step,
+          rootTargets: [],
+          targets: step.targets.filter(
+            (target) => target.retained?.kind === 'properties'
+          ),
+        })),
+      },
+      direction: 'forward',
+      target: 'accepted',
+    });
   }
   return projectAuthoredSteps({ ...input, steps });
 };
@@ -808,6 +945,7 @@ export const projectAuthoredReviewUndo = (input: {
       const dependants = [...authoredDependants(state, identity)].filter(
         (child) =>
           child.status === 'accepted' &&
+          !isIndependentAuthoredChange(state, child) &&
           !selected.has(child.id) &&
           [...records(child.operations)].some(([, id]) => {
             const edit = readRecord(state.operations, id);

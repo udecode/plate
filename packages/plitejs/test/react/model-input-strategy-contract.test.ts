@@ -1239,7 +1239,10 @@ describe('model input strategy', () => {
         nativeEvent: { data: 'x', inputType: 'insertText' },
       } as any,
       handledDOMBeforeInputRef,
-      inputController: {} as any,
+      inputController: createEditableInputController({
+        preferModelSelectionForInputRef: { current: false },
+        state: createEditableInputControllerState(),
+      }),
       readOnly: false,
       skipNativeTextInputRepair: true,
     });

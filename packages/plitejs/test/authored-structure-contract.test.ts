@@ -1,12 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  createEditor,
-  DocumentChange,
-  type EditorDocumentValue,
-} from 'plitejs';
-import { authored } from 'plitejs/authored';
+import { createEditor, DocumentChange, type EditorDocumentValue } from '../src';
+import { authored } from '../src/authored';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',

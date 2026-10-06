@@ -19,8 +19,7 @@ import type { ContentSlice as ContentSliceValue } from '../interfaces/editor';
 import type { AuthoredRangeProjection } from './anchors';
 import {
   authoredPositionSpans,
-  createAuthoredPositions,
-  replaceAuthoredPositions,
+  authoredPositionsFromSpans,
   type AuthoredPositions,
   type AuthoredSpan,
 } from './positions';
@@ -173,7 +172,7 @@ export const createAuthoredContentSlice = (
   return authoredContentSlice(document, from, to, context);
 };
 
-export const createAuthoredRetainedSlice = (
+const captureAuthoredRetainedSlice = (
   document: DocumentIndex,
   from: number,
   to: number,
@@ -201,14 +200,29 @@ export const createAuthoredRetainedSlice = (
   );
   return Object.freeze({
     from: start.length,
-    positions: replaceAuthoredPositions(
-      createAuthoredPositions(0, ''),
-      0,
-      0,
-      spans
-    ),
+    spans: snapshotEditorJsonValue(spans, 'Authored retained positions'),
     slice: authoredContentSlice(document, from, to, context, roots),
     to: start.length + to - from,
+  });
+};
+
+export const createAuthoredRetainedSlice = (
+  document: DocumentIndex,
+  from: number,
+  to: number,
+  positions: AuthoredPositions,
+  roots?: RetainedSourceRoots
+) => {
+  const { spans, ...content } = captureAuthoredRetainedSlice(
+    document,
+    from,
+    to,
+    positions,
+    roots
+  );
+  return Object.freeze({
+    ...content,
+    positions: authoredPositionsFromSpans(spans),
   });
 };
 
@@ -308,31 +322,27 @@ export const captureAuthoredRetainedContent = (
       'Authored retained properties'
     );
   }
-  const bare = createAuthoredRetainedSlice(document, from, to, positions);
-  const retained = Object.freeze({
-    ...bare,
-    kind,
-    slice: createContentSliceFromFragment(
-      bare.slice.content,
-      bare.slice.openStart,
-      bare.slice.openEnd,
-      selectRetainedRoots(bare.slice.content, roots, schema)
-    ),
-  });
-  const data = snapshotEditorJsonValue(
+  const retained = captureAuthoredRetainedSlice(document, from, to, positions);
+  const selectedRoots = selectRetainedRoots(
+    retained.slice.content,
+    roots,
+    schema
+  );
+  return snapshotEditorJsonValue(
     {
-      from: retained.from,
+      ...retained,
       kind,
-      slice: retained.slice,
-      spans: [...authoredPositionSpans(retained.positions)].map(
-        (entry) => entry.span
-      ),
-      to: retained.to,
+      slice: selectedRoots
+        ? createContentSliceFromFragment(
+            retained.slice.content,
+            retained.slice.openStart,
+            retained.slice.openEnd,
+            selectedRoots
+          )
+        : retained.slice,
     },
     'Authored retained content'
   );
-  RETAINED_CONTENT.set(data, retained);
-  return data;
 };
 
 export const readAuthoredRetainedContent = (
@@ -345,11 +355,8 @@ export const readAuthoredRetainedContent = (
   const { spans, ...content } = data;
   const retained = Object.freeze({
     ...content,
-    positions: replaceAuthoredPositions(
-      createAuthoredPositions(0, ''),
-      0,
-      0,
-      spans
+    positions: authoredPositionsFromSpans(
+      snapshotEditorJsonValue(spans, 'Authored retained positions')
     ),
   });
   RETAINED_CONTENT.set(data, retained);
@@ -465,20 +472,18 @@ export const decodeAuthoredRetainedData = (
   }
   const slice = ContentSlice.fromJSON(data.slice);
   const spans = data.spans.map(decodeAuthoredSpan);
-  const positions = replaceAuthoredPositions(
-    createAuthoredPositions(0, ''),
-    0,
-    0,
-    spans
-  );
   const document = DocumentIndex.fromValue(slice.content);
   if (
-    document.length !== (positions.root?.length ?? 0) ||
+    document.length !==
+      spans.reduce((length, span) => length + span.length, 0) ||
     data.to > document.length
   ) {
     throw new Error('Authored retained positions do not match their content.');
   }
-  const retained = createAuthoredRetainedSlice(
+  const positions = authoredPositionsFromSpans(
+    snapshotEditorJsonValue(spans, 'Authored retained positions')
+  );
+  const retained = captureAuthoredRetainedSlice(
     document,
     data.from,
     data.to,
@@ -504,7 +509,13 @@ export const decodeAuthoredRetainedData = (
   );
   RETAINED_CONTENT.set(
     decoded,
-    Object.freeze({ ...retained, kind: data.kind })
+    Object.freeze({
+      from: retained.from,
+      to: retained.to,
+      slice: retained.slice,
+      positions,
+      kind: data.kind,
+    })
   );
   return decoded;
 };

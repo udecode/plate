@@ -8,10 +8,8 @@ import {
   definePluginSlot,
   DocumentChange,
   type EditorCommit,
-} from 'plitejs';
-import { authored, type AuthoredChangePublication } from 'plitejs/authored';
-import { history } from 'plitejs/history';
-
+} from '../src';
+import { authored, type AuthoredChangePublication } from '../src/authored';
 import { encodeAuthoredPositionRoots } from '../src/authored/positions-codec';
 import { records } from '../src/authored/record-tree';
 import {
@@ -20,6 +18,7 @@ import {
   indexAuthoredState,
   materializeAuthoredEdit,
 } from '../src/authored/state';
+import { history } from '../src/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -28,6 +27,28 @@ const paragraph = (text: string) => ({
 const point = (offset: number, block = 0) => ({ path: [block, 0], offset });
 
 describe('native authored changes', () => {
+  it('keeps direct insertions inside a deletion outside its review ranges', () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('aABCDEFb')],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+    view.update.text.delete({ at: { anchor: point(1), focus: point(7) } });
+    const { id } = editor.read.authored.changes({ proposals: true }).items[0];
+    editor.update.text.insert('XYZ', { at: point(4) });
+    assert.equal(view.read.text.string([]), 'aXYZb');
+    assert.deepEqual(
+      view.read.authored.changesAt({ anchor: point(2), focus: point(3) }),
+      []
+    );
+    assert.deepEqual(editor.read.authored.change(id)?.ranges, [
+      { anchor: point(1), focus: point(4) },
+      { anchor: point(7), focus: point(10) },
+    ]);
+  });
+
   it('publishes one retained proposal without changing accepted content', () => {
     const editor = createEditor({
       plugins: [authored({ authorId: 'alice' })],
@@ -333,7 +354,7 @@ describe('native authored changes', () => {
     assert.deepEqual(proposed.read.children(), [paragraph('Base draft')]);
     assert.equal(restored.read.authored.change(changeId)?.status, 'pending');
     const saved = JSON.parse(JSON.stringify(restored.read.value()));
-    assert.equal(saved.meta.authored.version, 6);
+    assert.equal(saved.meta.authored.version, 7);
     assert.ok(Array.isArray(saved.meta.authored.value.changes));
     assert.ok(Array.isArray(saved.meta.authored.value.operations));
 
@@ -400,7 +421,7 @@ describe('native authored changes', () => {
     );
     assert.equal(
       JSON.parse(JSON.stringify(restored.read.value())).meta.authored.version,
-      6
+      7
     );
   });
 
@@ -416,6 +437,9 @@ describe('native authored changes', () => {
     });
     const legacy = JSON.parse(JSON.stringify(editor.read.value()));
     legacy.meta.authored.version = 3;
+    legacy.meta.authored.value.changes = legacy.meta.authored.value.changes.map(
+      (change: unknown[]) => change.slice(0, 11)
+    );
     legacy.meta.authored.value.operations =
       legacy.meta.authored.value.operations.map((operation: unknown[]) =>
         operation[0] === 0
@@ -436,11 +460,11 @@ describe('native authored changes', () => {
     );
     assert.equal(
       JSON.parse(JSON.stringify(restored.read.value())).meta.authored.version,
-      6
+      7
     );
   });
 
-  it('loads a v5 authored checkpoint and saves persisted content footprints', () => {
+  it('loads a v5 authored checkpoint and saves persisted content footprints', async () => {
     const plugin = authored({ authorId: 'alice' });
     const editor = createEditor({
       plugins: [plugin],
@@ -452,26 +476,51 @@ describe('native authored changes', () => {
     });
     const legacy = JSON.parse(JSON.stringify(editor.read.value()));
     legacy.meta.authored.version = 5;
+    legacy.meta.authored.value.changes = legacy.meta.authored.value.changes.map(
+      (change: unknown[]) => change.slice(0, 11)
+    );
     legacy.meta.authored.value.operations =
       legacy.meta.authored.value.operations.map((operation: unknown[]) =>
         operation[0] === 0 ? operation.slice(0, 16) : operation
       );
 
     const restored = createEditor({
-      plugins: [plugin],
+      plugins: [plugin, history()],
       initialValue: legacy,
     });
     const saved = JSON.parse(JSON.stringify(restored.read.value()));
 
-    assert.equal(saved.meta.authored.version, 6);
+    assert.equal(saved.meta.authored.version, 7);
     const edit = saved.meta.authored.value.operations.find(
       (operation: unknown[]) => operation[0] === 0
     );
     assert.equal(edit.length, 17);
     assert.ok(edit[16].steps.length > 0);
+    const view = createEditorView(restored, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+    const { id } = restored.read.authored.changes({ proposals: true }).items[0];
+    view.update.text.insert('X', { at: point(10) });
+    assert.equal(view.read.text.string([]), 'Base draftX');
+    assert.deepEqual(restored.read.authored.details(id)?.original, {
+      status: 'unavailable',
+      reason: 'legacy',
+    });
+    await view.api.history.undo();
+    assert.equal(view.read.text.string([]), 'Base draft');
+    await view.api.history.redo();
+    assert.equal(view.read.text.string([]), 'Base draftX');
+    const reopened = createEditor({
+      plugins: [plugin],
+      initialValue: JSON.parse(JSON.stringify(restored.read.value())),
+    });
+    assert.deepEqual(reopened.read.authored.details(id)?.original, {
+      status: 'unavailable',
+      reason: 'legacy',
+    });
   });
 
-  it('rebuilds live indexes from v6 footprints without hydrating retained bodies', async () => {
+  it('rebuilds live indexes from persisted footprints without hydrating retained bodies', async () => {
     const propertyEditor = createEditor({
       plugins: [authored({ authorId: 'alice', retainHistory: true })],
       initialValue: [paragraph('Base')],
@@ -1114,7 +1163,7 @@ describe('native authored changes', () => {
       mutate(value.meta.authored.value);
     };
     const corruptions: Array<(value: SavedCheckpoint) => void> = [
-      (value) => (value.meta.authored.version = 7),
+      (value) => (value.meta.authored.version = 8),
       (value) => mutatePayload(value, (payload) => (payload.documentId = '')),
       (value) =>
         mutatePayload(value, (payload) => {

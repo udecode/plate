@@ -13,6 +13,8 @@ import {
   type RootChangeJson,
 } from '../core/change/root-change';
 import {
+  nodeProps,
+  type JsonRecord,
   jsonEqual,
   isTextNode,
   PreparedTokenSlice,
@@ -68,6 +70,10 @@ import {
 } from './retained';
 import {
   authoredOriginOperation,
+  indexAuthoredState,
+  observesAuthoredOperation,
+  authoredContentRemovals,
+  isAuthoredEditVisible,
   authoredDeletionsAt,
   authoredContributionSteps,
   authoredPropertyWrites,
@@ -103,11 +109,18 @@ export type AuthoredRootTarget = Readonly<{
   root: string;
 }>;
 export type AuthoredTarget = Readonly<{
+  boundaries?: ReadonlyArray<
+    Readonly<{
+      position: NonNullable<AuthoredPosition['left']>;
+      spans: readonly AuthoredSpan[];
+    }>
+  >;
   association: 'left' | 'right' | null;
   afterFrom: AuthoredPosition;
   afterTo: AuthoredPosition;
   from: AuthoredPosition;
   inserted: readonly AuthoredSpan[];
+  insertedContent?: AuthoredRetainedData | null;
   removed: readonly AuthoredSpan[];
   retained: AuthoredRetainedData | null;
   root: string;
@@ -165,8 +178,18 @@ export const resolveAuthoredRetainedPosition = (
   if (from === null || to === null) return to ?? from;
   if (from === null || to === null || from >= to) return to;
   for (const current of authoredPositionSpans(positions, from, to)) {
-    if (spanInsertionAssociation(state, current.span) === 'right') {
-      return current.from;
+    const insertion = authoredInsertionOrigin(state, current.span);
+    const query = position.right ?? position.left;
+    const anchor =
+      insertion?.association === 'left'
+        ? (insertion.position.left ?? insertion.position.right)
+        : (insertion?.position.right ?? insertion?.position.left);
+    if (query && anchor && query.origin === anchor.origin) {
+      if (anchor.offset > query.offset) return current.from;
+      if (anchor.offset < query.offset) continue;
+      if (spanInsertionAssociation(state, current.span) === 'right') {
+        return current.from;
+      }
     }
   }
   return to;
@@ -319,7 +342,12 @@ export const authoredEditTarget = (
           for (const identity of identities) {
             if (!identity) continue;
             const proposal = readRecord(state.changes, identity);
-            if (proposal?.status !== 'pending') continue;
+            if (
+              proposal?.status !== 'pending' ||
+              (insertion && proposal.authorId !== options.authorId)
+            ) {
+              continue;
+            }
             if (containedTarget && identity !== containedTarget) mixed = true;
             containedTarget ??= identity;
             covered = true;
@@ -333,7 +361,7 @@ export const authoredEditTarget = (
             mixed = true;
           }
         }
-        if (section.replacement) {
+        if (section.replacement && options.adjacentDeletions) {
           const editFrom = position;
           const editTo = insertion ? position : position + section.length;
           for (const deletionPosition of insertion
@@ -399,6 +427,22 @@ export const authoredEditTarget = (
   }
   if (mixed || (containedTarget && uncovered)) return null;
   return containedTarget ?? (options.adjacentDeletions ? adjacentTarget : null);
+};
+
+export const coalesceAuthoredReplacements = (
+  sections: RootChangeJson
+): RootChangeJson => {
+  const joined: Array<RootChangeJson[number]> = [];
+  for (const section of sections) {
+    const prior = joined.at(-1);
+    if (prior?.replacement && section.replacement) {
+      joined[joined.length - 1] = {
+        length: prior.length + section.length,
+        replacement: [...prior.replacement, ...section.replacement],
+      };
+    } else joined.push(section);
+  }
+  return joined;
 };
 
 const rootSections = (
@@ -539,6 +583,7 @@ export const partitionAuthoredStructuralEdit = (
   value: JsonEditorValue
 ): ReturnType<typeof partitionAuthoredTextEdit> => {
   if (change.createRoots.size || change.deleteRoots.size) return null;
+  if (crossRootMovement(change, value)) return null;
   const regions: Array<{
     root: string;
     from: number;
@@ -546,11 +591,14 @@ export const partitionAuthoredStructuralEdit = (
     changeId: string;
   }> = [];
   const lengths = new Map<string, number>();
-  const owners = new Set<string>();
   for (const [root, sections] of rootSections(change.toJSON())) {
     const positions = readRecord(roots, root)?.positions;
     if (!positions) return null;
     const document = DocumentIndex.fromValue(authoredRootNodes(value, root));
+    if (getInternalDocumentRootChange(change, root)?.movedNode(document)) {
+      return null;
+    }
+    if (sections.some((section) => section.properties)) return null;
     lengths.set(root, document.length);
     const candidates: typeof regions = [];
     let from = 0;
@@ -583,7 +631,6 @@ export const partitionAuthoredStructuralEdit = (
                 changeId: proposal.id,
               });
             }
-            owners.add(proposal.id);
           }
           position += span.length;
         }
@@ -615,7 +662,7 @@ export const partitionAuthoredStructuralEdit = (
       }
     }
   }
-  if (owners.size < 2 || !regions.length) return null;
+  if (!regions.length) return null;
   const draft = new ChangeDraft(value);
   const parts: Array<
     NonNullable<ReturnType<typeof partitionAuthoredTextEdit>>[number]
@@ -868,10 +915,15 @@ const captureAuthoredStep = (input: {
 }) =>
   profileCoreDuration('authored-capture', () => {
     const json = input.change.toJSON();
+    const afterRoots =
+      json.roots || json.createRoots || json.deleteRoots
+        ? new ChangeDraft(input.value).apply(input.change).after.roots
+        : input.value.roots;
     const crossMovement = crossRootMovement(input.change, input.value);
     let roots = input.positions;
     const dependencies = new Set<string>();
     const publicationDependencies = new Set<string>();
+    const structuralDependencies = new Set<string>();
     const targets: AuthoredTarget[] = [];
     const rootTargets: AuthoredRootTarget[] = [];
     const depend = (identity: string | null) => {
@@ -893,7 +945,10 @@ const captureAuthoredStep = (input: {
       ...input.change.deleteRoots,
     ]) {
       const previous = readRecord(roots, root);
-      if (previous) depend(previous.birth);
+      if (previous) {
+        depend(previous.birth);
+        dependOnTarget(structuralDependencies, previous.birth);
+      }
       rootTargets.push({
         root,
         before: previous
@@ -915,7 +970,10 @@ const captureAuthoredStep = (input: {
     }
     for (const [root, sections] of rootSections(json)) {
       const previousRoot = readRecord(roots, root);
-      if (previousRoot) depend(previousRoot.birth);
+      if (previousRoot) {
+        depend(previousRoot.birth);
+        dependOnTarget(structuralDependencies, previousRoot.birth);
+      }
       const before =
         previousRoot?.positions ??
         createAuthoredPositions(0, `${input.operationId}:empty:${root}`);
@@ -994,6 +1052,7 @@ const captureAuthoredStep = (input: {
           for (const span of [...removed, ...propertyContent]) {
             dependOnPublication(span.birth);
             dependOnPublication(span.placement);
+            dependOnTarget(structuralDependencies, span.placement);
             for (const writer of section.properties
               ? authoredPropertyDependencies(
                   span.properties,
@@ -1013,6 +1072,7 @@ const captureAuthoredStep = (input: {
             )) {
               dependOnTarget(targetDependencies, span.birth);
               dependOnTarget(targetDependencies, span.placement);
+              dependOnTarget(structuralDependencies, span.placement);
             }
           }
           if (
@@ -1027,13 +1087,19 @@ const captureAuthoredStep = (input: {
               ...authoredPositionSpans(before, fromBefore, fromBefore + 1),
             ][0];
             if (left && right) {
+              if (section.replacement?.some((token) => token.kind !== 'text')) {
+                dependOnTarget(targetDependencies, left.span.birth);
+                dependOnTarget(targetDependencies, right.span.birth);
+              }
               if (left.span.birth && right.span.birth) {
                 dependOnPublication(left.span.birth);
                 dependOnPublication(right.span.birth);
               }
               if (left.span.placement && right.span.placement) {
                 dependOnPublication(left.span.placement);
+                dependOnTarget(structuralDependencies, left.span.placement);
                 dependOnPublication(right.span.placement);
+                dependOnTarget(structuralDependencies, right.span.placement);
               }
             }
           }
@@ -1138,7 +1204,18 @@ const captureAuthoredStep = (input: {
           ? (readRecord(input.afterPositions, root)?.positions ??
             createAuthoredPositions(0, `${input.operationId}:empty:${root}`))
           : applyPositionEdits(before, positionEdits, !!movement);
+      if (input.restoreIdentity) {
+        for (const target of pending) {
+          positions = replaceAuthoredPositions(
+            positions,
+            target.afterFromOffset,
+            target.afterToOffset,
+            target.inserted
+          );
+        }
+      }
       input.offsets.set(root, insertedOffset);
+      const afterNative = RootChange.fromJSON(sections).apply(native);
       for (const target of pending) {
         const {
           afterFromOffset,
@@ -1155,6 +1232,15 @@ const captureAuthoredStep = (input: {
             ...saved,
             afterFrom: authoredPositionAt(positions, afterFromOffset),
             afterTo: authoredPositionAt(positions, afterToOffset),
+            insertedContent: captureAuthoredRetainedContent(
+              afterNative,
+              afterFromOffset,
+              afterToOffset,
+              retainedKind,
+              positions,
+              afterRoots,
+              input.schema
+            ),
             retained: captureAuthoredRetainedContent(
               native,
               beforeFromOffset,
@@ -1167,6 +1253,64 @@ const captureAuthoredStep = (input: {
           },
           'Authored target'
         );
+        const boundarySpans = [
+          ...(captured.retained?.kind === 'properties'
+            ? (captured.retained.spans ?? [])
+            : []),
+          ...(sections[captured.section].replacement?.every(
+            (token) => token.kind === 'text'
+          )
+            ? captured.inserted
+            : input.afterPositions
+              ? afterNative
+                  .nodeRangesTouching(afterFromOffset, afterToOffset)
+                  .flatMap((node) => {
+                    if (node.kind !== 'text') return [];
+                    const from = Math.max(afterFromOffset, node.from + 1);
+                    const to = Math.min(afterToOffset, node.to - 1);
+                    return [...authoredPositionSpans(positions, from, to)].map(
+                      (entry) => ({
+                        ...entry.span,
+                        offset:
+                          entry.span.offset + Math.max(from - entry.from, 0),
+                        length:
+                          Math.min(to, entry.to) - Math.max(from, entry.from),
+                      })
+                    );
+                  })
+              : []),
+        ];
+        if (boundarySpans.length) {
+          const endpoints = new Map<
+            string,
+            NonNullable<AuthoredPosition['left']>
+          >();
+          for (const span of boundarySpans) {
+            for (const offset of [span.offset, span.offset + span.length]) {
+              const endpoint = { origin: span.origin, offset };
+              endpoints.set(JSON.stringify(endpoint), endpoint);
+            }
+          }
+          const boundaries = [...endpoints.values()].map((position) => ({
+            position,
+            spans: [
+              {
+                birth: null,
+                placement: null,
+                properties: {},
+                origin: `${input.operationId}:boundary:${JSON.stringify([root, position.origin, position.offset])}`,
+                offset: 0,
+                length: 2,
+              },
+            ],
+          }));
+          targets.push(
+            snapshotEditorJsonValue(
+              { ...captured, boundaries },
+              'Authored property boundaries'
+            )
+          );
+        }
         targetDependencies.forEach((dependency) =>
           dependencies.add(dependency)
         );
@@ -1220,7 +1364,7 @@ const captureAuthoredStep = (input: {
             }
           }
         }
-        targets.push(captured);
+        if (!boundarySpans.length) targets.push(captured);
       }
       roots = writeRecord(roots, root, {
         birth: input.change.createRoots.has(root)
@@ -1254,6 +1398,7 @@ const captureAuthoredStep = (input: {
     }
     return {
       dependencies: [...dependencies].sort(),
+      structuralDependencies: [...structuralDependencies].sort(),
       publicationDependencies: [...publicationDependencies].sort(),
       positions:
         input.afterPositions === undefined ? roots : input.afterPositions,
@@ -1315,6 +1460,9 @@ const textPropertyContext = (
 };
 
 type AuthoredMappingInput = {
+  insertionBounds?: Readonly<{ root: string; from: number; to: number }>;
+  target?: 'accepted' | 'proposed';
+  independent?: boolean;
   ignoreTextBoundaries?: boolean;
   state: AuthoredState;
   properties?: Readonly<{
@@ -1340,10 +1488,7 @@ type AuthoredMappingInput = {
   value: JsonEditorValue;
 };
 
-const mapMovement = (
-  input: AuthoredMappingInput,
-  targets: readonly AuthoredTarget[]
-) => {
+export const authoredMovementTargets = (targets: readonly AuthoredTarget[]) => {
   if (targets.length !== 2) return null;
   const inserted = targets.find(
     (target) => target.removed.length === 0 && target.inserted.length > 0
@@ -1358,6 +1503,16 @@ const mapMovement = (
   ) {
     return null;
   }
+  return { inserted, removed };
+};
+
+const mapMovement = (
+  input: AuthoredMappingInput,
+  targets: readonly AuthoredTarget[]
+) => {
+  const movement = authoredMovementTargets(targets);
+  if (!movement) return null;
+  const { inserted, removed } = movement;
   const original = input.direction === 'forward' ? removed : inserted;
   const destination = input.direction === 'forward' ? inserted : removed;
   const source = readRecord(input.positions, original.root);
@@ -1481,6 +1636,19 @@ const mapMovement = (
   };
 };
 
+const subtractInterval = (
+  part: Readonly<{ from: number; to: number }>,
+  removed: Readonly<{ from: number; to: number }>
+) =>
+  removed.from >= part.to || removed.to <= part.from
+    ? [part]
+    : [
+        ...(part.from < removed.from
+          ? [{ from: part.from, to: removed.from }]
+          : []),
+        ...(part.to > removed.to ? [{ from: removed.to, to: part.to }] : []),
+      ];
+
 const mapAuthoredStep = (input: AuthoredMappingInput) =>
   profileCoreDuration('authored-map', () => {
     let roots = input.positions;
@@ -1539,332 +1707,300 @@ const mapAuthoredStep = (input: AuthoredMappingInput) =>
         roots = movement.positions;
         continue;
       }
+      type MappedTarget = {
+        from: number;
+        to: number;
+        section: RootChangeJson[number];
+        target: AuthoredTarget;
+        replacementSpans: readonly AuthoredSpan[];
+        propertyWriters: AuthoredSpan['properties'] | undefined;
+      };
       const mapped = rootTargets
-        .map((target) => {
-          let section = sectionsByRoot.get(target.root)?.[target.section];
-          if (!section || (!section.replacement && !section.properties)) {
-            throw new Error('Missing authored change section.');
-          }
-          if (
-            input.ignoreTextBoundaries &&
-            readAuthoredTextBoundary(target, section)
-          ) {
-            return null;
-          }
-          if (
-            input.properties &&
-            target.retained?.kind === 'properties' &&
-            target.retained.spans?.length
-          ) {
-            if (input.properties.refuseCausalOverwrite && section.properties) {
-              const proposal = readRecord(
-                input.properties.state.operations,
-                input.operationId
-              );
-              if (proposal?.kind === 'edit') {
-                const conflicts = new Set<string>();
-                for (const original of target.retained.spans) {
-                  for (const location of authoredContentLocations(
-                    roots,
-                    original
-                  )) {
-                    const span = {
-                      ...location.span,
-                      offset: location.fromOffset,
-                      length: location.toOffset - location.fromOffset,
-                    };
-                    const currentDocument =
-                      location.root === root
-                        ? document
-                        : DocumentIndex.fromValue(
-                            authoredRootNodes(input.value, location.root)
-                          );
-                    const at =
-                      location.from +
-                      location.fromOffset -
-                      location.span.offset;
-                    const node = currentDocument
-                      .nodeRangesTouching(at, at + span.length)
-                      .find((range) => range.kind === 'text');
-                    for (const identity of authoredCausalPropertyConflicts({
-                      ...input.properties,
-                      textContext: node
-                        ? textPropertyContext(
-                            currentDocument,
-                            location.root,
-                            node.path
-                          )
-                        : undefined,
-                      proposal,
-                      current: location.span.properties,
-                      original: original.properties,
-                      modifications: section.properties.operations,
-                      writes: [
-                        ...authoredTextPropertyWrites(
-                          input.properties.state,
-                          span
-                        ),
-                      ].map((write) => write.value),
-                    })) {
-                      conflicts.add(identity);
-                    }
-                  }
-                }
-                if (conflicts.size) {
-                  throw new AuthoredMappingConflictError([...conflicts]);
-                }
-              }
+        .flatMap<MappedTarget | null>(
+          (target): MappedTarget | readonly MappedTarget[] | null => {
+            let section = sectionsByRoot.get(target.root)?.[target.section];
+            if (!section || (!section.replacement && !section.properties)) {
+              throw new Error('Missing authored change section.');
             }
-            return null;
-          }
-          if (input.direction === 'inverse') {
-            const retained = readAuthoredRetainedContent(target);
-            if (section.properties) {
-              if (retained?.kind !== 'properties') {
-                throw new Error('Missing retained authored properties.');
-              }
-              section = {
-                length: section.length,
-                properties: {
-                  version: 1,
-                  operations: invertPropertyModifications(
-                    retained.properties,
-                    section.properties.operations
-                  ),
-                },
-              };
-            } else {
+            if (
+              input.ignoreTextBoundaries &&
+              readAuthoredTextBoundary(target, section)
+            ) {
+              return null;
+            }
+            if (
+              input.properties &&
+              target.retained?.kind === 'properties' &&
+              target.retained.spans?.length
+            ) {
               if (
-                target.removed.length &&
-                (!retained || retained.kind === 'properties')
+                input.properties.refuseCausalOverwrite &&
+                section.properties
               ) {
-                throw new Error('Missing retained authored replacement.');
-              }
-              section = {
-                length: target.inserted.reduce(
-                  (total, span) => total + span.length,
-                  0
-                ),
-                replacement:
-                  retained && retained.kind !== 'properties'
-                    ? DocumentIndex.fromValue(retained.slice.content)
-                        .slice(retained.from, retained.to)
-                        .toJSON()
-                    : [],
-              };
-            }
-          }
-          const insertion =
-            input.direction === 'forward' &&
-            section.length === 0 &&
-            target.inserted[0]?.origin ===
-              authoredOperationOrigin(input.operationId, root)
-              ? authoredInsertionOrigin(input.state, target.inserted[0])
-              : null;
-          let from =
-            (input.direction === 'forward'
-              ? resolveConcurrentAuthoredInsertion(
-                  input.state,
-                  before,
-                  input.operationId,
-                  target
-                )
-              : null) ??
-            (insertion
-              ? resolveAuthoredPosition(
-                  before,
-                  {
-                    left:
-                      insertion.association === 'left'
-                        ? insertion.position.left
-                        : null,
-                    right:
-                      insertion.association === 'right'
-                        ? insertion.position.right
-                        : null,
-                  },
-                  insertion.association,
-                  'collapse'
-                )
-              : resolveAuthoredPosition(
-                  before,
-                  input.direction === 'forward'
-                    ? target.from
-                    : target.afterFrom,
-                  input.direction === 'forward' && section.length === 0
-                    ? (target.association ?? 'right')
-                    : 'right'
-                ));
-          if (input.direction === 'inverse' && section.length === 0) {
-            from = resolveAuthoredRetainedPosition(
-              input.state,
-              before,
-              target.afterFrom
-            );
-            if (input.accepted && target.removed.length) {
-              const original = authoredContentLocations(
-                input.accepted.positions,
-                target.removed[0]
-              ).next().value;
-              const left = resolveAuthoredPosition(
-                before,
-                { left: target.afterFrom.left, right: null },
-                'left',
-                'collapse'
-              );
-              const right = resolveAuthoredPosition(
-                before,
-                { left: null, right: target.afterFrom.right },
-                'right',
-                'collapse'
-              );
-              if (
-                original?.root === root &&
-                left !== null &&
-                right !== null &&
-                left < right
-              ) {
-                const position =
-                  original.from + original.fromOffset - original.span.offset;
-                for (const entry of authoredPositionSpans(
-                  before,
-                  left,
-                  right
-                )) {
-                  const current = authoredOriginalLocation(
-                    input.state,
-                    input.accepted.positions,
-                    {
-                      ...entry.span,
-                      offset:
-                        entry.span.offset + Math.max(left - entry.from, 0),
-                      length:
-                        Math.min(right, entry.to) - Math.max(left, entry.from),
-                    }
-                  );
-                  if (current?.root === root && current.offset > position) {
-                    from = Math.max(left, entry.from);
-                    break;
-                  }
-                }
-              }
-            }
-          }
-          let to =
-            section.length === 0
-              ? from
-              : resolveAuthoredPosition(
-                  before,
-                  input.direction === 'forward' ? target.to : target.afterTo,
-                  'left'
+                const proposal = readRecord(
+                  input.properties.state.operations,
+                  input.operationId
                 );
-          if (
-            input.acceptedEdit &&
-            target.removed.length &&
-            (section.properties || from === null || to === null)
-          ) {
-            const fragments = target.removed.flatMap((span) =>
-              [...authoredOriginSpans(before, span.origin)].flatMap(
-                (fragment) => {
-                  const start = Math.max(span.offset, fragment.span.offset);
-                  const end = Math.min(
-                    span.offset + span.length,
-                    fragment.span.offset + fragment.span.length
-                  );
-                  return start < end
-                    ? [
-                        {
-                          from: fragment.from + start - fragment.span.offset,
-                          to: fragment.from + end - fragment.span.offset,
-                        },
-                      ]
-                    : [];
+                if (proposal?.kind === 'edit') {
+                  const conflicts = new Set<string>();
+                  for (const original of target.retained.spans) {
+                    for (const location of authoredContentLocations(
+                      roots,
+                      original
+                    )) {
+                      const span = {
+                        ...location.span,
+                        offset: location.fromOffset,
+                        length: location.toOffset - location.fromOffset,
+                      };
+                      const currentDocument =
+                        location.root === root
+                          ? document
+                          : DocumentIndex.fromValue(
+                              authoredRootNodes(input.value, location.root)
+                            );
+                      const at =
+                        location.from +
+                        location.fromOffset -
+                        location.span.offset;
+                      const node = currentDocument
+                        .nodeRangesTouching(at, at + span.length)
+                        .find((range) => range.kind === 'text');
+                      for (const identity of authoredCausalPropertyConflicts({
+                        ...input.properties,
+                        textContext: node
+                          ? textPropertyContext(
+                              currentDocument,
+                              location.root,
+                              node.path
+                            )
+                          : undefined,
+                        proposal,
+                        current: location.span.properties,
+                        original: original.properties,
+                        modifications: section.properties.operations,
+                        writes: [
+                          ...authoredTextPropertyWrites(
+                            input.properties.state,
+                            span
+                          ),
+                        ].map((write) => write.value),
+                      })) {
+                        conflicts.add(identity);
+                      }
+                    }
+                  }
+                  if (conflicts.size) {
+                    throw new AuthoredMappingConflictError([...conflicts]);
+                  }
                 }
-              )
+              }
+              return null;
+            }
+            if (input.direction === 'inverse') {
+              const retained = readAuthoredRetainedContent(target);
+              if (section.properties) {
+                if (retained?.kind !== 'properties') {
+                  throw new Error('Missing retained authored properties.');
+                }
+                section = {
+                  length: section.length,
+                  properties: {
+                    version: 1,
+                    operations: invertPropertyModifications(
+                      retained.properties,
+                      section.properties.operations
+                    ),
+                  },
+                };
+              } else {
+                if (
+                  target.removed.length &&
+                  (!retained || retained.kind === 'properties')
+                ) {
+                  throw new Error('Missing retained authored replacement.');
+                }
+                section = {
+                  length: target.inserted.reduce(
+                    (total, span) => total + span.length,
+                    0
+                  ),
+                  replacement:
+                    retained && retained.kind !== 'properties'
+                      ? DocumentIndex.fromValue(retained.slice.content)
+                          .slice(retained.from, retained.to)
+                          .toJSON()
+                      : [],
+                };
+              }
+            }
+            const insertion =
+              input.direction === 'forward' &&
+              section.length === 0 &&
+              target.inserted[0]?.origin ===
+                authoredOperationOrigin(input.operationId, root)
+                ? authoredInsertionOrigin(input.state, target.inserted[0])
+                : null;
+            let from =
+              (input.direction === 'forward'
+                ? resolveConcurrentAuthoredInsertion(
+                    input.state,
+                    before,
+                    input.operationId,
+                    target,
+                    input.insertionBounds?.root === root
+                      ? input.insertionBounds
+                      : undefined
+                  )
+                : null) ??
+              (insertion &&
+              resolveAuthoredPosition(
+                before,
+                insertion.position,
+                insertion.association
+              ) === null
+                ? resolveAuthoredRetainedPosition(
+                    input.state,
+                    before,
+                    insertion.position
+                  )
+                : null) ??
+              (insertion
+                ? resolveAuthoredPosition(
+                    before,
+                    {
+                      left:
+                        insertion.association === 'left'
+                          ? insertion.position.left
+                          : null,
+                      right:
+                        insertion.association === 'right'
+                          ? insertion.position.right
+                          : null,
+                    },
+                    insertion.association,
+                    'collapse'
+                  )
+                : resolveAuthoredPosition(
+                    before,
+                    input.direction === 'forward'
+                      ? target.from
+                      : target.afterFrom,
+                    input.direction === 'forward' && section.length === 0
+                      ? (target.association ?? 'right')
+                      : 'right'
+                  ));
+            if (input.direction === 'inverse' && section.length === 0) {
+              from = resolveAuthoredRetainedPosition(
+                input.state,
+                before,
+                target.afterFrom
+              );
+              if (input.accepted && target.removed.length) {
+                const original = authoredContentLocations(
+                  input.accepted.positions,
+                  target.removed[0]
+                ).next().value;
+                const left = resolveAuthoredPosition(
+                  before,
+                  { left: target.afterFrom.left, right: null },
+                  'left',
+                  'collapse'
+                );
+                const right = resolveAuthoredPosition(
+                  before,
+                  { left: null, right: target.afterFrom.right },
+                  'right',
+                  'collapse'
+                );
+                if (
+                  original?.root === root &&
+                  left !== null &&
+                  right !== null &&
+                  left < right
+                ) {
+                  const position =
+                    original.from + original.fromOffset - original.span.offset;
+                  for (const entry of authoredPositionSpans(
+                    before,
+                    left,
+                    right
+                  )) {
+                    const current = authoredOriginalLocation(
+                      input.state,
+                      input.accepted.positions,
+                      {
+                        ...entry.span,
+                        offset:
+                          entry.span.offset + Math.max(left - entry.from, 0),
+                        length:
+                          Math.min(right, entry.to) -
+                          Math.max(left, entry.from),
+                      }
+                    );
+                    if (current?.root === root && current.offset > position) {
+                      from = Math.max(left, entry.from);
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+            if (
+              from === null &&
+              input.independent &&
+              input.direction === 'forward' &&
+              section.length === 0 &&
+              section.replacement?.length
+            ) {
+              from = resolveAuthoredPosition(
+                before,
+                target.from,
+                target.association ?? 'right',
+                'collapse'
+              );
+            }
+            let to =
+              section.length === 0
+                ? from
+                : resolveAuthoredPosition(
+                    before,
+                    input.direction === 'forward' ? target.to : target.afterTo,
+                    'left'
+                  );
+            const originalSection = getDefined(
+              sectionsByRoot.get(target.root)?.[target.section]
             );
-            if (!fragments.length) return null;
-            from = Math.min(...fragments.map((fragment) => fragment.from));
-            to = Math.max(...fragments.map((fragment) => fragment.to));
-          }
-          if (from === null || to === null || to < from) {
-            if (input.acceptedEdit) return null;
-            throw new AuthoredMappingConflictError([input.changeId]);
-          }
-          let replacementSpans = target.removed;
-          if (section.replacement) {
-            const conflicts = new Set<string>();
-            const currentOperation = readRecord(
+            const originalRetained = readAuthoredRetainedContent(target);
+            const removedTokens =
+              originalRetained && originalRetained.kind !== 'properties'
+                ? DocumentIndex.fromValue(originalRetained.slice.content)
+                    .slice(originalRetained.from, originalRetained.to)
+                    .toJSON()
+                : [];
+            const mappedOperation = readRecord(
               input.state.operations,
               input.operationId
             );
-            const operation =
-              currentOperation?.kind === 'edit' ? currentOperation : null;
-            for (const span of removedSpans(before, from, to)) {
-              const originals = (
-                input.direction === 'forward' ? target.removed : target.inserted
-              )
-                .filter(
-                  (retained) =>
-                    retained.origin === span.origin &&
-                    retained.offset < span.offset + span.length &&
-                    retained.offset + retained.length > span.offset
-                )
-                .sort((left, right) => left.offset - right.offset);
-              const covered = sameContent(
-                [span],
-                originals.map((retained) => {
-                  const offset = Math.max(span.offset, retained.offset);
-                  return {
-                    ...retained,
-                    offset,
-                    length:
-                      Math.min(
-                        span.offset + span.length,
-                        retained.offset + retained.length
-                      ) - offset,
-                  };
-                })
-              );
-              if (!covered) {
-                const acceptedCounterpart =
-                  input.direction === 'forward' &&
-                  span.birth !== null &&
-                  input.accepted?.isAccepted(span.birth) &&
-                  isLaterAuthoredInsertion(input.state, operation, span);
-                if (!acceptedCounterpart) {
-                  conflicts.add(span.birth ?? input.changeId);
-                }
-              } else if (input.direction === 'forward' && !input.acceptedEdit) {
-                for (const original of originals) {
-                  if (
-                    span.placement !== original.placement &&
-                    span.placement !== input.changeId
-                  ) {
-                    conflicts.add(span.placement ?? input.changeId);
-                  }
-                  for (const [key, writer] of Object.entries(span.properties)) {
-                    if (
-                      writer !== input.changeId &&
-                      writer !== original.properties[key]
-                    ) {
-                      conflicts.add(writer);
-                    }
-                  }
-                }
-              }
-            }
-            if (conflicts.size) {
-              throw new AuthoredMappingConflictError([...conflicts]);
-            }
-            const { accepted } = input;
-            if (
+            const restoresOriginal =
+              !(
+                mappedOperation?.kind === 'edit' && mappedOperation.inverseOf
+              ) &&
+              !!section.replacement &&
               input.direction === 'inverse' &&
-              accepted &&
-              target.removed.length &&
+              !!input.accepted;
+            const restoresAccepted =
+              restoresOriginal &&
+              target.removed.length > 0 &&
               target.removed.every(
-                (span) => span.birth === null || accepted.isAccepted(span.birth)
-              )
-            ) {
+                (span) =>
+                  span.birth === null || input.accepted?.isAccepted(span.birth)
+              );
+            const acceptedCounterpart = (() => {
+              if (!restoresAccepted || !input.accepted) return null;
+              const { accepted } = input;
+              const operation =
+                mappedOperation?.kind === 'edit' ? mappedOperation : null;
               const acceptedRoot =
                 authoredPositionRoot(
                   accepted.positions,
@@ -1927,124 +2063,712 @@ const mapAuthoredStep = (input: AuthoredMappingInput) =>
               const acceptedDocument = DocumentIndex.fromValue(
                 authoredRootNodes(accepted.value, acceptedRoot)
               );
-              section = {
-                ...section,
-                replacement: intervals.flatMap((interval) =>
+              return {
+                tokens: intervals.flatMap((interval) =>
                   acceptedDocument.slice(interval.from, interval.to).toJSON()
                 ),
+                spans: intervals.flatMap((interval) => interval.spans),
               };
-              replacementSpans = intervals.flatMap(
-                (interval) => interval.spans
+            })();
+            const restoresDirect =
+              input.acceptedEdit &&
+              input.target === 'accepted' &&
+              mappedOperation?.kind === 'edit' &&
+              !!mappedOperation.inverseOf &&
+              section.length === 0 &&
+              section.replacement?.some(
+                (token) => token.kind === 'text' || token.nodeKind !== 'text'
               );
-            }
-          }
-          let propertyWriters: AuthoredSpan['properties'] | undefined;
-          if (section.properties) {
-            const current = removedSpans(before, from, to)[0];
-            const original = (
-              input.direction === 'forward' ? target.removed : target.inserted
-            )[0];
-            if (!current || !original) {
-              throw new AuthoredMappingConflictError([input.changeId]);
-            }
-            if (input.properties) {
-              const propertyState = input.properties.state;
-              const node = getDefined(document.nodeStartingAt(from));
-              const textContext =
-                node.kind === 'text'
-                  ? textPropertyContext(document, root, node.path)
-                  : undefined;
-              const proposal = readRecord(
-                propertyState.operations,
-                input.operationId
+            const deletesTextNode =
+              input.acceptedEdit &&
+              section.replacement?.length === 0 &&
+              removedTokens.some((token) => token.kind !== 'text') &&
+              removedTokens.every(
+                (token) => token.kind === 'text' || token.nodeKind === 'text'
               );
+            if (
+              section.replacement &&
+              !section.properties &&
+              (restoresDirect ||
+                deletesTextNode ||
+                (originalSection.replacement?.every(
+                  (token) => token.kind === 'text'
+                ) &&
+                  removedTokens.every((token) => token.kind === 'text')) ||
+                [...target.inserted, ...target.removed].some(
+                  (span) =>
+                    span.birth &&
+                    span.birth !==
+                      (span.origin ===
+                      authoredOperationOrigin(input.operationId, root)
+                        ? input.changeId
+                        : authoredOriginOperation(input.state, span.origin)
+                            ?.changeId)
+                ))
+            ) {
               if (
-                input.properties.refuseCausalOverwrite &&
-                proposal?.kind === 'edit'
+                input.acceptedEdit &&
+                input.target === 'proposed' &&
+                !input.independent &&
+                section.length === 0 &&
+                !target.removed.length &&
+                (from === null || to === null)
               ) {
-                const superseded = authoredCausalPropertyConflicts({
-                  ...input.properties,
-                  textContext,
-                  proposal,
-                  current: current.properties,
-                  original: original.properties,
-                  modifications: section.properties.operations,
-                  writes: [
-                    ...new Set(
-                      textContext
-                        ? authoredPropertyKeys(
-                            propertyState,
-                            current.origin,
-                            current.offset
+                return [];
+              }
+              const removed =
+                input.direction === 'forward'
+                  ? target.removed
+                  : target.inserted;
+              const restored =
+                input.direction === 'forward'
+                  ? target.inserted
+                  : (acceptedCounterpart?.spans ?? target.removed);
+              const visible =
+                input.properties?.isVisible ??
+                ((edit) =>
+                  readRecord(input.state.changes, edit.changeId)?.status ===
+                  'accepted');
+              const mixedRestoration =
+                restoresOriginal &&
+                input.accepted &&
+                target.removed.some(
+                  (span) =>
+                    span.birth && !input.accepted?.isAccepted(span.birth)
+                ) &&
+                target.removed.some(
+                  (span) =>
+                    span.birth === null ||
+                    input.accepted?.isAccepted(span.birth)
+                );
+              const replacement = PreparedTokenSlice.fromTokens(
+                acceptedCounterpart?.tokens ?? section.replacement
+              );
+              let offset = 0;
+              const pieces: Array<{
+                tokens: ReturnType<typeof replacement.toJSON>;
+                span: AuthoredSpan;
+              }> = [];
+              for (const span of restored) {
+                let intervals = [
+                  { from: span.offset, to: span.offset + span.length },
+                ];
+                const origin = authoredOriginOperation(
+                  input.state,
+                  span.origin
+                );
+                if (
+                  origin &&
+                  origin.id !== input.operationId &&
+                  !visible(origin)
+                ) {
+                  intervals = [];
+                }
+                if (span.birth && span.birth !== input.changeId) {
+                  const birth = readRecord(input.state.changes, span.birth);
+                  const first =
+                    birth?.operations &&
+                    readRecord(
+                      input.state.operations,
+                      getDefined(
+                        readRecord(birth.operations, birth.operations.first)
+                      )
+                    );
+                  if (first?.kind === 'edit' && !visible(first)) intervals = [];
+                }
+                const restorationState = input.properties?.state ?? input.state;
+                const birth =
+                  span.birth && span.birth !== origin?.changeId
+                    ? readRecord(restorationState.changes, span.birth)
+                    : null;
+                const restorations = birth
+                  ? [...records(birth.operations)].flatMap(([, id]) => {
+                      const operation = readRecord(
+                        restorationState.operations,
+                        id
+                      );
+                      if (operation?.kind !== 'edit' || !visible(operation)) {
+                        return [];
+                      }
+                      return authoredContributionSteps(operation).flatMap(
+                        (step) =>
+                          step.targets.flatMap((frameTarget) =>
+                            frameTarget.inserted
+                              .filter(
+                                (inserted) =>
+                                  inserted.birth === span.birth &&
+                                  inserted.origin === span.origin
+                              )
+                              .map((inserted) => ({
+                                operation,
+                                from: inserted.offset,
+                                to: inserted.offset + inserted.length,
+                              }))
                           )
-                        : section.properties.operations.map(
-                            (entry) => entry.key
-                          )
-                    ),
-                  ].flatMap((key) => [
-                    ...authoredPropertyWrites(
-                      propertyState,
-                      current.origin,
-                      current.offset,
-                      key
-                    ),
-                  ]),
-                });
-                if (superseded.size) {
-                  throw new AuthoredMappingConflictError([...superseded]);
+                      );
+                    })
+                  : [];
+                for (const removal of authoredContentRemovals(
+                  input.state,
+                  span
+                )) {
+                  if (
+                    removal.value.id === input.operationId ||
+                    !isAuthoredEditVisible(input.state, removal.value, visible)
+                  ) {
+                    continue;
+                  }
+                  let remaining = [{ from: removal.from, to: removal.to }];
+                  for (const restoration of restorations) {
+                    if (
+                      observesAuthoredOperation(
+                        restoration.operation,
+                        removal.value
+                      )
+                    ) {
+                      remaining = remaining.flatMap((part) =>
+                        subtractInterval(part, restoration)
+                      );
+                    }
+                  }
+                  for (const removedInterval of remaining) {
+                    intervals = intervals.flatMap((part) =>
+                      subtractInterval(part, removedInterval)
+                    );
+                  }
+                }
+                if (mixedRestoration && input.accepted) {
+                  const boundaries = [
+                    ...authoredContentLocations(input.accepted.positions, span),
+                  ].flatMap((location) => [
+                    location.fromOffset,
+                    location.toOffset,
+                  ]);
+                  intervals = intervals.flatMap((part) => {
+                    const cuts = [
+                      ...new Set([
+                        part.from,
+                        ...boundaries.filter(
+                          (at) => at > part.from && at < part.to
+                        ),
+                        part.to,
+                      ]),
+                    ].sort((a, b) => a - b);
+                    return cuts
+                      .slice(1)
+                      .map((end, index) => ({ from: cuts[index], to: end }));
+                  });
+                }
+                if (restoresDirect) {
+                  for (const entry of authoredOriginSpans(before, span.origin, {
+                    from: span.offset,
+                    to: span.offset + span.length,
+                  })) {
+                    intervals = intervals.flatMap((part) =>
+                      subtractInterval(part, {
+                        from: entry.span.offset,
+                        to: entry.span.offset + entry.span.length,
+                      })
+                    );
+                  }
+                }
+                for (const part of intervals) {
+                  pieces.push({
+                    tokens: replacement
+                      .slice(
+                        offset + part.from - span.offset,
+                        offset + part.to - span.offset
+                      )
+                      .toJSON(),
+                    span: {
+                      ...span,
+                      offset: part.from,
+                      length: part.to - part.from,
+                    },
+                  });
+                }
+                offset += span.length;
+              }
+              if (
+                restoresDirect &&
+                section.replacement[0]?.kind === 'open' &&
+                section.replacement[0].nodeKind === 'text' &&
+                section.replacement.at(-1)?.kind === 'close' &&
+                section.replacement
+                  .slice(1, -1)
+                  .every((token) => token.kind === 'text') &&
+                (pieces[0]?.tokens[0]?.kind !== 'open' ||
+                  pieces.at(-1)?.tokens.at(-1)?.kind !== 'close')
+              ) {
+                for (const piece of pieces) {
+                  const opening = piece.tokens[0]?.kind === 'open' ? 1 : 0;
+                  const closing = piece.tokens.at(-1)?.kind === 'close' ? 1 : 0;
+                  piece.tokens = piece.tokens.filter(
+                    (token) => token.kind === 'text'
+                  );
+                  piece.span = {
+                    ...piece.span,
+                    offset: piece.span.offset + opening,
+                    length: piece.span.length - opening - closing,
+                  };
                 }
               }
-              const nodeProperties = Object.fromEntries(
-                Object.entries(document.node(node.path)).filter(
-                  ([key]) => key !== 'text' && key !== 'children'
+              const intervals = removed
+                .flatMap((span) =>
+                  [
+                    ...authoredOriginSpans(before, span.origin, {
+                      from: span.offset,
+                      to: span.offset + span.length,
+                    }),
+                  ].flatMap((entry) => {
+                    const start = Math.max(span.offset, entry.span.offset);
+                    const end = Math.min(
+                      span.offset + span.length,
+                      entry.span.offset + entry.span.length
+                    );
+                    return start < end
+                      ? [
+                          {
+                            from: entry.from + start - entry.span.offset,
+                            to: entry.from + end - entry.span.offset,
+                          },
+                        ]
+                      : [];
+                  })
+                )
+                .sort((a, b) => a.from - b.from);
+              const merged: Array<{ from: number; to: number }> = [];
+              const contentIntervals = deletesTextNode
+                ? intervals.flatMap(({ from: startAt, to: endAt }) =>
+                    document
+                      .nodeRangesTouching(startAt, endAt)
+                      .flatMap((node) => {
+                        if (node.kind !== 'text') return [];
+                        const start = Math.max(startAt, node.from + 1);
+                        const end = Math.min(endAt, node.to - 1);
+                        return start < end ? [{ from: start, to: end }] : [];
+                      })
+                  )
+                : intervals;
+              for (const part of contentIntervals) {
+                const prior = merged.at(-1);
+                if (prior && part.from <= prior.to) {
+                  prior.to = Math.max(prior.to, part.to);
+                } else merged.push({ ...part });
+              }
+              const tokens = pieces.flatMap((piece) => piece.tokens);
+              if (from === null && tokens.length) {
+                const position =
+                  input.direction === 'forward'
+                    ? target.from
+                    : target.afterFrom;
+                from = resolveAuthoredPosition(
+                  before,
+                  position,
+                  target.association ?? 'right',
+                  'collapse'
+                );
+                for (const side of ['left', 'right'] as const) {
+                  if (from !== null) break;
+                  const endpoint = position[side];
+                  if (!endpoint) continue;
+                  const location = authoredOriginalLocation(
+                    input.state,
+                    roots,
+                    {
+                      birth: null,
+                      placement: null,
+                      properties: {},
+                      length: 1,
+                      origin: endpoint.origin,
+                      offset: endpoint.offset - (side === 'left' ? 1 : 0),
+                    }
+                  );
+                  if (location?.root === root) {
+                    from = location.offset;
+                    break;
+                  }
+                }
+              }
+              const rows = merged.map((part) => ({
+                ...part,
+                section: {
+                  length: part.to - part.from,
+                  replacement: [] as typeof tokens,
+                },
+                target: { ...target, inserted: [] as AuthoredSpan[] },
+                replacementSpans: [] as AuthoredSpan[],
+                propertyWriters: undefined,
+              }));
+              for (const piece of pieces) {
+                if (!piece.span.length) continue;
+                const endpoint = {
+                  origin: piece.span.origin,
+                  offset: piece.span.offset,
+                };
+                const restoredFrom =
+                  piece.span.origin !==
+                    authoredOperationOrigin(input.operationId, root) &&
+                  readRecord(before.deleted, piece.span.origin)
+                    ? resolveAuthoredPosition(
+                        before,
+                        { left: endpoint, right: endpoint },
+                        'right',
+                        'collapse'
+                      )
+                    : null;
+                const gap =
+                  input.direction === 'forward'
+                    ? target.from
+                    : target.afterFrom;
+                const hasForeignNeighbour = (['left', 'right'] as const).some(
+                  (side) => {
+                    const neighbour = gap[side];
+                    return (
+                      neighbour &&
+                      neighbour.origin !== piece.span.origin &&
+                      resolveAuthoredPosition(
+                        before,
+                        {
+                          left: side === 'left' ? neighbour : null,
+                          right: side === 'right' ? neighbour : null,
+                        },
+                        side
+                      ) !== null
+                    );
+                  }
+                );
+                const hasAcceptedBoundary =
+                  acceptedCounterpart &&
+                  pieces.length === 1 &&
+                  gap.left &&
+                  resolveAuthoredPosition(
+                    before,
+                    { left: gap.left, right: null },
+                    'left'
+                  ) !== null;
+                let at =
+                  (hasForeignNeighbour && !acceptedCounterpart) ||
+                  hasAcceptedBoundary
+                    ? (from ?? restoredFrom)
+                    : (restoredFrom ?? from);
+                if (
+                  restoresDirect &&
+                  piece.tokens.every((token) => token.kind === 'text')
+                ) {
+                  let prior: number | null = null;
+                  for (const entry of authoredOriginSpans(
+                    before,
+                    piece.span.origin
+                  )) {
+                    if (
+                      entry.span.offset >=
+                      piece.span.offset + piece.span.length
+                    ) {
+                      at = prior ?? entry.from;
+                      break;
+                    }
+                    if (
+                      entry.span.offset + entry.span.length <=
+                      piece.span.offset
+                    ) {
+                      prior = entry.to;
+                      at = prior;
+                    }
+                  }
+                }
+                if (mixedRestoration && input.accepted) {
+                  const original = authoredOriginalLocation(
+                    input.state,
+                    input.accepted.positions,
+                    piece.span
+                  );
+                  const left = resolveAuthoredPosition(
+                    before,
+                    { left: gap.left, right: null },
+                    'left',
+                    'collapse'
+                  );
+                  const right = resolveAuthoredPosition(
+                    before,
+                    { left: null, right: gap.right },
+                    'right',
+                    'collapse'
+                  );
+                  if (
+                    original?.root === root &&
+                    left !== null &&
+                    right !== null &&
+                    left <= right
+                  ) {
+                    at = right;
+                    for (const entry of authoredPositionSpans(
+                      before,
+                      left,
+                      right
+                    )) {
+                      const location = authoredOriginalLocation(
+                        input.state,
+                        input.accepted.positions,
+                        entry.span
+                      );
+                      if (
+                        location?.root === root &&
+                        location.offset >= original.offset
+                      ) {
+                        at = Math.max(left, entry.from);
+                        break;
+                      }
+                    }
+                  }
+                }
+                if (at === null) {
+                  throw new AuthoredMappingConflictError([input.changeId]);
+                }
+                const containing = rows.find(
+                  (row) => row.from <= at && row.to >= at
+                );
+                if (containing) {
+                  containing.section.replacement.push(...piece.tokens);
+                  containing.target.inserted.push(piece.span);
+                  containing.replacementSpans.push(piece.span);
+                } else {
+                  rows.push({
+                    from: at,
+                    to: at,
+                    section: { length: 0, replacement: [...piece.tokens] },
+                    target: { ...target, inserted: [piece.span] },
+                    replacementSpans: [piece.span],
+                    propertyWriters: undefined,
+                  });
+                }
+              }
+              return rows;
+            }
+            if (
+              input.acceptedEdit &&
+              target.removed.length &&
+              (section.properties || from === null || to === null)
+            ) {
+              const fragments = target.removed.flatMap((span) =>
+                [...authoredOriginSpans(before, span.origin)].flatMap(
+                  (fragment) => {
+                    const start = Math.max(span.offset, fragment.span.offset);
+                    const end = Math.min(
+                      span.offset + span.length,
+                      fragment.span.offset + fragment.span.length
+                    );
+                    return start < end
+                      ? [
+                          {
+                            from: fragment.from + start - fragment.span.offset,
+                            to: fragment.from + end - fragment.span.offset,
+                          },
+                        ]
+                      : [];
+                  }
                 )
               );
-              const projected = projectAuthoredProperties({
-                ...input.properties,
-                span: current,
-                modifications: section.properties.operations,
-                current: nodeProperties,
-                textContext,
-              });
-              propertyWriters = projected.writers;
-              section = {
-                ...section,
-                properties: { version: 1, operations: projected.modifications },
-              };
-            } else {
-              const operations =
-                input.direction === 'inverse'
-                  ? matchingAuthoredProperties(
-                      current.properties,
-                      section.properties.operations,
-                      original.properties
-                    )
-                  : section.properties.operations;
-              const conflicts = input.acceptedEdit
-                ? new Set<string>()
-                : authoredPropertyConflicts(
-                    current.properties,
-                    original.properties,
-                    operations,
-                    input.changeId
-                  );
+              if (!fragments.length) return null;
+              from = Math.min(...fragments.map((fragment) => fragment.from));
+              to = Math.max(...fragments.map((fragment) => fragment.to));
+            }
+            if (from === null || to === null || to < from) {
+              if (input.acceptedEdit) return null;
+              throw new AuthoredMappingConflictError([input.changeId]);
+            }
+            let replacementSpans = target.removed;
+            if (section.replacement) {
+              const conflicts = new Set<string>();
+              const currentOperation = readRecord(
+                input.state.operations,
+                input.operationId
+              );
+              const operation =
+                currentOperation?.kind === 'edit' ? currentOperation : null;
+              for (const span of removedSpans(before, from, to)) {
+                const originals = (
+                  input.direction === 'forward'
+                    ? target.removed
+                    : target.inserted
+                )
+                  .filter(
+                    (retained) =>
+                      retained.origin === span.origin &&
+                      retained.offset < span.offset + span.length &&
+                      retained.offset + retained.length > span.offset
+                  )
+                  .sort((left, right) => left.offset - right.offset);
+                const covered = sameContent(
+                  [span],
+                  originals.map((retained) => {
+                    const offset = Math.max(span.offset, retained.offset);
+                    return {
+                      ...retained,
+                      offset,
+                      length:
+                        Math.min(
+                          span.offset + span.length,
+                          retained.offset + retained.length
+                        ) - offset,
+                    };
+                  })
+                );
+                if (!covered) {
+                  const laterAcceptedInsertion =
+                    input.direction === 'forward' &&
+                    span.birth !== null &&
+                    input.accepted?.isAccepted(span.birth) &&
+                    isLaterAuthoredInsertion(input.state, operation, span);
+                  if (!laterAcceptedInsertion) {
+                    conflicts.add(span.birth ?? input.changeId);
+                  }
+                } else if (
+                  input.direction === 'forward' &&
+                  !input.acceptedEdit
+                ) {
+                  for (const original of originals) {
+                    if (
+                      span.placement !== original.placement &&
+                      span.placement !== input.changeId
+                    ) {
+                      conflicts.add(span.placement ?? input.changeId);
+                    }
+                    for (const [key, writer] of Object.entries(
+                      span.properties
+                    )) {
+                      if (
+                        writer !== input.changeId &&
+                        writer !== original.properties[key]
+                      ) {
+                        conflicts.add(writer);
+                      }
+                    }
+                  }
+                }
+              }
               if (conflicts.size) {
                 throw new AuthoredMappingConflictError([...conflicts]);
               }
-              section = operations.length
-                ? { ...section, properties: { version: 1, operations } }
-                : { length: section.length };
+              if (acceptedCounterpart) {
+                section = {
+                  ...section,
+                  replacement: acceptedCounterpart.tokens,
+                };
+                replacementSpans = acceptedCounterpart.spans;
+              }
             }
+            let propertyWriters: AuthoredSpan['properties'] | undefined;
+            if (section.properties) {
+              const current = removedSpans(before, from, to)[0];
+              const original = (
+                input.direction === 'forward' ? target.removed : target.inserted
+              )[0];
+              if (!current || !original) {
+                throw new AuthoredMappingConflictError([input.changeId]);
+              }
+              if (input.properties) {
+                const propertyState = input.properties.state;
+                const node = getDefined(document.nodeStartingAt(from));
+                const textContext =
+                  node.kind === 'text'
+                    ? textPropertyContext(document, root, node.path)
+                    : undefined;
+                const proposal = readRecord(
+                  propertyState.operations,
+                  input.operationId
+                );
+                if (
+                  input.properties.refuseCausalOverwrite &&
+                  proposal?.kind === 'edit'
+                ) {
+                  const superseded = authoredCausalPropertyConflicts({
+                    ...input.properties,
+                    textContext,
+                    proposal,
+                    current: current.properties,
+                    original: original.properties,
+                    modifications: section.properties.operations,
+                    writes: [
+                      ...new Set(
+                        textContext
+                          ? authoredPropertyKeys(
+                              propertyState,
+                              current.origin,
+                              current.offset
+                            )
+                          : section.properties.operations.map(
+                              (entry) => entry.key
+                            )
+                      ),
+                    ].flatMap((key) => [
+                      ...authoredPropertyWrites(
+                        propertyState,
+                        current.origin,
+                        current.offset,
+                        key
+                      ),
+                    ]),
+                  });
+                  if (superseded.size) {
+                    throw new AuthoredMappingConflictError([...superseded]);
+                  }
+                }
+                const nodeProperties = Object.fromEntries(
+                  Object.entries(document.node(node.path)).filter(
+                    ([key]) => key !== 'text' && key !== 'children'
+                  )
+                );
+                const projected = projectAuthoredProperties({
+                  ...input.properties,
+                  span: current,
+                  modifications: section.properties.operations,
+                  current: nodeProperties,
+                  textContext,
+                });
+                propertyWriters = projected.writers;
+                section = {
+                  ...section,
+                  properties: {
+                    version: 1,
+                    operations: projected.modifications,
+                  },
+                };
+              } else {
+                const operations =
+                  input.direction === 'inverse'
+                    ? matchingAuthoredProperties(
+                        current.properties,
+                        section.properties.operations,
+                        original.properties
+                      )
+                    : section.properties.operations;
+                const conflicts = input.acceptedEdit
+                  ? new Set<string>()
+                  : authoredPropertyConflicts(
+                      current.properties,
+                      original.properties,
+                      operations,
+                      input.changeId
+                    );
+                if (conflicts.size) {
+                  throw new AuthoredMappingConflictError([...conflicts]);
+                }
+                section = operations.length
+                  ? { ...section, properties: { version: 1, operations } }
+                  : { length: section.length };
+              }
+            }
+            return {
+              from,
+              to,
+              section,
+              target,
+              replacementSpans,
+              propertyWriters,
+            };
           }
-          return {
-            from,
-            to,
-            section,
-            target,
-            replacementSpans,
-            propertyWriters,
-          };
-        })
+        )
         .filter((step) => step !== null)
         .sort(
           (left, right) =>
@@ -2188,6 +2912,7 @@ export const captureAuthoredChange = (input: {
   const offsets = new Map<string, number>();
   const dependencies = new Set<string>();
   const publicationDependencies = new Set<string>();
+  const structuralDependencies = new Set<string>();
   const steps: AuthoredStep[] = [];
   let { positions } = input;
   for (const [stepIndex, change] of changes.entries()) {
@@ -2208,6 +2933,9 @@ export const captureAuthoredChange = (input: {
     for (const dependency of captured.dependencies) {
       dependencies.add(dependency);
     }
+    for (const dependency of captured.structuralDependencies) {
+      structuralDependencies.add(dependency);
+    }
     for (const dependency of captured.publicationDependencies) {
       publicationDependencies.add(dependency);
     }
@@ -2220,6 +2948,7 @@ export const captureAuthoredChange = (input: {
   }
   return {
     dependencies: [...dependencies].sort(),
+    structuralDependencies: [...structuralDependencies].sort(),
     publicationDependencies: [...publicationDependencies].sort(),
     change,
     positions,
@@ -2238,6 +2967,61 @@ export const projectAuthoredTextProperties = (input: {
   value: JsonEditorValue;
 }) => {
   const documents = new Map<string, DocumentIndex>();
+  const contentLanes = input.steps.flatMap((step) =>
+    step.targets.flatMap((target) =>
+      [target.retained, target.insertedContent].flatMap((data) => {
+        if (!data || data.kind === 'properties') return [];
+        return [
+          {
+            root: target.root,
+            target,
+            content: data,
+            document: DocumentIndex.fromValue(data.slice.content),
+          },
+        ];
+      })
+    )
+  );
+  const propertyIndex = indexAuthoredState(input.properties.state);
+  const plainContent =
+    !propertyIndex.properties &&
+    !propertyIndex.textProperties &&
+    contentLanes.every(({ content, document }) =>
+      document
+        .nodeRangesTouching(content.from, content.to)
+        .every(
+          (node) =>
+            node.kind !== 'text' ||
+            Object.keys(nodeProps(document.node(node.path))).length === 0
+        )
+    );
+  const sourceProperties = (
+    root: string,
+    span: AuthoredSpan,
+    fallback: JsonRecord
+  ) => {
+    for (const lane of contentLanes) {
+      if (lane.root !== root) continue;
+      const content = readAuthoredRetainedContent({
+        ...lane.target,
+        retained: lane.content,
+      });
+      if (!content || content.kind === 'properties') continue;
+      for (const location of authoredOriginSpans(
+        content.positions,
+        span.origin,
+        { from: span.offset, to: span.offset + 1 }
+      )) {
+        const at = location.from + span.offset - location.span.offset;
+        if (at < lane.content.from || at >= lane.content.to) continue;
+        const text = lane.document
+          .nodeRangesTouching(at, at + 1)
+          .find((node) => node.kind === 'text');
+        if (text) return nodeProps(lane.document.node(text.path));
+      }
+    }
+    return fallback;
+  };
   const touched = new Map<string, Set<number>>();
   const touch = (root: string, from: number, to: number) => {
     if (!readRecord(input.positions, root)?.present) return;
@@ -2323,6 +3107,7 @@ export const projectAuthoredTextProperties = (input: {
       const value = document.node(node.path);
       if (!isTextNode(value)) continue;
       const { text, ...current } = value;
+      if (plainContent && Object.keys(current).length === 0) continue;
       const textContext = textPropertyContext(document, root, node.path);
       const pieces: Array<{
         from: number;
@@ -2361,11 +3146,16 @@ export const projectAuthoredTextProperties = (input: {
           const selected = writes
             .filter((write) => write.from <= offset && offset < write.to)
             .map((write) => write.value);
+          const baseline = sourceProperties(
+            root,
+            { ...span, offset, length },
+            current
+          );
           const projected = projectAuthoredProperties({
             ...input.properties,
             span: { ...span, offset, length },
             modifications: selected.flatMap((write) => write.modifications),
-            current,
+            current: baseline,
             textContext,
             writes: selected,
           });
@@ -2373,7 +3163,7 @@ export const projectAuthoredTextProperties = (input: {
             from: start + offset - span.offset,
             to: start + offset - span.offset + length,
             properties: applyPropertyModifications(
-              current,
+              baseline,
               projected.modifications
             ),
             span: { ...span, offset, length, properties: projected.writers },
@@ -2381,31 +3171,12 @@ export const projectAuthoredTextProperties = (input: {
         }
       }
       const first = getDefined(pieces[0]);
-      const sibling = getDefined(node.path.at(-1));
-      const parent = node.path.slice(0, -1);
-      const parentNode = parent.length ? document.node(parent) : null;
-      const children =
-        parentNode && !isTextNode(parentNode)
-          ? parentNode.children
-          : document.value;
-      const previousNode = children[sibling - 1];
-      const nextNode = children[sibling + 1];
-      const opening =
-        previousNode && isTextNode(previousNode)
-          ? (boundaryPart(first.span, 1) ??
-            removedSpans(currentRoot.positions, node.from, node.from + 1))
-          : removedSpans(currentRoot.positions, node.from, node.from + 1);
-      const next =
-        nextNode && isTextNode(nextNode) && nextNode.text.length
-          ? removedSpans(
-              currentRoot.positions,
-              document.nodeRange([...parent, sibling + 1]).from + 1,
-              document.nodeRange([...parent, sibling + 1]).from + 2
-            )[0]
-          : null;
-      const closing =
-        (next && boundaryPart(next, 0)) ??
-        removedSpans(currentRoot.positions, node.to - 1, node.to);
+      const opening = removedSpans(
+        currentRoot.positions,
+        node.from,
+        node.from + 1
+      );
+      const closing = removedSpans(currentRoot.positions, node.to - 1, node.to);
       const groups: Array<{
         from: number;
         to: number;
@@ -2460,11 +3231,31 @@ export const projectAuthoredTextProperties = (input: {
         });
         const spans: AuthoredSpan[] = [];
         for (const [index, group] of groups.entries()) {
+          const previousSpan = groups[index - 1]?.spans.at(-1);
           const groupOpening =
-            index === 0 ? opening : boundaryPart(group.spans[0], 1);
+            index === 0
+              ? opening
+              : (boundaryPart(group.spans[0], 1) ??
+                (previousSpan
+                  ? boundaryPart(
+                      {
+                        ...previousSpan,
+                        offset: previousSpan.offset + previousSpan.length,
+                      },
+                      1
+                    )
+                  : null));
+          const lastGroupSpan = getDefined(group.spans.at(-1));
           const nextGroup = groups[index + 1];
           const groupClosing = nextGroup
-            ? boundaryPart(nextGroup.spans[0], 0)
+            ? (boundaryPart(nextGroup.spans[0], 0) ??
+              boundaryPart(
+                {
+                  ...lastGroupSpan,
+                  offset: lastGroupSpan.offset + lastGroupSpan.length,
+                },
+                0
+              ))
             : closing;
           if (!groupOpening || !groupClosing) {
             throw new AuthoredMappingConflictError([input.changeId]);
@@ -2640,3 +3431,80 @@ export const mapAuthoredChange = (
     steps: snapshotEditorJsonValue(steps, 'Authored steps'),
   };
 };
+
+export const invertAuthoredSteps = (
+  steps: readonly AuthoredStep[]
+): readonly AuthoredStep[] =>
+  [...steps].reverse().map((step) => {
+    const sections = Object.fromEntries(
+      rootSections(step.forward).map(([root, entries]) => [
+        root,
+        entries.map((section, index) => {
+          const target = step.targets.find(
+            (item) => item.root === root && item.section === index
+          );
+          if (!target) return section;
+          if (section.properties) {
+            if (target.retained?.kind !== 'properties') {
+              throw new Error('Missing property inverse');
+            }
+            return {
+              length: section.length,
+              properties: {
+                version: 1 as const,
+                operations: invertPropertyModifications(
+                  target.retained.properties,
+                  section.properties.operations
+                ),
+              },
+            };
+          }
+          return {
+            length: target.inserted.reduce((sum, span) => sum + span.length, 0),
+            replacement:
+              target.retained && target.retained.kind !== 'properties'
+                ? DocumentIndex.fromValue(target.retained.slice.content)
+                    .slice(target.retained.from, target.retained.to)
+                    .toJSON()
+                : [],
+          };
+        }),
+      ])
+    );
+    const { createRoots, deleteRoots, ...forward } = step.forward;
+    return {
+      forward: {
+        ...forward,
+        ...(sections.main ? { primary: sections.main } : {}),
+        ...(step.forward.roots
+          ? {
+              roots: Object.fromEntries(
+                Object.entries(sections).filter(([root]) => root !== 'main')
+              ),
+            }
+          : {}),
+        ...(step.forward.createRoots
+          ? { deleteRoots: step.forward.createRoots }
+          : {}),
+        ...(step.forward.deleteRoots
+          ? { createRoots: step.forward.deleteRoots }
+          : {}),
+      },
+      rootTargets: step.rootTargets.map((target) => ({
+        ...target,
+        before: target.after,
+        after: target.before,
+      })),
+      targets: step.targets.map((target) => ({
+        ...target,
+        from: target.afterFrom,
+        to: target.afterTo,
+        afterFrom: target.from,
+        afterTo: target.to,
+        inserted: target.removed,
+        removed: target.inserted,
+        retained: target.insertedContent ?? null,
+        insertedContent: target.retained,
+      })),
+    };
+  });

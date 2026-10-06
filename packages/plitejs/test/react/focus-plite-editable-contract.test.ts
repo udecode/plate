@@ -27,6 +27,7 @@ import { createEditor } from '../../src/react/plugin/with-react';
 import { createPliteViewBoundaryGraph } from '../../src/react/view-boundary-graph';
 import {
   createPliteViewSelection,
+  readPliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
 
@@ -197,15 +198,16 @@ describe('focusPliteEditable', () => {
     expect(element.ownerDocument.activeElement).toBe(element);
   });
 
-  it('restores the DOM focus path for a collapsed projected view selection', () => {
-    const { editor, element, focus } = createFocusableEditor();
+  it('focuses the editable while preserving a collapsed projected view selection', () => {
+    const { editor, element } = createFocusableEditor();
+    const selection = createCollapsedProjectedSelection();
 
-    writePliteViewSelection(editor, createCollapsedProjectedSelection());
+    writePliteViewSelection(editor, selection);
 
     focusPliteEditable(editor);
 
-    expect(focus).toHaveBeenCalledTimes(1);
     expect(element.ownerDocument.activeElement).toBe(element);
+    expect(readPliteViewSelection(editor)).toEqual(selection);
   });
 
   it('clears native selection for a node selection', () => {

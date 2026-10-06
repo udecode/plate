@@ -22,6 +22,7 @@ import {
 } from '../editable/runtime-editor-api';
 import { useEditableRootRuntime } from '../editable/runtime-root-engine';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
+import { canUseNativeViewSelection } from '../editable/selection-projected-dom';
 import { resolveEditableSelectableOwnerClickTarget } from '../editable/selection-void-target';
 import {
   EditableDOMRuntimeContext,
@@ -33,7 +34,10 @@ import { ReadOnlyContext } from '../hooks/use-editor-read-only';
 import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
-import { usePliteViewSelectionPresence } from '../view-selection-decoration';
+import {
+  readPliteViewSelection,
+  subscribePliteViewSelection,
+} from '../view-selection';
 import type { MountedTopLevelRange } from '../viewport-commands';
 import { EditableDOMCommitFence } from './editable-dom-commit-fence';
 
@@ -310,7 +314,17 @@ export const EditableDOMRoot = (
   } = editableProps;
   const editor = useEditorContext();
   const editorRoot = toInternalRoot(editor.read((state) => state.view.root()));
-  const hasViewSelection = usePliteViewSelectionPresence(editor);
+  const hasViewSelection = useSyncExternalStore(
+    useCallback(
+      (notify) => subscribePliteViewSelection(editor, notify),
+      [editor]
+    ),
+    useCallback(() => {
+      const selection = readPliteViewSelection(editor);
+      return !!selection && !canUseNativeViewSelection(editor, selection);
+    }, [editor]),
+    () => false
+  );
   const { getLastSelectionForRoot, getMountedViewEditor, setActiveViewEditor } =
     useRequiredPliteRuntimeContext();
   const activateRootView = useCallback(() => {

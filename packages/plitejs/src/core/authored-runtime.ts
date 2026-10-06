@@ -7,6 +7,7 @@ import type {
   EditorViewOptions,
   EditorEffectType,
   EditorTransactionSpecBuilder,
+  EditorStateView,
   EditorUpdateTag,
   Selection,
   ContentSlice,
@@ -93,6 +94,20 @@ export type NativeAuthoredRenderSegment = Readonly<{
     | Readonly<{ end: number; kind: 'text'; start: number }>
   );
 
+export type NativeAuthoredTarget = Pick<
+  NativeAuthoredFragment,
+  'changeId' | 'id'
+> | null;
+
+export type NativeAuthoredPointBinding = Readonly<{
+  resolve: () => { target: NativeAuthoredTarget; point: Point } | null;
+}>;
+
+export type NativeAuthoredViewEdit = Readonly<{
+  target: NativeAuthoredTarget;
+  update: (tx: EditorTransactionSpecBuilder) => void;
+}>;
+
 type NativeAuthoredRuntime = {
   view: (view: Editor) => NonNullable<EditorViewOptions['authored']>;
   fragmentVersion: (view: Editor) => object | null;
@@ -125,11 +140,35 @@ type NativeAuthoredRuntime = {
     fragment: NativeAuthoredFragment,
     requireMarkupParent: boolean
   ) => void;
+  capturePoint: (
+    view: Editor,
+    target: NativeAuthoredTarget,
+    point: Point,
+    association: 'backward' | 'forward'
+  ) => NativeAuthoredPointBinding | null;
+  readTarget: <T>(
+    view: Editor,
+    target: NativeAuthoredTarget,
+    read: (state: EditorStateView) => T
+  ) => T | null;
+  updateViews: (
+    parent: Editor,
+    edits: readonly NativeAuthoredViewEdit[],
+    options?: { tags?: readonly EditorUpdateTag[] }
+  ) => ReadonlyArray<{
+    changed: boolean;
+    fragmentId: string | null;
+    selection: Selection;
+  }> | null;
   updateFragment: (
     view: Editor,
     update: (tx: EditorTransactionSpecBuilder) => void,
     options?: { tags?: readonly EditorUpdateTag[] }
-  ) => { changed: boolean; fragmentId: string; selection: Selection } | null;
+  ) => {
+    changed: boolean;
+    fragmentId: string | null;
+    selection: Selection;
+  } | null;
   path: (
     view: Editor,
     path: Path,
@@ -286,6 +325,45 @@ export const updateAuthoredFragment = (
   AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.updateFragment(
     view,
     update,
+    options
+  ) ?? null;
+
+export const captureAuthoredTargetPoint = (
+  parent: Editor,
+  target: NativeAuthoredTarget,
+  point: Point,
+  association: 'backward' | 'forward'
+): NativeAuthoredPointBinding | null =>
+  AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(parent))?.capturePoint(
+    parent,
+    target,
+    point,
+    association
+  ) ?? null;
+
+export const readAuthoredTarget = <T>(
+  parent: Editor,
+  target: NativeAuthoredTarget,
+  read: (state: EditorStateView) => T
+): T | null => {
+  if (!target) return parent.read(read);
+  return (
+    AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(parent))?.readTarget(
+      parent,
+      target,
+      read
+    ) ?? null
+  );
+};
+
+export const updateAuthoredViews = (
+  parent: Editor,
+  edits: readonly NativeAuthoredViewEdit[],
+  options?: { tags?: readonly EditorUpdateTag[] }
+) =>
+  AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(parent))?.updateViews(
+    parent,
+    edits,
     options
   ) ?? null;
 
