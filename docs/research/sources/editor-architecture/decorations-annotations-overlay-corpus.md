@@ -3,7 +3,7 @@ title: Decorations / annotations overlay corpus
 type: source
 status: partial
 source_refs:
-  - docs/analysis/editor-architecture-candidates.md
+  - docs/research/sources/editor-architecture/candidates.md
   - docs/plans/2026-04-14-slate-v2-decorations-annotations-cluster-research.md
   - docs/slate-v2/decoration-roadmap.md
   - ../prosemirror/state/src/selection.ts
@@ -24,7 +24,6 @@ source_refs:
   - docs/research/sources/editor-architecture/cursor-find-and-widget-geometry.md
 updated: 2026-08-30
 related:
-  - docs/research/systems/editor-architecture-landscape.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
   - docs/slate-v2/decorations-annotations-cluster.md
 ---
@@ -39,7 +38,7 @@ decorations / annotations / widgets architecture lane.
 It is the research-layer bridge between:
 
 - the candidate shortlist in
-  [docs/analysis/editor-architecture-candidates.md](docs/analysis/editor-architecture-candidates.md)
+  [docs/research/sources/editor-architecture/candidates.md](docs/research/sources/editor-architecture/candidates.md)
 - the earlier working notes in
   [2026-04-14-slate-v2-decorations-annotations-cluster-research.md](docs/plans/2026-04-14-slate-v2-decorations-annotations-cluster-research.md)
 - the accepted plan direction in

@@ -6,7 +6,6 @@ updated: 2026-04-04
 source_refs:
   - docs/research/sources/typora/clipboard-and-delete-behavior.md
 related:
-  - docs/research/concepts/delete-command-surface.md
   - docs/editor-behavior/editor-protocol-matrix.md
 ---
 

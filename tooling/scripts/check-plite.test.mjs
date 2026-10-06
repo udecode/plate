@@ -699,7 +699,7 @@ test('root scripts keep source-first typecheck and strict browser closure separa
   );
   assert.equal(
     scripts['plite:public-types'],
-    'pnpm plite:packages:build && tsc --project packages/plitejs/test/tsconfig.public-package-types.json --noEmit'
+    'pnpm plite:packages:build && tsc --project packages/plitejs/test/tsconfig.public-package-types.json --noEmit && node tooling/scripts/check-declaration-consumer.mjs'
   );
   assert.match(
     scripts['plite:typecheck'],

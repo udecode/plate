@@ -25,6 +25,5 @@ export {
 export { end } from '../editor/end';
 export {
   getLiveSelection as getEditorLiveSelection,
-  repairEditorValue as normalize,
   setEditorFocused,
 } from '../core/public-state';

@@ -13,13 +13,13 @@ import {
   SelectionApi,
 } from 'plitejs';
 
+import { getLastCommit as editorGetLastCommit } from '../src/internal';
 import {
   getChildren as editorGetChildren,
-  getLastCommit as editorGetLastCommit,
   getSelection as editorGetSelection,
   getSnapshot as editorGetSnapshot,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 import { defineTestSchema } from './support/schema';
 import { replaceEditorValue } from './support/snapshot';
 

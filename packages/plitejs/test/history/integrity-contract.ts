@@ -19,10 +19,12 @@ import {
   addMark as editorAddMark,
   getLastCommit as editorGetLastCommit,
   getNodeKey as editorGetNodeKey,
+} from '../../src/internal';
+import {
   getSnapshot as editorGetSnapshot,
   move as editorMove,
   replace as editorReplace,
-} from '../../src/internal';
+} from '../../src/testing';
 
 const paragraph = (text: string): Descendant => ({
   type: 'paragraph',

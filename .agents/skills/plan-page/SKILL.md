@@ -1,6 +1,7 @@
 ---
 name: plan-page
 description: "Write, check, repair and publish a plan page: a project's plans and subject files under its plans directory, rendered by .agents/pstack/plan-page.mjs and rendered as one local HTML page per subject with a local index of every subject, and published to claude.ai at each hand-back for comments and feedback. The page is how work hands back to the user. Use before writing or changing a plan, a subject file in <plans>/topics or its page; at every stop that hands work back, such as a review verdict other than a review-only panel's, a next answer or a playbook's close; when a plan page or its claude.ai artifact looks wrong or refuses to render; to republish a page; or to change the page shape or a playbook's page sections."
+argument-hint: '[refresh | check | repair | change] [plan]'
 metadata:
   source: udecode/dotai
   source-path: skills/plan-page
@@ -15,18 +16,19 @@ Read [references/shape.md](references/shape.md) before writing a plan or a subje
 | Mode | Use it to |
 | --- | --- |
 | [Render](#render) | publish a page at every stop the block's Plan pages rule lists |
+| Refresh | render the named plan's page again, or the open plan of the subject the session works on when none is named, with Render steps 5, 7 and 8, while its work is still active |
 | [Check](#check) | audit a plan and its subject before handing the page back |
 | [Repair](#repair) | fix a page whose shape is wrong |
 | [Change](#change) | change the page shape, the renderer, or a playbook's page sections |
 
 ## Render
 
-1. Pick the subject before writing the plan. Continue the subject whose thing the work changes. Start a new one only for a new thing that will be revisited. A one-off plan, such as a single fix or check, has no subject and keeps its own page. A stop with no plan yet, such as a review verdict or a close of work that wrote none, writes one now, either the iteration that later stops continue or a one-off plan.
+1. Pick the subject before writing the plan. Continue the subject whose thing the work changes. Start a new one only for a new thing that will be revisited. A one-off plan, such as a single fix or check, has no subject and keeps its own page. A stop with no plan yet, such as a review verdict or a close of work that wrote none, writes one now, either the iteration that later stops continue or a one-off plan. A read-only request still has its subject. Render its plan from a copy outside the repository, and publish it to that subject's `Page:` URL, never to a second page.
 2. Name the subject with `Topic: <slug>` under `Status:`, or through the first entry of the frontmatter list the project names in `pageTopic.field`, so list the scope that owns the change first. A plan whose list-named subject has no file yet keeps its own page until someone creates that file; the renderer refuses a `Topic:` line whose subject has no file until that file exists.
 3. Name the playbook poteto-mode picked with `Playbook: <name>` under `Status:`, so the rail shows it. When a project playbook in `.agents/playbooks/` writes the plan, name that one, so its page sections lead and its required sections apply; otherwise name pstack's, such as `feature` or `bug-fix`. The renderer refuses a name that is neither.
 4. Write the leading plan's `## Brief` first, per [references/shape.md](references/shape.md). It is the part the owner reads first. A page with a brief then shows Needs you, Picked for you and the plan's changes, and the plan file keeps the proof, steps and history.
 5. Walk [Check](#check)'s reading list before the first publish and after each revision, then run `node .agents/pstack/plan-page.mjs <plan>`. It refuses every shape it can check and names the fix. Fix the plan or the subject file, never the HTML.
-6. At a close, write the plan's `## Close` before rendering: what landed, the proof and its limits, the counts the block's Todo list and close rule requires, reversals and deviations first, and open work with owners. The page shows the brief, not the Close, so rewrite Changes and Risks to tell the owner what the Close holds.
+6. At a close, write the plan's `## Close` before rendering: what landed, the proof and its limits, the counts the block's Todo list and close rule requires, reversals and deviations first, and open work with owners and stops. The page shows the brief, not the Close, so rewrite Changes and Risks to tell the owner what the Close holds.
 7. Publish the printed file with the Artifact tool to the subject's `Page:` URL, or to the one-off plan's own, so the user can comment on it. The first publish writes `Page: <url>` under the subject file's title, or under a one-off plan's `Status:` line. When that link no longer opens, because the page was deleted or belongs to another account, publish a new page and replace the line. To read a page, open its rendered file under the plans directory or its plan and subject files, never the published page. The block's Plan pages rule says what the reply holds and what a Codex session does instead. On a subject page's first publish, offer once to pin it. When the owner asks in chat where a page is, answer with the link and offer the pin again.
 8. After a subject page renders, run `node .agents/pstack/plan-page.mjs --index`, which renders every subject's page and the index locally. The index is never published.
 
@@ -38,12 +40,13 @@ Run `node .agents/pstack/plan-page.mjs <plan> --check`. It runs every refusal an
 - While the plan is open, the subject file shows the state before it. That holds for a subject the plan created too.
 - Every subject section the plan changes carries a Delta table keyed to the subject's rows. Otherwise the page marks the section unchanged.
 - Main changes lists only non-public changes that alter how the code works.
-- `Status:` is one short line: the state word, then what the plan waits on. Open items go in their own section, each with its owner and where it is tracked.
+- Each box closed since the last render matches its approved `Proof:` clause, on the exact bytes and in the place the proof ran. A change to the shared source counts as live in a project only after that project syncs from its pushed commit.
+- `Status:` is one short line: the state word, then what the plan waits on. Open items go in their own section, each with its owner, where it is tracked and its stop.
 - When more than one subject waits on the owner, every answer word a brief, a question or a reply offers names its subject, such as "go model", so a bare "go" cannot land on the wrong page.
 
 ## Repair
 
-1. Copy each file to scratch before rewriting it, and keep the copy as the must-refuse fixture for any refusal that should have caught it.
+1. Copy each file to the run directory before rewriting it, and keep the copy as the must-refuse fixture for any refusal that should have caught it.
 2. Run [Check](#check) and fix each finding at its source. A subject that shows a plan's delta while its steps are all closed and its proof done is a finished fold whose `Status:` was not flipped yet; flip it instead of restoring. For an early fold, restore the subject file to its state before the open plan from the plan's `before` fences and `git show <base>:<path>`, and move the delta into the plan.
 3. Log one decision-log row for the repair.
 4. A ledger record that binds the plan's bytes goes stale on the edit. Rebind it by the project's record rule.

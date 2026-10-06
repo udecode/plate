@@ -8,11 +8,11 @@ import {
   type Editor as EditorType,
 } from 'plitejs';
 
+import type { getLastCommit as editorGetLastCommit } from '../src/internal';
 import {
-  type getLastCommit as editorGetLastCommit,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 
 type LegacyOnChangeKey = Extract<keyof EditorType, 'onChange'>;
 

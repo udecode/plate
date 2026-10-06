@@ -1,6 +1,6 @@
 ---
-description: Design, review, audit or repair a Plate or Plite public call shape with the Plate API lens.
-argument-hint: '[design|review|audit|repair] <API surface | diff | plan | correction>'
+description: Design, review or repair a Plate or Plite public call shape with the Plate API lens.
+argument-hint: '[design|review|repair] <API surface | diff | plan | correction>'
 name: best-api
 metadata:
   skiller:
@@ -19,7 +19,6 @@ Infer the mode when it is omitted. Do not invent more modes for workflow stages 
 
 - `design`: choose the smallest materially justified API for a new or redesigned surface, and return one call-shape decision. When the work continues into an API plan, the Plan playbook runs `pstack:architect` under the `api-plan` reviews row.
 - `review`: judge one current or proposed API, diff or plan, recommend the better target and rank its findings on the architecture reference's P0 to P3 scale (`.agents/playbooks/references/architecture.md#priority`), which the Babysit playbook's P0 and P1 gate reads.
-- `audit`: run the architecture reference's Audit on a bounded surface.
 - `repair`: edit the one Vision owner, then fix every example, recipe, check and doc that still teaches the rejected shape. See [Repair](#repair).
 
 A `design` or `review` verdict goes on a page, per `AGENTS.md`'s Plan pages: the active plan's, or a one-off plan's.
@@ -61,7 +60,7 @@ A target that adds, retains or changes hot runtime work stays provisional until 
 
 ### Bounded exhaustiveness
 
-When the question touches colocation, inlining, helper survival, file topology or "the full list", audit the complete bounded owner before recommending a cleanup. List its files, top-level declarations, plugin blocks, `tx`-accepting helpers, exports and production consumers; give every row one decision (inline or delete, keep lexical, reuse through the owning API, keep as an independent owner, or move with an owner gap); and report the expected, reviewed, removed, kept and deferred counts. A lexical search that missed constants, nested wrappers, render callbacks or transaction helpers is not exhaustive, so say so.
+When a design or review question touches colocation, inlining, helper survival, file topology or "the full list", build the architecture reference's Audit manifest for the complete bounded owner (`.agents/playbooks/references/architecture.md#audit`) before recommending a cleanup.
 
 ## Review questions
 
@@ -74,6 +73,7 @@ When the question touches colocation, inlining, helper survival, file topology o
 - Can an agent find the canonical path from types, JSDoc and one example?
 - What is the maximum justified deletion cone, and which survivor has hard-law or independent-current-job evidence?
 - Am I selecting a workaround because the durable owner repair is harder?
+- Do the exported types promise exactly what the runtime accepts: no option the runtime honors hidden behind a narrower type, and no parameter typed required that the runtime treats as optional?
 
 Do not preserve a weaker proposal because it is more elaborate, more generic, more observable, or already documented.
 
@@ -82,13 +82,6 @@ Do not preserve a weaker proposal because it is more elaborate, more generic, mo
 Lead with one recommendation, not a menu. For harsh honest feedback, the first sentence states the maximum materially justified cut.
 
 `design` and `review` return the verdict and deletion cone; ideal call sites with exact public import paths; current source and caller evidence; why the target is the simplest truthful model; the alternatives rejected, with retention evidence for every surviving public concept; ownership by layer and the runtime and safety laws kept; the pre-acceptance scale receipt or source-backed zero-runtime N/A; breaking and adoption impact; the verification run; and the exact next owner. A `review` gives each finding its P0 to P3 priority.
-
-`audit` writes the architecture reference's Audit report and one row per finding:
-
-| Priority | Surface | Current friction | Best direction | Delete / hide | Owner | Proof |
-| -------- | ------- | ---------------- | -------------- | ------------- | ----- | ----- |
-
-When the audit covers colocation, helpers or file topology, add the bounded manifest, its counts, the complete removed list and the complete survivor list with consumer evidence; without them the audit is partial and says so.
 
 ## Repair
 

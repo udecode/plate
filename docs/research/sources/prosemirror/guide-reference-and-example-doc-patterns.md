@@ -8,8 +8,7 @@ source_refs:
   - https://prosemirror.net/docs/ref/#inputrules.InputRule
   - https://prosemirror.net/examples/markdown/
   - /Users/zbeyens/git/prosemirror/README.md
-related:
-  - docs/research/systems/plugin-input-rule-doc-pattern-landscape.md
+related: []
 ---
 
 # ProseMirror guide, reference, and example doc patterns

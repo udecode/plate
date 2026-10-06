@@ -7,7 +7,7 @@ import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',

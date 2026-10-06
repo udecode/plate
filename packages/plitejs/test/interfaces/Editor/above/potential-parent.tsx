@@ -1,11 +1,8 @@
 import { ElementApi } from 'plitejs';
 
 /** @jsx jsx */
-import {
-  above as editorAbove,
-  isBlock as editorIsBlock,
-} from '../../../../src/internal';
-
+import { above as editorAbove } from '../../../../src/internal';
+import { isBlock as editorIsBlock } from '../../../../src/testing';
 // `above` can never return the location passed into it, and shouldnt care if it exists, only if its parent exists.
 
 export const input = (

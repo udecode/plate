@@ -42,7 +42,11 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
-import type { EditorSchemaSource } from '../core/schema-source.internal';
+import type {
+  EditorSchemaPluginProvider,
+  SchemaDescendantInValue,
+  EditorSchemaSource,
+} from '../core/schema-source.internal';
 import type { TxOnlyMethod, TxReadMethod } from '../core/tx-only';
 import { addMark as executeAddMarkCommand } from '../editor/add-mark';
 import { deleteBackward as executeDeleteBackwardCommand } from '../editor/delete-backward';
@@ -86,11 +90,9 @@ import type {
   EditorSchemaDeclaration,
   EditorSchemaDelta,
   EditorSchemaElement,
-  EditorSchemaPluginProvider,
   EditorSchemaIdentity,
   EditorSchemaProperty,
   EditorSchemaPropertyQuery,
-  SchemaDescendantInValue,
   SchemaElementConstructionPropertiesFor,
   SchemaElementFor,
   SchemaElementHandle,

@@ -1,5 +1,6 @@
 import { isAuthoredOperationEffect } from '../../core/authored-runtime';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
+import { runTrustedUpdate } from '../../core/public-state';
 import type {
   Descendant,
   DocumentChange,
@@ -11,7 +12,7 @@ import type {
   Range,
   Selection,
 } from '../../index';
-import { NodeApi, RangeApi, SelectionApi, runTrustedUpdate } from '../../index';
+import { NodeApi, RangeApi, SelectionApi } from '../../index';
 import type { YjsEditor } from './editor-types';
 import type { PendingYjsEffect } from './shared-effect-log';
 
@@ -33,6 +34,12 @@ export type YjsEditorAdapter = {
   readonly readValue: () => EditorDocumentValue;
 };
 
+/**
+ * Update policies for host adapters that import canonical `DocumentChange`
+ * values without the built-in Yjs binding. `remote` marks the commit as a
+ * remote Yjs import, so history and outbound subscriptions treat it like the
+ * binding's own imports.
+ */
 export const YjsUpdatePolicy = Object.freeze({
   remote: Object.freeze({
     tags: Object.freeze([

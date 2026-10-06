@@ -13,10 +13,12 @@ import { getPluginNodeClass } from '../../lib';
 import { EditorText } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
 import { usePlateRenderContext } from '../internal/plate-context';
-import { setDOMTextSyncRendererCapability } from '../plite-react';
+import {
+  setDOMTextSyncRendererCapability,
+  setRetainedTextFlowRendererCapability,
+} from '../plite-react';
 import { getRenderNodeProps } from './getRenderNodeProps.internal';
 import { type RenderText, pluginRenderText } from './pluginRenderText.internal';
-import { setRetainedTextFlowRendererCapability } from './retainedTextFlowRenderer.internal';
 
 type SimpleRenderText = {
   className?: string;

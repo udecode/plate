@@ -3,12 +3,12 @@ import { describe, it } from 'node:test';
 
 import { createEditor, DocumentChange } from 'plitejs';
 
+import { getLastCommit as editorGetLastCommit } from '../src/internal';
 import {
-  getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 
 describe('editor write boundary', () => {
   const createSeededEditor = () => {

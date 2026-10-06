@@ -1,10 +1,10 @@
 import type * as Y from 'yjs';
 
-import type { EditorSchemaIdentity } from '../../index';
 import {
   areEditorSchemaIdentitiesEqual,
   readEditorSchemaIdentity,
-} from '../../index';
+} from '../../core/schema-compiler';
+import type { EditorSchemaIdentity } from '../../index';
 import { isRecord } from './record';
 
 const SCHEMA_METADATA_FORMAT = 2;

@@ -8,9 +8,7 @@ source_refs:
   - ../raw/milkdown/repo/e2e/tests
 updated: 2026-04-04
 related:
-  - docs/research/entities/milkdown.md
   - docs/research/sources/milkdown/editor-behavior-priority-map.md
-  - docs/editor-behavior/README.md
 ---
 
 # Milkdown corpus overview

@@ -2550,17 +2550,6 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/plite/table-fragment-semantics.md",
-    "scopes": [
-      "clipboard",
-      "table"
-    ],
-    "kind": "specification",
-    "disposition": "superseded",
-    "rationale": "June 13 Plite-native grid proposal superseded by June 15 structural-core, extension-owned-grid policy; preserve rejected rectangle-owner rationale.",
-    "reviewBasis": []
-  },
-  {
     "path": "docs/research/decisions/ai-preview-ownership.md",
     "scopes": [
       "ai",
@@ -2872,16 +2861,6 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/research/open-questions/documents-conversion-proof.md",
-    "scopes": [
-      "documents"
-    ],
-    "kind": "report",
-    "disposition": "historical",
-    "rationale": "# DOCX fidelity decisions and proof The canonical conversion contract resolves this design packet. It does not promise arbitrary Word-package fidelity or Microsoft Word certification. | Question | Resolution | | --- | --- | | Import truth and failure | `DocxImportResult` returns one complete `EditorDocumentValue` on success and no document on expected package, limit, or decode failure. | | Export input and capture | `exportToDocx(editor, options)",
-    "reviewBasis": []
-  },
-  {
     "path": "docs/research/sources/docx-interoperability-oss.md",
     "scopes": [
       "documents"
@@ -2899,26 +2878,6 @@
     "kind": "report",
     "disposition": "historical",
     "rationale": "# Pretext Pagination And Page Virtualization ## Scope Evidence for the Slate v2 pagination / virtualization planning lane. Sources: - live `../pretext` source and research log, read on 2026-05-25. - live `Plate repo root` layout and React source, read on 2026-05-25. - Cyrus Radfar, \"Pretext is a text measurement library. The most interesting use cases have no DOM at all.\", fetched on 2026-05-25. - local `../tiptap-docs` Pages limitations and tabl",
-    "reviewBasis": []
-  },
-  {
-    "path": "docs/solutions/best-practices/2026-05-09-hashtag-like-text-tokens-should-use-dynamic-decorations.md",
-    "scopes": [
-      "annotations"
-    ],
-    "kind": "lesson",
-    "disposition": "historical",
-    "rationale": "Inspected failure/solution: editable hashtag-like text is a dynamic decoration, not a mention/inline void or the constrained Tag picker. Preserve the rejected ownership comparison under annotations.",
-    "reviewBasis": []
-  },
-  {
-    "path": "docs/solutions/logic-errors/2026-03-23-csv-header-mode-validity-check-must-handle-object-rows.md",
-    "scopes": [
-      "csv"
-    ],
-    "kind": "lesson",
-    "disposition": "historical",
-    "rationale": "# CSV header-mode validity check must handle object rows ## Problem `CsvPlugin` is supposed to deserialize plain CSV into a Plite table. Valid input like `name,age\\nAda,36` returned `undefined` on the default path because Papa Parse was configured with `header: true`, but the validity check still treated the parsed rows like arrays. ## Root cause `deserializeCsv` used one validation shape for both parse modes: ```ts data.length < 2 || data[0].len",
     "reviewBasis": []
   },
   {

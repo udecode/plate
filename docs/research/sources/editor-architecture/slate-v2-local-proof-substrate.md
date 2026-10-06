@@ -23,8 +23,6 @@ source_refs:
 updated: 2026-04-28
 related:
   - docs/research/entities/slate.md
-  - docs/research/concepts/durable-anchor-vs-live-handle.md
-  - docs/research/concepts/runtime-identity-vs-tree-address.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
 ---
 

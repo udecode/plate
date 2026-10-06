@@ -11,12 +11,12 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 
+import { getLastCommit as editorGetLastCommit } from '../src/internal';
 import {
-  getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',

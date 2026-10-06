@@ -10,17 +10,17 @@ import {
   SelectionApi,
 } from 'plitejs';
 
+import { getLastCommit as editorGetLastCommit } from '../src/internal';
 import {
   deleteBackward as editorDeleteBackward,
   deleteForward as editorDeleteForward,
   getChildren as editorGetChildren,
-  getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
   insertBreak as editorInsertBreak,
   insertText as editorInsertText,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 import { defineTestSchema } from './support/schema';
 
 const paragraph = (text: string) => ({

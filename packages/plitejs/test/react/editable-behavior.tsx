@@ -3,7 +3,6 @@ import { getEditorRuntimeOwner, TextApi } from 'plitejs';
 import type { DOMRange } from 'plitejs/dom';
 import { createRef, StrictMode, useLayoutEffect } from 'react';
 
-import { replace as editorReplace } from '../../src/internal';
 import {
   createEditor,
   Editable,
@@ -17,6 +16,7 @@ import {
   registerPliteInactiveSelectionFocus,
   setPliteInactiveSelectionVisible,
 } from '../../src/react/inactive-selection';
+import { replace as editorReplace } from '../../src/testing';
 
 describe('plite-react editable behavior', () => {
   test('renders initial editor children into the editable DOM', () => {

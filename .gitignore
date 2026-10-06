@@ -153,5 +153,3 @@ packages/platejs/docs/
 /autoresearch.*
 /autoresearch.research/
 
-# A temporary file the review ledger writes before linking a record.
-docs/research/review-records/.*.tmp

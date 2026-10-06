@@ -15,9 +15,11 @@ import {
   getLastCommit as editorGetLastCommit,
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
+} from '../src/internal';
+import {
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 import { createRangeAnchor } from './support/anchor';
 
 const paragraph = (text: string): Element => ({

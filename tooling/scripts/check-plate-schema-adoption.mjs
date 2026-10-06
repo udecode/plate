@@ -14,6 +14,7 @@ import {
   readBaseline,
   groupFindings,
 } from './finding-baseline.mjs';
+import { internalPliteContractTypeSymbols } from './plite-internal-symbols.mjs';
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -254,14 +255,6 @@ const internalCoreCompilerTypeSymbols = new Set([
   'LowerBasePlugin',
   'NormalizeBasePluginInput',
   'NormalizePluginInput',
-]);
-const internalPliteContractTypeSymbols = new Set([
-  'PluginTypeLambda',
-  'PluginDependencyContractReference',
-  'PluginDependencyReferenceFor',
-  'PluginInstalledCapabilitiesOf',
-  'PluginTypeProviderOf',
-  'PluginWitnessFor',
 ]);
 const liveRegistryNodeModulePattern =
   /^(?:@\/registry\/components\/editor\/|\.\/)(?:block-list|blockquote|callout|caption|code|code-block|code-drawing|column|comment|date|details|footnote|heading|highlight|horizontal-rule|kbd|link|math|media-audio|media-embed|media-file|media-image|media-video|mention|paragraph|suggestion|table|toc)$/;

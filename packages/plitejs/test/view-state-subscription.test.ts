@@ -2,11 +2,8 @@ import { describe, expect, test } from 'bun:test';
 
 import { createEditor, setEditorReadOnly } from 'plitejs';
 
-import {
-  setEditorComposing,
-  setEditorFocused,
-  subscribeEditorViewState,
-} from '../src/internal';
+import { setEditorComposing, subscribeEditorViewState } from '../src/internal';
+import { setEditorFocused } from '../src/testing';
 
 const value = [{ children: [{ text: '' }], type: 'paragraph' }];
 

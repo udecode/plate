@@ -322,6 +322,9 @@ const main = () => {
   run('package kit export audit', 'node', [
     'tooling/scripts/check-package-kit-exports.mjs',
   ]);
+  run('contract reachability audit', 'node', [
+    'tooling/scripts/check-contract-reachability.mjs',
+  ]);
   run('Plate schema adoption audit contracts', 'node', [
     '--test',
     'tooling/scripts/check-plate-schema-adoption.test.mjs',

@@ -8,10 +8,6 @@ import {
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
-import {
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '../../src/internal';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   readModelSelectionDOMPreference,
@@ -29,6 +25,10 @@ import {
   createPliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '../../src/testing';
 
 const createProjectedSelection = () => {
   const graph = createPliteViewBoundaryGraph([

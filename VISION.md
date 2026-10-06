@@ -4,17 +4,17 @@ This is the mandatory first read for Plate and Plite direction.
 
 Root `VISION.md` keeps the essential doctrine every agent must see. Detailed owner doctrine lives in `docs/vision/*.md`; read only the relevant detail file after this root file.
 
-Durable product doctrine belongs here and in `docs/vision/*.md`; the routing in `AGENTS.md` sends work to the operational skills that apply it. When reusable taste, architecture, proof, or automation doctrine changes, update the smallest relevant owner. Promote a rule to this file only when every agent must see it first: global taste, source order, cross-boundary law, essential Plite or Plate direction, proof standards or stop conditions. Put the rest in the smallest detail file, and keep command output, route state, branch history, raw issue text and artifact paths in plans.
+Durable product doctrine belongs here and in `docs/vision/*.md`; the routing in `AGENTS.md` sends work to the operational skills that apply it. When reusable taste, architecture, proof, or automation doctrine changes, update the smallest relevant owner. Record each latest-state rule with its accepted tradeoffs, rejected alternatives, proof commands and next owner, consolidate only reusable decisions, and never leave a durable rule only in PR text, a handoff or a temporary plan. Promote a rule to this file only when every agent must see it first: global taste, source order, cross-boundary law, essential Plite or Plate direction, proof standards or stop conditions. Put the rest in the smallest detail file, and keep command output, route state, branch history, raw issue text and artifact paths in plans.
 
 ## Detail Files
 
-- `docs/vision/common.md`: shared taste, proof, automation, research, maintainer policy, correction patterns, repair, and consolidation.
+- `docs/vision/common.md`: the redesign method, shared API taste, claim width and boundary law.
 - `docs/vision/plite.md`: Plite substrate, API/runtime/browser/perf doctrine, proof hierarchy, and Slate skill topology.
 - `docs/vision/plate.md`: Plate framework/product doctrine, plugin/component policy, docs/API ownership, security, AI, setup, and non-merge lines.
 
 ## How To Use
 
-Read this before changing reusable architecture, public APIs, editor behavior, automation loops, maintainer issue/PR policy, or Slate/Plate boundaries.
+Read this before changing reusable architecture, public APIs, editor behavior, or Plite/Plate boundaries.
 
 Use active plans for run-specific evidence. Use this file and the relevant detail file for durable direction.
 
@@ -23,6 +23,15 @@ Use active plans for run-specific evidence. Use this file and the relevant detai
 **Redesign from First Principles is the governing principle of `next`.** Start every API or architecture plan, review and feedback decision from the current user job and hard laws: what would we build if these requirements had been present from the start? Apply the full principle (`pstack:principle-redesign-from-first-principles`) and its [Plate decision method](docs/vision/common.md#redesign-from-first-principles).
 
 Existing and proposed APIs, owners, layers and packages must earn their place. Choose the strongest materially justified target, including deletion or replacement, before planning adoption. During beta, compatibility, migration convenience and implementation difficulty affect sequencing, never the target. Preserve hard correctness, security, serialized-data, native-behavior and runtime laws, plus explicit user constraints. Reuse sound decisions while their requirements and evidence hold; prove any adopted change through its real owner.
+
+## Invariants
+
+No cut, plan or review drops these four laws. Each names what enforces it today; a part marked rule-only rests on review, not a script.
+
+1. **Hard cuts over compatibility.** A breaking change or hard cut beats an alias, shim, wrapper or deprecated second name. `plate/no-second-name` enforces it for renames (`AGENTS.md`'s Rules and enforcement); the architecture reference's Hard cut, run through the Build playbook, and `best-api`'s hard-cut gate hold the rest, which is rule-only.
+2. **Redesign from first principles, then KISS.** Every API or architecture target starts from the current user job and hard laws and takes the simplest target that earns its place, as Next beta above says. `best-api`, the API review playbook and the `api-plan` reviews row (`architect`, then a panel) apply it; it is rule-only.
+3. **No infinite roadmap.** Every plan closes, and nothing stays later without an owner and a stop. `.agents/pstack/plan-open.mjs`, which the lead runs before marking a plan Done, refuses an unchecked box, a placeholder and a deferred or open finding without `owner:`; plan closure itself and the stop condition are rule-only.
+4. **Verifiability.** Every claim names the check that proves it. `.agents/pstack/decisions-check.mjs` refuses a fixed, verified or proven decision row without `scope:`, and `AGENTS.md`'s Rules and enforcement table names each code rule's enforcer; behavior claims follow `docs/vision/common.md`'s Claim Width, and other claims are rule-only.
 
 ## Common Essentials
 
@@ -43,12 +52,12 @@ Existing and proposed APIs, owners, layers and packages must earn their place. C
 - `plitejs` is the raw editor distribution: model, canonical document changes, runtime, explicit DOM/React/history subpaths, selection, browser proof, and unopinionated APIs.
 - `platejs` is the default product/editor framework distribution: plugins, React wrappers, components, ordinary features, opinionated UX, examples, and app-facing docs. Plate applications install and import `platejs`, never `plitejs`. Dedicated raw Plite examples and proof apps import `plitejs` because their job is to verify the substrate itself.
 - Inside `packages/platejs`, only exact facade, proxy, or intentional replacement leaves import `plitejs`. Every first-party plugin, feature, component, spec, type test, fixture, and other user-authorable implementation consumes the relative Plate facade or matching Plate entrypoint owner; package-wide and test-glob raw-import authority is forbidden. `platejs/testing` mirrors raw Plite test helpers for consumer tests.
+- `plitejs/internal` is the one published bridge between the distributions, because two npm packages can share Plite's module state only through one channel. It exports only framework hooks and private carriers, shares no binding with a public entrypoint of either package, and has no docs or support promise. Only first-party code imports it: `platejs` source and the two packages' own tests, type tests and benchmarks. An export leaves it once no first-party code imports it.
 - Plite owns neutral substrate laws. Reuse its API when it fits the current job; repair Plite when that primitive is inadequate. Remove conflicting Plate machinery instead of hiding either problem behind aliases or product glue.
-- Do not fix a Plate product concern by polluting Slate core.
-- Do not hide a Slate primitive gap in Plate glue.
+- Do not fix a Plate product concern by polluting Plite core.
+- Do not hide a Plite primitive gap in Plate glue.
 - Cross-boundary work must name both owners and prove the handoff.
 - Canonical editor state and mounted-view presentation have different owners. When an Editable can derive transient paint from its own DOM lifecycle, Plite React owns that behavior and a literal DOM protocol. Plate inherits it; copied product UI marks external focus targets and styles neutral output hooks. Add a controlled view input only when user intent cannot be derived from the mounted view or DOM. Never create editor-global plugin state or a parallel state carrier for a view-local presentation choice.
-- Plate plugin paint has two public authoring shapes. Inline ranges use `decorate: { read, observe? }`. Sparse attributes that custom components receive through React use `render.useViewElementAttributes`, one hook host per enabled plugin per mounted view, returning `{ key, attributes }[]`. Plate keeps its keyed store, provider, publisher, source identity, cleanup, and compiled precedence private. A feature may bind benchmarked high-frequency interaction state directly to its canonical mounted node hosts when the state is private, view-local, and not part of React component props. Compose the canonical host ref, prove replacement/detach/cleanup and native behavior, and add no public hook, store, registry, or generic channel. Per-node `render.attributes` and `inject.nodeProps.transformProps` remain pure and hook-free; components and slots own structure.
 
 ### Evidence Order
 
@@ -63,53 +72,14 @@ Existing and proposed APIs, owners, layers and packages must earn their place. C
 
 Executable tests outrank prose docs for behavior claims. Prose docs outrank tests for ownership, API intent, and public teaching surfaces.
 
-### Automation Essentials
-
-- Long-running automation must repair tests, metrics, skills, and docs while it works. A plan note without a future behavior change is archaeology.
-- `$benchmark` owns performance execution across Plate and Plite: all applicable lanes are inventoried by default, run in cheapest/highest-signal order, paused at a causally proven owner, routed through `best-api` and the correct layer plan when the durable target changes API or runtime architecture, fixed and rerun immediately, then resumed until breadth is complete. `$benchmark review` owns the review method.
-- `$maintainer` owns the public issue/PR/security queue, duplicate/claim guard, and public proof gates. Internal Plate/Plite quality loops and current-checkout closure of already applied work run through pstack's poteto-mode, with long unattended runs as its Autonomous run. Measured work routes to `$benchmark`.
-- Public issue and PR bodies are maintainer-agent input contracts. Plate/Slate maintenance runs through local Claude Code or Codex sessions in maintainer checkouts, not a hosted API bot that can infer private context. Require enough public repro, proof, risk, and next-action state to route or stop cleanly.
-- Maintainer queue state should be durable and boring: queue snapshot, candidate matrix, selected owner, proof path, authority boundary, and a run note when useful. Chat memory is not the queue ledger.
-- Private security advisory details must not leak into versioned queue docs. Keep public/versioned ledgers redacted and read sensitive details from live GitHub or local ignored artifacts.
-- Apply source-backed improvements within the active request's authority, including justified beta architecture and API cuts. Challenge stale doctrine and repair its authorized owner. `AGENTS.md` owns permission boundaries; a technical owner transition or a large blast radius does not require another approval. Ask for a missing decision, access, or authority only when it blocks the next action.
-- Multi-step automation must carry resumable state and stop at real approval boundaries. Never auto-approve payments, external sends/posts, credential use, destructive operations, or other irreversible user-authority actions.
-- Agent/harness integrations must preserve the harness's authentication, session, permission, and tool boundary. Do not reimplement model transport or claim stronger isolation than the underlying harness provides.
-- All issue/test harvests are issue-by-issue when the prompt says "all". Clusters and matrices are routing checkpoints, not completion.
-- Every relevant issue needs a checkmark: existing local test linked and verified, new test written and verified, Plate-owned proof linked, or explicit defer owner recorded.
-- External editors are pressure sources, not architecture to clone.
-- Research is a compiled agent layer, not a scrapbook.
-
-### User Correction Patterns
-
-- "This is still slow" usually means the measured lane missed the visible user operation.
-- "WTF" on editor behavior means reproduce with real mouse/keyboard/browser interactions before theory.
-- "Only uncommitted" means do not summarize older branch history.
-- "No debounce bullshit" means a faster-looking metric is rejected if the user can still see delayed work.
-- "Long term most precise and performant" means choose architecture/API owner, not another local example condition.
-- "Bug report" means reproduce and fix first unless the user explicitly asks for a plan.
-- "Make it perfect" means stabilize behavior first, then improve perf, then clean API/DX, then prove readiness.
-- Repeated "go next" expects one best next owner, not a menu.
-- "Batch loop" means keep working through safe alternate owners and collect unblock questions for the end.
-
 ## Plite Essentials
 
 Plite is the raw editor substrate. It must stay unopinionated, precise, and boring in the best way: document model, canonical changes, runtime, input, DOM, selection, history, browser proof, package API, and benchmarks.
 
 - Preserve Plite's simple document model and canonical `DocumentChange` as the sole mutation and commit truth. Transactions construct canonical changes directly; React does not define the core ontology.
-- Public API should teach `editor.read`, `editor.update`, `state`, `tx`, plugin groups, commit listeners, and decoration sources.
-- `<EditorRoot decorations>` is the sole raw Plite input for transient inline paint. Sources return keyed ranges with render-safe attributes; `Editable` only renders them. Annotations use their own store (`createAnnotationStore` from `plitejs/annotations`, or `useAnnotationStore` under a mounted view, read through `useAnnotation(store, id)` or `useAnnotations(store)`), and a feature explicitly adapts annotation ranges into decorations when it needs inline paint.
-- Primary-root APIs do not expose a public `main` key. The primary document is addressed by omission; explicit roots are for additional roots only.
 - Plite stays unopinionated. Plate owns product opinion.
-- Do not keep legacy APIs alive just because they are familiar.
-- Plite plugins are exact, `name`-identified definitions. Plate plugin `name` identifies a capability only. Element plugins own a persisted `type`; mark/property plugins own a persisted `key`. Each defaults to `name` when omitted but may differ at definition time, and behavior plugins expose neither. Only an installed compiled portal exposes persisted identities at `schema.type` for an exact element owner or `schema.key` for an exact primary mark. Behavior and aggregate-property portals omit `schema`; consumer portals never expose normalized property maps. Name-only portals keep non-optional identity getters for package-decoupled code, but missing or wrong-kind access throws after `installed: false`. These identities are immutable after construction. Plugins have no `config`; immutable construction inputs and runtime resources stay in factory closures or honest host owners.
-- Plugin-owned document capabilities are `read` and `update`; pure core-read policy is `readMiddleware`. One descriptor-owned `api` projects to `editor.api.<name>` and `editor.plugin(Plugin).api`; do not root-merge methods or add `getApi`. The `api` field is always a one-context-object factory, including for context-free values.
-- Lifecycle and host/DOM events share one root `on.*` family with prefixless child names. There is no second `handlers` bucket.
-- Behavior specs define law; ordinary plugin arrays compose accepted capabilities. Name a reusable kit only after real reuse, and treat runtime control as a separate proven job. Do not add a behavior-profile DSL.
-- Pagination is not core editor truth. Active caret, selection, and composition stay on the native/browser editing path.
 - Browser editing claims require model, DOM, selection/caret where observable, focus owner, legal trace, replayability, and follow-up typing.
-- Explicit navigation scrolling is the final post-selection DOM write; selection preservation must never restore over it.
 - Behavior before perf. Visual proof before green visible-UI claims. Keep perf packets only when correctness stays green. Run measured diagnosis and optimization through `$benchmark`.
-- Degraded huge-document modes stay degraded until native behavior is proved.
 
 Read `docs/vision/plite.md` for the full Plite doctrine.
 
@@ -117,39 +87,10 @@ Read `docs/vision/plite.md` for the full Plite doctrine.
 
 Plate is the editor framework that ships in apps. It owns plugins, wrappers, components, kits, app-facing docs, product ergonomics, and opinionated UX built on top of Slate-first primitives.
 
-- Plate should make Slate-based editors practical to build and maintain without taking away schema, UI, or app ownership.
 - Keep Plate core unopinionated enough for framework use. Packages ship semantically neutral defaults; opinionated product behavior belongs in the consuming app and copied registry source, kits, examples and docs.
 - A behavior, API, or gate change needs an adoption story. "Cleaner" alone is not enough.
-- Public docs must be source-backed, current-state only, and readable by humans and agents.
-- Plugin and feature pages are headless first. UI components are render examples unless source proves they own behavior.
-- Plugin authoring keeps one-owner behavior colocated and inferred. Every public builder or configuration method must represent a distinct user job; current assembly machinery is never doctrine.
-- Plate plugins are exact opinionated definitions lowered onto Plite once. Native Plite fields live directly at the plugin root; there is no nested `extension` grammar, parallel `PluginConfig`, public `__config`, or `pluginApi`.
-- Classify behavior before packaging it: invariants stay with their owner, runtime parameters stay in `initialState` and the scoped store, proven substitutable capabilities may become plugins, and product policy stays app- or kit-owned.
-- Plugin capability names encode execution boundaries: `selectors` are pure store projections, `read` is a pure supplied-state document query, `api` is a non-snapshot plugin service that may run a complete model action through exactly one update, `update` owns active-transaction document mutation, and flat native fields own genuine editor-wide substrate.
-- Public factories are one object call with no caller generics and preserve one exact normalized definition. Their private typing may infer a small dependency/initial-state environment beside the author input when TypeScript needs that split for contextual callbacks; do not expose it or pretend one self-referential generic can infer everything. `.extend()` widens the definition and `.configure()` is terminal and non-widening. `component` is ordinary render publication data accepted by Base and Plate constructors for static/RSC and live consumers; Base extension stages reject it, while terminal configuration may replace it. `toReactPlugin()` belongs at the owning React adapter when it publishes a reusable Plate-layer descriptor or adds genuine Plate-only authoring; terminal consumers never insert it merely to set `component`. Factories replace `clone()`.
-- `DefinitionOf<typeof FooPlugin>` is the sole public definition extractor, and its alias is `FooDefinition`, never `FooConfig`. True domain/runtime config types remain valid.
-- Root dependency references are shallow, non-generic identity values. `PluginTypeProvider` is the sole public value-sensitive capability bridge. Its higher-kinded encoding, normalized installed-capability carrier, and transitive dependency expansion stay private inside `plitejs`, never recursively encode exact ancestry, and never replace runtime exact-descriptor identity. Plate's author-source to canonical-lowered type split is private inside `platejs` too. Neither distribution exposes an `internal`, `unsafe`, or generic framework escape path.
-- Low-level React composition is `react({ dom })`: one object, one exact DOM descriptor, and at most one explicit erased implementation boundary for the TypeScript 7 invariant-union reduction limit.
-- Format compilers own intrinsic syntax and compile installed feature-owned mappings. Whole-payload MIME negotiation belongs to `DataTransferFormat`; feature syntax mappings use semantic `formats` keys and never depend on a live editor or store.
+- Root dependency references are shallow, non-generic identity values. `PluginTypeProvider` is the sole public value-sensitive capability bridge. Its higher-kinded encoding, normalized installed-capability carrier, and transitive dependency expansion stay private inside `plitejs`, never recursively encode exact ancestry, and never replace runtime exact-descriptor identity. Plate's author-source to canonical-lowered type split is private inside `platejs` too. Neither distribution offers authors an `internal`, `unsafe`, or generic framework escape path; the Boundary Law bridge is first-party only.
 - Plate re-exports the approved Plite surface by identity, and a bug that reproduces in plain Plite belongs to Plite.
 - If a Plate public API collides with Plite runtime names such as `api`, `read`, `update`, `state`, or `tx`, cut or rename the Plate API. Do not compromise Plite substrate names for Plate compatibility.
-- Security is about explicit trust boundaries and sane defaults. Do not hide trust decisions behind convenience abstractions.
-- AI support stays optional, composable, and plugin-first.
 
 Read `docs/vision/plate.md` for the full Plate doctrine.
-
-## Decision Consolidation
-
-Use the smallest durable target:
-
-- active plan for run-specific findings;
-- root `VISION.md` for mandatory essential taste and routing;
-- `docs/vision/*.md` for owner-specific reusable doctrine;
-- Slate docs for accepted Slate v2 architecture/proof/release claim width;
-- Plate docs for accepted Plate behavior/API/docs decisions;
-- research docs for durable architecture conclusions and vocabulary;
-- benchmark target registries for metric/control-plane truth;
-- `.agents/rules/benchmark.mdc` for ordered measurement, causal diagnosis, and iterative fix/rerun/resume policy;
-- `.agents/rules/**` for reusable agent workflow policy.
-
-Write latest-state rules, accepted tradeoffs, rejected alternatives, proof commands, and next owners. Do not write public changelog prose. Consolidate only reusable decisions. If code changes reveal or change durable subsystem intent, update the smallest owning spec, vision detail, skill, or docs owner instead of burying the "why" only in PR text or a final handoff.

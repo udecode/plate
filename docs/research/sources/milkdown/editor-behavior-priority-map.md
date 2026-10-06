@@ -8,9 +8,8 @@ source_refs:
   - ../raw/milkdown/repo/docs/api
 updated: 2026-04-04
 related:
-  - docs/research/entities/milkdown.md
   - docs/research/sources/milkdown/corpus-overview.md
-  - docs/editor-behavior/markdown-editing-reference-audit.md
+  - docs/research/history/2026-04-02-markdown-editing-reference-audit.md
 ---
 
 # Milkdown editor-behavior priority map

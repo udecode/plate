@@ -7,8 +7,6 @@ source_refs:
   - ../raw/typora/pages/delete-range.json
 updated: 2026-04-04
 related:
-  - docs/research/entities/typora.md
-  - docs/research/systems/typora-behavior-map.md
   - docs/editor-behavior/markdown-editing-spec.md
 ---
 

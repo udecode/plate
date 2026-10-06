@@ -8,9 +8,7 @@ source_refs:
   - ../raw/obsidian/help/en/Plugins/Outline.md
   - ../raw/obsidian/help/en/Plugins/Search.md
 updated: 2026-04-04
-related:
-  - docs/research/entities/obsidian.md
-  - docs/research/systems/obsidian-behavior-map.md
+related: []
 ---
 
 # Obsidian linking, navigation, and search

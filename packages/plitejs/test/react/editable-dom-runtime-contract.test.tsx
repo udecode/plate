@@ -19,10 +19,6 @@ import {
   markDOMSyncMutationTarget,
 } from '../../src/dom/internal';
 import {
-  replace as editorReplace,
-  string as editorString,
-} from '../../src/internal';
-import {
   applyEditableCompositionEnd,
   applyEditableCompositionUpdate,
 } from '../../src/react/editable/composition-state';
@@ -39,6 +35,10 @@ import { queuePendingCompositionModelInput } from '../../src/react/editable/runt
 import { useEditableRootRuntimeState } from '../../src/react/editable/runtime-root-state';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
+import {
+  replace as editorReplace,
+  string as editorString,
+} from '../../src/testing';
 
 const strictMode = ({ children }: { children: ReactNode }) => (
   <StrictMode>{children}</StrictMode>

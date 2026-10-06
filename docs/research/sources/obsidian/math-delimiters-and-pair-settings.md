@@ -14,7 +14,6 @@ source_refs:
   - ../raw/obsidian/help/Release notes/v0.13.3.md
 updated: 2026-04-09
 related:
-  - docs/research/entities/obsidian.md
   - docs/editor-behavior/markdown-editing-spec.md
   - docs/editor-behavior/editor-protocol-matrix.md
 ---

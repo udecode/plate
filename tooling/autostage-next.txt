@@ -1,6 +1,7 @@
 # Paths staged automatically on the `next` branch by
 # tooling/scripts/autostage-next.mjs (Claude Code Stop hook).
-# One git glob pathspec per line; `**` crosses directories.
+# One git glob pathspec per line; `**` crosses directories. A line starting
+# with `!` excludes its matches, such as run artifacts that are never committed.
 
 docs/**
 AGENTS.md
@@ -27,3 +28,13 @@ tooling/e2e/**
 tooling/**
 pnpm-lock.yaml
 skills-lock.json
+!**/*.orig
+!**/*.rej
+!**/test-results/**
+!**/playwright-report/**
+!docs/**/*.png
+!docs/**/*.jpg
+!docs/**/*.jpeg
+!docs/**/*.webm
+!docs/**/*.mp4
+!docs/**/*.zip

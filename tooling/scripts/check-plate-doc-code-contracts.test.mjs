@@ -203,15 +203,13 @@ test('accepts explicit content, void elements, and configured partial schemas', 
 test('requires typed handles for known schema properties', () => {
   const source = [
     '```ts',
-    'state.schema.getElementProperty(element, "colSpan");',
     'state.schema.property({ key: "colSpan", placement: "element", type: "tableCell" });',
-    'state.schema.getElementProperty(element, colSpan);',
     'state.schema.property({ key, placement, type });',
     '```',
   ].join('\n');
   const issues = auditPlateDocCode(source);
 
-  assert.equal(issues.length, 2);
+  assert.equal(issues.length, 1);
   assert.ok(issues.every((issue) => issue.reason.includes('typed handle')));
 });
 
@@ -306,30 +304,6 @@ test('accepts the full independent plugin declaration vocabulary in docs', () =>
   assert.equal(
     auditPlateDocCode(rejected).filter((issue) =>
       issue.reason.includes('only in definePlugin')
-    ).length,
-    1
-  );
-});
-
-test('requires the sole one-argument clipboard contribution form', () => {
-  const accepted = [
-    '```ts',
-    "import { clipboardHandler as clipboard } from 'platejs/dom';",
-    'clipboard({ insertData() { return true; } });',
-    'clipboardHandler({ insertData() { return true; } });',
-    '```',
-  ].join('\n');
-  const rejected = [
-    '```ts',
-    "import { clipboardHandler } from 'platejs/dom';",
-    'clipboardHandler(editor, { insertData() { return true; } });',
-    '```',
-  ].join('\n');
-
-  assert.deepEqual(auditPlateDocCode(accepted), []);
-  assert.equal(
-    auditPlateDocCode(rejected).filter((issue) =>
-      issue.reason.includes('exactly one contextually typed handler')
     ).length,
     1
   );
@@ -640,6 +614,19 @@ test('keeps dependency carriers internal and teaches exact react composition', (
       issue.reason.includes('not a public package entrypoint')
     ).length,
     1
+  );
+});
+
+test('keeps every internal Plite contract type out of the public root', () => {
+  const source = [
+    '```ts',
+    "import type { PluginFactoryTypeLambda } from 'platejs';",
+    '```',
+  ].join('\n');
+
+  assert.match(
+    auditPlateDocCode(source)[0]?.reason ?? '',
+    /PluginFactoryTypeLambda is internal dependency typing/
   );
 });
 

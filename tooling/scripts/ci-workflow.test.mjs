@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const ciWorkflowPath = new URL(
@@ -143,6 +143,47 @@ test('every check script is a pnpm check step or says why it stays manual', asyn
     missing,
     [],
     'Add each check script to the steps in tooling/scripts/check.mjs, or to its manualOnly map with the reason it stays manual.'
+  );
+
+  const scriptsDir = new URL('./', import.meta.url);
+  const fileRefs = (text) => [
+    ...[...text.matchAll(/tooling\/scripts\/([\w.-]+\.mjs)/gu)].map(
+      (match) => match[1]
+    ),
+    ...[...text.matchAll(/['"]\.\/([\w.-]+\.mjs)['"]/gu)].map(
+      (match) => match[1]
+    ),
+  ];
+  const reachFiles = async (startCommands) => {
+    const files = new Set();
+    const pending = [...startCommands].flatMap(fileRefs);
+    while (pending.length > 0) {
+      const file = pending.pop();
+      if (files.has(file)) continue;
+      files.add(file);
+      const text = await readFile(new URL(file, scriptsDir), 'utf-8').catch(
+        () => ''
+      );
+      pending.push(...fileRefs(text));
+    }
+    return files;
+  };
+  const gated = await reachFiles(commands);
+  const manual = await reachFiles(
+    Object.keys(manualOnly).map(
+      (name) => packageJson.scripts[name] ?? wwwPackageJson.scripts[name]
+    )
+  );
+  const scriptFiles = await readdir(scriptsDir);
+  const orphans = scriptFiles
+    .filter((file) => /^check-.*\.mjs$|-check\.mjs$/u.test(file))
+    .filter((file) => !file.endsWith('.test.mjs'))
+    .filter((file) => !gated.has(file) && !manual.has(file));
+
+  assert.deepEqual(
+    orphans,
+    [],
+    'Each check script file runs from a pnpm check step or a manualOnly script; wire it in or delete it.'
   );
   const covered = Object.keys(manualOnly).filter((name) => {
     const scope = Object.hasOwn(packageJson.scripts, name) ? 'root' : 'www';

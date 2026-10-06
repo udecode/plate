@@ -9,10 +9,7 @@ source_refs:
   - ../raw/typora/pages/strict-mode.json
   - ../raw/typora/pages/auto-pair.json
 updated: 2026-04-04
-related:
-  - docs/research/entities/typora.md
-  - docs/research/systems/typora-behavior-map.md
-  - docs/editor-behavior/markdown-standards.md
+related: []
 ---
 
 # Typora markdown-native editing foundations

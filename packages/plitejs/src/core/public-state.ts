@@ -789,7 +789,11 @@ export const markTransactionSelectionWritten = (editor: Editor) => {
   if (context) context.selectionWritten = true;
 };
 
-/** Allow one internal state read to observe the active command-spec draft. */
+/**
+ * Allow one internal state read to observe the active command-spec draft.
+ *
+ * @internal
+ */
 export const withTransactionSpecDraftRead = <T>(
   editor: Editor,
   fn: () => T
@@ -6998,6 +7002,7 @@ export const updateEditor = <
   );
 };
 
+/** @internal */
 export const runTrustedUpdate = <
   V extends Value,
   TPlugins extends readonly unknown[] = readonly [],
@@ -7200,6 +7205,7 @@ export const withEditorUpdateRootScope = <T>(
   );
 };
 
+/** @internal */
 export const repairEditorValue = (editor: Editor) => {
   const roots = Object.keys(getEditorDocumentRoots(editor)).sort(
     (left, right) =>
@@ -7415,6 +7421,7 @@ export const getEditorMaxLength = (editor: object): number | undefined =>
     STATE_VIEW_OWNERS.get(editor) ?? getEditorRuntimeOwner(editor as Editor)
   );
 
+/** @internal */
 export const setEditorMaxLength = (
   editor: AnyPluginEditor,
   maxLength: number | undefined

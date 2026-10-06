@@ -7,9 +7,7 @@ source_refs:
   - ../raw/typora/store.json
 updated: 2026-04-04
 related:
-  - docs/research/entities/typora.md
   - docs/research/sources/typora/editor-behavior-priority-map.md
-  - docs/editor-behavior/README.md
 ---
 
 # Typora corpus overview
@@ -55,8 +53,7 @@ Before this pass, Plate already had useful Typora work in the repo:
 
 And the editor-behavior stack already relied on Typora heavily:
 
-- [markdown-standards.md](docs/editor-behavior/markdown-standards.md)
-- [markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md)
+- [markdown-editing-reference-audit.md](docs/research/history/2026-04-02-markdown-editing-reference-audit.md)
 - [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
 - [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md)
 

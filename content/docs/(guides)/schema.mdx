@@ -98,6 +98,8 @@ The descriptor gives `properties` its inferred keys and values. A raw persisted 
 
 Property descriptors define JSON value laws: `property.boolean`, `string`, `number`, `enum`, `json`, and `set`. Use a validator for a custom JSON value. Defaults and structural equality are part of the descriptor's contract; `{ default, omitDefault: true }` can omit the default value from stored nodes.
 
+A validator pairs with a positive-integer `validationVersion`; increment it whenever the validator's accepted value set changes, because the descriptor and `validationVersion` enter schema identity and the validator function's identity does not.
+
 Declare element-owned fields in `schema.element.properties`. Declare a primary mark in `schema.mark`. Use the plugin's keyed `schema.properties` for a feature that owns several properties. Their placement and targets determine where those values are accepted.
 
 Pass plugin descriptors to schema-aware construction and lookup APIs. An installed element portal exposes its persisted type through `plugin.schema.type`; a primary-mark portal exposes `plugin.schema.key`. The plugin's `name` identifies the capability and is not a substitute for persisted identity.

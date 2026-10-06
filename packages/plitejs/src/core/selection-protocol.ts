@@ -610,6 +610,7 @@ export const getSelectionRanges = (
   return Object.freeze([projectSelectionRange(selection)]);
 };
 
+/** @internal */
 export const getSelectionRange = (
   editor: Editor,
   selection: Selection,
@@ -642,6 +643,7 @@ export const getSelectionRange = (
   });
 };
 
+/** @internal */
 export const getSelectionDOMRange = (
   editor: Editor,
   selection: Selection
@@ -843,6 +845,7 @@ export const mapSelectionWithContext = (
   return Object.freeze({ ...selection, ...range });
 };
 
+/** @internal */
 export const mapSelectionThroughChange = (
   editor: Editor,
   selection: Selection,

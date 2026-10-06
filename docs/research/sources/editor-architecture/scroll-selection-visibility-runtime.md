@@ -23,7 +23,6 @@ related:
   - docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md
   - docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md
   - docs/research/sources/editor-architecture/layout-measurement-and-ime-lanes.md
-  - docs/research/systems/editor-architecture-landscape.md
 ---
 
 # Scroll, selection, and caret visibility runtime

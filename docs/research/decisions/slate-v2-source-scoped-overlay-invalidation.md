@@ -4,7 +4,6 @@ type: decision
 status: accepted
 updated: 2026-04-15
 source_refs:
-  - docs/research/concepts/source-scoped-overlay-invalidation.md
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
   - docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md
   - docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md

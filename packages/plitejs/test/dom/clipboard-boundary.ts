@@ -44,10 +44,12 @@ import {
   getLastCommit as editorGetLastCommit,
   getInternalDocumentChangeRootKeys,
   getNodeKey as editorGetNodeKey,
+} from '../../src/internal';
+import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
-} from '../../src/internal';
+} from '../../src/testing';
 
 const editorGetChangedRoots = (editor: Editor) =>
   (editorGetLastCommit(editor)

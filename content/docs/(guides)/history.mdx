@@ -59,6 +59,8 @@ const editor = createEditor({
 `maxDepth` defaults to `100`. `newBatchDelay` defaults to `500` milliseconds.
 The configured values apply to the next accepted update or replay.
 
+An otherwise-compatible automatic native edit that arrives after the `newBatchDelay` idle window starts a new batch. Explicit `tx.history.merge()` and `tx.history.newBatch()` decide grouping without the idle window: `newBatch()` always starts a new batch, and `merge()` joins the previous batch when the two are compatible. Authored text input outside composition still needs the window. History JSON stores no timing metadata.
+
 ## External history effects
 
 Use one local effect when undo or redo must replay state outside the document.

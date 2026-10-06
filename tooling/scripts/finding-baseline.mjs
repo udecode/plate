@@ -97,6 +97,17 @@ export function enforceBaseline({
 }) {
   const old = readBaseline(file);
   const base = process.env.PLATE_BASELINE_BASE || 'HEAD';
+  const resolved = spawnSync(
+    'git',
+    ['rev-parse', '--verify', '--quiet', `${base}^{commit}`],
+    { cwd: repoRoot }
+  );
+  if (resolved.status !== 0) {
+    console.error(
+      `[baseline] Cannot resolve the base commit ${base}, so growth of ${file} cannot be checked. Pass a base this checkout holds.`
+    );
+    return 1;
+  }
   const atBase = spawnSync('git', ['show', `${base}:${file}`], {
     cwd: repoRoot,
     encoding: 'utf-8',

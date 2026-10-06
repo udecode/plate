@@ -1,9 +1,7 @@
 import { jsx } from '../../..';
 /** @jsx jsx */
-import {
-  getChildren as editorGetChildren,
-  isInline as editorIsInline,
-} from '../../../../src/internal';
+import { isInline as editorIsInline } from '../../../../src/internal';
+import { getChildren as editorGetChildren } from '../../../../src/testing';
 
 jsx;
 

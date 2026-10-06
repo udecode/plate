@@ -4,7 +4,7 @@ type: decision
 status: accepted
 updated: 2026-04-21
 source_refs:
-  - docs/analysis/editor-architecture-candidates.md
+  - docs/research/sources/editor-architecture/candidates.md
   - docs/plans/2026-04-21-slate-v2-data-model-first-react-perfect-runtime-plan.md
   - docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md
   - docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md
@@ -26,7 +26,6 @@ source_refs:
   - ../db/packages/react-db/src/useLiveQuery.ts
   - ../edit-context/dev-design.md
 related:
-  - docs/research/systems/editor-architecture-landscape.md
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
   - docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md
   - docs/slate-v2/references/architecture-contract.md

@@ -4,11 +4,9 @@ import type {
   PluginReference,
   PluginInput,
 } from '../interfaces/editor';
-import type {
-  EditorSchemaPluginProvider,
-  SchemaPluginsOf,
-} from '../interfaces/schema';
+import type { SchemaPluginsOf } from '../interfaces/schema';
 import { definePlugin } from './plugin';
+import type { EditorSchemaPluginProvider } from './schema-source.internal';
 
 const PLUGIN_SLOT_INPUTS = new WeakMap<object, PluginInput>();
 

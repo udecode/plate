@@ -39,7 +39,6 @@ Plite:
 
 - A controlled view of canonical selection proves two Editables over one editor and two independent editors, expanded and collapsed paint, root and direction correctness, native-paint deduplication, SSR and unmounted behavior, and zero mutation of DOM selection, focus, input, history, clipboard or the internal projected-view-selection runtime.
 - A design that filters input by a stamp, tag or origin traces every producer of it: model-owned input, DOM repair, composition, Android pending diffs and the `input`-event fallback. Input provenance is not typing intent. A per-Editable rule carries the Editable itself, because mounted Editables share their view's focus and selection state.
-- Ordinary architecture does not run `issue-harvester`'s Slate claims mode.
 
 ## Page sections
 
@@ -61,8 +60,8 @@ A hard cut removes behavior, so it runs only when the user asks to remove that f
 
 - Delete the surface and its glue: exports, commands and flags, routes, UI entrypoints, feature flags, call sites, types, state, tests of the deleted behavior, docs, examples and comments about the old code.
 - Leave no `Not implemented` throws, stub handlers, "feature removed" notices, compatibility aliases, shims, fallback parsing, migration bridges, dead enum or union members, permanently-false flag branches or unused config.
-- Before deleting, run `pstack:blast-radius` on the removed surface to find the consumers grep misses: serialized documents, registry copies, docs, generated output and downstream apps. An open plan, one whose `Status:` is not done, is a consumer when a step or proof command cites what the cut removes, and so is a file that changed under the run since its snapshot. Flag each on the page, per the Delivery rule.
-- Keep cutting the dead code the removal exposes, then grep again for the removed name and its obvious aliases.
+- Before deleting, run `pstack:blast-radius` on the removed surface to find the consumers grep misses: serialized documents, registry copies, docs, generated output and downstream apps. An open plan, one whose `Status:` line names a state that `.agents/pstack/status.mjs` does not count as done, is a consumer when a step or proof command cites what the cut removes, and so is a file that changed under the run since its snapshot. Flag each on the page, per the Delivery rule.
+- Keep cutting the dead code the removal exposes, then grep again for the removed name and its obvious aliases. Judge that grep on live source, current docs, skills and open plans. Decision logs, legacy review records and every other plan keep old names as history, and the cut is complete only when the live set is clean.
 - Keep real native behavior, serialized-data and package laws intact.
 
 Plate closeout for a cut:
@@ -76,6 +75,10 @@ Plate closeout for a cut:
 ## Audit
 
 An audit scores one scope's current architecture, read-only; it writes only its report. Build a bounded manifest of its units first and report `expected=<n> reviewed=<n> excluded=<n> missing=<n> duplicates=<n>`; each exclusion needs a reason, and a partial lexical search is not a complete manifest. A unit is one independently scoreable package, public entrypoint, plugin family or cross-layer runtime owner; headless and React files for the same job are one unit. Score and rank each unit separately, and never publish an average across units, because averaging unrelated architecture hides blockers.
+
+When the audit's question is colocation, inlining, helper survival, file topology or "the full list", the manifest lists the bounded owner's files, top-level declarations, plugin blocks, `tx`-accepting helpers, exports and production consumers, and gives each row one decision: inline or delete, keep lexical, reuse through the owning API, keep as an independent owner, or move with an owner gap. The report adds the expected, reviewed, removed, kept and deferred counts, the complete removed list and the complete survivor list with consumer evidence; without them the audit is partial and says so. A lexical search that missed constants, nested wrappers, render callbacks or transaction helpers is not exhaustive.
+
+A package audit builds its manifest with `git ls-files --cached --others --exclude-standard packages/<package>`, so every untracked source, spec, type-test and config file is a required row, and each row names its path, verdict, owner, evidence and next action. Every production helper file, and every standalone function that takes `editor`, `api`, `read`, `tx`, a store or resolved plugin state, is a mandatory owner-topology row; the audit never closes from a few representative helpers.
 
 Classify every state value before judging its API:
 
@@ -114,6 +117,11 @@ The raw score out of 10 is the sum of each grade divided by 4 times its weight; 
 | `incomplete-manifest` | n/a | incomplete | Expected units, writers, public paths, or materially distinct consumers remain unreviewed. |
 
 A provisional cap renders as a ceiling such as `≤6.0/10`, not a final score; an incomplete audit has no numeric score; a blocker leads the verdict with the violated hard law. Report evidence confidence separately (inventory 35, trace 30, consumers 20, runtime 15, each graded 0 to 4, out of 100); it does not change the score.
+
+The report gives each finding one row:
+
+| Priority | Surface | Current friction | Best direction | Delete / hide | Owner | Proof |
+| -------- | ------- | ---------------- | -------------- | ------------- | ----- | ----- |
 
 ## Priority
 

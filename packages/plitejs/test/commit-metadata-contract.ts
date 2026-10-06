@@ -24,10 +24,12 @@ import { getSnapshotIndexMappingStats } from '../src/core/snapshot-index';
 import {
   getLastCommit as editorGetLastCommit,
   getNodeKey as editorGetNodeKey,
+} from '../src/internal';
+import {
   getSnapshot as editorGetSnapshot,
   insertBreak as editorInsertBreak,
   replace as editorReplace,
-} from '../src/internal';
+} from '../src/testing';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',

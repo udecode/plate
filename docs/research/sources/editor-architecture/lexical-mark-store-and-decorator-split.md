@@ -11,8 +11,6 @@ source_refs:
   - ../lexical/packages/lexical-react/src/useLexicalSubscription.tsx
 updated: 2026-04-15
 related:
-  - docs/research/entities/lexical.md
-  - docs/research/concepts/overlay-lane-separation.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
 ---
 

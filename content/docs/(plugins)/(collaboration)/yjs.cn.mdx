@@ -72,7 +72,7 @@ const createHocuspocusInitialReadiness = (
 ### 添加 Plate 插件
 
 同一房间内的所有 peer 必须使用相同的编译后 schema 身份。持久房间应使用稳定的 schema
-`id` 和 `version`。
+`id` 和 `version`。非空且没有 schema 元数据的房间会直接失败。已认领且有内容的房间在整个生命周期内保持其 schema 身份，因此在任何使用新 schema 的 peer 加入之前，先运行显式的版本化文档迁移，并在 schema 语义变化时提升 schema `version`。
 
 ```tsx
 import { createEditor } from "platejs/react";
@@ -95,6 +95,8 @@ const editor = createEditor({
 
 `doc` 和 `initialReady` 是必填项。传入 `awareness` 时，`awareness.doc` 必须与 `doc`
 是同一对象。只有带 Awareness 的绑定才拥有 presence 方法和光标 hooks。
+
+`rootName` 命名整个协作文档：主文档子节点位于 `rootName`，命名根位于 `${rootName}:roots`；一次修改多个根的提交会成为一个 Yjs 事务和一个历史批次；awareness 会拒绝 anchor 和 focus 位于不同根的选择。
 
 普通服务端房间应在服务端保存规范 Yjs 更新，并省略 `seed`。只有应用已经为全新的空房间选定唯一
 初始化所有者时，才使用 `seed: true`。同步到空副本不能证明 seed 所有权；多个 seeder
@@ -122,6 +124,10 @@ const Collaboration = CollaborationPlugin.create({
 
 `CollaborationPlugin` 会为创建的每个 Yjs descriptor 添加选区样式和 `afterEditable` 光标覆盖层。
 颜色、透明度和标签都可以在复制的文件中调整。
+
+如需自定义光标 UI，`platejs/yjs/react` 导出复制组件所用的 hooks：`useYjsRemoteCursorIds(editor)` 读取稳定的成员列表，`useYjsRemoteCursor(editor, clientId)` 读取单个光标，`useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` 在该视图中读取其几何信息。
+
+如需自行绘制远程选区，用 `editor.api.yjs.remoteCursors()` 读取当前快照，并用 `editor.api.yjs.subscribeRemoteCursors(listener)` 让绘制失效；它只在解析后的远程光标变化时触发。它的清理函数是幂等的，随所属视图一起释放。
 
 ### 根据 admission 状态控制编辑
 
@@ -167,6 +173,10 @@ const reconnect = async () => {
 admission 会自动发布当前选择；显式 reconnect 调用适用于已经 admission 的绑定。
 
 </Steps>
+
+## 共享 effect 与压缩
+
+每个独立的共享 effect 都声明 `collabReplay`：`"live"` 用于只向活跃 peer 投递一次的事件，`"latest"` 只用于定义了 `collabSnapshot(state)` 的绝对、幂等值。`"live"` effect 绝不能是持久共享状态的唯一来源。长会话应为每个协作文档设置一个稳定的 `sharedEffectCompaction.authorityId`；所有活跃接收方确认后它会建立检查点，后加入的 peer 恢复 `"latest"` 值，不会重放已过期的 `"live"` 事件；`editor.api.yjs.retireSharedEffectPeer(clientId)` 用于释放宿主确认已永久离开的 peer。同一协作文档使用不同的 `sharedEffectCompaction.authorityId` 会被拒绝；只能通过宿主隔离的显式文档迁移转移压缩权限。
 
 ## 所有权
 

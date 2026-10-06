@@ -20,6 +20,7 @@ fix playbook for a local behavior bug or regression with no public mutation.
   `next`.
 - Shipping authority: a Plate PR targeting `next`.
 - Release authority: npm/GitHub release readback.
+- Never comment on `ianstormtaylor/slate` issues; issue updates target `udecode/slate`.
 
 - Read `CONTRIBUTING.md`, the relevant issue template,
   `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before public mutation.

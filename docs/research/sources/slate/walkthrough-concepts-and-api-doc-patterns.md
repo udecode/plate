@@ -10,8 +10,7 @@ source_refs:
   - /Users/zbeyens/git/slate/docs/api/transforms.md
   - https://docs.slatejs.org/
   - https://docs.slatejs.org/walkthroughs/01-installing-slate
-related:
-  - docs/research/systems/plugin-input-rule-doc-pattern-landscape.md
+related: []
 ---
 
 # Slate walkthrough, concepts, and API doc patterns

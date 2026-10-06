@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { createEditor } from 'plitejs';
 import { describe, it } from 'vitest';
 
-import { replace as editorReplace } from '../../src/internal';
 import { syncSelectionForBeforeInput } from '../../src/react/editable/selection-reconciler';
 import {
   ReactEditor,
   type ReactRuntimeEditor,
 } from '../../src/react/plugin/react-editor';
+import { replace as editorReplace } from '../../src/testing';
 import { readTextSelection as editorGetSelection } from './read-text-selection';
 
 const createRootWithoutSelection = () =>

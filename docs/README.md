@@ -18,15 +18,17 @@ decision selects a target; it does not establish adoption or passing proof.
 
 The [research schema](research/schema.md) defines the storage and command
 contract. Current conclusions live in [decision pages](research/decisions/).
-[Review and execution records](research/review-records/) are immutable: later
-records retain, reopen, or supersede specific conclusions without rewriting
-the original evidence. `lookup` and `show` derive the current state from these
-records and linked plans; do not maintain a second status anywhere else.
+Review pages under `docs/plans` carry each verdict in front matter, and the
+[legacy records](research/review-records/) keep the reviews and executions
+recorded before the front-matter cutover as history. `lookup` and `show` derive
+the current state from both and from linked plans; do not maintain a second
+status anywhere else.
 
 A plan owns its lifecycle status. New associated plans declare `review_scopes`,
 `review_basis`, and `work_kind`; cross-feature work names every affected scope.
-Completing a design plan is not completing its implementation. Execution
-outcomes bind progress to the governing review, plan fingerprint, and proof.
+Completing a design plan is not completing its implementation. A landed
+implementation or workflow plan binds progress to the review its `review_basis`
+names.
 Missing receipts, changed inputs, and an unreconciled decision summary remain
 visible gaps. Historical “complete” or “verified” wording alone is unbound
 evidence, not a current verification claim.
@@ -45,18 +47,18 @@ Filename matches are search candidates until their contents are classified.
 | [brainstorms](brainstorms/) | Options and exploratory designs. Proposal wording is not adoption authority. |
 | [development](development/) | Contributor and agent-tooling notes; current agent rules live in [.agents](../.agents/). |
 | [editor-audits](editor-audits/) | External-editor audit registry and durable report summaries, including source pins and rejected alternatives. An audit does not certify implementation. |
-| [editor-behavior](editor-behavior/README.md) | Behavior specifications and protocol history. [Current evidence](editor-behavior/current-evidence.md) identifies active proof owners; dated parity matrices retain their original limits. |
+| [editor-behavior](editor-behavior/markdown-editing-spec.md) | The editor-behavior law in [markdown-editing-spec.md](editor-behavior/markdown-editing-spec.md) and its proof index in [current-evidence.md](editor-behavior/current-evidence.md), which maps spec families to their proof owners and lists the matrix-era evidence gaps. |
 | [editor-benchmarks](editor-benchmarks/) | Earlier benchmark plans and scratch findings. Use `lookup <scope>` and bound receipts for current performance decisions. |
 | [editor-issue-harvester](editor-issue-harvester/) | Source-specific issue/PR inventories, classifications, and refresh cursors. A cursor describes the recorded refresh, not live upstream state. |
 | [editor-test-harvester](editor-test-harvester/) | Source-specific test inventories and portable behavior extraction. Reading or mapping an upstream test is distinct from executing it locally. |
 | [maintainer](maintainer/) | Public-maintenance queues and dated run receipts; revalidate external state before acting. |
 | [performance](performance/README.md) | Benchmark contracts and historical narratives. Numbers belong to their captured workload, source, and machine. |
 | [plans](plans/) | Dated execution/design plans and templates. Each plan owns one lifecycle status; scope associations connect it to review history. Raw `artifacts/` may be ignored or unavailable elsewhere. |
-| [plite](plite/overview.md) | Mixed current runtime contracts, active research, historical migration plans, and proof inventories. Classify documents individually; the tree is not one archived or universally current authority. |
+| [plite](plite/) | Mixed current runtime contracts, active research, historical migration plans, and proof inventories. Classify documents individually; the tree is not one archived or universally current authority. |
 | [plite-browser](plite-browser/overview.md) | Historical browser-proof design and comparisons. Current commands and proof selection belong to the live verification workflow. |
 | [plite-draft](plite-draft/overview.md) | Prior rewrite drafts and their historical decisions. Their queue/status language is scoped to that draft program. |
 | [plite-issues](plite-issues/) | Issue dossiers, source inventories, and extracted test shards. These preserve investigation context; inspect their dates and linked disposition before treating work as open. |
-| [research](research/README.md) | Feature entrypoints, global review queue, current decisions, immutable review/execution history, compiled concepts and source summaries. Raw-source availability and evidence freshness remain separate. |
+| [research](research/schema.md) | Review scopes and queue, decisions, compiled source summaries, dated history and probes. Raw-source availability and evidence freshness remain separate. |
 | [solutions](solutions/) | Reusable lessons and diagnosed failure patterns by category. Consult the relevant lesson before reopening the same mechanism; it does not override current law or proof. |
 | [sync](sync/) | Dated upstream UI, doctrine, and source-sync provenance. Each receipt applies to its named source revision and destination. |
 | [table](table/) | Historical table benchmark snapshots; `lookup table` and the [Table scope](research/review-scopes/table.json) lead to current decisions and evidence. |

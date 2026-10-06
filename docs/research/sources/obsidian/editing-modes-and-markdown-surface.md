@@ -7,9 +7,7 @@ source_refs:
   - ../raw/obsidian/help/en/Live preview update.md
   - ../raw/obsidian/help/en/Editing and formatting/Obsidian Flavored Markdown.md
 updated: 2026-04-04
-related:
-  - docs/research/entities/obsidian.md
-  - docs/research/systems/obsidian-behavior-map.md
+related: []
 ---
 
 # Obsidian editing modes and markdown surface

@@ -37,3 +37,4 @@ them only with an explicit user decision and record the reason in the sync plan.
 | Plite-to-HTML page | keep Plate | Keep the special page because the RSC example cannot be previewed through the generic block path. |
 | Workspace aliases/typecheck | keep Plate | Preserve app source aliases and package integration typecheck model. |
 | Package integration tests | keep Plate | Do not lose app-as-integration-harness coverage during shadcn syncs. |
+| Code blocks | keep Plate fork | Use Shiki themes that ship in the current bundle (`github-light`/`github-dark`, never upstream `github-light-default`). Client highlighters mount exactly one `SyntaxHighlighter`, render the light theme until mounted, and let the wrapper own background and border. Every rendered line carries `data-line`, and `code` keeps `data-line-numbers` after all post-processing. Check token colors and line numbers on the rendered page in both themes, not wrapper class names. |

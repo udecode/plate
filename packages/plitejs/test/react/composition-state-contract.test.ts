@@ -8,11 +8,6 @@ import {
   EDITOR_TO_USER_MARKS,
 } from '../../src/dom/internal';
 import {
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-  string as editorString,
-} from '../../src/internal';
-import {
   applyEditableCompositionEnd as applyEditableCompositionEndRuntime,
   applyEditableCompositionStart,
   applyEditableCompositionUpdate,
@@ -39,6 +34,11 @@ import {
 } from '../../src/react/editable/runtime-before-input-events';
 import type { AndroidInputManager } from '../../src/react/hooks/android-input-manager/android-input-manager';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+  string as editorString,
+} from '../../src/testing';
 import { readTextSelection } from './read-text-selection';
 
 const createAndroidManager = () =>

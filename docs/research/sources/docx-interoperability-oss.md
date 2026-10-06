@@ -8,7 +8,6 @@ source_refs:
   - ../../plite/research/2026-09-14-docx-interoperability-oss/read-log.tsv
 related:
   - ../decisions/documents-conversion-fidelity.md
-  - ../open-questions/documents-conversion-proof.md
 ---
 
 # DOCX conversion and preservation
@@ -67,5 +66,5 @@ No third-party source or fixture was copied into Plate, and no converter was
 adopted. Zero upstream tests, issue bodies or PR bodies were executed/read in
 this pass. Official discovery and exact local source settle the bounded
 comparison; performance, native fidelity and proprietary internals remain
-outside its proof. The [open questions](../open-questions/documents-conversion-proof.md)
-keep those limits attached to the design handoff.
+outside its proof. The [conversion decision](../decisions/documents-conversion-fidelity.md)
+keeps those limits attached to the design handoff.

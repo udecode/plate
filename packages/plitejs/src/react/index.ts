@@ -139,6 +139,7 @@ export { useClaimEditableDOMCommit } from './hooks/use-claim-editable-dom-commit
 export {
   type DOMTextSyncRendererCapabilityContext,
   setDOMTextSyncRendererCapability,
+  setRetainedTextFlowRendererCapability,
 } from './dom-text-sync';
 export {
   type EditorHistoryController,

@@ -4,14 +4,14 @@ import { describe, it } from 'node:test';
 import { createEditor, definePlugin, editorCommands } from 'plitejs';
 
 import { hasCommandHandler } from '../src/core/command-registry';
+import { getPluginRegistry as editorGetPluginRegistry } from '../src/internal';
 import {
   deleteBackward as editorDeleteBackward,
-  getPluginRegistry as editorGetPluginRegistry,
   getSnapshot as editorGetSnapshot,
   insertText as editorInsertText,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 
 describe('plugin method hard cut', () => {
   it('rejects one stable name with different descriptor identities', () => {

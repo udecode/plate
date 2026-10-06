@@ -1,5 +1,6 @@
-import { defineCommand, dispatchCommand } from '../../core';
+import { defineCommand } from '../../core';
 import {
+  dispatchCommand,
   createEditorView,
   createEditor as createPliteEditor,
   defineRuntimePlugin,

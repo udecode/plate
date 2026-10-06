@@ -21,24 +21,26 @@ import {
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 import {
   addMark as editorAddMark,
-  deleteBackward as editorDeleteBackward,
-  deleteForward as editorDeleteForward,
   deleteFragment as editorDeleteFragment,
-  getChildren as editorGetChildren,
   getPluginRegistry as editorGetPluginRegistry,
   getLastCommit as editorGetLastCommit,
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
-  getSnapshot as editorGetSnapshot,
   dispatchCommand,
-  insertBreak as editorInsertBreak,
   insertSoftBreak as editorInsertSoftBreak,
+  removeMark as editorRemoveMark,
+} from '../src/internal';
+import {
+  deleteBackward as editorDeleteBackward,
+  deleteForward as editorDeleteForward,
+  getChildren as editorGetChildren,
+  getSnapshot as editorGetSnapshot,
+  insertBreak as editorInsertBreak,
   insertText as editorInsertText,
   move as editorMove,
-  removeMark as editorRemoveMark,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 import {
   createTestDocumentChange,
   getTestDocumentRootChange,

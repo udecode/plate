@@ -3,7 +3,7 @@ import { jsx } from '../../..';
 import {
   getSnapshot as editorGetSnapshot,
   unhangRange as editorUnhangRange,
-} from '../../../../src/internal';
+} from '../../../../src/testing';
 
 jsx;
 

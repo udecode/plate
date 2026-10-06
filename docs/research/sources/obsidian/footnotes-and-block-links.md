@@ -8,9 +8,7 @@ source_refs:
   - ../raw/obsidian/help/en/Linking notes and files/Internal links.md
   - ../raw/obsidian/developer/en/Reference/TypeScript API/CachedMetadata.md
 updated: 2026-04-04
-related:
-  - docs/research/entities/obsidian.md
-  - docs/research/systems/obsidian-behavior-map.md
+related: []
 ---
 
 # Obsidian footnotes and block links

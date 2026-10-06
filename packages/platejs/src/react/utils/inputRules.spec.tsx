@@ -1,11 +1,7 @@
 /** @jsx jsxt */
 
-import {
-  editorCommands,
-  property,
-  schema,
-  probeCommandNativeEquivalent,
-} from '../../core';
+import { editorCommands, property, schema } from '../../core';
+import { probeCommandNativeEquivalent } from '../../facade';
 import {
   getCompiledPlatePlugin,
   getPlateRuntime,

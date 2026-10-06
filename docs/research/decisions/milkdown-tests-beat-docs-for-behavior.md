@@ -7,8 +7,7 @@ source_refs:
   - docs/research/sources/milkdown/behavior-test-lanes.md
   - docs/research/sources/milkdown/docs-and-package-surface-map.md
 related:
-  - docs/research/concepts/executable-behavior-truth.md
-  - docs/editor-behavior/markdown-editing-reference-audit.md
+  - docs/research/history/2026-04-02-markdown-editing-reference-audit.md
 ---
 
 # Milkdown tests beat docs for behavior

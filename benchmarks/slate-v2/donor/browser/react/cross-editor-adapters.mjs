@@ -54,7 +54,7 @@ import { getMountedEditableDOMRuntime } from 'cross-plite-dom-runtime';
 import { getEditableKernelTrace } from 'cross-plite-kernel';
 ${
   surface === 'plite'
-    ? "import {createEditor, Editable, EditorRoot, installBrowserHandle, setDOMTextSyncRendererCapability} from 'plitejs/react';"
+    ? "import {createEditor, Editable, EditorRoot, installBrowserHandle, setDOMTextSyncRendererCapability, setRetainedTextFlowRendererCapability} from 'plitejs/react';"
     : "import {createEditor, installBrowserHandle, EditorRoot, EditorContent, BoldPlugin, ParagraphPlugin} from 'platejs/react';"
 }
 installBrowserHandle();
@@ -75,7 +75,7 @@ export async function mount(host, lines, options) {
     surface === 'plite'
       ? `if(options.retained) {
     setDOMTextSyncRendererCapability(renderLeaf,()=>true);
-    Object.defineProperty(renderLeaf,Symbol.for('plitejs/react/retained-text-flow-renderer-capability'),{value:({marks})=>Object.keys(marks).length===0});
+    setRetainedTextFlowRendererCapability(renderLeaf,({marks})=>Object.keys(marks).length===0);
   }
   props.onKeyDown = event => {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'b') {

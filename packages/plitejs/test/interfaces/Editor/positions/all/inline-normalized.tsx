@@ -1,9 +1,7 @@
 import { jsx } from '../../../..';
 /** @jsx jsx */
-import {
-  positions as editorPositions,
-  range as editorRange,
-} from '../../../../../src/internal';
+import { range as editorRange } from '../../../../../src/internal';
+import { positions as editorPositions } from '../../../../../src/testing';
 
 jsx;
 

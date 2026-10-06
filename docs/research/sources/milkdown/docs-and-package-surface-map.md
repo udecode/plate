@@ -7,9 +7,7 @@ source_refs:
   - ../raw/milkdown/repo/packages
   - ../raw/milkdown/sync-metadata.json
 updated: 2026-04-04
-related:
-  - docs/research/entities/milkdown.md
-  - docs/research/systems/milkdown-behavior-map.md
+related: []
 ---
 
 # Milkdown docs and package surface map

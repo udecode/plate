@@ -1,6 +1,6 @@
 import { jsx } from '../../..';
 /** @jsx jsx */
-import { getSnapshot as editorGetSnapshot } from '../../../../src/internal';
+import { getSnapshot as editorGetSnapshot } from '../../../../src/testing';
 
 jsx;
 

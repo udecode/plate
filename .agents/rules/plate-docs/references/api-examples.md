@@ -12,6 +12,7 @@ examples honest to it.
 - No placeholder comments (`// your logic here`, `// Your validation logic`).
 - `showLineNumbers` + `{n-m}` highlights on snippets longer than ~15 lines.
 - `title="filename.tsx"` when file context matters.
+- Teach model behavior through semantic commands and input rules. An `onDOMBeforeInput` example appears only as a native escape hatch and never carries text-insertion or formatting semantics on its own.
 
 Inline code hygiene:
 

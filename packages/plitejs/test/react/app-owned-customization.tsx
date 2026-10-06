@@ -7,7 +7,6 @@ import {
 } from 'plitejs';
 import type React from 'react';
 
-import { replace as editorReplace } from '../../src/internal';
 import {
   createEditor,
   Editable,
@@ -15,6 +14,7 @@ import {
   EditorRoot,
   ReactUpdatePolicy,
 } from '../../src/react';
+import { replace as editorReplace } from '../../src/testing';
 
 const createChildren = (left = 'alpha', right = 'beta'): Descendant[] => [
   { type: 'paragraph', children: [{ text: left }] },

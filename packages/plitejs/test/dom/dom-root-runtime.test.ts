@@ -11,7 +11,7 @@ import {
   markDOMSyncMutationTarget,
 } from '../../src/dom/internal';
 import { IS_FOCUSED } from '../../src/dom/utils/weak-maps';
-import { setEditorFocused } from '../../src/internal';
+import { setEditorFocused } from '../../src/testing';
 
 const createHarness = () => {
   const dom = new JSDOM('<!doctype html><body></body>');

@@ -21,11 +21,13 @@ import {
 } from '../src/core/public-state';
 import {
   getPluginRegistry as editorGetPluginRegistry,
+  setEditorChildren,
+} from '../src/internal';
+import {
   getSnapshot as editorGetSnapshot,
   isEditor as editorIsEditor,
   replace as editorReplace,
-  setEditorChildren,
-} from '../src/internal';
+} from '../src/testing';
 import { defineTestSchema } from './support/schema';
 
 describe('plite normalization contract', () => {

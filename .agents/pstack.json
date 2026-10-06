@@ -8,13 +8,14 @@
   "plans": "docs/plans",
   "proof": "verify",
   "skiller": true,
-  "regen": "pnpm install",
+  "regen": "pnpm run prepare",
   "skip": [],
   "dropped": [
     "architecture",
     "architecture-cleanup",
     "autoclosure",
     "autoreview",
+    "best-api audit",
     "clawsweeper",
     "cross-review",
     "editor-audit",
@@ -23,6 +24,7 @@
     "grill-with-docs",
     "hard-cut",
     "improve",
+    "issue-harvester slate",
     "maintain-workflow",
     "patch",
     "plate-feature",
@@ -38,18 +40,19 @@
     "testing",
     "typescript-advanced-types",
     "vercel-composition-patterns",
+    "verify corpus",
     "verify-plate"
   ],
   "synced": {
-    "block": "549d0813cf6f67105a312ace315879811b7cf883f5991a9a2c33ce4d5f357929",
+    "block": "8600610c4a959c511e0f1b4ed01ec8b57516e0fb68ab5643f6297ad84128d2d3",
     "files": {
       ".agents/pstack/cross.mjs": "fbc38412b89397422abae04fe2791d0b6b704e16d2345b7f4298bfa85763be24",
       ".agents/pstack/decisions-check.mjs": "762fe49c174123e3bd98eb351679268cb22915303f4c0b40d36352042d356e69",
-      ".agents/pstack/plan-open.mjs": "87d9ac344a78478d142d5fa4f97b58ab3f9e94ce9b2d7839ec110bfd6e9e8b78",
+      ".agents/pstack/plan-open.mjs": "56110711b0ae2f9f26748390f9d406ed9a27cefb08d11bbae5932507e8bf786c",
       ".agents/pstack/plan-page.mjs": "3f52bf6e6f1c43e6e6c01453eb8dec5856c28b4417f90b087110b753be0f2f85",
       ".agents/pstack/status.mjs": "5579e56a262264709116ea570abc46fbd1bc01608153cef7abe64e1132efd511"
     },
-    "source": "f2e70e7d27ba58e96a3739bffc7bf227e92c1dae"
+    "source": "e78f50b9b2d7c94c25ded3b963afe587c410d317"
   },
   "pageTopic": {
     "field": "review_scopes",

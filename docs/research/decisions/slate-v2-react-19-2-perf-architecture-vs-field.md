@@ -9,9 +9,8 @@ source_refs:
   - docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md
   - docs/research/sources/editor-architecture/service-channels-and-live-stores.md
   - docs/research/sources/editor-architecture/slate-v2-local-proof-substrate.md
-  - docs/analysis/editor-architecture-candidates.md
+  - docs/research/sources/editor-architecture/candidates.md
 related:
-  - docs/research/systems/editor-architecture-landscape.md
   - docs/research/systems/slate-v2-overlay-architecture.md
   - docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md
 ---

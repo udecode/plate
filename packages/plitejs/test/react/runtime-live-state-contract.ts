@@ -1,10 +1,6 @@
 import { createEditor, createEditorView, TextApi } from 'plitejs';
 
 import {
-  getSnapshot as editorGetSnapshot,
-  replace as editorReplace,
-} from '../../src/internal';
-import {
   readRuntimeNode,
   readNodeByKey,
   readRuntimeText,
@@ -15,6 +11,10 @@ import {
   writeRuntimeSelection,
 } from '../../src/react/editable/runtime-mutation-state';
 import { readRuntimeSelection } from '../../src/react/editable/runtime-selection-state';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '../../src/testing';
 
 describe('plite-react runtime live state facade', () => {
   test('resolves live nodes and text through root view editors', () => {

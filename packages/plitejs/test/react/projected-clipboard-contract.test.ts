@@ -7,6 +7,7 @@ import {
   schema,
   type Point,
   type RootKey,
+  getEditorRuntimeOwner,
 } from 'plitejs';
 import { dataTransferFormats } from 'plitejs/dom';
 import type { ClipboardEvent } from 'react';
@@ -19,7 +20,6 @@ import {
   NODE_TO_ELEMENT,
   setDOMClipboardFormatKey,
 } from '../../src/dom/internal';
-import { getEditorRuntimeOwner } from '../../src/internal';
 import { applyEditableCut } from '../../src/react/editable/clipboard-input-strategy';
 import {
   decodeProjectedClipboardFragment,

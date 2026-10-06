@@ -10,7 +10,7 @@ Use `status` for the ordered reviews. The configured `plite-core`, `plite-view`
 and `plate-core` groups combine foundational architecture questions; every
 other feature stays independent. `lookup <group-id>` returns all its questions.
 Every repeated review reconsiders the design automatically. The
-[record contract](schema.md#review-history) keeps historical conclusions,
+[review ledger](schema.md#review-history) keeps historical conclusions,
 adoption, proof and source freshness separate.
 
 It exists to give future agents a stable, low-token, persistent reference

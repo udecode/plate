@@ -6,7 +6,6 @@ updated: 2026-07-23
 source_refs:
   - docs/research/sources/typora/markdown-native-editing-foundations.md
 related:
-  - docs/research/concepts/behavior-packaging-candidates.md
   - docs/research/systems/editor-behavior-architecture.md
   - docs/editor-behavior/markdown-editing-spec.md
 ---

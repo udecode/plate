@@ -98,10 +98,18 @@ heights, or block spacing differ from the defaults. Call `measurePages` with an
 explicit engine for headless snapshots. `createEstimatedPageLayoutEngine()` is
 useful where browser text measurement is unavailable.
 
+`measurePages(editor, options)` reads one coherent editor snapshot and returns an immutable `PageLayoutSnapshot`. It neither subscribes nor publishes. A custom `PageLayoutEngine` receives detached immutable input and must conserve source ranges, fragment order, paths, and declared non-text sizes.
+
 Different font files and browser profiles can produce different line breaks.
 Derived pages are therefore a view result, not stored page-break authority.
 Products that require identical exported pages need one controlled measurement
 environment for that export.
+
+## Roots and page settings
+
+Pass a named `root` to `PagedEditable` or `measurePages` to measure and render that root. Omit `root` for the primary document. `"main"` is an internal root spelling and is rejected at the public boundary.
+
+`page` accepts a `PageSettings` value or a `defineStateField` field, so the app keeps shared page settings in editor state without storing derived geometry. Persist that field with `persist: { ...pageSettingsCodec, version: 1 }`, which stores validated finite settings; the built-in presets are `"a4"` and `"letter"`.
 
 ## DOM coverage
 

@@ -1,16 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import {
-  existsSync,
-  linkSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  statSync,
-  unlinkSync,
-  writeFileSync,
-} from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,7 +12,6 @@ export const recordsDir = 'docs/research/review-records';
 export const groupsPath = 'docs/research/review-groups.json';
 export const documentsPath = 'docs/research/review-documents.json';
 export const legacyPath = 'docs/research/review-legacy.json';
-export const method = 'best-api-review/history-v4';
 
 export const census = {
   roots: [
@@ -277,7 +267,6 @@ const upstreamsShape = (value) =>
         (item.files === undefined || stringMap(item.files))
     ));
 
-/** Why a parsed record cannot be read, or null. Readers and `record` share it. */
 function recordShape(raw) {
   if (!isObject(raw) || typeof raw.id !== 'string') return 'id is not a string';
   if (typeof raw.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw.date)) {
@@ -427,6 +416,23 @@ export function loadLedger(root) {
     }
     records.set(raw.id, { ...normalize(raw), sha256 });
   }
+  const pages = new Map();
+  for (const path of (
+    git(root, [
+      'grep',
+      '-l',
+      '--untracked',
+      '-E',
+      '^verdict:',
+      '--',
+      'docs/plans/*.md',
+    ]) ?? ''
+  )
+    .split('\n')
+    .filter(Boolean)) {
+    const page = pageOf(root, scopes, path);
+    if (page) pages.set(page.id, page);
+  }
   const reviews = new Map();
   const executions = new Map();
   for (const record of records.values()) {
@@ -438,6 +444,14 @@ export function loadLedger(root) {
     } else {
       if (!reviews.has(record.scope)) reviews.set(record.scope, []);
       reviews.get(record.scope).push(record);
+    }
+  }
+  for (const page of pages.values()) {
+    for (const scope of page.scopes) {
+      if (!reviews.has(scope)) reviews.set(scope, []);
+      reviews
+        .get(scope)
+        .push({ ...page, scope, verdict: page.verdicts.get(scope) ?? null });
     }
   }
   const byDate = (a, b) => a.date.localeCompare(b.date) || byId(a, b);
@@ -457,6 +471,7 @@ export function loadLedger(root) {
     groups,
     documents,
     records,
+    pages,
     reviews,
     executions,
     membership,
@@ -465,10 +480,81 @@ export function loadLedger(root) {
   };
 }
 
-/**
- * Reviews of a scope that no other review of that scope names as previous or
- * reconciles. Imported historical records only stand in when no review exists.
- */
+function pageOf(root, scopes, path) {
+  const text = read(root, path);
+  const meta = documentMetadata(text);
+  if (!Array.isArray(meta.review_scopes) || meta.verdict === undefined) {
+    return null;
+  }
+  const id = idOf(path);
+  const inputs = Array.isArray(meta.review_inputs) ? meta.review_inputs : [];
+  return {
+    id,
+    kind: 'review',
+    path,
+    date: id.match(/^\d{4}-\d{2}-\d{2}/)?.[0] ?? '',
+    scopes: meta.review_scopes,
+    verdicts: verdictsOf(meta.review_scopes, meta.verdict),
+    basis: Array.isArray(meta.review_basis) ? meta.review_basis : [],
+    workKind: meta.work_kind ?? null,
+    commit: meta.review_commit ?? null,
+    inputs,
+    upstreams: Array.isArray(meta.review_upstreams)
+      ? meta.review_upstreams
+      : [],
+    entries: entriesFor(scopes, meta.review_scopes, inputs, path),
+    summary: leadOf(text),
+    previous: null,
+    reconciliation: [],
+    references: [],
+    alternatives: [],
+    raw: { id, path, ...meta },
+  };
+}
+
+const idOf = (path) =>
+  path.slice(path.lastIndexOf('/') + 1).replace(/\.md$/, '');
+
+const verdictWords = new Set(['stop', 'pursue', 'defer']);
+
+function verdictsOf(scopeIds, verdict) {
+  const result = new Map();
+  if (typeof verdict === 'string') {
+    if (verdictWords.has(verdict)) {
+      for (const id of scopeIds) result.set(id, verdict);
+    }
+    return result;
+  }
+  for (const item of Array.isArray(verdict) ? verdict : []) {
+    const [id, word] = item.split('=').map((part) => part.trim());
+    if (scopeIds.includes(id) && verdictWords.has(word) && !result.has(id)) {
+      result.set(id, word);
+    }
+  }
+  return result;
+}
+
+function entriesFor(scopes, scopeIds, inputs, own) {
+  const added = inputs.filter((input) => !input.startsWith('!'));
+  const dropped = new Set(
+    inputs
+      .filter((input) => input.startsWith('!'))
+      .map((input) => input.slice(1))
+  );
+  const skipped = new Set(
+    [own, ...scopeIds.map((id) => scopes.get(id)?.decision)].filter(
+      (path) => path && !added.includes(path)
+    )
+  );
+  const entries = new Set(added);
+  for (const id of scopeIds) {
+    for (const entry of scopes.has(id) ? entriesOf(scopes.get(id)) : []) {
+      if (!skipped.has(entry)) entries.add(entry);
+    }
+  }
+  return [...entries].filter((entry) => !dropped.has(entry)).sort(byCodeUnit);
+}
+
 export function headsOf(ledger, scopeId) {
   const all = ledger.reviews.get(scopeId) ?? [];
   const reviews = all.filter((record) => record.kind === 'review');
@@ -477,6 +563,7 @@ export function headsOf(ledger, scopeId) {
   for (const review of reviews) {
     if (review.previous) named.add(review.previous);
     for (const entry of review.reconciliation) named.add(entry.record);
+    for (const id of review.basis ?? []) named.add(id);
   }
   return reviews.filter((review) => !named.has(review.id));
 }
@@ -508,11 +595,37 @@ export function effectiveExecutions(ledger, reviewId) {
   return candidates.filter((record) => !superseded.has(record.id));
 }
 
-export function adoptionOf(ledger, review) {
+const executes = (plan) =>
+  ['implementation', 'workflow'].includes(plan.workKind);
+
+const isReviewPage = (plan) => plan.verdict !== undefined;
+
+const legacyAdoption = (ledger, review) => {
   const effective = effectiveExecutions(ledger, review.id);
   return effective.length === 1 && effective[0].outcome === 'completed'
     ? effective[0]
     : null;
+};
+
+/**
+ * What closes a Pursue: the implementation or workflow plans that name it, or
+ * its own review page, when every one of them is landed. A review page's basis
+ * adopts nothing.
+ */
+export function adoptionOf(ledger, review, plans) {
+  const executing = plans.filter(
+    (plan) =>
+      executes(plan) &&
+      plan.scopes.includes(review.scope) &&
+      (plan.path === review.path ||
+        (!isReviewPage(plan) && plan.reviewBasis.includes(review.id)))
+  );
+  if (executing.length) {
+    return executing.every((plan) => plan.landed)
+      ? { id: executing[0].path }
+      : null;
+  }
+  return legacyAdoption(ledger, review);
 }
 
 /**
@@ -527,21 +640,53 @@ export function associationOf(root, ledger, path) {
       Object.hasOwn(meta, key)
     )
   ) {
+    const scopeIds = Array.isArray(meta.review_scopes)
+      ? meta.review_scopes
+      : [];
+    const lists = ['review_basis', 'review_inputs', 'review_upstreams'];
     const invalid = [
       ...(Array.isArray(meta.review_scopes) ? [] : ['review_scopes']),
-      ...(Object.hasOwn(meta, 'review_basis') &&
-      !Array.isArray(meta.review_basis)
-        ? ['review_basis']
-        : []),
+      ...lists.filter(
+        (key) => Object.hasOwn(meta, key) && !Array.isArray(meta[key])
+      ),
       ...(meta.work_kind && !workKinds.has(meta.work_kind)
         ? ['work_kind']
         : []),
+      ...(meta.verdict !== undefined &&
+      (verdictsOf(scopeIds, meta.verdict).size !== scopeIds.length ||
+        (Array.isArray(meta.verdict) &&
+          meta.verdict.length !== scopeIds.length))
+        ? ['verdict']
+        : []),
+      ...(meta.review_commit !== undefined &&
+      !/^[0-9a-f]{40}$/.test(meta.review_commit)
+        ? ['review_commit']
+        : []),
+      ...(Array.isArray(meta.review_upstreams) &&
+      !meta.review_upstreams.every((entry) =>
+        /^[^@\s]+@[0-9a-f]{40}$/.test(entry)
+      )
+        ? ['review_upstreams']
+        : []),
     ];
+    const inputs = Array.isArray(meta.review_inputs) ? meta.review_inputs : [];
     return {
       path,
-      scopes: Array.isArray(meta.review_scopes) ? meta.review_scopes : [],
+      scopes: scopeIds,
       reviewBasis: Array.isArray(meta.review_basis) ? meta.review_basis : [],
       workKind: meta.work_kind ?? null,
+      ...(meta.verdict === undefined ? {} : { verdict: meta.verdict }),
+      ...(Object.hasOwn(meta, 'review_inputs') ? { inputs } : {}),
+      ...(meta.review_commit
+        ? {
+            commit: meta.review_commit,
+            inputs,
+            upstreams: Array.isArray(meta.review_upstreams)
+              ? meta.review_upstreams
+              : [],
+            entries: entriesFor(ledger.scopes, scopeIds, inputs, path),
+          }
+        : {}),
       ...planStatus(text),
       association: 'plan-metadata',
       ...(invalid.length ? { invalid } : {}),
@@ -633,52 +778,19 @@ export function openState(ledger, scopeId, plans) {
   if (!head?.verdict) return { open: 'unreviewed', head: head?.id ?? null };
   if (head.verdict === 'stop') return { open: null, head: head.id, by: 'stop' };
   if (head.verdict === 'defer') return { open: 'deferred', head: head.id };
-  const adopted = adoptionOf(ledger, head);
+  const adopted = adoptionOf(ledger, head, plans);
   if (adopted) return { open: null, head: head.id, by: adopted.id };
-  const recorded = new Set(
-    (ledger.executions.get(scopeId) ?? []).map((execution) => execution.plan)
-  );
-  const unbound = plans
-    .filter(
-      (plan) =>
-        plan.scopes.includes(scopeId) &&
-        plan.reviewBasis.includes(head.id) &&
-        plan.landed &&
-        !recorded.has(plan.path)
-    )
-    .map((plan) => plan.path);
-  if (unbound.length) {
-    return { open: 'pursue-unbound', head: head.id, unbound };
-  }
-  const started = (ledger.executions.get(scopeId) ?? []).some((execution) =>
-    execution.reviewBasis.includes(head.id)
+  const started = plans.some(
+    (plan) =>
+      plan.scopes.includes(scopeId) &&
+      plan.reviewBasis.includes(head.id) &&
+      !plan.landed
   );
   return {
     open: 'pursue-not-adopted',
     head: head.id,
     progress: started ? 'in-progress' : 'none',
   };
-}
-
-/** Records a new review of the scope must reconcile, given its previous review. */
-export function requiredReconciliation(ledger, scopeId, previousId) {
-  const reviews = ledger.reviews.get(scopeId) ?? [];
-  const reconciled = new Set(
-    reviews.flatMap((review) =>
-      review.reconciliation.map((entry) => entry.record)
-    )
-  );
-  return [
-    ...new Set([
-      ...(previousId ? [previousId] : []),
-      ...headsOf(ledger, scopeId)
-        .map((review) => review.id)
-        .filter((id) => id !== previousId),
-      ...(ledger.executions.get(scopeId) ?? [])
-        .filter((execution) => execution.bound && !reconciled.has(execution.id))
-        .map((execution) => execution.id),
-    ]),
-  ];
 }
 
 export function owningScopes(ledger, path) {
@@ -778,8 +890,9 @@ export function orderUnits(ledger, { strict = false } = {}) {
   return result;
 }
 
-/** Source and law freshness of a record against the live tree. Matching is not behavior proof. */
+/** Source and law freshness of a review page, plan or legacy record against the live tree. Matching is not behavior proof. */
 export function freshness(tree, record) {
+  if (record.commit) return commitFreshness(tree, record);
   const { evidence } = record;
   const result = {
     state: 'unknown',
@@ -819,6 +932,73 @@ export function freshness(tree, record) {
       : 'matching';
   result.law.state = result.law.changed.length ? 'moved' : 'unchanged';
   return result;
+}
+
+function commitFreshness(tree, record) {
+  const result = {
+    state: 'unknown',
+    changed: [],
+    missing: [],
+    law: { changed: [], state: 'unchanged' },
+    legacyGroups: 0,
+    upstream: null,
+  };
+  const moved = git(tree.root, [
+    'diff',
+    '--name-only',
+    '--no-renames',
+    record.commit,
+    '--',
+  ]);
+  if (moved === null) {
+    return { ...result, reason: `commit ${record.commit} is not reachable` };
+  }
+  const untracked =
+    git(tree.root, ['ls-files', '--others', '--exclude-standard']) ?? '';
+  const hit = new Set();
+  for (const path of `${moved}\n${untracked}`.split('\n').filter(Boolean)) {
+    if (isLaw(path)) {
+      result.law.changed.push(path);
+      continue;
+    }
+    for (const entry of record.entries) {
+      if (entry === path || (entry.endsWith('/') && path.startsWith(entry))) {
+        hit.add(entry);
+      }
+    }
+  }
+  for (const entry of [...hit].sort(byCodeUnit)) {
+    const present = entry.endsWith('/')
+      ? tree.under(entry).length > 0
+      : existsSync(join(tree.root, entry));
+    (present ? result.changed : result.missing).push(entry);
+  }
+  for (const upstream of record.upstreams) {
+    result.upstream = checkoutState(tree.root, upstream, result.upstream);
+  }
+  result.state =
+    result.changed.length ||
+    result.missing.length ||
+    result.upstream === 'stale'
+      ? 'stale'
+      : result.upstream === 'unknown'
+        ? 'unknown'
+        : 'matching';
+  result.law.state = result.law.changed.length ? 'moved' : 'unchanged';
+  return result;
+}
+
+function checkoutState(root, upstream, previous) {
+  if (previous === 'stale') return previous;
+  const at = upstream.lastIndexOf('@');
+  const checkout = resolve(root, upstream.slice(0, at));
+  if (!existsSync(checkout)) return 'unknown';
+  const head = git(checkout, ['rev-parse', 'HEAD'])?.trim();
+  const dirty = git(checkout, ['status', '--porcelain']);
+  if (!head || dirty === null) return 'unknown';
+  return head !== upstream.slice(at + 1) || dirty
+    ? 'stale'
+    : (previous ?? 'matching');
 }
 
 function upstreamState(upstream, previous) {
@@ -927,6 +1107,7 @@ function compact(ledger, tree, plans, scope) {
         path: plan.path,
         status: plan.status,
         reviewBasis: plan.reviewBasis,
+        freshness: plan.commit ? briefFreshness(freshness(tree, plan)) : null,
       })),
       5
     ),
@@ -962,7 +1143,12 @@ function detailed(ledger, tree, plans, scope) {
       ...record.raw,
       freshness: freshness(tree, record),
     })),
-    plans: plans.filter((plan) => plan.scopes.includes(scope.id)),
+    plans: plans
+      .filter((plan) => plan.scopes.includes(scope.id))
+      .map((plan) => ({
+        ...plan,
+        freshness: plan.commit ? freshness(tree, plan) : null,
+      })),
     documents: ledger.documents.filter((document) =>
       document.scopes.includes(scope.id)
     ),
@@ -1081,7 +1267,6 @@ export function status(root) {
     scopes: ledger.scopes.size,
     unreviewed: count('unreviewed'),
     fork: count('fork'),
-    pursueUnbound: count('pursue-unbound'),
     pursueNotAdopted: count('pursue-not-adopted'),
     deferred: count('deferred'),
     closed: count(null),
@@ -1100,24 +1285,19 @@ export function status(root) {
         verdict: latest(headsOf(ledger, id))?.verdict ?? null,
       })),
     })),
-    ...report(root, ledger),
+    ...report(ledger),
   };
 }
 
-const report = (root, ledger) => {
-  const problems = integrity(root, ledger);
-  return {
-    ...(problems.length ? { integrity: problems } : {}),
-    ...(ledger.warnings.length ? { warnings: ledger.warnings } : {}),
-  };
-};
+const report = (ledger) =>
+  ledger.warnings.length ? { warnings: ledger.warnings } : {};
 
 export function next(root) {
   const ledger = loadLedger(root);
   const tree = observe(root);
   const plans = plansOf(root, ledger);
   const actionable = (id) =>
-    ['fork', 'unreviewed', 'pursue-unbound', 'pursue-not-adopted'].includes(
+    ['fork', 'unreviewed', 'pursue-not-adopted'].includes(
       openState(ledger, id, plans).open
     );
   const unit = orderUnits(ledger).find((item) => item.scopes.some(actionable));
@@ -1125,7 +1305,7 @@ export function next(root) {
     return {
       unit: null,
       reason: 'No scope is open except those deferred on outside evidence.',
-      ...report(root, ledger),
+      ...report(ledger),
     };
   }
   return {
@@ -1134,7 +1314,7 @@ export function next(root) {
     scopes: unit.scopes
       .filter(actionable)
       .map((id) => compact(ledger, tree, plans, ledger.scopes.get(id))),
-    ...report(root, ledger),
+    ...report(ledger),
   };
 }
 
@@ -1198,6 +1378,8 @@ export function show(root, scopeId) {
       lines.push(
         `- plan ${record.plan}; basis ${list(record.reviewBasis)}; proof ${record.proof.state}: ${record.proof.limits}`
       );
+    } else if (record.path) {
+      lines.push('', `Page: ${record.path}`);
     } else {
       lines.push('', `Proof limits: ${record.proofLimits}`);
     }
@@ -1207,7 +1389,7 @@ export function show(root, scopeId) {
   lines.push('## Plans', '');
   for (const plan of scopePlans) {
     lines.push(
-      `- ${plan.path}: ${plan.status || 'no status'}; ${plan.workKind ?? 'no work kind'}; basis ${list(plan.reviewBasis)}`
+      `- ${plan.path}: ${plan.status || 'no status'}; ${plan.workKind ?? 'no work kind'}; basis ${list(plan.reviewBasis)}${plan.commit ? `; source ${freshness(tree, plan).state}` : ''}`
     );
   }
   if (!scopePlans.length) lines.push('None associated.');
@@ -1281,178 +1463,6 @@ export function coverage(
   };
 }
 
-function inputPaths(root, tree, scopes, extra, excluded) {
-  const entries = new Set();
-  for (const scope of scopes) {
-    for (const path of entriesOf(scope)) entries.add(entryOf(root, path));
-  }
-  for (const path of tree.files().filter(isLaw)) entries.add(path);
-  for (const path of extra) entries.add(entryOf(root, repoPath(path)));
-  const inputs = {};
-  const missing = [];
-  for (const entry of [...entries].sort(byCodeUnit)) {
-    if (excluded.has(entry) || excluded.has(entry.replace(/\/$/, ''))) continue;
-    const digest = tree.digest(entry);
-    if (digest === null) missing.push(entry);
-    else inputs[entry] = digest;
-  }
-  return { inputs, missing };
-}
-
-function freeId(root, base) {
-  let id = base;
-  for (let n = 2; existsSync(join(root, recordsDir, `${id}.json`)); n++) {
-    id = `${base}-${n}`;
-  }
-  return id;
-}
-
-export function draftReview(root, scopeId, extra = []) {
-  const ledger = loadLedger(root);
-  const scope = ledger.scopes.get(scopeId);
-  assert.ok(scope, `Unknown scope: ${scopeId}`);
-  const tree = observe(root);
-  const head = latest(headsOf(ledger, scopeId));
-  const date = new Date().toISOString().slice(0, 10);
-  const { inputs, missing } = inputPaths(
-    root,
-    tree,
-    [scope],
-    extra,
-    new Set(scope.decision ? [scope.decision] : [])
-  );
-  return {
-    draft: {
-      id: freeId(root, `${date}-${scopeId}`),
-      kind: 'review',
-      scope: scopeId,
-      date,
-      question: scope.question,
-      model: null,
-      method,
-      trigger: '',
-      requirements: [],
-      evidenceReuse: '',
-      summary: '',
-      verdict: null,
-      callSites: { current: '', proposed: '' },
-      previous: head?.id ?? null,
-      relation: head ? 'reaffirms' : 'initial',
-      reconciliation: requiredReconciliation(
-        ledger,
-        scopeId,
-        head?.id ?? null
-      ).map((record) => ({ record, action: '', reason: '' })),
-      alternatives: [],
-      proofLimits: '',
-      references: [],
-      inputs,
-      upstreams: [],
-    },
-    missing,
-  };
-}
-
-export function draftExecution(root, planPath, extra = []) {
-  repoPath(planPath);
-  assert.ok(existsSync(join(root, planPath)), `Missing plan: ${planPath}`);
-  const ledger = loadLedger(root);
-  const plan = associationOf(root, ledger, planPath);
-  assert.ok(
-    !plan?.invalid,
-    `The plan's review metadata is invalid: ${plan?.invalid?.join(', ')}`
-  );
-  assert.ok(
-    plan?.scopes?.length,
-    'Declare review_scopes, review_basis and work_kind in the plan front matter, or classify the plan in review-documents.json'
-  );
-  for (const id of plan.scopes) {
-    assert.ok(ledger.scopes.has(id), `Unknown plan scope: ${id}`);
-  }
-  const tree = observe(root);
-  const scopes = plan.scopes.map((id) => ledger.scopes.get(id));
-  const { inputs, missing } = inputPaths(
-    root,
-    tree,
-    scopes,
-    extra,
-    new Set([
-      planPath,
-      ...scopes.map((scope) => scope.decision).filter(Boolean),
-    ])
-  );
-  const date = new Date().toISOString().slice(0, 10);
-  const slug = planPath
-    .split('/')
-    .at(-1)
-    .replace(/\.md$/, '')
-    .replace(/^\d{4}-\d{2}-\d{2}-/, '');
-  return {
-    draft: {
-      id: freeId(root, `${date}-${slug}-execution`),
-      kind: 'execution',
-      date,
-      scopes: plan.scopes,
-      reviewBasis: plan.reviewBasis,
-      workKind: plan.workKind,
-      previous: [
-        ...new Set(
-          plan.reviewBasis.flatMap((id) =>
-            effectiveExecutions(ledger, id).map((execution) => execution.id)
-          )
-        ),
-      ],
-      plan: planPath,
-      outcome: plan.landed ? 'completed' : 'partial',
-      summary: '',
-      proof: { state: 'unknown', evidence: [], limits: '' },
-      references: [planPath],
-      inputs,
-      upstreams: [],
-    },
-    missing,
-  };
-}
-
-const reviewKeys = [
-  'id',
-  'kind',
-  'scope',
-  'date',
-  'question',
-  'model',
-  'method',
-  'trigger',
-  'requirements',
-  'evidenceReuse',
-  'summary',
-  'verdict',
-  'callSites',
-  'previous',
-  'relation',
-  'reconciliation',
-  'alternatives',
-  'proofLimits',
-  'references',
-  'inputs',
-  'upstreams',
-];
-const executionKeys = [
-  'id',
-  'kind',
-  'date',
-  'scopes',
-  'reviewBasis',
-  'workKind',
-  'previous',
-  'plan',
-  'outcome',
-  'summary',
-  'proof',
-  'references',
-  'inputs',
-  'upstreams',
-];
 const workKinds = new Set([
   'design',
   'implementation',
@@ -1460,349 +1470,6 @@ const workKinds = new Set([
   'workflow',
   'verification',
 ]);
-
-function validateInputs(record) {
-  assert.ok(
-    isObject(record.inputs) &&
-      Object.entries(record.inputs).every(
-        ([path, digest]) => repoPath(path) && isDigest(digest)
-      ),
-    'inputs maps repository paths to SHA-256 digests'
-  );
-  assert.ok(
-    Array.isArray(record.upstreams) && upstreamsShape(record.upstreams),
-    'upstreams is a list of { checkout, commit, files } entries'
-  );
-}
-
-/**
- * The rules a new record must keep forever. `record` checks them before
- * writing, and `check` re-checks every non-legacy record against them.
- */
-function validateContract(ledger, record) {
-  const shape = recordShape(record);
-  assert.ok(!shape, `Malformed record: ${shape}`);
-  assert.ok(/^[a-z0-9][a-z0-9-]+$/.test(record.id), 'Invalid record id');
-  assert.ok(
-    record.kind === 'execution' || record.kind === 'review',
-    'kind is review or execution'
-  );
-  const keys = record.kind === 'execution' ? executionKeys : reviewKeys;
-  const extra = Object.keys(record).filter((key) => !keys.includes(key));
-  assert.ok(!extra.length, `Unknown fields: ${extra.join(', ')}`);
-  assert.ok(
-    record.references?.length && record.references.every(repoPath),
-    'References name repository files'
-  );
-  validateInputs(record);
-  if (record.kind === 'execution') validateExecutionContract(ledger, record);
-  else validateReviewContract(ledger, record);
-}
-
-function validateReviewContract(ledger, record) {
-  assert.ok(ledger.scopes.has(record.scope), `Unknown scope: ${record.scope}`);
-  for (const field of [
-    'question',
-    'method',
-    'trigger',
-    'evidenceReuse',
-    'summary',
-    'proofLimits',
-  ]) {
-    assert.ok(isText(record[field]), `Missing ${field}`);
-  }
-  assert.ok(Object.hasOwn(record, 'model'), 'Record the model, or null');
-  assert.ok(
-    ['stop', 'pursue', 'defer'].includes(record.verdict),
-    'A review needs a Stop, Pursue or Defer verdict'
-  );
-  if (record.verdict === 'pursue') {
-    assert.ok(
-      isText(record.callSites?.current) && isText(record.callSites?.proposed),
-      'A Pursue review records callSites.current and callSites.proposed'
-    );
-  }
-  assert.ok(
-    record.requirements?.length && record.requirements.every(isText),
-    'Record the current requirements and hard laws'
-  );
-  assert.ok(
-    record.alternatives?.length >= 2 && record.alternatives.every(isText),
-    'Record at least two alternatives, including the strongest cut'
-  );
-  assert.ok(
-    ['initial', 'reaffirms', 'supersedes', 'reverses', 'defers'].includes(
-      record.relation
-    ),
-    'Invalid relation'
-  );
-  assert.equal(
-    record.previous === null,
-    record.relation === 'initial',
-    'Only a first review has relation initial and previous null'
-  );
-  if (record.previous !== null) {
-    assert.equal(
-      ledger.records.get(record.previous)?.scope,
-      record.scope,
-      `previous ${record.previous} is not a review of ${record.scope}`
-    );
-  }
-  assert.ok(Array.isArray(record.reconciliation), 'Record reconciliation');
-  for (const entry of record.reconciliation) {
-    assert.ok(
-      ledger.records.has(entry.record),
-      `Unknown reconciliation record: ${entry.record}`
-    );
-    assert.ok(
-      ['retains', 'reopens', 'supersedes'].includes(entry.action) &&
-        isText(entry.reason),
-      `Reconciliation of ${entry.record} needs an action and a reason`
-    );
-  }
-  const previous = ledger.records.get(record.previous);
-  if (previous?.verdict && previous.verdict !== record.verdict) {
-    assert.ok(
-      record.reconciliation.some(
-        (entry) => entry.record === previous.id && entry.action !== 'retains'
-      ),
-      'A changed verdict must reopen or supersede its previous review'
-    );
-  }
-  assert.ok(
-    Object.keys(record.inputs).length,
-    'A review captures the inputs it read'
-  );
-}
-
-function validateExecutionContract(ledger, record) {
-  assert.ok(
-    record.scopes.length &&
-      new Set(record.scopes).size === record.scopes.length &&
-      record.scopes.every((id) => ledger.scopes.has(id)),
-    'An execution needs unique known scopes'
-  );
-  assert.ok(Array.isArray(record.reviewBasis), 'Record reviewBasis');
-  for (const id of record.reviewBasis) {
-    const review = ledger.records.get(id);
-    assert.ok(
-      review &&
-        review.kind === 'review' &&
-        record.scopes.includes(review.scope),
-      `Unknown governing review: ${id}`
-    );
-  }
-  assert.ok(workKinds.has(record.workKind), 'Invalid workKind');
-  assert.ok(
-    Array.isArray(record.previous) &&
-      record.previous.every(
-        (id) => ledger.records.get(id)?.kind === 'execution'
-      ),
-    'previous names earlier executions'
-  );
-  assert.ok(
-    ['completed', 'partial', 'blocked', 'abandoned'].includes(record.outcome),
-    'Invalid outcome'
-  );
-  assert.ok(
-    isText(record.summary) && isText(record.proof?.limits),
-    'An execution needs a summary and proof limits'
-  );
-  assert.ok(
-    ['verified', 'partial', 'unverified', 'unknown'].includes(
-      record.proof.state
-    ),
-    'Invalid proof state'
-  );
-  assert.ok(
-    Array.isArray(record.proof.evidence) &&
-      record.proof.evidence.every(
-        (item) =>
-          repoPath(item.path) && isDigest(item.sha256) && isText(item.claim)
-      ),
-    'Each proof input names its path, digest and what it establishes'
-  );
-  repoPath(record.plan);
-  if (record.proof.state === 'verified') {
-    assert.ok(
-      record.outcome === 'completed' &&
-        record.proof.evidence.some((item) => item.path !== record.plan),
-      'Verified proof needs a completed outcome and evidence beyond the plan'
-    );
-  }
-}
-
-/** The rules that hold only at the moment of recording, against the live ledger and tree. */
-function validateAdmission(root, ledger, record) {
-  for (const path of record.references) {
-    assert.ok(existsSync(join(root, path)), `Missing reference: ${path}`);
-  }
-  if (record.kind === 'execution') {
-    for (const item of record.proof.evidence) {
-      assert.ok(
-        existsSync(join(root, item.path)),
-        `Missing proof file: ${item.path}`
-      );
-    }
-    if (['implementation', 'workflow'].includes(record.workKind)) {
-      const standing = record.reviewBasis
-        .flatMap((id) => effectiveExecutions(ledger, id))
-        .map((execution) => execution.id)
-        .filter((id) => !record.previous.includes(id));
-      assert.ok(
-        !standing.length,
-        `Name the executions this one follows in previous: ${[...new Set(standing)].join(', ')}`
-      );
-    }
-    assert.ok(
-      existsSync(join(root, record.plan)),
-      `Missing plan: ${record.plan}`
-    );
-    const plan = associationOf(root, ledger, record.plan);
-    assert.ok(
-      plan && !plan.invalid,
-      plan?.invalid
-        ? `The plan's review metadata is invalid: ${plan.invalid.join(', ')}`
-        : 'The plan has no review association'
-    );
-    const same = (a = [], b = []) =>
-      JSON.stringify([...a].sort(byCodeUnit)) ===
-      JSON.stringify([...b].sort(byCodeUnit));
-    assert.ok(
-      same(plan.scopes, record.scopes) &&
-        same(plan.reviewBasis, record.reviewBasis) &&
-        (plan.workKind ?? record.workKind) === record.workKind,
-      'Execution scopes, reviewBasis and workKind must match the plan association'
-    );
-    if (record.outcome === 'completed') {
-      assert.ok(
-        plan.landed,
-        plan.conflict
-          ? `A completed execution needs one landed plan status; the plan says ${plan.conflict.map((label) => `"${label}"`).join(' and ')}`
-          : `A completed execution needs a landed plan Status; found "${plan.status}"`
-      );
-    }
-    return;
-  }
-  const heads = headsOf(ledger, record.scope);
-  if (!heads.length) {
-    assert.equal(record.previous, null, 'A first review has previous null');
-  } else {
-    assert.ok(
-      heads.some((head) => head.id === record.previous),
-      `The head of ${record.scope} is ${latest(heads).id}${heads.length > 1 ? ` (fork: ${heads.map((head) => head.id).join(', ')})` : ''}; set previous to it and reconcile it`
-    );
-  }
-  const missing = requiredReconciliation(
-    ledger,
-    record.scope,
-    record.previous
-  ).filter((id) => !record.reconciliation.some((entry) => entry.record === id));
-  assert.ok(!missing.length, `Reconcile ${missing.join(', ')}`);
-}
-
-/** Validates one record and creates its file. Never rewrites another file. */
-export function recordDraft(root, draftPath, { dryRun = false } = {}) {
-  const draft = JSON.parse(readFileSync(resolve(root, draftPath), 'utf-8'));
-  delete draft.digest;
-  const path = `${recordsDir}/${draft.id}.json`;
-  const ledger = loadLedger(root);
-  if (existsSync(join(root, path))) {
-    const { digest, ...existing } = JSON.parse(read(root, path));
-    const stored = new Map(
-      (existing.proof?.evidence ?? []).map((item) => [item.path, item.sha256])
-    );
-    const retried =
-      draft.kind === 'execution'
-        ? {
-            ...draft,
-            proof: {
-              ...draft.proof,
-              evidence: (draft.proof?.evidence ?? []).map((item) => ({
-                ...item,
-                sha256: item.sha256 ?? stored.get(item.path),
-              })),
-            },
-          }
-        : draft;
-    assert.equal(
-      json(retried),
-      json(existing),
-      `${path} already exists with other content; pick another id`
-    );
-    return { recorded: path, duplicate: true, ...report(root, ledger) };
-  }
-  if (draft.kind === 'execution' && Array.isArray(draft.proof?.evidence)) {
-    draft.proof.evidence = draft.proof.evidence.map((item) => ({
-      ...item,
-      sha256:
-        item.sha256 ??
-        (existsSync(join(root, item.path))
-          ? hash(readFileSync(join(root, item.path)))
-          : undefined),
-    }));
-  }
-  for (const item of draft.kind === 'execution'
-    ? (draft.proof?.evidence ?? [])
-    : []) {
-    assert.ok(
-      typeof item?.path === 'string' && existsSync(join(root, item.path)),
-      `Missing proof file: ${item?.path}`
-    );
-  }
-  const contents = json({ ...draft, digest: hash(json(draft)) });
-  validateContract(ledger, draft);
-  validateAdmission(root, ledger, draft);
-  const tree = observe(root);
-  const changedSinceDraft = Object.entries(draft.inputs)
-    .filter(([entry, digest]) => tree.digest(entry) !== digest)
-    .map(([entry]) => entry);
-  const scopes = (draft.kind === 'execution' ? draft.scopes : [draft.scope])
-    .map((id) => ledger.scopes.get(id))
-    .filter(Boolean);
-  const skipped = new Set([
-    ...scopes.map((scope) => scope.decision),
-    draft.plan,
-  ]);
-  const notCaptured = [
-    ...new Set(
-      scopes
-        .flatMap(entriesOf)
-        .map((entry) => entryOf(root, entry))
-        .filter(
-          (entry) =>
-            !skipped.has(entry) &&
-            !Object.hasOwn(draft.inputs, entry) &&
-            tree.digest(entry) !== null
-        )
-    ),
-  ];
-  const result = {
-    recorded: path,
-    inputs: Object.keys(draft.inputs).length,
-    ...(changedSinceDraft.length ? { changedSinceDraft } : {}),
-    ...(notCaptured.length ? { notCaptured } : {}),
-    ...report(root, ledger),
-  };
-  if (dryRun) return { ...result, recorded: null, valid: true, record: draft };
-  mkdirSync(join(root, recordsDir), { recursive: true });
-  const temporary = join(root, recordsDir, `.${draft.id}.${process.pid}.tmp`);
-  writeFileSync(temporary, contents);
-  try {
-    linkSync(temporary, join(root, path));
-  } catch (error) {
-    if (error.code !== 'EEXIST') throw error;
-    assert.equal(
-      read(root, path),
-      contents,
-      `${path} was created concurrently with other content`
-    );
-    return { recorded: path, duplicate: true, ...report(root, ledger) };
-  } finally {
-    unlinkSync(temporary);
-  }
-  return result;
-}
 
 function git(root, args) {
   try {
@@ -1815,137 +1482,7 @@ function git(root, args) {
   }
 }
 
-const gitBlob = (bytes) =>
-  createHash('sha1')
-    .update(`blob ${bytes.length}\0`)
-    .update(bytes)
-    .digest('hex');
-
-/**
- * The blob each committed record and the legacy checksum list had in the first
- * commit that added it: the tree at the checksum list's oldest adding commit
- * (or at HEAD before one exists), plus every later addition reachable from
- * HEAD, side branches, merges and renamed paths included.
- */
-function committedBlobs(root) {
-  const history = ['-m', '--no-renames'];
-  const base =
-    git(root, [
-      'log',
-      ...history,
-      '--diff-filter=A',
-      '--format=%H',
-      '--',
-      legacyPath,
-    ])
-      ?.trim()
-      .split('\n')
-      .findLast(Boolean) ?? 'HEAD';
-  const blobs = new Map();
-  for (const line of (
-    git(root, ['ls-tree', '-r', base, '--', recordsDir, legacyPath]) ?? ''
-  ).split('\n')) {
-    const match = line.match(/^\d+ blob ([a-f0-9]{40})\t(.+)$/);
-    if (match) blobs.set(match[2], match[1]);
-  }
-  for (const line of (
-    git(root, [
-      'log',
-      ...history,
-      '--reverse',
-      '--raw',
-      '--no-abbrev',
-      '--diff-filter=A',
-      '--format=',
-      `${base}..HEAD`,
-      '--',
-      recordsDir,
-      legacyPath,
-    ]) ?? ''
-  ).split('\n')) {
-    const match = line.match(/^:\d+ \d+ [a-f0-9]+ ([a-f0-9]{40}) A\t(.+)$/);
-    if (match && !blobs.has(match[2])) blobs.set(match[2], match[1]);
-  }
-  return blobs;
-}
-
-/**
- * Edits and deletions of immutable records. The legacy checksum list and each
- * new record's digest and contract catch an edit before any commit. A
- * committed record or checksum list must match the blob it was first committed
- * with, in the working tree and in the index, so a byte-for-byte restore reads
- * clean. A staged record that was never committed must match its index entry,
- * which the Stop hook never restages.
- */
-export function integrity(root, ledger) {
-  const problems = [];
-  for (const item of ledger.records.values()) {
-    const path = `${recordsDir}/${item.id}.json`;
-    const legacy = ledger.legacy.get(item.id);
-    if (legacy) {
-      if (item.sha256 !== legacy.sha256) {
-        problems.push(`${path}: changed since the legacy checksum list`);
-      }
-      continue;
-    }
-    const { digest, ...body } = item.raw;
-    if (digest !== hash(json(body))) {
-      problems.push(`${path}: changed since it was recorded`);
-      continue;
-    }
-    try {
-      validateContract(ledger, body);
-    } catch (error) {
-      problems.push(`${path}: ${error.message.split('\n')[0]}`);
-    }
-  }
-  for (const id of ledger.legacy.keys()) {
-    if (!ledger.records.has(id)) problems.push(`Missing legacy record: ${id}`);
-  }
-  if (git(root, ['rev-parse', '--verify', 'HEAD']) === null) return problems;
-  const indexed = new Map();
-  for (const line of (
-    git(root, ['ls-files', '-s', '--', recordsDir, legacyPath]) ?? ''
-  ).split('\n')) {
-    const match = line.match(/^\d+ ([a-f0-9]{40}) \d\t(.+)$/);
-    if (match) indexed.set(match[2], match[1]);
-  }
-  const committed = committedBlobs(root);
-  for (const [path, blob] of committed) {
-    let bytes = null;
-    try {
-      bytes = readFileSync(join(root, path));
-    } catch {
-      problems.push(`Committed file deleted: ${path}`);
-      continue;
-    }
-    if (gitBlob(bytes) !== blob || indexed.get(path) !== blob) {
-      problems.push(
-        `Committed file changed since it was first committed: ${path}`
-      );
-    }
-  }
-  for (const line of (
-    git(root, [
-      'diff',
-      '--name-status',
-      '--no-renames',
-      '--',
-      recordsDir,
-      legacyPath,
-    ]) ?? ''
-  ).split('\n')) {
-    const [change, path] = line.split('\t');
-    if (/^[MD]$/.test(change) && !committed.has(path)) {
-      problems.push(
-        `Staged file changed or deleted before its first commit: ${path}`
-      );
-    }
-  }
-  return [...new Set(problems)];
-}
-
-/** Ledger integrity. Reads ledger files and git, never product source. */
+/** Ledger integrity. Reads ledger files, the pages and plans under docs/plans, and git, never product source. */
 export function check(root) {
   const ledger = loadLedger(root);
   const errors = [...ledger.warnings];
@@ -2057,16 +1594,17 @@ export function check(root) {
         'Unknown document scope'
       );
       for (const id of document.reviewBasis ?? []) {
-        assert.ok(ledger.records.has(id), `Unknown review basis: ${id}`);
+        assert.ok(
+          ledger.records.has(id) || ledger.pages.has(id),
+          `Unknown review basis: ${id}`
+        );
       }
       if (!existsSync(join(root, document.path))) {
         warnings.push(`Missing document: ${document.path}`);
       }
     });
   }
-  errors.push(...integrity(root, ledger));
   for (const item of ledger.records.values()) {
-    if (!ledger.legacy.has(item.id) && item.raw.digest) continue;
     attempt(`${recordsDir}/${item.id}.json`, () => {
       if (item.kind === 'execution') {
         assert.ok(
@@ -2106,7 +1644,7 @@ export function check(root) {
   for (const id of ledger.scopes.keys()) {
     const heads = headsOf(ledger, id);
     if (heads.length > 1) {
-      warnings.push(
+      (heads.some((head) => head.path) ? errors : warnings).push(
         `Fork in ${id}: ${heads.map((head) => head.id).join(', ')}`
       );
     }
@@ -2119,25 +1657,59 @@ export function check(root) {
       }
     }
   }
-  if (existsSync(join(root, recordsDir))) {
-    for (const name of readdirSync(join(root, recordsDir))) {
-      if (name.endsWith('.tmp')) warnings.push(`Stray temporary file: ${name}`);
-    }
-  }
-  for (const plan of plansOf(root, ledger)) {
+  const plans = plansOf(root, ledger);
+  for (const plan of plans) {
     const problems = [
+      ...(plan.invalid ? [`invalid ${plan.invalid.join(', ')}`] : []),
       ...plan.scopes
         .filter((id) => !ledger.scopes.has(id))
         .map((id) => `unknown scope ${id}`),
-      ...plan.reviewBasis
-        .filter((id) => ledger.records.get(id)?.kind !== 'review')
-        .map((id) => `unknown review ${id}`),
+      ...plan.scopes
+        .filter((id, index) => plan.scopes.indexOf(id) !== index)
+        .map((id) => `repeated scope ${id}`),
+      ...plan.reviewBasis.flatMap((id) => {
+        const reviewed = scopesOfReview(ledger, id);
+        if (!reviewed) return [`unknown review ${id}`];
+        return reviewed.some((scope) => plan.scopes.includes(scope))
+          ? []
+          : [`${id} is not a review of ${plan.scopes.join(', ')}`];
+      }),
+      ...pageProblems(root, ledger, plans, plan),
     ];
-    if (plan.invalid) problems.push(`invalid ${plan.invalid.join(', ')}`);
     if (plan.conflict) {
-      problems.push(`conflicting status labels ${plan.conflict.join(' | ')}`);
+      warnings.push(
+        `${plan.path}: conflicting status labels ${plan.conflict.join(' | ')}`
+      );
     }
-    if (problems.length) warnings.push(`${plan.path}: ${problems.join(', ')}`);
+    if (problems.length) errors.push(`${plan.path}: ${problems.join(', ')}`);
+  }
+  for (const path of (
+    git(root, [
+      'grep',
+      '-l',
+      '--untracked',
+      '-i',
+      '-E',
+      '^(review|verdict|work.?kind)',
+      '--',
+      'docs/plans/*.md',
+    ]) ?? ''
+  )
+    .split('\n')
+    .filter(Boolean)) {
+    const unknown = [
+      ...(read(root, path).match(frontmatterPattern)?.[1] ?? '').matchAll(
+        /^([\w-]+):/gm
+      ),
+    ]
+      .map((match) => match[1])
+      .filter(
+        (key) =>
+          /^(review|verdict|work.?kind)/i.test(key) && !reviewKeys.includes(key)
+      );
+    if (unknown.length) {
+      errors.push(`${path}: unknown review key ${unknown.join(', ')}`);
+    }
   }
   const covered = coverage(root, { ledger });
   if (covered.unowned.total) {
@@ -2153,22 +1725,212 @@ export function check(root) {
     ok: true,
     scopes: ledger.scopes.size,
     records: ledger.records.size,
+    pages: ledger.pages.size,
     ...(warnings.length ? { warnings } : {}),
   };
 }
 
+function scopesOfReview(ledger, id) {
+  if (ledger.pages.has(id)) return ledger.pages.get(id).scopes;
+  const record = ledger.records.get(id);
+  return record?.kind === 'review' ? [record.scope] : null;
+}
+
+const inTreeOrHistory = (root, path) =>
+  existsSync(join(root, path)) ||
+  Boolean(git(root, ['log', '--all', '-1', '--format=%H', '--', path])?.trim());
+
+function sectionOf(text, heading, level = '##') {
+  const lines = text.split(/\r?\n/);
+  const start = lines.findIndex(
+    (line) => line.trim() === `${level} ${heading}`
+  );
+  if (start === -1) return '';
+  const sameOrHigher = new RegExp(`^#{1,${level.length}} `);
+  const end = lines.findIndex(
+    (line, index) => index > start && sameOrHigher.test(line)
+  );
+  return lines
+    .slice(start + 1, end === -1 ? undefined : end)
+    .join('\n')
+    .trim();
+}
+
+const listItems = (text) =>
+  (text.match(/^[ \t]*(?:[-*]|\d+\.)[ \t]+\S/gm) ?? []).length;
+
+function leadOf(text) {
+  const body = text.replace(frontmatterPattern, '');
+  const title = body.search(/^# /m);
+  const rest = title === -1 ? body : body.slice(body.indexOf('\n', title) + 1);
+  for (const block of rest.split(/\r?\n[ \t]*\r?\n/)) {
+    const lines = block.split(/\r?\n/).filter((line) => line.trim());
+    if (!lines.length) continue;
+    if (lines[0].startsWith('#')) return '';
+    if (lines.every((line) => /^(?:Status|Topic|Playbook|Page):/.test(line))) {
+      continue;
+    }
+    return lines.join(' ').trim();
+  }
+  return '';
+}
+
+function linksOf(path, text) {
+  return [...text.matchAll(/\]\(([^)\s]+)/g)]
+    .map((match) => match[1])
+    .filter((link) => !/^(?:[a-z][a-z0-9+.-]*:|#|\/)/i.test(link))
+    .map((link) => {
+      const target = link.split('#')[0];
+      try {
+        return join(dirname(path), decodeURIComponent(target));
+      } catch {
+        return join(dirname(path), target);
+      }
+    })
+    .filter((target) => target && target !== '.');
+}
+
+function reconciliationOf(evidence, id) {
+  const named = new RegExp(
+    `(?:^|[^\\w-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`
+  );
+  for (const line of evidence.split('\n')) {
+    if (!named.test(line)) continue;
+    const match = line.match(/\b(retains|reopens|supersedes)\b(.*)$/);
+    if (!match) continue;
+    const reason = match[2]
+      .replace(id, '')
+      .replace(/[\s:;,.`*-]+/g, ' ')
+      .trim();
+    return { action: match[1], reason };
+  }
+  return null;
+}
+
+function pageProblems(root, ledger, plans, plan) {
+  const problems = [];
+  const text = read(root, plan.path);
+  const inputs = (plan.inputs ?? []).filter((input) => !input.startsWith('!'));
+  for (const path of inputs) {
+    if (
+      path.startsWith('/') ||
+      path.split('/').includes('..') ||
+      !inTreeOrHistory(root, path)
+    ) {
+      problems.push(`review_inputs path ${path} is in no tree or commit`);
+    }
+  }
+  if (executes(plan) && plan.landed) {
+    const close = sectionOf(text, 'Close');
+    if (
+      !close &&
+      (plan.commit || plan.reviewBasis.some((id) => ledger.pages.has(id)))
+    ) {
+      problems.push('a landed plan needs a ## Close');
+    }
+    for (const path of inputs) {
+      if (!close.includes(path)) {
+        problems.push(`## Close does not name ${path}`);
+      }
+    }
+  }
+  if (!isReviewPage(plan)) return problems;
+  const page = ledger.pages.get(idOf(plan.path));
+  if (!plan.commit) problems.push('a review page needs review_commit');
+  if (!leadOf(text)) problems.push('a review page needs a lead paragraph');
+  if (!/^Playbook:[ \t]*\S/m.test(text)) {
+    problems.push('a review page needs a Playbook: line');
+  }
+  const evidence = sectionOf(text, 'Evidence');
+  if (!evidence) problems.push('a review page needs ## Evidence');
+  if (!/^(?:[-*][ \t]+)?Model:[ \t]*\S/m.test(evidence)) {
+    problems.push('## Evidence needs a Model: line');
+  }
+  if (listItems(sectionOf(evidence, 'Requirements', '###')) < 1) {
+    problems.push('## Evidence needs a ### Requirements list');
+  }
+  if (listItems(sectionOf(evidence, 'Lanes', '###')) < 2) {
+    problems.push('### Lanes needs at least two lanes');
+  }
+  if (
+    [...(page?.verdicts.values() ?? [])].includes('pursue') &&
+    !sectionOf(text, 'Public API')
+  ) {
+    problems.push('a Pursue page needs ## Public API');
+  }
+  for (const [, link] of text.matchAll(/\]\((\/[^)\s]*)/g)) {
+    problems.push(`link ${link} is absolute, not a repository path`);
+  }
+  for (const target of linksOf(plan.path, text)) {
+    if (target.startsWith('..')) {
+      problems.push(`link ${target} leaves the repository`);
+    } else if (!inTreeOrHistory(root, target)) {
+      problems.push(`link ${target} is in no tree or commit`);
+    }
+  }
+  if (
+    !linksOf(plan.path, evidence).some((target) => !target.startsWith('..'))
+  ) {
+    problems.push('## Evidence links no repository file');
+  }
+  for (const id of plan.reviewBasis) {
+    const reconciled = [
+      id,
+      ...plans
+        .filter(
+          (other) =>
+            executes(other) &&
+            other.landed &&
+            !isReviewPage(other) &&
+            other.reviewBasis.includes(id)
+        )
+        .map((other) => idOf(other.path)),
+      ...effectiveExecutions(ledger, id).map((execution) => execution.id),
+    ];
+    for (const name of reconciled) {
+      const entry = reconciliationOf(evidence, name);
+      if (!entry?.reason) {
+        problems.push(
+          `## Evidence does not reconcile ${name} with an action and a reason`
+        );
+      }
+    }
+    const record = ledger.records.get(id);
+    const basisVerdicts =
+      ledger.pages.get(id)?.verdicts ??
+      new Map(record?.verdict ? [[record.scope, record.verdict]] : []);
+    for (const [scope, verdict] of page?.verdicts ?? []) {
+      const before = basisVerdicts.get(scope);
+      if (
+        before &&
+        before !== verdict &&
+        reconciliationOf(evidence, id)?.action === 'retains'
+      ) {
+        problems.push(`a changed verdict retains ${id}`);
+      }
+    }
+  }
+  return problems;
+}
+
 const unquote = (value) => value.trim().replace(/^(['"])(.*)\1$/, '$2');
 
-/**
- * Reads review_scopes, review_basis and work_kind from a document's front matter
- * and ignores every other key. The two list keys take a block list or `[a, b]`;
- * a scalar reads as null.
- */
+const frontmatterPattern = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/;
+
+const reviewKeys = [
+  'review_scopes',
+  'review_basis',
+  'work_kind',
+  'verdict',
+  'review_commit',
+  'review_inputs',
+  'review_upstreams',
+];
+
 export function documentMetadata(text) {
-  const frontmatter =
-    text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1] ?? '';
+  const frontmatter = text.match(frontmatterPattern)?.[1] ?? '';
   const result = {};
-  for (const key of ['review_scopes', 'review_basis', 'work_kind']) {
+  for (const key of reviewKeys) {
     const match = frontmatter.match(
       new RegExp(
         `^${key}:([^\\n]*)(?:\\n((?:[ \\t]+-[^\\n]*(?:\\n|$))*))?`,
@@ -2177,8 +1939,9 @@ export function documentMetadata(text) {
     );
     if (!match) continue;
     const value = match[1].trim();
-    if (key === 'work_kind') result[key] = unquote(value);
-    else if (value.startsWith('[') && value.endsWith(']')) {
+    if (key === 'work_kind' || key === 'review_commit') {
+      result[key] = unquote(value);
+    } else if (value.startsWith('[') && value.endsWith(']')) {
       result[key] = value.slice(1, -1).trim()
         ? value.slice(1, -1).split(',').map(unquote)
         : [];
@@ -2187,6 +1950,8 @@ export function documentMetadata(text) {
         .split('\n')
         .filter((line) => line.trim())
         .map((line) => unquote(line.replace(/^\s*-\s*/, '')));
+    } else if (key === 'verdict') {
+      result[key] = unquote(value);
     } else {
       result[key] = null;
     }
@@ -2255,13 +2020,10 @@ export function searchResearch(root, query) {
 }
 
 const usage =
-  'Usage: node tooling/scripts/review-ledger.mjs next|status|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|draft <scope|plan.md> [--input <path>]...|record <draft.json> [--dry-run]|check|research <term>';
+  'Usage: node tooling/scripts/review-ledger.mjs next|status|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check|research <term>';
 
 export function main(root, args) {
   const [command, argument] = args;
-  const inputs = args.flatMap((arg, i) =>
-    args[i - 1] === '--input' ? [arg] : []
-  );
   if (command === 'next') return next(root);
   if (command === 'status') return status(root);
   if (command === 'lookup') {
@@ -2269,20 +2031,6 @@ export function main(root, args) {
   }
   if (command === 'show') return show(root, argument);
   if (command === 'coverage') return coverage(root, { prefix: argument ?? '' });
-  if (command === 'draft') {
-    assert.ok(argument, 'Supply a scope id or a plan path');
-    const { draft, missing } = argument.endsWith('.md')
-      ? draftExecution(root, argument, inputs)
-      : draftReview(root, argument, inputs);
-    if (missing.length) {
-      process.stderr.write(`Not captured, missing: ${missing.join(', ')}\n`);
-    }
-    return draft;
-  }
-  if (command === 'record') {
-    assert.ok(argument, 'Supply a completed draft');
-    return recordDraft(root, argument, { dryRun: args.includes('--dry-run') });
-  }
   if (command === 'check') return check(root);
   if (command === 'research') return searchResearch(root, argument);
   throw new Error(usage);

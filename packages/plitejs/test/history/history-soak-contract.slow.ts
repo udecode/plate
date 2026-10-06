@@ -4,10 +4,8 @@ import { describe, it } from 'node:test';
 import { createEditor, type Descendant, type Editor, TextApi } from 'plitejs';
 
 import { history } from '../../src/history';
-import {
-  observeAnchorStateWork,
-  replace as editorReplace,
-} from '../../src/internal';
+import { observeAnchorStateWork } from '../../src/internal';
+import { replace as editorReplace } from '../../src/testing';
 
 const paragraph = (text: string): Descendant => ({
   type: 'paragraph',

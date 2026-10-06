@@ -11,13 +11,17 @@ import {
   getCompiledEditorSchema,
   getPluginRegistry,
 } from '../../core/plugin-registry';
+import { MAIN_ROOT_KEY } from '../../core/public-root';
 import {
   assertEditorExternalMutationAllowed,
   getCollabEffects,
   registerEditorTransactionGuard,
   scheduleAfterCommitNotification,
 } from '../../core/public-state';
-import { getCompiledPropertyMergeStrategy } from '../../core/schema-compiler';
+import {
+  areEditorSchemaIdentitiesEqual,
+  getCompiledPropertyMergeStrategy,
+} from '../../core/schema-compiler';
 import { createEditorEffect } from '../../core/transaction-values';
 import type {
   Descendant,
@@ -27,11 +31,7 @@ import type {
   EditorSnapshot,
   JsonEditorValue,
 } from '../../index';
-import {
-  areEditorSchemaIdentitiesEqual,
-  DocumentChange,
-  MAIN_ROOT_KEY,
-} from '../../index';
+import { DocumentChange } from '../../index';
 import {
   createYjsAwarenessAdapter,
   type YjsAwarenessAdapter,

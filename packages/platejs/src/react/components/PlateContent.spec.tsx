@@ -14,8 +14,8 @@ import {
   target,
   TextApi,
   valueCodecs,
-  evaluateCommand,
 } from '../../core';
+import { evaluateCommand } from '../../facade';
 import { definePlugin as defineHeadlessPlugin } from '../../lib';
 import { createEditor } from '../editor';
 import { useEditorViewState, useStateFieldValue } from '../plite-react';

@@ -49,7 +49,8 @@ run_barrelsby() {
     fi
 }
 
-common_excludes='.*__tests__.*|(.*(fixture|template|spec|slow|internal).*)|(.*\.d\.ts$)'
+# Excludes every test-file suffix; a new test suffix joins this pattern in the same change.
+common_excludes='.*__tests__.*|(.*(fixture|template|spec|slow|internal).*)|(.*\.test\.tsx?$)|(.*\.d\.ts$)'
 
 src_excludes="$common_excludes|(^.*\/(migrations|react|static)\/.*$)"
 

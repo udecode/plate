@@ -57,6 +57,8 @@ Before deduplicating example setup, compare the source with
 shape. Runtime duplication proves the aggregate needs filtering; it does not
 prove the explicit teaching declaration is redundant.
 
+The generated registry index `apps/www/src/__registry__/index.tsx` is runtime UI: only `apps/www/src/lib/registry-component.tsx` and client preview components import it, never `source.config.ts`, a route handler or a registry JSON builder. A registry item that this index puts in the server graph is server-safe or opens with `'use client'`; never add `'use client'` to a package entrypoint, or move it into package modules, to silence that build error.
+
 ---
 
 ## Style deps are real deps

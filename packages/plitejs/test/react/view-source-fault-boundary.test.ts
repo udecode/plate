@@ -1,12 +1,13 @@
 import { createEditor, type Range } from 'plitejs';
 
 import { createAnnotationStore } from '../../src/annotations';
-import { getNodeKey, replace } from '../../src/internal';
+import { getNodeKey } from '../../src/internal';
 import type { ViewSourceError } from '../../src/internal/view/view-source';
 import {
   createPliteDecorationManager,
   type DecorationSource,
 } from '../../src/react/decoration-source';
+import { replace } from '../../src/testing';
 
 const range: Range = {
   anchor: { path: [0, 0], offset: 0 },

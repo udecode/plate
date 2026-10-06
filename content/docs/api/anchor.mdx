@@ -30,7 +30,7 @@ const target = editor.anchor(selection, {
   restore the exact value recorded on each side of the history batch.
 
 Paths and points accept `"backward"` or `"forward"` association. Ranges also
-accept `"inward"` and `"outward"`. Pass `root` for a rootless value that belongs
+accept `"inward"` and `"outward"`. Ranges default to `"inward"`, so text inserted at either edge stays outside the anchored span; paths and points default to `"forward"`. Pass `root` for a rootless value that belongs
 to a named document root.
 
 Persistent anchors remain active across commits and history actions until

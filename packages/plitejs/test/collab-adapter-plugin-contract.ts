@@ -11,11 +11,11 @@ import {
   type EditorUpdateTransaction,
 } from 'plitejs';
 
+import { getLastCommit as editorGetLastCommit } from '../src/internal';
 import {
-  getLastCommit as editorGetLastCommit,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',

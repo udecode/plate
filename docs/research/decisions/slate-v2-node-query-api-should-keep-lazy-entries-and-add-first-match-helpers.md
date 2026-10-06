@@ -5,10 +5,6 @@ status: draft
 updated: 2026-05-14
 related:
   - docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md
-  - docs/research/systems/editor-architecture-landscape.md
-  - docs/research/entities/prosemirror.md
-  - docs/research/entities/lexical.md
-  - docs/research/entities/tiptap.md
 ---
 
 # Slate v2 Node Query API Should Keep Lazy Entries, Early-Exit Helpers, And Explicit Materialization

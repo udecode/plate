@@ -158,7 +158,7 @@ Use `defineCommand` from `platejs` when an action needs a typed, reusable intent
 that handlers can intercept. Its builder returns `false` or a frozen
 `TransactionSpec`. `state.transaction(...)` constructs that spec without
 publishing; `editor.update.command(descriptor, input)` applies the handled spec
-in one update.
+in one update. A command-backed one-shot update such as `editor.update.text.insert(...)` runs the installed command handlers, while the matching `tx.text.insert(...)` is a primitive for atomic composition and never redispatches a command.
 
 Both `state.transaction(...)` and `state.transaction.extend(...)` callbacks
 must finish synchronously. A returned Promise or thenable throws and discards

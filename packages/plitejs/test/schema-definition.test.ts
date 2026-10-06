@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
-  containsCompleteEditorSchema,
   createEditor,
   defineEditorSchema,
   definePlugin,
@@ -20,6 +19,8 @@ import {
   type SchemaElementTypes,
   target,
 } from 'plitejs';
+
+import { containsCompleteEditorSchema } from '../src/internal';
 
 const typeOnly = (_callback: () => void) => {};
 

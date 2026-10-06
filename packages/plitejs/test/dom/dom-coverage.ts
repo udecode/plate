@@ -19,10 +19,12 @@ import {
 } from '../../src/dom/internal';
 import {
   getNodeKey as editorGetNodeKey,
-  getSnapshot as editorGetSnapshot,
   hasPath as editorHasPath,
-  replace as editorReplace,
 } from '../../src/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '../../src/testing';
 
 type DOMTestEditor = ReturnType<typeof createNestedEditor>;
 

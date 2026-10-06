@@ -1,10 +1,6 @@
 import { act, render } from '@testing-library/react';
 import type { Value, TextSelection } from 'plitejs';
 
-import {
-  getChildren as editorGetChildren,
-  getSelection as editorGetSelection,
-} from '../../src/internal';
 import { createEditor, Editable, EditorRoot } from '../../src/react';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
@@ -12,6 +8,10 @@ import {
   createEditableInputControllerState,
   resolveEditableImplicitTarget,
 } from '../../src/react/editable/input-controller';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+} from '../../src/testing';
 
 const initialValue = [
   { type: 'paragraph', children: [{ text: 'one' }] },

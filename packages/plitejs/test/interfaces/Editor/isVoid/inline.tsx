@@ -1,9 +1,7 @@
 import { jsx } from '../../..';
 /** @jsx jsx */
-import {
-  getChildren as editorGetChildren,
-  isVoid as editorIsVoid,
-} from '../../../../src/internal';
+import { isVoid as editorIsVoid } from '../../../../src/internal';
+import { getChildren as editorGetChildren } from '../../../../src/testing';
 
 jsx;
 

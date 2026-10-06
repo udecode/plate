@@ -856,7 +856,8 @@ export const classifyEntrypoint = (definition, relativePath) => {
   for (const [entrypointName, entrypoint] of ownedEntrypoints) {
     if (
       entrypoint.sourceKind === 'file' &&
-      normalizedRelativePath === entrypoint.source
+      (normalizedRelativePath === entrypoint.source ||
+        `${normalizedRelativePath}/index` === entrypoint.source)
     ) {
       return entrypointName;
     }

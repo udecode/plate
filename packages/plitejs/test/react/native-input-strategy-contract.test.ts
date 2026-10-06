@@ -6,7 +6,6 @@ import {
   releaseDOMTextFlowRecordIndex,
   setDOMTextFlowRecordIndex,
 } from '../../src/dom/internal';
-import { replace as editorReplace } from '../../src/internal';
 import { applyModelOwnedTextInput } from '../../src/react/editable/mutation-controller';
 import {
   canUseNativeSingleCharacterInput,
@@ -15,6 +14,7 @@ import {
 import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
+import { replace as editorReplace } from '../../src/testing';
 import { readTextSelection } from './read-text-selection';
 
 const createFrameDocument = () => {

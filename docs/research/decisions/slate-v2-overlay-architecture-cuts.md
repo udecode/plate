@@ -5,13 +5,10 @@ status: accepted
 updated: 2026-04-14
 source_refs:
   - docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md
-  - docs/analysis/editor-architecture-candidates.md
+  - docs/research/sources/editor-architecture/candidates.md
   - docs/plans/2026-04-14-slate-v2-decorations-annotations-cluster-research.md
   - docs/slate-v2/decoration-roadmap.md
 related:
-  - docs/research/systems/editor-architecture-landscape.md
-  - docs/research/entities/prosemirror.md
-  - docs/research/entities/lexical.md
   - docs/research/entities/slate.md
 ---
 

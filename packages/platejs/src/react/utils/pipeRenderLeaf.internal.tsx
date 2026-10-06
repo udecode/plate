@@ -13,11 +13,13 @@ import type { EditableProps, EditOnlyConfig } from '../../lib';
 import { EditorLeaf } from '../components';
 import type { Editor } from '../editor/Editor';
 import { usePlateRenderContext } from '../internal/plate-context';
-import { setDOMTextSyncRendererCapability } from '../plite-react';
+import {
+  setDOMTextSyncRendererCapability,
+  setRetainedTextFlowRendererCapability,
+} from '../plite-react';
 import type { AnyResolvedPlugin } from '../plugin';
 import { getRenderNodeProps } from './getRenderNodeProps.internal';
 import { type RenderLeaf, pluginRenderLeaf } from './pluginRenderLeaf.internal';
-import { setRetainedTextFlowRendererCapability } from './retainedTextFlowRenderer.internal';
 
 const HARD_AFFINITY_SPACE = String.fromCodePoint(160);
 const HARD_AFFINITY_SPACER_STYLE = {

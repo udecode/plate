@@ -2,7 +2,7 @@ import { ElementApi } from 'plitejs';
 
 import { jsx } from '../../..';
 /** @jsx jsx */
-import { isBlock as editorIsBlock } from '../../../../src/internal';
+import { isBlock as editorIsBlock } from '../../../../src/testing';
 
 jsx;
 

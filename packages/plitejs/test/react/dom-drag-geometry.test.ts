@@ -11,13 +11,11 @@ import {
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
-import {
-  getNodeKey as editorGetNodeKey,
-  replace as editorReplace,
-} from '../../src/internal';
+import { getNodeKey as editorGetNodeKey } from '../../src/internal';
 import { createEditor } from '../../src/react';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import type { ReactRuntimeEditor } from '../../src/react/plugin/react-editor';
+import { replace as editorReplace } from '../../src/testing';
 
 const quoteSchema = defineEditorSchema('schema:dom-drag-geometry', {
   elements: {

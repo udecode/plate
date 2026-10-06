@@ -1,7 +1,6 @@
 export type {
   AnyEditor,
   BaseEditor,
-  Editor,
   EditorCommandContext,
   PluginDependencyReferenceFor,
   PluginDependencyContractReference,
@@ -13,13 +12,12 @@ export type {
   PluginWitnessFor,
   PluginTypeLambda,
   EditorGenericMethod,
+  EditorNodeTypeProvider,
   EditorStateViewProvider,
+  EditorValueTypeProvider,
   EditorUpdateTransactionOf,
   EditorUpdateTransactionProvider,
-  Value,
 } from '../interfaces/editor';
-export { txRead } from '../core/tx-only';
-export type { TxReadMethod } from '../core/tx-only';
 
 export { failInvariant } from './fail-invariant';
 
@@ -37,12 +35,8 @@ export {
 export {
   above,
   addMark,
-  after,
-  before,
   collapse,
   delete,
-  deleteBackward,
-  deleteForward,
   deleteFragment,
   deselect,
   edges,
@@ -50,27 +44,20 @@ export {
   install,
   first,
   fragment,
-  getChildren,
   getCollabEffects,
   getPluginRegistry,
   getFragment,
   getLastCommit,
   getPathByNodeKey,
   getNodeKey,
-  getSelection,
-  getSnapshot,
   hasBlocks,
   hasInlines,
   hasPath,
   hasTexts,
-  insertBreak,
   insertNode,
   insertNodes,
   insertSoftBreak,
-  insertText,
-  isBlock,
   isEdge,
-  isEditor,
   isElementReadOnly,
   isEmpty,
   isEnd,
@@ -83,13 +70,11 @@ export {
   levels,
   liftNodes,
   mergeNodes,
-  move,
   moveNodes,
   next,
   parent,
   path,
   point,
-  positions,
   previous,
   projectRange,
   range,
@@ -97,7 +82,6 @@ export {
   removeMark,
   removeNodes,
   replaceChildren,
-  replace,
   reset,
   select,
   setNodes,
@@ -105,11 +89,9 @@ export {
   setSelection,
   shouldMergeNodesRemovePrevNode,
   splitNodes,
-  string,
   subscribeSource,
   toggleBlock,
   toggleMark,
-  unhangRange,
   unsetNodes,
   unwrapNodes,
   update,
@@ -118,7 +100,6 @@ export {
 } from '../interfaces/editor';
 
 export {
-  defineCommand,
   dispatchCommand,
   evaluateCommand,
   hasCommandHandler,
@@ -130,7 +111,7 @@ export type {
 } from '../core/command-registry';
 export { createDetachedContentSlice } from '../core/content-slice';
 export type { InternalEditorRuntimeElementEntry } from '../core/snapshot-index';
-export { editorCommands } from '../core/editor-commands';
+
 export {
   createInternalRootChangeFromSections,
   getInternalDocumentChangeClassification,
@@ -160,8 +141,6 @@ export {
   getEditorAuthoredDocumentCapability,
   withCompiledEditorSchemaCapabilityEntries,
   compileEditorSchemaContractEntries,
-  type PluginsFromOptions,
-  type EditorValueFromOptions,
   initializePluginEntries,
   initializePlugins,
 } from '../create-editor';
@@ -170,14 +149,12 @@ export type {
   NativeAuthoredProjectionDiagnostic,
 } from '../core/authored-document-capability';
 export {
-  areEditorSchemaIdentitiesEqual,
   compileEditorSchemaContributions,
   EditorSchemaCompileError,
   getCompiledSchemaPropertyId,
   getCompiledPropertyMergeStrategy,
   matchesCompiledSchemaTarget,
   preserveCompiledSchemaPropertyIdentity,
-  readEditorSchemaIdentity,
   resolveCompiledSchemaProperty,
   type CompiledEditorSchema,
   type CompiledSchemaConstructionPlan,
@@ -191,10 +168,10 @@ export {
 } from '../core/schema-compiler';
 export { getSchemaElementSourceReference } from '../core/schema-definition';
 export {
+  containsCompleteEditorSchema,
   brandPluginDescriptor,
   compilePlugin,
   compilePluginInput,
-  definePlugin,
   getCompiledEditorConfiguration,
   getCandidatePluginApi,
   getPluginContributions,
@@ -218,13 +195,16 @@ export {
 export type { InternalEditorSchemaApi } from '../core/editor-schema';
 export type { NativeAuthoredDocumentCapability } from '../core/authored-document-capability';
 export type {
-  EditorSchemaSource,
   EditorSchemaSourceProvider,
+  EditorSchemaPluginProvider,
+  SchemaDescendantInValue,
+  SchemaElementInNode,
+  SchemaNodeTypeProvider,
+  SchemaTextInNode,
 } from '../core/schema-source.internal';
 export {
   getEditorRuntimeRoot,
   getEditorRuntime,
-  getEditorRuntimeOwner,
   hasEditorRuntime,
   setEditorRuntime,
 } from '../core/editor-runtime';
@@ -261,7 +241,6 @@ export {
   fitSliceChildren,
   fitSlicePlacements,
   getLiveNode as getEditorLiveNode,
-  getLiveSelection as getEditorLiveSelection,
   getLiveText as getEditorLiveText,
   getSnapshotVersion,
   withTransactionSpecDraftRead,
@@ -272,9 +251,7 @@ export {
   scheduleAfterCommitNotification,
   setChildren as setEditorChildren,
   setEditorComposing,
-  setEditorFocused,
   setEditorMaxLength,
-  setEditorReadOnly,
   setEditorSnapshotInputTransform,
   setEditorTransactionViewTransform,
   setEditorStateViewTransform,
@@ -282,7 +259,6 @@ export {
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
   subscribeEditorViewState,
-  toEditorCoreStateView,
   withEditorUpdateRootScope,
 } from '../core/public-state';
 export type {
@@ -296,8 +272,6 @@ export {
   decodeEditorSelection,
   encodeEditorSelection,
   getSelectionDOMRange,
-  getSelectionRange,
-  mapSelectionThroughChange,
 } from '../core/selection-protocol';
 export { createEditorEffect } from '../core/transaction-values';
 export {
@@ -317,9 +291,7 @@ export {
   assertEditorJsonValue,
   cloneEditorJsonValue,
   snapshotEditorJsonValue,
-  decodeEditorEffect,
   decodeVersionedValue,
-  encodeEditorEffect,
   encodeVersionedValue,
 } from '../core/value-codec';
 export { readAuthoredView } from '../core/authored-runtime';

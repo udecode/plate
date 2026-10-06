@@ -4,6 +4,8 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { internalPliteContractTypeSymbols } from './plite-internal-symbols.mjs';
+
 const declarationFilePattern = /\.d\.(?:c|m)?ts$/;
 const privateBrandPatterns = [
   /\b(?:declare\s+)?const\s+(PLATE_[A-Z0-9_]+)\s*:\s*unique\s+symbol\b/g,
@@ -29,17 +31,6 @@ const typeLambdaNamePattern = /^[A-Za-z_$][\w$]*TypeLambda$/;
 const typeOnlyExportSpecifierPrefixPattern = /^type\s+/;
 const exportSpecifierAliasPattern = /\s+as\s+/;
 const canonicalPluginTypeLambda = 'PluginTypeLambda';
-const internalPliteContractTypeSymbols = [
-  'PluginTypeLambda',
-  'PluginFactoryTypeLambda',
-  'PluginFactoryTypeProvider',
-  'PluginFactoryTypeProviderOf',
-  'PluginDependencyContractReference',
-  'PluginDependencyReferenceFor',
-  'PluginInstalledCapabilitiesOf',
-  'PluginTypeProviderOf',
-  'PluginWitnessFor',
-];
 const internalCoreContractTypeSymbols = [
   'InternalDefinitionOf',
   'PluginDefinitionCarrier',

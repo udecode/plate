@@ -6,7 +6,7 @@ work_kind: implementation
 
 # Reads: one public commit subscription
 
-Status: blocked: waiting on your call to close with the API reference gap
+Status: executed: built, reviewed, and closed with the API reference gap on your go; the work waits for your commit
 Playbook: plan
 
 Plite's editor keeps one public way to observe a published commit, `editor.subscribeCommit((commit, snapshot) => ...)`. This plan deletes `editor.subscribe`, the `Editor.subscribe` and `Editor.subscribeCommit` namespace functions, and the root `SnapshotListener` and `EditorCommitSource` type exports. `editor.subscribe` and `editor.subscribeCommit` deliver the same commit and snapshot once per commit and differ only in argument order and phase. The namespace `subscribeCommit` only forwards to the method. Keeping them teaches four spellings of one job. The Plite React provider, the one production caller of `editor.subscribe`, calls `getEditorRuntime(editor).subscribe` instead. That is the same runtime function `editor.subscribe` forwarded to, so the provider's delivery, projection and order do not change. No existing test pins that order, so the plan adds one public-boundary test, written first, that fails if the provider moves to `subscribeCommit`. The owner said "go" on 2026-10-05 to plan this cut, which the 2026-10-04 audit's Pursue verdict proposed. The plan runs under the Build playbook, `.agents/playbooks/build.md`.
@@ -15,11 +15,11 @@ Plite's editor keeps one public way to observe a published commit, `editor.subsc
 
 ### What will change?
 
-Apps observe commits through one editor method. The older method, two helper functions and two public types are gone, and tests, documents and release notes use the remaining method. The Close lists one reverted merge. Nothing is committed.
+Apps observe commits through one editor method, because the older method only repeated it. The older method, two helper functions and two public types are gone, and the work waits for your commit.
 
 ### What could go wrong?
 
-Apps using the removed method break when you publish. A moved listener that read the updated page runs earlier. The API reference still lists two removed types. Three checks fail as before. A final review found six warnings, none critical.
+Apps using the removed method break when you publish. Moved listeners run before the page updates. The API reference lists two removed types until the history work regenerates it. Three checks fail as before. The final review gave six warnings.
 
 ## Public API
 
@@ -41,6 +41,10 @@ const unsubscribe = editor.subscribe((_snapshot, commit) => {
 const unsubscribe = editor.subscribeCommit((commit) => {
   if (commit.changed.has("document") || commit.dirtyStateKeys.length) {
     save(editor.read.value());
+  }
+
+  if (commit.selectionChanged) {
+    syncSelection(commit.selectionAfter);
   }
 });
 ```
@@ -121,12 +125,12 @@ This page flags open plans that cite the removed names and leaves their text, be
 - [x] Add the ordering test first. In `packages/plitejs/test/react/plite-runtime-provider-contract.test.tsx`, mount `EditorRoot` with an `Editable` and an `onCommit` prop, register `editor.subscribeCommit` after mount, insert text, and assert the app listener ran before `onCommit`. Proof: `pnpm --filter plitejs test:react -- plite-runtime-provider-contract` passes at `HEAD`, and fails in a detached worktree where `packages/plitejs/src/react/components/plite.tsx:721` calls `editor.subscribeCommit(onContextChange)`. Closed by the decision row "Write the ordering test first and prove it fails for its named defect": exit 0 on the build, exit 1 on the `subscribeCommit` mutant.
 - [x] Move the provider to `getEditorRuntime(editor).subscribe(...)`, imported from `packages/plitejs/src/react/editable/runtime-editor-api.ts`. Proof: the ordering test passes. Closed by `packages/plitejs/src/react/components/plite.tsx` and the ordering test passing in `pnpm --filter plitejs test:react`.
 - [x] Delete `BaseEditor.subscribe`, the base and view object properties, the namespace `subscribe` and `subscribeCommit` types, bodies and export entries, their `plitejs/internal`, `plitejs/testing` and `runtime-editor-api.ts` re-exports, and the root `SnapshotListener` and `EditorCommitSource` exports. Proof: `pnpm --filter plitejs typecheck` and `pnpm --filter platejs typecheck` exit 0 after the next two steps, and `rg -n 'subscribe: viewRuntime\.subscribe' packages/plitejs/src` prints nothing (it prints `editor-runtime-view.ts:1412` at `HEAD`). Closed by the decision row "Typecheck the build": both package typechecks exit 0.
-- [x] Make the internal listener's commit required and delete the commit-absent branches listed under Main changes. Proof: the same typechecks. Closed by the same typecheck row and the recheck rows after the diff panel.
+- [x] Make the internal listener's commit required and delete the commit-absent branches listed under Main changes. Proof: the same typechecks. Closed by `pnpm --filter plitejs typecheck` and `pnpm --filter platejs typecheck`, exit 0 in the typecheck row and in the recheck rows after the diff panel.
 - [x] Migrate the 47 test calls to `editor.subscribeCommit` with swapped arguments, with two exceptions. In `packages/plitejs/test/update-after-commit-contract.ts:529,533`, call `getEditorRuntime(editor).subscribe` and keep the `'snapshot-listener'` assertion. In `packages/plitejs/test/apply-onchange-hard-cut-contract.ts:107`, keep the plugin-before-listener order assertion. Remove `'subscribe'` and `'subscribeCommit'` from `packages/platejs/test/public-package-import-smoke.slow.ts:410-411` and `:622-623`. Proof: `node ../../node_modules/typescript/bin/tsc -p tsconfig.test.json --noEmit` in `packages/plitejs` reports no file and message pair that `HEAD` lacks (`HEAD` reports 903 pre-existing errors; this comparison misses a new error whose text the same file already has, see Panel gate); `pnpm --filter plitejs test` and `pnpm --filter plitejs test:react` pass; removing the `runEditorObserver` guard at `packages/plitejs/src/core/public-state.ts:8758` fails the rewritten case; the platejs smoke test passes. Closed by the decision rows "Run the plitejs and Plate suites on the build", "Prove the rewritten error-routing case still guards the snapshot phase" and "Typecheck the build". As built, after diff panel round 1: two more cases moved to the runtime subscription to keep the phase they observe, `packages/plitejs/test/synchronous-transaction-authors.test.ts` (its notifications counter) and `packages/plitejs/test/authored-retained-contract.test.ts:702` (the fragment snapshot path); stale identifiers were renamed and one duplicate assertion in `packages/plitejs/test/snapshot-contract.ts` was cut.
 - [x] Migrate the 4 benchmark calls and the dnd probe to `editor.subscribeCommit`. Record that `editor-store.mjs`'s `subscribeDispatchMs` now measures commit-phase dispatch and needs a fresh baseline. Proof: `PLITE_TRANSACTION_EXECUTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/slate-v2/donor/core/current/transaction-execution.mjs` exits 0. `editor-store.mjs` already fails at `HEAD` on an unrelated document-shape refusal, and `compare/huge-document.mjs` needs a plitejs build, so both lanes and the dnd probe stay unproven. Closed by the decision row "Migrate the benchmarks and the dnd probe and run the transaction-execution lane".
-- [ ] Run `plate-docs` on `content/docs/api/editor-api.mdx` and `content/docs/(guides)/debugging.mdx`: the example coverage audit, the edits under Hard cuts, and their Chinese twins (`editor-api.cn.mdx` and `debugging.cn.mdx` carry no `subscribe` text today). Edit `docs/plite/references/architecture-contract.md:33` and `docs/plite/final-api-hard-cuts-status.md:31`. Remove both types from `apps/www/api-reference.config.json`, then run `pnpm --filter www api-reference` and `pnpm --filter www build:registry`. Proof: the `plate-docs` checks and preview, and `pnpm --filter www api-reference:check`. An absence search waits under Panel gate.
+- [x] Run `plate-docs` on `content/docs/api/editor-api.mdx` and `content/docs/(guides)/debugging.mdx`: the example coverage audit, the edits under Hard cuts, and their Chinese twins (`editor-api.cn.mdx` and `debugging.cn.mdx` carry no `subscribe` text today). Edit `docs/plite/references/architecture-contract.md:33` and `docs/plite/final-api-hard-cuts-status.md:31`. Remove both types from `apps/www/api-reference.config.json`, then run `pnpm --filter www api-reference` and `pnpm --filter www build:registry`. Proof: the `plate-docs` checks and preview, and `pnpm --filter www api-reference:check`. An absence search waits under Panel gate. Closed by `pnpm --filter www build:registry` exit 0 and a dev-server preview of both pages. `pnpm --filter www api-reference:check` fails at `HEAD` and on the build on the unclassified `HistoryApi` export, so the generated manifest still lists both types; the owner's go on 2026-10-05 accepted that narrower proof.
 - [x] Write the changeset for `plitejs` and `platejs` with the `changeset` skill, naming the earlier timing of migrated listeners, and run `best-api repair` for the cut. Proof: the changeset file and the repair's report. Closed by `.changeset/plite-commit-subscription.md`, `.changeset/plate-commit-subscription.md` and the decision row "Run best-api repair for the cut".
-- [ ] Run the writing passes, `pnpm lint:fix` on the task's files, then `pnpm check`, and fold the delta and the deferred rows into `docs/plans/topics/reads.md`. Proof: the passes' skill invocations, the check's exit status and `node .agents/pstack/plan-open.mjs docs/plans/2026-10-05-reads-review.md`.
+- [x] Run the writing passes, `pnpm lint:fix` on the task's files, then `pnpm check`, and fold the delta and the deferred rows into `docs/plans/topics/reads.md`. Proof: the passes' skill invocations, the check's exit status and `node .agents/pstack/plan-open.mjs docs/plans/2026-10-05-reads-review.md`. Closed by the decision rows for `deslop`, `no-comments` and `unslop`, `pnpm exec ultracite check` on the 31 task TypeScript files, the fold into `docs/plans/topics/reads.md` and `node .agents/pstack/plan-open.mjs docs/plans/2026-10-05-reads-review.md` exit 0. `pnpm check` stays red on lint, test-slow and www, each failing the same way at `HEAD`; the owner's go closed the plan on a page whose brief named those three failures.
 
 ## Completion Gates
 
@@ -146,8 +150,8 @@ This page flags open plans that cite the removed names and leaves their text, be
 | Panel on the diff | AGENTS.md reviews list `api-build` | Round 1 on frozen commit 7584ac9473: no critical finding, warnings applied or deferred with owners |
 | `pnpm lint:fix` on task files and `pnpm check` | AGENTS.md Delivery | partial: lint clean on the 31 task TypeScript files; `pnpm check` red on lint, test-slow and www, each attributed to a cause outside this cut in the decision row "Attribute the three failing pnpm check steps" |
 | Decision-trail review | AGENTS.md Decision-trail review | gpt-6.1-sol at xhigh on frozen commit c496b239d0: no critical finding; its Attention section is in Close and its fixes are decision rows |
-| Ledger execution record | Build playbook close | `docs/research/review-records/2026-10-05-reads-review-execution.json`, outcome partial with partial proof; `lookup reads` reports progress in-progress |
-| Subject fold, render with `--folded`, republish, `review-ledger.mjs next` | Build playbook close | blocked: waits on the answer under Needs you |
+| Ledger execution record | Build playbook close | `docs/research/review-records/2026-10-05-reads-review-execution.json`, outcome partial with partial proof, then `docs/research/review-records/2026-10-05-reads-review-execution-2.json`, which names it in `previous` and records the owner-accepted close |
+| Subject fold, render with `--folded`, republish, `review-ledger.mjs next` | Build playbook close | `docs/plans/topics/reads.md` folded and rendered with `--folded`, republished to its page; `node tooling/scripts/review-ledger.mjs next` names the next item at the end of Close |
 
 ## Proof
 
@@ -160,10 +164,11 @@ This page flags open plans that cite the removed names and leaves their text, be
 
 Reversals and deviations come first.
 
+- The owner answered go on 2026-10-05, which picked Accept the gap. The plan closes with two proofs narrower than approved: `pnpm --filter www api-reference:check` fails at `HEAD` and on the build, and `pnpm check` stays red on three steps that fail the same way at `HEAD`. Saying "reopen reads" reverses the close.
 - The build merged the view runtime's `subscribe` and `subscribeSource` after its thermo-nuclear review. Diff panel round 1 showed that the merged path projected the snapshot before the source filter, so filtered listeners paid a projection on commits they reject. The build reverted the merge byte for byte, and the approved deferral stands.
 - The docs example briefly synced `snapshot.selection`. The diff panel showed that a main-root commit's snapshot selection is null while `commit.selectionAfter` holds a named-root selection, so the example syncs `commit.selectionAfter` again.
 - The build merged that pair as a substituted slice that Build now never approved, and it should have stopped for you instead. The revert resolved it.
-- The plan's docs proof named `pnpm --filter www api-reference` and a docs preview. The preview ran after the trail review and shows both pages' final text. The generator fails at `HEAD` and on this build because `apps/www/api-reference.config.json` never classified the `HistoryApi` export, so `apps/www/src/generated/api-reference-manifest.json` still lists `SnapshotListener` and `EditorCommitSource`. Needs you asks whether the build can close with that gap.
+- The plan's docs proof named `pnpm --filter www api-reference` and a docs preview. The preview ran after the trail review and shows both pages' final text. The generator fails at `HEAD` and on this build because `apps/www/api-reference.config.json` never classified the `HistoryApi` export, so `apps/www/src/generated/api-reference-manifest.json` still lists `SnapshotListener` and `EditorCommitSource`. The owner's go accepted closing with that gap.
 - Diff panel fixes moved two more tests to the runtime subscription than Step 5 named, and dropped the docs example's snapshot parameter; Step 5 keeps its approved wording beside what was built.
 - The session restarted during the close, and its scratch directory came back empty. Evidence files that earlier decision rows cite under scratch paths are gone; the rows keep each command and result, and the frozen review commits still resolve.
 
@@ -180,7 +185,11 @@ Proof and its limits:
 - `pnpm check` fails three steps, and each fails the same way at `HEAD` in a detached worktree: `lint` on the root `package.json` format, `test-slow` on a collaborative history case and on a TableGrid compiler wall-clock budget that failed once in six interleaved runs on each side, and `www` at the same `HistoryApi` classification, whose `HEAD` log the restart deleted.
 - The order probes ran in jsdom on one decorated root view. The build migrated the editor-store and huge-document benchmark lanes and the dnd probe without running them. Nobody searched external downstream apps.
 
-There are 16 completion gates: 12 done, 3 partial (the hard-cut sweep and the absence search, which leave the generated manifest, and `pnpm check`, red on three steps that fail the same way at `HEAD`), 0 skipped, 1 blocked (the fold, which waits on Needs you) and 0 open.
+There are 16 completion gates: 13 done, 3 partial (the hard-cut sweep and the absence search, which leave the generated manifest, and `pnpm check`, red on three steps that fail the same way at `HEAD`; the owner's go accepted all three), 0 skipped, 0 blocked and 0 open.
+
+No commits: the work waits in the working tree for the owner's commit.
+
+Next ledger item, from `node tooling/scripts/review-ledger.mjs next`: the plate-core `distribution` scope. Its 2026-10-04 Pursue verdict, not yet adopted, would move the `@internal`-tagged `plitejs` root exports that `platejs` re-exports, such as `runTrustedUpdate` and `setEditorTransactionViewTransform`, behind `plitejs/internal`, so Plate's facade imports them there and apps stop seeing them on `platejs`. The verdict is stale: three files it read and four Vision files changed since.
 
 The Open work section names an owner for each remaining item: the history owner's reference classification, the listener-type and projection cleanups, the base-editor source buckets, the dead plugin-listener branch, the agent-facing notes, the table benchmark's wall-clock budget, the root `package.json` format and the collaborative history test.
 
@@ -234,25 +243,6 @@ reviewed by gpt-6.1-sol (xhigh)
 
 no further findings
 
-## Open questions
-
-### Close with the reference gap
-
-Can the build close while the generated API reference still lists the two removed types?
-
-Why it needs you: The plan named this step as proof, and only you can accept less.
-
-- An unlisted history type stops the generator, before and after this change.
-- The history work owns that list.
-
-- **Accept the gap** (recommended): I close the plan, update the subject page and record the result as complete. Cost: The generated reference shows two removed types until the history work regenerates it.
-- **Keep it open**: I record the result as partial and wait for the reference to regenerate. Cost: The plan stays open for a step this change does not control.
-- **Classify them here**: I add the history types to the reference list and regenerate it. Cost: It changes the list of another work area, whose owner can decide differently.
-
-Why I pick it: The gap is in another owner's list and fails before this change.
-
-Attention: safe
-
 ## Defaults
 
 | Decision | Pick | Alternative | Word |
@@ -266,8 +256,8 @@ Attention: safe
 
 ## Open work
 
-- Fragment-view order and per-view fence ordering stay deferred with their next probes, owner: zbeyens, moving to `docs/plans/topics/reads.md` Open work at the fold.
-- Base-editor source buckets, `EditorCommitSource`'s never-emitted members (`annotation`, `focus`, `composition`, `external`) and the dead `hasListeners` and `hasSnapshotListeners` exports (`packages/plitejs/src/core/public-state.ts:306-307`) wait for one subtractive follow-up, owner: zbeyens, moving to the same Open work. On `plitejs/internal`, `subscribeSource(editor, 'commit', listener)` still reaches every commit, because every commit carries the `'commit'` source, so that follow-up also decides whether the internal entry point keeps it.
+- Fragment-view order and per-view fence ordering stay deferred with their next probes, owner: zbeyens, tracked in `docs/plans/topics/reads.md` Open work.
+- Base-editor source buckets, `EditorCommitSource`'s never-emitted members (`annotation`, `focus`, `composition`, `external`) and the dead `hasListeners` and `hasSnapshotListeners` exports (`packages/plitejs/src/core/public-state.ts:306-307`) wait for one subtractive follow-up, owner: zbeyens, tracked in the same Open work. On `plitejs/internal`, `subscribeSource(editor, 'commit', listener)` still reaches every commit, because every commit carries the `'commit'` source, so that follow-up also decides whether the internal entry point keeps it.
 - After the commit-absent branches go, the view runtime's `subscribe` and `subscribeSource` (`packages/plitejs/src/editor-runtime-view.ts:1160-1246`) differ by one source filter and could share one projection, owner: zbeyens, tracked in the same Open work. The build merged them and the diff panel reverted the merge, because the shared path projected the snapshot before the source filter, adding work for every filtered listener on commits it rejects. A merge must keep the filter before the projection. The same file also repeats the commit-to-view projection in `afterCommit` and `subscribeCommit`.
 - The internal snapshot listener now always receives a commit, so it is `EditorCommitListener` with its arguments reversed. Typing the runtime's `subscribe` and `subscribeSource` listeners as `(commit, snapshot)` would delete the internal `SnapshotListener` type, owner: zbeyens, tracked in the same Open work.
 - `pnpm --filter www api-reference` and `api-reference:check` fail at `HEAD` because `apps/www/api-reference.config.json` never classified the `HistoryApi` export, so `apps/www/src/generated/api-reference-manifest.json` still lists `SnapshotListener` and `EditorCommitSource` until the history owner classifies it and the manifest regenerates, owner: zbeyens, tracked in the same Open work.

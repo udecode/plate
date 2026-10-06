@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
-  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -13,22 +12,16 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { fileURLToPath } from 'node:url';
 
 import {
   check,
   coverage,
-  integrity,
-  draftExecution,
-  draftReview,
   freshness,
   loadLedger,
   lookup,
-  main,
   next,
   observe,
   orderUnits,
-  recordDraft,
   recordsDir,
   scopesDir,
   searchResearch,
@@ -37,7 +30,6 @@ import {
 } from './review-ledger.mjs';
 
 const digest = (value) => createHash('sha256').update(value).digest('hex');
-const script = fileURLToPath(new URL('review-ledger.mjs', import.meta.url));
 
 function scope(id, fields = {}) {
   return {
@@ -104,97 +96,116 @@ function fixture(t, scopes = [scope('comments'), scope('link')]) {
   return { root, put, git, commit };
 }
 
-function completed(draft, fields = {}) {
-  return {
-    ...draft,
-    model: 'fixture-model',
-    trigger: 'The owner asked for a review.',
-    requirements: ['Keep one owner for comment ranges.'],
-    evidenceReuse: 'First observation of the fixture source.',
-    summary: 'Keep the existing owner.',
-    verdict: 'stop',
-    alternatives: [
-      'Keep the owner: it has an independent range lifetime.',
-      'Delete the owner: the consumer still needs mapped ranges.',
-    ],
-    proofLimits: 'Fixture source only.',
-    references: ['docs/evidence.md'],
-    reconciliation: draft.reconciliation.map((entry) => ({
-      ...entry,
-      action: entry.action || 'retains',
-      reason: entry.reason || 'The same evidence still holds.',
-    })),
-    ...fields,
-  };
-}
-
-function recordReview(root, put, scopeId, fields = {}) {
-  const { draft } = draftReview(root, scopeId);
-  const value = completed(draft, fields);
-  put(`drafts/${value.id}.json`, value);
-  return recordDraft(root, `drafts/${value.id}.json`);
-}
-
-function recordExecution(root, put, planPath, fields = {}) {
-  const { draft } = draftExecution(root, planPath);
-  const value = {
-    ...draft,
-    summary: 'Implemented the governing Pursue.',
-    proof: { state: 'partial', evidence: [], limits: 'Fixture proof only.' },
-    ...fields,
-  };
-  put(`drafts/${value.id}.json`, value);
-  return recordDraft(root, `drafts/${value.id}.json`);
-}
-
 function plan(
   put,
   path,
-  { scopes, basis, workKind = 'implementation', state }
+  {
+    scopes,
+    basis,
+    verdict,
+    workKind = verdict ? null : 'implementation',
+    state,
+    commit,
+    inputs,
+    action = 'supersedes',
+    reconciles = basis,
+  }
 ) {
+  const keys = [
+    `review_scopes: [${scopes.join(', ')}]`,
+    `review_basis: [${basis.join(', ')}]`,
+    ...(verdict ? [`verdict: ${verdict}`] : []),
+    ...(workKind ? [`work_kind: ${workKind}`] : []),
+    ...(commit ? [`review_commit: ${commit}`] : []),
+    ...(inputs ? [`review_inputs: [${inputs.join(', ')}]`] : []),
+  ];
+  const reconciled = reconciles.map(
+    (id) => `- ${id} ${action}: the fixture reads it again.`
+  );
   put(
     path,
-    `---\nreview_scopes: [${scopes.join(', ')}]\nreview_basis: [${basis.join(', ')}]\nwork_kind: ${workKind}\n---\n\n# Plan\n\nStatus: ${state}\n`
+    `---\n${keys.join('\n')}\n---\n\n# Plan\n\nThe lead paragraph.\n\nStatus: ${state}\nPlaybook: api-review\n\n## Public API\n\nCurrent and proposed call sites.\n\n## Close\n\nLanded with fixture proof${inputs ? ` in ${inputs.join(', ')}` : ''}.\n\n## Evidence\n\nModel: fixture-model\n\nRead [the evidence](../evidence.md).\n\n${reconciled.join('\n')}\n\n### Requirements\n\n- Keep one owner.\n\n### Lanes\n\n- Keep the owner.\n- Delete the owner.\n`
   );
 }
+
+const legacyReview = (id, fields = {}) => ({
+  id,
+  kind: 'review',
+  scope: 'comments',
+  date: id.slice(0, 10),
+  verdict: 'pursue',
+  previous: null,
+  relation: 'initial',
+  summary: 'Legacy.',
+  references: ['docs/evidence.md'],
+  source: null,
+  ...fields,
+});
 
 const openOf = (root, id) =>
   status(root).open.find((item) => item.id === id)?.open ?? null;
 
-test('retaining a completed execution does not adopt a new Pursue', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
+const headOf = (git) => git('rev-parse', 'HEAD').trim();
+
+test("a review page's verdict becomes the scope's head", (t) => {
+  const { root, put, git } = fixture(t);
+  const write = (verdict) =>
+    plan(put, 'docs/plans/2026-09-01-comments-review.md', {
+      scopes: ['comments'],
+      basis: [],
+      verdict,
+      state: 'reviewed',
+      commit: headOf(git),
+    });
+  write('stop');
+
+  assert.equal(
+    lookup(root, 'comments')[0].head.id,
+    '2026-09-01-comments-review'
+  );
+  assert.equal(openOf(root, 'comments'), null);
+  assert.equal(check(root).ok, true);
+  write('pursue');
+  assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
+  write('maybe');
+  assert.throws(() => check(root), /verdict/);
+});
+
+test('a landed plan naming an older review does not adopt the newer Pursue', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
     verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
+    state: 'reviewed',
+    commit: headOf(git),
   });
   plan(put, 'docs/plans/2026-09-02-comments.md', {
     scopes: ['comments'],
     basis: ['2026-09-01-comments'],
     state: 'executed',
   });
-  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-    id: '2026-09-02-comments-execution',
-    outcome: 'completed',
-  });
   assert.equal(openOf(root, 'comments'), null);
 
-  recordReview(root, put, 'comments', {
-    id: '2026-09-03-comments',
+  plan(put, 'docs/plans/2026-09-03-comments.md', {
+    scopes: ['comments'],
+    basis: ['2026-09-01-comments'],
     verdict: 'pursue',
-    relation: 'supersedes',
-    callSites: { current: 'b()', proposed: 'c()' },
+    state: 'reviewed',
+    commit: headOf(git),
   });
 
   assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
 });
 
-test('only a completed implementation or workflow execution adopts its Pursue', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
+test('a landed design plan does not adopt its Pursue', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
     verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
+    state: 'complete',
+    commit: headOf(git),
   });
   plan(put, 'docs/plans/2026-09-02-design.md', {
     scopes: ['comments'],
@@ -202,21 +213,16 @@ test('only a completed implementation or workflow execution adopts its Pursue', 
     workKind: 'design',
     state: 'done',
   });
-  recordExecution(root, put, 'docs/plans/2026-09-02-design.md', {
-    id: '2026-09-02-design-execution',
-    outcome: 'completed',
-  });
 
   assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
 });
 
 test('an imported execution without a recovered binding never adopts', (t) => {
   const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
+  put(
+    `${recordsDir}/2026-09-01-comments.json`,
+    legacyReview('2026-09-01-comments')
+  );
   put(`${recordsDir}/2026-09-02-imported.json`, {
     id: '2026-09-02-imported',
     kind: 'execution',
@@ -236,14 +242,12 @@ test('an imported execution without a recovered binding never adopts', (t) => {
   assert.notEqual(openOf(root, 'comments'), null);
 });
 
-test('recording one scope ignores every other session’s unfinished state', (t) => {
+test("readers tolerate another session's half-written ledger files", (t) => {
   const { root, put } = fixture(t, [
     scope('comments'),
     scope('link'),
     scope('table'),
   ]);
-  const { draft } = draftReview(root, 'comments');
-  put('drafts/comments.json', completed(draft));
   put('packages/core/src/typed-text.ts', 'export const wip = 1;');
   put('packages/core/src/link/index.ts', 'export const link = 2;');
   put('VISION.md', 'Doctrine, edited.');
@@ -290,140 +294,35 @@ test('recording one scope ignores every other session’s unfinished state', (t)
     },
   ]);
 
-  const result = recordDraft(root, 'drafts/comments.json');
-
-  assert.equal(result.recorded, `${recordsDir}/${draft.id}.json`);
   assert.equal(coverage(root).unowned.total, 1);
   assert.equal(status(root).scopes, 3);
   assert.ok(next(root).unit);
 });
 
-test('a broken foreign scope file fails check but not another scope’s record', (t) => {
+test('a broken scope file fails check and leaves lookup of another scope working', (t) => {
   const { root, put } = fixture(t);
   put(`${scopesDir}/link.json`, '{ not json');
-  const { draft } = draftReview(root, 'comments');
-  put('drafts/comments.json', completed(draft));
+  put('packages/core/src/link/index.ts', 'export const link = 3;');
 
-  assert.ok(recordDraft(root, 'drafts/comments.json').recorded);
+  assert.equal(lookup(root, 'comments').length, 1);
   assert.throws(() => check(root), /link\.json/);
+  put(`${scopesDir}/link.json`, scope('link'));
+  assert.equal(check(root).ok, true);
 });
 
-test('record refuses a stale previous and names the new head', (t) => {
-  const { root, put } = fixture(t);
-  const first = draftReview(root, 'comments').draft;
-  const second = { ...first, id: '2026-09-02-other' };
-  put('drafts/a.json', completed(first));
-  put('drafts/b.json', completed(second));
-  recordDraft(root, 'drafts/a.json');
-
-  assert.throws(
-    () => recordDraft(root, 'drafts/b.json'),
-    new RegExp(`head of comments is ${first.id}`)
-  );
-});
-
-test('a review must reconcile a bound execution recorded after its previous', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
-  plan(put, 'docs/plans/2026-09-02-comments.md', {
+test('a review page reads stale when its scope changed since its review_commit', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
     scopes: ['comments'],
-    basis: ['2026-09-01-comments'],
-    state: 'building',
+    basis: [],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
   });
-  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-    id: '2026-09-02-comments-execution',
-  });
-  const { draft } = draftReview(root, 'comments');
-  const value = completed(draft, {
-    reconciliation: [
-      { record: '2026-09-01-comments', action: 'retains', reason: 'Same.' },
-    ],
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
-  put('drafts/next.json', value);
+  assert.equal(lookup(root, 'comments')[0].freshness.state, 'matching');
 
-  assert.throws(
-    () => recordDraft(root, 'drafts/next.json'),
-    /Reconcile 2026-09-02-comments-execution/
-  );
-});
-
-test('a changed verdict cannot retain its previous review', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', { id: '2026-09-01-comments' });
-  const { draft } = draftReview(root, 'comments');
-  put(
-    'drafts/next.json',
-    completed(draft, {
-      verdict: 'pursue',
-      callSites: { current: 'a()', proposed: 'b()' },
-    })
-  );
-
-  assert.throws(
-    () => recordDraft(root, 'drafts/next.json'),
-    /changed verdict must reopen or supersede/
-  );
-});
-
-test('recording is idempotent and refuses an id that exists with other content', (t) => {
-  const { root, put } = fixture(t);
-  const { draft } = draftReview(root, 'comments');
-  put('drafts/a.json', completed(draft));
-  recordDraft(root, 'drafts/a.json');
-
-  assert.equal(recordDraft(root, 'drafts/a.json').duplicate, true);
-  put('drafts/b.json', completed(draft, { summary: 'Different.' }));
-  assert.throws(() => recordDraft(root, 'drafts/b.json'), /already exists/);
-});
-
-test('concurrent records of one id leave one complete file', async (t) => {
-  const { root, put } = fixture(t);
-  const { draft } = draftReview(root, 'comments');
-  put('drafts/a.json', completed(draft, { summary: 'From session A.' }));
-  put('drafts/b.json', completed(draft, { summary: 'From session B.' }));
-  const run = (path) =>
-    new Promise((resolve) => {
-      const child = spawn(
-        process.execPath,
-        [
-          '--input-type=module',
-          '-e',
-          `import { recordDraft } from ${JSON.stringify(script)}; try { recordDraft(${JSON.stringify(root)}, ${JSON.stringify(path)}); process.exit(0) } catch { process.exit(1) }`,
-        ],
-        { stdio: 'ignore' }
-      );
-      child.on('exit', resolve);
-    });
-
-  const codes = await Promise.all([run('drafts/a.json'), run('drafts/b.json')]);
-
-  assert.deepEqual(
-    [...codes].sort((a, b) => a - b),
-    [0, 1]
-  );
-  const files = readdirSync(join(root, recordsDir));
-  assert.deepEqual(files, [`${draft.id}.json`]);
-  assert.match(
-    readFileSync(join(root, recordsDir, files[0]), 'utf-8'),
-    /From session [AB]\./
-  );
-});
-
-test('an input moved after the draft records and reads stale with its path', (t) => {
-  const { root, put } = fixture(t);
-  const { draft } = draftReview(root, 'comments');
-  put('drafts/a.json', completed(draft));
   put('packages/core/src/comments/index.ts', 'export const comments = 2;');
 
-  const result = recordDraft(root, 'drafts/a.json');
-
-  assert.deepEqual(result.changedSinceDraft, ['packages/core/src/comments/']);
   const [item] = lookup(root, 'comments');
   assert.equal(item.freshness.state, 'stale');
   assert.deepEqual(item.freshness.changed.items, [
@@ -432,8 +331,14 @@ test('an input moved after the draft records and reads stale with its path', (t)
 });
 
 test('a doctrine edit moves the law clock without staling source', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments');
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
   put('VISION.md', 'Doctrine, edited.');
 
   const [item] = lookup(root, 'comments');
@@ -500,18 +405,11 @@ test('directory digests keep the legacy per-directory name order', (t) => {
   assert.equal(observe(root).digest('packages/core/src/order/'), legacy);
 });
 
-test('check fails on an edited committed record and a broken reference, not on source edits', (t) => {
-  const { root, put, commit } = fixture(t);
-  const result = recordReview(root, put, 'comments');
-  commit();
+test("check fails on a legacy record's broken reference, not on source edits", (t) => {
+  const { root, put } = fixture(t);
   put('packages/core/src/link/index.ts', 'export const link = 3;');
   assert.equal(check(root).ok, true);
 
-  const text = readFileSync(join(root, result.recorded), 'utf-8');
-  writeFileSync(join(root, result.recorded), text.replace('Keep', 'Drop'));
-  assert.throws(() => check(root), new RegExp(result.recorded));
-
-  writeFileSync(join(root, result.recorded), text);
   put(`${recordsDir}/2026-09-09-dangling.json`, {
     id: '2026-09-09-dangling',
     kind: 'review',
@@ -523,25 +421,24 @@ test('check fails on an edited committed record and a broken reference, not on s
   assert.throws(() => check(root), /previous 2026-01-01-missing/);
 });
 
-test('two reviews from one previous fork the scope until a review reconciles both', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', { id: '2026-09-01-comments' });
-  const { draft } = draftReview(root, 'comments');
-  for (const id of ['2026-09-02-a', '2026-09-02-b']) {
-    put(`${recordsDir}/${id}.json`, completed({ ...draft, id }));
-  }
-  assert.equal(openOf(root, 'comments'), 'fork');
+test('two review pages naming one head fork the scope until a review names both', (t) => {
+  const { root, put, git } = fixture(t);
+  const page = (id, basis, verdict = 'stop') =>
+    plan(put, `docs/plans/${id}.md`, {
+      scopes: ['comments'],
+      basis,
+      verdict,
+      state: 'reviewed',
+      commit: headOf(git),
+    });
+  page('2026-09-01-comments', []);
+  page('2026-09-02-a', ['2026-09-01-comments']);
+  page('2026-09-02-b', ['2026-09-01-comments']);
 
-  const resolving = draftReview(root, 'comments').draft;
-  assert.deepEqual(
-    resolving.reconciliation
-      .map((entry) => entry.record)
-      .sort((a, b) => a.localeCompare(b)),
-    ['2026-09-02-a', '2026-09-02-b']
-  );
-  put('drafts/resolve.json', completed(resolving));
-  recordDraft(root, 'drafts/resolve.json');
-  assert.equal(openOf(root, 'comments'), null);
+  assert.equal(openOf(root, 'comments'), 'fork');
+  assert.throws(() => check(root), /Fork in comments/);
+  page('2026-09-03-resolve', ['2026-09-02-a', '2026-09-02-b'], 'pursue');
+  assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
 });
 
 test('coverage lists unowned source, skips ignored files and lets a directory member own new files', (t) => {
@@ -572,58 +469,29 @@ test('a path lookup for unowned source exits with the owners of nearby files', (
   );
 });
 
-test('a completed execution needs a landed plan whose front matter matches', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
+test('a landed implementation plan naming the head closes its Pursue', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
     verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
+    state: 'reviewed',
+    commit: headOf(git),
   });
   plan(put, 'docs/plans/2026-09-02-comments.md', {
     scopes: ['comments'],
     basis: ['2026-09-01-comments'],
     state: 'building',
   });
-  assert.throws(
-    () =>
-      recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-        outcome: 'completed',
-      }),
-    /landed plan Status/
-  );
-  assert.throws(
-    () =>
-      recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-        workKind: 'workflow',
-      }),
-    /must match the plan association/
-  );
+  assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
 
   plan(put, 'docs/plans/2026-09-02-comments.md', {
     scopes: ['comments'],
     basis: ['2026-09-01-comments'],
     state: 'executed, folded into the subject',
   });
-  assert.equal(
-    draftExecution(root, 'docs/plans/2026-09-02-comments.md').draft.outcome,
-    'completed'
-  );
-});
 
-test('a landed plan for the head with no execution reads pursue-unbound', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
-  plan(put, 'docs/plans/2026-09-02-comments.md', {
-    scopes: ['comments'],
-    basis: ['2026-09-01-comments'],
-    state: 'done',
-  });
-
-  assert.equal(openOf(root, 'comments'), 'pursue-unbound');
+  assert.equal(openOf(root, 'comments'), null);
 });
 
 test('queue order honours dependencies, groups and AI-last over payoff', (t) => {
@@ -692,64 +560,40 @@ test('research search keeps headers, exact status and malformed-row warnings', (
   assert.equal(result.warnings.length, 1);
 });
 
-test('the CLI drafts, dry-runs and records without writing anything else', (t) => {
+test('a later open plan on the same Pursue reopens it', (t) => {
   const { root, put, git } = fixture(t);
-  const draft = main(root, ['draft', 'comments']);
-  put('drafts/a.json', completed(draft));
-  git('add', '-A');
-
-  const dry = main(root, ['record', 'drafts/a.json', '--dry-run']);
-  assert.equal(dry.valid, true);
-  assert.equal(existsSync(join(root, recordsDir, `${draft.id}.json`)), false);
-
-  main(root, ['record', 'drafts/a.json']);
-  assert.deepEqual(
-    git('status', '--porcelain', '--untracked-files=all').trim().split('\n'),
-    ['A  drafts/a.json', `?? ${recordsDir}/${draft.id}.json`]
-  );
-});
-
-test('a later partial execution of the same Pursue undoes its adoption', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
     verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
+    state: 'reviewed',
+    commit: headOf(git),
   });
   plan(put, 'docs/plans/2026-09-02-comments.md', {
     scopes: ['comments'],
     basis: ['2026-09-01-comments'],
     state: 'executed',
   });
-  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-    id: '2026-09-02-first',
-    outcome: 'completed',
-  });
   assert.equal(openOf(root, 'comments'), null);
 
-  plan(put, 'docs/plans/2026-09-02-comments.md', {
+  plan(put, 'docs/plans/2026-09-03-comments.md', {
     scopes: ['comments'],
     basis: ['2026-09-01-comments'],
-    state: 'reopened, closure gaps remain',
-  });
-  assert.throws(
-    () =>
-      recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-        id: '2026-09-02-second',
-        previous: [],
-      }),
-    /previous: 2026-09-02-first/
-  );
-  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-    id: '2026-09-02-second',
+    state: 'building',
   });
 
   assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
 });
 
 test('a historical import beside a review does not fork the scope', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', { id: '2026-09-01-comments' });
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
   put(`${recordsDir}/2026-08-01-imported.json`, {
     id: '2026-08-01-imported',
     kind: 'historical',
@@ -766,8 +610,15 @@ test('a historical import beside a review does not fork the scope', (t) => {
   assert.equal(openOf(root, 'comments'), null);
 });
 
-test('a plan classified in review-documents.json drafts an execution', (t) => {
-  const { root, put } = fixture(t);
+test('a classified historical plan with a landed status adopts its basis', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-link.md', {
+    scopes: ['link'],
+    basis: [],
+    verdict: 'pursue',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
   put('docs/plans/2026-03-15-table.md', '# Old plan\n\nStatus: done\n');
   put('docs/research/review-documents.json', [
     {
@@ -776,89 +627,40 @@ test('a plan classified in review-documents.json drafts an execution', (t) => {
       kind: 'plan',
       disposition: 'historical',
       rationale: 'Inspected: it executed link work.',
-      workKind: 'verification',
+      workKind: 'implementation',
+      reviewBasis: ['2026-09-01-link'],
     },
   ]);
 
-  const { draft } = draftExecution(root, 'docs/plans/2026-03-15-table.md');
-
-  assert.deepEqual(draft.scopes, ['link']);
-  assert.equal(draft.workKind, 'verification');
-  assert.equal(draft.outcome, 'completed');
+  assert.equal(openOf(root, 'link'), null);
 });
 
-test('check catches a staged edit to a record that was never committed', (t) => {
-  const { root, put, git } = fixture(t);
-  const result = recordReview(root, put, 'comments');
-  git('add', '-A');
-  assert.equal(check(root).ok, true);
-
-  const text = readFileSync(join(root, result.recorded), 'utf-8');
-  writeFileSync(join(root, result.recorded), text.replace('Keep', 'Drop'));
-  git('add', '-A');
-
-  assert.throws(() => check(root));
-});
-
-test('check catches a staged edit to an uncommitted legacy record', (t) => {
-  const { root, put, git } = fixture(t);
-  const legacy = {
-    id: '2026-09-01-legacy',
-    kind: 'historical',
-    scope: 'comments',
-    date: '2026-09-01',
-    verdict: null,
-    previous: null,
-    relation: 'historical-context',
-    summary: 'Imported.',
-    references: ['docs/evidence.md'],
-    source: null,
-  };
-  put(`${recordsDir}/${legacy.id}.json`, legacy);
-  put('docs/research/review-legacy.json', [
-    {
-      id: legacy.id,
-      sha256: digest(readFileSync(join(root, recordsDir, `${legacy.id}.json`))),
-    },
-  ]);
-  git('add', '-A');
-  put(`${recordsDir}/${legacy.id}.json`, { ...legacy, summary: 'Edited.' });
-  git('add', '-A');
-
-  assert.throws(() => check(root));
-});
-
-test('a changed proof artifact makes its execution stale', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
+test("a changed proof file in a plan's review_inputs reads stale", (t) => {
+  const { root, put, git, commit } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
     verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
+    state: 'reviewed',
+    commit: headOf(git),
   });
   put('docs/proof/report.md', 'Passed.');
+  commit();
   plan(put, 'docs/plans/2026-09-02-comments.md', {
     scopes: ['comments'],
     basis: ['2026-09-01-comments'],
     state: 'building',
-  });
-  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-    id: '2026-09-02-execution',
-    proof: {
-      state: 'partial',
-      evidence: [{ path: 'docs/proof/report.md', claim: 'The run passed.' }],
-      limits: 'One run.',
-    },
+    commit: headOf(git),
+    inputs: ['docs/proof/report.md'],
   });
   put('docs/proof/report.md', 'Failed.');
 
-  const ledger = loadLedger(root);
-  const result = freshness(
-    observe(root),
-    ledger.records.get('2026-09-02-execution')
-  );
+  const [item] = lookup(root, 'comments');
 
-  assert.equal(result.state, 'stale');
-  assert.deepEqual(result.changed, ['docs/proof/report.md']);
+  assert.equal(item.plans.items[0].freshness.state, 'stale');
+  assert.deepEqual(item.plans.items[0].freshness.changed.items, [
+    'docs/proof/report.md',
+  ]);
 });
 
 test('lookup still resolves a retired feature-group name through the records that bound it', (t) => {
@@ -885,66 +687,55 @@ test('lookup still resolves a retired feature-group name through the records tha
   );
 });
 
-test('a reopened Status beside an old completion label cannot record a completed execution', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
+test('a plan with conflicting status labels does not adopt', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
     verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
+    state: 'reviewed',
+    commit: headOf(git),
   });
   put(
     'docs/plans/2026-09-02-comments.md',
     '---\nreview_scopes: [comments]\nreview_basis: [2026-09-01-comments]\nwork_kind: implementation\n---\n\n# Plan\n\n- goal_status: complete\n\nStatus: reopened, a regression returned\n'
   );
 
-  assert.equal(
-    draftExecution(root, 'docs/plans/2026-09-02-comments.md').draft.outcome,
-    'partial'
-  );
-  assert.throws(
-    () =>
-      recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-        outcome: 'completed',
-      }),
-    /one landed plan status/
-  );
+  assert.equal(openOf(root, 'comments'), 'pursue-not-adopted');
 });
 
 test('check catches an execution whose previous execution is gone', (t) => {
   const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
-  plan(put, 'docs/plans/2026-09-02-comments.md', {
+  put(
+    `${recordsDir}/2026-09-01-comments.json`,
+    legacyReview('2026-09-01-comments')
+  );
+  const execution = (id, previous) => ({
+    id,
+    kind: 'execution',
+    date: '2026-09-02',
     scopes: ['comments'],
-    basis: ['2026-09-01-comments'],
-    state: 'building',
+    reviewBasis: ['2026-09-01-comments'],
+    workKind: 'implementation',
+    previous,
+    plan: 'docs/evidence.md',
+    outcome: 'partial',
+    summary: 'Fixture.',
+    proof: { state: 'partial', evidence: [], limits: 'Fixture.' },
+    references: ['docs/evidence.md'],
   });
-  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-    id: '2026-09-02-first',
-  });
-  recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-    id: '2026-09-02-second',
-  });
+  put(`${recordsDir}/2026-09-02-first.json`, execution('2026-09-02-first', []));
+  put(
+    `${recordsDir}/2026-09-02-second.json`,
+    execution('2026-09-02-second', ['2026-09-02-first'])
+  );
   rmSync(join(root, recordsDir, '2026-09-02-first.json'));
 
   assert.throws(() => check(root), /2026-09-02-second\.json: previous/);
 });
 
-test('a malformed foreign execution does not block another scope’s execution draft', (t) => {
+test('a malformed foreign record fails check and leaves another scope readable', (t) => {
   const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
-  plan(put, 'docs/plans/2026-09-02-comments.md', {
-    scopes: ['comments'],
-    basis: ['2026-09-01-comments'],
-    state: 'building',
-  });
   put(`${recordsDir}/2026-09-09-foreign.json`, {
     id: '2026-09-09-foreign',
     kind: 'execution',
@@ -955,140 +746,11 @@ test('a malformed foreign execution does not block another scope’s execution d
     reviewBasis: {},
   });
 
-  const result = recordExecution(
-    root,
-    put,
-    'docs/plans/2026-09-02-comments.md',
-    {
-      id: '2026-09-02-execution',
-    }
-  );
-
-  assert.ok(result.recorded);
+  assert.equal(lookup(root, 'comments').length, 1);
   assert.throws(
     () => check(root),
     /2026-09-09-foreign\.json: malformed record/
   );
-});
-
-test('a review must reconcile an execution recorded after its previous review even when drafted before it', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
-  plan(put, 'docs/plans/2026-09-02-comments.md', {
-    scopes: ['comments'],
-    basis: ['2026-09-01-comments'],
-    state: 'building',
-  });
-  const { draft } = draftExecution(root, 'docs/plans/2026-09-02-comments.md');
-  recordReview(root, put, 'comments', {
-    id: '2026-09-03-comments',
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
-  put('drafts/late.json', {
-    ...draft,
-    id: '2026-09-02-late-execution',
-    date: '2026-09-02',
-    summary: 'Drafted before the second review, recorded after it.',
-    proof: { state: 'partial', evidence: [], limits: 'Fixture.' },
-  });
-  recordDraft(root, 'drafts/late.json');
-
-  assert.ok(
-    draftReview(root, 'comments').draft.reconciliation.some(
-      (entry) => entry.record === '2026-09-02-late-execution'
-    )
-  );
-});
-
-test('record refuses a record its own readers could not read', (t) => {
-  const { root, put } = fixture(t);
-  const { draft } = draftReview(root, 'comments');
-  put('drafts/a.json', completed(draft, { upstreams: [null] }));
-
-  assert.throws(
-    () => recordDraft(root, 'drafts/a.json'),
-    /upstreams is malformed/
-  );
-});
-
-test('check catches a committed deletion of a record recorded after the cutover', (t) => {
-  const { root, put, commit, git } = fixture(t);
-  put('docs/research/review-legacy.json', []);
-  commit();
-  const result = recordReview(root, put, 'comments');
-  commit();
-  assert.equal(check(root).ok, true);
-
-  git('rm', '-q', result.recorded);
-  commit();
-
-  assert.throws(() => check(root), new RegExp(`deleted: ${result.recorded}`));
-});
-
-test('check catches a hand-written record that breaks the record contract', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
-  const forged = {
-    id: '2026-09-02-forged',
-    kind: 'execution',
-    date: '2026-09-02',
-    scopes: ['comments'],
-    reviewBasis: ['2026-09-01-comments'],
-    workKind: 'implementation',
-    previous: [],
-    plan: 'docs/evidence.md',
-    outcome: 'completed',
-    summary: 'Claims adoption.',
-    proof: { state: 'verified', evidence: [], limits: 'None.' },
-    references: ['docs/evidence.md'],
-    inputs: {},
-    upstreams: [],
-  };
-  put(`${recordsDir}/${forged.id}.json`, {
-    ...forged,
-    digest: digest(`${JSON.stringify(forged, null, 2)}\n`),
-  });
-
-  assert.throws(() => check(root), /Verified proof needs/);
-});
-
-test('retrying an execution draft without proof hashes stays a duplicate after the proof file changes', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
-    verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
-  });
-  put('docs/proof/report.md', 'Passed.');
-  plan(put, 'docs/plans/2026-09-02-comments.md', {
-    scopes: ['comments'],
-    basis: ['2026-09-01-comments'],
-    state: 'building',
-  });
-  const { draft } = draftExecution(root, 'docs/plans/2026-09-02-comments.md');
-  put('drafts/e.json', {
-    ...draft,
-    id: '2026-09-02-execution',
-    summary: 'Implemented.',
-    proof: {
-      state: 'partial',
-      evidence: [{ path: 'docs/proof/report.md', claim: 'The run passed.' }],
-      limits: 'One run.',
-    },
-  });
-  recordDraft(root, 'drafts/e.json');
-  put('docs/proof/report.md', 'Failed.');
-
-  assert.equal(recordDraft(root, 'drafts/e.json').duplicate, true);
 });
 
 test('strict queue order catches a dependency cycle inside a review group', (t) => {
@@ -1111,51 +773,154 @@ test('strict queue order catches a dependency cycle inside a review group', (t) 
   assert.throws(() => orderUnits(loadLedger(root), { strict: true }), /cycle/);
 });
 
-test('status reports a changed record as an integrity problem without failing', (t) => {
-  const { root, put } = fixture(t);
-  const result = recordReview(root, put, 'comments');
-  const text = readFileSync(join(root, result.recorded), 'utf-8');
-  writeFileSync(join(root, result.recorded), text.replace('Keep', 'Drop'));
+test("check fails on a review page whose basis names another scope's review", (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-link.md', {
+    scopes: ['link'],
+    basis: [],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
+  plan(put, 'docs/plans/2026-09-02-comments.md', {
+    scopes: ['comments'],
+    basis: ['2026-09-01-link'],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
 
-  assert.match(
-    status(root).integrity.join('\n'),
-    /changed since it was recorded/
+  assert.throws(() => check(root), /not a review of/);
+});
+
+test('check fails on a changed verdict that retains its basis review', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
+  const later = (action) =>
+    plan(put, 'docs/plans/2026-09-02-comments.md', {
+      scopes: ['comments'],
+      basis: ['2026-09-01-comments'],
+      verdict: 'pursue',
+      state: 'reviewed',
+      commit: headOf(git),
+      action,
+    });
+  later('retains');
+
+  assert.throws(
+    () => check(root),
+    /changed verdict retains 2026-09-01-comments/
+  );
+  later('supersedes');
+  assert.equal(check(root).ok, true);
+});
+
+test('check fails on an Evidence line that names only a longer id than the basis', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
+  plan(put, 'docs/plans/2026-09-02-comments.md', {
+    scopes: ['comments'],
+    basis: ['2026-09-01-comments'],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+    reconciles: ['2026-09-01-comments-design'],
+  });
+
+  assert.throws(
+    () => check(root),
+    /does not reconcile 2026-09-01-comments with an action/
   );
 });
 
-test('a supplied proof digest does not admit a proof file that does not exist', (t) => {
-  const { root, put } = fixture(t);
-  recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
+test('check fails on an absolute link on a review page', (t) => {
+  const { root, put, git } = fixture(t);
+  const path = 'docs/plans/2026-09-01-comments.md';
+  plan(put, path, {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
+  put(
+    path,
+    readFileSync(join(root, path), 'utf-8').replace(
+      'Read [the evidence](../evidence.md).',
+      'Read [the evidence](../evidence.md) and [the spec](/docs/spec.md).'
+    )
+  );
+
+  assert.throws(() => check(root), /link \/docs\/spec\.md is absolute/);
+});
+
+test('check fails on a review page whose Evidence section is empty', (t) => {
+  const { root, put, git } = fixture(t);
+  const path = 'docs/plans/2026-09-01-comments.md';
+  plan(put, path, {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
+  const text = readFileSync(join(root, path), 'utf-8');
+  put(path, text.slice(0, text.indexOf('## Evidence')));
+
+  assert.throws(() => check(root), /a review page needs ## Evidence/);
+});
+
+test('check fails on a review_inputs path that no tree or commit holds', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
     verdict: 'pursue',
-    callSites: { current: 'a()', proposed: 'b()' },
+    state: 'reviewed',
+    commit: headOf(git),
   });
   plan(put, 'docs/plans/2026-09-02-comments.md', {
     scopes: ['comments'],
     basis: ['2026-09-01-comments'],
     state: 'building',
+    commit: headOf(git),
+    inputs: ['docs/proof/gone.md'],
   });
 
   assert.throws(
-    () =>
-      recordExecution(root, put, 'docs/plans/2026-09-02-comments.md', {
-        proof: {
-          state: 'partial',
-          evidence: [
-            {
-              path: 'docs/proof/gone.md',
-              sha256: digest('x'),
-              claim: 'Passed.',
-            },
-          ],
-          limits: 'One run.',
-        },
-      }),
-    /Missing proof file: docs\/proof\/gone\.md/
+    () => check(root),
+    /review_inputs path docs\/proof\/gone\.md is in no tree or commit/
   );
 });
 
-test('invalid plan front matter is reported instead of falling back to a classified entry', (t) => {
+test('check fails on a misspelled review front-matter key', (t) => {
+  const { root, put } = fixture(t);
+  put(
+    'docs/plans/2026-09-16-persistence.md',
+    '---\ntitle: Persistence\nreview_scope: comments\nreview: docs/evidence.md\n---\n\n# Plan\n\nStatus: done\n'
+  );
+  assert.throws(() => check(root), /review_scope/);
+
+  put(
+    'docs/plans/2026-09-16-persistence.md',
+    '---\ntitle: Persistence\nreview_scopes: [comments]\n---\n\n# Plan\n\nStatus: done\n'
+  );
+  assert.equal(check(root).ok, true);
+});
+
+test('invalid plan front matter fails check instead of falling back to a classified entry', (t) => {
   const { root, put } = fixture(t);
   put(
     'docs/plans/2026-09-02-table.md',
@@ -1173,11 +938,7 @@ test('invalid plan front matter is reported instead of falling back to a classif
   ]);
 
   assert.throws(
-    () => draftExecution(root, 'docs/plans/2026-09-02-table.md'),
-    /metadata is invalid: review_scopes/
-  );
-  assert.match(
-    check(root).warnings.join('\n'),
+    () => check(root),
     /2026-09-02-table\.md: invalid review_scopes/
   );
 });
@@ -1197,101 +958,7 @@ test('show lists the plans associated with a scope', (t) => {
   );
 });
 
-test('integrity reports a legacy record deleted after loading instead of throwing', (t) => {
-  const { root, put } = fixture(t);
-  const legacy = {
-    id: '2026-09-01-legacy',
-    kind: 'historical',
-    scope: 'comments',
-    date: '2026-09-01',
-    verdict: null,
-    previous: null,
-    relation: 'historical-context',
-    summary: 'Imported.',
-    references: ['docs/evidence.md'],
-    source: null,
-  };
-  put(`${recordsDir}/${legacy.id}.json`, legacy);
-  put('docs/research/review-legacy.json', [
-    {
-      id: legacy.id,
-      sha256: digest(readFileSync(join(root, recordsDir, `${legacy.id}.json`))),
-    },
-  ]);
-  const ledger = loadLedger(root);
-  rmSync(join(root, recordsDir, `${legacy.id}.json`));
-
-  assert.deepEqual(integrity(root, ledger), []);
-});
-
-test('a committed record restored byte for byte reads clean again', (t) => {
-  const { root, put, commit, git } = fixture(t);
-  put('docs/research/review-legacy.json', []);
-  commit();
-  const result = recordReview(root, put, 'comments');
-  commit();
-  const bytes = readFileSync(join(root, result.recorded));
-  git('rm', '-q', result.recorded);
-  commit();
-  mkdirSync(join(root, recordsDir), { recursive: true });
-  writeFileSync(join(root, result.recorded), bytes);
-  commit();
-
-  assert.equal(check(root).ok, true);
-});
-
-test('check catches a forged entry committed into the legacy checksum list', (t) => {
-  const { root, put, commit } = fixture(t);
-  put('docs/research/review-legacy.json', []);
-  commit();
-  const forged = {
-    id: '2026-09-02-forged',
-    kind: 'historical',
-    scope: 'comments',
-    date: '2026-09-02',
-    verdict: 'stop',
-    previous: null,
-    relation: 'historical-context',
-    summary: 'Forged.',
-    references: ['docs/evidence.md'],
-    source: null,
-  };
-  put(`${recordsDir}/${forged.id}.json`, forged);
-  put('docs/research/review-legacy.json', [
-    {
-      id: forged.id,
-      sha256: digest(readFileSync(join(root, recordsDir, `${forged.id}.json`))),
-    },
-  ]);
-  commit();
-
-  assert.throws(() => check(root), /review-legacy\.json/);
-});
-
-test('next reports integrity problems even when no scope is open', (t) => {
-  const { root, put } = fixture(t, [scope('comments')]);
-  const result = recordReview(root, put, 'comments');
-  const text = readFileSync(join(root, result.recorded), 'utf-8');
-  writeFileSync(join(root, result.recorded), text.replace('Keep', 'Drop'));
-
-  const answer = next(root);
-  assert.equal(answer.unit, null);
-  assert.ok(answer.integrity.length);
-});
-
-test('record refuses a review without an upstreams list', (t) => {
-  const { root, put } = fixture(t);
-  const { draft } = draftReview(root, 'comments');
-  const { upstreams, ...rest } = completed(draft);
-  put('drafts/a.json', rest);
-
-  assert.throws(
-    () => recordDraft(root, 'drafts/a.json'),
-    /upstreams is a list/
-  );
-});
-
-test('plan front matter without review_scopes is invalid, not a fallback', (t) => {
+test('plan front matter without review_scopes fails check', (t) => {
   const { root, put } = fixture(t);
   put(
     'docs/plans/2026-09-02-link.md',
@@ -1308,12 +975,12 @@ test('plan front matter without review_scopes is invalid, not a fallback', (t) =
   ]);
 
   assert.throws(
-    () => draftExecution(root, 'docs/plans/2026-09-02-link.md'),
-    /metadata is invalid: review_scopes/
+    () => check(root),
+    /2026-09-02-link\.md: invalid review_scopes/
   );
 });
 
-test('check warns on a classified plan with an unknown work kind', (t) => {
+test('check fails on a classified plan with an unknown work kind', (t) => {
   const { root, put } = fixture(t);
   put('docs/plans/2026-03-15-link.md', '# Old plan\n\nStatus: done\n');
   put('docs/research/review-documents.json', [
@@ -1327,10 +994,7 @@ test('check warns on a classified plan with an unknown work kind', (t) => {
     },
   ]);
 
-  assert.match(
-    check(root).warnings.join('\n'),
-    /2026-03-15-link\.md: invalid workKind/
-  );
+  assert.throws(() => check(root), /invalid workKind/);
 });
 
 test('a ledger file of the wrong type fails check instead of reading as empty', (t) => {
@@ -1338,88 +1002,4 @@ test('a ledger file of the wrong type fails check instead of reading as empty', 
   put('docs/research/review-documents.json', { path: 'docs/plans/x.md' });
 
   assert.throws(() => check(root), /review-documents\.json: not a list/);
-});
-
-test('check catches a committed deletion of a record that first landed in a merge commit', (t) => {
-  const { root, put, commit, git } = fixture(t);
-  put('docs/research/review-legacy.json', []);
-  commit();
-  const trunk = git('branch', '--show-current').trim();
-  git('switch', '-q', '-c', 'side');
-  put('docs/side.md', 'Side work.');
-  commit();
-  git('switch', '-q', trunk);
-  git('merge', '-q', '--no-ff', '--no-commit', 'side');
-  const result = recordReview(root, put, 'comments');
-  commit();
-  git('rm', '-q', result.recorded);
-  commit();
-
-  assert.throws(() => check(root), new RegExp(`deleted: ${result.recorded}`));
-});
-
-test('check catches a record edited on a side branch before the branch merged', (t) => {
-  const { root, put, commit, git } = fixture(t);
-  put('docs/research/review-legacy.json', []);
-  commit();
-  const trunk = git('branch', '--show-current').trim();
-  git('switch', '-q', '-c', 'side');
-  const result = recordReview(root, put, 'comments');
-  commit();
-  const { digest: _, ...body } = JSON.parse(
-    readFileSync(join(root, result.recorded), 'utf-8')
-  );
-  const edited = { ...body, summary: 'Drop the owner.' };
-  put(result.recorded, {
-    ...edited,
-    digest: digest(`${JSON.stringify(edited, null, 2)}\n`),
-  });
-  commit();
-  git('switch', '-q', trunk);
-  git('merge', '-q', '--no-ff', '--no-commit', 'side');
-  commit();
-
-  assert.throws(
-    () => check(root),
-    new RegExp(`first committed: ${result.recorded}`)
-  );
-});
-
-test('check catches a committed deletion hidden as a rename of a similar record', (t) => {
-  const { root, put, commit, git } = fixture(t);
-  put('docs/research/review-legacy.json', []);
-  commit();
-  const first = recordReview(root, put, 'comments', {
-    id: '2026-09-01-comments',
-  });
-  commit();
-  const bytes = readFileSync(join(root, first.recorded));
-  git('rm', '-q', first.recorded);
-  const second = recordReview(root, put, 'comments', {
-    id: '2026-09-02-comments',
-    previous: null,
-    relation: 'initial',
-    reconciliation: [],
-  });
-  commit();
-  writeFileSync(join(root, first.recorded), bytes);
-  git('rm', '-q', second.recorded);
-  commit();
-
-  assert.throws(() => check(root), new RegExp(`deleted: ${second.recorded}`));
-});
-
-test('a committed record restored and staged reads clean before the restore is committed', (t) => {
-  const { root, put, commit, git } = fixture(t);
-  put('docs/research/review-legacy.json', []);
-  commit();
-  const result = recordReview(root, put, 'comments');
-  commit();
-  const bytes = readFileSync(join(root, result.recorded));
-  writeFileSync(join(root, result.recorded), '{}\n');
-  commit();
-  writeFileSync(join(root, result.recorded), bytes);
-  git('add', '-A');
-
-  assert.equal(check(root).ok, true);
 });

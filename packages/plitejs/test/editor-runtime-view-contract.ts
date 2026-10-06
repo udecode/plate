@@ -18,17 +18,19 @@ import { history } from 'plitejs/history';
 
 import {
   above as editorAbove,
-  deleteBackward as editorDeleteBackward,
   getPluginRegistry as editorGetPluginRegistry,
-  getEditorLiveSelection,
   getLastCommit as editorGetLastCommit,
+  reset as editorResetBase,
+  setEditorTargetRuntime,
+} from '../src/internal';
+import {
+  deleteBackward as editorDeleteBackward,
+  getEditorLiveSelection,
   insertText as editorInsertText,
   isEditor as editorIsEditor,
   replace as editorReplaceBase,
-  reset as editorResetBase,
   string as editorString,
-  setEditorTargetRuntime,
-} from '../src/internal';
+} from '../src/testing';
 import { createRangeAnchor } from './support/anchor';
 
 type LegacySnapshotInput = Omit<

@@ -18,10 +18,6 @@ import {
 } from '../../src/dom/internal';
 import * as domRangeResolver from '../../src/dom/plugin/dom-editor';
 import {
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '../../src/internal';
-import {
   EditableDOMRuntime,
   findMountedEditableDOMRuntime,
   getMountedEditableDOMRuntime,
@@ -62,6 +58,10 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '../../src/testing';
 
 const testRuntimes = new Set<EditableDOMRuntime>();
 const syncEditableDOMSelectionToEditor = (

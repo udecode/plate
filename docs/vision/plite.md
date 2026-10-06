@@ -11,13 +11,12 @@ Plite doctrine after the lane is selected.
 
 1. Active plan.
 2. Root `VISION.md`, then this file.
-3. `docs/plite/agent-start.md`.
-4. Relevant `plite-*` source rule under `.agents/rules`.
-5. Transplanted Plite package source/tests/benchmarks in this Plate checkout:
+3. Plite package source/tests/benchmarks in this Plate checkout:
    `packages/plitejs`, `packages/test`, `packages/plitejs/src/yjs`,
-   `apps/plite/tests/plite-browser/**`, and `benchmarks/plite/**`.
-6. `docs/plite/**` for accepted claim width.
-7. `benchmarks/targets/slate-v2.json` for perf target authority.
+   `apps/plite/tests/plite-browser/**`, and `benchmarks/slate-v2/**`.
+4. This file's Plite Browser And Behavior Proof section and the active plan for
+   accepted claim width.
+5. `benchmarks/targets/slate-v2.json` for perf target authority.
 
 Plate repo root commands are the current Plite runtime authority. Do not use a
 donor checkout as proof after the transplant.
@@ -45,7 +44,9 @@ donor checkout as proof after the transplant.
   before it touches plugin state. A source reads its state through the read
   context instead of resolving plugins or stores per node.
 - React components create one annotation index under each exact mounted view
-  with `useAnnotationStore` and pass its typed reader explicitly. Framework
+  with `useAnnotationStore` and pass its typed reader explicitly. React
+  components read that index through `useAnnotation(store, id)` or
+  `useAnnotations(store)`. Framework
   adapters with an independent lifetime use the owned result of
   `createAnnotationStore` from `plitejs/annotations`. Keep that constructor out
   of `plitejs/react`, reject generic annotation providers and implicit empty
@@ -56,6 +57,7 @@ donor checkout as proof after the transplant.
   destroyed only on a real replacement or unmount.
 - Plite stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
+- Legacy parity classifies each legacy behavior as copied, improved or rejected instead of copying legacy internals.
 - Do not make child-count chunking foundational again.
 - Plite supplies typed plugin identity, composition, publication, and
   inspection. It does not supply a behavior-profile DSL.
@@ -79,7 +81,8 @@ donor checkout as proof after the transplant.
   exposes only guaranteed Core capabilities; package consumers carry concrete
   editor or plugin generics. Every `plitejs` entrypoint calls its public
   runtime type `Editor`; private layered carriers do not create public branded
-  editor variants.
+  editor variants. An export with no author job is a framework hook and is
+  exported only from `plitejs/internal`.
 - Public editor capability generics default to the core-only `readonly []`
   tuple, and a bare default `Editor` parameter names that one concrete tuple,
   not an existential runtime boundary. Package code never compiles by defaulting
@@ -213,6 +216,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - Layering beats feature buckets: document truth, DOM transport, React runtime,
   browser proof, projections/services, layout, lightweight surfaces, and
   productization need clear owners.
+- The `plitejs` root is DOM-free and headless: `plitejs/dom` owns DOM codecs and mapping, and `plitejs/react` owns rendering, input import, native selection export, projection and DOM repair. `tooling/entrypoints/entrypoint-dag.mjs` declares that direction (`root: headless(root())`), `tooling/scripts/entrypoint-dag-plugin.test.mjs` enforces it, and `pnpm plite:release:packages` executes every headless entrypoint without React or DOM.
 - Browser proof instrumentation is opt-in. `installBrowserHandle()` in a test
   or development entry attaches the page handle and keeps the kernel trace;
   production bundles carry neither.
@@ -367,7 +371,8 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   document-root schema default through the property type-change lifecycle. It
   preserves children, selection, and live `NodeKey`; feature commands keep
   their policy guards and delegate this structural mutation instead of
-  replacing a node with a handcrafted default.
+  replacing a node with a handcrafted default. It takes no type or mode option,
+  and no feature publishes a reset alias for it.
 - Structural commands used for shorthand conversion report whether they staged
   a change. An inadmissible placement or no-op returns `false` without claiming
   a successful mutation; the canonical schema and change builder remain the
@@ -384,6 +389,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   documented handled signal prevents the runtime command, while `preventDefault`
   alone controls only the browser default unless the handler contract says
   otherwise.
+- A prepared beforeinput command is authoritative for its payload, except delete commands, which re-derive their shape from the selection imported during that beforeinput.
 - Typed ordered values use plugin `contributions`, not outputs.
   Plugin declarations use explicit low-level nouns: `stateFields` and
   `effectTypes`.
@@ -427,6 +433,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   named full-document invariant, never to coalesce leaves, settle a transform or
   preserve an old fixture shape. An invariant every operation must keep is
   repaired in the smallest transform or correction owner.
+- Every successful update publishes one canonical document. Primitive steps inside a transaction may leave private draft shapes, but finalization merges adjacent text with equal properties, removes redundant empty leaves while keeping required inline caret spacers, flattens invalid inline content, fills compiled schema defaults, and maps selection and node keys through the same change, so a committed snapshot has no noncanonical exception. An externally supplied `DocumentChange` must already be canonical and fails atomically otherwise. Proof: `packages/plitejs/test/accessor-transaction.test.ts`.
 - Public updates are synchronous and cannot nest. Helpers inside an update use
   the active `tx`.
 - One user action commits in one update: consecutive synchronous mutations that
@@ -457,7 +464,8 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   replay does. A mounted event controller returns `void`, and one private
   dispatcher delivers each final outcome once to the exact initiating view, so
   keyboard, toolbar, native-input and adapter callers own no separate `void` or
-  error path.
+  error path. No second controller publishes a result its production callers
+  discard.
 - A complete model action that must select published state owns one plugin
   `api` service, opens exactly one update, and returns an explicit outcome.
   Transaction `update` methods are reserved for mutations that honestly
@@ -479,6 +487,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   `failed`. `HistoryResult`, `HistoryOutcome`, `HistorySettlement` and
   `HistoryApi` export from the root `plitejs` entrypoint, not from
   `plitejs/history`.
+- History stores each batch as the commit's inverse `DocumentChange` with its inverted effects, selections and roots, and replays it inside one history-skipped transaction. It never keeps a mutable operation log as document truth.
 - The primary document root is implicit in public API and docs. Do not expose a
   public `main` root key, config option, or example. Explicit roots are only for
   additional roots.
@@ -526,6 +535,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   line operations from offsets and native syntax paint from Decorations; solve scale
   in the renderer or runtime without public chunk controls or a second
   persisted schema.
+- An empty text leaf survives an edit only as the line-break anchor of an empty block, a required inline spacer, or a mark placeholder at the caret. Corrections remove every other empty leaf before render, so a non-empty block never paints a zero-width line break.
 - A non-void block with exactly one Text may replace native child DOM with one
   external editable-text view. Plite still owns canonical text, selection,
   history, schema, and collaboration. The adapter owns its DOM, input, layout,
@@ -540,6 +550,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   monotonically: lifecycle callbacks cannot edit the mounted view or canonical
   editor, an older callback cannot overwrite newer delivered state, and bounded
   failure recovery reads the latest canonical state without a replay queue.
+- Runtime-owned DOM, such as a void's hidden spacer or an inline void's hidden anchor, is rendered by the runtime and never passed through app renderers. A renderer API that asks authors for hidden editor structure is wrong unless it is an explicit escape hatch. Block and inline voids keep separate primitives with one ownership rule: the app renders visible content and the runtime renders the hidden editor children.
 - An embedded editor that owns syntax parsing omits the duplicated syntax
   provider when every view uses it. When native and external views mix, the
   provider stays, and the external renderer discards only contributions that
@@ -586,6 +597,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   identity resolves to `null` without rebuilding the document index.
 - Keyed composed reads and small range projections touch only their contributing
   sources and selected leaves.
+- App-facing selector hooks observe model truth, and no option lets them skip a commit. A performance skip, such as ignoring a text commit that direct DOM sync already painted, lives only on an internal mounted-render subscription, and a contract test proves that subscription still sees non-text commits.
 - `editor.anchor` creates a persistent Path, Point, or Range handle that its
   owner releases. One model-owned target supports multiple projected views;
   `resolve(view?)` defaults to its capture view and accepts only another view of
@@ -610,7 +622,8 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   that exact live NodeKey, and discard leaves with no live allocation or index
   entry. Keys are unique across one editor's roots and may target node
   operations across roots, while `nodes.path(key)` remains scoped to the current
-  editor or view root because a `Path` carries no root. Base-editor path inputs
+  editor or view root because a `Path` carries no root. Passing a live node to
+  `editor.key(node)` resolves it from any root in the same editor. Base-editor path inputs
   always address the main root; view path inputs address that view's root. A
   view created from a view reads its requested root, or the primary root when
   none is given, and keeps the source view's document, read-only state and
@@ -634,6 +647,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - Browser editing claims require model, DOM, selection/caret where observable,
   focus owner, commit metadata when mutating, legal trace, replayability, and
   follow-up typing.
+- Model-only proof does not prove browser editing behavior, and DOM-only proof does not prove Plite model correctness; a browser editing claim asserts both layers.
 - Use `@platejs/test` to the maximum reasonable extent for browser-facing
   proof.
 - Route-local Playwright is acceptable for first reproduction only. If the same
@@ -643,9 +657,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   wrong caret line, wrong margin click, wrong scroll anchoring, table or page
   fragment drift, or native selection handles that disagree with the model
   selection.
-- Do not claim full selection/navigation coverage from one route row.
+- Claim full selection/navigation coverage only when every relevant command, direction, topology and starting state is green; one route row never proves it.
 - Native mobile, semantic mobile, Playwright mobile viewport, and Appium raw
-  device proof are distinct claim classes.
+  device proof are distinct claim classes. Collaboration remote-update proof is a separate class too: a claim about how remote imports invalidate and render needs a multi-client row, never a model-update smoke row.
+- IME overlap is policy-owned. Route proof covers composition at or beside the edit point, never app, model or remote edits that intersect an active native composition span; runtime overlap work needs an accepted plan that sets the conflict rule, and its proof drives a real native composition span and covers stale terminal events, follow-up typing, undo/redo, model and native selection, and event-trace coherence.
+- Route proof claims none of these until an accepted plan defines the behavior and browser proof covers it: `selection.direction` as import authority (Plite imports anchor and focus endpoints and keeps backward native direction), an application `selectstart.preventDefault()` veto of model-owned keyboard extension, CSS vertical `writing-mode` caret movement, and mixed-bidi `Selection.modify("extend", left/right, "lineboundary")` extension.
 - Public proof APIs validate untrusted lane evidence and exact source identity.
   Caller-provided success flags, transport names, and nonempty commit labels are
   claims, not proof.
@@ -691,6 +707,7 @@ post-selection navigation` order, coalesces by semantic key, and reports
   settling may use timers, but DOM mutation, scroll restoration, focus writes,
   and selection repair re-enter the root scheduler. Standalone internal test
   adapters may create a disposable fallback scheduler.
+- Each mounted `Editable` routes keydown, beforeinput, input, selectionchange, paste, cut, drop and repair through one editing kernel (`packages/plitejs/src/react/editable/editing-kernel.ts`). The kernel owns the event frame and decides whether the native action proceeds; input, selection and mutation controllers and strategies work for it and never own the selection source, target, mutation authority, repair scheduling or the kernel trace. Destructive editing is model-owned: a native structural delete never becomes document or selection truth. Proof: `packages/plitejs/test/react/editing-kernel-contract.ts` and `editing-epoch-kernel-contract.ts`.
 
 ## Plite Perf And Degraded Modes
 
@@ -709,7 +726,8 @@ post-selection navigation` order, coalesces by semantic key, and reports
   selected or requested targets. Its document, history and collaboration state
   stay canonical while native find, accessibility traversal, printing and DOM
   integrations can observe only mounted content. Product support requires
-  explicit browser, IME and device proof for the claimed matrix.
+  explicit browser, IME and device proof for the claimed matrix. Degraded
+  huge-document modes stay degraded until native behavior is proved.
 - React `Activity` hidden mode is not a primitive for hidden editable content,
   because it gives no browser find, native selection, IME, clipboard,
   screen-reader or DOM point mapping. Visible typing, DOM text sync, selection

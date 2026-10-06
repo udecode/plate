@@ -7,9 +7,7 @@ source_refs:
   - ../raw/milkdown/repo/packages
 updated: 2026-04-04
 related:
-  - docs/research/entities/milkdown.md
-  - docs/research/systems/milkdown-behavior-map.md
-  - docs/editor-behavior/markdown-editing-reference-audit.md
+  - docs/research/history/2026-04-02-markdown-editing-reference-audit.md
 ---
 
 # Milkdown behavior test lanes

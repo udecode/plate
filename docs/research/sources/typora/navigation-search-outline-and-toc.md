@@ -9,8 +9,6 @@ source_refs:
   - ../raw/typora/pages/toc-levels.json
 updated: 2026-04-04
 related:
-  - docs/research/entities/typora.md
-  - docs/research/systems/typora-behavior-map.md
   - docs/editor-behavior/editor-protocol-matrix.md
 ---
 

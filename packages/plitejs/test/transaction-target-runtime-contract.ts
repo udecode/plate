@@ -10,12 +10,12 @@ import {
   type Range,
 } from 'plitejs';
 
+import { setEditorTargetRuntime } from '../src/internal';
 import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
   replace as editorReplace,
-  setEditorTargetRuntime,
-} from '../src/internal';
+} from '../src/testing';
 
 const paragraph = (text: string, props: Record<string, unknown> = {}) =>
   ({

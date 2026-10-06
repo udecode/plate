@@ -11,7 +11,7 @@ import {
 import {
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 import { createRangeAnchor } from './support/anchor';
 import { extendTestSchema } from './support/schema';
 

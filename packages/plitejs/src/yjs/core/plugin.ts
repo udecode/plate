@@ -1,8 +1,8 @@
+import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
 import { carryPluginFactoryType } from '../../core/plugin';
 import {
   definePlugin,
   type Descendant,
-  getCompiledEditorSchemaFromApi,
   getEditorRuntimeOwner,
   readEditorSelection,
 } from '../../index';

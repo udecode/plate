@@ -34,7 +34,6 @@ source_refs:
   - ../raw/tiptap/docs/src/content/guides/faq.mdx
 related:
   - docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md
-  - docs/research/systems/editor-node-text-mark-dx-landscape.md
   - docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md
 ---
 

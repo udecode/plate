@@ -17,12 +17,6 @@ import {
   releaseDOMTextFlowRecordIndex,
   setDOMTextFlowRecordIndex,
 } from '../../src/dom/internal';
-import {
-  getSelection as editorGetSelection,
-  insertText as editorInsertText,
-  replace as editorReplace,
-  string as editorString,
-} from '../../src/internal';
 import { createDOMRepairQueue } from '../../src/react/editable/dom-repair-queue';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
@@ -48,6 +42,12 @@ import {
 } from '../../src/react/editable/runtime-keyboard-events';
 import { useEditableRootRuntimeState } from '../../src/react/editable/runtime-root-state';
 import { createEditor } from '../../src/react/plugin/with-react';
+import {
+  getSelection as editorGetSelection,
+  insertText as editorInsertText,
+  replace as editorReplace,
+  string as editorString,
+} from '../../src/testing';
 
 const browserWindow: Window = window;
 

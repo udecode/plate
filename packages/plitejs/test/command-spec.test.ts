@@ -36,9 +36,9 @@ import {
 import {
   dispatchCommand,
   evaluateCommand,
-  getEditorLiveSelection,
   probeCommandNativeEquivalent,
 } from '../src/internal';
+import { getEditorLiveSelection } from '../src/testing';
 import { defineTestSchema } from './support/schema';
 
 type InsertCommand = {

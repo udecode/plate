@@ -10,14 +10,14 @@ import {
 import { History, history } from 'plitejs/history';
 import { createHyperscript } from 'plitejs/hyperscript';
 
+import { getFragment as editorGetFragment } from '../src/internal';
 import {
   deleteForward as editorDeleteForward,
   getChildren as editorGetChildren,
-  getFragment as editorGetFragment,
   getSelection as editorGetSelection,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
-} from '../src/internal';
+} from '../src/testing';
 import { jsx } from './index.js';
 
 const createSelectedEditor = (): EditorType =>

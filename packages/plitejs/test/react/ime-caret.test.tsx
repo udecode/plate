@@ -1,9 +1,9 @@
 import { act, fireEvent, render } from '@testing-library/react';
 
 import { defineEditorSchema, schema } from '../../src';
-import { replace as editorReplace } from '../../src/internal';
 import { createEditor, Editable, EditorRoot } from '../../src/react';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
+import { replace as editorReplace } from '../../src/testing';
 
 const inlineSchema = defineEditorSchema('schema:ime-inline', {
   elements: {

@@ -6,9 +6,7 @@ updated: 2026-04-04
 source_refs:
   - docs/research/sources/milkdown/corpus-overview.md
   - docs/research/sources/milkdown/behavior-test-lanes.md
-related:
-  - docs/research/entities/milkdown.md
-  - docs/editor-behavior/markdown-standards.md
+related: []
 ---
 
 # Milkdown is the primary open-source cross-check

@@ -16,7 +16,7 @@ Plate adds playbooks on top of pstack's in [`.agents/playbooks/`](../../.agents/
 | Next item | "next" | [API review](../../.agents/playbooks/api-review.md): `review-ledger.mjs next` and `status` | The open ledger unit, why it is open, its prior work and the release counts |
 | Review | "review <scope>", then "again" or "panel" to iterate | API review: `best-api-review` | A Stop, Pursue or Defer verdict with the current and proposed call site |
 | Plan | "plan" | [Plan](../../.agents/playbooks/plan.md), with its architecture reference for API or architecture work | The ready plan and its open questions |
-| Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify` and the ledger record | The done report, ending with the next item |
+| Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify` and the plan's landed `Status:` | The done report, ending with the next item |
 
 Bugs go through [Bug fix](../../.agents/playbooks/bug-fix.md) and finishing a PR or the current tree through [Babysit](../../.agents/playbooks/babysit.md). "review PR <number>" on someone else's PR runs a review-only panel through Babysit and returns findings without editing anything. A structural cleanup runs [Refactoring](../../.agents/playbooks/refactoring.md), and a slowness report runs [Perf issue](../../.agents/playbooks/perf-issue.md) with `benchmark`.
 
@@ -130,8 +130,8 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 | Skill | Purpose |
 | --- | --- |
 | [benchmark](../../.agents/skills/benchmark/SKILL.md) | Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. |
-| [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review, audit or repair a Plate or Plite public call shape with the Plate API lens. |
-| [best-api-review](../../.agents/skills/best-api-review/SKILL.md) | Reconcile earlier reviews, then judge whether a Plate or Plite API or architecture direction earns further work before detailed design or implementation, and record the verdict in the review ledger. |
+| [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review or repair a Plate or Plite public call shape with the Plate API lens. |
+| [best-api-review](../../.agents/skills/best-api-review/SKILL.md) | Reconcile earlier reviews, then judge whether a Plate or Plite API or architecture direction earns further work before detailed design or implementation, and write the verdict into the review page's front matter. |
 | [changeset](../../.agents/skills/changeset/SKILL.md) | Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice. |
 | [issue-harvester](../../.agents/skills/issue-harvester/SKILL.md) | Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence. |
 | [maintainer](../../.agents/skills/maintainer/SKILL.md) | Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof. |
@@ -154,9 +154,12 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 
 The linked skills and [project instructions](../../AGENTS.md) own the current
 contracts. Edit repository rules in `.agents/rules` and regenerate with
-`pnpm install`. The pstack block in `AGENTS.md`, `.agents/pstack.json` and
+`pnpm run prepare`. The pstack block in `AGENTS.md`, `.agents/pstack.json` and
 `.agents/pstack/` come from the `sync-pstack` skill, so shared pstack rules
-change there; pstack's own skills come from the pinned plugin.
+change there; pstack's own skills come from the pinned plugin. A reflect lesson
+for that shared source waits as a saved patch in the run's
+`docs/plans/artifacts/<slug>/` until you say to commit and push it to
+`udecode/dotai`.
 
 The [September 5 skill audit](agent-skill-audit.md) records historical decisions
 and evidence. Use this guide and the current skill files to choose today's route.

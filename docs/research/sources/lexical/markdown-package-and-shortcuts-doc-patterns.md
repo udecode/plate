@@ -9,8 +9,7 @@ source_refs:
   - /Users/zbeyens/git/lexical/packages/lexical-markdown/src/MarkdownTransformers.ts
   - https://lexical.dev/docs/intro
   - https://lexical.dev/docs/packages/lexical-markdown
-related:
-  - docs/research/systems/plugin-input-rule-doc-pattern-landscape.md
+related: []
 ---
 
 # Lexical markdown package and shortcuts doc patterns

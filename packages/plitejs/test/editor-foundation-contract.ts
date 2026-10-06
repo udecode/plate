@@ -14,10 +14,12 @@ import {
   getLastCommit as editorGetLastCommit,
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
+} from '../src/internal';
+import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 import { extendTestSchema } from './support/schema';
 
 const paragraph = (text: string): Element => ({

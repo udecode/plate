@@ -10,11 +10,13 @@ import {
 
 import {
   getEditorRuntime,
+  subscribeSource as editorSubscribeSource,
+} from '../src/internal';
+import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
-  subscribeSource as editorSubscribeSource,
-} from '../src/internal';
+} from '../src/testing';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',

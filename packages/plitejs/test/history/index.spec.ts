@@ -16,16 +16,18 @@ import * as PliteHistory from '../../src/history';
 import { History, type HistoryPlugin, history } from '../../src/history';
 import {
   delete as editorDelete,
+  deselect as editorDeselect,
+  select as editorSelect,
+  hasEditorRuntime,
+} from '../../src/internal';
+import {
   deleteBackward as editorDeleteBackward,
   deleteForward as editorDeleteForward,
-  deselect as editorDeselect,
   getSnapshot as editorGetSnapshot,
   insertBreak as editorInsertBreak,
   insertText as editorInsertText,
   move as editorMove,
-  select as editorSelect,
-  hasEditorRuntime,
-} from '../../src/internal';
+} from '../../src/testing';
 
 const testsDir = dirname(fileURLToPath(import.meta.url));
 

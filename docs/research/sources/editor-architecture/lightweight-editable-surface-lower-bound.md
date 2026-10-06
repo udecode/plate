@@ -7,11 +7,7 @@ source_refs:
   - ../use-editable/README.md
   - ../rich-textarea/README.md
 updated: 2026-04-14
-related:
-  - docs/research/entities/edix.md
-  - docs/research/entities/use-editable.md
-  - docs/research/entities/rich-textarea.md
-  - docs/research/systems/editor-architecture-landscape.md
+related: []
 ---
 
 # Lightweight editable-surface lower bound

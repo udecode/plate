@@ -4,8 +4,6 @@ type: architecture-plan
 status: complete
 runtime_readiness: ready
 date: 2026-09-16
-review_scope: persistence
-review: ../research/review-records/2026-09-16-persistence-source-closure.json
 ---
 
 # Complete immutable document conversion

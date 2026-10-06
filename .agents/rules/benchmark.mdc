@@ -7,8 +7,8 @@ argument-hint: '[review | only] <scope, lane or plan>'
 
 Handle $ARGUMENTS.
 
-For `review <scope-or-plan>`, read the full [performance review method](./references/performance-review.md)
-and only its applicable rule leaves. This mode inspects the plan and proof
+For `review <scope-or-plan>`, read the full [performance review method](./references/performance-review.md).
+This mode inspects the plan and proof
 requirements without starting a measurement or implementation loop. Continue
 below when the request calls for measurement, causal diagnosis or a repair.
 
@@ -98,9 +98,9 @@ the design decision only; it never proves the shipped implementation.
 
 ## Correctness And Native Behavior
 
-Before keeping a fix, load only the relevant `benchmark review` rule files for
-cohorts, interaction metrics, repeated units, staged readiness, degradation,
-and native behavior. Use real keyboard/browser input for user-facing editing
+Before keeping a fix, answer the matching rows of `benchmark review`'s
+Performance Questions for cohorts, interaction metrics, repeated units,
+readiness, degradation, and native behavior. Use real keyboard/browser input for user-facing editing
 claims. Programmatic transforms may isolate runtime cost but stay labeled as
 proxies.
 
@@ -118,12 +118,12 @@ Repair the benchmark before product code when source identity, host freshness,
 fixture parity, sample count, percentile math, metric aggregation, browser
 action, correctness guard, or artifact provenance is wrong. A failing producer
 guard is a product signal until a minimal repro shows the guard itself is
-wrong.
+wrong. A benchmark row measures only what its name says: helper reads such as full-snapshot materialization stay out of rows that time writes, reads or normalization, and a row that measures snapshots is named as one.
 
 Two identical builds prove only that an evaluator raises no false alarm. Prove
 a new or repaired evaluator end to end with at least one known-bad candidate;
 an identical-build result close to a guard means that guard sits inside the
-noise.
+noise. A change to a shared benchmark summary or stats helper proves itself on one current core artifact and one current React artifact, read from the emitted JSON, before any threshold uses the new field.
 
 `benchmarks/editor` is a standalone npm package with its own lockfile. Its
 Evidence Kit CLI exists only after `pnpm bench:editor:install`, and the root

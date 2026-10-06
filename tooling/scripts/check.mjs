@@ -31,6 +31,7 @@ export const steps = [
   { name: 'public-types', run: 'pnpm plite:public-types' },
   { name: 'cli-test', run: 'pnpm --filter @platejs/cli test' },
   { name: 'core-audits', run: 'pnpm check:core' },
+  { name: 'plite-bridge', run: 'node tooling/scripts/check-plite-bridge.mjs' },
   {
     name: 'entrypoint-graph',
     run: 'pnpm entrypoint:turbo:check',

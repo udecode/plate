@@ -5,7 +5,7 @@ import { jsx } from '../../..';
 import {
   getChildren as editorGetChildren,
   isBlock as editorIsBlock,
-} from '../../../../src/internal';
+} from '../../../../src/testing';
 
 jsx;
 

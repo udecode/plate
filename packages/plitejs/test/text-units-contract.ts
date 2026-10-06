@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import { createEditor, type Element, NodeApi } from 'plitejs';
 
-import { getSnapshot as editorGetSnapshot } from '../src/internal';
+import { getSnapshot as editorGetSnapshot } from '../src/testing';
 import { getCharacterDistance, getWordDistance } from '../src/text-units';
 import { getWordDistances } from '../src/utils/string';
 

@@ -9,8 +9,7 @@ Status: current readable law for the markdown-first behavior contract.
 profile registry or a second behavior runtime. A reusable shipped profile is an
 ordinary plugin kit only after real reuse earns that API.
 
-This file is about editing behavior, not syntax coverage. Syntax coverage lives
-in [markdown-parity-matrix.md](./markdown-parity-matrix.md).
+This file is about editing behavior and the round-trip rules its families state; ordinary Markdown syntax law lives in `docs/vision/plate.md` (Ordinary Markdown is CommonMark with GFM and math) and in each family's `syntax:` Authority line below.
 
 This file is also intentionally non-exhaustive. It defines the readable law:
 
@@ -20,47 +19,339 @@ This file is also intentionally non-exhaustive. It defines the readable law:
 - canonical examples
 - locked policy calls
 
-It is family-complete for the current in-scope editor behavior, but it is not
-the scenario-complete matrix. Exhaustive permutations still live in
-[editor-protocol-matrix.md](./editor-protocol-matrix.md).
-
-For the exhaustive scenario backlog and future protocol-complete matrix, use
-[editor-protocol-matrix.md](./editor-protocol-matrix.md).
+It is family-complete for the current in-scope editor behavior. Scenario permutations live as notes under each family, and [current-evidence.md](./current-evidence.md) maps spec families to their proof owners and lists the matrix-era evidence gaps.
 
 ## Behavior Contract
 
 - contract id: `markdown_typora`
 - companion reference: `markdown_milkdown`
 
-## Authority Summary
+## Authority
 
-This summary is routing guidance, not governing winner law.
+This section is the method for choosing authority. Concrete family sections and their notes choose authority per surface; do not infer one default owner for an entire category.
 
-Concrete sections and protocol rows choose authority per surface.
+### Scope
 
-Typical candidate pools:
+This spec covers markdown-first editing behavior, markdown parse and serialize parity, existing block-editor-native behavior, markdown-aware autoformat, and markdown streaming and partial syntax handling. It does not claim that every Plate block is native markdown; it does claim that every existing content-affecting feature has an explicit authority here and a proof status in [current-evidence.md](./current-evidence.md). It does not cover AI workflows, slash-menu and toolbar UI, DOCX, HTML or CSV export quality unless it changes editor behavior, or browser chrome around the editor.
 
-- syntax and serialization:
-  - CommonMark
-  - GFM and GitHub Docs for GFM-only constructs
-  - MDX only where Plate intentionally uses MDX round-trip
-- markdown-native editing:
+### Spec IDs
+
+Every meaningful rule has a stable spec ID with the `EDIT` prefix, such as `EDIT-BQ-ENTER-EMPTY-001`.
+
+### Law To Packaging
+
+This spec defines behavior law, scenario evidence, and correctness invariants. It does not decide public plugin count. When law exposes a packaging question, classify the behavior as `docs/vision/plate.md` requires (invariant, parameter, substitutable capability or product policy), run `best-api design` or `best-api review` before naming a public plugin, run `best-api repair` when the classification changes reusable doctrine, and hand an accepted public target to the Plan playbook; do not encode an unresolved packaging decision in an implementation plan. Do not infer one plugin from one spec note, handler, extension block, or non-universal behavior.
+
+### Authority Order
+
+Use this order when deciding Plate behavior.
+
+1. syntax spec
+2. explicit surface definition and node model
+3. strongest surface-specific UX authority with real evidence
+4. inspectable cross-check and strongest adjacent precedent
+5. explicit fallback only when the others are silent or incompatible
+
+### Applying The Order
+
+#### 1. Syntax spec
+
+For parse and serialize semantics, prefer the syntax spec first:
+
+- CommonMark
+- GFM spec plus GitHub Docs for GFM-only constructs
+- LaTeX / KaTeX-style math delimiter conventions where explicitly adopted
+- MDX where Plate intentionally uses MDX for custom round-trip support
+
+#### 2. Strongest surface-specific UX authority
+
+Pick the strongest reference for the concrete surface you are actually
+specifying, not for the broad family label wrapped around it.
+
+Family labels are routing hints only.
+
+Examples:
+
+- one markdown-extension row may land on Typora
+- another markdown-extension row may land on Obsidian
+- a third may land on Google Docs or GitHub Docs
+
+That is normal. Do not force one owner across the whole family unless the
+evidence genuinely supports it.
+
+#### 3. Milkdown
+
+Use Milkdown as the open-source companion reference for inspectable markdown
+behavior and engine-level cross-checking.
+
+#### 4. Explicit fallback
+
+If the specs are silent or the references disagree, first look for the
+strongest adjacent mainstream precedent instead of inheriting legacy Plate
+behavior.
+
+Only when that still fails should Plate choose explicitly and record that
+choice in the spec and tests.
+
+Do not cite stale `editor-protocol` GitHub issues as authority; port a useful scenario from an older issue into this spec in Plate's current vocabulary and drop the link.
+
+### Reference Pools
+
+#### Typora
+
+Typora is a high-signal reference pool for many markdown-first surfaces.
+
+It is not a governing default owner for every markdown-native row.
+
+Use it for:
+
+- paragraph
+- heading
+- list
+- blockquote
+- link
+- markdown-native marks
+- code
+- hard breaks
+- markdown-native click-to-edit behavior for links and image-like source syntax
+- footnote preview and reference navigation
+- HTML-block edit entry
+- clipboard text expectations for markdown-first editing
+- token-style TOC insertion
+
+#### Obsidian
+
+Obsidian is a high-signal reference pool for dual-mode and
+note-linked-navigation surfaces.
+
+Use it for:
+
+- live preview vs source mode
+- link autocomplete for files, headings, and block references
+- rename-updating internal links
+- backlinks and unlinked mentions
+- outline-as-navigation chrome
+- markdown-workspace search chrome
+- block-reference product behavior
+- product constraints around inline footnotes in dual-mode editors
+
+Do not treat Obsidian as a broad default owner for:
+
+- plain markdown-native typing and structural keys
+- generic markdown-first source-entry behavior for rendered links, images, or
+  HTML blocks
+- low-level destructive-key law where Typora is stronger and more explicit
+
+#### Notion
+
+Notion is a high-signal reference pool for many block-editor-native elements.
+
+Use it for:
+
+- details
+- callout
+- mention
+- date mentions
+- TOC-like blocks
+- columns
+- media / file blocks
+- slash-style or block-menu insertion feel for non-markdown blocks
+- inline chip and page-reference interactions
+
+#### Google Docs
+
+Google Docs is a high-signal reference pool for document-style editing.
+
+Use it for:
+
+- table cell behavior
+- selection and multi-cell expectations
+- indentation and alignment feel
+- table row and column structure operations
+- document-navigation chrome such as outline-like heading jumps
+- comment / suggestion / review behavior
+
+#### GitHub
+
+GitHub is a high-signal product reference for GFM-only syntax and rendered
+semantics.
+
+Use it for:
+
+- task list semantics
+- autolink literal semantics
+- footnote semantics
+- GFM table syntax and rendered rules
+
+Do not use GitHub as the main WYSIWYG editing authority for generic text
+behavior. Those surfaces usually point toward Typora for markdown-native
+editing and Google Docs for table-feel and document-feel, but the concrete row
+still has to choose its own authority.
+
+#### Milkdown
+
+Milkdown is the inspectable open-source cross-check.
+
+Use it to inspect:
+
+- markdown-first editing choices
+- editor-engine tradeoffs
+- cases where Typora or Notion behavior is hard to inspect directly
+
+### Candidate Reference Pools
+
+Do not treat this section as governing law.
+
+Use it to route a pass toward likely sources. Concrete sections and protocol
+rows still choose authority explicitly.
+
+- parse / serialize semantics:
+  - CommonMark for native markdown
+  - GFM spec plus GitHub Docs for GFM-only constructs
+  - local MDX contract only for intentionally local MDX round-trip
+- markdown-native typing, boundary, and source-expansion behavior:
   - often Typora
-  - often Milkdown as the inspectable cross-check
+  - sometimes Milkdown as the stronger inspectable check
+- markdown-native interactive preview and navigation:
+  - often Typora for plain markdown-native spans, footnotes, image-source
+    editing, and HTML-block edit entry
+- source-preserving conversion behavior:
+  - often Typora for source-entry editing and explicit source-to-structure
+    conversion feel
+  - often Obsidian for conservative markdown-sensitive conversion pressure such
+    as selection-wrap-first delimiter handling
+  - often Milkdown as the inspectable cross-check for input-rule conversion
+    mechanics
 - mode architecture and note-linked navigation:
   - often Obsidian
   - sometimes Google Docs or Typora for narrower document-navigation pieces
-- table and document-style behavior:
+- search and navigation chrome:
+  - often Obsidian for markdown-workspace search, backlinks, outline, and
+    linked-note navigation
+  - often Google Docs for linear document outline and heading-jump behavior
+- navigation feedback after successful jumps:
+  - local shared contract
+  - informed by the strongest owner for the target surface
+- table navigation, selection, and structure:
   - often Google Docs
   - sometimes Obsidian, Notion, or Milkdown depending on the surface
-- block-editor-native behavior:
+- block-editor-native shell behavior:
   - often Notion
   - sometimes Milkdown or a narrower mainstream precedent
-- local contract:
-  - only when the stronger external refs for the concrete surface are silent or
-    incompatible
+- comments, suggestions, and review semantics:
+  - often Google Docs
+- clipboard:
+  - often Typora for general markdown-first copy / paste semantics
+  - often Google Docs when table or document-fidelity expectations are stronger
+- open-source cross-check:
+  - Milkdown
+- behavior-policy options:
+  - Typora is often the primary reference for markdown shorthand and
+    markdown-delimiter autoformat
+  - Typora is often a useful reference for strict-mode and more aggressive
+    pair-on-type behavior
+  - Obsidian is often a useful reference for conservative markdown-sensitive
+    selection-wrap and live-preview-sensitive trigger behavior
+  - Milkdown is often a useful inspectable cross-check for input-rule-backed
+    trigger behavior
+  - mainstream typographic norms are useful for smart quotes and punctuation
+    substitutions
+  - local current contract may temporarily own thinner symbol-substitution
+    tables when stronger editor-level proof is absent
+  - `[text](url)` automd and math delimiter triggers belong with
+    source-preserving conversion behavior, not with plain mark or
+    text-substitution autoformat
+- fallback:
+  - explicit Plate decision only after the stronger refs for the concrete
+    surface are silent or incompatible
 
-Do not infer one default owner for an entire category from this summary.
+### Decision Rules
+
+#### Surface-first rule
+
+Do not let a category label decide the winner.
+
+Each concrete surface, family split, or protocol row should choose the
+strongest authority it can actually justify.
+
+#### When the primary and secondary references agree
+
+Default to that behavior unless it directly conflicts with syntax correctness or
+Plate's document model.
+
+An explicit primary reference with a merely compatible secondary reference is enough to lock a rule. Treat a reference's silence as a gap, not as agreement.
+
+#### When the primary and secondary references disagree
+
+Document:
+
+- the scenario
+- what the primary reference does
+- what the secondary reference does
+- the Plate choice
+- why the Plate choice wins
+
+When the references pull in different directions, push the behavior into plugin- or kit-owned policy instead of hard-coding one global default.
+
+#### When both are silent
+
+Only then make an explicit fallback decision. Do not smuggle it in as if it
+were a standard.
+
+#### When current Plate behavior differs
+
+Do not treat current behavior as a tie-breaker. Existing behavior is evidence,
+not authority.
+
+#### When to rerun reference research
+
+Rerun broad reference research only when a concrete authority question is unresolved, compiled research is stale or contradictory, or a new surface appears that this spec does not cover.
+
+### Deviation Policy
+
+Deviations are allowed. Hidden deviations are not.
+
+When Plate differs from Typora, Obsidian, Google Docs, Notion, or Milkdown,
+record:
+
+- spec ID
+- scenario
+- reference behavior
+- Plate behavior
+- reason
+
+Good reasons:
+
+- syntax correctness
+- document model safety
+- better multi-block consistency
+- better streaming stability
+- cleaner capability composition
+- stronger mainstream editor precedent
+- assigning reference behavior to an explicit owner option or app-kit policy
+  after classification instead of forcing one global default
+
+Bad reasons:
+
+- "the plugin already did this"
+- "changing it is annoying"
+- "we have tests for it already"
+- "it was Plate's old default"
+
+### Required Scenario Shape
+
+When auditing a rule, always capture:
+
+- block family
+- nesting context
+- selection shape
+- triggering key or syntax
+- expected structural result
+- expected cursor result
+- parse / serialize effect if relevant
+- streaming effect if relevant
+
+Without that, the audit will drift into vague prose.
 
 ## Legend
 
@@ -116,7 +407,7 @@ $$
 | x | y |
 ```
 
-- toggle: `::toggle[open] Title`
+- details: `::details[open] Summary`
 - callout: `::callout[info] Text`
 - media/embed: `::media[url]`
 - atomic block: `::atom[name]`
@@ -164,8 +455,54 @@ Rules:
 - every inline non-void span or leaf mark must declare one affinity class
 - inline void atoms do not rely on mark/link affinity; they own arrow, delete,
   and navigation behavior as atoms
+- an inline void atom declares one keyboard-access policy: arrows enter it, or arrows skip it as one unit (`selectable: false`). Sibling inline atoms share one policy unless a named product decision splits them, a change to one inline atom's arrow behavior reruns its sibling atoms' arrow rows, and skipping is never a default fix for an arrow bug
 - rich mode must not expose a caret inside identifier or chip text that is only
   renderer chrome for an inline void atom
+- do not infer atomicity from UI chrome
+- do not infer voidness from DOM `contentEditable={false}`
+- use the editor node contract, not the rendered DOM trick
+
+### Entity Model Map
+
+This is the canonical model map for the current feature set. Family sections below inherit the entity model from this table unless a section says otherwise. Use the same taxonomy across docs and tests.
+
+| Family              | Entity                    | Node Model                            | Affinity / Boundary Policy |
+| ------------------- | ------------------------- | ------------------------------------- | -------------------------- |
+| markdown-native     | paragraph                 | block non-void                        | `n/a`                      |
+| markdown-native     | heading                   | block non-void                        | `n/a`                      |
+| markdown-native     | blockquote                | block non-void container              | `n/a`                      |
+| markdown-native     | list item                 | block non-void container              | `n/a`                      |
+| markdown-native     | link                      | inline non-void span                  | `directional`              |
+| markdown-native     | image                     | non-void object owner with editable children | node-selected asset / text-selected caption |
+| markdown-native     | soft mark                 | leaf mark                             | `directional`              |
+| markdown-native     | hard mark                 | leaf mark                             | `hard`                     |
+| markdown-native     | code block                | block non-void owner                  | `n/a`                      |
+| markdown-native     | thematic break            | block void atom                       | `n/a`                      |
+| markdown-native     | hard line break           | text token                            | `n/a`                      |
+| markdown-extension  | task list item            | block non-void container              | `n/a`                      |
+| markdown-extension  | table                     | block non-void grid owner             | `n/a`                      |
+| markdown-extension  | inline math               | inline void atom                      | `n/a`                      |
+| markdown-extension  | block math                | block void atom                       | `n/a`                      |
+| markdown-extension  | autolink literal          | inline non-void link span             | `directional`              |
+| markdown-extension  | footnote reference        | inline void atom                      | `n/a`                      |
+| markdown-extension  | footnote definition       | block non-void container              | `n/a`                      |
+| markdown-extension  | emoji shortcode           | text token after parse                | `n/a`                      |
+| block-editor-native | mention                   | inline void atom                      | `n/a`                      |
+| block-editor-native | date                      | inline void atom                      | `n/a`                      |
+| block-editor-native | callout                   | block non-void container              | `n/a`                      |
+| block-editor-native | details                   | block non-void container              | `n/a`                      |
+| block-editor-native | TOC                       | block void atom                       | `n/a`                      |
+| block-editor-native | column group / item       | block non-void container              | `n/a`                      |
+| block-editor-native | media embed               | isolating non-void keyboard-selectable media owner | node-selected asset / text-selected caption |
+| block-editor-native | media block               | isolating non-void keyboard-selectable media owner | node-selected asset / text-selected caption |
+| block-editor-native | caption                   | direct inline media children          | `TextSelection`            |
+| block-editor-native | code drawing / excalidraw | block void atom                       | `n/a`                      |
+| styling/layout      | block style property      | block non-void property               | `n/a`                      |
+| styling/layout      | style mark                | leaf mark                             | `directional`              |
+| collaboration       | comment                   | leaf metadata mark                    | `outward`                  |
+| collaboration       | suggestion                | leaf metadata mark plus block wrapper | `outward`                  |
+| collaboration       | discussion                | overlay / anchor surface              | `n/a`                      |
+| collaboration       | yjs cursor overlay        | overlay / no node                     | `n/a`                      |
 
 ### `⌫` Hierarchy
 
@@ -182,13 +519,15 @@ For structural keys, the default ownership order is:
 
 1. table cell
 2. code block or fenced block
-3. toggle-like container
+3. details container
 4. list item
 5. blockquote
 6. indent block
 7. generic block fallback
 
 This is the current ownership order for markdown-first behavior.
+
+Where Markdown has a real structural representation, the editor uses it instead of a visual-only shortcut or local fake structure.
 
 ## Paragraph
 
@@ -313,6 +652,8 @@ Plugin surface:
 =>
 |
 ```
+
+note: `⌫` on an expanded selection inside one heading deletes the selection in place and keeps the heading type
 
 ## List
 
@@ -468,6 +809,8 @@ Blockquote is a real container, not a flat text block.
 > |def
 ```
 
+note: in a nested quote, the split keeps both blocks inside the same inner quote
+
 - `EDIT-BQ-ENTER-EMPTY-001` `locked` `↵`
 
 ```text
@@ -518,6 +861,8 @@ Blockquote is a real container, not a flat text block.
 =>
 |Item
 ```
+
+note: an indented quoted paragraph loses its indent before `⇤` lifts it out of the quote
 
 - `EDIT-BQ-TAB-001` `locked` `⇥`
 
@@ -602,6 +947,10 @@ Code block is a strong local owner.
 ```
 ````
 
+note: markdown round trip keeps the code fence language
+
+note: `↵` on an expanded selection inside one code line replaces the selection with a code-local line split
+
 - `EDIT-CB-BS-START-001` `locked` `⌫`
 
 ````text
@@ -668,6 +1017,8 @@ bar]]
 For `⇥` and `⇤`, an expanded selection ending exactly at the next physical
 line start excludes that untouched line in either selection direction.
 
+note: the first `⌘+A` inside a code block selects the whole code block
+
 ## Math Block
 
 Authority:
@@ -680,13 +1031,10 @@ Ownership:
 
 - math block should behave closer to code than paragraph
 - insertion is locked
-- destructive and tab ownership are still less certain than code blocks
 
 Plugin surface:
 
 - math plugins expose insert transforms
-- this section defines current editing law and explicitly marks the weaker
-  ownership rows as audit targets
 
 Math block should behave closer to code than paragraph.
 
@@ -729,6 +1077,14 @@ $$
 ```
 
 note: keep tab owned by math editing unless a stronger math-specific surface overrides it
+
+- `EDIT-MATH-INLINE-INSERT-001` `locked`: inserting an inline equation inserts an inline void equation and uses the selected text as its default expression
+
+- `EDIT-MATH-INLINE-ARROW-001` `locked`: `ArrowLeft` and `ArrowRight` at the edges of an inline equation's input hand control back to the editor
+
+- `EDIT-MATH-BLOCK-INSERT-001` `locked`: inserting an equation inserts a void block equation at the requested path
+
+- `EDIT-MATH-BLOCK-BS-START-001` `locked` `⌫`: at the start of the block after a block equation, the selection moves onto the equation instead of deleting through it
 
 ## Table
 
@@ -828,6 +1184,12 @@ note: split inside the same cell unless a stronger owner intercepts
 
 note: stay inside the cell; no accidental table escape
 
+- `EDIT-TABLE-ARROWDOWN-MULTIBLOCK-001` `locked` `↓`: from the last visual line of a cell, the caret moves to the cell below
+
+- `EDIT-TABLE-ARROWUP-MULTIBLOCK-001` `locked` `↑`: from the first visual line of a cell, the caret moves to the cell above
+
+note: `⌫` at the start of the block after a table moves the selection toward the table instead of deleting through a cell boundary
+
 ### Selection And Structure
 
 - `EDIT-TABLE-*` `locked`
@@ -844,6 +1206,8 @@ select document
 
 note: table selection escalates from cell to table to document
 
+note: `⇧+arrow` from a cell range extends the selection by whole cells
+
 - `EDIT-TABLE-*` `locked`
 
 ```text
@@ -855,6 +1219,18 @@ merge / split
 note: row and column structure changes must preserve table shape instead of
 corrupting merged cells
 
+- `EDIT-TABLE-ROW-INSERT-001` `locked`: inserting a row after the current row adds a row of empty cells and moves the selection into it when requested
+
+- `EDIT-TABLE-ROW-INSERT-002` `locked`: inserting a row before the current row adds a row of empty cells and moves the selection into it when requested
+
+- `EDIT-TABLE-COL-INSERT-001` `locked`: inserting a column after the current column adds a column of empty cells and moves the selection into it when requested
+
+- `EDIT-TABLE-COL-INSERT-002` `locked`: inserting a column before the current column adds a column of empty cells and moves the selection into it when requested
+
+- `EDIT-TABLE-ROW-DELETE-001` `locked`: deleting the current row removes it and repairs row spans instead of corrupting a merged table
+
+- `EDIT-TABLE-COL-DELETE-001` `locked`: deleting the current column removes it and repairs column spans instead of corrupting a merged table
+
 - `EDIT-TABLE-*` `locked`
 
 ```text
@@ -865,6 +1241,12 @@ addMark / removeMark on selected cells
 
 note: multi-cell operations stay table-scoped instead of degrading into generic
 block selection behavior
+
+note: copying a cell range puts those cells on the clipboard as a subtable
+
+note: reading marks on a cell range returns only the marks every selected text node shares
+
+note: deleting a cell-range selection clears the selected cells' contents and keeps the table shape
 
 ### Rectangular Paste
 
@@ -975,8 +1357,7 @@ Plugin surface:
   syntax-trigger subfamily
 - link automd now ships in the current rich-mode kits as a typed conversion
   member of this family
-- math delimiter conversion now ships a safe rich-mode slice while richer
-  markdown-native variants remain deferred
+- math delimiter conversion ships the explicit-completion rich-mode slice; markdown-native variants such as selection-wrap are outside this contract
 - this family is not generic autoformat and not hidden parser magic
 - this family does not imply one monolithic runtime host:
 
@@ -1041,8 +1422,25 @@ open target
 
 note: command / control click should navigate to the link target
 
-note: current readable law covers boundary typing, not every link transform
-permutation
+note: the notes below cover boundary typing, URL paste, autolink and the upsert and unwrap transforms
+
+note: typing a space or `↵` at the end of a URL candidate finalizes it as a link using the current autolink heuristics, and a link whose text is its URL serializes back to bare URL markdown
+
+note: pasting a URL into plain text inserts a link whose text is the URL
+
+note: pasting a URL over selected text keeps the selected text as the link text by default
+
+note: with `keepSelectedTextOnPaste: false`, pasting a URL over selected text replaces it with the URL text
+
+note: with `getUrlHref`, a space typed at the end of visible URL text wraps that text and uses the computed href
+
+note: typing a space inside an existing link never wraps it again
+
+note: `↵` at the end of an autolink candidate finalizes the link before creating the next block
+
+note: normalization removes a link wrapper that deletion left empty
+
+note: link upsert updates the href or text and keeps marks, and unwrap removes the link, each according to the transform's intent
 
 ### Image
 
@@ -1083,8 +1481,7 @@ markdown-native image subsection
 note: current Plate html-block behavior preserves raw HTML block source as
 editable source text
 note: this current surface is source-canonical, not preview-first
-note: richer rendered HTML preview or block-specific chrome is deferred until a
-later product lane chooses it explicitly
+note: the contract has no rendered HTML preview or block-specific chrome
 
 ## Callout
 
@@ -1140,71 +1537,26 @@ note: reset an empty callout to a paragraph
 
 note: reset the callout at block start instead of merging through it
 
-## Toggle
+## Details
 
 Authority:
 
-- syntax: local toggle node contract
+- syntax: HTML `<details>` and `<summary>`
 - primary UX ref: Notion
 - secondary ref: Milkdown
 
 Ownership:
 
-- toggle is a local container contract
-- toggle title rows own `↵`
-- nested content still yields to stronger child owners before toggle claims tab
-  or structural exit
+- details is a local container contract: one Summary followed by direct body blocks
+- open state is transient view state and never persists in the document
+- nested containers keep their own structural keys before Details claims them
 
-Plugin surface:
-
-- toggle plugins expose toggle state and block transforms
-- the current implementation may still be reworked, but the expected behavior
-  is defined here
-
-Toggle is not markdown-native, but it still needs explicit behavior because it
-can contain markdown-native blocks.
-
-- `EDIT-TOGGLE-ENTER-001` `locked` `↵`
-
-```text
-::toggle[open] Title|
-=>
-::toggle[open] Title
-  |
-```
-
-note: create an indented paragraph inside an open toggle
-
-- `EDIT-TOGGLE-ENTER-CLOSED-001` `locked` `↵`
-
-```text
-::toggle[closed] Title|
-  hidden
-=>
-::toggle[closed] Title
-  hidden
-::toggle[closed] |
-```
-
-note: insert a new toggle after the hidden range of the closed toggle
-
-- `EDIT-TOGGLE-BS-START-001` `locked` `⌫`
-
-```text
-::toggle[open] |
-```
-
-note: remove the toggle shell and return the title row to normal block content
-instead of leaving a special empty toggle wrapper behind
-
-- `EDIT-TOGGLE-TAB-001` `locked` `⇥`
-
-```text
-::toggle[open]
-  |text
-```
-
-note: lower owner wins before toggle claims it
+- `EDIT-DETAILS-ENTER-001` `locked` `↵`: at the end of an open Summary, the caret moves into the first body block; trailing Summary text moves into a new first body paragraph
+- `EDIT-DETAILS-ENTER-CLOSED-001` `locked` `↵`: in a closed Summary, the caret moves after the whole Details
+- `EDIT-DETAILS-ENTER-EXIT-001` `locked` `↵`: in the final empty body block, a paragraph is inserted after the Details and the empty body block stays
+- `EDIT-DETAILS-BS-START-001` `locked` `⌫`: at the Summary start, the Details unwraps
+- `EDIT-DETAILS-BS-BODY-001` `locked` `⌫`: at the start of the first body block, the caret moves to the end of the Summary
+- `EDIT-DETAILS-DEL-CLOSED-001` `locked` `⌦`: at the Summary end with a closed body, the caret skips the hidden body without changing content
 
 ## Drawing Blocks
 
@@ -1223,8 +1575,7 @@ Ownership:
 Plugin surface:
 
 - drawing plugins expose insert transforms
-- richer editing UX can still evolve later, but the baseline block law is
-  defined here
+- this section defines the baseline block law; richer drawing UX is outside it
 
 - `EDIT-DRAWING-*` `locked`
 
@@ -1339,8 +1690,9 @@ Plugin surface:
 - bundled renderers may derive relative labels or long-date display from the
   canonical node value, but that is render-layer behavior layered on top of the
   canonical payload
-- locale-heavy or timezone-heavy serialized semantics and display-vs-value
-  payload splits remain deferred
+- a bundled renderer derives relative labels from the canonical `YYYY-MM-DD`
+  value without timezone drift and renders raw fallback text literally
+- the contract has no locale- or timezone-aware serialized semantics and no display-vs-value payload split
 
 - `EDIT-DATE-INSERT-001` `locked`
 
@@ -1351,7 +1703,7 @@ hi [date] |
 ```
 
 note: insert the date node followed by a trailing spacer
-note: keyboard movement enters the inline void child so date stays keyboard-accessible like mention
+note: keyboard movement crosses the date atom without stopping inside it; issue 5125 chose this split from mention's arrow-entry policy
 
 - `EDIT-DATE-BS-START-001` `locked`
 
@@ -1467,6 +1819,12 @@ scrolls or edits through the same document
 note: delete and movement treat TOC as an atomic block, not editable inline
 content
 
+note: `⌫` at the start of the block after a TOC moves the selection onto the TOC instead of deleting through it
+
+note: `↑` from the start of the block after a TOC selects the TOC instead of entering its empty child
+
+note: `⇥` on a selected TOC moves focus onward or falls through; it never tabs into TOC text
+
 ## Columns
 
 Authority:
@@ -1507,6 +1865,12 @@ note: column keyboard ownership and select-all escalation are local layout-contr
 ```
 
 note: updating the column count preserves existing content and redistributes widths
+
+note: the first `⌘+A` with the selection in a column's text selects that column
+
+note: a second `⌘+A` with a column selected selects its column group
+
+note: `↵` in a paragraph inside a column splits it inside the same column and keeps the column group intact
 
 ## Media And Caption
 
@@ -1565,9 +1929,7 @@ Plugin surface:
   allowlisted instead of becoming open-ended executable embed behavior
 - PDF-in-iframe should not be assumed as a baseline supported path just because
   generic iframe syntax exists
-- broader script-based embed behavior, PDF iframe support, richer embed chrome,
-  and wider path-policy/product behavior beyond the current
-  `url` / `provider` / `id` / optional `sourceUrl` contract remain deferred
+- broader script-based embed behavior, PDF iframe support, richer embed chrome, and path-policy or product behavior beyond the current `url` / `provider` / `id` / optional `sourceUrl` contract are outside the contract
 
 Media and caption are local contracts informed by Notion-style media blocks and
 Google Docs-style file behavior.
@@ -1584,6 +1946,12 @@ note: media insertion creates the chosen media node shape and preserves MDX
 attributes on markdown round-trip; it stores direct inline children and uses
 `[{ text: '' }]` when the caption is absent
 
+note: an upload batch from a picker, paste or drop is validated whole before mutation, inserts its keyed `upload` drafts atomically and starts transport only after commit
+
+note: completing an upload keeps the draft and child keys, replaces the draft with the installed media type in skipped history, and lets undo and redo replay the document without restarting transport
+
+note: an unresolved upload draft keeps `{ type, kind, children }` in document-owned formats, gets a fresh runtime identity on copy, and is omitted from HTML, plain-text and static output
+
 - `EDIT-MEDIA-*` `locked`
 
 ```text
@@ -1592,6 +1960,10 @@ next block start + ⌫ after media
 
 note: destructive movement creates a `NodeSelection` on the media asset instead
 of deleting through it
+
+note: inserting an embed with a selection places it at the selection's parent path as the next block
+
+note: inserting an embed with no selection changes nothing
 
 - `EDIT-CAPTION-NAV-001` `locked`
 
@@ -1788,8 +2160,7 @@ Ownership:
 Plugin surface:
 
 - comment and suggestion packages expose real plugin surfaces today
-- discussion and yjs behavior is still implementation work, but the expected
-  law is defined here
+- discussion anchors and Yjs presence follow the law below; [current-evidence.md](./current-evidence.md) records which of it has current proof
 
 - `EDIT-COMMENT-*` `locked`
 
@@ -1799,6 +2170,8 @@ create / remove comment mark
 
 note: comments attach metadata to text ranges and stay excluded from markdown
 serialization
+
+- `EDIT-COMMENT-HISTORY-PENDING-001` `locked`: when comment creation sits at the undo head and its live-session removal is awaiting persistence, typing, repeated undo or a remote update keeps editor changes live, returns `busy` for the overlapping replay, settles the claimed comment entry in call order, and preserves the same head after a refusal or a failed settlement
 
 - `EDIT-SUGGESTION-*` `locked`
 
@@ -1845,6 +2218,10 @@ note: clipboard behavior should preserve the strongest available structure for
 the current selection instead of flattening rich content to plain text by
 default
 
+note: pasting a link, image or media with an unsafe URL drops only the destination or source, keeps the label, alt text or caption and reports the removal; removing a script URL is lossless
+
+note: paste reports content it left out once to the initiating editor after commit, or when nothing inserts; copied UI warns for lossy loss and stays silent for lossless cleanup
+
 ### Interactive Preview And Navigation
 
 - `EDIT-INTERACT-*` `locked`
@@ -1865,6 +2242,8 @@ creating text caret or block-selection state at the landed heading unless a
 separate explicit edit-entry gesture is defined
 note: keyboard-accessible navigation controls should expose the same activation
 result on `↵` / `Space` as on pointer activation
+
+note: an outline highlights the current heading while the user edits or scrolls through the document
 
 ### Navigation Feedback
 
@@ -1906,10 +2285,7 @@ note: cross-file search and open-quickly are app-shell behaviors, not core
 content-editing law, but when Plate needs a product precedent for those
 surfaces, Obsidian is stronger than Typora
 note: search jumps should also use the shared navigation-feedback primitive
-note: current search / find-replace law is specified for the future product
-surface, but the runtime implementation is intentionally deferred for now
-note: until that lane is built, this section should be read as locked behavior
-law, not as a claim that Plate already ships the full search surface
+note: `platejs/find` ships current-document literal search, next and previous match movement, and active-match selection (`packages/platejs/src/features/find/lib/BaseFindPlugin.ts`); replace, search seeded from the selection, jump-to-selection and outline header search are locked law with no shipped surface
 
 ### Mouse Drag And Selection
 
@@ -1917,6 +2293,8 @@ law, not as a claim that Plate already ships the full search surface
 
 note: drag selection should clamp to strong container boundaries such as tables
 instead of producing impossible mixed native selections
+note: Google Docs is the primary winner for document selection drag and Notion for block drag semantics
+note: forward drag-select from a table cell past the table clamps focus to the end of the table, and backward drag-select from after the table into a cell clamps focus to the point before the table
 note: a block or text drag inside one document moves the content present at
 drop in one update and one undo entry, and refuses with nothing published when
 the source vanished, the edge lies inside the payload, or corrections would
@@ -1924,6 +2302,7 @@ rewrite the moved content
 note: a drag from another editor, a read-only view or a document view copies and
 keeps the source; Alt on Apple platforms and Ctrl elsewhere copy inside one
 editor
+note: a copy carries owned content roots with the copied blocks; a copy that does not fit lands what fits and reports the loss
 note: a drag into another application never deletes the source
 note: a block lands wherever the target's schema accepts it, at any depth, such
 as inside a blockquote, a details body, a column or a table cell; within 8px of
@@ -1939,11 +2318,9 @@ so no caret paints while it runs; each view paints one indicator on the edge a
 drop would use, and Escape, leaving the editor or a refused edge clears every
 indicator and changes nothing; dropped files land on the same edges and a
 refused file landing inserts nothing
-note: every drag has a non-drag equivalent: handle actions on click, tap, Enter
-or Space, the right-click block menu, and `Mod+Shift+ArrowUp` /
-`Mod+Shift+ArrowDown`, which move the blocks containing the selection among
-their siblings and keep the caret, and refuse blocks under different parents; the shortcut replaces native select-to-boundary while the DnD kit is
-installed
+note: every drag has a non-drag equivalent: handle actions on click, tap, Enter or Space, the right-click block menu, and `Mod+Shift+ArrowUp` / `Mod+Shift+ArrowDown`, which move the blocks containing the selection past the previous or next admitted sibling edge in one update and one undo entry, keep the caret, announce the move, step a list item over its whole family, and refuse blocks under different parents; the shortcut replaces native select-to-boundary while the DnD kit is installed
+
+note: block handles offer Move up, Move down and Cut; column handles offer Move left and Move right; row handles offer Select row, Move up and Move down; the right-click block menu offers Move up, Move down and Cut
 
 ### Platform Shortcuts
 
@@ -1961,12 +2338,22 @@ code, and math contexts
 note: Google Docs overrides Typora for table row and column destructive command
 semantics
 
+note: a delete command in a paragraph deletes the current sentence instead of acting like block removal
+
+note: a delete command in a table deletes the current row instead of applying generic text deletion inside the active cell
+
+note: a delete command in a code block deletes the current code line like a code editor instead of structurally exiting the block
+
+note: a delete command in a math block deletes the current math line like a code-like editing surface instead of structurally exiting the block
+
 ### IME And Composition
 
 - `EDIT-IME-*` `locked`
 
 note: IME composition should stay inside the active text owner and must not
 double-apply committed text at block or inline-atom boundaries
+
+note: platform text-editing norms decide IME behavior, with product-specific owner behavior at atoms, code blocks and tables
 
 ## Thematic Break And Atomic Blocks
 
@@ -2069,6 +2456,8 @@ note: replace the selection with the owning behavior contract's split result
 ```
 
 note: remove the selection without corrupting surrounding structure
+
+note: `⌦` on an expanded selection, and `⌫` on a backward expanded selection, use the same structural cleanup as forward `⌫`; inside one paragraph the selected text is deleted in place and the paragraph wrapper stays
 
 - `EDIT-SEL-STAB-001` `locked` `⇤`
 
@@ -2206,27 +2595,18 @@ Ownership:
 - footnote reference is an inline void atom whose identifier is element
   metadata, not editable rich text
 - footnote definition is a block non-void container
-- current law also chooses preview and navigation winners for future product
-  surfaces
+- current law also chooses preview and navigation winners for product surfaces that expose them
 - current law now defines insert and navigation behavior
 - toolbar and slash are app-surface integrations built on top of the package
   transform, not separate package-level law
 
 Plugin surface:
 
-- `platejs` exposes `FootnoteReferencePlugin` and
-  `FootnoteDefinitionPlugin`
-- `editor.update.insert.footnote` inserts a reference, creates a missing
-  definition, and moves focus into the definition body
-- `editor.update.footnote.createDefinition` creates a missing definition for an
-  existing identifier without inserting another reference
-- `api.footnote.nextId`, `api.footnote.definition`,
-  `api.footnote.definitions`, `api.footnote.definitionText`,
-  `api.footnote.references`, `api.footnote.isResolved`,
-  `api.footnote.hasDuplicateDefinitions`, and
-  `api.footnote.duplicateIdentifiers` expose lookup and resolution helpers
-- `editor.update.footnote.focusDefinition` and
-  `editor.update.footnote.focusReference` expose navigation helpers
+- `platejs/footnote` exposes `BaseFootnotePlugin` and `BaseFootnoteDefinitionPlugin`, and `platejs/footnote/react` exposes `FootnotePlugin` and `FootnoteDefinitionPlugin`
+- `editor.update.footnote.insert` inserts a reference, creates a missing definition, and moves focus into the definition body
+- `editor.update.footnote.createDefinition` creates a missing definition for an existing identifier without inserting another reference
+- `editor.read.footnote.nextRef`, `definition`, `definitions`, `definitionText`, `references`, `refs`, `isResolved`, `hasDuplicateDefinitions`, `duplicateDefinitions`, `duplicateRefs` and `isDuplicateDefinition` expose lookup and resolution helpers
+- `editor.api.footnote.focusDefinition` and `editor.api.footnote.focusReference` expose navigation helpers over `editor.update.footnote.selectDefinition` and `selectReference`
 - toolbar and slash-command entry points are valid app-surface integrations for
   the same insert transform
 - lookup helpers should resolve through one lazy registry-backed index per
@@ -2333,6 +2713,8 @@ reference inline + definition block
 
 note: insert creates the reference at the current selection, creates the
 definition if missing, and focuses the definition body
+
+note: when the selection is expanded, the inserted definition is seeded from the selected content
 
 note: current footnote law is parse, serialize, insert, preview, and
 navigation
@@ -2516,9 +2898,7 @@ code block owner
 
 note: current kit promotes into a code block on the closing backtick trigger
 itself, not on a later `↵`
-note: this is a current-kit deviation, not the preferred long-horizon contract;
-future normalization should move toward an Enter-owned neighboring input-rule
-lane instead of expanding generic autoformat further
+note: this is a current-kit deviation; an Enter-owned input rule is the preferred shape, and changing it needs its own plan
 
 - `EDIT-PROFILE-AUTOFMT-BLOCK-006` `deviation`
 
@@ -2529,9 +2909,7 @@ horizontal rule + trailing paragraph
 ```
 
 note: current kit inserts the HR immediately when the shorthand closes
-note: this is a current-kit deviation, not the preferred long-horizon contract;
-future normalization should move toward a stronger input-rule / command-aligned
-lane instead of immediate closure
+note: this is a current-kit deviation; a command-aligned input rule is the preferred shape, and changing it needs its own plan
 
 ### Inline Mark Autoformat
 
@@ -2691,6 +3069,8 @@ note: spec it separately from block shorthand, mark closure, and text
 substitution
 note: current rich-mode kits now ship the narrow closing-`)` slice
 
+note: the slice does not claim nested markdown-link grammar, link titles, or broader source-entry expansion
+
 ### Auto Pair
 
 Authority:
@@ -2778,8 +3158,7 @@ $word$
 
 note: Obsidian is explicit that `$` belongs in the markdown auto-pair family
 and that a conservative selection-wrap policy is a real product choice
-note: this branch remains deferred for default rich mode and belongs to a
-future markdown-native or explicitly approved app kit
+note: default rich mode does not ship this branch; only a markdown-native or explicitly approved app kit may
 note: for Plate's default rich editor, `$` / `$$` collision pressure is strong
 enough that selection-wrap stays out of the shipped contract
 
@@ -2812,28 +3191,6 @@ here because it explicitly documents `$$` line-shaped block detection and block
 preview even if it does not document the same `Enter` promotion shape
 note: current rich mode ships this as the explicit block-completion boundary
 
-## Implementation-Deferred Lanes
-
-The behavior law is defined for these surfaces, but implementation work may
-still land later:
-
-- toggle rewrite
-- drawing and board blocks
-- collaboration/editor-only product work
-- IME, mouse drag selection, platform shortcuts, and clipboard hardening
-- markdown-native math selection-wrap and other future-mode trigger variants
-
-## Open Audit Targets
-
-These are still the meaningful open areas in the readable law:
-
-- math block destructive and tab ownership
-- toggle interaction with markdown-native containers
-- thematic break and atomic-block destructive behavior
-- strict mode and auto pair only exist as behavior-policy option law today
-- any future rows added to the protocol matrix that prove this file is missing a
-  canonical example
-
 ## TDD Rule
 
-Do not lock a rule in this file without adding or mapping a test for it.
+Do not lock a rule in this file without adding or mapping a test for it. Map each locked rule to one or more tests, its owning package or integration surface and its owning behavior contract in [current-evidence.md](./current-evidence.md) and its `docs/vision/plate.md` classification (invariant, parameter, substitutable capability or product policy); name an important test after its spec ID so the mapping survives refactors.

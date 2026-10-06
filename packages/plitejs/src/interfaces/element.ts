@@ -1,12 +1,11 @@
 import { type Ancestor, type Descendant, NodeApi, type Path } from '..';
-import { isObject } from '../utils/is-object';
-import type { BaseEditor, EditorNodeTypeProvider } from './editor';
 import type {
   EditorSchemaPluginProvider,
   SchemaElementInNode,
-  SchemaElementShapeFor,
-  SchemaElementTypes,
-} from './schema';
+} from '../core/schema-source.internal';
+import { isObject } from '../utils/is-object';
+import type { BaseEditor, EditorNodeTypeProvider } from './editor';
+import type { SchemaElementShapeFor, SchemaElementTypes } from './schema';
 
 /**
  * `Element` objects are nodes in a document that contain other

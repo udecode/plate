@@ -100,10 +100,12 @@ These gates must be closed in the active plan:
   `lastSyncedCommit` semantics match the work actually completed.
 - Browser proof exists when browser-visible docs UI changed, or when a
   planning scope is visual and needs Plate-vs-shadcn parity evidence.
+- A header, nav or search change has browser proof on `/` and `/cn` at mobile width, and command-menu fallback navigation is proved apart from search results.
 - Visual sync scopes include screenshots of both upstream shadcn and Plate
   pages at matching viewport(s), plus written deltas such as background,
   spacing, disabled/gray controls, nav/header items, and first-viewport
   framing.
+- For layout parity, copy the upstream component structure first, then measure the deployed shadcn page and the Plate page at the same viewport and record x, y, width and height for the sidebar label, first item, active item, main heading and TOC title. The local `../ui` source can differ from the deployed DOM, and screenshot-only Tailwind tweaks are not parity proof.
 ## Durable Policy
 
 Read these before making decisions:
@@ -115,7 +117,6 @@ Read these before making decisions:
 - [parity](./parity.md)
 - `docs/solutions/best-practices/2026-05-23-shadcn-docs-restart-comparison.md`
 - `docs/solutions/developer-experience/2026-05-27-shadcn-docs-sidebar-parity-needs-source-and-dom-metrics.md`
-- `docs/solutions/developer-experience/2026-05-24-shadcn-v4-registry-schema-needs-source-only-validation.md`
 - `docs/solutions/developer-experience/2026-05-24-shadcn-registry-install-commands-should-use-configured-namespaces.md`
 - `docs/solutions/developer-experience/2026-05-24-fumadocs-page-tree-search-needs-locale-safe-metadata.md`
 

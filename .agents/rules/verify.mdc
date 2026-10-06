@@ -1,6 +1,6 @@
 ---
-description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, and before claiming a fix works.
-argument-hint: '[package | route | cli | collaboration | corpus | testing audit] <target>'
+description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, and before claiming a fix works.
+argument-hint: '[package | route | cli | collaboration | testing audit] <target>'
 ---
 
 # Verify
@@ -32,7 +32,8 @@ accepted contract picks one, ask before writing the product test or fix.
 For flaky, native, lifecycle, compositor, focus, selection, drag-and-drop or
 device risk, run the final proof five times, warm and without retries. One
 failure keeps the case open. Each run executes the proof command; a cached
-result does not count.
+result does not count. A turbo run prints `Cached: N cached, M total`; when the
+claim needs a real run, rerun with `TURBO_FORCE=true`.
 In a checkout that other sessions are editing, run the acceptance check in a
 detached worktree at the base commit plus the task's saved patch, and attribute
 each failure from that run. When attributing a chained `a && b && c` step
@@ -45,16 +46,6 @@ review and current-checkout proof with known serving-source identity can close
 a local fix; Maintainer's public-claim gates
 own pushed-ref replay. A missing capability limits the claim, not unrelated
 authorized progress.
-## Corpus mode
-
-Explicit corpus, harness, rewrite-closure or repeated regression work reads the
-complete [corpus method](./references/corpus.md) and copies its
-[plan template](./templates/regression.md). Validate the plan with
-`node .agents/skills/verify/scripts/validate-regression-plan.mjs <plan>` (and
-`--complete` before closing), and record proof receipts with
-`scripts/capture-proof-receipt.mjs`. One ordinary bug stays on the Bug fix
-playbook without this schema.
-
 ## Review the implementation
 
 For a changed implementation, review the final diff, its owning path and
@@ -292,13 +283,19 @@ input/action, observed result, runtime errors and relevant screenshots under
 the final evidence is copied there before cleanup. Treat a runner's output
 directory and the reports it overwrites, such as Playwright's `test-results`,
 as temporary, and copy a failure's artifacts to the artifact tree when a log
-row or plan first cites them, before the next run of that config. Preserve originals locally;
+row or plan first cites them, before the next run of that config. Each base, mutant,
+spike and control run writes its own named log, never a path an earlier run or
+row cites. Preserve originals locally;
 this artifact tree is Git-ignored. Keep concise conclusions and required proof
 summaries in the versioned plan or analysis document. Reusable runners, required
 fixtures and pinned benchmark inputs belong with their source or test owner,
 never inside the artifact tree.
 
-Every proof command names the cwd, package or app it proves. Evidence carries
+When an edit touches an owner that cases this work selected depend on through production code, a fixture, harness, config, host or behavior, run each of those cases that is already executable before the edit and record its pass or red result as its pre-edit baseline; a pending, N/A or inferred historical result is not a baseline. After the last edit to that owner, rerun those cases, together when they share state or could invalidate one another, so a new failure belongs to the current change; a green from before that last edit is stale.
+
+A requested or started package, browser, root or CI gate that fails keeps the work open until the same gate passes on the final bytes. Calling the failure unrelated does not close it; only the same check failing the same way at `HEAD` in a detached worktree makes it pre-existing, per `AGENTS.md`'s Tests rule.
+
+Every proof command names the cwd, package or app it proves. A managed browser proof command names the doctored URL literally, for example `PLAYWRIGHT_BASE_URL=<url>`; a host label with the intended port while the runner uses its default URL is a host mismatch. Evidence carries
 forward only while source and build, environment, identity, auth and
 permissions, fixture, URL and state, viewport and artifact are unchanged; a
 matching screenshot alone is insufficient. A plain screenshot is not enough for
@@ -322,7 +319,7 @@ relevant domain sections for native input, focus, pointer, caret, paint,
 subscription or identity regressions; do not impose every domain on every check.
 Use the shared `recordBrowserRuntimeErrors` helper for browser errors.
 Pass `{ strict: true }` when the case requires every console/page error to fail;
-default capture retains the helper's targeted filters and approved ignores.
+default capture retains the helper's targeted filters and approved ignores. A unit or contract run that prints an uncaught error stack is not green even when the runner reports a pass; trace the throw before calling the run green.
 Mock only an already isolated external boundary and label what it cannot prove.
 
 Ordinary scoped proof retains the logs and fingerprints above. For broad
@@ -344,7 +341,3 @@ Reuse the existing package runners, Benchmark target runner and
 `node .agents/rules/plate-next/scripts/sync-resources.mjs --check`.
 Their commands are above or in the linked full recipes; this skill does not
 wrap them with another controller.
-
-For a reusable tool-side limitation, use the complete
-[browser tool report recipe](./references/browser-tool-issue.md). Preparing
-evidence is local; filing follows the pstack block's Messages rule.

@@ -23,22 +23,15 @@ import {
   addMark as editorAddMark,
   collapse as editorCollapse,
   delete as editorDelete,
-  deleteBackward as editorDeleteBackward,
   deselect as editorDeselect,
-  getSnapshot as editorGetSnapshot,
-  insertBreak as editorInsertBreak,
   insertNodes as editorInsertNodes,
   insertSoftBreak as editorInsertSoftBreak,
-  insertText as editorInsertText,
-  isEditor as editorIsEditor,
   mergeNodes as editorMergeNodes,
-  move as editorMove,
   moveNodes as editorMoveNodes,
   projectRangeInSnapshot,
   projectRange as editorProjectRange,
   removeMark as editorRemoveMark,
   removeNodes as editorRemoveNodes,
-  replace as editorReplaceBase,
   select as editorSelect,
   setPoint as editorSetPoint,
   setSelection as editorSetSelection,
@@ -51,6 +44,15 @@ import {
   unsetNodes as editorUnsetNodes,
   wrapNodes as editorWrapNodes,
 } from '../src/internal';
+import {
+  deleteBackward as editorDeleteBackward,
+  getSnapshot as editorGetSnapshot,
+  insertBreak as editorInsertBreak,
+  insertText as editorInsertText,
+  isEditor as editorIsEditor,
+  move as editorMove,
+  replace as editorReplaceBase,
+} from '../src/testing';
 
 type NestedTextElement = {
   a?: boolean;

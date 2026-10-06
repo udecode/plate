@@ -2,6 +2,7 @@ import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 
+/** @internal */
 export const MAIN_ROOT_KEY = 'main';
 
 export type RootVisibility = 'explicit' | 'implicit';

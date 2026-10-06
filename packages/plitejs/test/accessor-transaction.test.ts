@@ -14,14 +14,14 @@ import {
   type Value,
 } from 'plitejs';
 
+import { getEditorSelectionRoot } from '../src/internal';
 import {
   getChildren as editorGetChildren,
-  getEditorSelectionRoot,
   getSnapshot as editorGetSnapshot,
   isEditor as editorIsEditor,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 import { defineTestSchema } from './support/schema';
 
 const paragraph = (
