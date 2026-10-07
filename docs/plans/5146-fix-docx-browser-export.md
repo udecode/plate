@@ -66,9 +66,9 @@ Blocked condition:
 Task state:
 - task_type: bug-fix
 - task_complexity: non-trivial browser/package runtime
-- current_phase: verification
+- current_phase: closeout
 - current_phase_status: in_progress
-- next_phase: closeout
+- next_phase: exact-head receipt and merge
 - goal_status: active
 
 Current verdict:
@@ -173,7 +173,7 @@ Work Checklist:
       new branch needed, or N/A with reason.
 - [x] Every PR has its own `task` invocation and dedicated plan; this plan is
       not aggregate evidence for another PR.
-- [ ] If a PR exists, its body has exactly one
+- [x] If a PR exists, its body has exactly one
       `🧭 Task plan: docs/plans/<plan>.md` line, this file exists at the exact PR
       head, and this plan records that exact PR number or URL.
 - [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
@@ -226,16 +226,16 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent workflow/tool changes. |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: missing peer dist and module mocks explained by source configuration/isolation, not install rot; no reinstall warranted. |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Structured branch review against origin/main at 597ecbf0cc exits 0, no accepted/actionable findings. Stale red-test-only bundle superseded. |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Per-PR task ownership | pending | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | pnpm check passed before ready PR #5148 creation; body read back with task format. Auto release remains unchecked, no separate publication requested. |
+| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | OPEN #5148 body has exactly one task-plan line. git show refs/pr/5148 proves plan exists and identifies #5148. Live/fetched/local OIDs match; repeat after final push. |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | Exact body readback has Fixes #5146, one plan line, confidence, required phase table and four emoji sections; no self-link, auto-release block preserved. |
 | PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: non-visual download proof, exact artifact/console caveat; no local image paths in PR body. |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
+| Tracker sync-back | yes | Post concise issue/Linear sync after PR exists, or record N/A/blocker | Issue #5146 comment https://github.com/udecode/plate/issues/5146#issuecomment-6043605554 posted and read back, ties #5148 to original repro and verified outcome. |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Exact PR, issue, confidence, red/green proof, browser caveat, chosen boundary and verification fields below. External merge/readback required before final answer. |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | pnpm lint:fix checks 3309 files with no rewrites; final pnpm check lint passes. |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Bounded owner searches and /tmp logs. Accidental metadata inventory and console hydration output recorded, recovered with filtered bounded results. |
 | Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested. |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5146-fix-docx-browser-export.md` | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5146-fix-docx-browser-export.md` | Run after this final versioned update and again at final delivered head. Native goal stays active until external exact-head receipt, merge and issue-state readback succeed. |
 | Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | Actual original Export as Word interaction creates fresh plate (4).docx, 71585 bytes. |
 | Browser console/network check | yes | Record console/network state or why it is not applicable | No new export errors. Unrelated table hydration warnings recorded. No network-path edits; remote image fetching disabled by default. |
 | Browser final proof artifact | yes | Record screenshot/trace/route proof or exact caveat | Fresh Chrome artifact, nine well-formed XML parts and expected heading/table/callout; SHA256 recorded above. |
@@ -253,8 +253,8 @@ Phase / pass table:
 | Intake and source read | done | issue challenged; mechanism and original browser failure proven | implementation |
 | Implementation | done | one Juice option; red-first public integration test; patch changeset | verification |
 | Verification | done | browser artifact, package proof, pnpm check, structured review all pass | closeout |
-| PR / tracker sync | pending | | final response |
-| Closeout | pending | | final response |
+| PR / tracker sync | done | compliant ready #5148; body and #5146 sync readback | external receipt |
+| Closeout | ready | all local/versioned gates closed; exact-head feedback receipt and merge remain external guards | verify MERGED/CLOSED before final response |
 
 Findings:
 - Dedicated managed worktree starts at origin/main 6c3d7c4127, including #5145. Branch codex/fix-5146-docx-browser-export. No source .env or .env.local found to copy.
@@ -324,7 +324,7 @@ Final handoff contract:
   - Why not quick patch: nil guards or removing font quotes hide correctly escaped HTML instead of parsing CSS correctly
   - Why not broader change: serializer, converter, public API and dependency contracts remain unchanged
 - Verified: red/green export regression, 108 isolated DOCX tests before lane move, package types, final pnpm check and clean structured branch review
-- PR body verified: pending
+- PR body verified: gh pr view body readback; exactly one plan line and required task sections, preserved auto-release block
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -350,7 +350,7 @@ Task-style PR body contract:
 
 Final handoff / sync:
 - PR: https://github.com/udecode/plate/pull/5148, OPEN; exact issue-owned branch
-- Task plan at exact PR head: pending
+- Task plan at exact PR head: fetched refs/pr/5148 contains exact #5148 ownership; live/local/fetched equality confirmed before feedback triage, repeated after final push
 - Issue / tracker: https://github.com/udecode/plate/issues/5146, linked with Fixes #5146
 - Browser proof: original action downloads fresh DOCX; exact artifact/XML audit in Verification evidence
 - Caveats: table hydration warnings and Word rendering are outside this browser crash fix
@@ -359,6 +359,23 @@ Timeline:
 - 2026-10-07T17:16:34.698Z Task goal plan created.
 - 2026-10-07T17:33:25Z Chrome writes verified plate (4).docx.
 - 2026-10-07T17:44:00Z Local closeout complete: final pnpm check and actual committed branch autoreview pass.
+- 2026-10-07T17:48:16Z Ready #5148 created and attached to task. Exact ownership pushed and compliance verified before live-feedback triage.
+- 2026-10-07T17:51:00Z Issue sync read back. Helper/raw feedback inventories have zero actionable items; three non-actionable comments ledgered below.
+
+Live feedback ledger:
+| Exact URL | Source | Priority | Verdict and rationale | Proof/reply/resolution |
+| --- | --- | --- | --- | --- |
+| https://github.com/udecode/plate/pull/5148#issuecomment-6043565686 | top-level, helper omitted | N/A: no finding | Non-actionable CodeSandbox editor/preview links, no behavior claim or failure | Content read; no reply or resolution API needed |
+| https://github.com/udecode/plate/pull/5148#issuecomment-6043566035 | top-level | N/A: no finding | Non-actionable changeset status confirms one patch package, no defect request | Content matches scoped changeset; no reply or resolution needed |
+| https://github.com/udecode/plate/pull/5148#issuecomment-6043568589 | top-level | N/A: no finding | Non-actionable Codex activity summary says review completed; no finding text | Actual raw review/thread inventories empty; not used as sole source review proof |
+
+External delivery guards:
+- After final material push, require live head = fetched refs/pr/5148 = local HEAD.
+- Full resolve-pr-feedback inventories: helper 2 top-level, raw 3 top-level, excluded 1; 0 reviews, 0 resolved or unresolved inline threads. All actionable priority counts P0/P1/P2/P3 are zero; no deferred URLs. Repeat after final push and terminal receipt.
+- P1 replay N/A: no live P1 findings. Existing structured review red-test-only finding is closed by inclusion of the verified fix and clean complete-branch review.
+- Post one external terminal receipt naming exact head, proof and every ledger URL; read back exact URL/body/OID, re-fetch helper and raw inventories, and reject any unrecorded new item.
+- Merge only after fresh terminal receipt. Verify GitHub MERGED and #5146 CLOSED before native goal completion or final answer. No Word visual or release-publication claim.
+- Receipt remains external, not a receipt-only branch commit. These guards are required actions, not claims that merge already happened.
 
 Reboot status:
 | Question | Answer |
