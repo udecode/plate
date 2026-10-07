@@ -58,7 +58,7 @@ export const startBlockDrag = (
   const image = document.createElement('div');
 
   image.style.cssText = `position:fixed;pointer-events:none;left:${rect?.left ?? 0}px;top:${rect?.top ?? 0}px;width:${rect?.width ?? 0}px;`;
-  image.className = 'flow-root bg-background';
+  image.className = 'flow-root opacity-50';
   image.append(...drag.previews);
   document.body.append(image);
   event.dataTransfer.setDragImage(image, drag.origin.x, drag.origin.y);

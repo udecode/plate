@@ -138,7 +138,7 @@ The indicator moves on every `dragover`, so position it with `transform`, which 
 
 ### Drag image
 
-`drag.start` also returns inert clones of the dragged blocks and the pointer's offset from the first one. The kit's `startBlockDrag` places them over the dragged block and hands them to the browser as the drag image:
+`drag.start` also returns inert clones of the dragged blocks and the pointer's offset from the first one. The kit's `startBlockDrag` places them over the dragged block at half opacity, with no background, and hands them to the browser as the drag image:
 
 ```tsx
 onDragStart={(event) => {
@@ -153,6 +153,7 @@ onDragStart={(event) => {
   const image = document.createElement('div');
 
   image.style.cssText = `position:fixed;pointer-events:none;left:${rect?.left ?? 0}px;top:${rect?.top ?? 0}px;width:${rect?.width ?? 0}px;`;
+  image.className = 'flow-root opacity-50';
   image.append(...drag.previews);
   document.body.append(image);
   event.dataTransfer.setDragImage(image, drag.origin.x, drag.origin.y);
@@ -160,6 +161,8 @@ onDragStart={(event) => {
   requestAnimationFrame(() => image.remove());
 }}
 ```
+
+Only the faded blocks follow the pointer. A block that paints its own background, such as a code block or a table cell, keeps that background at half opacity.
 
 ## Move blocks programmatically
 

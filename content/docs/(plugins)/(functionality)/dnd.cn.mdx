@@ -136,7 +136,7 @@ export const DragHandlePlugin = definePlugin('dragHandle', {
 
 ### 拖拽图像
 
-`drag.start` 还返回被拖拽区块的惰性克隆，以及指针相对第一个区块的偏移。套件的 `startBlockDrag` 将它们放在被拖拽区块上方，并交给浏览器作为拖拽图像：
+`drag.start` 还返回被拖拽区块的惰性克隆，以及指针相对第一个区块的偏移。套件的 `startBlockDrag` 将它们以半透明、无背景的方式放在被拖拽区块上方，并交给浏览器作为拖拽图像：
 
 ```tsx
 onDragStart={(event) => {
@@ -151,6 +151,7 @@ onDragStart={(event) => {
   const image = document.createElement('div');
 
   image.style.cssText = `position:fixed;pointer-events:none;left:${rect?.left ?? 0}px;top:${rect?.top ?? 0}px;width:${rect?.width ?? 0}px;`;
+  image.className = 'flow-root opacity-50';
   image.append(...drag.previews);
   document.body.append(image);
   event.dataTransfer.setDragImage(image, drag.origin.x, drag.origin.y);
@@ -158,6 +159,8 @@ onDragStart={(event) => {
   requestAnimationFrame(() => image.remove());
 }}
 ```
+
+指针下只跟随半透明的区块。自带背景的区块，例如代码块或表格单元格，会保留半透明的背景。
 
 ## 以代码移动区块
 

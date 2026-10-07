@@ -1,6 +1,6 @@
 # Drag and drop
 
-Page: https://claude.ai/artifact/WddBEy4mfjBjRLp3FwVqRz
+Page: https://claude.ai/artifact/D9VwT52kFmZaxasYC8x4Db
 
 Block drag and drop in Plite and Plate. `node tooling/scripts/review-ledger.mjs show dnd` prints the scope's full review and plan history.
 

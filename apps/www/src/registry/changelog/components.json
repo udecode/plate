@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "components": {
     "dnd": [
+      "2026-10-07-dnd-translucent-drag-image",
       "2026-10-02-schema-block-handles",
       "2026-10-01-block-move-actions",
       "2026-10-01-native-block-drag",

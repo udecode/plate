@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-07-dnd-translucent-drag-image",
+      "href": "/registry/changelog/2026-10-07-dnd-translucent-drag-image.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Fade the block drag image with no background",
+      "change": {
+        "type": "source",
+        "date": "2026-10-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-02-schema-block-handles",
       "href": "/registry/changelog/2026-10-02-schema-block-handles.json",
       "status": "draft",
