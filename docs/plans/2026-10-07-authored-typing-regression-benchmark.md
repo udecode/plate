@@ -1,6 +1,12 @@
+---
+review_scopes: [suggestions, authored]
+review_basis: []
+work_kind: research
+---
+
 # Authored typing regression: locate the owner introduced by 95eeaf92b7
 
-This is a project-owned plan template. Copy it to `docs/plans/<date>-<slug>.md` and fill its `{{…}}` placeholders. The pstack block in `AGENTS.md` governs timing, publication and review rows. Relevant domain and executable-validator gates remain required; mark unrequested publication/review N/A.
+Status: executed: the owner was located; the repair landed in docs/plans/2026-10-07-markup-caret-model-selection.md
 
 ## Brief
 
@@ -40,7 +46,7 @@ Boundaries:
 - allowed runtime/packages/apps: packages/plitejs（只读诊断与可撤回的临时干预）
 - allowed benchmark/tests/fixtures: scratch 中的 profile-typing.mjs，不改仓库内基准
 - allowed baseline checkouts/hosts: next da4898bb61 的临时 worktree 与 dev server（已删除）
-- non-goals: 本计划不落地修复；拖选端点问题（Open work 23）由他人跟进（之后随 `2026-10-07-struck-text-onlyoffice-caret.md` 关闭）
+- non-goals: 本计划不落地修复；拖选端点问题（Open work 23）由他人跟进（之后随 `2026-10-07-caret-inside-struck-text.md` 关闭）
 
 ## Interaction Coverage
 
@@ -136,19 +142,19 @@ Metric table:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |---|---|---|---|
-| Named verification threshold | pending | Run the exact metrics, comparisons, and correctness proof named above | pending |
-| Benchmark plan structural validation | yes | Run `node .agents/skills/benchmark/scripts/validate-benchmark-plan.mjs docs/plans/2026-10-07-authored-typing-regression-benchmark.md` at cause/resume checkpoints | pending |
-| Every applicable lane closed | yes | Complete or mark N/A with concrete reason | pending |
-| Exact post-fix benchmark reruns | pending | Rerun every kept fix against its original lane/baseline | pending |
-| Correctness/native behavior reruns | pending | Run named tests and Browser/Chrome/device proof required by the claim | pending |
-| Final source/host identity | yes | Prove final artifacts still match candidate and baseline identities | pending |
-| Benchmark target/metric honesty | yes | Repair or verify source identity, fixture parity, sample math, aggregation, and artifact provenance | pending |
-| Durable fix decision | pending | For every proven cause, validate the long-term target, Best API/layer-plan route when architectural, hard-cut or hard-law verdict, and concrete implementation owner | pending |
-| Package/type/build proof | pending | Run affected package checks/typecheck/build only where owned | pending |
-| Browser surface proof | pending | Run Browser for product routes; Chrome/device for native state when applicable, or N/A with reason | pending |
-| Changeset/release artifact | pending | Add only for published package behavior/API changes, otherwise N/A | pending |
-| Benchmark plan complete validation | yes | Run validator with `--complete` | pending |
-| Plan complete | yes | Run `node .agents/pstack/plan-open.mjs docs/plans/2026-10-07-authored-typing-regression-benchmark.md` | pending |
+| Named verification threshold | yes | Run the exact metrics, comparisons, and correctness proof named above | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Benchmark plan structural validation | yes | Run `node .agents/skills/benchmark/scripts/validate-benchmark-plan.mjs docs/plans/2026-10-07-authored-typing-regression-benchmark.md` at cause/resume checkpoints | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Every applicable lane closed | yes | Complete or mark N/A with concrete reason | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Exact post-fix benchmark reruns | yes | Rerun every kept fix against its original lane/baseline | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Correctness/native behavior reruns | yes | Run named tests and Browser/Chrome/device proof required by the claim | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Final source/host identity | yes | Prove final artifacts still match candidate and baseline identities | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Benchmark target/metric honesty | yes | Repair or verify source identity, fixture parity, sample math, aggregation, and artifact provenance | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Durable fix decision | yes | For every proven cause, validate the long-term target, Best API/layer-plan route when architectural, hard-cut or hard-law verdict, and concrete implementation owner | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Package/type/build proof | yes | Run affected package checks/typecheck/build only where owned | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Browser surface proof | yes | Run Browser for product routes; Chrome/device for native state when applicable, or N/A with reason | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Changeset/release artifact | yes | Add only for published package behavior/API changes, otherwise N/A | `.changeset/plite-retained-editing.md` |
+| Benchmark plan complete validation | yes | Run validator with `--complete` | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
+| Plan complete | yes | Run `node .agents/pstack/plan-open.mjs docs/plans/2026-10-07-authored-typing-regression-benchmark.md` | skip: 修复、复测与正确性验证在 `2026-10-07-markup-caret-model-selection.md` 中完成，见其 Close |
 
 Verification evidence:
 - Pending.

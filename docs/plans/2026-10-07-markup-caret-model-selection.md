@@ -1,12 +1,12 @@
 ---
-review_scopes: [authored, selection, suggestions]
+review_scopes: [suggestions, authored, selection]
 review_basis: []
 work_kind: implementation
 ---
 
 # 删除线视图的折叠光标回到模型选区
 
-Status: building: phase 1 landed in a narrower form; phases 2 and 3 wait on the owner; changes uncommitted
+Status: executed: phase 1 landed in a narrower form; phases 2 and 3 were superseded by docs/plans/2026-10-07-caret-inside-struck-text.md
 Playbook: plan
 Page: https://claude.ai/artifact/1fHcpr4DHjHpHAd3CKYspe
 
@@ -24,7 +24,7 @@ Page: https://claude.ai/artifact/1fHcpr4DHjHpHAd3CKYspe
 
 ### What do you need from me?
 
-审阅并提交。阶段二的清理与边缘规则表已被 `2026-10-07-struck-text-onlyoffice-caret.md` 取代：光标重新可进入删除线，自绘光标与片段内投影选区仍在使用。
+审阅并提交。阶段二的清理与边缘规则表已被 `2026-10-07-caret-inside-struck-text.md` 取代：光标重新可进入删除线，自绘光标与片段内投影选区仍在使用。
 
 ### What happens if I say go?
 
@@ -32,7 +32,7 @@ go 不再推进阶段二；改动留在工作区由所有者提交。
 
 ### What could go wrong?
 
-WebKit 未验证；删除、方向键与单段多删除的代价未测；diff 已在 `2026-10-07-struck-text-onlyoffice-caret.md` 的两轮评审中审过。撤销只需还原本次十个文件的改动，记录见 Close。
+WebKit 未验证；删除、方向键与单段多删除的代价未测；diff 已在 `2026-10-07-caret-inside-struck-text.md` 的两轮评审中审过。撤销只需还原本次十个文件的改动，记录见 Close。
 
 ## What other editors do
 
@@ -122,8 +122,8 @@ WebKit 未验证；删除、方向键与单段多删除的代价未测；diff �
 ### 阶段一：一个光标与一个规则表
 
 - [x] 1.1（`authored-fragment-provider.test.tsx` exports a model caret beside retained text on its affinity side，含块末尾；撤去导出改动后两例以 forward caret is on the wrong side 失败）先行探针：新增 jsdom React 测试，在 dock 处 forward 与 backward 两种光标、含块末尾 dock，断言原生选区 `anchorNode` 位于删除线之后或之前；在 Chromium 与 WebKit 删到段尾后输入，并读回 `getSelection()`。块末尾若浏览器把光标规范回左侧字符串，改为在末尾删除线元素之后渲染一个空文本节点作为落点。证明：测试日志与截图。WebKit 未运行；块末尾在 jsdom 通过，无需空文本落点。
-- [x] 1.2（skip: 已被 `2026-10-07-struck-text-onlyoffice-caret.md` 取代，边缘规则不再需要。偏离：未新增 `authored/dock.ts`；改为 `caretMayTouchRetained` 一次槽位查询判断是否可能贴近删除线，只有贴近时才建图并用 `caretTouchesRetained` 判定；差分与生成式用例未做）新增 `authored/dock.ts` 与 `readAuthoredViewDock`：返回光标所在文本节点上 dock 在该点的删除线单元，归一化相邻叶子 offset 0 的 text 放置与块边缘的 children 放置。证明：差分脚本比较 dock 与图邻居，fixture 必须包含格式边界 dock、块首与块尾 children 放置、同一点两段删除线、本人与他人删除相邻、内容根内光标；另以生成式用例随机组合种类、作者、相邻与块边缘。差异逐项按附录 A 判定，不以图为准（图的已知缺陷见行为契约计划 Open work 10、11、14）。
-- [x] 1.3（skip: 已被 `2026-10-07-struck-text-onlyoffice-caret.md` 取代。偏离：未新增纯函数表；E7、S8、S8L 与方向键仍由原前置段与 `moveMarkupSelection` 决定，只在光标贴近删除线时运行，并以模型 affinity 作种子；转置在删除线边缘不执行）新增 `react/editable/markup-caret.ts` 纯函数表，覆盖附录 C 的折叠行：E7、E7L、S8、S8L、方向键、点击与拖放落点、多段单元；无 affinity 时按 Defaults 取左缘。`applyEditableCommand`、`applyContentRootViewSelectionAction`、`resolveRetainedDropPoint` 的折叠分支改用该表。证明：附录 C 每行一条 React 用例。
+- [x] 1.2（skip: 已被 `2026-10-07-caret-inside-struck-text.md` 取代，边缘规则不再需要。偏离：未新增 `authored/dock.ts`；改为 `caretMayTouchRetained` 一次槽位查询判断是否可能贴近删除线，只有贴近时才建图并用 `caretTouchesRetained` 判定；差分与生成式用例未做）新增 `authored/dock.ts` 与 `readAuthoredViewDock`：返回光标所在文本节点上 dock 在该点的删除线单元，归一化相邻叶子 offset 0 的 text 放置与块边缘的 children 放置。证明：差分脚本比较 dock 与图邻居，fixture 必须包含格式边界 dock、块首与块尾 children 放置、同一点两段删除线、本人与他人删除相邻、内容根内光标；另以生成式用例随机组合种类、作者、相邻与块边缘。差异逐项按附录 A 判定，不以图为准（图的已知缺陷见行为契约计划 Open work 10、11、14）。
+- [x] 1.3（skip: 已被 `2026-10-07-caret-inside-struck-text.md` 取代。偏离：未新增纯函数表；E7、S8、S8L 与方向键仍由原前置段与 `moveMarkupSelection` 决定，只在光标贴近删除线时运行，并以模型 affinity 作种子；转置在删除线边缘不执行）新增 `react/editable/markup-caret.ts` 纯函数表，覆盖附录 C 的折叠行：E7、E7L、S8、S8L、方向键、点击与拖放落点、多段单元；无 affinity 时按 Defaults 取左缘。`applyEditableCommand`、`applyContentRootViewSelectionAction`、`resolveRetainedDropPoint` 的折叠分支改用该表。证明：附录 C 每行一条 React 用例。
 - [x] 1.4（`authored-fragment-provider.test.tsx` keeps text typed after Backspace on the side of retained text the caret came from；把删除后侧别改回删除方向时以 `LYbravoR` 失败；撤销、他人删除、程序设置与词删除的专门用例未加，现有撤销用例通过）写入者给出 affinity：选区导入（`importMarkupCaret`，删除线内移到较近边缘）、规则表返回的光标、历史（现状已恢复原侧）、authored 视图更新收尾（删除后光标落到 dock 时取被删内容所在一侧）；插入关联钩子在 dock 无 affinity 时取左缘。证明：先写用例“右缘输入一字、Backspace 后再输入，新字在删除线之后”，当前在模型路径失败（探针 `internal` 得到 `LYbravo R`）；词删除同一用例；撤销后输入落原侧；E7 后撤销再 Backspace 仍删除删除字符；他人删除后、程序设置选区后落左缘。
 - [x] 1.5（React 套件 1456 项通过）删除 `possibleDock` 与 `resolveProjectedDOMSelection` 的三处 `projection !== 'markup'` 例外；`writePliteViewSelection` 与绑定重解析不再产生折叠投影选区；`applyMarkupInput` 对折叠光标不再处理（规则表已接管）；写回段只删折叠分支，展开选区命令结果写回模型选区并释放投影绑定。证明：替换展开选区后再输入一字的用例；React 套件。偏离：例外与 `possibleDock` 保留，供内容根与删除线内的光标使用；活文本中的折叠光标在 `importProjectedDOMSelection` 前置的快速路径中直接写入模型选区，不建图。
 - [x] 1.6（同 1.1）模型导出携带 affinity：`getSelectionDOMRange` 与 `resolveDOMRangeInRoot` 的两个调用方传入 affinity；块末尾 dock 后无正文字符串时定位到删除线元素之后。证明：1.1 的测试通过，且在投影选区不存在、临时 DOM 偏好过期后仍通过。
@@ -135,17 +135,17 @@ WebKit 未验证；删除、方向键与单段多删除的代价未测；diff �
 
 ### 阶段二：清理
 
-- [x] 2.1（skip: 已被取代：OnlyOffice 体验需要保留自绘光标与片段内投影选区，见 `2026-10-07-struck-text-onlyoffice-caret.md`）删除 `PliteViewSelectionCaret`、`isPliteViewSelectionCollapsed`、`bindViewSelection` 折叠分支、折叠历史条目、`applyRetainedViewSelectionMarkCommand` 折叠分支、`retainedCaretEdge` 的图遍历。证明：`git grep` 无引用；React 套件。
+- [x] 2.1（skip: 已被取代：OnlyOffice 体验需要保留自绘光标与片段内投影选区，见 `2026-10-07-caret-inside-struck-text.md`）删除 `PliteViewSelectionCaret`、`isPliteViewSelectionCollapsed`、`bindViewSelection` 折叠分支、折叠历史条目、`applyRetainedViewSelectionMarkCommand` 折叠分支、`retainedCaretEdge` 的图遍历。证明：`git grep` 无引用；React 套件。
 - [x] 2.2（skip: 阶段二已被取代，见 2.1）阶段门槛：同 1.11。删除行数以 `git diff --stat` 记录。决定 keep 或只撤回本阶段。
 
 ### 阶段三：测量片段编译
 
 - [x] 3.1（skip: 挂载基准未重跑，转入 Open work。部分：`scratch-perf/profile-fixed-30-1.txt` 与 `-2.txt`：30 键 1506 与 1509ms，base 1511ms，修复前 4850ms；剖析中无图构建与片段编译；挂载基准未重跑）在 1.10 的 lane 中挂载 fragment 观察者，记录打字、回车（在删除上方插段）、Backspace 时的编译次数与挂载基准 retained 视图 paint p95。证明：lane 输出。若每键编译次数与删除建议总数无关且挂载 p95 回到 base 的 1.25 倍内，关闭本步；否则把不含绝对位置的片段设计列为 Open work，交给新计划。
-- [x] 3.2（附录 A 与 `current-evidence.md` 已在 `2026-10-07-struck-text-onlyoffice-caret.md` 中更新；diff 评审在该计划收尾时合并运行。部分：deslop 与 no-comments 已运行；lint 通过（仅余构建前已有的一处）；unslop 见 Close；附录 A 行、`current-evidence.md` 对账与 diff 的 panel 未做，所有者已要求停止评审）写作与收尾：deslop、no-comments、unslop；`pnpm lint:fix`（仅本任务文件）；附录 A 增加 E7L 行与多段单元行；`docs/editor-behavior/current-evidence.md` 对账；diff 的 panel（reviews: api-build）。
+- [x] 3.2（附录 A 与 `current-evidence.md` 已在 `2026-10-07-caret-inside-struck-text.md` 中更新；diff 评审在该计划收尾时合并运行。部分：deslop 与 no-comments 已运行；lint 通过（仅余构建前已有的一处）；unslop 见 Close；附录 A 行、`current-evidence.md` 对账与 diff 的 panel 未做，所有者已要求停止评审）写作与收尾：deslop、no-comments、unslop；`pnpm lint:fix`（仅本任务文件）；附录 A 增加 E7L 行与多段单元行；`docs/editor-behavior/current-evidence.md` 对账；diff 的 panel（reviews: api-build）。
 
 ## Close
 
-后续：所有者 2026-10-07 改为 OnlyOffice 体验，点击、方向键与修订模式删除不再把光标推到删除线边缘；本计划的边缘规则表（1.2、1.3）与阶段二清理不再推进。光标在活文本中的模型选区与 affinity、`changes()` 缓存继续有效。见 `docs/plans/2026-10-07-struck-text-onlyoffice-caret.md`。
+后续：所有者 2026-10-07 改为 OnlyOffice 体验，点击、方向键与修订模式删除不再把光标推到删除线边缘；本计划的边缘规则表（1.2、1.3）与阶段二清理不再推进。光标在活文本中的模型选区与 affinity、`changes()` 缓存继续有效。见 `docs/plans/2026-10-07-caret-inside-struck-text.md`。
 
 - 偏离（先列）：阶段一未按计划新增 `authored/dock.ts` 与纯函数规则表，改为更窄的实现，以缩小改动与风险。活文本中的折叠光标在选区导入前直接写入模型选区；删除与转置只在一次槽位查询判定可能贴近删除线时才建图，此时沿用原前置段，并以模型 affinity 作种子；`possibleDock` 与 `projection !== 'markup'` 例外保留给内容根与删除线内的光标。评审第二轮之后的计划修改与本次 diff 均未经评审，所有者要求停止评审。
 - 落地：`core/selection-protocol.ts` 与 `dom/plugin/dom-editor.ts` 导出携带 affinity；`selection-controller.ts` 折叠光标快速导入与回声跳过；`mutation-controller.ts` 写回、删除侧别、转置；`content-root-navigation.ts` 移动种子与折叠移动写模型选区；`content-root-owners.ts` 的 `caretMayTouchRetained`；`selection-projected-dom.ts` 的 `writeMarkupSelection`、`writeModelCaret`、`isModelCaret`、`caretTouchesRetained`；`input-state.ts` 组合提交判定。
@@ -163,10 +163,10 @@ WebKit 未验证；删除、方向键与单段多删除的代价未测；diff �
 | # | 项 | owner | 跟踪 |
 | --- | --- | --- | --- |
 | 1 | large 的 paint p99 偶尔接近 100ms（四次运行中一次 106.6ms，修复 `changes()` 后两次为 96 与 84.3ms），未定位 | natamox | 本表 |
-| 2 | 已关闭：阶段二清理与边缘规则表被 `2026-10-07-struck-text-onlyoffice-caret.md` 取代 | natamox | 本表 |
+| 2 | 已关闭：阶段二清理与边缘规则表被 `2026-10-07-caret-inside-struck-text.md` 取代 | natamox | 本表 |
 | 3 | 基准 lane：删除、方向键、回车、删除数量扫描，图构建计数入库（1.10），挂载基准重跑（3.1） | natamox | 本表 |
 | 4 | WebKit、两个 Editable、撤销与他人删除后的侧别用例 | natamox | 本表 |
-| 5 | 已关闭：附录 A 与 `current-evidence.md` 已更新；diff 评审在 `2026-10-07-struck-text-onlyoffice-caret.md` 收尾时合并运行 | natamox | 本表 |
+| 5 | 已关闭：附录 A 与 `current-evidence.md` 已更新；diff 评审在 `2026-10-07-caret-inside-struck-text.md` 收尾时合并运行 | natamox | 本表 |
 | 6 | 普通文档打字早期测得 `next` 的 1.4–1.5 倍（1.11），后续复测约 1.05 倍（见 Brief），未在仓库基准中复核 | natamox | 本表 |
 
 ## Open questions

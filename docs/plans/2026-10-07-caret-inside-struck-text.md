@@ -1,12 +1,12 @@
 ---
-review_scopes: [authored, selection, suggestions]
+review_scopes: [suggestions, authored, selection]
 review_basis: []
 work_kind: implementation
 ---
 
-# 删除线内光标与编辑对齐 OnlyOffice
+# 删除线内的光标与编辑：光标可进入、逐字移动，输入拆开删除线
 
-Status: closed for now: owner is closing; remaining items in Open work; changes uncommitted for the owner to commit
+Status: executed: committed in 0e5d1df318; remaining items in Open work
 Playbook: plan
 Page: https://claude.ai/artifact/VBJMDNvF9AG6ekJcpsJQqy
 
@@ -20,7 +20,7 @@ Page: https://claude.ai/artifact/VBJMDNvF9AG6ekJcpsJQqy
 
 ### What will change?
 
-删除线交互改为 OnlyOffice 体验，附录 A 的 E6、E7、S6、S8、S8L、S20、S21 与 Vision 一句随之改写。正文打字速度不变。
+光标可进入删除线并逐字移动，删除线内输入把它拆开，修订模式 Backspace 与 Delete 逐字跨过删除线；附录 A 的 E6、E7、S6、S8、S8L、S20、S21 与 Vision 一句随之改写。正文打字速度不变。
 
 ### What do you need from me?
 

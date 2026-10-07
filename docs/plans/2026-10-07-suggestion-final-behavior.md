@@ -4,9 +4,9 @@ review_basis: []
 work_kind: implementation
 ---
 
-# Suggestion 最终行为：修订按 Google，编辑按行业通用，卡片读当前内容
+# Suggestion 的编辑与修订行为：直接编辑、按位置合并的建议、读取当前内容的卡片
 
-Status: closed for now: owner chose to deliver as is; changes stay uncommitted for the owner to commit
+Status: executed: committed in 95eeaf92b7, 6efd9bf87c and 0e5d1df318; remaining items in Open work
 Playbook: plan
 Page: https://claude.ai/artifact/Gcd9LP7QxTS1psbsqRGDV4
 
@@ -22,7 +22,7 @@ Page: https://claude.ai/artifact/Gcd9LP7QxTS1psbsqRGDV4
 
 ### What will change?
 
-删除线交互按 OnlyOffice：光标可进入并逐字移动，删除线内输入把它拆开，修订模式 Backspace 逐字跨过删除线；卡片读取当前内容；被其他建议依赖的建议拒绝时返回 blocked。翻页结果新增 `documentId`。删除线部分见 `2026-10-07-struck-text-onlyoffice-caret.md`。
+删除线内光标可进入并逐字移动，删除线内输入把它拆开，修订模式 Backspace 逐字跨过删除线；卡片读取当前内容；被其他建议依赖的建议拒绝时返回 blocked。翻页结果新增 `documentId`。删除线部分见 `2026-10-07-caret-inside-struck-text.md`。
 
 ### What do you need from me?
 
@@ -45,8 +45,8 @@ Page: https://claude.ai/artifact/Gcd9LP7QxTS1psbsqRGDV4
 | 编辑模式在建议内输入 | 未知 | 普通正文，拆开原建议（LibreOffice 源码） | 同左（源码） | 同左（文档写明） | 普通正文 |
 | 编辑模式删除建议内容 | 未知 | 真删 | 真删 | 真删 | 真删 |
 | 修订模式删他人新增 | 嵌套删除 | LibreOffice 叠加删除 | OnlyOffice 嵌套；Overleaf 直接删 | Tiptap 嵌套 | 叠加删除建议 |
-| 修订模式在删除线内输入 | 并入删除（`brXavo`） | 拆开删除线并另起新增 | OnlyOffice 拆开 | prosemirror-suggest-changes 移到删除线末尾 | 移到删除线边缘；现为拆开删除线并另起新增（现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`） |
-| 删除线右侧 Backspace | 删除向左延伸 | 跨过 | OnlyOffice 跨过 | 跨过 | 跨过并并入相邻本人删除；现为逐字跨过（现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`） |
+| 修订模式在删除线内输入 | 并入删除（`brXavo`） | 拆开删除线并另起新增 | OnlyOffice 拆开 | prosemirror-suggest-changes 移到删除线末尾 | 移到删除线边缘；现为拆开删除线并另起新增（现行行为见 `2026-10-07-caret-inside-struck-text.md`） |
+| 删除线右侧 Backspace | 删除向左延伸 | 跨过 | OnlyOffice 跨过 | 跨过 | 跨过并并入相邻本人删除；现为逐字跨过（现行行为见 `2026-10-07-caret-inside-struck-text.md`） |
 | 连续删除分组 | 按位置，无时间窗 | LibreOffice 1 分钟窗 | 按位置 | Tiptap 0.8.0 去掉超时 | 按位置，同作者同类 |
 | 修订模式格式 | 格式建议 | 格式修订 | OnlyOffice 格式修订 | 属性建议，旧值→新值 | 格式建议 |
 | 卡片内容 | 当前内容 | 当前内容 | 当前内容 | 当前内容 | 当前内容 |
@@ -99,7 +99,7 @@ const cursors = paging.documentId === page.documentId ? paging.cursors : [];
 | 编辑模式直接文字 | `isolate.ts`、`independent` 与 `decisions.ts` rebase | 保留；只有直接编辑与删除线内编辑可独立重放，提案不再标为 `independent` |
 | 依赖判定 | `decisions.ts` 的 `decide` | 按操作判定：只有依赖目标的非独立提案操作使其所在建议成为依赖 |
 | 删除分组 | 空间分组（`adjacentDeletions: intent === 'propose'`） | 删除 `continuesDeletion` 与视图删除会话状态 |
-| 删除线输入 | 删除线渲染为 `contenteditable=false`（由 fragment 外壳设置）；折叠光标落入删除线时在选区导入处移到边缘；现为光标留在删除线内并自绘（现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`） | 删除删除线内插入路径与删除线 composition 分支 |
+| 删除线输入 | 删除线渲染为 `contenteditable=false`（由 fragment 外壳设置）；折叠光标落入删除线时在选区导入处移到边缘；现为光标留在删除线内并自绘（现行行为见 `2026-10-07-caret-inside-struck-text.md`） | 删除删除线内插入路径与删除线 composition 分支 |
 | 编辑模式删除删除线文字 | `edit`/`accepted` 视图写入：把删除线范围映射到已接受投影后执行普通删除（原型 P1） | 不新增写入通道 |
 | 拒绝有依赖的建议 | `decide` 返回 `blocked` 与 `dependants`；卡片提供“连同依赖一起拒绝”（原型 P3） | 不新增失效状态 |
 | 卡片摘要 | `readAuthoredReviewParts` 与投影身份缓存 | 读取时按位置合并连续删除并与相邻新增配成替换；删除 `original.ts` |
@@ -114,7 +114,7 @@ const cursors = paging.documentId === page.documentId ? paging.cursors : [];
 ## Main changes
 
 - 删除第二存储：`record.original`、`original.ts`、逐键原文折叠及其解码兼容。
-- 删除线不可编辑：输入、输入法与拖放不再进入删除线；编辑模式删除删除线文字经已接受投影执行。删除线仍为 `contenteditable=false`，但光标可进入，输入会拆开删除线（现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`）。
+- 删除线不可编辑：输入、输入法与拖放不再进入删除线；编辑模式删除删除线文字经已接受投影执行。删除线仍为 `contenteditable=false`，但光标可进入，输入会拆开删除线（现行行为见 `2026-10-07-caret-inside-struck-text.md`）。
 - 恢复按位置分组；删除自动格式策略。
 - 依赖按操作判定；修订提案在所有写入路径上都不标为 `independent`。
 - 光标插入关联以构建器保存的步骤对象为键，不再按通知传入的变更对象或其 JSON 匹配。
@@ -127,7 +127,7 @@ const cursors = paging.documentId === page.documentId ? paging.cursors : [];
 | Google Docs 编辑模式缺一手证据 | 按 Word、LibreOffice、OnlyOffice、Overleaf、CKEditor、Tiptap 的一致做法实现 | 先用两个账号实测 Google Docs | probe google first |
 | 建议列表 tab 与 `proposals` 查询 | 保留，按操作的 `proposal` 建索引，游标跨提交保持 | 删除，回到评论与建议相互独立 | cut suggestions tab |
 | 修订模式普通格式 | 格式建议，撤回 Plate 默认的直接格式 | 保留 `automaticFormatting: 'edit'` | keep direct formatting |
-| 删除线 | 不可编辑，整段选中；光标停在边缘；不能加格式（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`：光标可进入并逐字移动，可局部选中，仍不能加格式） | 保留删除线内编辑与局部选中 | edit inside struck text |
+| 删除线 | 不可编辑，整段选中；光标停在边缘；不能加格式（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-caret-inside-struck-text.md`：光标可进入并逐字移动，可局部选中，仍不能加格式） | 保留删除线内编辑与局部选中 | edit inside struck text |
 | 拒绝有依赖的建议 | 阻止并提供“连同依赖一起拒绝” | 自动级联拒绝依赖 | cascade automatically |
 | 已决定建议的卡片 | 操作体仍保留时显示其内容，否则显示“内容已不可用” | 保留 `record.original` | keep originals |
 | state 版本 | 去掉 original 槽位后升到 v8。偏离：执行时保持 v7；第二轮删除对 original 槽位的解码兼容，含该槽位的未发布开发数据不再可读 | 保持 v7 并继续兼容 | keep original decode |
@@ -205,8 +205,10 @@ const cursors = paging.documentId === page.documentId ? paging.cursors : [];
 | 20 | 多步骤命令（如带格式插入文字）经采纳一次加入多个步骤时，不记录光标关联，forward 光标下删除线落在新文字之后；基础版本相同 | warning | 构建器在采纳时为对应步骤保留光标信息 | natamox | 本表 |
 | 21 | 光标关联按“一次通知恰好新增一个步骤”记录：静默步骤后紧跟空变更会误记，嵌套写入与带子根的切片不记录 | nit | 在通知上下文中直接提供对应步骤 | natamox | 本表 |
 | 22 | 混合建议（一条正文操作与一条删除线上的独立操作）在父建议被拒绝后，其作者撤销父建议所在编辑是否抛冲突，未验证：两次复现都未先拒绝父建议 | warning | 先拒绝父建议再撤销的三方复现；若抛冲突，把撤销与 rebase 统一到按操作判定 | natamox | 本表 |
-| 23 | 已解决，见 `2026-10-07-struck-text-onlyoffice-caret.md`：局部选中成为现行行为，可见选区包含被选中的删除线部分，修订模式复制不含删除线文字（Chromium 拖选核对）。原记录：拖选端点落在删除线内时仍局部选中：可见选区不含删除线，复制结果却含部分删除线文字（如 `this redundant phras`）；与 S21“整段选中”不符 | warning | 在选区导入时把非折叠选区落在删除线内的端点外推到删除线边缘 | natamox | 本表 |
+| 23 | 已解决，见 `2026-10-07-caret-inside-struck-text.md`：局部选中成为现行行为，可见选区包含被选中的删除线部分，修订模式复制不含删除线文字（Chromium 拖选核对）。原记录：拖选端点落在删除线内时仍局部选中：可见选区不含删除线，复制结果却含部分删除线文字（如 `this redundant phras`）；与 S21“整段选中”不符 | warning | 在选区导入时把非折叠选区落在删除线内的端点外推到删除线边缘 | natamox | 本表 |
 | 18 | 预备路径不再标记独立后，仓库内挂载测试只覆盖 delete-fragment 路径；挂载打字与 Backspace 由自动路径和 `authored-causal-contract` 覆盖 | nit | 如挂载输入改走预备路径，补一条挂载打字用例 | natamox | 本表 |
+| 24 | 已修复（2026-10-07，PR 前 `pnpm check` 发现）：编辑模式下一次操作分几步插入、后一步落在前一步插入之内时（如表格边缘粘贴扩展），重做把恢复的片段按来源偏移相邻放置，单元格进错行。修复在 `steps.ts`（谓词改名为 `hasLiveNeighbourOutsidePiece`）：同一次操作的步骤在来源里偏移递增，同来源且落在片段起点之前的锚点是前面步骤的正文，视为权威；第一版把片段之后的同来源锚点也算进去，使 `authored-retained-edit-contract` keeps an undone Editing deletion of retained text 失败，已收窄；用例 `authored-history-contract` redoes an Editing edit whose later step inserts inside its earlier insertion 修复前得到 `oneabQ`，`BaseTablePlugin.paste.spec.tsx` 的边缘扩展撤销重做用例修复前为 5 列 | warning | — | natamox | 本表 |
+| 25 | `steps.ts` 的 `deletesTextNode` 把文本节点合并也当作删除整个文本节点，重放时丢掉该步骤，后续偏移漂移 2；本次表格用例结果仍正确，收窄判断会破坏 deletes across pending inline proposals and retained text | warning | 单独排查文本节点合并在重放中的表示 | natamox | 本表 |
 
 已关闭：1、2、16（16c 无法复现，未改代码），见第二轮步骤与决策记录。
 
@@ -220,7 +222,7 @@ const cursors = paging.documentId === page.documentId ? paging.cursors : [];
 
 ## Close
 
-后续：删除线交互改为 OnlyOffice 体验，并修复删除变化引起的全量重编译，见 `docs/plans/2026-10-07-struck-text-onlyoffice-caret.md`；附录 A 中被取代的行已逐行标注。
+后续：删除线交互改为 OnlyOffice 体验，并修复删除变化引起的全量重编译，见 `docs/plans/2026-10-07-caret-inside-struck-text.md`；附录 A 中被取代的行已逐行标注。
 
 - 流程偏离：构建会话未加载 pstack，两轮评审为手工近似，写作三项、reflect 与决策轨迹评审未运行。评审会话按正式流程补跑了这些步骤，并运行 lint 与最终字节验收。
 - 第二轮：按所有者要求修复 Open work 1、4、16，并以正式措辞精简本计划与决策记录。决策记录因此整体改写，不再是逐行追加的原始记录，原件保存在 `scratch-review/r2/decisions.before-rewrite.tsv`。
@@ -277,8 +279,8 @@ reviewed by gpt-6.1-sol（第二轮之后，经 `cross.mjs` 只读运行）
 | E3 | 他人行内新增内输入 | 同 E2 | 改 | 同 |
 | E2b | 新增段落、列表项或表格单元内输入 | 普通正文，放在承载容器中；拒绝新增后文字和容器保留，接受后顺序不变 | 改 | 同 |
 | E4/E5 | 删除新增的一部分 | 真删，建议缩短 | E5 改 | 同 |
-| E6 | 删除线旁输入 | 光标在删除线边缘，普通正文放在该边缘（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`：删除线内输入把它拆开，正文放在两段之间） | 改（修丢字和无反应） | 改位置 |
-| E7 | 删除线右缘 Backspace | 删除删除线最后一个字符，删除建议缩短，删空即不显示；撤销后字符回到删除建议（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`：删除线内同样真删光标前的字符） | 改（修无反应） | 修空记录 |
+| E6 | 删除线旁输入 | 光标在删除线边缘，普通正文放在该边缘（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-caret-inside-struck-text.md`：删除线内输入把它拆开，正文放在两段之间） | 改（修丢字和无反应） | 改位置 |
+| E7 | 删除线右缘 Backspace | 删除删除线最后一个字符，删除建议缩短，删空即不显示；撤销后字符回到删除建议（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-caret-inside-struck-text.md`：删除线内同样真删光标前的字符） | 改（修无反应） | 修空记录 |
 | E7b | 选区跨过整段删除线后删除（含跨段全选） | 全部删除，一次撤销恢复 | 改 | 同 |
 | E8 | 部分覆盖混合选区删除 | 真删，被覆盖的建议缩短 | 改（base 阻止） | 同 |
 | E9 | 完整覆盖混合选区删除 | 直接删除，被覆盖的建议不再显示，不记为接受 | 修空记录 | 修空记录 |
@@ -294,10 +296,10 @@ reviewed by gpt-6.1-sol（第二轮之后，经 `cross.mjs` 只读运行）
 | S3 | 他人新增内输入 | 当前作者的依赖新增 | 同 | 同 |
 | S4 | 删本人新增 | 直接撤回 | 同 | 同 |
 | S5 | 删他人新增 | 叠加删除建议，拒绝删除即恢复新增 | 同 | 同 |
-| S6 | 本人删除线右缘输入 | 并入该删除成为一条替换；重新输入刚删的字符时取消对应删除（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`：右缘不变；删除线内输入拆开删除线，新文字为独立新增） | 改（修丢字） | 改 |
+| S6 | 本人删除线右缘输入 | 并入该删除成为一条替换；重新输入刚删的字符时取消对应删除（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-caret-inside-struck-text.md`：右缘不变；删除线内输入拆开删除线，新文字为独立新增） | 改（修丢字） | 改 |
 | S7 | 他人删除线右缘输入 | 当前作者的独立新增 | 改（修无反应） | 改位置 |
-| S8 | 删除线右缘 Backspace | 跨过删除线，删左侧正文并并入相邻本人删除（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`：逐字跨过删除字符、不改内容，到左缘后再删正文并并入） | 改 | 改 |
-| S8L | 删除线左缘输入或 Delete | 输入落在删除线之前，与相邻本人删除合成替换；Delete 跨过删除线删右侧正文（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`：Delete 逐字跨过删除字符） | 改 | 改 |
+| S8 | 删除线右缘 Backspace | 跨过删除线，删左侧正文并并入相邻本人删除（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-caret-inside-struck-text.md`：逐字跨过删除字符、不改内容，到左缘后再删正文并并入） | 改 | 改 |
+| S8L | 删除线左缘输入或 Delete | 输入落在删除线之前，与相邻本人删除合成替换；Delete 跨过删除线删右侧正文（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-caret-inside-struck-text.md`：Delete 逐字跨过删除字符） | 改 | 改 |
 | S9 | 选区含已有删除线 | 已删部分不动，其余删除并合并 | 修无反应 | 同 |
 | S10 | 替换 | 一条替换建议 | 同 | 改回 |
 | S11 | 连续 Backspace | 一条，不受格式边界影响 | 修分组 | 修分组 |
@@ -309,8 +311,8 @@ reviewed by gpt-6.1-sol（第二轮之后，经 `cross.mjs` 只读运行）
 | S17 | 撤销/重做 | 卡片跟随当前内容；空记录不显示，内容回来后原 id 恢复 | 修空记录 | 修摘要错误 |
 | S18 | 重叠建议 | 见决定表 | 同 | 改 |
 | S19 | 拖放 | 落点在删除线上时放到边缘；拖动源含删除线时只移动可见文字 | 新 | 新 |
-| S20 | 输入法 | 删除线不可编辑，组合文字不进入删除线（桌面 Chromium 已验证，移动端未测）（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`：组合文字提交后拆开删除线；组合过程中预编辑显示在删除线左侧） | 新 | 新 |
-| S21 | 复制删除线 | 删除线整段选中，可复制为普通文本（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-struck-text-onlyoffice-caret.md`：可局部选中；修订模式复制不含删除线文字，编辑模式包含） | 新 | 新 |
+| S20 | 输入法 | 删除线不可编辑，组合文字不进入删除线（桌面 Chromium 已验证，移动端未测）（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-caret-inside-struck-text.md`：组合文字提交后拆开删除线；组合过程中预编辑显示在删除线左侧） | 新 | 新 |
+| S21 | 复制删除线 | 删除线整段选中，可复制为普通文本（所有者 2026-10-07 改为 OnlyOffice 体验，现行行为见 `2026-10-07-caret-inside-struck-text.md`：可局部选中；修订模式复制不含删除线文字，编辑模式包含） | 新 | 新 |
 
 ### 重叠建议决定表
 

@@ -6,7 +6,7 @@ work_kind: implementation
 
 # 实现 Editing 与 Suggesting 的文本编辑规则
 
-Status: building
+Status: superseded: by docs/plans/2026-10-07-suggestion-final-behavior.md, which rebuilt the behavior contract on this plan's code and reversed its direct formatting in Suggesting
 
 本方案覆盖 Editing 与 Suggesting 的文本编辑语义、提案原文留存、讨论 UI 及持久化接入。实现沿用 Plite authored、Plate suggestion 和现有 registry 组件，不新增独立建议存储。
 
@@ -281,9 +281,9 @@ Package boundary contract 继续遵守 VISION：应用只导入 platejs；Plite 
 - [x] 验证 link 独立文字、retained trim、A/B 叠加建议与原子 replacement。证据：`packages/plitejs/test/authored-structure-contract.test.ts`、`authored-retained-edit-contract.test.ts`、`authored-causal-contract.test.ts`；原生探针及 authored 分项验证见决策记录 `native-v29-correctness`。
 - [x] 实现提案内容贡献、本人 amendment 和分组编码，覆盖合成 composition、AI stream 及多 replica 回放。证据：`packages/plitejs/test/authored-original-contract.test.ts`、`packages/plitejs/test/yjs/authored-contract.spec.ts`；决策记录 `Update original only on actual own amendment`。
 - [x] 接入提案查询和 Plate 自动捕获调用者。证据：`packages/plitejs/src/authored/read.ts`、`apps/www/src/registry/components/editor/discussion.tsx`；Verification evidence 中的类型检查及 authored 契约。
-- [ ] 完成查询和自动捕获入口的最终 best-api 核验及完整 API inventory 检查。owner: best-api。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）完成查询和自动捕获入口的最终 best-api 核验及完整 API inventory 检查。owner: best-api。
 - [x] 运行隔离候选性能探针，记录 overlap、checkpoint 和索引复用结果。证据：Performance 对照表；决策记录 `checkpoint-index-reuse`、`checkpoint-single-index`、`skip-unchanged-original-index-writes`。
-- [ ] 按固定 cohorts 和阈值完成最终源码的 typing、mounted、checkpoint、retention、reload、collaboration 性能验收，补齐留存增长、A/B 重叠及资源开销结果。owner: benchmark。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）按固定 cohorts 和阈值完成最终源码的 typing、mounted、checkpoint、retention、reload、collaboration 性能验收，补齐留存增长、A/B 重叠及资源开销结果。owner: benchmark。
 
 原生行为、协作与性能分别验收。UI 接入已完成，性能门槛继续独立跟踪。
 
@@ -291,26 +291,26 @@ Package boundary contract 继续遵守 VISION：应用只导入 platejs；Plite 
 
 - [x] 实现 Editing 与 Suggesting 分类、直接删除、marks、结构承载和决定规则。证据：`packages/plitejs/test/authored-self-edit-contract.test.ts`、`authored-structure-contract.test.ts`、`authored-view-contract.test.ts`；Verification evidence 中的 authored 与 React 检查。
 - [x] 更新 codec、原文留存、checkpoint、history 和 Yjs 操作回放。证据：`packages/plitejs/src/authored/state.ts`、`original.ts`、`checkpoint.ts`、`history.ts`；`packages/plitejs/test/yjs/authored-contract.spec.ts` 的 275 项分项验证。
-- [ ] 完成最终版本的新旧 codec、未知版本拒绝、混合版本写入限制及 offline tail 验收。owner: authored/yjs。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）完成最终版本的新旧 codec、未知版本拒绝、混合版本写入限制及 offline tail 验收。owner: authored/yjs。
 - [x] 实现原文详情与提案分页查询，区分普通直接编辑记录与提案，保留零效果提案查询。证据：`packages/plitejs/src/authored/read.ts`、`packages/plitejs/test/authored-changes-contract.test.ts`、`authored-original-contract.test.ts`。
-- [ ] 完成最终查询路径的规模验证。owner: authored read/benchmark。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）完成最终查询路径的规模验证。owner: authored read/benchmark。
 
 未通过兼容性验收的新格式不写入用户真实文档；恢复旧代码前保留已产生新格式的原件，不能让旧 decoder 覆写它。
 
 ### 阶段三：交付真实 UI、接入示例和文档
 
 - [x] 接入 discussion、评论工具栏、模式切换、AI、首页三条 suggestion 和 persistence demo。证据：Implementation results；决策记录 `final-production` 审查与 `Simplify suggestion cards`。
-- [ ] 完成最终源码的真实浏览器鼠标键盘、系统 IME、混合选择、undo/redo、重载及持续输入验收。owner: plate-ui/plate-plugins。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）完成最终源码的真实浏览器鼠标键盘、系统 IME、混合选择、undo/redo、重载及持续输入验收。owner: plate-ui/plate-plugins。
 - [x] 更新 suggestion、comment 及受影响编辑、选择、AI 和导出文档的中英文说明。证据：`content/docs/(plugins)/(collaboration)/suggestion.mdx`、`suggestion.cn.mdx`、`comment.mdx`、`comment.cn.mdx`；决策记录 `Document editing input fixes and preserve open verification gates` 中的 MDX 与 source parity 结果。
-- [ ] 完成逐页 preview、示例覆盖审计与完整 docs check。owner: plate-docs。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）完成逐页 preview、示例覆盖审计与完整 docs check。owner: plate-docs。
 - [x] 生成 registry 并完成 source 检查。证据：Verification evidence 中的文档与 registry 结果；决策记录 `Document editing input fixes and preserve open verification gates`。
-- [ ] 完成最终 clean 输出、native review 往返、registry 复制安装、包边界及 `check-plate-feature` 验收。owner: verify/plate-plugins。
-- [ ] 完成包 manifest、attestation、changeset 和 registry changelog 核验。owner: plate-next/changeset。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）完成最终 clean 输出、native review 往返、registry 复制安装、包边界及 `check-plate-feature` 验收。owner: verify/plate-plugins。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）完成包 manifest、attestation、changeset 和 registry changelog 核验。owner: plate-next/changeset。
 - [x] 同步编辑行为和接入文档中的模式、作者及原文留存约定。证据：上述 suggestion/comment 中英文文档及 Implementation results。
-- [ ] 核对相关维护规则与最终行为约定的一致性。owner: Plate 文档与规则 owner。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）核对相关维护规则与最终行为约定的一致性。owner: Plate 文档与规则 owner。
 - [x] 完成当前实现的代码审查、writing passes 与 decision-trail review。证据：Review history 第 14 轮；决策记录 `Close proof and attribution flags from opus trail review`、`Finish writing and reflection passes`。
 - [x] 完成最终回归修复后的 React、测试类型与修改路径 lint 检查。证据：Verification evidence；决策记录 `Verify repaired regression set`，95 个文件、1,446 项测试及两项静态检查均通过。
-- [ ] 排除完整文档与全库格式检查阻塞后，完成全库检查。owner: repository checks。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）排除完整文档与全库格式检查阻塞后，完成全库检查。owner: repository checks。
 
 阶段三完成条件为真实首页与复制 registry 路径均通过验收。
 
@@ -379,10 +379,10 @@ Package boundary contract 继续遵守 VISION：应用只导入 platejs；Plite 
 
 ## Remaining work
 
-- [ ] 在最终源码上完成原生浏览器连续输入、模式切换、系统 IME 和光标稳定性验收。合成 composition 测试已覆盖提交与取消，系统输入法交互尚未验证。owner: Plite DOM/React。
-- [ ] 完成固定 cohorts 的性能复测，记录延迟、载入、绘制、内存及留存数据增长。owner: benchmark。
-- [ ] 完成 registry 复制安装路径、feature manifest、包 attestation 与发布记录核验。owner: plate-plugins/plate-next/changeset。
-- [ ] 修复文档 API 清单与全库格式检查阻塞后，运行完整仓库检查。owner: repository checks。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）在最终源码上完成原生浏览器连续输入、模式切换、系统 IME 和光标稳定性验收。合成 composition 测试已覆盖提交与取消，系统输入法交互尚未验证。owner: Plite DOM/React。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）完成固定 cohorts 的性能复测，记录延迟、载入、绘制、内存及留存数据增长。owner: benchmark。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）完成 registry 复制安装路径、feature manifest、包 attestation 与发布记录核验。owner: plate-plugins/plate-next/changeset。
+- [x] （skip: 本计划已被 `2026-10-07-suggestion-final-behavior.md` 取代，该项由其 Steps 与 Open work 接手）修复文档 API 清单与全库格式检查阻塞后，运行完整仓库检查。owner: repository checks。
 
 ## Review history
 
