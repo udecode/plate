@@ -20,6 +20,7 @@ Task source:
 - type: GitHub bug
 - id / link: https://github.com/udecode/plate/issues/5146
 - title: DOCX playground export fails in Juice setStyleAttrs
+- exact PR ownership: https://github.com/udecode/plate/pull/5148, task invocation in this run owns only #5148 and #5146.
 - acceptance criteria: Export > Export as Word on /blocks/playground-demo downloads a valid DOCX without the Juice exception. Reproduce before implementation; prove the root cause, regression coverage, owning package checks and browser outcome. Complete task-owned PR through merge.
 
 Timed checkpoint:
@@ -309,7 +310,7 @@ Verification evidence:
 - Final pnpm check exits 0 after correct slow-lane classification; lint, package builds/types, fast and slow suites, fast runtime budget all pass. Exact slow integration command bun test ./packages/docx-io/src/lib/docx-export-plugin.slow.tsx reports 1 pass, 0 fail, 7 assertions.
 
 Final handoff contract:
-- PR line: Assign exact issue-owned PR at creation; branch codex/fix-5146-docx-browser-export
+- PR line: https://github.com/udecode/plate/pull/5148
 - Issue / tracker line: Fixes #5146
 - Confidence line: 98% for escaped-style crash and successful download, no Word-rendering claim
 - Flow table:
@@ -348,11 +349,11 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
+- PR: https://github.com/udecode/plate/pull/5148, OPEN; exact issue-owned branch
 - Task plan at exact PR head: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- Issue / tracker: https://github.com/udecode/plate/issues/5146, linked with Fixes #5146
+- Browser proof: original action downloads fresh DOCX; exact artifact/XML audit in Verification evidence
+- Caveats: table hydration warnings and Word rendering are outside this browser crash fix
 
 Timeline:
 - 2026-10-07T17:16:34.698Z Task goal plan created.
