@@ -12,9 +12,12 @@ import {
 } from './render-document-file';
 
 describe('render-document-file helpers', () => {
+  let buildParagraphSpy: ReturnType<typeof spyOn> | undefined;
   let fetchSpy: ReturnType<typeof spyOn> | undefined;
 
   afterEach(() => {
+    buildParagraphSpy?.mockRestore();
+    buildParagraphSpy = undefined;
     fetchSpy?.mockRestore();
     fetchSpy = undefined;
   });
@@ -72,13 +75,11 @@ describe('render-document-file helpers', () => {
     const docxDocument = {} as any;
     const nullFragment = fragment({ namespaceAlias: { w: 'urn:test' } });
     const xmlFragment = fragment({ namespaceAlias: { w: 'urn:test' } });
-    const buildParagraphSpy = spyOn(
-      xmlBuilder,
-      'buildParagraph'
-    ).mockImplementation(async () =>
-      fragment({ namespaceAlias: { w: 'urn:test' } })
-        .ele('@w', 'p')
-        .up()
+    buildParagraphSpy = spyOn(xmlBuilder, 'buildParagraph').mockImplementation(
+      async () =>
+        fragment({ namespaceAlias: { w: 'urn:test' } })
+          .ele('@w', 'p')
+          .up()
     );
 
     await expect(
