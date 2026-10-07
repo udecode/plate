@@ -69,6 +69,7 @@ When a design or review question touches colocation, inlining, helper survival, 
 - Can an agent find the canonical path from types, JSDoc and one example?
 - What is the maximum justified deletion cone, and which survivor has hard-law or independent-current-job evidence?
 - Am I selecting a workaround because the durable owner repair is harder?
+- When a guard's input widens for a new case, do existing guards, third-party ones included, still decide that case correctly unchanged? An optional field they ignore fails open; prefer a shape they already read, such as the actual landing parent, or an opt-in.
 - Do the exported types promise exactly what the runtime accepts: no option the runtime honors hidden behind a narrower type, and no parameter typed required that the runtime treats as optional?
 
 Do not preserve a weaker proposal because it is more elaborate, more generic, more observable, or already documented.

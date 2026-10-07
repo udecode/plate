@@ -164,7 +164,7 @@ Rules:
   package script and argument forwarding are verified in the plan;
 ## Source-first package checks
 
-A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it with `bun run` from the package directory, import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/<package>/` that the import added. A scratch file outside the repository cannot resolve bare package names, so it imports by path.
+A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it from the package directory and pass each preload its `bunfig.toml` lists under `[test]`, such as `bun --preload ../../config/plite-source-aliases.ts <abs path>` from `packages/platejs`. Bun applies `[test]` preloads only to `bun test`, so a plain `bun run` resolves dependency packages such as `plitejs` from `dist`. Import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/` that the import added, dependency packages included. A scratch file outside the repository cannot resolve bare package names, so it imports by path.
 
 Default to source-first typecheck. Do not build packages just to run types.
 Inspect the affected package/app `paths` and source-entry graph if stale
@@ -190,6 +190,8 @@ pnpm turbo typecheck --filter='...[origin/main]'
 pnpm --filter platejs typecheck
 pnpm --filter platejs lint:fix
 ```
+
+A typecheck that reports TS6305, a referenced project's output not built, checked nothing: it is neither a clean result nor evidence that its other errors are unrelated. Build the references or run the package's partition typecheck instead.
 
 Use root `pnpm lint:fix` when the affected lint scope needs that command.
 `pnpm typecheck` checks root packages from source; `pnpm build` builds all
@@ -237,7 +239,7 @@ Add a detached worktree at the base (`git worktree add --detach <path> <sha>`)
 and link this checkout's installed dependencies, as `AGENTS.md`'s Git rule says.
 When the base lockfile differs or a package's links are missing, install with
 scripts instead (`pnpm rebuild` first when an earlier install skipped them) and
-build `@platejs/cli`. A step that fails in about a second, such as `plate:
+build `@platejs/cli`. A worktree that serves the app with `next dev` needs a real install, `pnpm install --frozen-lockfile --offline --ignore-scripts`, because Turbopack refuses a `node_modules` symlink that points outside the worktree. A step that fails in about a second, such as `plate:
 command not found`, is a broken install, not a result. Never copy candidate
 files into the base worktree; replay them in a second worktree, and require an
 empty `git -C <path> status --porcelain` before labeling any run as base.

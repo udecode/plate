@@ -130,6 +130,22 @@ each way a wrong result can look right, such as a throw after the logged step,
 a canceled insert or a selection-only commit, and add one rejecting case for
 each. A fake runtime cannot certify native browser behavior.
 
+A contract whose data crosses editors, such as node keys, paths or an owner
+editor read from a view editor, needs a fixture with separate owner and view
+editors. A single-editor fixture shares one key space, so it passes while the
+product fails. A mutation control proves only that the test notices a removed
+guard, not that the fixture matches how the product wires its editors.
+
+## Failures that pass alone
+
+A test that fails in the full partition and passes when rerun alone is not a
+flake until the same full partition passes at the base under the same
+conditions. Isolated reruns cannot reproduce module evaluation order. When the
+failures move between tests across runs, or a spy finds an undefined binding,
+suspect an import cycle the change added. Show the cycle's import chain, then
+remove the new edge instead of routing it through a module that already
+imports both sides.
+
 ## File Organization
 
 - File-scoped specs live beside the implementation.

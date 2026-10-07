@@ -1,5 +1,5 @@
 ---
-description: Build Plate plugins and entrypoints with semantic ownership, inference, scoped capabilities and package proof, and deliver a feature across its package, UI, docs and release. Use it also when a change touches a plugin's Markdown or HTML encode or decode mapping or its preserve claims.
+description: Use before adding or changing a plugin's stage fields or options, such as read middleware, contributions, transfer vetoes or landing policy, and for a feature that spans Plite, Plate, the registry and docs. Builds Plate plugins and entrypoints with semantic ownership, inference, scoped capabilities and package proof, and delivers a feature across its package, UI, docs and release. Use it also when a change touches a plugin's Markdown or HTML encode or decode mapping or its preserve claims.
 ---
 
 # Plate Plugins

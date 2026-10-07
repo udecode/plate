@@ -115,8 +115,6 @@ Read these before making decisions:
 - `docs/plans/2026-05-23-shadcn-docs-restart-comparison.md`
 - `docs/plans/2026-05-24-shadcn-base-migration-progress.md`
 - [parity](./parity.md)
-- `docs/solutions/best-practices/2026-05-23-shadcn-docs-restart-comparison.md`
-- `docs/solutions/developer-experience/2026-05-27-shadcn-docs-sidebar-parity-needs-source-and-dom-metrics.md`
 - `docs/solutions/developer-experience/2026-05-24-shadcn-registry-install-commands-should-use-configured-namespaces.md`
 - `docs/solutions/developer-experience/2026-05-24-fumadocs-page-tree-search-needs-locale-safe-metadata.md`
 

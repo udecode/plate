@@ -52,7 +52,10 @@ Before the architecture owner may lock that target:
 2. Freeze the absolute/relative budget and noise rule before reading the target
    result. Reuse an honest existing budget when one exists. Run each budget
    line on the baseline first. A line the baseline already fails or nears
-   measures existing cost, so restate it before freezing.
+   measures existing cost, so restate it before freezing. Size each line
+   relative to the baseline and above the timer resolution, and run one
+   planted-slowdown control that the line must reject; an absolute tolerance
+   larger than the measured quantity cannot fail.
 3. Capture a comparable current-owner baseline. If the proposed path is not
    executable, build the smallest disposable prototype that can falsify its
    claimed owner and scaling law; do not start production implementation.
@@ -64,7 +67,8 @@ Before the architecture owner may lock that target:
    and the correctness/native guard.
 5. Accept the target only when the result meets the frozen contract and the
    evidence isolates the claimed owner. An inconclusive result leaves the
-   decision `defer` or `gate` with the next probe named.
+   decision `defer` or `gate` with the next probe named. Keeping or dismissing
+   code on a cost argument needs a matched run with that code removed.
 
 An asymptotic table, review score, profiler suspicion, future benchmark plan,
 or "measure during implementation" note cannot satisfy this probe. Record N/A

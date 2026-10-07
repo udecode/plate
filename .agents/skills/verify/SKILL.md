@@ -139,7 +139,10 @@ its controls after hydration. Preserve evidence before removing that workspace.
 
 Run from the current Plate checkout. Read the relevant package script and
 configuration first; do not reuse ports or source paths from another checkout.
-Use a foreground managed session and retain its handle for cleanup.
+Use a foreground managed session and retain its handle for cleanup. A proof
+run that can outlast the foreground command limit, such as a multi-engine
+browser matrix, runs in the background with one log per engine that ends in
+its `exit N` line; after an interruption or resume, only those logs count.
 
 - Plate app: `pnpm --filter www dev --port 3297`.
   This script generates and serves dynamic docs. Set
