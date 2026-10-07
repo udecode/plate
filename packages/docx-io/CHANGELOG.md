@@ -1,5 +1,13 @@
 # @platejs/docx-io
 
+## 53.3.16
+
+### Patch Changes
+
+- [#5148](https://github.com/udecode/plate/pull/5148) by [@zbeyens](https://github.com/zbeyens) – Fix DOCX export failures with quoted font names in inline styles.
+
+- [#5145](https://github.com/udecode/plate/pull/5145) by [@vincent69001](https://github.com/vincent69001) – Fix `line-height` export: `px`, `pt`, `cm` and `in` values become an absolute line height, `%` and unitless values a line multiplier that no longer scales with the font size.
+
 ## 53.3.10
 
 ### Patch Changes
