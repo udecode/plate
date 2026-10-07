@@ -6,13 +6,14 @@ import {
   createEditorView,
   defineEditorSchema,
   schema,
-} from '../src';
-import { authored } from '../src/authored';
+} from 'plitejs';
+import { authored } from 'plitejs/authored';
+import { history } from 'plitejs/history';
+
 import {
   applyTransactionSpec,
   setEditorComposing,
 } from '../src/core/public-state';
-import { history } from '../src/history';
 
 const point = (offset: number) => ({ path: [0, 0], offset });
 const proposal = { intent: 'propose', projection: 'proposed' } as const;
@@ -273,12 +274,8 @@ describe('native authored input history', () => {
     authorId = 'alice';
     view.update.selection.set(point(4));
 
-    view.update({ tags: 'native-text-input' }, (tx) =>
-      tx.text.deleteBackward()
-    );
-    view.update({ tags: 'native-text-input' }, (tx) =>
-      tx.text.deleteBackward()
-    );
+    view.update.text.deleteBackward();
+    view.update.text.deleteBackward();
 
     const alice = view.read.authored.changes({
       authorId: 'alice',
@@ -316,16 +313,39 @@ describe('native authored input history', () => {
     const view = createEditorView(source, { authored: markup });
     view.update.selection.set({ path: [0, 1], offset: 18 });
 
-    view.update({ tags: 'native-text-input' }, (tx) =>
-      tx.text.deleteBackward()
-    );
-    view.update({ tags: 'native-text-input' }, (tx) =>
-      tx.text.deleteBackward()
-    );
+    view.update.text.deleteBackward();
+    view.update.text.deleteBackward();
 
     const changes = view.read.authored.changes({ status: 'pending' }).items;
     assert.equal(changes.length, 1);
     assert.equal(changes[0].revision, 2);
+  });
+
+  it('groups contiguous backward deletions across a mark boundary into one part', () => {
+    const source = createEditor({
+      plugins: [history(), authored({ authorId: 'alice' })],
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'B' }, { bold: true, text: 'as' }, { text: 'e' }],
+        },
+      ],
+    });
+    const view = createEditorView(source, { authored: proposal });
+    view.update.selection.set({ path: [0, 2], offset: 1 });
+    for (let index = 0; index < 3; index++) {
+      view.update({ tags: 'native-text-input' }, (tx) =>
+        tx.text.delete({ reverse: true, unit: 'character' })
+      );
+    }
+
+    const changes = view.read.authored.changes({ status: 'pending' }).items;
+    assert.equal(changes.length, 1);
+    const details = view.read.authored.details(changes[0].id);
+    assert.equal(
+      details?.parts.status === 'available' ? details.parts.items.length : -1,
+      1
+    );
   });
 
   it('groups contiguous forward deletions into one suggestion', () => {
@@ -345,7 +365,7 @@ describe('native authored input history', () => {
     assert.equal(changes[0].revision, 2);
   });
 
-  it('keeps independent range deletions separate at either edge', () => {
+  it('groups adjacent range deletions from either edge', () => {
     for (const side of ['left', 'right'] as const) {
       const source = createEditor({
         plugins: [history(), authored({ authorId: 'alice' })],
@@ -364,11 +384,8 @@ describe('native authored input history', () => {
       });
 
       const changes = view.read.authored.changes({ status: 'pending' }).items;
-      assert.equal(changes.length, 2, side);
-      assert.ok(
-        changes.every((change) => change.revision === 1),
-        side
-      );
+      assert.equal(changes.length, 1, side);
+      assert.equal(changes[0].revision, 2, side);
       assert.equal(source.read.text.string([]), 'ABCDEFG', side);
       assert.equal(
         view.read.text.string([]),
@@ -378,7 +395,7 @@ describe('native authored input history', () => {
     }
   });
 
-  it('starts a new deletion group after selection moves', () => {
+  it('keeps spatial suggestion grouping independent from history batches', () => {
     const { view } = setup();
     view.update({ tags: 'native-text-input' }, (tx) =>
       tx.text.delete({ reverse: true, unit: 'character' })
@@ -390,8 +407,8 @@ describe('native authored input history', () => {
     );
 
     const changes = view.read.authored.changes({ status: 'pending' }).items;
-    assert.equal(changes.length, 2);
-    assert.ok(changes.every((change) => change.revision === 1));
+    assert.equal(changes.length, 1);
+    assert.equal(changes[0].revision, 2);
     assert.equal(view.read.text.string([]), 'Ba');
 
     view.api.history.undo();
@@ -400,11 +417,7 @@ describe('native authored input history', () => {
       view.read.authored
         .changes({ status: 'pending' })
         .items.map(({ id }) => id),
-      changes.map(({ id }) => id)
-    );
-    assert.deepEqual(
-      view.read.authored.details(changes[1].id)?.parts.items,
-      []
+      [changes[0].id]
     );
     view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base');
@@ -433,7 +446,7 @@ describe('native authored input history', () => {
     );
   });
 
-  it('keeps an independent gap deletion separate from adjacent suggestions', () => {
+  it('extends one adjacent deletion when removing the gap between two suggestions', () => {
     const source = createEditor({
       plugins: [history(), authored({ authorId: 'alice' })],
       initialValue: [{ type: 'paragraph', children: [{ text: 'ABCDE' }] }],
@@ -447,16 +460,16 @@ describe('native authored input history', () => {
     assert.equal(source.read.text.string([]), 'ABCDE');
     assert.equal(view.read.text.string([]), 'AE');
     const changes = view.read.authored.changes({ status: 'pending' }).items;
-    assert.equal(changes.length, 3);
+    assert.equal(changes.length, 2);
     assert.deepEqual(
       changes
         .map(({ revision }) => revision)
         .sort((left, right) => left - right),
-      [1, 1, 1]
+      [1, 2]
     );
   });
 
-  it('starts an insertion proposal when typing follows a deletion', () => {
+  it('groups a collapsed deletion and replacement text', () => {
     const { view } = setup();
     view.update({ tags: 'native-text-input' }, (tx) =>
       tx.text.delete({ reverse: true, unit: 'character' })
@@ -464,12 +477,18 @@ describe('native authored input history', () => {
     type(view, 'X');
 
     const changes = view.read.authored.changes({ status: 'pending' }).items;
-    assert.equal(changes.length, 2);
-    assert.deepEqual(changes.map((change) => change.kind).sort(), [
-      'delete',
-      'insert',
-    ]);
+    assert.equal(changes.length, 1);
+    assert.equal(changes[0].revision, 2);
     assert.equal(view.read.text.string([]), 'BasX');
+    const details = view.read.authored.details(changes[0].id);
+    assert.equal(details?.parts.status, 'available');
+    assert.equal(
+      details?.parts.status === 'available' &&
+        details.parts.items.some(
+          (part) => part.kind === 'content' && part.action === 'replace'
+        ),
+      true
+    );
   });
 
   it('starts a distinct typing batch when the author changes', () => {

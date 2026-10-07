@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor } from '../src';
-import { authored } from '../src/authored';
-import { encodeAuthoredOriginal } from '../src/authored/original';
+import { createEditor, createEditorView, NodeApi } from 'plitejs';
+import { authored } from 'plitejs/authored';
+import { history } from 'plitejs/history';
+
 import { readRecord, records } from '../src/authored/record-tree';
 import {
   authoredState,
@@ -30,7 +31,6 @@ const logicalChanges = (state: AuthoredState) =>
     id,
     {
       ...value,
-      original: encodeAuthoredOriginal(value.original),
       operations: [...records(value.operations)],
       reviews: [...records(value.reviews)],
     },
@@ -201,4 +201,70 @@ describe('authored causal amendments', () => {
       );
     });
   }
+});
+
+describe('overlapping suggestion decisions', () => {
+  const setup = (relation: 'adjacent' | 'deletes' | 'inside') => {
+    let authorId = 'alice';
+    const editor = createEditor({
+      plugins: [history(), authored({ authorId: () => authorId })],
+      initialValue: [paragraph('Base')],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+    view.update.text.insert('XYZ', { at: point(2) });
+    const [{ id: a }] = editor.read.authored.changes().items;
+    authorId = 'bob';
+    if (relation === 'deletes') {
+      view.update.text.delete({ at: { anchor: point(3), focus: point(4) } });
+    } else {
+      view.update.text.insert('q', {
+        at: point(relation === 'inside' ? 3 : 5),
+      });
+    }
+    const b = editor.read.authored
+      .changes()
+      .items.find((change) => change.id !== a)!.id;
+    authorId = 'carol';
+    const reject = (ids: string[]) =>
+      editor.update.authored.decide({
+        action: 'reject',
+        selection: editor.read.authored.select({ ids }),
+      });
+    const proposed = () => view.read.text.string([]);
+    return { a, b, editor, proposed, reject };
+  };
+
+  for (const relation of ['inside', 'deletes'] as const) {
+    it(`blocks rejecting a suggestion another suggestion ${relation === 'inside' ? 'is inserted in' : 'deletes from'}, then rejects both and undoes them together`, () => {
+      const { a, b, editor, proposed, reject } = setup(relation);
+      const before = proposed();
+      const blocked = reject([a]);
+      assert.equal(blocked.status, 'blocked');
+      assert.deepEqual(blocked.status === 'blocked' ? blocked.dependants : [], [
+        b,
+      ]);
+      assert.equal(proposed(), before);
+
+      assert.equal(reject([a, b]).status, 'applied');
+      assert.equal(proposed(), 'Base');
+      editor.api.history.undo();
+      assert.equal(proposed(), before);
+      assert.deepEqual(
+        editor.read.authored
+          .changes({ status: 'pending' })
+          .items.map((change) => change.id)
+          .sort(),
+        [a, b].sort()
+      );
+    });
+  }
+
+  it('rejects a suggestion without touching an adjacent one', () => {
+    const { a, b, editor, reject } = setup('adjacent');
+    assert.equal(reject([a]).status, 'applied');
+    assert.equal(NodeApi.string(editor.read.children()[0]), 'Base');
+    assert.equal(editor.read.authored.change(b)?.status, 'pending');
+  });
 });

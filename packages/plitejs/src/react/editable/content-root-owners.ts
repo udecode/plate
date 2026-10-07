@@ -4,6 +4,7 @@ import {
   NodeApi,
   type Path,
   PathApi,
+  type Point,
   type Range,
   type RootKey,
   type Value,
@@ -15,6 +16,7 @@ import {
   readAuthoredView,
   readAuthoredViewFragmentVersion,
   readAuthoredViewRenderSegments,
+  type NativeAuthoredFragment,
   type NativeAuthoredFragmentSlot,
   type NativeAuthoredRenderSegment,
 } from '../../core/authored-runtime';
@@ -26,6 +28,7 @@ import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
   createPliteViewBoundaryGraph,
   createPliteViewBoundaryRootMap,
+  PliteViewBoundaryGraph,
   getPliteDescendantAtPath,
   getPliteBoundaryPoint,
   rootPlitePoint,
@@ -343,9 +346,142 @@ const VIEW_BOUNDARY_GRAPHS = new WeakMap<
   }
 >();
 
+/**
+ * Whether a collapsed caret may touch struck text: a text slot docks on its
+ * text node, or it sits on a node edge where a neighbour's slot may dock.
+ */
+export const caretMayTouchRetained = <V extends Value>(
+  editor: Pick<AnyEditor<V>, 'read'>,
+  point: Point
+) => {
+  const runtimeEditor = getRuntimeEditor(editor);
+  if (!runtimeEditor || !readAuthoredViewFragmentVersion(runtimeEditor)) {
+    return false;
+  }
+  return editor.read((state) => {
+    const node = state.nodes.get(point.path)?.[0];
+    if (!node || !NodeApi.isText(node)) return true;
+    if (point.offset === 0 || point.offset === node.text.length) return true;
+    const root = point.root ?? state.view.root() ?? MAIN_ROOT_KEY;
+    const nodeKey = getEditorProjectionSnapshotIndex(
+      runtimeEditor,
+      readRootChildren(state, root)
+    ).keyAt(point.path);
+    return readAuthoredViewFragmentSlots(
+      runtimeEditor,
+      nodeKey ?? undefined,
+      root
+    ).some((slot) => slot.side === 'text');
+  });
+};
+
+export const readRetainedFragmentIdsAt = <V extends Value>(
+  editor: Pick<AnyEditor<V>, 'read'>,
+  point: Point
+) => {
+  const runtimeEditor = getRuntimeEditor(editor);
+  if (!runtimeEditor) return '';
+  return editor.read((state) => {
+    const root = point.root ?? state.view.root() ?? MAIN_ROOT_KEY;
+    const nodeKey = getEditorProjectionSnapshotIndex(
+      runtimeEditor,
+      readRootChildren(state, root)
+    ).keyAt(point.path);
+    return readAuthoredViewFragmentSlots(
+      runtimeEditor,
+      nodeKey ?? undefined,
+      root
+    )
+      .map((slot) => slot.id)
+      .join(' ');
+  });
+};
+
+export const readCaretBlock = <V extends Value>(
+  editor: Pick<AnyEditor<V>, 'read'>,
+  owners: readonly ContentRootOwner[],
+  caret: Readonly<{
+    fragment?: Pick<NativeAuthoredFragment, 'changeId' | 'id'> | null;
+    point: Point;
+  }>
+) => {
+  const root = editor.read.view.root() ?? MAIN_ROOT_KEY;
+  if (owners.some((owner) => owner.childRoot === root)) return null;
+  const runtimeEditor = getRuntimeEditor(editor);
+  const placement = caret.fragment
+    ? runtimeEditor &&
+      readAuthoredViewFragments(runtimeEditor, caret.fragment.changeId).find(
+        (entry) => entry.id === caret.fragment?.id
+      )?.placement
+    : { kind: 'text' as const, point: caret.point };
+  if (
+    placement?.kind !== 'text' ||
+    (placement.point.root ?? MAIN_ROOT_KEY) !== root
+  ) {
+    return null;
+  }
+  return placement.point.path[0] ?? null;
+};
+
+/**
+ * The graph of a collapsed caret's block when a character or word step in
+ * `direction` cannot leave it (a word step stops at the block edge), so the
+ * step reads no other block's retained fragments. Null otherwise.
+ */
+export const createCaretBlockGraph = <V extends Value>(
+  editor: Pick<AnyEditor<V>, 'read'>,
+  owners: readonly ContentRootOwner[],
+  caret: Readonly<{
+    collapsed: boolean;
+    direction: 'backward' | 'forward';
+    fragment?: Pick<NativeAuthoredFragment, 'changeId' | 'id'> | null;
+    point?: Point | null;
+  }>
+) => {
+  const { direction, fragment, point } = caret;
+  if (!caret.collapsed || !point) return null;
+  const block = readCaretBlock(editor, owners, { fragment, point });
+  if (block === null) return null;
+  const graph = createContentRootViewBoundaryGraph(editor, owners, block);
+  const node = PliteViewBoundaryGraph.resolvePointNode(graph, {
+    affinity: direction,
+    ...(fragment ? { fragmentId: fragment.id } : {}),
+    point,
+  });
+  if (!node) return null;
+  if (
+    node.text &&
+    (direction === 'backward'
+      ? point.offset > node.text.start
+      : point.offset < node.text.end)
+  ) {
+    return graph;
+  }
+  // The step stays in the block only when non-empty live text of the same
+  // block lies past any struck text and empty boundaries in its direction.
+  let current: PliteViewBoundaryGraphNode | null = node;
+  while (current) {
+    current =
+      direction === 'backward'
+        ? PliteViewBoundaryGraph.previousNode(graph, current)
+        : PliteViewBoundaryGraph.nextNode(graph, current);
+    if (!current || current.blockKey !== node.blockKey) return null;
+    if (!current.fragment && current.text?.end !== current.text?.start) {
+      return graph;
+    }
+  }
+  return null;
+};
+
+/**
+ * Unless the root itself carries retained slots, `block` limits the graph to
+ * one top-level block, so a local question reads only that block's retained
+ * fragments; the result then has no neighbours past that block.
+ */
 export const createContentRootViewBoundaryGraph = <V extends Value>(
   editor: Pick<AnyEditor<V>, 'read'>,
-  owners: readonly ContentRootOwner[]
+  owners: readonly ContentRootOwner[],
+  block?: number
 ) =>
   editor.read((state) => {
     const nodes: PliteViewBoundaryGraphNodeInput[] = [];
@@ -365,6 +501,7 @@ export const createContentRootViewBoundaryGraph = <V extends Value>(
     const cacheKey = JSON.stringify([
       graphRoot,
       owners.map(getContentRootOwnerKey),
+      block ?? null,
     ]);
     let cache = source ? VIEW_BOUNDARY_GRAPHS.get(source) : null;
     if (source && cache?.version !== version) {
@@ -614,9 +751,18 @@ export const createContentRootViewBoundaryGraph = <V extends Value>(
         segments.forEach((segment) => appendRenderSegment(segment));
         return;
       }
-      slotsAt()
-        .filter((slot) => slot.side === 'children')
-        .forEach((slot) => appendFragment(slot));
+      const rootSlots = slotsAt().filter((slot) => slot.side === 'children');
+      const scoped =
+        block !== undefined &&
+        root === graphRoot &&
+        !ownerStack.size &&
+        !rootSlots.length &&
+        children[block];
+      if (scoped) {
+        appendNode(scoped, [block]);
+        return;
+      }
+      rootSlots.forEach((slot) => appendFragment(slot));
       children.forEach((child, index) => {
         appendNode(child, [index]);
       });

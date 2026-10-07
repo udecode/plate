@@ -202,7 +202,7 @@ describe('native authored views', () => {
           view.read.authored
             .changes({ status: 'pending' })
             .items.map(({ id }) => id),
-          pending
+          across ? pending.slice(1) : pending
         );
         view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
         assert.equal(

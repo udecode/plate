@@ -61,6 +61,7 @@ import {
 import {
   type ContentRootNavigationEditor,
   type ContentRootOwner,
+  createCaretBlockGraph,
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
   getContentRootViewBoundaryPoint,
@@ -91,7 +92,11 @@ import {
 } from './runtime-editor-api';
 import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
-import { canUseNativeViewSelection } from './selection-projected-dom';
+import {
+  canUseNativeViewSelection,
+  caretTouchesRetained,
+  retainedCaretBoundary,
+} from './selection-projected-dom';
 
 export {
   type ContentRootOwner,
@@ -1277,6 +1282,13 @@ export const resolveMarkupSelectionMovement = ({
   viewSelection: PliteViewSelection | null;
 }) => {
   const root = toInternalRoot(editor.read((state) => state.view.root()));
+  const caretAffinity =
+    selection &&
+    RangeApi.isCollapsed(selection) &&
+    SelectionApi.isText(selection) &&
+    caretTouchesRetained(graph, selection.anchor)
+      ? selection.affinity
+      : undefined;
   const initial =
     viewSelection ??
     (selection
@@ -1284,17 +1296,20 @@ export const resolveMarkupSelectionMovement = ({
           anchor: {
             point: rootPlitePoint(selection.anchor, root),
             affinity:
-              !RangeApi.isCollapsed(selection) &&
+              caretAffinity ??
+              (!RangeApi.isCollapsed(selection) &&
               !RangeApi.isBackward(selection)
                 ? 'forward'
-                : 'backward',
+                : 'backward'),
           },
           focus: {
             point: rootPlitePoint(selection.focus, root),
             affinity:
-              !RangeApi.isCollapsed(selection) && RangeApi.isBackward(selection)
+              caretAffinity ??
+              (!RangeApi.isCollapsed(selection) &&
+              RangeApi.isBackward(selection)
                 ? 'forward'
-                : 'backward',
+                : 'backward'),
           },
         })
       : null);
@@ -1471,6 +1486,9 @@ const moveMarkupSelection = (
       };
     }
   }
+  if (!extend && target.fragmentId) {
+    target = retainedCaretBoundary(graph, target) ?? target;
+  }
   const projected = createPliteViewSelection(graph, {
     anchor: extend ? initial.anchor : target,
     focus: target,
@@ -1500,7 +1518,7 @@ const moveMarkupSelection = (
         docked ? { affinity: target.affinity } : undefined
       )
     );
-    writePliteViewSelection(editor, projected);
+    writePliteViewSelection(editor, target.owner ? projected : null);
   } else {
     collapseModelSelectionForProjectedSelection(editor, selection);
     writePliteViewSelection(editor, projected);
@@ -1541,7 +1559,25 @@ const applyContentRootViewSelectionAction = ({
   const owners = findContentRootOwners(editor);
   const viewSelection = readPliteViewSelection(editor);
   if (readAuthoredViewFragmentVersion(editor)) {
-    const graph = createContentRootViewBoundaryGraph(editor, owners);
+    const caret = viewSelection
+      ? {
+          collapsed: isPliteViewSelectionCollapsed(viewSelection),
+          fragment: viewSelection.segments.parts[0]?.fragment,
+          point: viewSelection.anchor.point,
+        }
+      : {
+          collapsed: !!selection && RangeApi.isCollapsed(selection),
+          point: selection?.anchor,
+        };
+    const graph =
+      (!extend &&
+        action.kind === 'move' &&
+        (action.axis === 'horizontal' || action.axis === 'word') &&
+        createCaretBlockGraph(editor, owners, {
+          ...caret,
+          direction: action.direction,
+        })) ||
+      createContentRootViewBoundaryGraph(editor, owners);
     if (
       moveMarkupSelection({
         action,

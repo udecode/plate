@@ -9,6 +9,7 @@ import {
   SelectionApi,
   type TargetFreshnessRequest,
 } from '../..';
+import { readAuthoredView } from '../../core/authored-runtime';
 import {
   type DOMRange,
   getSelection,
@@ -24,7 +25,11 @@ import {
   isWebKitDOMHost,
   replaceDOMSelectionRange,
 } from '../../dom/internal';
-import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
+import {
+  resolveDOMPointInRoot,
+  resolveDOMRangeInRoot,
+} from '../../dom/plugin/dom-editor';
+import { readDOMFragmentTarget } from '../../dom/plugin/dom-fragment-view';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
@@ -59,6 +64,11 @@ import type {
 } from './input-state';
 import { isEditableOutsideFocusBoundarySettling } from './input-state';
 import { getExternalTextHostOwner } from './interaction-owner';
+import {
+  isModelCaret,
+  writeMarkupSelection,
+  writeModelCaret,
+} from './markup-selection';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
   getSelection as editorGetSelection,
@@ -73,6 +83,8 @@ import {
   canUseNativeViewSelection,
   resolveNativeViewSelectionDOMRange,
   resolveProjectedDOMSelection,
+  resolveProjectedDOMSelectionEndpoint,
+  resolveRetainedDockDOMPoint,
   resolveViewBoundaryDOMPoint,
 } from './selection-projected-dom';
 import {
@@ -449,16 +461,52 @@ export const isStaleModelOwnedTextInputDOMRange = ({
 
 const importProjectedDOMSelection = ({
   domSelection,
+  echo = false,
   editor,
   editorElement,
   inputController,
 }: {
   domSelection: globalThis.Selection;
+  echo?: boolean;
   editor: ReactRuntimeEditor;
   editorElement: HTMLElement;
   inputController: EditableInputController;
 }) => {
   if (inputController.state.isNativeSelectionDragActive) return false;
+
+  // A collapsed markup caret in live text is the model selection; its side
+  // of a struck run comes from the DOM leaf, so no graph is built.
+  const { anchorNode } = domSelection;
+  if (
+    domSelection.isCollapsed &&
+    anchorNode &&
+    editorElement.contains(anchorNode) &&
+    !readDOMFragmentTarget(anchorNode) &&
+    readAuthoredView(editor)?.projection === 'markup'
+  ) {
+    // The echo of a model export carries no new caret.
+    if (echo) return true;
+    const caret = resolveProjectedDOMSelectionEndpoint({
+      node: anchorNode,
+      offset: domSelection.anchorOffset,
+      owners: findContentRootOwners(editor),
+    });
+    if (
+      caret &&
+      !caret.fragmentId &&
+      !caret.owner &&
+      caret.root === toInternalRoot(editor.read.view.root())
+    ) {
+      writeModelCaret(editor, caret.point, caret.affinity);
+      setEditableModelSelectionPreference({
+        inputController,
+        preferModelSelection: true,
+        reason: 'viewport-backed',
+        selectionSource: 'model-owned',
+      });
+      return true;
+    }
+  }
 
   const projectedSelection = resolveProjectedDOMSelection({
     domSelection,
@@ -486,7 +534,23 @@ const importProjectedDOMSelection = ({
             : undefined
         )
   );
-  writePliteViewSelection(editor, projectedSelection);
+  writeMarkupSelection(editor, projectedSelection);
+  if (
+    isPliteViewSelectionCollapsed(projectedSelection) &&
+    domSelection.anchorNode &&
+    readDOMFragmentTarget(domSelection.anchorNode)
+  ) {
+    // Struck text takes no native input, so the DOM caret waits at the live
+    // point the fragment docks to; a caret inside the fragment is painted.
+    const { affinity, point } = projectedSelection.anchor;
+    const domPoint = isModelCaret(projectedSelection)
+      ? resolveDOMPointInRoot(editor, point, editorElement, affinity)
+      : resolveRetainedDockDOMPoint(editor, projectedSelection.anchor);
+    if (domPoint) {
+      inputController.state.selectionChangeOrigin = 'programmatic-export';
+      domSelection.collapse(domPoint[0], domPoint[1]);
+    }
+  }
   setEditableModelSelectionPreference({
     inputController,
     preferModelSelection: true,
@@ -1141,9 +1205,15 @@ export const applyEditableDOMSelectionChange = ({
     return;
   }
 
+  const echo =
+    selectionChangeOrigin !== 'native-user' &&
+    domSelection.isCollapsed &&
+    isEditableModelSelectionPreferred(inputController);
+
   if (
     importProjectedDOMSelection({
       domSelection,
+      echo,
       editor,
       editorElement,
       inputController,
@@ -1152,13 +1222,7 @@ export const applyEditableDOMSelectionChange = ({
     return;
   }
 
-  if (
-    selectionChangeOrigin !== 'native-user' &&
-    domSelection.isCollapsed &&
-    isEditableModelSelectionPreferred(inputController)
-  ) {
-    return;
-  }
+  if (echo) return;
 
   if (selectionChangeOrigin === 'repair-induced' && domSelection.isCollapsed) {
     if (
@@ -1563,7 +1627,9 @@ export const syncEditableDOMSelectionToEditor = ({
       return;
     }
     if (collapsedViewSelection) {
-      const point = resolveViewBoundaryDOMPoint(editor, viewSelection.focus);
+      const point = viewSelection.focus.fragmentId
+        ? resolveRetainedDockDOMPoint(editor, viewSelection.focus)
+        : resolveViewBoundaryDOMPoint(editor, viewSelection.focus);
       if (!point) return;
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';

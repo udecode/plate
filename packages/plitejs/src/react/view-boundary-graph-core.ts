@@ -20,6 +20,7 @@ export type PliteViewBoundaryGraphNodeInput = Readonly<{
 }>;
 
 export type PliteViewBoundaryGraphNode = Readonly<{
+  blockKey: string | null;
   fragment: Pick<NativeAuthoredFragment, 'changeId' | 'id'> | null;
   index: number;
   key: string;
@@ -139,6 +140,7 @@ const createNode = (
           changeId: input.fragment.changeId,
         })
       : null,
+    blockKey: input.blockKey ?? null,
     index,
     key: getGraphNodeKey({
       ownerKey,

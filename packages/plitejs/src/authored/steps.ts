@@ -16,6 +16,7 @@ import {
   nodeProps,
   type JsonRecord,
   jsonEqual,
+  isTextBoundaryToken,
   isTextNode,
   PreparedTokenSlice,
   tokenLength,
@@ -83,6 +84,8 @@ import {
   authoredOperationPropertySteps,
   type AuthoredContributionStep,
   type AuthoredEditIdentity,
+  type AuthoredOperation,
+  type AuthoredRecord,
   type AuthoredState,
 } from './state';
 
@@ -201,6 +204,18 @@ export type AuthoredStep = Readonly<{
   targets: readonly AuthoredTarget[];
 }>;
 
+// An undo restores only what its original removed; a redo re-applies the
+// original edit, so it overrides removals it observed just like the original.
+const isAuthoredUndo = (state: AuthoredState, operation: AuthoredOperation) => {
+  let undo = false;
+  let current: AuthoredOperation | null = operation;
+  while (current?.kind === 'edit' && current.inverseOf) {
+    undo = !undo;
+    current = readRecord(state.operations, current.inverseOf);
+  }
+  return undo;
+};
+
 export const authoredRootNodes = (value: JsonEditorValue, root: string) =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
 export const authoredOperationOrigin = (id: string, root: string) =>
@@ -295,17 +310,67 @@ export const createAuthoredPositionRoots = (
   return roots;
 };
 
+const authoredProposalRemovesText = (
+  state: AuthoredState,
+  proposal: AuthoredRecord
+) =>
+  [...records(proposal.operations)].some(([, id]) => {
+    const operation = readRecord(state.operations, id);
+    return (
+      operation?.kind === 'edit' &&
+      authoredContributionSteps(operation).some((step) =>
+        step.targets.some((target) => {
+          const removed = readAuthoredRetainedContent(target);
+          return (
+            removed?.kind === 'delete' &&
+            DocumentIndex.fromValue(removed.slice.content)
+              .slice(removed.from, removed.to)
+              .toJSON()
+              .some((token) => token.kind === 'text' && token.text.length > 0)
+          );
+        })
+      )
+    );
+  });
+
 export const authoredEditTarget = (
   change: DocumentChange,
   roots: AuthoredPositionRoots,
   state: AuthoredState,
   options: Readonly<{
     adjacentDeletions: boolean;
-    amendDeletions: boolean;
     authorId: string;
+    value?: JsonEditorValue;
   }>
 ): string | null => {
   if (change.createRoots.size || change.deleteRoots.size) return null;
+  const documents = new Map<string, DocumentIndex>();
+  // A mark boundary between text nodes has width but no content, so a
+  // deletion just across it still continues the same run.
+  const acrossTextBoundaries = (root: string, position: number) => {
+    const { value } = options;
+    if (!value) return [position];
+    let document = documents.get(root);
+    if (!document) {
+      document = DocumentIndex.fromValue(authoredRootNodes(value, root));
+      documents.set(root, document);
+    }
+    const isTextBoundary = (from: number) => {
+      if (from < 0 || from + 1 > document.length) return false;
+      const [token, ...rest] = document.slice(from, from + 1).toJSON();
+      return rest.length === 0 && !!token && isTextBoundaryToken(token);
+    };
+    const positions = [position];
+    for (let next = position; isTextBoundary(next); next += 1) {
+      positions.push(next + 1);
+    }
+    for (let previous = position; isTextBoundary(previous - 1); previous -= 1) {
+      positions.push(previous - 1);
+    }
+    return positions;
+  };
+  const isForeign = (identity: string) =>
+    readRecord(state.changes, identity)?.authorId !== options.authorId;
   let adjacentTarget: string | null = null;
   let containedTarget: string | null = null;
   let mixed = false;
@@ -362,11 +427,15 @@ export const authoredEditTarget = (
           }
         }
         if (section.replacement && options.adjacentDeletions) {
+          const carriesText =
+            section.replacement.length === 0 ||
+            section.replacement.some((token) => token.kind === 'text');
           const editFrom = position;
           const editTo = insertion ? position : position + section.length;
-          for (const deletionPosition of insertion
+          for (const deletionPosition of (insertion
             ? [editFrom]
-            : [editFrom, editTo]) {
+            : [editFrom, editTo]
+          ).flatMap((edge) => acrossTextBoundaries(root, edge))) {
             for (const { operation, target: deletion } of authoredDeletionsAt(
               state,
               root,
@@ -379,8 +448,12 @@ export const authoredEditTarget = (
               ) {
                 continue;
               }
+              // Input carrying text continues an adjacent deletion. A bare
+              // block break joins it only when that suggestion removed no
+              // text, as a paragraph join does, or restores deleted content.
               if (
-                !options.amendDeletions &&
+                !carriesText &&
+                authoredProposalRemovesText(state, proposal) &&
                 !restoredAuthoredSpans({
                   state,
                   roots,
@@ -410,11 +483,27 @@ export const authoredEditTarget = (
                 deletedFrom === null ||
                 deletedTo === null ||
                 deletionPosition < deletedFrom ||
-                deletionPosition > deletedTo
+                deletionPosition > deletedTo ||
+                // Another author's content between them keeps the edit apart.
+                [
+                  ...authoredPositionSpans(
+                    index,
+                    Math.min(deletionPosition, deletedFrom, deletedTo),
+                    Math.max(deletionPosition, deletedFrom, deletedTo)
+                  ),
+                ].some(({ span }) => {
+                  const birth =
+                    span.birth && readRecord(state.changes, span.birth);
+                  return !!birth && birth.authorId !== options.authorId;
+                })
               ) {
                 continue;
               }
-              if (containedTarget && containedTarget !== proposal.id) {
+              if (
+                containedTarget &&
+                !isForeign(containedTarget) &&
+                containedTarget !== proposal.id
+              ) {
                 mixed = true;
               }
               adjacentTarget ??= proposal.id;
@@ -426,7 +515,13 @@ export const authoredEditTarget = (
     }
   }
   if (mixed || (containedTarget && uncovered)) return null;
-  return containedTarget ?? (options.adjacentDeletions ? adjacentTarget : null);
+  // Deleting inside another author's insertion continues the adjacent own
+  // deletion instead of amending their proposal.
+  return (
+    (containedTarget && !isForeign(containedTarget) ? containedTarget : null) ??
+    (options.adjacentDeletions ? adjacentTarget : null) ??
+    containedTarget
+  );
 };
 
 export const coalesceAuthoredReplacements = (
@@ -2030,6 +2125,9 @@ const mapAuthoredStep = (input: AuthoredMappingInput) =>
                   ...authoredContentLocations(accepted.positions, span),
                 ])
                 .filter((location) => location.root === acceptedRoot);
+              // Content absent from the accepted document has no counterpart
+              // there; the ordinary restore below handles it.
+              if (!locations.length) return null;
               const start = Math.min(
                 ...locations.map(
                   (location) =>
@@ -2214,7 +2312,15 @@ const mapAuthoredStep = (input: AuthoredMappingInput) =>
                 )) {
                   if (
                     removal.value.id === input.operationId ||
-                    !isAuthoredEditVisible(input.state, removal.value, visible)
+                    !isAuthoredEditVisible(
+                      input.state,
+                      removal.value,
+                      visible
+                    ) ||
+                    (input.direction === 'forward' &&
+                      mappedOperation?.kind === 'edit' &&
+                      !isAuthoredUndo(input.state, mappedOperation) &&
+                      observesAuthoredOperation(mappedOperation, removal.value))
                   ) {
                     continue;
                   }
@@ -2895,7 +3001,7 @@ export const captureAuthoredChange = (input: {
   schema?: CompiledEditorSchema | null;
   state?: AuthoredState;
   associations?: ReadonlyArray<ReadonlyArray<AuthoredTarget['association']>>;
-  insertions?: ReadonlyMap<DocumentChange, AuthoredInsertion>;
+  insertionsByStep?: ReadonlyMap<DocumentChange, AuthoredInsertion>;
   afterPositions?: AuthoredPositionRoots;
   restoreIdentity?: boolean;
   change?: DocumentChange;
@@ -2919,7 +3025,7 @@ export const captureAuthoredChange = (input: {
     const captured = captureAuthoredStep({
       ...input,
       associations: input.associations?.[stepIndex],
-      insertion: input.insertions?.get(change),
+      insertion: input.insertionsByStep?.get(change),
       change,
       offsets,
       positions,

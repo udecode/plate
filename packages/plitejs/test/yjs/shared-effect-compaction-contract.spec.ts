@@ -190,6 +190,60 @@ describe('plitejs/yjs shared effect compaction', () => {
     tailJoin.cleanup();
   });
 
+  it('decodes a shared effect written at a legacy version', () => {
+    const rootName = 'legacy-shared-effect';
+    const announce = (version: 1 | 2, received: string[]) => {
+      const type = defineEffect<string>({
+        collab: 'shared',
+        collabReplay: 'live',
+        key: 'legacy.announce',
+        persist:
+          version === 1
+            ? { ...valueCodecs.string, version: 1 }
+            : {
+                ...valueCodecs.string,
+                legacyDecoders: { 1: (value) => `v1:${String(value)}` },
+                version: 2,
+              },
+      });
+      const recorder = definePlugin(`legacy-recorder-${version}`, {
+        effectTypes: [type],
+        on: {
+          commit({ commit }) {
+            for (const effect of commit.effects) {
+              if (effect.type === type) received.push(String(effect.value));
+            }
+          },
+        },
+      });
+      return { recorder, type };
+    };
+    const createPeer = (doc: Y.Doc, version: 1 | 2) => {
+      const received: string[] = [];
+      const { recorder, type } = announce(version, received);
+      const editor = createEditor({
+        plugins: [recorder] as const,
+        initialValue: [paragraph('body')],
+      });
+      const cleanup = editor.install(
+        yjs({ doc, initialReady: true, rootName, seed: true })
+      );
+      return { cleanup, doc, editor, received, type };
+    };
+    const legacy = createPeer(new Y.Doc(), 1);
+    const currentDoc = new Y.Doc();
+    sync(legacy.doc, currentDoc);
+    const current = createPeer(currentDoc, 2);
+    sync(current.doc, legacy.doc);
+
+    legacy.editor.update((tx) => tx.effects.emit(legacy.type, 'hello'));
+    sync(legacy.doc, current.doc);
+
+    assert.deepEqual(current.received, ['v1:hello']);
+    legacy.cleanup();
+    current.cleanup();
+  });
+
   it('captures custom latest effects instead of replaying their last event', () => {
     const rootName = 'custom-latest-snapshot';
     const title = defineStateField({

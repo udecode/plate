@@ -153,12 +153,10 @@ Changing the mode updates the input intent and preserves the current projection:
 | Type inside a pending insertion | Insert independent ordinary text and split the surrounding suggestion. | Amend your own insertion; create a separate proposal inside another author's insertion. |
 | Delete ordinary text | Delete directly. | Create a deletion proposal. |
 | Delete proposed text | Delete the selected portion directly. | Remove the selected portion of your own insertion; propose deleting another author's insertion. |
-| Edit struck-through text | Insert independent ordinary text, or directly remove the selected deleted characters. | Create an independent insertion; repeated deletion has no effect. |
+| Edit in or beside struck-through text | Typing inside struck text splits it and adds ordinary text between the parts; typing at its edge lands at that edge. Backspace or Delete removes struck characters directly; undo returns them to the deletion. | Typing inside struck text splits it and adds a proposal between the parts; typing at the edge of your own deletion joins it as one replacement. Backspace or Delete steps over struck characters one at a time without changing them, then deletes the next character and joins your adjacent deletion. |
 | Replace a selection | Delete the selection and insert ordinary text in one undoable action. | Apply the deletion rules above and insert proposed text in one undoable action; replacing your own insertion amends it. |
 
-Editing applies the same rules to your own and other authors' suggestions. Partial edits affect only the selection and do not accept or reject an entire suggestion. Split portions retain their original change ID and discussion. Continuous input groups related edits, and undo/redo restores the text and its suggestion associations together.
-
-Input in a wholly deleted block creates a separate block before the retained original. Enter and pasted formatting stay with the new content; reviewing the deletion does not consume that content.
+A click inside struck-through text places the caret where you click, and arrow keys move through it one character at a time. Selections can start or end inside struck text. Copying in Suggesting leaves struck text out; copying in Editing includes it as ordinary text. Editing applies the same rules to your own and other authors' suggestions. Partial edits affect only the selection and do not accept or reject an entire suggestion. Split portions retain their original change ID and discussion. Continuous input groups related edits, and undo/redo restores the text and its suggestion associations together.
 
 Mode belongs to the exact mounted view. Two views over one document can use different modes without changing each other. Changing mode affects subsequent input, preserves pending changes, and adds no undo step.
 
@@ -203,11 +201,11 @@ Clicking an element with `data-editor-authored-change` activates its change in t
 
 ### Formatting and blocks
 
-The first explicit proposal makes a sentence bold; the second inserts a paragraph. Open each block's discussion button to accept or reject it. Select text and use **Bold** to change formatting directly, or press Enter to propose another paragraph.
+The first explicit proposal makes a sentence bold; the second inserts a paragraph. Open each block's discussion button to accept or reject it. Select text and use **Bold** to propose a formatting change, or press Enter to propose another paragraph. In Editing mode, **Bold** changes the text directly.
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-Add [Basic Marks](/docs/basic-marks) for supported text formatting. Ordinary text mark commands change existing text directly in both modes. Formatting carried by new content follows that content. An explicit proposal can still include text, formatting, and structural changes.
+Add [Basic Marks](/docs/basic-marks) for supported text formatting. Ordinary text mark commands follow the mode. Editing changes existing text directly, and Suggesting records a format suggestion. Formatting carried by new content follows that content. An explicit proposal can still include text, formatting, and structural changes.
 
 ### Accepted, proposed, and markup
 

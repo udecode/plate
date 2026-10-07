@@ -217,7 +217,7 @@ describe('DiscussionSlots', () => {
     view.unmount();
   });
 
-  it('shows retained inserted text across an inline boundary and separate ranges', async () => {
+  it('groups only contiguous inserted text across an inline boundary', async () => {
     const { DiscussionSlots } = await import(
       `./discussion?test=${Math.random().toString(36).slice(2)}`
     );
@@ -286,10 +286,7 @@ describe('DiscussionSlots', () => {
       (item) => item.textContent
     );
 
-    expect(descriptions).toEqual([
-      'Add “suggestions”',
-      'Add “ like this added text”',
-    ]);
+    expect(descriptions).toEqual(['Add “suggestions like this added text”']);
 
     fireEvent.click(triggers[1]);
     const separatedCard = view.container.querySelector(

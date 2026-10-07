@@ -1154,7 +1154,7 @@ const readTextToCaret = (editor: DOMEditor<any>, from: Point) => {
 /** Resolve native coordinates within an exact mounted DOM root. @internal */
 export const resolveDOMRangeInRoot = (
   editor: DOMEditor<any>,
-  range: Range,
+  range: Range & { readonly affinity?: 'backward' | 'forward' },
   root?: HTMLElement | null
 ): DOMRange | null => {
   const { anchor, focus } = range;
@@ -1164,7 +1164,7 @@ export const resolveDOMRangeInRoot = (
     editor,
     anchor,
     root,
-    collapsed ? undefined : isBackward ? 'backward' : 'forward'
+    collapsed ? range.affinity : isBackward ? 'backward' : 'forward'
   );
 
   if (!domAnchor) {

@@ -44,7 +44,6 @@ import { PLITE_REACT_PRESERVE_SELECTION_TAGS } from '../update-policy';
 import {
   readPliteViewSelectionHistoryGroup,
   subscribePliteViewSelection,
-  writePliteViewSelection,
 } from '../view-selection';
 import { isSelectionViewportBacked } from '../viewport-commands';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
@@ -62,6 +61,7 @@ import {
   restoreEditableCompositionRuntimeMarks,
 } from './input-state';
 import { getEditableInteractionOwner } from './interaction-owner';
+import { writeMarkupSelection } from './markup-selection';
 import type { DeferredMutation } from './model-input-strategy';
 import {
   getEditorRuntimeOwner,
@@ -1104,7 +1104,7 @@ export class EditableDOMRuntime {
       return result;
     }
 
-    writePliteViewSelection(
+    writeMarkupSelection(
       this.editorValue,
       readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null
     );

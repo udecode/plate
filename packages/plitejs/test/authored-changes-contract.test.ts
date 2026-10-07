@@ -7,6 +7,7 @@ import {
   definePlugin,
   definePluginSlot,
   DocumentChange,
+  NodeApi,
   type EditorCommit,
 } from '../src';
 import { authored, type AuthoredChangePublication } from '../src/authored';
@@ -18,6 +19,7 @@ import {
   indexAuthoredState,
   materializeAuthoredEdit,
 } from '../src/authored/state';
+import { subscribeAuthoredViewFragmentSlots } from '../src/core/authored-runtime';
 import { history } from '../src/history';
 
 const paragraph = (text: string) => ({
@@ -27,6 +29,172 @@ const paragraph = (text: string) => ({
 const point = (offset: number, block = 0) => ({ path: [block, 0], offset });
 
 describe('native authored changes', () => {
+  const pagedEditor = () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('Base')],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'proposed' },
+    });
+    view.update.text.insert('a', { at: point(0) });
+    view.update.text.insert('b', { at: point(4) });
+    return editor;
+  };
+
+  it('restarts paging at the first page for a cursor from another document', () => {
+    const { cursor } = pagedEditor().read.authored.changes({ limit: 1 });
+    assert.ok(cursor);
+    const other = pagedEditor();
+    assert.deepEqual(
+      other.read.authored.changes({ cursor, limit: 1 }).items,
+      other.read.authored.changes({ limit: 1 }).items
+    );
+  });
+
+  it('restarts paging for a cursor from a document whose id contains a colon', () => {
+    const editor = pagedEditor();
+    const { cursor, documentId } = editor.read.authored.changes({ limit: 1 });
+    assert.ok(cursor);
+    assert.deepEqual(
+      editor.read.authored.changes({
+        cursor: cursor.replace(documentId, 'team:1'),
+        limit: 1,
+      }).items,
+      editor.read.authored.changes({ limit: 1 }).items
+    );
+  });
+
+  it('rejects a page cursor from another query', () => {
+    const editor = pagedEditor();
+    const { cursor } = editor.read.authored.changes({ limit: 1 });
+    assert.ok(cursor);
+    for (const query of [{ status: 'pending' as const }, { from: 0 }]) {
+      assert.throws(
+        () => editor.read.authored.changes({ ...query, cursor, limit: 1 }),
+        /another query/
+      );
+    }
+  });
+
+  it('hides a suggestion once its content is deleted after the list was read', () => {
+    let authorId = 'alice';
+    const editor = createEditor({
+      plugins: [authored({ authorId: () => authorId })],
+      initialValue: [paragraph('Base'), paragraph('Other')],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+    const key = view.key([0, 0]);
+    assert.ok(key);
+    const stop = subscribeAuthoredViewFragmentSlots(view, key, () => {});
+    view.update.text.insert('XY', { at: point(4) });
+    view.update.text.delete({
+      at: { anchor: point(0, 1), focus: point(3, 1) },
+    });
+    const pending = () =>
+      editor.read.authored.changes({ status: 'pending' }).items.length;
+    assert.equal(pending(), 2);
+    authorId = 'bob';
+    view.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    view.update.text.delete({ at: { anchor: point(4), focus: point(6) } });
+    assert.equal(pending(), 1);
+    stop();
+  });
+
+  it('summarizes contiguous keystroke deletions as one part in document order', () => {
+    const editor = createEditor({
+      plugins: [authored({ authorId: 'alice' })],
+      initialValue: [paragraph('Hello world')],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'proposed' },
+    });
+    view.update.selection.set(point(11));
+    for (let index = 0; index < 3; index++) {
+      view.update(
+        {
+          tags: index
+            ? ['native-text-input', 'history-merge']
+            : 'native-text-input',
+        },
+        (tx) => tx.text.delete({ reverse: true, unit: 'character' })
+      );
+    }
+    view.update.text.delete({ at: { anchor: point(0), focus: point(1) } });
+
+    const deleted = editor.read.authored
+      .changes({ status: 'pending' })
+      .items.map((change) => {
+        const details = editor.read.authored.details(change.id);
+        assert.equal(details?.parts.status, 'available');
+        if (details?.parts.status !== 'available') return [];
+        return details.parts.items.map((part) =>
+          part.kind === 'content' && part.before
+            ? part.before.content.content.map(NodeApi.string).join('')
+            : part.kind
+        );
+      });
+    assert.deepEqual(
+      deleted.sort((a, b) => (a[0] ?? '').localeCompare(b[0] ?? '')),
+      [['H'], ['rld']]
+    );
+  });
+
+  for (const marked of [false, true]) {
+    it(`summarizes Backspace then typing as one replacement${marked ? ' across a mark boundary' : ''}`, () => {
+      const editor = createEditor({
+        plugins: [authored({ authorId: 'alice' })],
+        initialValue: [
+          {
+            type: 'paragraph',
+            children: marked
+              ? [{ text: 'Hello wo' }, { text: 'rld', bold: true }]
+              : [{ text: 'Hello world' }],
+          },
+        ],
+      });
+      const view = createEditorView(editor, {
+        authored: { intent: 'propose', projection: 'proposed' },
+      });
+      view.update.selection.set(
+        marked ? { path: [0, 1], offset: 3 } : point(11)
+      );
+      for (let index = 0; index < 3; index++) {
+        view.update(
+          {
+            tags: index
+              ? ['native-text-input', 'history-merge']
+              : 'native-text-input',
+          },
+          (tx) => tx.text.delete({ reverse: true, unit: 'character' })
+        );
+      }
+      for (const text of ['X', 'Y']) {
+        view.update({ tags: ['native-text-input'] }, (tx) =>
+          tx.text.insert(text)
+        );
+      }
+
+      const [change] = editor.read.authored.changes().items;
+      const details = editor.read.authored.details(change.id);
+      assert.ok(details?.parts.status === 'available');
+      assert.deepEqual(
+        details.parts.items.map((part) =>
+          part.kind === 'content'
+            ? [
+                part.action,
+                part.before?.content.content.map(NodeApi.string).join('') ?? '',
+                part.after?.content.content.map(NodeApi.string).join('') ?? '',
+              ]
+            : [part.kind]
+        ),
+        [['replace', 'rld', 'XY']]
+      );
+    });
+  }
+
   it('keeps direct insertions inside a deletion outside its review ranges', () => {
     const editor = createEditor({
       plugins: [authored({ authorId: 'alice' })],
@@ -502,22 +670,11 @@ describe('native authored changes', () => {
     const { id } = restored.read.authored.changes({ proposals: true }).items[0];
     view.update.text.insert('X', { at: point(10) });
     assert.equal(view.read.text.string([]), 'Base draftX');
-    assert.deepEqual(restored.read.authored.details(id)?.original, {
-      status: 'unavailable',
-      reason: 'legacy',
-    });
+    assert.equal(restored.read.authored.change(id)?.status, 'pending');
     await view.api.history.undo();
     assert.equal(view.read.text.string([]), 'Base draft');
     await view.api.history.redo();
     assert.equal(view.read.text.string([]), 'Base draftX');
-    const reopened = createEditor({
-      plugins: [plugin],
-      initialValue: JSON.parse(JSON.stringify(restored.read.value())),
-    });
-    assert.deepEqual(reopened.read.authored.details(id)?.original, {
-      status: 'unavailable',
-      reason: 'legacy',
-    });
   });
 
   it('rebuilds live indexes from persisted footprints without hydrating retained bodies', async () => {

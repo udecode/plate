@@ -177,10 +177,20 @@ export const createPliteViewSelectionDecorationSource = <V extends Value>(
   });
 };
 
-export const usePliteViewSelectionPresence = (editor: object) =>
+/** Whether the view selection needs painted range decorations. */
+export const usePliteViewSelectionNeedsDecorations = (
+  editor: ReactRuntimeEditor<any>
+) =>
   useSyncExternalStore(
     (listener) => subscribePliteViewSelection(editor, listener),
-    () => readPliteViewSelection(editor) !== null,
+    () => {
+      const selection = readPliteViewSelection(editor);
+      return (
+        !!selection &&
+        !isPliteViewSelectionCollapsed(selection) &&
+        !canUseNativeViewSelection(editor, selection)
+      );
+    },
     () => false
   );
 
@@ -212,11 +222,14 @@ const readViewSelectionFragmentKeys = (editor: ReactRuntimeEditor<any>) => {
   return snapshot;
 };
 
-export const usePliteViewSelectionFragmentKeys = (
-  editor: ReactRuntimeEditor<any>
-) =>
-  useSyncExternalStore(
+export const usePliteViewSelectionPaintsFragment = (
+  editor: ReactRuntimeEditor<any>,
+  fragment: Readonly<{ changeId: string; id: string }>
+) => {
+  const key = JSON.stringify([fragment.changeId, fragment.id]);
+  return useSyncExternalStore(
     (listener) => subscribePliteViewSelection(editor, listener),
-    () => readViewSelectionFragmentKeys(editor),
-    () => EMPTY_FRAGMENT_KEYS
+    () => readViewSelectionFragmentKeys(editor).includes(key),
+    () => false
   );
+};

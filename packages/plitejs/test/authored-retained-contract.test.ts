@@ -509,7 +509,7 @@ describe('native retained counterparts', () => {
       });
     }
 
-    it(`preserves ${affinity} insertion at a retained boundary through history, reload and decisions`, () => {
+    it(`merges a ${affinity} insertion at an own retained boundary into one replacement through history, reload and decisions`, () => {
       const editor = createEditor({
         plugins: [history(), authored({ authorId: 'alice' })],
         initialValue: [paragraph('A shared draft.')],
@@ -555,18 +555,9 @@ describe('native retained counterparts', () => {
             point: point(expectedOffset),
           }
         );
-        const inserted = loaded.read.authored
-          .changes()
-          .items.filter((item) => item.id !== id);
-        loaded.update.authored.decide({
-          action: 'accept',
-          selection: loaded.read.authored.select({
-            ids: inserted.map((item) => item.id),
-          }),
-        });
-        assert.equal(
-          loaded.read.text.string([]),
-          affinity === 'backward' ? 'A !shared draft.' : 'A shared! draft.'
+        assert.deepEqual(
+          loaded.read.authored.changes().items.map((item) => item.id),
+          [id]
         );
         loaded.update.authored.decide({
           action,
@@ -574,13 +565,36 @@ describe('native retained counterparts', () => {
         });
         assert.equal(
           loadedView.read.text.string([]),
-          action === 'accept'
-            ? 'A ! draft.'
-            : affinity === 'backward'
-              ? 'A !shared draft.'
-              : 'A shared! draft.'
+          action === 'accept' ? 'A ! draft.' : 'A shared draft.'
         );
       }
+    });
+
+    it(`keeps a ${affinity} caret on its own step when an empty change precedes the insertion`, () => {
+      const editor = createEditor({
+        plugins: [authored({ authorId: 'alice' })],
+        initialValue: [paragraph('A shared draft.')],
+      });
+      const view = createEditorView(editor, { authored: markup });
+      view.update.text.delete({ at: { anchor: point(2), focus: point(8) } });
+      const { id } = editor.read.authored.changes().items[0];
+      view.update((tx) => {
+        tx.selection.set(
+          SelectionApi.text(
+            { anchor: point(2), focus: point(2) },
+            { affinity: affinity === 'backward' ? 'forward' : 'backward' }
+          )
+        );
+        tx.changes.apply(DocumentChange.empty);
+        tx.selection.set(
+          SelectionApi.text({ anchor: point(2), focus: point(2) }, { affinity })
+        );
+        tx.text.insert('!');
+      });
+      assert.deepEqual(readAuthoredViewFragments(view, id)[0].placement, {
+        kind: 'text',
+        point: point(affinity === 'backward' ? 3 : 2),
+      });
     });
 
     it(`captures a ${affinity} caret selected inside the insertion transaction`, () => {
@@ -1773,39 +1787,6 @@ describe('native retained counterparts', () => {
       paragraph('B'),
     ]);
     assert.deepEqual(source.read.root('note'), view.read.children());
-  });
-  it('formats retained whole-block text without inserting a carrier', () => {
-    for (const intent of ['edit', 'propose'] as const) {
-      const source = createEditor({
-        plugins: [authored({ authorId: 'alice', automaticFormatting: 'edit' })],
-        initialValue: [paragraph('Only'), paragraph('Survive')],
-      });
-      const view = createEditorView(source, { authored: markup });
-      view.update.nodes.remove({ at: [0] });
-      const deletion = source.read.authored.changes({ status: 'pending' })
-        .items[0].id;
-      view.api.authored.setView({ intent, projection: 'markup' });
-      const retained = createAuthoredFragmentView(
-        view,
-        readAuthoredViewFragments(view, deletion)[0]
-      );
-      updateAuthoredFragment(retained, (tx) => {
-        tx.selection.set({ anchor: point(1), focus: point(3) });
-        tx.marks.add('bold', true);
-      });
-      assert.deepEqual(view.read.children(), [paragraph('Survive')]);
-      source.update.authored.decide({
-        action: 'reject',
-        selection: source.read.authored.select({ ids: [deletion] }),
-      });
-      assert.deepEqual(source.read.children(), [
-        {
-          type: 'paragraph',
-          children: [{ text: 'O' }, { text: 'nl', bold: true }, { text: 'y' }],
-        },
-        paragraph('Survive'),
-      ]);
-    }
   });
   it('preserves pasted owned roots when lifting retained block input', async () => {
     for (const intent of ['edit', 'propose'] as const) {

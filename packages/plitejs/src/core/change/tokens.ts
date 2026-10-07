@@ -87,6 +87,9 @@ export type CloseToken = {
 
 export type JsonToken = CloseToken | OpenToken | TextToken;
 
+export const isTextBoundaryToken = (token: JsonToken) =>
+  token.kind !== 'text' && token.nodeKind === 'text';
+
 export type JsonTokenData =
   | {
       kind: 'close';

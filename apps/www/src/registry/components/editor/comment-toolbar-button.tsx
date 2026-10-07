@@ -254,19 +254,19 @@ function AllSuggestionsList({
   const editor = useEditor();
   const authored = editor.plugin(DefaultAuthoredPlugin);
   const comments = editor.plugin(CommentsPlugin).api;
-  const version = useEditorSelector(
-    (current) => current.read.runtime.snapshot().version
-  );
-  const [pagination, setPagination] = React.useState<{
-    version: number;
-    cursors: string[];
-  }>({ version, cursors: [] });
-  const cursors = pagination.version === version ? pagination.cursors : [];
+  useEditorSelector((current) => current.read.runtime.snapshot().version);
+  const [paging, setPaging] = React.useState<{
+    cursors: readonly string[];
+    documentId: string | null;
+  }>({ cursors: [], documentId: null });
   const page = authored.read.changes({
     proposals: true,
     limit: PAGE_SIZE,
-    cursor: cursors.at(-1),
+    cursor: paging.cursors.at(-1),
   });
+  const cursors = paging.documentId === page.documentId ? paging.cursors : [];
+  const setCursors = (next: readonly string[]) =>
+    setPaging({ cursors: next, documentId: page.documentId });
   const blockedIds = React.useRef(new Set<string>());
   const [heldChanges, setHeldChanges] = React.useState<
     readonly AuthoredChange[] | null
@@ -363,9 +363,7 @@ function AllSuggestionsList({
             variant="outline"
             size="sm"
             disabled={blocked || cursors.length === 0}
-            onClick={() =>
-              setPagination({ version, cursors: cursors.slice(0, -1) })
-            }
+            onClick={() => setCursors(cursors.slice(0, -1))}
           >
             Previous
           </Button>
@@ -374,9 +372,7 @@ function AllSuggestionsList({
             size="sm"
             disabled={blocked || !page.cursor}
             onClick={() => {
-              if (page.cursor) {
-                setPagination({ version, cursors: [...cursors, page.cursor] });
-              }
+              if (page.cursor) setCursors([...cursors, page.cursor]);
             }}
           >
             Next

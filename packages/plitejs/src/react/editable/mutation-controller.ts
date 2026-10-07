@@ -42,6 +42,7 @@ import {
   rootPlitePoint,
   resolvePliteViewBoundarySegmentEndpoint,
   hasAmbiguousPliteViewBoundarySegments,
+  PliteViewBoundaryGraph,
 } from '../view-boundary-graph';
 import {
   createMainRootPliteViewSelection,
@@ -58,9 +59,12 @@ import {
   resolveMarkupSelectionMovement,
 } from './content-root-navigation';
 import {
+  caretMayTouchRetained,
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
   getContentRootViewBoundaryPoint,
+  createCaretBlockGraph,
+  readRetainedFragmentIdsAt,
 } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import {
@@ -74,6 +78,7 @@ import {
   type EditableSelectionSourceTransition,
   getEditableNativeGroupingInput,
 } from './input-state';
+import { writeMarkupSelection, writeModelCaret } from './markup-selection';
 import {
   applyParagraphBreakAfterSelectedBlockVoid,
   createDefaultParagraph,
@@ -111,6 +116,11 @@ import {
   setEditableModelSelectionPreference,
   shouldUseModelBackedSelectAllSelection,
 } from './selection-controller';
+import {
+  caretTouchesRetained,
+  retainedCaretBoundary,
+  retainedCaretEdge,
+} from './selection-projected-dom';
 import { shouldSkipSelectionFocus } from './selection-side-effect-policy';
 import { withTypedTextIntent } from './typed-text';
 
@@ -837,9 +847,29 @@ export const applyMarkupInput = (
   command: EditableCommand,
   tags?: readonly EditorUpdateTag[],
   nativeInput?: NativeGroupingInput,
-  selectionBefore = readPliteViewSelection(editor)
-) => {
+  selectionBefore = readPliteViewSelection(editor),
+  caretBefore: PliteViewSelection | null = selectionBefore
+): boolean => {
   let previous = selectionBefore;
+  let undoSelection = caretBefore;
+  let deleteSide: 'backward' | 'forward' | undefined;
+  let strike: { side: 'backward' | 'forward'; slots: string } | undefined;
+  if (command.kind === 'transpose-character' && !previous) {
+    const selection = readRuntimeSelectionRange(editor);
+    if (
+      selection &&
+      RangeApi.isCollapsed(selection) &&
+      caretMayTouchRetained(editor, selection.anchor)
+    ) {
+      const graph = createContentRootViewBoundaryGraph(
+        editor,
+        findContentRootOwners(editor)
+      );
+      // Swapping the characters around struck text would move live text
+      // across a pending deletion, so the key does nothing there.
+      if (caretTouchesRetained(graph, selection.anchor)) return true;
+    }
+  }
   if (
     command.kind === 'delete' &&
     command.unit !== 'block' &&
@@ -849,48 +879,107 @@ export const applyMarkupInput = (
     if (
       previous
         ? isPliteViewSelectionCollapsed(previous)
-        : selection && RangeApi.isCollapsed(selection)
+        : selection &&
+          RangeApi.isCollapsed(selection) &&
+          caretMayTouchRetained(editor, selection.anchor)
     ) {
       const owners = findContentRootOwners(editor);
-      const graph = createContentRootViewBoundaryGraph(editor, owners);
-      const moved = resolveMarkupSelectionMovement({
-        action: {
-          kind: 'move',
-          axis:
-            command.unit === 'word'
-              ? 'word'
-              : command.unit === 'line'
-                ? 'line'
-                : 'horizontal',
+      const graph =
+        createCaretBlockGraph(editor, owners, {
+          collapsed: previous ? isPliteViewSelectionCollapsed(previous) : true,
           direction: command.direction,
-        },
-        boundaryAffinity: command.direction,
-        editor: toReactRuntimeEditor(editor),
-        extend: true,
-        graph,
-        owners,
-        selection,
-        viewSelection: previous,
-      });
+          fragment: previous?.segments.parts[0]?.fragment,
+          point: previous ? previous.anchor.point : selection?.anchor,
+        }) ?? createContentRootViewBoundaryGraph(editor, owners);
+      let touching = true;
+      if (!previous && selection) {
+        // Beside struck text the model affinity names the caret's side and
+        // the caret stays there; elsewhere the caret belongs to the text the
+        // key deletes and ends on the side that text occupied.
+        const model = readRuntimeSelection(editor);
+        touching = caretTouchesRetained(graph, selection.anchor);
+        const side =
+          SelectionApi.isText(model) && touching ? model.affinity : undefined;
+        deleteSide =
+          side ?? (command.direction === 'backward' ? 'forward' : 'backward');
+        if (!side && readAuthoredView(editor)?.intent === 'propose') {
+          strike = {
+            side: command.direction,
+            slots: readRetainedFragmentIdsAt(editor, selection.anchor),
+          };
+        }
+        const caret = {
+          affinity: side ?? command.direction,
+          point: selection.anchor,
+        } as const;
+        previous = createPliteViewSelection(graph, {
+          anchor: caret,
+          focus: caret,
+        });
+        undoSelection ??= previous;
+      }
+      const deletesLiveTextOnly = !touching && !command.unit;
+      const moved = deletesLiveTextOnly
+        ? null
+        : resolveMarkupSelectionMovement({
+            action: {
+              kind: 'move',
+              axis:
+                command.unit === 'word'
+                  ? 'word'
+                  : command.unit === 'line'
+                    ? 'line'
+                    : 'horizontal',
+              direction: command.direction,
+            },
+            boundaryAffinity: command.direction,
+            editor: toReactRuntimeEditor(editor),
+            extend: true,
+            graph,
+            owners,
+            selection,
+            viewSelection: previous,
+          });
       if (moved) {
         const range = createPliteViewSelection(graph, {
           anchor: moved.initial.focus,
           focus: moved.target,
         });
-        if (range.segments.parts.some((part) => part.fragment)) {
-          if (
-            readAuthoredView(editor)?.intent === 'propose' &&
-            retainedSelectionGroups(editor, range)?.every(
-              (group) =>
-                group.fragment || group.ranges.every(RangeApi.isCollapsed)
-            )
-          ) {
-            writePliteViewSelection(
+        const caretNode = PliteViewBoundaryGraph.resolvePointNode(
+          graph,
+          moved.initial.focus
+        );
+        const neighbour =
+          caretNode &&
+          (command.direction === 'backward'
+            ? PliteViewBoundaryGraph.previousNode(graph, caretNode)
+            : PliteViewBoundaryGraph.nextNode(graph, caretNode));
+        // Across a block boundary the key deletes that boundary, so the
+        // ordinary delete handles it.
+        const neighbourInCaretBlock =
+          !!caretNode?.blockKey && neighbour?.blockKey === caretNode.blockKey;
+        // Joining across a whole retained block would rewrite the block that
+        // its pending deletion still owns, so Editing leaves it in place.
+        if (
+          !neighbourInCaretBlock &&
+          neighbour?.fragment &&
+          readAuthoredView(editor)?.intent !== 'propose'
+        ) {
+          return true;
+        }
+        if (
+          neighbourInCaretBlock &&
+          range.segments.parts.some((part) => part.fragment)
+        ) {
+          if (readAuthoredView(editor)?.intent === 'propose') {
+            // Struck text is already deleted, so a Suggesting delete steps
+            // the caret over it without changing content.
+            const target = moved.target.fragmentId
+              ? (retainedCaretBoundary(graph, moved.target) ?? moved.target)
+              : moved.target;
+            writeMarkupSelection(
               editor,
-              createPliteViewSelection(graph, {
-                anchor: moved.target,
-                focus: moved.target,
-              })
+              createPliteViewSelection(graph, { anchor: target, focus: target })
             );
             return true;
           }
@@ -921,194 +1010,257 @@ export const applyMarkupInput = (
   const pendingMarks = withAuthoredViewRead(editor, editor, () =>
     getCurrentMarks(editor)
   );
-  const results = updateAuthoredViews(
-    editor,
-    [...groups].reverse().map((group) => ({
-      target: group.fragment,
-      update: (tx) => {
-        if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
-        const run = <TCommand extends EditorCommandDescriptor>(
-          descriptor: TCommand,
-          ...input: [EditorCommandInput<TCommand>] extends [void]
-            ? [] | [input: EditorCommandInput<TCommand>]
-            : [input: EditorCommandInput<TCommand>]
-        ) =>
-          withProjectedMutationRoot(
-            getEditorRuntimeOwner(editor),
-            group.start.root,
-            () => {
-              if (!group.fragment && groups.length === 1) {
-                dispatchCommand(editor, descriptor, ...input);
-                return;
+  // Re-resolving a caret bound inside struck text on commit rebuilds the
+  // whole-document boundary graph; the result below writes the caret anew.
+  const released =
+    isPliteViewSelectionCollapsed(previous) &&
+    !!previous.anchor.fragmentId &&
+    !!readPliteViewSelection(editor);
+  if (released) writePliteViewSelection(editor, null);
+  const update = () =>
+    updateAuthoredViews(
+      editor,
+      [...groups].reverse().map((group) => ({
+        target: group.fragment,
+        update: (tx) => {
+          if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
+          const run = <TCommand extends EditorCommandDescriptor>(
+            descriptor: TCommand,
+            ...input: [EditorCommandInput<TCommand>] extends [void]
+              ? [] | [input: EditorCommandInput<TCommand>]
+              : [input: EditorCommandInput<TCommand>]
+          ) =>
+            withProjectedMutationRoot(
+              getEditorRuntimeOwner(editor),
+              group.start.root,
+              () => {
+                if (!group.fragment && groups.length === 1) {
+                  dispatchCommand(editor, descriptor, ...input);
+                  return;
+                }
+                const owner = getEditorRuntimeOwner(editor);
+                const spec = evaluateCommandWithState(
+                  editor,
+                  descriptor,
+                  getEditorStateView(owner),
+                  ...input
+                ).result;
+                if (spec) applyTransactionSpec(owner, spec);
               }
-              const owner = getEditorRuntimeOwner(editor);
-              const spec = evaluateCommandWithState(
-                editor,
-                descriptor,
-                getEditorStateView(owner),
-                ...input
-              ).result;
-              if (spec) applyTransactionSpec(owner, spec);
-            }
-          );
-        tx.selection.set({ anchor: group.start, focus: group.start });
-        if (groups.length > 1 || group.ranges.length > 1) {
-          for (const range of [...group.ranges].reverse()) {
-            if (RangeApi.isCollapsed(range)) continue;
-            const { fragment } = group;
-            if (
-              fragment?.kind === 'delete' &&
-              (fragment.slice.openStart > 0 || fragment.slice.openEnd > 0)
-            ) {
-              tx.selection.set(range);
-              run(editorCommands.deleteFragment, { direction: 'forward' });
-            } else {
-              run(editorCommands.deleteFragment, {
-                at: range,
-                direction: 'forward',
-              });
-            }
-          }
-          if (
-            group !== first ||
-            command.kind === 'delete' ||
-            command.kind === 'delete-both' ||
-            command.kind === 'delete-fragment'
-          ) {
-            return;
-          }
-        } else tx.selection.set(group.ranges[0]);
-        if (pendingMarks !== null && RangeApi.isCollapsed(group.ranges[0])) {
-          tx.marks.set(pendingMarks);
-        }
-        if (
-          !RangeApi.isCollapsed(group.ranges[0]) &&
-          (command.kind === 'delete' || command.kind === 'delete-both')
-        ) {
-          const direction =
-            command.kind === 'delete' ? command.direction : 'backward';
-          run(editorCommands.deleteFragment, { direction });
-          const selection = tx.selection();
-          if (
-            selection &&
-            RangeApi.isRange(selection) &&
-            RangeApi.isCollapsed(selection)
-          ) {
-            tx.selection.set(
-              SelectionApi.text(selection, { affinity: direction })
             );
+          tx.selection.set({ anchor: group.start, focus: group.start });
+          if (groups.length > 1 || group.ranges.length > 1) {
+            for (const range of [...group.ranges].reverse()) {
+              if (RangeApi.isCollapsed(range)) continue;
+              const { fragment } = group;
+              if (
+                fragment?.kind === 'delete' &&
+                (fragment.slice.openStart > 0 || fragment.slice.openEnd > 0)
+              ) {
+                tx.selection.set(range);
+                run(editorCommands.deleteFragment, { direction: 'forward' });
+              } else {
+                run(editorCommands.deleteFragment, {
+                  at: range,
+                  direction: 'forward',
+                });
+              }
+            }
+            if (
+              group !== first ||
+              command.kind === 'delete' ||
+              command.kind === 'delete-both' ||
+              command.kind === 'delete-fragment'
+            ) {
+              return;
+            }
+          } else tx.selection.set(group.ranges[0]);
+          if (pendingMarks !== null && RangeApi.isCollapsed(group.ranges[0])) {
+            tx.marks.set(pendingMarks);
           }
-          return;
-        }
-        switch (command.kind) {
-          case 'transpose-character': {
-            applyModelOwnedTransposeCharacterIntent({
-              editor,
-              selection: group.ranges[0],
-            });
-            break;
-          }
-          case 'insert-text': {
-            run(editorCommands.insertText, { text: command.text });
-            break;
-          }
-          case 'delete': {
-            run(editorCommands.delete, {
-              direction: command.direction,
-              unit: command.unit ?? 'character',
-            });
+          if (
+            !RangeApi.isCollapsed(group.ranges[0]) &&
+            (command.kind === 'delete' || command.kind === 'delete-both')
+          ) {
+            const direction =
+              command.kind === 'delete' ? command.direction : 'backward';
+            run(editorCommands.deleteFragment, { direction });
             const selection = tx.selection();
-            if (selection && RangeApi.isRange(selection)) {
+            if (
+              selection &&
+              RangeApi.isRange(selection) &&
+              RangeApi.isCollapsed(selection)
+            ) {
               tx.selection.set(
-                SelectionApi.text(selection, { affinity: command.direction })
+                SelectionApi.text(selection, { affinity: direction })
               );
             }
-            break;
+            return;
           }
-          case 'delete-both': {
-            run(editorCommands.delete, {
-              direction: 'backward',
-              unit: command.unit ?? 'character',
-            });
-            run(editorCommands.delete, {
-              direction: 'forward',
-              unit: command.unit ?? 'character',
-            });
-            break;
-          }
-          case 'delete-fragment': {
-            run(editorCommands.deleteFragment, {
-              direction: command.direction ?? 'forward',
-            });
-            break;
-          }
-          case 'insert-break': {
-            if (command.variant === 'open-line') {
-              const selection = tx.selection();
-              const block =
-                selection &&
-                RangeApi.isRange(selection) &&
-                RangeApi.isCollapsed(selection)
-                  ? tx.nodes.block({ at: selection.anchor })
-                  : undefined;
-              if (block) {
-                run(editorCommands.insertNodes, {
-                  nodes: createDefaultParagraph(),
-                  options: { at: block[1] },
-                });
-                const start = { path: block[1].concat(0), offset: 0 };
-                tx.selection.set({ anchor: start, focus: start });
-                break;
-              }
+          switch (command.kind) {
+            case 'transpose-character': {
+              applyModelOwnedTransposeCharacterIntent({
+                editor,
+                selection: group.ranges[0],
+              });
+              break;
             }
-            run(
-              command.variant === 'soft'
-                ? editorCommands.insertSoftBreak
-                : editorCommands.insertBreak
-            );
-            break;
+            case 'insert-text': {
+              run(editorCommands.insertText, { text: command.text });
+              break;
+            }
+            case 'delete': {
+              run(editorCommands.delete, {
+                direction: command.direction,
+                unit: command.unit ?? 'character',
+              });
+              const selection = tx.selection();
+              if (selection && RangeApi.isRange(selection)) {
+                tx.selection.set(
+                  SelectionApi.text(selection, { affinity: command.direction })
+                );
+              }
+              break;
+            }
+            case 'delete-both': {
+              run(editorCommands.delete, {
+                direction: 'backward',
+                unit: command.unit ?? 'character',
+              });
+              run(editorCommands.delete, {
+                direction: 'forward',
+                unit: command.unit ?? 'character',
+              });
+              break;
+            }
+            case 'delete-fragment': {
+              run(editorCommands.deleteFragment, {
+                direction: command.direction ?? 'forward',
+              });
+              break;
+            }
+            case 'insert-break': {
+              if (command.variant === 'open-line') {
+                const selection = tx.selection();
+                const block =
+                  selection &&
+                  RangeApi.isRange(selection) &&
+                  RangeApi.isCollapsed(selection)
+                    ? tx.nodes.block({ at: selection.anchor })
+                    : undefined;
+                if (block) {
+                  run(editorCommands.insertNodes, {
+                    nodes: createDefaultParagraph(),
+                    options: { at: block[1] },
+                  });
+                  const start = { path: block[1].concat(0), offset: 0 };
+                  tx.selection.set({ anchor: start, focus: start });
+                  break;
+                }
+              }
+              run(
+                command.variant === 'soft'
+                  ? editorCommands.insertSoftBreak
+                  : editorCommands.insertBreak
+              );
+              break;
+            }
+            case 'insert-data': {
+              run(domCommands.insertData, command.data);
+              break;
+            }
+            default: {
+              break;
+            }
           }
-          case 'insert-data': {
-            run(domCommands.insertData, command.data);
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      },
-    })),
-    { tags }
-  );
+        },
+      })),
+      { tags }
+    );
+  let results: ReturnType<typeof update>;
+  try {
+    results = update();
+  } catch (error) {
+    if (released) writePliteViewSelection(editor, previous);
+    throw error;
+  }
   const changed = results?.some((result) => result.changed);
   const result = results?.at(-1);
   if (result && RangeApi.isRange(result.selection)) {
-    const next = createPliteViewSelection(
-      createContentRootViewBoundaryGraph(editor, findContentRootOwners(editor)),
-      {
-        anchor: {
-          ...previous.anchor,
-          owner: first.owner,
-          affinity: result.selection.affinity ?? previous.anchor.affinity,
-          fragmentId: result.fragmentId ?? undefined,
-          point: result.selection.anchor,
-        },
-        focus: {
-          ...previous.focus,
-          owner: first.owner,
-          affinity: result.selection.affinity ?? previous.focus.affinity,
-          fragmentId: result.fragmentId ?? undefined,
-          point: result.selection.focus,
-        },
+    if (
+      RangeApi.isCollapsed(result.selection) &&
+      !result.fragmentId &&
+      !first.owner
+    ) {
+      // A delete can leave the caret on struck text, so it keeps its side;
+      // text a Suggesting delete strikes stays on the side the caret came
+      // from, so the caret takes the key's direction.
+      const struck =
+        strike &&
+        readRetainedFragmentIdsAt(editor, result.selection.anchor) !==
+          strike.slots;
+      const affinity =
+        (struck ? strike?.side : undefined) ??
+        deleteSide ??
+        result.selection.affinity ??
+        (command.kind === 'delete' ? previous.anchor.affinity : undefined);
+      if (changed) {
+        savePliteViewSelectionHistoryEntry(editor, {
+          undo: undoSelection,
+          redo: null,
+        });
       }
+      writeModelCaret(editor, result.selection.anchor, affinity);
+      return true;
+    }
+    const graph = createContentRootViewBoundaryGraph(
+      editor,
+      findContentRootOwners(editor)
     );
+    const mapped = createPliteViewSelection(graph, {
+      anchor: {
+        ...previous.anchor,
+        owner: first.owner,
+        affinity: result.selection.affinity ?? previous.anchor.affinity,
+        fragmentId: result.fragmentId ?? undefined,
+        point: result.selection.anchor,
+      },
+      focus: {
+        ...previous.focus,
+        owner: first.owner,
+        affinity: result.selection.affinity ?? previous.focus.affinity,
+        fragmentId: result.fragmentId ?? undefined,
+        point: result.selection.focus,
+      },
+    });
+    // Deleting struck text in Editing leaves the caret at the edge the
+    // deleted text occupied, since struck text takes no input.
+    const edge =
+      deleteSide &&
+      isPliteViewSelectionCollapsed(mapped) &&
+      mapped.anchor.fragmentId
+        ? retainedCaretEdge(
+            graph,
+            mapped.anchor,
+            deleteSide === 'forward'
+              ? 'after'
+              : deleteSide === 'backward'
+                ? 'before'
+                : undefined
+          )
+        : null;
+    const next = edge
+      ? createPliteViewSelection(graph, { anchor: edge, focus: edge })
+      : mapped;
     if (changed) {
       savePliteViewSelectionHistoryEntry(editor, {
-        undo: selectionBefore,
+        undo: undoSelection,
         redo: next,
       });
     }
-    writePliteViewSelection(editor, next);
+    writeMarkupSelection(editor, next);
+  } else if (released) {
+    writePliteViewSelection(editor, previous);
   }
   return true;
 };

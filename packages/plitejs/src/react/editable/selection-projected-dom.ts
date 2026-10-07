@@ -8,8 +8,13 @@ import {
   TextApi,
 } from '../..';
 import { readAuthoredView } from '../../core/authored-runtime';
-import { isDOMElement, isDOMText, normalizeDOMPoint } from '../../dom';
-import { ELEMENT_TO_NODE } from '../../dom/internal';
+import {
+  isDOMElement,
+  isDOMNode,
+  isDOMText,
+  normalizeDOMPoint,
+} from '../../dom';
+import { createDOMGeometryKernel, ELEMENT_TO_NODE } from '../../dom/internal';
 import {
   resolveDOMLeafPoint,
   resolveDOMPointInRoot,
@@ -24,10 +29,13 @@ import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
   PliteViewBoundaryGraph,
+  type PliteViewBoundaryGraphModel,
   type PliteViewBoundaryPoint,
 } from '../view-boundary-graph';
+import type { PliteViewBoundaryGraphNode } from '../view-boundary-graph-core';
 import {
   createPliteViewSelection,
+  isPliteViewSelectionCollapsed,
   type PliteViewSelection,
 } from '../view-selection';
 import {
@@ -38,6 +46,7 @@ import {
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
+  readCaretBlock,
 } from './content-root-owners';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { toInternalRoot } from './runtime-editor-api';
@@ -93,6 +102,25 @@ export const resolveViewBoundaryDOMPoint = (
   return null;
 };
 
+/**
+ * Struck text takes no native input, so the DOM caret for a caret inside it
+ * waits just before the struck element, in the live text it docks to.
+ */
+export const resolveRetainedDockDOMPoint = (
+  editor: ReactRuntimeEditor<any>,
+  point: PliteViewBoundaryPoint
+): [Node, number] | null => {
+  const domPoint = resolveViewBoundaryDOMPoint(editor, point);
+  if (!domPoint) return null;
+  const element = isDOMElement(domPoint[0])
+    ? domPoint[0]
+    : domPoint[0].parentElement;
+  const retained = element?.closest('[data-editor-retained]');
+  const parent = retained?.parentNode;
+  if (!retained || !parent) return domPoint;
+  return [parent, Array.prototype.indexOf.call(parent.childNodes, retained)];
+};
+
 export const canUseNativeViewSelection = (
   editor: ReactRuntimeEditor<any>,
   selection: PliteViewSelection
@@ -105,6 +133,9 @@ export const canUseNativeViewSelection = (
   return (
     !!runtime &&
     !runtime.viewportRuntime &&
+    !(
+      isPliteViewSelectionCollapsed(selection) && selection.anchor.fragmentId
+    ) &&
     selection.segments.parts.every(
       (part) =>
         part.root === root &&
@@ -361,6 +392,135 @@ export const resolveProjectedDOMSelectionEndpoint = ({
   };
 };
 
+export const caretTouchesRetained = (
+  graph: PliteViewBoundaryGraphModel,
+  point: Point
+) => {
+  const before = PliteViewBoundaryGraph.resolvePointNode(graph, {
+    affinity: 'backward',
+    point,
+  });
+  const after = PliteViewBoundaryGraph.resolvePointNode(graph, {
+    affinity: 'forward',
+    point,
+  });
+  return (
+    (!!before?.text &&
+      point.offset === before.text.end &&
+      !!PliteViewBoundaryGraph.nextNode(graph, before)?.fragment) ||
+    (!!after?.text &&
+      point.offset === after.text.start &&
+      !!PliteViewBoundaryGraph.previousNode(graph, after)?.fragment)
+  );
+};
+
+/**
+ * The live edge of the retained (struck) run at `point`: the nearer one, or
+ * the one `side` names.
+ */
+export const retainedCaretEdge = (
+  graph: PliteViewBoundaryGraphModel,
+  point: PliteViewBoundaryPoint,
+  side?: 'after' | 'before'
+): PliteViewBoundaryPoint | null => {
+  const node = PliteViewBoundaryGraph.resolvePointNode(graph, point);
+  if (!node?.fragment) return null;
+  const local = point.point.offset - (node.text?.start ?? 0);
+  const length = (node.text?.end ?? 0) - (node.text?.start ?? 0);
+  const live = (direction: 'next' | 'previous') => {
+    let current: PliteViewBoundaryGraphNode | null = node;
+    while (current?.fragment) {
+      current =
+        direction === 'next'
+          ? PliteViewBoundaryGraph.nextNode(graph, current)
+          : PliteViewBoundaryGraph.previousNode(graph, current);
+    }
+    return current;
+  };
+  const edge = (at: 'after' | 'before') => {
+    const target = live(at === 'after' ? 'next' : 'previous');
+    if (!target) return null;
+    return {
+      affinity: at === 'after' ? ('forward' as const) : ('backward' as const),
+      ...(target.owner ? { owner: target.owner } : {}),
+      point: {
+        path: target.path,
+        offset:
+          at === 'after' ? (target.text?.start ?? 0) : (target.text?.end ?? 0),
+        ...(target.root === MAIN_ROOT_KEY ? {} : { root: target.root }),
+      },
+    };
+  };
+  if (side) return edge(side);
+  return local * 2 >= length
+    ? (edge('after') ?? edge('before'))
+    : (edge('before') ?? edge('after'));
+};
+
+/**
+ * A caret at the outer end of a retained run sits where live text continues,
+ * so it resolves to that live edge; only interior points stay in the run.
+ */
+export const retainedCaretBoundary = (
+  graph: PliteViewBoundaryGraphModel,
+  point: PliteViewBoundaryPoint
+) => {
+  const node = PliteViewBoundaryGraph.resolvePointNode(graph, point);
+  if (!node?.fragment || !node.text) return null;
+  if (
+    point.point.offset === node.text.start &&
+    !PliteViewBoundaryGraph.previousNode(graph, node)?.fragment
+  ) {
+    return retainedCaretEdge(graph, point, 'before');
+  }
+  if (
+    point.point.offset === node.text.end &&
+    !PliteViewBoundaryGraph.nextNode(graph, node)?.fragment
+  ) {
+    return retainedCaretEdge(graph, point, 'after');
+  }
+  return null;
+};
+
+export const resolveRetainedDropPoint = ({
+  editor,
+  root,
+  target,
+  x,
+  y,
+}: {
+  editor: ReactRuntimeEditor;
+  root: HTMLElement;
+  target: EventTarget | null;
+  x: number;
+  y: number;
+}): Point | null => {
+  if (!isDOMNode(target) || !readDOMFragmentTarget(target)) return null;
+  const element = isDOMElement(target) ? target : target.parentElement;
+  const retained = element?.closest<HTMLElement>('[data-editor-retained]');
+  if (!retained) return null;
+  const domPoint = createDOMGeometryKernel({
+    root,
+    target: retained,
+  }).pointAtCoordinates({ x, y });
+  const owners = findContentRootOwners(editor);
+  const endpoint = domPoint
+    ? resolveProjectedDOMSelectionEndpoint({
+        node: domPoint.point[0],
+        offset: domPoint.point[1],
+        owners,
+      })
+    : null;
+  if (!endpoint?.fragmentId) return null;
+  return (
+    retainedCaretEdge(createContentRootViewBoundaryGraph(editor, owners), {
+      affinity: endpoint.affinity,
+      fragmentId: endpoint.fragmentId,
+      point: endpoint.point,
+    })?.point ?? null
+  );
+};
+
 export const resolveProjectedDOMSelection = ({
   domSelection,
   editor,
@@ -447,7 +607,33 @@ export const resolveProjectedDOMSelection = ({
     return null;
   }
 
-  const graph = createContentRootViewBoundaryGraph(editor, owners);
+  // A collapsed caret resolves against its own block: an inline struck run
+  // always has its block's live text on both sides.
+  const block =
+    domSelection.isCollapsed && !anchor.owner && domSelection.anchorNode
+      ? readCaretBlock(editor, owners, {
+          fragment: anchor.fragmentId
+            ? readDOMFragmentTarget(domSelection.anchorNode)?.target
+            : null,
+          point: anchor.point,
+        })
+      : null;
+  const graph = createContentRootViewBoundaryGraph(
+    editor,
+    owners,
+    block ?? undefined
+  );
+  if (domSelection.isCollapsed && anchor.fragmentId) {
+    const edge = retainedCaretBoundary(graph, {
+      affinity: anchor.affinity,
+      fragmentId: anchor.fragmentId,
+      ...(anchorOwner ? { owner: anchorOwner } : {}),
+      point: anchor.point,
+    });
+    if (edge) {
+      return createPliteViewSelection(graph, { anchor: edge, focus: edge });
+    }
+  }
   const selection = createPliteViewSelection(graph, {
     anchor: {
       affinity: anchor.affinity,

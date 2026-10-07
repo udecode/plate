@@ -7,6 +7,7 @@ import {
 } from '../..';
 import {
   readAuthoredTarget,
+  readAuthoredView,
   readAuthoredViewFragments,
 } from '../../core/authored-runtime';
 import { rewriteContentRootReferences } from '../../core/content-slice-roots';
@@ -128,7 +129,8 @@ export const remapProjectedSourceSlice = (
 };
 
 export const getProjectedViewSelectionSlice = (
-  editor: RuntimeEditor
+  editor: RuntimeEditor,
+  { retained = true }: { retained?: boolean } = {}
 ): ContentSliceValue | null => {
   const viewSelection = readPliteViewSelection(editor);
 
@@ -155,6 +157,34 @@ export const getProjectedViewSelectionSlice = (
       : null;
     if (segment.fragment && (!fragment || fragment.kind === 'properties')) {
       return null;
+    }
+    const joinStart =
+      fragment && fragment.kind !== 'properties'
+        ? fragment.placement?.kind === 'text'
+          ? fragment.slice.openStart
+          : 0
+        : null;
+    const joinEnd =
+      fragment && fragment.kind !== 'properties'
+        ? fragment.placement?.kind === 'text'
+          ? fragment.slice.openEnd
+          : 0
+        : null;
+    if (fragment && !retained) {
+      // The live text on both sides of omitted struck text still joins at
+      // the depth the struck text would have joined it.
+      if (previous) {
+        previous = {
+          ownerKey: previous.ownerKey,
+          root: previous.root,
+          join: Math.min(
+            ...[previous.join, joinStart, joinEnd].filter(
+              (depth): depth is number => depth != null
+            )
+          ),
+        };
+      }
+      continue;
     }
     const slice = readAuthoredTarget(editor, fragment ?? null, (state) => {
       const rootChildren = {
@@ -208,18 +238,6 @@ export const getProjectedViewSelectionSlice = (
     if (!mapped) return null;
     const { content: mappedContent } = mapped;
     Object.assign(roots, mapped.roots);
-    const joinStart =
-      fragment && fragment.kind !== 'properties'
-        ? fragment.placement?.kind === 'text'
-          ? fragment.slice.openStart
-          : 0
-        : null;
-    const joinEnd =
-      fragment && fragment.kind !== 'properties'
-        ? fragment.placement?.kind === 'text'
-          ? fragment.slice.openEnd
-          : 0
-        : null;
     if (content) {
       const depths = [previous?.join, joinStart].filter(
         (depth): depth is number => depth != null
@@ -256,10 +274,18 @@ export const writeProjectedViewSelectionClipboardData = (
   editor: RuntimeEditor,
   data: Pick<DataTransfer, 'getData' | 'setData'>
 ) => {
-  const slice = getProjectedViewSelectionSlice(editor);
+  // Suggesting copies what the document reads once its changes are
+  // accepted, so struck text stays behind.
+  const retained = readAuthoredView(editor)?.intent !== 'propose';
+  const slice = getProjectedViewSelectionSlice(editor, { retained });
 
   if (!slice || slice.content.length === 0) {
-    return false;
+    const selection = readPliteViewSelection(editor);
+    if (retained || !selection || isPliteViewSelectionCollapsed(selection)) {
+      return false;
+    }
+    data.setData('text/plain', '');
+    return true;
   }
 
   const runtimeEditor = getEditorRuntimeOwner(editor);

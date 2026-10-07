@@ -2,8 +2,6 @@
 'plitejs': patch
 ---
 
-Allow direct deletion of selected struck-through text and preserve independent input inside pending deletions. Use the native caret in retained text and preserve its position through consecutive Backspace and deletion of newly inserted text. In Suggesting mode, Backspace moves left through existing deleted text without creating another edit. Keep text, suggestion associations, and retained-content selections consistent through undo, redo, saving, and collaboration.
+Let the caret enter struck-through suggested deletions. A click inside one places a painted caret at that point, arrow keys move through it one character at a time, and selections can end inside it. Typing, pasting or Enter inside it splits the deletion around the new content. Typing at the edge of your own deletion joins it as one replacement. In Suggesting mode, Backspace and Delete step over struck characters without changing them, then delete the next character and join your adjacent deletion, and copying leaves struck text out. In Editing mode, Backspace and Delete remove struck characters directly and undo returns them to the pending deletion. Keys and clicks beside struck text read only the caret's block, so their cost no longer grows with the number of pending deletions in the document.
 
 Fix Editing-mode range deletion across pending inline suggestions and retained text, including selecting and deleting the entire document across multiple blocks. Preserve accepted text and suggestion visibility through deletion, undo, and redo.
-
-Preserve full native text selections in ordinary content when markup is visible. Resolve typing, deletion, formatting, and composition against the selected live or retained text, and commit prepared commands without losing their individual deletion steps. Keep composition completion and follow-up input on the same mounted editor.

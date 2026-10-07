@@ -6,7 +6,7 @@
       "href": "/registry/changelog/2026-10-04-suggestion-originals.json",
       "status": "draft",
       "kind": "behavior",
-      "summary": "Keep proposal originals accessible after text edits and review",
+      "summary": "Browse suggestions across statuses with their current text",
       "change": {
         "type": "source",
         "date": "2026-10-04",

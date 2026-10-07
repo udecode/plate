@@ -1,5 +1,6 @@
 import { NodeApi, type Path, type Point, SelectionApi } from '../..';
 import { getSelection, isDOMElement, isDOMNode, isDOMText } from '../../dom';
+import { readDOMFragmentTarget } from '../../dom/plugin/dom-fragment-view';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';
@@ -19,7 +20,8 @@ export const resolveEditableClickTarget = (
   editor: ReactRuntimeEditor,
   target: EventTarget
 ) => {
-  if (!isDOMNode(target)) {
+  // Retained content carries fragment-local paths, not parent document paths.
+  if (!isDOMNode(target) || readDOMFragmentTarget(target)) {
     return null;
   }
 

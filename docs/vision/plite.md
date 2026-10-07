@@ -300,14 +300,19 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   needed for pending review and selected history. Accepted, proposed, and
   markup projections belong to exact editor views; their input intent and
   rendered children never become another saved document or global mode. An
-  editing view may use any projection. Independent accepted-content edits
-  publish directly. A visible replacement that fully contains its pending
-  contributions resolves them and publishes the replacement in one atomic
-  transaction; partial retained or dependency-spanning targets remain
-  protected. Other edits that depend on pending content remain reviewable with
-  their actual author. Review decisions are atomic document writes. Local undo
-  remains local interaction history, and retained author history produces new
-  compensating changes.
+  editing view may use any projection. Editing-intent edits publish directly
+  against the accepted projection. Text typed inside a pending suggestion
+  stays direct and survives its rejection, and a deletion shrinks the pending
+  suggestions it covers or removes them when it covers them fully. Retained
+  deleted content holds a caret but never native input; input inside it
+  splits the deletion around the new content.
+  Proposed edits that depend on pending content remain reviewable with their
+  actual author, and rejecting their dependency is blocked until both are
+  decided together. Review cards read current content, never a stored
+  original. Review decisions are atomic document writes. Local undo
+  remains local interaction history: undoing an edit restores the content
+  identity it removed, under whatever pending changes still cover it, and
+  retained author history produces new compensating changes.
   Persistence checkpoints current authored facts and exact projections
   directly; opening a document never rebuilds them by reducing retained
   operations or replaying pending edits. Checksum-bound retained operation

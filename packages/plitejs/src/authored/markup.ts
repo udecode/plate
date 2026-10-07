@@ -493,7 +493,17 @@ const compileAuthoredMarkupFragments = (
                       'accepted'
                   )
               )
-              .map((entry) => ({ from: entry.from, to: entry.to }));
+              .flatMap((entry) =>
+                // A later visible restore keeps the text accepted, so only the
+                // part still missing from the accepted projection is removed.
+                subtractIntervals(
+                  { from: entry.from, to: entry.to },
+                  [...contentLocations(accepted, span)].map((location) => ({
+                    from: location.fromOffset,
+                    to: location.toOffset,
+                  }))
+                )
+              );
             const birth = span.birth && readRecord(state.changes, span.birth);
             for (const interval of (birth && birth.status === 'rejected'
               ? []

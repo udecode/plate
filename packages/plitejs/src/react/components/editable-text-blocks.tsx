@@ -115,7 +115,6 @@ import {
   readPliteViewSelection,
   subscribePliteViewSelection,
 } from '../view-selection';
-import { usePliteViewSelectionFragmentKeys } from '../view-selection-decoration';
 import { EditableViewportBoundary } from '../viewport-boundary';
 import type { EditableViewportPlan } from '../viewport-plan';
 import {
@@ -1415,7 +1414,6 @@ const EditableInner = <TElement extends ElementNode>({
   viewportPlan?: EditableViewportPlan | null;
 }) => {
   const editor = useEditorContext();
-  const viewSelectionFragmentKeys = usePliteViewSelectionFragmentKeys(editor);
   const renderAuthoredFragment = React.useCallback<
     NonNullable<React.ContextType<typeof AuthoredFragmentRendererContext>>
   >(
@@ -1436,13 +1434,7 @@ const EditableInner = <TElement extends ElementNode>({
       return fragment.placement?.kind === 'text' &&
         !renderLeaf &&
         !renderText ? (
-        <PlitePlainTextFragment
-          key={fragment.id}
-          fragment={fragment}
-          hasViewSelection={viewSelectionFragmentKeys.includes(
-            JSON.stringify([fragment.changeId, fragment.id])
-          )}
-        >
+        <PlitePlainTextFragment key={fragment.id} fragment={fragment}>
           {children}
         </PlitePlainTextFragment>
       ) : (
@@ -1451,14 +1443,7 @@ const EditableInner = <TElement extends ElementNode>({
         </PliteFragment>
       );
     },
-    [
-      renderElement,
-      renderLeaf,
-      renderPlaceholder,
-      renderText,
-      renderVoid,
-      viewSelectionFragmentKeys,
-    ]
+    [renderElement, renderLeaf, renderPlaceholder, renderText, renderVoid]
   );
   const editableRoot = toInternalRoot(
     editor.read((state) => state.view.root())

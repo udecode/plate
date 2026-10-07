@@ -12,6 +12,7 @@ import { applyContentRootSelectionMoveCommand } from '../../src/react/editable/c
 import { createContentRootViewBoundaryGraph } from '../../src/react/editable/content-root-owners';
 import {
   applyMarkupInput,
+  applyModelOwnedTextInput,
   applyRetainedViewSelectionMarkCommand,
 } from '../../src/react/editable/mutation-controller';
 import {
@@ -25,7 +26,7 @@ describe('retained marks', () => {
     let calls = 0;
     const source = createEditor({
       plugins: [
-        authored({ authorId: 'alice', automaticFormatting: 'edit' }),
+        authored({ authorId: 'alice' }),
         definePlugin('toggle-handler', {
           commands: ({ around }) => [
             around(editorCommands.toggleMark, ({ input, next }) => {
@@ -73,7 +74,7 @@ it.each(['edit', 'propose'] as const)(
   'retains collapsed typing marks in %s',
   (intent) => {
     const source = createEditor({
-      plugins: [authored({ authorId: 'alice', automaticFormatting: 'edit' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [{ type: 'paragraph', children: [{ text: 'aABCDEFb' }] }],
     });
     const view = createEditorView(source, {
@@ -137,7 +138,7 @@ it.each(['edit', 'propose'] as const)(
 
 it('uses retained text formatting when the model caret remains in another leaf', () => {
   const source = createEditor({
-    plugins: [authored({ authorId: 'alice', automaticFormatting: 'edit' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [
       {
         type: 'paragraph',
@@ -193,7 +194,7 @@ it.each(['edit', 'propose'] as const)(
   'clears retained pending marks on keyboard movement in %s',
   (intent) => {
     const source = createEditor({
-      plugins: [authored({ authorId: 'alice', automaticFormatting: 'edit' })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [{ type: 'paragraph', children: [{ text: 'aABCDEFb' }] }],
     });
     const view = createEditorView(source, {
@@ -226,12 +227,11 @@ it.each(['edit', 'propose'] as const)(
         selection: view.read.selection() as never,
       }).handled
     ).toBe(true);
-    expect(
-      applyMarkupInput(view as never, {
-        kind: 'insert-text',
-        text: 'X',
-      })
-    ).toBe(true);
+    applyModelOwnedTextInput({
+      data: 'X',
+      editor: view as never,
+      inputType: 'insertText',
+    });
     expect(view.read.children()).toEqual([
       { type: 'paragraph', children: [{ text: 'aXb' }] },
     ]);
@@ -240,7 +240,7 @@ it.each(['edit', 'propose'] as const)(
 
 it('toggles the selected retained marks independently of live text', () => {
   const source = createEditor({
-    plugins: [authored({ authorId: 'alice', automaticFormatting: 'edit' })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [
       {
         type: 'paragraph',

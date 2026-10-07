@@ -401,12 +401,16 @@ export const runTrackedEditableCompositionMutation = <T>({
 
   const owner = getEditorRuntimeOwner(editor);
   const before = getLastCommit(owner);
+  const childrenBefore = editor.read.children();
   const recordCommit = () => {
     const after = getLastCommit(owner);
+    // A selection-only commit can follow the edit, so the document is
+    // compared as well as the last commit.
     const committed =
       after !== before &&
       !!after &&
       (after.changed.hasAny('document') ||
+        editor.read.children() !== childrenBefore ||
         after.effects.some((effect) =>
           isAuthoredOperationEffect(owner, effect)
         ));

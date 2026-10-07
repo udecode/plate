@@ -182,7 +182,7 @@ describe('authored Yjs collaboration', () => {
   });
 
   for (const initialEdit of ['insertion', 'deletion'] as const) {
-    it(`synchronizes an own ${initialEdit} followed by the opposite input through reload`, () => {
+    it(`synchronizes an own ${initialEdit} cancellation and restored identities through reload`, () => {
       const { left, right } = connected([paragraph('ABC')]);
       if (initialEdit === 'insertion') {
         left.view.update.text.insert('p', { at: point(1) });
@@ -212,17 +212,16 @@ describe('authored Yjs collaboration', () => {
       for (const peer of [left, right, reopened]) {
         assert.deepEqual(peer.editor.read.children(), [paragraph('ABC')]);
         assert.deepEqual(peer.view.read.children(), [paragraph('ABC')]);
-        const parts = peer.view.read.authored.details(id)?.parts;
-        assert.equal(parts?.status, 'available');
-        if (parts?.status === 'available') {
-          assert.equal(parts.items.length, initialEdit === 'insertion' ? 0 : 1);
-        }
-        assert.equal(
+        assert.deepEqual(peer.view.read.authored.details(id)?.parts, {
+          items: [],
+          status: 'available',
+        });
+        assert.deepEqual(
           peer.view.read.authored.changesAt({
             anchor: point(0),
             focus: point(3),
-          }).length,
-          initialEdit === 'insertion' ? 0 : 2
+          }),
+          []
         );
       }
 
@@ -1472,76 +1471,6 @@ describe('authored Yjs collaboration', () => {
     }
   });
 
-  it('freezes refreshed originals at concurrent amendments and restores their baselines with history', async () => {
-    const left = createPeer('alice', createDocument(), [paragraph('ab')]);
-    left.view.update.text.insert('ABCDEF', { at: point(1) });
-    const { id } = left.editor.read.authored.changes({ proposals: true })
-      .items[0];
-    const rightDoc = createDocument();
-    sync(left.doc, rightDoc);
-    const right = createPeer('alice', rightDoc);
-    const originalText = (peer: typeof left) => {
-      const original = peer.editor.read.authored.details(id)?.original;
-      assert.equal(original?.status, 'available');
-      if (original?.status !== 'available') assert.fail();
-      return original.items
-        .flatMap((part) =>
-          part.kind === 'content' ? (part.after?.content.content ?? []) : []
-        )
-        .map(NodeApi.string)
-        .join('');
-    };
-    right.view.api.authored.setView({ intent: 'edit', projection: 'markup' });
-    right.view.update.text.delete({
-      at: { anchor: point(3), focus: point(5) },
-    });
-    right.view.update.text.insert('Z', { at: point(3) });
-    right.view.api.authored.setView({
-      intent: 'propose',
-      projection: 'markup',
-    });
-    assert.equal(originalText(right), 'ABCDEF');
-    right.view.update.text.insert('Y', { at: point(6) });
-    left.view.update.text.insert('X', { at: point(7) });
-    assert.equal(originalText(right), 'ABEFY');
-    assert.equal(originalText(left), 'ABCDEFX');
-    sync(left.doc, right.doc);
-    sync(right.doc, left.doc);
-    const refreshed = originalText(left);
-    assert.ok(['ABEFXY', 'ABEFYX'].includes(refreshed), refreshed);
-    assert.equal(originalText(right), refreshed);
-    const remoteDoc = createDocument();
-    sync(left.doc, remoteDoc);
-    const remote = createPeer('bob', remoteDoc);
-    remote.view.api.authored.setView({ intent: 'edit', projection: 'markup' });
-    remote.view.update.text.delete({
-      at: { anchor: point(1), focus: point(2) },
-    });
-    sync(remote.doc, left.doc);
-    sync(remote.doc, right.doc);
-    assert.equal(originalText(left), refreshed);
-    assert.equal(originalText(right), refreshed);
-    left.view.update.text.insert('Q', {
-      at: point(left.view.read.text.string([]).length - 1),
-    });
-    const next = `${refreshed.slice(1)}Q`;
-    assert.equal(originalText(left), next);
-    await left.view.api.history.undo();
-    assert.equal(originalText(left), refreshed);
-    await left.view.api.history.redo();
-    assert.equal(originalText(left), next);
-    sync(left.doc, right.doc);
-    assert.equal(originalText(right), next);
-    const restored = createEditor({
-      plugins: [authored({ authorId: 'alice' }), history()],
-      initialValue: JSON.parse(JSON.stringify(right.editor.read.value())),
-    });
-    assert.deepEqual(
-      restored.read.authored.details(id)?.original,
-      right.editor.read.authored.details(id)?.original
-    );
-  });
-
   it('keeps concurrent opposite decisions conflicted on both peers', () => {
     const { left, right } = connected();
     left.view.update.text.insert('q', { at: point(4) });
@@ -1610,10 +1539,8 @@ describe('authored Yjs collaboration', () => {
       'applied'
     );
     assert.equal(
-      JSON.stringify(
-        left.editor.read.authored.details(selection.changes[0].id)?.original
-      ).includes(payload),
-      true
+      JSON.stringify(left.editor.read.value()).includes(payload),
+      false
     );
     assert.equal(
       right.editor.update.authored.decide({ action: 'accept', selection })
@@ -1666,10 +1593,8 @@ describe('authored Yjs collaboration', () => {
       'applied'
     );
     assert.equal(
-      JSON.stringify(
-        right.editor.read.authored.details(changeId)?.original
-      ).includes(payload),
-      true
+      JSON.stringify(right.editor.read.value()).includes(payload),
+      false
     );
     left.editor.update((tx) => {
       tx.authored.propose({ changeId });

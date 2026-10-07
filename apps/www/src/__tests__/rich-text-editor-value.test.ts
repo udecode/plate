@@ -70,7 +70,7 @@ describe('saved rich-text playground', () => {
         .plugin(DefaultAuthoredPlugin)
         .read.details(change.id);
 
-      for (const parts of [details?.parts, details?.original]) {
+      for (const parts of [details?.parts]) {
         expect(parts?.status).toBe('available');
         if (parts?.status !== 'available') {
           throw new Error('Missing review content.');
@@ -129,9 +129,7 @@ describe('saved rich-text playground', () => {
     const authored = editor.plugin(DefaultAuthoredPlugin);
     const change = authored.read.changes({ proposals: true, authorId: 'alice' })
       .items[0];
-    const original = authored.read.details(change.id)?.original;
     view.update.text.insert('X', { at: { path: [3, 1, 0], offset: 4 } });
-    expect(authored.read.details(change.id)?.original).toEqual(original);
     const deletion = authored.read.changes({ proposals: true, authorId: 'bob' })
       .items[0];
     const deletionParts = authored.read.details(deletion.id)?.parts;
@@ -143,7 +141,6 @@ describe('saved rich-text playground', () => {
     expect(NodeApi.string(editor.read.children()[3])).toBe(
       'Review and refine content seamlessly. Use X or to mark text for removal. Discuss changes using comments on many text segments. You can even have annotations!'
     );
-    expect(authored.read.details(change.id)?.original).toEqual(original);
     editor.api.history.undo();
     expect(authored.read.details(deletion.id)?.parts).toEqual(deletionParts);
   });

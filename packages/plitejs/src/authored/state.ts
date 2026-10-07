@@ -30,12 +30,6 @@ import {
   type AuthoredIntervals,
 } from './intervals';
 import {
-  updateAuthoredOriginal,
-  encodeAuthoredOriginal,
-  decodeAuthoredOriginal,
-  type AuthoredOriginal,
-} from './original';
-import {
   authoredPositionSpans,
   decodeAuthoredPosition,
   type AuthoredPosition,
@@ -94,7 +88,6 @@ export type AuthoredEditIdentity = AuthoredStamp &
     proposal: boolean;
     independent?: true;
     directFormatting?: true;
-    refreshOriginal?: true;
     retained?: string;
   }>;
 
@@ -179,7 +172,6 @@ export const authoredOriginOperation = (
 };
 
 export type AuthoredRecord = Readonly<{
-  original?: AuthoredOriginal | null;
   authorId: string;
   createdAt: number;
   dependencies: readonly string[];
@@ -491,9 +483,6 @@ const decodeEditIdentity = (
     ...(data.independent === true ? { independent: true as const } : {}),
     ...(data.directFormatting === true
       ? { directFormatting: true as const }
-      : {}),
-    ...(data.refreshOriginal === true
-      ? { refreshOriginal: true as const }
       : {}),
     ...(data.retained !== undefined
       ? { retained: decodeId(data.retained) }
@@ -896,9 +885,7 @@ const encodeCheckpointEdit = (operation: AuthoredEdit) => {
     checksumAuthoredPayload(steps),
     steps,
     compactAuthoredEdit(operation).content,
-    (operation.independent ? 1 : 0) |
-      (operation.directFormatting ? 2 : 0) |
-      (operation.refreshOriginal ? 4 : 0),
+    (operation.independent ? 1 : 0) | (operation.directFormatting ? 2 : 0),
   ]);
   AUTHORED_EDIT_ENCODINGS.set(operation, value);
 
@@ -969,7 +956,6 @@ const decodeCheckpointEditIdentity = (
     proposal: value[8],
     ...(flags & 1 ? { independent: true as const } : {}),
     ...(flags & 2 ? { directFormatting: true as const } : {}),
-    ...(flags & 4 ? { refreshOriginal: true as const } : {}),
     replica: decodeId(value[9]),
     seen,
     sequence: integer(value[11]),
@@ -1150,9 +1136,6 @@ const encodeCheckpointRecord = (value: AuthoredRecord) => {
     value.revision,
     value.status,
     value.updatedAt,
-    ...(value.original !== undefined
-      ? [encodeAuthoredOriginal(value.original)]
-      : []),
   ]);
   AUTHORED_RECORD_ENCODINGS.set(value, encoded);
   return encoded;
@@ -1174,9 +1157,6 @@ const decodeAuthoredRecord = (
     'revision',
     'status',
     'updatedAt',
-    ...(input && typeof input === 'object' && 'original' in input
-      ? ['original']
-      : []),
   ]);
   if (
     !['delete', 'format', 'insert', 'mixed', 'structure'].includes(
@@ -1192,17 +1172,6 @@ const decodeAuthoredRecord = (
   }
   return snapshotEditorJsonValue(
     {
-      ...(data.original !== undefined
-        ? { original: decodeAuthoredOriginal(data.original) }
-        : (() => {
-            const first = readRecord(
-              operations,
-              String((data.operations as unknown[])[0])
-            );
-            return first?.kind === 'edit' && !first.proposal
-              ? { original: null }
-              : {};
-          })()),
       authorId: decodeId(data.authorId),
       createdAt: integer(data.createdAt),
       dependencies: decodeIds(data.dependencies),
@@ -1241,11 +1210,7 @@ const decodeCheckpointRecord = (
   input: unknown,
   operations: AuthoredState['operations']
 ) => {
-  const value = checkpointTuple(
-    input,
-    Array.isArray(input) && input.length === 12 ? 12 : 11,
-    'change'
-  );
+  const value = checkpointTuple(input, 11, 'change');
 
   return decodeAuthoredRecord(
     {
@@ -1260,7 +1225,6 @@ const decodeCheckpointRecord = (
       revision: value[8],
       status: value[9],
       updatedAt: value[10],
-      ...(value.length === 12 ? { original: value[11] } : {}),
     },
     operations
   );
@@ -2177,15 +2141,6 @@ const reduceEdit = (
   }
   const previous = readRecord(state.changes, operation.changeId);
   if (
-    operation.refreshOriginal &&
-    (!operation.proposal ||
-      operation.inverseOf ||
-      operation.retained ||
-      !previous)
-  ) {
-    throw new Error('Original refresh requires a proposal amendment.');
-  }
-  if (
     previous &&
     (previous.authorId !== operation.authorId || !operation.proposal)
   ) {
@@ -2272,26 +2227,8 @@ const reduceEdit = (
     }
   }
   const kind = changeKind(operation);
-  let originalState = state;
-  if (operation.proposal && hasAuthoredContent(operation)) {
-    originalState = { ...state, operations };
-    AUTHORED_INDEXES.set(
-      getDefined(operations),
-      indexPropertyWrites(indexAuthoredState(state), operation)
-    );
-  }
-  const original = !operation.proposal
-    ? null
-    : hasAuthoredContent(operation)
-      ? updateAuthoredOriginal(
-          previous ? previous.original : null,
-          materializeAuthoredEdit(operation),
-          originalState
-        )
-      : previous?.original;
   const next: AuthoredRecord = snapshotEditorJsonValue(
     {
-      ...(original === undefined ? {} : { original }),
       authorId: operation.authorId,
       createdAt: previous?.createdAt ?? operation.time,
       dependencies: [
@@ -2729,6 +2666,7 @@ const applyAuthoredOperation = (
       for (const identity of changed) {
         index = updateIndex(
           index,
+          result.operations,
           readRecord(state.changes, identity),
           getDefined(readRecord(result.changes, identity))
         );
@@ -3218,21 +3156,33 @@ const proposalKeys = (change: AuthoredRecord) =>
     proposalPrefix(change.authorId, change.status),
   ].map((prefix) => prefix + authoredOrderKey(change.createdAt, change.id));
 
+const isProposalRecord = (
+  operations: AuthoredState['operations'],
+  change: AuthoredRecord
+) => {
+  const first = change.operations
+    ? readRecord(change.operations, change.operations.first)
+    : undefined;
+  const operation = first ? readRecord(operations, first) : undefined;
+
+  return operation?.kind === 'edit' && operation.proposal;
+};
+
 const updateIndex = (
   index: AuthoredIndex,
+  operations: AuthoredState['operations'],
   previous: AuthoredRecord | null,
   next: AuthoredRecord
 ): AuthoredIndex => {
   let { authors, authorStatuses, dependants, statuses, proposals } = index;
-  const wasProposal = previous !== null && previous.original !== null;
-  const isProposal = next.original !== null;
+  const isProposal = isProposalRecord(operations, next);
   const statusChanged = previous?.status !== next.status;
-  if (wasProposal && (!isProposal || statusChanged)) {
+  if (previous && isProposal && statusChanged) {
     for (const key of proposalKeys(previous)) {
       proposals = removeRecord(proposals, key);
     }
   }
-  if (isProposal && (!wasProposal || statusChanged)) {
+  if (isProposal && (!previous || statusChanged)) {
     for (const key of proposalKeys(next)) {
       proposals = writeRecord(proposals, key, next.id);
     }
@@ -3303,7 +3253,7 @@ export const indexAuthoredState = (state: AuthoredState): AuthoredIndex => {
     };
     const proposals: Array<readonly [string, string]> = [];
     for (const [, change] of records(state.changes)) {
-      if (change.original !== null) {
+      if (isProposalRecord(operations, change)) {
         for (const key of proposalKeys(change)) {
           proposals.push([key, change.id]);
         }

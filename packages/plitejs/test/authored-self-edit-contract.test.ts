@@ -5,13 +5,13 @@ import {
   createEditor,
   createEditorView,
   defineEditorSchema,
-  schema,
   NodeApi,
+  schema,
   SelectionApi,
   type InitialValue,
-} from '../src';
-import { authored, type AuthoredChangePart } from '../src/authored';
-import { history } from '../src/history';
+} from 'plitejs';
+import { authored, type AuthoredChangePart } from 'plitejs/authored';
+import { history } from 'plitejs/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -70,22 +70,15 @@ const contentText = (parts: readonly AuthoredChangePart[]) => {
 
 describe('authored self-edit review semantics', () => {
   for (const affinity of ['backward', 'forward'] as const) {
-    it(`keeps retyped text independent from a ${affinity} caret`, () => {
+    it(`restores deleted text from a ${affinity} caret`, () => {
       const { view } = setup();
       view.update.text.delete({ at: range(1, 2) });
       view.update.selection.set(SelectionApi.text(range(1, 1), { affinity }));
       view.update.text.insert('B');
 
       assert.deepEqual(view.read.children(), [paragraph('ABC')]);
-      assert.deepEqual(contentText(reviewParts(view)), {
-        before: 'B',
-        after: 'B',
-      });
-      assert.equal(
-        view.read.authored.changes({ proposals: true, status: 'pending' }).items
-          .length,
-        2
-      );
+      assert.deepEqual(reviewParts(view), []);
+      assert.deepEqual(view.read.authored.changesAt(range(0, 3)), []);
     });
   }
 
@@ -404,29 +397,57 @@ describe('authored self-edit review semantics', () => {
   });
 
   for (const replacement of ['B', 'D']) {
-    it(`keeps retyped ${replacement} independent from an own deletion`, () => {
+    it(`amends an own deletion when retyping ${replacement === 'B' ? 'the original text' : 'different text'}`, () => {
       const { source, view } = setup();
       view.update.text.delete({ at: range(1, 2) });
       const { id } = source.read.authored.changes().items[0];
-      const original = source.read.authored.details(id)?.original;
       view.update.text.insert(replacement, { at: point(1) });
 
       assert.deepEqual(view.read.children(), [paragraph(`A${replacement}C`)]);
-      assert.equal(
-        source.read.authored.changes({ proposals: true }).items.length,
-        2
-      );
-      assert.deepEqual(contentText(reviewParts(view)), {
-        before: 'B',
-        after: replacement,
-      });
-      assert.equal(source.read.authored.change(id)?.revision, 1);
-      assert.deepEqual(source.read.authored.details(id)?.original, original);
+      assert.equal(source.read.authored.select({}).changes.length, 1);
+      if (replacement === 'B') {
+        assert.deepEqual(reviewParts(view), []);
+        assert.deepEqual(view.read.authored.changesAt(range(0, 3)), []);
+      } else {
+        assert.deepEqual(contentText(reviewParts(view)), {
+          before: 'B',
+          after: 'D',
+        });
+        assert.deepEqual(
+          view.read.authored.changesAt(range(0, 3)).map((change) => change.id),
+          [id]
+        );
+      }
     });
   }
 
-  for (const replacement of ['mark', 'text', 'mark text', 'mars']) {
-    it(`preserves the deletion when independently typing ${replacement}`, () => {
+  for (const { expectedAfter, expectedBefore, label, replacement } of [
+    {
+      expectedAfter: '',
+      expectedBefore: ' text',
+      label: 'matching prefix',
+      replacement: 'mark',
+    },
+    {
+      expectedAfter: '',
+      expectedBefore: 'mark ',
+      label: 'matching suffix',
+      replacement: 'text',
+    },
+    {
+      expectedAfter: '',
+      expectedBefore: '',
+      label: 'full original text',
+      replacement: 'mark text',
+    },
+    {
+      expectedAfter: 'mars',
+      expectedBefore: 'mark text',
+      label: 'different text',
+      replacement: 'mars',
+    },
+  ]) {
+    it(`minimizes an own deletion after retyping ${label}`, () => {
       const { source, view } = setup([paragraph('to mark text end')]);
       view.update.text.delete({ at: range(3, 12) });
       const { id } = source.read.authored.changes().items[0];
@@ -435,15 +456,12 @@ describe('authored self-edit review semantics', () => {
       assert.deepEqual(view.read.children(), [
         paragraph(`to ${replacement} end`),
       ]);
-      assert.equal(
-        source.read.authored.changes({ proposals: true }).items.length,
-        2
-      );
+      assert.equal(source.read.authored.select({}).changes.length, 1);
       assert.deepEqual(contentText(reviewParts(view)), {
-        before: 'mark text',
-        after: replacement,
+        before: expectedBefore,
+        after: expectedAfter,
       });
-      assert.equal(source.read.authored.change(id)?.revision, 1);
+      assert.equal(source.read.authored.change(id)?.revision, 2);
     });
   }
 
@@ -642,41 +660,36 @@ describe('authored self-edit review semantics', () => {
     assert.deepEqual(view.read.authored.changesAt(range(0, 3)), []);
   });
 
-  it('amends the independent insertion across reload without changing the deletion', () => {
+  it('restores an own deletion a character at a time across reload', () => {
     const { source, view, plugin } = setup([paragraph('ABCD')]);
     view.update.text.delete({ at: range(1, 3) });
     const { id } = source.read.authored.changes().items[0];
-    view.update.text.insert('XY', { at: point(1) });
-    const insertion = source.read.authored
-      .changes({ proposals: true })
-      .items.find((change) => change.id !== id)!;
-    assert.deepEqual(view.read.children(), [paragraph('AXYD')]);
+    view.update.text.insert('B', { at: point(1) });
+
+    assert.deepEqual(view.read.children(), [paragraph('ABD')]);
     assert.deepEqual(contentText(reviewParts(view)), {
-      before: 'BC',
-      after: 'XY',
+      before: 'C',
+      after: '',
     });
+    assert.deepEqual(
+      view.read.authored.changesAt(range(0, 3)).map((change) => change.id),
+      [id]
+    );
     const restored = createEditor({
       plugins: [plugin],
       initialValue: JSON.parse(JSON.stringify(source.read.value())),
     });
     const reopened = createEditorView(restored, { authored: markup });
     assert.deepEqual(contentText(reviewParts(reopened)), {
-      before: 'BC',
-      after: 'XY',
+      before: 'C',
+      after: '',
     });
-    reopened.update.text.insert('Z', { at: point(2) });
+    reopened.update.text.insert('C', { at: point(2) });
 
-    assert.deepEqual(reopened.read.children(), [paragraph('AXZYD')]);
-    assert.deepEqual(contentText(reviewParts(reopened)), {
-      before: 'BC',
-      after: 'XZY',
-    });
-    assert.equal(restored.read.authored.change(id)?.revision, 1);
-    assert.equal(restored.read.authored.change(insertion.id)?.revision, 2);
-    assert.equal(
-      restored.read.authored.changes({ proposals: true }).items.length,
-      2
-    );
+    assert.deepEqual(reopened.read.children(), [paragraph('ABCD')]);
+    assert.deepEqual(reviewParts(reopened), []);
+    assert.deepEqual(reopened.read.authored.changesAt(range(0, 4)), []);
+    assert.ok(restored.read.authored.change(id));
   });
 
   it('amends and clears a block property independently of text formatting', () => {
@@ -938,14 +951,11 @@ describe('authored self-edit review semantics', () => {
   });
 
   for (const action of ['accept', 'reject'] as const) {
-    it(`${action}s a deletion without deciding independent retyped text after reload`, () => {
+    it(`treats ${action} of a cancelled deletion as a document no-op after reload`, () => {
       const { source, view, plugin } = setup();
       view.update.text.delete({ at: range(1, 2) });
       const { id } = source.read.authored.changes().items[0];
       view.update.text.insert('B', { at: point(1) });
-      const insertion = source.read.authored
-        .changes({ proposals: true })
-        .items.find((change) => change.id !== id)!;
       const restored = createEditor({
         plugins: [plugin],
         initialValue: JSON.parse(JSON.stringify(source.read.value())),
@@ -957,24 +967,16 @@ describe('authored self-edit review semantics', () => {
       });
 
       assert.equal(decision.status, 'applied');
-      assert.deepEqual(restored.read.children(), [
-        paragraph(action === 'accept' ? 'AC' : 'ABC'),
-      ]);
-      assert.deepEqual(reopened.read.children(), [
-        paragraph(action === 'accept' ? 'ABC' : 'ABBC'),
-      ]);
-      assert.equal(
-        restored.read.authored.change(insertion.id)?.status,
-        'pending'
-      );
+      assert.deepEqual(restored.read.children(), [paragraph('ABC')]);
+      assert.deepEqual(reopened.read.children(), [paragraph('ABC')]);
+      assert.deepEqual(reviewParts(reopened), []);
+      assert.deepEqual(reopened.read.authored.changesAt(range(0, 3)), []);
+      reopened.update.text.delete({ at: range(1, 2) });
+      assert.deepEqual(reopened.read.children(), [paragraph('AC')]);
       assert.deepEqual(contentText(reviewParts(reopened)), {
-        before: '',
-        after: 'B',
+        before: 'B',
+        after: '',
       });
-      reopened.update.text.insert('Z', { at: point(0) });
-      assert.deepEqual(reopened.read.children(), [
-        paragraph(action === 'accept' ? 'ZABC' : 'ZABBC'),
-      ]);
     });
   }
 });
@@ -1053,4 +1055,131 @@ it('keeps marked Editing input independent when its proposed link is rejected', 
       children: [{ text: 'a' }, { text: 'X', bold: true }, { text: 'b' }],
     },
   ]);
+});
+
+it('keeps retyped deleted text through undo, redo and accept', () => {
+  const { source, view } = setup([paragraph('Alpha bravo omega')]);
+  view.update.selection.set(point(11));
+  for (let index = 0; index < 5; index++) {
+    view.update(
+      {
+        tags: index
+          ? ['native-text-input', 'history-merge']
+          : 'native-text-input',
+      },
+      (tx) => tx.text.delete({ reverse: true, unit: 'character' })
+    );
+  }
+  view.update({ tags: ['native-text-input'] }, (tx) => tx.text.insert('o'));
+  assert.equal(view.read.text.string([]), 'Alpha o omega');
+
+  view.api.history.undo();
+  view.api.history.redo();
+  assert.equal(view.read.text.string([]), 'Alpha o omega');
+  source.update.authored.decide({
+    action: 'accept',
+    selection: source.read.authored.select({
+      ids: source.read.authored.changes().items.map((change) => change.id),
+    }),
+  });
+  assert.equal(source.read.text.string([]), 'Alpha o omega');
+});
+
+it('keeps typing apart from an own deletion when another author inserted between them', () => {
+  const { source, view, setAuthor } = setup([paragraph('A bravo Z')]);
+  view.update.text.delete({ at: range(2, 7) });
+  const [{ id }] = source.read.authored.changes().items;
+  setAuthor('bob');
+  view.update.text.insert('X', { at: point(2) });
+  setAuthor('alice');
+  view.update.text.insert('y', { at: point(3) });
+
+  assert.equal(source.read.authored.change(id)?.kind, 'delete');
+  assert.equal(source.read.authored.changes().items.length, 3);
+});
+
+it('keeps Enter after deleting a formatted run as a separate suggestion', () => {
+  const { source, view } = setup([
+    {
+      type: 'paragraph',
+      children: [
+        { text: 'Hello wo' },
+        { text: 'rld', bold: true },
+        { text: ' tail' },
+      ],
+    },
+  ]);
+  view.update.selection.set({ path: [0, 1], offset: 3 });
+  for (let index = 0; index < 3; index++) {
+    view.update(
+      {
+        tags: index
+          ? ['native-text-input', 'history-merge']
+          : 'native-text-input',
+      },
+      (tx) => tx.text.delete({ reverse: true, unit: 'character' })
+    );
+  }
+  view.update.break.insert();
+
+  assert.deepEqual(
+    source.read.authored
+      .changes()
+      .items.map((change) => change.kind)
+      .sort(),
+    ['delete', 'structure']
+  );
+});
+
+it('joins pasted blocks beside an own deletion into one replacement', () => {
+  const { source, view } = setup([paragraph('Alpha bravo omega')]);
+  view.update.text.delete({ at: range(6, 11) });
+  view.update.selection.set(
+    SelectionApi.text(
+      { anchor: point(6), focus: point(6) },
+      { affinity: 'forward' }
+    )
+  );
+  view.update.fragment.replace([paragraph('XY'), paragraph('ZW')]);
+
+  assert.deepEqual(
+    source.read.authored.changes().items.map((change) => change.kind),
+    ['mixed']
+  );
+});
+
+it('keeps Enter beside an own deletion as a separate suggestion', () => {
+  const { source, view } = setup([paragraph('Alpha bravo omega')]);
+  view.update.text.delete({ at: range(6, 11) });
+  const [{ id }] = source.read.authored.changes().items;
+  view.update.selection.set(
+    SelectionApi.text(
+      { anchor: point(6), focus: point(6) },
+      { affinity: 'forward' }
+    )
+  );
+  view.update.break.insert();
+
+  assert.equal(source.read.authored.changes().items.length, 2);
+  source.update.authored.decide({
+    action: 'reject',
+    selection: source.read.authored.select({ ids: [id] }),
+  });
+  assert.equal(view.read.children().length, 2);
+});
+
+it('splits an own insertion with Enter as part of the same suggestion', () => {
+  const { source, view } = setup([paragraph('Base')]);
+  view.update.text.insert('XYZ', { at: point(2) });
+  view.update.selection.set(point(3));
+  view.update.break.insert();
+
+  assert.deepEqual(view.read.children(), [paragraph('BaX'), paragraph('YZse')]);
+  const { items } = source.read.authored.changes();
+  assert.equal(items.length, 1);
+  source.update.authored.decide({
+    action: 'reject',
+    selection: source.read.authored.select({ ids: [items[0].id] }),
+  });
+  assert.deepEqual(view.read.children(), [paragraph('Base')]);
 });

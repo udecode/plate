@@ -649,7 +649,11 @@ export const getSelectionDOMRange = (
   if (!selection) return null;
   if (SelectionApi.isNode(selection)) return null;
 
-  return projectSelectionRange(selection);
+  const range = projectSelectionRange(selection);
+
+  return SelectionApi.isText(selection) && selection.affinity
+    ? Object.freeze({ ...range, affinity: selection.affinity })
+    : range;
 };
 
 export const assertSelectionSupported = (

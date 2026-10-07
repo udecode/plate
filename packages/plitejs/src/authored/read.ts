@@ -4,12 +4,14 @@ import {
   type RootChangeJson,
 } from '../core/change/root-change';
 import {
+  isTextBoundaryToken,
   jsonEqual,
   PreparedTokenSlice,
   type JsonEditorValue,
 } from '../core/change/tokens';
 import { snapshotEditorJsonValue } from '../core/value-codec';
 import type { Point } from '../interfaces/point';
+import { getDefined } from '../internal/get-defined';
 import type { AuthoredRangeProjection } from './anchors';
 import { authoredContentLocations } from './counterparts';
 import {
@@ -18,7 +20,6 @@ import {
   readAuthoredMarkupFragments,
   readAuthoredRemovalIntervals,
 } from './markup';
-import { readAuthoredOriginal } from './original';
 import { resolveAuthoredPosition, type AuthoredSpan } from './positions';
 import { readRecord, records } from './record-tree';
 import {
@@ -670,6 +671,26 @@ const REVIEW_PARTS = new WeakMap<
   >
 >();
 
+const onlyTextBoundaries = (
+  document: DocumentIndex,
+  from: number,
+  to: number
+) => document.slice(from, to).toJSON().every(isTextBoundaryToken);
+
+const childrenPlacementOffset = (
+  document: DocumentIndex,
+  path: readonly number[],
+  index: number
+) => {
+  const children = path.length ? document.node(path).children : document.value;
+  if (!children) return null;
+  return index < children.length
+    ? document.nodeRange([...path, index]).from
+    : path.length
+      ? document.nodeRange(path).to - 1
+      : null;
+};
+
 /** Current review content, after amendments and their inverses are reconciled. */
 export const readAuthoredReviewParts = (
   change: AuthoredRecord,
@@ -908,7 +929,16 @@ export const readAuthoredReviewParts = (
     root,
   });
   const remaining = mergeIntervals(insertions);
-  const items: AuthoredChangePart[] = [...boundaryItems];
+  type Deletion = {
+    before: AuthoredChangeContent;
+    interval: Interval | null;
+    location: string;
+    offset: number | null;
+    root: string;
+  };
+  const entries: Array<AuthoredChangePart | { deletion: Deletion }> = [
+    ...boundaryItems,
+  ];
   for (const fragment of readAuthoredMarkupFragments(
     change.id,
     accepted,
@@ -924,7 +954,7 @@ export const readAuthoredReviewParts = (
         ].filter((key) => !jsonEqual(fragment.before[key], fragment.after[key]))
       );
       if (keys.size > 0) {
-        items.push({
+        entries.push({
           after: changedProperties(fragment.after, keys),
           before: changedProperties(fragment.before, keys),
           kind: 'properties',
@@ -968,7 +998,7 @@ export const readAuthoredReviewParts = (
         )
       );
       const after = mergeIntervals(move?.after ?? []);
-      items.push({
+      entries.push({
         action: 'move',
         after: after[0] ? content(after[0]) : null,
         before,
@@ -976,24 +1006,119 @@ export const readAuthoredReviewParts = (
       });
       continue;
     }
+    const placed = document(fragment.root);
     const offset =
       placement?.kind === 'text'
-        ? document(fragment.root).positionAt(placement.point)
-        : null;
-    const index = remaining.findIndex(
-      (interval) =>
-        interval.root === fragment.root &&
-        offset !== null &&
-        (interval.from === offset || interval.to === offset)
+        ? placed.positionAt(placement.point)
+        : placement?.kind === 'children'
+          ? childrenPlacementOffset(placed, placement.path, placement.index)
+          : null;
+    const removed = mergeIntervals(
+      spans.flatMap((span) =>
+        [...authoredContentLocations(accepted.positions, span)].map(
+          (entry) => ({
+            from: entry.from + entry.fromOffset - entry.span.offset,
+            root: entry.root,
+            to: entry.from + entry.toOffset - entry.span.offset,
+          })
+        )
+      )
     );
-    const after = index !== -1 ? remaining.splice(index, 1)[0] : null;
-    items.push({
-      action: after ? 'replace' : 'delete',
-      after: after ? content(after) : null,
-      before,
-      kind: 'content',
+    entries.push({
+      deletion: {
+        before,
+        interval: removed.length === 1 ? getDefined(removed[0]) : null,
+        location: JSON.stringify(location),
+        offset,
+        root: fragment.root,
+      },
     });
   }
+  const acceptedDocuments = new Map<string, DocumentIndex>();
+  const acceptedDocument = (root: string) => {
+    let value = acceptedDocuments.get(root);
+    if (!value) {
+      value = DocumentIndex.fromValue(authoredRootNodes(accepted.value, root));
+      acceptedDocuments.set(root, value);
+    }
+    return value;
+  };
+  // Deletions at one place whose removed text is separated only by text node
+  // boundaries read as one run, emitted where its first deletion was found.
+  const runs = new Map<Deletion, Interval | null>();
+  const placed = entries.flatMap((entry) =>
+    'deletion' in entry && entry.deletion.interval
+      ? [{ deletion: entry.deletion, interval: entry.deletion.interval }]
+      : []
+  );
+  placed.sort(
+    (left, right) =>
+      left.interval.root.localeCompare(right.interval.root) ||
+      left.interval.from - right.interval.from
+  );
+  let run: { head: Deletion; interval: Interval } | null = null;
+  for (const { deletion, interval } of placed) {
+    if (
+      run &&
+      interval.root === run.interval.root &&
+      deletion.location === run.head.location &&
+      interval.from >= run.interval.to &&
+      onlyTextBoundaries(
+        acceptedDocument(interval.root),
+        run.interval.to,
+        interval.from
+      )
+    ) {
+      run.interval = { ...run.interval, to: interval.to };
+      runs.set(run.head, run.interval);
+      runs.set(deletion, null);
+      continue;
+    }
+    run = { head: deletion, interval };
+  }
+  // A deletion and an insertion separated only by the close and open tokens
+  // of adjacent text nodes read as one replacement.
+  const splitOnlyByTextNodes = (root: string, from: number, to: number) =>
+    Math.abs(to - from) <= 2 &&
+    onlyTextBoundaries(document(root), Math.min(from, to), Math.max(from, to));
+  const items = entries.flatMap((entry): AuthoredChangePart[] => {
+    if (!('deletion' in entry)) return [entry];
+    const { deletion } = entry;
+    const merged = runs.get(deletion);
+    if (merged === null) return [];
+    const before = merged
+      ? {
+          ...deletion.before,
+          content: createAuthoredContentSlice(
+            acceptedDocument(merged.root),
+            merged.from,
+            merged.to
+          ),
+        }
+      : deletion.before;
+    const { offset, root } = deletion;
+    const index =
+      offset === null
+        ? -1
+        : remaining.findIndex(
+            (interval) =>
+              interval.root === root &&
+              (splitOnlyByTextNodes(root, interval.from, offset) ||
+                splitOnlyByTextNodes(root, interval.to, offset))
+          );
+    if (index === -1) {
+      return [{ action: 'delete', after: null, before, kind: 'content' }];
+    }
+    const [after] = remaining.splice(index, 1);
+    return [
+      {
+        action: 'replace',
+        after: content(getDefined(after)),
+        before,
+        kind: 'content',
+      },
+    ];
+  });
   for (const interval of remaining) {
     items.push({
       action: 'insert',
@@ -1187,7 +1312,6 @@ export const readAuthoredChangeDetails = (
         change.status === 'pending' || change.status === 'conflicted'
           ? readAuthoredReviewParts(change, accepted, proposed)
           : readParts(change, current.state, proposed),
-      original: readAuthoredOriginal(change, current.state),
       reviews: readReviews(change, current.state),
     },
     'Authored change details'

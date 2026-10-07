@@ -848,25 +848,6 @@ describe('AIChatPlugin suggestions', () => {
     expect(editor.read.children()[0].children).toEqual([
       { text: 'done', bold: true },
     ]);
-    const change = editor.read.authored.changes({ proposals: true }).items[0];
-    expect(change).toBeDefined();
-    expect(editor.read.authored.details(change!.id)?.original).toMatchObject({
-      status: 'available',
-      items: expect.arrayContaining([
-        expect.objectContaining({
-          kind: 'content',
-          after: expect.objectContaining({
-            content: expect.objectContaining({
-              content: [
-                expect.objectContaining({
-                  children: [{ text: 'done', bold: true }],
-                }),
-              ],
-            }),
-          }),
-        }),
-      ]),
-    });
     expect(editor.read.authored.view()).toEqual({
       intent: 'edit',
       projection: 'markup',

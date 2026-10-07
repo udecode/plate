@@ -1360,410 +1360,84 @@ test('uses the editor content root as the suggestion surface', async ({
   runtimeErrors.assertNone();
 });
 
-for (const action of ['Accept', 'Reject'] as const) {
-  test(`types inside a deleted word and resolves it with ${action}`, async ({
-    page,
-  }) => {
-    const { root, runtimeErrors } = await openSuggestions(page);
-    const retained = root.locator('[data-editor-retained="delete"]');
-
-    await expect(retained).toHaveText('redundant phrase ');
-    const target = await retained.evaluate((element) => {
-      const text = document
-        .createTreeWalker(element, NodeFilter.SHOW_TEXT)
-        .nextNode();
-      if (!text) throw new Error('Missing retained text');
-      const range = document.createRange();
-      range.setStart(text, 6);
-      range.collapse(true);
-      const rect = range.getBoundingClientRect();
-      return { x: rect.left, y: rect.top + rect.height / 2 };
-    });
-
-    await page.mouse.click(target.x, target.y);
-    await page.keyboard.type('XY');
-    await expect(retained).toHaveText('redundXYant phrase ');
-    await page.keyboard.press('Backspace');
-    await expect(retained).toHaveText('redundXant phrase ');
-    await page.keyboard.press('ControlOrMeta+z');
-    await expect(retained).toHaveText('redundXYant phrase ');
-    await page.keyboard.press('ControlOrMeta+Shift+z');
-    await page.keyboard.type('Z');
-    await expect(retained).toHaveText('redundXZant phrase ');
-    await page.keyboard.press('Enter');
-    await page.keyboard.type('Q');
-    await expect
-      .poll(async () => {
-        const texts = await retained.allTextContents();
-        return texts.join('');
-      })
-      .toBe('redundXZQant phrase ');
-    await expect(
-      root
-        .locator('[data-editor-node="element"]')
-        .filter({ hasText: 'Keep this' })
-    ).toHaveText('Keep this redundXZ');
-    await expect(
-      root
-        .locator('[data-editor-node="element"]')
-        .filter({ hasText: 'out of the final draft.' })
-    ).toHaveText('Qant phrase out of the final draft.');
-    const card = page.locator('[data-suggestion-review]');
-
-    await expect(card).toHaveCount(1);
-    await expect(card).toContainText('Delete');
-    await expect(card).toContainText('Qant phrase');
-    await decideSuggestion(page, card, action);
-    await expect(retained).toHaveCount(0);
-    await expect(root).toContainText(
-      action === 'Reject'
-        ? 'Keep this redundant phrase out of the final draft.'
-        : 'Keep this out of the final draft.'
-    );
-    await root.focus();
-    await page.keyboard.press('ControlOrMeta+z');
-    await expect
-      .poll(async () => {
-        const contents = await retained.allTextContents();
-
-        return contents.join('');
-      })
-      .toBe('redundXZQant phrase ');
-    runtimeErrors.assertNone();
-  });
-}
-
-test('paints one caret inside redlined text during pointer and arrow navigation', async ({
+test('places the caret inside deleted text, splits it on input and steps Backspace over it', async ({
   page,
-}, testInfo) => {
-  type CaretFrame = {
-    expectedOffset: number;
-    key: string;
-    dx: number;
-    dy: number;
-    height: number;
-    viewFragment: boolean;
-    viewOffset: number | null;
-  };
-  const { editor, root, runtimeErrors } = await openSuggestions(page);
+}) => {
+  const { root, runtimeErrors } = await openSuggestions(page);
   const retained = root.locator('[data-editor-retained="delete"]');
-  const caret = root.locator('[data-editor-view-selection-caret]');
+  const block = root
+    .locator('[data-editor-node="element"]')
+    .filter({ hasText: 'out of the final draft.' });
+
+  await expect(retained).toHaveText('redundant phrase ');
+  await expect(retained).toHaveAttribute('contenteditable', 'false');
   const target = await retained.evaluate((element) => {
     const text = document
       .createTreeWalker(element, NodeFilter.SHOW_TEXT)
       .nextNode();
     if (!text) throw new Error('Missing retained text');
     const range = document.createRange();
-    range.setStart(text, 6);
+    range.setStart(text, 3);
     range.collapse(true);
     const rect = range.getBoundingClientRect();
     return { x: rect.left, y: rect.top + rect.height / 2 };
   });
-  await page.evaluate(() => {
-    const trace: Array<{ type: string; buttons: number; retained: boolean }> =
-      [];
-    Object.assign(window, {
-      __retainedCaretExpectedOffset: 6,
-      __retainedCaretInputTrace: trace,
-    });
-    for (const type of [
-      'pointerdown',
-      'mousedown',
-      'pointerup',
-      'mouseup',
-      'click',
-      'keydown',
-    ]) {
-      document.addEventListener(
-        type,
-        (event) => {
-          trace.push({
-            type: event.type,
-            buttons: 'buttons' in event ? Number(event.buttons) : 0,
-            retained:
-              event.target instanceof Element &&
-              !!event.target.closest('[data-editor-retained="delete"]'),
-          });
-        },
-        { capture: true }
-      );
-    }
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-      const state = window as typeof window & {
-        __retainedCaretExpectedOffset: number;
-      };
-      state.__retainedCaretExpectedOffset += event.key === 'ArrowLeft' ? -1 : 1;
-      const expectedOffset = state.__retainedCaretExpectedOffset;
-      const frame = new Promise<CaretFrame | null>((resolve) => {
-        // Sample the first frame after the key handler schedules its DOM reads.
-        queueMicrotask(() =>
-          requestAnimationFrame(() => {
-            const selection = window.getSelection();
-            const caretElement = document.querySelector(
-              '[data-editor-view-selection-caret]'
-            );
-            const retainedElement = document.querySelector(
-              '[data-editor-retained="delete"]'
-            );
-            const retainedText = retainedElement
-              ? document
-                  .createTreeWalker(retainedElement, NodeFilter.SHOW_TEXT)
-                  .nextNode()
-              : null;
-            const editorRoot = document.querySelector(
-              '[data-editor="true"]'
-            ) as
-              | (HTMLElement & {
-                  __pliteBrowserHandle?: {
-                    getViewSelection: () => {
-                      focus?: {
-                        fragmentId?: string;
-                        point?: { offset?: number };
-                      };
-                    } | null;
-                  };
-                })
-              | null;
-            if (!selection?.rangeCount || !caretElement || !retainedText) {
-              resolve(null);
-              return;
-            }
-            const expected = document.createRange();
-            expected.setStart(retainedText, expectedOffset);
-            expected.collapse(true);
-            const expectedRect = expected.getBoundingClientRect();
-            const painted = caretElement.getBoundingClientRect();
-            const viewSelection =
-              editorRoot?.__pliteBrowserHandle?.getViewSelection();
-            resolve({
-              expectedOffset,
-              key: event.key,
-              dx: Math.abs(painted.left - expectedRect.left),
-              dy: Math.abs(painted.top - expectedRect.top),
-              height: painted.height,
-              viewFragment: Boolean(viewSelection?.focus?.fragmentId),
-              viewOffset: viewSelection?.focus?.point?.offset ?? null,
-            });
-          })
-        );
-      });
-      Object.assign(window, { __retainedCaretArrowFrame: frame });
-    });
-  });
+
   await page.mouse.click(target.x, target.y);
-  const assertCaret = async (offset: number, arrowKey?: string) => {
-    const arrowFrame = arrowKey
-      ? await page.evaluate(
-          () =>
-            (
-              window as typeof window & {
-                __retainedCaretArrowFrame?: Promise<CaretFrame | null>;
-              }
-            ).__retainedCaretArrowFrame
-        )
-      : null;
-    if (arrowKey) {
-      expect(arrowFrame).toMatchObject({
-        expectedOffset: offset,
-        key: arrowKey,
-        viewFragment: true,
-        viewOffset: offset,
-      });
-    }
-    await expect
-      .poll(() =>
-        retained.evaluate((element) => {
-          const selection = window.getSelection();
-          return {
-            inside:
-              !!selection?.anchorNode && element.contains(selection.anchorNode),
-            collapsed: selection?.isCollapsed,
-            offset: selection?.anchorOffset,
-          };
-        })
-      )
-      .toEqual({ inside: true, collapsed: true, offset });
-    await expect(caret).toHaveCount(1);
-    await expect(caret).toBeVisible();
-    const geometry =
-      arrowFrame ??
-      (await caret.evaluate((element) => {
-        const selection = window.getSelection();
-        if (!selection?.rangeCount) throw new Error('Missing native selection');
-        const native = selection.getRangeAt(0).getBoundingClientRect();
-        const painted = element.getBoundingClientRect();
-        return {
-          dx: Math.abs(painted.left - native.left),
-          dy: Math.abs(painted.top - native.top),
-          height: painted.height,
-        };
-      }));
-    expect(geometry.dx).toBeLessThanOrEqual(1);
-    expect(geometry.dy).toBeLessThanOrEqual(1);
-    expect(geometry.height).toBeGreaterThan(10);
-  };
-  await assertCaret(6);
-  const focusRect = await retained.evaluate(() => {
-    const selection = window.getSelection();
-    if (!selection?.rangeCount) throw new Error('Missing native caret');
-    const rect = selection.getRangeAt(0).getBoundingClientRect();
-    return { x: rect.left, y: rect.top, height: rect.height };
-  });
-  const clip = {
-    x: Math.floor(focusRect.x) - 3,
-    y: Math.floor(focusRect.y),
-    width: 14,
-    height: Math.ceil(focusRect.height),
-  };
-  const captures = new Map<
-    string,
-    { data: number[]; width: number; height: number }
-  >();
-  for (const control of ['actual', 'absent', 'single', 'duplicate']) {
-    await page.evaluate(
-      ({ control: mode, focusRect: pointRect }) => {
-        document.querySelector('[data-test-caret-controls]')?.remove();
-        if (mode === 'actual') return;
-        const container = document.createElement('div');
-        container.setAttribute('data-test-caret-controls', '');
-        container.style.pointerEvents = 'none';
-        const style = document.createElement('style');
-        style.textContent =
-          '[data-editor-view-selection-caret] { visibility: hidden !important; } [data-editor] { caret-color: transparent !important; }';
-        container.append(style);
-        const count = mode === 'absent' ? 0 : mode === 'single' ? 1 : 2;
-        for (let index = 0; index < count; index++) {
-          const line = document.createElement('span');
-          Object.assign(line.style, {
-            backgroundColor: getComputedStyle(
-              document.querySelector('[aria-label="Suggestions document"]')!
-            ).color,
-            height: `${pointRect.height}px`,
-            left: `${pointRect.x + index * 5}px`,
-            position: 'fixed',
-            top: `${pointRect.y}px`,
-            width: '1px',
-            zIndex: '2147483647',
-          });
-          container.append(line);
-        }
-        document.body.append(container);
-      },
-      { control, focusRect }
-    );
-    const png = await page.screenshot({
-      caret: 'initial',
-      clip,
-      path: testInfo.outputPath(`retained-caret-${control}.png`),
-    });
-    if (control === 'actual') {
-      const inputTrace = await page.evaluate(
-        () =>
-          (
-            window as typeof window & {
-              __retainedCaretInputTrace: Array<{
-                type: string;
-                buttons: number;
-                retained: boolean;
-              }>;
-            }
-          ).__retainedCaretInputTrace
-      );
-      expect(inputTrace).toEqual([
-        { type: 'pointerdown', buttons: 1, retained: true },
-        { type: 'mousedown', buttons: 1, retained: true },
-        { type: 'pointerup', buttons: 0, retained: true },
-        { type: 'mouseup', buttons: 0, retained: true },
-        { type: 'click', buttons: 0, retained: true },
-      ]);
-    }
-    captures.set(
-      control,
-      await page.evaluate(async (base64) => {
-        const bytes = Uint8Array.from(atob(base64), (value) =>
-          value.charCodeAt(0)
-        );
-        const image = await createImageBitmap(
-          new Blob([bytes], { type: 'image/png' })
-        );
-        const canvas = document.createElement('canvas');
-        canvas.width = image.width;
-        canvas.height = image.height;
-        const context = canvas.getContext('2d');
-        if (!context) throw new Error('Missing pixel decoder');
-        context.drawImage(image, 0, 0);
-        return {
-          data: Array.from(
-            context.getImageData(0, 0, image.width, image.height).data
-          ),
-          width: image.width,
-          height: image.height,
-        };
-      }, png.toString('base64'))
-    );
-  }
-  const absent = captures.get('absent')!;
-  const strokes = (name: string) => {
-    const image = captures.get(name)!;
-    let count = 0;
-    let previous = false;
-    for (let x = 0; x < image.width; x++) {
-      let changed = 0;
-      for (let y = 0; y < image.height; y++) {
-        const index = (y * image.width + x) * 4;
-        if (
-          [0, 1, 2].some(
-            (channel) =>
-              Math.abs(
-                image.data[index + channel] - absent.data[index + channel]
-              ) > 24
-          )
-        ) {
-          changed += 1;
-        }
-      }
-      const stroke = changed >= image.height * 0.7;
-      if (stroke && !previous) count += 1;
-      previous = stroke;
-    }
-    return count;
-  };
-  expect(strokes('absent')).toBe(0);
-  expect(strokes('single')).toBe(1);
-  expect(strokes('duplicate')).toBe(2);
-  expect(strokes('actual')).toBe(1);
-  await page.evaluate(() => {
-    document.querySelector('[data-test-caret-controls]')?.remove();
-  });
-  await testInfo.attach('retained-caret', {
-    body: await page.screenshot({
-      caret: 'initial',
-      path: testInfo.outputPath('retained-caret.png'),
-    }),
-    contentType: 'image/png',
-  });
-  await assertCaret(6);
-  await page.keyboard.press('ArrowLeft');
-  await assertCaret(5, 'ArrowLeft');
+  const caret = root.locator('[data-editor-view-selection-caret]');
+  await expect(caret).toBeVisible();
+  expect(
+    Math.abs((await caret.boundingBox())!.x - target.x)
+  ).toBeLessThanOrEqual(1);
+  await page.keyboard.type('XY');
+  await expect(block).toHaveText(
+    'Keep this redXYundant phrase out of the final draft.'
+  );
+  await expect(retained).toHaveText(['red', 'undant phrase ']);
   await page.keyboard.press('ArrowRight');
-  await assertCaret(6, 'ArrowRight');
-  const original = await editor.get.modelBlockTexts();
-  await page.keyboard.type('!');
-  await editor.assert.modelBlockTexts(original);
-  await page.getByRole('textbox', { name: 'Comment on suggestion' }).click();
-  await expect(caret).toHaveCount(0);
-  await page.mouse.click(target.x, target.y);
-  await assertCaret(6);
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('End');
-  await page.keyboard.type('!');
-  await editor.assert.modelBlockTexts([
-    original[0],
-    `${original[1]}!`,
-    original[2],
-  ]);
-  await expect(caret).toHaveCount(0);
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type('Z');
+  await expect(block).toHaveText(
+    'Keep this redXYZundant phrase out of the final draft.'
+  );
+  await expect(retained).toHaveText(['red', 'undant phrase ']);
+  runtimeErrors.assertNone();
+});
+
+test('drops external text at the edge of deleted text', async ({ page }) => {
+  const { root, runtimeErrors } = await openSuggestions(page);
+  const retained = root.locator('[data-editor-retained="delete"]');
+
+  await expect(retained).toHaveText('redundant phrase ');
+  // Synthetic drop events: Playwright cannot drive a native text drag.
+  await retained.evaluate((element) => {
+    const text = document
+      .createTreeWalker(element, NodeFilter.SHOW_TEXT)
+      .nextNode();
+    if (!text) throw new Error('Missing retained text');
+    const range = document.createRange();
+    range.setStart(text, 4);
+    range.collapse(true);
+    const rect = range.getBoundingClientRect();
+    const target = text.parentElement!;
+    const init = {
+      bubbles: true,
+      cancelable: true,
+      clientX: rect.left,
+      clientY: rect.top + rect.height / 2,
+    };
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData('text/plain', 'DROP');
+    target.dispatchEvent(new DragEvent('dragover', { ...init, dataTransfer }));
+    target.dispatchEvent(new DragEvent('drop', { ...init, dataTransfer }));
+  });
+
+  await expect(retained).toHaveText('redundant phrase ');
+  await expect(
+    root
+      .locator('[data-editor-node="element"]')
+      .filter({ hasText: 'out of the final draft.' })
+  ).toHaveText('Keep this DROPredundant phrase out of the final draft.');
   runtimeErrors.assertNone();
 });
 

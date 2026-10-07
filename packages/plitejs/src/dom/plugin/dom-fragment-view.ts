@@ -175,6 +175,8 @@ export const bindDOMRetainedElement = (
     element.setAttribute('data-editor-authored-change', changeId);
     markDOMSyncMutationTarget(element, 'attributes', 'data-editor-retained');
     element.setAttribute('data-editor-retained', fragmentKind);
+    markDOMSyncMutationTarget(element, 'attributes', 'contenteditable');
+    element.setAttribute('contenteditable', 'false');
   }
 
   return registration.dispose;
@@ -260,6 +262,8 @@ export const bindDOMFragmentElement = <V extends Value>(
     );
     markDOMSyncMutationTarget(element, 'attributes', 'data-editor-retained');
     element.setAttribute('data-editor-retained', fragment.fragment.kind);
+    markDOMSyncMutationTarget(element, 'attributes', 'contenteditable');
+    element.setAttribute('contenteditable', 'false');
   }
   return () => {
     if (

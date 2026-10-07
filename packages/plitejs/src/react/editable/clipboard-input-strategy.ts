@@ -31,6 +31,7 @@ import {
   indicateDOMDropTarget,
   resolveDOMDropTarget,
 } from '../../dom/plugin/dom-drag';
+import { readDOMFragmentTarget } from '../../dom/plugin/dom-fragment-view';
 import {
   beginDragSession,
   clearDragSession,
@@ -75,6 +76,7 @@ import {
   readRuntimeSelection,
   readRuntimeSelectionRange,
 } from './runtime-selection-state';
+import { resolveRetainedDropPoint } from './selection-projected-dom';
 
 type EditablePasteHandler = (
   event: ClipboardEvent<HTMLDivElement>
@@ -160,6 +162,21 @@ const isDragEventHandled = ({
   return event.isDefaultPrevented() || event.isPropagationStopped();
 };
 
+// Retained deleted text is not editable, so a drop over it lands at its edge.
+const resolveRetainedDropRange = (
+  editor: ReactRuntimeEditor,
+  event: DragEvent<HTMLDivElement>
+) => {
+  const point = resolveRetainedDropPoint({
+    editor,
+    root: event.currentTarget,
+    target: event.target,
+    x: event.clientX,
+    y: event.clientY,
+  });
+  return point ? { anchor: point, focus: point } : null;
+};
+
 const shouldHandleEditorDragEvent = ({
   editor,
   event,
@@ -169,7 +186,10 @@ const shouldHandleEditorDragEvent = ({
   event: DragEvent<HTMLDivElement>;
   handler?: EditableDragHandler;
 }) =>
-  ReactEditor.hasTarget(editor, event.target) &&
+  (ReactEditor.hasTarget(editor, event.target) ||
+    (isDOMNode(event.target) &&
+      !!readDOMFragmentTarget(event.target) &&
+      event.currentTarget.contains(event.target))) &&
   !isDragEventHandled({ event, handler }) &&
   !isInteractiveInternalTarget(editor, event.target);
 
@@ -646,13 +666,16 @@ export const applyEditableDragOver = ({
       : 'move';
   }
 
-  // Only when the target is void, call `preventDefault` to signal
-  // that drops are allowed. Editable content is droppable by
+  // Only when the target is void or retained, call `preventDefault` to
+  // signal that drops are allowed. Editable content is droppable by
   // default, and calling `preventDefault` hides the cursor.
   const target = resolveDragTarget(editor, event.target);
   const node = target?.node;
 
-  if (node && NodeApi.isElement(node) && editorIsVoid(editor, node)) {
+  if (
+    (node && NodeApi.isElement(node) && editorIsVoid(editor, node)) ||
+    (isDOMNode(event.target) && readDOMFragmentTarget(event.target))
+  ) {
     event.preventDefault();
   }
 
@@ -791,6 +814,7 @@ const applySessionDrop = ({
       ? { nodes: session.source.keys }
       : { range: range as Range };
   const dropPoint = (
+    resolveRetainedDropRange(editor, event) ??
     resolveTextDropRangeFromEvent(editor, event) ??
     ReactEditor.resolveEventRange(editor, event)
   )?.anchor;
@@ -893,7 +917,9 @@ export const applyEditableDrop = ({
       }
     }
 
-    const range = ReactEditor.resolveEventRange(editor, event);
+    const range =
+      resolveRetainedDropRange(editor, event) ??
+      ReactEditor.resolveEventRange(editor, event);
 
     if (!range) return clipboardResult({ command: null });
 

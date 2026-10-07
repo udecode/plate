@@ -95,7 +95,7 @@ const change = editor.read.authored.change(id);
 const changesAtRange = editor.read.authored.changesAt(range);
 ```
 
-`AuthoredChange` 提供稳定 identity、作者和时间、revision、status、kind、dependency 和当前 range。列表使用 cursor paging；keyed reader 使用 `change(id)`。
+`AuthoredChange` 提供稳定 identity、作者和时间、revision、status、kind、dependency 和当前 range。列表使用 cursor paging；keyed reader 使用 `change(id)`。每页带有 `documentId`；来自已替换文档的 cursor 从第一页重新开始，来自其他查询条件的 cursor 会抛错。
 
 ## 保留作者历史
 

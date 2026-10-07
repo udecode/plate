@@ -101,7 +101,8 @@ import {
 } from '../view-selection';
 import {
   createPliteViewSelectionDecorationSource,
-  usePliteViewSelectionPresence,
+  usePliteViewSelectionPaintsFragment,
+  usePliteViewSelectionNeedsDecorations,
 } from '../view-selection-decoration';
 
 const isRootValueChanged = (root: RootKey, commit: EditorCommit) =>
@@ -337,7 +338,7 @@ export const PliteRuntimeView = <
     onValueChange,
     root: viewRoot,
   });
-  const hasViewSelection = usePliteViewSelectionPresence(reactEditor);
+  const hasViewSelection = usePliteViewSelectionNeedsDecorations(reactEditor);
   const viewSelectionDecoration = useMemo(
     () =>
       createPliteViewSelectionDecorationSource(reactEditor, contentRootOwner),
@@ -542,10 +543,12 @@ const PlitePlainRetainedText = ({
   );
 };
 
-export const PlitePlainTextFragment = (
-  props: PliteFragmentProps & { hasViewSelection: boolean }
-) => {
+export const PlitePlainTextFragment = (props: PliteFragmentProps) => {
   const parent = useEditorContext();
+  const hasViewSelection = usePliteViewSelectionPaintsFragment(
+    parent,
+    props.fragment
+  );
   const entries = readAuthoredFragmentRoots(props.fragment);
   const [node, path] = entries[0] ?? [];
   const plain =
@@ -556,7 +559,7 @@ export const PlitePlainTextFragment = (
     node.text.length > 0 &&
     !node.text.endsWith('\n');
 
-  if (!plain || props.hasViewSelection) {
+  if (!plain || hasViewSelection) {
     return <PliteFragment {...props} />;
   }
 

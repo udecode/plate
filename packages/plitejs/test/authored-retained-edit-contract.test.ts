@@ -101,107 +101,6 @@ it('evaluates installed semantic commands in retained coordinates', () => {
   });
 });
 
-for (const parent of ['source', 'view'] as const) {
-  for (const action of ['accept', 'reject'] as const) {
-    it(`undoes and ${action}s retained amendments in a later paragraph through a markup ${parent}`, () => {
-      const source = createEditor({
-        plugins: [authored({ authorId: 'alice' }), history()],
-        initialValue: [
-          paragraph('Review and refine this sentence.'),
-          paragraph('Keep this redundant phrase out of the final draft.'),
-          paragraph('Try typing your own suggestion here.'),
-        ],
-      });
-      const view =
-        parent === 'source'
-          ? source
-          : createEditorView(source, { authored: markup });
-      if (parent === 'source') source.api.authored.setView(markup);
-      view.update.text.insert('collaboratively ', { at: point(7) });
-      view.update.text.delete({
-        at: {
-          anchor: { path: [1, 0], offset: 10 },
-          focus: { path: [1, 0], offset: 27 },
-        },
-      });
-      const deletion = source.read.authored
-        .changes()
-        .items.find((item) => item.kind === 'delete');
-      assert.ok(deletion);
-      const retained = createAuthoredFragmentView(
-        view,
-        retainedRuntime.readAuthoredViewFragments(view, deletion.id)[0]
-      );
-      const inserted = retainedRuntime.updateAuthoredFragment(
-        retained,
-        (tx) => {
-          tx.selection.set(point(6));
-          tx.text.insert('X');
-        },
-        { tags: ['dom-text-input'] }
-      );
-      assert.equal(inserted?.fragmentId, null);
-      assert.ok(inserted?.selection);
-      view.update.selection.set(inserted.selection);
-      view.update.text.insert('Y');
-      assert.equal(
-        NodeApi.string(view.read.children()[1]),
-        'Keep this XYout of the final draft.'
-      );
-      view.update((tx) => {
-        tx.history.newBatch();
-        tx.text.deleteBackward();
-      });
-      assert.equal(
-        NodeApi.string(view.read.children()[1]),
-        'Keep this Xout of the final draft.'
-      );
-      view.api.history.undo();
-      assert.equal(
-        NodeApi.string(view.read.children()[1]),
-        'Keep this XYout of the final draft.'
-      );
-      const retainedCaret = retained.anchor(point(6), {
-        association: 'forward',
-        deletion: 'nearest',
-      });
-      assert.deepEqual(retainedCaret.resolve(), point(6));
-      retainedCaret.release();
-      view.api.history.redo();
-      assert.equal(
-        NodeApi.string(view.read.children()[1]),
-        'Keep this Xout of the final draft.'
-      );
-      view.update.text.insert('Z');
-      view.update.break.insert();
-      view.update.text.insert('Q');
-      assert.equal(retainedText(view, deletion.id), 'redundant phrase ');
-      const beforeDecision = view.read.children();
-      const result = view.update.authored.decide({
-        action,
-        selection: view.read.authored.select({ ids: [deletion.id] }),
-      });
-      assert.equal(result.status, 'applied', JSON.stringify(result));
-      const decided = view.read.children();
-      assert.deepEqual(
-        decided.slice(1, 3).map(NodeApi.string),
-        action === 'accept'
-          ? ['Keep this XZ', 'Qout of the final draft.']
-          : ['Keep this redundXZ', 'Qant phrase out of the final draft.']
-      );
-      view.api.history.undo();
-      assert.deepEqual(view.read.children(), beforeDecision);
-      assert.equal(retainedText(view, deletion.id), 'redundant phrase ');
-      view.api.history.redo();
-      assert.deepEqual(view.read.children(), decided);
-      assert.deepEqual(
-        retainedRuntime.readAuthoredViewFragments(view, deletion.id),
-        []
-      );
-    });
-  }
-}
-
 it('allows another author but refuses stale fragments and readonly parents', () => {
   let authorId = 'alice';
   const source = createEditor({
@@ -413,3 +312,83 @@ it('keeps independent insertions at distinct retained positions in document orde
   });
   assert.equal(reopened.read.text.string([]), 'm1111ark2222 text for removal');
 });
+
+for (const action of ['accept', 'reject'] as const) {
+  it(`keeps an undone Editing deletion of retained text under the proposal, then ${action}s it`, async () => {
+    let authorId = 'alice';
+    const source = createEditor({
+      plugins: [authored({ authorId: () => authorId }), history()],
+      initialValue: [paragraph('Alpha bravo omega')],
+    });
+    const view = createEditorView(source, { authored: markup });
+    view.update.text.delete({ at: { anchor: point(6), focus: point(11) } });
+    const { id } = source.read.authored.changes().items[0];
+    authorId = 'bob';
+    view.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    retainedRuntime.updateAuthoredFragment(
+      createAuthoredFragmentView(
+        view,
+        retainedRuntime.readAuthoredViewFragments(view, id)[0]
+      ),
+      (tx) => {
+        tx.text.delete({ at: { anchor: point(4), focus: point(5) } });
+      }
+    );
+    assert.equal(retainedText(view, id), 'brav');
+
+    await view.api.history.undo();
+    assert.equal(source.read.text.string([]), 'Alpha bravo omega');
+    assert.equal(view.read.text.string([]), 'Alpha  omega');
+    assert.equal(retainedText(view, id), 'bravo');
+
+    authorId = 'carol';
+    source.update.authored.decide({
+      action,
+      selection: source.read.authored.select({ ids: [id] }),
+    });
+    const expected = action === 'accept' ? 'Alpha  omega' : 'Alpha bravo omega';
+    assert.equal(source.read.text.string([]), expected);
+    assert.equal(view.read.text.string([]), expected);
+  });
+}
+
+for (const [label, from, expected] of [
+  ['last', 4, 'Alpha brav omega'],
+  ['middle', 2, 'Alpha brvo omega'],
+] as const) {
+  it(`undoes accepting a deletion after Editing removed its ${label} struck character`, async () => {
+    let authorId = 'alice';
+    const source = createEditor({
+      plugins: [authored({ authorId: () => authorId }), history()],
+      initialValue: [paragraph('Alpha bravo omega')],
+    });
+    const view = createEditorView(source, { authored: markup });
+    view.update.text.delete({ at: { anchor: point(6), focus: point(11) } });
+    const { id } = source.read.authored.changes().items[0];
+    authorId = 'bob';
+    view.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    retainedRuntime.updateAuthoredFragment(
+      createAuthoredFragmentView(
+        view,
+        retainedRuntime.readAuthoredViewFragments(view, id)[0]
+      ),
+      (tx) => {
+        tx.text.delete({ at: { anchor: point(from), focus: point(from + 1) } });
+      }
+    );
+
+    authorId = 'carol';
+    const decide = (action: 'accept' | 'reject') =>
+      source.update.authored.decide({
+        action,
+        selection: source.read.authored.select({ ids: [id] }),
+      }).status;
+    assert.equal(decide('accept'), 'applied');
+    assert.equal(source.read.text.string([]), 'Alpha  omega');
+    await source.api.history.undo();
+    assert.equal(source.read.authored.change(id)?.status, 'pending');
+    assert.equal(source.read.text.string([]), expected);
+    assert.equal(decide('reject'), 'applied');
+    assert.equal(source.read.text.string([]), expected);
+  });
+}

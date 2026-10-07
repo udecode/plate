@@ -15,7 +15,7 @@
     "status": "unresolved"
   },
   "kind": "behavior",
-  "summary": "Keep proposal originals accessible after text edits and review",
+  "summary": "Browse suggestions across statuses with their current text",
   "targets": [
     {
       "name": "comment-toolbar-button",
@@ -46,12 +46,12 @@
     {
       "id": "2026-10-04-suggestion-originals",
       "kind": "behavior",
-      "summary": "Browse pending and decided suggestions, including those without visible text or replies. Keep the suggestion text and unsent replies available while the document changes.",
+      "summary": "Browse pending and decided suggestions page by page. Each card shows the suggestion's current text, and unsent replies stay available while the document changes.",
       "details": [],
       "migrationNotes": [],
       "targets": ["comment-toolbar-button", "discussion", "editor-ai"],
       "source": {
-        "line": 12,
+        "line": 14,
         "row": 1,
         "legacyRelease": {
           "date": "2026-10-04",

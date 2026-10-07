@@ -17,16 +17,6 @@ describe('authored HTML', () => {
       ],
       initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
     });
-    editor.update((tx) => {
-      tx.authored.propose({ changeId: 'private-original' });
-      tx.text.insert('unpublished proposal', {
-        at: { offset: 0, path: [0, 0] },
-      });
-    });
-    editor.update.authored.decide({
-      action: 'reject',
-      selection: editor.read.authored.select({ ids: ['private-original'] }),
-    });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'proposed' },
     });
@@ -40,11 +30,6 @@ describe('authored HTML', () => {
     const proposed = await renderStaticHtml(editor, {
       projection: 'proposed',
     });
-    expect(accepted.data).not.toContain('unpublished proposal');
-    expect(proposed.data).not.toContain('unpublished proposal');
-    expect(
-      JSON.stringify(editor.read.authored.details('private-original')?.original)
-    ).toContain('unpublished proposal');
     expect(accepted.data).toContain('Base');
     expect(accepted.data).not.toContain('draft');
     expect(proposed.data).toContain('Base draft');

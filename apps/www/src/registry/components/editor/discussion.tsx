@@ -683,8 +683,7 @@ const formatPropertyValue = (value: unknown) => {
 };
 
 const describeSuggestionPart = (
-  part: AuthoredChangePart,
-  preview = contentPreview
+  part: AuthoredChangePart
 ): readonly string[] => {
   const { kind } = part;
 
@@ -697,8 +696,8 @@ const describeSuggestionPart = (
       ];
     }
     case 'content': {
-      const before = preview(part.before);
-      const after = preview(part.after);
+      const before = contentPreview(part.before);
+      const after = contentPreview(part.after);
       const { action } = part;
 
       switch (action) {
@@ -761,6 +760,7 @@ const describeSuggestion = (
   details: AuthoredChangeDetails | null,
   fallback: AuthoredChange['kind']
 ) => {
+  if (details?.parts.status === 'unavailable') return ['Content unavailable'];
   if (details?.parts.status === 'available') {
     const descriptions: string[] = [];
 
@@ -857,15 +857,11 @@ export function SuggestionDiscussionCard({
   const current = details?.change ?? change;
   const canDecide =
     current.status === 'pending' || current.status === 'conflicted';
-  const retainedDescriptions =
-    details?.original?.status === 'available'
-      ? details.original.items.flatMap((part) =>
-          describeSuggestionPart(part, contentText)
-        )
-      : [];
-  const descriptions = retainedDescriptions.length
-    ? retainedDescriptions
-    : describeSuggestion(proposedEditor, details ?? null, change.kind);
+  const descriptions = describeSuggestion(
+    proposedEditor,
+    details ?? null,
+    change.kind
+  );
   const setOutcome = (result: AuthoredResult) =>
     setOutcomeState({ changeKey, result });
 

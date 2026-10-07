@@ -68,7 +68,7 @@ const historyEditor = createEditor({
 const retainedAuthored = historyEditor.plugin(RetainedAuthoredPlugin);
 ```
 
-`retainHistory` keeps closed edit bodies needed for selective revert. Proposal originals remain available with the default `false`; retaining an original does not preserve the operation history required for selective revert.
+`retainHistory` keeps closed edit bodies needed for selective revert.
 
 ## Capture changes
 
@@ -203,11 +203,11 @@ if (details?.parts.status === "available") {
 }
 ```
 
-`details(id)` returns the compact change summary, decision history, current semantic parts, and proposal original. Content parts include before and after slices. Boundary parts distinguish paragraph splits from joins. Property parts preserve exact before and after values. Root parts describe root creation or deletion.
+`details(id)` returns the compact change summary, decision history, and current semantic parts. Content parts include before and after slices. Boundary parts distinguish paragraph splits from joins. Property parts preserve exact before and after values. Root parts describe root creation or deletion.
 
-`details.original` is `{ status: 'available', items }` for a retained proposal, `{ status: 'unavailable', reason: 'legacy' }` when old data cannot establish its original, and `null` for a direct edit. Editing and mode changes leave the original unchanged. When the author next amends their own insertion in Suggesting, the original updates from the remaining proposal content at that point. Independent inserted text stays outside the proposal. Undo restores the previous original; redo restores the same amendment baseline. Accept and reject use the remaining content, not the original.
+Parts describe the change as it is now. Text typed in Editing inside a suggestion is a direct edit and stays outside it, so the suggestion's parts and its accept or reject use only its remaining content. Contiguous deletions read as one part, across mark boundaries.
 
-Use `changes({ proposals: true, limit: 50 })` to paginate proposals across statuses, including records without visible ranges or replies. A closed proposal can have an available original even when its current `parts` are unavailable.
+Use `changes({ proposals: true, limit: 50 })` to paginate proposals across statuses. A pending proposal whose content was removed entirely is left out of `changes()` until undo brings its content back under the same ID.
 
 Closed changes without retained edit bodies return `parts.status: 'unavailable'` with `reason: 'retention'`; their summary and reviews remain readable. Keep list and spatial reads compact, and request details only for the change being reviewed.
 
@@ -339,7 +339,7 @@ accepted or proposed content only. A successful DOCX result returns a `Blob` in
 | DOCX | Projected Word document | Word revisions; add `nativeState: 'attach'` to include canonical review data |
 
 DOCX review export reports `lossy-content` or `unsupported-content` when Word
-cannot express a native construct. Proposal originals are included only with `nativeState: 'attach'`. The `comments` option exports Word comments separately; persist the complete `CommentsJSON` alongside the document in your application. The DOCX authored part restores exact data
+cannot express a native construct. The `comments` option exports Word comments separately; persist the complete `CommentsJSON` alongside the document in your application. The DOCX authored part restores exact data
 only when the caller grants authored trust and the visible Word content still
 corresponds to that part.
 
@@ -347,7 +347,7 @@ corresponds to that part.
 
 Install the authored plugin and Yjs on every peer, with matching document and schema identities. Plate supplies local History by default.
 
-The Yjs adapter applies authored operations and decisions in one remote transaction. Its checkpoints preserve pending work and each peer's retained content. Retention policy is local: an archival peer can retain closed bodies while another peer compacts them. Proposal originals remain part of the shared canonical document. All writers must support the current authored schema capability; reject incompatible writers at admission and isolate old offline clients by document generation before upgrading.
+The Yjs adapter applies authored operations and decisions in one remote transaction. Its checkpoints preserve pending work and each peer's retained content. Retention policy is local: an archival peer can retain closed bodies while another peer compacts them. All writers must support the current authored schema capability; reject incompatible writers at admission and isolate old offline clients by document generation before upgrading.
 
 See [Collaboration](/docs/yjs) for setup and compaction ownership.
 
@@ -355,7 +355,7 @@ See [Collaboration](/docs/yjs) for setup and compaction ownership.
 
 ### `DefaultAuthoredPlugin`
 
-Import the standard descriptor from `platejs/authored`. It resolves the author from the Plate editor's `userId` and uses default retention. It sets `automaticFormatting: 'edit'` so ordinary mark commands apply directly in either mode. Explicit `tx.authored.propose(...)` transactions, including AI proposals, retain their full proposal semantics. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
+Import the standard descriptor from `platejs/authored`. It resolves the author from the Plate editor's `userId` and uses default retention. Ordinary mark commands follow the view. Editing applies them directly, and Suggesting records a format suggestion. Explicit `tx.authored.propose(...)` transactions, including AI proposals, retain their full proposal semantics. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
 
 ### `authored(options)`
 
@@ -364,7 +364,6 @@ Create a custom authored descriptor. Import it from `platejs/authored`.
 | Option          | Type                                                  | Purpose                                                            |
 | --------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
 | `authorId`      | `string \| ((editor) => string \| null \| undefined)` | Required. Resolve a nonempty author ID once per transaction.       |
-| `automaticFormatting` | `'edit' \| 'inherit'` | Apply ordinary text mark commands directly or inherit view intent. Native default: `'inherit'`. |
 | `retainHistory` | `boolean`                                             | Keep closed edit bodies for selective revert. Defaults to `false`. |
 
 ### Transaction, reads, and updates
@@ -377,7 +376,7 @@ After `const authored = editor.plugin(DefaultAuthoredPlugin)`, use these methods
 | `authored.read.canPropose()`              | Report whether the current identity can author proposals.                          |
 | `authored.read.view()`                    | Read this view's intent and projection.                                            |
 | `authored.read.change(id)`                | Read one logical change, or `null`.                                                |
-| `authored.read.details(id)`               | Read one change with current parts, proposal original, and decision history, or `null`.               |
+| `authored.read.details(id)`               | Read one change with current parts and decision history, or `null`.               |
 | `authored.read.changes(query?)`           | Read a page filtered by proposal identity, author, status, or time.                                   |
 | `authored.read.changesAt(range)`          | Read changes intersecting a text range.                                            |
 | `authored.read.select(query)`             | Capture a revision-bound selection for a decision.                                 |

@@ -740,7 +740,7 @@ describe('Comments persistence', () => {
     expect(savedApi.toJSON()).toEqual(stored);
   });
 
-  it('reloads a proposal with no remaining text together with its discussion and original', async () => {
+  it('reloads a proposal with no remaining text together with its discussion', async () => {
     const editor = createEditor({
       userId: 'alice',
       initialValue: value,
@@ -755,8 +755,6 @@ describe('Comments persistence', () => {
       tx.authored.propose({ changeId: 'review' });
       tx.text.insert(' proposal', { at: { path: [0, 0], offset: 5 } });
     });
-    const original = editor.read.authored.details('review')?.original;
-    expect(original?.status).toBe('available');
     const { api } = editor.plugin(BaseCommentsPlugin);
     expect(
       await api.createThread({
@@ -794,19 +792,14 @@ describe('Comments persistence', () => {
     });
     const restored = reopened.plugin(BaseCommentsPlugin).api;
     expect(reopened.read.children()).toEqual(value);
-    expect(
-      reopened.read.authored
-        .changes({ proposals: true })
-        .items.map(({ id }) => id)
-    ).toEqual(['review']);
+    expect(reopened.read.authored.changes({ proposals: true }).items).toEqual(
+      []
+    );
     expect(reopened.read.authored.change('review')?.status).toBe('pending');
     expect(reopened.read.authored.details('review')?.parts).toEqual({
       status: 'available',
       items: [],
     });
-    expect(reopened.read.authored.details('review')?.original).toEqual(
-      original
-    );
     expect(
       restored
         .getThread('review-thread')

@@ -104,7 +104,6 @@ import {
   projectAuthoredDocument,
   projectAuthoredReview,
 } from './format';
-import { classifyAuthoredFormatting } from './formatting';
 import {
   authoredFragmentIndexNodeKeys,
   authoredFragmentBucket,
@@ -168,6 +167,7 @@ import {
   type AuthoredEditIdentity,
   type AuthoredReview,
   type AuthoredState,
+  authoredOrderKey,
 } from './state';
 import {
   invertAuthoredSteps,
@@ -250,7 +250,10 @@ type AuthoredTransaction = {
   revertPositions?: AuthoredPositionRoots;
   hydratedChanges: Set<string>;
   receiving: AuthoredState | null;
-  insertions: Map<DocumentChange, AuthoredInsertion>;
+  /** Caret association of each step, keyed by the step the change builder holds. */
+  insertionsByStep: Map<DocumentChange, AuthoredInsertion>;
+  /** Builder steps already seen by `transactionChange`. */
+  observedSteps: number;
   rangeLifetime: { aborted: boolean };
   ranges: Array<{ release: () => void; settle: () => void }>;
   rangeProjection?: { change: DocumentChange; projection: AuthoredProjection };
@@ -293,6 +296,19 @@ type AuthoredRuntime = {
   fragments: Map<string, Map<string, NativeAuthoredFragment>>;
   fragmentIndex: AuthoredFragmentIndex | null;
   options: AuthoredOptions;
+  /**
+   * Whether each change still has reviewable content in the published
+   * projections. An entry holds while its record and operations keep their
+   * identity and no commit affects the change.
+   */
+  reviewContent: Map<
+    string,
+    Readonly<{
+      change: AuthoredRecord;
+      operations: readonly unknown[];
+      visible: boolean;
+    }>
+  >;
   projected: EditorDocumentValue;
   projectedPositions: AuthoredPositionRoots;
   replica: string;
@@ -370,6 +386,28 @@ const canReplayIndependently = (
   );
 };
 
+const parseJson = (text: string): unknown => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
+const readPageCursor = (cursor: string) => {
+  const value = parseJson(cursor);
+  if (
+    !Array.isArray(value) ||
+    value.length !== 3 ||
+    typeof value[0] !== 'string' ||
+    typeof value[1] !== 'string' ||
+    typeof value[2] !== 'string'
+  ) {
+    throw new Error('Invalid authored page cursor.');
+  }
+  return { documentId: value[0], key: value[2], scope: value[1] };
+};
+
 const RUNTIMES = new WeakMap<Editor, AuthoredRuntime>();
 
 /** Narrow an editor only when the native authored capability is active. */
@@ -377,101 +415,9 @@ export const isAuthoredEditor = <TEditor extends Editor>(
   editor: TEditor
 ): editor is TEditor & AuthoredEditor<ValueOf<TEditor>> =>
   RUNTIMES.has(getEditorRuntimeOwner(editor));
-type NativeDeletion = Readonly<{
-  root: string;
-  beforeCaret: number;
-  afterCaret: number;
-  direction: 'backward' | 'forward';
-}>;
 type AuthoredViewState = {
   composition: { changeId: string | null } | null;
   policy: AuthoredView;
-  deletion?: NativeDeletion & {
-    authorId: string;
-    changeId: string;
-    commit: EditorCommit;
-    policy: AuthoredView;
-  };
-};
-const nativeDeletion = (
-  change: DocumentChange,
-  value: JsonEditorValue,
-  selection: Selection,
-  after: JsonEditorValue,
-  afterSelection: Selection
-): NativeDeletion | null => {
-  if (
-    !selection ||
-    !SelectionApi.isText(selection) ||
-    !RangeApi.isCollapsed(selection) ||
-    !afterSelection ||
-    !SelectionApi.isText(afterSelection) ||
-    !RangeApi.isCollapsed(afterSelection) ||
-    (afterSelection.anchor.root ?? 'main') !==
-      (selection.anchor.root ?? 'main') ||
-    change.createRoots.size ||
-    change.deleteRoots.size
-  ) {
-    return null;
-  }
-  const json = change.toJSON();
-  const roots = [
-    ...(json.primary ? [['main', json.primary] as const] : []),
-    ...Object.entries(json.roots ?? {}),
-  ];
-  let result: NativeDeletion | null = null;
-  for (const [root, sections] of roots) {
-    const index = DocumentIndex.fromValue(authoredRootNodes(value, root));
-    let position = 0;
-    for (const section of sections) {
-      if (section.properties) return null;
-      if (section.replacement) {
-        if ((selection.anchor.root ?? 'main') !== root) return null;
-        const emptyTextBoundaries =
-          section.length === 0 &&
-          section.replacement.length > 0 &&
-          section.replacement.length % 2 === 0 &&
-          section.replacement.every((token, i) =>
-            i % 2 === 0
-              ? token.kind === 'open' &&
-                token.nodeKind === 'text' &&
-                Object.keys(token.props).length === 0
-              : token.kind === 'close' && token.nodeKind === 'text'
-          );
-        if (emptyTextBoundaries) continue;
-        if (
-          result ||
-          section.replacement.length ||
-          !section.length ||
-          (selection.anchor.root ?? 'main') !== root
-        ) {
-          return null;
-        }
-        const caret = index.positionAt(selection.anchor);
-        const to = position + section.length;
-        if (caret !== position && caret !== to) return null;
-        result = {
-          root,
-          beforeCaret: caret,
-          afterCaret: DocumentIndex.fromValue(
-            authoredRootNodes(after, root)
-          ).positionAt(afterSelection.anchor),
-          direction: caret === to ? 'backward' : 'forward',
-        };
-      }
-      position += section.length;
-    }
-  }
-  if (
-    result &&
-    change.mapPosition(result.beforeCaret, {
-      ...(result.root === 'main' ? {} : { root: result.root }),
-      association: 'forward',
-    }) !== result.afterCaret
-  ) {
-    return null;
-  }
-  return result;
 };
 const VIEWS = new WeakMap<
   ReturnType<typeof getEditorRuntime>,
@@ -641,6 +587,37 @@ const receiveAuthoredProjection = (
   return active.decision;
 };
 
+const readReviewContent = (
+  live: AuthoredRuntime,
+  change: AuthoredRecord,
+  accepted: AuthoredRangeProjection,
+  proposed: AuthoredRangeProjection
+) => {
+  if (
+    getActiveEditorTransaction(live.source) ||
+    accepted.positions !== live.acceptedPositions ||
+    proposed.positions !== live.projectedPositions
+  ) {
+    return hasAuthoredReviewContent(change, accepted, proposed);
+  }
+  const operations = [...records(change.operations)].map(([, identity]) =>
+    readRecord(proposed.state.operations, identity)
+  );
+  const cached = live.reviewContent.get(change.id);
+  if (
+    cached?.change === change &&
+    cached.operations.length === operations.length &&
+    cached.operations.every(
+      (operation, index) => operation === operations[index]
+    )
+  ) {
+    return cached.visible;
+  }
+  const visible = hasAuthoredReviewContent(change, accepted, proposed);
+  live.reviewContent.set(change.id, { change, operations, visible });
+  return visible;
+};
+
 const readAuthoredViewProjection = (
   live: AuthoredRuntime,
   view: Editor,
@@ -704,7 +681,7 @@ const readAuthoredViewProjection = (
             schema: getCompiledEditorSchemaFromApi(
               getEditorSchema(live.source)
             ),
-            insertions: active.insertions,
+            insertionsByStep: active.insertionsByStep,
             change,
             steps: getActiveDocumentChangeBuilder(live.source).steps,
             changeId,
@@ -905,7 +882,6 @@ const setAuthoredView = (editor: Editor, value: AuthoredView) => {
   ) {
     return;
   }
-  authoredViewState(editor).deletion = undefined;
   authoredViewState(editor).policy = Object.freeze({ ...value });
   notifyEditorViewState(editor, 'authored');
 };
@@ -1601,6 +1577,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         active: null,
         fragmentIndex: null,
         fragments: new Map(),
+        reviewContent: new Map(),
         ...restoreInitialProjection(initialState, initialValue, schema, source),
         options,
         replica: crypto.randomUUID(),
@@ -2011,22 +1988,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           }
           let { changes } = spec;
           const specSteps = readTransactionSpecSteps(spec);
-          const formattingOnly =
-            live.options.automaticFormatting === 'edit' &&
-            classifyAuthoredFormatting(
-              captureAuthoredChange({
-                state,
-                change: changes,
-                steps: specSteps,
-                changeId: 'classification',
-                operationId: 'classification',
-                positions: projection.positions,
-                value: projection.value,
-                schema: getCompiledEditorSchemaFromApi(schema),
-              }).steps,
-              'classification'
-            )?.onlyFormatting;
-          if (binding && intent === 'propose' && !formattingOnly) {
+          if (binding && intent === 'propose') {
             const retainDeleted = (
               sections: RootChangeJson
             ): RootChangeJson => {
@@ -2239,7 +2201,6 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                 !part.changeId
                   ? authoredEditTarget(part.change, positions, current, {
                       adjacentDeletions: false,
-                      amendDeletions: false,
                       authorId,
                     })
                   : null;
@@ -2281,12 +2242,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                   : {}),
                 ...(isolated ? { afterPositions: isolated.positions } : {}),
               });
-              const formatting =
-                live.options.automaticFormatting === 'edit'
-                  ? classifyAuthoredFormatting(captured.steps, id)
-                  : null;
-              const proposing =
-                intent === 'propose' && !formatting?.onlyFormatting;
+              const proposing = intent === 'propose';
               if (!proposing && readRecord(current.changes, proposalId)) {
                 proposalId = crypto.randomUUID();
                 captured = captureAuthoredChange({
@@ -2372,18 +2328,12 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                   kind: 'edit',
                   parents: current.frontier,
                   proposal: proposing,
-                  ...(proposing &&
-                  readRecord(current.changes, proposalId)?.status === 'pending'
-                    ? { refreshOriginal: true as const }
-                    : {}),
-                  ...((proposing ||
-                    binding ||
-                    authoredView(parent).projection !== 'accepted') &&
+                  ...((binding ||
+                    carrier ||
+                    (!proposing &&
+                      authoredView(parent).projection !== 'accepted')) &&
                   canReplayIndependently(captured, current)
                     ? { independent: true as const }
-                    : {}),
-                  ...(proposing && formatting
-                    ? { directFormatting: true as const }
                     : {}),
                   steps: captured.steps,
                   replica: live.replica,
@@ -3308,7 +3258,8 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
             finishing: false,
             hydratedChanges: new Set(),
             receiving: null,
-            insertions: new Map(),
+            insertionsByStep: new Map(),
+            observedSteps: 0,
             rangeLifetime: { aborted: false },
             ranges: [],
             view: null,
@@ -3337,12 +3288,6 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           let nextProjectedChange = DocumentChange.empty;
           let nextAcceptedPositions = live.acceptedPositions;
           let nextProjectedPositions = live.projectedPositions;
-          let deletionCapture: {
-            view: AuthoredViewState;
-            deletion: NativeDeletion;
-            changeId: string;
-            authorId: string;
-          } | null = null;
           let compositionCapture: {
             composition: { changeId: string | null };
             changeId: string;
@@ -3461,40 +3406,6 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                 const sequence =
                   (readRecord(state.vector, live.replica) ?? 0) + 1;
                 const operationId = `${live.replica}:${sequence}`;
-                const viewState = authoredViewState(active.view ?? source);
-                const deletion =
-                  active.automatic &&
-                  active.intent === 'propose' &&
-                  active.inputProjection === 'proposed' &&
-                  !viewState.composition &&
-                  (tx.tags.has('native-text-input') ||
-                    tx.tags.has('dom-text-input')) &&
-                  !tx.tags.has('paste') &&
-                  !tx.tags.has('historic') &&
-                  !tx.tags.has('history-push')
-                    ? nativeDeletion(
-                        change,
-                        before,
-                        resolveAuthoredSelection(
-                          active.viewSelection,
-                          projectedPositionsBase,
-                          before,
-                          state
-                        ),
-                        after,
-                        viewSelection
-                      )
-                    : null;
-                const previousDeletion = viewState.deletion;
-                const continuesDeletion =
-                  deletion &&
-                  previousDeletion &&
-                  previousDeletion.commit === getLastCommit(source) &&
-                  previousDeletion.authorId === authorId &&
-                  previousDeletion.policy === viewState.policy &&
-                  previousDeletion.root === deletion.root &&
-                  previousDeletion.direction === deletion.direction &&
-                  deletion.beforeCaret === previousDeletion.afterCaret;
                 const changedRoots = change.toJSON();
                 const restoresStructure = [
                   changedRoots.primary ?? [],
@@ -3513,18 +3424,15 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                         projectedPositionsBase,
                         state,
                         {
-                          adjacentDeletions:
-                            Boolean(continuesDeletion) || restoresStructure,
-                          amendDeletions: active.insertions.size === 0,
+                          adjacentDeletions: true,
                           authorId,
+                          value: before,
                         }
                       )
                     : null;
-                const targeted = continuesDeletion
-                  ? readRecord(state.changes, previousDeletion.changeId)
-                  : editingTarget
-                    ? readRecord(state.changes, editingTarget)
-                    : null;
+                const targeted = editingTarget
+                  ? readRecord(state.changes, editingTarget)
+                  : null;
                 const owned = targeted?.authorId === authorId ? targeted : null;
                 const editingOwner = owned?.id ?? null;
                 const composition = active.automatic
@@ -3574,7 +3482,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                   restoreIdentity: active.revertPositions !== undefined,
                   schema: getCompiledEditorSchemaFromApi(schema),
                   state,
-                  insertions: active.insertions,
+                  insertionsByStep: active.insertionsByStep,
                   change,
                   steps: active.decision || isolated ? [change] : input.steps,
                   changeId: classificationId,
@@ -3585,14 +3493,6 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                       : acceptedPositionsBase,
                   value: before,
                 });
-                const formatting =
-                  active.automatic &&
-                  live.options.automaticFormatting === 'edit'
-                    ? classifyAuthoredFormatting(
-                        classificationCaptured.steps,
-                        operationId
-                      )
-                    : null;
                 const pendingDependencies =
                   classificationCaptured.publicationDependencies.filter(
                     (identity) => {
@@ -3605,33 +3505,23 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                   );
                 const changeId =
                   active.changeId ??
-                  (formatting?.onlyFormatting
-                    ? classificationId
-                    : compositionChange?.authorId === authorId &&
-                        compositionChange.status === 'pending'
-                      ? compositionChange.id
-                      : editingOwner &&
-                          (active.intent === 'propose' ||
-                            pendingDependencies.includes(editingOwner)) &&
-                          owned?.authorId === authorId &&
-                          owned.status === 'pending'
-                        ? owned.id
-                        : classificationId);
-                if (deletion) {
-                  deletionCapture = {
-                    view: viewState,
-                    deletion,
-                    changeId,
-                    authorId,
-                  };
-                }
+                  (compositionChange?.authorId === authorId &&
+                  compositionChange.status === 'pending'
+                    ? compositionChange.id
+                    : editingOwner &&
+                        (active.intent === 'propose' ||
+                          pendingDependencies.includes(editingOwner)) &&
+                        owned?.authorId === authorId &&
+                        owned.status === 'pending'
+                      ? owned.id
+                      : classificationId);
                 const initialCaptured =
                   changeId === classificationId
                     ? classificationCaptured
                     : captureAuthoredChange({
                         schema: getCompiledEditorSchemaFromApi(schema),
                         state,
-                        insertions: active.insertions,
+                        insertionsByStep: active.insertionsByStep,
                         change,
                         steps: active.decision ? [change] : input.steps,
                         changeId,
@@ -3642,14 +3532,10 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                             : acceptedPositionsBase,
                         value: before,
                       });
-                if (formatting?.onlyFormatting) active.publication = 'accepted';
                 if (active.publication === 'unresolved') {
                   active.publication = 'accepted';
                 }
                 if (
-                  (formatting &&
-                    !formatting.onlyFormatting &&
-                    active.publication === 'proposed') ||
                   (isolated &&
                     restoresStructure &&
                     active.publication !== 'proposed') ||
@@ -3670,19 +3556,9 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                       inverseOf: null,
                       kind: 'edit',
                       parents: state.frontier,
-                      proposal: active.publication === 'proposed',
-                      ...(active.automatic &&
-                      active.publication === 'proposed' &&
-                      readRecord(state.changes, changeId)?.status === 'pending'
-                        ? { refreshOriginal: true as const }
-                        : {}),
-                      ...((active.automatic ||
-                        active.publication !== 'proposed') &&
-                      canReplayIndependently(initialCaptured, state)
+                      proposal: false,
+                      ...(canReplayIndependently(initialCaptured, state)
                         ? { independent: true as const }
-                        : {}),
-                      ...(active.publication === 'proposed'
-                        ? { directFormatting: true as const }
                         : {}),
                       steps: initialCaptured.steps,
                       replica: live.replica,
@@ -3772,13 +3648,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                         kind: 'edit',
                         parents: publicationState.frontier,
                         proposal: proposedPublication,
-                        ...(active.automatic &&
-                        proposedPublication &&
-                        readRecord(publicationState.changes, id)?.status ===
-                          'pending'
-                          ? { refreshOriginal: true as const }
-                          : {}),
-                        ...((active.automatic || !proposedPublication) &&
+                        ...(!proposedPublication &&
                         canReplayIndependently(
                           captured,
                           publicationState,
@@ -4188,19 +4058,6 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
               ) {
                 renderScopes.clear();
               }
-              if (active.view) {
-                authoredViewState(active.view).deletion = undefined;
-              }
-              if (deletionCapture) {
-                const { view, deletion, changeId, authorId } = deletionCapture;
-                view.deletion = {
-                  ...deletion,
-                  changeId,
-                  authorId,
-                  commit,
-                  policy: view.policy,
-                };
-              }
               if (compositionCapture) {
                 compositionCapture.composition.changeId =
                   compositionCapture.changeId;
@@ -4208,6 +4065,19 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
               if (nextFragments) {
                 live.fragmentIndex = nextFragments.index;
                 fragmentPublications.set(commit, nextFragments);
+              }
+              if (
+                nextState !== stateBefore ||
+                nextAccepted !== live.accepted ||
+                nextProjected !== live.projected
+              ) {
+                if (nextFragments && !active.replacement) {
+                  for (const id of nextFragments.affected) {
+                    live.reviewContent.delete(id);
+                  }
+                } else {
+                  live.reviewContent.clear();
+                }
               }
               if (active.replacement) live.fragments.clear();
               for (const id of removedFragments) live.fragments.delete(id);
@@ -4267,7 +4137,16 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         }
         actor(live);
         if (live.active) {
+          const { steps } = getActiveDocumentChangeBuilder(editor);
+          // Only a notification that appended exactly one step can carry
+          // that step's caret; empty and adopted batches carry none.
+          const step =
+            steps.length === live.active.observedSteps + 1
+              ? steps.at(-1)
+              : undefined;
+          live.active.observedSteps = steps.length;
           if (
+            step &&
             live.active.view &&
             authoredView(live.active.view).projection === 'markup' &&
             SelectionApi.isText(selectionBefore) &&
@@ -4275,7 +4154,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
             RangeApi.isCollapsed(selectionBefore)
           ) {
             const root = selectionBeforeRoot ?? 'main';
-            live.active.insertions.set(change, {
+            live.active.insertionsByStep.set(step, {
               association:
                 selectionBefore.affinity === 'backward' ? 'left' : 'right',
               position: DocumentIndex.fromValue(
@@ -4321,35 +4200,75 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         },
         changes(query = {}) {
           validateAuthoredQuery(query);
+          const snapshot = state.getField(authoredState);
+          const { documentId } = snapshot;
           if (isDocumentView(editor)) {
-            return Object.freeze({ items: Object.freeze([]), cursor: null });
+            return Object.freeze({
+              items: Object.freeze([]),
+              cursor: null,
+              documentId,
+            });
           }
           const limit = query.limit ?? 50;
           if (!Number.isSafeInteger(limit) || limit < 1 || limit > 200) {
             throw new Error('Authored page limit must be between 1 and 200.');
           }
-          const snapshot = state.getField(authoredState);
-          const prefix = `${snapshot.documentId}:${snapshot.clock}:`;
-          if (query.cursor && !query.cursor.startsWith(prefix)) {
-            throw new Error('Stale authored page cursor.');
+          const scope = JSON.stringify([
+            query.proposals ?? false,
+            query.authorId ?? null,
+            query.status ?? null,
+            query.from ?? null,
+            query.to ?? null,
+          ]);
+          const cursor =
+            query.cursor === undefined ? null : readPageCursor(query.cursor);
+          // A cursor from a replaced document restarts at the first page.
+          const after =
+            cursor?.documentId === documentId ? cursor.key : undefined;
+          if (after !== undefined) {
+            if (cursor?.scope !== scope) {
+              throw new Error('Authored page cursor belongs to another query.');
+            }
+            if (
+              query.from !== undefined &&
+              after < authoredOrderKey(query.from, '')
+            ) {
+              throw new Error('Invalid authored page cursor.');
+            }
           }
+          const live = runtime(editor);
+          const accepted = readAuthoredViewProjection(live, editor, 'accepted');
+          const proposed = readAuthoredViewProjection(live, editor, 'proposed');
           const items: AuthoredChange[] = [];
           let lastKey: string | null = null;
           for (const { key, change } of matchingAuthoredChanges(
             snapshot,
             query,
-            query.cursor?.slice(prefix.length)
+            after
           )) {
+            if (
+              (change.status === 'pending' || change.status === 'conflicted') &&
+              change.kind !== 'format' &&
+              change.kind !== 'structure' &&
+              !readReviewContent(live, change, accepted, proposed)
+            ) {
+              continue;
+            }
             if (items.length === limit) {
               return Object.freeze({
                 items: Object.freeze(items),
-                cursor: prefix + lastKey,
+                cursor: JSON.stringify([documentId, scope, lastKey]),
+                documentId,
               });
             }
             items.push(publicChange(change));
             lastKey = key;
           }
-          return Object.freeze({ items: Object.freeze(items), cursor: null });
+          return Object.freeze({
+            items: Object.freeze(items),
+            cursor: null,
+            documentId,
+          });
         },
         changesAt(range) {
           if (!RangeApi.isRange(range)) {
@@ -4408,7 +4327,8 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
           const items: AuthoredChange[] = [];
           for (const change of candidates) {
             if (
-              !hasAuthoredReviewContent(
+              !readReviewContent(
+                live,
                 change,
                 readAuthoredViewProjection(live, editor, 'accepted'),
                 readAuthoredViewProjection(live, editor, 'proposed')

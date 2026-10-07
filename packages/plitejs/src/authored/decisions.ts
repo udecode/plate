@@ -123,6 +123,18 @@ export const inspectAuthoredSelection = (
   return { status: 'ready', ids, changes };
 };
 
+// Direct edits and independently replayable proposals survive their
+// dependencies' decisions, so only reviewed proposal operations bind changes.
+const reviewedDependencies = (state: AuthoredState, change: AuthoredRecord) =>
+  new Set(
+    [...records(change.operations)].flatMap(([, id]) => {
+      const op = readRecord(state.operations, id);
+      return op?.kind === 'edit' && op.proposal && !op.independent
+        ? op.dependencies
+        : [];
+    })
+  );
+
 export const previewAuthoredDecision = (
   state: AuthoredState,
   input: AuthoredDecision,
@@ -162,15 +174,7 @@ export const previewAuthoredDecision = (
     const change = readRecord(state.changes, identity);
     if (!change) return;
     if (input.action === 'accept') {
-      if (
-        [...records(change.operations)].every(([, id]) => {
-          const op = readRecord(state.operations, id);
-          return op?.kind === 'edit' && (!op.proposal || op.independent);
-        })
-      ) {
-        return;
-      }
-      for (const dependency of change.dependencies) {
+      for (const dependency of reviewedDependencies(state, change)) {
         const parent = readRecord(state.changes, dependency);
         if (parent?.status === 'accepted') continue;
         if (!selected.has(dependency)) dependencies.add(dependency);
@@ -180,10 +184,7 @@ export const previewAuthoredDecision = (
       for (const child of authoredDependants(state, identity)) {
         if (
           child.status === 'rejected' ||
-          [...records(child.operations)].every(([, id]) => {
-            const op = readRecord(state.operations, id);
-            return op?.kind === 'edit' && (!op.proposal || op.independent);
-          })
+          !reviewedDependencies(state, child).has(identity)
         ) {
           continue;
         }
