@@ -2527,23 +2527,27 @@ const mapAuthoredStep = (input: AuthoredMappingInput) =>
                   input.direction === 'forward'
                     ? target.from
                     : target.afterFrom;
-                const hasForeignNeighbour = (['left', 'right'] as const).some(
-                  (side) => {
-                    const neighbour = gap[side];
-                    return (
-                      neighbour &&
-                      neighbour.origin !== piece.span.origin &&
-                      resolveAuthoredPosition(
-                        before,
-                        {
-                          left: side === 'left' ? neighbour : null,
-                          right: side === 'right' ? neighbour : null,
-                        },
-                        side
-                      ) !== null
-                    );
-                  }
-                );
+                const hasLiveNeighbourOutsidePiece = (
+                  ['left', 'right'] as const
+                ).some((side) => {
+                  const neighbour = gap[side];
+                  return (
+                    neighbour &&
+                    // Steps of one operation take increasing offsets in its
+                    // origin, so a same-origin anchor before the piece is an
+                    // earlier step's live text and outranks origin adjacency.
+                    (neighbour.origin !== piece.span.origin ||
+                      neighbour.offset < piece.span.offset) &&
+                    resolveAuthoredPosition(
+                      before,
+                      {
+                        left: side === 'left' ? neighbour : null,
+                        right: side === 'right' ? neighbour : null,
+                      },
+                      side
+                    ) !== null
+                  );
+                });
                 const hasAcceptedBoundary =
                   acceptedCounterpart &&
                   pieces.length === 1 &&
@@ -2554,7 +2558,7 @@ const mapAuthoredStep = (input: AuthoredMappingInput) =>
                     'left'
                   ) !== null;
                 let at =
-                  (hasForeignNeighbour && !acceptedCounterpart) ||
+                  (hasLiveNeighbourOutsidePiece && !acceptedCounterpart) ||
                   hasAcceptedBoundary
                     ? (from ?? restoredFrom)
                     : (restoredFrom ?? from);

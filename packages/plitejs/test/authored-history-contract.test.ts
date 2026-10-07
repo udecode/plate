@@ -722,4 +722,23 @@ describe('authored local history', () => {
     assert.equal(editor.read.authored.change(id)?.status, 'pending');
     assert.equal(editor.read.authored.change(id)?.revision, 6);
   });
+
+  it('redoes an Editing edit whose later step inserts inside its earlier insertion', () => {
+    const source = createEditor({
+      plugins: [history(), authored({ authorId: 'alice' })],
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+    const view = createEditorView(source, {
+      authored: { intent: 'edit', projection: 'markup' },
+    });
+    view.update((tx) => {
+      tx.text.insert('ab', { at: at(3) });
+      tx.text.insert('Q', { at: at(4) });
+    });
+
+    assert.equal(view.api.history.undo().status, 'applied');
+    assert.equal(view.read.text.string([0]), 'one');
+    assert.equal(view.api.history.redo().status, 'applied');
+    assert.equal(view.read.text.string([0]), 'oneaQb');
+  });
 });
