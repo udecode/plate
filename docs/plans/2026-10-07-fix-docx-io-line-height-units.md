@@ -20,7 +20,7 @@ Applied packs:
 
 Task source:
 - type: plain task text (bug report with a measured reproduction, written by the MyNotary team for an AI-assisted contribution; no public issue)
-- id / link: no tracker item; the PR opened from `fix/docx-io-line-height-units` on fork `vincent69001/plate` is the only artifact
+- id / link: no tracker item; PR #5145 (https://github.com/udecode/plate/pull/5145), opened from `fix/docx-io-line-height-units` on fork `vincent69001/plate`, is the only artifact
 - title: `fix(docx-io): read line-height units when exporting to DOCX`
 - task type: behavior bug fix in a published package
 - acceptance criteria (measured on `@platejs/docx-io` 53.3.2, code identical on `main` at a8607621c0 / 53.3.10):
@@ -88,9 +88,9 @@ Task state:
 - task_type: bug fix in a published package
 - task_complexity: normal, non-heavyweight, measurable
 - current_phase: closeout
-- current_phase_status: complete locally; PR creation awaits the requesting user's approval
-- next_phase: PR creation, then plan sync with the PR number
-- goal_status: active until the PR exists and this plan names it
+- current_phase_status: complete
+- next_phase: final response
+- goal_status: complete
 
 Current verdict:
 - verdict: valid
@@ -139,8 +139,8 @@ Start Gates:
 | Branch decision for code-changing task | yes | `fix/docx-io-line-height-units` on fork `vincent69001/plate` from `upstream/main` a8607621c0; the PR targets `main` |
 | Release artifact decision | yes | `.changeset/docx-io-line-height-units.md`, `@platejs/docx-io` patch |
 | Browser tool decision for browser surface | no | N/A: no route or DOM |
-| PR expectation decision | yes | One PR, opened only after the requesting user approves the title and body shown in the session |
-| Dedicated task plan selected for exact PR | yes | This plan owns the single PR opened from `fix/docx-io-line-height-units`; its number is recorded in Final handoff / sync once it exists |
+| PR expectation decision | yes | One PR, opened after the requesting user approved the title and body shown in the session: PR #5145 (https://github.com/udecode/plate/pull/5145) |
+| Dedicated task plan selected for exact PR | yes | This plan owns PR #5145 (https://github.com/udecode/plate/pull/5145) only |
 | Tracker sync expectation decision | no | N/A: no tracker item |
 | Output budget strategy recorded | yes | Bounded reads and log-file tails as recorded above |
 | Package/API pack selected | yes | `--with package-api`: published runtime behavior of `@platejs/docx-io` changes and a changeset ships |
@@ -196,8 +196,9 @@ Work Checklist:
       not aggregate evidence for another PR.
 - [x] If a PR exists, its body has exactly one
       `🧭 Task plan: docs/plans/<plan>.md` line, this file exists at the exact PR
-      head, and this plan records that exact PR number or URL. The PR body is
-      drafted with that line; the number is recorded here once the PR exists.
+      head, and this plan records that exact PR number or URL. PR #5145
+      (https://github.com/udecode/plate/pull/5145): the body carries the line,
+      this plan names the PR and is pushed to its head.
 - [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
       reinstall/rerun evidence or N/A with reason. N/A: no missing-module or
       React-runtime failure; the only typecheck miss was `@platejs/docx` without
@@ -249,9 +250,9 @@ Completion Gates:
 | Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent surface touched |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: no corruption signal |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Helper run with `--engine claude` (Codex not installed) failed on authentication; substitute in-session review run, 5 findings triaged and resolved, see Review fixes |
-| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | `pnpm check` run after the review fixes; result in Verification evidence; PR body drafted in the task-style format and shown to the requesting user before creation |
-| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | PR body carries one `🧭 Task plan:` line; this plan is committed on the branch; the PR number is recorded in Final handoff / sync once the PR exists |
-| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | Body drafted in that format with an unchecked auto-release block; verified with `gh pr view --json body` after creation |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | `pnpm check` exit 0 after the review fixes; PR #5145 created with the task-style body shown to and approved by the requesting user |
+| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | PR #5145 body carries one `🧭 Task plan: docs/plans/2026-10-07-fix-docx-io-line-height-units.md` line; this plan names PR #5145 and is pushed to the PR head |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | `gh pr view 5145 --json body`: unchecked auto-release block, `🐛 Fixes ➖ N/A`, one task-plan line, `🟢 90-95% confidence`, the Phase table, the four bold emoji sections, no self-link |
 | PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no images |
 | Tracker sync-back | no | Post concise issue/Linear sync after PR exists, or record N/A/blocker | N/A: no tracker item |
 | Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Filled below |
@@ -266,8 +267,8 @@ Phase / pass table:
 | Intake and source read | done | Task text, repo rules, `xml-builder.ts` and `unit-conversion.ts` read | implementation |
 | Implementation | done | `fixupLineHeight` parses `px`/`pt`/`cm`/`in`/`%`/`em`/unitless with an anchored pattern; `LineSpacing` attribute; `buildSpacing` writes `lineRule` | verification |
 | Verification | done | Package lane, typecheck, build, lint, brl, repro, `pnpm check`; see Verification evidence | closeout |
-| PR / tracker sync | awaiting the requesting user's approval of the title and body | Title and body drafted; no push or PR before approval | final response |
-| Closeout | done locally | Plan filled; PR number added here after creation | final response |
+| PR / tracker sync | done | PR #5145 opened after the requesting user's approval; no tracker item | final response |
+| Closeout | done | Plan names PR #5145 and is pushed to its head | final response |
 
 Findings:
 - `fixupLineHeight` on `main` receives `Number.parseFloat(style['line-height'])`, so `24px` is read as 24 lines; with a font size it returned `HIPToTWIP(lineHeight * fontSizeHIP)`, an absolute height written under `lineRule="auto"` whose unit is 240ths of a line, so `1.5` was right only at 12 pt (`1.5 * 24 HIP * 10 = 360`).
@@ -363,8 +364,8 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: not yet opened; this plan owns the single PR to be opened from `fix/docx-io-line-height-units` once the requesting user approves the title and body
-- Task plan at exact PR head: committed on the branch; re-verified after the PR exists
+- PR: PR #5145 (https://github.com/udecode/plate/pull/5145)
+- Task plan at exact PR head: this file is committed on `fix/docx-io-line-height-units` and pushed to the head of PR #5145
 - Issue / tracker: N/A
 - Browser proof: N/A
 - Caveats: `atLeast` vs `exact` is a one-word maintainer call; autoreview helper blocked on authentication, substitute review recorded
@@ -373,12 +374,13 @@ Timeline:
 - 2026-10-07 Task goal plan created.
 - 2026-10-07 Repro against `main` source, fix, spec, changeset, package gates, timing gate, first `pnpm check`.
 - 2026-10-07 Autoreview helper blocked (OAuth); substitute review run; its 5 findings resolved (anchored parse, `atLeast`, zero guard, spy restore in `afterEach`); gates and `pnpm check` rerun.
+- 2026-10-07 PR #5145 opened after the requesting user's approval; plan synced with the PR number and pushed to its head.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Closeout: local gates done, PR awaiting the requesting user's approval |
-| Where am I going? | PR creation, then record the PR number here and push the plan to the PR head |
+| Where am I? | Closeout complete: PR #5145 open with this plan at its head |
+| Where am I going? | Bot and maintainer review on PR #5145 |
 | What is the goal? | Export CSS `line-height` with its unit in `@platejs/docx-io` |
 | What have I learned? | See Findings |
 | What have I done? | See Timeline |
