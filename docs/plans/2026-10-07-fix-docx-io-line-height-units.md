@@ -271,6 +271,15 @@ Phase / pass table:
 | Closeout | done | Plan names PR #5145 and is pushed to its head | final response |
 
 Findings:
+Closure review on 2026-10-07:
+- The paired value and rule remain the internal contract. No public API or signature changes are needed for the follow-up.
+- Fractional centimeter and inch heights convert directly to points before the final twip rounding. Public `htmlToDocxBlob` tests reproduced `1cm` as 560 instead of 567 and `0.1in` as 140 instead of 144 before the repair.
+- The package lane passes 107 tests after the repair. The focused XML file contains 14 cases. Package typecheck passes after building the existing dist-backed `@platejs/docx` peer.
+- The original branch's structured Codex autoreview passes. Follow-up review and repository checks are recorded in `docs/plans/2026-10-07-pr-5145-docx-spacing-closure.md`.
+- Relative values approximate CSS heights with Word line multipliers. Full CSS font-size and inheritance fidelity is outside this PR. `atLeast` is the existing non-clipping policy, not an exact CSS-layout guarantee.
+- Unsupported values omit `w:line`; the writer still emits `lineRule="auto"`. This does not prove exact document-default inheritance.
+- Browser export was attempted at `/blocks/playground-demo`. Juice throws `Cannot read properties of undefined (reading 'indexOf')` before `htmlToDocxBlob`. No browser download or Word-rendering claim is made. The inlining call precedes the changed converter at `docx-export-plugin.tsx` lines 449 and 456.
+
 - `fixupLineHeight` on `main` receives `Number.parseFloat(style['line-height'])`, so `24px` is read as 24 lines; with a font size it returned `HIPToTWIP(lineHeight * fontSizeHIP)`, an absolute height written under `lineRule="auto"` whose unit is 240ths of a line, so `1.5` was right only at 12 pt (`1.5 * 24 HIP * 10 = 360`).
 - `buildSpacing` hardcoded `lineRule="auto"`; the attribute now travels with the value (`LineSpacing { line, lineRule }`) and still defaults to `auto` when there is no line value, so paragraphs without a `line-height` keep the same XML.
 - High-risk note: every exported document whose styles carry a `line-height` changes. Failure mode if wrong: unreadable spacing in Word for all exports. Proof: the 12 red/green cases plus the probe table over the task's inputs; `DOCX_EXPORT_STYLES` (`line-height: 1.5` at 11 pt) now yields `360 auto` (1.5 lines) instead of `330 auto` (1.375 lines), which is what the stylesheet asks for.

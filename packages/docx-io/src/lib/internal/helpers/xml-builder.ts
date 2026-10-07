@@ -411,7 +411,6 @@ const fixupLineHeight = (lineHeightString: string): LineSpacing | undefined => {
     .trim()
     .match(/^(\d*\.?\d+)(px|pt|cm|in|%|em)?$/i);
   if (!matchedParts) {
-    // `normal`, `calc()` and unknown units keep the document default
     return;
   }
 
@@ -426,13 +425,12 @@ const fixupLineHeight = (lineHeightString: string): LineSpacing | undefined => {
     case 'pt':
       return { line: pointToTWIP(value), lineRule: 'atLeast' };
     case 'cm':
-      return { line: cmToTWIP(value), lineRule: 'atLeast' };
+      return { line: pointToTWIP((value * 72) / 2.54), lineRule: 'atLeast' };
     case 'in':
-      return { line: inchToTWIP(value), lineRule: 'atLeast' };
+      return { line: pointToTWIP(value * 72), lineRule: 'atLeast' };
     case '%':
       return { line: Math.round((value / 100) * 240), lineRule: 'auto' };
     default:
-      // unitless and `em` values are line multipliers (240 = one line)
       return { line: Math.round(value * 240), lineRule: 'auto' };
   }
 };
