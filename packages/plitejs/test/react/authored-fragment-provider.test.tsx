@@ -1976,9 +1976,10 @@ for (const fixture of [
 }
 
 it('keeps a caret clicked in a trailing retained run in its paragraph', async () => {
+  const initialValue: Value = [paragraph('Hello world'), paragraph('Next')];
   const source = createEditor({
     plugins: [authored({ authorId: 'alice' })],
-    initialValue: [paragraph('Hello world'), paragraph('Next')],
+    initialValue,
   });
   const parent = createReactRuntimeViewEditor(
     createEditorView(source, { authored: markup })
@@ -2153,9 +2154,10 @@ it('keeps the caret live with Backspace after a retained block in Editing', asyn
 });
 
 it('resolves no parent node for a click inside a retained block', async () => {
+  const initialValue: Value = [paragraph('A'), paragraph('D'), paragraph('B')];
   const source = createEditor({
     plugins: [authored({ authorId: 'alice' })],
-    initialValue: [paragraph('A'), paragraph('D'), paragraph('B')],
+    initialValue,
   });
   const parent = createReactRuntimeViewEditor(
     createEditorView(source, { authored: markup })
@@ -2486,9 +2488,10 @@ const clickRetained = (
 };
 
 it('merges own input at the edge of a retained deletion into one replacement through undo and redo', async () => {
+  const initialValue: Value = [paragraph('Alpha bravo omega')];
   const source = createEditor({
     plugins: [authored({ authorId: 'alice' }), history()],
-    initialValue: [paragraph('Alpha bravo omega')],
+    initialValue,
   });
   const parent = createReactRuntimeViewEditor(
     createEditorView(source, { authored: markup })
@@ -2562,9 +2565,10 @@ it('merges own input at the edge of a retained deletion into one replacement thr
 });
 
 it('pastes and splits at the edge of retained text', async () => {
+  const initialValue: Value = [paragraph('Alpha bravo omega')];
   const source = createEditor({
     plugins: [authored({ authorId: 'alice' }), history()],
-    initialValue: [paragraph('Alpha bravo omega')],
+    initialValue,
   });
   const parent = createReactRuntimeViewEditor(
     createEditorView(source, { authored: markup })

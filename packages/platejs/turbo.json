@@ -1627,6 +1627,7 @@
         "typecheck:partition:markdown",
         "typecheck:partition:proxies",
         "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list",
         "typecheck:partition:table"

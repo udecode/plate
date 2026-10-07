@@ -436,11 +436,7 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
 ) =>
   (!isBuildingTransactionSpec(getEditorRuntimeOwner(editor)) &&
   !hasWrittenTransactionSelection(getEditorRuntimeOwner(editor))
-    ? dispatchTargetRuntimeCommand(
-        editor,
-        command as EditorCommandDescriptor,
-        input
-      )
+    ? dispatchTargetRuntimeCommand(editor, command, input)
     : undefined) ??
   applyCommandEvaluation(editor, evaluateCommandChain(editor, command, input));
 

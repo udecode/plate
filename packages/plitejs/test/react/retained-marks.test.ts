@@ -224,7 +224,7 @@ it.each(['edit', 'propose'] as const)(
       applyContentRootSelectionMoveCommand({
         command: { kind: 'move-selection', axis: 'horizontal', reverse: false },
         editor: view as never,
-        selection: view.read.selection() as never,
+        selection: view.read.selection(),
       }).handled
     ).toBe(true);
     applyModelOwnedTextInput({

@@ -264,7 +264,8 @@
         "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:diff",
-        "typecheck:partition:history"
+        "typecheck:partition:history",
+        "typecheck:partition:react"
       ],
       "inputs": [
         "src/authored/**",
