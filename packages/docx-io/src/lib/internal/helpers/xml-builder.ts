@@ -41,7 +41,6 @@ import { parseOmml } from '../utils/parse-omml';
 import {
   cmRegex,
   cmToTWIP,
-  HIPToTWIP,
   inchRegex,
   inchToTWIP,
   percentageRegex,
@@ -132,6 +131,15 @@ type Indentation = {
   right?: number;
 };
 
+/**
+ * `w:spacing` line height: twips when `lineRule` is `atLeast`, 240ths of a
+ * line when `auto`.
+ */
+type LineSpacing = {
+  line: number;
+  lineRule: 'atLeast' | 'auto';
+};
+
 type NumberingInfo = {
   levelId: number;
   numberingId: number;
@@ -162,7 +170,7 @@ type RunAttributes = {
   hyperlink?: boolean;
   i?: boolean;
   kbd?: boolean;
-  lineHeight?: number;
+  lineHeight?: LineSpacing;
   mark?: boolean;
   strike?: boolean;
   strong?: boolean | string;
@@ -398,23 +406,35 @@ const buildTextElement = (text: string): XMLBuilderType =>
     .txt(text)
     .up();
 
-const fixupLineHeight = (
-  lineHeight: number,
-  fontSize: number | null
-): number => {
-  // FIXME: If line height is anything other than a number
-
-  if (Number.isNaN(lineHeight)) {
-    // 240 TWIP or 12 point is default line height
-    return 240;
+const fixupLineHeight = (lineHeightString: string): LineSpacing | undefined => {
+  const matchedParts = lineHeightString
+    .trim()
+    .match(/^(\d*\.?\d+)(px|pt|cm|in|%|em)?$/i);
+  if (!matchedParts) {
+    // `normal`, `calc()` and unknown units keep the document default
+    return;
   }
-  if (fontSize) {
-    const actualLineHeight = +lineHeight * fontSize;
 
-    return HIPToTWIP(actualLineHeight);
+  const value = Number.parseFloat(matchedParts[1]);
+  if (value === 0) {
+    return;
   }
-  // 240 TWIP or 12 point is default line height
-  return +lineHeight * 240;
+
+  switch (matchedParts[2]?.toLowerCase()) {
+    case 'px':
+      return { line: pixelToTWIP(value), lineRule: 'atLeast' };
+    case 'pt':
+      return { line: pointToTWIP(value), lineRule: 'atLeast' };
+    case 'cm':
+      return { line: cmToTWIP(value), lineRule: 'atLeast' };
+    case 'in':
+      return { line: inchToTWIP(value), lineRule: 'atLeast' };
+    case '%':
+      return { line: Math.round((value / 100) * 240), lineRule: 'auto' };
+    default:
+      // unitless and `em` values are line multipliers (240 = one line)
+      return { line: Math.round(value * 240), lineRule: 'auto' };
+  }
 };
 
 const fixupFontSize = (fontSizeString: string): number | undefined => {
@@ -598,10 +618,7 @@ const modifiedStyleAttributesBuilder = (
       modifiedAttributes.fontSize = fixupFontSize(style['font-size']);
     }
     if (style['line-height']) {
-      modifiedAttributes.lineHeight = fixupLineHeight(
-        Number.parseFloat(style['line-height']),
-        style['font-size'] ? fixupFontSize(style['font-size']) || null : null
-      );
+      modifiedAttributes.lineHeight = fixupLineHeight(style['line-height']);
     }
     if (style['margin-left'] || style['margin-right']) {
       const leftMargin = style['margin-left']
@@ -1096,7 +1113,7 @@ const buildNumberingInstances = (): XMLBuilderType =>
     .up();
 
 const buildSpacing = (
-  lineSpacing?: number,
+  lineSpacing?: LineSpacing,
   beforeSpacing?: number,
   afterSpacing?: number
 ): XMLBuilderType => {
@@ -1106,7 +1123,7 @@ const buildSpacing = (
   );
 
   if (lineSpacing) {
-    spacingFragment.att('@w', 'line', String(lineSpacing));
+    spacingFragment.att('@w', 'line', String(lineSpacing.line));
   }
   if (beforeSpacing) {
     spacingFragment.att('@w', 'before', String(beforeSpacing));
@@ -1115,7 +1132,7 @@ const buildSpacing = (
     spacingFragment.att('@w', 'after', String(afterSpacing));
   }
 
-  spacingFragment.att('@w', 'lineRule', 'auto').up();
+  spacingFragment.att('@w', 'lineRule', lineSpacing?.lineRule ?? 'auto').up();
 
   return spacingFragment;
 };
