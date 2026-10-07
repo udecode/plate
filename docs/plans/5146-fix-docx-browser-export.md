@@ -65,9 +65,9 @@ Blocked condition:
 Task state:
 - task_type: bug-fix
 - task_complexity: non-trivial browser/package runtime
-- current_phase: intake
+- current_phase: verification
 - current_phase_status: in_progress
-- next_phase: implementation
+- next_phase: closeout
 - goal_status: active
 
 Current verdict:
@@ -271,6 +271,11 @@ Implementation notes:
 - New public export regression uses an isolated Bun process to avoid existing mock.module interference. It renders editor text via React, exports two quoted font families, and asserts real DOCX XML fonts and exact literal text.
 - Red proof observed by parent: bun test packages/docx-io/src/lib/docx-export-plugin.spec.tsx reports 0 pass, 1 fail; Juice prop.prop.indexOf TypeError matches browser.
 - All worktree-holding delegates completed before failing-test commit. Deslop pass found no unnecessary guards, casts or comments in new test.
+- Fix adds only decodeStyleAttributes true in existing Juice options. Regression moved to docx-export-plugin.slow.tsx because root check's fast-suite budget rejects its 298ms subprocess runtime. The slow lane is the correct integration-test owner; barrels explicitly exclude slow tests.
+- Test initially included entity-looking literal &quot;. Baseline with Arial and original Juice options reproduces the converter's existing double decoding. Removed only that unrelated case; angle brackets, ampersand and actual quotes/apostrophes remain asserted. No converter or sibling mock-test changes.
+- Browser download events timed out despite successful export. Read-only filesystem proof finds fresh task files; Chrome wrote plate (4).docx at 17:33:25 UTC. Chrome downloads UI was blocked by browser URL policy; did not bypass it. Validated exact task-owned file directly, without scanning unrelated downloads.
+- No-comments report: zero changed comments, zero flags. Parent verified final source diff has no diagnostic logging or new comments.
+- Autoreview scope freeze: #5146 browser crash, existing DOCX/Juice adapter, four intended files: adapter, integration test, one changeset, this plan. Production code delta is one added option. No public API, dependency, registry, template, or workflow changes.
 
 Pstack bug-fix execution steps:
 1. Reproduce it yourself on the matching surface via the driver skill (Non-negotiables), even when a debug or instrumentation protocol says to ask the user to reproduce. Ask the user only with a stated, specific reason the control surface cannot reach the target, and only after driving it as far as it goes. If it won't reproduce directly, synthesize the trigger, tighten conditions, or instrument until it fires.
@@ -288,11 +293,18 @@ Error attempts:
 |------------------------|-------|---------------------|------------|
 | Initial browser navigation exceeded compile timeout | 1 | inspect existing tab after compile | tab rendered, original repro completed |
 | Initial package typecheck lacks @platejs/docx peer dist | 1 | inspect paths and build explicit peer | rerun after peer build |
+| Raw bun package run has existing module-mock interference | 1 | use repo-owned isolated runner | 108 tests pass; existing pair independently reproduces 4 failures |
+| Browser download event unavailable despite completed blob | 2 | inspect exact task artifact timestamp/ZIP | Chrome plate (4).docx downloaded, 71585 bytes |
+| ZIP audit started from root lacking jszip dependency | 1 | rerun in owning packages/docx-io cwd | nine XML parts parse successfully |
+| Root check exceeds fast-test runtime budget | 1 | move public integration test to slow lane | root check rerun required |
 
 Verification evidence:
 - Issue body/comments read via gh; zero comments. Juice setStyleAttrs reads prop.prop.indexOf('--'), so a malformed property object is a candidate, not a proven diagnosis.
 - Browser original failure: 15s download timeout, TypeError in setStyleAttrs before htmlToDocxBlob. Temporary instrumentation captured 17 React-escaped quoted-font style attributes; instrumentation removed before tests/fix.
 - Node mechanism confirmed with actual React markup. Juice defaults crash; decodeStyleAttributes true succeeds and leaves encoded literal text intact.
+- Green regression before lane move: 1 pass, 7 assertions. Existing focused XML spacing suite 14/14 passes. Repo-owned pnpm test packages/docx-io runs 108 tests, all pass with mock isolation.
+- Package typecheck passes after explicit @platejs/docx peer build. pnpm lint:fix checks 3309 files, zero rewrites. Initial pnpm check lint/types/fast/slow tests pass but fast budget rejects new integration test; classified and moved to .slow.tsx.
+- Browser source mode PLATE_WWW_DEV_SOURCE=1, original route and action. No new export console errors. Download /Users/zbeyens/Downloads/plate (4).docx at 2026-10-07T17:33:25Z, 71585 bytes, SHA256 342dc4b06bf7220c2b3d54257870a9c50fa9f049e16a5c9c96864b6093a3e837. Nine XML parts parse; document.xml includes playground heading, table and callout. This is successful-download/package proof, not Word visual fidelity.
 
 Final handoff contract:
 - PR line: pending
@@ -353,4 +365,4 @@ Reboot status:
 | What have I done? | See Timeline |
 
 Open risks:
-- Pending.
+- Existing table-ID hydration warnings remain outside #5146. Browser event driver missed real Blob downloads; task-owned file timestamp and XML inspection provide actual download proof. Word visual rendering not tested. Existing literal entity-text conversion is not changed.

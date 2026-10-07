@@ -447,6 +447,7 @@ async function exportToDocxInternal(
 
   // Inline CSS styles using juice for DOCX compatibility
   const inlinedHtml = juice(fullHtml, {
+    decodeStyleAttributes: true,
     removeStyleTags: false,
     preserveMediaQueries: false,
     preserveFontFaces: false,

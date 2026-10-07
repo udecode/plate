@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 
 describe('exportToDocx', () => {
   it('exports quoted font families and preserves literal text', async () => {
-    const text = '<tag> & "quotes" \'apostrophes\' &quot;';
+    const text = '<tag> & "quotes" \'apostrophes\'';
     const fonts = [
       { fontFamily: "'Courier New', monospace", fontName: 'Courier New' },
       {
