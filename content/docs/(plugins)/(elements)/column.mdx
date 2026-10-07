@@ -13,6 +13,7 @@ docs:
 
 - Add columns to your document.
 - Choose from a variety of column layouts using `column-group-node` toolbar.
+- With [Drag & Drop](/docs/dnd), drop a block beside another block, on its inline-end edge or in the editor's side padding next to a top-level block, to place both in a new column group, or beside a block in a column to add a column, up to five.
 
 </PackageInfo>
 
@@ -170,6 +171,12 @@ commands are available through `editor.update.column`.
 - `toggle` converts the active block to a column group or updates its layout.
 - `moveMiddle` moves the middle column's content into the first column.
 - `selectAll` expands a selection inside a column to the column group.
+
+`ColumnPlugin` also builds side drops through `editorReads.transfer.side`, so
+`editor.api.transfer.move({ nodes, to: { key, side: 'end' } })` places blocks
+beside a top-level block in a new group, or beside a block in a column as a new
+column of up to five. Adding a column gives it the group's mean width and scales
+the group back to 100%. See [Build beside a block](/docs/dnd#build-beside-a-block).
 
 ## Hooks
 

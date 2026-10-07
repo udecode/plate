@@ -1,8 +1,11 @@
 import {
   defineEditorSchema,
+  definePlugin,
   type Descendant,
   type Element as EditorElement,
+  editorReads,
   schema,
+  transferVeto,
 } from 'plitejs';
 
 import {
@@ -11,6 +14,7 @@ import {
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
+import { readDropIndicator } from '../../src/dom/utils/drop-indicator';
 import { getNodeKey as editorGetNodeKey } from '../../src/internal';
 import { createEditor } from '../../src/react';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
@@ -60,8 +64,10 @@ const toPath = (path: string) => path.split('.').map(Number);
 
 const mounted: Array<() => void> = [];
 
-const mount = (layout = LAYOUT) => {
-  const editor = createEditor({ plugins: [quoteSchema] }) as ReactRuntimeEditor;
+const mount = (layout = LAYOUT, plugins: readonly unknown[] = []) => {
+  const editor = createEditor({
+    plugins: [quoteSchema, ...plugins],
+  }) as ReactRuntimeEditor;
 
   editorReplace(editor, {
     children: [
@@ -162,7 +168,7 @@ const mount = (layout = LAYOUT) => {
       { files: paragraph('') }
     );
 
-  return { drop, dropFiles, editor, keyAt, runtime };
+  return { drop, dropFiles, editor, hosts, keyAt, runtime };
 };
 
 afterEach(() => {
@@ -275,5 +281,250 @@ describe('DOM drop target geometry', () => {
       edge: 'before',
       key: keyAt('1'),
     });
+  });
+});
+
+describe('DOM side strips', () => {
+  // Builds a quote beside the root block that holds the target.
+  const besideRoot = definePlugin('beside-root', {
+    readMiddleware: ({ around }) => [
+      around(editorReads.transfer.side, ({ input }) => ({
+        ancestor: input.target[1].length - 1,
+        edge: input.side === 'end' ? ('after' as const) : ('before' as const),
+        payload: [],
+        shell: { children: [], type: 'quote' },
+      })),
+    ],
+  });
+  const rootOnly = definePlugin('root-only', {
+    readMiddleware: ({ around }) => [
+      around(editorReads.transfer.side, ({ input, next }) =>
+        input.target[1].length === 1
+          ? {
+              ancestor: 0,
+              edge: 'after' as const,
+              payload: [],
+              shell: { children: [], type: 'quote' },
+            }
+          : next()
+      ),
+    ],
+  });
+
+  test('resolves only the end strip of a block to a side', () => {
+    const { drop, keyAt } = mount(LAYOUT, [besideRoot]);
+
+    expect([
+      drop('0', 10, '2', { clientX: 390 }),
+      drop('0', 8, '2', { clientX: 10 }),
+    ]).toEqual([
+      { key: keyAt('0'), side: 'end' },
+      { axis: 'y', edge: 'before', key: keyAt('0') },
+    ]);
+  });
+
+  test('keeps the top and bottom quarters of a block for edges', () => {
+    const { drop, keyAt } = mount(LAYOUT, [besideRoot]);
+
+    expect(drop('0', 2, '2', { clientX: 390 })).toMatchObject({
+      edge: 'before',
+      key: keyAt('0'),
+    });
+  });
+
+  test('falls back to the edge under a strip the feature refuses', () => {
+    const { drop, keyAt } = mount(LAYOUT, [rootOnly]);
+
+    expect(drop('1.0', 50, '2', { clientX: 390 })).toEqual({
+      axis: 'y',
+      edge: 'after',
+      key: keyAt('1.0'),
+    });
+  });
+
+  test("gives a container's band the corner where it overlaps a strip", () => {
+    const { drop, keyAt } = mount(
+      {
+        ...LAYOUT,
+        '1.0': { bottom: 50, top: 30 },
+        '1.1': { bottom: 80, top: 50 },
+      },
+      [besideRoot]
+    );
+
+    expect(drop('1.0', 36, '2', { clientX: 390 })).toMatchObject({
+      edge: 'before',
+      key: keyAt('1'),
+    });
+  });
+
+  test('gives a shared side to the innermost block', () => {
+    const { drop, keyAt } = mount(LAYOUT, [besideRoot]);
+
+    expect(drop('1.0', 50, '2', { clientX: 390 })).toEqual({
+      key: keyAt('1.0'),
+      side: 'end',
+    });
+  });
+
+  test('maps the left strip to the end side in a right-to-left block, and paints it on the left', () => {
+    const { drop, editor, hosts, keyAt } = mount(LAYOUT, [besideRoot]);
+
+    hosts.get('0')!.style.direction = 'rtl';
+
+    const target = drop('0', 10, '2', { clientX: 10 });
+
+    editor.api.dom.drag.indicate(target);
+
+    expect([target, readDropIndicator(editor)?.line.x]).toEqual([
+      { key: keyAt('0'), side: 'end' },
+      0,
+    ]);
+  });
+
+  describe('beside a top-level block, in the root padding', () => {
+    // A 100px padding on each side of a 400px content column.
+    const padded = (plugins: readonly unknown[] = [besideRoot]) => {
+      const view = mount(LAYOUT, plugins);
+      const root = view.editor.api.dom.root()!;
+
+      root.style.paddingLeft = '100px';
+      root.style.paddingRight = '100px';
+      root.getBoundingClientRect = () => ({
+        ...rect({ bottom: 300, top: 0 }),
+        left: -100,
+        right: 500,
+        width: 600,
+        x: -100,
+      });
+
+      return view;
+    };
+
+    test('resolves the end side right of the content over the full height', () => {
+      const { drop, keyAt } = padded();
+
+      expect([
+        drop(null, 6, '2', { clientX: 450 }),
+        drop(null, 2, '2', { clientX: 450 }),
+      ]).toEqual([
+        { key: keyAt('0'), side: 'end' },
+        { key: keyAt('0'), side: 'end' },
+      ]);
+    });
+
+    test('resolves the start side in the left padding', () => {
+      const { drop, keyAt } = padded();
+
+      expect(drop(null, 6, '2', { clientX: -5 })).toEqual({
+        key: keyAt('0'),
+        side: 'start',
+      });
+    });
+
+    test('gives the side beside a nested block to its top-level block', () => {
+      const { drop, keyAt } = padded();
+
+      expect(drop(null, 50, '2', { clientX: 450 })).toEqual({
+        key: keyAt('1'),
+        side: 'end',
+      });
+    });
+
+    test('falls back to the edge when nothing builds a side', () => {
+      const { drop, keyAt } = padded([]);
+
+      expect(drop(null, 6, '2', { clientX: 450 })).toEqual({
+        axis: 'y',
+        edge: 'before',
+        key: keyAt('0'),
+      });
+    });
+
+    test('measures the clearance from where the drag started', () => {
+      const { drop, editor, hosts, keyAt } = padded();
+      const data = new Map<string, string>();
+
+      editor.api.dom.drag.start(
+        {
+          clientX: -60,
+          clientY: 105,
+          dataTransfer: {
+            effectAllowed: 'all',
+            getData: (type: string) => data.get(type) ?? '',
+            setData: (type: string, value: string) => data.set(type, value),
+            setDragImage: () => {},
+            get types() {
+              return [...data.keys()];
+            },
+          } as unknown as DataTransfer,
+        },
+        { node: editor.read.children()[2] }
+      );
+
+      try {
+        expect([
+          drop(null, 6, '2', { clientX: -40 }),
+          drop(null, 6, '2', { clientX: -90 }),
+        ]).toEqual([
+          { axis: 'y', edge: 'before', key: keyAt('0') },
+          { key: keyAt('0'), side: 'start' },
+        ]);
+      } finally {
+        hosts.get('2')!.ownerDocument.dispatchEvent(new Event('dragend'));
+      }
+    });
+
+    test('maps the left padding to the end side in a right-to-left block', () => {
+      const { drop, hosts, keyAt } = padded();
+
+      hosts.get('0')!.style.direction = 'rtl';
+
+      expect(drop(null, 6, '2', { clientX: -40 })).toEqual({
+        key: keyAt('0'),
+        side: 'end',
+      });
+    });
+  });
+
+  test('never resolves a side for a copy or a files drop', () => {
+    const { drop, editor, hosts, keyAt } = mount(LAYOUT, [besideRoot]);
+    const files = editor.api.dom.resolveDropTarget(
+      {
+        clientX: 390,
+        clientY: 8,
+        dataTransfer: {
+          items: [{ kind: 'file' }],
+          types: ['Files'],
+        } as unknown as DataTransfer,
+        target: hosts.get('0'),
+      },
+      { files: paragraph('') }
+    );
+
+    expect([drop('0', 8, '2', { clientX: 390, copy: true }), files]).toEqual([
+      { axis: 'y', edge: 'before', key: keyAt('0') },
+      { axis: 'y', edge: 'before', key: keyAt('0') },
+    ]);
+  });
+
+  test('admits a resting pointer in a refused strip once, not on every dragover', () => {
+    let admissions = 0;
+    const counting = definePlugin('counting', {
+      contributions: [
+        transferVeto.of(() => {
+          admissions += 1;
+
+          return false;
+        }),
+      ],
+    });
+    const { drop } = mount(LAYOUT, [rootOnly, counting]);
+
+    drop('1.0', 50, '2', { clientX: 390 });
+    const first = admissions;
+    drop('1.0', 50, '2', { clientX: 390 });
+
+    expect(admissions).toBe(first);
   });
 });

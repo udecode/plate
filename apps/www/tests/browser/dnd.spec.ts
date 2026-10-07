@@ -336,6 +336,101 @@ test.describe(MOVE_CASE_ID, () => {
     }
   });
 
+  // The depth of the block that starts with `needle`, and whether its root
+  // block also holds `beside`.
+  const placeOf = (page: Page, needle: string, beside: string) =>
+    page.locator('.editor-editor').evaluate(
+      (root, [value, other]) => {
+        const block = [
+          ...root.querySelectorAll('[data-editor-node="element"]'),
+        ].find(
+          (element) =>
+            element.textContent?.startsWith(value) &&
+            !element.querySelector('[data-editor-node="element"]')
+        );
+        const path = block
+          ?.getAttribute('data-editor-path')
+          ?.split(/\D+/)
+          .filter(Boolean);
+        const top = root.querySelector(
+          `[data-editor-node="element"][data-editor-path="${path?.[0]}"]`
+        );
+
+        return [path?.length ?? 0, !!top?.textContent?.includes(other)];
+      },
+      [needle, beside]
+    );
+
+  test('puts a block beside the previous block through its handle actions, undone in one step', async ({
+    page,
+  }) => {
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+    try {
+      const block = page
+        .locator('.editor-editor .editor-blockWrapper')
+        .filter({ hasText: text })
+        .first();
+
+      await block.scrollIntoViewIfNeeded();
+      await block.hover();
+      await block
+        .locator('xpath=..')
+        .getByRole('button', { name: 'Drag block' })
+        .click();
+      await page
+        .getByRole('menuitem', { name: 'Move beside previous' })
+        .click();
+
+      await expect.poll(() => placeOf(page, text, heading)).toEqual([3, true]);
+
+      await page.getByText(text).click();
+      await page.keyboard.press('ControlOrMeta+z');
+
+      await expect.poll(() => placeOf(page, text, heading)).toEqual([1, false]);
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+
+  test('puts a block beside the previous block from the keyboard', async ({
+    page,
+  }) => {
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+    try {
+      const block = page
+        .locator('.editor-editor .editor-blockWrapper')
+        .filter({ hasText: text })
+        .first();
+
+      await block.scrollIntoViewIfNeeded();
+      await block.hover();
+      await block
+        .locator('xpath=..')
+        .getByRole('button', { name: 'Drag block' })
+        .focus();
+      await page.keyboard.press('Enter');
+
+      // Arrow keys walk Move up and Move down, then the sides.
+      await expect(page.getByRole('menu')).toBeVisible();
+      for (const index of [0, 1, 2]) {
+        await page.keyboard.press('ArrowDown');
+        await expect(page.getByRole('menuitem').nth(index)).toBeFocused();
+      }
+      await expect(
+        page.getByRole('menuitem', { name: 'Move beside previous' })
+      ).toBeFocused();
+      await page.keyboard.press('Enter');
+
+      await expect.poll(() => placeOf(page, text, heading)).toEqual([3, true]);
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+
   test('moves a column right through its handle actions', async ({ page }) => {
     const runtimeErrors = recordBrowserRuntimeErrors(page);
     const first = 'First column content.';
@@ -677,6 +772,214 @@ test.describe(LANDING_CASE_ID, () => {
       .toEqual(['columnGroup', 'column']);
   });
 
+  const host = (block: Locator) =>
+    block.locator('[data-editor-node="element"]').first();
+
+  const holdersOf = async (page: Page, prefix: string) => {
+    const found = await locate(page, prefix);
+
+    return found?.holders;
+  };
+
+  landing(
+    'puts a block dropped on a heading side strip beside it as columns, undone in one step',
+    async (page) => {
+      const name = 'How Plate Compares';
+
+      await dragBlock(page, paragraph(page, payload), async () => {
+        const target = await box(host(heading(page, name)));
+
+        return {
+          x: target.x + target.width - 12,
+          y: target.y + target.height / 2,
+        };
+      });
+
+      await expect
+        .poll(async () => [
+          await holdersOf(page, name),
+          await holdersOf(page, payload),
+        ])
+        .toEqual([
+          ['columnGroup', 'column'],
+          ['columnGroup', 'column'],
+        ]);
+
+      await page.getByText(payload).click();
+      await page.keyboard.press('ControlOrMeta+z');
+
+      await expect.poll(async () => await holdersOf(page, payload)).toEqual([]);
+    }
+  );
+
+  landing('adds a column beside a block inside a column', async (page) => {
+    await dragBlock(page, paragraph(page, payload), async () => {
+      const target = await box(
+        page
+          .getByText('First column content.')
+          .locator('xpath=ancestor::*[@data-editor-node="element"][1]')
+      );
+
+      return {
+        x: target.x + target.width - 6,
+        y: target.y + target.height / 2,
+      };
+    });
+
+    await expect
+      .poll(async () => {
+        const found = await locate(page, payload);
+        const blocks = await children(page);
+        const group = found ? blocks[found.path[0]] : undefined;
+
+        return [found?.holders, group?.children?.length];
+      })
+      .toEqual([['columnGroup', 'column'], 3]);
+  });
+
+  landing(
+    'puts a block dropped in the right padding beside a block after it as columns',
+    async (page) => {
+      const name = 'How Plate Compares';
+
+      await dragBlock(page, paragraph(page, payload), async () => {
+        const target = await box(host(heading(page, name)));
+
+        return { x: target.x + target.width + 30, y: target.y + 3 };
+      });
+
+      await expect
+        .poll(async () => [
+          await locate(page, name),
+          await locate(page, payload),
+        ])
+        .toMatchObject([
+          {
+            holders: ['columnGroup', 'column'],
+            path: [expect.any(Number), 0, 0],
+          },
+          {
+            holders: ['columnGroup', 'column'],
+            path: [expect.any(Number), 1, 0],
+          },
+        ]);
+    }
+  );
+
+  landing(
+    'puts a block dropped in the left padding past the handle gutter before a block as columns',
+    async (page) => {
+      const name = 'How Plate Compares';
+
+      await dragBlock(page, paragraph(page, payload), async () => {
+        const target = await box(host(heading(page, name)));
+
+        return { x: target.x - 40, y: target.y + target.height / 2 };
+      });
+
+      await expect
+        .poll(async () => [
+          await locate(page, payload),
+          await locate(page, name),
+        ])
+        .toMatchObject([
+          {
+            holders: ['columnGroup', 'column'],
+            path: [expect.any(Number), 0, 0],
+          },
+          {
+            holders: ['columnGroup', 'column'],
+            path: [expect.any(Number), 1, 0],
+          },
+        ]);
+    }
+  );
+
+  landing(
+    'lands below, not beside, when a downward drag drifts left of the handle',
+    async (page) => {
+      const name = 'How Plate Compares';
+
+      await dragBlock(page, heading(page, name), async () => {
+        const target = await box(host(paragraph(page, payload)));
+
+        return { x: target.x - 21, y: target.y + target.height / 2 };
+      });
+
+      await expect
+        .poll(async () => {
+          const [moved, below] = [
+            await locate(page, payload),
+            await locate(page, name),
+          ];
+
+          return [
+            below?.holders,
+            (below?.path[0] ?? -1) - (moved?.path[0] ?? 0),
+          ];
+        })
+        .toEqual([[], 1]);
+    }
+  );
+
+  landing(
+    'lands below a block from near its bottom, outside the strip',
+    async (page) => {
+      const name = 'How Plate Compares';
+
+      await dragBlock(page, paragraph(page, payload), async () => {
+        const target = await box(host(heading(page, name)));
+
+        return {
+          x: target.x + target.width - 12,
+          y: target.y + target.height - 2,
+        };
+      });
+
+      await expect.poll(async () => await holdersOf(page, payload)).toEqual([]);
+    }
+  );
+
+  landing(
+    'lands below, not beside, when a downward drag drifts into the left strip',
+    async (page) => {
+      const name = 'How Plate Compares';
+
+      await dragBlock(page, heading(page, name), async () => {
+        const target = await box(host(paragraph(page, payload)));
+
+        return { x: target.x + 12, y: target.y + target.height / 2 };
+      });
+
+      await expect.poll(async () => await holdersOf(page, name)).toEqual([]);
+    }
+  );
+
+  landing(
+    'creates no column group from the right edge of a table cell',
+    async (page) => {
+      const groups = async () => {
+        const blocks = await children(page);
+
+        return blocks.filter((node) => node.type === 'columnGroup').length;
+      };
+      const before = await groups();
+
+      await dragBlock(page, paragraph(page, payload), async () => {
+        const cell = await box(
+          page.locator('.editor-editor tr').nth(1).locator('td').nth(1)
+        );
+
+        return { x: cell.x + cell.width - 4, y: cell.y + cell.height / 2 };
+      });
+
+      expect([await groups(), await holdersOf(page, payload)]).toEqual([
+        before,
+        expect.not.arrayContaining(['columnGroup']),
+      ]);
+    }
+  );
+
   landing('drops below a blockquote from its bottom edge', async (page) => {
     await dragBlock(page, paragraph(page, payload), async () => {
       const outer = await box(quote(page));
@@ -783,10 +1086,12 @@ test.describe(LANDING_CASE_ID, () => {
       expect(blocks[6]?.listType).toBe('bulleted');
 
       await dragBlock(page, paragraph(page, moved), async () => {
-        const root = await box(page.locator('.editor-editor'));
+        const block = await box(
+          line.locator('xpath=ancestor::*[@data-editor-node="element"][1]')
+        );
         const target = await box(line);
 
-        return { x: root.x + 4, y: target.y + target.height * 0.25 };
+        return { x: block.x - 13, y: target.y + target.height * 0.25 };
       });
 
       await expect
@@ -924,4 +1229,265 @@ test.describe(LANDING_CASE_ID, () => {
       })
       .toBe(2);
   });
+});
+
+test.describe('dnd:drop-line-follows-scroll', () => {
+  // Holds a block drag over the editor, then scrolls the content 37px under it.
+  const heldDrag = async (
+    page: Page,
+    run: (drag: {
+      hold: (at?: { x: number; y: number }) => Promise<void>;
+      lineTop: () => Promise<number>;
+      scroll: () => Promise<void>;
+    }) => Promise<void>
+  ) => {
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+    try {
+      await page.setViewportSize({ height: 800, width: 1280 });
+      await page.goto('/', { waitUntil: 'commit' });
+      await createBrowserEditorHarness(
+        page,
+        'dnd:drop-line-follows-scroll',
+        page.locator('.editor-editor')
+      ).ready({ editor: 'visible', text: 'Collaborative Editing' });
+
+      const heading = page.getByRole('heading', {
+        name: 'Collaborative Editing',
+      });
+      const block = page.locator('.editor-editor > div').filter({
+        has: heading,
+      });
+
+      await heading.evaluate((element) =>
+        element.scrollIntoView({ block: 'center' })
+      );
+      await block.hover();
+      const handle = block.getByRole('button', { name: 'Drag block' }).first();
+
+      await handle.hover();
+      const from = await handle.boundingBox();
+
+      expect(from).not.toBeNull();
+      const over = { x: from!.x + 250, y: from!.y + 140 };
+      const hold = async (at = over) => {
+        for (const offset of [1, 0, 1, 0]) {
+          await page.waitForTimeout(50);
+          await page.mouse.move(at.x, at.y + offset);
+        }
+      };
+      const scroll = async () => {
+        const scrolled = await heading.evaluate((element) => {
+          let scroller = element.parentElement;
+
+          while (
+            scroller &&
+            !(
+              scroller.scrollHeight > scroller.clientHeight &&
+              /auto|scroll/.test(getComputedStyle(scroller).overflowY)
+            )
+          ) {
+            scroller = scroller.parentElement;
+          }
+          const before = scroller?.scrollTop;
+
+          scroller?.scrollBy(0, 37);
+
+          return scroller ? scroller.scrollTop - before! : 0;
+        });
+
+        expect(scrolled).toBe(37);
+        await page.evaluate(
+          () =>
+            new Promise((resolve) => {
+              requestAnimationFrame(() => requestAnimationFrame(resolve));
+            })
+        );
+      };
+
+      await page.mouse.move(
+        from!.x + from!.width / 2,
+        from!.y + from!.height / 2
+      );
+      await page.mouse.down();
+      try {
+        await page.mouse.move(over.x, over.y, { steps: 12 });
+        await hold();
+        await run({
+          hold,
+          lineTop: () =>
+            page
+              .locator('[data-drop-indicator]')
+              .evaluate((element) => element.getBoundingClientRect().top),
+          scroll,
+        });
+      } finally {
+        await page.mouse.up();
+      }
+
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  };
+
+  test('keeps the line where a fresh dragover puts it', async ({
+    page,
+  }, testInfo) => {
+    expect(testInfo.retry).toBe(0);
+
+    await heldDrag(page, async ({ hold, lineTop, scroll }) => {
+      await scroll();
+      const afterScroll = await lineTop();
+
+      await hold();
+
+      expect(Math.abs((await lineTop()) - afterScroll)).toBeLessThan(1);
+    });
+  });
+
+  test('paints no line after the pointer leaves the editor', async ({
+    page,
+  }, testInfo) => {
+    expect(testInfo.retry).toBe(0);
+
+    await heldDrag(page, async ({ hold, scroll }) => {
+      const editor = await page.locator('.editor-editor').boundingBox();
+
+      expect(editor).not.toBeNull();
+      await hold({ x: editor!.x + editor!.width + 20, y: 400 });
+      await expect(page.locator('[data-drop-indicator]')).toHaveCount(0);
+      await scroll();
+
+      await expect(page.locator('[data-drop-indicator]')).toHaveCount(0);
+    });
+  });
+});
+
+test('dnd:drop-over-interactive-element', async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.setViewportSize({ height: 800, width: 1280 });
+    await page.goto('/', { waitUntil: 'commit' });
+    await createBrowserEditorHarness(
+      page,
+      'dnd:drop-over-interactive-element',
+      page.locator('.editor-editor')
+    ).ready({ editor: 'visible', text: 'Collaborative Editing' });
+
+    const blocks = page.locator('.editor-editor > div');
+    const source = blocks.filter({
+      has: page.getByRole('heading', { name: 'AI-Powered Editing' }),
+    });
+    const target = blocks.filter({ hasText: 'Review and refine content' });
+
+    await page
+      .getByRole('heading', { name: 'Collaborative Editing' })
+      .evaluate((element) => element.scrollIntoView({ block: 'center' }));
+    const button = target
+      .locator('button:not([aria-label="Drag block"])')
+      .first();
+    const comment = await button.boundingBox();
+
+    expect(comment).not.toBeNull();
+    await source.hover();
+    const handle = source.getByRole('button', { name: 'Drag block' }).first();
+
+    await handle.hover();
+    const from = await handle.boundingBox();
+
+    expect(from).not.toBeNull();
+    const at = { x: comment!.x + comment!.width / 2, y: comment!.y + 4 };
+    const lineTop = () =>
+      page
+        .locator('[data-drop-indicator]')
+        .evaluate((element) => element.getBoundingClientRect().top);
+    const hoverAt = async (x: number, y: number) => {
+      for (const offset of [1, 0, 1, 0]) {
+        await page.waitForTimeout(50);
+        await page.mouse.move(x, y + offset);
+      }
+    };
+
+    await page.mouse.move(
+      from!.x + from!.width / 2,
+      from!.y + from!.height / 2
+    );
+    await page.mouse.down();
+    await page.mouse.move(at.x + 30, at.y, { steps: 12 });
+    await hoverAt(at.x + 30, at.y);
+    const besideButton = await lineTop();
+
+    await hoverAt(at.x + 30, at.y - 60);
+    await hoverAt(at.x, at.y);
+
+    expect(Math.abs((await lineTop()) - besideButton)).toBeLessThan(1);
+    await page.mouse.up();
+
+    await expect
+      .poll(() =>
+        blocks
+          .filter({ hasText: 'Review and refine content' })
+          .filter({
+            has: page.getByRole('heading', { name: 'AI-Powered Editing' }),
+          })
+          .count()
+      )
+      .toBe(1);
+
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('dnd:block-selection-from-side-padding', async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.setViewportSize({ height: 800, width: 1280 });
+    await page.goto('/', { waitUntil: 'commit' });
+    const harness = createBrowserEditorHarness(
+      page,
+      'dnd:block-selection-from-side-padding',
+      page.locator('.editor-editor')
+    );
+
+    await harness.ready({ editor: 'visible', text: 'Collaborative Editing' });
+
+    const heading = page.getByRole('heading', {
+      name: 'Collaborative Editing',
+    });
+
+    await heading.evaluate((element) =>
+      element.scrollIntoView({ block: 'center' })
+    );
+    const start = await heading.boundingBox();
+
+    expect(start).not.toBeNull();
+    await page.mouse.move(start!.x - 60, start!.y + start!.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(start!.x + 200, start!.y + 120, { steps: 12 });
+    await page.mouse.up();
+
+    const selection = (await harness.get.selection()) as {
+      anchor: { path: number[] };
+      focus: { path: number[] };
+    };
+
+    expect([
+      selection.anchor.path[0],
+      selection.focus.path[0],
+      await harness.get.domSelection(),
+    ]).toEqual([2, 3, null]);
+
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
 });

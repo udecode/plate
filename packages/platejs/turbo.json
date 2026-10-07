@@ -2310,6 +2310,7 @@
         "typecheck:partition:combobox",
         "typecheck:partition:core",
         "typecheck:partition:footnote",
+        "typecheck:partition:layout",
         "typecheck:partition:table"
       ],
       "inputs": [

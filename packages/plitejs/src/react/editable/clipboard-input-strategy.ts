@@ -23,11 +23,13 @@ import {
   getPliteStringEdgeOffset,
   getPliteTextHostStrings,
   isWebKitDOMHost,
+  scheduleEditorDOMPhase,
   supportsDOMBeforeInput,
 } from '../../dom/internal';
 import {
   blockCopyIntent,
   copyIntentOf,
+  type DOMDropTargetInput,
   indicateDOMDropTarget,
   resolveDOMDropTarget,
 } from '../../dom/plugin/dom-drag';
@@ -37,6 +39,7 @@ import {
   type DragSession,
   isDragSessionClaimed,
   readDragSession,
+  setDragScrollRepaint,
   settleDragSession,
   takeDragSession,
 } from '../../dom/utils/drag-session';
@@ -161,17 +164,21 @@ const isDragEventHandled = ({
 };
 
 const shouldHandleEditorDragEvent = ({
+  blockDrag = false,
   editor,
   event,
   handler,
 }: {
+  blockDrag?: boolean;
   editor: ReactRuntimeEditor;
   event: DragEvent<HTMLDivElement>;
   handler?: EditableDragHandler;
 }) =>
   ReactEditor.hasTarget(editor, event.target) &&
   !isDragEventHandled({ event, handler }) &&
-  !isInteractiveInternalTarget(editor, event.target);
+  // A block drag over a control resolves against the block that holds it;
+  // other drags yield to the control.
+  (blockDrag || !isInteractiveInternalTarget(editor, event.target));
 
 const resolveDragTarget = (editor: ReactRuntimeEditor, target: EventTarget) => {
   if (!isDOMNode(target)) {
@@ -587,6 +594,39 @@ export const applyEditableDragEnd = ({
   indicateDOMDropTarget(editor, null);
 };
 
+// A repaint runs after the event, when `dataTransfer` no longer lists the
+// session and the event target may have scrolled away, so it passes the
+// session's payload and only the pointer coordinates.
+const followDOMDropTargetOnScroll = (
+  editor: ReactRuntimeEditor,
+  session: DragSession,
+  input: DOMDropTargetInput
+) => {
+  if (session.source.kind !== 'nodes') return;
+
+  const point = { clientX: input.clientX, clientY: input.clientY };
+  const options = {
+    copy: blockCopyIntent(session, input),
+    from: session.sourceEditor,
+    nodes: session.source.keys,
+  };
+
+  setDragScrollRepaint(ReactEditor.getWindow(editor).document, editor, () => {
+    scheduleEditorDOMPhase(
+      editor,
+      'dom-read',
+      'drag scroll repaint',
+      () => {
+        indicateDOMDropTarget(
+          editor,
+          resolveDOMDropTarget(editor, point, options)
+        );
+      },
+      { key: 'drag-scroll-repaint', timing: 'animation-frame' }
+    );
+  });
+};
+
 export const applyEditableDragOver = ({
   editor,
   event,
@@ -604,6 +644,7 @@ export const applyEditableDragOver = ({
   );
   // The editor's own drag is never external data for a handler to claim.
   const shouldHandleDragOver = shouldHandleEditorDragEvent({
+    blockDrag: !!session?.draggedBlock,
     editor,
     event,
     handler: session ? undefined : onDragOver,
@@ -612,18 +653,17 @@ export const applyEditableDragOver = ({
   if (!shouldHandleDragOver) return false;
 
   if (session?.draggedBlock) {
-    const target = resolveDOMDropTarget(editor, dropInputOf(event));
+    const input = dropInputOf(event);
+    const target = resolveDOMDropTarget(editor, input);
     const root = editor.api.dom.root();
 
     indicateDOMDropTarget(editor, target);
+    followDOMDropTargetOnScroll(editor, session, input);
     // Always preventDefault for block drags to suppress the native text cursor,
     // even when no valid drop target is found.
     event.preventDefault();
     if (target) {
-      event.dataTransfer.dropEffect = blockCopyIntent(
-        session,
-        dropInputOf(event)
-      )
+      event.dataTransfer.dropEffect = blockCopyIntent(session, input)
         ? 'copy'
         : 'move';
     } else {
@@ -803,7 +843,9 @@ const applySessionDrop = ({
     : null;
   const to = session.draggedBlock
     ? resolved && 'key' in resolved
-      ? { edge: resolved.edge, key: resolved.key }
+      ? 'side' in resolved
+        ? resolved
+        : { edge: resolved.edge, key: resolved.key }
       : null
     : dropPoint
       ? { point: dropPoint }
@@ -865,15 +907,15 @@ export const applyEditableDrop = ({
   }
 
   const { document } = ReactEditor.getWindow(editor);
+  const activeSession = readDragSession(document, event.dataTransfer);
 
   if (
     !readOnly &&
     shouldHandleEditorDragEvent({
+      blockDrag: !!activeSession?.draggedBlock,
       editor,
       event,
-      handler: readDragSession(document, event.dataTransfer)
-        ? undefined
-        : onDrop,
+      handler: activeSession ? undefined : onDrop,
     })
   ) {
     event.preventDefault();

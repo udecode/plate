@@ -18,6 +18,7 @@ import { type AnyEditor, isBlock } from '../../interfaces/editor';
 import {
   type DragSession,
   beginDragSession,
+  readDragOriginX,
   readDragSession,
 } from '../utils/drag-session';
 import { publishDropIndicator } from '../utils/drop-indicator';
@@ -34,9 +35,20 @@ export type DOMDragStart = Readonly<{
   previews: readonly HTMLElement[];
 }>;
 
-/** Where a drop lands: beside a block on an axis, or at a text point. */
+/** A drop beside a block on an axis. */
+export type DOMDropEdge = Readonly<{
+  axis: 'x' | 'y';
+  edge: 'after' | 'before';
+  key: NodeKey;
+}>;
+
+/**
+ * Where a drop lands: beside a block on an axis, at a block's inline start or
+ * end side, or at a text point.
+ */
 export type DOMDropTarget =
-  | Readonly<{ axis: 'x' | 'y'; edge: 'after' | 'before'; key: NodeKey }>
+  | DOMDropEdge
+  | Readonly<{ key: NodeKey; side: 'end' | 'start' }>
   | Readonly<{ point: Point }>;
 
 /** A pointer position, from a drag event or a custom driver. */
@@ -140,6 +152,8 @@ type Candidate = {
 
 const ELEMENT_HOST = '[data-editor-node="element"]:not([data-editor-inline])';
 const BAND = 8;
+const STRIP = 24;
+const SIDE_CLEARANCE = 20;
 const SHARED_EDGE = 2;
 
 type Level = Readonly<{
@@ -415,6 +429,70 @@ const bandsAt = (
     return [];
   });
 
+const isRtl = (host: HTMLElement) =>
+  host.ownerDocument.defaultView?.getComputedStyle(host).direction === 'rtl';
+
+// Middle half only, so a drag near the top or bottom still lands above or
+// below. No start strip: it sits beside the drag handle, where a straight drag
+// down drifts.
+const inEndStrip = (host: HTMLElement | null, input: DOMDropTargetInput) => {
+  const rect = rectOf(host);
+
+  if (
+    !host ||
+    !rect ||
+    input.clientY < rect.top + rect.height / 4 ||
+    input.clientY > rect.bottom - rect.height / 4 ||
+    input.clientX < rect.left ||
+    input.clientX > rect.right
+  ) {
+    return false;
+  }
+
+  return (
+    (isRtl(host) ? input.clientX - rect.left : rect.right - input.clientX) <=
+    Math.min(STRIP, rect.width / 4)
+  );
+};
+
+// A drag that starts in the padding, as from a block handle, must move
+// SIDE_CLEARANCE outward before the padding counts as a side, so a straight
+// vertical drag still lands above or below. A drag with no recorded start
+// gets the side as soon as it enters the padding.
+const paddingSide = (
+  root: HTMLElement,
+  host: HTMLElement | null,
+  input: DOMDropTargetInput
+) => {
+  const box = rectOf(root);
+  const rect = rectOf(host);
+  const view = root.ownerDocument.defaultView;
+
+  if (
+    !host ||
+    !box ||
+    !rect ||
+    !view ||
+    input.clientY < rect.top ||
+    input.clientY > rect.bottom
+  ) {
+    return null;
+  }
+
+  const style = view.getComputedStyle(root);
+  const origin = readDragOriginX(root.ownerDocument);
+  const right =
+    input.clientX > box.right - (Number.parseFloat(style.paddingRight) || 0) &&
+    (origin === undefined || input.clientX > origin + SIDE_CLEARANCE);
+  const left =
+    input.clientX < box.left + (Number.parseFloat(style.paddingLeft) || 0) &&
+    (origin === undefined || input.clientX < origin - SIDE_CLEARANCE);
+
+  if (!right && !left) return null;
+
+  return right !== isRtl(host) ? ('end' as const) : ('start' as const);
+};
+
 const COLLAPSED_REASONS = new Set(['app-collapse', 'app-hidden']);
 
 // An edge inside content unmounted for collapse is unreachable to the user,
@@ -595,7 +673,7 @@ export const resolveDOMDropTarget = (
     check: TransferCheck,
     axis: 'x' | 'y'
   ): DOMDropTarget | null => {
-    if (!check.admitted || !('key' in check.to)) return null;
+    if (!check.admitted || !('edge' in check.to)) return null;
 
     const target = editor.read.nodes.get(check.to.key)?.[0];
     const targetHost = dom.resolveDOMNode(check.to.key);
@@ -669,6 +747,23 @@ export const resolveDOMDropTarget = (
     return landed(winner.check, 'y');
   }
 
+  if (anchor && nodes && !copy && !fileFit) {
+    const side =
+      (level.path.length === 0 && paddingSide(root, anchor.host, input)) ||
+      (inEndStrip(anchor.host, input) ? ('end' as const) : null);
+
+    if (
+      side &&
+      checkTransfer(
+        editor,
+        { from, nodes, to: { key: anchor.key, side } },
+        'move'
+      ).admitted
+    ) {
+      return { key: anchor.key, side };
+    }
+  }
+
   for (const candidate of [...(anchor ? [anchor] : []), ...containers]) {
     const axis = axisOf(editor, candidate.node, candidate.host);
     const check = checkEdge({
@@ -704,6 +799,19 @@ export const indicateDOMDropTarget = (
 
   if (!host) {
     publishDropIndicator(editor, null);
+
+    return;
+  }
+
+  if ('side' in target) {
+    const edge = (target.side === 'start') !== isRtl(host) ? 'before' : 'after';
+
+    publishDropIndicator(editor, {
+      axis: 'x',
+      edge,
+      key: target.key,
+      line: lineOf(host, 'x', edge),
+    });
 
     return;
   }
@@ -805,6 +913,7 @@ export const startDOMDrag = (
     document: dom.getWindow().document,
     draggedBlock: true,
     hosts,
+    originX: event.clientX,
     source: { keys, kind: 'nodes' },
     sourceEditor: editor,
   });

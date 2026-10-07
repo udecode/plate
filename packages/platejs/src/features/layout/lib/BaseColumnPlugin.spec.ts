@@ -234,8 +234,8 @@ describe('BaseColumnPlugin schema', () => {
 
         expect(columnGroup.children).toHaveLength(3);
         expect(columnGroup.children[2].type).toBe('column');
-        expect(columnGroup.children[2].width).toBe('44.333333333333336%');
-        expect(columnGroup.children[0].width).toBe('28.333333333333332%');
+        expect(columnGroup.children[2].width).toBe('42.73504273504273%');
+        expect(columnGroup.children[0].width).toBe('29.05982905982906%');
         expect(columnGroup.children[2].children[0]).toMatchObject({
           type: 'paragraph',
         });
@@ -520,6 +520,24 @@ describe('BaseColumnPlugin schema', () => {
         expect(editor.read.text.string([0, 1])).toBe('Column 2 text');
         expect(editor.read.text.string([0, 2])).toBe('');
       });
+
+      it.each([6, 7, 11, 12])(
+        'settles widths that cannot sum to exactly one hundred at %i columns',
+        (columns) => {
+          const editor = createEditor();
+
+          editor.update.columnGroup.setColumns({ at: [0], columns });
+
+          const widths = getColumnGroup(editor).children.map((column) =>
+            Number.parseFloat(column.width)
+          );
+
+          expect(widths).toHaveLength(columns);
+          expect(
+            Math.abs(widths.reduce((sum, width) => sum + width, 0) - 100)
+          ).toBeLessThan(0.1);
+        }
+      );
 
       it('merges removed content into the last kept column', () => {
         const editor = createEditor({
@@ -847,5 +865,240 @@ describe('column transfer landing', () => {
         NodeApi.string(node)
       )
     ).toEqual(['parent', 'child', 'moved']);
+  });
+});
+
+describe('column side drop', () => {
+  const paragraph = (text: string) => ({
+    children: [{ text }],
+    type: 'paragraph',
+  });
+  const columns = (...texts: string[]) => ({
+    children: texts.map((text) => ({
+      children: [paragraph(text)],
+      type: 'column',
+      width: `${100 / texts.length}%`,
+    })),
+    type: 'columnGroup',
+  });
+  const createColumns = (
+    ...children: Array<ReturnType<typeof columns | typeof paragraph>>
+  ) =>
+    createRuntimeEditor({
+      initialValue: children,
+      plugins: columnPlugins,
+    });
+  const layout = (editor: ReturnType<typeof createColumns>) =>
+    editor.read
+      .children()
+      .map((node) =>
+        node.type === 'columnGroup'
+          ? node.children.map((column) =>
+              (column as Element).children.map((child) => NodeApi.string(child))
+            )
+          : NodeApi.string(node)
+      );
+  const widths = (editor: ReturnType<typeof createColumns>, at: number) => {
+    const group = editor.read.children()[at];
+
+    return group.children.map((column) =>
+      Number.parseFloat((column as ColumnElement).width)
+    );
+  };
+
+  it('puts a block dropped beside a root block in a new two-column group', () => {
+    const editor = createColumns(paragraph('target'), paragraph('dragged'));
+
+    editor.api.transfer.move({
+      nodes: [editor.key([1])!],
+      to: { key: editor.key([0])!, side: 'end' },
+    });
+
+    expect(layout(editor)).toEqual([[['target'], ['dragged']]]);
+  });
+
+  it('adds a column beside the column of the target block', () => {
+    const editor = createColumns(columns('a', 'b'), paragraph('dragged'));
+
+    editor.api.transfer.move({
+      nodes: [editor.key([1])!],
+      to: { key: editor.key([0, 0, 0])!, side: 'end' },
+    });
+
+    expect(layout(editor)).toEqual([[['a'], ['dragged'], ['b']]]);
+  });
+
+  it('keeps every column visible and in proportion as joins fill a group', () => {
+    const editor = createColumns(
+      {
+        children: [
+          { children: [paragraph('wide')], type: 'column', width: '70%' },
+          { children: [paragraph('narrow')], type: 'column', width: '30%' },
+        ],
+        type: 'columnGroup',
+      },
+      paragraph('c'),
+      paragraph('d'),
+      paragraph('e')
+    );
+
+    const outcomes = ['c', 'd', 'e'].map(
+      () =>
+        editor.api.transfer.move({
+          nodes: [editor.key([1])!],
+          to: { key: editor.key([0, 1, 0])!, side: 'end' },
+        }).status
+    );
+    const all = widths(editor, 0);
+    const [wide, narrow] = all;
+
+    expect([
+      outcomes,
+      all.length,
+      all.every((width) => width > 0),
+      Math.round(all.reduce((sum, width) => sum + width, 0)),
+    ]).toEqual([['moved', 'moved', 'moved'], 5, true, 100]);
+    expect(wide / narrow).toBeCloseTo(70 / 30);
+  });
+
+  it('adds a column before the column of the target block from its start side', () => {
+    const editor = createColumns(columns('a', 'b'), paragraph('dragged'));
+
+    editor.api.transfer.move({
+      nodes: [editor.key([1])!],
+      to: { key: editor.key([0, 1, 0])!, side: 'start' },
+    });
+
+    expect(layout(editor)).toEqual([[['a'], ['dragged'], ['b']]]);
+  });
+
+  it('refuses a join into a group whose widths do not parse', () => {
+    const editor = createColumns(
+      {
+        children: [
+          { children: [paragraph('a')], type: 'column', width: 'auto' },
+          { children: [paragraph('b')], type: 'column', width: 'auto' },
+        ],
+        type: 'columnGroup',
+      },
+      paragraph('dragged')
+    );
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { key: editor.key([0, 0, 0])!, side: 'end' },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
+  });
+
+  it('refuses a column beyond the drop limit', () => {
+    const editor = createColumns(
+      columns('1', '2', '3', '4', '5'),
+      paragraph('dragged')
+    );
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { key: editor.key([0, 4, 0])!, side: 'end' },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
+  });
+
+  it('still loads a stored group wider than the drop limit', () => {
+    const editor = createColumns(columns('1', '2', '3', '4', '5', '6', '7'));
+
+    expect(editor.read.children()[0].children).toHaveLength(7);
+  });
+
+  it('refuses a column group dropped at a side', () => {
+    const editor = createColumns(paragraph('target'), columns('a', 'b'));
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { key: editor.key([0])!, side: 'end' },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
+  });
+
+  it('never wraps a column group in another group', () => {
+    const editor = createColumns(columns('a', 'b'), paragraph('dragged'));
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { key: editor.key([0])!, side: 'end' },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
+  });
+
+  it("refuses a column's whole content dropped on the neighbor's facing side", () => {
+    const editor = createColumns(columns('a', 'b'));
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([0, 0, 0])!],
+        to: { key: editor.key([0, 1, 0])!, side: 'start' },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
+  });
+
+  it('adds a column beside a list item with deeper items inside a column', () => {
+    const item = (text: string, indent: number) => ({
+      children: [{ text }],
+      indent,
+      listType: ListType.Bulleted,
+      type: 'paragraph',
+    });
+    const editor = createRuntimeEditor({
+      initialValue: [
+        {
+          children: [
+            {
+              children: [item('parent', 1), item('child', 2)],
+              type: 'column',
+              width: '50%',
+            },
+            { children: [paragraph('b')], type: 'column', width: '50%' },
+          ],
+          type: 'columnGroup',
+        },
+        paragraph('x'),
+      ] as never,
+      plugins: [BaseIndentPlugin, ...columnPlugins, BaseListPlugin],
+    });
+
+    editor.api.transfer.move({
+      nodes: [editor.key([1])!],
+      to: { key: editor.key([0, 0, 0])!, side: 'end' },
+    });
+
+    expect(layout(editor)).toEqual([[['parent', 'child'], ['x'], ['b']]]);
+  });
+
+  it('refuses a list item with deeper items as the target', () => {
+    const item = (text: string, indent: number) => ({
+      children: [{ text }],
+      indent,
+      listType: ListType.Bulleted,
+      type: 'paragraph',
+    });
+    const editor = createRuntimeEditor({
+      initialValue: [
+        item('parent', 1),
+        item('child', 2),
+        paragraph('x'),
+      ] as never,
+      plugins: [BaseIndentPlugin, ...columnPlugins, BaseListPlugin],
+    });
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([2])!],
+        to: { key: editor.key([0])!, side: 'end' },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
   });
 });

@@ -1114,7 +1114,9 @@ Current priorities:
   wrapper from replacement. Block drag and drop is native. A handle calls
   `editor.api.dom.drag.start`, the Editable resolves each drop and runs
   `editor.api.transfer`, and the kit paints `useDropIndicator`. It needs no
-  provider, manager or backend. Copied handles follow the schema: every
+  provider, manager or backend. A side drop is a feature's read, not a kit
+  branch: Column builds columns beside a block, and the copied menu offers the
+  same move only where `editor.read.transfer.check` admits it. Copied handles follow the schema: every
   selectable block-content element gets one, at any depth, and only the
   innermost hovered one shows; copied UI never lists plugin types or depths. A gesture the browser does not drag natively,
   such as touch, gets a pointer driver over `resolveDropTarget` and

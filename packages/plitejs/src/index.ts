@@ -23,10 +23,14 @@ export type {
   TransferPayload,
   TransferRefusalReason,
   TransferRelation,
+  TransferSide,
+  TransferSideInput,
   TransferSourceInput,
   TransferLandingTarget,
   TransferTarget,
   TransferVeto,
+  TransferVetoInput,
+  TransferWrap,
 } from './core/transfer-types';
 export type {
   AddMarkCommand,

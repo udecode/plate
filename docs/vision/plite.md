@@ -510,6 +510,15 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   refuse. Hover and drop resolve the same edge. A redirected edge maps to
   itself, and every feature veto runs on the final edge, so no feature skips
   another feature's veto.
+- A block's side is a landing only when a feature describes what to build there.
+  The `transfer.side` read returns a shell with empty slots and an anchor given as
+  levels above the target, never a key, because a read's state keys belong to the
+  runtime owner and a view resolves its own. Plite commits the shell as one insert
+  plus moves in one update, judges the filled shell and each slot through the
+  schema, and runs every veto with `wrap` set, once more with the target as the
+  payload when the shell takes its place. A side admits only blocks that relocate
+  inside one root. `editor.read.transfer.check` is the same dry run the
+  indicator paints from.
 - Inferred values preserve the primary/named root grammar and every element's
   legal child variants without an arbitrary depth cliff. Canonical output
   requiredness follows runtime defaults; construction input may omit defaulted

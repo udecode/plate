@@ -383,7 +383,10 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts',
-    [[['update'], ['shortcuts']], [['corrections', 'update']]],
+    [
+      [['update'], ['shortcuts']],
+      [['corrections', 'readMiddleware', 'update']],
+    ],
   ],
   ['packages/platejs/src/math/lib/BaseEquationPlugin.ts', [[['update']]]],
   [

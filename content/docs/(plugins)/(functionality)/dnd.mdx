@@ -18,6 +18,7 @@ docs:
 - Each view paints one drop indicator at the edge where the drop lands.
 - A drag moves blocks within one document and copies them into another editor. Hold Option on macOS, or Ctrl elsewhere, to copy instead.
 - Click a handle for Move up, Move down and Cut. `Mod+Shift+ArrowUp` and `Mod+Shift+ArrowDown` move the blocks around the caret.
+- With columns installed, drop a block beside another block to place both side by side in a new column group, or to add a column beside a block that already sits in one. Beside a top-level block, the editor's side padding works too. The handle menu offers the same as Move beside previous and Move beside next.
 - A block drops wherever its schema allows, such as inside a blockquote, a details body, a column or a table cell. Table rows, columns, lists, the details summary and uploads keep their own rules, so the indicator only shows edges the drop can use.
 - Dropped files become uploads when `UploadPlugin` accepts native drops.
 
@@ -62,6 +63,8 @@ Two `EditorRoot`s over one editor are two views of one document, so a drag betwe
 <ComponentPreview name="dnd-table-demo" />
 
 The copied `table` and `column` components add their own row and column handles. Rows land only beside rows of the same table, and the table refuses a drop that would split a merged cell. Columns reorder within their group. Other blocks can drop into a cell or a column.
+
+Drop a block on the inline-end edge of a top-level block, the right edge in left-to-right text, in the middle half of its height, and the indicator turns vertical: the drop places both blocks in a new two-column group. The editor's side padding beside a top-level block does the same over the block's full height. The right padding places the dropped block after it, and the left padding places it before. Padding counts only once the pointer is 20px past where the drag started, so a straight drag down from a handle in the padding still lands above or below. Beside a block inside a column, the drop adds a column to that group, up to five. A group never nests in another group, and a block inside a table cell, blockquote or details body takes no side drop.
 
 ### File drops
 
@@ -187,6 +190,16 @@ editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
 
 Pass `from` with another editor to move or copy from it. Between independent editors a move always copies.
 
+`to` also accepts a block's side, `{ key, side: 'start' | 'end' }`, which places the blocks beside it when a feature builds side landings, such as the Column plugin. A side takes only a move inside one document; a copy refuses with `policy`. Ask before offering the action, as the handle menu does:
+
+```tsx
+const to = { key: editor.key(previous), side: 'end' } as const;
+
+if (editor.read.transfer.check({ nodes: [editor.key(element)], to }).admitted) {
+  editor.api.transfer.move({ announce: 'Moved beside', nodes: [editor.key(element)], to });
+}
+```
+
 ### Refuse a landing
 
 A block lands wherever the target's schema accepts it. A plugin refuses what its schema allows but the feature does not, such as a row in another table, with a `transferVeto` contribution. It runs on the final edge for every drag, keyboard move and `editor.api.transfer` call, after features such as lists have adjusted it.
@@ -206,6 +219,32 @@ The input also carries the source view (`from`), the `intent` (`move` or `copy`)
 
 To move an edge instead, such as past a list item's nested items, wrap `editorReads.transfer.landing` in read middleware and return another edge, or `next()` to keep it. A moved edge must map to itself; the schema and the vetoes then check the final edge.
 
+### Build beside a block
+
+A drop at a block's side lands only when a feature describes what to build there through `editorReads.transfer.side`. The Column plugin returns a column group that takes the target's place:
+
+```tsx
+import { editorReads } from 'platejs';
+
+around(editorReads.transfer.side, ({ input, next }) =>
+  input.target[1].length === 1
+    ? {
+        payload: [input.side === 'end' ? 1 : 0],
+        shell: {
+          children: [
+            { children: [], type: 'column', width: '50%' },
+            { children: [], type: 'column', width: '50%' },
+          ],
+          type: 'columnGroup',
+        },
+        target: [input.side === 'end' ? 0 : 1],
+      }
+    : next()
+),
+```
+
+With `target`, the shell takes the target's place and the target moves into that slot. Without it, return `ancestor` and `edge` to land the shell before or after the target, or its ancestor that many levels up, as Column does to add a column beside a block's column. The dragged blocks move into the slot at `payload`, all in one undo step. A target whose feature family reaches past it, such as a list item with nested items, refuses. The schema checks the filled shell and each slot, and every veto runs with `wrap` set; a wrap that takes the target's place also runs the vetoes with the target as the payload.
+
 ## API reference
 
 ### `editor.api.transfer.move`
@@ -214,8 +253,8 @@ To move an edge instead, such as past a list item's nested items, wrap `editorRe
 <APIParameters>
   <APIItem name="input" type="TransferInput">
     <APISubList>
-      <APISubListItem parent="input" name="to" type="{ key: NodeKey; edge: 'before' | 'after' } | { point: Point } | 'next' | 'previous'">
-        Where the payload lands: beside a block, at a text point, or one step past a sibling.
+      <APISubListItem parent="input" name="to" type="{ key: NodeKey; edge: 'before' | 'after' } | { key: NodeKey; side: 'start' | 'end' } | { point: Point } | 'next' | 'previous'">
+        Where the payload lands: before or after a block, at a block's side, at a text point, or one step past a sibling.
       </APISubListItem>
       <APISubListItem parent="input" name="nodes" type="NodeKey[]" optional>
         Blocks to move, by key in `from`. **Default:** the selected blocks, or the blocks containing the selection.
@@ -244,6 +283,10 @@ To move an edge instead, such as past a list item's nested items, wrap `editorRe
 
 Takes the same input as `move` and keeps the source.
 
+### `editor.read.transfer.check`
+
+`editor.read.transfer.check(input: TransferInput): TransferCheck` admits a move without running it, through the same schema, redirects and vetoes the drop indicator paints from. It returns `{ admitted: true, to }` or `{ admitted: false, reason }`. A refusal found only at commit, such as a lossy landing, is not predicted.
+
 ### `editor.read.transfer.nodes`
 
 `editor.read.transfer.nodes(options?: { node?: Element | NodeKey }): NodeKey[]` returns the blocks a transfer carries, such as a list item with its nested items. With `node`, it returns a handle's blocks: the selected blocks when the selection holds `node`, else `node` alone. Without it, it returns the selected blocks, or the blocks containing the selection. Pass the result as `nodes` to `editor.api.transfer.move`.
@@ -261,7 +304,7 @@ Takes the same input as `move` and keeps the source.
     Side of that block.
   </APIItem>
   <APIItem name="axis" type="'x' | 'y'">
-    `y` for stacked blocks, `x` for side-by-side items such as columns.
+    `y` for stacked blocks, `x` for side-by-side items such as columns and for a drop at a block's side, where `edge` names the left (`before`) or right (`after`) side.
   </APIItem>
   <APIItem name="line" type="{ x: number; y: number; width: number; height: number }">
     Viewport rectangle of the edge, with zero height on `y` and zero width on `x`.

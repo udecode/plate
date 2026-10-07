@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-06-dnd-move-beside",
+      "href": "/registry/changelog/2026-10-06-dnd-move-beside.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Move a block beside another one from its handle menu",
+      "change": {
+        "type": "source",
+        "date": "2026-10-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["dnd"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-02-schema-block-handles",
       "href": "/registry/changelog/2026-10-02-schema-block-handles.json",
       "status": "draft",

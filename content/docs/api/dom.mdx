@@ -249,7 +249,7 @@ starts a copy-only drag. Returns `null` when nothing can be dragged.
 Publish this view's drop indicator for a target from `resolveDropTarget`, or
 clear it. `useDropIndicator` reads it.
 
-#### `editor.api.dom.resolveDropTarget(input: { clientX: number; clientY: number; target?: EventTarget | null; dataTransfer?: DataTransfer | null }, options?: { copy?: boolean; files?: Element; from?: Editor; nodes?: NodeKey[]; range?: Range }): { key: NodeKey; edge: 'after' | 'before'; axis: 'x' | 'y' } | { point: Point } | null`
+#### `editor.api.dom.resolveDropTarget(input: { clientX: number; clientY: number; target?: EventTarget | null; dataTransfer?: DataTransfer | null }, options?: { copy?: boolean; files?: Element; from?: Editor; nodes?: NodeKey[]; range?: Range }): { key: NodeKey; edge: 'after' | 'before'; axis: 'x' | 'y' } | { key: NodeKey; side: 'end' | 'start' } | { point: Point } | null`
 
 Resolve where a drop under a pointer lands: an edge the schema, the landing
 redirects and the vetoes admit, or a text point for a text drag. Within 8px of a
@@ -263,6 +263,14 @@ collapsed content are refused. Without options it reads the active drag session.
 Pass `files` with the block that dropped files become to place an upload. The
 drop checks one such block per file the browser exposes, and one block when the
 browser hides them during the drag.
+
+When a feature builds side landings, such as the Column plugin, a move inside
+the editor whose pointer rests in the inline-end strip of the innermost block
+resolves to `{ key, side: 'end' }`. The strip is the outer 24px of the block's
+box, at most a quarter of its width, in the middle half of its height; a
+container's band wins where they overlap. A copy, a file drop or a drag from
+another editor never resolves to a side. Pass the target to
+`editor.api.transfer.move` as `to`, or narrow with `'edge' in target`.
 
 ## DataTransfer
 

@@ -3,6 +3,7 @@
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  Columns2Icon,
   GripVertical,
   type LucideIcon,
   ScissorsIcon,
@@ -158,6 +159,9 @@ function Draggable(props: RenderNodeWrapperProps) {
   const { children, editor, element, renderPath } = props;
   const [buttonTop, setButtonTop] = React.useState(0);
   const [actionsOpen, setActionsOpen] = React.useState(false);
+  const [besideActions, setBesideActions] = React.useState<
+    Array<{ icon: LucideIcon; label: string; run: () => void }>
+  >([]);
   const selected = useElementSelected();
   // A drag node-selects the handle's blocks, so their gutter stays laid out.
   // Mode 'node' matches those blocks only, so with hover the blocks nested
@@ -170,12 +174,63 @@ function Draggable(props: RenderNodeWrapperProps) {
   const move = (to: 'next' | 'previous', announce: string) => {
     editor.api.transfer.move({ announce, nodes: nodes(), to });
   };
+  // The siblings around the whole payload, such as a list item with its
+  // nested items, not around the handle's own block.
+  const besideOf = (keys: readonly NodeKey[]) => {
+    const paths = keys.map((key) => editor.read.nodes.path(key));
+    const first = paths[0];
+    const last = paths.at(-1);
+
+    if (
+      !first ||
+      !last ||
+      !PathApi.equals(PathApi.parent(first), PathApi.parent(last))
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        label: 'Move beside previous',
+        sibling: PathApi.hasPrevious(first) ? PathApi.previous(first) : null,
+        side: 'end' as const,
+      },
+      {
+        label: 'Move beside next',
+        sibling: PathApi.next(last),
+        side: 'start' as const,
+      },
+    ].flatMap(({ label, sibling, side }) => {
+      const key = sibling && editor.key(sibling);
+
+      if (!key) return [];
+
+      const to = { key, side };
+
+      return editor.read.transfer.check({ nodes: keys, to }).admitted
+        ? [
+            {
+              icon: Columns2Icon,
+              label,
+              run: () => {
+                editor.api.transfer.move({
+                  announce: 'Moved beside',
+                  nodes: keys,
+                  to,
+                });
+              },
+            },
+          ]
+        : [];
+    });
+  };
   const openActions = () => {
     const keys = nodes();
 
     if (!keys.every((key) => editor.read.selection.contains(key))) {
       editor.update.selection.setNodes(keys);
     }
+    setBesideActions(besideOf(keys));
     setActionsOpen(true);
   };
 
@@ -255,6 +310,7 @@ function Draggable(props: RenderNodeWrapperProps) {
                   label: 'Move down',
                   run: () => move('next', 'Moved down'),
                 },
+                ...besideActions,
                 {
                   icon: ScissorsIcon,
                   label: 'Cut',

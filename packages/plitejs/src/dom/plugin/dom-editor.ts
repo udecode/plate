@@ -160,8 +160,9 @@ export interface DOMApi {
   blur: () => void;
   drag: DOMDragApi;
   /**
-   * Resolve where a drop under a pointer lands: the innermost block edge the
-   * transfer dry pass admits, or a text point for a text drag.
+   * Resolve where a drop under a pointer lands: the innermost block edge or
+   * side the transfer dry pass admits, or a text point for a text drag. A
+   * files drop resolves only to an edge.
    */
   resolveDropTarget: (
     input: DOMDropTargetInput,
