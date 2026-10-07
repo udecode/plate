@@ -27,7 +27,7 @@ Timed checkpoint:
 - semantics: outcome-based
 - initial confidence score: 75%; prior browser trace locates failure, cause unproven
 - improvement loop: reproduce, isolate, test, fix, review, merge
-- final score / loop closure: Await final proof
+- final score / loop closure: 98%; local proof and structured review pass. Exact PR/feedback/merge closure remains.
 
 Completion threshold:
 - Original browser interaction downloads a DOCX with document.xml; focused regression passes, relevant source-first typecheck and pnpm check pass, structured autoreview has no accepted actionable findings, exact-head PR merged and #5146 closed.
@@ -132,23 +132,23 @@ Start Gates:
 | Barrel/export impact decision recorded | no | N/A: existing internal option; no public export or layout changes |
 
 Work Checklist:
-- [ ] If a duration was requested, it is recorded as minimum active work unless
+- [x] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded.
-- [ ] Short objective plus outcome, completion threshold, verification surface,
+- [x] Short objective plus outcome, completion threshold, verification surface,
       constraints, boundaries, and blocked condition are concrete.
-- [ ] Task source classified with source type, id/link, title, task type,
+- [x] Task source classified with source type, id/link, title, task type,
       acceptance criteria, caveats, likely files/routes/packages, browser
       surface, and root-cause layer.
-- [ ] Required video or screen-recording evidence is cached/read as normalized
+- [x] Required video or screen-recording evidence is cached/read as normalized
       `<video-transcripts>` XML, or marked N/A with reason.
-- [ ] For public tracker bug reports, behavior claims, technical diagnoses, or
+- [x] For public tracker bug reports, behavior claims, technical diagnoses, or
       suggested fixes, reporter claims are challenged before implementation
       with a recorded verdict: `valid`, `not reproduced`, `invalid`,
       `wont-fix`, `partially valid`, or `platform limitation`. Feature, docs,
       support, or cleanup requests with no bug claim may mark reproduction
       `N/A` with reason.
-- [ ] Repro escalation ladder followed for bug/behavior claims: focused
+- [x] Repro escalation ladder followed for bug/behavior claims: focused
       test/source-level repro first when applicable; existing repo-owned
       Playwright regression/test harness next when available and useful as
       executable coverage; do not use standalone Playwright, Puppeteer, or raw
@@ -157,101 +157,101 @@ Work Checklist:
       Playwright cannot reproduce or cannot model the surface honestly;
       screenshot or explicit visual-proof waiver when visual/native state
       matters.
-- [ ] Hard-stop rule followed for bug/behavior claims: no code when the issue
+- [x] Hard-stop rule followed for bug/behavior claims: no code when the issue
       is not reproduced, invalid, or won't-fix; partial validity pivots to the
       best long-term fix and records what was wrong or incomplete in the issue's
       proposed path.
-- [ ] Nearby repo instructions and implementation patterns read before edits.
-- [ ] Implementation fixes the right ownership boundary, or the narrower choice
+- [x] Nearby repo instructions and implementation patterns read before edits.
+- [x] Implementation fixes the right ownership boundary, or the narrower choice
       is recorded with reason.
-- [ ] Release artifact requirement recorded: changeset, registry changelog, or
+- [x] Release artifact requirement recorded: changeset, registry changelog, or
       N/A with reason.
-- [ ] Final handoff shape decided: bug/feature/testing/batch/review/tracker
+- [x] Final handoff shape decided: bug/feature/testing/batch/review/tracker
       requirements, PR body sync, and issue/Linear sync when applicable.
-- [ ] Branch handling recorded for code-changing work: dedicated branch used,
+- [x] Branch handling recorded for code-changing work: dedicated branch used,
       new branch needed, or N/A with reason.
-- [ ] Every PR has its own `task` invocation and dedicated plan; this plan is
+- [x] Every PR has its own `task` invocation and dedicated plan; this plan is
       not aggregate evidence for another PR.
 - [ ] If a PR exists, its body has exactly one
       `🧭 Task plan: docs/plans/<plan>.md` line, this file exists at the exact PR
       head, and this plan records that exact PR number or URL.
-- [ ] Local-env-rot retry policy recorded for any surprising repo-wide failure:
+- [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
       reinstall/rerun evidence or N/A with reason.
-- [ ] Workspace authority recorded: every proof command names the cwd/tool that
+- [x] Workspace authority recorded: every proof command names the cwd/tool that
       owns the changed behavior.
-- [ ] High-risk note recorded for public API, runtime, package-boundary,
+- [x] High-risk note recorded for public API, runtime, package-boundary,
       browser behavior, agent-action, or command-contract changes, or marked
       N/A with reason.
-- [ ] Review/autoreview target selected from actual diff state for non-trivial
+- [x] Review/autoreview target selected from actual diff state for non-trivial
       implementation work, or marked N/A with reason.
-- [ ] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
+- [x] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
       `.codex/**`, skills, hooks, commands, prompts, or user-action tooling.
-- [ ] Output budget discipline recorded and followed: broad searches are
+- [x] Output budget discipline recorded and followed: broad searches are
       scoped, capped, counted, or artifacted instead of streamed into goal
       context.
-- [ ] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
-- [ ] Browser pack: browser proof uses the repo-approved browser tool or records a blocker/waiver.
-- [ ] Browser pack: console and network errors are checked or explicitly out of scope.
-- [ ] Browser pack: screenshot, trace, or exact verification caveat is ready for final handoff.
-- [ ] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
-- [ ] Package/API pack: release artifact matrix is applied: `.changeset`, registry changelog, or explicit no-artifact reason.
-- [ ] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules.
-- [ ] Package/API pack: registry-only work uses the `registry-changelog` pack instead of adding a package changeset.
-- [ ] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
-- [ ] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
-- [ ] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
-- [ ] Package/API pack: generated barrels or release notes are updated when required.
+- [x] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
+- [x] Browser pack: browser proof uses the repo-approved browser tool or records a blocker/waiver.
+- [x] Browser pack: console and network errors are checked or explicitly out of scope.
+- [x] Browser pack: screenshot, trace, or exact verification caveat is ready for final handoff.
+- [x] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
+- [x] Package/API pack: release artifact matrix is applied: `.changeset`, registry changelog, or explicit no-artifact reason.
+- [x] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules.
+- [x] Package/API pack: registry-only work uses the `registry-changelog` pack instead of adding a package changeset.
+- [x] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
+- [x] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
+- [x] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
+- [x] Package/API pack: generated barrels or release notes are updated when required.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Pre-solution issue challenge verdict | pending | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | pending |
-| Repro escalation ladder | pending | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
-| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| User-visible registry output changed | pending | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for supporting public docs/content/API/example changes, load `docs-creator` and close the docs pack; for typo/link-only edits, record the explicit reason and proportional proof | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Browser download, nine XML parts, package proof and final pnpm check pass; GitHub closure remains a required external gate. |
+| Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | Valid, original current-main browser failure and exact escaped-style mechanism established before implementation. |
+| Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | React/Juice source probe plus actual approved browser; no matching existing browser harness. Non-visual download proof, not Word rendering. |
+| Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Browser setStyleAttrs TypeError and public regression red at dbdc629baa, before one-option fix. |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | Quoted-font public export integration: 1 pass, 7 assertions. Exact playground file download and XML parse. |
+| TypeScript or typed config changed | yes | Run relevant typecheck | pnpm turbo typecheck --filter=./packages/docx-io and final root check pass. |
+| Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: only test lane move; brl common_excludes explicitly excludes slow/spec files, no public layout/export change. |
+| Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A: no dependency or lockfile delta. Initial pnpm install completed without versioned changes. |
+| Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A: no workflow or agent-source changes. |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | All proof owns task managed worktree; ZIP audit specifically runs from packages/docx-io where jszip/xmlbuilder2 are dependencies. |
+| Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | Approved IAB and Chrome drove /blocks/playground-demo Export as Word in source mode. |
+| Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | Exact task-owned download with timestamp, size, SHA256 and XML audit. Browser event wait missed real download; no visual-render claim. |
+| CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: templates untouched. |
+| Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | Single @platejs/docx-io patch changeset; no API shape change. |
+| User-visible registry output changed | no | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | N/A: no registry edits. |
+| Docs or content changed | no | For docs-heavy work, use `--template docs`; for supporting public docs/content/API/example changes, load `docs-creator` and close the docs pack; for typo/link-only edits, record the explicit reason and proportional proof | N/A: internal task plan only; no public docs/content delta. |
+| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Escaped CSS quotes crashed normal export. Decode only style attributes using Juice-supported option; real XML text/font regression plus browser download prove boundary. |
+| Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent workflow/tool changes. |
+| Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: missing peer dist and module mocks explained by source configuration/isolation, not install rot; no reinstall warranted. |
+| Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Structured branch review against origin/main at 597ecbf0cc exits 0, no accepted/actionable findings. Stale red-test-only bundle superseded. |
 | PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
 | Per-PR task ownership | pending | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | pending |
 | Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
+| PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: non-visual download proof, exact artifact/console caveat; no local image paths in PR body. |
 | Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
 | Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
+| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | pnpm lint:fix checks 3309 files with no rewrites; final pnpm check lint passes. |
+| Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Bounded owner searches and /tmp logs. Accidental metadata inventory and console hydration output recorded, recovered with filtered bounded results. |
+| Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested. |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/5146-fix-docx-browser-export.md` | pending |
-| Browser interaction proof | pending | Exercise the target route/interaction with the approved browser tool or record blocker | pending |
-| Browser console/network check | pending | Record console/network state or why it is not applicable | pending |
-| Browser final proof artifact | pending | Record screenshot/trace/route proof or exact caveat | pending |
-| Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
-| Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
-| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | pending |
-| Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | pending |
-| No release artifact | pending | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | pending |
-| Package typecheck/build/test | pending | Run owning package checks or record N/A with reason | pending |
-| Barrel/export generation | pending | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | pending |
+| Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | Actual original Export as Word interaction creates fresh plate (4).docx, 71585 bytes. |
+| Browser console/network check | yes | Record console/network state or why it is not applicable | No new export errors. Unrelated table hydration warnings recorded. No network-path edits; remote image fetching disabled by default. |
+| Browser final proof artifact | yes | Record screenshot/trace/route proof or exact caveat | Fresh Chrome artifact, nine well-formed XML parts and expected heading/table/callout; SHA256 recorded above. |
+| Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | One internal Juice option; no signature, package exports or dependency changes. |
+| Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published package runtime bug fix, one patch changeset. |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | changeset skill applied to @platejs/docx-io only; no forbidden core minor. |
+| Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | N/A: no registry-only delta. |
+| No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: package runtime delta has required changeset. |
+| Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | Owning package types, isolated package tests, slow integration, explicit peer artifact build and root pnpm check pass. |
+| Barrel/export generation | no | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | N/A: no public export/layout change; test filenames excluded by brl. |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | in_progress | created plan | implementation |
-| Implementation | pending | | verification |
-| Verification | pending | | closeout |
+| Intake and source read | done | issue challenged; mechanism and original browser failure proven | implementation |
+| Implementation | done | one Juice option; red-first public integration test; patch changeset | verification |
+| Verification | done | browser artifact, package proof, pnpm check, structured review all pass | closeout |
 | PR / tracker sync | pending | | final response |
 | Closeout | pending | | final response |
 
@@ -286,7 +286,7 @@ Pstack bug-fix execution steps:
 6. Run **Opening a PR**.
 
 Review fixes:
-- None yet.
+- Initial branch autoreview reviewed committed red-test tree dbdc629baa, not staged green changes. Its P1 asks to include implementation fix. Committed verified green tree and reran actual complete branch review. Final helper exits 0, no accepted/actionable findings. No additional product edit justified by stale bundle.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
@@ -297,6 +297,7 @@ Error attempts:
 | Browser download event unavailable despite completed blob | 2 | inspect exact task artifact timestamp/ZIP | Chrome plate (4).docx downloaded, 71585 bytes |
 | ZIP audit started from root lacking jszip dependency | 1 | rerun in owning packages/docx-io cwd | nine XML parts parse successfully |
 | Root check exceeds fast-test runtime budget | 1 | move public integration test to slow lane | root check rerun required |
+| Branch review ignored staged green changes | 1 | commit verified fix and review complete branch | rerun correct committed target |
 
 Verification evidence:
 - Issue body/comments read via gh; zero comments. Juice setStyleAttrs reads prop.prop.indexOf('--'), so a malformed property object is a candidate, not a proven diagnosis.
@@ -305,22 +306,23 @@ Verification evidence:
 - Green regression before lane move: 1 pass, 7 assertions. Existing focused XML spacing suite 14/14 passes. Repo-owned pnpm test packages/docx-io runs 108 tests, all pass with mock isolation.
 - Package typecheck passes after explicit @platejs/docx peer build. pnpm lint:fix checks 3309 files, zero rewrites. Initial pnpm check lint/types/fast/slow tests pass but fast budget rejects new integration test; classified and moved to .slow.tsx.
 - Browser source mode PLATE_WWW_DEV_SOURCE=1, original route and action. No new export console errors. Download /Users/zbeyens/Downloads/plate (4).docx at 2026-10-07T17:33:25Z, 71585 bytes, SHA256 342dc4b06bf7220c2b3d54257870a9c50fa9f049e16a5c9c96864b6093a3e837. Nine XML parts parse; document.xml includes playground heading, table and callout. This is successful-download/package proof, not Word visual fidelity.
+- Final pnpm check exits 0 after correct slow-lane classification; lint, package builds/types, fast and slow suites, fast runtime budget all pass. Exact slow integration command bun test ./packages/docx-io/src/lib/docx-export-plugin.slow.tsx reports 1 pass, 0 fail, 7 assertions.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: Assign exact issue-owned PR at creation; branch codex/fix-5146-docx-browser-export
+- Issue / tracker line: Fixes #5146
+- Confidence line: 98% for escaped-style crash and successful download, no Word-rendering claim
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: public export regression fails with exact Juice stack; current-main playground fails before download
+  - Verified: quoted-font/text XML regression passes, package checks and root check pass; fresh Chrome DOCX download parses
+- Browser check: /blocks/playground-demo > Export > Export as Word, source mode. Fresh task file 71585 bytes, nine XML parts.
+- Outcome: Word export completes with React-escaped font-family quotes.
+- Caveat: Existing table-ID hydration warnings; no Word visual fidelity claim. Event wait missed actual download, verified task artifact directly.
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
+  - Chosen boundary: DOCX export adapter's Juice options, decodeStyleAttributes true
+  - Why not quick patch: nil guards or removing font quotes hide correctly escaped HTML instead of parsing CSS correctly
+  - Why not broader change: serializer, converter, public API and dependency contracts remain unchanged
+- Verified: red/green export regression, 108 isolated DOCX tests before lane move, package types, final pnpm check and clean structured branch review
 - PR body verified: pending
 
 Task-style PR body contract:
@@ -354,12 +356,14 @@ Final handoff / sync:
 
 Timeline:
 - 2026-10-07T17:16:34.698Z Task goal plan created.
+- 2026-10-07T17:33:25Z Chrome writes verified plate (4).docx.
+- 2026-10-07T17:44:00Z Local closeout complete: final pnpm check and actual committed branch autoreview pass.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
+| Where am I? | GitHub delivery and live-feedback closure |
+| Where am I going? | Task compliance, final receipt, merge and issue-state readback |
 | What is the goal? | Valid DOCX browser download, regression proof, reviewed merged PR, #5146 closed |
 | What have I learned? | See Findings |
 | What have I done? | See Timeline |
