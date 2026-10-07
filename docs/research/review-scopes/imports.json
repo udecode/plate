@@ -28,7 +28,7 @@
     "packages/platejs/src/docx/import/lib/importDocx.spec.ts"
   ],
   "evidenceInputs": [
-    "docs/analysis/editor-architecture-candidates.md",
+    "docs/research/sources/editor-architecture/candidates.md",
     "docs/research/decisions/export-fidelity.md",
     "docs/research/decisions/documents-conversion-fidelity.md",
     "docs/research/decisions/persistence-ownership.md",

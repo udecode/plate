@@ -11,7 +11,6 @@ import { domCommands } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import { createDataTransfer } from 'plitejs/testing';
 
-import { getEditorLiveSelection } from '../../src/internal';
 import {
   createEditor,
   Editable,
@@ -20,6 +19,7 @@ import {
   EditorRoot,
 } from '../../src/react';
 import { writeCollapsedModelSelectionDOMPreference } from '../../src/react/editable/model-selection-dom-preference';
+import { getEditorLiveSelection } from '../../src/testing';
 
 const objectSchema = defineEditorSchema('schema:object-selection', {
   elements: {

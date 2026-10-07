@@ -32,6 +32,8 @@ Rules:
   from `apps/www`; never maintain a second example source tree.
 - WebKit, mobile viewport, and the full Playwright app matrix are closure
   gates through `pnpm check:plite:browser-matrix`.
+- Yjs collaboration soak runners under `tooling/plite/donor/proof/` are manual-only diagnostics: run one only when the user explicitly asks for a soak run, and never add one to `check`, `test`, `test:release-proof` or any automatic agent gate.
+- Run `pnpm plite:browser:install` once when Playwright reports a missing local browser. Proof commands never download browsers implicitly.
 - run commands from the Plate repo root unless a package-local script requires
   the package cwd;
 - keep docs, skill, runtime, package, benchmark, and Playwright scans rooted in
@@ -52,9 +54,11 @@ Rules:
   guessing command variants. Locate the exact file or wrapper with `rg --files`
   / `rg -n`, then rerun once with the correct runner;
 - run Plite package checks through the entrypoint-aware `plitejs` scripts, such
-  as `pnpm --filter plitejs typecheck`, and typecheck its test files with
-  `pnpm --filter plitejs typecheck:tests`, not `tsc -p test/tsconfig.json` or
-  `tsconfig.test.json`; do not target deleted package roots;
+  as `pnpm --filter plitejs typecheck`, which already runs `typecheck:tests`
+  for its test files; run alone in a fresh worktree, `typecheck:tests` fails
+  with TS6305 because its partition outputs are not built. Never use
+  `tsc -p test/tsconfig.json` or `tsconfig.test.json`; do not target deleted
+  package roots;
 - use `pnpm --filter plite test:plite-browser:chromium ...` for focused Plite
   browser specs; do not send Playwright specs through `bun test` or the
   `apps/www` docs app;
@@ -108,6 +112,7 @@ Rules:
   `tests/plite-browser/runtime-entrypoints.test.ts` drives `/runtime-entrypoints`
   for client imports. These runners derive membership from the DAG; type-only
   exports and CSS assets retain their separate proof scope;
+- a reported type regression in a published release starts from the tarballs: `npm pack` the bad and the last good version, compare their declaration entrypoints, and rebuild locally; when the rebuild is right and the tarball wrong, fix the release artifact path, not source;
 - split external consumer type smoke by claim width. App-facing packages
   should compile with strict declaration checking. `@platejs/test/playwright`
   may need a separate config with third-party lib checking skipped so
@@ -159,7 +164,7 @@ Rules:
   package script and argument forwarding are verified in the plan;
 ## Source-first package checks
 
-A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it with `bun run` from the package directory, import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/<package>/` that the import added. A scratch file outside the repository cannot resolve bare package names, so it imports by path.
+A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it from the package directory and pass each preload its `bunfig.toml` lists under `[test]`, such as `bun --preload ../../config/plite-source-aliases.ts <abs path>` from `packages/platejs`. Bun applies `[test]` preloads only to `bun test`, so a plain `bun run` resolves dependency packages such as `plitejs` from `dist`. Import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/` that the import added, dependency packages included. A scratch file outside the repository cannot resolve bare package names, so it imports by path.
 
 Default to source-first typecheck. Do not build packages just to run types.
 Inspect the affected package/app `paths` and source-entry graph if stale
@@ -167,7 +172,14 @@ declarations or unresolved exports suggest built-output resolution. Repair
 source-entry debt when appropriate; build when the actual claim concerns
 release artifacts or a package intentionally has no source-first path.
 
-Install dependencies when required by changed inputs or lockfile state, then
+Install dependencies when required by changed inputs or lockfile state. In a
+tree other sessions are editing, install with `pnpm install --ignore-scripts`,
+because the root `prepare` script regenerates agent outputs; add
+`--frozen-lockfile` to check the lockfile as CI does, run `pnpm rebuild <pkg>`
+when a dependency needs its own scripts, and run `pnpm run prepare` only on
+purpose. A dependency or toolchain upgrade searches the whole repository for
+every load form of the package, `import`, `require` and a `createRequire(...)`
+call, and closes only on `pnpm check`. Then
 use `pnpm turbo typecheck --filter=./packages/<modified-package>`. Run affected
 lint and fix actual diagnostics before final verification. Useful forms:
 
@@ -178,6 +190,8 @@ pnpm turbo typecheck --filter='...[origin/main]'
 pnpm --filter platejs typecheck
 pnpm --filter platejs lint:fix
 ```
+
+A typecheck that reports TS6305, a referenced project's output not built, checked nothing: it is neither a clean result nor evidence that its other errors are unrelated. Build the references or run the package's partition typecheck instead.
 
 Use root `pnpm lint:fix` when the affected lint scope needs that command.
 `pnpm typecheck` checks root packages from source; `pnpm build` builds all
@@ -225,7 +239,7 @@ Add a detached worktree at the base (`git worktree add --detach <path> <sha>`)
 and link this checkout's installed dependencies, as `AGENTS.md`'s Git rule says.
 When the base lockfile differs or a package's links are missing, install with
 scripts instead (`pnpm rebuild` first when an earlier install skipped them) and
-build `@platejs/cli`. A step that fails in about a second, such as `plate:
+build `@platejs/cli`. A worktree that serves the app with `next dev` needs a real install, `pnpm install --frozen-lockfile --offline --ignore-scripts`, because Turbopack refuses a `node_modules` symlink that points outside the worktree. A step that fails in about a second, such as `plate:
 command not found`, is a broken install, not a result. Never copy candidate
 files into the base worktree; replay them in a second worktree, and require an
 empty `git -C <path> status --porcelain` before labeling any run as base.

@@ -16,6 +16,7 @@ docs:
 - 每个视图在放置位置的边缘绘制一条放置指示线。
 - 在同一文档内拖拽会移动区块，拖到另一个编辑器会复制区块。按住 Option（macOS）或 Ctrl（其他平台）可改为复制。
 - 点击手柄可使用“上移”“下移”和“剪切”。`Mod+Shift+ArrowUp` 和 `Mod+Shift+ArrowDown` 移动光标所在的区块。
+- 安装分栏后，把区块拖到另一个区块旁边，两者会并排放入一个新的分栏组；拖到已在分栏中的区块旁边，则为该分栏组添加一栏。在顶层区块旁，编辑器两侧的留白同样可以放置。手柄菜单提供同样的“移到前一项旁”和“移到后一项旁”。
 - 区块可以放到 schema 允许的任何位置，例如引用块、详情正文、分栏或表格单元格内。表格行、分栏、列表、详情摘要和上传保留各自的规则，指示线只显示可以放置的边缘。
 - `UploadPlugin` 接受原生拖放时，拖入的文件会变成上传。
 
@@ -60,6 +61,8 @@ const editor = createEditor({
 <ComponentPreview name="dnd-table-demo" />
 
 复制的 `table` 和 `column` 组件会添加各自的行手柄和分栏手柄。行只能落在同一表格的行旁边，表格会拒绝会拆分合并单元格的拖放。分栏只在所属分栏组内重新排序。其他区块可以拖入单元格或分栏。
+
+把区块拖到顶层区块的行内结束边缘（从左到右的文本中为右侧边缘），并处于其高度的中间一半时，指示线变为竖线：放下后两个区块进入一个新的两栏分栏组。顶层区块旁的编辑器两侧留白在区块的整个高度内效果相同。右侧留白把拖入的区块放在它之后，左侧留白放在它之前。指针要比拖拽起点再偏出 20px，留白才生效，因此从留白中的手柄直接向下拖仍会落在上方或下方。拖到分栏内某个区块的旁边，会为该分栏组添加一栏，最多五栏。分栏组不会嵌套在另一个分栏组中，表格单元格、引用块或详情正文内的区块不接受侧边放置。
 
 ### 文件拖放
 
@@ -136,7 +139,7 @@ export const DragHandlePlugin = definePlugin('dragHandle', {
 
 ### 拖拽图像
 
-`drag.start` 还返回被拖拽区块的惰性克隆，以及指针相对第一个区块的偏移。套件的 `startBlockDrag` 将它们放在被拖拽区块上方，并交给浏览器作为拖拽图像：
+`drag.start` 还返回被拖拽区块的惰性克隆，以及指针相对第一个区块的偏移。套件的 `startBlockDrag` 将它们以半透明、无背景的方式放在被拖拽区块上方，并交给浏览器作为拖拽图像：
 
 ```tsx
 onDragStart={(event) => {
@@ -151,6 +154,7 @@ onDragStart={(event) => {
   const image = document.createElement('div');
 
   image.style.cssText = `position:fixed;pointer-events:none;left:${rect?.left ?? 0}px;top:${rect?.top ?? 0}px;width:${rect?.width ?? 0}px;`;
+  image.className = 'flow-root opacity-50';
   image.append(...drag.previews);
   document.body.append(image);
   event.dataTransfer.setDragImage(image, drag.origin.x, drag.origin.y);
@@ -158,6 +162,8 @@ onDragStart={(event) => {
   requestAnimationFrame(() => image.remove());
 }}
 ```
+
+指针下只跟随半透明的区块。自带背景的区块，例如代码块或表格单元格，会保留半透明的背景。
 
 ## 以代码移动区块
 
@@ -182,6 +188,16 @@ editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
 
 传入另一个编辑器作为 `from`，即可从该编辑器移动或复制。在相互独立的编辑器之间，移动总是复制。
 
+`to` 也接受区块的一侧 `{ key, side: 'start' | 'end' }`。当某个功能（例如分栏插件）构建侧边放置时，区块会落到它旁边。侧边只接受同一文档内的移动；复制会以 `policy` 拒绝。像手柄菜单一样，在提供操作之前先检查：
+
+```tsx
+const to = { key: editor.key(previous), side: 'end' } as const;
+
+if (editor.read.transfer.check({ nodes: [editor.key(element)], to }).admitted) {
+  editor.api.transfer.move({ announce: 'Moved beside', nodes: [editor.key(element)], to });
+}
+```
+
 ### 拒绝放置
 
 区块落在目标 schema 接受它的任何位置。schema 允许但功能不允许的放置，例如把表格行放进另一个表格，由插件通过 `transferVeto` 贡献拒绝。它在列表等功能调整之后，对每次拖拽、键盘移动和 `editor.api.transfer` 调用的最终边缘运行。
@@ -201,6 +217,32 @@ export const PinnedPlugin = definePlugin('pinned', {
 
 若要移动边缘，例如越过列表项的嵌套项，用读取中间件包裹 `editorReads.transfer.landing` 并返回另一个边缘，或返回 `next()` 保持原边缘。被移动的边缘必须映射到它自身；随后由 schema 和否决检查最终边缘。
 
+### 在区块旁构建
+
+只有当某个功能通过 `editorReads.transfer.side` 描述要在侧边构建什么时，区块侧边的放置才会落下。分栏插件返回一个取代目标位置的分栏组：
+
+```tsx
+import { editorReads } from 'platejs';
+
+around(editorReads.transfer.side, ({ input, next }) =>
+  input.target[1].length === 1
+    ? {
+        payload: [input.side === 'end' ? 1 : 0],
+        shell: {
+          children: [
+            { children: [], type: 'column', width: '50%' },
+            { children: [], type: 'column', width: '50%' },
+          ],
+          type: 'columnGroup',
+        },
+        target: [input.side === 'end' ? 0 : 1],
+      }
+    : next()
+),
+```
+
+有 `target` 时，shell 取代目标的位置，目标移入该槽位。没有它时，返回 `ancestor` 和 `edge`，把 shell 放在目标（或其向上若干层的祖先）之前或之后，分栏插件正是这样在区块所在的栏旁添加一栏。拖动的区块移入 `payload` 槽位，全部在一个撤销步骤内完成。功能族超出自身的目标，例如带嵌套项的列表项，会被拒绝。schema 检查填充后的 shell 和每个槽位，每个否决在设置了 `wrap` 时运行；取代目标位置的 wrap 还会把目标作为 payload 再运行一次否决。
+
 ## API 参考
 
 ### `editor.api.transfer.move`
@@ -209,8 +251,8 @@ export const PinnedPlugin = definePlugin('pinned', {
 <APIParameters>
   <APIItem name="input" type="TransferInput">
     <APISubList>
-      <APISubListItem parent="input" name="to" type="{ key: NodeKey; edge: 'before' | 'after' } | { point: Point } | 'next' | 'previous'">
-        放置位置：某个区块旁、某个文本点，或越过一个同级区块。
+      <APISubListItem parent="input" name="to" type="{ key: NodeKey; edge: 'before' | 'after' } | { key: NodeKey; side: 'start' | 'end' } | { point: Point } | 'next' | 'previous'">
+        放置位置：某个区块之前或之后、某个区块的一侧、某个文本点，或越过一个同级区块。
       </APISubListItem>
       <APISubListItem parent="input" name="nodes" type="NodeKey[]" optional>
         要移动的区块，以 `from` 中的键表示。**默认值：** 选中的区块，或包含选区的区块。
@@ -239,6 +281,10 @@ export const PinnedPlugin = definePlugin('pinned', {
 
 输入与 `move` 相同，并保留源内容。
 
+### `editor.read.transfer.check`
+
+`editor.read.transfer.check(input: TransferInput): TransferCheck` 在不执行移动的情况下判断是否接受，使用放置指示线所依据的同一套 schema、重定向和否决。返回 `{ admitted: true, to }` 或 `{ admitted: false, reason }`。只在提交时才发现的拒绝（例如有损放置）不会被预测。
+
 ### `editor.read.transfer.nodes`
 
 `editor.read.transfer.nodes(options?: { node?: Element | NodeKey }): NodeKey[]` 返回转移携带的区块，例如列表项及其嵌套项。传入 `node` 时返回手柄的区块：选区包含 `node` 时为选中的区块，否则只有 `node`。不传时返回选中的区块，或包含选区的区块。把结果作为 `nodes` 传给 `editor.api.transfer.move`。
@@ -256,7 +302,7 @@ export const PinnedPlugin = definePlugin('pinned', {
     该区块的哪一侧。
   </APIItem>
   <APIItem name="axis" type="'x' | 'y'">
-    纵向堆叠的区块为 `y`，分栏等横向排列的项为 `x`。
+    纵向堆叠的区块为 `y`，分栏等横向排列的项以及区块侧边的放置为 `x`；此时 `edge` 表示左侧（`before`）或右侧（`after`）。
   </APIItem>
   <APIItem name="line" type="{ x: number; y: number; width: number; height: number }">
     边缘在视口中的矩形：`y` 轴时高度为零，`x` 轴时宽度为零。

@@ -9,7 +9,6 @@ source_refs:
   - packages/slate/src/interfaces/text.ts
   - content/docs/slate/concepts/13-roots.md
   - content/docs/slate/concepts/14-document-state.md
-  - docs/research/entities/portable-text.md
   - ../portabletext/README.md
   - ../portabletext/apps/docs/src/content/docs/introduction.mdx
   - ../portabletext/packages/schema/src/index.ts
@@ -19,8 +18,6 @@ source_refs:
 related:
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md
   - docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md
-  - docs/research/entities/portable-text.md
-  - docs/research/entities/prosemirror.md
 ---
 
 # Arthrod discussion says the semantic document model belongs above Slate

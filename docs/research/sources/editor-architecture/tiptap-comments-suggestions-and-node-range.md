@@ -10,8 +10,6 @@ source_refs:
   - ../raw/tiptap/docs/src/content/content-ai/capabilities/suggestion/features/display-suggestions.mdx
 updated: 2026-04-14
 related:
-  - docs/research/entities/tiptap.md
-  - docs/research/concepts/overlay-lane-separation.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
 ---
 

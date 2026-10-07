@@ -4,10 +4,6 @@ import { type Value, NodeApi } from 'plitejs';
 import React from 'react';
 
 import {
-  replace as editorReplace,
-  string as editorString,
-} from '../../src/internal';
-import {
   createEditor,
   Editable,
   EditorElement,
@@ -19,6 +15,10 @@ import {
 } from '../../src/react/components/dom-coverage-boundary';
 import { isPliteReactDevelopmentEnvironment } from '../../src/react/components/editable-text-blocks';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
+import {
+  replace as editorReplace,
+  string as editorString,
+} from '../../src/testing';
 import { createLargeBoundarySurface } from './render-probes/dom-coverage-render-probe';
 
 const getMountedEditableDOMRuntime = (_editor: unknown, root?: Node) => {

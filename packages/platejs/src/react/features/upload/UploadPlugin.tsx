@@ -42,7 +42,7 @@ export const UploadPlugin = toReactPlugin(BaseUploadPlugin)
           editor.api.dom.drag.indicate(null);
           event.preventDefault();
           event.stopPropagation();
-          if (!target || !('key' in target)) return true;
+          if (!target || !('edge' in target)) return true;
 
           editor
             .plugin(BaseUploadPlugin)

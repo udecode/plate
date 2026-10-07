@@ -54,8 +54,8 @@ Current priorities:
   `platejs`, never imports `plitejs`, keeps headless fixtures in its Node-safe
   root, and isolates React, DOM, Playwright, and proof harnesses behind
   explicit subpaths. Test-runner differences do not justify more npm packages.
-- `platejs` reexports the approved Plite surface by identity and replaces only
-  an executable exception set. Runtime React code stays behind
+- `platejs` reexports the approved Plite surface by identity, never a
+  `plitejs/internal` binding, and replaces only an executable exception set. Runtime React code stays behind
   `platejs/static` or `platejs/react`; the root and its required dependency
   closure remain runnable without React.
 - A package declares only the dependencies its source and runtime import, keeps
@@ -120,6 +120,16 @@ Current priorities:
   `initialState` and its scoped store, and product policy app- or kit-owned;
   proven substitutable capabilities use ordinary plugins or entrypoints.
   Classify behavior this way before exposing composition.
+  Classify by these tests: an invariant's omission makes the feature invalid,
+  unsafe, inaccessible or semantically incomplete; a parameter serves callers
+  who want the same capability with different data, thresholds or policy
+  values; a substitutable capability leaves a complete editor with defined
+  fallback behavior when omitted or replaced; product policy belongs to one
+  app personality rather than Plate's framework default and is promoted
+  separately only if the capability gates pass. Non-universal is not enough: a
+  non-universal width or threshold stays a runtime value in `initialState`,
+  while a broadly required keyboard capability may still need a replaceable
+  owner when legitimate products implement it differently.
 - Plugin authoring keeps one-owner behavior colocated and inferred. Public
   builders, configuration paths, and contribution namespaces each need a
   distinct user job; current assembly machinery is evidence, not doctrine.
@@ -301,7 +311,8 @@ Current priorities:
   subscriptions. A feature may bind benchmarked high-frequency interaction state
   directly to canonical mounted node hosts when the state is private,
   view-local, and outside React component props. Compose the existing host ref,
-  prove host replacement, detach, cleanup, hydration and native behavior, and
+  prove host replacement, detach, cleanup, hydration, native behavior and
+  production scale, and
   add no public hook, store, registry or generic channel. Per-node
   `render.attributes` and `inject.nodeProps.transformProps` stay pure and
   hook-free. Structural product rendering uses components and plugin render
@@ -421,6 +432,7 @@ Current priorities:
   registry UI owns Floating UI middleware, out-of-flow composition, and
   presentation. DOM geometry returns `null` during server rendering and rejects
   virtual-element adapters.
+- Asynchronous hover content, such as a remote link preview, ships only for an approved product surface; architectural curiosity is not enough. The consuming component family owns request identity, cancellation, loading, empty, error and stale-result rejection. The overlay primitive owns pointer transit, focus, delays, dismissal, portals and geometry. Editor plugins expose only feature queries; request state never enters plugin state, document state or Core. Keep the first implementation local, and promote a shared hook only after a second maintained component family proves the same lifecycle. Its proof shows that closing, unmounting, changing the target or starting a newer request aborts the obsolete request; that a rapid change from target A to B and back to A never publishes B's result for A; that a rejection has an explicit UI state and no unhandled promise; and that pointer, keyboard, focus, touch and editor-update behavior stay correct.
 - Per-peer cursor paint uses the existing keyed cursor read, with no theme API,
   parallel plugin, cursor cache or observation channel. Related copied
   selection, caret and label paint shares one copied color resolver.
@@ -548,6 +560,7 @@ Current priorities:
 - An Editable `onKeyDown` handler runs before the built-in editor commands and
   returns `true` to claim a key; `preventDefault()` alone does not mark the
   event handled.
+- A plugin that owns a key's outcome, such as caret movement or Shift+Arrow selection across table cells, claims the key in its keydown handler before the browser default runs. It never lets the native default paint an intermediate caret or selection and then repairs the selection afterward.
 - A field that already owns contextual typing does not expose a second public
   identity helper merely to reapply its nested type. Fix the owning generic and
   hard-cut that compiler machinery. Plate native-field callbacks stay directly
@@ -676,7 +689,7 @@ Current priorities:
   fix for unsupported content. Input a mapping cannot represent is a diagnosed
   refusal under the loss policy; programmer and configuration faults throw.
   Configurable custom tag identity stays on its schema-owning plugin, not a
-  foreign mapping contributor.
+  foreign mapping contributor. A paste or import support claim names the installed mappings it covers, never a whole format such as HTML.
 - Every parse or import diagnostic judged under `lossPolicy` declares `impact`:
   `lossless` for normalization and `lossy` when source content was dropped. The
   code that removes content classifies it, and no diagnostic code is exempt
@@ -775,7 +788,8 @@ Current priorities:
 - Capability names encode execution boundaries. `selectors` are pure projections
   of plugin store state; `read` is a pure, replayable query over a supplied
   document snapshot; `api` is a stable plugin service not bound to a supplied
-  snapshot or transaction; `update` owns document mutation through the active
+  snapshot or transaction, and it may run a complete model action through
+  exactly one update; `update` owns document mutation through the active
   transaction; flat native Plite fields own genuine editor-wide substrate.
 - An API that combines a caller-supplied old snapshot with live editor reads is
   deleted. A narrower public capture helper needs a current standalone read job
@@ -855,11 +869,15 @@ Current priorities:
   closed editors may also expose `tx.pluginName.method()`. Nested portal
   one-shot updates are rejected.
 - A public capability plugin needs a real omission/replacement job or a hard
-  ownership boundary, valid fallback semantics, closed dependencies, one stable
+  ownership boundary, valid fallback semantics, dependencies that close through
+  public contracts without private sibling access or cycles, one stable
   user-facing name, and independent default, omitted and replaced proof, with
   browser proof for any native input, clipboard, selection, focus or DOM
-  behavior it owns; the full preset stays the obvious common path. Protocol
-  rows, events, and native plugin fields do not map one-to-one to plugins.
+  behavior it owns; the full preset stays the obvious common path and advanced
+  composition uses the existing plugin array. When a gate fails, keep the
+  behavior inline or in `initialState`, and add no public name in anticipation
+  of reuse. Protocol rows, events, and native plugin fields do not map
+  one-to-one to plugins.
 - Plugin identity does not force another file. Keep one-owner descriptors
   colocated. Public packages export individual capability descriptors;
   inseparable multi-plugin structure uses an honest owner with `dependencies`.
@@ -937,7 +955,8 @@ Current priorities:
   primary-mark portals expose `schema.type` and `schema.key`; behavior and
   aggregate-property portals omit `schema`. Nominal descriptor portals keep
   applicable schema getters non-optional, but absent or wrong-kind access
-  throws. Never add optional chaining, non-null assertions, or a raw identity
+  throws. Consumer portals never expose normalized property maps, and persisted
+  identities are immutable after construction. Never add optional chaining, non-null assertions, or a raw identity
   fallback. Do not infer plugin
   availability from root `editor.api`, node types, schema properties, caches,
   or caught access errors.
@@ -1095,7 +1114,9 @@ Current priorities:
   wrapper from replacement. Block drag and drop is native. A handle calls
   `editor.api.dom.drag.start`, the Editable resolves each drop and runs
   `editor.api.transfer`, and the kit paints `useDropIndicator`. It needs no
-  provider, manager or backend. Copied handles follow the schema: every
+  provider, manager or backend. A side drop is a feature's read, not a kit
+  branch: Column builds columns beside a block, and the copied menu offers the
+  same move only where `editor.read.transfer.check` admits it. Copied handles follow the schema: every
   selectable block-content element gets one, at any depth, and only the
   innermost hovered one shows; copied UI never lists plugin types or depths. A gesture the browser does not drag natively,
   such as touch, gets a pointer driver over `resolveDropTarget` and
@@ -1188,7 +1209,7 @@ Current priorities:
   production consumers. A public headless hook exposes one terminal consumer
   job, and adapters used only to build it stay out of the package entrypoint. A
   second convenience component or lower-level hook beside the selected terminal
-  API needs its own independent consumer job.
+  API needs its own independent consumer job. A hook that is a surface's consumer API returns the state that surface renders, such as its active item, so app code never pairs it with a second hook family.
 - Keep feature React roots flat by default. A nested component/hook
   directory earns its keep only as a real public subsystem with multiple
   cross-family owners, not as taxonomy or a response to file size.
@@ -1354,7 +1375,7 @@ transforms, link validation or insertion, equation insertion, code-block
 insertion, or any semantic transform owned by a feature entrypoint.
 
 Core owns matcher primitives and shared input-state access. Feature entrypoints
-own semantic apply behavior.
+own semantic apply behavior. Repeated context derivation may become an internal query or matcher primitive after real reuse. Do not publish a generic behavior-context object merely to organize local code.
 
 ## Plite Boundary
 
@@ -1386,7 +1407,7 @@ Keep risky paths obvious and operator-controlled:
 - untrusted content and app-specific integrations.
 
 Use safe defaults where possible. Do not add convenience abstractions that hide
-where trust decisions are actually made.
+where trust decisions are actually made. A vulnerable third-party dependency of a published package is fixed by removing or replacing it in both the manifest and the lockfile; guarding the Plate call site leaves it in the published graph.
 
 ## AI
 

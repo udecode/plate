@@ -11,7 +11,7 @@ import {
   type TestEditor,
 } from '#platejs-test-internal';
 
-import { getSelectionDOMRange } from '../../../core';
+import { getSelectionDOMRange } from '../../../facade';
 import {
   createTestTableEditor,
   getTestTablePlugins,

@@ -1553,6 +1553,9 @@
           }
         }
       ],
+      "thresholds": {
+        "promotion": "largePlainTextPaste10000 p50<=60ms (baseline 38.57ms); populatedFullSelectionCopy10000 p50<=20ms (baseline 12.16ms); populatedMiddlePlainTextPaste10000Into10000 p50<=280ms (baseline 185.49ms); each issue paste commits once; plite_clipboard_correctness_failures=0"
+      },
       "docs": {
         "sources": [
           "benchmarks/editor/research/evidence-source-map.md",

@@ -287,7 +287,8 @@
       "dependsOn": [
         "typecheck:partition:authored",
         "typecheck:partition:core",
-        "typecheck:partition:history"
+        "typecheck:partition:history",
+        "typecheck:partition:testing"
       ],
       "inputs": [
         "src/annotations/**",
@@ -356,7 +357,11 @@
     },
     "test:partition:dom": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:dom"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:dom",
+        "typecheck:partition:testing"
+      ],
       "inputs": [
         "src/dom/**",
         "test/dom/**",
@@ -375,7 +380,11 @@
     },
     "test:partition:history": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:history"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:history",
+        "typecheck:partition:testing"
+      ],
       "inputs": [
         "src/history/**",
         "test/history/**",

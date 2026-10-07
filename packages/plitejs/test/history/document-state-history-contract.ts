@@ -16,10 +16,8 @@ import {
 } from 'plitejs';
 
 import { history } from '../../src/history';
-import {
-  getLastCommit as editorGetLastCommit,
-  string as editorString,
-} from '../../src/internal';
+import { getLastCommit as editorGetLastCommit } from '../../src/internal';
+import { string as editorString } from '../../src/testing';
 
 const paragraph = (text: string) =>
   ({

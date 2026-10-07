@@ -7,11 +7,7 @@ source_refs:
   - ../pretext/README.md
   - ../edit-context/dev-design.md
 updated: 2026-04-14
-related:
-  - docs/research/entities/premirror.md
-  - docs/research/entities/pretext.md
-  - docs/research/entities/editcontext.md
-  - docs/research/systems/editor-architecture-landscape.md
+related: []
 ---
 
 # Layout, measurement, and IME lanes

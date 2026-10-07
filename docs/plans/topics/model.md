@@ -110,7 +110,6 @@ Every load path reads the stored document. An application that saved a field at 
 
 ## Open work
 
-- `setEditorSnapshotInputTransform` is marked `@internal` but exported from Plite's public root (`packages/plitejs/src/index.ts`) and Plate's facade, and the admission plan admits its output like any snapshot. Decide whether it is public, then document it or take it off the root. owner: zbeyens.
 - The special-case reject callbacks (reconfigure `meta`, root view `meta` and `roots`, Plate `selection`) could become a per-field hint map in Plite's record message mapper, the migration step loop could use a `readStepResult` helper, and `readDocumentRecord`'s result could be typed from its field list; the build's reviews deferred all three as small. owner: zbeyens.
 - A document view keeps reading the caller's object after admission, so a later mutation reaches its reads unvalidated; snapshotting the document on admission would close it at a copy's cost. owner: zbeyens.
 - Plite load, Plate construction and the root view still report a `document` key beside `children` as an envelope error naming `children`; `migrateDocument` already asks for `source` there. `plate migrate run` reports an envelope under `--from` with API wording ("omit source intent"). owner: zbeyens.

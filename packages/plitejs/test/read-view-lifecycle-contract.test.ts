@@ -7,14 +7,14 @@ import {
   definePlugin,
   type EditorStateView,
   setEditorReadOnly,
+  txRead,
 } from 'plitejs';
 
 import {
   setEditorComposing,
-  setEditorFocused,
   setEditorStateViewTransform,
-  txRead,
 } from '../src/internal';
+import { setEditorFocused } from '../src/testing';
 import { replaceEditorValue } from './support/snapshot';
 
 const paragraph = (text: string) => ({

@@ -11,8 +11,8 @@ metadata:
 
 Handle $ARGUMENTS.
 
-For `review <scope-or-plan>`, read the full [performance review method](./references/performance-review.md)
-and only its applicable rule leaves. This mode inspects the plan and proof
+For `review <scope-or-plan>`, read the full [performance review method](./references/performance-review.md).
+This mode inspects the plan and proof
 requirements without starting a measurement or implementation loop. Continue
 below when the request calls for measurement, causal diagnosis or a repair.
 
@@ -56,7 +56,10 @@ Before the architecture owner may lock that target:
 2. Freeze the absolute/relative budget and noise rule before reading the target
    result. Reuse an honest existing budget when one exists. Run each budget
    line on the baseline first. A line the baseline already fails or nears
-   measures existing cost, so restate it before freezing.
+   measures existing cost, so restate it before freezing. Size each line
+   relative to the baseline and above the timer resolution, and run one
+   planted-slowdown control that the line must reject; an absolute tolerance
+   larger than the measured quantity cannot fail.
 3. Capture a comparable current-owner baseline. If the proposed path is not
    executable, build the smallest disposable prototype that can falsify its
    claimed owner and scaling law; do not start production implementation.
@@ -68,7 +71,8 @@ Before the architecture owner may lock that target:
    and the correctness/native guard.
 5. Accept the target only when the result meets the frozen contract and the
    evidence isolates the claimed owner. An inconclusive result leaves the
-   decision `defer` or `gate` with the next probe named.
+   decision `defer` or `gate` with the next probe named. Keeping or dismissing
+   code on a cost argument needs a matched run with that code removed.
 
 An asymptotic table, review score, profiler suspicion, future benchmark plan,
 or "measure during implementation" note cannot satisfy this probe. Record N/A
@@ -102,9 +106,9 @@ the design decision only; it never proves the shipped implementation.
 
 ## Correctness And Native Behavior
 
-Before keeping a fix, load only the relevant `benchmark review` rule files for
-cohorts, interaction metrics, repeated units, staged readiness, degradation,
-and native behavior. Use real keyboard/browser input for user-facing editing
+Before keeping a fix, answer the matching rows of `benchmark review`'s
+Performance Questions for cohorts, interaction metrics, repeated units,
+readiness, degradation, and native behavior. Use real keyboard/browser input for user-facing editing
 claims. Programmatic transforms may isolate runtime cost but stay labeled as
 proxies.
 
@@ -122,12 +126,12 @@ Repair the benchmark before product code when source identity, host freshness,
 fixture parity, sample count, percentile math, metric aggregation, browser
 action, correctness guard, or artifact provenance is wrong. A failing producer
 guard is a product signal until a minimal repro shows the guard itself is
-wrong.
+wrong. A benchmark row measures only what its name says: helper reads such as full-snapshot materialization stay out of rows that time writes, reads or normalization, and a row that measures snapshots is named as one.
 
 Two identical builds prove only that an evaluator raises no false alarm. Prove
 a new or repaired evaluator end to end with at least one known-bad candidate;
 an identical-build result close to a guard means that guard sits inside the
-noise.
+noise. A change to a shared benchmark summary or stats helper proves itself on one current core artifact and one current React artifact, read from the emitted JSON, before any threshold uses the new field.
 
 `benchmarks/editor` is a standalone npm package with its own lockfile. Its
 Evidence Kit CLI exists only after `pnpm bench:editor:install`, and the root

@@ -13,6 +13,7 @@ docs:
 
 - 在文档中添加分栏布局
 - 通过 `column-group-node` 工具栏选择多种分栏样式
+- 配合[拖放](/docs/dnd)，把区块拖到另一个区块旁边（它的行内结束边缘，或顶层区块旁编辑器两侧的留白），两者会放入一个新的分栏组；拖到分栏内区块的旁边则添加一栏，最多五栏
 
 </PackageInfo>
 
@@ -169,6 +170,9 @@ column.update.selectAll();
 - `toggle` 将当前区块转换为分栏组，或更新其布局。
 - `moveMiddle` 将中间栏内容移动到第一栏。
 - `selectAll` 将栏内选区扩展到整个分栏组。
+
+`ColumnPlugin` 还通过 `editorReads.transfer.side` 构建侧边放置，因此
+`editor.api.transfer.move({ nodes, to: { key, side: 'end' } })` 会把区块放到顶层区块旁的新分栏组中，或作为新的一栏放到分栏内区块旁，最多五栏。新加的一栏取分栏组的平均宽度，随后分栏组按比例缩放回 100%。参见[在区块旁构建](/docs/dnd#在区块旁构建)。
 
 ## 钩子函数
 

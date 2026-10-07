@@ -6,7 +6,6 @@ updated: 2026-04-04
 source_refs:
   - docs/research/sources/typora/links-images-and-html-behavior.md
 related:
-  - docs/research/concepts/source-entry-surface.md
   - docs/editor-behavior/markdown-editing-spec.md
 ---
 

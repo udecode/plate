@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import ts from 'typescript';
+import ts from '@typescript/typescript6';
 
 const packageRoot = process.env.FILES_SDK_PACKAGE_ROOT;
 if (!packageRoot) {

@@ -11,45 +11,4 @@ metadata:
 
 Handle $ARGUMENTS.
 
-This skill keeps the live packages reviewed against the Plate v2 target shape: a clean Plate product layer on top of Plite, with no old Slate or Plate compatibility left in the final API. `VISION.md`, `docs/vision/plate.md` and `docs/vision/plite.md` hold that target's law; this skill holds the review lens and the package procedure. Public call-shape forks go to `best-api`, and adoption plans to the Plan playbook.
-
-## Plate v2 lens
-
-- Use `origin/main` as evidence, not as the final API target. Preserve user-visible behavior unless a breaking change is part of the accepted Plate v2 direction, and preserve the existing Plate owner when that owner still describes the product concern. Never keep an old API shape, alias, shim, wrapper or `with*` glue because `origin/main` had it.
-- `origin/main` is behavior and ownership evidence, not a veto on the best current path or filename. Compare the current owner, name and role with it before suggesting renames, deletions or new owner topology.
-- Implementation topology is not frozen in review mode. Rename, move, merge or delete internal files, helper exports and test filenames in the same packet when that restores owner truth or removes a one-use split. Reject cosmetic synonym churn and record cosmetic naming ideas as deferred, but complete owner-driven merge/delete/rename work in the active packet.
-- Treat new plugins and public concepts as API decisions. They go through `best-api`, while internal colocation, helper deletion and owner-accurate file and test names belong to the current cleanup packet.
-- Prefer merging into the existing owner or a hard cut over restoring a one-use migration split.
-
-## Review
-
-A package, file or API path under a live package gets the Plate v2 review: the Refactoring playbook with the architecture reference's Audit (`.agents/playbooks/references/architecture.md`) and the lens above. It is read-only unless the request asks for repairs.
-
-For a package, do not treat `plate-next packages/<name>` as permission to sweep the repo or move to the next package.
-
-- Freeze scope to the named package plus the smallest Plite/Plate foundation owner needed to remove a blocker found in that package. Do not silently turn a package review into a repo-wide migration. A correction's related-surface sweep is mandatory, but it is not permission to update unrelated packages, docs, examples, or generated surfaces, and a hard cut found in one package lands package by package unless the user names the broader scope.
-- Before repairs, generate a package file manifest and materialize one checkbox per reviewed file in the plan, listing the package with `git ls-files --cached --others --exclude-standard packages/<package>`, so every untracked source, spec, type-test and config file is a required row. Each row names its path, verdict, owner, evidence and next action. A row is checked only when its file has no behavior regression versus `origin/main`, no type regression, and the ownership the lens and Vision require. Anything else stays unchecked with a concrete reason and next action.
-- Every production helper file, and every standalone function that takes `editor`, `api`, `read`, `tx`, a store or resolved plugin state, is a mandatory owner-topology row; a review never closes from a few representative helpers.
-- Do not move to the next package until every file is either checked or explicitly deferred for user review with reason, owner, and proof needed.
-- `sweep`, `all plate`, `full-loop`, `full review` and similar broad Plate foundation requests mean a review of every foundation source file, each with its manifest row, never a sample.
-- The handoff lists the out-of-scope matches discovered; they are routing hints, not permission to patch them. Failures in packages outside the named scope are out-of-scope drift unless the current change caused them.
-
-## Sync
-
-`sync` is an execution mode, not a status summary. `sync <package>` reviews that package and repairs its findings; `sync` with no argument does the same for every live Plate package, `packages/platejs` and `packages/test`.
-
-1. Keep one plan under `docs/plans/` with `work_kind: verification`, `review_basis: []` and the packages' review scopes, and one section per queued package holding its manifest and findings.
-2. Process one package at a time, as Review describes, and repair each finding; never start the next package while the active one has unchecked or deferred rows.
-3. Close each package with the proof below, then draft one `verification` execution from the plan with `node tooling/scripts/review-ledger.mjs draft <plan>` and `record` it, as `best-api-review` requires.
-4. Sync finishes when the plan has no unchecked or deferred row. A blocked package stays open in the plan and blocks the all-done claim.
-
-## Proof
-
-```bash
-pnpm check:core
-pnpm turbo typecheck --filter=./packages/platejs
-pnpm --filter platejs test
-pnpm --filter platejs build
-```
-
-Use package-local focused tests first and broader gates only when exports, the public type surface or the foundation/Plite owner change. Never start `apps/www` from a package review unless the target is docs, registry UI or examples.
+Run the Refactoring playbook's Package review and sync section (`.agents/playbooks/refactoring.md`) in full. The Plate v2 target is a clean Plate product layer on top of Plite, with no old Slate or Plate compatibility left in the final API; `VISION.md`, `docs/vision/plate.md` and `docs/vision/plite.md` hold its law.

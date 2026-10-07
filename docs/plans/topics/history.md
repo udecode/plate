@@ -2,20 +2,19 @@
 
 Page: https://claude.ai/artifact/J52MrJR8szy1DAhcShcxqZ
 
-Plite History owns one undo order per editor: document batches, native grouping, mapped selection and one kind of fallible external effect, comment-thread creation. `node tooling/scripts/review-ledger.mjs show history` prints the scope's full review and plan history. The 2026-10-04 audit kept the replay lifecycle (call-order claims, per-editor pending state, `busy` overlap, one mounted dispatcher) and the Plate configuration adapter; the TaskHub-22 order, safety and focus cases pass in Bun and Chromium.
+Plite History owns one undo order per editor: document batches, native grouping, mapped selection and one kind of fallible external effect, comment-thread creation. `node tooling/scripts/review-ledger.mjs show history` prints the scope's full review and plan history. The 2026-10-04 audit kept the replay lifecycle (call-order claims, per-editor pending state, `busy` overlap, one mounted dispatcher) and the Plate configuration adapter. Undo and redo return their result in the call; only comment-creation replay returns `pending`. The TaskHub-22 order, safety and focus cases pass in Bun and Chromium.
 
 ## Public API
 
-Application code replays history through the model service, which returns a Promise for every batch.
+Application code replays history through the model service. A document batch has applied when the call returns; code that needs the final outcome waits only when the replay is pending.
 
 ```ts
 // content/docs/(guides)/history.mdx
-const canUndo = editor.read.history.hasUndo();
-const pending = editor.read.history.pending();
-const result = await editor.api.history.undo();
+const result = editor.api.history.undo();
+const outcome = result.status === "pending" ? await result.settled : result;
 ```
 
-Event code that does not need the outcome calls it bare, which `typescript/no-floating-promises` reports once the type-aware lint runs.
+Event code that does not need the outcome calls it bare, and the type-aware lint stays quiet.
 
 ```ts
 // apps/www/src/app/(app)/examples/plite/_examples/yjs-collaboration.tsx
@@ -29,6 +28,62 @@ Mounted controls dispatch through the view and return `void`.
 // apps/www/src/registry/components/editor/history-toolbar-button.tsx
 const { canUndo, pending, undo } = useEditorHistory({ editor: useEditor() });
 <ToolbarButton aria-busy={pending !== null} disabled={!canUndo} onClick={undo} />
+```
+
+A test waiting on a comment-style replay asserts the `pending` variant through a small `settled` helper.
+
+```ts
+// packages/plitejs/test/history/history-branch-contract.spec.ts
+const pending = editor.api.history.undo();
+gate.resolve();
+assert.deepEqual(await settled(pending), { reason: 'external-diverged', status: 'blocked' });
+assert.deepEqual(editor.api.history.undo(), { status: 'applied' });
+```
+
+The result types live in the root entrypoint, beside the effect replay types.
+
+```ts
+// packages/plitejs/src/interfaces/editor.ts
+/** Final outcome of a replay that waited on its effect owner. */
+export type HistorySettlement =
+  | Readonly<{ status: 'applied' }>
+  | Readonly<{ reason: string; status: 'blocked' }>
+  | Readonly<{ status: 'failed' }>;
+
+/** Outcome of an undo or redo that has finished. */
+export type HistoryOutcome =
+  | HistorySettlement
+  | Readonly<{ status: 'busy' | 'empty' }>
+  | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>;
+
+export type HistoryResult =
+  | HistoryOutcome
+  | Readonly<{
+      /** Resolves once the effect owner finishes. Never rejects. */
+      settled: Promise<HistorySettlement>;
+      status: 'pending';
+    }>;
+
+export type HistoryApi = {
+  /** Replay the current redo batch as one complete editor update. */
+  redo: () => HistoryResult;
+  /** Replay the current undo batch as one complete editor update. */
+  undo: () => HistoryResult;
+};
+```
+
+History's preconditions, such as a replay inside a transaction, and a document replay's own update throw, like any `editor.update`. Once a session batch is claimed, an owner or settle failure settles `failed`, keeps the entry at the head and reports to the editor's lifecycle error sink. With no sink set, the report goes to `globalThis.reportError` when the platform has it, and to `console.error` otherwise.
+
+```ts
+// packages/plitejs/src/history/history-plugin.ts
+const report = (cause: unknown) =>
+  reportEditorLifecycleError({
+    cause,
+    direction,
+    editor,
+    phase: 'replay',
+    source: 'history',
+  });
 ```
 
 A local effect joins the undo order by owning its replay callback.
@@ -69,10 +124,11 @@ Products: whether Google Docs, Notion, Figma, Linear or Confluence undo a commen
 
 ## Main changes
 
-- `packages/plitejs/src/history/history-plugin.ts` owns replay: a document batch applies in one synchronous update; a batch carrying a `history: { replay }` effect claims the branch head, publishes `pending`, awaits its owner and settles applied or blocked.
-- `packages/plitejs/src/history/history-state.ts` owns the branches, the claim record and the four-case settlement table.
-- `packages/plitejs/src/react/editable/editable-dom-runtime.ts` `dispatchHistory` is the one mounted owner: it awaits every replay, delivers `onHistoryReplay`, reports rejections through `reportError` and repairs selection and focus.
-- `packages/platejs/src/lib/plugins/HistoryPlugin.ts` forwards live store getters into one Plite recorder.
+- `packages/plitejs/src/history/history-plugin.ts` owns replay. A document batch applies in one synchronous update and returns its outcome. A batch carrying a `history: { replay }` effect claims the branch head, publishes `pending` and calls its owner. A result without a callable `then` settles in the call; a thenable returns `pending` with a `settled` that never rejects. An owner or settle failure after the claim settles `failed`, keeps the entry, clears `pending` and reports once through `reportEditorLifecycleError`.
+- `packages/plitejs/src/history/history-state.ts` owns the branches, the claim record with its claim version and the four-case settlement table.
+- `packages/plitejs/src/core/lifecycle-error.ts` sends a history replay failure to `globalThis.reportError` when no sink is set and the platform has it.
+- `packages/plitejs/src/react/editable/editable-dom-runtime.ts` `dispatchHistory` is the one mounted owner. It waits on `settled` only for a pending replay, delivers `onHistoryReplay`, and repairs selection and focus one microtask after the call unless a commit followed the claim, checked against the claim version in History's receipt. Its `focusin`/`pointerdown` guards come off even when the replay throws.
+- `packages/platejs/src/lib/plugins/HistoryPlugin.ts` forwards live store getters into one Plite recorder; `HistoryApi` reaches Plate through `packages/platejs/src/facade.ts`.
 - `packages/platejs/src/features/comments/BaseCommentsPlugin.ts` is the only production `history: { replay }` author; its replay runs the app's `mutate` inside the per-thread queue.
 
 ## Open work

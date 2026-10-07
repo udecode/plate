@@ -96,11 +96,12 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
   }
 ).extend(({ schema: { type } }) => ({
   contributions: [
-    // Definitions are end matter: a transfer lands them only at a root.
+    // Definitions are end matter: a transfer lands them only at a root, and a
+    // side wrap lands its blocks inside the wrap.
     transferVeto.of(
-      ({ payload, target: [, path] }) =>
+      ({ payload, target: [, path], wrap }) =>
         payload.kind === 'nodes' &&
-        path.length > 1 &&
+        (path.length > 1 || wrap !== undefined) &&
         payload.nodes.some((node) => ElementApi.isElementType(node, type))
     ),
   ],

@@ -1,6 +1,7 @@
 import type { AnyEditor, NodeKey } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
 import type { Descendant, NodeEntry } from '../interfaces/node';
+import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 import type { NodeSelection } from '../interfaces/selection';
@@ -11,8 +12,21 @@ export type TransferEdge = Readonly<{
   key: NodeKey;
 }>;
 
-/** A resolved landing: beside a block or at a text point. */
-export type TransferLandingTarget = TransferEdge | Readonly<{ point: Point }>;
+/**
+ * The inline start or end side of a block, where a dropped block lands beside
+ * it. A `transfer.side` read decides what the landing builds; without one the
+ * transfer refuses.
+ */
+export type TransferSide = Readonly<{
+  key: NodeKey;
+  side: 'end' | 'start';
+}>;
+
+/** A resolved landing: beside a block, at its side, or at a text point. */
+export type TransferLandingTarget =
+  | TransferEdge
+  | TransferSide
+  | Readonly<{ point: Point }>;
 
 /**
  * Where a transfer lands. `previous` and `next` step the payload past the
@@ -66,11 +80,46 @@ export type TransferLandingInput = Readonly<{
 }>;
 
 /**
+ * What a side landing builds: `shell`, an element with empty slots, and the
+ * slot at `payload`, a path inside it, for the dropped blocks. With `target`,
+ * the shell takes the target's place and the target moves into the slot at
+ * `target`. Otherwise the shell lands at `edge` of the target's ancestor
+ * `ancestor` levels up, 0 being the target itself.
+ */
+export type TransferWrap =
+  | Readonly<{ payload: Path; shell: Element; target: Path }>
+  | Readonly<{
+      ancestor: number;
+      edge: 'after' | 'before';
+      payload: Path;
+      shell: Element;
+    }>;
+
+export type TransferSideInput = Readonly<{
+  /** Source view. */
+  from: AnyEditor;
+  intent: TransferIntent;
+  payload: TransferPayload;
+  relation: TransferRelation;
+  side: 'end' | 'start';
+  target: NodeEntry<Element>;
+}>;
+
+/**
+ * A veto's input. For a side landing, `edge` and `target` place the shell and
+ * `wrap` is set: the payload lands inside the shell, deeper than the edge, and
+ * a wrap that takes the target's place also runs every veto with the target as
+ * the payload.
+ */
+export type TransferVetoInput = TransferLandingInput &
+  Readonly<{ wrap?: TransferWrap }>;
+
+/**
  * A veto refuses a landing on the final edge in `view`, the target view;
  * every contributed veto runs.
  */
 export type TransferVeto = (
-  input: TransferLandingInput,
+  input: TransferVetoInput,
   view: AnyEditor
 ) => boolean;
 

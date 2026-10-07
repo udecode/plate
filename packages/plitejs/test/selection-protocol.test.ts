@@ -15,10 +15,9 @@ import {
 import {
   decodeEditorSelection,
   encodeEditorSelection,
-  getEditorLiveSelection,
   getSelectionDOMRange,
-  getSnapshot,
 } from '../src/internal';
+import { getEditorLiveSelection, getSnapshot } from '../src/testing';
 
 const range = (
   anchorPath: number[],

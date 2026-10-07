@@ -20,13 +20,15 @@ import {
 import { history } from 'plitejs/history';
 
 import {
-  getSnapshot as editorGetSnapshot,
   insertNodes as editorInsertNodes,
   removeNodes as editorRemoveNodes,
-  replace as editorReplace,
   runTrustedUpdate,
   splitNodes as editorSplitNodes,
 } from '../src/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '../src/testing';
 import { defineTestSchema } from './support/schema';
 
 const collapsedSelection = (path: number[], offset: number) => ({

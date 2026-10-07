@@ -2,6 +2,7 @@ import {
   BaseParagraphPlugin,
   definePlugin,
   type DefinitionOf,
+  editorReads,
   type Element,
   ElementApi,
   type ElementOf,
@@ -154,6 +155,22 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
 
 export type ColumnElement = ElementOf<typeof BaseColumnItemPlugin>;
 
+const widthsOf = (group: Element, columnType: string) => {
+  const columns = group.children.filter(
+    (column): column is ColumnElement =>
+      ElementApi.isElementType(column, columnType) &&
+      typeof column.width === 'string'
+  );
+
+  return columns.length === group.children.length
+    ? columns.map((column) => {
+        const parsed = Number.parseFloat(column.width);
+
+        return Number.isNaN(parsed) ? 0 : parsed;
+      })
+    : null;
+};
+
 export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
   dependencies: [BaseColumnItemPlugin],
   schema: {
@@ -176,29 +193,25 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
       correct({ editor: innerEditor, entry: [node, path], tx }) {
         if (!ElementApi.isElement(node)) return;
 
-        const columnType = innerEditor.plugin(BaseColumnItemPlugin).schema.type;
-        const columns = node.children.filter(
-          (column): column is ColumnElement =>
-            ElementApi.isElementType(column, columnType) &&
-            typeof column.width === 'string'
+        const widths = widthsOf(
+          node,
+          innerEditor.plugin(BaseColumnItemPlugin).schema.type
         );
 
-        if (columns.length !== node.children.length) return;
+        if (!widths) return;
 
-        const widths = columns.map((column) => {
-          const parsed = Number.parseFloat(column.width);
-
-          return Number.isNaN(parsed) ? 0 : parsed;
-        });
         const sum = widths.reduce((total, width) => total + width, 0);
 
-        if (sum === 100) return;
+        if (Math.abs(sum - 100) < 1e-6) return;
 
-        const adjustment = (100 - sum) / columns.length;
+        // An inserted column makes a group over-full; scaling keeps every
+        // column's share, where the additive repair can push one below zero.
+        const resize = (width: number) =>
+          sum > 100 ? (width * 100) / sum : width + (100 - sum) / widths.length;
 
         widths.forEach((width, index) => {
           tx.nodes.set(
-            { width: `${width + adjustment}%` },
+            { width: `${resize(width)}%` },
             {
               at: path.concat([index]),
             }
@@ -206,6 +219,80 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
         });
       },
     },
+  ],
+  readMiddleware: ({ around }) => [
+    around(editorReads.transfer.side, ({ input, next, state }) => {
+      const {
+        payload,
+        side,
+        target: [target, path],
+      } = input;
+      const columnType = editor.plugin(BaseColumnItemPlugin).schema.type;
+
+      if (
+        payload.kind !== 'nodes' ||
+        payload.nodes.some(
+          (node) =>
+            ElementApi.isElementType(node, columnType) ||
+            ElementApi.isElementType(node, type)
+        )
+      ) {
+        return next();
+      }
+
+      const end = side === 'end';
+      const column = (width: string) => ({
+        children: [],
+        type: columnType,
+        width,
+      });
+
+      if (path.length === 1) {
+        if (ElementApi.isElementType(target, type)) return next();
+
+        return {
+          payload: [end ? 1 : 0],
+          shell: { children: [column('50%'), column('50%')], type },
+          target: [end ? 0 : 1],
+        };
+      }
+
+      const columnPath = PathApi.parent(path);
+      const group = state.nodes.get(PathApi.parent(columnPath))?.[0];
+
+      if (
+        !ElementApi.isElementType(group, type) ||
+        !ElementApi.isElementType(
+          state.nodes.get(columnPath)?.[0],
+          columnType
+        ) ||
+        group.children.length >= 5
+      ) {
+        return next();
+      }
+
+      const index = columnPath.at(-1) as number;
+      const facing = group.children[end ? index + 1 : index - 1];
+      const onlyTradesPlaces =
+        ElementApi.isElement(facing) &&
+        facing.children.length === payload.nodes.length &&
+        facing.children.every((child, i) => child === payload.nodes[i]);
+
+      if (onlyTradesPlaces) return next();
+
+      const widths = widthsOf(group, columnType);
+
+      if (!widths?.every((width) => width > 0)) return next();
+
+      return {
+        ancestor: 1,
+        edge: end ? ('after' as const) : ('before' as const),
+        payload: [],
+        shell: column(
+          `${widths.reduce((total, width) => total + width, 0) / widths.length}%`
+        ),
+      };
+    }),
   ],
   update: ({ tx }) => {
     const columnType = editor.plugin(BaseColumnItemPlugin).schema.type;

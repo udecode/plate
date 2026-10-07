@@ -6,9 +6,7 @@ import { expect, test } from 'vitest';
 
 import {
   getNodeKey as editorGetNodeKey,
-  getSnapshot as editorGetSnapshot,
   point as editorPoint,
-  replace as editorReplace,
 } from '../../src/internal';
 import {
   createEditor,
@@ -23,6 +21,10 @@ import {
   getDOMTextRenderRevision,
   syncChangedTextToDOM,
 } from '../../src/react/hooks/use-plite-node-ref';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '../../src/testing';
 
 const TestEditorSurface = ({
   editor,

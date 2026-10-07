@@ -18,10 +18,6 @@ import {
 } from '../../src/dom/internal';
 import * as domRangeResolver from '../../src/dom/plugin/dom-editor';
 import {
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '../../src/internal';
-import {
   EditableDOMRuntime,
   findMountedEditableDOMRuntime,
   getMountedEditableDOMRuntime,
@@ -62,6 +58,10 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '../../src/testing';
 
 const testRuntimes = new Set<EditableDOMRuntime>();
 const syncEditableDOMSelectionToEditor = (
@@ -949,8 +949,8 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
 
   const commits: Array<NonNullable<ReturnType<typeof editor.read.lastCommit>>> =
     [];
-  const unsubscribe = editor.subscribe((_snapshot, commit) => {
-    if (commit) commits.push(commit);
+  const unsubscribe = editor.subscribeCommit((commit) => {
+    commits.push(commit);
   });
 
   try {
@@ -1069,8 +1069,8 @@ test('projected DOM selection import publishes its anchor selection commit', () 
 
   const commits: Array<NonNullable<ReturnType<typeof editor.read.lastCommit>>> =
     [];
-  const unsubscribe = editor.subscribe((_snapshot, commit) => {
-    if (commit) commits.push(commit);
+  const unsubscribe = editor.subscribeCommit((commit) => {
+    commits.push(commit);
   });
 
   try {

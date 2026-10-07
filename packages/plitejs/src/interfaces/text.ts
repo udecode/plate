@@ -1,7 +1,7 @@
+import type { SchemaTextInNode } from '../core/schema-source.internal';
 import { isObject } from '../utils/is-object';
 import type { BaseEditor, EditorNodeTypeProvider } from './editor';
 import type { Element } from './element';
-import type { SchemaTextInNode } from './schema';
 
 type Simplify<T> = { [K in keyof T]: T[K] } & {};
 

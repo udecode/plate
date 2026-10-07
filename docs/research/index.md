@@ -13,9 +13,9 @@ This is the entrypoint for the compiled agent research layer.
   Only Plite core, Plite view architecture and Plate core share review groups;
   individual features retain their own reviews.
 - [Core architecture review groups](review-groups.json):
-  group lookup, queue counts and per-question records.
+  group lookup, queue counts and per-question reviews.
 - [Review-history schema and commands](schema.md#review-history): automatic
-  repeat review, immutable records, source reuse and cross-run research lookup.
+  repeat review, review pages and legacy records, source reuse and cross-run research lookup.
 - [Reads and demand-driven invalidation](decisions/reads-demand-driven-invalidation.md):
   canonical commit membership, subscription demand, and isolated scale evidence.
 - [Plite core ownership](decisions/plite-core-ownership.md): four-question audit;

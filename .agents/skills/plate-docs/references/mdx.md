@@ -11,11 +11,13 @@ Sync Shadcn owns actual upstream adoption; writing does not require a sync.
   plain command fences so the command renderer can produce its tabs.
 - Use `<ComponentPreview>` only for a real registered demo and
   `<ComponentSource>` for an actual copied registry file.
+- Give an example with its own control panel, a heavy mount or a long scroll area a custom route under `app/(app)/docs/examples/*` wrapped in `DocContent`, not `<ComponentPreview>`. When an example works alone but looks broken in docs, inspect the preview wrapper first.
 - Use `title="file.tsx"` when a fence represents an app file. Use line numbers
   and highlights when a long snippet needs focus.
 - Use cards for real branch choices and callouts for environment constraints.
 - Preserve frontmatter, MDX tags, fence attributes, anchors and link targets
   during prose edits.
+- An MDX component that uses hooks opens with `'use client'`, because compiled MDX renders as a server component. When MDX children can cross that boundary, recognize them by data shape or `React.isValidElement`, never by `child.type.name`.
 
 ### Navigation And Routing
 

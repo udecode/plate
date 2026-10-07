@@ -187,8 +187,8 @@ describe('document state effect contract', () => {
       },
     });
     let commits = 0;
-    const unsubscribe = editor.subscribe((_snapshot, commit) => {
-      if (commit) commits += 1;
+    const unsubscribe = editor.subscribeCommit(() => {
+      commits += 1;
     });
 
     editor.update((tx) => {

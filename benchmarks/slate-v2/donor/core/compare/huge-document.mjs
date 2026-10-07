@@ -162,8 +162,8 @@ const createHistoryEditor = () => {
   return legacyWithHistory(editor);
 };
 
-const subscribeSnapshot = (editor) => {
-  return isPlite ? editor.subscribe(() => {}) : () => {};
+const subscribeCommitListener = (editor) => {
+  return isPlite ? editor.subscribeCommit(() => {}) : () => {};
 };
 
 const getChildren = (editor) =>
@@ -369,7 +369,7 @@ const selectAllDeleteTypeUndo = () =>
         children: createChildren(blocks),
         selection: null,
       });
-      subscribeSnapshot(editor);
+      subscribeCommitListener(editor);
       return editor;
     },
     (editor) => {

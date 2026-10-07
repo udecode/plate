@@ -842,6 +842,7 @@ function createPlateRuntimeIdentityConsumerSource() {
     "    'EditorPlaceholder',",
     "    'EditorReadOnlyProvider',",
     "    'setDOMTextSyncRendererCapability',",
+    "    'setRetainedTextFlowRendererCapability',",
     "    'useClaimEditableDOMCommit',",
     "    'useCommand',",
     "    'useEditorContext',",

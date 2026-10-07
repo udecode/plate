@@ -12,7 +12,7 @@ import {
 import {
   getChildren as editorGetChildren,
   replace as editorReplace,
-} from '../src/internal';
+} from '../src/testing';
 import { createRangeAnchor } from './support/anchor';
 
 const createChildren = (): Element[] => [

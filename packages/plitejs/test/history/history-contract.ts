@@ -21,14 +21,16 @@ import {
 
 import { type Batch, History, history } from '../../src/history';
 import {
-  deleteBackward as editorDeleteBackward,
   deleteFragment as editorDeleteFragment,
+  moveNodes as editorMoveNodes,
+} from '../../src/internal';
+import {
+  deleteBackward as editorDeleteBackward,
   getSnapshot as editorGetSnapshot,
   insertBreak as editorInsertBreak,
-  moveNodes as editorMoveNodes,
   replace as editorReplace,
   string as editorString,
-} from '../../src/internal';
+} from '../../src/testing';
 import { inheritNodeKeys } from '../../src/utils/node-keys';
 
 const nativeGroupingInput = defineUpdateAnnotation<{

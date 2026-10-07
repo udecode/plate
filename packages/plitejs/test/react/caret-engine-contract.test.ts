@@ -1,12 +1,12 @@
 import { SelectionApi } from 'plitejs';
 
-import {
-  getEditorLiveSelection,
-  replace as editorReplace,
-} from '../../src/internal';
 import { applyEditableCaretMovement } from '../../src/react/editable/caret-engine';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { createEditor } from '../../src/react/plugin/with-react';
+import {
+  getEditorLiveSelection,
+  replace as editorReplace,
+} from '../../src/testing';
 
 const createKeyDownEvent = (key: string) =>
   ({

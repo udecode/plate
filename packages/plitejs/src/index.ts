@@ -3,12 +3,7 @@ export {
   definePlugin,
   definePluginPoint,
 } from './core/plugin';
-export {
-  defineCommand,
-  dispatchCommand,
-  evaluateCommand,
-  probeCommandNativeEquivalent,
-} from './core/command-registry';
+export { defineCommand } from './core/command-registry';
 export { editorCommands } from './core/editor-commands';
 export { editorReads } from './core/editor-reads';
 export { transfer, transferVeto } from './core/transfer';
@@ -28,10 +23,14 @@ export type {
   TransferPayload,
   TransferRefusalReason,
   TransferRelation,
+  TransferSide,
+  TransferSideInput,
   TransferSourceInput,
   TransferLandingTarget,
   TransferTarget,
   TransferVeto,
+  TransferVetoInput,
+  TransferWrap,
 } from './core/transfer-types';
 export type {
   AddMarkCommand,
@@ -83,18 +82,7 @@ export {
   type EditorSchemaContractElement,
   type EditorSchemaContractRoot,
 } from './core/schema-compiler';
-export {
-  documentReplacement,
-  repairEditorValue,
-  runTrustedUpdate,
-  setEditorMaxLength,
-  setEditorReadOnly,
-  setEditorSnapshotInputTransform,
-  setEditorStateViewTransform,
-  setEditorTransactionViewTransform,
-  toEditorCoreStateView,
-  withTransactionSpecDraftRead,
-} from './core/public-state';
+export { documentReplacement, setEditorReadOnly } from './core/public-state';
 export { defineStateField } from './core/state-field';
 export { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
 export {
@@ -115,7 +103,6 @@ export {
   createEditor,
   type PluginsFromOptions,
   type EditorValueFromOptions,
-  initializePlugins,
 } from './create-editor';
 export { createEditorView } from './editor-runtime-view';
 export {
@@ -144,7 +131,6 @@ export type {
   EditorCommitHandler,
   EditorCommitListener,
   EditorCommitRuntimeChangeKind,
-  EditorCommitSource,
   EditorSliceReadOptions,
   EditorCoreStateView,
   EditorCoreUpdateMethods,
@@ -242,7 +228,6 @@ export type {
   EditorStateTextApi,
   EditorStateValueApi,
   EditorStateView,
-  EditorStateViewProvider,
   EditorStateViewApi,
   EditorTargetRuntime,
   EditorTextChangeContext,
@@ -280,18 +265,14 @@ export type {
   EditorUpdateTagInput,
   EditorUpdateAnnotation,
   EditorUpdateTransaction,
-  EditorUpdateTransactionOf,
-  EditorUpdateTransactionProvider,
   EditorUpdateValueFromPlugin,
   EditorEffectHistoryReplayResult,
   HistoryApi,
   HistoryOutcome,
   HistoryResult,
   HistorySettlement,
-  EditorNodeTypeProvider,
   EditorNodeUnsetOptions,
   EditorValueFromPlugins,
-  EditorValueTypeProvider,
   EditorView,
   EditorViewOptions,
   PluginsOf,
@@ -303,7 +284,6 @@ export type {
   NodeKey,
   SnapshotIndex,
   SnapshotInput,
-  SnapshotListener,
   StateFieldCollabPolicy,
   StateFieldDescriptor,
   StateFieldHistoryPolicy,
@@ -319,29 +299,9 @@ export type {
   ValueOf,
 } from './interfaces/editor';
 export { PluginPublicationError } from './core/plugin';
-export { containsCompleteEditorSchema, isPlugin } from './core/plugin';
-export { reportEditorLifecycleError } from './core/lifecycle-error';
-export {
-  areEditorSchemaIdentitiesEqual,
-  preserveCompiledSchemaPropertyIdentity,
-  readEditorSchemaIdentity,
-} from './core/schema-compiler';
-export { getSchemaElementSourceReference } from './core/schema-definition';
-export { getCompiledEditorSchemaFromApi } from './core/editor-schema';
+
 export { getEditorRuntimeOwner } from './core/editor-runtime';
-export { getEditorCommitSnapshot } from './core/commit';
-export { MAIN_ROOT_KEY } from './core/public-root';
-export {
-  getSelectionDOMRange,
-  getSelectionRange,
-  mapSelectionThroughChange,
-} from './core/selection-protocol';
-export { mapSemanticUpdateMethodArguments } from './core/semantic-update-method';
-export type {
-  EditorSchemaSource,
-  EditorSchemaSourceProvider,
-} from './core/schema-source.internal';
-export type { EditorGenericMethod } from './interfaces/editor';
+
 export type * from './interfaces/decoration';
 export * from './interfaces/element';
 export type * from './interfaces/json';
@@ -362,3 +322,4 @@ export {
   type DebugValueScrubber,
   setDebugValueScrubber,
 } from './utils/format-debug-value';
+export type { EditorSchemaSource } from './core/schema-source.internal';

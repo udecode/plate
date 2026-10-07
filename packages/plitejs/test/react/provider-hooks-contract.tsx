@@ -17,10 +17,7 @@ import {
 
 import {
   getLastCommit as editorGetLastCommit,
-  getSnapshot as editorGetSnapshot,
-  isEditor as editorIsEditor,
   moveNodes as editorMoveNodes,
-  replace as editorReplace,
 } from '../../src/internal';
 import {
   createEditor,
@@ -49,6 +46,11 @@ import {
   useMountedTextRenderSelector,
 } from '../../src/react/hooks/use-node-selector';
 import { createPliteReactRenderCounter } from '../../src/react/render-profiler';
+import {
+  getSnapshot as editorGetSnapshot,
+  isEditor as editorIsEditor,
+  replace as editorReplace,
+} from '../../src/testing';
 
 const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
 

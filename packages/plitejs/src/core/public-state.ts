@@ -801,7 +801,11 @@ export const markTransactionSelectionWritten = (editor: Editor) => {
   if (context) context.selectionWritten = true;
 };
 
-/** Allow one internal state read to observe the active command-spec draft. */
+/**
+ * Allow one internal state read to observe the active command-spec draft.
+ *
+ * @internal
+ */
 export const withTransactionSpecDraftRead = <T>(
   editor: Editor,
   fn: () => T
@@ -7039,6 +7043,7 @@ export const updateEditor = <
   );
 };
 
+/** @internal */
 export const runTrustedUpdate = <
   V extends Value,
   TPlugins extends readonly unknown[] = readonly [],
@@ -7241,6 +7246,7 @@ export const withEditorUpdateRootScope = <T>(
   );
 };
 
+/** @internal */
 export const repairEditorValue = (editor: Editor) => {
   const roots = Object.keys(getEditorDocumentRoots(editor)).sort(
     (left, right) =>
@@ -7456,6 +7462,7 @@ export const getEditorMaxLength = (editor: object): number | undefined =>
     STATE_VIEW_OWNERS.get(editor) ?? getEditorRuntimeOwner(editor as Editor)
   );
 
+/** @internal */
 export const setEditorMaxLength = (
   editor: AnyPluginEditor,
   maxLength: number | undefined
@@ -8730,7 +8737,7 @@ const runEditorObserver = (
   }
 };
 
-export const notifyListeners = (editor: Editor, change?: EditorCommit) => {
+export const notifyListeners = (editor: Editor, change: EditorCommit) => {
   COMMIT_NOTIFICATION_DEPTH.set(
     editor,
     (COMMIT_NOTIFICATION_DEPTH.get(editor) ?? 0) + 1
@@ -8739,24 +8746,23 @@ export const notifyListeners = (editor: Editor, change?: EditorCommit) => {
   try {
     const listeners = getSnapshotListeners(editor);
     const sourceListeners = getSourceListeners(editor);
-    const pluginCommitListeners = change
-      ? getPluginRegistry(editor).commitListeners
-      : null;
+    const pluginCommitListeners = getPluginRegistry(editor).commitListeners;
     const hasAnySourceListeners =
       sourceListeners !== undefined &&
       [...sourceListeners.values()].some(
         (innerListeners) => innerListeners.size > 0
       );
-    const sourcesForChange =
-      change && hasAnySourceListeners ? getSourcesForChange(change) : [];
+    const sourcesForChange = hasAnySourceListeners
+      ? getSourcesForChange(change)
+      : [];
     const hasSourceListenersForChange = sourcesForChange.some(
       (source) => (sourceListeners?.get(source)?.size ?? 0) > 0
     );
     const hasSnapshotListeners =
       (listeners && listeners.size > 0) || hasSourceListenersForChange;
-    const pluginCommitListenersNeedSnapshot =
-      pluginCommitListeners &&
-      [...pluginCommitListeners].some((listener) => listener.length >= 2);
+    const pluginCommitListenersNeedSnapshot = [...pluginCommitListeners].some(
+      (listener) => listener.length >= 2
+    );
 
     let snapshot: EditorSnapshot | null = null;
     const getSnapshotForListeners = () => {
@@ -8767,27 +8773,25 @@ export const notifyListeners = (editor: Editor, change?: EditorCommit) => {
       return snapshot;
     };
 
-    if (change) {
-      LAST_COMMIT.set(editor, change);
+    LAST_COMMIT.set(editor, change);
 
-      profileCoreDuration('notify-plugin-commit-listeners', () => {
-        for (const listener of pluginCommitListeners ?? []) {
-          if (listener.length >= 2) {
-            listener(change, getSnapshotForListeners());
-          } else {
-            (listener as (commit: EditorCommit) => void)(change);
-          }
+    profileCoreDuration('notify-plugin-commit-listeners', () => {
+      for (const listener of pluginCommitListeners) {
+        if (listener.length >= 2) {
+          listener(change, getSnapshotForListeners());
+        } else {
+          (listener as (commit: EditorCommit) => void)(change);
         }
-      });
+      }
+    });
 
-      profileCoreDuration('notify-commit-listeners', () => {
-        for (const listener of getCommitListeners(editor) ?? []) {
-          runEditorObserver(editor, 'commit-listener', () => {
-            listener(change, getSnapshotForListeners());
-          });
-        }
-      });
-    }
+    profileCoreDuration('notify-commit-listeners', () => {
+      for (const listener of getCommitListeners(editor) ?? []) {
+        runEditorObserver(editor, 'commit-listener', () => {
+          listener(change, getSnapshotForListeners());
+        });
+      }
+    });
 
     if (hasSnapshotListeners || pluginCommitListenersNeedSnapshot) {
       if ((listeners?.size ?? 0) > 0 || pluginCommitListenersNeedSnapshot) {
@@ -8802,7 +8806,7 @@ export const notifyListeners = (editor: Editor, change?: EditorCommit) => {
         }
       });
 
-      if (change && sourceListeners) {
+      if (sourceListeners) {
         profileCoreDuration('notify-source-listeners', () => {
           for (const source of sourcesForChange) {
             const listenersForSource = sourceListeners.get(source);

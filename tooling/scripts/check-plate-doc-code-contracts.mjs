@@ -5,6 +5,8 @@ import { pathToFileURL } from 'node:url';
 
 import { parse } from '@babel/parser';
 
+import { internalPliteContractTypeSymbols } from './plite-internal-symbols.mjs';
+
 const compareStrings = (left, right) => {
   if (left < right) return -1;
   if (left > right) return 1;
@@ -37,7 +39,6 @@ const markdownFilePattern = /\.mdx?$/;
 const whitespacePattern = /\s+/;
 const pluginFactoryNamePattern = /^define(?:BasePlugin|Plugin)$/;
 const plitePluginNamePattern = /^define.*Plugin$/;
-const pliteDomModulePattern = /^(?:platejs|plitejs)\/dom(?:\/|$)/;
 const pluginDescriptorOwnerPathPattern =
   /(?:^|\.)(?:editor|plugin|[A-Za-z_$][\w$]*Plugin)$/;
 const prefixedOnListenerPattern = /^on[A-Z]/;
@@ -55,14 +56,6 @@ const internalCoreContractTypeSymbols = new Set([
   'InternalPluginDefinitionOf',
   'PluginDefinitionCarrier',
   'StaticPluginTypeLambda',
-]);
-const internalPliteContractTypeSymbols = new Set([
-  'PluginTypeLambda',
-  'PluginDependencyContractReference',
-  'PluginDependencyReferenceFor',
-  'PluginInstalledCapabilitiesOf',
-  'PluginTypeProviderOf',
-  'PluginWitnessFor',
 ]);
 const contextualConfigureKeys = new Set([
   'initialState',
@@ -920,10 +913,6 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
       exportedName: 'react',
       modulePattern: pliteReactModulePattern,
     });
-    const localClipboardHandlerNames = collectLocalModuleCallableNames(ast, {
-      exportedName: 'clipboardHandler',
-      modulePattern: pliteDomModulePattern,
-    });
     const getAuthorProperties = (value) =>
       getStaticPluginProperties(value, staticValueBindings);
     const reportPrefixedOnHandlers = (property) => {
@@ -1030,22 +1019,6 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
     };
 
     visit(ast, (node, ancestors) => {
-      if (
-        (localClipboardHandlerNames.hasCall(node) ||
-          (node.type === 'CallExpression' &&
-            node.callee.type === 'Identifier' &&
-            node.callee.name === 'clipboardHandler')) &&
-        node.arguments.length !== 1
-      ) {
-        issues.push(
-          createIssue(
-            file,
-            fence,
-            node,
-            'clipboardHandler accepts exactly one contextually typed handler argument'
-          )
-        );
-      }
       if (
         node.type === 'TSTypeAliasDeclaration' &&
         containsDefinitionOfType(node.typeAnnotation) &&
@@ -1601,20 +1574,6 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
             fence,
             elementProperty,
             'non-void element schema requires explicit content'
-          )
-        );
-      }
-
-      if (
-        isSchemaApiCall(node, 'getElementProperty') &&
-        unwrapTypedExpression(node.arguments[1])?.type === 'StringLiteral'
-      ) {
-        issues.push(
-          createIssue(
-            file,
-            fence,
-            node.arguments[1],
-            'known schema properties use a typed handle from schema.handle.property instead of a raw key'
           )
         );
       }

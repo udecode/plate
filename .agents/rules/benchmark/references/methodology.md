@@ -60,6 +60,8 @@ before its first mount, which also keeps the kernel trace. Report that
 trace-retaining result apart from a DOM-only production control such as
 `pnpm --filter www perf:editor` against a build without the handle.
 
+A timed Playwright lane runs in its own page, and the runner closes that page when the lane finishes or times out: `Promise.race` does not cancel `page.evaluate`, so a timed-out lane left running contaminates the next one. Size each lane's sample count and timeout from one timed sample of that lane, so a heavy lane runs fewer honest samples instead of several that time out. Register a render waiter before firing the state change it waits for. Rows from a live artifact and a frozen snapshot stay separate unless their row ids name the same contract or a declared mapping normalizes them first.
+
 ## Two Comparison Classes
 
 ### Product comparison
@@ -67,7 +69,7 @@ trace-retaining result apart from a DOM-only production control such as
 Run actual Plate routes on candidate and main. Preserve each ref's real product
 composition when the question is user experience. Use the same persisted or
 injected document and action where possible. Differences in plugin membership
-are product cost and must be reported, not silently normalized away.
+are product cost and must be reported, not silently normalized away. A page that mounts several heavy editors is a contaminated timing surface: read per-engine numbers only from a one-engine mode or a dedicated benchmark route.
 
 ## Primary Metrics
 

@@ -27,6 +27,7 @@ export const setEditorLifecycleErrorSink = <
   }
 };
 
+/** @internal */
 export const reportEditorLifecycleError = <
   TEditor extends BaseEditor<any, any>,
 >(

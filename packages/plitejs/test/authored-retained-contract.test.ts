@@ -26,6 +26,7 @@ import {
   readAuthoredViewFragments,
   updateAuthoredFragment,
 } from '../src/core/authored-runtime';
+import { getEditorRuntime } from '../src/core/editor-runtime';
 import { history } from '../src/history';
 
 const paragraph = (text: string) => ({
@@ -724,8 +725,8 @@ describe('native retained counterparts', () => {
     const first = fragment.subscribeCommit(listener);
     const second = fragment.subscribeCommit(listener);
     const snapshots: string[] = [];
-    const snapshotSubscription = fragment.subscribe((snapshot) =>
-      snapshots.push(NodeApi.string(snapshot.children[0]))
+    const snapshotSubscription = getEditorRuntime(fragment).subscribe(
+      (snapshot) => snapshots.push(NodeApi.string(snapshot.children[0]))
     );
     source.update.text.insert('!', { at: { path: [1, 0], offset: 3 } });
     assert.equal(calls, 0);

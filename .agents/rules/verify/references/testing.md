@@ -34,7 +34,7 @@ Hard constraints:
 - Type tests use an exact `Equal` check that defeats `any` widening, with
   `IsAny` and `IsNever` guards. Each `@ts-expect-error` sits on the line
   immediately before the error, with a reason; an unused directive fails the
-  test because the constraint is missing.
+  test because the constraint is missing. When a public prop reuses a native DOM attribute name, omit the native key from the inherited attributes; when the prop's type is wider, add a type contract that passes the wider value, such as JSX to a `placeholder`. A public type contract imports from the package's public entrypoints, never from `src/internal`, because only the public path catches a missing root export; it proves source exports, and published declarations need the packed-consumer proof.
 - Type proof runs at application scale: app-scale API and core-field access stay
   under TypeScript's instantiation-depth limit, and a standalone conversion
   typechecks with a full application kit, not a small plugin tuple.
@@ -57,6 +57,7 @@ Hard constraints:
 - A new refusal or resource bound ships with a must-still-accept case at
   realistic scale beside its must-refuse case, because over-refusal drops
   user data.
+- A regression for Node-native module loading, such as a CommonJS dependency imported by name from an ESM entrypoint, loads the built entrypoint through `node`, because `process.execPath` under Bun launches Bun and hides the failure.
 ## Plate foundation Rules
 
 - Bun globals come from `tooling/config/global.d.ts`. Do not import `describe`, `it`, `expect`, `mock`, `spyOn`, or other globals from `bun:test`.
@@ -67,6 +68,7 @@ Hard constraints:
 - A plugin behavior family keeps one colocated `<FooPlugin>.<family>.spec.tsx`; merged helpers merge their specs into it, and no spec mirrors one public method, deleted helper or old filename.
 - Tests declare no local fixture-shape alias or cast to hide weak hyperscript typing; the test-utils owner type is repaired and exported instead.
 - Test setup is not extracted into constants, helpers or factories to work around weak inference; the source typing is fixed so inline construction infers.
+- A spec that spies on a global, a prototype or a shared module export restores it in the same file (`mock.restore()` in `afterEach`, or the spy's `mockRestore()`); a spec that passes alone and fails in the full suite points at leaked spy or module-mock state before product code. A `mock.module` replacement spreads the real module into the mock, which `plate/mock-spreads-module` enforces, so later specs in the run still see the real exports.
 - Put compile-only type contracts in `type-tests/`, not mixed into runtime specs.
 - Titles should describe behavior semantically, not echo raw option names.
 - Prefer explicit assertions over snapshots by default.
@@ -79,6 +81,7 @@ Hard constraints:
 - Treat the local warning zone as real debt before CI proves you wrong, but optimize the slow behavior rather than splitting files to game aggregate file time.
 - For borderline individual cases, run `pnpm test:slowest -- --top 25 --rerun-each 3` and move only repeatably blocking behavior into the matching `*.slow.ts[x]` family.
 - Treat known third-party resource logs and serializer fallback warnings as test noise. Suppress them narrowly in the shared Bun setup at `tooling/config/bunTestSetup.ts`, not by changing runtime code or sprinkling per-spec console mocks.
+- A spec that deliberately hits a Plate warning path captures that warning in its own editor harness, for example a no-op `logger.warn` on `DebugPlugin`; it never mutes the runtime warning globally or leaves it in broad runs.
 
 ## Owner Selection
 
@@ -127,6 +130,22 @@ each way a wrong result can look right, such as a throw after the logged step,
 a canceled insert or a selection-only commit, and add one rejecting case for
 each. A fake runtime cannot certify native browser behavior.
 
+A contract whose data crosses editors, such as node keys, paths or an owner
+editor read from a view editor, needs a fixture with separate owner and view
+editors. A single-editor fixture shares one key space, so it passes while the
+product fails. A mutation control proves only that the test notices a removed
+guard, not that the fixture matches how the product wires its editors.
+
+## Failures that pass alone
+
+A test that fails in the full partition and passes when rerun alone is not a
+flake until the same full partition passes at the base under the same
+conditions. Isolated reruns cannot reproduce module evaluation order. When the
+failures move between tests across runs, or a spy finds an undefined binding,
+suspect an import cycle the change added. Show the cycle's import chain, then
+remove the new edge instead of routing it through a module that already
+imports both sides.
+
 ## File Organization
 
 - File-scoped specs live beside the implementation.
@@ -147,10 +166,11 @@ each. A fake runtime cannot certify native browser behavior.
 - In a hyperscript file under automatic React JSX, put `/** @jsxRuntime classic */`
   before the custom factory pragma (`/** @jsx jsxt */` or `/** @jsx jsx */`).
   The factory pragma alone does not switch runtimes; React elements are not
-  editor fixtures. Keep ordinary React rendering in its own JSX runtime.
+  editor fixtures. Keep ordinary React rendering in its own JSX runtime. A suite that fails on fixture import or pragma drift is repaired first; its failures are not runtime evidence until it loads cleanly.
 - Use plain object fixtures for option, state, and pure helper tests.
 - Use a real editor object only when editor-root semantics matter. `NodeApi` and `ElementApi` do not treat plain `{ children: [...] }` objects the same way as real editors.
 - Keep inputs and outputs small.
+- An empty text renders a `data-editor-zero-width` placeholder and no `data-editor-string` node, so a test that edits empty-text DOM mutates the `[data-editor-node="text"]` host.
 - The shared browser runtime error recorder `recordBrowserRuntimeErrors` uses `{ strict: true }` wherever every runtime error must fail, and it keeps listener cleanup and reset. Consolidating verification helpers preserves each caller's failure policy: strict error capture stays explicit on the existing recorder instead of copied listeners or a narrower filter.
 - Use `it.each` for small behavior matrices.
 - In this Bun + Testing Library setup, prefer render-returned queries over `screen`.

@@ -1,6 +1,6 @@
 ---
 description: Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence.
-argument-hint: '[slate] <repo or ledger>'
+argument-hint: <repo or ledger>
 ---
 
 # Issue Harvester
@@ -17,10 +17,6 @@ issue-harvester facebook/lexical --state all
 
 The skill expands that into the full issue-by-issue loop. Do not make the user
 paste the long closure-ledger prompt again.
-
-## Slate claims mode
-
-`issue-harvester slate ...` keeps the Slate v2 fork's issue provenance and claim hygiene: the v2 sync ledger, exact claim levels, the fork issue dossier, coverage-matrix and PR-text claim sync, and gitcrawl upkeep. Read [Slate claims](./references/slate-claims.md) in full for that mode.
 
 ## Scope
 
@@ -64,6 +60,8 @@ Do not broad-search `docs/editor-issue-harvester/**` or raw issue JSON just to
 learn ledger status. Parse `issue-closure-ledger.md` / `.tsv` directly for the
 `check` column, `unchecked relevant`, total rows, and next unchecked issue.
 
+A file that declares itself generated stays generated: manual decisions go in `issue-closure-overrides.json`, never as new columns in the generated ledger. A frozen corpus is named a historical seed, not current state. A ledger family that mixes generated input, manual classification and a summary gets a local check that fails when they drift.
+
 If a ledger exists:
 
 1. read the TSV/MD and overrides;
@@ -85,7 +83,7 @@ If no ledger exists:
 ## Refresh Commands
 
 Prefer `gitcrawl` for archive input; [gitcrawl](./references/gitcrawl.md) holds
-its install, update and archive commands:
+its install and archive commands:
 
 ```bash
 gitcrawl doctor --json
@@ -211,7 +209,8 @@ objective. For each unchecked row:
 1. Read title, body, comments, labels, state, existing classification, and
    current ledger row.
 2. Decide skip vs relevant. If irrelevant, write `invalid-skip` with a concrete
-   reason and continue.
+   reason and continue. When current behavior is uncertain, mark `needs-repro`
+   instead of designing a fix.
 3. For closed relevant issues, scan linked PR/test provenance before coverage
    search.
 4. Classify owner: raw Slate v2, Plate, external-framework noise, docs/support,
@@ -276,6 +275,9 @@ method and record that the generator is missing as a workflow gap.
 
 ## Stop and hand off
 
+Every relevant issue ends with a checkmark: an existing local test linked and
+verified, a new test written and verified, Plate-owned proof linked, or
+`deferred-with-owner` naming its owner and the condition that ends the deferral.
 Stop only when every relevant row for the objective is checked, a real blocker
 prevents all progress, a broad API or runtime decision belongs to `best-api` or
 the Plan playbook, or the timebox expires with the active packet decided. Never

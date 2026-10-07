@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { isEditor } from '../../src/editor/is-editor';
 import { createHyperscript, jsx as pliteJsx } from '../../src/hyperscript';
+import './smoke-contract';
 
 type FixtureModule = {
   input: Record<string, unknown> | unknown[];

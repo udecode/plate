@@ -10,10 +10,6 @@ import {
 } from 'plitejs';
 
 import {
-  replace as editorReplace,
-  string as editorString,
-} from '../../src/internal';
-import {
   createEditableInputController,
   createEditableInputControllerState,
   setEditableModelSelectionPreference,
@@ -34,6 +30,10 @@ import {
   shouldIgnoreDOMBeforeInputWithoutSelection,
 } from '../../src/react/editable/runtime-before-input-events';
 import type { ReactRuntimeEditor } from '../../src/react/plugin/react-editor';
+import {
+  replace as editorReplace,
+  string as editorString,
+} from '../../src/testing';
 
 const collapsedSelection: TextSelection = {
   kind: 'text',

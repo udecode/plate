@@ -18,7 +18,7 @@ export type DOMTextSyncCapability =
       reason: DOMTextSyncOptOutReason;
     };
 
-/** Context used to claim native DOM text-sync capability for a renderer. */
+/** Marks of the text a renderer capability resolver is asked about. */
 export type DOMTextSyncRendererCapabilityContext = Readonly<{
   marks: Omit<Text, 'text'>;
 }>;
@@ -30,24 +30,37 @@ const RETAINED_TEXT_FLOW_RENDERER_CAPABILITY = Symbol.for(
   'plitejs/react/retained-text-flow-renderer-capability'
 );
 
-/**
- * Publish renderer-owned DOM text-sync capability.
- *
- * @internal
- */
-export const setDOMTextSyncRendererCapability = <TRenderer extends object>(
-  renderer: TRenderer,
-  resolve: (context: DOMTextSyncRendererCapabilityContext) => boolean
-): TRenderer => {
-  Object.defineProperty(renderer, DOM_TEXT_SYNC_RENDERER_CAPABILITY, {
-    configurable: false,
-    enumerable: false,
-    value: resolve,
-    writable: false,
-  });
+const defineRendererCapability =
+  (key: symbol) =>
+  <TRenderer extends object>(
+    renderer: TRenderer,
+    resolve: (context: DOMTextSyncRendererCapabilityContext) => boolean
+  ): TRenderer =>
+    Object.defineProperty(renderer, key, {
+      configurable: false,
+      enumerable: false,
+      value: resolve,
+      writable: false,
+    });
 
-  return renderer;
-};
+/**
+ * Mark a custom `renderLeaf` or `renderText` as safe for native DOM text sync
+ * for the marks `resolve` accepts, so typing updates text in place without
+ * re-rendering the renderer. Call it once per renderer object; a second call
+ * with a different `resolve` throws.
+ */
+export const setDOMTextSyncRendererCapability = defineRendererCapability(
+  DOM_TEXT_SYNC_RENDERER_CAPABILITY
+);
+
+/**
+ * Mark a custom `renderLeaf` or `renderText` as safe to skip during retained
+ * text flow for the marks `resolve` accepts. Call it once per renderer
+ * object; a second call with a different `resolve` throws.
+ */
+export const setRetainedTextFlowRendererCapability = defineRendererCapability(
+  RETAINED_TEXT_FLOW_RENDERER_CAPABILITY
+);
 
 const hasDOMTextSyncRendererCapability = (
   renderer: unknown,

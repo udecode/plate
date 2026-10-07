@@ -4,20 +4,22 @@ import { describe, it } from 'node:test';
 import { createEditor, type Element, NodeApi, SelectionApi } from 'plitejs';
 
 import {
+  deleteFragment as editorDeleteFragment,
+  getLastCommit as editorGetLastCommit,
+  range as editorRange,
+  runTrustedUpdate,
+  setEditorTargetRuntime,
+} from '../src/internal';
+import {
   deleteBackward as editorDeleteBackward,
   deleteForward as editorDeleteForward,
-  deleteFragment as editorDeleteFragment,
   getChildren as editorGetChildren,
-  getLastCommit as editorGetLastCommit,
   getSelection as editorGetSelection,
   insertBreak as editorInsertBreak,
   insertText as editorInsertText,
-  range as editorRange,
   replace as editorReplace,
-  runTrustedUpdate,
   string as editorString,
-  setEditorTargetRuntime,
-} from '../src/internal';
+} from '../src/testing';
 import { extendTestSchema } from './support/schema';
 
 const paragraph = (text: string): Element => ({

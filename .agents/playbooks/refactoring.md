@@ -16,9 +16,45 @@ Find, rank and, when safe, clean source-backed architecture sludge so the codeba
 - **Replace** "Rebase into small ordered commits": leave commits to the owner, per `AGENTS.md`'s Delivery rule, and name the subtraction, reshape and follow-on slices in the report so they can be committed in that order. Open a PR only when the user asks.
 - The plan's `## Close` also reports the source roots inspected, candidate count and top recommendation, decision counts, navigation-score changes, packets applied with their keep, revert or quarantine result, proof run, scale receipts or source-backed N/A, rejected and deferred candidates, and the next owner with its first command or file.
 
+## Package review and sync
+
+`plate-next <package, file or API path>` runs this playbook read-only with the architecture reference's Audit against the Plate v2 target, and repairs only when the request asks. `sync` is an execution mode, not a status summary: `plate-next sync <package>` reviews that package and repairs its findings; `plate-next sync` with no argument does the same for every live Plate package, `packages/platejs` and `packages/test`. Public call-shape forks go to `best-api`, and adoption plans to the Plan playbook.
+
+- Use `origin/main` as evidence, not as the final API target. Preserve user-visible behavior unless a breaking change is part of the accepted Plate v2 direction, and preserve the existing Plate owner when that owner still describes the product concern. Never keep an old API shape, alias, shim, wrapper or `with*` glue because `origin/main` had it.
+- `origin/main` is behavior and ownership evidence, not a veto on the best current path or filename. Compare the current owner, name and role with it before suggesting renames, deletions or new owner topology.
+- Implementation topology is not frozen. A repair request renames, moves, merges or deletes internal files, helper exports and test filenames in the same packet when that restores owner truth or removes a one-use split; a read-only review recommends those moves instead. Reject cosmetic synonym churn, but complete owner-driven merge/delete/rename work in the active packet.
+- Treat new plugins and public concepts as API decisions. They go through `best-api`, while internal colocation, helper deletion and owner-accurate file and test names belong to the current cleanup packet.
+- Prefer merging into the existing owner or a hard cut over restoring a one-use migration split.
+
+For a package, do not treat `plate-next packages/<name>` as permission to sweep the repo or move to the next package.
+
+- Freeze scope to the named package plus the smallest Plite/Plate foundation owner needed to remove a blocker found in that package. Do not silently turn a package review into a repo-wide migration. A correction's related-surface sweep is mandatory, but it is not permission to update unrelated packages, docs, examples, or generated surfaces, and a hard cut found in one package lands package by package unless the user names the broader scope.
+- Before repairs, build the package manifest as the architecture reference's Audit describes and materialize one checkbox per reviewed file in the plan. A row is checked only when its file has no behavior regression versus `origin/main`, no type regression, and the ownership the lens and Vision require. Anything else stays unchecked with a concrete reason and next action.
+- Do not move to the next package until every file is either checked or explicitly deferred for user review with reason, owner, and proof needed.
+- `sweep`, `all plate`, `full-loop`, `full review` and similar broad Plate foundation requests mean a review of every foundation source file, each with its manifest row, never a sample.
+- The handoff lists the out-of-scope matches discovered; they are routing hints, not permission to patch them. Failures in packages outside the named scope are out-of-scope drift unless the current change caused them.
+
+Sync:
+
+1. Keep one plan under `docs/plans/` with `work_kind: verification`, `review_basis: []` and the packages' review scopes, and one section per queued package holding its manifest and findings.
+2. Process one package at a time, building its manifest before repairs as above, and repair each finding; never start the next package while the active one has unchecked or deferred rows.
+3. Close each package with the proof below. The plan's front matter and `Status:` are its ledger history; `work_kind: verification` never adopts a Pursue.
+4. Sync finishes when the plan has no unchecked or deferred row. A blocked package stays open in the plan and blocks the all-done claim.
+
+Proof:
+
+```bash
+pnpm check:core
+pnpm turbo typecheck --filter=./packages/platejs
+pnpm --filter platejs test
+pnpm --filter platejs build
+```
+
+Use package-local focused tests first and broader gates only when exports, the public type surface or the foundation/Plite owner change. Never start `apps/www` from a package review unless the target is docs, registry UI or examples.
+
 ## Candidates
 
-Use the repo's vocabulary: model, operations, runtime, DOM and input, selection, history, browser proof, packages, benchmarks and public API for Plite; plugins, wrappers, components, kits, registry, app-facing docs and product UX for Plate. Read `docs/analysis/editor-architecture-candidates.md` only when the surface is editor architecture and current source does not settle it.
+Use the repo's vocabulary: model, operations, runtime, DOM and input, selection, history, browser proof, packages, benchmarks and public API for Plite; plugins, wrappers, components, kits, registry, app-facing docs and product UX for Plate. Read `docs/research/sources/editor-architecture/candidates.md` only when the surface is editor architecture and current source does not settle it.
 
 Inspect at least five candidate areas unless the prompt names a smaller surface. A candidate needs concrete friction: a shallow wrapper or pass-through module, duplicated branching, helpers, proof or selector logic, a vague name hiding the owner, public/private confusion, an over-broad barrel, an orphan test or stale oracle, tests forced through internals, copied browser or proof logic, one behavior spread across too many files, aliases and compatibility paths the current API should not keep, stale docs or tests after ownership moved, or tests asserting old file locations. Apply `pstack:principle-subtract-before-you-add` and `pstack:principle-minimize-reader-load`, then rank each candidate on four tests:
 

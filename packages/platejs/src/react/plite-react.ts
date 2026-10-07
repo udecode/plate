@@ -105,6 +105,7 @@ export {
   installBrowserHandle,
   useClaimEditableDOMCommit,
   setDOMTextSyncRendererCapability,
+  setRetainedTextFlowRendererCapability,
   useEditorHistory,
   useRootChrome,
   useActiveEditor,

@@ -11,11 +11,13 @@ import {
   getLastCommit as editorGetLastCommit,
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
-  getSnapshot as editorGetSnapshot,
   insertNodes as editorInsertNodes,
+} from '../src/internal';
+import {
+  getSnapshot as editorGetSnapshot,
   isEditor as editorIsEditor,
   replace as editorReplace,
-} from '../src/internal';
+} from '../src/testing';
 import { isExplicitCutFixture } from './fixture-claim-overrides.js';
 import { createFixtureTransactionApi, withTest } from './support/with-test.js';
 

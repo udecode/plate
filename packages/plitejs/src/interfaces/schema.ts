@@ -1,6 +1,9 @@
 import type {
   EditorSchemaSource,
   EditorSchemaSourceProvider,
+  EditorSchemaPluginProvider,
+  SchemaNodeTypeProvider,
+  SchemaValueBrand,
 } from '../core/schema-source.internal';
 import type { BaseElement } from './element';
 import type { EditorJsonValue } from './json';
@@ -860,8 +863,6 @@ type SchemaIsUnion<TValue, TWhole = TValue> = TValue extends unknown
 type SchemaHasRuntimeUnion<TValue> =
   true extends SchemaIsUnion<TValue> ? true : false;
 
-type SchemaIsAny<TValue> = 0 extends 1 & TValue ? true : false;
-
 type SchemaVoidIsInline<TVoid> = [TVoid] extends ['inline' | 'markable-inline']
   ? true
   : [Extract<TVoid, 'inline' | 'markable-inline'>] extends [never]
@@ -1587,19 +1588,6 @@ type SchemaNodeElementFor<
           SchemaElementContentRootsFor<TSchema, TType>
       : never;
 
-/**
- * Compact schema-node inference witness.
- *
- * @internal
- */
-export interface SchemaNodeTypeProvider<
-  TElement extends BaseElement = BaseElement,
-  TText extends BaseText = BaseText,
-> {
-  readonly element: () => TElement;
-  readonly text: () => TText;
-}
-
 type SchemaNodeTypeProviderFor<TSchema extends EditorSchemaSource> =
   TSchema extends EditorSchemaSource
     ? SchemaNodeTypeProvider<
@@ -1652,44 +1640,6 @@ export type SchemaDescendant<TSchema extends EditorSchemaSource> =
     : SchemaElementFor<TSchema> | SchemaText<TSchema>;
 
 /**
- * Exact schema elements reachable from one schema-owned node.
- *
- * @internal
- */
-export type SchemaElementInNode<TNode> = '~schema.node' extends keyof TNode
-  ? NonNullable<TNode[Extract<'~schema.node', keyof TNode>]> extends Readonly<{
-      element: infer TElement;
-    }>
-    ? TElement extends () => infer TElementResult
-      ? Extract<TElementResult, BaseElement> &
-          Pick<TNode, Extract<'~schema.node', keyof TNode>>
-      : never
-    : never
-  : never;
-
-/**
- * Exact schema text variants reachable from one schema-owned node.
- *
- * @internal
- */
-export type SchemaTextInNode<TNode> = '~schema.node' extends keyof TNode
-  ? NonNullable<TNode[Extract<'~schema.node', keyof TNode>]> extends Readonly<{
-      text: infer TText;
-    }>
-    ? TText extends () => infer TTextResult
-      ? Extract<TTextResult, BaseText> &
-          Pick<TNode, Extract<'~schema.node', keyof TNode>>
-      : never
-    : never
-  : never;
-
-declare const EDITOR_SCHEMA_VALUE: unique symbol;
-
-type SchemaValueBrand<TSchema extends EditorSchemaPlugin> = Readonly<{
-  [EDITOR_SCHEMA_VALUE]?: SchemaNodeTypeProviderFor<TSchema>;
-}>;
-
-/**
  * Finite installed element vocabulary inferred from one complete schema.
  * Runtime schema validates primary and named-root grammar.
  */
@@ -1702,43 +1652,7 @@ export type SchemaValue<TSchema extends EditorSchemaPlugin> = ReadonlyArray<
             ? PreservedSchemaElement<TSchema>
             : never)
 > &
-  SchemaValueBrand<TSchema>;
-
-/**
- * Non-recursive schema descendant lookup for editor API generics.
- *
- * @internal
- */
-export type SchemaDescendantInValue<V extends readonly unknown[]> =
-  SchemaIsAny<V> extends true
-    ? never
-    : typeof EDITOR_SCHEMA_VALUE extends keyof V
-      ? NonNullable<
-          V[Extract<typeof EDITOR_SCHEMA_VALUE, keyof V>]
-        > extends Readonly<{
-          element: infer TElement;
-          text: infer TText;
-        }>
-        ? Extract<
-            | (TElement extends () => infer TElementResult
-                ? TElementResult
-                : never)
-            | (TText extends () => infer TTextResult ? TTextResult : never),
-            BaseElement | BaseText
-          >
-        : never
-      : never;
-
-/**
- * Deferred type-only schema forwarding for plugin slots.
- *
- * @internal
- */
-export interface EditorSchemaPluginProvider<
-  TSchemaFactory extends () => EditorSchemaPlugin = () => EditorSchemaPlugin,
-> {
-  readonly '~schema.plugins': TSchemaFactory;
-}
+  SchemaValueBrand<SchemaNodeTypeProviderFor<TSchema>>;
 
 type SchemaDeclarationOf<TInput> = TInput extends readonly unknown[]
   ? SchemaDeclarationOf<TInput[number]>

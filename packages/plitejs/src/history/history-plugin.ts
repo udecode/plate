@@ -972,7 +972,7 @@ const createHistoryPlugin = <
             try {
               settleBlocked();
             } catch (clearError) {
-              report(clearError);
+              if (clearError !== cause) report(clearError);
             }
           }
           report(cause);
@@ -1026,7 +1026,12 @@ const createHistoryPlugin = <
         } catch (error) {
           return fail(error);
         }
-        if (!('then' in ownerResult)) return settle(ownerResult);
+        if (
+          typeof (ownerResult as { then?: unknown } | null | undefined)
+            ?.then !== 'function'
+        ) {
+          return settle(ownerResult as EditorEffectHistoryReplayResult);
+        }
 
         return Object.freeze({
           settled: Promise.resolve(ownerResult).then(settle, fail),

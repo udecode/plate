@@ -14,8 +14,6 @@ import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { removeNodes } from '../transforms-node';
 import { deleteText } from '../transforms-text';
 import { readAuthoredView } from './authored-runtime';
-import { DocumentChange } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
 import { isDocumentView } from './document-view-read';
 import { editorReads } from './editor-reads';
 import {
@@ -25,8 +23,11 @@ import {
 } from './editor-runtime';
 import { getContentSlice } from './get-content-slice';
 import {
+  insertionPath,
   type JsonValue,
   landAt,
+  landBeside,
+  type LandedWrap,
   type LandingRequest,
   refuse,
   TransferRefusalError,
@@ -35,13 +36,22 @@ import {
 import { definePlugin } from './plugin';
 import { getConfiguredPluginRegistry } from './plugin-registry';
 import {
-  registerEditorDraftGuard,
   replaceSliceAtBlockBoundary,
   withEditorUpdateRootScope,
 } from './public-state';
 import { executeEditorRead } from './read-registry';
 import { EditorSchemaValidationError } from './schema-validation';
 import { screenReaderAnnouncementEffect } from './screen-reader-announcement';
+import {
+  type DraftLanding,
+  guardLanding,
+  mapDraft,
+  nodeAt,
+  rootChildren,
+  sameContent,
+  selectionRange,
+  textTokens,
+} from './transfer-guard';
 import type {
   TransferCheck,
   TransferDiagnostic,
@@ -53,6 +63,7 @@ import type {
   TransferPayload,
   TransferRefusalReason,
   TransferRelation,
+  TransferSide,
 } from './transfer-types';
 
 export { transferVeto };
@@ -65,39 +76,31 @@ type NodeSource = Readonly<{
 
 type TextSource = Readonly<{ kind: 'text'; range: Range; root: RootKey }>;
 
+type Landing =
+  | Readonly<{ edge: TransferEdge; kind: 'edge' }>
+  | Readonly<{ kind: 'point'; point: Point }>
+  | Readonly<{
+      keys: readonly NodeKey[];
+      kind: 'wrap';
+      side: TransferSide;
+      wrap: LandedWrap;
+    }>;
+
 type Admission = Readonly<{
   intent: TransferIntent;
+  landing: Landing;
   relation: TransferRelation;
   /** What lands, or `null` when the source nodes themselves move. */
   slice: ContentSlice | null;
   source: NodeSource | TextSource;
-  to: TransferLandingTarget;
 }>;
 
-const rootChildren = (value: JsonValue, root: RootKey) =>
-  root === 'main' ? value.children : (value.roots?.[root] ?? []);
-
-const childrenAt = (
-  children: readonly Descendant[],
-  path: Path
-): readonly Descendant[] | null => {
-  let current = children;
-
-  for (const index of path) {
-    const node = current[index];
-
-    if (!node || !ElementApi.isElement(node)) return null;
-    ({ children: current } = node);
-  }
-
-  return current;
-};
-
-const nodeAt = (children: readonly Descendant[], path: Path) =>
-  path.length === 0
-    ? null
-    : (childrenAt(children, path.slice(0, -1))?.[path.at(-1) as number] ??
-      null);
+const targetOf = (landing: Landing): TransferLandingTarget =>
+  landing.kind === 'edge'
+    ? landing.edge
+    : landing.kind === 'point'
+      ? { point: landing.point }
+      : landing.side;
 
 const authoredIdentity = (editor: AnyEditor) => {
   const view = readAuthoredView(editor);
@@ -399,187 +402,47 @@ const admit = (
         ));
   const request = requestOf(from, intent, payload, relation, source, slice);
 
+  const admitted = (landing: Landing): Admission => ({
+    intent,
+    landing,
+    relation,
+    slice,
+    source,
+  });
+
   if (typeof input.to === 'string') {
-    return {
-      intent,
-      relation,
-      slice,
-      source,
-      to: resolveStep(editor, request, source, input.to),
-    };
+    return admitted({
+      edge: resolveStep(editor, request, source, input.to),
+      kind: 'edge',
+    });
   }
 
   if ('point' in input.to) {
     if (source.kind === 'nodes') refuse('schema');
 
-    const admission = { intent, relation, slice, source, to: input.to };
+    const admission = admitted({ kind: 'point', point: input.to.point });
 
     checkTextLanding(editor, admission, input.to.point);
 
     return admission;
   }
 
-  return {
-    intent,
-    relation,
-    slice,
-    source,
-    to: landAt(editor, request, input.to),
-  };
-};
-
-const sameContent = (
-  a: Descendant,
-  aRoots: JsonValue['roots'],
-  b: Descendant,
-  bRoots: JsonValue['roots']
-): boolean => {
-  if (NodeApi.isText(a) || NodeApi.isText(b)) {
-    return JSON.stringify(a) === JSON.stringify(b);
-  }
-
-  const {
-    children: aChildren,
-    childRoots: aChildRoots,
-    ...aProps
-  } = a as Element & { childRoots?: Record<string, string> };
-  const {
-    children: bChildren,
-    childRoots: bChildRoots,
-    ...bProps
-  } = b as Element & { childRoots?: Record<string, string> };
-
-  if (JSON.stringify(aProps) !== JSON.stringify(bProps)) return false;
-  if (aChildren.length !== bChildren.length) return false;
-
-  const aRootNames = Object.keys(aChildRoots ?? {}).sort();
-  const bRootNames = Object.keys(bChildRoots ?? {}).sort();
-
-  if (aRootNames.join(',') !== bRootNames.join(',')) return false;
-
-  for (const slot of aRootNames) {
-    const aRoot = aRoots?.[aChildRoots?.[slot] as string] ?? [];
-    const bRoot = bRoots?.[bChildRoots?.[slot] as string] ?? [];
-
-    if (
-      aRoot.length !== bRoot.length ||
-      aRoot.some((node, i) => !sameContent(node, aRoots, bRoot[i], bRoots))
-    ) {
-      return false;
+  if ('side' in input.to) {
+    // A side lands only blocks that relocate inside one root.
+    if (source.kind !== 'nodes' || slice || !request.moving) {
+      return refuse('policy');
     }
+
+    return admitted({
+      keys: source.entries.map(([, path]) => from.key(path) as NodeKey),
+      kind: 'wrap',
+      side: input.to,
+      wrap: landBeside(editor, request, request.moving, input.to),
+    });
   }
 
-  return aChildren.every((child, i) =>
-    sameContent(child, aRoots, bChildren[i], bRoots)
-  );
+  return admitted({ edge: landAt(editor, request, input.to), kind: 'edge' });
 };
-
-const textTokens = (fragment: readonly Descendant[]) => {
-  const tokens: string[] = [];
-  const visit = (
-    nodes: readonly Descendant[],
-    openStart: boolean,
-    openEnd: boolean
-  ) => {
-    nodes.forEach((node, index) => {
-      const isFirst = index === 0;
-      const isLast = index === nodes.length - 1;
-
-      if (NodeApi.isText(node)) {
-        tokens.push(JSON.stringify(node));
-        return;
-      }
-
-      const element = node;
-      const open = (openStart && isFirst) || (openEnd && isLast);
-
-      if (!open) {
-        const { children: _children, ...props } = element;
-
-        tokens.push(`<${JSON.stringify(props)}>`);
-      }
-      visit(element.children, openStart && isFirst, openEnd && isLast);
-      if (!open) tokens.push('</>');
-    });
-  };
-
-  visit(fragment, true, true);
-
-  const emptyText = JSON.stringify({ text: '' });
-
-  return tokens.filter((token) => token !== emptyText).join('\u0000');
-};
-
-const selectionRange = (from: Point, to: Point): Range => ({
-  anchor: from,
-  focus: to,
-});
-
-type DraftLanding = Readonly<{
-  children: readonly Descendant[];
-  landed: Readonly<{ paths: readonly Path[] }> | Readonly<{ range: Range }>;
-}>;
-
-const mapDraft = (
-  draft: readonly Descendant[],
-  after: readonly Descendant[]
-) => {
-  if (draft === after) {
-    return {
-      path: (path: Path): Path | null => path,
-      point: (point: Point): Point | null => point,
-    };
-  }
-
-  const before = DocumentIndex.fromValue(draft);
-  const next = DocumentIndex.fromValue(after);
-  const change = DocumentChange.between(
-    { children: draft },
-    { children: after }
-  );
-
-  return {
-    path: (path: Path): Path | null => {
-      const mapped = change.mapPosition(before.nodeRange(path).from, {
-        association: 'forward',
-      });
-      const entry = mapped == null ? null : next.nodeStartingAt(mapped);
-
-      return entry ? [...entry.path] : null;
-    },
-    point: (point: Point, association: 'backward' | 'forward' = 'backward') => {
-      const mapped = change.mapPosition(before.positionAt(point), {
-        association,
-      });
-      const mappedPoint =
-        mapped == null
-          ? null
-          : next.pointAt(mapped, association === 'backward' ? -1 : 1);
-
-      return mappedPoint;
-    },
-  };
-};
-
-const guardLanding = (
-  editor: AnyEditor,
-  copy: boolean,
-  draft: { current: DraftLanding | null },
-  check: (landed: DraftLanding, after: JsonValue) => boolean,
-  diagnostics: TransferDiagnostic[]
-) =>
-  registerEditorDraftGuard(editor, (written) => {
-    const landing = draft.current;
-
-    if (!landing) return;
-    draft.current = null;
-    if (check(landing, written)) return;
-    if (!copy) throw new TransferRefusalError('lossy');
-    diagnostics.push({
-      impact: 'lossy',
-      message: 'Some dragged content does not fit here.',
-    });
-  });
 
 const runTransfer = (
   editor: AnyEditor,
@@ -599,15 +462,22 @@ const runTransfer = (
     throw error;
   }
 
-  const { intent, relation, slice, source, to } = admission;
+  const { intent, landing, relation, slice, source } = admission;
   const copy = intent === 'copy';
   const targetRoot = getEditorRuntimeRoot(editor);
   const before = from.read.value() as JsonValue;
   const relocate = !slice;
+  const carried =
+    landing.kind === 'wrap' && landing.wrap.replaced
+      ? [landing.wrap.replaced]
+      : [];
   const expected: readonly Descendant[] = slice
     ? slice.content
     : source.kind === 'nodes'
-      ? source.entries.map(([node]) => node)
+      ? [
+          ...source.entries.map(([node]) => node),
+          ...carried.map(({ node }) => node),
+        ]
       : [];
   const expectedRoots = slice ? slice.roots : before.roots;
   const schema = getEditorSchema(editor);
@@ -618,12 +488,12 @@ const runTransfer = (
     editor,
     copy,
     draft,
-    (landing, after) => {
+    (drafted, after) => {
       const children = rootChildren(after, targetRoot);
-      const map = mapDraft(landing.children, children);
+      const map = mapDraft(drafted.children, children);
 
-      if ('range' in landing.landed) {
-        const [start, end] = RangeApi.edges(landing.landed.range);
+      if ('range' in drafted.landed) {
+        const [start, end] = RangeApi.edges(drafted.landed.range);
         const landedStart = map.point(start);
         const landedEnd = map.point(end);
 
@@ -641,7 +511,7 @@ const runTransfer = (
         );
       }
 
-      const paths = landing.landed.paths.map((path) => map.path(path));
+      const paths = drafted.landed.paths.map((path) => map.path(path));
 
       return (
         paths.length === expected.length &&
@@ -670,44 +540,89 @@ const runTransfer = (
       if (input.announce) {
         tx.effects.emit(screenReaderAnnouncementEffect, input.announce);
       }
-      if (relocate && source.kind === 'nodes' && !('point' in to)) {
+      const pathOf = (key: NodeKey): Path =>
+        tx.nodes.get(key)?.[1] ?? refuse('source-missing');
+      // The child position before or after `anchor` once `at` leaves its
+      // parent, if they share one.
+      const besidePath = (
+        anchor: Path,
+        edge: 'after' | 'before',
+        leaving: Path
+      ): Path => {
+        const index = anchor.at(-1) as number;
+        const shifted =
+          PathApi.equals(leaving.slice(0, -1), anchor.slice(0, -1)) &&
+          (leaving.at(-1) as number) < index
+            ? index - 1
+            : index;
+
+        return [
+          ...anchor.slice(0, -1),
+          edge === 'before' ? shifted : shifted + 1,
+        ];
+      };
+      const moveChain = (keys: readonly NodeKey[], first: () => Path) => {
+        keys.forEach((key, index) => {
+          const at = pathOf(key);
+
+          tx.nodes.move({
+            at,
+            to:
+              index === 0
+                ? first()
+                : besidePath(pathOf(keys[index - 1]), 'after', at),
+          });
+        });
+      };
+
+      // The draft guard also expects any target a wrap carried into its slot.
+      const selectLanded = (keys: readonly NodeKey[]) => {
+        const paths = keys.map(pathOf);
+
+        landed = SelectionApi.nodes(paths as [Path, ...Path[]]);
+        draft.current = {
+          children: tx.nodes.children(),
+          landed: {
+            paths: [...paths, ...carried.map(({ key }) => pathOf(key))],
+          },
+        };
+        if (select) tx.selection.set(landed);
+      };
+
+      if (landing.kind === 'wrap') {
+        const { anchor, payload, replaced, shell } = landing.wrap;
+        const shellPath = insertionPath(pathOf(anchor.key), anchor.edge);
+
+        tx.nodes.insert(shell, { at: shellPath });
+
+        const shellKey = tx.key(shellPath) ?? refuse('schema');
+        const slot = (path: Path, index: number): Path => [
+          ...pathOf(shellKey),
+          ...path,
+          index,
+        ];
+
+        if (replaced) {
+          tx.nodes.move({
+            at: pathOf(replaced.key),
+            to: slot(replaced.slot, 0),
+          });
+        }
+        moveChain(landing.keys, () => slot(payload, 0));
+        selectLanded(landing.keys);
+
+        return;
+      }
+      if (relocate && source.kind === 'nodes' && landing.kind === 'edge') {
         const keys = source.entries.map(
           ([, path]) => from.key(path) as NodeKey
         );
-        let anchorKey = to.key;
-        let { edge } = to;
+        const { edge } = landing;
 
-        for (const key of keys) {
-          const at = tx.nodes.get(key)?.[1];
-          const anchorPath = tx.nodes.get(anchorKey)?.[1];
-
-          if (!at || !anchorPath) refuse('source-missing');
-
-          const atPath = at as Path;
-          const targetPath = anchorPath as Path;
-          const anchorIndex = targetPath.at(-1) as number;
-          const shifted =
-            PathApi.equals(atPath.slice(0, -1), targetPath.slice(0, -1)) &&
-            (atPath.at(-1) as number) < anchorIndex
-              ? anchorIndex - 1
-              : anchorIndex;
-
-          tx.nodes.move({
-            at: atPath,
-            to: [
-              ...targetPath.slice(0, -1),
-              edge === 'before' ? shifted : shifted + 1,
-            ],
-          });
-          anchorKey = key;
-          edge = 'after';
-        }
-
-        const paths = keys.map((key) => tx.nodes.get(key)?.[1] as Path);
-
-        landed = SelectionApi.nodes(paths as [Path, ...Path[]]);
-        draft.current = { children: tx.nodes.children(), landed: { paths } };
-        if (select) tx.selection.set(landed);
+        moveChain(keys, () =>
+          besidePath(pathOf(edge.key), edge.edge, pathOf(keys[0]))
+        );
+        selectLanded(keys);
 
         return;
       }
@@ -739,12 +654,12 @@ const runTransfer = (
         });
       };
 
-      if ('point' in to) {
-        const start = tx.anchor(to.point, {
+      if (landing.kind === 'point') {
+        const start = tx.anchor(landing.point, {
           association: 'backward',
           deletion: 'nearest',
         });
-        const end = tx.anchor(to.point, {
+        const end = tx.anchor(landing.point, {
           association: 'forward',
           deletion: 'nearest',
         });
@@ -774,15 +689,12 @@ const runTransfer = (
 
       removeSource();
 
-      const target = tx.nodes.get(to.key);
+      const target = tx.nodes.get(landing.edge.key);
 
       if (!target || !slice) refuse('policy');
 
       const [, targetPath] = target as NodeEntry;
-      const boundary: Path = [
-        ...targetPath.slice(0, -1),
-        (targetPath.at(-1) as number) + (to.edge === 'after' ? 1 : 0),
-      ];
+      const boundary = insertionPath(targetPath, landing.edge.edge);
 
       if (
         !replaceSliceAtBlockBoundary(
@@ -836,9 +748,13 @@ const runTransfer = (
   };
 };
 
+type CachedCheck = Readonly<{ check: TransferCheck; key: readonly unknown[] }>;
+
+// A dragover over a side strip checks the side, then the edge it falls back
+// to; one slot each keeps them from evicting each other.
 const CHECKS = new WeakMap<
   AnyEditor,
-  Readonly<{ check: TransferCheck; key: readonly unknown[] }>
+  { edge?: CachedCheck; side?: CachedCheck }
 >();
 
 const checkKey = (
@@ -869,20 +785,27 @@ export const checkTransfer = (
   method: TransferIntent
 ): TransferCheck => {
   const key = checkKey(editor, input, method);
-  const cached = CHECKS.get(editor);
+  const slot =
+    typeof input.to === 'object' && 'side' in input.to ? 'side' : 'edge';
+  const slots = CHECKS.get(editor) ?? {};
+  const cached = slots[slot];
 
   if (cached && sameKey(cached.key, key)) return cached.check;
 
   let check: TransferCheck;
 
   try {
-    check = { admitted: true, to: admit(editor, input, method).to };
+    check = {
+      admitted: true,
+      to: targetOf(admit(editor, input, method).landing),
+    };
   } catch (error) {
     if (!(error instanceof TransferRefusalError)) throw error;
     check = { admitted: false, reason: error.reason };
   }
 
-  CHECKS.set(editor, { check, key });
+  slots[slot] = { check, key };
+  CHECKS.set(editor, slots);
 
   return check;
 };
@@ -921,6 +844,12 @@ export const checkFilesLanding = (
 /** The `editor.read.transfer` group. */
 export type TransferRead = Readonly<{
   /**
+   * Whether a transfer would be admitted, without running it: the dry run the
+   * drop indicator paints from, for a move. A refusal at commit time, such as
+   * a lossy landing, is not predicted.
+   */
+  check: (input: TransferInput) => TransferCheck;
+  /**
    * The blocks a transfer carries, after feature expansion such as list
    * families, without nested duplicates, in document order. With `node`, a
    * handle's blocks: the node selection when it holds the node, else the node
@@ -945,6 +874,7 @@ export type TransferApi = Readonly<{
 
 const TRANSFER_PLUGIN = definePlugin('transfer', {
   read: ({ editor }): TransferRead => ({
+    check: (input) => checkTransfer(editor as AnyEditor, input, 'move'),
     nodes: (options) =>
       transferEntries(editor as AnyEditor, options?.node).flatMap(
         ([node]) => editor.key(node) ?? []

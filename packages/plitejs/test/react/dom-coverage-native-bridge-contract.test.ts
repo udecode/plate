@@ -20,12 +20,7 @@ import {
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
 import { readDropIndicator } from '../../src/dom/utils/drop-indicator';
-import {
-  getNodeKey as editorGetNodeKey,
-  getSnapshot as editorGetSnapshot,
-  replace as editorReplace,
-  string as editorString,
-} from '../../src/internal';
+import { getNodeKey as editorGetNodeKey } from '../../src/internal';
 import { createEditor } from '../../src/react';
 import {
   applyEditableCopy,
@@ -41,6 +36,11 @@ import {
   ReactEditor,
   type ReactRuntimeEditor,
 } from '../../src/react/plugin/react-editor';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '../../src/testing';
 
 const blockImageSchema = defineEditorSchema('schema:dom-coverage-block-image', {
   elements: { image: { void: 'block' } },

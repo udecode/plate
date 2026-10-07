@@ -25,8 +25,6 @@ source_refs:
   - docs/research/sources/typora/navigation-search-outline-and-toc.md
 related:
   - docs/plans/2026-08-30-cursor-find-overlay-architecture.md
-  - docs/research/concepts/overlay-lane-separation.md
-  - docs/research/concepts/source-scoped-overlay-invalidation.md
   - docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md
   - docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md
 ---

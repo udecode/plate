@@ -8,7 +8,6 @@ source_refs:
   - ../raw/typora/pages/upload-image.json
 updated: 2026-04-09
 related:
-  - docs/research/entities/typora.md
   - docs/research/sources/typora/links-images-and-html-behavior.md
   - docs/editor-behavior/markdown-editing-spec.md
 ---

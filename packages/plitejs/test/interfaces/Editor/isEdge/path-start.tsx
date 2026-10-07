@@ -1,9 +1,7 @@
 import { jsx } from '../../..';
 /** @jsx jsx */
-import {
-  getSnapshot as editorGetSnapshot,
-  isEdge as editorIsEdge,
-} from '../../../../src/internal';
+import { isEdge as editorIsEdge } from '../../../../src/internal';
+import { getSnapshot as editorGetSnapshot } from '../../../../src/testing';
 
 jsx;
 

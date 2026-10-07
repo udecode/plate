@@ -6,7 +6,6 @@ updated: 2026-07-23
 source_refs:
   - docs/research/sources/typora/markdown-shorthand-and-inline-autoformat.md
   - docs/research/sources/milkdown/input-autoformat-lanes.md
-  - docs/research/concepts/behavior-packaging-candidates.md
   - docs/research/systems/editor-behavior-architecture.md
 related:
   - docs/editor-behavior/markdown-editing-spec.md

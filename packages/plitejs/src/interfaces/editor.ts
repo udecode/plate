@@ -42,7 +42,11 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
-import type { EditorSchemaSource } from '../core/schema-source.internal';
+import type {
+  EditorSchemaPluginProvider,
+  SchemaDescendantInValue,
+  EditorSchemaSource,
+} from '../core/schema-source.internal';
 import type { TxOnlyMethod, TxReadMethod } from '../core/tx-only';
 import { addMark as executeAddMarkCommand } from '../editor/add-mark';
 import { deleteBackward as executeDeleteBackwardCommand } from '../editor/delete-backward';
@@ -86,11 +90,9 @@ import type {
   EditorSchemaDeclaration,
   EditorSchemaDelta,
   EditorSchemaElement,
-  EditorSchemaPluginProvider,
   EditorSchemaIdentity,
   EditorSchemaProperty,
   EditorSchemaPropertyQuery,
-  SchemaDescendantInValue,
   SchemaElementConstructionPropertiesFor,
   SchemaElementFor,
   SchemaElementHandle,
@@ -1855,7 +1857,6 @@ export interface BaseEditor<
   /** Return the stable runtime key for a live node or location. */
   key: EditorKeyApi;
   read: EditorRead<V, TPlugins>;
-  subscribe: (listener: SnapshotListener<any>) => () => void;
   subscribeCommit: (listener: EditorCommitListener<any>) => () => void;
   update: EditorUpdate<V, TPlugins>;
   install: (
@@ -2048,7 +2049,7 @@ export type SnapshotInput<V extends Value = Value> =
 
 export type SnapshotListener<V extends Value = Value> = (
   snapshot: EditorSnapshot<V>,
-  change?: EditorCommit<V>
+  change: EditorCommit<V>
 ) => void;
 
 export type EditorCommitSource =
@@ -4313,16 +4314,6 @@ export interface EditorStaticApi {
     options?: EditorStringOptions
   ) => string;
 
-  subscribe: <V extends Value>(
-    editor: AnyEditor<V>,
-    listener: SnapshotListener<V>
-  ) => () => void;
-
-  subscribeCommit: <V extends Value>(
-    editor: AnyEditor<V>,
-    listener: EditorCommitListener<V>
-  ) => () => void;
-
   subscribeSource: <V extends Value>(
     editor: AnyEditor<V>,
     source: EditorCommitSource,
@@ -4894,14 +4885,6 @@ const editorInternalApi: EditorInternalApiTable = {
     return getEditorRuntime(editor).string(at, options);
   },
 
-  subscribe(editor, listener) {
-    return editor.subscribe(listener);
-  },
-
-  subscribeCommit(editor, listener) {
-    return editor.subscribeCommit(listener);
-  },
-
   subscribeSource<V extends Value>(
     editor: Editor<V>,
     source: EditorCommitSource,
@@ -5005,8 +4988,6 @@ const {
   unsetNodes,
   wrapNodes,
   string,
-  subscribe,
-  subscribeCommit,
   subscribeSource,
   update,
   unhangRange,
@@ -5089,8 +5070,6 @@ export {
   shouldMergeNodesRemovePrevNode,
   splitNodes,
   string,
-  subscribe,
-  subscribeCommit,
   subscribeSource,
   toggleBlock,
   toggleMark,

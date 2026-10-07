@@ -13,10 +13,7 @@ import {
 } from '../../src/annotations';
 import { authored } from '../../src/authored';
 import { history } from '../../src/history';
-import {
-  getAnnotationStoreMetrics,
-  replace as editorReplace,
-} from '../../src/internal';
+import { getAnnotationStoreMetrics } from '../../src/internal';
 import {
   createEditor,
   type Annotation,
@@ -24,6 +21,7 @@ import {
   useAnnotationStore,
   useAnnotations,
 } from '../../src/react';
+import { replace as editorReplace } from '../../src/testing';
 
 type CommentData = {
   body?: string;

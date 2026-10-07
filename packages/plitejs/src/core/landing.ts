@@ -1,7 +1,8 @@
-import type { AnyEditor, RootKey } from '../interfaces/editor';
+import type { AnyEditor, NodeKey, RootKey } from '../interfaces/editor';
 import { ElementApi, type Element } from '../interfaces/element';
-import type { Descendant, NodeEntry } from '../interfaces/node';
+import { NodeApi, type Descendant, type NodeEntry } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
+import { SelectionApi } from '../interfaces/selection';
 import { editorReads } from './editor-reads';
 import { getEditorRuntimeRoot, getEditorSchema } from './editor-runtime';
 import { definePluginPoint, getPluginContributions } from './plugin';
@@ -13,7 +14,9 @@ import type {
   TransferPayload,
   TransferRefusalReason,
   TransferRelation,
+  TransferSide,
   TransferVeto,
+  TransferVetoInput,
 } from './transfer-types';
 
 /** Contribute a veto that refuses a landing on its final edge. */
@@ -83,21 +86,25 @@ const reachableRoots = (
   return roots;
 };
 
-const liveTarget = (editor: AnyEditor, edge: TransferEdge) => {
-  const entry = editor.read.nodes.get(edge.key);
+const liveTarget = (editor: AnyEditor, { key }: Readonly<{ key: NodeKey }>) => {
+  const entry = editor.read.nodes.get(key);
 
   if (!entry || !ElementApi.isElement(entry[0])) refuse('policy');
 
   return entry as NodeEntry<Element>;
 };
 
-const insertionIndex = (edge: TransferEdge, targetPath: Path) =>
-  (targetPath.at(-1) as number) + (edge.edge === 'after' ? 1 : 0);
+export const insertionPath = (path: Path, edge: 'after' | 'before'): Path => [
+  ...path.slice(0, -1),
+  (path.at(-1) as number) + (edge === 'after' ? 1 : 0),
+];
 
-const checkIdentity = (
+const insertionIndex = (edge: TransferEdge, targetPath: Path) =>
+  insertionPath(targetPath, edge.edge).at(-1) as number;
+
+const checkInside = (
   editor: AnyEditor,
   { moving }: LandingRequest,
-  edge: TransferEdge,
   targetPath: Path
 ) => {
   if (!moving) return;
@@ -123,7 +130,19 @@ const checkIdentity = (
   ) {
     refuse('inside-source');
   }
-  if (moving.root !== targetRoot) return;
+};
+
+const checkIdentity = (
+  editor: AnyEditor,
+  request: LandingRequest,
+  edge: TransferEdge,
+  targetPath: Path
+) => {
+  checkInside(editor, request, targetPath);
+
+  const { moving } = request;
+
+  if (!moving || moving.root !== getEditorRuntimeRoot(editor)) return;
 
   const parentPath = targetPath.slice(0, -1);
   const index = insertionIndex(edge, targetPath);
@@ -146,7 +165,8 @@ const checkPlacement = (
   editor: AnyEditor,
   { fit, intent, moving }: LandingRequest,
   edge: TransferEdge,
-  targetPath: Path
+  targetPath: Path,
+  replacing: readonly number[] = []
 ) => {
   const parentPath = targetPath.slice(0, -1);
   const parent =
@@ -167,10 +187,16 @@ const checkPlacement = (
       parent ? parent.children : editor.read.children(),
       fit,
       insertionIndex(edge, targetPath),
-      { removing, root, strict: intent === 'copy' }
+      { removing: [...removing, ...replacing], root, strict: intent === 'copy' }
     )
   ) {
     refuse('schema');
+  }
+};
+
+const runVetoes = (editor: AnyEditor, input: TransferVetoInput) => {
+  for (const veto of getPluginContributions(editor, transferVeto)) {
+    if ((veto as TransferVeto)(input, editor)) refuse('policy');
   }
 };
 
@@ -223,10 +249,175 @@ export const landAt = (
   }
 
   checkPlacement(editor, request, to, final[1]);
-
-  for (const veto of getPluginContributions(editor, transferVeto)) {
-    if ((veto as TransferVeto)(input, editor)) refuse('policy');
-  }
+  runVetoes(editor, input);
 
   return to;
+};
+
+const withSlot = (
+  shell: Element,
+  slot: Path,
+  children: readonly Descendant[]
+): Element => {
+  if (slot.length === 0) return { ...shell, children: [...children] };
+
+  const [index, ...rest] = slot;
+
+  return {
+    ...shell,
+    children: shell.children.map((child, i) =>
+      i === index ? withSlot(child as Element, rest, children) : child
+    ),
+  };
+};
+
+const slotIn = (shell: Element, slot: Path) => {
+  const element = slot.length === 0 ? shell : NodeApi.getIf(shell, slot);
+
+  return ElementApi.isElement(element) && element.children.length === 0
+    ? element
+    : null;
+};
+
+const checkSlot = (
+  editor: AnyEditor,
+  slot: Element,
+  fit: readonly Descendant[]
+) => {
+  if (
+    !getEditorSchema(editor).canPlaceAt(slot, [], fit, 0, {
+      root: getEditorRuntimeRoot(editor),
+    })
+  ) {
+    refuse('schema');
+  }
+};
+
+export type LandedWrap = Readonly<{
+  anchor: TransferEdge;
+  payload: Path;
+  replaced: Readonly<{ key: NodeKey; node: Element; slot: Path }> | null;
+  shell: Element;
+}>;
+
+/**
+ * A wrap that takes the target's place moves the target alone, so a target
+ * whose feature family reaches past it refuses.
+ */
+export const landBeside = (
+  editor: AnyEditor,
+  request: LandingRequest,
+  moving: NonNullable<LandingRequest['moving']>,
+  side: TransferSide
+): LandedWrap => {
+  const target = liveTarget(editor, side);
+  const [targetNode, targetPath] = target;
+
+  checkInside(editor, request, targetPath);
+
+  const wrap = executeEditorRead(
+    editor,
+    editorReads.transfer.side,
+    {
+      from: request.from,
+      intent: request.intent,
+      payload: request.payload,
+      relation: request.relation,
+      side: side.side,
+      target,
+    },
+    () => null,
+    editor
+  );
+
+  // A feature's shell must name empty, distinct slots that exist.
+  const payloadSlot = wrap && slotIn(wrap.shell, wrap.payload);
+  const targetSlot =
+    wrap && 'target' in wrap ? slotIn(wrap.shell, wrap.target) : null;
+
+  if (
+    !wrap ||
+    !payloadSlot ||
+    ('target' in wrap &&
+      (!targetSlot || PathApi.equals(wrap.target, wrap.payload)))
+  ) {
+    return refuse('policy');
+  }
+
+  let anchor: TransferEdge;
+  let replaced: LandedWrap['replaced'] = null;
+
+  if ('target' in wrap) {
+    if (
+      moving.entries.some(([, path]) => PathApi.isAncestor(targetPath, path))
+    ) {
+      refuse('inside-source');
+    }
+    if (
+      executeEditorRead(
+        editor,
+        editorReads.transfer.source,
+        { selection: SelectionApi.nodes([targetPath]) },
+        ({ selection }) => selection,
+        editor
+      ).paths.some((path) => !PathApi.equals(path, targetPath))
+    ) {
+      return refuse('policy');
+    }
+
+    anchor = { edge: 'before', key: side.key };
+    replaced = { key: side.key, node: targetNode, slot: wrap.target };
+  } else {
+    const key =
+      wrap.ancestor >= 0 && wrap.ancestor < targetPath.length
+        ? editor.key(targetPath.slice(0, targetPath.length - wrap.ancestor))
+        : null;
+
+    if (!key) return refuse('policy');
+    anchor = { edge: wrap.edge, key };
+  }
+
+  const anchorEntry = liveTarget(editor, anchor);
+  const [, anchorPath] = anchorEntry;
+  const filled = withSlot(wrap.shell, wrap.payload, request.fit);
+
+  checkPlacement(
+    editor,
+    {
+      ...request,
+      fit: [replaced ? withSlot(filled, replaced.slot, [targetNode]) : filled],
+    },
+    anchor,
+    anchorPath,
+    replaced ? [anchorPath.at(-1) as number] : []
+  );
+  checkSlot(editor, payloadSlot, request.fit);
+  if (targetSlot) checkSlot(editor, targetSlot, [targetNode]);
+
+  const input = { ...landingInput(request, anchor, anchorEntry), wrap };
+
+  runVetoes(editor, input);
+
+  if (replaced) {
+    const parentPath = targetPath.slice(0, -1);
+
+    runVetoes(editor, {
+      ...input,
+      from: editor,
+      intent: 'move',
+      payload: {
+        kind: 'nodes',
+        nodes: [targetNode],
+        parentKeys: [parentPath.length > 0 ? editor.key(parentPath) : null],
+      },
+      relation: 'document',
+    });
+  }
+
+  return {
+    anchor,
+    payload: wrap.payload,
+    replaced,
+    shell: wrap.shell,
+  };
 };

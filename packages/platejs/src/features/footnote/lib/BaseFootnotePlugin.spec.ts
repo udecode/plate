@@ -6,6 +6,7 @@ import {
   type Selection,
   type Value,
 } from '../../../core';
+import { BaseColumnPlugin } from '../../layout/lib/BaseColumnPlugin';
 import { BaseTablePlugin } from '../../table/lib/BaseTablePlugin';
 import {
   BaseFootnoteDefinitionPlugin,
@@ -949,6 +950,45 @@ describe('footnote definition transfer landing', () => {
         to: { edge: 'after', key: editor.key([0, 0, 0, 0])! },
       }).status
     ).toBe('refused');
+  });
+
+  const createWithColumns = () =>
+    createEditor({
+      plugins: [
+        BaseFootnotePlugin,
+        BaseFootnoteDefinitionPlugin,
+        BaseColumnPlugin,
+      ],
+      initialValue: [
+        { children: [{ text: 'text' }], type: 'paragraph' },
+        {
+          children: [{ children: [{ text: 'note' }], type: 'paragraph' }],
+          ref: '1',
+          type: 'footnoteDefinition',
+        },
+      ] as Value,
+    });
+
+  it('refuses a definition dropped beside a block, which would put it in a column', () => {
+    const editor = createWithColumns();
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { key: editor.key([0])!, side: 'end' },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
+  });
+
+  it('refuses a block dropped beside a definition, which would move it into a column', () => {
+    const editor = createWithColumns();
+
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([0])!],
+        to: { key: editor.key([1])!, side: 'start' },
+      })
+    ).toEqual({ reason: 'policy', status: 'refused' });
   });
 
   it('moves a definition among root blocks', () => {

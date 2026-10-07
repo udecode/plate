@@ -92,13 +92,13 @@ run('T2 slice.replace at an existing block path merges text', () => {
 run('T3 a spec built in a read and never applied publishes nothing', () => {
   const editor = createEditor({ initialValue: [paragraph('A'), paragraph('B')] });
   let commits = 0;
-  const unsubscribe = editor.subscribe?.(() => {
+  const unsubscribe = editor.subscribeCommit(() => {
     commits += 1;
   });
   const spec = editor.read((state: any) =>
     state.transaction((tx: any) => tx.nodes.remove({ at: SelectionApi.nodes([[0]]) }))
   );
-  unsubscribe?.();
+  unsubscribe();
   return { commits, specBuilt: !!spec, texts: texts(editor) };
 });
 

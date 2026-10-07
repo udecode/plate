@@ -14,11 +14,12 @@ import {
   getLastCommit as editorGetLastCommit,
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
+} from '../src/internal';
+import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
-  subscribe as editorSubscribe,
-} from '../src/internal';
+} from '../src/testing';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -69,10 +70,8 @@ describe('collab canonical remote reconcile contract', () => {
     const editor = createCollabEditor();
     const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
       [];
-    const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
-      if (commit) {
-        commits.push(commit);
-      }
+    const unsubscribe = editor.subscribeCommit((commit) => {
+      commits.push(commit);
     });
     const oldBlockNodeKey = editorGetNodeKey(editor, [0]);
     const oldTextNodeKey = editorGetNodeKey(editor, [0, 0]);

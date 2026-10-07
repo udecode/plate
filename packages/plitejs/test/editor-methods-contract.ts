@@ -4,11 +4,13 @@ import { describe, it } from 'node:test';
 import { createEditor, type Element } from 'plitejs';
 
 import {
-  getChildren as editorGetChildren,
   getLastCommit as editorGetLastCommit,
-  replace as editorReplace,
   setEditorTargetRuntime,
 } from '../src/internal';
+import {
+  getChildren as editorGetChildren,
+  replace as editorReplace,
+} from '../src/testing';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',

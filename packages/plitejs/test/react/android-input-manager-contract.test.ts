@@ -17,9 +17,7 @@ import {
 } from '../../src/dom/internal';
 import {
   addMark as editorAddMark,
-  getSnapshot as editorGetSnapshot,
   select as editorSelect,
-  string as editorString,
 } from '../../src/internal';
 import { nativeGroupingInput } from '../../src/react/editable/input-history';
 import {
@@ -34,6 +32,10 @@ import {
 } from '../../src/react/hooks/android-input-manager/android-input-manager';
 import { useAndroidInputManagerForEditor } from '../../src/react/hooks/android-input-manager/use-android-input-manager';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
+import {
+  getSnapshot as editorGetSnapshot,
+  string as editorString,
+} from '../../src/testing';
 
 const testSchedulers = new Set<DOMPhaseScheduler>();
 

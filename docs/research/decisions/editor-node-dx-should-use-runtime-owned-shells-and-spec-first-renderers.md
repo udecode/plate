@@ -5,7 +5,6 @@ status: accepted
 updated: 2026-04-28
 source_refs:
   - docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md
-  - docs/research/systems/editor-node-text-mark-dx-landscape.md
 related:
   - docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md

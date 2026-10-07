@@ -20,13 +20,10 @@ export {
   positions,
   replace,
   string,
-  subscribe,
-  subscribeCommit,
   unhangRange,
 } from '../interfaces/editor';
 export { end } from '../editor/end';
 export {
   getLiveSelection as getEditorLiveSelection,
-  repairEditorValue as normalize,
   setEditorFocused,
 } from '../core/public-state';

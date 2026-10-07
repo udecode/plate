@@ -9,9 +9,6 @@ source_refs:
   - ../prosemirror/history/src/history.ts
 updated: 2026-04-15
 related:
-  - docs/research/entities/prosemirror.md
-  - docs/research/concepts/overlay-lane-separation.md
-  - docs/research/concepts/durable-anchor-vs-live-handle.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
 ---
 

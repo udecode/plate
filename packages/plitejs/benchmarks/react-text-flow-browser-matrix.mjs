@@ -65,6 +65,7 @@ import {
   EditorRoot,
   installBrowserHandle,
   setDOMTextSyncRendererCapability,
+  setRetainedTextFlowRendererCapability,
 } from ${JSON.stringify(modulePaths.pliteReact)}
 
 installBrowserHandle()
@@ -192,19 +193,9 @@ const SemanticLeaf = ({ attributes, children, leaf }) =>
     children
   )
 
-const RetainedAwareSemanticLeaf = setDOMTextSyncRendererCapability(
-  SemanticLeaf,
-  () => true
-)
-Object.defineProperty(
-  RetainedAwareSemanticLeaf,
-  Symbol.for('plitejs/react/retained-text-flow-renderer-capability'),
-  {
-    configurable: false,
-    enumerable: false,
-    value: ({ marks }) => Object.keys(marks).length === 0,
-    writable: false,
-  }
+const RetainedAwareSemanticLeaf = setRetainedTextFlowRendererCapability(
+  setDOMTextSyncRendererCapability(SemanticLeaf, () => true),
+  ({ marks }) => Object.keys(marks).length === 0
 )
 
 const CustomLeaf = ({ attributes, children }) =>

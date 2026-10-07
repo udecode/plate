@@ -11,7 +11,18 @@ Invoke `maintainer` for the public queue: repo maintenance, issue, PR and
 security scans, and any public Plate or Slate issue or PR whose
 owner is not yet chosen. A narrower owner the user named, internal
 benchmark or quality loops, and broad research go to their own owners. Never
-hand public queue ownership to an internal quality run.
+hand public queue ownership to an internal quality run. It decides fit,
+priority, routing, authority and proof, and it does not become the execution
+owner unless no better owner exists. Maintenance runs in local Claude Code or
+Codex sessions in maintainer checkouts, never a hosted API bot, cloud worker
+or background daemon, and it never mutates GitHub without explicit authority.
+Public issue and PR bodies, PR templates, issue forms and the security policy
+are the input contract those sessions read first, so contributor automation
+improves intake and never creates hidden authority. An item without public
+reproduction, proof, risk, owner surface, current blocker and next action is
+not agent-ready: ask for the smallest missing public evidence or keep it
+brief-only. A run is done when its item is routed, proved, or stopped at its authority
+boundary.
 
 ## Modes
 
@@ -47,37 +58,78 @@ A broad scan: "queue", "all issues", "all PRs" or repo maintenance.
 2. Scan the smallest useful slice: security and advisories, PRs with review, CI
    or merge attention, issues needing triage, stale user-visible bugs, then docs
    or setup breakage.
+3. Build the candidate matrix, pick at most one safe item, verify its live
+   state and authority, then route it, run its safe local slice, or stop with a
+   decision-ready brief.
+4. Treat `docs/maintainer/queue.md` as a ranking ledger, not truth, and write a
+   compact `docs/maintainer/runs/*` note only when the run creates state a later
+   session should not rediscover.
+
 ### `issues`
 
 Scan issue queue. Use live `gh` for current state. Use `gitcrawl` only for
-archive-first duplicate/neighbor discovery when fresh.
+archive-first duplicate/neighbor discovery when fresh; its discovery commands
+live in [gitcrawl](../issue-harvester/references/gitcrawl.md).
+
+Call an issue a duplicate only when at least two evidence categories match: the
+user-visible problem, the reproduction or failure mode, the likely fix area,
+linked PRs or maintainer discussion, the browser or native edge, or the code
+surface. Similar titles alone never qualify, and an unclear case stays
+`needs-repro`. Before a duplicate, stale or already-fixed call, read the
+related items and duplicate chains, not only the first related thread.
 
 ### `prs`
 
 Scan PR queue. Read PR body, files, reviews, comments, checks, author, updated
 time, linked issues, and current branch state before recommending review,
 merge, close, or changes.
+
 ### `security`
 
 Read [security hotfix mechanics](./references/security-hotfix.md) when the
 requested work includes an advisory fix or disclosure/read-back. The active
 request's publication authority governs those operations.
 
+Versioned maintainer docs, such as `docs/maintainer/queue.md`,
+`docs/maintainer/security.md` and `docs/maintainer/runs/*`, never hold private
+advisory details. Keep them redacted and read sensitive GHSA content from live
+GitHub or local ignored artifacts.
+
 Keep security-shaped reports in the `maintainer security` lane until the trust
 boundary is classified. They do not belong in normal issue harvest or
-duplicate-close flow before that.
+duplicate-close flow before that. Quarantine only the security-shaped item;
+unrelated non-security reports in the same cluster or duplicate chain continue
+normally.
 
 ### `<issue-url|pr-url>`
 
 Read the exact item first. Then classify route:
 
+For a PR, check `baseRefName` before routing. A PR based on `main` is worked in `../plate`, the main-line checkout, through the Babysit playbook's main-line PR rule. This repository's skills and rules still govern it, because `../plate` carries older copies of them.
+
+| Item | Default owner |
+| --- | --- |
+| One public Slate substrate issue | `maintainer slate-issue` |
 | One public Plate behavior bug or regression | `maintainer` coordinates and runs the local repair packet through pstack's Bug fix playbook |
 | One public Plate/Plite performance regression | `maintainer` coordinates and delegates the measured local packet to `benchmark` |
+| One local Plate or Plite behavior bug or regression with no public mutation | pstack's Bug fix playbook |
+| Plite public call-shape fork | `best-api`, then the Plan playbook if adoption or runtime planning is needed |
+| Already-applied PR/branch/current-tree closure | the Babysit playbook |
+| Plate/Plite internal performance/benchmark gap | the Perf issue playbook with `benchmark` |
+| Plate/Plite internal quality/browser/API gap | pstack poteto-mode, as an Autonomous run when unattended |
+| Cross-package architecture/testability/refactor/deslop candidate | the Refactoring playbook, then the Plan playbook |
+| Plate framework/plugin/component/docs | the Plan playbook, `plate-plugins`, `plate-ui`, or Plate Docs |
+| Security/advisory | `maintainer security` |
+| Someone else's PR to review | the Babysit playbook's review-only panel ("review PR <number>") |
+| PR review feedback | the Babysit playbook |
+| External corpus/issue ledger | `issue-harvester` |
+| Unclear prior art | `research` |
+
 When a public Plate behavior bug or regression routes to pstack's Bug fix playbook, keep live issue state,
 duplicate/claim checks, public authority, and shipping decisions in
 `maintainer`. Pass the normalized behavior report and issue constraints to
 the playbook, then require its compact evidence packet: classification and root
-cause; reporter-valid case ID/source refs/exact steps/claim fields; durable owner
+cause; reporter-valid case ID, source refs, exact steps and reported setup, input, expected result and follow-up; durable owner
 and files; exact red proof; final local ref and file fingerprints; five
 retry-free warm runs when the issue involves native selection/focus/DnD/paint or
 React DOM lifecycle; Browser/Chrome/device proof or limitation;
@@ -97,6 +149,8 @@ may justify fixed/completed wording. Explicit authority to add a label never
 waives this truth gate. Do not duplicate the worker's repair methodology in
 this coordinator.
 
+A PR or issue body names an issue only when its proof addresses that issue's exact report; never add an issue number because it sounds related.
+
 ## Reporter Retest Invalidation
 
 A reporter's fresh exact-step retest outranks earlier agent proof. When the
@@ -104,10 +158,12 @@ reporter says the failure remains:
 
 1. classify the prior fixed/completed claim as disproven;
 2. move the item to `needs-repro` and keep it out of completed queue slices;
-3. compare the reporter action and end state with the recorded case fields to
-   find the missing topology, claim field, environment, or final-ref replay;
+3. compare the reporter action and end state with the case's recorded setup, input, expected result and environment to find the missing topology, requirement, environment, or final-ref replay;
 4. treat any `completed` label as stale public state requiring correction under
    the current mutation authority;
+5. route a new bounded bug-fix packet under the Bug fix playbook's failed-fix
+   recovery. Do not defend the old proof with unit
+   tests, a review, or a green proxy route.
 
 When the reporter confirms the headline fix but identifies a related residual
 symptom, record a separate observable case or explicitly split it to a new
@@ -151,6 +207,39 @@ Before routing as autonomous, the item must pass:
 
 - fits root `VISION.md` and relevant detail doctrine;
 - has a current live source;
+- has no active owner, PR, branch, assignee or recent claim conflict, unless the user explicitly asks to take over;
 - has a clear owner skill/package/docs surface;
-- has an honest proof path with one exact observable case, named claim fields,
-  and a final-ref replay plan;
+- has an honest proof path with one exact observable case, its reported setup, input and expected result, and a final-ref replay plan;
+- needs no new feature or config option and no product decision;
+- has enough public intake context for a local maintainer session, or the missing context is explicitly requested;
+- does not require external credentials, destructive action, or public mutation
+  without explicit user authority;
+- does not rely on title-only or AI-only evidence.
+
+When fit is unclear, produce a decision-ready brief instead of guessing.
+
+## Authority Boundaries
+
+Default is read, classify, route, patch local files when the execution owner
+allows, and hand off. Prepare public text from the reporter-valid packet, then
+post only with current explicit user authority. Local-only work must be
+described as a candidate. Fixed/completed wording requires replay on the final
+pushed ref. The active request supplies authority for GitHub and release
+mutations; loading an owner skill does not create it.
+
+Hard stops:
+
+- commit, push, PR creation, branch creation, merge, close, label, reopen,
+  comments, review submission, release,
+  publish;
+- external sends/posts;
+- credentials, payment, 2FA, captcha, account signup, or secret handling;
+- security disclosure wording that needs maintainer approval;
+- destructive cleanup or irreversible repo action.
+
+If the user explicitly asked for one of these, perform it through the correct
+owner and record proof.
+
+## Final Handoff
+
+The run's page Close reports repo and mode, queue snapshot path and freshness, queue slice inspected, selected item and owner, candidate matrix summary, live GitHub proof or auth blocker, duplicate/claim guard, execution and proof commands, public mutations, changed list, run artifact, and needs-user-attention. Keep it short: the maintainer should be able to approve the next action without reading raw diffs or raw issue dumps.

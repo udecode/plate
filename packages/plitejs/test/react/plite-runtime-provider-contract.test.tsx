@@ -757,6 +757,26 @@ describe('EditorRoot provider contract', () => {
     expect(onValueChange).not.toHaveBeenCalled();
   });
 
+  test('Plite onCommit runs after commit listeners registered after mount', async () => {
+    const editor = createEditor({ initialValue: initialValue() });
+    const events: string[] = [];
+
+    render(
+      <TestRoot editor={editor} onCommit={() => events.push('onCommit')}>
+        <Editable aria-label="Main editor" />
+      </TestRoot>
+    );
+    editor.subscribeCommit(() => events.push('commit listener'));
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+      });
+    });
+
+    expect(events).toEqual(['commit listener', 'onCommit']);
+  });
+
   test.each(['direct', 'runtime'] as const)(
     'Plite %s callbacks publish nested commits in version order with paired snapshots',
     async (mode) => {

@@ -8,7 +8,6 @@ import { authored } from 'plitejs/authored';
 import { domCommands } from 'plitejs/dom';
 
 import { isInTransaction } from '../../src/core/public-state';
-import { replace as editorReplace } from '../../src/internal';
 import {
   applyEditableCommand,
   applyModelOwnedDeleteIntent,
@@ -17,6 +16,7 @@ import {
 } from '../../src/react/editable/mutation-controller';
 import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
 import { createEditor } from '../../src/react/plugin/with-react';
+import { replace as editorReplace } from '../../src/testing';
 
 const createCommandProbeEditor = () => {
   const seen: string[] = [];

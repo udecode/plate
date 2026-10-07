@@ -8,6 +8,7 @@ import {
   type PluginInput,
   type Point,
   type RootKey,
+  getEditorRuntimeOwner,
 } from 'plitejs';
 import { authored } from 'plitejs/authored';
 import { dataTransferFormats, dom, domCommands } from 'plitejs/dom';
@@ -18,12 +19,7 @@ import {
   observeDataTransferInsertion,
   setDOMClipboardFormatKey,
 } from '../../src/dom/internal';
-import {
-  getLastCommit as editorGetLastCommit,
-  getEditorRuntimeOwner,
-  getSelection as editorGetSelection,
-  string as editorString,
-} from '../../src/internal';
+import { getLastCommit as editorGetLastCommit } from '../../src/internal';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   applyEditableCommand,
@@ -40,6 +36,10 @@ import {
   subscribePliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
+import {
+  getSelection as editorGetSelection,
+  string as editorString,
+} from '../../src/testing';
 
 const SHARED_ROOT = 'synced-block:shared:body' as RootKey;
 

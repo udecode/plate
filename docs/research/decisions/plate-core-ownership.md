@@ -137,7 +137,9 @@ replacement or dual vocabulary survives.
 Plate reaches Plite compilation through the explicit `plitejs/internal`
 package bridge. That entrypoint owns one file; Plite's own DOM, React and other
 public subentries continue to depend on their actual local owners. Public root
-declarations and docs do not expose the compiled carriers.
+declarations and docs do not expose the compiled carriers. The bridge exports
+only framework hooks and carriers and shares no binding with a public
+`plitejs` or `platejs` entrypoint.
 
 The [production result](../../plans/artifacts/shared-plugin-identity-feasibility/production-result.json)
 passes the frozen runtime/type budgets. Plite and Plate package suites, builds,

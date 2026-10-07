@@ -9,8 +9,7 @@ source_refs:
   - docs/research/sources/lexical/markdown-package-and-shortcuts-doc-patterns.md
   - docs/research/sources/slate/walkthrough-concepts-and-api-doc-patterns.md
   - .agents/rules/docs-creator.mdc
-related:
-  - docs/research/systems/plugin-input-rule-doc-pattern-landscape.md
+related: []
 ---
 
 # Plugin input rules guide should lead with runtime first then feature owners then API reference

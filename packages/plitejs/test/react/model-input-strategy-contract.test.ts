@@ -2,13 +2,7 @@ import { createEditor, definePlugin, editorCommands } from 'plitejs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { IS_COMPOSING } from '../../src/dom/internal';
-import {
-  getChildren as editorGetChildren,
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-  select as editorSelect,
-  string as editorString,
-} from '../../src/internal';
+import { select as editorSelect } from '../../src/internal';
 import {
   createEditableInputController,
   createEditableInputControllerState,
@@ -20,6 +14,12 @@ import {
 } from '../../src/react/editable/model-input-strategy';
 import { applyModelOwnedDataTransferInput } from '../../src/react/editable/mutation-controller';
 import type { ReactRuntimeEditor as ReactEditor } from '../../src/react/plugin/react-editor';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+  string as editorString,
+} from '../../src/testing';
 
 const createTextEditor = (text = '', offset = 0, type = 'paragraph') => {
   const editor = createEditor();

@@ -11,11 +11,6 @@ import {
   EDITOR_TO_USER_MARKS,
 } from '../../src/dom/internal';
 import {
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-  string as editorString,
-} from '../../src/internal';
-import {
   commitProjectedCompositionInput,
   applyEditableCompositionEnd as applyEditableCompositionEndRuntime,
   applyEditableCompositionStart,
@@ -52,6 +47,11 @@ import {
   createPliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+  string as editorString,
+} from '../../src/testing';
 import { readTextSelection } from './read-text-selection';
 
 const createAndroidManager = () =>

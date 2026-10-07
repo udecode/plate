@@ -9,10 +9,7 @@ import {
 import React from 'react';
 
 import { resolveDOMTextFlowPoint } from '../../src/dom/internal';
-import {
-  getNodeKey as editorGetNodeKey,
-  replace as editorReplace,
-} from '../../src/internal';
+import { getNodeKey as editorGetNodeKey } from '../../src/internal';
 import {
   createEditor,
   Editable,
@@ -21,6 +18,7 @@ import {
 } from '../../src/react';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { getPliteNodeElementByPath } from '../../src/react/hooks/use-plite-node-ref';
+import { replace as editorReplace } from '../../src/testing';
 
 const inlineLinkSchema = defineEditorSchema(
   'schema:rendered-dom-shape-inline-link',

@@ -10,11 +10,11 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 
+import { getLastCommit as editorGetLastCommit } from '../src/internal';
 import {
-  getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
-} from '../src/internal';
+} from '../src/testing';
 import { extendTestSchema } from './support/schema';
 
 const createChildren = (): Element[] => [

@@ -31,6 +31,7 @@ Treat `platejs` as the shared Plate host, not another feature dependency.
   entrypoint's `peerDependencies` in the canonical DAG; the manifest's optional
   peer set and the DAG's peer set must match exactly. Optional peers are not a
   dumping ground for normal dependencies.
+- Import a CommonJS dependency through its default import unless its named exports are proven under native Node ESM; Bun and bundlers accept named imports that Node rejects.
 - Packed release proof records minified consumer sizes for the root and every
   public feature entrypoint. Review each byte diff before running
   `pnpm plite:entrypoint-sizes:update`.

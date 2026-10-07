@@ -19,10 +19,6 @@ import {
   markDOMSyncMutationTarget,
 } from '../../src/dom/internal';
 import {
-  replace as editorReplace,
-  string as editorString,
-} from '../../src/internal';
-import {
   applyEditableCompositionEnd,
   applyEditableCompositionUpdate,
 } from '../../src/react/editable/composition-state';
@@ -39,6 +35,10 @@ import { queuePendingCompositionModelInput } from '../../src/react/editable/runt
 import { useEditableRootRuntimeState } from '../../src/react/editable/runtime-root-state';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
+import {
+  replace as editorReplace,
+  string as editorString,
+} from '../../src/testing';
 
 const strictMode = ({ children }: { children: ReactNode }) => (
   <StrictMode>{children}</StrictMode>
@@ -258,7 +258,7 @@ test('skips focus repair when a claim subscriber publishes before settlement', a
   const focus = vi.fn();
   const runtime = new EditableDOMRuntime({ editor });
   let published = false;
-  const unsubscribe = editor.subscribe(() => {
+  const unsubscribe = editor.subscribeCommit(() => {
     if (published || editor.read.history.pending() !== 'undo') return;
     published = true;
     editor.update((tx) => {

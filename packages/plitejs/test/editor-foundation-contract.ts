@@ -14,10 +14,12 @@ import {
   getLastCommit as editorGetLastCommit,
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
+} from '../src/internal';
+import {
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 import { extendTestSchema } from './support/schema';
 
 const paragraph = (text: string): Element => ({
@@ -192,10 +194,8 @@ describe('editor foundation contract', () => {
     const remoteCommits: Array<
       NonNullable<ReturnType<typeof editorGetLastCommit>>
     > = [];
-    const unsubscribe = remote.subscribe((_snapshot, commit) => {
-      if (commit) {
-        remoteCommits.push(commit);
-      }
+    const unsubscribe = remote.subscribeCommit((commit) => {
+      remoteCommits.push(commit);
     });
 
     source.update({ tags: ['local-edit', 'collab-export'] }, (tx) => {

@@ -13,11 +13,7 @@ import {
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
 import * as domRangeResolver from '../../src/dom/plugin/dom-editor';
-import {
-  getNodeKey as editorGetNodeKey,
-  getSelection as editorGetSelection,
-  replace as editorReplace,
-} from '../../src/internal';
+import { getNodeKey as editorGetNodeKey } from '../../src/internal';
 import { applyDOMCoverageSelectionPolicy } from '../../src/react/editable/dom-coverage-selection';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
@@ -38,6 +34,10 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '../../src/testing';
 import { readTextSelection } from './read-text-selection';
 
 test('initial unselected mounts do not read native selection between sibling view layouts', () => {

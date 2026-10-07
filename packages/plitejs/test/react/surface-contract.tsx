@@ -169,6 +169,7 @@ const expectedPliteReactRuntimeRootExports = [
   'installBrowserHandle',
   'react',
   'setDOMTextSyncRendererCapability',
+  'setRetainedTextFlowRendererCapability',
   'useClaimEditableDOMCommit',
   'useEditorContext',
   'useEditorComposing',

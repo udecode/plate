@@ -47,7 +47,7 @@ state or follow-up usability.
 
 Before calling a unit or package RED exact, compare its setup with every route
 mode that changes mutation representation or schema properties. Record
-`runtime-modes:` in the selected case's `Exact environment`, including preview,
+`runtime-modes:` in the case's `Exact environment`, including preview,
 suggestion, history, read-only, and any other relevant active or inactive mode.
 The same transform with a route-owned mode disabled is a proxy: it can reproduce
 the first exception while hiding the next invalid state in the same action.
@@ -140,7 +140,7 @@ merge, then type or navigate from the restored range. Completion requires
 prove point mapping through a merge.
 
 When changing Plate/Plite runtime dependency placement for a React helper,
-record `package-dependency-change:` in the selected case. Its `runtime-errors`
+record `package-dependency-change:` in the case. Its `runtime-errors`
 oracle uses a `packed package` proof layer and records `react-free-headless:`
 and `react-consumer:` assertions. Before a keep decision, run
 `pnpm plite:release:packages` against the final manifest and built artifacts;
@@ -418,7 +418,8 @@ configure the interceptor, replay the same tab, and record
 When the report names Chrome, Blink, a compositor, or browser-native behavior,
 record `exact-chrome: <environment>` and use exact Chrome for the full final
 replay. Playwright Chromium remains useful diagnosis but cannot certify that
-claim. Record the exact binary's path and its version output, and make the
+claim. An applicable `geometry-paint` oracle uses exact Chrome as well, even
+when the report names no browser. Record the exact binary's path and its version output, and make the
 proof command launch that same path. Confirm one
 worker launch trace before counting stability. A requested channel, project
 name, or handwritten host label is not executable attestation.
@@ -466,7 +467,7 @@ ran; neither proves the intermediate state was painted.
 
 An ordering fix must exercise both the pre-handler already queued competitor
 and a delayed post-handler re-entry when either can overwrite the named result.
-Proving only one ordering window cannot close the case.
+Proving only one ordering window cannot close the case. A selection-authority fix that ignores or blocks DOM selection import keeps the toolbar-selection and paste rows green as its must-still-accept cases.
 
 A pixel classifier needs executable sentinels before it can judge product
 behavior. Capture a known-correct single-layer state, a known-absent state, and

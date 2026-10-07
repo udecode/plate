@@ -10,7 +10,7 @@ import {
 import {
   getChildren as editorGetChildren,
   getSelection as editorGetSelection,
-} from '../../src/internal';
+} from '../../src/testing';
 
 describe('plite-hyperscript smoke contract', () => {
   it('creates an empty editor tree through the default jsx factory', () => {

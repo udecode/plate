@@ -239,6 +239,18 @@ const lintSource = ({
   return reports;
 };
 
+test('rejects a directory import of a forbidden index entrypoint', () => {
+  const reports = lintSource({
+    filename: path.join(
+      repositoryRoot,
+      'packages/plitejs/src/yjs/core/controller.ts'
+    ),
+    specifier: '../../internal',
+  });
+
+  assert.equal(reports.length, 1);
+});
+
 test('the configured entrypoint maps are acyclic', () => {
   assert.doesNotThrow(() => assertEntrypointDags());
 });

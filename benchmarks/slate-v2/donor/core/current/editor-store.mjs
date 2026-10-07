@@ -122,7 +122,7 @@ const getSnapshotAfterEachWriteMs = measureLane(
 
 const subscribeDispatchMs = measureLane(createEditorWithChildren, (editor) => {
   let notifications = 0;
-  const unsubscribe = Editor.subscribe(editor, () => {
+  const unsubscribe = editor.subscribeCommit(() => {
     notifications += 1;
   });
 

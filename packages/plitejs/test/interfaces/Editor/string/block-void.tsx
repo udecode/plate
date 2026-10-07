@@ -1,4 +1,4 @@
-import { string as editorString } from '../../../../src/internal';
+import { string as editorString } from '../../../../src/testing';
 /** @jsx jsx  */
 
 export const input = (

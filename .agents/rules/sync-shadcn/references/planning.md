@@ -202,6 +202,8 @@ surface:
 git grep --untracked -n -E "v0|OpenInV0|create|charts|colors|themes|customizer|useProject|liftMode|docsConfig|Contentlayer|/api/registry/\\[name\\]" -- apps/www content/docs docs
 ```
 
+For every discarded surface, also search its hidden state names, not only its UI entrypoints: component, hook and route names, localStorage keys, event names, and stale sync comments. Deleting the visible UI is not enough.
+
 Classify each row with one decision:
 
 - `adopt-upstream`: upstream owns the better generic docs infrastructure and

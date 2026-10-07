@@ -9,10 +9,7 @@ import {
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
 } from '../../src/dom/internal';
-import {
-  getNodeKey as editorGetNodeKey,
-  replace as editorReplace,
-} from '../../src/internal';
+import { getNodeKey as editorGetNodeKey } from '../../src/internal';
 import { createEditor } from '../../src/react';
 import {
   beginDOMRepairFrame,
@@ -27,6 +24,7 @@ import {
   createEditableInputControllerState,
 } from '../../src/react/editable/input-state';
 import { executeEditableRepairPolicy } from '../../src/react/editable/mutation-controller';
+import { replace as editorReplace } from '../../src/testing';
 
 const browserWindow: Window = window;
 

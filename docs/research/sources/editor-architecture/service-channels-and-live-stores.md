@@ -11,9 +11,6 @@ source_refs:
   - ../db/packages/react-db/src/useLiveQuery.ts
 updated: 2026-04-15
 related:
-  - docs/research/entities/vscode.md
-  - docs/research/entities/tanstack-db.md
-  - docs/research/concepts/overlay-lane-separation.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
 ---
 

@@ -21,9 +21,9 @@ import {
   type NodeKey,
   type Path,
   PathApi,
-  reportEditorLifecycleError,
   SelectionApi,
 } from '..';
+import { reportEditorLifecycleError } from '../core/lifecycle-error';
 import {
   EditorRoot,
   type EditableProps,

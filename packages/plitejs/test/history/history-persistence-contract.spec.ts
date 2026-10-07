@@ -19,7 +19,8 @@ import {
 
 import { History, history } from '../../src/history';
 import { encodeHistoryValue } from '../../src/history/history-codec';
-import { getEditorLiveSelection, initializePlugins } from '../../src/internal';
+import { initializePlugins } from '../../src/internal';
+import { getEditorLiveSelection } from '../../src/testing';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',

@@ -15,13 +15,13 @@ import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_ROOT_VIEW_EDITORS,
 } from '../../src/dom/internal';
-import { replace as editorReplace } from '../../src/internal';
 import { Editable } from '../../src/react/components/editable-text-blocks';
 import { EditorRoot } from '../../src/react/components/plite';
 import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
 import { useSelectionGeometry } from '../../src/react/hooks/use-selection-geometry';
 import { createEditor, type Editor } from '../../src/react/plugin/with-react';
 import { createRangeGeometryOwner } from '../../src/react/range-geometry';
+import { replace as editorReplace } from '../../src/testing';
 
 const paragraph = (text: string) => ({
   children: [{ text }],

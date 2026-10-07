@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import ts from 'typescript';
+import ts from '@typescript/typescript6';
 
 type EntrypointDecision = {
   exclude: string[];

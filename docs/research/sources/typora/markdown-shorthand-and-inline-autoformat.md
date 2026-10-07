@@ -8,7 +8,6 @@ source_refs:
   - ../raw/typora/pages/auto-pair.json
 updated: 2026-04-09
 related:
-  - docs/research/entities/typora.md
   - docs/editor-behavior/markdown-editing-spec.md
   - docs/editor-behavior/editor-protocol-matrix.md
 ---

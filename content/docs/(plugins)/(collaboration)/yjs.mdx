@@ -77,7 +77,7 @@ empty shared room.
 ### Add the Plate plugin
 
 Every peer in a room must use the same compiled schema identity. Use a stable
-schema `id` and `version` for persistent rooms.
+schema `id` and `version` for persistent rooms. A nonempty room without schema metadata fails closed. A claimed, populated room keeps its schema identity for its lifetime, so run an explicit versioned document migration before any peer joins with a new schema, and bump the schema `version` whenever its semantics change.
 
 ```tsx
 import { createEditor } from "platejs/react";
@@ -101,6 +101,8 @@ const editor = createEditor({
 `doc` and `initialReady` are required. If `awareness` is present, its `doc`
 must be the same object as `doc`. Presence methods and cursor hooks are available
 only for bindings that include awareness.
+
+`rootName` names the whole collaboration document: primary children live at `rootName` and named roots in `${rootName}:roots`, one commit that changes several roots becomes one Yjs transaction and one history batch, and awareness rejects a selection whose anchor and focus sit in different roots.
 
 For a normal server-backed room, persist a canonical Yjs update on the server and
 omit `seed`. Use `seed: true` only when the app has already selected one
@@ -131,6 +133,10 @@ const Collaboration = CollaborationPlugin.create({
 `CollaborationPlugin` maps selection styles and an `afterEditable` caret overlay
 onto each Yjs descriptor that it creates. Edit the copied file to customize
 colors, opacity, and labels.
+
+For custom cursor UI, `platejs/yjs/react` exports the hooks the copied component uses: `useYjsRemoteCursorIds(editor)` reads stable membership, `useYjsRemoteCursor(editor, clientId)` reads one cursor, and `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` reads its geometry in that exact view.
+
+To paint remote selections yourself, read the current snapshot with `editor.api.yjs.remoteCursors()` and invalidate that paint with `editor.api.yjs.subscribeRemoteCursors(listener)`, which fires only when resolved remote cursors change. Its cleanup is idempotent; retire it with the owning view.
 
 ### Gate the editable on admission
 
@@ -187,6 +193,10 @@ current selection automatically; the explicit reconnect call applies to an
 already admitted binding.
 
 </Steps>
+
+## Shared effects and compaction
+
+Every standalone shared effect declares `collabReplay`: `"live"` for an event delivered once to active peers, or `"latest"` only for an absolute, idempotent value that defines `collabSnapshot(state)`. A `"live"` effect is never the only source of durable shared state. For long sessions, give one stable `sharedEffectCompaction.authorityId` per collaboration document; it checkpoints once every live recipient acknowledges, late joiners restore `"latest"` values and never replay expired `"live"` events, and `editor.api.yjs.retireSharedEffectPeer(clientId)` releases a peer the host knows is permanently gone. A different `sharedEffectCompaction.authorityId` for the same collaboration document is rejected; transfer compaction authority only through an explicit host-fenced document migration.
 
 ## Ownership
 

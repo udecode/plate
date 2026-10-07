@@ -17,21 +17,9 @@ Template:
 
 ## Brief
 
-### What did you find?
-
-`mdast-util-find-and-replace` looks up every text node's index, and every ancestor's index, with a full `indexOf`. GFM autolinks and `remark-emoji` run it 3 to 4 times per parse, so cost grows quadratically with siblings and blocks.
-
 ### What will change?
 
 On `next`, 25600 breaks parse in 2.5 s instead of 6.3 s and 16000 blocks in about 3.3 s instead of 5.9 s, through a pnpm patch of the dependency. It is uncommitted.
-
-### What do you need from me?
-
-Approve which reflect lessons I apply, under Needs you. Under Defaults, `no patch` removes the pnpm patch from `next`.
-
-### What happens if I say go?
-
-Nothing more runs. Everything stays uncommitted on `next`.
 
 ### What could go wrong?
 

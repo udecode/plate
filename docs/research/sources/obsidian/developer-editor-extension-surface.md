@@ -7,9 +7,7 @@ source_refs:
   - ../raw/obsidian/developer/en/Plugins/Editor/Editor.md
   - ../raw/obsidian/developer/en/Plugins/Editor/Markdown post processing.md
 updated: 2026-04-04
-related:
-  - docs/research/entities/obsidian.md
-  - docs/research/systems/obsidian-behavior-map.md
+related: []
 ---
 
 # Obsidian developer editor-extension surface

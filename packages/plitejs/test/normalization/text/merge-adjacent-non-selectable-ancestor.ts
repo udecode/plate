@@ -1,9 +1,7 @@
 import { createEditor } from 'plitejs';
 
-import {
-  replace as editorReplace,
-  getEditorRuntime,
-} from '../../../src/internal';
+import { getEditorRuntime } from '../../../src/internal';
+import { replace as editorReplace } from '../../../src/testing';
 
 export const input = createEditor() as any;
 const runtime = getEditorRuntime(input);

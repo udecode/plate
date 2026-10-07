@@ -24,9 +24,9 @@ import {
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
-  replace as editorReplace,
 } from '../../src/internal';
 import { createPliteReactRenderCounter } from '../../src/react/render-profiler';
+import { replace as editorReplace } from '../../src/testing';
 
 const createRect = ({
   height,

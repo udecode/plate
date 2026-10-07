@@ -5,14 +5,10 @@ status: accepted
 updated: 2026-04-15
 source_refs:
   - docs/research/systems/slate-v2-overlay-architecture.md
-  - docs/research/systems/editor-architecture-landscape.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
-  - docs/analysis/editor-architecture-candidates.md
+  - docs/research/sources/editor-architecture/candidates.md
 related:
   - docs/research/entities/slate.md
-  - docs/research/entities/prosemirror.md
-  - docs/research/entities/lexical.md
-  - docs/research/entities/tiptap.md
 ---
 
 # Slate v2 overlay architecture beats legacy Slate and aligns with the best parts of the field

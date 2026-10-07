@@ -8,7 +8,6 @@ source_refs:
   - ../raw/milkdown/repo/packages/crepe/src/feature/top-bar/config.ts
 updated: 2026-04-09
 related:
-  - docs/research/entities/milkdown.md
   - docs/editor-behavior/markdown-editing-spec.md
   - docs/editor-behavior/editor-protocol-matrix.md
 ---

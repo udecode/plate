@@ -3,6 +3,7 @@ import React, { useCallback, useSyncExternalStore } from 'react';
 import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
 import { type DOMRange, isDOMNode } from '../../dom';
 import { createDOMGeometryKernel } from '../../dom/internal';
+import { clearDragScrollRepaint } from '../../dom/utils/drag-session';
 import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
@@ -398,6 +399,7 @@ export const EditableDOMRoot = (
       ) {
         clearEditableDropCursor(event.currentTarget);
         editor.api.dom.drag.indicate(null);
+        clearDragScrollRepaint(event.currentTarget.ownerDocument, editor);
       }
       propsOnDragLeave?.(event);
     },

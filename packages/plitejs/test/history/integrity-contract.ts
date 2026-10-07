@@ -19,11 +19,12 @@ import {
   addMark as editorAddMark,
   getLastCommit as editorGetLastCommit,
   getNodeKey as editorGetNodeKey,
+} from '../../src/internal';
+import {
   getSnapshot as editorGetSnapshot,
   move as editorMove,
   replace as editorReplace,
-  subscribe as editorSubscribe,
-} from '../../src/internal';
+} from '../../src/testing';
 
 const paragraph = (text: string): Descendant => ({
   type: 'paragraph',
@@ -400,7 +401,7 @@ describe('plite-history integrity contract', () => {
 
     replace(editor, [paragraph('one')]);
 
-    const unsubscribe = editorSubscribe(editor, () => {
+    const unsubscribe = editor.subscribeCommit(() => {
       if (reentered) return;
       reentered = true;
 
@@ -437,10 +438,8 @@ describe('plite-history integrity contract', () => {
     );
     const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
       [];
-    const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
-      if (commit) {
-        commits.push(commit);
-      }
+    const unsubscribe = editor.subscribeCommit((commit) => {
+      commits.push(commit);
     });
 
     write(editor, (tx) => {

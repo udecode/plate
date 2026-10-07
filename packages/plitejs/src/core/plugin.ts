@@ -483,7 +483,11 @@ const normalizePluginInput = (input: PluginInput) =>
     return plugin;
   });
 
-/** Return whether an plugin input installs a complete editor schema. */
+/**
+ * Return whether an plugin input installs a complete editor schema.
+ *
+ * @internal
+ */
 export const containsCompleteEditorSchema = (input: PluginInput): boolean => {
   const visiting = new Set<PluginReference>();
   const inspected = new Set<PluginReference>();

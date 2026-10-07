@@ -8,11 +8,11 @@ import {
   type Editor as EditorType,
 } from 'plitejs';
 
+import type { getLastCommit as editorGetLastCommit } from '../src/internal';
 import {
-  type getLastCommit as editorGetLastCommit,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 
 type LegacyOnChangeKey = Extract<keyof EditorType, 'onChange'>;
 
@@ -51,10 +51,8 @@ describe('apply/onChange hard cuts', () => {
     const editor = createEditor();
     const commits: Array<NonNullable<ReturnType<typeof editorGetLastCommit>>> =
       [];
-    const unsubscribe = editor.subscribe((_snapshot, commit) => {
-      if (commit) {
-        commits.push(commit);
-      }
+    const unsubscribe = editor.subscribeCommit((commit) => {
+      commits.push(commit);
     });
 
     editorReplace(editor, {
@@ -104,18 +102,16 @@ describe('apply/onChange hard cuts', () => {
     });
     events.length = 0;
 
-    const unsubscribeSubscribe = editor.subscribe((_snapshot, commit) => {
-      if (commit) {
-        events.push(`subscribe:${commit.changed.has('text')}`);
-      }
+    const unsubscribeListener = editor.subscribeCommit((commit) => {
+      events.push(`listener:${commit.changed.has('text')}`);
     });
     editor.update((tx) => {
       tx.text.insert('!');
       tx.text.insert('?');
     });
 
-    unsubscribeSubscribe();
+    unsubscribeListener();
 
-    assert.deepEqual(events, ['commit:true', 'subscribe:true']);
+    assert.deepEqual(events, ['commit:true', 'listener:true']);
   });
 });

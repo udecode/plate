@@ -38,11 +38,7 @@ type AnyGeneratedEditorTypes = GeneratedEditorTypes<
   Readonly<Record<string, unknown>>
 >;
 
-/**
- * Type-only exact contract emitted by `plate generate`.
- *
- * @internal
- */
+/** Type-only exact contract emitted by `plate generate`. */
 export type GeneratedEditorTypeProvider<
   TTypes extends AnyGeneratedEditorTypes,
 > = EditorNodeTypeProvider<() => TTypes['element'], () => TTypes['text']> &

@@ -4,8 +4,7 @@ type: source
 status: partial
 updated: 2026-05-28
 related:
-  - docs/analysis/editor-architecture-candidates.md
-  - docs/research/systems/editor-architecture-landscape.md
+  - docs/research/sources/editor-architecture/candidates.md
   - docs/research/sources/editor-architecture/read-update-runtime-corpus-ledger.md
   - docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md
 ---

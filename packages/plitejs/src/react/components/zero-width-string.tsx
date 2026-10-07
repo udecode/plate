@@ -35,7 +35,7 @@ export const ZeroWidthString = ({
     }
 
     return (
-      // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] This fixed editor marker renders a trusted literal break, not external HTML.
+      // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] This fixed editor marker renders a trusted literal break, not external HTML. Chromium rewrites this <br> during IME composition, so React must not own it as a child fiber; owning it crashed reconciliation with a removeChild NotFoundError.
       <span {...attributes} dangerouslySetInnerHTML={{ __html: '<br />' }} />
     );
   }

@@ -20,7 +20,6 @@ source_refs:
   - /Users/zbeyens/git/lexical/packages/lexical/src/extension-core/types.ts
   - /Users/zbeyens/git/lexical/packages/lexical-website/docs/extensions/signals.md
 related:
-  - docs/research/entities/lexical.md
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
 ---
 

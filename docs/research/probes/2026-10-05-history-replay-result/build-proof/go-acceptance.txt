@@ -1,0 +1,40 @@
+# plite run 1: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (2.6s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.9s
+# exit: 0
+# plite run 2: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (2.3s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.0s
+# exit: 0
+# plite run 3: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (2.4s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.2s
+# exit: 0
+# plite run 4: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (2.3s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.0s
+# exit: 0
+# plite run 5: PLITE_BROWSER_FORCE_PROOF=1 fnm exec --using=22 -- pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/document-state.test.ts tests/plite-browser/donor/examples/richtext.test.ts --grep undo
+  9 passed (2.3s)
+chromium: 9 passed, 0 skipped, 1 bounded batches, 3.0s
+# exit: 0
+# c22 run 1: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (4.0s)
+  1 passed (33.5s)
+# exit: 0
+# c22 run 2: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (5.0s)
+  1 passed (32.6s)
+# exit: 0
+# c22 run 3: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (4.1s)
+  1 passed (32.7s)
+# exit: 0
+# c22 run 4: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (5.4s)
+  1 passed (34.8s)
+# exit: 0
+# c22 run 5: fnm exec --using=22 -- pnpm --filter www exec playwright test tests/browser/comment.spec.ts --config playwright.config.ts --project=chromium --grep 'local comment creation shares document undo order'
+  ✓  1 [chromium] › tests/browser/comment.spec.ts:977:5 › local comment creation shares document undo order and keeps composer history local (5.4s)
+  1 passed (34.7s)
+# exit: 0

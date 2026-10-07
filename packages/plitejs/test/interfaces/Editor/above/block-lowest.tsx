@@ -1,10 +1,8 @@
 import { ElementApi } from 'plitejs';
 
 /** @jsx jsx */
-import {
-  above as editorAbove,
-  isBlock as editorIsBlock,
-} from '../../../../src/internal';
+import { above as editorAbove } from '../../../../src/internal';
+import { isBlock as editorIsBlock } from '../../../../src/testing';
 
 export const input = (
   <editor>

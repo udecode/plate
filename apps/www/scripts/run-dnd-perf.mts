@@ -15,6 +15,16 @@ const DRAG_TYPES = [
 ];
 const SAMPLES = 120;
 
+const getArg = (name: string) => {
+  const index = process.argv.indexOf(`--${name}`);
+
+  return index === -1 ? undefined : process.argv[index + 1];
+};
+
+const RESTING = JSON.stringify(getArg('rest') ?? 'Block 5');
+const STRIP = process.argv.includes('--strip');
+const SCROLL = process.argv.includes('--scroll');
+
 const LISTENER_COUNTER = `(() => {
   const types = ${JSON.stringify(DRAG_TYPES)};
   const active = new Map();
@@ -87,12 +97,50 @@ const MEASURE = `(async () => {
   });
   const first = blockElement('Block 5');
   const second = blockElement('Block 7');
-  drag('dragenter', first, at(first, 0.25));
+  const resting = blockElement(${RESTING});
+  const restingRect = resting.getBoundingClientRect();
+  const restAt = ${STRIP}
+    ? { clientX: restingRect.right - 8, clientY: restingRect.top + restingRect.height / 2 }
+    : at(resting, 0.75);
+  drag('dragenter', resting, restAt);
   const still = [];
   const moving = [];
   for (let index = 0; index < samples; index++) {
-    still.push(await time(() => drag('dragover', first, at(first, 0.75))));
+    still.push(await time(() => drag('dragover', resting, restAt)));
   }
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  let scroll = null;
+  if (${SCROLL}) {
+    // Each frame scrolls the container once and dispatches five more scroll
+    // events, as nested scrollports can; frame coalescing keeps maxHitsPerFrame
+    // at one resolve's hit tests.
+    const scroller = document.querySelector('[data-dnd-perf]');
+    const hitTest = document.elementFromPoint.bind(document);
+    let hits = 0;
+    document.elementFromPoint = (x, y) => {
+      hits++;
+      return hitTest(x, y);
+    };
+    drag('dragover', resting, restAt);
+    const perDragover = hits;
+    const frames = [];
+    const perFrame = [];
+    for (let frame = 0; frame < 60; frame++) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      hits = 0;
+      const start = performance.now();
+      scroller.scrollTop += 30;
+      for (let extra = 0; extra < 5; extra++) scroller.dispatchEvent(new Event('scroll'));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await flush();
+      frames.push(performance.now() - start);
+      perFrame.push(hits);
+    }
+    document.elementFromPoint = hitTest;
+    scroll = { frames, perDragover, perFrame };
+  }
+  const indicator =
+    document.querySelector('[data-drop-indicator]')?.getAttribute('data-drop-indicator') ?? null;
   for (let index = 0; index < samples; index++) {
     const target = index % 2 === 0 ? first : second;
     moving.push(await time(() => drag('dragover', target, at(target, index % 4 < 2 ? 0.25 : 0.75))));
@@ -102,14 +150,8 @@ const MEASURE = `(async () => {
   const order = [...document.querySelectorAll('[data-editor-node="element"]')]
     .slice(0, 8)
     .map((element) => element.textContent);
-  return { drop, moving, order, preview, still, teardown };
+  return { drop, indicator, moving, order, preview, scroll, still, teardown };
 })()`;
-
-const getArg = (name: string) => {
-  const index = process.argv.indexOf(`--${name}`);
-
-  return index === -1 ? undefined : process.argv[index + 1];
-};
 
 const percentile = (samples: readonly number[], value: number) => {
   const sorted = [...samples].sort((left, right) => left - right);
@@ -132,7 +174,9 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { height: 900, width: 1280 } });
 
 await page.addInitScript(LISTENER_COUNTER);
-await page.goto(`${url}/dev/dnd-perf?blocks=${blocks}`);
+await page.goto(
+  `${url}/dev/dnd-perf?blocks=${blocks}${process.argv.includes('--columns') ? '&columns' : ''}`
+);
 await page.getByText('Block 3', { exact: true }).waitFor();
 await page.waitForTimeout(500);
 
@@ -151,14 +195,24 @@ await page.waitForTimeout(200);
 const activated = await page.evaluate(COUNT_LISTENERS);
 const timings = (await page.evaluate(MEASURE)) as {
   drop: number;
+  indicator: string | null;
   moving: number[];
   order: string[];
   preview: number;
+  scroll: {
+    frames: number[];
+    perDragover: number;
+    perFrame: number[];
+  } | null;
   still: number[];
   teardown: number;
 };
 const result = {
   blocks,
+  columns: process.argv.includes('--columns'),
+  indicator: timings.indicator,
+  rest: JSON.parse(RESTING),
+  strip: STRIP,
   listeners: { activated, rest },
   order: timings.order,
   timings: {
@@ -167,6 +221,11 @@ const result = {
     preview: timings.preview,
     still: summarize(timings.still),
     teardown: timings.teardown,
+  },
+  scroll: timings.scroll && {
+    frames: summarize(timings.scroll.frames),
+    hitsPerDragover: timings.scroll.perDragover,
+    maxHitsPerFrame: Math.max(...timings.scroll.perFrame),
   },
   url,
 };

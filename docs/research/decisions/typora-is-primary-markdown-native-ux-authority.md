@@ -6,9 +6,7 @@ updated: 2026-04-04
 source_refs:
   - docs/research/sources/typora/markdown-native-editing-foundations.md
   - docs/research/sources/typora/links-images-and-html-behavior.md
-related:
-  - docs/research/concepts/markdown-native-editing-authority.md
-  - docs/editor-behavior/markdown-standards.md
+related: []
 ---
 
 # Typora is the primary markdown-native UX authority

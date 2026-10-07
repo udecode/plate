@@ -5,6 +5,11 @@ import { clearDropIndicators } from './drop-indicator';
 const DRAG_SESSION_FORMAT = 'application/x-editor-drag-session';
 const DRAGGING_ATTRIBUTE = 'data-editor-dragging';
 const SESSIONS = new WeakMap<Document, ActiveDragSession>();
+const ORIGINS = new WeakMap<Document, number>();
+const REPAINTS = new WeakMap<
+  Document,
+  Readonly<{ owner: object; repaint: () => void }>
+>();
 const CONSUMED = new WeakMap<Document, string>();
 
 export type DragSession = Readonly<{
@@ -42,11 +47,13 @@ export const beginDragSession = ({
   dataTransfer,
   document,
   hosts = [],
+  originX,
   ...session
 }: Omit<DragSession, 'id'> & {
   dataTransfer: DataTransfer;
   document: Document;
   hosts?: readonly HTMLElement[];
+  originX?: number;
 }): DragSession | null => {
   const previous = SESSIONS.get(document);
 
@@ -70,6 +77,9 @@ export const beginDragSession = ({
 
     if (current?.id === id) endSession(document, current);
   };
+  // Browsers repeat dragover for a held pointer only periodically, so content
+  // scrolling under it would leave the indicator at stale viewport coordinates.
+  const repaint = () => REPAINTS.get(document)?.repaint();
   const next: ActiveDragSession = {
     ...session,
     id,
@@ -78,6 +88,9 @@ export const beginDragSession = ({
       released = true;
       document.removeEventListener('dragend', end, true);
       document.removeEventListener('pointermove', end, true);
+      document.removeEventListener('scroll', repaint, true);
+      REPAINTS.delete(document);
+      ORIGINS.delete(document);
       for (const host of hosts) host.removeAttribute(DRAGGING_ATTRIBUTE);
       // A cancelled drag reaches no dragleave on the view it was over.
       clearDropIndicators();
@@ -87,10 +100,32 @@ export const beginDragSession = ({
 
   document.addEventListener('dragend', end, true);
   document.addEventListener('pointermove', end, true);
+  document.addEventListener('scroll', repaint, {
+    capture: true,
+    passive: true,
+  });
   SESSIONS.set(document, next);
+  if (originX !== undefined) ORIGINS.set(document, originX);
 
   return next;
 };
+
+/** Sets what the active drag runs after each scroll; does nothing without one. */
+export const setDragScrollRepaint = (
+  document: Document,
+  owner: object,
+  repaint: () => void
+) => {
+  if (SESSIONS.has(document)) REPAINTS.set(document, { owner, repaint });
+};
+
+/** Drops `owner`'s repaint, as when the pointer leaves its view. */
+export const clearDragScrollRepaint = (document: Document, owner: object) => {
+  if (REPAINTS.get(document)?.owner === owner) REPAINTS.delete(document);
+};
+
+// Outlives `takeDragSession`, so the drop resolves the target the hover painted.
+export const readDragOriginX = (document: Document) => ORIGINS.get(document);
 
 export const clearDragSession = (
   document: Document,

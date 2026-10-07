@@ -68,7 +68,6 @@ import {
   projectRange,
   range,
   string,
-  subscribeCommit,
   subscribeSource,
   type AnyEditor as EditorType,
   void as editorVoid,
@@ -155,7 +154,6 @@ export {
   projectRange,
   range,
   string,
-  subscribeCommit,
   subscribeSource,
   editorVoid as void,
 };

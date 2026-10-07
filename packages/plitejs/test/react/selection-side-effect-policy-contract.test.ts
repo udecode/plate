@@ -1,4 +1,3 @@
-import { replace as editorReplace } from '../../src/internal';
 import { ReactUpdatePolicy } from '../../src/react';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
@@ -14,6 +13,7 @@ import {
 import { createPliteInactiveSelectionStore } from '../../src/react/inactive-selection';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import { createEditor } from '../../src/react/plugin/with-react';
+import { replace as editorReplace } from '../../src/testing';
 
 test('selection preservation policy is deeply frozen', () => {
   expect(Object.isFrozen(ReactUpdatePolicy)).toBe(true);

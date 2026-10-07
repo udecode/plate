@@ -18,17 +18,19 @@ import { history } from 'plitejs/history';
 
 import {
   above as editorAbove,
-  deleteBackward as editorDeleteBackward,
   getPluginRegistry as editorGetPluginRegistry,
-  getEditorLiveSelection,
   getLastCommit as editorGetLastCommit,
+  reset as editorResetBase,
+  setEditorTargetRuntime,
+} from '../src/internal';
+import {
+  deleteBackward as editorDeleteBackward,
+  getEditorLiveSelection,
   insertText as editorInsertText,
   isEditor as editorIsEditor,
   replace as editorReplaceBase,
-  reset as editorResetBase,
   string as editorString,
-  setEditorTargetRuntime,
-} from '../src/internal';
+} from '../src/testing';
 import { createRangeAnchor } from './support/anchor';
 
 type LegacySnapshotInput = Omit<
@@ -154,7 +156,7 @@ describe('editor runtime/view contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const commits: string[] = [];
-    const unsubscribe = headerEditor.subscribe((snapshot) => {
+    const unsubscribe = headerEditor.subscribeCommit((_commit, snapshot) => {
       const [block] = snapshot.children as Array<{
         children: Array<{ text: string }>;
       }>;
@@ -1108,13 +1110,13 @@ describe('editor runtime/view contract', () => {
     });
     let listenerText: string | undefined;
     let changedHeader = false;
-    const unsubscribe = runtime.subscribe((snapshot, change) => {
+    const unsubscribe = runtime.subscribeCommit((change, snapshot) => {
       listenerText = (
         snapshot.children[0] as Element & {
           children: [{ text: string }];
         }
       ).children[0].text;
-      changedHeader = change?.changed.has('text', 'header') ?? false;
+      changedHeader = change.changed.has('text', 'header');
     });
 
     runtime.update((tx) => {
@@ -1513,7 +1515,7 @@ describe('editor runtime/view contract', () => {
         state.nodes.children().map((node) => NodeApi.string(node))
       );
     const subscriberReads: string[][] = [];
-    const unsubscribe = runtime.subscribe(() => {
+    const unsubscribe = runtime.subscribeCommit(() => {
       subscriberReads.push(getViewTexts(mainEditor));
     });
 
@@ -1862,8 +1864,8 @@ describe('editor runtime/view contract', () => {
     const footerTextKey = footerEditor.read((state) => state.key([0, 0]));
     const headerTextKey = headerEditor.read((state) => state.key([0, 0]));
     let nodeImpactNodeKeys: readonly string[] | null | undefined;
-    const unsubscribe = runtime.subscribe((_snapshot, change) => {
-      nodeImpactNodeKeys = change?.changed.nodeKeysAll('node');
+    const unsubscribe = runtime.subscribeCommit((change) => {
+      nodeImpactNodeKeys = change.changed.nodeKeysAll('node');
     });
 
     headerEditor.update((tx) => {
@@ -1896,8 +1898,8 @@ describe('editor runtime/view contract', () => {
     const footerTextKey = footerEditor.read((state) => state.key([0, 0]));
     const headerTextKey = headerEditor.read((state) => state.key([0, 0]));
     let nodeImpactNodeKeys: readonly string[] | null | undefined;
-    const unsubscribe = runtime.subscribe((_snapshot, change) => {
-      nodeImpactNodeKeys = change?.changed.nodeKeysAll('node');
+    const unsubscribe = runtime.subscribeCommit((change) => {
+      nodeImpactNodeKeys = change.changed.nodeKeysAll('node');
     });
 
     headerEditor.update((tx) => {
@@ -2005,7 +2007,7 @@ describe('editor runtime/view contract', () => {
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
     let listenerText: string | undefined;
-    const unsubscribe = headerEditor.subscribe((snapshot) => {
+    const unsubscribe = headerEditor.subscribeCommit((_commit, snapshot) => {
       listenerText = (
         snapshot.children[0] as Element & {
           children: [{ text: string }];
@@ -2046,7 +2048,7 @@ describe('editor runtime/view contract', () => {
       });
     });
 
-    const unsubscribe = runtime.subscribe((snapshot) => {
+    const unsubscribe = runtime.subscribeCommit((_commit, snapshot) => {
       listenerText = (
         snapshot.children[0] as Element & {
           children: [{ text: string }];
@@ -2082,7 +2084,7 @@ describe('editor runtime/view contract', () => {
       });
     });
 
-    const unsubscribe = runtime.subscribe((snapshot) => {
+    const unsubscribe = runtime.subscribeCommit((_commit, snapshot) => {
       listenerText = (
         snapshot.children[0] as Element & {
           children: [{ text: string }];
@@ -2118,7 +2120,7 @@ describe('editor runtime/view contract', () => {
       });
     });
 
-    const unsubscribe = runtime.subscribe((snapshot) => {
+    const unsubscribe = runtime.subscribeCommit((_commit, snapshot) => {
       listenerText = (
         snapshot.children[0] as Element & {
           children: [{ text: string }];

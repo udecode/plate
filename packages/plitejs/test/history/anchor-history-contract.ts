@@ -19,8 +19,8 @@ import { history } from '../../src/history';
 import {
   getLastCommit as editorGetLastCommit,
   observeAnchorStateWork,
-  string as editorString,
 } from '../../src/internal';
+import { string as editorString } from '../../src/testing';
 
 const paragraph = (text: string) =>
   ({

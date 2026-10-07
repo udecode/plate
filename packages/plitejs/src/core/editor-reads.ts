@@ -9,7 +9,9 @@ import { defineRead } from './read-definition';
 import type {
   TransferEdge,
   TransferLandingInput,
+  TransferSideInput,
   TransferSourceInput,
+  TransferWrap,
 } from './transfer-types';
 
 export const editorReads = Object.freeze({
@@ -38,6 +40,14 @@ export const editorReads = Object.freeze({
      */
     landing: defineRead<TransferLandingInput, TransferEdge>(
       'plite:transfer.landing'
+    ),
+    /**
+     * What a drop at a block's side builds, such as a column group; the
+     * default, `null`, refuses. The schema must still admit the wrap, and
+     * vetoes can still refuse it.
+     */
+    side: defineRead<TransferSideInput, TransferWrap | null>(
+      'plite:transfer.side'
     ),
   }),
   slice: Object.freeze({

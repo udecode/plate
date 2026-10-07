@@ -13,7 +13,6 @@ import {
   type EditorCommitContext,
   type EditorViewOptions,
   type EditorSnapshot,
-  type PluginsOf,
   isEditor,
   type NamedRootKey,
   type RootKey,
@@ -53,6 +52,7 @@ import {
   type DecorationSource,
 } from '../decoration-source';
 import {
+  getEditorRuntime,
   getEditorRuntimeOwner,
   getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
@@ -86,7 +86,6 @@ import {
   useOptionalPliteRuntimeContext,
 } from '../hooks/use-plite-runtime';
 import { useRuntimeFocusState } from '../hooks/use-runtime-focus-state';
-import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type {
   EditorContextValue,
   Editor as ReactEditorType,
@@ -678,25 +677,15 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
         });
       }
     };
-    const onContextChange: Parameters<
-      ReactRuntimeEditor<ValueOf<E>, PluginsOf<E>>['subscribeCommit']
-    >[0] = (commit, snapshot) => {
+    const unsubscribe = getEditorRuntime(editor).subscribe((snapshot, commit) =>
       publishEditorCommitInVersionOrder(
         commitPublicationQueue,
         commit,
         snapshot,
         publishContextChange,
         { allowVersionGap: readAuthoredFragmentView(editor) !== null }
-      );
-    };
-
-    const unsubscribe = editor.subscribe((snapshot, commit) => {
-      if (commit) onContextChange(commit, snapshot);
-      else {
-        lastSnapshotRef.current = snapshot;
-        onChange();
-      }
-    });
+      )
+    );
     const unsubscribeView = subscribeEditorViewState(editor, (change) => {
       if (change !== 'authored') return;
       reconcilePliteViewSelection(editor);

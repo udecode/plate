@@ -14,15 +14,14 @@ import {
   type Value,
 } from 'plitejs';
 
+import { getEditorSelectionRoot } from '../src/internal';
 import {
   getChildren as editorGetChildren,
-  getEditorSelectionRoot,
   getSnapshot as editorGetSnapshot,
   isEditor as editorIsEditor,
   replace as editorReplace,
   string as editorString,
-  subscribe as editorSubscribe,
-} from '../src/internal';
+} from '../src/testing';
 import { defineTestSchema } from './support/schema';
 
 const paragraph = (
@@ -195,7 +194,7 @@ describe('plite public accessor + transaction boundary', () => {
 
     replaceChildren(editor, [paragraph('one'), paragraph('two')]);
 
-    const unsubscribe = editorSubscribe(editor, () => {
+    const unsubscribe = editor.subscribeCommit(() => {
       publishedStates.push(getVisibleState(editor));
     });
 

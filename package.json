@@ -100,7 +100,7 @@
     "plite:browser:test:selection": "pnpm --filter @platejs/test test:selection",
     "plite:entrypoint-sizes:update": "pnpm plite:packages:build && node tooling/scripts/check-plite-release-artifacts.mjs --update-entrypoint-sizes",
     "plite:packages:build": "turbo build --filter=./packages/plitejs --filter=./packages/test --filter=./packages/cli --filter=./packages/platejs",
-    "plite:public-types": "pnpm plite:packages:build && tsc --project packages/plitejs/test/tsconfig.public-package-types.json --noEmit",
+    "plite:public-types": "pnpm plite:packages:build && tsc --project packages/plitejs/test/tsconfig.public-package-types.json --noEmit && node tooling/scripts/check-declaration-consumer.mjs",
     "plite:release:packages": "pnpm plite:packages:build && node tooling/scripts/check-plite-release-artifacts.mjs",
     "plite:release:proof": "node tooling/scripts/check-plite-release-proof.mjs --from-env",
     "plite:release:boundaries": "turbo build --filter=./packages/plitejs --filter=./packages/platejs && node tooling/scripts/check-plite-release-artifacts.mjs --package-boundaries-only",
@@ -161,6 +161,7 @@
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@types/validator": "13.15.1",
+    "@typescript/typescript6": "6.0.2",
     "app-root-path": "3.1.0",
     "autoprefixer": "10.4.21",
     "babel-plugin-react-compiler": "1.0.0",
@@ -201,12 +202,12 @@
     "pnpm": ">=9.15.0"
   },
   "packageManager": "pnpm@9.15.0",
-  "patchedDependencies": {
-    "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch"
-  },
   "pnpm": {
     "patchedDependencies": {
       "mdast-util-find-and-replace@3.0.2": "patches/mdast-util-find-and-replace@3.0.2.patch"
     }
+  },
+  "patchedDependencies": {
+    "is-hotkey@0.2.0": "patches/is-hotkey@0.2.0.patch"
   }
 }

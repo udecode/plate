@@ -1,6 +1,6 @@
 # Ledger triage audit
 
-Status: blocked: 39 records wait on another session's unmapped inventory group
+Status: closed: all 39 verdicts recorded in 17195da367
 Page: https://claude.ai/artifact/LwmSwZHtEPSJbhaYnfUVSY
 Playbook: api-review
 
@@ -10,7 +10,7 @@ Every open unit in the review ledger has a fresh verdict: 24 Pursue, 14 Stop and
 
 | Expected | Reviewed | Excluded | Unresolved | Recorded |
 | --- | --- | --- | --- | --- |
-| 39 | 39 | 0 | 0 | 0 |
+| 39 | 39 | 0 | 0 | 39 |
 
 Reviewed counts units with a verdict from this audit. Excluded and unresolved are zero because every frozen unit got a verdict, including the two another session is building (autocomplete and markdown). Verdict moves: Pursue to Stop 11, Defer to Stop 2, Defer to Pursue 1, Pursue kept 10, and first reviews 15 (13 Pursue, 1 Stop, 1 Defer).
 
@@ -277,7 +277,7 @@ The 24 Pursue units in queue order, each with its current and proposed call site
 
 ## Close
 
-0 of 39 verdicts are recorded, and every verdict is final and on this page. The autocomplete session's untracked packages/plitejs/src/react/editable/typed-text.ts is not mapped in the review index yet, so every validate and record refuses the inventory check. This run does not own that file, so a scheduled retry records the rest once the owning session maps it. Reversals come first. Eleven Pursue verdicts and two Defers closed as Stop on live adoption evidence, and proof moved from Defer to Pursue. Every verdict rests on source and history review. Research ran in twelve read-only Opus subagents, and the lead re-ran at least one decisive citation per unit before accepting its verdict. CSV and markdown cite headless probes from scratch scripts. No test, browser, benchmark or device run backs any verdict, and verdicts that cite uncommitted files from other sessions say so in their proof limits. Counts: 39 units, 0 done, 0 skipped, 39 blocked, 0 open.
+39 of 39 verdicts are recorded as the `2026-10-04-<scope>-audit` records committed in 17195da367, and every verdict is final and on this page. Reversals come first. Eleven Pursue verdicts and two Defers closed as Stop on live adoption evidence, and proof moved from Defer to Pursue. Every verdict rests on source and history review. Research ran in twelve read-only Opus subagents, and the lead re-ran at least one decisive citation per unit before accepting its verdict. CSV and markdown cite headless probes from scratch scripts. No test, browser, benchmark or device run backs any verdict, and verdicts that cite uncommitted files from other sessions say so in their proof limits. Counts: 39 units, 39 done, 0 skipped, 0 blocked, 0 open.
 
 ## Evidence
 

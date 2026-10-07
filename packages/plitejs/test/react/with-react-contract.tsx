@@ -8,11 +8,11 @@ import {
   DOMRootRuntime,
   EDITOR_TO_PENDING_SELECTION,
 } from '../../src/dom/internal';
+import { react } from '../../src/react/plugin/with-react';
 import {
   insertText as editorInsertText,
   replace as editorReplace,
-} from '../../src/internal';
-import { react } from '../../src/react/plugin/with-react';
+} from '../../src/testing';
 
 test('react clears pending selection before mounted-root Android insertText bridge calls', () => {
   const editor = createEditor({ plugins: [react({ dom: dom() })] });

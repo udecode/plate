@@ -72,7 +72,7 @@ test('www resolves public Plite dependencies against workspace source', () => {
 
 test('typed lint owns Plate tests and resolves CLI dependencies without built declarations', () => {
   const ts = createRequire(path.join(repoRoot, 'apps/www/package.json'))(
-    'typescript'
+    '@typescript/typescript6'
   );
   const readConfig = (relativePath) => {
     const configPath = path.join(repoRoot, relativePath);

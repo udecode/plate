@@ -6,8 +6,6 @@ updated: 2026-04-30
 related:
   - docs/research/systems/slate-v2-overlay-architecture.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
-  - docs/research/concepts/durable-anchor-vs-live-handle.md
-  - docs/research/concepts/source-scoped-overlay-invalidation.md
 ---
 
 # Slate v2 collaborative annotations use external channels by default

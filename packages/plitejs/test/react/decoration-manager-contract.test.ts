@@ -8,7 +8,7 @@ import {
 import { authored } from 'plitejs/authored';
 
 import { createAnnotationStore } from '../../src/annotations';
-import { getNodeKey, replace } from '../../src/internal';
+import { getNodeKey } from '../../src/internal';
 import {
   createPliteDecorationManager,
   getDecorationPaintChange,
@@ -16,6 +16,7 @@ import {
   type Decoration,
   type DecorationSource,
 } from '../../src/react/decoration-source';
+import { replace } from '../../src/testing';
 
 const createViewEditor = () => {
   const editor = createEditor();

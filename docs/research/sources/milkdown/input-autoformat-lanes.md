@@ -13,7 +13,6 @@ source_refs:
   - ../raw/milkdown/repo/e2e/tests/plugin/automd.spec.ts
 updated: 2026-04-09
 related:
-  - docs/research/entities/milkdown.md
   - docs/editor-behavior/markdown-editing-spec.md
   - docs/editor-behavior/editor-protocol-matrix.md
 ---

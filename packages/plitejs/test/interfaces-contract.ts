@@ -14,13 +14,13 @@ import {
   TextApi,
 } from 'plitejs';
 
+import { hasPath as editorHasPath } from '../src/internal';
 import {
   getSelection as editorGetSelection,
-  hasPath as editorHasPath,
   isEditor as editorIsEditor,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 
 const typeOnly = (_callback: () => void) => {};
 

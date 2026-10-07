@@ -3,7 +3,7 @@ import { jsx } from '../../..';
 import {
   before as editorBefore,
   getSnapshot as editorGetSnapshot,
-} from '../../../../src/internal';
+} from '../../../../src/testing';
 
 jsx;
 

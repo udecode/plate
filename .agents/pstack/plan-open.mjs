@@ -1,9 +1,4 @@
 #!/usr/bin/env node
-// Fails a plan that still has open work, so no plan is marked Done with an
-// unchecked box or a placeholder left in it. A box closed since HEAD must name
-// the artifact that closed it, and a deferred or open finding added since HEAD
-// must name its owner; committed lines stay as history. The checks run whether
-// or not the plan already says Done, because this is the gate before Done.
 // Installed by the sync-pstack skill.
 // Usage: node .agents/pstack/plan-open.mjs <plan.md> [...]
 //        node .agents/pstack/plan-open.mjs --done   (every plan whose Status starts with a landed word, such as done or executed)
@@ -17,7 +12,7 @@ const OPEN_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[ \]/u;
 const CLOSED_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[[xX]\]/u;
 const ITEM = /^\s*(?:[-*+]|\d+\.)\s+/u;
 const PLACEHOLDER = /\b(?:TODO|TBD|FIXME)\b/u;
-const FINDINGS = /^#{1,6}\s+.*\b(?:deferred|open (?:items|findings|questions)|follow-?ups?|known gaps|gaps|residual)\b/iu;
+const FINDINGS = /^#{1,6}\s+.*\b(?:deferred|open (?:items|findings|questions|work)|follow-?ups?|known gaps|gaps|residual)\b/iu;
 // A path or command in backticks, a link, a URL, a commit or an explicit skip.
 const ARTIFACT = /`[^`]*[/.\s][^`]*`|\]\([^)]+\)|https?:\/\/|\b[0-9a-f]{7,40}\b|\bskip:/u;
 const GATES = /^(?:#{1,6}\s+)?(?:Start|Completion) Gates:?$/iu;
@@ -92,7 +87,7 @@ function openLines(path) {
     }
     if (committed.has(raw)) continue;
     if (CLOSED_BOX.test(line) && !ARTIFACT.test(line)) found.push(`${where} (name the artifact that closed it, or skip: <reason>)`);
-    else if (findings && ITEM.test(line) && !/\bowner:/iu.test(line)) found.push(`${where} (name its owner: and where it is tracked)`);
+    else if (findings && ITEM.test(line) && !(/\bowner:/iu.test(line) && /\bstop:/iu.test(line))) found.push(`${where} (name its owner:, where it is tracked, and its stop:)`);
   }
   return found;
 }

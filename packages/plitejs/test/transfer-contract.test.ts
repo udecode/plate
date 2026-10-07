@@ -951,3 +951,325 @@ describe('transfer nodes read', () => {
     assert.deepEqual(texts(editor), ['insidetail', 'outside', 'last']);
   });
 });
+
+describe('side landing', () => {
+  const rowSchema = defineEditorSchema('schema:transfer-contract-row', {
+    elements: {
+      heading: { content: schema.content.text({ default: 'text', min: 1 }) },
+      paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+      quote: {
+        content: schema.content.types(['paragraph'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
+      row: {
+        content: schema.content.types(['slot'], {
+          default: { type: 'slot' },
+          min: 2,
+        }),
+      },
+      slot: {
+        content: schema.content.types(['paragraph', 'quote'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
+    },
+    id: 'transfer-contract-row',
+    root: schema.content.types(['heading', 'paragraph', 'quote', 'row'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const beside = definePlugin('beside', {
+    readMiddleware: ({ around }) => [
+      around(editorReads.transfer.side, ({ input, next }) =>
+        input.target[1].length === 1
+          ? {
+              payload: [input.side === 'end' ? 1 : 0],
+              shell: {
+                children: [
+                  { children: [], type: 'slot' },
+                  { children: [], type: 'slot' },
+                ],
+                type: 'row',
+              },
+              target: [input.side === 'end' ? 0 : 1],
+            }
+          : next()
+      ),
+    ],
+  });
+  const shape = (editor: { read: { children: () => readonly Descendant[] } }) =>
+    editor.read
+      .children()
+      .map((node) =>
+        (node as Element).type === 'row'
+          ? (node as Element).children.map((slot) =>
+              (slot as Element).children.map((child) => NodeApi.string(child))
+            )
+          : NodeApi.string(node)
+      );
+
+  it('refuses a side drop when no feature builds one', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('target'), paragraph('dragged')],
+      plugins: [transfer(), rowSchema],
+    });
+
+    const outcome = editor.api.transfer.move({
+      nodes: [editor.key([1])!],
+      to: { key: editor.key([0])!, side: 'end' },
+    });
+
+    assert.deepEqual(outcome, { reason: 'policy', status: 'refused' });
+  });
+
+  it('wraps an adjacent sibling beside its target, keeping both keys', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('target'), paragraph('dragged')],
+      plugins: [transfer(), rowSchema, beside],
+    });
+    const targetKey = editor.key([0]);
+    const draggedKey = editor.key([1]);
+
+    const outcome = editor.api.transfer.move({
+      nodes: [draggedKey!],
+      to: { key: targetKey!, side: 'end' },
+    });
+
+    assert.equal(outcome.status, 'moved');
+    assert.deepEqual(shape(editor), [[['target'], ['dragged']]]);
+    assert.deepEqual(
+      [editor.key([0, 0, 0]), editor.key([0, 1, 0])],
+      [targetKey, draggedKey]
+    );
+  });
+
+  it('lands several blocks dropped before their target beside it, selected', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two'), paragraph('target')],
+      plugins: [transfer(), rowSchema, beside],
+    });
+
+    const outcome = editor.api.transfer.move({
+      nodes: [editor.key([0])!, editor.key([1])!],
+      to: { key: editor.key([2])!, side: 'start' },
+    });
+
+    assert.deepEqual(
+      [outcome.status === 'moved' && outcome.at, shape(editor)],
+      [
+        {
+          anchorPath: [0, 0, 0],
+          focusPath: [0, 0, 1],
+          kind: 'node',
+          paths: [
+            [0, 0, 0],
+            [0, 0, 1],
+          ],
+        },
+        [[['one', 'two'], ['target']]],
+      ]
+    );
+  });
+
+  it('refuses a wrap whose slots are missing, filled or shared', () => {
+    const build = (shell: Element, payload: number[], slot: number[]) =>
+      definePlugin('bad-beside', {
+        readMiddleware: ({ around }) => [
+          around(editorReads.transfer.side, () => ({
+            payload,
+            shell,
+            target: slot,
+          })),
+        ],
+      });
+    const slots = (...children: Element[]) => ({ children, type: 'row' });
+    const refusals = [
+      build(slots({ children: [], type: 'slot' }), [0], [3]),
+      build(
+        slots(
+          { children: [paragraph('x')], type: 'slot' },
+          { children: [], type: 'slot' }
+        ),
+        [0],
+        [1]
+      ),
+      build(
+        slots({ children: [], type: 'slot' }, { children: [], type: 'slot' }),
+        [1],
+        [1]
+      ),
+    ].map((plugin) => {
+      const editor = createEditor({
+        initialValue: [paragraph('target'), paragraph('dragged')],
+        plugins: [transfer(), rowSchema, plugin],
+      });
+
+      return editor.api.transfer.move({
+        nodes: [editor.key([1])!],
+        to: { key: editor.key([0])!, side: 'end' },
+      });
+    });
+
+    assert.deepEqual(refusals, [
+      { reason: 'policy', status: 'refused' },
+      { reason: 'policy', status: 'refused' },
+      { reason: 'policy', status: 'refused' },
+    ]);
+  });
+
+  it('undoes a side drop in one step', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('target'), paragraph('dragged')],
+      plugins: [transfer(), history(), rowSchema, beside],
+    });
+
+    editor.api.transfer.move({
+      nodes: [editor.key([1])!],
+      to: { key: editor.key([0])!, side: 'start' },
+    });
+    editor.api.history.undo();
+
+    assert.deepEqual(shape(editor), ['target', 'dragged']);
+  });
+
+  it('refuses a copy at a side', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('target'), paragraph('dragged')],
+      plugins: [transfer(), rowSchema, beside],
+    });
+
+    const outcome = editor.api.transfer.copy({
+      nodes: [editor.key([1])!],
+      to: { key: editor.key([0])!, side: 'end' },
+    });
+
+    assert.deepEqual(outcome, { reason: 'policy', status: 'refused' });
+  });
+
+  it('refuses, at hover, a side drop whose target its slot does not allow', () => {
+    const editor = createEditor({
+      initialValue: [
+        block('heading', { text: 'target' }),
+        paragraph('dragged'),
+      ],
+      plugins: [transfer(), rowSchema, beside],
+    });
+
+    assert.deepEqual(
+      editor.read.transfer.check({
+        nodes: [editor.key([1])!],
+        to: { key: editor.key([0])!, side: 'end' },
+      }),
+      { admitted: false, reason: 'schema' }
+    );
+  });
+
+  it('refuses, at hover, a side drop whose payload its slot does not allow', () => {
+    const editor = createEditor({
+      initialValue: [
+        paragraph('target'),
+        block('heading', { text: 'dragged' }),
+      ],
+      plugins: [transfer(), rowSchema, beside],
+    });
+
+    assert.deepEqual(
+      editor.read.transfer.check({
+        nodes: [editor.key([1])!],
+        to: { key: editor.key([0])!, side: 'end' },
+      }),
+      { admitted: false, reason: 'schema' }
+    );
+  });
+
+  it('lets a veto refuse the target that a wrap moves', () => {
+    const pinned = definePlugin('pinned', {
+      contributions: [
+        transferVeto.of(
+          ({ payload, wrap }) =>
+            wrap !== undefined &&
+            payload.kind === 'nodes' &&
+            payload.nodes.some((node) => NodeApi.string(node) === 'pinned')
+        ),
+      ],
+    });
+    const editor = createEditor({
+      initialValue: [paragraph('pinned'), paragraph('dragged')],
+      plugins: [transfer(), rowSchema, beside, pinned],
+    });
+
+    const outcome = editor.api.transfer.move({
+      nodes: [editor.key([1])!],
+      to: { key: editor.key([0])!, side: 'end' },
+    });
+
+    assert.deepEqual(outcome, { reason: 'policy', status: 'refused' });
+  });
+
+  it('refuses a target whose feature family reaches past it', () => {
+    const families = definePlugin('families', {
+      readMiddleware: ({ around }) => [
+        around(editorReads.transfer.source, ({ next }) => {
+          const selection = next();
+
+          return selection.paths.some((path) => path[0] === 0)
+            ? { ...selection, paths: [[0], [1]] }
+            : selection;
+        }),
+      ],
+    });
+    const editor = createEditor({
+      initialValue: [paragraph('parent'), paragraph('child')],
+      plugins: [transfer(), rowSchema, beside, families],
+    });
+
+    const outcome = editor.api.transfer.move({
+      nodes: [editor.key([1])!],
+      to: { key: editor.key([0])!, side: 'end' },
+    });
+
+    assert.deepEqual(outcome, { reason: 'policy', status: 'refused' });
+  });
+
+  it('refuses a target that holds the payload', () => {
+    const editor = createEditor({
+      initialValue: [block('quote', paragraph('inside'))],
+      plugins: [transfer(), rowSchema, beside],
+    });
+
+    const outcome = editor.api.transfer.move({
+      nodes: [editor.key([0, 0])!],
+      to: { key: editor.key([0])!, side: 'end' },
+    });
+
+    assert.deepEqual(outcome, { reason: 'inside-source', status: 'refused' });
+  });
+
+  it('checks a transfer against the vetoes its move obeys', () => {
+    const blockEnd = definePlugin('block-end', {
+      contributions: [
+        transferVeto.of(
+          ({ edge, target: [, path] }) => edge === 'after' && path[0] === 0
+        ),
+      ],
+    });
+    const editor = createEditor({
+      initialValue: [paragraph('a'), paragraph('b'), paragraph('c')],
+      plugins: [transfer(), blockEnd],
+    });
+
+    assert.deepEqual(
+      editor.read.transfer.check({
+        nodes: [editor.key([2])!],
+        to: { edge: 'after', key: editor.key([0])! },
+      }),
+      { admitted: false, reason: 'policy' }
+    );
+  });
+});

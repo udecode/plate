@@ -9,7 +9,7 @@ import {
   getSelection as editorGetSelection,
   replace as editorReplace,
   string as editorString,
-} from '../src/internal';
+} from '../src/testing';
 import { extendTestSchema } from './support/schema';
 
 const paragraphWithEmptySuffixLeaves = (): Element => ({

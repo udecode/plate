@@ -4,7 +4,7 @@ Mine another editor repository for tests worth harvesting: Lexical, ProseMirror,
 
 - With `--issues`, mine the editor's issue corpus for robustness pressure, not to mirror its backlog: all states by default, cluster first, skip unrelated issues hard, extract portable invariants, then map them to Plite/Plate coverage. `issue-harvester` owns the exhaustive issue-by-issue closure that follows: ledger autodiscovery, refresh, closed-issue provenance, unchecked rows and coverage checkmarks.
 
-Work source-first with an exhaustive inventory, explicit skip reasons, evidence rows, complete passes and narrow claims, following the Slate claims provenance bar: exact thread, exact behavior, no speculative closure claim, no broad claim without current source proof. Implement only when asked (`--apply`).
+Work source-first with an exhaustive inventory, explicit skip reasons, evidence rows, complete passes and narrow claims: exact thread, exact behavior, no speculative closure claim, no broad claim without current source proof. Implement only when asked (`--apply`).
 
 ## Incremental test sync
 
@@ -35,7 +35,7 @@ A request to process an existing harvest into "all Slate tests", "all Plate rows
 3. The Plate repo's current test files and package scripts.
 4. Plate package, docs and example owners when the behavior is a plugin, kit, UI, React integration or product policy.
 5. `docs/solutions/` for prior browser, IME, selection and mobile proof lessons.
-6. `issue-harvester`'s Slate claims mode for issue and PR provenance when a test exists because of a known upstream bug.
+6. `issue-harvester`'s Closed-Issue PR/Test Provenance for issue and PR provenance when a test exists because of a known upstream bug.
 7. For lane-plan mode, the Plan playbook, with the Plite layer for `slate-v2` and the Plate layer for `plate`.
 
 In issue mode, GitHub issue data is candidate and provenance input, not implementation source. Use `gitcrawl` or `gh` for issue metadata and comments, and the local checkout for source, tests and license evidence.
@@ -84,7 +84,7 @@ Run harvests as passes, not one giant skim; the [discovery workflow](#discovery-
 2. **Inventory:** package manager and harnesses, the full test inventory, runnable tests split from support files, every row in the appendix with an initial category.
 3. **Issue inventory and clusters** (`--issues`): all-state discovery into `issues.md`, raw cache in `.tmp`, clusters before deep reads.
 4. **Test names:** `describe`, `it` and `test` names for every runnable portable, mixed and uncertain file; index huge files first, then read targeted ranges.
-5. **Classification pressure:** challenge skips and product-shell routing with negative controls.
+5. **Classification pressure:** challenge skips and product-shell routing with negative controls. Before classifying a browser-quirk row as omitted, build the DOM shape it depends on, such as a real nested contenteditable, and run the row there; a current example set too weak to expose the shape is not evidence for omission.
 6. **Behavior extraction:** invariants with source file, line, test name, tag, proof kind, browser or device needs and issue rationale.
 7. **Coverage mapping:** search the Plate repo by behavior words and adjacent concepts, and Plate packages, docs, examples and kits for product behavior; never cite old plans as coverage.
 8. **Action planning:** one action per row, with target owner, proof kind and command or backlog owner.
@@ -202,12 +202,12 @@ Infer an unknown lane only when the harvest's owner labels make it obvious; othe
    - `product-shell`: app or demo behavior outside the substrate.
    - `uncertain`: needs a read before routing.
 9. Extract test names for every runnable portable, mixed and uncertain file: `rg -n "(describe|it|test)\\(" <target-test-files>`.
-10. Read every portable and uncertain file, indexing huge files first.
+10. Read every portable and uncertain file, indexing huge files first. Before closure, reopen every runnable file whose test-name extraction found no tests: a body with only setup or a `TODO` is `harness`, and a route or demo that exists never counts as a behavior row.
 11. Read representative open and closed issues from every kept cluster, keeping refs and short paraphrased behavior.
 12. Extract behavior rows in behavior words, not upstream class names.
 13. Search the Plate repo for equivalent coverage by behavior keywords and adjacent concepts, and Plate packages, kits, examples and docs for product behavior.
 14. Assign one action per portable row:
-    - `covered`: a current Plite or Plate test fully proves the invariant.
+    - `covered`: a current Plite or Plate test fully proves the invariant on the runtime's own output; a test whose harness reshapes input, output or selection before comparing is `refactor-existing` until the runtime emits that shape.
     - `refactor-existing`: related coverage needs a split, rename, stronger assertion or browser proof.
     - `create-new`: no adequate coverage; name the target location.
     - `copy-now`: the user asked to apply and the invariant is safe to implement now (a fresh proof for `behavior-only` sources).
@@ -220,6 +220,8 @@ Infer an unknown lane only when the harvest's owner labels make it obvious; othe
 Tags: `ime-composition`, `beforeinput-input`, `composition-selection-repair`, `selection-dom-mapping`, `clipboard-paste`, `drag-drop`, `history-undo-redo`, `normalization-schema`, `delete-backspace`, `insert-fragment`, `marks-inline`, `void-atom`, `tables-grid`, `decorations-overlays`, `collaboration-remote`, `performance-large-doc`, `accessibility-keyboard`, `serialization-parsing`, `browser-engine`, `mobile-device`, `focus-blur`, `shadow-dom`, `pagination-layout`, `structured-blocks`, `markdown-richtext-roundtrip`.
 
 Portable examples: IME composition through marked text, decorations, void boundaries and undo; selection mapping around zero-width text, voids, inline boundaries and tables; browser-specific selection such as Firefox multi-range selections; native paste, drag, drop, beforeinput delete and compositionend ordering; undo granularity across composition, paste, delete and fragment insertion; fragment insertion across mixed inline, block and void boundaries; collaborative position mapping across concurrent edits and undo; pagination and layout behavior when the source proves editor semantics rather than appearance.
+
+Source ranking for DOM selection: ProseMirror's `view/test/webtest-selection.ts` is the primary source for selection import and export, coordinates and fallback invariants; Lexical harvests shape browser regression rows and skip discipline; Tiptap's focus tests are focus-timing pressure only and never justify its command API.
 
 Skip examples: React, Vue or Svelte integration internals; Lexical node-class lifecycle or ProseMirror plugin object mechanics; command registry wiring without observable behavior; tests of the upstream harness; demo chrome, menus, shortcuts or app UX; snapshot-only styling; `behavior-only` candidates that cannot be reduced to a fresh invariant.
 

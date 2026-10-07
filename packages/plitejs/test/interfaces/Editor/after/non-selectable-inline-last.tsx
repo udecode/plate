@@ -1,6 +1,6 @@
 import { jsx } from '../../..';
 /** @jsx jsx */
-import { after as editorAfter } from '../../../../src/internal';
+import { after as editorAfter } from '../../../../src/testing';
 
 jsx;
 

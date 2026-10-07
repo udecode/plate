@@ -14,7 +14,6 @@ source_refs:
   - content/docs/slate/walkthroughs/09-performance.md
 updated: 2026-04-28
 related:
-  - docs/research/systems/editor-architecture-landscape.md
   - docs/research/systems/slate-v2-overlay-architecture.md
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
 ---
