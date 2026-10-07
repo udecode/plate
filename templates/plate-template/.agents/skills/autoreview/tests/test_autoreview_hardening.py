@@ -3536,6 +3536,22 @@ class AutoreviewHardeningTests(unittest.TestCase):
             args.codex_config,
         )
 
+    def test_codex_speed_override_accepts_ultrafast(self) -> None:
+        override = self.helper["codex_speed_override"]
+        with mock.patch.dict(os.environ, {"AUTOREVIEW_CODEX_SPEED": ""}):
+            self.assertEqual(
+                override(argparse.Namespace(codex_speed="ultrafast")),
+                'service_tier="ultrafast"',
+            )
+        with mock.patch.dict(os.environ, {"AUTOREVIEW_CODEX_SPEED": " UltraFast "}):
+            self.assertEqual(
+                override(argparse.Namespace(codex_speed=None)),
+                'service_tier="ultrafast"',
+            )
+        with mock.patch.dict(os.environ, {"AUTOREVIEW_CODEX_SPEED": "warp"}):
+            with self.assertRaisesRegex(SystemExit, "valid: fast, ultrafast, flex, default"):
+                override(argparse.Namespace(codex_speed=None))
+
     def test_untracked_files_respect_trusted_global_excludes(self) -> None:
         cases = [("external", "global-ignore"), ("missing", "global-ignore"),
                  ("inside", "global-ignore")]

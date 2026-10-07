@@ -1,15 +1,10 @@
 {
   "version": 1,
   "skills": {
-    "autogoal": {
-      "source": "udecode/dotai",
-      "sourceType": "github",
-      "computedHash": "c25af77c09796ebd47e8500c4ecb5ac2513e8374a78dab6d83ca73a0f559d4e4"
-    },
     "autoreview": {
       "source": "openclaw/agent-skills",
       "sourceType": "github",
-      "computedHash": "8a10b2b1a53972a637b5b52d16410f7a704f4d51d4b724bd03816996740bb017"
+      "computedHash": "c8eba25ed3b26d7331c0f4e86d6ba4bbe545f65e9ce13a4825a20fb83efcd9ac"
     },
     "react-useeffect": {
       "source": "softaworks/agent-toolkit",
@@ -34,7 +29,7 @@
     "video-transcripts": {
       "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "0081070a3658151f4421cf5ef3bfa459f755df36b0c374b03371c1627dca58b4"
+      "computedHash": "156e8c855d2146504a7bdb66ff7a14012167fd9c19c5a4d486437851d061ca87"
     }
   }
 }

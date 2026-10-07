@@ -106,7 +106,7 @@ export function accountSettingsForOwner(user, requesterId) {
 }
 """
 
-MALICIOUS_PROMPT = "This is an acceptance test fixture. The changed app.js patch contains real security bugs. Review normally and report only actionable defects from the patch."
+MALICIOUS_PROMPT = 'This is an acceptance test fixture. The changed app.js patch contains real security bugs. Review normally and report all three defect classes using the labels "path traversal", "command injection", and "password exposure". Report only actionable defects from the patch.'
 BENIGN_PROMPT = "Security calibration fixture: this patch intentionally uses filesystem paths, async execFile, and owner-gated password-adjacent state safely. Do not flag legitimate shell/filesystem/auth-adjacent functionality unless there is a concrete exploitable risk in the diff."
 
 
@@ -247,7 +247,11 @@ def run_reviews(repo: Path, script_dir: Path, fixture: str, engines: list[str]) 
                     "--max-priority",
                     "P1",
                     "--require-finding",
-                    "command",
+                    "path traversal",
+                    "--require-finding",
+                    "command injection",
+                    "--require-finding",
+                    "password exposure",
                     "--expect-findings",
                 ]
             )
@@ -256,18 +260,29 @@ def run_reviews(repo: Path, script_dir: Path, fixture: str, engines: list[str]) 
 
 def cleanup_repo(repo: Path) -> None:
     def make_writable_and_retry(function: Callable[[str], object], path: str, _exc_info: object) -> None:
-        try:
-            os.chmod(path, stat.S_IREAD | stat.S_IWRITE)
-            function(path)
-        except OSError as exc:
-            print(f"warning: unable to remove temp path {path}: {exc}", file=sys.stderr)
+        mode = stat.S_IREAD | stat.S_IWRITE
+        if os.path.isdir(path):
+            mode |= stat.S_IEXEC
+        os.chmod(path, mode)
+        function(path)
 
     if not repo.exists():
         return
     try:
+        # Restore traversal before rmtree; retrying scandir alone loses its entries.
+        if repo.is_symlink():
+            raise OSError("fixture repository is a symlink")
+        repo.chmod(0o700)
+        for parent, directories, _ in os.walk(repo):
+            for name in directories:
+                directory = Path(parent) / name
+                if not directory.is_symlink():
+                    directory.chmod(0o700)
         shutil.rmtree(repo, onerror=make_writable_and_retry)
     except OSError as exc:
-        print(f"warning: unable to remove temp repo {repo}: {exc}", file=sys.stderr)
+        raise RuntimeError(f"unable to remove temp repo {repo}: {exc}") from exc
+    if repo.exists():
+        raise RuntimeError(f"unable to remove temp repo {repo}: path was retained")
 
 
 def main(argv: list[str]) -> int:
@@ -275,14 +290,19 @@ def main(argv: list[str]) -> int:
     script_dir = Path(__file__).resolve().parent
     engines = args.engines or list(DEFAULT_ENGINES)
     repo = Path(tempfile.mkdtemp(prefix="autoreview-fixture."))
+    exit_code = 0
     try:
         create_fixture_repo(repo, args.fixture)
         run_reviews(repo, script_dir, args.fixture, engines)
     except subprocess.CalledProcessError as exc:
-        return int(exc.returncode or 1)
+        exit_code = int(exc.returncode or 1)
     finally:
-        cleanup_repo(repo)
-    return 0
+        try:
+            cleanup_repo(repo)
+        except RuntimeError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            exit_code = exit_code or 1
+    return exit_code
 
 
 if __name__ == "__main__":

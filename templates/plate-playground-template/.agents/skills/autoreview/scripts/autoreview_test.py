@@ -1681,6 +1681,41 @@ class AutoreviewKimiRefusalTests(unittest.TestCase):
             guard.assert_not_called()
 
 
+@unittest.skipIf(os.name == "nt", "POSIX executable fixture")
+class AutoreviewExecutableDiscoveryTests(unittest.TestCase):
+    def test_unreadable_search_entry_does_not_hide_trusted_git(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            repo = root / "repo"
+            denied = root / "unreadable"
+            trusted = root / "trusted"
+            for directory in (repo, denied, trusted):
+                directory.mkdir()
+            executable = trusted / "git"
+            executable.write_text("#!/bin/sh\nexit 0\n")
+            executable.chmod(0o755)
+            is_file = Path.is_file
+
+            def checked_is_file(path):
+                if path == denied / "git":
+                    raise PermissionError("unreadable search entry")
+                return is_file(path)
+
+            with mock.patch.object(Path, "is_file", checked_is_file), \
+                    mock.patch.object(Path, "cwd", return_value=repo), \
+                    mock.patch.object(AUTOREVIEW, "DEFAULT_ENGINE_PATHS", [str(denied)]), \
+                    mock.patch.dict(os.environ, {
+                        "PATH": os.pathsep.join((str(denied), str(trusted))),
+                        "AUTOREVIEW_GIT": "git",
+                    }):
+                self.assertEqual(AUTOREVIEW.resolve_git(repo), str(executable))
+                self.assertTrue(AUTOREVIEW.preflight_git())
+                with mock.patch.dict(os.environ, {"AUTOREVIEW_GIT": str(executable)}):
+                    self.assertTrue(AUTOREVIEW.preflight_git())
+                with mock.patch.dict(os.environ, {"AUTOREVIEW_GIT": str(denied / "git")}):
+                    self.assertFalse(AUTOREVIEW.preflight_git())
+
+
 class AutoreviewCompatibilityTests(unittest.TestCase):
     def test_default_reviewer_uses_sol_61_high_with_sol_6_access_retry(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(sys, "argv", ["autoreview"]):
