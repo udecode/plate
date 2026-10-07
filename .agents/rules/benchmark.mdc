@@ -1,5 +1,5 @@
 ---
-description: Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. Use before writing, reviewing, running, rerunning, checking, skipping or deferring a performance gate, including a plan's scale gate, before writing a benchmark script, before explaining a benchmark result or failure, and when a review or panel finds a latency or scaling cost.
+description: Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. Use before writing, reviewing, running, rerunning, checking, skipping or deferring a performance gate, including a plan's scale gate, before writing a benchmark script, before explaining a benchmark result or failure, when a review or panel finds a latency or scaling cost, when a fix widens a fallback or slow path in code an earlier step optimized, and before a Close or reply quotes a measured latency or work count.
 argument-hint: '[review | only] <scope, lane or plan>'
 ---
 

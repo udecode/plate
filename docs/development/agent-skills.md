@@ -77,7 +77,9 @@ the lead writes the code. The panel review (`/pstack:interrogate`) runs without
 asking only for the rows in the `reviews` list of `.agents/pstack.json`: an API
 or architecture plan (after `architect`), a
 PR's diff before it opens and "review PR <number>". For anything else, say
-"panel", "arena" or "full".
+"panel", "arena" or "full". A panel run without a models sheet says so and
+seats a Codex reviewer when Codex is installed; the dismissal and probe rules
+that apply until upstream are in `AGENTS.md`'s Lessons awaiting upstream.
 
 Plate Docs owns public page design, examples, installation, API teaching, MDX
 and navigation. `pstack:technical-writing` supplies general prose guidance.

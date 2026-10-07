@@ -230,6 +230,32 @@ command not found`, is a broken install, not a result. Never copy candidate
 files into the base worktree; replay them in a second worktree, and require an
 empty `git -C <path> status --porcelain` before labeling any run as base.
 
+A worktree that runs `next dev` cannot use linked `node_modules`: Turbopack
+refuses a symlink that points outside the project root. Install there with
+`CI=1 pnpm install --frozen-lockfile --offline --ignore-scripts`; linked
+dependencies stay fine for a test-only worktree.
+
+A must-fail-before control for uncommitted work runs in such a worktree: save
+`git diff HEAD` and the untracked files before the change, then
+`git worktree add --detach <path> HEAD`, `git apply` the saved patch, unpack the
+untracked files and copy in the new test. Never write `git show <rev>:<path>`
+or a mutated copy over a tracked file in the live checkout, even for a moment.
+
+## Proof exit status
+
+Capture the proof command's own exit status: `cmd > log 2>&1; echo EXIT=$?`.
+A pipe into `head`, `tail` or `grep`, or a later `diff` in the same call, reports
+that command's status instead. Run the acceptance suites after the last
+`ultracite fix`, because formatting changes the bytes they prove.
+
+## Browser and Node environment
+
+Browser runners and Playwright probes use the installed Chrome when
+`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` points at it, such as
+`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` on macOS.
+Benchmarks and app builds run on the Node major version `.nvmrc` names, which
+can differ from the shell default; put that version's `bin` first on `PATH`.
+
 ## Local install recovery
 
 When a local-only typecheck/build/dev/test failure does not match the change and

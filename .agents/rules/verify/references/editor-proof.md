@@ -123,6 +123,13 @@ When using the in-app Browser:
 - if a tab is stuck on an error page or Browser prints a huge encoded failure
   document, retry once from a fresh in-app Browser tab, catch per-route errors,
   and truncate recorded error text before falling back to Playwright screenshots;
+## Caret side proof
+
+Prove where a caret sits, or on which side of an inline boundary such as struck
+text, by typing a sentinel character right after the first gesture and reading
+where it lands. Text left after a run of keys does not show the caret between
+them, so it cannot dismiss a finding about caret position or side.
+
 ## Scenario Generator
 
 For a broad sweep or a defect that crosses several states, derive a small

@@ -1,5 +1,5 @@
 ---
-description: Research prior art and external editor evidence for any Plate or Plite feature, picking the gap most likely to change a decision; compare external editor architectures through a strict source inventory; harvest portable tests from external editors; and maintain the compiled research layer.
+description: Research prior art and external editor evidence for any Plate or Plite feature, picking the gap most likely to change a decision; compare external editor architectures through a strict source inventory; harvest portable tests from external editors; and maintain the compiled research layer. Use when a plan compares named editors such as OnlyOffice, Word, LibreOffice or Google Docs. A result that sets a behavior default needs a hands-on gesture check in the running reference editor, or labels the default inferred. Partial clones fetch blobs on `git show` or `git grep <rev>`; read on-disk files in a read-only audit.
 argument-hint: '[audit [sync] | harvest [plan] | maintain | full] <topic, area or repo>'
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Write or audit Plate public documentation, page design, examples, installation, MDX and navigation.
+description: Write or audit Plate public documentation, page design, examples, installation, MDX and navigation. Use whenever `content/docs/**` MDX changes, including a behavior sentence; then search the old wording in `apps/www/public/r` and regenerate the registry output when the branch allows it.
 name: plate-docs
 metadata:
   skiller:
