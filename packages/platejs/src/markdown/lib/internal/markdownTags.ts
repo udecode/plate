@@ -910,6 +910,13 @@ const normalizeBlocks = (
   const demote = (node: AnyNode) => {
     if (!node.children) return;
     node.children = node.children.flatMap((child) => {
+      if (
+        node.type === 'tableCell' &&
+        isBlockElement(child) &&
+        child.children?.length === 0
+      ) {
+        return [child];
+      }
       demote(child);
       const tag = child.data?.markdownTag;
 

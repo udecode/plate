@@ -11,7 +11,7 @@ import { type Descendant, ElementApi, TextApi } from '../../../core';
 import type { MarkdownEncodeContext } from '../../../lib/plugin/MarkdownNodeMapping';
 import { convertNodesDeserialize } from '../deserializer/convertNodesDeserialize';
 import type { MdRootContent } from '../mdast';
-import { isMdLineContent } from '../serializer/mdastContent';
+import { isMdPhrasingContent } from '../serializer/mdastContent';
 import type { DeserializeMdContext, MdMarks } from '../types';
 import { ReportedMarkdownFailureError } from './markdownDiagnostics';
 import { toMarkdownBlockContent } from './markdownDocument';
@@ -189,8 +189,7 @@ const endsLine = (node: PhrasingContent | undefined) =>
 
 /**
  * `beforeBreak` means the last child ends right before a line break.
- * `encodeMarkdownParagraph` splits a `\r\n` at the `\n`, so text before a
- * break can still end with the `\r`.
+ * A CRLF split across text leaves can leave `\r` before a break.
  */
 const lowerPhrasing = (
   children: readonly PhrasingContent[],
@@ -417,7 +416,18 @@ const lowerBlock = (block: MdRootContent, line: LineWriter): LineSegment[] => {
       ];
     }
     default: {
-      if (isMdLineContent(block)) {
+      if (block.type === 'mdxJsxFlowElement' && block.children.length === 0) {
+        return [
+          {
+            kind: 'block',
+            phrasing: lowerPhrasing(
+              [{ ...block, children: [], type: 'mdxJsxTextElement' }],
+              line
+            ),
+          },
+        ];
+      }
+      if (isMdPhrasingContent(block)) {
         // An image reads back as its own block, so joining it with `<br/>`
         // loses nothing.
         return [

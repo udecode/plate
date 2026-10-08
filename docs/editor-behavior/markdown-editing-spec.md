@@ -1237,9 +1237,10 @@ note: the serializer joins other paragraphs with `<br/>` and reports that
 boundary as a lossy warning, because the parser returns one paragraph with
 inline breaks and cannot tell a paragraph boundary from a line break
 note: a heading or quote keeps its inline content and a code or math block
-keeps its text, each with a lossy warning; the serializer drops any other
-block, such as a horizontal rule or a captioned image, and reports it under
-the loss policy
+keeps its text, each with a lossy warning; childless registered block tags,
+including an image with width, remain tags on the cell line and read back as
+blocks; the serializer drops other unsupported blocks, such as a horizontal
+rule or a captioned image, and reports it under the loss policy
 note: the serializer writes a merged cell in its first slot and empty cells in
 the slots it covers, and reports its span as an omitted property
 note: the parser keeps images as image blocks when it reads a cell back
