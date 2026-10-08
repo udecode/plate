@@ -25,7 +25,7 @@ Add Plite React integration with strict editor and element hooks, typed `usePlit
 - Install the default DOM descriptor when `createReactEditor()` is called directly; keep `react({ dom })` as the low-level custom DOM composition surface
 - Hydrate separate server and client editor runtimes with deterministic local node tokens, then publish full runtime-owned keys after mounting
 - Route keyboard default-action ownership through the DOM host-facts selector
-- Expose transaction announcements through one `aria-live` region per logical editor
+- Write each transaction announcement into at most one of the editor's live regions, however many views of it are mounted
 - Keep placeholder and drop-cursor presentation in applications while retaining structural DOM, geometry, and selection behavior in Plite React
 - Resolve physical left/right caret and word movement through the DOM visual-point API, preserving affinity across mixed-direction text
 - Remove view-level `Editable` maximum-length configuration; set `maxLength` when creating the editor

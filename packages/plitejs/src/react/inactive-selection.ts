@@ -1,5 +1,6 @@
 import { type NodeKey, PathApi, RangeApi } from '..';
 import { isDOMNode } from '../dom';
+import { getFlatTreeParentElement } from '../dom/utils/dom';
 import type { DecorationSource } from './decoration-source';
 import {
   getSnapshot as editorGetSnapshot,
@@ -197,17 +198,6 @@ export const createPliteInactiveSelectionStore = (
   });
 };
 
-const getComposedParentElement = (element: Element): Element | null => {
-  if (element.parentElement) return element.parentElement;
-
-  const root = element.getRootNode();
-  const ShadowRootConstructor = element.ownerDocument.defaultView?.ShadowRoot;
-
-  return ShadowRootConstructor && root instanceof ShadowRootConstructor
-    ? root.host
-    : null;
-};
-
 export const keepsPliteSelectionVisible = (
   target: EventTarget | null | undefined
 ) => {
@@ -221,7 +211,7 @@ export const keepsPliteSelectionVisible = (
       return true;
     }
 
-    element = getComposedParentElement(element);
+    element = getFlatTreeParentElement(element);
   }
 
   return false;

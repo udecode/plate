@@ -142,6 +142,30 @@ describe('root interaction controller', () => {
     expect(scroller.scrollTop).toBeGreaterThan(0);
   });
 
+  test('resolves drag autoscroll through a scroller around the slot that projects the root', () => {
+    const host = document.createElement('div');
+    const scroller = createScrollableElement();
+    const rootElement = document.createElement('div');
+
+    scroller.append(document.createElement('slot'));
+    host.attachShadow({ mode: 'open' }).append(scroller);
+    host.append(rootElement);
+    document.body.append(host);
+
+    try {
+      const target = getDragAutoScrollTarget({
+        clientX: 50,
+        clientY: 130,
+        rootElement,
+      });
+
+      expect(target?.scroll()).toBe(true);
+      expect(scroller.scrollTop).toBeGreaterThan(0);
+    } finally {
+      host.remove();
+    }
+  });
+
   test('stops drag autoscroll when the scrolled frame cannot resolve a range', () => {
     const scroller = createScrollableElement();
     const previousElementFromPoint = document.elementFromPoint;

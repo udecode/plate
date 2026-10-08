@@ -25,6 +25,7 @@ import {
   replaceDOMSelectionRange,
 } from '../../dom/internal';
 import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
+import { getFlatTreeParentElement } from '../../dom/utils/dom';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
@@ -308,40 +309,17 @@ export type EditableDOMSelectionSyncOptions = {
   preserveScroll?: boolean;
 };
 
-const getComposedParentElement = (element: HTMLElement) => {
-  if (element.parentElement) {
-    return element.parentElement;
-  }
-
-  const window = element.ownerDocument.defaultView;
-
-  if (!window) {
-    return null;
-  }
-
-  const ShadowRootConstructor = window.ShadowRoot;
-  const root = element.getRootNode();
-
-  if (ShadowRootConstructor && root instanceof ShadowRootConstructor) {
-    const { host } = root;
-
-    return host instanceof window.HTMLElement ? host : null;
-  }
-
-  return null;
-};
-
 const captureScrollOffsets = (startElement: HTMLElement) => {
   const elements: Array<{
-    element: HTMLElement;
+    element: Element;
     scrollLeft: number;
     scrollTop: number;
   }> = [];
 
   for (
-    let element: HTMLElement | null = startElement;
+    let element: Element | null = startElement;
     element;
-    element = getComposedParentElement(element)
+    element = getFlatTreeParentElement(element)
   ) {
     elements.push({
       element,

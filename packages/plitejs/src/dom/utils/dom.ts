@@ -378,6 +378,18 @@ export const replaceDOMSelectionRange = (
   selection.setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset);
 };
 
+export const getFlatTreeParentElement = (element: Element): Element | null => {
+  if (element.assignedSlot) return element.assignedSlot;
+  if (element.parentElement) return element.parentElement;
+
+  const root = element.getRootNode();
+  const ShadowRootConstructor = element.ownerDocument.defaultView?.ShadowRoot;
+
+  return ShadowRootConstructor && root instanceof ShadowRootConstructor
+    ? root.host
+    : null;
+};
+
 /**
  * Retrieves the deepest active element in the DOM, considering nested shadow DOMs.
  */

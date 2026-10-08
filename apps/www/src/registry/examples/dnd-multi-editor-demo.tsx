@@ -48,7 +48,7 @@ export default function DndMultiEditorDemo() {
         </EditorRoot>
       </Pane>
       <Pane label="Same document, second view">
-        <EditorRoot editor={documentEditor} suppressInstanceWarning>
+        <EditorRoot editor={documentEditor}>
           <EditorContainer>
             <Editor className="px-12 py-4 text-base" variant="none" />
           </EditorContainer>

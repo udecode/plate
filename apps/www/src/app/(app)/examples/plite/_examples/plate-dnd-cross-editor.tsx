@@ -103,7 +103,7 @@ const DndEditor = ({
 
   return Array.from({ length: views }, (_, view) => (
     <section key={view} data-test-id={`${id}-view-${view}`}>
-      <EditorRoot editor={editor} suppressInstanceWarning={view > 0}>
+      <EditorRoot editor={editor}>
         {view === 0 && <EditorModel id={id} />}
         <EditorContent
           aria-label={view === 0 ? label : `${label} view ${view + 1}`}

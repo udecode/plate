@@ -5,6 +5,7 @@ import {
   screenReaderAnnouncementEffect,
 } from 'plitejs';
 import { authored } from 'plitejs/authored';
+import { type ReactNode, useLayoutEffect, useRef } from 'react';
 
 import { createEditor, EditorRoot, useRootEditor } from '../../src/react';
 import { EditorAnnouncementLiveRegion } from '../../src/react/components/editor-announcement-live-region';
@@ -110,7 +111,7 @@ describe('screen-reader announcement live region', () => {
     expect(rendered.getAllByRole('status')).toHaveLength(1);
   });
 
-  it('keeps independent authored roots and announcement lifetimes separate', () => {
+  it('speaks once across independent authored roots and keeps speaking after the speaker unmounts', () => {
     const editor = createEditor({
       plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('body')],
@@ -132,21 +133,16 @@ describe('screen-reader announcement live region', () => {
       </EditorRoot>
     );
 
-    expect(accepted.container.querySelectorAll('[role="status"]')).toHaveLength(
-      1
-    );
-    expect(proposed.container.querySelectorAll('[role="status"]')).toHaveLength(
-      1
-    );
-
     act(() => {
       editor.update((tx) => {
         tx.effects.emit(screenReaderAnnouncementEffect, 'Shared update');
       });
     });
 
-    expect(accepted.container).toHaveTextContent('Shared update');
-    expect(proposed.container).toHaveTextContent('Shared update');
+    expect([
+      accepted.container.textContent,
+      proposed.container.textContent,
+    ]).toEqual(['Shared update', '']);
 
     accepted.unmount();
     act(() => {
@@ -155,6 +151,195 @@ describe('screen-reader announcement live region', () => {
       });
     });
     expect(proposed.container).toHaveTextContent('Still mounted');
+  });
+
+  it('speaks from the region nearest the focused element', () => {
+    const editor = createEditor({ initialValue: [paragraph('body')] });
+    const rendered = render(
+      <>
+        <section>
+          <EditorRoot editor={editor}>
+            <button type="button">First view</button>
+          </EditorRoot>
+        </section>
+        <section>
+          <EditorRoot editor={editor}>
+            <button type="button">Second view</button>
+          </EditorRoot>
+        </section>
+      </>
+    );
+
+    rendered.getByText('Second view').focus();
+    act(() => {
+      editor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Moved up');
+      });
+    });
+
+    expect(
+      rendered.getAllByRole('status').map((region) => region.textContent)
+    ).toEqual(['', 'Moved up']);
+
+    rendered.getByText('First view').focus();
+    act(() => {
+      editor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Moved down');
+      });
+    });
+
+    expect(
+      rendered.getAllByRole('status').map((region) => region.textContent)
+    ).toEqual(['Moved down', '']);
+  });
+
+  it('speaks from an audible region before a nearer hidden one', () => {
+    const editor = createEditor({ initialValue: [paragraph('body')] });
+    const rendered = render(
+      <>
+        <section>
+          <button type="button">Header</button>
+          {/* @ts-expect-error React types aria-hidden as a boolean string, but the DOM attribute value is case-insensitive */}
+          <div aria-hidden="TRUE">
+            <EditorRoot editor={editor}>
+              <div />
+            </EditorRoot>
+          </div>
+        </section>
+        <section>
+          <EditorRoot editor={editor}>
+            <div />
+          </EditorRoot>
+        </section>
+      </>
+    );
+
+    rendered.getByText('Header').focus();
+    act(() => {
+      editor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Moved up');
+      });
+    });
+
+    expect(
+      [...rendered.container.querySelectorAll('[role="status"]')].map(
+        (region) => region.textContent
+      )
+    ).toEqual(['', 'Moved up']);
+  });
+
+  it('skips a region slotted under an inert shadow wrapper', () => {
+    const editor = createEditor({ initialValue: [paragraph('body')] });
+    const SlotHost = ({ children }: { children: ReactNode }) => {
+      const hostRef = useRef<HTMLDivElement>(null);
+
+      useLayoutEffect(() => {
+        const host = hostRef.current;
+
+        if (!host) return;
+
+        const inertWrapper = document.createElement('div');
+        const firstSlot = document.createElement('slot');
+        const secondSlot = document.createElement('slot');
+
+        inertWrapper.setAttribute('inert', '');
+        firstSlot.name = 'first';
+        secondSlot.name = 'second';
+        inertWrapper.append(firstSlot);
+        host.attachShadow({ mode: 'open' }).append(inertWrapper, secondSlot);
+      }, []);
+
+      return <div ref={hostRef}>{children}</div>;
+    };
+    const rendered = render(
+      <>
+        <SlotHost>
+          <section slot="first">
+            <EditorRoot editor={editor}>
+              <div />
+            </EditorRoot>
+          </section>
+          <section slot="second">
+            <EditorRoot editor={editor}>
+              <div />
+            </EditorRoot>
+          </section>
+        </SlotHost>
+        <button type="button">Toolbar</button>
+      </>
+    );
+
+    rendered.getByText('Toolbar').focus();
+    act(() => {
+      editor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Moved up');
+      });
+    });
+
+    expect(
+      [...rendered.container.querySelectorAll('[role="status"]')].map(
+        (region) => region.textContent
+      )
+    ).toEqual(['', 'Moved up']);
+  });
+
+  it('ends on the later message when a commit listener nests an update', () => {
+    const editor = createEditor({ initialValue: [paragraph('body')] });
+    let nested = false;
+
+    editor.subscribeCommit(() => {
+      if (nested) return;
+
+      nested = true;
+      editor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Second');
+      });
+    });
+
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <div />
+      </EditorRoot>
+    );
+
+    act(() => {
+      editor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'First');
+      });
+    });
+
+    expect(rendered.getByRole('status')).toHaveTextContent('Second');
+  });
+
+  it('keeps the outer message when a commit listener nests a silent update', () => {
+    const editor = createEditor({ initialValue: [paragraph('body')] });
+    let nested = false;
+
+    editor.subscribeCommit(() => {
+      if (nested) return;
+
+      nested = true;
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        });
+      });
+    });
+
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <div />
+      </EditorRoot>
+    );
+
+    act(() => {
+      editor.update((tx) => {
+        tx.effects.emit(screenReaderAnnouncementEffect, 'Moved up');
+      });
+    });
+
+    expect(rendered.getByRole('status')).toHaveTextContent('Moved up');
   });
 
   it('consumes root-editor announcements while the mounted view is read-only', () => {

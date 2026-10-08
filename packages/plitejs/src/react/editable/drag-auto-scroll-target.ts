@@ -1,3 +1,5 @@
+import { getFlatTreeParentElement } from '../../dom/utils/dom';
+
 const DRAG_AUTOSCROLL_EDGE_SIZE = 48;
 const DRAG_AUTOSCROLL_MAX_DELTA = 28;
 const SCROLLABLE_OVERFLOW_PATTERN = /(auto|scroll|overlay)/;
@@ -8,30 +10,7 @@ const clampDragAutoScrollCoordinate = (
   max: number
 ) => Math.min(Math.max(value, min), Math.max(min, max - 1));
 
-const getComposedParentElement = (element: HTMLElement) => {
-  if (element.parentElement) {
-    return element.parentElement;
-  }
-
-  const window = element.ownerDocument.defaultView;
-
-  if (!window) {
-    return null;
-  }
-
-  const ShadowRootConstructor = window.ShadowRoot;
-  const root = element.getRootNode();
-
-  if (ShadowRootConstructor && root instanceof ShadowRootConstructor) {
-    const { host } = root;
-
-    return host instanceof window.HTMLElement ? host : null;
-  }
-
-  return null;
-};
-
-export const canScrollY = (element: HTMLElement) => {
+export const canScrollY = (element: Element) => {
   const style = element.ownerDocument.defaultView?.getComputedStyle(element);
   const overflowY = style?.overflowY ?? '';
 
@@ -88,9 +67,9 @@ export const getDragAutoScrollTarget = ({
   scroll: () => boolean;
 } => {
   for (
-    let parent: HTMLElement | null = rootElement;
+    let parent: Element | null = rootElement;
     parent;
-    parent = getComposedParentElement(parent)
+    parent = getFlatTreeParentElement(parent)
   ) {
     if (!canScrollY(parent)) {
       continue;
