@@ -55,6 +55,7 @@ export {
 } from './render-profiler';
 export { takeBrowserRenderStateSnapshot } from './render-state';
 export {
+  DEFAULT_RUNTIME_ERROR_PATTERNS,
   recordBrowserRuntimeErrors,
   type BrowserRuntimeErrorRecorder,
 } from './runtime-errors';

@@ -35,6 +35,7 @@ const expectedBrowserRuntimeSubpathExports = {
     'validateRawMobileProof',
   ],
   playwright: [
+    'DEFAULT_RUNTIME_ERROR_PATTERNS',
     'assertNoIllegalKernelTransitions',
     'assertBrowserCaretVisibleInScrollableParent',
     'assertBrowserKernelTraceEntry',

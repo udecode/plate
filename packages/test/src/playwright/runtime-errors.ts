@@ -1,6 +1,7 @@
 import { type ConsoleMessage, expect, type Page } from '@playwright/test';
 
-const DEFAULT_RUNTIME_ERROR_PATTERNS = [
+/** The console error texts `recordBrowserRuntimeErrors` records by default. */
+export const DEFAULT_RUNTIME_ERROR_PATTERNS: readonly string[] = [
   'Unable to find the path for Plite node',
   'Cannot resolve a Plite node',
   'Cannot resolve a DOM ',
