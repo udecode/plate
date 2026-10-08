@@ -178,12 +178,12 @@ fragment and unit; true permits pagination to omit all three together.
 | Async backend factory, public height/window store, virtualizer config passthrough | Reject | No current independent caller job offsets loading state, extra ownership or implementation leakage |
 | Existing page scan and geometry caches | Defer optimization judgment | Measure surviving work after removing duplication; historical E20/E23 are not acceptance receipts |
 
-The [reconciled manifest](../../plans/artifacts/large-documents-deep/owner-manifest.json)
+The reconciled manifest of 100 declarations and 26 explicit shared blocks
 accounts for 126 bounded rows: 100 declarations and 26 explicit shared blocks.
 It has no missing dedicated declarations; 61 deletion rows and the complete
 survivor/move/gate list are recorded there. These dispositions are not runtime
 acceptance. The earlier manifest's virtual grouping and pagination normalization
-choices are superseded. The [83-path census](../../plans/artifacts/large-documents-deep/consumer-paths.json)
+choices are superseded. The lexical adoption census of 83 paths
 contains 41 product, 32 proof, nine teaching and one generated match. This is a
 bounded lexical adoption census, not an assertion that every match is public or
 that external consumers were enumerated.

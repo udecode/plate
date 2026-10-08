@@ -57,9 +57,9 @@ Filename matches are search candidates until their contents are classified.
 | [plite](plite/) | Mixed current runtime contracts, active research, historical migration plans, and proof inventories. Classify documents individually; the tree is not one archived or universally current authority. |
 | [plite-browser](plite-browser/overview.md) | Historical browser-proof design and comparisons. Current commands and proof selection belong to the live verification workflow. |
 | [plite-draft](plite-draft/overview.md) | Prior rewrite drafts and their historical decisions. Their queue/status language is scoped to that draft program. |
-| [plite-issues](plite-issues/) | Issue dossiers, source inventories, and extracted test shards. These preserve investigation context; inspect their dates and linked disposition before treating work as open. |
+| [plite-issues](plite-issues/) | Folded issue dossiers, source inventories, and extracted test shards, kept unchanged. Their findings live on the Plite and Slate pages under [research sources](research/sources/README.md); inspect a dossier's date and linked disposition before treating work as open. |
 | [research](research/schema.md) | Review scopes and queue, decisions, compiled source summaries, dated history and probes. Raw-source availability and evidence freshness remain separate. |
-| [solutions](solutions/) | Reusable lessons and diagnosed failure patterns by category. Consult the relevant lesson before reopening the same mechanism; it does not override current law or proof. |
+| [solutions](solutions/) | Folded lesson notes, kept unchanged. Their lessons live in the [plate-notes pages](research/sources/plate-notes/README.md); consult those before reopening the same mechanism, and add new lessons there. |
 | [sync](sync/) | Dated upstream UI, doctrine, and source-sync provenance. Each receipt applies to its named source revision and destination. |
 | [table](table/) | Historical table benchmark snapshots; `lookup table` and the [Table scope](research/review-scopes/table.json) lead to current decisions and evidence. |
 | [transplant](transplant/) | Preserved donor provenance, migration manifests, and deletion/readiness evidence. Not an instruction to restore retired APIs. |

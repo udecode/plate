@@ -96,6 +96,7 @@ Pages in this folder:
 - [ProseMirror transaction/view DOM runtime](prosemirror-transaction-view-dom-runtime.md). ProseMirror transaction, selection-mapping, bookmark and DOM-bridge evidence; its Slate v2 content is only steal/reject advice.
 - [React 19.2 external-store and background-ui primitives](react-19-2-external-store-and-background-ui.md). React 19.2 primitives, plus April 2026 facts about Slate v2 selector, annotation and widget hooks and its use of Activity, which current Plite replaced or dropped; no other home editor.
 - [Read/update runtime corpus ledger](read-update-runtime-corpus-ledger.md). A corpus ledger that records which Lexical, ProseMirror and Tiptap docs and source files were read, with the strongest read/update, transaction and extension evidence for each; it states no Plite facts.
+- [Editor architecture: rendering and DOM](rendering-and-dom.md)
 - [Scroll, selection, and caret visibility runtime](scroll-selection-visibility-runtime.md). Scroll/caret-visibility mechanisms observed in ProseMirror, Lexical, CodeMirror, Tiptap, Milkdown and Obsidian; the Slate v2 part is a target only.
 - [Editor architecture: selection and caret](selection-and-caret.md)
 - [Service channels and live stores](service-channels-and-live-stores.md)

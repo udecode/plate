@@ -1,7 +1,7 @@
 # Preserved streaming review evidence
 
 These are selected byte-identical copies from the local, ignored
-`docs/plans/artifacts/2026-09-28-conversion-boundary/streaming/` experiment.
+2026-09-28 conversion-boundary streaming experiment.
 `preservation.json` records the source and each copied file's SHA-256.
 Reports retain their original commands and historical write-scope statements.
 They describe one bounded delegated investigation, not a reviewer panel.

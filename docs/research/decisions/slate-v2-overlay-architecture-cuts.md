@@ -6,8 +6,8 @@ updated: 2026-04-14
 source_refs:
   - docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md
   - docs/research/sources/editor-architecture/candidates.md
-  - docs/plans/2026-04-14-slate-v2-decorations-annotations-cluster-research.md
-  - docs/slate-v2/decoration-roadmap.md
+  - docs/plans/2026-04-14-plite-decorations-annotations-cluster-research.md
+  - c70bacbd4a:docs/plite-draft/decoration-roadmap.md
 related:
   - docs/research/entities/slate.md
 ---

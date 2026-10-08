@@ -152,7 +152,7 @@ output reloads as current. An unsafe image with a legacy caption becomes
    suggested sentences follow.
 4. **API reference manifest.**
    - `apps/www/src/generated/api-reference-manifest.json` is generated from
-     packed declarations (`packages/platejs/dist`, which is gitignored). It
+     packed declarations (the `platejs` package's `dist` build output, which is gitignored). It
      still carries the old one-line `migrateV54` sentence, and
      `api-reference:check` passes.
    - After the next `platejs` build, run `pnpm --filter www api-reference` to

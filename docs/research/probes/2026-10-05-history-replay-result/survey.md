@@ -1,6 +1,6 @@
 Every editor-level undo I checked is synchronous. The only async undo API I found is VS Code's workbench service, and even that returns `Promise<void> | void`, not an always-Promise.
 
-Local clones are under `/Users/zbeyens/git`. Liveblocks was cloned shallow into scratch.
+Local clones are in the maintainer's git directory, outside this repository. Liveblocks was cloned shallow into scratch.
 
 | Editor | Undo signature | Sync/async | Non-document side effects | Citation |
 |---|---|---|---|---|
@@ -59,4 +59,4 @@ Inference:
 8. If async stays, copy VS Code's rules from point 3, and decide explicitly what a failed comment undo does to the stack. VS Code drops the stack.
 9. I found no library where undo waits on a server before taking local effect. A comment undo that waits on the server has no precedent here, and the product behavior is unverified.
 
-The same content is saved as a 36-line TSV at `/private/tmp/claude-501/-Users-zbeyens-git-plate-2/77220dd0-ee8b-48e9-a5a3-6b1b40c6c371/scratchpad/undo-survey/survey.tsv`; the Liveblocks clone is in the same folder.
+The evidence file for the reported 36-line TSV is no longer available; its content and the accompanying Liveblocks clone's location cannot be checked.

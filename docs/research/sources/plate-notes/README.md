@@ -17,4 +17,17 @@ Pages in this folder:
 - [Testing and browser proof](testing-and-proof.md)
 - [Tooling, docs build and release](tooling-and-release.md)
 
+Other pages:
+
+- [Sync shadcn decisions](../../../sync/shadcn/decisions.md). Live input. .agents/rules/sync-shadcn.mdc:30 has every sync read it before classifying; references/policy.md:114 lists it as durable policy. Holds the keep/fork/adopt defaults for the docs site.
+- [deltas.json](../../../sync/shadcn/deltas.json). Live input. read and rewritten by .agents/rules/sync-shadcn/scripts/build-dashboard.mjs:11,223,1337; references/dashboard.md:17,41 and apply.md:16 call it the editable decision source. Holds per-feature fork decisions.
+- [Sync Shadcn Header 4a4dc8e..360e8a1](../../../sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1-header/plan.md). Live input. named in status.json partialSyncs[*].plan; .agents/rules/sync-shadcn/references/status.md:25-33 has status mode read the matching partialSyncs plan's Questions and deferred rows.
+- [Sync Shadcn 4a4dc8e..360e8a1](../../../sync/shadcn/runs/2026-05-28-4a4dc8e-to-360e8a1/plan.md). Live input. named in status.json partialSyncs[*].plan; .agents/rules/sync-shadcn/references/status.md:25-33 has status mode read the matching partialSyncs plan's Questions and deferred rows.
+- [Sync Shadcn Home Page 4a4dc8e..360e8a1](../../../sync/shadcn/runs/2026-05-29-4a4dc8e-to-360e8a1-home-page/plan.md). Live input. named in status.json partialSyncs[*].plan; .agents/rules/sync-shadcn/references/status.md:25-33 has status mode read the matching partialSyncs plan's Questions and deferred rows.
+- [Sync Shadcn Editors Blocks Style 4a4dc8e..efdec3c](../../../sync/shadcn/runs/2026-05-29-4a4dc8e-to-efdec3c-editors-blocks-style/plan.md). Live input. named in status.json partialSyncs[*].plan; .agents/rules/sync-shadcn/references/status.md:25-33 has status mode read the matching partialSyncs plan's Questions and deferred rows.
+- [Editors Preview Frame Polish](../../../sync/shadcn/runs/2026-05-30-editors-preview-frame-polish/plan.md). Live input. named in status.json partialSyncs[*].plan; .agents/rules/sync-shadcn/references/status.md:25-33 has status mode read the matching partialSyncs plan's Questions and deferred rows.
+- [Releases Page Changelog Sync](../../../sync/shadcn/runs/2026-05-30-releases-changelog-page/plan.md). Live input. named in status.json partialSyncs[*].plan; .agents/rules/sync-shadcn/references/status.md:25-33 has status mode read the matching partialSyncs plan's Questions and deferred rows.
+- [Sync Shadcn Latest 4a4dc8e..cd54e09](../../../sync/shadcn/runs/2026-06-02-4a4dc8e-to-cd54e09/plan.md). Live input. named in status.json partialSyncs[*].plan; .agents/rules/sync-shadcn/references/status.md:25-33 has status mode read the matching partialSyncs plan's Questions and deferred rows.
+- [Sync Shadcn Latest cd54e09..b9938d9](../../../sync/shadcn/runs/2026-08-24-cd54e09-to-b9938d9/plan.md). Live input. status.json lastPlan; .agents/rules/sync-shadcn/references/status.md:19 and review.md:19,28 read it as the default plan (also a partialSyncs entry). Holds the base-luma/base-lyra and merge-slice decisions.
+
 <!-- index:end -->

@@ -8,7 +8,7 @@
   - keep semantic blocks such as quotes;
   - keep the default styling of links, hashtags and mentions.
 
-  Plate's spec has no clear-formatting row. Source: `docs/editor-test-harvester/lexical/plite-processing-ledger.md:512-518`, extracted on 2026-05-09 from an unpinned Lexical checkout. Limit: not rerun.
+  Plate's spec has no clear-formatting row. Source: `c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:512-518`, extracted on 2026-05-09 from an unpinned Lexical checkout. Limit: not rerun.
 
 ## Mark formatting
 
@@ -21,7 +21,7 @@
   - formatting at the edge of a date-time decorator (#2523);
   - toolbar active state, including underline over a multi-line selection.
 
-  Source: `docs/editor-test-harvester/lexical/plite-processing-ledger.md:688-696`, extracted on 2026-05-09 from an unpinned Lexical checkout. Limit: row families only, not rerun.
+  Source: `c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:688-696`, extracted on 2026-05-09 from an unpinned Lexical checkout. Limit: row families only, not rerun.
 
 ## Text tokens
 
@@ -30,12 +30,16 @@
   - #230 moves right into a hashtag after a text node before it was inserted and removed (`facebook/lexical@dd5c41b1:packages/lexical-playground/__tests__/regression/230-navigation-around-hashtags.spec.mjs:22`);
   - #231 deletes backward through a hashtag typed after `a` until the paragraph is empty, the case that once raised a segment error (`facebook/lexical@dd5c41b1:packages/lexical-playground/__tests__/regression/231-empty-text-nodes.spec.mjs:26`).
 
-  Plite ports only #231, as a delete over a `token: true` leaf that ends in one empty text leaf with the caret at `[0, 0]` offset 0 (`packages/plitejs/test/delete-contract.ts:849`). The ledger's Plite proofs for the other rows lived in a `highlighted-text` example this repository never had (`git log --all` finds no such file), and `git grep -i hashtag` over `apps/plite/tests` and `packages/plitejs/test` finds only a mark-typing row (`apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:1293`), so no current Plite test covers editing a decoration-derived token. Source: `docs/editor-test-harvester/lexical/plite-processing-ledger.md:801`, `:803`, `:313`, `:871-872`; Plite side checked on 2026-10-08. Limit: Lexical's files were not rerun, and the Keywords rows were read only through the ledger.
+  Plite ports only #231, as a delete over a `token: true` leaf that ends in one empty text leaf with the caret at `[0, 0]` offset 0 (`packages/plitejs/test/delete-contract.ts:849`). The ledger's Plite proofs for the other rows lived in a `highlighted-text` example this repository never had (`git log --all` finds no such file), and `git grep -i hashtag` over `apps/plite/tests` and `packages/plitejs/test` finds only a mark-typing row (`apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:1293`), so no current Plite test covers editing a decoration-derived token. Source: `c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:801`, `:803`, `:313`, `:871-872`; Plite side checked on 2026-10-08. Limit: Lexical's files were not rerun, and the Keywords rows were read only through the ledger.
 
 ## Text styles
 
-- **Selection helpers own inline CSS styles.** The `lexical-selection` package holds `$setBlocksType`, block-selection movement, and helpers that patch the inline CSS style string of text nodes through a style cache. Its tests also resolve the selection to a sibling element when a selected node, or a selected node's child, is removed (`facebook/lexical@dd5c41b1:packages/lexical-selection/src/__tests__/unit/LexicalSelection.test.tsx:1973-2089`). Source: `docs/editor-test-harvester/lexical/plite-processing-ledger.md:815-816`. Limit: not rerun.
+- **Selection helpers own inline CSS styles.** The `lexical-selection` package holds `$setBlocksType`, block-selection movement, and helpers that patch the inline CSS style string of text nodes through a style cache. Its tests also resolve the selection to a sibling element when a selected node, or a selected node's child, is removed (`facebook/lexical@dd5c41b1:packages/lexical-selection/src/__tests__/unit/LexicalSelection.test.tsx:1973-2089`). Source: `c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:815-816`. Limit: not rerun.
 
 ## Comments
 
 - Lexical's playground `CommentPlugin` keeps threads in an external store, removes marks through document mutation listeners and asynchronous cleanup, and indexes the active comment IDs (facebook/lexical@83e8b4925c6c4f5ecb884036bdfaa2c1a0bb2349:packages/lexical-playground/src/plugins/CommentPlugin/index.tsx:730-905; read 2026-09-21). The external metadata store is sound, but the listener-and-async cleanup is playground glue, not a cleaner reusable annotation engine (docs/plite/research/2026-09-21-annotation-architecture-oss/read-log.tsv:12).
+
+## Mark wrapping
+
+- **One Lexical comment id can span several `MarkNode` wrappers.** `$wrapSelectionInMarkNode` extracts the selection, splitting text at its edges, then wraps text nodes and whole inline element or inline decorator nodes in a `MarkNode` that carries the id. Any other node, such as a line break, a block element or a non-inline decorator, ends the current wrapper, and the walk starts a new one at the next wrappable node or whenever the parent changes, so one id ends up on several sibling wrappers; an existing `MarkNode` in the range is skipped and its children are wrapped, leaving nested marks for a `registerNestedElementResolver` call elsewhere to unnest (`facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-mark/src/index.ts:66-131`). The function's comment says line breaks are wrapped too, but the loop has no case for `LineBreakNode`, which is neither a text, element nor decorator node. `MarkNode` is an inline element that cannot be empty (`facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-mark/src/MarkNode.ts:144-150`). The April 2026 Plite decorations cluster read this, beside `DecoratorNode` for node-sized UI and the separate cursor container, as Lexical splitting three jobs that Slate's `decorate` merged (`c70bacbd4a:docs/plite-draft/decorations-annotations-cluster.md:563-585`). Limit: read on 2026-10-08 at that commit; no test was run.

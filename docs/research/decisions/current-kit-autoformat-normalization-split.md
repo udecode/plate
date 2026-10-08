@@ -6,10 +6,10 @@ updated: 2026-04-10
 source_refs:
   - docs/research/sources/typora/markdown-shorthand-and-inline-autoformat.md
   - docs/research/sources/milkdown/input-autoformat-lanes.md
-  - apps/www/src/registry/components/editor/plugins/autoformat-kit.tsx
+  - apps/www/src/registry/components/editor/autoformat.tsx
 related:
   - docs/editor-behavior/markdown-editing-spec.md
-  - docs/editor-behavior/markdown-parity-matrix.md
+  - c70bacbd4a:docs/editor-behavior/markdown-parity-matrix.md
 ---
 
 # Current kit autoformat normalization split

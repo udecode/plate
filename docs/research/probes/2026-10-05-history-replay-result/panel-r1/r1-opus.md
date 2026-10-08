@@ -50,7 +50,7 @@ The second case is a subtractive change and keeps AC5 for real owner failures.
 - `history-ownership.md:92-94` still says "Do not restore synchronous replay, return a sync-or-Promise union". The new paragraph supersedes only sentences that keep `Promise<HistoryResult>`.
 - The record reconciles only `2026-10-04-history-audit`. It skips `2026-09-23-history-async-replay-api`, whose requirements were "one statically honest return type" and "avoid conditional timing". A result discriminated on `pending` is a tagged sync-or-async union. A caller that ignores the result now gets no signal at all, where the lint used to force them to acknowledge it. The plan may still win this argument, but it has to make it against that record.
 - The adoption steps miss `.agents/rules/best-api.mdc:683-686`. That rule teaches an awaited replay that "blocks on … failure", which contradicts the new `failed` status.
-- They also miss `docs/editor-behavior/editor-protocol-matrix.md:397` (`EDIT-COMMENT-HISTORY-PENDING-001`), and the editor-behavior reconciliation that AGENTS.md requires for a change to Cmd+Z focus timing.
+- They also miss `c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md:397` (`EDIT-COMMENT-HISTORY-PENDING-001`), and the editor-behavior reconciliation that AGENTS.md requires for a change to Cmd+Z focus timing.
 
 ### 7. [nit] The migration grep misses the plugin-portal call sites
 The pattern `(void|await) [^;]*history\.(undo|redo)\(` does not match `historyPortal.api.undo()`. That misses `document-state.tsx:149,151,214,223` and `authored-changes.tsx:356,365`, which the plan itself lists as call sites to migrate.

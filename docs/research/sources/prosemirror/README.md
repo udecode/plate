@@ -2,7 +2,7 @@
 
 This directory contains compiled research summaries derived from the official
 ProseMirror docs entrypoints on `https://prosemirror.net` plus the local repo at
-`/Users/zbeyens/git/prosemirror`.
+`ProseMirror/prosemirror@c7f2f1d7bde70728dfedaa68ca8f5fc3dffa17cc`.
 
 Current pages:
 
@@ -96,46 +96,8 @@ Research runs:
 
 Issue ledgers and test harvests:
 
-- [ProseMirror Closure Pass](../../../editor-issue-harvester/prosemirror/full/checkpoints/closure-pass.md)
-- [ProseMirror Issues 1-16 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0001-0016.md)
-- [ProseMirror Issues 17-41 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0017-0041.md)
-- [ProseMirror Issues 45-62 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0045-0062.md)
-- [ProseMirror Issues #63-#85 Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0063-0085.md)
-- [ProseMirror Issues #86-#126 Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0086-0126.md)
-- [Issues 129-218 Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0129-0218.md)
-- [Issues 219-271 Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0219-0271.md)
-- [Issues 275-342 Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0275-0342.md)
-- [ProseMirror Issues #345-#431 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0345-0431.md)
-- [ProseMirror Issues #432-#479 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0432-0479.md)
-- [ProseMirror Issues #480-#524 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0480-0524.md)
-- [ProseMirror Issues #526-#580 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0526-0580.md)
-- [ProseMirror Issues #582-#602 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0582-0602.md)
-- [ProseMirror Issues #603-#638 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0603-0638.md)
-- [ProseMirror Issues #639-#690 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0639-0690.md)
-- [ProseMirror Issues #691-#734 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0691-0734.md)
-- [Issues #735-#788 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0735-0788.md)
-- [Issues #789-#856 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0789-0856.md)
-- [ProseMirror Issues #858-#931 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0858-0931.md)
-- [ProseMirror Issues #932-#1008 Closure Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-0932-1008.md)
-- [ProseMirror Issue Closure Checkpoint: #1010-#1073](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1010-1073.md)
-- [ProseMirror Issue Closure Checkpoint: #1078-#1105](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1078-1105.md)
-- [ProseMirror Issue Closure Checkpoint: #1106-#1129](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1106-1129.md)
-- [ProseMirror Issue Closure Checkpoint: #1130-#1160](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1130-1160.md)
-- [ProseMirror Issue Closure Checkpoint: #1161-#1187](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1161-1187.md)
-- [ProseMirror Issue Closure Checkpoint: #1188-#1218](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1188-1218.md)
-- [ProseMirror issues #1220-#1259 checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1220-1259.md)
-- [ProseMirror issues #1260-#1291 checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1260-1291.md)
-- [ProseMirror issues #1292-#1329 checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1292-1329.md)
-- [ProseMirror issues #1330-#1370 checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md)
-- [ProseMirror issues #1372-#1424](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1372-1424.md)
-- [ProseMirror issues #1425-#1460](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1425-1460.md)
-- [ProseMirror issues #1461-#1488](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1461-1488.md)
-- [ProseMirror Issues 1491-1522 Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1491-1522.md)
-- [ProseMirror Issues 1523-1568 Checkpoint](../../../editor-issue-harvester/prosemirror/full/checkpoints/issues-1523-1568.md)
 - [ProseMirror Issue Closure Ledger](../../../editor-issue-harvester/prosemirror/full/issue-closure-ledger.md)
 - [ProseMirror Issue Refresh](../../../editor-issue-harvester/prosemirror/full/issue-refresh.md)
-- [ProseMirror Issue Harvest Matrix](../../../editor-issue-harvester/prosemirror/full/matrix.md)
-- [ProseMirror Issue Harvest](../../../editor-issue-harvester/prosemirror/full/report.md)
 - [ProseMirror test inventory](../../../editor-test-harvester/prosemirror/inventory.md)
 - [Editor Test Harvest: ProseMirror](../../../editor-test-harvester/prosemirror/report.md)
 - [ProseMirror test-name index](../../../editor-test-harvester/prosemirror/test-index.md)

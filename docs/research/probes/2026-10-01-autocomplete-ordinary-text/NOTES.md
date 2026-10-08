@@ -38,7 +38,7 @@ and history (`run.result.txt`):
   a dismissal survives a later remote insert.
 - Completion is one undo step, and undo restores the typed `@jo`. The current
   native-input model restores an empty input node instead
-  (`packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.spec.ts`
+  (`cf1572560313960e87226640b93f73f2486c9aab:packages/platejs/src/features/combobox/lib/BaseComboboxPlugin.spec.ts`
   compares the post-undo value with the value captured right after the trigger),
   so its typed query is lost.
 - A failing completion callback rolls back the deletion too.

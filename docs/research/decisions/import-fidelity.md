@@ -23,7 +23,7 @@ related:
 
 **Audit of 2026-10-04.** Stop. The adopted cross-format import contract holds in live source. Its remaining outlier, CSV deserialize, has a Pursue verdict in the csv audit; the [2026-10-06 documents plan](../../plans/2026-10-06-documents-review.md) deleted the other outlier, the DOCX `authoredTrust` mode. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-imports-audit` hold the evidence.
 
-The [adversarial audit feedback](../../plans/artifacts/2026-09-27-document-conversion-audit-feedback/feedback.md)
+The September 27 adversarial audit feedback, based on three passing defect observations with 11 assertions,
 reopened implementation closure for HTML transfer parity, fragment admission,
 observable recovery, finalized AI output, DOCX cancellation and comment adoption.
 The [corrections](../../plans/2026-09-27-document-conversion-architecture-corrections.md)

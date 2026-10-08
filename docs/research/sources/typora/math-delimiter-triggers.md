@@ -8,7 +8,7 @@ source_refs:
 updated: 2026-04-09
 related:
   - docs/editor-behavior/markdown-editing-spec.md
-  - docs/editor-behavior/editor-protocol-matrix.md
+  - c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md
 ---
 
 # Typora math delimiter triggers

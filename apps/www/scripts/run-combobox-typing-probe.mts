@@ -259,7 +259,7 @@ const measure = async (
   });
 
   try {
-    await routeEmojibase(page);
+    await routeEmojibase(page, { allowOtherHosts: true });
     await page.goto(
       `${baseURL}/dev/combobox-typing?${cohort.query}&chars=${chars}`
     );

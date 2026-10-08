@@ -627,7 +627,7 @@ alpha|
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: CommonMark; primary UX ref: Typora; secondary ref: ProseMirror (#1309)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1292-1329.md:22
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1292-1329.md:22
 Proof: Plite core proves it for a nested list wrapper: `packages/plitejs/test/delete-contract.ts:983` "preserves following list and block quote wrappers on Delete from an empty paragraph", run by `packages/plitejs/test/runtime-contracts.test.ts`, asserts the wrappers unchanged and the caret at the start of their first text; its block-quote case is a text block, not a wrapper. No Plate test covers it; a model probe on 2026-10-08 (Bun, package source, happy-dom) pressed `deleteForward` in an empty paragraph before a flat list item and before a blockquote holding two paragraphs, and both kept the following block whole with the caret at its first text's start. Checked 2026-10-08.
 
 - `EDIT-P-TAB-001` `locked` `⇥`
@@ -693,7 +693,7 @@ Plugin surface:
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: CommonMark heading syntax; primary UX ref: Typora; secondary ref: Lexical's `TextEntry.spec.mjs`
-Source: docs/editor-test-harvester/lexical/plite-processing-ledger.md:770
+Source: c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:770
 Proof: no Plate heading test runs it. The Plate path: headings declare `break.splitReset` (`packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts:25`), which resets the empty block above when the split starts at the block start (`packages/platejs/src/internal/plugin/OverridePlugin.ts:189-203`), and `packages/platejs/src/lib/plugins/override/OverridePlugin.spec.tsx:273` "resets the empty block inserted at the start of a splitReset block" runs it on a callout stand-in and asserts no caret. A model probe on 2026-10-08 with `BaseHeadingPlugin` (Bun, package source) gave an empty paragraph, then the level-1 heading `Heading`, with the caret at offset 0 of `[1, 0]`. In a browser, only Plite's markdown-shortcuts example proves it, under its own Enter policy rather than Plate's plugin: `apps/plite/tests/plite-browser/donor/examples/markdown-shortcuts.test.ts:479` "inserts a paragraph before a heading from the heading start" asserts block texts `['', 'Heading']` and the caret at offset 0 of `[1, 0]`. Checked 2026-10-08.
 
 - `EDIT-H-BS-START-001` `locked` `⌫`
@@ -1572,7 +1572,7 @@ Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-brow
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: CommonMark; primary UX ref: Typora for markdown-native link editing; secondary ref: ProseMirror (#1338, #83)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md:27
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md:27
 Proof: in a browser only a Plite example proves it: `apps/plite/tests/plite-browser/donor/examples/inlines.test.ts:146` "keeps selected text selected after toolbar link wrapping" asserts the native selected text but not the model selection, and `:117` "inserts a toolbar link at a collapsed selection" asserts later typing stays out of the link, both under that example's own `wrapLink`. Plate's link specs check the wrapped children but not the selection afterwards (`packages/platejs/src/features/link/lib/BaseLinkPlugin.spec.tsx:574`, `:824`), and `:873` "creates and selects a text leaf after a terminal link" shows typing at a link's end lands after it. A model probe on 2026-10-08 (Bun, package source, happy-dom) found `link.upsert` and `link.wrap` over `world` keep `world` selected, and a collapsed upsert leaves the caret at the link's end, where typing lands outside it. The copied toolbar submit path (`apps/www/src/registry/components/editor/link.tsx:128-146`) has no browser proof. Checked 2026-10-08.
 
 ### Image
@@ -2430,28 +2430,28 @@ paste into an empty paragraph |
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#231, #570, #788)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0219-0271.md:22
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0219-0271.md:22
 Proof: Plite core proves it for closed slices: `packages/plitejs/test/clipboard-contract.ts:1373` "slice replacement preserves a copied text-block type over an empty target block", `:1554` "slice replacement preserves a copied text-block type over a single empty document block", `:1648` "slice replacement preserves copied block void attributes over an empty target block" and `:2034` "preserves the target block type when replacing its selected text with a single text-block fragment", run by `packages/plitejs/test/architecture-contracts.test.ts`; `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:6048` "pastes a copied heading into an empty paragraph as a heading" passes only because that example's schema sets `slice.preserveContext` on headings. Drift: a model probe on 2026-10-08 (Bun, package source, happy-dom) copied a heading's text with Plate's own clipboard writer and pasted it into an empty paragraph, and into a document whose only block is empty, and both landed as paragraphs, because Plate's headings do not set `slice.preserveContext`, so the copied slice stays open; a node-selection copy, a closed `fragment.replace` and external `<h1>` HTML keep the heading, an image's attributes survive, and text pasted over a heading's selected text keeps the heading. No Plate test pastes into an empty block. Checked 2026-10-08.
 
 - `EDIT-CLIPBOARD-HTML-BLANK-001` `proposed` `HTML paste with blank lines`: pasting HTML keeps its blank lines: a `<br>` that stands alone as a line, such as `<div><br></div>` or the leading and trailing `<br>`s in `<div><br><br><div>CCC</div><div>DDD</div><br><br></div>`, becomes an empty paragraph, so `<div>a</div><div><br></div><div>b</div>` pastes as three paragraphs, `a`, an empty one and `b`
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#1218, #1332)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1188-1218.md:46-48
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1188-1218.md:46-48
 Proof: Plate's HTML reader has the matching rule: `shouldBrBecomeEmptyParagraph` (`packages/platejs/src/lib/plugins/html/HtmlPlugin.ts:1710-1737`) turns a `<br>` outside `<p>` and `<span>` with no non-blank text-node sibling into an empty default block, and a model probe on 2026-10-08 (Bun, package source, happy-dom) pasted both inputs through `insertData` and got `a`, an empty paragraph and `b`, and two empty paragraphs, `CCC`, `DDD` and two empty paragraphs. No Plate test covers these inputs. The Plite browser tests `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1188` "preserves blank lines from contenteditable-style multiline HTML paste" and `:1236` "preserves leading and trailing br-only lines from rich HTML paste" run the paste-html example's own deserializer, not Plite core or Plate. Checked 2026-10-08.
 
 - `EDIT-CLIPBOARD-HTML-LIST-WS-001` `proposed` `HTML paste of nested lists`: pasting nested HTML lists, including mixed ordered and unordered levels, drops the source's structural indentation whitespace between list elements and trims multiline item text, so no source whitespace leaks into list-item text
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#1247)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1220-1259.md:19-20
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1220-1259.md:19-20
 Proof: Plate does not meet it. A model probe on 2026-10-08 (Bun, package source, happy-dom) pasted ProseMirror's mixed nested-list fixture and got an item reading `xxxx human ` with a trailing space and `human` moved ahead of its nested items, plus an extra empty list item for an `<li>` that only wraps a nested `<ol>`; `apps/www/src/__tests__/package-integration/list/ListPlugin.slow.tsx:153` "handle li with nested ul correctly" asserts the trailing-space leak (`Item 1 `). `packages/platejs/src/lib/plugins/html/HtmlPlugin.dom.spec.ts:44` "removes whitespace between block elements" covers only `<p>` siblings. The only proof, `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1882` "imports mixed nested ordered and unordered lists from rich HTML paste", runs the paste-html example's own deserializer. Checked 2026-10-08.
 
 - `EDIT-CLIPBOARD-HTML-MARK-001` `proposed` `HTML paste of nested style resets`: when pasted HTML nests an element with an explicit normal style (`font-style: normal` or a non-bold `font-weight`) inside a bold or italic parent, such as a nested list item, that element's text takes its explicit style and does not inherit the parent's mark, while the parent's own text keeps it
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#1347)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md:28
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md:28
 Proof: Plate does not meet it for inline nesting. Its bold, italic, underline and strikethrough HTML readers veto the mark for the whole matched element when any element inside it resets the style (`someHtmlElement` in `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts:156-158`, `:228-230`, `:302-308`, `:330-336`), and the bold reset matches only `font-weight: normal`; a model probe on 2026-10-08 (Bun, package source, happy-dom) pasted `<b>Parent <span style="font-weight: normal">child</span></b>` and lost bold on both words, and pasted the same with `font-weight: 400` and kept bold on both. `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.spec.tsx:143` "vetoes %s parsing when a descendant resets the style" asserts the veto on fixtures with no parent text of their own. ProseMirror's nested-list fixture passes in Plate only because each item becomes its own block. `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1610` "does not leak parent list item marks into nested pasted list items" runs the paste-html example's own deserializer and never checks the parent items. Checked 2026-10-08.
 
 ### Interactive Preview And Navigation
@@ -2575,7 +2575,7 @@ Proof: only a Plite example proves it: `apps/plite/tests/plite-browser/donor/exa
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: ProseMirror (#1563)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1523-1568.md:24-30
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1523-1568.md:24-30
 Proof: only Plite proves it: `apps/plite/tests/plite-browser/donor/examples/read-only.test.ts:48` "clicking inside a read-only selection collapses DOM and Plite selection" (a plain read-only Editable, Chromium, Firefox and WebKit) selects `This example` programmatically, clicks at text offset 5 and asserts an empty native selection and a collapsed model selection, not that it collapsed at the click point. No Plate or www test clicks inside a read-only selection, and Plate's editor content adds its own pointer plugins around the same Editable. Checked 2026-10-08.
 
 ### Platform Shortcuts
@@ -2599,7 +2599,7 @@ bca|
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137; it applies on Apple platforms, whose text system sends this input
 Authority: syntax: none; primary UX ref: the macOS text system's `Ctrl+T` transpose; secondary ref: Lexical's `Keyboard.spec.mjs`
-Source: docs/editor-test-harvester/lexical/plite-processing-ledger.md:726
+Source: c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:726
 Proof: only Plite proves it: `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts:2350` "applies insertTranspose beforeinput as adjacent character transpose" (Plite's plaintext example, Chromium and WebKit, two synthetic `insertTranspose` events from `a|bc`) asserts `bca` with the caret at 3, and `packages/plitejs/test/react/model-input-strategy-contract.test.ts:634` "transposes adjacent characters from insertTranspose beforeinput" (vitest) asserts `bac` with the caret at 2, then `bca` at 3. Both use synthetic events; no test presses `Ctrl+T`, whose Apple-only keydown maps to the same command only in browsers without `beforeinput` (`packages/plitejs/src/react/editable/keyboard-input-strategy.ts:1134`, `:1158`). Plate renders Plite's Editable, so Plate editors get the `beforeinput` path; Plate's own `transposeCharacter` hotkey (`packages/platejs/src/lib/utils/hotkeys.ts:53`) has no caller, and no Plate test covers it. Code: `applyModelOwnedTransposeCharacterIntent` (`packages/plitejs/src/react/editable/mutation-controller.ts:602`) swaps the characters around the caret, swaps the two characters before it only at the end of the document, and does nothing at the end of any other block or leaf. Checked 2026-10-08.
 
 - `EDIT-SHORTCUT-OPEN-LINE-001` `proposed` `Ctrl+O`: on Apple platforms, `Ctrl+O` with a collapsed caret at the start of a block opens an empty paragraph before that block and keeps the caret on the new empty line, so the following text does not move under the caret; the mid-block case stays open
@@ -2615,7 +2615,7 @@ bar
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137; it applies on Apple platforms, whose text system sends this input
 Authority: syntax: none; primary UX ref: the macOS text system's `Ctrl+O` open line; secondary ref: Lexical regression #399
-Source: docs/editor-test-harvester/lexical/plite-processing-ledger.md:875
+Source: c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:875
 Proof: only a Plite example proves it: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:5032` "opens a line with Mac Ctrl+O without moving past following text" (Chromium desktop with a Mac user agent) asserts `foo`, an empty block and `bar`, the model caret in the empty block, the DOM location and an `open-line` kernel trace. Plate has no binding or test of its own and inherits Plite's. Mid-block, read from the code and not run, Plite opens the empty paragraph above the whole block instead of splitting it (`packages/plitejs/src/react/editable/mutation-controller.ts:136-192`). Checked 2026-10-08.
 
 ### Delete Commands
@@ -2969,6 +2969,22 @@ Plugin surface:
 
 note: create an adjacent paragraph, not content inside the HR
 
+- `EDIT-ATOMIC-ENTER-SELECTED-001` `proposed` `↵ or ⇧↵`: with a block atom selected, whether by a click or by arrow keys, `↵` or `⇧↵` inserts an empty paragraph after the atom and puts the caret at its start; it creates no text inside the atom
+
+```text
+::atom[name] (selected)
+next
+=>
+::atom[name]
+|
+next
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: none checked; the rule generalizes `EDIT-HR-ENTER-001` and `EDIT-TOC-ENTER-201`, which state only the thematic-break and TOC cases, to every block atom
+Source: 52625e85025313eebd4eeb9be2254249ded58676:docs/solutions/logic-errors/2026-04-26-plite-selectable-voids-should-be-atomic-navigation-points.md:91-96
+Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/images.test.ts:911` "inserts a paragraph after a clicked selected image on Enter" and `:941` (Shift+Enter) click the first image, which leaves the caret in its child `[1, 0]`, press the key, type and assert the typed text in its own block with the DOM caret after it; mobile skips both. Plite model tests: `packages/plitejs/test/snapshot-contract.ts:1428` (tagged `EDIT-HR-ENTER-001`) and `:1468` for `insertSoftBreak`. Code: `packages/plitejs/src/editor/insert-break.ts:39-55` hands a caret in a block void to `packages/plitejs/src/editor/block-void-break.ts:16-58`. A model probe on 2026-10-08 (Bun, package source, no DOM) with a `void: 'block'` plugin and the caret in the void's child got an empty paragraph after the void with the caret at `[2, 0]`. Drift: a node selection on the atom makes `↵` do nothing (`packages/plitejs/src/editor/insert-break.ts:43-44`), the drift `EDIT-TOC-ENTER-201` records, so only the caret-in-child form meets the rule. Plate's only test of the rule is the TOC's (`packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts:145`). Checked 2026-10-08.
+
 - `EDIT-ATOMIC-BS-START-001` `locked` `⌫`
 
 ```text
@@ -2976,6 +2992,22 @@ note: create an adjacent paragraph, not content inside the HR
 ```
 
 note: select or remove according to atomic ownership, not generic merge
+
+- `EDIT-ATOMIC-BS-AFTER-EMPTY-001` `proposed` `⌫`: with a collapsed caret in an empty paragraph directly after a block atom, `⌫` removes that empty paragraph and selects the atom; the same keypress never deletes the atom
+
+```text
+::atom[name]
+|
+next
+=>
+::atom[name] (selected)
+next
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: none checked; the rule narrows `EDIT-ATOMIC-BS-START-001` ("select or remove according to atomic ownership") and the media rule for `⌫` at the start of the block after media to an empty paragraph, which neither decides
+Source: 52625e85025313eebd4eeb9be2254249ded58676:docs/solutions/logic-errors/2026-04-26-plite-selectable-voids-should-be-atomic-navigation-points.md:82-90
+Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/images.test.ts:828` "removes an empty paragraph after an image before deleting the image" presses Backspace in the empty paragraph after the first image and asserts both images kept, the caret in the image's child `[1, 0]` and the image's selected style, on Chromium and WebKit; Firefox and mobile skip it. No Plate test covers it. A model probe on 2026-10-08 (Bun, package source, no DOM) with a `void: 'block'` plugin ran `deleteBackward` in the empty paragraph after the void: the paragraph was removed and the caret landed in the void's child `[1, 0]`, the selection form that `packages/platejs/src/lib/plugins/override/OverridePlugin.spec.tsx:50` asserts for `EDIT-ATOMIC-BS-START-001`. Checked 2026-10-08.
 
 ## Hard Line Break
 
@@ -3058,7 +3090,7 @@ three
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: ProseMirror (#112)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0086-0126.md:44-52
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0086-0126.md:44-52
 Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts:726` "replaces a multi-paragraph selection with typed text" selects from the start of `one` to the end of `two`, types `replacement` and asserts `replacement`, `three` and the caret at offset 11; every block there is a paragraph, so it cannot show which block type wins. No Plate or www test types over whole blocks. Plate routes typing through Plite's `insertText` command (`packages/plitejs/src/react/editable/mutation-controller.ts:1166`), whose whole-block path (`getFullBlockTextReplacement` with `fillDefaultRootChild`, `packages/plitejs/src/core/editor-commands.ts:407-465`) builds the root's default block; a model probe on 2026-10-08 (Bun, package source, happy-dom) turned a fully selected heading and paragraph into one paragraph `X`, two whole list items into a plain paragraph without `listType` or `indent`, and a fully selected blockquote into a bare paragraph, while a selection starting one character into the heading kept the heading. Which type the replacement block takes, and whether list membership or a wholly selected wrapper survives, is open work under `EDIT-GLOBAL-005`. Checked 2026-10-08.
 
 - `EDIT-SEL-TYPE-MARK-001` `proposed` `typing over marked text`: typing over an expanded selection whose selected text all carries the same marks gives the typed text those marks instead of falling back to unmarked text
@@ -3072,7 +3104,7 @@ plain **x|** rest
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: ProseMirror (#399)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0345-0431.md:9-14
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0345-0431.md:9-14
 Proof: Plite proves it for one whole marked leaf: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:819` "preserves selected text marks when typing a replacement" (Plite's richtext example) and `packages/plitejs/test/primitive-method-runtime-contract.ts:334` "insertText inherits consistent marks from a replaced selected range", run by `packages/plitejs/test/runtime-contracts.test.ts`. No Plate test covers it; a model probe on 2026-10-08 (Bun, package source, happy-dom) gave bold typed text over a bold leaf, over consistently bold text across two blocks and over whole bold blocks, and unmarked text over a mixed selection. Code: `getConsistentRangeTextMarks` requires every non-empty selected leaf to carry the same text properties (`packages/plitejs/src/internal/range-text-marks.ts:35-52`, used by `packages/plitejs/src/transforms-text/insert-text.ts:236-240`). Checked 2026-10-08.
 
 - `EDIT-SEL-CUT-ALL-001` `proposed` `⌫, ⌦ or cut over the whole document`: deleting or cutting a selection that covers the whole document leaves one empty paragraph, never an empty shell of the removed block's type such as an empty heading, and the cut payload pastes back with its original block type
@@ -3087,7 +3119,7 @@ body]]
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: ProseMirror (#570)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0526-0580.md:13-15
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0526-0580.md:13-15
 Proof: Plite proves the empty-paragraph clause: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:729` "normalizes select-all Backspace to one empty paragraph" (Ctrl+A and Backspace over a heading and a paragraph leave one empty paragraph with the caret at its start) and `:6095` "cuts and pastes a fully selected heading as a heading", whose paste-back passes only because that example's schema sets `slice.preserveContext` on headings. No Plate test covers it; `apps/www/tests/browser/suggestion.spec.ts:300` "homepage select-all deletion stays editable" asserts one empty block and the caret but not its type. Drift: a model probe on 2026-10-08 (Bun, package source, happy-dom) cut a selected heading and pasted it back as a paragraph, because Plate's headings do not set `slice.preserveContext` and the copied slice stays open; the browser delete path passes `at` (`packages/plitejs/src/react/editable/mutation-controller.ts:886-892`) and leaves an empty paragraph, but `editor.update.fragment.delete()` without `at` leaves an empty heading shell (`packages/plitejs/src/transforms-text/delete-text-whole-blocks.ts:85-126`). Checked 2026-10-08.
 
 - `EDIT-SEL-STAB-001` `locked` `⇤`
@@ -3098,6 +3130,37 @@ Proof: Plite proves the empty-paragraph clause: `apps/plite/tests/plite-browser/
 ```
 
 note: outdent all selected blocks one owned level
+
+- `EDIT-SEL-TRIPLE-SELECT-001` `proposed` `triple-click`: a triple-click in a block selects exactly that block's content, from its start to its end, and the model selection never reaches into the block below, even where the browser's own triple-click selection would hang into it
+
+```text
+one|
+two
+triple-click one
+=>
+[[one]]
+two
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: none checked; secondary ref: Slate #3871
+Source: c70bacbd4a:docs/plite/references/pr-description.md:91-92
+Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:7254` "selects the current block on browser triple click" triple-clicks the first paragraph and asserts the model selection from `{ path: [0, 0], offset: 0 }` to `{ path: [0, 6], offset: 1 }`, the selected text and a non-collapsed DOM selection inside the editor; mobile skips it. The owner is Plite's click handler, which on `event.detail === 3`, unless an app `onClick` handled the event, sets the model selection to the range of the nearest block above the click target (`packages/plitejs/src/react/editable/selection-reconciler.ts:348-385`), so Plate inherits it. No Plate or www test triple-clicks (search of `apps/www/tests`, `tooling/e2e` and `packages/platejs/src`, 2026-10-08).
+
+- `EDIT-SEL-TRIPLE-BS-001` `proposed` `⌫ after triple-click`: after a triple-click selects a block, `⌫` removes the whole block, so the block below moves up with the caret at its start; it never leaves the emptied block behind
+
+```text
+one|
+two
+triple-click one, ⌫
+=>
+|two
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: none checked; secondary ref: Slate #5847
+Source: c70bacbd4a:docs/plite/references/pr-description.md:93-94
+Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:7310` "removes the current block after browser triple click and Backspace" triple-clicks the first paragraph, presses Backspace, asserts that the first block now holds the second paragraph's text and the removed text is gone, then types `Z` and asserts it lands at offset 1 of that block; mobile skips it. The delete-fragment command keeps the event-time selection for this case (`packages/plitejs/src/react/editable/mutation-controller.ts:860-880`; plate-notes/selection-and-editing.md, 'Delete-fragment commands carry the event-time selection'). Typing after a triple-click instead replaces the block's text and keeps the block (`:7353`). No Plate or www test covers it.
 
 ## Affinity Rules
 
@@ -3127,7 +3190,7 @@ plain **x|**
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: none; primary UX ref: Typora for markdown-native marks; secondary ref: ProseMirror (#517, #1013)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0480-0524.md:17-18
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0480-0524.md:17-18
 Proof: Plite proves it when the marked run is the whole block: `packages/plitejs/test/delete-contract.ts:1520` "keeps marks from deleted text active after Backspace removes the marked run" and `:1557` "keeps consistently selected marks active after deleting a marked range", run by `packages/plitejs/test/runtime-contracts.test.ts`, and `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:1139` "keeps selected bold as the active mark after deleting its text" on Plite's richtext example; none deletes a mid-paragraph run, uses Delete or crosses blocks. No Plate test covers it; a model probe on 2026-10-08 (Bun, package source, happy-dom) gave bold typed text after Backspace and after Delete over a bold run inside a paragraph, and after deleting a bold range in both directions and across blocks; marks other than bold were not probed. Code: `setDeletedMarks` stores the deleted text's consistent marks (`packages/plitejs/src/transforms-text/delete-text.ts:1289-1306`). Checked 2026-10-08.
 
 - `EDIT-AFF-LINK-001` `locked`
@@ -3573,8 +3636,21 @@ heading block
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137; it holds within the block shorthand rules, which are themselves kit policy (`EDIT-PROFILE-AUTOFMT-BLOCK-*`)
 Authority: syntax: CommonMark / GFM shorthand where applicable; primary UX ref: Typora for markdown shorthand; secondary ref: ProseMirror (#598)
-Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0582-0602.md:15-22
+Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0582-0602.md:15-22
 Proof: Plate does not meet it. Its block input rules declare `trigger: ' '` (`packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts:95`; `packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts:30`, `:79`; `packages/platejs/src/features/list/lib/BaseListPlugin.ts:1850`, `:1870`, `:1903`), the resolved rules are indexed by that exact trigger string (`packages/platejs/src/internal/plugin/resolvePlugins.ts:1835-1847`), and `InputRulesPlugin` looks up the typed text by exact string (`packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts:370-373`); a model probe on 2026-10-08 (Bun, package source, happy-dom) typed `#`, `>` and `-` followed by U+00A0 and each stayed literal text. The only browser proof, `apps/plite/tests/plite-browser/donor/examples/markdown-shortcuts.test.ts:104` "treats non-breaking space as markdown shortcut whitespace", runs the Plite markdown-shortcuts example's own handler, whose trailing-whitespace pattern matches U+00A0, not Plite core or Plate. Checked 2026-10-08.
+
+- `EDIT-AUTOFMT-BLOCK-ACTIVE-SET-001` `proposed` `block marker + space in a block that already has the rule's target type`: a block shorthand that sets its type (not a `toggle` or `wrap` rule) never toggles the block off; when the block already has the target type and level, the rule declines, the block keeps its type and the typed marker and space stay as text with the caret after the space; a heading marker of another level changes only the level
+
+```text
+## ##|x (heading 2), type space
+=>
+## ## |x (heading 2)
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137; it holds within the block shorthand rules, which are themselves kit policy (`EDIT-PROFILE-AUTOFMT-BLOCK-*`)
+Authority: syntax: CommonMark / GFM shorthand where applicable; primary UX ref: Typora for markdown shorthand; secondary ref: Milkdown for executable input lanes and invalid-match guardrails
+Source: docs/plans/2026-07-04-plate-next-nodes-set-block-toggle-sweep.md:234
+Proof: the code meets it, and no test pins it. `HeadingRules.markdown()` declines when the block already has the heading type and the matched level (`packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts:113-115`), and `createBlockStartInputRule` without a mode applies `tx.blocks.set` and declines when it reports no change (`packages/platejs/src/lib/plugins/input-rules/createInputRules.ts:249`), which it does when every block already matches (`packages/plitejs/src/core/public-state.ts:5363-5392`); a declined rule's draft is discarded ('discards a declined rule's draft before inserting the typed input', `packages/platejs/src/react/utils/inputRules.spec.tsx:997`). A model probe on 2026-10-08 (Bun, package source through `config/plite-source-aliases.ts`, `BaseHeadingPlugin` with `HeadingRules.markdown()`) gave: heading 2 `##|x` plus space stays heading 2 `## x` with the caret at offset 3; heading 2 `###|x` plus space becomes heading 3 `x`; a paragraph `##|x` plus space becomes heading 2 `x`. A rule in `toggle` mode keeps toggling, as the public guide states (`content/docs/(guides)/plugin-input-rules.mdx:821`). Checked 2026-10-08.
 
 ### Inline Mark Autoformat
 

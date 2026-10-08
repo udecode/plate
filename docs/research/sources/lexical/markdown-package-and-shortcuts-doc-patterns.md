@@ -4,9 +4,9 @@ type: source
 status: partial
 updated: 2026-04-15
 source_refs:
-  - /Users/zbeyens/git/lexical/README.md
-  - /Users/zbeyens/git/lexical/packages/lexical-markdown/README.md
-  - /Users/zbeyens/git/lexical/packages/lexical-markdown/src/MarkdownTransformers.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:README.md
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-markdown/README.md
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-markdown/src/MarkdownTransformers.ts
   - https://lexical.dev/docs/intro
   - https://lexical.dev/docs/packages/lexical-markdown
 related: []
@@ -58,8 +58,8 @@ surface around them.
 
 ## High-value pages
 
-- `/Users/zbeyens/git/lexical/packages/lexical-markdown/README.md`
-- `/Users/zbeyens/git/lexical/packages/lexical-markdown/src/MarkdownTransformers.ts`
+- `facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-markdown/README.md`
+- `facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-markdown/src/MarkdownTransformers.ts`
 - `https://lexical.dev/docs/packages/lexical-markdown`
 
 ## What this source cluster is good for

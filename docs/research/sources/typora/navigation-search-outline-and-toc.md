@@ -9,7 +9,7 @@ source_refs:
   - ../raw/typora/pages/toc-levels.json
 updated: 2026-04-04
 related:
-  - docs/editor-behavior/editor-protocol-matrix.md
+  - c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md
 ---
 
 # Typora navigation, search, outline, and TOC

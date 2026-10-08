@@ -49,8 +49,6 @@
         "lint:partition:docx-import",
         "lint:partition:docx-internal",
         "lint:partition:docx-paste",
-        "lint:partition:emoji",
-        "lint:partition:emoji-react",
         "lint:partition:excalidraw",
         "lint:partition:excalidraw-react",
         "lint:partition:find",
@@ -333,8 +331,6 @@
         "!src/docx/export/**",
         "!src/docx/import/**",
         "!src/docx/html/**",
-        "!src/emoji/**",
-        "!src/emoji/react/**",
         "!src/excalidraw/**",
         "!src/excalidraw/react/**",
         "!src/history/**",
@@ -418,8 +414,6 @@
         "!test/docx/export/**",
         "!test/docx/import/**",
         "!test/docx/html/**",
-        "!test/emoji/**",
-        "!test/emoji/react/**",
         "!test/excalidraw/**",
         "!test/excalidraw/react/**",
         "!test/history/**",
@@ -637,38 +631,6 @@
       "inputs": [
         "src/docx/paste/**",
         "test/docx/paste/**",
-        "$TURBO_ROOT$/oxlint.config.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "lint:partition:emoji": {
-      "cache": true,
-      "dependsOn": [],
-      "inputs": [
-        "src/emoji/**",
-        "!src/emoji/react/**",
-        "test/emoji/**",
-        "!test/emoji/react/**",
-        "$TURBO_ROOT$/oxlint.config.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "lint:partition:emoji-react": {
-      "cache": true,
-      "dependsOn": [],
-      "inputs": [
-        "src/emoji/react/**",
-        "test/emoji/react/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -1581,7 +1543,6 @@
         "test:partition:docx-html",
         "test:partition:docx-import",
         "test:partition:docx-paste",
-        "test:partition:emoji",
         "test:partition:excalidraw",
         "test:partition:excalidraw-react",
         "test:partition:find",
@@ -1925,8 +1886,6 @@
         "!src/docx/export/**",
         "!src/docx/import/**",
         "!src/docx/html/**",
-        "!src/emoji/**",
-        "!src/emoji/react/**",
         "!src/excalidraw/**",
         "!src/excalidraw/react/**",
         "!src/history/**",
@@ -2010,8 +1969,6 @@
         "!test/docx/export/**",
         "!test/docx/import/**",
         "!test/docx/html/**",
-        "!test/emoji/**",
-        "!test/emoji/react/**",
         "!test/excalidraw/**",
         "!test/excalidraw/react/**",
         "!test/history/**",
@@ -2260,30 +2217,6 @@
       "inputs": [
         "src/docx/paste/**",
         "test/docx/paste/**",
-        "$TURBO_ROOT$/config/plite-source-aliases.ts",
-        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
-        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "bunfig.toml"
-      ],
-      "env": ["CI"],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "test:partition:emoji": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:combobox",
-        "typecheck:partition:core",
-        "typecheck:partition:emoji"
-      ],
-      "inputs": [
-        "src/emoji/**",
-        "!src/emoji/react/**",
-        "test/emoji/**",
-        "!test/emoji/react/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -3251,8 +3184,6 @@
         "typecheck:partition:docx-import",
         "typecheck:partition:docx-internal",
         "typecheck:partition:docx-paste",
-        "typecheck:partition:emoji",
-        "typecheck:partition:emoji-react",
         "typecheck:partition:excalidraw",
         "typecheck:partition:excalidraw-react",
         "typecheck:partition:find",
@@ -3756,8 +3687,6 @@
         "!src/docx/export/**",
         "!src/docx/import/**",
         "!src/docx/html/**",
-        "!src/emoji/**",
-        "!src/emoji/react/**",
         "!src/excalidraw/**",
         "!src/excalidraw/react/**",
         "!src/history/**",
@@ -4130,62 +4059,6 @@
       "outputs": [
         ".turbo/entrypoint-types/docx-paste/**",
         ".turbo/entrypoint-types/docx-paste.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:emoji": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:combobox", "typecheck:partition:core"],
-      "inputs": [
-        "src/emoji/**",
-        "!src/emoji/react/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*.slow.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/emoji.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/emoji/**",
-        ".turbo/entrypoint-types/emoji.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:emoji-react": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:emoji",
-        "typecheck:partition:react-core"
-      ],
-      "inputs": [
-        "src/emoji/react/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*.slow.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/emoji-react.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/emoji-react/**",
-        ".turbo/entrypoint-types/emoji-react.tsbuildinfo"
       ]
     },
     "typecheck:partition:excalidraw": {

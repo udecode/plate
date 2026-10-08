@@ -4,7 +4,7 @@ type: decision
 status: accepted
 updated: 2026-04-25
 source_refs:
-  - docs/plans/2026-04-25-slate-v2-leaf-lifecycle-dom-shape-conformance-plan.md
+  - docs/plans/2026-04-25-plite-leaf-lifecycle-dom-shape-conformance-plan.md
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
   - docs/research/decisions/slate-v2-editing-epoch-legacy-timing-recovery-audit.md
 legacy_refs:
@@ -14,13 +14,13 @@ legacy_refs:
   - ../slate/packages/slate-dom/src/plugin/dom-editor.ts
   - ../slate/packages/slate-dom/src/plugin/with-dom.ts
 v2_refs:
-  - packages/slate/src/core/leaf-lifecycle.ts
-  - packages/slate/test/leaf-lifecycle-contract.ts
-  - packages/slate/test/selection-rebase-contract.ts
-  - packages/slate-react/test/rendered-dom-shape-contract.tsx
+  - fc2cb1f56d39d488cc72482d86ce994fdbcf3a23:packages/plite/src/core/leaf-lifecycle.ts
+  - packages/plitejs/test/leaf-lifecycle-contract.ts
+  - packages/plitejs/test/selection-rebase-contract.ts
+  - packages/plitejs/test/react/rendered-dom-shape-contract.tsx
   - packages/test/src/playwright/index.ts
-  - apps/www/tests/slate-browser/donor/examples/richtext.test.ts
-  - apps/www/tests/slate-browser/donor/examples/inlines.test.ts
+  - apps/plite/tests/plite-browser/donor/examples/richtext.test.ts
+  - apps/plite/tests/plite-browser/donor/examples/inlines.test.ts
 ---
 
 # Slate v2 destructive leaf-boundary deletion should own leaf cleanup before render
@@ -131,7 +131,7 @@ Current accepted proof for this decision:
 ```bash
 bun test ./packages/slate/test/leaf-lifecycle-contract.ts ./packages/slate/test/selection-rebase-contract.ts ./packages/slate/test/transaction-target-runtime-contract.ts ./packages/slate/test/commit-metadata-contract.ts --bail 1
 bun test ./packages/slate-react/test/rendered-dom-shape-contract.tsx ./packages/slate-react/test/primitives-contract.tsx ./packages/slate-react/test/dom-text-sync-contract.ts --bail 1
-bun run --cwd packages/slate-browser test:core --bail 1
+bun run --cwd ./packages/slate-browser test:core --bail 1
 PLAYWRIGHT_BASE_URL=http://localhost:3100 bunx playwright test ./playwright/integration/examples/richtext.test.ts ./playwright/integration/examples/highlighted-text.test.ts ./playwright/integration/examples/inlines.test.ts --project=chromium --project=firefox --project=webkit --project=mobile --grep "destructive|leaf|zero-width|DOM shape|Backspace|Delete|word-delete|generated inline cut|generated mixed" --workers=4 --retries=0
 bunx turbo build --filter=./packages/slate --filter=./packages/slate-browser --filter=./packages/slate-react --filter=./packages/slate-dom --force
 bunx turbo typecheck --filter=./packages/slate --filter=./packages/slate-browser --filter=./packages/slate-react --filter=./packages/slate-dom --force

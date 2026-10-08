@@ -4,11 +4,11 @@ type: decision
 status: proposed
 updated: 2026-05-31
 source_refs:
-  - packages/slate/src/interfaces/editor.ts
-  - packages/slate/src/interfaces/element.ts
-  - packages/slate/src/interfaces/text.ts
-  - content/docs/slate/concepts/13-roots.md
-  - content/docs/slate/concepts/14-document-state.md
+  - packages/plitejs/src/interfaces/editor.ts
+  - packages/plitejs/src/interfaces/element.ts
+  - packages/plitejs/src/interfaces/text.ts
+  - content/docs/(guides)/roots.mdx
+  - content/docs/(guides)/document-meta.mdx
   - ../portabletext/README.md
   - ../portabletext/apps/docs/src/content/docs/introduction.mdx
   - ../portabletext/packages/schema/src/index.ts

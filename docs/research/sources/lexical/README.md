@@ -1,7 +1,7 @@
 # Lexical Sources
 
 This directory contains compiled research summaries derived from the official
-Lexical monorepo at `/Users/zbeyens/git/lexical` plus the live docs entrypoints
+Lexical monorepo at `facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988` plus the live docs entrypoints
 on `https://lexical.dev`.
 
 Current pages:
@@ -30,6 +30,7 @@ Pages in this folder:
 - [Lexical: media and embeds](media-and-embeds.md)
 - [Lexical: model and schema](model-and-schema.md)
 - [Lexical: plugins and extensions](plugins-and-extensions.md)
+- [Lexical: rendering and DOM](rendering-and-dom.md)
 - [Lexical: selection and caret](selection-and-caret.md)
 - [Lexical: tables](tables.md)
 - [Lexical: testing and proof](testing-and-proof.md)
@@ -91,28 +92,9 @@ Research runs:
 
 Issue ledgers and test harvests:
 
-- [Checkpoint 01](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-01.md)
-- [Checkpoint 02](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-02.md)
-- [Checkpoint 03](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-03.md)
-- [Checkpoint 04](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-04.md)
-- [Checkpoint 05](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-05.md)
-- [Checkpoint 06](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-06.md)
-- [Checkpoint 07](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-07.md)
-- [Checkpoint 08](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-08.md)
-- [Checkpoint 09](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-09.md)
-- [Checkpoint 10](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-10.md)
-- [Checkpoint 11](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-11.md)
-- [Checkpoint 12](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-12.md)
-- [Checkpoint 13](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-13.md)
-- [Checkpoint 14](../../../editor-issue-harvester/lexical/full/checkpoints/checkpoint-14.md)
-- [Full Lexical Issue Coverage Map](../../../editor-issue-harvester/lexical/full/coverage-map.md)
 - [Lexical Issue Closure Ledger](../../../editor-issue-harvester/lexical/full/issue-closure-ledger.md)
 - [Lexical Issue Refresh](../../../editor-issue-harvester/lexical/full/issue-refresh.md)
-- [Full Lexical Issue Matrix](../../../editor-issue-harvester/lexical/full/matrix.md)
-- [Lexical Full All-Issues Robustness Harvest](../../../editor-issue-harvester/lexical/full/report.md)
-- [Supervisor Miss: Matrix-Only Closure](../../../editor-issue-harvester/lexical/full/supervisor-miss.md)
 - [Lexical Test Harvest Full Inventory](../../../editor-test-harvester/lexical/inventory.md)
-- [Lexical To Plite Processing Ledger](../../../editor-test-harvester/lexical/plite-processing-ledger.md)
 - [Editor Test Harvest: Lexical](../../../editor-test-harvester/lexical/report.md)
 - [Lexical Portable Test-Name Index](../../../editor-test-harvester/lexical/test-index.md)
 

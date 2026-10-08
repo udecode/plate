@@ -9,9 +9,9 @@ source_refs:
   - ../raw/prosemirror/packages/view/src/index.ts
   - ../raw/prosemirror/packages/view/src/domcoords.ts
   - ../raw/prosemirror/packages/view/src/domchange.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalEvents.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalSelection.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalUtils.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/LexicalEvents.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/LexicalSelection.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/LexicalUtils.ts
   - node_modules/.pnpm/@codemirror+view@6.39.16/node_modules/@codemirror/view/dist/index.d.ts
   - node_modules/.pnpm/@codemirror+view@6.39.16/node_modules/@codemirror/view/dist/index.js
   - ../tiptap/packages/core/src/commands/scrollIntoView.ts

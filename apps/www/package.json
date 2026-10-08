@@ -55,7 +55,6 @@
     "@codemirror/search": "6.7.2",
     "@codemirror/state": "6.7.2",
     "@codemirror/view": "6.41.0",
-    "@emoji-mart/data": "1.2.1",
     "@excalidraw/excalidraw": "0.18.0",
     "@faker-js/faker": "9.8.0",
     "@floating-ui/react": "^0.26.23",

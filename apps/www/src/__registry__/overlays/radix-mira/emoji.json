@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "emoji",
+  "title": "Emoji",
+  "description": "A popup for emoji search and insertion.",
+  "dependencies": [
+    "platejs",
+    "diff-match-patch-ts@^0.6.0"
+  ],
+  "registryDependencies": [
+    "@plate/emoji-data",
+    "@plate/inline-combobox"
+  ],
+  "files": [
+    {
+      "path": "src/registry/components/editor/emoji.tsx",
+      "content": "'use client';\n\nimport { BaseCodeBlockPlugin } from 'platejs';\nimport type { ComboboxState } from 'platejs/combobox';\nimport { definePlugin } from 'platejs/react';\nimport type * as React from 'react';\n\nimport { useEmojiSearch } from '@/registry/lib/emoji-data';\n\nimport {\n  InlineCombobox,\n  InlineComboboxContent,\n  InlineComboboxEmpty,\n  InlineComboboxGroup,\n  InlineComboboxItem,\n  useInlineComboboxQuery,\n} from './inline-combobox';\n\nexport function EmojiCombobox({\n  editableRef,\n}: {\n  editableRef: React.RefObject<HTMLDivElement | null>;\n}) {\n  const { status } = useEmojiSearch(null);\n\n  return (\n    <InlineCombobox\n      editableRef={editableRef}\n      filter={false}\n      plugin={EmojiPlugin}\n      hideWhenNoValue\n      loading={status === 'loading'}\n    >\n      <EmojiComboboxContent />\n    </InlineCombobox>\n  );\n}\n\nfunction EmojiComboboxContent() {\n  const query = useInlineComboboxQuery();\n  const { results, status } = useEmojiSearch(query || null);\n\n  return (\n    <InlineComboboxContent>\n      {status === 'loading' ? (\n        <div className=\"py-6 text-center text-xs/relaxed\" role=\"status\">\n          Loading emoji…\n        </div>\n      ) : (\n        <InlineComboboxEmpty>\n          {status === 'failed' ? 'Emoji unavailable' : 'No results'}\n        </InlineComboboxEmpty>\n      )}\n\n      <InlineComboboxGroup>\n        {results.map((emoji) => (\n          <InlineComboboxItem\n            key={emoji.emoji}\n            value={emoji.label}\n            onSelect={(tx) => {\n              tx.text.insert(emoji.emoji);\n            }}\n          >\n            {emoji.emoji} {emoji.label}\n          </InlineComboboxItem>\n        ))}\n      </InlineComboboxGroup>\n    </InlineComboboxContent>\n  );\n}\n\nexport const EmojiPlugin = definePlugin('emoji', {\n  editOnly: true,\n  initialState: (): ComboboxState => ({\n    maxQueryLength: 75,\n    queryPattern: /^[\\p{L}\\p{N}_+\\-:]$/u,\n    trigger: ':',\n    triggerPreviousCharPattern: /^\\s?$/,\n    triggerQuery: (editor) => {\n      const codeBlock = editor.plugin(BaseCodeBlockPlugin);\n\n      return (\n        !codeBlock.installed ||\n        !editor.read.nodes.some({ type: codeBlock.schema.type })\n      );\n    },\n  }),\n});\n\nexport const EmojiKit = [\n  EmojiPlugin.configure({ slots: { afterEditable: EmojiCombobox } }),\n];\n",
+      "type": "registry:component",
+      "target": "@components/editor/emoji.tsx"
+    }
+  ],
+  "meta": {
+    "docs": [
+      {
+        "route": "/docs/emoji"
+      },
+      {
+        "route": "https://pro.platejs.org/docs/components/emoji"
+      }
+    ],
+    "examples": [
+      "emoji-demo"
+    ]
+  },
+  "type": "registry:component"
+}

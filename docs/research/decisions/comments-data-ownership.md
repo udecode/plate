@@ -94,7 +94,7 @@ The component and browser tests explicitly expect this placement. A missing
 target must remove the thread from live block counts; it must not remove the
 conversation.
 
-The [source probe](../../plans/artifacts/comments-history-api/deleted-target-retyping-2026-09-18.json)
+The September 18 source probe comparing ordinary and Authored comments after deleting `lph` and separately inserting `NEW`
 also exposes a native discrepancy. Commenting on `lph` in `Alpha Beta`, deleting
 that range, then inserting `NEW` in a separate transaction leaves an ordinary
 anchor unavailable. With Authored installed in its default editing/accepted

@@ -9,7 +9,7 @@ source_refs:
   - docs/research/systems/editor-behavior-architecture.md
 related:
   - docs/editor-behavior/markdown-editing-spec.md
-  - docs/editor-behavior/editor-protocol-matrix.md
+  - c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md
 ---
 
 # Autoformat families are distinct input-assist surfaces

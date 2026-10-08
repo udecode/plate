@@ -12,13 +12,13 @@ source_refs:
   - ../raw/lexical/repo/packages/lexical-website/docs/extensions/intro.md
   - ../raw/lexical/repo/packages/lexical-website/docs/extensions/design.md
   - ../raw/lexical/repo/packages/lexical/src/LexicalUpdateTags.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditor.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalCommands.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalNodeState.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/nodes/LexicalDecoratorNode.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/extension-core/types.ts
-  - /Users/zbeyens/git/lexical/packages/lexical-website/docs/extensions/signals.md
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/LexicalEditor.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/LexicalUpdates.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/LexicalCommands.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/LexicalNodeState.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/nodes/LexicalDecoratorNode.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/extension-core/types.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-website/docs/extensions/signals.md
 related:
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
 ---
@@ -46,7 +46,7 @@ runtime architecture.
 
 ## 2026-04-30 Local API Surface Refresh
 
-Direct local source refresh against `/Users/zbeyens/git/lexical` adds sharper
+Direct local source refresh against `facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988` adds sharper
 API evidence for the Slate v2 API review:
 
 - `LexicalEditor` partitions listeners by update, editable, decorator, text

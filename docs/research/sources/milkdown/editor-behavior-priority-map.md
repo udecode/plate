@@ -25,11 +25,11 @@ These are the highest-value lanes to read first:
 - `e2e/tests/input/*`
 - `e2e/tests/shortcut/*`
 - `e2e/tests/transform/*`
-- `packages/plugins/preset-commonmark/src`
-- `packages/plugins/preset-gfm/src`
-- `packages/plugins/plugin-indent/src`
-- `packages/transformer/src/parser`
-- `packages/transformer/src/serializer`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:packages/plugins/preset-commonmark/src`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:packages/plugins/preset-gfm/src`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:packages/plugins/plugin-indent/src`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:packages/transformer/src/parser`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:packages/transformer/src/serializer`
 
 Why:
 

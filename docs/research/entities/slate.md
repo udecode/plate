@@ -6,7 +6,7 @@ updated: 2026-04-14
 related:
   - docs/research/sources/editor-architecture/candidates.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
-  - docs/slate-v2/decorations-annotations-cluster.md
+  - c70bacbd4a:docs/plite-draft/decorations-annotations-cluster.md
 ---
 
 # Slate
@@ -25,9 +25,9 @@ being rewritten.
 ## Strongest local evidence
 
 - `../slate/Readme.md`
-- `packages/slate/src/interfaces/editor.ts`
-- `packages/slate-react/src/projection-store.ts`
-- `docs/slate-v2/decorations-annotations-cluster.md`
+- `udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate/src/interfaces/editor.ts`
+- `udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate-react/src/projection-store.ts`
+- `c70bacbd4a:docs/plite-draft/decorations-annotations-cluster.md`
 
 ## Limits
 

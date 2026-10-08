@@ -7,7 +7,7 @@ source_refs:
   - https://prosemirror.net/docs/guide/
   - https://prosemirror.net/docs/ref/#inputrules.InputRule
   - https://prosemirror.net/examples/markdown/
-  - /Users/zbeyens/git/prosemirror/README.md
+  - ProseMirror/prosemirror@c7f2f1d7bde70728dfedaa68ca8f5fc3dffa17cc:README.md
 related: []
 ---
 

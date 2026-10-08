@@ -9,7 +9,7 @@ source_refs:
 updated: 2026-04-09
 related:
   - docs/editor-behavior/markdown-editing-spec.md
-  - docs/editor-behavior/editor-protocol-matrix.md
+  - c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md
 ---
 
 # Milkdown latex trigger surface
@@ -21,9 +21,9 @@ delimiter triggers.
 
 ## Source set
 
-- `packages/crepe/src/feature/latex/input-rule.ts`
-- `packages/crepe/src/feature/latex/index.ts`
-- `packages/crepe/src/feature/top-bar/config.ts`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:packages/crepe/src/feature/latex/input-rule.ts`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:packages/crepe/src/feature/latex/index.ts`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:packages/crepe/src/feature/top-bar/config.ts`
 
 ## Strongest explicit signals
 

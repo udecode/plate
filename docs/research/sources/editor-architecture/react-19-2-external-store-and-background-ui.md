@@ -8,10 +8,10 @@ source_refs:
   - https://react.dev/reference/react/useTransition
   - https://react.dev/reference/react/useDeferredValue
   - https://react.dev/reference/react/Activity
-  - packages/slate-react/src/hooks/use-slate-selector.tsx
-  - packages/slate-react/src/hooks/use-slate-annotations.tsx
-  - packages/slate-react/src/hooks/use-slate-widgets.tsx
-  - content/docs/slate/walkthroughs/09-performance.md
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-slate-selector.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-slate-annotations.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-slate-widgets.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:docs/walkthroughs/09-performance.md
 updated: 2026-04-28
 related:
   - docs/research/systems/slate-v2-overlay-architecture.md

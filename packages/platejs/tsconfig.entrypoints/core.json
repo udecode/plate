@@ -27,8 +27,6 @@
     "../src/docx/export/**/*",
     "../src/docx/import/**/*",
     "../src/docx/html/**/*",
-    "../src/emoji/**/*",
-    "../src/emoji/react/**/*",
     "../src/excalidraw/**/*",
     "../src/excalidraw/react/**/*",
     "../src/history/**/*",

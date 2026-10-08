@@ -93,12 +93,12 @@ the public configuration and read/write calls.
 provider, awareness and pause operations. They do not enqueue effects for
 successful transaction acceptance.
 
-The [source-backed probe](../../plans/artifacts/2026-09-14-collaboration-transaction-probe.test.ts)
+The September 14 source-backed probe using a FakeProvider in discarded-spec and aborted-update modes
 constructs a discarded `state.transaction` and separately throws from
 `editor.update`. Both attempt a text insertion, cursor-data publication,
 pause and disconnect. In each case text remains `original` and zero editor
 commits fire, but cursor data is published, synchronization stays paused and
-the provider receives `disconnect`. [Captured output](../../plans/artifacts/2026-09-14-collaboration-transaction-probe.log)
+the provider receives `disconnect`. Captured output from two passing diagnostic cases with zero failures
 confirms both observations. Its passing assertions describe the defect, not
 desired regression expectations.
 
@@ -109,7 +109,7 @@ a document transaction merely to publish a profile or disconnect a socket.
 
 ### Cut duplicated configuration and transport control
 
-[BaseYjsPlugin.ts](../../../packages/platejs/src/yjs/BaseYjsPlugin.ts) copies the
+[BaseYjsPlugin.ts](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/platejs/src/yjs/BaseYjsPlugin.ts) copies the
 native options into nullable `YjsPluginState`, then reads the store to
 construct `yjs(options)`. The controller captures those options. This is a
 second public configuration representation, not a demonstrated live
@@ -118,7 +118,7 @@ Plate authoring/decoration adapter; test cursor-data inference during design.
 
 [YjsProviderLike](../../../packages/plitejs/src/yjs/core/types.ts) admits optional
 document, awareness, connect/disconnect/destroy, subscriptions and several event
-payload shapes. [The lifecycle adapter](../../../packages/plitejs/src/yjs/core/provider-lifecycle-adapter.ts)
+payload shapes. [The lifecycle adapter](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/yjs/core/provider-lifecycle-adapter.ts)
 normalizes those shapes into connection/sync state. The public transaction
 methods discard the underlying operation result, and promise rejection
 handlers suppress errors. The
@@ -200,7 +200,7 @@ line-by-line or behavioral coverage of the CRDT implementation.
 Existing source-first checks passed: 69 Plite tests across provider, awareness,
 schema identity and multi-root contracts, plus eight Plate adapter tests.
 The two diagnostic cases also pass, reproducing the defect. Commands and
-outputs are retained in the [proof receipt](../../plans/artifacts/2026-09-14-collaboration-proof.md).
+outputs are retained in the September 14 receipt recording 69 Plite passes, eight Plate adapter passes and two passing defect diagnostics.
 No real network/provider server, browser/native device, performance comparison,
 full history/CRDT soak or proposed implementation was executed. Source review
 was sequential; no independent worker review is claimed.

@@ -69,7 +69,7 @@ membership.
 ## Assessed units
 
 Ten semantic units cover the ledger question. All ten received a disposition;
-none remain unreviewed. The [census accounting](../../plans/artifacts/2026-09-17-ui-review/coverage.json)
+none remain unreviewed. The September 17 census accounting (49 assessed groups and 11 exclusions)
 classifies all 60 mapped source groups, including ancillary exclusions and
 support-only artifacts. This is a composition audit, not certification of
 every feature algorithm, locale fixture, or external example.
@@ -123,7 +123,7 @@ mode. A direct call with `directory: 'rd'`, `style: 'base-luma'` and
 the response failure on the current artifacts. The final design deletes the
 mode split: one neutral compilation serializes both canonical directories and
 publishes them with sparse overlays and generation metadata. The original
-[receipt](../../plans/artifacts/2026-09-17-ui-review/proof.json) preserves the
+September 17 response reproduction for `rd`, `base-luma` and `link.json` preserves the
 invocation and result.
 
 ## Alternatives and prior decisions

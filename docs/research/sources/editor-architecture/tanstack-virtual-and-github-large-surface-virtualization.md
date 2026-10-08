@@ -134,13 +134,13 @@ Current live `Plate repo root` source has:
   runtime-id item keys, dynamic measurement, retained selected/promoted
   indexes, and coalesced missing viewport ranges;
 - an experimental `type: 'virtualized'` option in
-  `packages/slate-react/src/rendering-strategy/create-segment-plan.ts`;
+  `udecode/slate@1b9432d2a7bc4b55010011c9a442365da2f5347c:packages/slate-react/src/rendering-strategy/create-segment-plan.ts`;
 - `DOMCoverageReason = 'viewport-virtualization'` in
-  `packages/slate-dom/src/plugin/dom-coverage.ts`;
+  `packages/plitejs/src/dom/plugin/dom-coverage.ts`;
 - hidden viewport-range `DOMCoverageBoundary` registration in
-  `packages/slate-react/src/rendering-strategy/virtualized-range-boundary.tsx`;
+  `udecode/slate@1b9432d2a7bc4b55010011c9a442365da2f5347c:packages/slate-react/src/rendering-strategy/virtualized-range-boundary.tsx`;
 - virtualized-mode package tests in
-  `packages/slate-react/test/rendering-strategy-and-scroll.tsx`;
+  `udecode/slate@1b9432d2a7bc4b55010011c9a442365da2f5347c:packages/slate-react/test/rendering-strategy-and-scroll.tsx`;
 - a full browser example in
   `site/examples/ts/rendering-strategy-runtime.tsx`;
 - docs warning that virtualized native browser find and screen-reader traversal

@@ -3,21 +3,21 @@ title: Slate v2 local overlay proof substrate
 type: source
 status: partial
 source_refs:
-  - packages/slate-react/src/projection-store.ts
-  - packages/slate-react/src/annotation-store.ts
-  - packages/slate-react/src/widget-store.ts
-  - packages/slate-react/src/hooks/use-slate-projections.tsx
-  - packages/slate-react/src/hooks/use-decoration-selector.tsx
-  - packages/slate-react/test/projections-and-selection-contract.tsx
-  - packages/slate-react/test/annotation-store-contract.tsx
-  - packages/slate-react/test/widget-layer-contract.tsx
-  - packages/slate/src/interfaces/bookmark.ts
-  - packages/slate/src/interfaces/editor.ts
-  - packages/slate/src/editor.ts
-  - packages/slate/src/range-projection.ts
-  - packages/slate/src/core/get-dirty-paths.ts
-  - packages/slate/src/core/draft-helpers.ts
-  - packages/slate/test/snapshot-contract.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/projection-store.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/annotation-store.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/widget-store.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-slate-projections.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-decoration-selector.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/test/projections-and-selection-contract.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/test/annotation-store-contract.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/test/widget-layer-contract.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/src/interfaces/bookmark.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/src/interfaces/editor.ts
+  - Historical Slate editor implementation evidence file is no longer available.
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/src/range-projection.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/src/core/get-dirty-paths.ts
+  - Draft helpers evidence file is no longer available.
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/test/snapshot-contract.ts
   - benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx
   - benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx
 updated: 2026-04-28

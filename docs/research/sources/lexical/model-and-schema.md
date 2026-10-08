@@ -8,7 +8,7 @@
   - keep a commented #4429 TODO;
   - type Tab at a block start, in the middle of text, and over a selection.
 
-  Plite stores a tab as ordinary text. Source: `docs/editor-test-harvester/lexical/plite-processing-ledger.md:709-716`, extracted on 2026-05-09 from an unpinned Lexical checkout. Limit: not rerun.
+  Plite stores a tab as ordinary text. Source: `c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:709-716`, extracted on 2026-05-09 from an unpinned Lexical checkout. Limit: not rerun.
 
 ## Inline entities
 
@@ -18,7 +18,7 @@
 
 ## Line breaks
 
-- **A soft line break is a `LineBreakNode`.** Lexical models a line break inside a paragraph as a `LineBreakNode` child rendered as `<br>`, with its own type, schema and type guard. The open-line regression shows the shape: Ctrl+O at the start of the second paragraph leaves that paragraph holding a `<br>` and then `bar`, with the caret on the paragraph element before the break (`facebook/lexical@dd5c41b1:packages/lexical-playground/__tests__/regression/399-open-line.spec.mjs:72-91`). Plite has no line-break node; its soft break inserts a newline character into the text (`packages/plitejs/src/editor/insert-soft-break.ts:8-18`). Source: `docs/editor-test-harvester/lexical/plite-processing-ledger.md:899`. Limit: the #399 reading covers rich-text mode only.
+- **A soft line break is a `LineBreakNode`.** Lexical models a line break inside a paragraph as a `LineBreakNode` child rendered as `<br>`, with its own type, schema and type guard. The open-line regression shows the shape: Ctrl+O at the start of the second paragraph leaves that paragraph holding a `<br>` and then `bar`, with the caret on the paragraph element before the break (`facebook/lexical@dd5c41b1:packages/lexical-playground/__tests__/regression/399-open-line.spec.mjs:72-91`). Plite has no line-break node; its soft break inserts a newline character into the text (`packages/plitejs/src/editor/insert-soft-break.ts:8-18`). Source: `c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:899`. Limit: the #399 reading covers rich-text mode only.
 
 ## Serialized node model and versions
 

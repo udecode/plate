@@ -230,5 +230,5 @@ metrics must identify every rebuild and fallback.
   registry installation, and the packed runtime/declaration/bundle matrix.
 
 There is no raw or compiled evidence gap for this decision pass. The missing
-`docs/solutions/patterns/critical-patterns.md` path is stale workflow routing;
+critical-patterns solutions path is stale workflow routing;
 the current research-wiki owner files were present and fully read.

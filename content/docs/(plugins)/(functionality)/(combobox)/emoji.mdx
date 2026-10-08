@@ -11,9 +11,10 @@ docs:
 ---
 
 Emoji adds two insertion paths. Typing `:` opens a popup that searches the
-text typed after it, and a toolbar popover browses categories. The package owns emoji data,
-trigger behavior, index search, and insertion. The registry owns both UI
-controllers, including picker state and frequent emoji storage.
+shortcode typed after it, and a toolbar picker browses and searches every emoji.
+Both are copied registry components over [Emojibase](https://emojibase.dev) data,
+and the picker grid is built on [frimousse](https://frimousse.liveblocks.io).
+Both insert emoji as plain text.
 
 <ComponentPreview name="emoji-demo" />
 
@@ -22,11 +23,12 @@ controllers, including picker state and frequent emoji storage.
 ## Features
 
 - A popup over the shortcode typed after `:`, through [Combobox](/docs/combobox).
+- GitHub shortcodes such as `:+1:`, `:tada:` and `:heart_eyes:`, ranked before label and tag matches.
 - Shortcode queries, where a space closes the popup and a closing `:` stays in the query.
-- Emoji search from `@emoji-mart/data`.
-- Default insertion as Unicode text.
-- Custom inserted node support through `createEmojiNode`.
-- Toolbar popover with categories, search, preview, and frequent emoji tracking.
+- No popup inside code blocks.
+- Insertion as Unicode text.
+- A toolbar picker with category browsing, search, keyboard navigation and a frequent row.
+- Emojibase data loaded on first use and cached in the browser, with emoji the device cannot draw left out.
 - Markdown shortcode deserialization to Unicode text.
 
 </PackageInfo>
@@ -37,7 +39,7 @@ controllers, including picker state and frequent emoji storage.
 
 ### Add the kit
 
-`EmojiKit` installs `EmojiPlugin` with `@emoji-mart/data` and mounts the registry emoji popup.
+`EmojiKit` installs `EmojiPlugin` and mounts the emoji popup.
 
 <ComponentSource name="emoji" />
 
@@ -51,16 +53,17 @@ export const editor = createEditor({
 });
 ```
 
-### Render the popup
+### Load emoji data
 
-`emoji` searches `createEmojiSearch(data)` with the typed shortcode and inserts the selected emoji.
+`emoji-data` loads Emojibase through frimousse, joins GitHub shortcodes to it
+and ranks searches. The popup and every picker share one load.
 
-<ComponentSource name="emoji" />
+<ComponentSource name="emoji-data" />
 
 ### Add toolbar picking
 
-`emoji-picker` owns the searchable picker family and frequent emoji storage.
-`emoji-toolbar-button` is its toolbar trigger.
+`emoji-picker` owns the picker popover, search and frequent picks.
+`emoji-toolbar-button` inserts the picked emoji at the selection.
 
 <ComponentSource name="emoji-picker" />
 <ComponentSource name="emoji-toolbar-button" />
@@ -71,18 +74,16 @@ export const editor = createEditor({
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `platejs/emoji` | Package | Exports `BaseEmojiPlugin`, emoji search libraries, settings, categories, and types. |
-| `platejs/emoji/react` | Package | Exports `EmojiPlugin`. |
-| `platejs/combobox/react` | Package | Exports `useCombobox`, which opens the popup on a typed `:`. |
-| `@emoji-mart/data` | Dependency | Provides the emoji dataset used by the registry kit. |
-| `emoji` | Registry | Configures `EmojiPlugin` with the full emoji-mart dataset and mounts `EmojiCombobox`. |
-| `emoji` | Registry UI | Renders emoji search with `InlineCombobox`. |
-| `emoji-picker` | Registry UI | Owns popover state, search, category focus, preview, selection, and frequent emoji storage. |
-| `emoji-toolbar-button` | Registry UI | Adapts `EmojiPicker` to the editor toolbar. |
+| `emoji` | Registry | Defines `EmojiPlugin`, its trigger policy and code-block veto, and `EmojiCombobox`. |
+| `emoji-data` | Registry | Loads Emojibase once, joins GitHub shortcodes and ranks searches. |
+| `emoji-picker` | Registry UI | Owns the popover, search results, frimousse grid and frequent picks. |
+| `emoji-toolbar-button` | Registry UI | Opens `EmojiPicker` from the toolbar and inserts the pick. |
 | `inline-combobox` | Registry UI | Renders the listbox and popover primitives at the trigger. |
+| `platejs/combobox/react` | Package | Exports `useCombobox`, which opens the popup on a typed `:`. |
 | `platejs/markdown` | Package | Deserializes emoji shortcodes such as `:fire:` to Unicode text. |
 
-The emoji plugin is edit-only. Completion replaces the typed `:` and shortcode with text or your custom node.
+`EmojiPlugin` is edit-only. Completion replaces the typed `:` and shortcode with
+the emoji in one undo step.
 
 ## Manual setup
 
@@ -91,34 +92,41 @@ The emoji plugin is edit-only. Completion replaces the typed `:` and shortcode w
 ### Install packages
 
 ```bash
-npm install platejs @emoji-mart/data @tanstack/react-virtual
+npm install platejs frimousse@0.4.0
+```
+
+### Add the registry items
+
+Copy the popup, the data loader and the picker into your app.
+
+```bash
+npx shadcn@latest add @plate/emoji @plate/emoji-picker @plate/emoji-toolbar-button
 ```
 
 ### Add plugins
 
-`emojiPlugin` configures the package plugin with the full emoji-mart dataset.
-Mount the popup in its `afterEditable` slot.
+`EmojiPlugin` holds only the trigger policy. Mount the popup in its
+`afterEditable` slot.
 
 ```tsx
 import { createEditor } from 'platejs/react';
 
-import { EmojiCombobox, emojiPlugin } from '@/components/editor/emoji';
+import { EmojiCombobox, EmojiPlugin } from '@/components/editor/emoji';
 
 export const editor = createEditor({
-  plugins: [
-    emojiPlugin.configure({ slots: { afterEditable: EmojiCombobox } }),
-  ],
+  plugins: [EmojiPlugin.configure({ slots: { afterEditable: EmojiCombobox } })],
 });
 ```
 
 ### Add a toolbar button
 
-Render `EmojiToolbarButton` in your toolbar when users should browse emoji without typing `:`.
+Render `EmojiToolbarButton` in your toolbar when users should browse emoji
+without typing `:`.
 
 ```tsx
 import { EmojiToolbarButton } from '@/components/editor/emoji-toolbar-button';
 
-export function FixedToolbarButtons() {
+export function EditorToolbar() {
   return <EmojiToolbarButton />;
 }
 ```
@@ -131,70 +139,57 @@ The inline path is a [combobox](/docs/combobox) flow.
 
 | Step | Source |
 |------|--------|
-| Type `:` | `BaseEmojiPlugin` trigger. |
+| Type `:` | `EmojiPlugin` trigger. |
 | Previous character must match `/^\s?$/` | Start of block or whitespace by default. |
+| Not inside a code block | `triggerQuery` refuses the trigger when the selection is in a code block. |
 | Type the shortcode | `queryPattern` admits letters, digits, `_`, `+`, `-` and `:`; a space closes the popup. |
-| Search emoji data | `EmojiCombobox` calls `search(query, { limit: 60 })` on `createEmojiSearch(data)`, ignoring a closing `:`. |
-| Select a result | `InlineComboboxItem` replaces `:` and the shortcode and calls `editor.plugin(EmojiPlugin).update.insert(emoji)`. |
-| Insert final content | `update.insert` calls `createEmojiNode(emoji)` and inserts that node. |
+| Search emoji data | The `:` popup calls `useEmojiSearch(query)`, which ignores a closing `:`. |
+| Select a result | `InlineComboboxItem` replaces `:` and the shortcode and calls `tx.text.insert(emoji)`. |
 
-`EmojiCombobox` sets `filter={false}` because emoji search already returns filtered results. It also uses `hideWhenNoValue`, so the popover stays closed until the user types a search value after `:`.
+Search ranks an exact shortcode first, then the shortest shortcode that starts
+with the query, then a label word that starts with it, then any match in the
+label, tags or shortcodes. It returns at most 60 results.
 
-## Inserted value
-
-By default, selecting an emoji inserts the first native skin as text.
-
-```tsx
-emojiPlugin.configure({
-  initialState: {
-    createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
-  },
-});
-```
-
-Use `createEmojiNode` when your app stores emoji as structured inline nodes instead of text.
-
-```tsx
-emojiPlugin.configure({
-  initialState: {
-    createEmojiNode: (emoji) => ({
-      children: [{ text: emoji.id }],
-      emojiId: emoji.id,
-      type: 'emoji-chip',
-    }),
-  },
-});
-```
+`EmojiCombobox` sets `filter={false}` because emoji search already returns
+filtered results, and `hideWhenNoValue`, so the popup stays closed until the
+user types after `:`. While the data loads, the popup shows a loading row and
+holds Enter, so Enter keeps the typed shortcode. When the data cannot load,
+the popup says so and retries on the next keystroke.
 
 ## Toolbar picker
 
-`EmojiPicker` owns its state. `EmojiToolbarButton` supplies the toolbar trigger,
-while another component such as a callout can supply its own trigger and
-selection callback.
+`EmojiPicker` takes its trigger as its child and hands the picked emoji to
+`onEmojiSelect`. It closes after a pick and returns focus to the editor.
+`EmojiToolbarButton` inserts the pick; another component, such as a callout,
+can use the emoji any other way.
 
 ```tsx
 import { Button } from '@/components/ui/button';
-import {
-  EmojiPicker,
-  EmojiPickerTrigger,
-} from '@/components/editor/emoji-picker';
+import { EmojiPicker } from '@/components/editor/emoji-picker';
 
-<EmojiPicker onSelectEmoji={setIcon}>
-  <EmojiPickerTrigger>
-    <Button>Choose icon</Button>
-  </EmojiPickerTrigger>
+<EmojiPicker onEmojiSelect={setIcon}>
+  <Button>Choose icon</Button>
 </EmojiPicker>;
 ```
 
-| Option | Default | Use |
-|--------|---------|-----|
-| `closeOnSelect` | `true` | Close the toolbar popover after insertion. |
-| `data` | `@emoji-mart/data` | Emoji dataset used by the picker. |
-| `settings` | `EmojiSettings` | Configure categories, per-line count, button size, and frequent emoji behavior. |
-| `settings.showFrequent.limit` | `EmojiSettings` value | Limits the frequent emoji category. |
+While the search box is empty, the picker shows a Frequently used row and the
+frimousse category grid; press ArrowDown or Tab to move into the grid. Typing a
+search shows the same ranked results as the popup, with arrow keys and Enter.
+Enter that confirms an IME composition does not pick an emoji.
 
-Frequent emoji counts are stored in `window.localStorage`. Server rendering uses
-the default frequent set.
+Frequent picks are counted per browser in `window.localStorage` under
+`plate:emoji-frequent:v1`.
+
+## Emoji data
+
+`emoji-data` fetches `emojibase-data@17.0.0` from the jsDelivr CDN the first
+time the popup or a picker needs it. frimousse caches the emoji in
+`localStorage` and drops emoji the device cannot draw, and the GitHub shortcodes
+are stored beside them, so later page loads also work offline.
+
+To serve the data yourself, host `en/data.json`, `en/messages.json` and
+`en/shortcodes/github.json` from the `emojibase-data` 17.0.0 package and point
+`EMOJIBASE_URL` in `emoji-data` at that location.
 
 ## Markdown
 
@@ -212,24 +207,12 @@ Launch 🔥 soon
 
 ## API Reference
 
-Create a search once for each dataset. Queries match IDs, names and keywords,
-with exact IDs first. Each call returns an independent array; the optional
-`limit` bounds the result count. An empty query returns no results.
-
-```ts
-import emojiMartData, { type EmojiMartData } from '@emoji-mart/data';
-import { createEmojiSearch } from 'platejs/emoji';
-
-const search = createEmojiSearch(emojiMartData as unknown as EmojiMartData);
-const results = search('rocket', { limit: 60 });
-```
-
-| API | Package | Use |
-|-----|---------|-----|
-| `BaseEmojiPlugin` | `platejs/emoji` | Edit-only trigger plugin with default `:`, emoji data, and text insertion. |
-| `EmojiPlugin` | `platejs/emoji/react` | React emoji plugin. |
-| `editor.plugin(EmojiPlugin).update.insert(emoji)` | `platejs/emoji` | Inserts `createEmojiNode(emoji)`. |
-| `createEmojiSearch(data)` | `platejs/emoji` | Creates a dataset search used by the popup and toolbar picker. |
-| `EmojiPicker` | `emoji-picker` registry UI | Owns popover state, search, category focus, preview, selection, and frequent emoji updates. |
-| `EmojiPickerTrigger` | `emoji-picker` registry UI | Composes an application-owned trigger without exposing the selected primitive API. |
-| `EmojiToolbarButton` | `emoji-toolbar-button` registry UI | Renders `EmojiPicker` from the toolbar. |
+| API | Source | Use |
+|-----|--------|-----|
+| `EmojiPlugin` | `emoji` registry | Edit-only plugin whose state holds the `:` trigger policy. |
+| `EmojiKit` | `emoji` registry | `EmojiPlugin` with `EmojiCombobox` in its `afterEditable` slot. |
+| `useEmojiSearch(query)` | `emoji-data` registry | Starts the shared load for a non-null query and returns `{ results, status }`, where `status` is `'loading'`, `'ready'` or `'failed'`. |
+| `searchEmojis(entries, query)` | `emoji-data` registry | Ranks entries for a query and returns at most 60. |
+| `resolveEmojiData` | `emoji-data` registry | frimousse data source for pickers, shared with the popup. |
+| `EmojiPicker` | `emoji-picker` registry UI | Popover picker; props are the trigger child and `onEmojiSelect(emoji)`. |
+| `EmojiToolbarButton` | `emoji-toolbar-button` registry UI | Toolbar trigger that inserts the picked emoji at the selection. |

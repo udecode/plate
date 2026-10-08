@@ -74,7 +74,7 @@ never enter the engine input or replace its output: snapshots still expose
 from the layout lifecycle, despite `PageLayout` describing itself as a reader
 that owns subscriptions, not content.
 
-The [current-source probe](../../plans/artifacts/2026-09-15-pagination-review/contract-probe.json)
+The September 15 source probe of pagination authority, refresh commits and unit layouts
 demonstrates all three consequences:
 
 - The writer produces **11 pages** at 24px line height. A reader at 48px line

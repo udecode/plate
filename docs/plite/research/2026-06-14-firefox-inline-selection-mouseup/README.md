@@ -23,6 +23,12 @@ Stop rule:
 - Stop this shard after the strongest local-source leads are recorded and
   either promoted or rejected.
 
+Retired evidence:
+- The read log's `wpt-selection-raw` and `editor-selection-raw` rows cite
+  search dumps of third-party code, which this run no longer relies on. Their patterns and hit counts,
+  2,552 WPT lines and 3,537 Slate, ProseMirror and Lexical lines, are in
+  `query-ledger.tsv`; the other read-log rows name the files the run read.
+
 Promotion:
 - `selection:pointer-native-dom-first-sync:docs-packet` promoted as a
   no-runtime-change decision. Current Plite-native proof already implements the

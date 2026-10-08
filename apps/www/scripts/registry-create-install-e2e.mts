@@ -247,6 +247,47 @@ async function verifyInstalledEditorCommands(project: string) {
     await editor.pressSequentially('K');
     await waitForCount(keyboardText, initialKeyboardTextCount + 1);
 
+    // The installed picker loads Emojibase from jsDelivr, like any installed app.
+    const emojiButton = toolbar.getByRole('button', {
+      name: 'Emoji',
+      exact: true,
+    });
+    const emojiSearch = page.getByRole('combobox', { name: 'Search emoji' });
+    const fireCount = async () =>
+      ((await editor.textContent()) ?? '').split('🔥').length - 1;
+    const initialFireCount = await fireCount();
+
+    await insertedHeading.click();
+    await insertedHeading.press('End');
+    await emojiButton.click();
+    await emojiSearch.waitFor();
+    await emojiSearch.pressSequentially('fire');
+    await page
+      .locator('[role="option"][aria-label="Fire"][aria-selected="true"]')
+      .waitFor();
+    await emojiSearch.press('Enter');
+    await emojiSearch.waitFor({ state: 'detached' });
+    await page.waitForFunction(
+      () => document.activeElement?.getAttribute('contenteditable') === 'true'
+    );
+
+    if ((await fireCount()) !== initialFireCount + 1) {
+      throw new Error('Installed emoji picker did not insert 🔥 at the caret');
+    }
+
+    await emojiButton.click();
+    await emojiSearch.waitFor();
+    await emojiSearch.press('Escape');
+    await emojiSearch.waitFor({ state: 'detached' });
+
+    if (
+      !(await emojiButton.evaluate(
+        (button) => button === document.activeElement
+      ))
+    ) {
+      throw new Error('Installed emoji picker did not return focus on Escape');
+    }
+
     if (runtimeErrors.length > 0) {
       throw new Error(
         `Installed editor reported runtime errors:\n${runtimeErrors.join('\n')}`

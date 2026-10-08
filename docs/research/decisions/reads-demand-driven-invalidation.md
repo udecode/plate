@@ -100,9 +100,9 @@ current implementation and two in the proposed cached reader. Repeated reads
 perform zero index calls in both. Boolean parity passes for all measured rows
 and 70 guard-key observations. Dense follow-up satisfies the predeclared
 regression bound. Raw timing and fingerprints are retained in the
-[cached packet](../../plans/artifacts/reads-api-review/path-membership-cached.json).
+September 11 cached-reader results (8,192 paragraphs, one watcher: median first read 12.927084 ms current versus 0.001958 ms target; Node v24.3.0/Bun 1.3.12).
 
-The [direct packet](../../plans/artifacts/reads-api-review/path-membership-direct.json)
+The September 11 direct-reader result for 8,192 paragraphs and 8,192 watchers (median repeated read: 0.173 ms current versus 1.308042 ms target)
 is preserved: its uncached reader loses repeated dense reads, which is why the
 proposal keeps memoization at the commit owner. This is an isolated algorithm
 comparison, not a measurement of React callbacks, cold indexes, native input,

@@ -75,7 +75,7 @@ Created:
 - `packages/plitejs/test/react/editable-paste-result.test.tsx`
 - `packages/platejs/src/react/components/PlateContent-paste-result.spec.tsx`
 - `.changeset/plitejs-paste-result.md` and `.changeset/platejs-paste-result.md` (patch)
-- `apps/www/src/registry/changelog/entries/2026-09-28-paste-result-toast.mdx` (created with `--new`; `--write` was not run)
+- A paste-result toast changelog entry was reported as created with `--new`; `--write` was not run, but the evidence file is no longer available to verify its contents.
 
 ## Commands and results
 

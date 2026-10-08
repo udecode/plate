@@ -25,9 +25,9 @@ related:
 CodeMirror. The bounded code-command and native-highlighter cleanup is
 implemented.**
 
-The [complete audit](../../plans/artifacts/2026-09-22-code-api-audit/review.md)
+The September 22 complete code audit, recommending bounded command/highlighter cleanup while retaining the canonical model, CodeMirror adapter and external-text protocol,
 covers all 13 code source groups and eight semantic units. Its
-[last pass](../../plans/artifacts/2026-09-22-code-api-audit/last-pass.md)
+last pass, which requires insertion-option parity and complete composition proof before claiming a backend-free demo,
 narrows two adoption claims. Remove hidden grammar-registry mutation from
 syntax reads; design schema-owned construction only after proving parity with
 the custom code insertion options; move JSON-only formatting policy to copied

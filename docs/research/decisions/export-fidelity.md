@@ -23,7 +23,7 @@ related:
 
 **Audit of 2026-10-04.** Pursue. The adopted export contract says an authored document without an explicit projection throws, yet standalone serializeHtml defaults it to the proposed projection, because each export path keeps its own copy of the guard instead of the shared projection helper owning it. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-exports-audit` and `2026-10-04-exports-audit-2` hold the evidence.
 
-The [adversarial audit feedback](../../plans/artifacts/2026-09-27-document-conversion-audit-feedback/feedback.md)
+The September 27 adversarial audit feedback, which rejects blanket closure and distinguishes existing HTML projection checks from DOCX cancellation gaps,
 retains document-first format ownership but reopens the blanket conversion
 closure claim. Detached HTML serialization already asserts its projection;
 that proposed repair is a false positive. DOCX cancellation needs repair. That
@@ -163,11 +163,11 @@ work, structural plain text keeps `NodeApi.string` unchanged, and styled React
 rendering uses one private read-only projected view per document without editing
 lifecycle activation.
 
-The [runtime probe](../../plans/artifacts/2026-09-24-document-first-export-contracts/export-runtime-probe.json)
+The runtime probe at revision `6a6e8f660f10ede916b90e90b2849e02d95e7d84`, using two warmups and nine samples per cohort,
 records exact Markdown and static HTML output digests in normal, fanout, stress
 and pathological cohorts. One compiled conversion runtime and one projected
 view per document beat the repeated-editor baseline in every cohort and pass the
-frozen p95 budgets. The [DOCX receipt](../../plans/artifacts/2026-09-24-document-first-export-contracts/docx-export-proof.json)
+frozen p95 budgets. The DOCX receipt at revision `6a6e8f660f10ede916b90e90b2849e02d95e7d84`, recording exact retained-source recovery and LibreOffice resaves,
 covers accepted, proposed, review and retained-source artifacts, including
 0/10/100-comment workloads. LibreOffice reopen/resave is the available native
 viewer proof; Microsoft Word remains untested, and memory figures are

@@ -134,7 +134,7 @@ export function EditorToolbar() {
 | 前一个字符必须匹配 `/^\s?$/` | 默认为块的开头或空白字符。 |
 | 不在代码块内 | 选区位于代码块时，`triggerQuery` 拒绝触发。 |
 | 输入短代码 | `queryPattern` 允许字母、数字、`_`、`+`、`-` 和 `:`；空格会关闭弹出框。 |
-| 搜索表情数据 | `EmojiCombobox` 调用 `useEmojiSearch(query)`，它会忽略结尾的 `:`。 |
+| 搜索表情数据 | `:` 弹出框调用 `useEmojiSearch(query)`，它会忽略结尾的 `:`。 |
 | 选择结果 | `InlineComboboxItem` 替换 `:` 和短代码，并调用 `tx.text.insert(emoji)`。 |
 
 搜索排序依次为：完全匹配的短代码，以查询开头且最短的短代码，以查询开头的名称单词，最后是名称、标签或短代码中的任意匹配。最多返回 60 个结果。

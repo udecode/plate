@@ -4,33 +4,33 @@ type: decision
 status: accepted
 updated: 2026-04-29
 source_refs:
-  - docs/slate-v2/absolute-architecture-release-claim.md
-  - docs/slate-v2/release-readiness-decision.md
-  - docs/slate-v2/replacement-gates-scoreboard.md
-  - docs/plans/2026-04-27-slate-v2-internal-runtime-projection-firewall-plan.md
-  - docs/plans/2026-04-27-slate-v2-selector-and-live-read-runtime-hard-cut-plan.md
-  - docs/plans/2026-04-28-slate-v2-root-runtime-selector-guard-hard-cut-plan.md
-  - docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md
-  - docs/plans/2026-04-26-slate-v2-human-editing-stress-sweep.md
-  - docs/solutions/developer-experience/2026-04-27-slate-react-public-selectors-must-stay-model-truth.md
-  - docs/solutions/developer-experience/2026-04-27-slate-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md
+  - 6bc2fffa0bee6fcb6752d96139c698879682b41b:docs/slate-v2/absolute-architecture-release-claim.md
+  - 6bc2fffa0bee6fcb6752d96139c698879682b41b:docs/slate-v2/release-readiness-decision.md
+  - 6bc2fffa0bee6fcb6752d96139c698879682b41b:docs/slate-v2/replacement-gates-scoreboard.md
+  - docs/plans/2026-04-27-plite-internal-runtime-projection-firewall-plan.md
+  - docs/plans/2026-04-27-plite-selector-and-live-read-runtime-hard-cut-plan.md
+  - docs/plans/2026-04-28-plite-root-runtime-selector-guard-hard-cut-plan.md
+  - docs/plans/2026-04-24-plite-absolute-architecture-closure-plan.md
+  - docs/plans/2026-04-26-plite-human-editing-stress-sweep.md
+  - c70bacbd4a:docs/solutions/developer-experience/2026-04-27-plite-react-public-selectors-must-stay-model-truth.md
+  - 6bc2fffa0bee6fcb6752d96139c698879682b41b:docs/solutions/developer-experience/2026-04-27-slate-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md
   - active goal state
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
   - docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md
   - docs/research/decisions/slate-v2-post-closure-architecture-review.md
   - docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md
-  - /Users/zbeyens/git/slate-v2/packages/slate/src/core/public-state.ts
-  - /Users/zbeyens/git/slate-v2/packages/slate/src/create-editor.ts
-  - /Users/zbeyens/git/slate-v2/packages/slate/test/write-boundary-contract.ts
-  - /Users/zbeyens/git/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts
-  - /Users/zbeyens/git/slate-v2/packages/slate-dom/test/clipboard-boundary.ts
-  - /Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx
-  - /Users/zbeyens/git/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts
-  - /Users/zbeyens/git/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts
-  - /Users/zbeyens/git/slate-v2/packages/slate-react/test/surface-contract.tsx
-  - /Users/zbeyens/git/slate-v2/playwright/stress/generated-editing.test.ts
-  - /Users/zbeyens/git/slate-v2/package.json
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate/src/core/public-state.ts
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate/src/create-editor.ts
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate/test/write-boundary-contract.ts
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate/test/public-field-hard-cut-contract.ts
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate-dom/test/clipboard-boundary.ts
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate-react/src/components/editable.tsx
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate-react/src/editable/root-selector-sources.ts
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate-react/test/kernel-authority-audit-contract.ts
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate-react/test/surface-contract.tsx
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:playwright/stress/generated-editing.test.ts
+  - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:package.json
 related:
   - docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md

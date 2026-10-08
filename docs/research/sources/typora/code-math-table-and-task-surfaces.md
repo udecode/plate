@@ -9,7 +9,7 @@ source_refs:
   - ../raw/typora/pages/task-list.json
 updated: 2026-04-04
 related:
-  - docs/editor-behavior/markdown-parity-matrix.md
+  - c70bacbd4a:docs/editor-behavior/markdown-parity-matrix.md
 ---
 
 # Typora code, math, table, and task surfaces

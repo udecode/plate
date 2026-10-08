@@ -10,7 +10,7 @@ related:
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
   - docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
-  - docs/slate-v2/decoration-roadmap.md
+  - c70bacbd4a:docs/plite-draft/decoration-roadmap.md
 ---
 
 # Slate v2 overlay architecture

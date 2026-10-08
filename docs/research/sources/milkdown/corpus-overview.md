@@ -22,7 +22,7 @@ It bridges:
 - the upstream raw clone at `../raw/milkdown/repo`
 - the raw entrypoint in `../raw/milkdown`
 - the older repo-safe inventory docs that previously lived under
-  `docs/editor-behavior/references/milkdown`
+  the former editor-behavior references folder for Milkdown
 
 ## Corpus shape
 

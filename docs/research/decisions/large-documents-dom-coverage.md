@@ -64,24 +64,24 @@ it cannot quietly select a weaker native contract.
 ## Decisive observations
 
 1. **The default contradicts current Vision.**
-   [Strategy helpers](../../../packages/plitejs/src/react/components/editable-dom-strategy-helpers.ts)
+   [Strategy helpers](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/react/components/editable-dom-strategy-helpers.ts)
    default to `auto` and enable segment omission at 1,000 top-level blocks.
-   The executed [contract](../../../packages/plitejs/test/react/dom-strategy-and-scroll.tsx)
+   The executed [contract](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/test/react/dom-strategy-and-scroll.tsx)
    confirms 32 mounted text blocks out of 1,001, 969 pending, and
    `nativeSurfaceComplete: false`, still bounded after 750 ms.
    [Vision](../../vision/plite.md) requires a DOM-present default until the
    omitted-DOM modes prove native services. The current
-   [guide](../../../content/docs/plite/libraries/plite-react/virtualized-rendering.mdx)
+   [guide](04f11c01a9c957c848c697f2522f677f0a71c3f4:content/docs/plite/libraries/plite-react/experimental-virtualized-rendering.mdx)
    instead calls bounded `auto` the production default. That is a substantive
    contract conflict, not a naming preference.
 2. **Staged is not proved to become complete by waiting.**
-   [Root groups](../../../packages/plitejs/src/react/components/editable-root-groups.ts)
+   [Root groups](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/react/components/editable-root-groups.ts)
    retain activated/materialized groups. The staged contract keeps the last
    block absent after 750 ms. No background completion scheduler is present in
    this owner or its mounting caller. Eventual full coverage in the guide is
    therefore conditional on materialization, not a demonstrated warmup promise.
 3. **`findPolicy` does not implement finding omitted text.**
-   The [census](../../plans/artifacts/large-documents-api-review/consumer-census.json)
+   The September 11 lexical census of 2,142 JS/TS source files
    finds declarations, forwarding and boundary writers, but no source consumer
    branching on the flag. The guide accurately describes it as metadata.
    Remove this public promise-shaped field unless a real metadata consumer
@@ -110,7 +110,7 @@ it cannot quietly select a weaker native contract.
 6. **The earlier easy cut is already present.**
    September 9's [E19–E23 study](../../plite/research/2026-09-09-editor-performance-iteration-2/virtualization.md)
    proposed deleting hidden-range key arrays. Live
-   [virtual planning](../../../packages/plitejs/src/react/dom-strategy/use-virtualized-root-plan.ts)
+   [virtual planning](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/react/dom-strategy/use-virtualized-root-plan.ts)
    uses endpoint keys without those slices. Its hash differs from the recorded
    E19 baseline. E19 is not new work. Page-scan indexing, DOM containment,
    viewport omission and immutable window snapshots still lack current
@@ -124,7 +124,7 @@ it cannot quietly select a weaker native contract.
 | Change the public rendering contract | Pursue. Ordinary setup preserves DOM coverage; omission is an explicit product decision with concrete native limits. Remove misleading mode promises and inert `findPolicy`. Exact signatures remain design work. |
 | Add search, print or a public coverage store | Stop without a current independent job. Search metadata cannot restore DOM services; a new store adds synchronization to existing root coverage. |
 | Delete/merge segment, staged and viewport owners | Strongest runtime candidate, still provisional. Separate segment and group retention protocols should survive only for a proven distinct product job. Keep the shared coverage bridge and selection retention. |
-| Move ownership | Keep model content/selection below React and coverage/geometry with the mounted root. Plate forwards the substrate contract; feature kits should not each repair the default. Pagination supplies layout inputs. |
+| Move ownership | Keep model content and selection below React and coverage/geometry with the mounted root. Plate forwards the substrate contract; feature kits should not each repair the default. Pagination supplies layout inputs. |
 | Replace with a height tree or immutable window snapshot | Defer runtime acceptance. A new index/store can introduce stale geometry, tearing and retained-range bugs; E20/E23 have not proved it necessary. |
 
 Omission directly avoids creating omitted React/native node surfaces. It does
@@ -150,7 +150,7 @@ No timing benefit is inferred from fewer nodes or cleaner ownership.
 
 Five existing package suites pass **112 tests** using the owning Vitest config,
 including its React Compiler transform. The
-[receipt](../../plans/artifacts/large-documents-api-review/verification.json)
+September 11 verification receipt for five suites and 112 passing tests
 records the command, log and post-run source hashes. This is focused behavior
 evidence from the shared checkout, not an atomic release snapshot. No product
 code changed. No new benchmark or browser/native session ran.

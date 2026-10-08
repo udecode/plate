@@ -198,7 +198,7 @@ Take:
 
 Study Slate to understand your inheritance and its limits, not because it is the future benchmark.
 
-For a view layer other than React, `plitejs/dom` already exposes `DOMCoverage` and `DOMEditor` to framework adapters; the Slate bindings `worktile/slate-angular` and `Guan-Erjia/slate-vue3` are useful prior art. Retired sources: `52625e8502:docs/plite/reference/public-docs/general/resources.mdx` and `docs/plite/reference/public-docs/libraries/plite-dom.mdx` at commit `52625e8502`.
+For a view layer other than React, `plitejs/dom` already exposes `DOMCoverage` and `DOMEditor` to framework adapters; the Slate bindings `worktile/slate-angular` and `Guan-Erjia/slate-vue3` are useful prior art. Retired sources: `52625e8502:docs/plite/reference/public-docs/general/resources.mdx` and `c70bacbd4a:docs/plite/reference/public-docs/libraries/plite-dom.mdx` at commit `52625e8502`.
 
 ### edix
 

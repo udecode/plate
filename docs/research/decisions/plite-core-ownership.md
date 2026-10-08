@@ -132,7 +132,7 @@ options contain ordinary transient UI state. Those jobs cannot all move into
 React state or serialized node properties. Conversely, a local panel does not
 need document ownership merely because fields are available.
 
-The [consumer census](../../plans/artifacts/plite-core-api-review/consumer-census.json)
+The September 11 lexical consumer census of package/application TypeScript sources
 examined 1,644 package/application source files. All 21 facet-token occurrences
 are definitions, exports, forwarding, typing, or validation text. There are no
 observed feature definitions, provider installations, or consumer reads.
@@ -140,7 +140,7 @@ Tests exercise facets, and public documentation lists them; neither supplies
 an independent current product job. This lexical census excludes generated
 sources, tests and external applications and is not a whole-program proof.
 
-In the [saved baseline](../../plans/artifacts/plite-core-cuts/baseline-source/core/facet.ts), facet state clones
+In the saved baseline (three map copies per transaction draft), facet state clones
 three maps for each draft. [Transaction state](../../../packages/plitejs/src/core/public-state.ts)
 creates these drafts unconditionally and records field, document, selection
 and commit revisions. Previously changed fields remain in the revision map
@@ -174,23 +174,23 @@ persisted/shared fields retain their codecs and policies.
 
 ## Extension composition: retain atomic ownership
 
-[Extension expansion](../../../packages/plitejs/src/core/editor-extension.ts)
+[Extension expansion](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/core/editor-extension.ts)
 distinguishes dependency edges from slot ownership, validates descriptors and
 schema against a detached candidate, stages fields and resources, and publishes
 one registry. Failure rolls back candidate state; finalized replacement cleans
-up the displaced owners. [The registry](../../../packages/plitejs/src/core/extension-registry.ts)
+up the displaced owners. [The registry](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/core/extension-registry.ts)
 validates identity, freezes publication collections and preserves ordered
 registrations. [Schema contributions](../../../packages/plitejs/src/core/schema-contribution-registry.ts)
 lower to one compiled schema.
 
-[Slots](../../../packages/plitejs/src/core/extension-slot.ts) serve actual
+[Slots](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/core/extension-slot.ts) serve actual
 replaceable schema owners in the schema-reconfiguration and Yjs examples.
 Separate cleanup and `install()` calls cannot replace the transaction's atomic
 reconfiguration contract without moving that same ownership into another API.
 Dependencies express requirements, not permission to delete every dependent
 when a configurable subtree changes. These are distinct laws.
 
-[Host codecs](../../../packages/plitejs/src/dom/plugin/host-codec.ts) and
+[Host codecs](7cbec2435fff368c4e189d2d400ffec09e53dd18:packages/plitejs/src/dom/plugin/host-codec.ts) and
 [clipboard handlers](../../../packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts)
 use ordered typed contributions. Their handlers are not persisted state and do
 not need facet dependency invalidation. Plate's plugin compiler forwards these
@@ -224,7 +224,7 @@ rewrites, delegation, read-only checks and native-equivalence decisions.
 The census finds no production call to the descriptor's `.build()` method.
 Its two relevant implementation hits are private `runtime.build` calls; the
 third textual hit is a list helper's `...build(child)` spread. The public
-method is taught in [command docs](../../../content/docs/plite/concepts/06-commands.mdx)
+method is taught in [command docs](04f11c01a9c957c848c697f2522f677f0a71c3f4:content/docs/plite/concepts/06-commands.mdx)
 and tested once. That establishes intended behavior, not a necessary second
 evaluation contract.
 
@@ -252,7 +252,7 @@ optimization: the repeated evaluation and application paths remain the same.
 
 ## Evidence and adoption limits
 
-The [frozen facet contract](../../plans/artifacts/plite-core-api-review/facet-probe-contract.json)
+The frozen headless facet-deletion contract for five alternating matched pairs and four field/block cohorts
 compared current source with a Bun-loaded disposable replacement of `facet.ts`.
 It leaves existing call sites in place, removes bookkeeping, and throws if any
 public facet consumer is reached. Five alternating matched pairs cover 0/32/256/
@@ -261,7 +261,7 @@ and committed text edits. All eight operation/cohort comparisons passed the
 predeclared noise and non-regression screen. Results do not show a consistent
 speedup and do not justify one.
 
-[Separate instrumentation](../../plans/artifacts/plite-core-api-review/facet-work-results.json)
+Separate headless instrumentation of preview and command dispatch
 counts three map clones and N field-revision entries per preview, and six clones
 and 2N entries per command dispatch. The deletion prototype performs zero of
 that work. Text, selection, field values, unpublished-spec and commit-count
@@ -272,7 +272,7 @@ Current-source proof: 159 headless contracts, 18 field/facet/transaction
 contracts, two React field-selector tests under the package's Vitest runner,
 one Plate construction test, public API type contracts and generic inference
 contracts. The same 159 headless contracts pass against the deletion prototype.
-The [verification receipt](../../plans/artifacts/plite-core-api-review/verification.json)
+The September 11 verification receipt for 180 current tests and 159 prototype tests
 records exact commands, runner corrections, hashes and limits. Browser routes,
 the view matrix, transport collaboration and external applications were not
 replayed. Keep ledger adoption and proof status separate from review completion.
@@ -303,7 +303,7 @@ Allocation instrumentation confirms zero facet map/field-revision copies.
 The target includes concurrent authored/runtime edits, so timing describes the
 whole current production path. It is not an isolated speedup estimate for the
 facet cut, an end-to-end speed claim, or a browser measurement.
-See the [adoption receipt](../../plans/artifacts/plite-core-cuts/verification.json).
+See the September 11 adoption results: the five-pair/four-cohort production comparison passed, while the strict package/browser handoff remained incomplete.
 
 Full handoff is **not green**:
 

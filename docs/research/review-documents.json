@@ -74,48 +74,6 @@
     "workKind": "implementation"
   },
   {
-    "path": "docs/analysis/best-api-review.md",
-    "scopes": [
-      "model",
-      "react",
-      "schema",
-      "transactions"
-    ],
-    "kind": "report",
-    "disposition": "historical",
-    "rationale": "# Best API Review Date: 2026-07-23 Historical assessment. Its source references and verdicts describe the July review. Use the [feature review ledger](../research/reviews.md) to locate current owners and later decisions before reusing a conclusion. Scope: current Plate and Plite public types, exports, docs, representative call sites, and owning implementations. This ranks public API debt only. It does not authorize product API changes. ## Verdict",
-    "reviewBasis": []
-  },
-  {
-    "path": "docs/editor-audits/reports/2026-09-07-plate-ui-execution.md",
-    "scopes": [
-      "autocomplete",
-      "basic",
-      "callout",
-      "canvas",
-      "collaboration",
-      "dnd",
-      "documents",
-      "drawing",
-      "emoji",
-      "footnote",
-      "html",
-      "link",
-      "list",
-      "math",
-      "media",
-      "slash",
-      "table",
-      "tags",
-      "toc",
-      "ui",
-      "uploads"
-    ],
-    "kind": "report",
-    "disposition": "historical",
-    "rationale": "Preserved final 46-family/637-disposition execution account, withdrawn command-menu cut, browser/typecheck/service/device limits and original hashes."
-  },
-  {
     "path": "docs/editor-audits/reports/editor-performance-research-iteration-2-2026-09-09.md",
     "scopes": [
       "performance",
@@ -2881,28 +2839,6 @@
     "reviewBasis": []
   },
   {
-    "path": "docs/table/table-perf-benchmark-input-snapshot.md",
-    "scopes": [
-      "performance",
-      "table"
-    ],
-    "kind": "report",
-    "disposition": "historical",
-    "rationale": "Inspected benchmark environment, metric cohorts and results. Historical snapshot; not current production proof. Dated 2026-03-12 at commit 98ae3116f.",
-    "reviewBasis": []
-  },
-  {
-    "path": "docs/table/table-selection-latency-snapshot.md",
-    "scopes": [
-      "performance",
-      "table"
-    ],
-    "kind": "report",
-    "disposition": "historical",
-    "rationale": "Inspected benchmark environment, metric cohorts and results. Historical snapshot; not current production proof. No date/source identity supplied in the document.",
-    "reviewBasis": []
-  },
-  {
     "path": "docs/research/decisions/editing-command-ownership.md",
     "scopes": [
       "editing"
@@ -3136,14 +3072,5 @@
     "kind": "plan",
     "disposition": "rejected",
     "rationale": "Inspected objective: open/update a pull request and a GitHub issue comment for AI history issue #4900. This is publication workflow, not the Comments feature."
-  },
-  {
-    "path": "docs/brainstorms/plite-canvas.md",
-    "scopes": [
-      "canvas"
-    ],
-    "kind": "plan",
-    "disposition": "rejected",
-    "rationale": "Inspected goal: optional html-in-canvas editor runtime adapter. Scope canvas owns embedded Excalidraw document interaction; matching the noun canvas does not establish this association."
   }
 ]

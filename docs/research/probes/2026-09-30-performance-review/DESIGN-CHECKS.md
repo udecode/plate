@@ -80,7 +80,7 @@ worker nor the lead implemented or ran these future proof arrangements.
 
 The first ledger-record attempt was rejected as stale after concurrent edits
 to `VISION.md` and `docs/vision/common.md`. The old Task routing reference
-`.agents/rules/task/references/best-api-review.md` was also removed during that
+`cf1572560313960e87226640b93f73f2486c9aab:.agents/rules/task/references/best-api-review.md` was also removed during that
 maintenance. The current first-principles, acceptance, claim-width and private
 scratch-storage laws were reread. They retain the chosen design; scratch/locks
 are explicitly kept outside tracked benchmark history. Measurement sources and

@@ -8,12 +8,12 @@ source_refs:
   - docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md
   - docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md
   - docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md
-  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditor.ts
-  - /Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts
-  - /Users/zbeyens/git/prosemirror/state/src/transaction.ts
-  - /Users/zbeyens/git/prosemirror/state/src/plugin.ts
-  - /Users/zbeyens/git/tiptap/packages/platejs/src/CommandManager.ts
-  - /Users/zbeyens/git/tiptap/packages/platejs/src/Extendable.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/LexicalEditor.ts
+  - facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical/src/LexicalUpdates.ts
+  - prosemirror/prosemirror-state@57d4a96286ca972125a18a56ecd6d2b00927de30:src/transaction.ts
+  - prosemirror/prosemirror-state@57d4a96286ca972125a18a56ecd6d2b00927de30:src/plugin.ts
+  - ueberdosis/tiptap@91c51be53c4655ef07e29ec489471524debfa0ca:packages/core/src/CommandManager.ts
+  - ueberdosis/tiptap@91c51be53c4655ef07e29ec489471524debfa0ca:packages/core/src/Extendable.ts
 related:
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
   - docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md
@@ -117,14 +117,14 @@ But author-facing docs and examples still teach primitive editor writes inside
 
 Live source evidence:
 
-- `packages/slate/test/state-tx-public-api-contract.ts` proves grouped
+- `packages/plitejs/test/state-tx-public-api-contract.ts` proves grouped
   `state` reads, grouped `tx` writes, and tx-local read coherence.
-- `packages/slate/src/create-editor.ts` still wires primitive transform
+- `udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/src/create-editor.ts` still wires primitive transform
   methods onto `BaseEditor`.
-- `packages/slate/test/write-boundary-contract.ts` rejects primitive writes
+- `udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/test/write-boundary-contract.ts` rejects primitive writes
   outside `editor.update`, but still proves primitive writes are routed inside
   update.
-- `docs/concepts/04-transforms.md` and `docs/concepts/07-editor.md` still
+- `udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:docs/concepts/04-transforms.md` and `udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:docs/concepts/07-editor.md` still
   present primitive `editor.*` methods as the author-facing method API.
 
 Current research verdict:

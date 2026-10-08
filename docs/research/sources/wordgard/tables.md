@@ -12,6 +12,6 @@
 
 ## Grid paste
 
-- **Grid paste.** `test/test-table-paste.ts` lines 34-124 at b5ad0d0 pin grid paste: scalar content repeats, matrices expand or clip, the table grows, and merged cells that cross the destination border are split. Plate's `BaseTablePlugin.clipboard.slow.tsx` and `internal/paste.spec.ts` cover these cases. Browser-quality claims still need a Chromium paste run (report.md:106).
+- **Grid paste.** `test/test-table-paste.ts` lines 34-124 at b5ad0d0 pin grid paste: scalar content repeats, matrices expand or clip, the table grows, and merged cells that cross the destination border are split. Browser-quality claims still need a Chromium paste run (report.md:106).
 
 - **Merged cells in paste.** Of Wordgard's 13 grid-paste cases (`test/test-table-paste.ts` lines 35-124), Plate maps 9 directly (`BaseTablePlugin.paste.spec.tsx`, `.clipboard.slow.tsx`, `internal/paste.spec.ts`) and adapts 4 cases where a scalar is pasted into a selection that touches a merged cell. Plate never selects part of a merged cell: it selects whole merged cells, expands the selected logical grid, and splits borders in its table-fragment path (report.md:194).

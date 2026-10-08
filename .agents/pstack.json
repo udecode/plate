@@ -8,6 +8,7 @@
   "plans": "docs/plans",
   "proof": "verify",
   "skiller": true,
+  "codexLanes": true,
   "regen": "pnpm run prepare",
   "skip": [],
   "dropped": [
@@ -44,9 +45,12 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "701fe53e6e0036cb59300f9f5cc844e9edbe378521aacd2742063a66c75d2532",
+    "block": "69d14a228828ed6067bd9375c0314c3f4b985961432886a9406fe089e590d0ae",
     "files": {
-      ".agents/pstack/cross.mjs": "3c4deec1b718faa58109488075ccb24ddb32a1c8da4183aa92d28a729c891208",
+      ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
+      ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
+      ".agents/pstack/cross.mjs": "ec0dbbbff16115528c799a2e9ed76a3871c16da62d3304528c55f4ed8597770e",
+      ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
       ".agents/pstack/freeze.mjs": "7adda630479f6c81b865b381411f4fcea3d9a26c3b2103148c4bab84b461c4bb",
       ".agents/pstack/mutate.mjs": "05c639f85020c067199699f167ac3920e2645971ccaa30a0aeebbc5f8316a317",
       ".agents/pstack/proof.mjs": "5a65de9344d25559f080c91653e22f59f23def3b5b3c312a319440221b8f2144",
@@ -57,7 +61,7 @@
       ".agents/pstack/plan-page.mjs": "bd092d7208de3ec35da226de706ed69e98199c96c768af359cb159befa2775a3",
       ".agents/pstack/status.mjs": "6a90a44fbe813229d2aa760bd1d30cd75852c2d161671bd1d84f814813935f47"
     },
-    "source": "2b980d7ac1be499be1444ce475682e5038840bb8"
+    "source": "51feddbc47a52584fba9198403006249527cfad7"
   },
   "pageTopic": {
     "field": "review_scopes",

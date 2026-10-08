@@ -150,16 +150,6 @@
       "import": "./dist/dom/index.js",
       "default": "./dist/dom/index.js"
     },
-    "./emoji": {
-      "types": "./dist/emoji/index.d.ts",
-      "import": "./dist/emoji/index.js",
-      "default": "./dist/emoji/index.js"
-    },
-    "./emoji/react": {
-      "types": "./dist/emoji/react/index.d.ts",
-      "import": "./dist/emoji/react/index.js",
-      "default": "./dist/emoji/react/index.js"
-    },
     "./excalidraw": {
       "types": "./dist/excalidraw/index.d.ts",
       "import": "./dist/excalidraw/index.js",
@@ -425,8 +415,6 @@
     "lint:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-import",
     "lint:partition:docx-internal": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-internal",
     "lint:partition:docx-paste": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs docx-paste",
-    "lint:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs emoji",
-    "lint:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs emoji-react",
     "lint:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw",
     "lint:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs excalidraw-react",
     "lint:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs find",
@@ -512,7 +500,6 @@
     "test:partition:docx-html": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-html",
     "test:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-import",
     "test:partition:docx-paste": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs docx-paste",
-    "test:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs emoji",
     "test:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw",
     "test:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs excalidraw-react",
     "test:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs find",
@@ -587,8 +574,6 @@
     "typecheck:partition:docx-import": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-import",
     "typecheck:partition:docx-internal": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-internal",
     "typecheck:partition:docx-paste": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs docx-paste",
-    "typecheck:partition:emoji": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs emoji",
-    "typecheck:partition:emoji-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs emoji-react",
     "typecheck:partition:excalidraw": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs excalidraw",
     "typecheck:partition:excalidraw-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs excalidraw-react",
     "typecheck:partition:find": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs find",
@@ -675,7 +660,6 @@
     "@codemirror/language": "6.12.4",
     "@codemirror/state": "6.7.2",
     "@codemirror/view": "6.41.0",
-    "@emoji-mart/data": "^1.2.0",
     "@excalidraw/excalidraw": "0.18.0",
     "@tanstack/react-virtual": "^3.13.25",
     "@testing-library/react": "16.3.0",
@@ -728,7 +712,6 @@
     "@codemirror/language": "^6.12.4",
     "@codemirror/state": "^6.7.2",
     "@codemirror/view": "^6.41.0",
-    "@emoji-mart/data": ">=1.2.0",
     "@excalidraw/excalidraw": "0.18.0",
     "@tanstack/react-virtual": "^3.13.25",
     "@types/papaparse": "^5.3.16",
@@ -773,9 +756,6 @@
       "optional": true
     },
     "@codemirror/view": {
-      "optional": true
-    },
-    "@emoji-mart/data": {
       "optional": true
     },
     "@excalidraw/excalidraw": {

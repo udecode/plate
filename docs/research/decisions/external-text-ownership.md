@@ -63,7 +63,7 @@ repository gate passes packages, types, contracts, builds and public
 declarations before stopping on unrelated native selection tests. Physical IME,
 assistive technology and keyboard-to-paint latency remain outside the claim.
 
-See the [evidence receipt](../../plans/artifacts/2026-09-15-external-text-plan/proof.md)
+See the September 15 external-text evidence account, with 23 passing final focused cases and adopted-source checks,
 for rejected candidates, the earlier inconclusive scale packet and replay
 limits. The following audit sections retain their audit-time observations;
 the plan resolves their provisional sequencing and authored-fixture questions.
@@ -131,7 +131,7 @@ passes. An in-memory candidate replacing only the queued-apply branch with
 This establishes a concrete path using the existing public contract. It does
 not certify nested listeners, arbitrary extension composition, physical IME,
 or performance. Source and retained outputs are in the
-[audit artifacts](../../plans/artifacts/2026-09-15-external-text-review/).
+audit materials comprising the adapter-ordering probe, its ordinary and mounted logs, a proof receipt, a review record and synchronous-candidate source/output.
 
 ## Design lanes
 

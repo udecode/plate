@@ -115,7 +115,7 @@ policy can operate on an exact projected replacement target atomically.
 
 Projected extraction also calls `state.slice.get`, while ordinary export uses
 `state.slice.export`. This bypasses export middleware. The
-[diff export policy](../../../packages/plitejs/src/diff/lib/excludeDiffFragment.ts)
+[diff export policy](68898220fec48a27b0662862895628094898f066:packages/plitejs/src/diff/lib/excludeDiffFragment.ts)
 is a concrete consumer: it strips diff metadata from both content and roots.
 The projected writer already delegates to the shared DOM payload writer; it
 does not duplicate the whole serializer.
@@ -218,9 +218,9 @@ is not inherited by clipboard.
 
 ## Proof and limits
 
-Evidence: [probe](../../plans/artifacts/clipboard-root-preservation-probe.ts)
-and [four observations](../../plans/artifacts/clipboard-root-preservation-results.json).
-Run `bun docs/plans/artifacts/clipboard-root-preservation-probe.ts` from the
+Evidence: a public-API probe inserting a portal-owned root in original, limited, closed-rewrite and preserved-rewrite modes
+and four observations: original and preserved rewrites commit successfully; limited and closed rewrites throw missing-root errors with zero commits.
+The historical root-preservation probe was run directly with Bun from the
 repository root. It imports live source and calls public APIs. A first attempt
 used the test-only preload outside a test runner and failed before executing
 the probe; the direct source import is the corrected command.
@@ -228,7 +228,7 @@ the probe; the direct source import is the corrected command.
 241 existing tests passed across 10 files: 87 core slice/fitting tests in six
 files, 98 clipboard and DOM boundary tests in two files, 11 projected clipboard
 tests and 45 projected command tests. Exact commands and captured output are in
-[the proof receipt](../../plans/artifacts/clipboard-review-proof.md).
+the September 13 baseline receipt recording 87 core, 98 clipboard/DOM, 11 projected-clipboard and 45 projected-command passes, with zero failures.
 
 Passing baseline tests do not establish the newly identified combinations.
 No actual browser, native/device, Plate package or performance replay is

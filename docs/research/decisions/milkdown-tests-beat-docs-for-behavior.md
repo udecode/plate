@@ -33,5 +33,5 @@ The executable lanes are:
 - e2e transform
 - package-local unit tests
 
-Those are stronger than README or docs/api pages when the question is "what
+Those are stronger than README or API documentation pages when the question is "what
 does it really do?"

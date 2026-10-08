@@ -1,6 +1,6 @@
 # Current behavior evidence navigation
 
-Historical coverage claims and stable spec IDs from the retired protocol and parity matrices stay in git history (`git log -- docs/editor-behavior/editor-protocol-matrix.md docs/editor-behavior/markdown-parity-matrix.md`). Use the source and proof entry points in the [feature ledger](../research/schema.md#review-history) to choose an exact replay; a replacement path does not inherit a previous `tested` or `locked` result.
+Historical coverage claims and stable spec IDs from the retired protocol and parity matrices stay in those two files, folded and kept unchanged (`c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md`, `c70bacbd4a:docs/editor-behavior/markdown-parity-matrix.md`). Their rules and gaps live in the spec and on this page. Use the source and proof entry points in the [feature ledger](../research/schema.md#review-history) to choose an exact replay; a replacement path does not inherit a previous `tested` or `locked` result.
 
 The ledger observes current editable package source, copied registry UI, actual shared examples, exports and editor proof tooling. Its per-scope files and fingerprints own source navigation; the tables below map spec families to them, name the proof for matrix-era spec IDs and list the matrix-era evidence gaps. The normative editing spec remains in this directory.
 

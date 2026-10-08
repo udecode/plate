@@ -33,8 +33,7 @@ Result: 6 passed, 18 explicit browser-scope skips.
 
 - `docs/research/raw/2026-06-14-selection-input-oracles/file-list.txt`
 - `docs/research/raw/2026-06-14-selection-input-oracles/test-file-list.txt`
-- `docs/research/raw/2026-06-14-selection-input-oracles/source-hits.txt`
-- `docs/research/raw/2026-06-14-selection-input-oracles/test-hits.txt`
+- A local search of the Lexical, Tiptap, ProseMirror and Monaco source for selection and input handling returned 2,821 hit lines: Lexical 1,272, Tiptap 612, ProseMirror 515 and Monaco 422. The same search over their test files returned 3,410: Lexical 2,827, ProseMirror 450, Tiptap 82 and Monaco 51. The run recorded neither the pattern nor the clones' revisions, so both counts are unpinned; the read log names the files the run then read.
 - `docs/research/raw/2026-06-14-selection-input-oracles/plite-coverage-hits.txt`
 
 ## Workflow Notes

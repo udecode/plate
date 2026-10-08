@@ -393,7 +393,6 @@ test('combobox:emoji completes a closed shortcode', async ({ page }) => {
     );
 
     await page.keyboard.type(':smile:');
-    await editor.assert.modelBlockText(0, ':smile:Emoji');
     await expect(page.getByRole('option').first()).toHaveText(/^😄/);
     await page.keyboard.press('Enter');
     await expect(root).not.toHaveAttribute('aria-controls');
@@ -406,6 +405,56 @@ test('combobox:emoji completes a closed shortcode', async ({ page }) => {
     await editor.assert.modelBlockText(0, '😄Emoji');
     await page.keyboard.type('x');
     await editor.assert.modelBlockText(0, '😄xEmoji');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('combobox:emoji activates the top result when the query grows', async ({
+  page,
+}) => {
+  await routeEmojibase(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const { editor } = await openDemo(page, '/blocks/emoji-demo', 'Emoji');
+
+    await page.keyboard.type(':grin');
+    await expect(page.getByRole('option').first()).toHaveText(/^😁/);
+
+    // A person types one key at a time, so each query renders before the next.
+    for (const key of 'ning:') {
+      await page.keyboard.type(key);
+      await expect(page.getByRole('option').first()).toHaveText(/^😀/);
+      await expect(page.getByRole('option').first()).toHaveAttribute(
+        'data-active-item'
+      );
+    }
+    await editor.assert.modelBlockText(0, ':grinning:Emoji');
+    await page.keyboard.press('Enter');
+    await editor.assert.modelBlockText(0, '😀Emoji');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('combobox:emoji Enter as soon as a new top result shows picks it', async ({
+  page,
+}) => {
+  await routeEmojibase(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const { editor } = await openDemo(page, '/blocks/emoji-demo', 'Emoji');
+
+    await page.keyboard.type(':b');
+    await expect(page.getByRole('option').first()).toHaveText(/^🅱/);
+    await page.keyboard.type('y');
+    await expect(page.getByRole('option').first()).toHaveText(/^👋/);
+    await page.keyboard.press('Enter');
+    await editor.assert.modelBlockText(0, '👋Emoji');
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();
@@ -440,7 +489,8 @@ test('combobox:emoji stays closed inside a code block', async ({ page }) => {
 test('combobox:emoji Enter while the list loads keeps the query', async ({
   page,
 }) => {
-  const release = (await routeEmojibase(page)).hold();
+  const emojibase = await routeEmojibase(page);
+  const release = emojibase.hold();
   const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {

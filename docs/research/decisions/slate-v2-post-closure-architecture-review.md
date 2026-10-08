@@ -4,8 +4,8 @@ type: decision
 status: accepted
 updated: 2026-04-24
 source_refs:
-  - docs/slate-v2/absolute-architecture-release-claim.md
-  - docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md
+  - 6bc2fffa0bee6fcb6752d96139c698879682b41b:docs/slate-v2/absolute-architecture-release-claim.md
+  - docs/plans/2026-04-24-plite-absolute-architecture-closure-plan.md
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
   - docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md
 related:

@@ -66,7 +66,7 @@ documents must remain distinct. Feature reviews such as math and emoji remain
 separate, as the user requested.
 
 Acceptance follows [Best API Review](../../../.agents/skills/best-api-review/SKILL.md)
-and [Plate routing](../../../.agents/rules/best-api/references/review.md):
+and [Plate routing](cf1572560313960e87226640b93f73f2486c9aab:.agents/rules/task/references/best-api-review.md):
 
 - [x] Assess React, selection, native input, accessibility and geometry, with
   current owners, materially different consumers and relevant prior history.
@@ -91,10 +91,10 @@ and [Plate routing](../../../.agents/rules/best-api/references/review.md):
 
 The current [selection hook](../../../packages/plitejs/src/react/hooks/use-selection-geometry.tsx:14)
 creates a synthetic singleton Widget and a Widget store before measuring the
-selection. [WidgetStore](../../../packages/plitejs/src/react/widget-store.ts:26)
+selection. [WidgetStore](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/react/widget-store.ts:71)
 adds identities, target indexing, resolved records, snapshots, subscriptions,
 refresh/retry and lifecycle to data owned elsewhere. The
-[Yjs adapter](../../../packages/plitejs/src/yjs/react/cursor-widget-store.ts:84)
+[Yjs adapter](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/yjs/react/cursor-widget-store.ts:84)
 wraps already-keyed cursor records and labels each remote range as a
 `selection` target. The public domain cursor hook then passes that adapter to
 geometry. This is redundant derived infrastructure, not a second canonical
@@ -135,10 +135,10 @@ design questions.
 | Move ownership | Logical data stays with selection, annotation, node identity or cursor cache; coordinates belong to the exact Editable; placement belongs to copied UI. |
 | Replace architecture | Replacing DOM measurement, adding global geometry state, or merging all observers is unjustified. Floating UI's popup resize observer and Plite's reference measurement serve different elements. |
 
-The existing [geometry owner](../../../packages/plitejs/src/react/widget-geometry.ts:398)
+The existing [geometry owner](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/react/widget-geometry.ts:400)
 binds `(store, id, editableRef)` and releases subscriptions after its final
 lease. Its coordinator reference-counts observed Editables. The
-[floating adapter](../../../apps/www/src/registry/hooks/use-widget-floating.ts:44)
+[floating adapter](04f11c01a9c957c848c697f2522f677f0a71c3f4:apps/www/src/registry/hooks/use-widget-floating.ts:44)
 consumes rectangles and observes popup size. Preserve exact-ref resolution,
 SSR/null and unmounted targets, multiline and collapsed selection, scrolling,
 keyed cursor locality, remount cleanup and hiding before first positioning.
@@ -147,7 +147,7 @@ This reopens the
 [August decision](../../plans/2026-08-30-cursor-find-overlay-architecture.md:281)
 to keep logical Widget as an advanced public owner, while retaining its
 exact-view and copied-UI conclusions. The
-[historical scale receipt](../../plans/artifacts/transient-projection-scalability/node-benchmark.json)
+historical August 31 logical-Widget scale result at revision `377a77a537971b793a4ddbb34cc13797fdfeee15`
 covers logical Widget work through 10,000 items, omits geometry source, and
 captures a different Widget hash. It cannot accept the replacement. Detailed
 design must compare current versus direct-domain paths at matched target and

@@ -1,35 +1,38 @@
 'use client';
 
 import { SmileIcon } from 'lucide-react';
+import { useEditor, useEditorReadOnly } from 'platejs/react';
 import * as React from 'react';
 
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
-import {
-  EmojiPicker,
-  type EmojiPickerOptions,
-  EmojiPickerTrigger,
-} from './emoji-picker';
+import { EmojiPicker } from './emoji-picker';
 
-export function EmojiToolbarButton({
-  closeOnSelect,
-  data,
-  onSelectEmoji,
-  settings,
-  ...props
-}: EmojiPickerOptions & React.ComponentPropsWithoutRef<typeof ToolbarButton>) {
+export function EmojiToolbarButton(
+  props: React.ComponentPropsWithoutRef<typeof ToolbarButton>
+) {
+  const editor = useEditor();
+  const readOnly = useEditorReadOnly();
+
   return (
     <EmojiPicker
-      closeOnSelect={closeOnSelect}
-      data={data}
-      onSelectEmoji={onSelectEmoji}
-      settings={settings}
+      onEmojiSelect={(emoji) => {
+        if (!editor.read.selection()) return;
+
+        editor.update({ history: 'new-batch' }, (tx) => {
+          tx.text.insert(emoji);
+        });
+      }}
     >
-      <EmojiPickerTrigger>
-        <ToolbarButton tooltip="Emoji" isDropdown {...props}>
-          <SmileIcon />
-        </ToolbarButton>
-      </EmojiPickerTrigger>
+      <ToolbarButton
+        aria-label="Emoji"
+        disabled={readOnly}
+        tooltip="Emoji"
+        isDropdown
+        {...props}
+      >
+        <SmileIcon />
+      </ToolbarButton>
     </EmojiPicker>
   );
 }
