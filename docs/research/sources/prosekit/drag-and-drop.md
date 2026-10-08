@@ -1,0 +1,5 @@
+# ProseKit: drag and drop
+
+## Block drag payload
+
+- **Drag payload.** `prosekit/prosekit@3fbfe7906c3448328e80c1c1333647d08e50907e:registry/test/block-handle.test.ts` (L143) pins that dragging the block handle writes HTML carrying ProseMirror's `data-pm-slice` envelope plus a plain-text fallback, because a drop into another editor can read only the DataTransfer, and that dragend clears the view's drag state. Plite's block drag, `editor.api.dom.drag.start` in `packages/plitejs/src/dom/plugin/dom-drag.ts`, writes an editable source's dragged blocks through `writeDOMSelectionData`, the copy path. `packages/plitejs/test/react/dom-coverage-native-bridge-contract.test.ts` pins the text-drag payload (`application/x-editor-fragment`, `text/html` and `text/plain`) and the block drag's host marks and dragend cleanup, and `apps/plite/tests/plite-browser/donor/examples/plate-dnd-cross-editor.test.ts` copies a dragged block into another editor. ProseKit's ProseMirror MIME envelope is not copied (`docs/editor-test-harvester/prosekit/report.md:139`).

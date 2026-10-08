@@ -1,0 +1,5 @@
+# Meowdown: autocomplete and triggers
+
+## Text substitution
+
+- **Text substitution.** `prosekit/meowdown@5b9962982a1cb3d1732355c753ce76d9a5966af3:packages/core/src/extensions/substitution.test.ts` (lines 27-198) pins Meowdown's typed shorthand: `<-`, `->`, `(c)`, `(r)`, `1/2`, `+/-`, `!=`, `<<`, `>>` and `--` become symbols only once Space or Enter follows, an immediate Backspace restores the typed text, Backspace after more typing is ordinary, and only the latest replacement can be restored. These are input rules, not browser text substitution; the report's routing to `insertReplacementText` was wrong. Plate's text-substitution law is `EDIT-PROFILE-AUTOFMT-TEXT-001` to `-004` in `docs/editor-behavior/markdown-editing-spec.md`, including undo-on-delete when enabled, and `packages/platejs/src/lib/plugins/input-rules/createTextSubstitutionInputRule.spec.ts:24` substitutes on the final character of the match, without waiting for Space. Evidence: `docs/editor-test-harvester/meowdown/report.md:155`; checked on 2026-10-08.

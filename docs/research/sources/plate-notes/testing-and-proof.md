@@ -21,6 +21,8 @@ These lessons come from retired solution notes and Plite references, and no rule
 - **Stress families need a real `Editable`.** The generated stress runner opens every route with `ready: { editor: 'visible' }`, so a stress family needs a route that renders a real `Editable` and publishes the browser handle; selector-only demos stay contract rows. A row pointed at a selector-only route timed out on the textbox and stopped every later family. Set up stress cases through the smallest example control the contract needs, such as a seed button, and budget app-owned control rerenders apart from node churn. Code: `apps/plite/tests/plite-browser/donor/stress/generated-editing.test.ts:1345`. Sources: `solutions/test-failures/2026-04-28-plite-browser-generated-stress-rows-need-real-editable-harnesses.md`, `solutions/test-failures/2026-05-18-plite-read-only-selection-tests-need-selector-owned-dom-selection.md`.
 - **WebKit computed lengths carry float noise.** A cross-browser row parses CSS lengths and compares them within a tolerance; exact string assertions failed only on WebKit while the layout was right. Source: `solutions/test-failures/2026-05-20-plite-integration-local-editor-stacking-and-project-scope-failures.md`.
 
+- **`Locator.evaluate` passes the element first.** A paste test that wrote `navigator.clipboard` from `locator.evaluate((text) => ...)` put `[object HTMLDivElement]` into the document, because Playwright passes the locator's element as the first argument; write `(_element, text)` and pass the value second. Source: `docs/plite/research/2026-06-12-oss-clipboard-paste-architecture/README.md:74-78`.
+
 ## Ownership and type checks
 
 - **The React editable root's static inventory is grandfathered.** `kernel-authority-audit-contract.ts` records per-file call counts with owner, next step and rationale through `expectAuthorityInventory` and `expectSourceOwnershipInventory`. It reads source text, so it is a baselined `plate/no-source-text-test` finding; update it only when a patch moves a counted call such as selection import, event frames, trace or repair, and do not extend the pattern. A helper extraction that shrinks a file proves no change of owner, and browser rows are the durable proof of the timing and DOM-authority bugs a count cannot see. Code: `packages/plitejs/test/react/kernel-authority-audit-contract.ts:89`, `:210`, `tooling/oxlint/plate-baseline.json`. Source: `solutions/developer-experience/2026-04-27-plite-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md`.
@@ -34,3 +36,13 @@ These lessons come from retired solution notes and Plite references, and no rule
 ## Open lead
 
 - **61 legacy fixtures are skipped on a premise current law reverses.** `packages/plitejs/test/fixture-claim-overrides.ts` turns 61 legacy fixtures into `it.skip` (`index.slow.ts:78-83`) because adjacent-text and spacer cleanup was explicit-only. `docs/vision/plite.md` now says finalization merges equal adjacent text and removes redundant empty leaves while keeping required inline caret spacers. Run those rows unskipped and classify each as copied, improved or rejected instead of trusting the blanket skip. Source: `solutions/developer-experience/2026-04-19-plite-explicit-normalization-cuts-should-live-in-one-fixture-override-registry.md`.
+
+## Harvesting other editors
+
+- **Classify a harvested test by its body, not its file name.** Four Lexical files are misnamed:
+  - `LexicalElementHelpers.test.ts` tests only the DOM class-name helpers `addClassNamesToElement` and `removeClassNamesFromElement` (`facebook/lexical@dd5c41b1:packages/lexical/src/__tests__/unit/LexicalElementHelpers.test.ts:9-64`);
+  - `1384-insert-nodes.spec.mjs` tests code-block paste;
+  - `LexicalNormalization.test.tsx` tests selection endpoint normalization, not tree repair;
+  - `7635-SELECTION_INSERT_CLIPBOARD_NODES_COMMAND.spec.mjs` tests paste into an image caption.
+
+  Routed by its name, each row would land on the wrong owner, so read the test before assigning one. Source: `docs/editor-test-harvester/lexical/plite-processing-ledger.md:870`, `:883`, `:886`, `:890`.

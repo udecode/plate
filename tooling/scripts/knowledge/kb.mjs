@@ -7,10 +7,17 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   renameSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join } from 'node:path';
+import {
+  basename,
+  dirname,
+  join,
+  relative,
+  resolve as resolvePath,
+} from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -315,7 +322,7 @@ const words = args.filter((arg) => !arg.startsWith('--'));
 
 if (!words.length) {
   console.error(
-    'Usage: pnpm kb <query> [--detail] [--json] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>] | pnpm kb batch <batch dir> <batch> <source...> | pnpm kb write <change.json> --log <file> --resolved <run dir> | pnpm kb resolve <batch dir> [--seed <seed>] [--sample <n>] | pnpm kb fold <resolved.json> <paths...> | pnpm kb quote <run dir> --plan <plan> | pnpm kb pins <home>'
+    'Usage: pnpm kb <query> [--detail] [--json] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>] | pnpm kb batch <batch dir> <batch> <source...> | pnpm kb write <change.json> --log <file> --resolved <batches dir> | pnpm kb resolve <batch dir> [--seed <seed>] [--sample <n>] | pnpm kb fold <resolved.json> <path...> | pnpm kb quote <batches dir> --plan <plan> | pnpm kb pins <home>'
   );
   process.exit(2);
 }
@@ -325,27 +332,21 @@ const option = (name) => {
   return at === -1 ? undefined : args[at + 1];
 };
 
-// A source written `<commit>:<path>` is a deleted file, read from a commit
-// that still holds it.
-const COMMIT_SOURCE = /^([0-9a-f]{7,40}\^?):(.+)$/;
-
-const sourceBytes = (path) => {
-  const commit = COMMIT_SOURCE.exec(path);
-  if (!commit) return readFileSync(join(root, path));
-  const shown = spawnSync('git', ['show', path], { cwd: root });
-  if (shown.status !== 0) {
-    throw new Error(`git show ${path} failed: ${shown.stderr.toString()}`);
+const need = (ok, usage) => {
+  if (!ok) {
+    console.error(`Usage: pnpm kb ${usage}`);
+    process.exit(2);
   }
-  return shown.stdout;
 };
 
 if (words[0] === 'batch') {
   const [, dir, batch, ...paths] = words;
+  need(dir && batch && paths.length, 'batch <batch dir> <batch> <source...>');
   const homesOf = homesFor(workTree(root));
   const sources = paths.map((path) => ({
     path,
-    homes: homesOf(COMMIT_SOURCE.exec(path)?.[2] ?? path),
-    blob: blobOf(sourceBytes(path)),
+    homes: homesOf(path),
+    blob: blobOf(readFileSync(join(root, path))),
   }));
   mkdirSync(dir, { recursive: true });
   writeFileSync(
@@ -360,6 +361,10 @@ if (words[0] === 'batch') {
 
 if (words[0] === 'fold') {
   const [, resolvedFile, ...paths] = words;
+  need(
+    resolvedFile && existsSync(resolvedFile) && paths.length,
+    'fold <resolved.json> <path...>'
+  );
   const resolved = JSON.parse(readFileSync(resolvedFile, 'utf-8'));
   const table = join(root, FOLDED_FILE);
   const rows = new Map(
@@ -379,12 +384,6 @@ if (words[0] === 'fold') {
       process.exit(1);
     }
     for (const source of sources) {
-      if (COMMIT_SOURCE.test(source.path)) {
-        console.error(
-          `[kb] ${source.path} is a deleted file; only a file in the tree folds`
-        );
-        process.exit(1);
-      }
       const file = join(root, source.path);
       const text = readFileSync(file);
       let next;
@@ -406,12 +405,37 @@ if (words[0] === 'fold') {
   process.exit(0);
 }
 
+// A batch is named by its resolved file's path under `dir`, not by the
+// file's own `batch` field, so two batches never share a name.
 const resolvedFiles = (dir) =>
   readdirSync(dir, { recursive: true })
-    .filter((name) => String(name).endsWith('.resolved.json'))
-    .map((name) => JSON.parse(readFileSync(join(dir, String(name)), 'utf-8')));
+    .map(String)
+    .filter((name) => name.endsWith('.resolved.json'))
+    .map((name) => ({
+      ...JSON.parse(readFileSync(join(dir, name), 'utf-8')),
+      batch: name.slice(0, -'.resolved.json'.length),
+    }));
+
+const realRoot = realpathSync.native(root);
+
+// realpathSync.native returns the filesystem's own spelling, case included,
+// which realpathSync does not, so a case or `./` variant of an existing file
+// names the same file.
+const canonical = (path) => {
+  let probe = resolvePath(root, path);
+  const rest = [];
+  while (!existsSync(probe)) {
+    rest.unshift(basename(probe));
+    probe = dirname(probe);
+  }
+  return relative(realRoot, join(realpathSync.native(probe), ...rest));
+};
 
 if (words[0] === 'write') {
+  need(
+    words[1] && existsSync(words[1]),
+    'write <change.json> --log <file> --resolved <batches dir>'
+  );
   const change = JSON.parse(readFileSync(words[1], 'utf-8'));
   const log = option('--log');
   if (!log) {
@@ -423,29 +447,47 @@ if (words[0] === 'write') {
   const runDir = option('--resolved');
   if (!runDir) {
     console.error(
-      '[kb] kb write needs --resolved <run dir>, whose resolved batches name the spans it keeps'
+      '[kb] kb write needs --resolved <batches dir>, whose resolved batches name the spans it keeps'
     );
     process.exit(2);
+  }
+  const batches = existsSync(runDir) ? resolvedFiles(runDir) : [];
+  if (!batches.length) {
+    console.error(
+      `[kb] ${runDir} holds no resolved batch; pass the folder kb quote reads`
+    );
+    process.exit(2);
+  }
+  for (const named of [change.path, change.to?.home].filter(Boolean)) {
+    const own = canonical(named);
+    const problem = /^(\.\.|\/)/.test(own)
+      ? `${named} is outside the repository`
+      : own !== named && `name ${own}, the file's own spelling, not ${named}`;
+    if (problem) {
+      console.error(`[kb] ${problem}`);
+      process.exit(1);
+    }
   }
   const again = join(runDir, 'resolutions.json');
   const resolutions = existsSync(again)
     ? JSON.parse(readFileSync(again, 'utf-8'))
     : [];
+  // A target in a resolved file or resolutions.json keeps its reader's
+  // spelling, so it is compared by the file it names.
+  const here = (target) => Boolean(target) && canonical(target) === change.path;
   const kept = [
-    ...resolvedFiles(runDir).flatMap(({ batch, units }) =>
+    ...batches.flatMap(({ batch, units }) =>
       units
         .filter(
           (unit) =>
-            unit.target === change.path &&
+            here(unit.target) &&
             unit.verdict === 'accepted' &&
             ['covered', 'added'].includes(unit.disposition)
         )
-        .map((unit) => ({ key: `${batch}/${unit.key}`, span: unit.span }))
+        .map((unit) => ({ key: `${batch}#${unit.key}`, span: unit.span }))
     ),
     ...resolutions
-      .filter(
-        (item) => item.verdict === 'covered' && item.target === change.path
-      )
+      .filter((item) => item.verdict === 'covered' && here(item.target))
       .map((item) => ({ key: item.unit, span: item.span })),
   ];
   if (change.verdict) {
@@ -453,7 +495,7 @@ if (words[0] === 'write') {
     const matches =
       change.verdict === 'move'
         ? recorded?.verdict === 'covered' &&
-          recorded.target === change.to?.home &&
+          canonical(recorded.target) === change.to?.home &&
           recorded.span === change.to?.span
         : recorded?.verdict === change.verdict && Boolean(recorded.reason);
     if (!matches) {
@@ -498,6 +540,10 @@ if (words[0] === 'write') {
 
 if (words[0] === 'resolve') {
   const dir = words[1];
+  need(
+    dir && existsSync(join(dir, 'batch.json')),
+    'resolve <batch dir> [--seed <seed>] [--sample <n>]'
+  );
   const { batch, sources } = JSON.parse(
     readFileSync(join(dir, 'batch.json'), 'utf-8')
   );
@@ -508,7 +554,7 @@ if (words[0] === 'resolve') {
     resolved = resolve({
       batch,
       sources: sources.map((source) => {
-        const bytes = sourceBytes(source.path);
+        const bytes = readFileSync(join(root, source.path));
         return {
           ...source,
           text: bytes.toString('utf-8'),
@@ -544,6 +590,7 @@ if (words[0] === 'resolve') {
 
 if (words[0] === 'quote') {
   const dir = words[1];
+  need(dir && existsSync(dir), 'quote <batches dir> --plan <plan>');
   const plan = option('--plan');
   const again = join(dir, 'resolutions.json');
   const read = (path) =>
@@ -574,6 +621,7 @@ if (words[0] === 'quote') {
 }
 
 if (words[0] === 'pins') {
+  need(words[1], 'pins <home>');
   const folder = `docs/research/sources/${words[1]}/`;
   const tree = workTree(root);
   const cited = new Map();

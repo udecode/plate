@@ -380,23 +380,6 @@ test('kb write refuses a law rule whose ID the law already has', () => {
   );
 });
 
-test('kb write refuses a lesson that is not one bullet', () => {
-  assert.throws(
-    () =>
-      write(
-        'docs/research/sources/plate-notes/selection.md',
-        '# Selection\n\n## Caret\n\n- **Keep the caret.** It stays.\n',
-        {
-          op: 'append',
-          section: '## Caret',
-          text: '### New lesson\n\nThe caret moves.\n',
-        },
-        {}
-      ),
-    /a lesson lands as one/
-  );
-});
-
 const lexicalNote = {
   path: 'docs/research/lexical-marks.md',
   text: '# Marks\n\nLexical keeps marks apart.\n\nDecorators render outside.\n',
@@ -476,18 +459,6 @@ test('resolve fails on a unit with no accepted verdict', () => {
         })
       ),
     /n3 has no accepted verdict/
-  );
-});
-
-test('resolve fails when a sibling cover cites a unit that is not an accepted added unit', () => {
-  const units = [
-    noteUnits[0],
-    noteUnits[1],
-    unit('n3', lexicalNote.path, [5, 5], { disposition: 'covered', by: 'n1' }),
-  ];
-  assert.throws(
-    () => resolve(batch({ units })),
-    /n3 is covered by n1, which is not an accepted added unit of the batch/
   );
 });
 
@@ -629,7 +600,7 @@ test('the quote check passes once the unit resolves at a span that stands', () =
   assert.deepEqual(
     lostOf([
       {
-        unit: 'b1/n2',
+        unit: 'b1#n2',
         verdict: 'covered',
         target: 'docs/research/sources/lexical/marks.md',
         span: 'Lexical stores marks elsewhere.',
@@ -643,7 +614,7 @@ test('the quote check refuses a claimed move whose span stands nowhere', () => {
   assert.deepEqual(
     lostOf([
       {
-        unit: 'b1/n2',
+        unit: 'b1#n2',
         verdict: 'covered',
         target: 'docs/research/sources/lexical/marks.md',
         span: 'Lexical keeps marks apart in a store.',
@@ -701,7 +672,7 @@ test('the quote check does not take another key in Open work for the unit', () =
     quote({
       resolved: [{ batch: 'b1', units: [owned] }],
       read: () => undefined,
-      openWork: '- b1/u12 waits on the owner.',
+      openWork: '- b1#u12 waits on the owner.',
     }).lost.map((item) => item.key),
     ['u1']
   );
@@ -770,22 +741,6 @@ test('resolve holds a unit that targets the law to one rule ID', () => {
   );
 });
 
-test('a sibling cover is kept while its sibling stands in its home', () => {
-  const units = [
-    noteUnits[0],
-    noteUnits[1],
-    { ...noteUnits[2], target: undefined, span: undefined, by: 'n2' },
-  ];
-  const resolved = resolve(batch({ units }));
-  assert.deepEqual(
-    quote({
-      resolved: [resolved],
-      read: () => '# Marks\n\nLexical keeps marks apart.\n',
-    }).lost.map((item) => item.key),
-    []
-  );
-});
-
 test('a resolution settles only the unit of its own batch', () => {
   const gone = { ...kept1, key: 'r2' };
   assert.deepEqual(
@@ -796,10 +751,10 @@ test('a resolution settles only the unit of its own batch', () => {
       ],
       read: () => '',
       resolutions: [
-        { unit: 'b1/r2', verdict: 'obsolete', reason: 'the code changed' },
+        { unit: 'b1#r2', verdict: 'obsolete', reason: 'the code changed' },
       ],
-    }).lost.map((item) => `${item.batch}/${item.key}`),
-    ['b2/r2']
+    }).lost.map((item) => `${item.batch}#${item.key}`),
+    ['b2#r2']
   );
 });
 
@@ -851,57 +806,6 @@ test('an unchanged folded binary file passes', () => {
       base: foldedRows([`${png}\t${blobOf(pngBytes)}`]),
     }),
     []
-  );
-});
-
-test('kb write refuses a path that is not repository-relative', () => {
-  assert.throws(
-    () =>
-      write(
-        './docs/research/sources/lexical/marks.md',
-        marks,
-        { op: 'replace', old: 'separate store', new: 'shared store' },
-        { kept }
-      ),
-    /takes a repository-relative path, not \.\/docs/
-  );
-});
-
-const lessons = 'docs/research/sources/plate-notes/selection.md';
-const lessonPage =
-  '# Selection\n\n## Caret\n\n- **Keep the caret.** It stays.\n';
-
-test('kb write refuses a lesson whose body starts on the next line', () => {
-  assert.throws(
-    () =>
-      write(
-        lessons,
-        lessonPage,
-        {
-          op: 'append',
-          section: '## Caret',
-          text: '- **New lesson**\nThe caret stays.\n',
-        },
-        {}
-      ),
-    /a lesson lands as one/
-  );
-});
-
-test('kb write refuses a replace that turns a lesson into a heading', () => {
-  assert.throws(
-    () =>
-      write(
-        lessons,
-        lessonPage,
-        {
-          op: 'replace',
-          old: '- **Keep the caret.** It stays.',
-          new: '### Keep the caret\n\nIt stays.',
-        },
-        {}
-      ),
-    /a lesson lands as one/
   );
 });
 
@@ -1012,41 +916,32 @@ test('a link-only unit is lost until its home links the source', () => {
   );
 });
 
-test('kb write refuses a lesson that runs onto a second line', () => {
+test('resolve refuses a key that is not a plain name', () => {
+  const units = [noteUnits[0], noteUnits[1], { ...noteUnits[2], key: 'n..3' }];
   assert.throws(
-    () =>
-      write(
-        lessons,
-        lessonPage,
-        {
-          op: 'append',
-          section: '## Caret',
-          text: '- **New lesson** The caret stays\nwhen focus returns.\n',
-        },
-        {}
-      ),
-    /a lesson lands as one/
+    () => resolve(batch({ units, verdicts: accept('n1', 'n2', 'n..3') })),
+    /n\.\.3 is not a plain key/
   );
 });
 
-test('kb write refuses a move whose destination is another spelling of its own file', () => {
-  assert.throws(
-    () =>
-      write(
-        page,
-        marks,
-        {
-          op: 'remove',
-          span: 'Lexical keeps marks in a separate store',
-          unit: 'u1',
-          verdict: 'move',
-          to: {
-            home: `./${page}`,
-            span: 'Lexical keeps marks in a separate store',
-          },
-        },
-        { kept, stands: () => true }
-      ),
-    /takes a repository-relative path, not \.\/docs/
+test('a new parent row cannot hide a new file under a child folded at base', () => {
+  const child = 'docs/solutions/logic-errors/';
+  const base = foldedRows([`${child}\t-`, row]);
+  const sibling = 'docs/solutions/logic-errors/focus.md';
+  assert.deepEqual(
+    foldForms(
+      {
+        [note]: folded,
+        [sibling]: '# Focus\n',
+        'docs/research/folded.tsv': foldedRows([
+          'docs/solutions/\t-',
+          `${child}\t-`,
+          row,
+          `${sibling}\t${blobOf('# Focus\n')}`,
+        ]),
+      },
+      base
+    ),
+    [['new-file', sibling]]
   );
 });

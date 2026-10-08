@@ -432,7 +432,9 @@ try {
   await validateStagedGeneration(build.stageDir);
 
   const targets = [
-    ...REGISTRY_PUBLIC_TARGETS.map(({ directory }) => ({
+    ...REGISTRY_PUBLIC_TARGETS.filter(
+      ({ directory }) => !checkOnly || directory === 'r'
+    ).map(({ directory }) => ({
       destination: path.join(root, `public/${directory}`),
       staged: stage.publicDirectories[directory],
     })),

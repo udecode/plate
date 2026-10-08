@@ -1,0 +1,9 @@
+# Tiptap: commands and transforms
+
+## Command preflight with can()
+
+- **Command preflight.** Tiptap's `editor.can()` runs a command with an undefined `dispatch`, so it reports whether the command would apply without applying it. `ueberdosis/tiptap@91c51be53c:packages/core/__tests__/can.spec.ts` (14 tests, lines 18-189) pins that `can().undo()` is false on a fresh editor and true after a change, also inside a chain. It pins that `can().setMark('bold')` is false with the caret in a code block or when the selected nodes, marks or stored marks conflict with bold, and true when at least one selected node accepts it. A nested `can().chain()` passes the undefined dispatch down. The harvest routes this to the enabled state of Plate toolbar buttons and shortcuts (`docs/editor-test-harvester/tiptap/report.md:94`). Read at that commit on 2026-10-08; the 2026-05-10 harvest pinned no commit, but its cited lines match this one.
+
+## Hard break
+
+- **Hard break.** Tiptap's hard break is an inline `hardBreak` node rendered as `<br>`, the line break that Plite calls a soft break. The HardBreak demo spec (`ueberdosis/tiptap@91c51be53c:demos/src/Nodes/HardBreak/React/index.spec.js:12-48`, mirrored in Vue) pins that `<br>` and `<br />` both parse to it, and that the toolbar button, Shift+Enter and Mod+Enter each insert one; the extension binds both keys (`ueberdosis/tiptap@91c51be53c:packages/extension-hard-break/src/hard-break.ts:112-117`). Plite's DOM hotkeys bind Shift+Enter to `insertSoftBreak`, which inserts a `\n` into the text rather than a node (`packages/plitejs/src/dom/utils/hotkeys.ts:29`, `packages/plitejs/src/editor/insert-soft-break.ts:8-18`). The harvest routes this to Plite's soft-break browser examples and Plate's break policy (`docs/editor-test-harvester/tiptap/portable-mixed-routing.md:46-47`). Read on 2026-10-08.

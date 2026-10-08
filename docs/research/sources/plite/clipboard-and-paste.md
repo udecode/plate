@@ -1,0 +1,9 @@
+# Plite: clipboard and paste
+
+## Paste proof
+
+- Three clipboard proofs came from the 2026-06-12 clipboard research. A native Chromium IME composition stays coherent when a real clipboard paste lands at the composition point: the test writes the browser clipboard, presses the real paste shortcut while the composition is open, commits it, and asserts model text and selection at the adjusted caret (`apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:2825`); a synthetic paste during composition is too weak for this class (`rejected-ledger.tsv:3`). A ProseMirror `data-pm-slice` text slice pastes only its visible text and a table-row slice imports as a table row, neither exposing the slice metadata, on Chromium, Firefox and WebKit (`apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1691`, `:1715`). Runtime copy, cut and paste handlers flush pending native text input before app callbacks or model clipboard commands read state (`packages/plitejs/src/react/editable/runtime-clipboard-events.ts:101`, `:154`, `:181`). Source: `docs/plite/research/2026-06-12-oss-clipboard-paste-architecture/README.md:29-43`.
+
+## Paste and copy boundaries
+
+- Pasting into text right before a read-only inline keeps that inline and everything after it (`apps/plite/tests/plite-browser/donor/examples/inlines.test.ts:1587`, from WPT `copy-paste-before-non-editable`); copying hidden or unmounted content writes model-backed data instead of browser DOM serialization (`apps/plite/tests/plite-browser/donor/examples/hidden-content-blocks.test.ts:191`); and when an app `onPaste` mutates `event.clipboardData` and returns false, Plite inserts the mutated payload (`packages/plitejs/test/react/dom-coverage-native-bridge-contract.test.ts:1426`, from WPT `paste-clipboard-change`). Source: `docs/plite/research/2026-06-13-wpt-editing-oracles/lead-ledger.tsv:13-15`.

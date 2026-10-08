@@ -245,18 +245,6 @@
             "N extends Descendant"
           ]
         },
-        "platejs:areEditorSchemaIdentitiesEqual": {
-          "aliases": [],
-          "documentation": "Exact equality for schema identities, including absent metadata.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "areEditorSchemaIdentitiesEqual",
-          "route": null,
-          "runtime": true,
-          "signature": "areEditorSchemaIdentitiesEqual: (left: EditorSchemaIdentity | null, right: EditorSchemaIdentity | null) => boolean",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:AutoScrollApi": {
           "aliases": [],
           "documentation": "",
@@ -1250,18 +1238,6 @@
             "C extends AnyBasePluginDefinition = BasePluginDefinition"
           ]
         },
-        "platejs:containsCompleteEditorSchema": {
-          "aliases": [],
-          "documentation": "Return whether an plugin input installs a complete editor schema.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "containsCompleteEditorSchema",
-          "route": null,
-          "runtime": true,
-          "signature": "containsCompleteEditorSchema: (input: PluginInput) => boolean",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:ContentSlice": {
           "aliases": [],
           "documentation": "Immutable open document content carried across host and insertion boundaries.",
@@ -1304,7 +1280,7 @@
         },
         "platejs:createEditor": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Creates a base Plate editor (non-React version).\n\nThis function creates a fully configured Plate editor for\nnon-React environments or server-side contexts. It applies the specified\nplugins and configuration to create a functional editor.\n\nExamples:\n\n```ts\nconst editor = createEditor({\n  plugins: [ParagraphPlugin, HeadingPlugin],\n  initialValue: [{ type: 'paragraph', children: [{ text: 'Hello world!' }] }],\n});\n\n// Editor with custom configuration\nconst editor = createEditor({\n  plugins: [ParagraphPlugin, ElementIdPlugin],\n  maxLength: 1000,\n  autoSelect: 'end',\n});\n\n// Server-side editor with feature-owned HTML conversion\nconst editor = createEditor({\n  plugins: [ParagraphPlugin, HtmlPlugin],\n  initialValue: ({ editor }) => {\n    const result = editor.api.html.parse('<p>HTML content</p>');\n\n    if (!result.ok) throw new Error(result.diagnostics[0].message);\n\n    return result.document;\n  },\n});\n\n// Name the schema only when persisted or collaborative state needs lineage.\nconst persistedEditor = createEditor({\n  schema: { id: 'acme-document', version: 1 },\n});\n```",
           "entrypoint": "platejs",
           "kind": "function",
           "name": "createEditor",
@@ -1866,18 +1842,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:dispatchCommand": {
-          "aliases": [],
-          "documentation": "Imperatively dispatch a pure command at a host boundary.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "dispatchCommand",
-          "route": null,
-          "runtime": true,
-          "signature": "dispatchCommand: <TCommand extends EditorCommandDescriptor>(editor: AnyEditor, command: TCommand, ...input: [EditorCommandInput<TCommand>] extends [void] ? [] | [input: EditorCommandInput<TCommand>] : [input: EditorCommandInput<TCommand>]) => boolean",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:DocumentChange": {
           "aliases": [],
           "documentation": "",
@@ -2272,18 +2236,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:EditorCommitSource": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "EditorCommitSource",
-          "route": null,
-          "runtime": false,
-          "signature": "type EditorCommitSource = 'commit' | 'selection' | 'text' | 'node' | 'decoration' | 'annotation' | 'root' | 'state' | 'focus' | 'composition' | 'external';",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:EditorCoreStateView": {
           "aliases": [],
           "documentation": "",
@@ -2497,20 +2449,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:EditorGenericMethod": {
-          "aliases": [],
-          "documentation": "Preserve a generic plugin method through editor projections.",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "EditorGenericMethod",
-          "route": null,
-          "runtime": false,
-          "signature": "type EditorGenericMethod<TMethod extends (...args: any[]) => any> = TMethod & Readonly<{\n  [editorGenericMethod]: true;\n}>;",
-          "source": null,
-          "typeParameters": [
-            "TMethod extends (...args: any[]) => any"
-          ]
-        },
         "platejs:EditorInstalledApiGroups": {
           "aliases": [],
           "documentation": "",
@@ -2602,7 +2540,7 @@
           "name": "EditorLifecycleError",
           "route": null,
           "runtime": false,
-          "signature": "type EditorLifecycleError<TEditor = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'cleanup' | 'measure' | 'publish';\n  source: 'pagination';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'mount' | 'update' | 'focus' | 'destroy';\n  source: 'external-text';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  phase: 'after-commit' | 'afterPublish' | 'cleanup' | 'commit-listener' | 'node-change-listener' | 'snapshot-listener' | 'source-listener' | 'text-change-listener';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  mimeType: string;\n  key: string;\n  phase: 'accept' | 'decode' | 'encode';\n  source: 'data-transfer-format';\n}>;",
+          "signature": "type EditorLifecycleError<TEditor = Editor> = Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'cleanup' | 'measure' | 'publish';\n  source: 'pagination';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  phase: 'mount' | 'update' | 'focus' | 'destroy';\n  source: 'external-text';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  phase: 'after-commit' | 'afterPublish' | 'cleanup' | 'commit-listener' | 'node-change-listener' | 'snapshot-listener' | 'source-listener' | 'text-change-listener';\n}> | Readonly<{\n  cause: unknown;\n  editor: TEditor;\n  pluginName: string;\n  mimeType: string;\n  key: string;\n  phase: 'accept' | 'decode' | 'encode';\n  source: 'data-transfer-format';\n}> | Readonly<{\n  cause: unknown;\n  direction: 'redo' | 'undo';\n  editor: TEditor;\n  phase: 'replay';\n  source: 'history';\n}>;",
           "source": null,
           "typeParameters": [
             "TEditor = Editor"
@@ -2748,21 +2686,6 @@
           "typeParameters": [
             "T extends Node",
             "TType extends NodeTypeSelector | undefined = NodeTypeSelector | undefined"
-          ]
-        },
-        "platejs:EditorNodeTypeProvider": {
-          "aliases": [],
-          "documentation": "Deferred exact-node witness for hosts with a broad runtime editor.",
-          "entrypoint": "platejs",
-          "kind": "interface",
-          "name": "EditorNodeTypeProvider",
-          "route": null,
-          "runtime": false,
-          "signature": "interface EditorNodeTypeProvider<TElementFactory extends () => Element = () => Element, TTextFactory extends () => Text = () => Text> {\n  readonly [EDITOR_NODE_TYPES]: Readonly<{\n    element: TElementFactory;\n    text: TTextFactory;\n  }>;\n}",
-          "source": null,
-          "typeParameters": [
-            "TElementFactory extends () => Element = () => Element",
-            "TTextFactory extends () => Text = () => Text"
           ]
         },
         "platejs:EditorNodeUnsetOptions": {
@@ -2962,7 +2885,7 @@
           "name": "editorReads",
           "route": null,
           "runtime": true,
-          "signature": "editorReads: Readonly<{\n  nodes: Readonly<{\n    isSelectable: EditorReadDescriptor<Readonly<{\n      element: Node;\n      nodeKey: NodeKey | null;\n    }>, boolean, Editor>;\n    shouldMergeNodesRemovePrevNode: EditorReadDescriptor<Readonly<{\n      current: NodeEntry;\n      previous: NodeEntry;\n    }>, boolean, Editor>;\n  }>;\n  transfer: Readonly<{\n    /** Expand a transfer's selected blocks, such as a list item's family. */\n    source: EditorReadDescriptor<Readonly<{\n      selection: NodeSelection;\n    }>, Readonly<{\n      anchorPath: Path;\n      focusPath: Path;\n      kind: 'node';\n      paths: readonly [Path, ...Path[]];\n      root?: NamedRootKey;\n    }>, Editor>;\n    /**\n     * Redirect one landing edge, such as past a list item's family; the default\n     * keeps the edge. A redirected edge must map to itself. The schema admits\n     * the final edge and vetoes refuse it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      edge: 'after' | 'before';\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      target: NodeEntry<Element>;\n    }>, Readonly<{\n      edge: 'after' | 'before';\n      key: NodeKey;\n    }>, Editor>;\n  }>;\n  slice: Readonly<{\n    export: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n      source: 'assembled' | 'selection';\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n    get: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n  }>;\n}>",
+          "signature": "editorReads: Readonly<{\n  nodes: Readonly<{\n    isSelectable: EditorReadDescriptor<Readonly<{\n      element: Node;\n      nodeKey: NodeKey | null;\n    }>, boolean, Editor>;\n    shouldMergeNodesRemovePrevNode: EditorReadDescriptor<Readonly<{\n      current: NodeEntry;\n      previous: NodeEntry;\n    }>, boolean, Editor>;\n  }>;\n  transfer: Readonly<{\n    /** Expand a transfer's selected blocks, such as a list item's family. */\n    source: EditorReadDescriptor<Readonly<{\n      selection: NodeSelection;\n    }>, Readonly<{\n      anchorPath: Path;\n      focusPath: Path;\n      kind: 'node';\n      paths: readonly [Path, ...Path[]];\n      root?: NamedRootKey;\n    }>, Editor>;\n    /**\n     * Redirect one landing edge, such as past a list item's family; the default\n     * keeps the edge. A redirected edge must map to itself. The schema admits\n     * the final edge and vetoes refuse it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      edge: 'after' | 'before';\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      target: NodeEntry<Element>;\n    }>, Readonly<{\n      edge: 'after' | 'before';\n      key: NodeKey;\n    }>, Editor>;\n    /**\n     * What a drop at a block's side builds, such as a column group; the\n     * default, `null`, refuses. The schema must still admit the wrap, and\n     * vetoes can still refuse it.\n     */\n    side: EditorReadDescriptor<Readonly<{\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      side: 'end' | 'start';\n      target: NodeEntry<Element>;\n    }>, TransferWrap | null, Editor>;\n  }>;\n  slice: Readonly<{\n    export: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n      source: 'assembled' | 'selection';\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n    get: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n  }>;\n}>",
           "source": null,
           "typeParameters": []
         },
@@ -3322,20 +3245,6 @@
             "TName extends string = string"
           ]
         },
-        "platejs:EditorSchemaPluginProvider": {
-          "aliases": [],
-          "documentation": "Deferred type-only schema forwarding for plugin slots.",
-          "entrypoint": "platejs",
-          "kind": "interface",
-          "name": "EditorSchemaPluginProvider",
-          "route": null,
-          "runtime": false,
-          "signature": "interface EditorSchemaPluginProvider<TSchemaFactory extends () => EditorSchemaPlugin = () => EditorSchemaPlugin> {\n  readonly '~schema.plugins': TSchemaFactory;\n}",
-          "source": null,
-          "typeParameters": [
-            "TSchemaFactory extends () => EditorSchemaPlugin = () => EditorSchemaPlugin"
-          ]
-        },
         "platejs:EditorSchemaProperty": {
           "aliases": [],
           "documentation": "Immutable compiled property facts returned by `state.schema.property()`.",
@@ -3431,20 +3340,6 @@
           "signature": "type EditorSchemaSource = EditorSchemaSourceProvider | Readonly<{\n  schema: EditorSchemaDeclaration | ((...args: any[]) => EditorSchemaDeclaration);\n}>;",
           "source": null,
           "typeParameters": []
-        },
-        "platejs:EditorSchemaSourceProvider": {
-          "aliases": [],
-          "documentation": "Deferred exact schema declaration witness carried by host descriptors.",
-          "entrypoint": "platejs",
-          "kind": "interface",
-          "name": "EditorSchemaSourceProvider",
-          "route": null,
-          "runtime": false,
-          "signature": "interface EditorSchemaSourceProvider<TDeclarationFactory extends () => EditorSchemaDeclaration = () => EditorSchemaDeclaration> {\n  readonly '~schema.source': TDeclarationFactory;\n}",
-          "source": null,
-          "typeParameters": [
-            "TDeclarationFactory extends () => EditorSchemaDeclaration = () => EditorSchemaDeclaration"
-          ]
         },
         "platejs:EditorSchemaStructureProperty": {
           "aliases": [],
@@ -3794,20 +3689,6 @@
           "signature": "type EditorStateViewApi = {\n  isComposing: () => boolean;\n  isFocused: () => boolean;\n  isReadOnly: () => boolean;\n  /** Named view root, or `undefined` for the primary document. */\n  root: () => NamedRootKey | undefined;\n};",
           "source": null,
           "typeParameters": []
-        },
-        "platejs:EditorStateViewProvider": {
-          "aliases": [],
-          "documentation": "Deferred state-view carrier for editor layers with richer transactions.",
-          "entrypoint": "platejs",
-          "kind": "interface",
-          "name": "EditorStateViewProvider",
-          "route": null,
-          "runtime": false,
-          "signature": "interface EditorStateViewProvider<TStateFactory extends () => unknown> {\n  readonly [editorStateViewTypes]: TStateFactory;\n}",
-          "source": null,
-          "typeParameters": [
-            "TStateFactory extends () => unknown"
-          ]
         },
         "platejs:EditorTargetRuntime": {
           "aliases": [],
@@ -4298,34 +4179,6 @@
             "TPlugins extends readonly unknown[] = readonly []"
           ]
         },
-        "platejs:EditorUpdateTransactionOf": {
-          "aliases": [],
-          "documentation": "Resolve a layered editor's exact live update transaction.",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "EditorUpdateTransactionOf",
-          "route": null,
-          "runtime": false,
-          "signature": "type EditorUpdateTransactionOf<TEditor> = TEditor extends EditorUpdateTransactionProvider<infer TTransactionFactory> ? ReturnType<TTransactionFactory> : EditorUpdateTransaction<ValueOf<TEditor>, PluginsOf<TEditor>>;",
-          "source": null,
-          "typeParameters": [
-            "TEditor"
-          ]
-        },
-        "platejs:EditorUpdateTransactionProvider": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "interface",
-          "name": "EditorUpdateTransactionProvider",
-          "route": null,
-          "runtime": false,
-          "signature": "interface EditorUpdateTransactionProvider<TTransactionFactory extends () => unknown> {\n  readonly [editorUpdateTransactionTypes]: TTransactionFactory;\n}",
-          "source": null,
-          "typeParameters": [
-            "TTransactionFactory extends () => unknown"
-          ]
-        },
         "platejs:EditorUpdateValueFromPlugin": {
           "aliases": [],
           "documentation": "",
@@ -4396,20 +4249,6 @@
           "typeParameters": [
             "TValue = unknown",
             "TEncoded extends EditorJsonValue = EditorJsonValue"
-          ]
-        },
-        "platejs:EditorValueTypeProvider": {
-          "aliases": [],
-          "documentation": "Deferred exact-value witness for hosts with a broad runtime editor.",
-          "entrypoint": "platejs",
-          "kind": "interface",
-          "name": "EditorValueTypeProvider",
-          "route": null,
-          "runtime": false,
-          "signature": "interface EditorValueTypeProvider<TValueFactory extends () => Value = () => Value> {\n  readonly [EDITOR_VALUE_TYPE]: TValueFactory;\n}",
-          "source": null,
-          "typeParameters": [
-            "TValueFactory extends () => Value = () => Value"
           ]
         },
         "platejs:EditorView": {
@@ -4672,18 +4511,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:evaluateCommand": {
-          "aliases": [],
-          "documentation": "Evaluate one pure command without publishing its transaction.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "evaluateCommand",
-          "route": null,
-          "runtime": true,
-          "signature": "evaluateCommand: <TCommand extends EditorCommandDescriptor>(editor: AnyEditor, command: TCommand, ...input: [EditorCommandInput<TCommand>] extends [void] ? [] | [input: EditorCommandInput<TCommand>] : [input: EditorCommandInput<TCommand>]) => EditorCommandEvaluation",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:ExitBreakPlugin": {
           "aliases": [],
           "documentation": "Inserts an exit block before or after the current block structure.",
@@ -4705,30 +4532,6 @@
           "route": null,
           "runtime": false,
           "signature": "type FragmentPropMode = 'all' | 'block' | 'text';",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:getCompiledEditorSchemaFromApi": {
-          "aliases": [],
-          "documentation": "Resolve the exact compiled artifact behind a candidate schema API.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "getCompiledEditorSchemaFromApi",
-          "route": null,
-          "runtime": true,
-          "signature": "getCompiledEditorSchemaFromApi: (schemaApi: EditorStateSchemaApi<any>) => Readonly<{\n  diagnostics: readonly EditorSchemaDiagnostic[];\n  elements: Readonly<{\n    allowedChildren: ReadonlyMap<string, ReadonlySet<string>>;\n    allowedParents: ReadonlyMap<string, ReadonlySet<string>>;\n    byType: ReadonlyMap<string, CompiledSchemaElement>;\n    contentPrograms: ReadonlyMap<string, CompiledSchemaContentProgram>;\n    defaultPlans: ReadonlyMap<string, CompiledSchemaConstructionPlan>;\n    groups: ReadonlyMap<string, ReadonlySet<string>>;\n    textGroups: ReadonlySet<string>;\n    wrapperPlans: ReadonlyMap<string, CompiledSchemaWrapperPlan>;\n  }>;\n  identity: EditorSchemaIdentity;\n  primaryRoot: CompiledSchemaRoot;\n  properties: Readonly<{\n    byId: ReadonlyMap<string, CompiledSchemaProperty>;\n    conflictsByPropertyId: ReadonlyMap<string, ReadonlySet<string>>;\n    elementAllowedByType: ReadonlyMap<string, ReadonlySet<string>>;\n    lifecycle: ReadonlyMap<string, CompiledSchemaProperty['lifecycle']>;\n    lookup: Readonly<{\n      element: CompiledSchemaPropertyLookup;\n      text: CompiledSchemaPropertyLookup;\n    }>;\n    mergeStrategies: ReadonlyMap<string, CompiledSchemaPropertyMergeStrategy>;\n    membersByExclusiveGroup: ReadonlyMap<string, ReadonlySet<string>>;\n    textAllowedByParentType: ReadonlyMap<string, ReadonlySet<string>>;\n  }>;\n  revision: number;\n  roots: ReadonlyMap<string, CompiledSchemaRoot>;\n  unknown: EditorSchemaUnknownPolicy;\n  vocabulary: CompiledSchemaVocabulary;\n}> | null",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:getEditorCommitSnapshot": {
-          "aliases": [],
-          "documentation": "Return an immutable commit snapshot for one document root.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "getEditorCommitSnapshot",
-          "route": null,
-          "runtime": true,
-          "signature": "getEditorCommitSnapshot: <V extends Value>(commit: EditorCommit<V>, root?: RootKey, phase?: 'after' | 'before') => EditorSnapshot<V>",
           "source": null,
           "typeParameters": []
         },
@@ -4818,42 +4621,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:getSchemaElementSourceReference": {
-          "aliases": [],
-          "documentation": "Recover the nominal source retained by element relationship builders.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "getSchemaElementSourceReference",
-          "route": null,
-          "runtime": true,
-          "signature": "getSchemaElementSourceReference: (value: unknown) => unknown",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:getSelectionDOMRange": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "getSelectionDOMRange",
-          "route": null,
-          "runtime": true,
-          "signature": "getSelectionDOMRange: (editor: AnyEditor, selection: Selection) => Range | null",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:getSelectionRange": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "getSelectionRange",
-          "route": null,
-          "runtime": true,
-          "signature": "getSelectionRange: (editor: AnyEditor, selection: Selection, documentValue?: EditorDocumentValue) => Range | null",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:GetSiblingListOptions": {
           "aliases": [],
           "documentation": "",
@@ -4938,6 +4705,18 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:HistoryApi": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "HistoryApi",
+          "route": null,
+          "runtime": false,
+          "signature": "type HistoryApi = {\n  /** Replay the current redo batch as one complete editor update. */\n  redo: () => HistoryResult;\n  /** Replay the current undo batch as one complete editor update. */\n  undo: () => HistoryResult;\n};",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:HistoryDefinition": {
           "aliases": [],
           "documentation": "",
@@ -4947,6 +4726,18 @@
           "route": null,
           "runtime": false,
           "signature": "type HistoryDefinition = DefinitionOf<typeof HistoryPlugin>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:HistoryOutcome": {
+          "aliases": [],
+          "documentation": "Outcome of an undo or redo that has finished.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "HistoryOutcome",
+          "route": null,
+          "runtime": false,
+          "signature": "type HistoryOutcome = HistorySettlement | Readonly<{\n  status: 'busy' | 'empty';\n}> | Readonly<{\n  conflicts: readonly string[];\n  status: 'blocked';\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -4971,6 +4762,30 @@
           "route": null,
           "runtime": false,
           "signature": "type HistoryPluginState = {\n  maxDepth: number;\n  newBatchDelay: number;\n};",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:HistoryResult": {
+          "aliases": [],
+          "documentation": "Result of one undo or redo call. A document batch has already applied when\nthe call returns; only a batch whose effect owner is still working returns\n`pending`.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "HistoryResult",
+          "route": null,
+          "runtime": false,
+          "signature": "type HistoryResult = HistoryOutcome | Readonly<{\n  /** Resolves once the effect owner finishes. Never rejects. */\n  settled: Promise<HistorySettlement>;\n  status: 'pending';\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:HistorySettlement": {
+          "aliases": [],
+          "documentation": "Final outcome of a replay that waited on its effect owner.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "HistorySettlement",
+          "route": null,
+          "runtime": false,
+          "signature": "type HistorySettlement = Readonly<{\n  status: 'applied';\n}> | Readonly<{\n  reason: string;\n  status: 'blocked';\n}> | Readonly<{\n  status: 'failed';\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -5376,18 +5191,6 @@
             "P"
           ]
         },
-        "platejs:initializePlugins": {
-          "aliases": [],
-          "documentation": "Replace the derived base schema on one unchanged raw editor.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "initializePlugins",
-          "route": null,
-          "runtime": true,
-          "signature": "initializePlugins: <TEditor extends AnyEditor>(editor: TEditor, input: PluginInput, options?: Readonly<{\n  initialize?: (transaction: EditorTransactionSpecBuilder<ValueOf<TEditor>, PluginsOf<TEditor>>) => void;\n  /** Resolve one post-publication initial value for direct schema adoption. */\n  initialValue?: () => SnapshotInput<ValueOf<TEditor>>;\n}>) => void",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:InitialValue": {
           "aliases": [],
           "documentation": "",
@@ -5758,18 +5561,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:isPlugin": {
-          "aliases": [],
-          "documentation": "Test nominal descriptor identity without structural guessing.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "isPlugin",
-          "route": null,
-          "runtime": true,
-          "signature": "isPlugin: (value: unknown) => value is PluginReference",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:isPluginElementClass": {
           "aliases": [],
           "documentation": "Return true when an editor element boundary carries the plugin node class.",
@@ -6024,18 +5815,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:MAIN_ROOT_KEY": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "MAIN_ROOT_KEY",
-          "route": null,
-          "runtime": true,
-          "signature": "MAIN_ROOT_KEY = \"main\"",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:mapEffect": {
           "aliases": [],
           "documentation": "",
@@ -6045,30 +5824,6 @@
           "route": null,
           "runtime": true,
           "signature": "mapEffect: <TValue, TEncoded extends EditorJsonValue>(effect: EditorEffect<TValue, TEncoded>, changes: Parameters<EditorEffectType<TValue, TEncoded>['map']>[1]) => EditorEffect<TValue, TEncoded> | undefined",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:mapSelectionThroughChange": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "mapSelectionThroughChange",
-          "route": null,
-          "runtime": true,
-          "signature": "mapSelectionThroughChange: (editor: AnyEditor, selection: Selection, change: DocumentChange, before: EditorDocumentValue, after: EditorDocumentValue, fallbackRoot: RootKey, options?: SelectionMappingOptions) => Selection",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:mapSemanticUpdateMethodArguments": {
-          "aliases": [],
-          "documentation": "Map one update method's arguments without bypassing its command lowering.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "mapSemanticUpdateMethodArguments",
-          "route": null,
-          "runtime": true,
-          "signature": "mapSemanticUpdateMethodArguments: <TMethod extends UpdateMethod>(method: TMethod, mapArguments: (args: readonly unknown[]) => readonly unknown[]) => TMethod",
           "source": null,
           "typeParameters": []
         },
@@ -8209,30 +7964,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:preserveCompiledSchemaPropertyIdentity": {
-          "aliases": [],
-          "documentation": "Preserve one authored property's semantic identity after lowering.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "preserveCompiledSchemaPropertyIdentity",
-          "route": null,
-          "runtime": true,
-          "signature": "preserveCompiledSchemaPropertyIdentity: <TProperty extends Readonly<{\n  key: SchemaPropertyKey;\n  placement: 'element' | 'text';\n  target?: SchemaTarget | null;\n}>>(property: TProperty, authored: TProperty) => TProperty",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:probeCommandNativeEquivalent": {
-          "aliases": [],
-          "documentation": "Probe whether installed handlers preserve the default command unchanged.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "probeCommandNativeEquivalent",
-          "route": null,
-          "runtime": true,
-          "signature": "probeCommandNativeEquivalent: <TCommand extends EditorCommandDescriptor>(editor: AnyEditor, command: TCommand, ...input: [EditorCommandInput<TCommand>] extends [void] ? [] | [input: EditorCommandInput<TCommand>] : [input: EditorCommandInput<TCommand>]) => EditorCommandNativeProbe",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:ProjectedRangeSegment": {
           "aliases": [],
           "documentation": "",
@@ -8564,18 +8295,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:readEditorSchemaIdentity": {
-          "aliases": [],
-          "documentation": "Strict decoder for persisted editor schema identities.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "readEditorSchemaIdentity",
-          "route": null,
-          "runtime": true,
-          "signature": "readEditorSchemaIdentity: (value: unknown) => EditorSchemaIdentity | undefined",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:readEditorSelection": {
           "aliases": [
             "getSelection"
@@ -8749,18 +8468,6 @@
             "N extends Text$1 = Text$1"
           ]
         },
-        "platejs:repairEditorValue": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "repairEditorValue",
-          "route": null,
-          "runtime": true,
-          "signature": "repairEditorValue: (editor: AnyEditor) => void",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:ReplaceSliceCommand": {
           "aliases": [],
           "documentation": "",
@@ -8770,18 +8477,6 @@
           "route": null,
           "runtime": false,
           "signature": "type ReplaceSliceCommand = {\n  options?: CommandTargetOptions<TextInsertFragmentOptions>;\n  slice: ContentSlice$1;\n};",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:reportEditorLifecycleError": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "reportEditorLifecycleError",
-          "route": null,
-          "runtime": true,
-          "signature": "reportEditorLifecycleError: <TEditor extends BaseEditor<any, any>>(error: EditorLifecycleError<TEditor>) => void",
           "source": null,
           "typeParameters": []
         },
@@ -8847,18 +8542,6 @@
             "TAction",
             "C extends AnyBasePluginDefinition = BasePluginDefinition"
           ]
-        },
-        "platejs:runTrustedUpdate": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "runTrustedUpdate",
-          "route": null,
-          "runtime": true,
-          "signature": "runTrustedUpdate: <V extends Value, TPlugins extends readonly unknown[] = readonly []>(editor: AnyEditor<V, TPlugins>, fn: (transaction: EditorUpdateTransaction<V, TPlugins>, context: EditorUpdateContext<AnyEditor<V, TPlugins>>) => void, options?: Pick<InternalEditorUpdateOptions, 'tags'>) => void",
-          "source": null,
-          "typeParameters": []
         },
         "platejs:schema": {
           "aliases": [],
@@ -9043,20 +8726,6 @@
             "TSchema extends EditorSchemaSource"
           ]
         },
-        "platejs:SchemaDescendantInValue": {
-          "aliases": [],
-          "documentation": "Non-recursive schema descendant lookup for editor API generics.",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "SchemaDescendantInValue",
-          "route": null,
-          "runtime": false,
-          "signature": "type SchemaDescendantInValue<V extends readonly unknown[]> = SchemaIsAny<V> extends true ? never : typeof EDITOR_SCHEMA_VALUE extends keyof V ? NonNullable<V[Extract<typeof EDITOR_SCHEMA_VALUE, keyof V>]> extends Readonly<{\n  element: infer TElement;\n  text: infer TText;\n}> ? Extract<(TElement extends (() => infer TElementResult) ? TElementResult : never) | (TText extends (() => infer TTextResult) ? TTextResult : never), BaseElement | BaseText> : never : never;",
-          "source": null,
-          "typeParameters": [
-            "V extends readonly unknown[]"
-          ]
-        },
         "platejs:SchemaElement": {
           "aliases": [],
           "documentation": "",
@@ -9114,20 +8783,6 @@
           "typeParameters": [
             "TSchema extends object = EditorSchemaSource",
             "TType extends string = TSchema extends EditorSchemaSource ? SchemaElementTypes<TSchema> : string"
-          ]
-        },
-        "platejs:SchemaElementInNode": {
-          "aliases": [],
-          "documentation": "Exact schema elements reachable from one schema-owned node.",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "SchemaElementInNode",
-          "route": null,
-          "runtime": false,
-          "signature": "type SchemaElementInNode<TNode> = '~schema.node' extends keyof TNode ? NonNullable<TNode[Extract<'~schema.node', keyof TNode>]> extends Readonly<{\n  element: infer TElement;\n}> ? TElement extends (() => infer TElementResult) ? Extract<TElementResult, BaseElement> & Pick<TNode, Extract<'~schema.node', keyof TNode>> : never : never : never;",
-          "source": null,
-          "typeParameters": [
-            "TNode"
           ]
         },
         "platejs:SchemaElementInput": {
@@ -9362,21 +9017,6 @@
             "TPrefix extends string = string"
           ]
         },
-        "platejs:SchemaNodeTypeProvider": {
-          "aliases": [],
-          "documentation": "Compact schema-node inference witness.",
-          "entrypoint": "platejs",
-          "kind": "interface",
-          "name": "SchemaNodeTypeProvider",
-          "route": null,
-          "runtime": false,
-          "signature": "interface SchemaNodeTypeProvider<TElement extends BaseElement = BaseElement, TText extends BaseText = BaseText> {\n  readonly element: () => TElement;\n  readonly text: () => TText;\n}",
-          "source": null,
-          "typeParameters": [
-            "TElement extends BaseElement = BaseElement",
-            "TText extends BaseText = BaseText"
-          ]
-        },
         "platejs:SchemaPluginsOf": {
           "aliases": [],
           "documentation": "Complete schema vocabulary composed from every installed contribution.",
@@ -9585,20 +9225,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:SchemaTextInNode": {
-          "aliases": [],
-          "documentation": "Exact schema text variants reachable from one schema-owned node.",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "SchemaTextInNode",
-          "route": null,
-          "runtime": false,
-          "signature": "type SchemaTextInNode<TNode> = '~schema.node' extends keyof TNode ? NonNullable<TNode[Extract<'~schema.node', keyof TNode>]> extends Readonly<{\n  text: infer TText;\n}> ? TText extends (() => infer TTextResult) ? Extract<TTextResult, BaseText> & Pick<TNode, Extract<'~schema.node', keyof TNode>> : never : never : never;",
-          "source": null,
-          "typeParameters": [
-            "TNode"
-          ]
-        },
         "platejs:SchemaTextProperties": {
           "aliases": [],
           "documentation": "Optional JSON property values accepted on schema text leaves.",
@@ -9692,7 +9318,7 @@
           "name": "SchemaValue",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaValue<TSchema extends EditorSchemaPlugin> = ReadonlyArray<string extends SchemaElementTypes<TSchema> ? BaseElement : SchemaElementFor<TSchema> | (SchemaDefinitionOf<TSchema>['unknown'] extends 'preserve' ? PreservedSchemaElement<TSchema> : never)> & SchemaValueBrand<TSchema>;",
+          "signature": "type SchemaValue<TSchema extends EditorSchemaPlugin> = ReadonlyArray<string extends SchemaElementTypes<TSchema> ? BaseElement : SchemaElementFor<TSchema> | (SchemaDefinitionOf<TSchema>['unknown'] extends 'preserve' ? PreservedSchemaElement<TSchema> : never)> & SchemaValueBrand<SchemaNodeTypeProviderFor<TSchema>>;",
           "source": null,
           "typeParameters": [
             "TSchema extends EditorSchemaPlugin"
@@ -9998,18 +9624,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs:setEditorMaxLength": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "setEditorMaxLength",
-          "route": null,
-          "runtime": true,
-          "signature": "setEditorMaxLength: (editor: AnyPluginEditor, maxLength: number | undefined) => void",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:setEditorReadOnly": {
           "aliases": [],
           "documentation": "",
@@ -10019,42 +9633,6 @@
           "route": null,
           "runtime": true,
           "signature": "setEditorReadOnly: (editor: AnyPluginEditor, readOnly: boolean) => void",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:setEditorSnapshotInputTransform": {
-          "aliases": [],
-          "documentation": "Install one host-owned transform before external snapshot fitting.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "setEditorSnapshotInputTransform",
-          "route": null,
-          "runtime": true,
-          "signature": "setEditorSnapshotInputTransform: (editor: AnyEditor, transform: ((input: SnapshotInput) => SnapshotInput) | undefined) => () => void",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:setEditorStateViewTransform": {
-          "aliases": [],
-          "documentation": "Install one host-owned projection before a state view freezes.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "setEditorStateViewTransform",
-          "route": null,
-          "runtime": true,
-          "signature": "setEditorStateViewTransform: (editor: AnyEditor, transform: ((state: Record<string, unknown>) => void) | undefined) => () => void",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs:setEditorTransactionViewTransform": {
-          "aliases": [],
-          "documentation": "Install one host-owned projection before a transaction view freezes.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "setEditorTransactionViewTransform",
-          "route": null,
-          "runtime": true,
-          "signature": "setEditorTransactionViewTransform: (editor: AnyEditor, transform: ((transaction: Record<string, unknown>) => void) | undefined) => () => void",
           "source": null,
           "typeParameters": []
         },
@@ -10127,20 +9705,6 @@
           "route": null,
           "runtime": false,
           "signature": "type SnapshotInput<V extends Value = Value> = PersistedDocumentInput<V> | Readonly<{\n  children: V | readonly Descendant[];\n  meta?: Readonly<Record<string, unknown>>;\n  roots?: Readonly<Record<RootKey, V | readonly Descendant[]>>;\n  selection?: SnapshotSelectionInput;\n}>;",
-          "source": null,
-          "typeParameters": [
-            "V extends Value = Value"
-          ]
-        },
-        "platejs:SnapshotListener": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs",
-          "kind": "type",
-          "name": "SnapshotListener",
-          "route": null,
-          "runtime": false,
-          "signature": "type SnapshotListener<V extends Value = Value> = (snapshot: EditorSnapshot<V>, change?: EditorCommit<V>) => void;",
           "source": null,
           "typeParameters": [
             "V extends Value = Value"
@@ -10667,18 +10231,6 @@
             "TRequired extends SchemaPropertyRequiredLocalId<SchemaPropertyEntriesOf<TSource, 'text'>> = never"
           ]
         },
-        "platejs:toEditorCoreStateView": {
-          "aliases": [],
-          "documentation": "Remove transaction and plugin groups from a public state view.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "toEditorCoreStateView",
-          "route": null,
-          "runtime": true,
-          "signature": "toEditorCoreStateView: <V extends Value>(state: EditorCoreStateView<V>) => EditorCoreStateView<V>",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:ToggleBlockCommand": {
           "aliases": [],
           "documentation": "",
@@ -10911,13 +10463,13 @@
         },
         "platejs:TransferLandingTarget": {
           "aliases": [],
-          "documentation": "A resolved landing: beside a block or at a text point.",
+          "documentation": "A resolved landing: beside a block, at its side, or at a text point.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "TransferLandingTarget",
           "route": null,
           "runtime": false,
-          "signature": "type TransferLandingTarget = TransferEdge | Readonly<{\n  point: Point;\n}>;",
+          "signature": "type TransferLandingTarget = TransferEdge | TransferSide | Readonly<{\n  point: Point;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -10965,7 +10517,7 @@
           "name": "TransferRead",
           "route": null,
           "runtime": false,
-          "signature": "type TransferRead = Readonly<{\n  /**\n   * The blocks a transfer carries, after feature expansion such as list\n   * families, without nested duplicates, in document order. With `node`, a\n   * handle's blocks: the node selection when it holds the node, else the node\n   * alone. Without it, a keyboard move's blocks: the selected blocks, else the\n   * blocks holding the selection.\n   */\n  nodes: (options?: Readonly<{\n    node?: NodeTarget<Element>;\n  }>) => readonly NodeKey[];\n}>;",
+          "signature": "type TransferRead = Readonly<{\n  /**\n   * Whether a transfer would be admitted, without running it: the dry run the\n   * drop indicator paints from, for a move. A refusal at commit time, such as\n   * a lossy landing, is not predicted.\n   */\n  check: (input: TransferInput) => TransferCheck;\n  /**\n   * The blocks a transfer carries, after feature expansion such as list\n   * families, without nested duplicates, in document order. With `node`, a\n   * handle's blocks: the node selection when it holds the node, else the node\n   * alone. Without it, a keyboard move's blocks: the selected blocks, else the\n   * blocks holding the selection.\n   */\n  nodes: (options?: Readonly<{\n    node?: NodeTarget<Element>;\n  }>) => readonly NodeKey[];\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -10990,6 +10542,30 @@
           "route": null,
           "runtime": false,
           "signature": "type TransferRelation = 'document' | 'identity' | 'independent';",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:TransferSide": {
+          "aliases": [],
+          "documentation": "The inline start or end side of a block, where a dropped block lands beside\nit. A `transfer.side` read decides what the landing builds; without one the\ntransfer refuses.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "TransferSide",
+          "route": null,
+          "runtime": false,
+          "signature": "type TransferSide = Readonly<{\n  key: NodeKey;\n  side: 'end' | 'start';\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:TransferSideInput": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "TransferSideInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type TransferSideInput = Readonly<{\n  /** Source view. */\n  from: AnyEditor;\n  intent: TransferIntent;\n  payload: TransferPayload;\n  relation: TransferRelation;\n  side: 'end' | 'start';\n  target: NodeEntry<Element>;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -11037,7 +10613,31 @@
           "name": "TransferVeto",
           "route": null,
           "runtime": false,
-          "signature": "type TransferVeto = (input: TransferLandingInput, view: AnyEditor) => boolean;",
+          "signature": "type TransferVeto = (input: TransferVetoInput, view: AnyEditor) => boolean;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:TransferVetoInput": {
+          "aliases": [],
+          "documentation": "A veto's input. For a side landing, `edge` and `target` place the shell and\n`wrap` is set: the payload lands inside the shell, deeper than the edge, and\na wrap that takes the target's place also runs every veto with the target as\nthe payload.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "TransferVetoInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type TransferVetoInput = TransferLandingInput & Readonly<{\n  wrap?: TransferWrap;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:TransferWrap": {
+          "aliases": [],
+          "documentation": "What a side landing builds: `shell`, an element with empty slots, and the\nslot at `payload`, a path inside it, for the dropped blocks. With `target`,\nthe shell takes the target's place and the target moves into the slot at\n`target`. Otherwise the shell lands at `edge` of the target's ancestor\n`ancestor` levels up, 0 being the target itself.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "TransferWrap",
+          "route": null,
+          "runtime": false,
+          "signature": "type TransferWrap = Readonly<{\n  payload: Path;\n  shell: Element;\n  target: Path;\n}> | Readonly<{\n  ancestor: number;\n  edge: 'after' | 'before';\n  payload: Path;\n  shell: Element;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -11247,18 +10847,6 @@
             "P = {}"
           ]
         },
-        "platejs:withTransactionSpecDraftRead": {
-          "aliases": [],
-          "documentation": "Allow one internal state read to observe the active command-spec draft.",
-          "entrypoint": "platejs",
-          "kind": "const",
-          "name": "withTransactionSpecDraftRead",
-          "route": null,
-          "runtime": true,
-          "signature": "withTransactionSpecDraftRead: <T>(editor: AnyEditor, fn: () => T) => T",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs:WrapLinkOptions": {
           "aliases": [],
           "documentation": "",
@@ -11403,7 +10991,7 @@
           "name": "BaseCommentsPlugin",
           "route": "/docs/comment",
           "runtime": true,
-          "signature": "BaseCommentsPlugin: BasePlugin<Readonly<{\n  readonly name: \"comments\";\n  readonly decorate: true;\n  readonly activate: true;\n  readonly api: {\n    /** Start a comment at a range, or expand a caret to its text block. */\n    readonly begin: (at?: Range | null) => boolean;\n    /** Dismiss the pending composer and release its private range. */\n    readonly cancel: () => void;\n    /** Publish from the pending selection; failure preserves the composer. */\n    readonly create: (body: Value) => Promise<CommentMutationResult<string>>;\n    /** Persist and publish at an explicit primary range or authored change ID. */\n    readonly createThread: (input: CreateCommentThreadInput, pending?: Anchor<Range>) => Promise<CommentMutationResult<string>>;\n    /** Allocate a local draft; only publishDraft invokes durable storage. */\n    readonly createDraft: (input: CreateCommentThreadInput) => string | null;\n    /** Retire an unpublished draft, including its private range. */\n    readonly discardDraft: (id: string) => boolean;\n    /** Edit a message after application authorization and persistence. */\n    readonly edit: (id: string, messageId: string, body: Value) => Promise<CommentMutationResult>;\n    /** Stable membership and pending-composer state for targeted UI reads. */\n    readonly getSnapshot: () => Readonly<{\n      draftThreadIds: readonly string[];\n      pending: PendingComment | null;\n      threadIds: readonly string[];\n      visibleThreadIds: readonly string[];\n    }>;\n    /** Read immutable conversation data; document mapping preserves identity. */\n    readonly getThread: (id: string) => Readonly<{\n      createdAt: string;\n      excerpt: string;\n      id: string;\n      messages: readonly CommentMessage[];\n      resolution: CommentResolution;\n      status: 'draft' | 'published';\n      target: CommentTarget;\n      userId: string;\n    }> | undefined;\n    /** Read live semantic records. Use toJSON for persistence. */\n    readonly getThreads: () => readonly CommentThread[];\n    /** Replace the complete saved snapshot for the exact current document. */\n    readonly replace: (value: CommentsJSON) => boolean;\n    /** Export published conversations and opaque targets for this exact document. */\n    readonly toJSON: () => CommentsJSON;\n    /** Resolve the pending selection without exposing its native handle. */\n    readonly pendingRange: () => BaseRange | null;\n    /** Persist a local draft; discard during the request fences late completion. */\n    readonly publishDraft: (id: string) => Promise<CommentMutationResult<undefined>>;\n    /** Remove a message; the final message removes the thread. */\n    readonly removeMessage: (id: string, messageId: string) => Promise<CommentMutationResult<undefined>>;\n    /** Remove after authorization; document undo never recreates conversations. */\n    readonly removeThread: (id: string) => Promise<CommentMutationResult<undefined>>;\n    /** Add the current user's reply to an unresolved thread. */\n    readonly reply: (id: string, body: Value) => Promise<CommentMutationResult>;\n    /** Close a discussion outside document history. Reopen is its inverse. */\n    readonly resolve: (id: string) => Promise<CommentMutationResult<undefined>>;\n    /** Reopen a resolved discussion without touching document history. */\n    readonly reopen: (id: string) => Promise<CommentMutationResult<undefined>>;\n    /** Observe one record; unrelated metadata writes do not wake it. */\n    readonly subscribeThread: (id: string, listener: () => void) => () => void;\n    /** Observe semantic writes only; document mapping never wakes this channel. */\n    readonly subscribeThreads: (listener: (change: CommentsChange) => void) => () => void;\n    readonly subscribeVisibleThreadIds: (listener: () => void) => () => void;\n    readonly subscribeDraftThreadIds: (listener: () => void) => () => void;\n    readonly subscribePending: (listener: () => void) => () => void;\n    readonly idsAt: (location: Location) => readonly string[];\n    /** Resolve a live attachment without copying it into the conversation. */\n    readonly attachment: (id: string) => CommentAttachment | null;\n    readonly setActive: (ids: readonly string[]) => void;\n    /** Observe mapped attachments without rewriting semantic thread records. */\n    readonly subscribeAttachments: (listener: (change: AnnotationChange) => void) => () => void;\n  };\n  readonly effectTypes: true;\n  readonly initialState: {\n    readonly activeIds: readonly string[];\n    readonly currentUserId: string | null;\n    readonly initialComments: CommentsJSON | null;\n    readonly mutate: (request: CommentMutationRequest) => CommentMutationDecision | Promise<CommentMutationDecision>;\n    readonly users: {\n      readonly [x: string]: {\n        readonly id: string;\n        readonly name: string;\n        readonly avatarUrl?: string;\n      };\n    };\n  };\n}>> & Readonly<Record<never, never>>",
+          "signature": "BaseCommentsPlugin: BasePlugin<Readonly<{\n  readonly name: \"comments\";\n  readonly decorate: true;\n  readonly activate: true;\n  readonly api: {\n    /** Start a comment at a range, or expand a caret to its text block. */\n    readonly begin: (at?: Range | null) => boolean;\n    /** Dismiss the pending composer and release its private range. */\n    readonly cancel: () => void;\n    /** Publish from the pending selection; failure preserves the composer. */\n    readonly create: (body: Value) => Promise<CommentMutationResult<string>>;\n    /** Persist and publish at an explicit primary range or authored change ID. */\n    readonly createThread: (input: CreateCommentThreadInput, pending?: Anchor<Range>) => Promise<CommentMutationResult<string>>;\n    /** Allocate a local draft; only publishDraft invokes durable storage. */\n    readonly createDraft: (input: CreateCommentThreadInput) => string | null;\n    /** Retire an unpublished draft, including its private range. */\n    readonly discardDraft: (id: string) => boolean;\n    /** Edit a message after application authorization and persistence. */\n    readonly edit: (id: string, messageId: string, body: Value) => Promise<CommentMutationResult>;\n    /** Stable membership and pending-composer state for targeted UI reads. */\n    readonly getSnapshot: () => Readonly<{\n      draftThreadIds: readonly string[];\n      pending: PendingComment | null;\n      threadIds: readonly string[];\n      visibleThreadIds: readonly string[];\n    }>;\n    /** Read immutable conversation data; document mapping preserves identity. */\n    readonly getThread: (id: string) => Readonly<{\n      createdAt: string;\n      excerpt: string;\n      id: string;\n      messages: readonly CommentMessage[];\n      resolution: CommentResolution;\n      status: 'draft' | 'published';\n      target: CommentTarget;\n      userId: string;\n    }> | undefined;\n    /** Read live semantic records. Use toJSON for persistence. */\n    readonly getThreads: () => readonly CommentThread[];\n    /** Replace the complete saved snapshot for the exact current document. */\n    readonly replace: (value: CommentsJSON) => boolean;\n    /** Export published conversations and opaque targets for this exact document. */\n    readonly toJSON: () => CommentsJSON;\n    /** Resolve the pending selection without exposing its native handle. */\n    readonly pendingRange: () => BaseRange | null;\n    /** Persist a local draft; discard during the request fences late completion. */\n    readonly publishDraft: (id: string) => Promise<CommentMutationResult<undefined>>;\n    /** Remove a message; the final message removes the thread. */\n    readonly removeMessage: (id: string, messageId: string) => Promise<CommentMutationResult<undefined>>;\n    /** Remove after authorization; document undo never recreates conversations. */\n    readonly removeThread: (id: string) => Promise<CommentMutationResult<undefined>>;\n    /** Add the current user's reply to an unresolved thread. */\n    readonly reply: (id: string, body: Value) => Promise<CommentMutationResult>;\n    /** Close a discussion outside document history. Reopen is its inverse. */\n    readonly resolve: (id: string) => Promise<CommentMutationResult<undefined>>;\n    /** Reopen a resolved discussion without touching document history. */\n    readonly reopen: (id: string) => Promise<CommentMutationResult<undefined>>;\n    /** Observe one record; unrelated metadata writes do not wake it. */\n    readonly subscribeThread: (id: string, listener: () => void) => () => void;\n    /** Observe semantic writes only; document mapping never wakes this channel. */\n    readonly subscribeThreads: (listener: (change: CommentsChange) => void) => () => void;\n    readonly subscribeVisibleThreadIds: (listener: () => void) => () => void;\n    readonly subscribeDraftThreadIds: (listener: () => void) => () => void;\n    readonly subscribePending: (listener: () => void) => () => void;\n    readonly idsAt: (location: Location) => readonly string[];\n    /** Resolve a live attachment without copying it into the conversation. */\n    readonly attachment: (id: string) => CommentAttachment | null;\n    readonly setActive: (ids: readonly string[]) => void;\n    /** Observe mapped attachments without rewriting semantic thread records. */\n    readonly subscribeAttachments: (listener: (change: AnnotationChange) => void) => () => void;\n  };\n  readonly effectTypes: true;\n  readonly initialState: {\n    readonly activeIds: readonly string[];\n    readonly initialComments: CommentsJSON | null;\n    readonly mutate: (request: CommentMutationRequest) => CommentMutationDecision | Promise<CommentMutationDecision>;\n    readonly users: {\n      readonly [x: string]: {\n        readonly id: string;\n        readonly name: string;\n        readonly avatarUrl?: string;\n      };\n    };\n  };\n}>> & Readonly<Record<never, never>>",
           "source": null,
           "typeParameters": []
         },
@@ -11525,7 +11113,7 @@
           "name": "CommentsPluginState",
           "route": "/docs/comment",
           "runtime": false,
-          "signature": "type CommentsPluginState = {\n  activeIds: readonly string[];\n  currentUserId: string | null;\n  /** Loaded once, before mount, against the matching initial document. */\n  initialComments: CommentsJSON | null;\n  /** Authorize and persist before publication. Throws preserve the previous state. */\n  mutate: (request: CommentMutationRequest) => CommentMutationDecision | Promise<CommentMutationDecision>;\n  users: Readonly<Record<string, CommentUser>>;\n};",
+          "signature": "type CommentsPluginState = {\n  activeIds: readonly string[];\n  /** Loaded once, before mount, against the matching initial document. */\n  initialComments: CommentsJSON | null;\n  /** Authorize and persist before publication. Throws preserve the previous state. */\n  mutate: (request: CommentMutationRequest) => CommentMutationDecision | Promise<CommentMutationDecision>;\n  users: Readonly<Record<string, CommentUser>>;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -11609,7 +11197,7 @@
           "name": "CommentsPlugin",
           "route": "/docs/comment",
           "runtime": true,
-          "signature": "CommentsPlugin: InternalPluginAuthorExtension<Plugin<Readonly<{\n  readonly name: \"comments\";\n  readonly decorate: true;\n  readonly activate: true;\n  readonly api: {\n    readonly begin: (at?: Range | null) => boolean;\n    readonly cancel: () => void;\n    readonly create: (body: Value) => Promise<CommentMutationResult<string>>;\n    readonly createThread: (input: CreateCommentThreadInput, pending?: Anchor<Range>) => Promise<CommentMutationResult<string>>;\n    readonly createDraft: (input: CreateCommentThreadInput) => string | null;\n    readonly discardDraft: (id: string) => boolean;\n    readonly edit: (id: string, messageId: string, body: Value) => Promise<CommentMutationResult>;\n    readonly getSnapshot: () => Readonly<{\n      draftThreadIds: readonly string[];\n      pending: PendingComment | null;\n      threadIds: readonly string[];\n      visibleThreadIds: readonly string[];\n    }>;\n    readonly getThread: (id: string) => Readonly<{\n      createdAt: string;\n      excerpt: string;\n      id: string;\n      messages: readonly CommentMessage[];\n      resolution: CommentResolution;\n      status: 'draft' | 'published';\n      target: CommentTarget;\n      userId: string;\n    }> | undefined;\n    readonly getThreads: () => readonly CommentThread[];\n    readonly replace: (value: CommentsJSON) => boolean;\n    readonly toJSON: () => CommentsJSON;\n    readonly pendingRange: () => BaseRange | null;\n    readonly publishDraft: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly removeMessage: (id: string, messageId: string) => Promise<CommentMutationResult<undefined>>;\n    readonly removeThread: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly reply: (id: string, body: Value) => Promise<CommentMutationResult>;\n    readonly resolve: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly reopen: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly subscribeThread: (id: string, listener: () => void) => () => void;\n    readonly subscribeThreads: (listener: (change: CommentsChange) => void) => () => void;\n    readonly subscribeVisibleThreadIds: (listener: () => void) => () => void;\n    readonly subscribeDraftThreadIds: (listener: () => void) => () => void;\n    readonly subscribePending: (listener: () => void) => () => void;\n    readonly idsAt: (location: Location) => readonly string[];\n    readonly attachment: (id: string) => CommentAttachment | null;\n    readonly setActive: (ids: readonly string[]) => void;\n    readonly subscribeAttachments: (listener: (change: AnnotationChange) => void) => () => void;\n  };\n  readonly effectTypes: true;\n  readonly initialState: {\n    readonly activeIds: readonly string[];\n    readonly currentUserId: string | null;\n    readonly initialComments: CommentsJSON | null;\n    readonly mutate: (request: CommentMutationRequest) => CommentMutationDecision | Promise<CommentMutationDecision>;\n    readonly users: {\n      readonly [x: string]: {\n        readonly id: string;\n        readonly name: string;\n        readonly avatarUrl?: string;\n      };\n    };\n  };\n}>>, Readonly<{\n  readonly name: \"comments\";\n  readonly decorate: true;\n  readonly activate: true;\n  readonly api: {\n    readonly begin: (at?: Range | null) => boolean;\n    readonly cancel: () => void;\n    readonly create: (body: Value) => Promise<CommentMutationResult<string>>;\n    readonly createThread: (input: CreateCommentThreadInput, pending?: Anchor<Range>) => Promise<CommentMutationResult<string>>;\n    readonly createDraft: (input: CreateCommentThreadInput) => string | null;\n    readonly discardDraft: (id: string) => boolean;\n    readonly edit: (id: string, messageId: string, body: Value) => Promise<CommentMutationResult>;\n    readonly getSnapshot: () => Readonly<{\n      draftThreadIds: readonly string[];\n      pending: PendingComment | null;\n      threadIds: readonly string[];\n      visibleThreadIds: readonly string[];\n    }>;\n    readonly getThread: (id: string) => Readonly<{\n      createdAt: string;\n      excerpt: string;\n      id: string;\n      messages: readonly CommentMessage[];\n      resolution: CommentResolution;\n      status: 'draft' | 'published';\n      target: CommentTarget;\n      userId: string;\n    }> | undefined;\n    readonly getThreads: () => readonly CommentThread[];\n    readonly replace: (value: CommentsJSON) => boolean;\n    readonly toJSON: () => CommentsJSON;\n    readonly pendingRange: () => BaseRange | null;\n    readonly publishDraft: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly removeMessage: (id: string, messageId: string) => Promise<CommentMutationResult<undefined>>;\n    readonly removeThread: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly reply: (id: string, body: Value) => Promise<CommentMutationResult>;\n    readonly resolve: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly reopen: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly subscribeThread: (id: string, listener: () => void) => () => void;\n    readonly subscribeThreads: (listener: (change: CommentsChange) => void) => () => void;\n    readonly subscribeVisibleThreadIds: (listener: () => void) => () => void;\n    readonly subscribeDraftThreadIds: (listener: () => void) => () => void;\n    readonly subscribePending: (listener: () => void) => () => void;\n    readonly idsAt: (location: Location) => readonly string[];\n    readonly attachment: (id: string) => CommentAttachment | null;\n    readonly setActive: (ids: readonly string[]) => void;\n    readonly subscribeAttachments: (listener: (change: AnnotationChange) => void) => () => void;\n  };\n  readonly effectTypes: true;\n  readonly initialState: {\n    readonly activeIds: readonly string[];\n    readonly currentUserId: string | null;\n    readonly initialComments: CommentsJSON | null;\n    readonly mutate: (request: CommentMutationRequest) => CommentMutationDecision | Promise<CommentMutationDecision>;\n    readonly users: {\n      readonly [x: string]: {\n        readonly id: string;\n        readonly name: string;\n        readonly avatarUrl?: string;\n      };\n    };\n  };\n}>, \"api\" | \"on\" | \"shortcuts\", {}, {\n  readonly begin: (at?: Range | null) => boolean;\n}, {}, {}, {}, readonly [], boolean, readonly []>",
+          "signature": "CommentsPlugin: InternalPluginAuthorExtension<Plugin<Readonly<{\n  readonly name: \"comments\";\n  readonly decorate: true;\n  readonly activate: true;\n  readonly api: {\n    readonly begin: (at?: Range | null) => boolean;\n    readonly cancel: () => void;\n    readonly create: (body: Value) => Promise<CommentMutationResult<string>>;\n    readonly createThread: (input: CreateCommentThreadInput, pending?: Anchor<Range>) => Promise<CommentMutationResult<string>>;\n    readonly createDraft: (input: CreateCommentThreadInput) => string | null;\n    readonly discardDraft: (id: string) => boolean;\n    readonly edit: (id: string, messageId: string, body: Value) => Promise<CommentMutationResult>;\n    readonly getSnapshot: () => Readonly<{\n      draftThreadIds: readonly string[];\n      pending: PendingComment | null;\n      threadIds: readonly string[];\n      visibleThreadIds: readonly string[];\n    }>;\n    readonly getThread: (id: string) => Readonly<{\n      createdAt: string;\n      excerpt: string;\n      id: string;\n      messages: readonly CommentMessage[];\n      resolution: CommentResolution;\n      status: 'draft' | 'published';\n      target: CommentTarget;\n      userId: string;\n    }> | undefined;\n    readonly getThreads: () => readonly CommentThread[];\n    readonly replace: (value: CommentsJSON) => boolean;\n    readonly toJSON: () => CommentsJSON;\n    readonly pendingRange: () => BaseRange | null;\n    readonly publishDraft: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly removeMessage: (id: string, messageId: string) => Promise<CommentMutationResult<undefined>>;\n    readonly removeThread: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly reply: (id: string, body: Value) => Promise<CommentMutationResult>;\n    readonly resolve: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly reopen: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly subscribeThread: (id: string, listener: () => void) => () => void;\n    readonly subscribeThreads: (listener: (change: CommentsChange) => void) => () => void;\n    readonly subscribeVisibleThreadIds: (listener: () => void) => () => void;\n    readonly subscribeDraftThreadIds: (listener: () => void) => () => void;\n    readonly subscribePending: (listener: () => void) => () => void;\n    readonly idsAt: (location: Location) => readonly string[];\n    readonly attachment: (id: string) => CommentAttachment | null;\n    readonly setActive: (ids: readonly string[]) => void;\n    readonly subscribeAttachments: (listener: (change: AnnotationChange) => void) => () => void;\n  };\n  readonly effectTypes: true;\n  readonly initialState: {\n    readonly activeIds: readonly string[];\n    readonly initialComments: CommentsJSON | null;\n    readonly mutate: (request: CommentMutationRequest) => CommentMutationDecision | Promise<CommentMutationDecision>;\n    readonly users: {\n      readonly [x: string]: {\n        readonly id: string;\n        readonly name: string;\n        readonly avatarUrl?: string;\n      };\n    };\n  };\n}>>, Readonly<{\n  readonly name: \"comments\";\n  readonly decorate: true;\n  readonly activate: true;\n  readonly api: {\n    readonly begin: (at?: Range | null) => boolean;\n    readonly cancel: () => void;\n    readonly create: (body: Value) => Promise<CommentMutationResult<string>>;\n    readonly createThread: (input: CreateCommentThreadInput, pending?: Anchor<Range>) => Promise<CommentMutationResult<string>>;\n    readonly createDraft: (input: CreateCommentThreadInput) => string | null;\n    readonly discardDraft: (id: string) => boolean;\n    readonly edit: (id: string, messageId: string, body: Value) => Promise<CommentMutationResult>;\n    readonly getSnapshot: () => Readonly<{\n      draftThreadIds: readonly string[];\n      pending: PendingComment | null;\n      threadIds: readonly string[];\n      visibleThreadIds: readonly string[];\n    }>;\n    readonly getThread: (id: string) => Readonly<{\n      createdAt: string;\n      excerpt: string;\n      id: string;\n      messages: readonly CommentMessage[];\n      resolution: CommentResolution;\n      status: 'draft' | 'published';\n      target: CommentTarget;\n      userId: string;\n    }> | undefined;\n    readonly getThreads: () => readonly CommentThread[];\n    readonly replace: (value: CommentsJSON) => boolean;\n    readonly toJSON: () => CommentsJSON;\n    readonly pendingRange: () => BaseRange | null;\n    readonly publishDraft: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly removeMessage: (id: string, messageId: string) => Promise<CommentMutationResult<undefined>>;\n    readonly removeThread: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly reply: (id: string, body: Value) => Promise<CommentMutationResult>;\n    readonly resolve: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly reopen: (id: string) => Promise<CommentMutationResult<undefined>>;\n    readonly subscribeThread: (id: string, listener: () => void) => () => void;\n    readonly subscribeThreads: (listener: (change: CommentsChange) => void) => () => void;\n    readonly subscribeVisibleThreadIds: (listener: () => void) => () => void;\n    readonly subscribeDraftThreadIds: (listener: () => void) => () => void;\n    readonly subscribePending: (listener: () => void) => () => void;\n    readonly idsAt: (location: Location) => readonly string[];\n    readonly attachment: (id: string) => CommentAttachment | null;\n    readonly setActive: (ids: readonly string[]) => void;\n    readonly subscribeAttachments: (listener: (change: AnnotationChange) => void) => () => void;\n  };\n  readonly effectTypes: true;\n  readonly initialState: {\n    readonly activeIds: readonly string[];\n    readonly initialComments: CommentsJSON | null;\n    readonly mutate: (request: CommentMutationRequest) => CommentMutationDecision | Promise<CommentMutationDecision>;\n    readonly users: {\n      readonly [x: string]: {\n        readonly id: string;\n        readonly name: string;\n        readonly avatarUrl?: string;\n      };\n    };\n  };\n}>, \"api\" | \"on\" | \"shortcuts\", {}, {\n  readonly begin: (at?: Range | null) => boolean;\n}, {}, {}, {}, readonly [], boolean, readonly []>",
           "source": null,
           "typeParameters": []
         },
@@ -11913,7 +11501,7 @@
           "name": "BaseColumnPlugin",
           "route": null,
           "runtime": true,
-          "signature": "BaseColumnPlugin: BasePlugin<Readonly<{\n  readonly dependencies: readonly [PluginReference<\"column\"> & PluginDependency<Readonly<{\n    name: \"column\";\n  }> & Readonly<{\n    __pluginWritableProperties: Readonly<{\n      descriptor: PropertyStringDescriptor<{\n        readonly default: \"50%\";\n        readonly omitDefault: false;\n      }>;\n      key: \"width\";\n      localId: \"width\";\n      ownerName: \"column\";\n      placement: \"element\";\n      unaliased: true;\n      value: string;\n    }>;\n  }> & Readonly<Record<\"schema\", {\n    element: {\n      content: Readonly<{\n        allowed: SchemaContentRule;\n        prefix?: readonly Readonly<{\n          element: string | Readonly<{\n            source: string;\n            type: string;\n          }>;\n          properties?: Readonly<Record<string, EditorJsonValue>>;\n        }>[] | undefined;\n      } & Readonly<{\n        default?: SchemaContentDefault;\n        max?: number;\n        min?: number;\n      }>>;\n      properties: {\n        width: PropertyStringDescriptor<{\n          readonly default: \"50%\";\n          readonly omitDefault: false;\n        }>;\n      };\n      blockContent: false;\n    };\n  }>> & Readonly<Record<\"update\", {\n    readonly moveMiddle: ([node, path]: NodeEntry<Element>, { direction }?: Partial<MoveMiddleColumnOptions>) => false | undefined;\n    readonly selectAll: () => boolean;\n  }>> & Readonly<{\n    dependencies: readonly [PluginReference<\"paragraph\"> & PluginDependency<Readonly<{\n      name: \"paragraph\";\n    }> & Readonly<{\n      __pluginWritableProperties: never;\n    }> & Readonly<Record<\"schema\", {\n      readonly element: Readonly<{\n        content: Readonly<{\n          allowed: Readonly<{\n            kind: 'any';\n            rules: readonly [Readonly<{\n              kind: 'text';\n            }>, Readonly<{\n              group: 'inline';\n              kind: 'group';\n            }>];\n          }>;\n          prefix?: readonly Readonly<{\n            element: string | Readonly<{\n              source: string;\n              type: string;\n            }>;\n            properties?: Readonly<Record<string, EditorJsonValue>>;\n          }>[] | undefined;\n        } & Readonly<{\n          default: 'text';\n          min: 1;\n        }> & Readonly<{\n          '~schema.content.rule'?: Readonly<{\n            kind: 'any';\n            rules: readonly [Readonly<{\n              kind: 'text';\n            }>, Readonly<{\n              group: 'inline';\n              kind: 'group';\n            }>];\n          }> | undefined;\n        }>>;\n      }>;\n    }>> & Readonly<Record<never, never>>>];\n  }>> & Pick<BasePlugin<Readonly<{\n    readonly dependencies: readonly [PluginReference<\"paragraph\"> & PluginDependency<Readonly<{\n      name: \"paragraph\";\n    }> & Readonly<{\n      __pluginWritableProperties: never;\n    }> & Readonly<Record<\"schema\", {\n      readonly element: Readonly<{\n        content: Readonly<{\n          allowed: Readonly<{\n            kind: 'any';\n            rules: readonly [Readonly<{\n              kind: 'text';\n            }>, Readonly<{\n              group: 'inline';\n              kind: 'group';\n            }>];\n          }>;\n          prefix?: readonly Readonly<{\n            element: string | Readonly<{\n              source: string;\n              type: string;\n            }>;\n            properties?: Readonly<Record<string, EditorJsonValue>>;\n          }>[] | undefined;\n        } & Readonly<{\n          default: 'text';\n          min: 1;\n        }> & Readonly<{\n          '~schema.content.rule'?: Readonly<{\n            kind: 'any';\n            rules: readonly [Readonly<{\n              kind: 'text';\n            }>, Readonly<{\n              group: 'inline';\n              kind: 'group';\n            }>];\n          }> | undefined;\n        }>>;\n      }>;\n    }>> & Readonly<Record<never, never>>> & Pick<BasePlugin<Readonly<{\n      formats: true;\n      rules: true;\n    }> & Readonly<{\n      name: \"paragraph\";\n    }> & Readonly<Record<never, never>> & Readonly<{\n      __pluginWritableProperties: never;\n      schema: {\n        readonly element: Readonly<{\n          content: Readonly<{\n            allowed: Readonly<{\n              kind: 'any';\n              rules: readonly [Readonly<{\n                kind: 'text';\n              }>, Readonly<{\n                group: 'inline';\n                kind: 'group';\n              }>];\n            }>;\n            prefix?: readonly Readonly<{\n              element: string | Readonly<{\n                source: string;\n                type: string;\n              }>;\n              properties?: Readonly<Record<string, EditorJsonValue>>;\n            }>[] | undefined;\n          } & Readonly<{\n            default: 'text';\n            min: 1;\n          }> & Readonly<{\n            '~schema.content.rule'?: Readonly<{\n              kind: 'any';\n              rules: readonly [Readonly<{\n                kind: 'text';\n              }>, Readonly<{\n                group: 'inline';\n                kind: 'group';\n              }>];\n            }> | undefined;\n          }>>;\n        }>;\n      };\n    }>>, \"~schema.plugins\">];\n    readonly __pluginWritableProperties: Readonly<{\n      descriptor: PropertyStringDescriptor<{\n        readonly default: \"50%\";\n        readonly omitDefault: false;\n      }>;\n      key: \"width\";\n      localId: \"width\";\n      ownerName: \"column\";\n      placement: \"element\";\n      unaliased: true;\n      value: string;\n    }>;\n    readonly schema: {\n      element: {\n        content: Readonly<{\n          allowed: SchemaContentRule;\n          prefix?: readonly Readonly<{\n            element: string | Readonly<{\n              source: string;\n              type: string;\n            }>;\n            properties?: Readonly<Record<string, EditorJsonValue>>;\n          }>[] | undefined;\n        } & Readonly<{\n          default?: SchemaContentDefault;\n          max?: number;\n          min?: number;\n        }>>;\n        properties: {\n          width: PropertyStringDescriptor<{\n            readonly default: \"50%\";\n            readonly omitDefault: false;\n          }>;\n        };\n        blockContent: false;\n      };\n    };\n    readonly name: \"column\";\n    readonly shortcuts: true;\n    readonly contributions: true;\n    readonly formats: true;\n    readonly update: {\n      readonly moveMiddle: ([node, path]: NodeEntry<Element>, { direction }?: Partial<MoveMiddleColumnOptions>) => false | undefined;\n      readonly selectAll: () => boolean;\n    };\n  }>> & Readonly<Record<never, never>>, \"~schema.plugins\">];\n  readonly __pluginWritableProperties: never;\n  readonly schema: {\n    readonly element: {\n      content: Readonly<{\n        allowed: Readonly<{\n          kind: 'type';\n          source: \"column\";\n          type: \"column\";\n        }>;\n        prefix?: readonly Readonly<{\n          element: string | Readonly<{\n            source: string;\n            type: string;\n          }>;\n          properties?: Readonly<Record<string, EditorJsonValue>>;\n        }>[] | undefined;\n      } & {\n        readonly min: 2;\n      } & Readonly<{\n        default: Readonly<{\n          type: \"column\";\n        }>;\n      }> & Readonly<{\n        '~schema.content.rule'?: Readonly<{\n          kind: 'type';\n          source: \"column\";\n          type: \"column\";\n        }> | undefined;\n      }>>;\n    };\n  };\n  readonly name: \"columnGroup\";\n  readonly corrections: true;\n  readonly formats: true;\n  readonly update: {\n    readonly insert: (input?: {\n      columns?: number;\n    }, options?: BlockInsertOptions) => void | undefined;\n    readonly setColumns: ({ at, columns, widths }: SetColumnsOptions) => void;\n    readonly toggle: ({ at, columns, widths }?: ToggleColumnGroupOptions) => void;\n    readonly upsert: (input?: {\n      columns?: number;\n    }, options?: BlockUpsertOptions) => void | undefined;\n  };\n}>> & Readonly<Record<never, never>>",
+          "signature": "BaseColumnPlugin: BasePlugin<Readonly<{\n  readonly dependencies: readonly [PluginReference<\"column\"> & PluginDependency<Readonly<{\n    name: \"column\";\n  }> & Readonly<{\n    __pluginWritableProperties: Readonly<{\n      descriptor: PropertyStringDescriptor<{\n        readonly default: \"50%\";\n        readonly omitDefault: false;\n      }>;\n      key: \"width\";\n      localId: \"width\";\n      ownerName: \"column\";\n      placement: \"element\";\n      unaliased: true;\n      value: string;\n    }>;\n  }> & Readonly<Record<\"schema\", {\n    element: {\n      content: Readonly<{\n        allowed: SchemaContentRule;\n        prefix?: readonly Readonly<{\n          element: string | Readonly<{\n            source: string;\n            type: string;\n          }>;\n          properties?: Readonly<Record<string, EditorJsonValue>>;\n        }>[] | undefined;\n      } & Readonly<{\n        default?: SchemaContentDefault;\n        max?: number;\n        min?: number;\n      }>>;\n      properties: {\n        width: PropertyStringDescriptor<{\n          readonly default: \"50%\";\n          readonly omitDefault: false;\n        }>;\n      };\n      blockContent: false;\n    };\n  }>> & Readonly<Record<\"update\", {\n    readonly moveMiddle: ([node, path]: NodeEntry<Element>, { direction }?: Partial<MoveMiddleColumnOptions>) => false | undefined;\n    readonly selectAll: () => boolean;\n  }>> & Readonly<{\n    dependencies: readonly [PluginReference<\"paragraph\"> & PluginDependency<Readonly<{\n      name: \"paragraph\";\n    }> & Readonly<{\n      __pluginWritableProperties: never;\n    }> & Readonly<Record<\"schema\", {\n      readonly element: Readonly<{\n        content: Readonly<{\n          allowed: Readonly<{\n            kind: 'any';\n            rules: readonly [Readonly<{\n              kind: 'text';\n            }>, Readonly<{\n              group: 'inline';\n              kind: 'group';\n            }>];\n          }>;\n          prefix?: readonly Readonly<{\n            element: string | Readonly<{\n              source: string;\n              type: string;\n            }>;\n            properties?: Readonly<Record<string, EditorJsonValue>>;\n          }>[] | undefined;\n        } & Readonly<{\n          default: 'text';\n          min: 1;\n        }> & Readonly<{\n          '~schema.content.rule'?: Readonly<{\n            kind: 'any';\n            rules: readonly [Readonly<{\n              kind: 'text';\n            }>, Readonly<{\n              group: 'inline';\n              kind: 'group';\n            }>];\n          }> | undefined;\n        }>>;\n      }>;\n    }>> & Readonly<Record<never, never>>>];\n  }>> & Pick<BasePlugin<Readonly<{\n    readonly dependencies: readonly [PluginReference<\"paragraph\"> & PluginDependency<Readonly<{\n      name: \"paragraph\";\n    }> & Readonly<{\n      __pluginWritableProperties: never;\n    }> & Readonly<Record<\"schema\", {\n      readonly element: Readonly<{\n        content: Readonly<{\n          allowed: Readonly<{\n            kind: 'any';\n            rules: readonly [Readonly<{\n              kind: 'text';\n            }>, Readonly<{\n              group: 'inline';\n              kind: 'group';\n            }>];\n          }>;\n          prefix?: readonly Readonly<{\n            element: string | Readonly<{\n              source: string;\n              type: string;\n            }>;\n            properties?: Readonly<Record<string, EditorJsonValue>>;\n          }>[] | undefined;\n        } & Readonly<{\n          default: 'text';\n          min: 1;\n        }> & Readonly<{\n          '~schema.content.rule'?: Readonly<{\n            kind: 'any';\n            rules: readonly [Readonly<{\n              kind: 'text';\n            }>, Readonly<{\n              group: 'inline';\n              kind: 'group';\n            }>];\n          }> | undefined;\n        }>>;\n      }>;\n    }>> & Readonly<Record<never, never>>> & Pick<BasePlugin<Readonly<{\n      formats: true;\n      rules: true;\n    }> & Readonly<{\n      name: \"paragraph\";\n    }> & Readonly<Record<never, never>> & Readonly<{\n      __pluginWritableProperties: never;\n      schema: {\n        readonly element: Readonly<{\n          content: Readonly<{\n            allowed: Readonly<{\n              kind: 'any';\n              rules: readonly [Readonly<{\n                kind: 'text';\n              }>, Readonly<{\n                group: 'inline';\n                kind: 'group';\n              }>];\n            }>;\n            prefix?: readonly Readonly<{\n              element: string | Readonly<{\n                source: string;\n                type: string;\n              }>;\n              properties?: Readonly<Record<string, EditorJsonValue>>;\n            }>[] | undefined;\n          } & Readonly<{\n            default: 'text';\n            min: 1;\n          }> & Readonly<{\n            '~schema.content.rule'?: Readonly<{\n              kind: 'any';\n              rules: readonly [Readonly<{\n                kind: 'text';\n              }>, Readonly<{\n                group: 'inline';\n                kind: 'group';\n              }>];\n            }> | undefined;\n          }>>;\n        }>;\n      };\n    }>>, \"~schema.plugins\">];\n    readonly __pluginWritableProperties: Readonly<{\n      descriptor: PropertyStringDescriptor<{\n        readonly default: \"50%\";\n        readonly omitDefault: false;\n      }>;\n      key: \"width\";\n      localId: \"width\";\n      ownerName: \"column\";\n      placement: \"element\";\n      unaliased: true;\n      value: string;\n    }>;\n    readonly schema: {\n      element: {\n        content: Readonly<{\n          allowed: SchemaContentRule;\n          prefix?: readonly Readonly<{\n            element: string | Readonly<{\n              source: string;\n              type: string;\n            }>;\n            properties?: Readonly<Record<string, EditorJsonValue>>;\n          }>[] | undefined;\n        } & Readonly<{\n          default?: SchemaContentDefault;\n          max?: number;\n          min?: number;\n        }>>;\n        properties: {\n          width: PropertyStringDescriptor<{\n            readonly default: \"50%\";\n            readonly omitDefault: false;\n          }>;\n        };\n        blockContent: false;\n      };\n    };\n    readonly name: \"column\";\n    readonly shortcuts: true;\n    readonly contributions: true;\n    readonly formats: true;\n    readonly update: {\n      readonly moveMiddle: ([node, path]: NodeEntry<Element>, { direction }?: Partial<MoveMiddleColumnOptions>) => false | undefined;\n      readonly selectAll: () => boolean;\n    };\n  }>> & Readonly<Record<never, never>>, \"~schema.plugins\">];\n  readonly __pluginWritableProperties: never;\n  readonly schema: {\n    readonly element: {\n      content: Readonly<{\n        allowed: Readonly<{\n          kind: 'type';\n          source: \"column\";\n          type: \"column\";\n        }>;\n        prefix?: readonly Readonly<{\n          element: string | Readonly<{\n            source: string;\n            type: string;\n          }>;\n          properties?: Readonly<Record<string, EditorJsonValue>>;\n        }>[] | undefined;\n      } & {\n        readonly min: 2;\n      } & Readonly<{\n        default: Readonly<{\n          type: \"column\";\n        }>;\n      }> & Readonly<{\n        '~schema.content.rule'?: Readonly<{\n          kind: 'type';\n          source: \"column\";\n          type: \"column\";\n        }> | undefined;\n      }>>;\n    };\n  };\n  readonly name: \"columnGroup\";\n  readonly corrections: true;\n  readonly formats: true;\n  readonly readMiddleware: true;\n  readonly update: {\n    readonly insert: (input?: {\n      columns?: number;\n    }, options?: BlockInsertOptions) => void | undefined;\n    readonly setColumns: ({ at, columns, widths }: SetColumnsOptions) => void;\n    readonly toggle: ({ at, columns, widths }?: ToggleColumnGroupOptions) => void;\n    readonly upsert: (input?: {\n      columns?: number;\n    }, options?: BlockUpsertOptions) => void | undefined;\n  };\n}>> & Readonly<Record<never, never>>",
           "source": null,
           "typeParameters": []
         },

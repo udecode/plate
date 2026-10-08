@@ -1,0 +1,5 @@
+# Wordgard: plugins and extensions
+
+## Facets
+
+- **Facets have no Plite counterpart.** `test/test-facet.ts` at b5ad0d0 pins two facet laws. Static and computed providers combine deterministically, keep a stable output identity, honor priority and survive atomic slot reconfiguration (lines 15-58 and 130-207). Computed providers rerun only when their declared document, selection, schema or facet dependencies change, and dependency cycles fail deterministically (lines 58-129 and 209-227). Plite had its own facet system until e0c1500b95 (2026-09-15) deleted its facet module (`04f11c01a9:packages/plitejs/src/core/facet.ts`), its facet contracts and `transaction-extension-contract.ts`, after the 2026-09-11 review found facets had no consumer (`docs/research/review-records/2026-09-11-state-remove-unused-facets.json`). The coverage claims at report.md:92-93 therefore no longer hold. The renamed `packages/plitejs/test/plugin-methods-contract.ts` tests the install order of command handlers, not facet priority (checked 2026-10-08).

@@ -1,0 +1,9 @@
+# Tiptap: autocomplete and triggers
+
+## Markdown shortcuts and rule application
+
+- **Markdown shortcuts and rule application.** Tiptap's MarkdownShortcuts demo spec (`ueberdosis/tiptap@91c51be53c:demos/src/Examples/MarkdownShortcuts/React/index.spec.js:12-62`, 13 tests, mirrored in Vue) types `#` to `######`, inline backticks, a fenced code block, `*`, `-` and `+` bullets, `1.` and `>`, and checks the block or mark each one makes. Programmatic insertion skips these rules by default: `insertContent` defaults `applyInputRules` and `applyPasteRules` to false (`ueberdosis/tiptap@91c51be53c:packages/core/src/commands/insertContentAt.ts:73-74`). The InsertContentApplyingRules demo spec pins that with the flags set, inserting `-` and then a space builds a bullet list, and `*text*` becomes italic (`ueberdosis/tiptap@91c51be53c:demos/src/Commands/InsertContentApplyingRules/React/index.spec.js:12-35`). The harvest routes this to Plate's Markdown and input-rule plugins (`docs/editor-test-harvester/tiptap/report.md:99`). Read at that commit on 2026-10-08; the 2026-05-10 harvest pinned no commit, but its cited lines match this one.
+
+## Autolink
+
+- **Autolink.** `ueberdosis/tiptap@91c51be53c:demos/src/Examples/AutolinkValidation/React/index.spec.js` pins when typed URLs autolink. `https://` and `http://` URLs link once a space follows, and a URL wrapped in `[]` or `()` links without the brackets. A URL with no trailing space, `tiptap.dev` and `www.tiptap.dev` do not link. A URL also links when Enter or Shift+Enter follows it. A link the user removed stays unlinked after typing a second link after it, after more text and Enter, and after editing its text. The Accessibility example's spec, which the harvest routed (`docs/editor-test-harvester/tiptap/portable-mixed-routing.md:13`), is a byte-identical copy that visits the AutolinkValidation route. The harvest routes this to Plate's link and autolink examples. Read at that commit on 2026-10-08.

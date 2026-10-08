@@ -143,12 +143,7 @@ const nextConfig = (_phase: string) => {
             webpackConfig.plugins.push(
               new webpack.NormalModuleReplacementPlugin(
                 /^collections\/server$/,
-                (resource) => {
-                  resource.request = path.join(
-                    APP_ROOT,
-                    '.source-async/server'
-                  );
-                }
+                path.join(APP_ROOT, '.source-async/server')
               )
             );
             return webpackConfig;

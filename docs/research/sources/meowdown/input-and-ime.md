@@ -1,0 +1,9 @@
+# Meowdown: input and ime
+
+## WebKit early compositionend
+
+- **Early compositionend.** `prosekit/meowdown@5b9962982a1cb3d1732355c753ce76d9a5966af3:packages/core/src/utils/composition.ts`, which has no test of its own, works around WebKit firing `compositionend` before the keydown that commits a composition, so that keydown reports `isComposing: false` (WebKit bugs 165004 and 311717): it treats the 50 ms after `compositionend` as still composing. Plite records a different Safari order, `compositionend` after the `insertFromComposition` beforeinput (`packages/plitejs/src/react/editable/composition-state.ts:254-258`), and its keydown path drops its own composing flag whenever the event's `isComposing` is false (`packages/plitejs/src/react/editable/keyboard-input-strategy.ts:689-698`). A text search on 2026-10-08 found no Plite guard or test for a commit key that arrives after an early `compositionend`, so the report's 'covered' verdict is unproven (inferred); Meowdown's timer is a lead, not proof. Evidence: `docs/editor-test-harvester/meowdown/report.md:158`.
+
+## Smart-dash guard
+
+- **Smart-dash guard.** `prosekit/meowdown@5b9962982a1cb3d1732355c753ce76d9a5966af3:packages/core/src/extensions/system-substitution-guard.ts`, which has no test, cancels any `insertReplacementText` beforeinput whose replacement holds an em dash, because macOS WebKit's smart-dash rewrite of a typed `--` corrupts Markdown such as the `-->` that closes an image sizing comment. Word-level autocorrect passes through, and the selection is restored on the next frame (WebKit bug 321420). The guard fits only an editor that shows literal Markdown source. Plite applies a replacement's target range as given: `packages/plitejs/test/react/model-input-strategy-contract.test.ts:607` and `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts:2165`. Evidence: `docs/editor-test-harvester/meowdown/report.md:159, 207-208`.

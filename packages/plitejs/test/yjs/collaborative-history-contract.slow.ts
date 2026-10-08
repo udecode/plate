@@ -157,6 +157,8 @@ describe('plitejs/yjs collaborative history contract', () => {
       });
       const pending = target.editor.api.history.undo();
 
+      assert.ok(pending.status === 'pending');
+
       source.editor.update((tx) => {
         tx.text.insert('!', { at: { offset: 5, path: [0, 0] } });
       });
@@ -166,7 +168,7 @@ describe('plitejs/yjs collaborative history contract', () => {
       assert.equal(target.editor.read.history.pending(), 'undo');
 
       gate.resolve();
-      assert.deepEqual(await pending, { status: 'applied' });
+      assert.deepEqual(await pending.settled, { status: 'applied' });
       assert.deepEqual(getPeerTopLevelTexts(target), ['alpha!']);
       assert.equal(target.editor.read.history.pending(), null);
     } finally {

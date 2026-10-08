@@ -1,0 +1,9 @@
+# Plite: rendering and dom
+
+## Trailing and consecutive soft breaks
+
+- **Trailing break line.** Wordgard `wordgard/wordgard@b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54:test/webtest-coords.ts` lines 101-115 pin that consecutive soft breaks and a trailing break each keep a measurable line, and that clicks map back to the right model offset. Porting the case exposed a Plite Chromium defect: the trailing line had no physical height. The fix renders one newline after the final text for display only, while `data-editor-length` keeps the model length (`packages/plitejs/src/react/components/text-string.tsx`). The browser regression 'keeps consecutive soft-break lines and a trailing break clickable' in `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts` maps the consecutive empty line to offset 6 and the trailing line to offset 18; it passed five forced runs and strict Chromium on 2026-09-02 (docs/editor-test-harvester/wordgard/report.md:123, 167). `packages/plitejs/test/react/rendered-dom-shape-contract.tsx` ('adds one rendering-only newline only to the final text child') pins the projection at package level. The report calls the attribute `data-plite-length`; the current file uses `data-editor-length`.
+
+## Nested wrappers and inline-void anchors
+
+- **Inline-void anchors.** Wordgard `wordgard/wordgard@b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54:test/webtest-resolve-dom.ts` lines 102-193 pin that DOM and model positions survive nested content wrappers, several decoration wrappers and the zero-width anchors of inline voids. Plite's React regression 'nested wrappers preserve inline void anchor DOM point round trips' (`packages/plitejs/test/react/surface-contract.tsx:966`, run through `surface-contract.test.tsx`) maps the inline-void anchor in both directions and maps the edges of the nested wrappers. It passed 54/54 on 2026-09-02 (docs/editor-test-harvester/wordgard/report.md:124, 168).

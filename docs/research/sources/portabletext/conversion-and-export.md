@@ -1,0 +1,5 @@
+# Portable Text: conversion and export
+
+## Serializers and product packages
+
+- **Serializers.** The harvest classes 71 Portable Text files (1,007 indexed test and describe names) on HTML and Markdown conversion, toolbar, plugins, media and the Sanity bridge as Plate product policy: their expected output is not editor law (report.md:128, 163). Examples: the editor's converters under `portabletext/editor@ad2a52d13d9f:packages/editor/src/converters` (`converter.text-html.serialize.test.ts`, `converter.text-html.deserialize.test.ts`, `converter.text-plain.test.ts`, `converter.portable-text.deserialize.test.ts`), block tools (`portabletext/editor@ad2a52d13d9f:packages/block-tools/test/html-to-blocks/schema.test.ts`), Markdown (`portabletext/editor@ad2a52d13d9f:packages/markdown/src/markdown-to-portable-text.test.ts`) and the Sanity bridge (`portabletext/editor@ad2a52d13d9f:packages/sanity-bridge/src/sanity-schema-to-portable-text-schema.test.ts`), the last two classed in inventory.md:384 and :422.

@@ -1,0 +1,5 @@
+# Portable Text: clipboard and paste
+
+## Clipboard fragments
+
+- **Clipboard.** Three Portable Text files (15 indexed test and describe names) under `portabletext/editor@ad2a52d13d9f:packages/editor` pin clipboard behavior (report.md:120): pasting an `x-portable-text` block at the start, middle or end of a text block or over a selection keeps its marks and leaves the caret after it, and `text/plain` and `text/html` paste into a text block (`gherkin-tests/paste.test.ts`); cut and paste of a block object, copy and paste of an expanded selection, copying an inline object as Portable Text, and pasting HTML with inline images through image matchers (`tests/event.paste.test.tsx`); and uploading pasted image files, including images that arrive both in HTML and as files (`tests/upload-images-on-paste.test.tsx`). The harvest's invariant for Plite, that clipboard import and export keep fragment shape, object boundaries, selection endpoints and undo grouping while serializers stay product policy, is its target: none of the three files tests undo.

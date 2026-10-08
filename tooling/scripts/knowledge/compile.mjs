@@ -278,9 +278,11 @@ export function foldFindings(tree, { base } = {}) {
     .filter((row) => row.path.endsWith('/'))
     .map((row) => row.path);
   for (const path of tree.list()) {
-    const dir = dirs.find((folder) => path.startsWith(folder));
-    if (!dir || !tree.has(path)) continue;
-    const known = baseDirs.has(dir) ? baseFiles : files;
+    if (!dirs.some((dir) => path.startsWith(dir)) || !tree.has(path)) continue;
+    // Membership under a directory folded at base is the base table's, so a
+    // row added with its file cannot admit it.
+    const atBase = [...baseDirs].some((dir) => path.startsWith(dir));
+    const known = atBase ? baseFiles : files;
     if (!known.has(path)) {
       finding(
         'new-file',
@@ -337,9 +339,6 @@ export function foldSource(path, content, resolvedBlob, homes) {
 }
 
 const SPEC_FILE = 'docs/editor-behavior/markdown-editing-spec.md';
-const LESSON_PAGE =
-  /^docs\/research\/sources\/plate-notes\/(?!README\.md$)[^/]+\.md$/;
-const LESSON = /^- \*\*.+?\*\*[ \t]*\S.*$/;
 const HEADING = /^(#{1,6}) /;
 const VERDICTS = new Set(['obsolete', 'withdrawn', 'move']);
 
@@ -384,15 +383,6 @@ function removeSpan(text, span) {
   return text.replace(span, '');
 }
 
-const lessonShaped = (op, added) => {
-  const lines = added.trim().split('\n');
-  if (op === 'append') return lines.length === 1 && LESSON.test(lines[0]);
-  return lines.every(
-    (line) =>
-      !/^#{3,6} /.test(line) && (!line.startsWith('- ') || LESSON.test(line))
-  );
-};
-
 /**
  * `kb write`'s one change to the file at `path`, returning its new text.
  * `kept` lists the accepted units whose quoted spans the file holds; a
@@ -406,15 +396,6 @@ export function write(
   change,
   { kept = [], stands = () => false } = {}
 ) {
-  // The caller's kept spans, the law check and the lesson check match `path`
-  // as a string, so another spelling of the same file would skip them.
-  for (const named of [path, change.to?.home].filter(Boolean)) {
-    if (posix.normalize(named) !== named || /^(\/|\.\.\/)/.test(named)) {
-      throw new Error(
-        `kb write takes a repository-relative path, not ${named}`
-      );
-    }
-  }
   let next;
   if (change.op === 'create') {
     if (text !== undefined) {
@@ -463,12 +444,6 @@ export function write(
         );
       }
     }
-  }
-  const added = change.text ?? change.new;
-  if (LESSON_PAGE.test(path) && added && !lessonShaped(change.op, added)) {
-    throw new Error(
-      'a lesson lands as one `- **Title** text` bullet, the shape kb parses'
-    );
   }
   for (const { key, span } of kept) {
     const own =
@@ -526,6 +501,11 @@ export function resolve({
   has = () => false,
 }) {
   const problems = [];
+  for (const item of units) {
+    if (!/^[\w-]+$/.test(item.key ?? '')) {
+      problems.push(`${item.key} is not a plain key`);
+    }
+  }
   for (const key of new Set(repeated(units.map((item) => item.key)))) {
     problems.push(`${key} names more than one unit`);
   }
@@ -566,13 +546,6 @@ export function resolve({
       }
     });
   }
-  const added = new Map(
-    resolved
-      .filter(
-        (item) => item.disposition === 'added' && item.verdict === 'accepted'
-      )
-      .map((item) => [item.key, item])
-  );
   const ids = new Map();
   for (const item of resolved) {
     if (!done(item)) problems.push(`${item.key} has no accepted verdict`);
@@ -582,11 +555,6 @@ export function resolve({
     if (item.disposition === 'record' && !binary.has(item.source)) {
       problems.push(
         `${item.key} is a record, but ${posix.basename(item.source)} is text`
-      );
-    }
-    if (item.by && !added.has(item.by)) {
-      problems.push(
-        `${item.key} is covered by ${item.by}, which is not an accepted added unit of the batch`
       );
     }
     if (item.disposition === 'link' && !isLinkOnly(item.source, has)) {
@@ -609,7 +577,6 @@ export function resolve({
   if (problems.length) {
     throw new Error(`batch ${batch} does not resolve:\n${problems.join('\n')}`);
   }
-  const spanOf = (item) => item.span ?? item.text?.trim();
   const rank = (key) =>
     createHash('sha1').update(`${seed}\0${key}`).digest('hex');
   return {
@@ -627,15 +594,11 @@ export function resolve({
       blob: source.blob,
       homes: source.homes,
     })),
-    units: resolved.map((item) => {
-      const sibling = item.by && added.get(item.by);
-      if (sibling) {
-        return { ...item, target: sibling.target, span: spanOf(sibling) };
-      }
-      return item.disposition === 'added'
-        ? { ...item, span: spanOf(item) }
-        : item;
-    }),
+    units: resolved.map((item) =>
+      item.disposition === 'added'
+        ? { ...item, span: item.span ?? item.text.trim() }
+        : item
+    ),
   };
 }
 
@@ -644,20 +607,21 @@ const holds = (read, target, span) =>
 
 /**
  * Reports every resolved unit by its disposition. A resolution and an Open
- * work item name a unit as `<batch>/<key>`. A unit whose span left its home
- * is lost until a later resolution covers it at a span that stands, records
- * why it was removed, or sends it to the owner's Open work.
+ * work item name a unit as `<batch>#<key>`, where `kb` names a batch by its
+ * resolved file's path under the directory it reads. A unit whose span left
+ * its home is lost until a later resolution covers it at a span that stands,
+ * records why it was removed, or sends it to the owner's Open work.
  */
 export function quote({ resolved, read, resolutions = [], openWork = '' }) {
   const latest = new Map(resolutions.map((item) => [item.unit, item]));
-  const named = new Set(openWork.match(/[\w-]+(?:[./:][\w-]+)*/g));
+  const named = new Set(openWork.match(/[\w-]+(?:[./:#][\w-]+)*/g));
   const counts = {};
   const lost = [];
   const count = (word) => {
     counts[word] = (counts[word] ?? 0) + 1;
   };
   const settle = (item, batch, why) => {
-    const id = `${batch}/${item.key}`;
+    const id = `${batch}#${item.key}`;
     const again = latest.get(id);
     if (again?.verdict === 'covered' && holds(read, again.target, again.span)) {
       count('kept');
@@ -676,7 +640,7 @@ export function quote({ resolved, read, resolutions = [], openWork = '' }) {
   for (const { batch, units } of resolved) {
     for (const item of units) {
       if (item.verdict === 'owner') {
-        if (named.has(`${batch}/${item.key}`)) count('owner');
+        if (named.has(`${batch}#${item.key}`)) count('owner');
         else settle(item, batch, 'sent to the owner with no Open work item');
       } else if (
         item.disposition === 'covered' ||

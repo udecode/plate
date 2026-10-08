@@ -43,8 +43,12 @@ for (const mode of ['static', 'dynamic', 'async'] as const) {
       static: '.source',
     }[mode];
     expect([...directories]).toEqual([outDir]);
-    expect(resolveAlias['collections/server']).toBe(
-      mode === 'dynamic' ? './.source-dev/dynamic.ts' : undefined
-    );
+    if (mode === 'dynamic') {
+      expect(resolveAlias['collections/server']).toBe(
+        './.source-dev/dynamic.ts'
+      );
+    } else {
+      expect(resolveAlias['collections/server']).toBeUndefined();
+    }
   });
 }

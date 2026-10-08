@@ -1,0 +1,5 @@
+# Tiptap: clipboard and paste
+
+## Paste HTML transform order
+
+- **Paste HTML transform order.** Tiptap composes `transformPastedHTML` in a fixed order. The editor's own `editorProps.transformPastedHTML` runs first, then each extension's hook by priority, higher first, with equal priorities kept in registration order. Each hook receives the previous hook's output, and extensions without the hook are skipped. Unit tests pin this in `ueberdosis/tiptap@91c51be53c:packages/core/src/__tests__/transformPastedHTML.test.ts:8-257`, and `ueberdosis/tiptap@91c51be53c:tests/cypress/integration/core/transformPastedHTML.spec.ts` repeats it in a browser. The composition is `ueberdosis/tiptap@91c51be53c:packages/core/src/ExtensionManager.ts:285-319`. The harvest would add this order to Plate only where a Plate paste owner chains HTML transforms (`docs/editor-test-harvester/tiptap/report.md:92`, and lines 133-135). Read at that commit on 2026-10-08; the 2026-05-10 harvest pinned no commit, but its cited lines match this one.

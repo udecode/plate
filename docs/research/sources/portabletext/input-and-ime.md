@@ -1,0 +1,5 @@
+# Portable Text: input and ime
+
+## Composition
+
+- **Composition.** `portabletext/editor@ad2a52d13d9f:packages/editor/tests/composition.test.ts` holds 20 composition tests; the harvest's 25 names count its five describe blocks too (report.md:123). They cover Japanese input into empty and non-empty blocks, cancel with Escape, replacing selected text, Korean character-by-character building and recomposition, composition at decorator and annotation boundaries (text composed inside an annotation inherits its mark, text at its boundary does not), replacing text that spans an annotation boundary, and compositions after a soft break or in sequence. The limit: the file runs only in Chromium, drives composition through the DevTools Protocol's `Input.imeSetComposition`, and dispatches by hand the keyCode 229 keydown an OS IME would send, so it proves protocol-driven composition, not a real IME or a mobile keyboard. The harvest admits such cases into Plite only through an honest browser composition lane, never as IME or mobile proof (report.md:143).
