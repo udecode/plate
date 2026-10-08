@@ -5,6 +5,14 @@ import {
 } from './__tests__/createTestEditor';
 
 describe('gfm package surfaces', () => {
+  it('round-trips a bare autolink in a heading', () => {
+    const editor = createTestEditor();
+    const document = parseTestMarkdown(editor, '## https://example.com\n');
+    const result = serializeTestMarkdown(editor, { document });
+
+    expect(parseTestMarkdown(editor, result.data)).toEqual(document);
+  });
+
   it.each([
     {
       expected: 'https://platejs.org\n',

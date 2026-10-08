@@ -827,6 +827,7 @@ describe('markdown tables', () => {
     it.each([
       { bold: false, read: 'a\nb', text: 'a\r\nb' },
       { bold: false, read: 'c\n', text: 'c\r\n' },
+      { bold: false, read: 'a\n\n', text: 'a\r\n\n' },
       { bold: true, read: 'a\nb', text: 'a\r\nb' },
       { bold: true, read: 'a\n\nb', text: 'a\r\n\r\nb' },
     ])(
@@ -904,6 +905,19 @@ describe('markdown tables', () => {
             'nodeType' in diagnostic && diagnostic.nodeType === 'paragraph'
         )
       ).toEqual([]);
+    });
+
+    it('preserves the width of an image in a table cell', () => {
+      const image = {
+        children: [{ text: '' }],
+        type: 'image',
+        url: 'https://placehold.co/200x100.png',
+        width: 200,
+      };
+      const result = write(headed([image]));
+
+      expect(bodyCellChildren(result.data)[0][0]).toEqual([image]);
+      expect(result.diagnostics).toEqual([]);
     });
 
     it.each([

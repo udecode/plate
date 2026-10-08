@@ -1,11 +1,19 @@
 import {
   createTestEditor,
+  parseTestMarkdown,
   serializeTestMarkdown,
 } from '../__tests__/createTestEditor';
 
 const editor = createTestEditor();
 
 describe('editor.api.markdown.serialize list', () => {
+  it('keeps the trailing hard break in a list item', () => {
+    const document = parseTestMarkdown(editor, '- a<br/>\n\nEND\n');
+    const result = serializeTestMarkdown(editor, { document });
+
+    expect(parseTestMarkdown(editor, result.data)).toEqual(document);
+  });
+
   it('keeps a bare URL inside a list item', () => {
     const input = [
       {

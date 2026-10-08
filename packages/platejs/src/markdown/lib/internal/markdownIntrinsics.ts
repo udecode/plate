@@ -199,7 +199,7 @@ export const encodeMarkdownParagraph = (
         );
       continue;
     }
-    child.text.split('\n').forEach((text, index) => {
+    child.text.split(/\r?\n/).forEach((text, index) => {
       if (index > 0) lines.push([]);
       if (text) lines.at(-1)?.push(part(child, text));
     });
@@ -216,6 +216,10 @@ export const encodeMarkdownParagraph = (
   ]);
 
   if (lines.length > 1 && lines.at(-1)?.length === 0) {
+    for (let index = children.length - 2; index >= 0; index -= 1) {
+      if (children[index].type !== 'break') break;
+      children[index] = { type: 'html', value: '<br />' };
+    }
     children[children.length - 1] = {
       type: 'html',
       value: TRAILING_BREAK_HTML,

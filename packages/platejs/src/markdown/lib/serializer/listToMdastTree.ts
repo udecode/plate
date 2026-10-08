@@ -1,17 +1,11 @@
 import { type Element, PLUGINS } from '../../../core';
 import { failInvariant } from '../../internal/failInvariant';
+import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
 import { setMarkdownStructureKeys } from '../internal/markdownMappings';
 import type { MdList, MdListItem } from '../mdast';
 import type { SerializeMdContext } from '../types';
-import {
-  convertNodesSerialize,
-  encodeMdastNode,
-} from './convertNodesSerialize';
-import {
-  isMdFlowContent,
-  isMdLineContent,
-  isMdPhrasingContent,
-} from './mdastContent';
+import { encodeMdastNode } from './convertNodesSerialize';
+import { isMdFlowContent, isMdPhrasingContent } from './mdastContent';
 import { reportOmittedProperties } from './reportOmittedProperties';
 
 // List topology Markdown writes through list structure, never tag attributes.
@@ -179,14 +173,7 @@ export const listToMdastTree = (
         options,
         'list'
       );
-      content = [
-        {
-          children: convertNodesSerialize(node.children, options).filter(
-            isMdLineContent
-          ),
-          type: 'paragraph',
-        },
-      ];
+      content = [encodeMarkdownParagraph(node, options)];
     } else {
       // Another block is the item's content; both owners' claims count.
       setMarkdownStructureKeys(options, node, LIST_KEYS);

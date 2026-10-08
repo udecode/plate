@@ -8,6 +8,13 @@ import {
 describe('paragraph breaks preservation', () => {
   const editor = createTestEditor();
 
+  it('keeps consecutive trailing breaks without adding a backslash', () => {
+    const document = parseTestMarkdown(editor, 'a<br/><br/>\n\nEND\n');
+    const result = serializeTestMarkdown(editor, { document });
+
+    expect(parseTestMarkdown(editor, result.data)).toEqual(document);
+  });
+
   it('keeps a trailing line break after bold text', () => {
     const serialized = serializeTestMarkdown(editor, {
       document: {

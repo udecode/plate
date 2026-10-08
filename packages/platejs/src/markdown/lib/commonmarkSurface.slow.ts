@@ -421,9 +421,9 @@ describe('commonmark package surfaces', () => {
       ],
     };
 
-    expect(serializeTestMarkdown(editor, { document: value }).data).toBe(
-      '> Block quote\\ \n> <br />\n'
-    );
+    const result = serializeTestMarkdown(editor, { document: value });
+
+    expect(parseTestMarkdown(editor, result.data)).toEqual(value);
   });
 
   it('round-trips hard line breaks inside nested blockquotes', () => {

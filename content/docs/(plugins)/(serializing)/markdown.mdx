@@ -160,7 +160,8 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
 - HTML comments are dropped with a lossless warning.
 - `<br>`, `<br/>`, and `<br />` become line breaks.
 - A line holding only a registered block tag is a block, even next to paragraph
-  text. A block tag elsewhere in a paragraph, heading, or table cell stays text.
+  text. A block tag elsewhere in a paragraph or heading stays text. A table cell
+  also accepts childless registered block tags, such as a sized image.
 - Tags pair within one container, such as a paragraph, list item, or block
   quote. An unclosed tag closes at the end of its container, and an unmatched
   closing tag stays text. Each repair reports a `markdown-tag-repair` warning
@@ -199,8 +200,10 @@ line:
   paragraph with line breaks, so serializing reports the folded boundary as a
   lossy warning.
 - A heading or quote keeps its inline content, and a code or math block keeps
-  its text, each with a lossy warning. Serializing drops any other block, such
-  as a horizontal rule or a captioned image, and reports it under `lossPolicy`.
+  its text, each with a lossy warning. Childless registered block tags, such as
+  `<img src="…" width="200" />`, keep their attributes and read back as blocks.
+  Serializing drops other unsupported blocks, such as a horizontal rule or a
+  captioned image, and reports it under `lossPolicy`.
 - Plate writes a merged cell in its first slot and empty cells in the slots it
   covers. Each span reports `markdown-property-omitted`.
 - No line ending or `|` ends a cell early. In inline math, serializing writes
