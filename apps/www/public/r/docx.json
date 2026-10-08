@@ -3,8 +3,8 @@
   "name": "docx",
   "dependencies": [
     "platejs",
-    "juice",
-    "validator"
+    "juice@^11.0.1",
+    "validator@^13.15.15"
   ],
   "files": [
     {

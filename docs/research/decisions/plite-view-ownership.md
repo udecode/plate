@@ -6,8 +6,10 @@ updated: 2026-10-04
 source_refs:
   - ../../../packages/plitejs/src/react/components/plite.tsx
   - ../../../packages/plitejs/src/react/hooks/use-plite-runtime.tsx
-  - ../../../packages/plitejs/src/react/widget-store.ts
-  - ../../../packages/plitejs/src/react/widget-geometry.ts
+  - ../../../packages/plitejs/src/react/range-geometry.ts
+  - ../../../packages/plitejs/src/react/hooks/use-selection-geometry.tsx
+  - 04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/react/widget-store.ts
+  - 04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/react/widget-geometry.ts
 related:
   - ../review-groups.json
   - plite-core-ownership.md
@@ -84,6 +86,8 @@ and [Plate routing](../../../.agents/rules/best-api/references/review.md):
 | Geometry | Pursue | Selection, annotation and cursor owners are wrapped in a Widget projection solely to reach resolved data or geometry. | Task design/plan, jointly with React |
 
 ## Geometry: delete the intermediary data model
+
+> Current Plite (checked 2026-10-08): this section reads the tree before e0c1500b95 (2026-09-15), which made the cut it recommends, as the `geometry` audit above records. That commit deleted the `WidgetStore`, geometry-owner and Yjs-adapter files linked below and renamed the floating adapter; read them at `04f11c01a9c957c848c697f2522f677f0a71c3f4`. Selection geometry now builds a private range-geometry owner with no Widget (`packages/plitejs/src/react/hooks/use-selection-geometry.tsx:27-31`, `:65`; `packages/plitejs/src/react/range-geometry.ts:493-501`), remote cursors read geometry per client through `useYjsRemoteCursorGeometry` (`packages/plitejs/src/yjs/react/useYjs.ts:181-193`), and copied UI positions itself from those rectangles with `useFloatingRect` (`apps/www/src/registry/hooks/use-floating-rect.ts:33`).
 
 The current [selection hook](../../../packages/plitejs/src/react/hooks/use-selection-geometry.tsx:14)
 creates a synthetic singleton Widget and a Widget store before measuring the

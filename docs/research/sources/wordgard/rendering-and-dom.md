@@ -1,4 +1,4 @@
-# Wordgard: rendering and dom
+# Wordgard: rendering and DOM
 
 ## Bidi and tile rendering
 

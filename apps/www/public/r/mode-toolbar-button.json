@@ -9,8 +9,8 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor-dropdown-menu.json",
     "https://platejs.org/r/suggestion.json",
+    "https://platejs.org/r/editor-dropdown-menu.json",
     "https://platejs.org/r/toolbar.json"
   ],
   "files": [

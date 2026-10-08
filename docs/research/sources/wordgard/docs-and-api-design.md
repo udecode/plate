@@ -1,4 +1,4 @@
-# Wordgard: docs and api design
+# Wordgard: docs and API design
 
 ## Localization
 

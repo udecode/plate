@@ -1,7 +1,7 @@
 ---
 title: Slate v2 should add source-scoped overlay invalidation before claiming field-best decoration perf architecture
 type: decision
-status: accepted
+status: superseded
 updated: 2026-04-15
 source_refs:
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
@@ -11,7 +11,7 @@ source_refs:
   - docs/research/sources/editor-architecture/slate-v2-local-proof-substrate.md
 related:
   - docs/research/systems/slate-v2-overlay-architecture.md
-  - docs/slate-v2/decoration-roadmap.md
+  - 6bc2fffa0bee6fcb6752d96139c698879682b41b:docs/slate-v2/decoration-roadmap.md
 ---
 
 # Slate v2 should add source-scoped overlay invalidation before claiming field-best decoration perf architecture
@@ -84,4 +84,4 @@ projection recompute path can still start too broad.
 
 ## Current status
 
-Accepted as the next architecture extension for perfect decoration performance.
+Superseded in shape (checked 2026-10-08). Plite has no projection, widget or `Bookmark` model to extend: a `DecorationSource` reads one node entry and an observing source refreshes named node keys (`packages/plitejs/src/interfaces/decoration.ts:25-37`), and commit consumers invalidate by their actual dependency (`docs/vision/plite.md:605-609`). Whether that shape meets this page's recompute-count proof bar was not checked.

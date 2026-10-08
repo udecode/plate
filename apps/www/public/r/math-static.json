@@ -7,9 +7,6 @@
     "katex@0.16.22",
     "lucide-react"
   ],
-  "registryDependencies": [
-    "https://platejs.org/r/suggestion-style.json"
-  ],
   "files": [
     {
       "path": "src/registry/components/editor/math-static.tsx",

@@ -9,7 +9,6 @@
         "platejs"
       ],
       "devDependencies": [],
-      "registryDependencies": [],
       "files": [],
       "type": "registry:lib"
     },
@@ -40,7 +39,6 @@
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/editor.tsx",
@@ -76,7 +74,6 @@
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/editor-static.tsx",
@@ -129,14 +126,14 @@
         "unified@^11.0.5"
       ],
       "registryDependencies": [
-        "button",
-        "command",
         "https://platejs.org/r/comment.json",
-        "https://platejs.org/r/floating-popover.json",
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/use-chat.json",
+        "https://platejs.org/r/editor-plugins-static.json",
         "https://platejs.org/r/editor-static.json",
-        "https://platejs.org/r/editor-plugins-static.json"
+        "https://platejs.org/r/floating-popover.json",
+        "button",
+        "command"
       ],
       "files": [
         {
@@ -246,19 +243,19 @@
       "dependencies": [
         "platejs",
         "use-file-picker@2.1.2",
-        "mammoth",
         "sonner",
-        "validator",
         "diff-match-patch-ts@^0.6.0",
         "jszip@^3.10.1",
         "lucide-react",
+        "mammoth@^1.9.0",
         "remark-parse@^11.0.0",
         "remark-stringify@^11.0.0",
-        "unified@^11.0.5"
+        "unified@^11.0.5",
+        "validator@^13.15.15"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/docx-source.json",
+        "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/toolbar.json"
       ],
       "files": [
@@ -289,28 +286,28 @@
       "dependencies": [
         "platejs",
         "lucide-react",
-        "color-name",
-        "html-to-vdom",
-        "jszip",
-        "juice",
-        "mime-types",
         "sonner",
-        "virtual-dom",
-        "xmlbuilder2",
+        "color-name@^2.0.0",
         "diff-match-patch-ts@^0.6.0",
+        "html-to-vdom@^0.7.0",
+        "jszip@^3.10.1",
+        "juice@^11.0.1",
         "katex@0.16.22",
+        "mime-types@^2.1.35",
         "remark-parse@^11.0.0",
         "remark-stringify@^11.0.0",
-        "unified@^11.0.5"
+        "unified@^11.0.5",
+        "virtual-dom@^2.1.1",
+        "xmlbuilder2@^3.1.1"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/editor-plugins-static.json",
         "https://platejs.org/r/docx-export.json",
         "https://platejs.org/r/docx-source.json",
         "https://platejs.org/r/editor-dropdown-menu.json",
-        "https://platejs.org/r/toolbar.json",
         "https://platejs.org/r/editor-static.json",
-        "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/editor-plugins-static.json"
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -374,7 +371,6 @@
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/caption-static.tsx",
@@ -399,9 +395,9 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor-dropdown-menu.json",
+        "https://platejs.org/r/toolbar.json",
         "button",
-        "tooltip",
-        "https://platejs.org/r/toolbar.json"
+        "tooltip"
       ],
       "files": [
         {
@@ -511,14 +507,12 @@
       "description": "A searchable emoji picker with frequent emoji storage.",
       "dependencies": [
         "platejs",
-        "@emoji-mart/data@1.2.1",
+        "frimousse@0.4.0",
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
       "registryDependencies": [
-        "button",
-        "tooltip",
-        "https://platejs.org/r/emoji.json",
+        "https://platejs.org/r/emoji-data.json",
         "https://platejs.org/r/floating-popover.json"
       ],
       "files": [
@@ -546,7 +540,9 @@
       "title": "Emoji Toolbar Button",
       "description": "An emoji picker toolbar button.",
       "dependencies": [
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0",
+        "lucide-react",
+        "platejs"
       ],
       "registryDependencies": [
         "https://platejs.org/r/emoji-picker.json",
@@ -847,12 +843,12 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "button",
-        "input",
-        "separator",
+        "https://platejs.org/r/media-preview-dialog.json",
         "https://platejs.org/r/caption.json",
         "https://platejs.org/r/floating-popover.json",
-        "https://platejs.org/r/media-preview-dialog.json"
+        "button",
+        "input",
+        "separator"
       ],
       "files": [
         {
@@ -888,10 +884,10 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/upload.json",
-        "https://platejs.org/r/toolbar.json",
-        "input",
         "https://platejs.org/r/editor-dropdown-menu.json",
-        "alert-dialog"
+        "https://platejs.org/r/toolbar.json",
+        "alert-dialog",
+        "input"
       ],
       "files": [
         {
@@ -923,8 +919,8 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/suggestion.json",
+        "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/toolbar.json"
       ],
       "files": [
@@ -983,7 +979,6 @@
         "class-variance-authority",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/resize-handle.tsx",
@@ -1109,10 +1104,9 @@
       "description": "Copied Yjs selection highlights, carets, and labels.",
       "dependencies": [
         "platejs",
-        "yjs",
-        "diff-match-patch-ts@^0.6.0"
+        "diff-match-patch-ts@^0.6.0",
+        "yjs@>=13.6.30"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/remote-cursor-overlay.tsx",
@@ -1179,7 +1173,6 @@
         "@base-ui/react",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/bases/base/floating-popover.tsx",
@@ -1200,7 +1193,6 @@
         "lucide-react",
         "platejs"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/bases/base/toolbar.tsx",
@@ -1282,7 +1274,6 @@
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/block-list-static.tsx",
@@ -1300,7 +1291,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/blockquote.tsx",
@@ -1330,7 +1320,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/blockquote-static.tsx",
@@ -1348,7 +1337,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/code.tsx",
@@ -1377,7 +1365,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/code-static.tsx",
@@ -1431,10 +1418,10 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "button",
-        "input",
         "https://platejs.org/r/floating-popover.json",
-        "https://platejs.org/r/toolbar.json"
+        "https://platejs.org/r/toolbar.json",
+        "button",
+        "input"
       ],
       "files": [
         {
@@ -1464,7 +1451,6 @@
         "class-variance-authority",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/heading.tsx",
@@ -1495,7 +1481,6 @@
         "class-variance-authority",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/heading-static.tsx",
@@ -1561,7 +1546,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/horizontal-rule.tsx",
@@ -1590,7 +1574,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/horizontal-rule-static.tsx",
@@ -1609,9 +1592,9 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-toolbar.json",
-        "https://platejs.org/r/media-preview-dialog.json",
         "https://platejs.org/r/caption.json",
+        "https://platejs.org/r/media-preview-dialog.json",
+        "https://platejs.org/r/media-toolbar.json",
         "https://platejs.org/r/resize-handle.json"
       ],
       "files": [
@@ -1668,7 +1651,6 @@
         "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/media-preview-dialog.tsx",
@@ -1700,7 +1682,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/kbd.tsx",
@@ -1727,7 +1708,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/kbd-static.tsx",
@@ -1746,8 +1726,8 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/caption.json",
-        "https://platejs.org/r/resize-handle.json"
+        "https://platejs.org/r/resize-handle.json",
+        "https://platejs.org/r/caption.json"
       ],
       "files": [
         {
@@ -1801,8 +1781,8 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/media-toolbar.json",
         "https://platejs.org/r/caption.json",
+        "https://platejs.org/r/media-toolbar.json",
         "https://platejs.org/r/resize-handle.json"
       ],
       "files": [
@@ -1859,8 +1839,8 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/caption.json",
-        "https://platejs.org/r/resize-handle.json"
+        "https://platejs.org/r/resize-handle.json",
+        "https://platejs.org/r/caption.json"
       ],
       "files": [
         {
@@ -1970,7 +1950,6 @@
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/paragraph.tsx",
@@ -2000,7 +1979,6 @@
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/paragraph-static.tsx",
@@ -2019,7 +1997,6 @@
         "diff-match-patch-ts@^0.6.0",
         "next"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/tag.tsx",
@@ -2086,7 +2063,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/callout-static.tsx",
@@ -2103,7 +2079,6 @@
         "lowlight",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/code-block-static.tsx",
@@ -2128,7 +2103,6 @@
         "plantuml-encoder@^1.4.0",
         "viz.js@^2.1.2"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/code-drawing-static.tsx",
@@ -2144,7 +2118,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/column-static.tsx",
@@ -2159,9 +2132,6 @@
       "dependencies": [
         "platejs",
         "diff-match-patch-ts@^0.6.0"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/suggestion-style.json"
       ],
       "files": [
         {
@@ -2178,7 +2148,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/footnote-static.tsx",
@@ -2194,10 +2163,9 @@
       "description": "A drawing component powered by Excalidraw.",
       "dependencies": [
         "platejs",
-        "@excalidraw/excalidraw",
+        "@excalidraw/excalidraw@0.18.0",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/excalidraw.tsx",
@@ -2223,7 +2191,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/font-static.tsx",
@@ -2239,7 +2206,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/indent-static.tsx",
@@ -2254,9 +2220,6 @@
       "dependencies": [
         "platejs",
         "diff-match-patch-ts@^0.6.0"
-      ],
-      "registryDependencies": [
-        "https://platejs.org/r/suggestion-style.json"
       ],
       "files": [
         {
@@ -2294,9 +2257,6 @@
         "katex@0.16.22",
         "lucide-react"
       ],
-      "registryDependencies": [
-        "https://platejs.org/r/suggestion-style.json"
-      ],
       "files": [
         {
           "path": "src/registry/components/editor/math-static.tsx",
@@ -2333,9 +2293,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [
-        "https://platejs.org/r/suggestion-style.json"
-      ],
       "files": [
         {
           "path": "src/registry/components/editor/mention-static.tsx",
@@ -2351,7 +2308,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/table-static.tsx",
@@ -2386,7 +2342,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/details-static.tsx",
@@ -2412,6 +2367,7 @@
         "https://platejs.org/r/code-drawing-static.json",
         "https://platejs.org/r/column-static.json",
         "https://platejs.org/r/date-static.json",
+        "https://platejs.org/r/details-static.json",
         "https://platejs.org/r/font-static.json",
         "https://platejs.org/r/footnote-static.json",
         "https://platejs.org/r/line-height.json",
@@ -2422,8 +2378,7 @@
         "https://platejs.org/r/media-static.json",
         "https://platejs.org/r/mention-static.json",
         "https://platejs.org/r/table-static.json",
-        "https://platejs.org/r/toc-static.json",
-        "https://platejs.org/r/details-static.json"
+        "https://platejs.org/r/toc-static.json"
       ],
       "files": [
         {
@@ -2449,9 +2404,9 @@
         "unified@^11.0.5"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/ai-menu.json",
         "https://platejs.org/r/ai-toolbar-button.json",
         "https://platejs.org/r/ai-api.json",
+        "https://platejs.org/r/ai-menu.json",
         "https://platejs.org/r/use-chat.json"
       ],
       "files": [
@@ -2538,10 +2493,10 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/mark-toolbar-button.json",
         "https://platejs.org/r/code.json",
         "https://platejs.org/r/highlight.json",
-        "https://platejs.org/r/kbd.json",
-        "https://platejs.org/r/mark-toolbar-button.json"
+        "https://platejs.org/r/kbd.json"
       ],
       "files": [
         {
@@ -2582,8 +2537,8 @@
         "unified@^11.0.5"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor-context-menu.json",
-        "https://platejs.org/r/dnd.json"
+        "https://platejs.org/r/dnd.json",
+        "https://platejs.org/r/editor-context-menu.json"
       ],
       "files": [
         {
@@ -2614,7 +2569,6 @@
         "diff-match-patch-ts@^0.6.0",
         "platejs"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/block-placeholder.tsx",
@@ -2633,8 +2587,8 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "button",
-        "https://platejs.org/r/emoji-picker.json"
+        "https://platejs.org/r/emoji-picker.json",
+        "button"
       ],
       "files": [
         {
@@ -2665,13 +2619,13 @@
       "dependencies": [
         "platejs",
         "lowlight",
-        "diff-match-patch-ts",
+        "diff-match-patch-ts@^0.6.0",
         "lucide-react"
       ],
       "registryDependencies": [
-        "command",
         "https://platejs.org/r/floating-popover.json",
-        "button"
+        "button",
+        "command"
       ],
       "files": [
         {
@@ -2707,14 +2661,14 @@
       "title": "Code Block CodeMirror",
       "description": "A CodeMirror projection for explicitly high-scale code block editors.",
       "dependencies": [
-        "@codemirror/language",
         "@codemirror/language-data",
         "@codemirror/commands",
         "@lezer/highlight",
         "@codemirror/search",
-        "@codemirror/state",
-        "@codemirror/view",
         "platejs",
+        "@codemirror/language@^6.12.4",
+        "@codemirror/state@^6.7.2",
+        "@codemirror/view@^6.41.0",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
@@ -2755,10 +2709,10 @@
         "viz.js@^2.1.2"
       ],
       "registryDependencies": [
-        "button",
-        "select",
         "https://platejs.org/r/floating-popover.json",
-        "https://platejs.org/r/use-mobile.json"
+        "https://platejs.org/r/use-mobile.json",
+        "button",
+        "select"
       ],
       "files": [
         {
@@ -2792,11 +2746,11 @@
         "lucide-react"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/dnd.json",
+        "https://platejs.org/r/floating-popover.json",
         "button",
         "separator",
-        "tooltip",
-        "https://platejs.org/r/dnd.json",
-        "https://platejs.org/r/floating-popover.json"
+        "tooltip"
       ],
       "files": [
         {
@@ -2831,13 +2785,13 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "avatar",
-        "button",
+        "https://platejs.org/r/highlight-style.json",
         "https://platejs.org/r/basic-marks.json",
         "https://platejs.org/r/basic-marks-static.json",
-        "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/highlight-style.json"
+        "https://platejs.org/r/editor-dropdown-menu.json",
+        "avatar",
+        "button"
       ],
       "files": [
         {
@@ -2904,12 +2858,12 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "avatar",
-        "button",
-        "separator",
+        "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/comment.json",
         "https://platejs.org/r/floating-popover.json",
-        "https://platejs.org/r/suggestion.json"
+        "avatar",
+        "button",
+        "separator"
       ],
       "files": [
         {
@@ -2944,7 +2898,6 @@
         "remark-stringify@^11.0.0",
         "unified@^11.0.5"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/copilot.tsx",
@@ -2978,9 +2931,9 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/editor.json",
         "input-group",
-        "tooltip",
-        "https://platejs.org/r/editor.json"
+        "tooltip"
       ],
       "files": [
         {
@@ -3010,9 +2963,9 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/suggestion-style.json",
         "calendar",
-        "popover",
-        "https://platejs.org/r/suggestion-style.json"
+        "popover"
       ],
       "files": [
         {
@@ -3046,9 +2999,8 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "button",
-        "tooltip",
-        "https://platejs.org/r/editor-dropdown-menu.json"
+        "https://platejs.org/r/editor-dropdown-menu.json",
+        "tooltip"
       ],
       "files": [
         {
@@ -3083,8 +3035,8 @@
       "name": "docx",
       "dependencies": [
         "platejs",
-        "juice",
-        "validator"
+        "juice@^11.0.1",
+        "validator@^13.15.15"
       ],
       "files": [
         {
@@ -3137,6 +3089,7 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/comment.json",
         "https://platejs.org/r/ai.json",
         "https://platejs.org/r/align.json",
         "https://platejs.org/r/autoformat.json",
@@ -3147,8 +3100,8 @@
         "https://platejs.org/r/callout.json",
         "https://platejs.org/r/code-block.json",
         "https://platejs.org/r/column.json",
-        "https://platejs.org/r/comment.json",
         "https://platejs.org/r/date.json",
+        "https://platejs.org/r/details.json",
         "https://platejs.org/r/dnd.json",
         "https://platejs.org/r/emoji.json",
         "https://platejs.org/r/exit-break.json",
@@ -3162,13 +3115,12 @@
         "https://platejs.org/r/markdown.json",
         "https://platejs.org/r/math.json",
         "https://platejs.org/r/media.json",
-        "https://platejs.org/r/upload.json",
         "https://platejs.org/r/mention.json",
         "https://platejs.org/r/slash.json",
         "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/table.json",
         "https://platejs.org/r/toc.json",
-        "https://platejs.org/r/details.json"
+        "https://platejs.org/r/upload.json"
       ],
       "files": [
         {
@@ -3185,10 +3137,10 @@
       "description": "A popup for emoji search and insertion.",
       "dependencies": [
         "platejs",
-        "@emoji-mart/data@1.2.1",
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/emoji-data.json",
         "https://platejs.org/r/inline-combobox.json"
       ],
       "files": [
@@ -3238,26 +3190,26 @@
         "platejs"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/toolbar.json",
         "https://platejs.org/r/tailwind-scrollbar-hide.json",
         "https://platejs.org/r/ai-toolbar-button.json",
         "https://platejs.org/r/align-toolbar-button.json",
         "https://platejs.org/r/comment-toolbar-button.json",
+        "https://platejs.org/r/details-toolbar-button.json",
         "https://platejs.org/r/emoji-toolbar-button.json",
         "https://platejs.org/r/font-color-toolbar-button.json",
         "https://platejs.org/r/font-size-toolbar-button.json",
         "https://platejs.org/r/history-toolbar-button.json",
-        "https://platejs.org/r/list-toolbar-button.json",
         "https://platejs.org/r/indent-toolbar-button.json",
         "https://platejs.org/r/insert-toolbar-button.json",
         "https://platejs.org/r/line-height-toolbar-button.json",
         "https://platejs.org/r/link-toolbar-button.json",
+        "https://platejs.org/r/list-toolbar-button.json",
         "https://platejs.org/r/mark-toolbar-button.json",
         "https://platejs.org/r/media-toolbar-button.json",
         "https://platejs.org/r/mode-toolbar-button.json",
         "https://platejs.org/r/more-toolbar-button.json",
         "https://platejs.org/r/table-toolbar-button.json",
-        "https://platejs.org/r/details-toolbar-button.json",
+        "https://platejs.org/r/toolbar.json",
         "https://platejs.org/r/turn-into-toolbar-button.json"
       ],
       "files": [
@@ -3291,18 +3243,18 @@
         "unified@^11.0.5"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/link.json",
-        "https://platejs.org/r/toolbar.json",
-        "https://platejs.org/r/use-floating-rect.json",
         "https://platejs.org/r/tailwind-scrollbar-hide.json",
         "https://platejs.org/r/ai-toolbar-button.json",
         "https://platejs.org/r/comment-toolbar-button.json",
         "https://platejs.org/r/equation-toolbar-button.json",
+        "https://platejs.org/r/link.json",
         "https://platejs.org/r/link-toolbar-button.json",
         "https://platejs.org/r/mark-toolbar-button.json",
         "https://platejs.org/r/more-toolbar-button.json",
         "https://platejs.org/r/suggestion-toolbar-button.json",
-        "https://platejs.org/r/turn-into-toolbar-button.json"
+        "https://platejs.org/r/toolbar.json",
+        "https://platejs.org/r/turn-into-toolbar-button.json",
+        "https://platejs.org/r/use-floating-rect.json"
       ],
       "files": [
         {
@@ -3333,12 +3285,12 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/highlight-style.json",
+        "https://platejs.org/r/floating-popover.json",
+        "https://platejs.org/r/inline-combobox.json",
         "button",
         "command",
-        "hover-card",
-        "https://platejs.org/r/floating-popover.json",
-        "https://platejs.org/r/highlight-style.json",
-        "https://platejs.org/r/inline-combobox.json"
+        "hover-card"
       ],
       "files": [
         {
@@ -3423,12 +3375,12 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "button",
-        "input",
-        "separator",
         "https://platejs.org/r/link-toolbar-button.json",
         "https://platejs.org/r/suggestion-style.json",
-        "https://platejs.org/r/use-floating-rect.json"
+        "https://platejs.org/r/use-floating-rect.json",
+        "button",
+        "input",
+        "separator"
       ],
       "files": [
         {
@@ -3460,8 +3412,8 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/block-list.json",
         "https://platejs.org/r/list-toolbar-button.json",
+        "https://platejs.org/r/block-list.json",
         "https://platejs.org/r/indent.json"
       ],
       "files": [
@@ -3500,16 +3452,16 @@
       "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
       "dependencies": [
         "platejs",
-        "katex",
         "react-textarea-autosize",
         "diff-match-patch-ts@^0.6.0",
+        "katex@0.16.22",
         "lucide-react"
       ],
       "registryDependencies": [
         "https://platejs.org/r/equation-toolbar-button.json",
-        "button",
         "https://platejs.org/r/floating-popover.json",
-        "https://platejs.org/r/suggestion-style.json"
+        "https://platejs.org/r/suggestion-style.json",
+        "button"
       ],
       "files": [
         {
@@ -3540,12 +3492,12 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/media-toolbar.json",
         "https://platejs.org/r/media-audio.json",
         "https://platejs.org/r/media-embed.json",
         "https://platejs.org/r/media-file.json",
         "https://platejs.org/r/media-image.json",
         "https://platejs.org/r/media-preview-dialog.json",
-        "https://platejs.org/r/media-toolbar.json",
         "https://platejs.org/r/media-video.json"
       ],
       "files": [
@@ -3642,8 +3594,8 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/suggestion-style.json",
         "https://platejs.org/r/inline-combobox.json",
+        "https://platejs.org/r/suggestion-style.json",
         "https://platejs.org/r/use-mounted.json"
       ],
       "files": [
@@ -3724,7 +3676,6 @@
         "platejs",
         "diff-match-patch-ts@^0.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/components/editor/suggestion.tsx",
@@ -3770,13 +3721,13 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "button",
+        "https://platejs.org/r/tailwind-scrollbar-hide.json",
         "https://platejs.org/r/dnd.json",
         "https://platejs.org/r/editor-dropdown-menu.json",
         "https://platejs.org/r/floating-popover.json",
+        "https://platejs.org/r/font-color-toolbar-button.json",
         "https://platejs.org/r/toolbar.json",
-        "https://platejs.org/r/tailwind-scrollbar-hide.json",
-        "https://platejs.org/r/font-color-toolbar-button.json"
+        "button"
       ],
       "files": [
         {
@@ -3810,8 +3761,8 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "button",
-        "https://platejs.org/r/highlight-style.json"
+        "https://platejs.org/r/highlight-style.json",
+        "button"
       ],
       "files": [
         {
@@ -3886,8 +3837,8 @@
       "registryDependencies": [
         "https://platejs.org/r/copilot-api.json",
         "https://platejs.org/r/editor-static.json",
-        "https://platejs.org/r/use-chat.json",
-        "https://platejs.org/r/editor-plugins-static.json"
+        "https://platejs.org/r/editor-plugins-static.json",
+        "https://platejs.org/r/use-chat.json"
       ],
       "files": [
         {
@@ -3940,7 +3891,6 @@
         "ai@6",
         "next"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/app/api/ai/copilot/route.ts",
@@ -3956,7 +3906,6 @@
       "dependencies": [
         "files-sdk@2.6.0"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/lib/files.ts",
@@ -3977,8 +3926,8 @@
         "files-sdk@2.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/files-api.json",
-        "https://platejs.org/r/upload.json"
+        "https://platejs.org/r/upload.json",
+        "https://platejs.org/r/files-api.json"
       ],
       "files": [
         {
@@ -4008,8 +3957,8 @@
         "files-sdk@2.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/files-api.json",
-        "https://platejs.org/r/upload.json"
+        "https://platejs.org/r/upload.json",
+        "https://platejs.org/r/files-api.json"
       ],
       "files": [
         {
@@ -4042,12 +3991,12 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/ai.json",
+        "https://platejs.org/r/use-chat.json",
         "button",
         "command",
         "dialog",
         "input",
-        "popover",
-        "https://platejs.org/r/use-chat.json"
+        "popover"
       ],
       "files": [
         {
@@ -4093,16 +4042,15 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/plate-ui.json",
-        "tooltip",
-        "https://platejs.org/r/editor.json",
         "https://platejs.org/r/comment.json",
-        "https://platejs.org/r/discussion.json",
         "https://platejs.org/r/suggestion.json",
-        "https://platejs.org/r/use-mobile.json",
-        "https://platejs.org/r/settings-dialog.json",
-        "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/ai.json",
-        "https://platejs.org/r/dnd.json"
+        "https://platejs.org/r/dnd.json",
+        "https://platejs.org/r/discussion.json",
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/editor-plugins.json",
+        "https://platejs.org/r/settings-dialog.json",
+        "tooltip"
       ],
       "files": [
         {
@@ -4158,8 +4106,8 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/plate-ui.json",
-        "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/basic-nodes.json"
+        "https://platejs.org/r/basic-nodes.json",
+        "https://platejs.org/r/editor.json"
       ],
       "files": [
         {
@@ -4190,16 +4138,16 @@
       ],
       "registryDependencies": [
         "https://platejs.org/r/plate-ui.json",
-        "https://platejs.org/r/editor-static.json",
+        "https://platejs.org/r/ai.json",
+        "https://platejs.org/r/dnd.json",
         "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/fixed-toolbar.json",
-        "https://platejs.org/r/floating-toolbar.json",
-        "button",
         "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/editor-plugins-static.json",
+        "https://platejs.org/r/editor-static.json",
+        "https://platejs.org/r/fixed-toolbar.json",
+        "https://platejs.org/r/floating-toolbar.json",
         "https://platejs.org/r/use-object-url.json",
-        "https://platejs.org/r/ai.json",
-        "https://platejs.org/r/dnd.json"
+        "button"
       ],
       "files": [
         {
@@ -4294,6 +4242,20 @@
         "Serializers"
       ],
       "type": "registry:block"
+    },
+    {
+      "name": "emoji-data",
+      "description": "Loads Emojibase emoji with GitHub shortcodes and ranks emoji searches.",
+      "dependencies": [
+        "frimousse@0.4.0"
+      ],
+      "files": [
+        {
+          "path": "src/registry/lib/emoji-data.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "type": "registry:lib"
     },
     {
       "name": "suggestion-style",
@@ -4400,8 +4362,8 @@
         "platejs"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor.json",
         "https://platejs.org/r/dnd.json",
+        "https://platejs.org/r/editor.json",
         "https://platejs.org/r/media.json",
         "https://platejs.org/r/media-toolbar-button.json",
         "https://platejs.org/r/paragraph.json",
@@ -4576,14 +4538,14 @@
         "platejs"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/basic-blocks.json",
         "https://platejs.org/r/comment.json",
         "https://platejs.org/r/comment-toolbar-button.json",
         "https://platejs.org/r/discussion.json",
         "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/suggestion.json",
-        "https://platejs.org/r/toolbar.json",
-        "https://platejs.org/r/link.json"
+        "https://platejs.org/r/link.json",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -4614,14 +4576,14 @@
         "platejs"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/basic-blocks.json",
         "https://platejs.org/r/comment.json",
         "https://platejs.org/r/comment-toolbar-button.json",
         "https://platejs.org/r/discussion.json",
         "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/suggestion.json",
-        "https://platejs.org/r/toolbar.json",
-        "https://platejs.org/r/history-toolbar-button.json"
+        "https://platejs.org/r/history-toolbar-button.json",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -4652,15 +4614,15 @@
         "platejs"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/basic-blocks.json",
         "https://platejs.org/r/comment.json",
         "https://platejs.org/r/comment-toolbar-button.json",
         "https://platejs.org/r/discussion.json",
         "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/suggestion.json",
+        "https://platejs.org/r/link.json",
         "https://platejs.org/r/toolbar.json",
-        "button",
-        "https://platejs.org/r/link.json"
+        "button"
       ],
       "files": [
         {
@@ -4691,14 +4653,14 @@
         "platejs"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/suggestion.json",
         "https://platejs.org/r/basic-blocks.json",
+        "https://platejs.org/r/basic-blocks-static.json",
         "https://platejs.org/r/comment.json",
+        "https://platejs.org/r/comment-static.json",
         "https://platejs.org/r/comment-toolbar-button.json",
         "https://platejs.org/r/discussion.json",
         "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/suggestion.json",
-        "https://platejs.org/r/basic-blocks-static.json",
-        "https://platejs.org/r/comment-static.json",
         "https://platejs.org/r/editor-static.json",
         "https://platejs.org/r/link.json",
         "https://platejs.org/r/link-static.json",
@@ -4733,11 +4695,11 @@
         "platejs"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/ai.json",
+        "https://platejs.org/r/dnd.json",
         "https://platejs.org/r/copilot.json",
         "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/editor-plugins.json",
-        "https://platejs.org/r/ai.json",
-        "https://platejs.org/r/dnd.json"
+        "https://platejs.org/r/editor-plugins.json"
       ],
       "files": [
         {
@@ -4770,8 +4732,8 @@
         "lucide-react"
       ],
       "registryDependencies": [
-        "button",
-        "https://platejs.org/r/select-editor.json"
+        "https://platejs.org/r/select-editor.json",
+        "button"
       ],
       "files": [
         {
@@ -4795,9 +4757,9 @@
         "platejs"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/editor.json",
-        "button",
-        "https://platejs.org/r/editor-plugins.json"
+        "button"
       ],
       "files": [
         {
@@ -4819,8 +4781,8 @@
         "next"
       ],
       "registryDependencies": [
-        "button",
-        "https://platejs.org/r/use-mounted.json"
+        "https://platejs.org/r/use-mounted.json",
+        "button"
       ],
       "files": [
         {
@@ -4842,8 +4804,8 @@
         "platejs"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/editor-plugins.json"
+        "https://platejs.org/r/editor-plugins.json",
+        "https://platejs.org/r/editor.json"
       ],
       "files": [
         {
@@ -4865,15 +4827,15 @@
         "platejs"
       ],
       "registryDependencies": [
-        "separator",
+        "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/align.json",
         "https://platejs.org/r/basic-nodes.json",
         "https://platejs.org/r/dnd.json",
-        "https://platejs.org/r/media.json",
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/fixed-toolbar.json",
+        "https://platejs.org/r/media.json",
         "https://platejs.org/r/turn-into-toolbar-button.json",
-        "https://platejs.org/r/editor-plugins.json"
+        "separator"
       ],
       "files": [
         {
@@ -4903,9 +4865,9 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "button",
         "https://platejs.org/r/basic-marks.json",
-        "https://platejs.org/r/diff.json"
+        "https://platejs.org/r/diff.json",
+        "button"
       ],
       "files": [
         {
@@ -4924,9 +4886,9 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/basic-nodes.json",
-        "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/editor-plugins.json"
+        "https://platejs.org/r/editor.json"
       ],
       "files": [
         {
@@ -4950,11 +4912,11 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/use-debounce.json",
-        "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/ai.json",
-        "https://platejs.org/r/dnd.json"
+        "https://platejs.org/r/dnd.json",
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/editor-plugins.json",
+        "https://platejs.org/r/use-debounce.json"
       ],
       "files": [
         {
@@ -4975,11 +4937,7 @@
         "unified@^11.0.5"
       ],
       "registryDependencies": [
-        "button",
-        "https://platejs.org/r/editor.json",
         "https://platejs.org/r/editor-static.json",
-        "https://platejs.org/r/editor-plugins-static.json",
-        "https://platejs.org/r/dnd.json",
         "https://platejs.org/r/align.json",
         "https://platejs.org/r/basic-blocks.json",
         "https://platejs.org/r/basic-marks.json",
@@ -4988,6 +4946,9 @@
         "https://platejs.org/r/column.json",
         "https://platejs.org/r/date.json",
         "https://platejs.org/r/details.json",
+        "https://platejs.org/r/dnd.json",
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/editor-plugins-static.json",
         "https://platejs.org/r/font.json",
         "https://platejs.org/r/footnote.json",
         "https://platejs.org/r/line-height.json",
@@ -4998,7 +4959,8 @@
         "https://platejs.org/r/media.json",
         "https://platejs.org/r/mention.json",
         "https://platejs.org/r/table.json",
-        "https://platejs.org/r/toc.json"
+        "https://platejs.org/r/toc.json",
+        "button"
       ],
       "files": [
         {
@@ -5013,19 +4975,19 @@
       "description": "Two-peer Yjs collaboration with cursors, reconnect, schema guards, and history.",
       "dependencies": [
         "platejs",
-        "yjs",
         "diff-match-patch-ts@^0.6.0",
-        "lucide-react"
+        "lucide-react",
+        "yjs@>=13.6.30"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/basic-nodes.json",
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/remote-cursor-overlay.json",
         "alert",
         "badge",
         "button",
-        "card",
-        "https://platejs.org/r/editor-plugins.json"
+        "card"
       ],
       "files": [
         {
@@ -5042,13 +5004,13 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
+        "https://platejs.org/r/editor-plugins.json",
+        "https://platejs.org/r/blockquote.json",
         "https://platejs.org/r/editor.json",
         "https://platejs.org/r/fixed-toolbar.json",
-        "https://platejs.org/r/toolbar.json",
-        "https://platejs.org/r/mark-toolbar-button.json",
         "https://platejs.org/r/heading.json",
-        "https://platejs.org/r/blockquote.json",
-        "https://platejs.org/r/editor-plugins.json"
+        "https://platejs.org/r/mark-toolbar-button.json",
+        "https://platejs.org/r/toolbar.json"
       ],
       "files": [
         {
@@ -5066,10 +5028,10 @@
         "diff-match-patch-ts@^0.6.0"
       ],
       "registryDependencies": [
-        "https://platejs.org/r/editor.json",
-        "https://platejs.org/r/editor-plugins.json",
         "https://platejs.org/r/ai.json",
-        "https://platejs.org/r/dnd.json"
+        "https://platejs.org/r/dnd.json",
+        "https://platejs.org/r/editor.json",
+        "https://platejs.org/r/editor-plugins.json"
       ],
       "files": [
         {
@@ -6167,7 +6129,7 @@
       "files": [
         {
           "path": "../../content/docs/(plugins)/(functionality)/(combobox)/emoji.mdx",
-          "content": "---\ntitle: Emoji\ndescription: Inline emoji search and toolbar emoji picking.\ndocs:\n  - route: /docs/combobox\n    title: Combobox\n  - route: /docs/components/emoji\n    title: Emoji Combobox\n  - route: /docs/components/emoji-toolbar-button\n    title: Emoji Toolbar Button\n---\n\nEmoji adds two insertion paths. Typing `:` opens a popup that searches the\ntext typed after it, and a toolbar popover browses categories. The package owns emoji data,\ntrigger behavior, index search, and insertion. The registry owns both UI\ncontrollers, including picker state and frequent emoji storage.\n\n<ComponentPreview name=\"emoji-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- A popup over the shortcode typed after `:`, through [Combobox](/docs/plate/combobox).\n- Shortcode queries, where a space closes the popup and a closing `:` stays in the query.\n- Emoji search from `@emoji-mart/data`.\n- Default insertion as Unicode text.\n- Custom inserted node support through `createEmojiNode`.\n- Toolbar popover with categories, search, preview, and frequent emoji tracking.\n- Markdown shortcode deserialization to Unicode text.\n\n</PackageInfo>\n\n## Fast path\n\n<Steps>\n\n### Add the kit\n\n`EmojiKit` installs `EmojiPlugin` with `@emoji-mart/data` and mounts the registry emoji popup.\n\n<ComponentSource name=\"emoji\" />\n\n```tsx\nimport { createEditor } from 'platejs/react';\n\nimport { EmojiKit } from '@/components/editor/emoji';\n\nexport const editor = createEditor({\n  plugins: EmojiKit,\n});\n```\n\n### Render the popup\n\n`emoji` searches `createEmojiSearch(data)` with the typed shortcode and inserts the selected emoji.\n\n<ComponentSource name=\"emoji\" />\n\n### Add toolbar picking\n\n`emoji-picker` owns the searchable picker family and frequent emoji storage.\n`emoji-toolbar-button` is its toolbar trigger.\n\n<ComponentSource name=\"emoji-picker\" />\n<ComponentSource name=\"emoji-toolbar-button\" />\n\n</Steps>\n\n## Ownership\n\n| Layer | Owner | What It Does |\n|-------|-------|--------------|\n| `platejs/emoji` | Package | Exports `BaseEmojiPlugin`, emoji search libraries, settings, categories, and types. |\n| `platejs/emoji/react` | Package | Exports `EmojiPlugin`. |\n| `platejs/combobox/react` | Package | Exports `useCombobox`, which opens the popup on a typed `:`. |\n| `@emoji-mart/data` | Dependency | Provides the emoji dataset used by the registry kit. |\n| `emoji` | Registry | Configures `EmojiPlugin` with the full emoji-mart dataset and mounts `EmojiCombobox`. |\n| `emoji` | Registry UI | Renders emoji search with `InlineCombobox`. |\n| `emoji-picker` | Registry UI | Owns popover state, search, category focus, preview, selection, and frequent emoji storage. |\n| `emoji-toolbar-button` | Registry UI | Adapts `EmojiPicker` to the editor toolbar. |\n| `inline-combobox` | Registry UI | Renders the listbox and popover primitives at the trigger. |\n| `platejs/markdown` | Package | Deserializes emoji shortcodes such as `:fire:` to Unicode text. |\n\nThe emoji plugin is edit-only. Completion replaces the typed `:` and shortcode with text or your custom node.\n\n## Manual setup\n\n<Steps>\n\n### Install packages\n\n```bash\nnpm install platejs @emoji-mart/data @tanstack/react-virtual\n```\n\n### Add plugins\n\n`emojiPlugin` configures the package plugin with the full emoji-mart dataset.\nMount the popup in its `afterEditable` slot.\n\n```tsx\nimport { createEditor } from 'platejs/react';\n\nimport { EmojiCombobox, emojiPlugin } from '@/components/editor/emoji';\n\nexport const editor = createEditor({\n  plugins: [\n    emojiPlugin.configure({ slots: { afterEditable: EmojiCombobox } }),\n  ],\n});\n```\n\n### Add a toolbar button\n\nRender `EmojiToolbarButton` in your toolbar when users should browse emoji without typing `:`.\n\n```tsx\nimport { EmojiToolbarButton } from '@/components/editor/emoji-toolbar-button';\n\nexport function FixedToolbarButtons() {\n  return <EmojiToolbarButton />;\n}\n```\n\n</Steps>\n\n## Inline flow\n\nThe inline path is a [combobox](/docs/plate/combobox) flow.\n\n| Step | Source |\n|------|--------|\n| Type `:` | `BaseEmojiPlugin` trigger. |\n| Previous character must match `/^\\s?$/` | Start of block or whitespace by default. |\n| Type the shortcode | `queryPattern` admits letters, digits, `_`, `+`, `-` and `:`; a space closes the popup. |\n| Search emoji data | `EmojiCombobox` calls `search(query, { limit: 60 })` on `createEmojiSearch(data)`, ignoring a closing `:`. |\n| Select a result | `InlineComboboxItem` replaces `:` and the shortcode and calls `editor.plugin(EmojiPlugin).update.insert(emoji)`. |\n| Insert final content | `update.insert` calls `createEmojiNode(emoji)` and inserts that node. |\n\n`EmojiCombobox` sets `filter={false}` because emoji search already returns filtered results. It also uses `hideWhenNoValue`, so the popover stays closed until the user types a search value after `:`.\n\n## Inserted value\n\nBy default, selecting an emoji inserts the first native skin as text.\n\n```tsx\nemojiPlugin.configure({\n  initialState: {\n    createEmojiNode: ({ skins }) => ({ text: skins[0].native }),\n  },\n});\n```\n\nUse `createEmojiNode` when your app stores emoji as structured inline nodes instead of text.\n\n```tsx\nemojiPlugin.configure({\n  initialState: {\n    createEmojiNode: (emoji) => ({\n      children: [{ text: emoji.id }],\n      emojiId: emoji.id,\n      type: 'emoji-chip',\n    }),\n  },\n});\n```\n\n## Toolbar picker\n\n`EmojiPicker` owns its state. `EmojiToolbarButton` supplies the toolbar trigger,\nwhile another component such as a callout can supply its own trigger and\nselection callback.\n\n```tsx\nimport { Button } from '@/components/ui/button';\nimport {\n  EmojiPicker,\n  EmojiPickerTrigger,\n} from '@/components/editor/emoji-picker';\n\n<EmojiPicker onSelectEmoji={setIcon}>\n  <EmojiPickerTrigger>\n    <Button>Choose icon</Button>\n  </EmojiPickerTrigger>\n</EmojiPicker>;\n```\n\n| Option | Default | Use |\n|--------|---------|-----|\n| `closeOnSelect` | `true` | Close the toolbar popover after insertion. |\n| `data` | `@emoji-mart/data` | Emoji dataset used by the picker. |\n| `settings` | `EmojiSettings` | Configure categories, per-line count, button size, and frequent emoji behavior. |\n| `settings.showFrequent.limit` | `EmojiSettings` value | Limits the frequent emoji category. |\n\nFrequent emoji counts are stored in `window.localStorage`. Server rendering uses\nthe default frequent set.\n\n## Markdown\n\n`platejs/markdown` parses emoji shortcodes to Unicode text.\n\n```md\nLaunch :fire: soon\n```\n\nSerializing the resulting value writes the Unicode emoji:\n\n```md\nLaunch 🔥 soon\n```\n\n## API Reference\n\nCreate a search once for each dataset. Queries match IDs, names and keywords,\nwith exact IDs first. Each call returns an independent array; the optional\n`limit` bounds the result count. An empty query returns no results.\n\n```ts\nimport emojiMartData, { type EmojiMartData } from '@emoji-mart/data';\nimport { createEmojiSearch } from 'platejs/emoji';\n\nconst search = createEmojiSearch(emojiMartData as unknown as EmojiMartData);\nconst results = search('rocket', { limit: 60 });\n```\n\n| API | Package | Use |\n|-----|---------|-----|\n| `BaseEmojiPlugin` | `platejs/emoji` | Edit-only trigger plugin with default `:`, emoji data, and text insertion. |\n| `EmojiPlugin` | `platejs/emoji/react` | React emoji plugin. |\n| `editor.plugin(EmojiPlugin).update.insert(emoji)` | `platejs/emoji` | Inserts `createEmojiNode(emoji)`. |\n| `createEmojiSearch(data)` | `platejs/emoji` | Creates a dataset search used by the popup and toolbar picker. |\n| `EmojiPicker` | `emoji-picker` registry UI | Owns popover state, search, category focus, preview, selection, and frequent emoji updates. |\n| `EmojiPickerTrigger` | `emoji-picker` registry UI | Composes an application-owned trigger without exposing the selected primitive API. |\n| `EmojiToolbarButton` | `emoji-toolbar-button` registry UI | Renders `EmojiPicker` from the toolbar. |\n",
+          "content": "---\ntitle: Emoji\ndescription: Inline emoji search and toolbar emoji picking.\ndocs:\n  - route: /docs/combobox\n    title: Combobox\n  - route: /docs/components/emoji\n    title: Emoji Combobox\n  - route: /docs/components/emoji-toolbar-button\n    title: Emoji Toolbar Button\n---\n\nEmoji adds two insertion paths. Typing `:` opens a popup that searches the\nshortcode typed after it, and a toolbar picker browses and searches every emoji.\nBoth are copied registry components over [Emojibase](https://emojibase.dev) data,\nand the picker grid is built on [frimousse](https://frimousse.liveblocks.io).\nEmoji are inserted as plain text.\n\n<ComponentPreview name=\"emoji-demo\" />\n\n<PackageInfo>\n\n## Features\n\n- A popup over the shortcode typed after `:`, through [Combobox](/docs/plate/combobox).\n- GitHub shortcodes such as `:+1:`, `:tada:` and `:heart_eyes:`, ranked before label and tag matches.\n- Shortcode queries, where a space closes the popup and a closing `:` stays in the query.\n- No popup inside code blocks.\n- Insertion as Unicode text.\n- A toolbar picker with category browsing, search, keyboard navigation and a frequent row.\n- Emojibase data loaded on first use and cached in the browser, with emoji the device cannot draw left out.\n- Markdown shortcode deserialization to Unicode text.\n\n</PackageInfo>\n\n## Fast path\n\n<Steps>\n\n### Add the kit\n\n`EmojiKit` installs `EmojiPlugin` and mounts the emoji popup.\n\n<ComponentSource name=\"emoji\" />\n\n```tsx\nimport { createEditor } from 'platejs/react';\n\nimport { EmojiKit } from '@/components/editor/emoji';\n\nexport const editor = createEditor({\n  plugins: EmojiKit,\n});\n```\n\n### Load emoji data\n\n`emoji-data` loads Emojibase through frimousse, joins GitHub shortcodes to it\nand ranks searches. The popup and every picker share one load.\n\n<ComponentSource name=\"emoji-data\" />\n\n### Add toolbar picking\n\n`emoji-picker` owns the picker popover, search and frequent picks.\n`emoji-toolbar-button` inserts the picked emoji at the selection.\n\n<ComponentSource name=\"emoji-picker\" />\n<ComponentSource name=\"emoji-toolbar-button\" />\n\n</Steps>\n\n## Ownership\n\n| Layer | Owner | What It Does |\n|-------|-------|--------------|\n| `emoji` | Registry | Defines `EmojiPlugin`, its trigger policy and code-block veto, and `EmojiCombobox`. |\n| `emoji-data` | Registry | Loads Emojibase once, joins GitHub shortcodes and ranks searches. |\n| `emoji-picker` | Registry UI | Owns the popover, search results, frimousse grid and frequent picks. |\n| `emoji-toolbar-button` | Registry UI | Opens `EmojiPicker` from the toolbar and inserts the pick. |\n| `inline-combobox` | Registry UI | Renders the listbox and popover primitives at the trigger. |\n| `platejs/combobox/react` | Package | Exports `useCombobox`, which opens the popup on a typed `:`. |\n| `platejs/markdown` | Package | Deserializes emoji shortcodes such as `:fire:` to Unicode text. |\n\n`EmojiPlugin` is edit-only. Completion replaces the typed `:` and shortcode with\nthe emoji in one undo step.\n\n## Manual setup\n\n<Steps>\n\n### Install packages\n\n```bash\nnpm install platejs frimousse@0.4.0\n```\n\n### Add plugins\n\n`EmojiPlugin` holds only the trigger policy. Mount the popup in its\n`afterEditable` slot.\n\n```tsx\nimport { createEditor } from 'platejs/react';\n\nimport { EmojiCombobox, EmojiPlugin } from '@/components/editor/emoji';\n\nexport const editor = createEditor({\n  plugins: [EmojiPlugin.configure({ slots: { afterEditable: EmojiCombobox } })],\n});\n```\n\n### Add a toolbar button\n\nRender `EmojiToolbarButton` in your toolbar when users should browse emoji\nwithout typing `:`.\n\n```tsx\nimport { EmojiToolbarButton } from '@/components/editor/emoji-toolbar-button';\n\nexport function FixedToolbarButtons() {\n  return <EmojiToolbarButton />;\n}\n```\n\n</Steps>\n\n## Inline flow\n\nThe inline path is a [combobox](/docs/plate/combobox) flow.\n\n| Step | Source |\n|------|--------|\n| Type `:` | `EmojiPlugin` trigger. |\n| Previous character must match `/^\\s?$/` | Start of block or whitespace by default. |\n| Not inside a code block | `triggerQuery` refuses the trigger when the selection is in a code block. |\n| Type the shortcode | `queryPattern` admits letters, digits, `_`, `+`, `-` and `:`; a space closes the popup. |\n| Search emoji data | `EmojiCombobox` calls `searchEmojis(entries, query)`, ignoring a closing `:`. |\n| Select a result | `InlineComboboxItem` replaces `:` and the shortcode and calls `tx.text.insert(emoji)`. |\n\nSearch ranks an exact shortcode first, then the shortest shortcode that starts\nwith the query, then a label word that starts with it, then any match in the\nlabel, tags or shortcodes. It returns at most 60 results.\n\n`EmojiCombobox` sets `filter={false}` because emoji search already returns\nfiltered results, and `hideWhenNoValue`, so the popup stays closed until the\nuser types after `:`. While the data loads, the popup shows a loading row that\nrefuses Enter, so Enter keeps the typed shortcode. When the data cannot load,\nthe popup says so and retries on the next keystroke.\n\n## Toolbar picker\n\n`EmojiPicker` takes its trigger as its child and hands the picked emoji to\n`onEmojiSelect`. It closes after a pick and returns focus to the editor.\n`EmojiToolbarButton` inserts the pick; another component, such as a callout,\ncan use the emoji any other way.\n\n```tsx\nimport { Button } from '@/components/ui/button';\nimport { EmojiPicker } from '@/components/editor/emoji-picker';\n\n<EmojiPicker onEmojiSelect={setIcon}>\n  <Button>Choose icon</Button>\n</EmojiPicker>;\n```\n\nWhile the search box is empty, the picker shows a Frequently used row and the\nfrimousse category grid; press ArrowDown or Tab to move into the grid. Typing a\nsearch shows the same ranked results as the popup, with arrow keys and Enter.\nEnter that confirms an IME composition does not pick an emoji.\n\nFrequent picks are counted per browser in `window.localStorage` under\n`plate:emoji-frequent`.\n\n## Emoji data\n\n`emoji-data` fetches `emojibase-data@17.0.0` from the jsDelivr CDN the first\ntime the popup or a picker needs it. frimousse caches the emoji in\n`localStorage` and drops emoji the device cannot draw, and the GitHub shortcodes\nare stored beside them, so later page loads also work offline.\n\nTo serve the data yourself, host `en/data.json`, `en/messages.json` and\n`en/shortcodes/github.json` from the `emojibase-data` 17.0.0 package and point\n`EMOJIBASE_URL` in `emoji-data` at that location.\n\n## Markdown\n\n`platejs/markdown` parses emoji shortcodes to Unicode text.\n\n```md\nLaunch :fire: soon\n```\n\nSerializing the resulting value writes the Unicode emoji:\n\n```md\nLaunch 🔥 soon\n```\n\n## API Reference\n\n| API | Source | Use |\n|-----|--------|-----|\n| `EmojiPlugin` | `emoji` registry | Edit-only plugin whose state holds the `:` trigger policy. |\n| `EmojiKit` | `emoji` registry | `EmojiPlugin` with `EmojiCombobox` in its `afterEditable` slot. |\n| `useEmojis(query)` | `emoji-data` registry | Starts the shared load for a non-null query and returns the entries, `'loading'` or `'failed'`. |\n| `searchEmojis(entries, query)` | `emoji-data` registry | Ranks entries for a query and returns at most 60. |\n| `resolveEmojiData` | `emoji-data` registry | frimousse data source for pickers, shared with the popup. |\n| `EmojiPicker` | `emoji-picker` registry UI | Popover picker; props are the trigger child and `onEmojiSelect(emoji)`. |\n| `EmojiToolbarButton` | `emoji-toolbar-button` registry UI | Toolbar trigger that inserts the picked emoji at the selection. |\n",
           "type": "registry:file",
           "target": "content/docs/plate/(plugins)/(functionality)/(combobox)/emoji.mdx"
         }

@@ -1,12 +1,7 @@
 # Sources
 
-This directory contains compiled research summaries of raw evidence.
-
-Each page here should summarize one raw source or one tightly related source
-group from `../raw`.
+This directory holds one home per editor, such as `lexical/`, `prosemirror/`, `slate/` and `tiptap/`, plus `plite/` for Plate's own Slate rewrite and `editor-architecture/` for comparisons across editors; `../homes.tsv` maps each research file to its homes. A home's README indexes its area pages, one page per topic such as `input-and-ime.md` or `testing-and-proof.md`, continued in a numbered page past 100 KB. Each finding names its evidence: a pinned upstream file as `<owner>/<repo>@<commit>:<path>`, a raw source under `../raw` or a Plate file.
 
 Do not store raw captures here.
 
-Each source summary should say what the source is, what it added, what it confirmed, what it contradicted and which compiled pages it should affect. A page that still mostly reports what one source said probably belongs here.
-
-`plate-notes/` is the exception. Each page there covers one editor area and lists lessons compiled from retired internal solution notes and Plite references, ledgers and roadmap notes, each with the retired source it came from and, where one exists, its current code owner.
+`plate-notes/` holds Plate's own lessons, one page per editor area, each with the retired source it came from and, where one exists, its current code owner.

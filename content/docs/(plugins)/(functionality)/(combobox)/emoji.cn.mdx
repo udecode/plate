@@ -1,13 +1,16 @@
 ---
 title: Emoji
+description: 内联表情搜索与工具栏表情选择。
 docs:
   - route: /docs/combobox
     title: 组合框
   - route: /docs/components/emoji
-    title: Emoji输入元素
-  - route: /docs/components/emoji-dropdown-menu
-    title: Emoji工具栏按钮
+    title: Emoji 组合框
+  - route: /docs/components/emoji-toolbar-button
+    title: Emoji 工具栏按钮
 ---
+
+Emoji 提供两种插入方式。输入 `:` 会打开一个弹出框，搜索其后输入的短代码；工具栏选择器可以浏览并搜索所有表情。两者都是复制到项目中的 registry 组件，数据来自 [Emojibase](https://emojibase.dev)，选择器网格基于 [frimousse](https://frimousse.liveblocks.io)。表情以纯文本插入。
 
 <ComponentPreview name="emoji-demo" />
 
@@ -15,135 +18,174 @@ docs:
 
 ## 功能特性
 
-- 通过自动补全建议内联插入表情符号
-- 通过输入`:`字符后跟表情名称触发（例如`:apple:` 🍎）
-- 可自定义的表情数据源和渲染方式
+- 通过 [Combobox](/docs/combobox) 在 `:` 后的短代码上打开弹出框。
+- 支持 `:+1:`、`:tada:`、`:heart_eyes:` 等 GitHub 短代码，排在名称和标签匹配之前。
+- 短代码查询中，空格会关闭弹出框，结尾的 `:` 保留在查询里。
+- 代码块内不会打开弹出框。
+- 以 Unicode 文本插入。
+- 工具栏选择器支持分类浏览、搜索、键盘导航和常用表情行。
+- Emojibase 数据在首次使用时加载并缓存在浏览器中，设备无法显示的表情会被排除。
+- Markdown 短代码反序列化为 Unicode 文本。
 
 </PackageInfo>
 
-## 套件使用方式
+## 快速开始
 
 <Steps>
-
-### 安装
-
-最快捷的添加表情功能方式是使用`EmojiKit`，它包含预配置的`EmojiPlugin`以及它的[Plate UI](/docs/installation/plate-ui)弹出框。
-
-<ComponentSource name="emoji" />
-
-- [`EmojiCombobox`](/docs/components/emoji)：渲染在 `:` 处搜索表情的弹出框
 
 ### 添加套件
 
+`EmojiKit` 安装 `EmojiPlugin` 并挂载表情弹出框。
+
+<ComponentSource name="emoji" />
+
 ```tsx
 import { createEditor } from 'platejs/react';
+
 import { EmojiKit } from '@/components/editor/emoji';
 
-const editor = createEditor({
-  plugins: [
-    // ...其他插件,
-    ...EmojiKit,
-  ],
+export const editor = createEditor({
+  plugins: EmojiKit,
 });
 ```
 
-</Steps>
+### 加载表情数据
 
-## 手动配置方式
+`emoji-data` 通过 frimousse 加载 Emojibase，合并 GitHub 短代码并对搜索结果排序。弹出框和所有选择器共用同一次加载。
 
-<Steps>
+<ComponentSource name="emoji-data" />
 
-### 安装
+### 添加工具栏选择
 
-```bash
-npm install platejs @emoji-mart/data @tanstack/react-virtual
-```
-
-### 添加插件
-
-`emojiPlugin` 使用完整的 emoji-mart 数据集配置包插件。在它的 `afterEditable` 插槽中挂载弹出框：
-
-```tsx
-import { createEditor } from 'platejs/react';
-import { EmojiCombobox, emojiPlugin } from '@/components/editor/emoji';
-
-const editor = createEditor({
-  plugins: [
-    // ...其他插件,
-    emojiPlugin.configure({
-      initialState: {
-        trigger: ':',
-        triggerPreviousCharPattern: /^\s?$/,
-        createEmojiNode: (emoji) => ({ text: emoji.skins[0].native }),
-      },
-      slots: { afterEditable: EmojiCombobox },
-    }),
-  ],
-});
-```
-
-- `initialState.data`: 来自@emoji-mart/data包的表情数据
-- `initialState.trigger`: 打开表情弹出框的文本（默认：`:`）
-- `initialState.triggerPreviousCharPattern`: 匹配触发字符前一个字符的正则表达式
-- `initialState.createEmojiNode`: 选择表情时创建表情节点的函数。默认插入Unicode字符作为文本
-- `slots.afterEditable`: 表情弹出框组件
-
-### 添加工具栏按钮
-
-您可以在[工具栏](/docs/toolbar)中添加[`EmojiToolbarButton`](/docs/components/emoji-toolbar-button)来插入表情符号。
-
-`EmojiPicker` 自行管理弹出层、搜索、分类焦点、预览、选择和常用表情。`EmojiToolbarButton` 只提供工具栏触发器。
-
-弹出框和工具栏共用 `platejs/emoji` 的 `createEmojiSearch(data)`。
-为每个数据集创建一次搜索函数，再调用 `search(query, { limit: 60 })`。
-搜索匹配 ID、名称和关键词，优先返回完全匹配的 ID。每次查询返回独立数组，
-空查询返回空数组。分类、行布局、常用表情记录和结果数量由复制的 UI 管理。
-
-```tsx
-import { Button } from '@/components/ui/button';
-import {
-  EmojiPicker,
-  EmojiPickerTrigger,
-} from '@/components/editor/emoji-picker';
-
-<EmojiPicker onSelectEmoji={setIcon}>
-  <EmojiPickerTrigger>
-    <Button>选择图标</Button>
-  </EmojiPickerTrigger>
-</EmojiPicker>;
-```
+`emoji-picker` 负责选择器弹出层、搜索和常用表情。`emoji-toolbar-button` 把选中的表情插入到选区处。
 
 <ComponentSource name="emoji-picker" />
 <ComponentSource name="emoji-toolbar-button" />
 
 </Steps>
 
-## 插件说明
+## 职责划分
 
-### EmojiPlugin
+| 层 | 所有者 | 作用 |
+|----|--------|------|
+| `emoji` | Registry | 定义 `EmojiPlugin`、它的触发规则和代码块限制，以及 `EmojiCombobox`。 |
+| `emoji-data` | Registry | 加载一次 Emojibase，合并 GitHub 短代码并对搜索排序。 |
+| `emoji-picker` | Registry UI | 负责弹出层、搜索结果、frimousse 网格和常用表情。 |
+| `emoji-toolbar-button` | Registry UI | 在工具栏中打开 `EmojiPicker` 并插入所选表情。 |
+| `inline-combobox` | Registry UI | 在触发位置渲染列表框和弹出层基础组件。 |
+| `platejs/combobox/react` | Package | 导出 `useCombobox`，在输入 `:` 时打开弹出框。 |
+| `platejs/markdown` | Package | 把 `:fire:` 等表情短代码反序列化为 Unicode 文本。 |
 
-提供表情功能的核心插件。其状态包含 [ComboboxState](/docs/combobox#comboboxstate) 触发策略。
+`EmojiPlugin` 只在编辑模式下生效。补全会在一个撤销步骤中，用表情替换输入的 `:` 和短代码。
 
-<API name="EmojiPlugin">
-<APIOptions>
-  <APIItem name="data" type="EmojiMartData" optional>
-    来自@emoji-mart/data包的表情数据。
-    - **默认值:** 内置表情库
-  </APIItem>
-  <APIItem name="createEmojiNode" type="(emoji: Emoji) => Descendant" optional>
-    指定选择表情时插入节点的函数。
-    - **默认行为:** 插入包含表情Unicode字符的文本节点
-  </APIItem>
-  <APIItem name="trigger" type="RegExp | readonly string[] | string" optional>
-    打开表情弹出框的文本。
-    - **默认值:** `':'`
-  </APIItem>
-  <APIItem name="triggerPreviousCharPattern" type="RegExp | null" optional>
-    匹配触发字符前一个字符的模式。
-    - **默认值:** `/^\s?$/`
-  </APIItem>
-  <APIItem name="queryPattern" type="RegExp | null" optional>
-    逐个测试短代码字符；空格会关闭弹出框，结尾的 `:` 保留在查询中。
-  </APIItem>
-</APIOptions>
-</API>
+## 手动配置
+
+<Steps>
+
+### 安装依赖
+
+```bash
+npm install platejs frimousse@0.4.0
+```
+
+### 添加 registry 组件
+
+把弹出框、数据加载器和选择器复制到你的应用中。
+
+```bash
+npx shadcn@latest add @plate/emoji @plate/emoji-picker @plate/emoji-toolbar-button
+```
+
+### 添加插件
+
+`EmojiPlugin` 只包含触发规则。把弹出框挂载到它的 `afterEditable` 插槽。
+
+```tsx
+import { createEditor } from 'platejs/react';
+
+import { EmojiCombobox, EmojiPlugin } from '@/components/editor/emoji';
+
+export const editor = createEditor({
+  plugins: [EmojiPlugin.configure({ slots: { afterEditable: EmojiCombobox } })],
+});
+```
+
+### 添加工具栏按钮
+
+如果用户需要不输入 `:` 也能浏览表情，在工具栏中渲染 `EmojiToolbarButton`。
+
+```tsx
+import { EmojiToolbarButton } from '@/components/editor/emoji-toolbar-button';
+
+export function EditorToolbar() {
+  return <EmojiToolbarButton />;
+}
+```
+
+</Steps>
+
+## 内联流程
+
+内联路径是一个 [combobox](/docs/combobox) 流程。
+
+| 步骤 | 来源 |
+|------|------|
+| 输入 `:` | `EmojiPlugin` 触发器。 |
+| 前一个字符必须匹配 `/^\s?$/` | 默认为块的开头或空白字符。 |
+| 不在代码块内 | 选区位于代码块时，`triggerQuery` 拒绝触发。 |
+| 输入短代码 | `queryPattern` 允许字母、数字、`_`、`+`、`-` 和 `:`；空格会关闭弹出框。 |
+| 搜索表情数据 | `EmojiCombobox` 调用 `useEmojiSearch(query)`，它会忽略结尾的 `:`。 |
+| 选择结果 | `InlineComboboxItem` 替换 `:` 和短代码，并调用 `tx.text.insert(emoji)`。 |
+
+搜索排序依次为：完全匹配的短代码，以查询开头且最短的短代码，以查询开头的名称单词，最后是名称、标签或短代码中的任意匹配。最多返回 60 个结果。
+
+`EmojiCombobox` 设置 `filter={false}`，因为表情搜索已经返回过滤后的结果；同时设置 `hideWhenNoValue`，所以在 `:` 后输入内容之前弹出框保持关闭。数据加载期间，弹出框显示加载行并拦截 Enter，因此 Enter 会保留已输入的短代码。数据无法加载时，弹出框会给出提示，并在下一次按键时重试。
+
+## 工具栏选择器
+
+`EmojiPicker` 以子元素作为触发器，并把选中的表情传给 `onEmojiSelect`。选择后它会关闭，并把焦点还给编辑器。`EmojiToolbarButton` 负责插入；其他组件（例如 callout）可以按自己的方式使用表情。
+
+```tsx
+import { Button } from '@/components/ui/button';
+import { EmojiPicker } from '@/components/editor/emoji-picker';
+
+<EmojiPicker onEmojiSelect={setIcon}>
+  <Button>选择图标</Button>
+</EmojiPicker>;
+```
+
+搜索框为空时，选择器显示常用表情行和 frimousse 分类网格；按 ArrowDown 或 Tab 进入网格。输入搜索内容后，会显示与弹出框相同的排序结果，可用方向键和 Enter 选择。用于确认输入法候选词的 Enter 不会选中表情。
+
+常用表情按浏览器计数，保存在 `window.localStorage` 的 `plate:emoji-frequent:v1` 中。
+
+## 表情数据
+
+`emoji-data` 在弹出框或选择器首次需要时，从 jsDelivr CDN 获取 `emojibase-data@17.0.0`。frimousse 会把表情缓存到 `localStorage`，并排除设备无法显示的表情；GitHub 短代码也保存在旁边，因此之后的页面加载在离线时也能使用。
+
+如需自行托管数据，请从 `emojibase-data` 17.0.0 包中托管 `en/data.json`、`en/messages.json` 和 `en/shortcodes/github.json`，并把 `emoji-data` 中的 `EMOJIBASE_URL` 指向该位置。
+
+## Markdown
+
+`platejs/markdown` 会把表情短代码解析为 Unicode 文本。
+
+```md
+Launch :fire: soon
+```
+
+序列化结果值时会写出 Unicode 表情：
+
+```md
+Launch 🔥 soon
+```
+
+## API 参考
+
+| API | 来源 | 用途 |
+|-----|------|------|
+| `EmojiPlugin` | `emoji` registry | 只在编辑模式下生效的插件，其状态保存 `:` 触发规则。 |
+| `EmojiKit` | `emoji` registry | 在 `afterEditable` 插槽中挂载 `EmojiCombobox` 的 `EmojiPlugin`。 |
+| `useEmojiSearch(query)` | `emoji-data` registry | 查询不为 null 时开始共享加载，返回 `{ results, status }`，其中 `status` 为 `'loading'`、`'ready'` 或 `'failed'`。 |
+| `searchEmojis(entries, query)` | `emoji-data` registry | 按查询对条目排序，最多返回 60 个。 |
+| `resolveEmojiData` | `emoji-data` registry | 选择器使用的 frimousse 数据源，与弹出框共享。 |
+| `EmojiPicker` | `emoji-picker` registry UI | 弹出式选择器；属性为子元素触发器和 `onEmojiSelect(emoji)`。 |
+| `EmojiToolbarButton` | `emoji-toolbar-button` registry UI | 把所选表情插入到选区处的工具栏触发器。 |

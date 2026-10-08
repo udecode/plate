@@ -1,27 +1,27 @@
 ---
 title: Cursor, Find, and Widget geometry architecture
 type: source
-status: accepted
+status: stale
 updated: 2026-08-30
 source_refs:
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/plitejs/src/react/decoration-source.ts
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/plitejs/src/react/projection-store.ts
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/plitejs/src/react/widget-store.ts
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/plitejs/src/dom/plugin/editable-dom-runtime.ts
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/react/components/PlateContent.tsx
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/static/components/PlateStatic.tsx
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/yjs/core/awareness-adapter.ts
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/yjs/core/controller.ts
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/yjs/core/types.ts
-  - platejs@494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/yjs/react/useYjs.ts
-  - prosekit@3fbfe7906c3448328e80c1c1333647d08e50907e:packages/extensions/src/search/index.ts
-  - prosekit@3fbfe7906c3448328e80c1c1333647d08e50907e:packages/web/src/components/inline-popover/inline-popover-root.ts
-  - prosekit@3fbfe7906c3448328e80c1c1333647d08e50907e:packages/web/src/components/inline-popover/virtual-selection-element.ts
-  - tiptap@a4b939127821aac3a2139a467c5b257dd897da4e:packages/extension-bubble-menu/src/bubble-menu-plugin.ts
-  - tiptap@a4b939127821aac3a2139a467c5b257dd897da4e:packages/extension-collaboration-caret/src/collaboration-caret.ts
-  - lexical@1ca42f1d88140abfd929a854615705c035c5b99b:packages/lexical-yjs/src/SyncCursors.ts
-  - lexical@1ca42f1d88140abfd929a854615705c035c5b99b:packages/lexical-yjs/src/SyncEditorStates.ts
-  - y-prosemirror@9200946f0ea455c681a7496c364ee998a9f064f7:src/cursor-plugin.js
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/plitejs/src/react/decoration-source.ts
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/plitejs/src/react/projection-store.ts
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/plitejs/src/react/widget-store.ts
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/plitejs/src/react/editable/editable-dom-runtime.ts
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/react/components/PlateContent.tsx
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/static/components/PlateStatic.tsx
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/yjs/core/awareness-adapter.ts
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/yjs/core/controller.ts
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/yjs/core/types.ts
+  - 494d90c495092d25941b6f57ca7ebf97b5db13dd:packages/platejs/src/yjs/react/useYjs.ts
+  - prosekit/prosekit@3fbfe7906c3448328e80c1c1333647d08e50907e:packages/extensions/src/search/index.ts
+  - prosekit/prosekit@3fbfe7906c3448328e80c1c1333647d08e50907e:packages/web/src/components/inline-popover/inline-popover-root.ts
+  - prosekit/prosekit@3fbfe7906c3448328e80c1c1333647d08e50907e:packages/web/src/components/inline-popover/virtual-selection-element.ts
+  - ueberdosis/tiptap@a4b939127821aac3a2139a467c5b257dd897da4e:packages/extension-bubble-menu/src/bubble-menu-plugin.ts
+  - ueberdosis/tiptap@a4b939127821aac3a2139a467c5b257dd897da4e:packages/extension-collaboration-caret/src/collaboration-caret.ts
+  - facebook/lexical@1ca42f1d88140abfd929a854615705c035c5b99b:packages/lexical-yjs/src/SyncCursors.ts
+  - facebook/lexical@1ca42f1d88140abfd929a854615705c035c5b99b:packages/lexical-yjs/src/SyncEditorStates.ts
+  - yjs/y-prosemirror@9200946f0ea455c681a7496c364ee998a9f064f7:src/cursor-plugin.js
   - docs/research/sources/typora/navigation-search-outline-and-toc.md
 related:
   - docs/plans/2026-08-30-cursor-find-overlay-architecture.md
@@ -30,6 +30,8 @@ related:
 ---
 
 # Cursor, Find, and Widget geometry architecture
+
+> Current Plite (checked 2026-10-08): this page reads Plate commit 494d90c4. Plite has since cut the Widget lane and its store (`docs/research/decisions/plite-view-ownership.md:28`), and `packages/plitejs/src` has no widget or projection store. Selection or keyed cursor owners feed exact-mounted-view geometry (`docs/vision/plite.md:597-600`): remote cursor geometry is read per client with `useYjsRemoteCursorGeometry(editor, clientId, { editableRef })` (`packages/plitejs/src/yjs/react/useYjs.ts:181-193`), over an awareness adapter that keeps each cursor's endpoints as `Anchor<Point>` handles (`packages/plitejs/src/yjs/core/awareness-adapter.ts:85-88`). Read the Widget lane, Widget store and projection-store steps below as the 2026-08-30 design.
 
 ## Question
 
@@ -76,7 +78,7 @@ canonical ordered ranges for navigation and its Decoration source. The app
 owns one stable Decoration-source array and explicitly composes copied Find and
 Yjs segment renderers; neither feature may replace the other.
 
-## Current Plite and Plate evidence
+## Plite and Plate evidence at 494d90c4
 
 ### Projection substrate
 

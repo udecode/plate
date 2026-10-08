@@ -28,6 +28,8 @@ related:
 
 # Slate v2 local overlay proof substrate
 
+> Current Plite (checked 2026-10-08): the projection store, widget store, `Bookmark` and `idToPath`/`pathToId` indexes this April 2026 page reads are gone from `packages/plitejs/src`. Live identity is the opaque `NodeKey`, which a snapshot index maps to and from paths (`packages/plitejs/src/interfaces/editor.ts:2013-2025`); a durable location is an `editor.anchor` handle that resolves in its capture view or another view of the same model (`packages/plitejs/src/core/anchor.ts:327-341`); a decoration source reads one node entry and can refresh named node keys (`packages/plitejs/src/interfaces/decoration.ts:25-37`), projecting ranges with `projectRangeInSnapshot` (`packages/plitejs/src/react/decoration-source.ts:748`); and Plite exposes no widget target or store lane (`docs/vision/plite.md:597-600`).
+
 ## Purpose
 
 Compile the local Slate v2 evidence that already supports the overlay rewrite.

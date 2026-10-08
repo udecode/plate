@@ -14,9 +14,9 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/editor-dropdown-menu.json",
+    "https://platejs.org/r/toolbar.json",
     "button",
-    "tooltip",
-    "https://platejs.org/r/toolbar.json"
+    "tooltip"
   ],
   "files": [
     {

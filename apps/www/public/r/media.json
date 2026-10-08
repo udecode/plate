@@ -8,12 +8,12 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/media-toolbar.json",
     "https://platejs.org/r/media-audio.json",
     "https://platejs.org/r/media-embed.json",
     "https://platejs.org/r/media-file.json",
     "https://platejs.org/r/media-image.json",
     "https://platejs.org/r/media-preview-dialog.json",
-    "https://platejs.org/r/media-toolbar.json",
     "https://platejs.org/r/media-video.json"
   ],
   "files": [

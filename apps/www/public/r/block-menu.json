@@ -14,8 +14,8 @@
     "unified@^11.0.5"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor-context-menu.json",
-    "https://platejs.org/r/dnd.json"
+    "https://platejs.org/r/dnd.json",
+    "https://platejs.org/r/editor-context-menu.json"
   ],
   "files": [
     {

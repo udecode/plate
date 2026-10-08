@@ -11,8 +11,8 @@
     "files-sdk@2.6.0"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/files-api.json",
-    "https://platejs.org/r/upload.json"
+    "https://platejs.org/r/upload.json",
+    "https://platejs.org/r/files-api.json"
   ],
   "files": [
     {

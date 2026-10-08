@@ -8,7 +8,6 @@
     "@base-ui/react",
     "diff-match-patch-ts@^0.6.0"
   ],
-  "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/bases/base/floating-popover.tsx",

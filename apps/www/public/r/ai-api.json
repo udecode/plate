@@ -17,8 +17,8 @@
   "registryDependencies": [
     "https://platejs.org/r/copilot-api.json",
     "https://platejs.org/r/editor-static.json",
-    "https://platejs.org/r/use-chat.json",
-    "https://platejs.org/r/editor-plugins-static.json"
+    "https://platejs.org/r/editor-plugins-static.json",
+    "https://platejs.org/r/use-chat.json"
   ],
   "files": [
     {

@@ -25,7 +25,6 @@
     "apps/www/src/registry/components/editor/inline-combobox.tsx",
     "packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts",
     "packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts",
-    "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts",
     "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts",
     "apps/www/src/registry/components/editor/mention.tsx",
     "apps/www/src/registry/components/editor/slash.tsx",
@@ -51,7 +50,6 @@
     "bunfig.toml",
     "packages/platejs/src/lib/plugins/input-rules/",
     "apps/www/src/registry/hooks/use-debounce.ts",
-    "packages/platejs/src/emoji/lib/createEmojiSearch.ts",
     "apps/www/src/registry/components/editor/select-editor.tsx",
     "apps/www/src/registry/components/editor/select-command.tsx"
   ],

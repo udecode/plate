@@ -9,10 +9,10 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "button",
-    "input",
     "https://platejs.org/r/floating-popover.json",
-    "https://platejs.org/r/toolbar.json"
+    "https://platejs.org/r/toolbar.json",
+    "button",
+    "input"
   ],
   "files": [
     {

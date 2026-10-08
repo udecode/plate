@@ -15,6 +15,8 @@ related:
 
 # Slate v2 overlay architecture
 
+> Current Plite (checked 2026-10-08): this is the April 2026 Slate v2 design. Plite kept the Decoration and Annotation lanes and cut the Widget lane, `Bookmark` and `RangeRef`: Plite exposes no widget target or store lane (`docs/vision/plite.md:597-600`; `docs/research/decisions/plite-view-ownership.md:28`), `packages/plitejs/src` has no `Bookmark` or `RangeRef`, and a durable location is an `editor.anchor` handle its owner releases (`packages/plitejs/src/interfaces/editor.ts:2559-2567`, `docs/vision/plite.md:613-624`).
+
 ## Purpose
 
 This is the research-layer architecture map for the Slate v2 overlay system.
@@ -96,7 +98,7 @@ That made one callback pretend it could own:
 
 Slate v2 is better because it stopped doing that.
 
-It now has:
+By April 2026 it had:
 
 - separate `Decoration`, `Annotation`, and `Widget` lanes
 - `Bookmark` as the durable public anchor story

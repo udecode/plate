@@ -10,11 +10,7 @@
     "unified@^11.0.5"
   ],
   "registryDependencies": [
-    "button",
-    "https://platejs.org/r/editor.json",
     "https://platejs.org/r/editor-static.json",
-    "https://platejs.org/r/editor-plugins-static.json",
-    "https://platejs.org/r/dnd.json",
     "https://platejs.org/r/align.json",
     "https://platejs.org/r/basic-blocks.json",
     "https://platejs.org/r/basic-marks.json",
@@ -23,6 +19,9 @@
     "https://platejs.org/r/column.json",
     "https://platejs.org/r/date.json",
     "https://platejs.org/r/details.json",
+    "https://platejs.org/r/dnd.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/editor-plugins-static.json",
     "https://platejs.org/r/font.json",
     "https://platejs.org/r/footnote.json",
     "https://platejs.org/r/line-height.json",
@@ -33,7 +32,8 @@
     "https://platejs.org/r/media.json",
     "https://platejs.org/r/mention.json",
     "https://platejs.org/r/table.json",
-    "https://platejs.org/r/toc.json"
+    "https://platejs.org/r/toc.json",
+    "button"
   ],
   "files": [
     {

@@ -14,10 +14,10 @@
     "viz.js@^2.1.2"
   ],
   "registryDependencies": [
-    "button",
-    "select",
     "https://platejs.org/r/floating-popover.json",
-    "https://platejs.org/r/use-mobile.json"
+    "https://platejs.org/r/use-mobile.json",
+    "button",
+    "select"
   ],
   "files": [
     {

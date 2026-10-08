@@ -44,7 +44,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "fd476b162151a9f0ee1e0efc8f904616b09b13abb8188ffd46bb4a86660bd2a1",
+    "block": "701fe53e6e0036cb59300f9f5cc844e9edbe378521aacd2742063a66c75d2532",
     "files": {
       ".agents/pstack/cross.mjs": "3c4deec1b718faa58109488075ccb24ddb32a1c8da4183aa92d28a729c891208",
       ".agents/pstack/freeze.mjs": "7adda630479f6c81b865b381411f4fcea3d9a26c3b2103148c4bab84b461c4bb",
@@ -54,10 +54,10 @@
       ".agents/pstack/reread.mjs": "a7826063963cbef31d263004fd41c42b50c0252c7105e1b0ec37ea427448c2cf",
       ".agents/pstack/decisions-check.mjs": "81e5fdc4cc6cea2696a18b24261d3db476f671bd9d2a0882662c275cdc0f488a",
       ".agents/pstack/plan-open.mjs": "701ba00e8b651851de566c26a28142606bd0694f109ca52dce274d54966b69fb",
-      ".agents/pstack/plan-page.mjs": "41795aebc6e8c2d01fca6966dcc24f5d3cfa56041b822bfae1ac392063bd0f4a",
+      ".agents/pstack/plan-page.mjs": "bd092d7208de3ec35da226de706ed69e98199c96c768af359cb159befa2775a3",
       ".agents/pstack/status.mjs": "6a90a44fbe813229d2aa760bd1d30cd75852c2d161671bd1d84f814813935f47"
     },
-    "source": "7d68fd73b6417dc23663e62a2cdfbaa8adee0743"
+    "source": "2b980d7ac1be499be1444ce475682e5038840bb8"
   },
   "pageTopic": {
     "field": "review_scopes",
@@ -66,7 +66,7 @@
   "reviews": [
     {
       "id": "api-plan",
-      "rule": "A plan with an API or architecture target runs `architect` to pick the target, then a panel on the finished plan."
+      "rule": "A plan that changes a public API runs `architect` to pick the target, then a panel on the finished plan."
     },
     {
       "id": "api-build",

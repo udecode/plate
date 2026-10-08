@@ -20,6 +20,8 @@ related:
 
 # React 19.2 external-store and background-ui primitives
 
+> Current Plite (checked 2026-10-08): the Slate v2 hooks that section 3 below lists are gone. Plite reads editor state with `useEditorSelector` (`packages/plitejs/src/react/hooks/use-editor-selector.tsx:98`) and annotations with `useAnnotation(store, id)` and `useAnnotations(store)` over `useSyncExternalStore` (`packages/plitejs/src/react/hooks/use-plite-annotations.tsx:10-21`, `:24`); decorations are sources passed to `<EditorRoot decorations>` (`packages/plitejs/src/react/components/plite.tsx:181`); `packages/plitejs/src` has no widget or projection hook, and the law rules out a widget lane (`docs/vision/plite.md:597-600`); and a search of `apps` and `packages` on 2026-10-08 found no use of React's `Activity`.
+
 ## Purpose
 
 Compile the React 19.2 primitives that matter to the Slate v2 perf-architecture

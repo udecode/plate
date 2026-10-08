@@ -9,9 +9,8 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "button",
-    "tooltip",
-    "https://platejs.org/r/editor-dropdown-menu.json"
+    "https://platejs.org/r/editor-dropdown-menu.json",
+    "tooltip"
   ],
   "files": [
     {

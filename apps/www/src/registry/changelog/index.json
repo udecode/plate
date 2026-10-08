@@ -2,6 +2,68 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-08-emoji-frimousse",
+      "href": "/registry/changelog/2026-10-08-emoji-frimousse.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Rebuild the emoji popup and picker on frimousse and Emojibase",
+      "change": {
+        "type": "source",
+        "date": "2026-10-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "emoji-data",
+        "emoji",
+        "emoji-picker",
+        "emoji-toolbar-button",
+        "callout"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-08-registry-install-dependencies",
+      "href": "/registry/changelog/2026-10-08-registry-install-dependencies.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Install the package versions Plate declares and skip unused files",
+      "change": {
+        "type": "source",
+        "date": "2026-10-08",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "export-toolbar-button",
+        "docx",
+        "excalidraw",
+        "code-block",
+        "code-block-codemirror",
+        "remote-cursor-overlay",
+        "collaboration-demo",
+        "date-static",
+        "link-static",
+        "math-static",
+        "mention-static",
+        "dnd",
+        "editor-ai",
+        "ai",
+        "ai-api",
+        "ai-menu",
+        "settings-dialog",
+        "editor-plugins-static",
+        "block-menu"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-07-dnd-translucent-drag-image",
       "href": "/registry/changelog/2026-10-07-dnd-translucent-drag-image.json",
       "status": "draft",
@@ -1121,24 +1183,6 @@
         "status": "unresolved"
       },
       "targets": ["floating-toolbar", "multiple-editors-demo"],
-      "entries": 2,
-      "diagnostics": []
-    },
-    {
-      "id": "2026-09-08-emoji-search",
-      "href": "/registry/changelog/2026-09-08-emoji-search.json",
-      "status": "draft",
-      "kind": "update",
-      "summary": "Use one emoji search with locally owned picker categories.",
-      "change": {
-        "type": "source",
-        "date": "2026-09-08",
-        "commits": []
-      },
-      "release": {
-        "status": "unresolved"
-      },
-      "targets": ["emoji", "emoji-picker"],
       "entries": 2,
       "diagnostics": []
     },

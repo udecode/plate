@@ -508,6 +508,23 @@ test('resolve fails on a wildcard law ID', () => {
   );
 });
 
+test('resolve accepts units that cite the spec as covered without an ID', () => {
+  const covered = (key, line) =>
+    unit(key, matrix.path, [line, line], {
+      disposition: 'covered',
+      target: 'docs/editor-behavior/markdown-editing-spec.md',
+      span: 'rule',
+    });
+  const result = resolve({
+    batch: 'b2',
+    sources: [matrix],
+    units: [covered('m1', 1), covered('m2', 2), unit('m3', matrix.path, [3, 3])],
+    verdicts: accept('m1', 'm2', 'm3'),
+    seed: 's',
+  });
+  assert.equal(result.units.length, 3);
+});
+
 const linkBatch = (path, has = () => false) =>
   resolve({
     batch: 'b3',

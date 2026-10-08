@@ -1,0 +1,26 @@
+---
+id: 2026-10-08-emoji-frimousse
+date: 2026-10-08
+status: draft
+kind: behavior
+summary: 'Rebuild the emoji popup and picker on frimousse and Emojibase'
+change: { 'type': 'source', 'date': '2026-10-08', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-08-emoji-data-new-d4c3c91e","kind":"new","migrationNotes":[]} -->
+
+- **`emoji-data`**: Add a shared Emojibase catalog with GitHub shortcodes, loaded on first use from a pinned CDN release, cached in the browser, and ranked by shortcode before label and tag matches.
+
+<!-- entry: {"id":"2026-10-08-emoji-popup-local-plugin-5b1e0a72","kind":"behavior","migrationNotes":["Replace emojiPlugin with EmojiPlugin from the copied emoji file."]} -->
+
+- **`emoji`**: Define `EmojiPlugin` in the copied file, search `emoji-data`, insert the emoji as text, show a loading row that keeps Enter from splitting the block, and keep the popup closed inside code blocks.
+
+<!-- entry: {"id":"2026-10-08-emoji-picker-frimousse-9c2f4d18","kind":"behavior","migrationNotes":["Pass the trigger as the picker's child and handle onEmojiSelect(emoji); the data, settings, closeOnSelect and disabled props and EmojiPickerTrigger are gone."]} -->
+
+- **`emoji-picker`**: Build the picker on frimousse with keyboard navigation, the ranked `emoji-data` search, a frequent row and an unavailable message, and take the trigger as the child with a required `onEmojiSelect(emoji)`.
+
+<!-- entry: {"id":"2026-10-08-emoji-toolbar-insert-3e8a6b51","kind":"behavior","migrationNotes":[]} -->
+
+- **`emoji-toolbar-button`**, **`callout`**: Insert the picked emoji at the selection as its own undo step and return focus to the editor; the callout sets its icon from the picker.

@@ -576,6 +576,37 @@ alpha|beta
 
 note: when merge is valid; otherwise generic fallback
 
+- `EDIT-P-BS-START-FIRST-401` `proposed` `⌫`: with a collapsed caret at the start of a top-level paragraph that has no previous block, empty or not, nothing changes and the caret stays at the paragraph start
+
+```text
+|alpha
+beta
+=>
+|alpha
+beta
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: CommonMark; primary UX ref: Typora; secondary ref: Milkdown
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/markdown-parity-matrix.md:82
+Proof: no Plate test runs it. For an empty first paragraph, Plite proves it: `packages/plitejs/test/delete-contract.ts:1444` "keeps Backspace at the start of leading empty paragraphs as a no-op", run by `packages/plitejs/test/runtime-contracts.test.ts`, runs `tx.text.deleteBackward()` in the first of two empty paragraphs before `text` and asserts the children and the caret unchanged, a tag candidate at Plite core level, and `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts:1209` "keeps Backspace in an empty first block from deleting it" presses Backspace in an empty first block before `second` on Plite's plaintext example and asserts the block texts and the caret. For a non-empty one, `packages/platejs/src/lib/plugins/override/OverridePlugin.spec.tsx:237` "leaves document-start deletion inside nested blocks to their owner" covers only a paragraph nested in a wrapper, and `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:5966` "keeps the first heading unchanged on Backspace at the start" covers a heading. Model probes on 2026-10-08 (Bun, package source) ran `deleteBackward` on Plate's `createEditor` at the start of the first of two paragraphs, of a lone paragraph, of a lone empty paragraph, of an empty paragraph before `beta` and of the first of two empty paragraphs before `text`, and left the value and caret unchanged each time, while the same call after an empty or a non-empty paragraph changed the value, so the shipped code agrees. This states the document-start case of the fallback that `EDIT-P-BS-START-001`'s note leaves unstated; a paragraph after an empty one follows `EDIT-P-BS-START-AFTER-EMPTY-001`. Checked 2026-10-08.
+
+- `EDIT-P-BS-START-AFTER-EMPTY-001` `proposed` `⌫`: with a collapsed caret at the start of a top-level paragraph whose previous sibling is an empty paragraph, only that empty paragraph is removed; the current paragraph keeps its text and the caret stays at its start, and every empty paragraph before the removed one stays. When the previous paragraph holds only whitespace, `⌫` merges into it as `EDIT-P-BS-START-001` says, and the empty paragraphs before that one still stay
+
+```text
+(empty paragraph)
+(empty paragraph)
+|text
+=>
+(empty paragraph)
+|text
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: CommonMark; primary UX ref: Typora; secondary ref: Milkdown
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/solutions/developer-experience/2026-05-21-plite-layout-source-entry-and-paged-editable-dx.md:17-19, :417-426, :458-462
+Proof: Plite core's `getPreviousEmptyBlockPathAtBlockStart` (`packages/plitejs/src/transforms-text/delete-text-collapsed-path-targets.ts:58-102`), which a one-character backward delete calls (`packages/plitejs/src/transforms-text/delete-text.ts:308-320`), path-deletes the previous empty, non-void, editable top-level block. In `packages/plitejs/test/delete-contract.ts`, run by `packages/plitejs/test/runtime-contracts.test.ts`, "removes one preceding empty paragraph at a time on Backspace" (:1403) and "keeps earlier empty paragraphs when Backspace merges after a space block" (:1472) assert both clauses, with the caret, through `tx.text.deleteBackward()` on a raw Plite editor; they are tag candidates. A scratch probe on 2026-10-08 ran `deleteBackward` from `packages/platejs/src/testing` on Plate's `createEditor` with `BaseBlockquotePlugin` and `BaseHeadingPlugin`, loading package source: three empty paragraphs then `text`, with the caret at the start of `text`, left two empty paragraphs and `text` with the caret at `[2, 0]` offset 0, and two empty paragraphs, a ` ` paragraph and `text` left the two empty paragraphs and ` text` with the caret after the space, so the shipped code agrees. No browser row presses Enter, Space, Enter, Backspace, the native path the source note says programmatic coverage misses. The first-block case, empty or not, belongs to `EDIT-P-BS-START-FIRST-401`. Checked 2026-10-08.
+
 - `EDIT-P-BS-START-EMPTY-001` `locked` `⌫`
 
 ```text
@@ -584,6 +615,20 @@ alpha
 =>
 alpha|
 ```
+
+- `EDIT-P-DEL-EMPTY-001` `proposed` `⌦`: in an empty top-level paragraph whose next sibling is a list or blockquote, `⌦` removes the empty paragraph, keeps the following wrapper whole and puts the caret at the start of that wrapper's first text, instead of unwrapping the wrapper's first child to the top level
+
+```text
+|
+> quoted
+=>
+> |quoted
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: CommonMark; primary UX ref: Typora; secondary ref: ProseMirror (#1309)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1292-1329.md:22
+Proof: Plite core proves it for a nested list wrapper: `packages/plitejs/test/delete-contract.ts:983` "preserves following list and block quote wrappers on Delete from an empty paragraph", run by `packages/plitejs/test/runtime-contracts.test.ts`, asserts the wrappers unchanged and the caret at the start of their first text; its block-quote case is a text block, not a wrapper. No Plate test covers it; a model probe on 2026-10-08 (Bun, package source, happy-dom) pressed `deleteForward` in an empty paragraph before a flat list item and before a blockquote holding two paragraphs, and both kept the following block whole with the caret at its first text's start. Checked 2026-10-08.
 
 - `EDIT-P-TAB-001` `locked` `⇥`
 
@@ -637,6 +682,20 @@ Plugin surface:
 |
 ```
 
+- `EDIT-H-ENTER-START-001` `proposed` `↵`: with a collapsed caret at the start of a non-empty heading, `↵` inserts an empty paragraph above the heading and leaves the caret at the start of the heading, which keeps its type, level and text
+
+```text
+# |Heading
+=>
+(empty paragraph)
+# |Heading
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: CommonMark heading syntax; primary UX ref: Typora; secondary ref: Lexical's `TextEntry.spec.mjs`
+Source: docs/editor-test-harvester/lexical/plite-processing-ledger.md:770
+Proof: no Plate heading test runs it. The Plate path: headings declare `break.splitReset` (`packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts:25`), which resets the empty block above when the split starts at the block start (`packages/platejs/src/internal/plugin/OverridePlugin.ts:189-203`), and `packages/platejs/src/lib/plugins/override/OverridePlugin.spec.tsx:273` "resets the empty block inserted at the start of a splitReset block" runs it on a callout stand-in and asserts no caret. A model probe on 2026-10-08 with `BaseHeadingPlugin` (Bun, package source) gave an empty paragraph, then the level-1 heading `Heading`, with the caret at offset 0 of `[1, 0]`. In a browser, only Plite's markdown-shortcuts example proves it, under its own Enter policy rather than Plate's plugin: `apps/plite/tests/plite-browser/donor/examples/markdown-shortcuts.test.ts:479` "inserts a paragraph before a heading from the heading start" asserts block texts `['', 'Heading']` and the caret at offset 0 of `[1, 0]`. Checked 2026-10-08.
+
 - `EDIT-H-BS-START-001` `locked` `⌫`
 
 ```text
@@ -687,6 +746,20 @@ this predictably.
 - abc
 - |def
 ```
+
+- `EDIT-LIST-START-ENTER-402` `proposed` `↵`: with a collapsed caret inside a non-empty ordered list item that carries an explicit start or restart number, the item splits, the first half keeps that number, and the new item carries none, continues the sequence and takes the caret at its start
+
+```text
+7. One|Two
+=>
+7. One
+8. |Two
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: CommonMark; primary UX ref: Typora; secondary ref: Milkdown
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/markdown-parity-matrix.md:86
+Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx:427` "clears an explicit start from the sibling created by a split" runs `break.insert` at offset 3 of `OneTwo` with `listStart: 7` and asserts `listStart: 7` on the first item, none on the second and ordinal 8, without the split text or the caret; `:452` "drops an explicit start for direct node splits" and `:473` "drops a forced restart from split siblings" split with `nodes.split`, not `↵`. A model probe on 2026-10-08 (Bun, package source) ran `↵` on a `listRestart: 4` item and on a `listStart: 7` item and got ordinals 4 and 5, and 7 and 8, with the caret at offset 0 of `[1, 0]` both times. Tag candidate for the `listStart` structure; the caret and the restart case have no test. Code: the list's `↵` override clears `listStart` and `listRestart` from the new item (`packages/platejs/src/features/list/lib/BaseListPlugin.ts:1678-1693`), and the schema also drops both on split (`:652-673`). Checked 2026-10-08.
 
 - `EDIT-LIST-ENTER-EMPTY-001` `locked` `↵`
 
@@ -743,6 +816,24 @@ this predictably.
 =>
 - |Item
 ```
+
+- `EDIT-LIST-START-MD-401` `proposed` `Markdown parse and serialize`: an ordered list keeps its explicit start number, including `0` and the start of a list that follows an interrupting paragraph, through parse, value replacement and serialize
+
+```text
+1. First list item
+
+Break between lists.
+
+2. Second list item
+3. Third list item
+=>
+the same markdown after parse, value replacement and serialize
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: CommonMark ordered-list start numbers; primary UX ref: Typora; secondary ref: Milkdown
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/markdown-parity-matrix.md:86 and :225
+Proof: `packages/platejs/src/markdown/lib/deserializer/deserializeMdList.spec.tsx:16` "preserves ordered-list starts after setValue normalizes the value" parses the scenario and asserts `listStart: 2` on `Second list item` before and after `value.replace`; `:84` "preserves an ordered list that starts at zero" asserts `listStart: 0` and serializes exactly `0. Zero` and `1. One`; and `packages/platejs/src/markdown/lib/serializer/standardList.spec.ts:264` "serialize restarted ordered lists separated by a paragraph" writes the parsed shape back to the scenario's markdown. Together they prove the rule, though no single test runs parse, replacement and serialize; tag candidates. Checked 2026-10-08.
 
 ## Task List
 
@@ -871,6 +962,21 @@ note: an indented quoted paragraph loses its indent before `⇤` lifts it out of
 =>
 > indented |Item
 ```
+
+- `EDIT-BQ-PASTE-EMPTY-001` `proposed` `paste of several paragraphs`: with a collapsed caret in an empty quoted paragraph, pasting two or more copied paragraphs keeps every pasted paragraph inside that quote, in order and in the empty paragraph's place among any other quoted blocks, and leaves the caret at the end of the last one
+
+```text
+copy two paragraphs, a and b
+paste into an empty quoted paragraph: > |
+=>
+> a
+> b|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: CommonMark blockquote syntax; primary UX ref: Typora; secondary ref: Milkdown
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/solutions/logic-errors/2026-05-09-empty-target-fragment-paste-keeps-first-block-wrapper.md:20-34
+Proof: no test pins it. A scratch probe on 2026-10-08 (Bun, package source, happy-dom) copied paragraphs `a` and `b` with Plate's own clipboard writer and pasted them through `insertData` into a lone empty quoted paragraph between `x` and `y`, into an empty quoted paragraph after a quoted `lead`, and into one between `lead` and `tail`; each time both landed inside the quote in that place and order, with the caret at the end of `b`. External HTML `<p>a</p><p>b</p>` and plain text `a`, newline, `b` landed the same way, the same paste into an empty top-level paragraph stayed at the top level, and an earlier probe that replaced the selection through `tx.fragment.replace` and through an open `ContentSlice` (`openStart: 1`, `openEnd: 1`) gave the same quote, so the shipped code agrees. The empty-target cases in `packages/plitejs/test/clipboard-contract.ts` (:1373, :1420) paste into an empty paragraph, where the copied block types win, and none pastes into a quoted paragraph; the Plite example test `apps/plite/tests/plite-browser/donor/examples/markdown-shortcuts.test.ts:59` "keeps pasted text inside an empty markdown quote" pastes one line, not several paragraphs, and no Plate browser paste row covers it. The source note's fix kept only the first pasted paragraph in the quote and put the rest after it, as the Lexical row it ported does (`facebook/lexical@dd5c41b1:packages/lexical-playground/__tests__/e2e/CopyAndPaste/lexical/CopyAndPaste.spec.mjs:825`); that shape follows from a quote that holds text rather than blocks, while this section makes the quote a real container, and Plite no longer has the function that produced it. Typora, the section's primary reference, was not checked. Checked 2026-10-08.
 
 ### Quote + List Interaction
 
@@ -1248,6 +1354,13 @@ note: reading marks on a cell range returns only the marks every selected text n
 
 note: deleting a cell-range selection clears the selected cells' contents and keeps the table shape
 
+- `EDIT-TABLE-RESIZE-COMMIT-001` `proposed` `column or row boundary drag`: dragging a table column or row boundary previews the new size only in the view being dragged; releasing the pointer commits the new width or height to the document in one change, and cancelling the drag discards the preview without changing the document
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none, since GFM tables carry no widths; primary UX ref: Google Docs for table feel; secondary ref: Notion
+Source: docs/plite/research/2026-09-17-table-substrate-ownership/REPORT.md:20-22
+Proof: `packages/platejs/src/react/features/table/useTableResize.spec.tsx:128` "previews without writes and commits one complete undoable gesture" asserts two previews with unchanged children, then one `columnWidths` write, one undo entry and one `onResizeEnd` on pointerup, and `:149` "ignores other pointers and discards a cancelled gesture" asserts `pointercancel` writes nothing and adds no undo entry; the www browser tests "table resize previews, commits, and undoes at ${width}px" and "table resize cancellation restores the rendered sizes" in `apps/www/tests/browser/table-resize.spec.ts` (Chromium, Firefox and WebKit, `/blocks/table-demo`) cover a column and a row commit with undo, and cancellation. No test mounts two views, so the preview staying in the dragged view is unproven, and the row drag asserts no absence of writes during the drag. Code: the preview stays in the caller's `onResize`, and pointerup calls one `update.resize` (`packages/platejs/src/react/features/table/useTableResize.ts:105`, `:115`). Checked 2026-10-08.
+
 ### Rectangular Paste
 
 - `EDIT-TABLE-PASTE-EXPAND-001` `locked`
@@ -1282,6 +1395,21 @@ reject the complete paste
 
 note: disabled expansion rejects overflow atomically; it must not apply a
 partial rectangle or leave changed content, widths, or selection
+
+- `EDIT-TABLE-PASTE-FILL-001` `proposed` `paste into a selected cell rectangle`: pasting a copied cell range into a rectangular selection of several cells fills exactly that rectangle: a smaller source repeats across it in both directions, a partial last tile is clipped, a larger source is clipped to the selection, and the table never grows; a non-rectangular selection refuses a table source, a source that is not a table fills every selected cell with the same content, the filled cells end selected, and one paste is one undo step
+
+```text
+copy cells x | y
+paste into a selected 2 × 3 rectangle
+=>
+x | y | x
+x | y | x
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: GFM tables; primary UX ref: Google Docs for table paste; secondary ref: Notion
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:264
+Proof: `packages/platejs/src/features/table/lib/BaseTablePlugin.paste.spec.tsx:421` "pastes $name and replays it through history", case "a partial source tile across the selected rectangle", pastes a 1 × 2 source into a selected 2 × 3 rectangle and asserts `x y x` in both rows, one commit, no grid problems, an undo back to the exact prior value and selection and a redo back to the paste; `packages/platejs/src/features/table/lib/internal/paste.spec.ts:340` "9. clips and repeats a partial source tile" and `:386` "keeps each repeated source tile as an independent placement group" prove repeat and clip at the planner level, `packages/platejs/src/features/table/lib/BaseTablePlugin.clipboard.slow.tsx:192` "replace these cells (allowCellSpanEditing: $allowCellSpanEditing)" repeats a 1 × 2 source down a selected 2 × 2 rectangle, and `:1184` "fits closed text against every selected cell grammar" fills every selected cell with text. No test asserts the refused non-rectangular selection or the selection after a fill. Code: a multi-cell target fixes the fill bounds to the selection and starts the plan at its top-left cell (`packages/platejs/src/features/table/lib/BaseTablePlugin.ts:2427-2457`, `packages/platejs/src/features/table/lib/internal/paste.ts:346-360`), a non-table source fills each selected cell (`packages/platejs/src/features/table/lib/BaseTablePlugin.ts:2408-2425`), and several placements end as a cell selection from the top-left to the bottom-right filled cell (`:2489-2513`). Checked 2026-10-08.
 
 ## Link And Image
 
@@ -1432,6 +1560,20 @@ note: `↵` at the end of an autolink candidate finalizes the link before creati
 note: normalization removes a link wrapper that deletion left empty
 
 note: link upsert updates the href or text and keeps marks, and unwrap removes the link, each according to the transform's intent
+
+- `EDIT-LINK-EDGE-DELETE-001` `proposed` `⌫ or ⌦ at a link edge, then typing`: deleting a selected first or last character of a link with `⌫` or `⌦`, then typing, puts the typed text outside the surviving link; typing over a selected link character keeps the new text inside the link; and a collapsed `⌫` from just after the link deletes its last character and keeps later typing inside it, since the caret is then on the linked side under `EDIT-AFF-LINK-001`
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: CommonMark; primary UX ref: Typora for markdown-native link editing; secondary ref: the WPT editing tests for deletion at a link edge
+Source: docs/plite/research/2026-06-13-wpt-editing-oracles/README.md:291-297
+Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/inlines.test.ts:672` "keeps typing outside a surviving inline link after deleting edge text" (Backspace on the selected first character and Delete on the selected last character, then `XY`, with the caret asserted outside the link), `:643` "keeps replacement text inside selected link text" and `:773` "keeps typing after a link-boundary Backspace inside the link" run in Chromium, Firefox and WebKit on Plite's inlines example; the last two assert no selection. No Plate test covers any clause. Drift: a model probe on 2026-10-08 with the real `BaseLinkPlugin` and `AffinityPlugin` (Bun, package source, no browser) met the first two clauses, but after a collapsed `⌫` from just after the link the caret sat inside the link at its end and typed `tail` landed outside it, because the link plugin's `insertText` override exits the link from any collapsed caret at its end (`packages/platejs/src/features/link/lib/BaseLinkPlugin.ts:670-703`, `:364-397`), and `AffinityPlugin` never acts on an element edge (`packages/platejs/src/lib/plugins/affinity/AffinityPlugin.ts:270-283`). The same override breaks `EDIT-AFF-LINK-001` for the shipped plugin; see current-evidence's Open work. Checked 2026-10-08.
+
+- `EDIT-LINK-WRAP-SEL-001` `proposed` `toolbar link`: wrapping selected text in a link from the toolbar keeps that text selected, while inserting a link at a collapsed caret leaves later typing outside the link
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: CommonMark; primary UX ref: Typora for markdown-native link editing; secondary ref: ProseMirror (#1338, #83)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md:27
+Proof: in a browser only a Plite example proves it: `apps/plite/tests/plite-browser/donor/examples/inlines.test.ts:146` "keeps selected text selected after toolbar link wrapping" asserts the native selected text but not the model selection, and `:117` "inserts a toolbar link at a collapsed selection" asserts later typing stays out of the link, both under that example's own `wrapLink`. Plate's link specs check the wrapped children but not the selection afterwards (`packages/platejs/src/features/link/lib/BaseLinkPlugin.spec.tsx:574`, `:824`), and `:873` "creates and selects a text leaf after a terminal link" shows typing at a link's end lands after it. A model probe on 2026-10-08 (Bun, package source, happy-dom) found `link.upsert` and `link.wrap` over `world` keep `world` selected, and a collapsed upsert leaves the caret at the link's end, where typing lands outside it. The copied toolbar submit path (`apps/www/src/registry/components/editor/link.tsx:128-146`) has no browser proof. Checked 2026-10-08.
 
 ### Image
 
@@ -1651,6 +1793,19 @@ text|[@Ada]more
 note: left and right movement enters the mention child so the inline void stays
 keyboard-accessible
 
+- `EDIT-MENTION-MD-401` `proposed` `Markdown parse and serialize`: a mention serializes as the link `[label](mention:ref)`, writing its ref as the label when it has no label and percent-encoding the ref; such a link parses back to a mention with that ref and label, an ordinary link stays a link even when its text starts with `@`, and a bare `@handle` stays text
+
+```text
+Hello [Jane Smith](mention:jane_smith) and @bob!
+=>
+the same markdown after parse and serialize
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: local mention markdown contract; primary UX ref: Notion; secondary ref: Milkdown
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/markdown-parity-matrix.md:116
+Proof: the mapping is `BaseMentionPlugin`'s `markdown` format (`packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts:95-135`), whose writer percent-encodes the ref, also encoding `(` and `)`, and writes `label ?? ref`. `packages/platejs/src/markdown/lib/serializer/serializeMention.spec.ts:88` "round-trips link mentions and keeps bare handles as text" asserts the scenario's markdown after parse and serialize but not that the parsed node is a mention; `packages/platejs/src/markdown/lib/deserializer/deserializeMentionLink.slow.tsx:30` "parses mentions with spaces in ID" reads `mention:jane%20smith` as ref `jane smith`, `:109` "does not convert regular links to mentions even with @ in text" keeps `[@mention](/docs/mention)` a link, and `:47` "keeps bare @handles as text beside link mentions" keeps `@bob` text. No test writes a ref that needs encoding or a mention without a label; a model probe on 2026-10-08 (Bun, package source) wrote ref `a b)c` with no label as `[a b)c](mention:a%20b%29c)` and read it back unchanged. Tag candidates for the parse clauses. Checked 2026-10-08.
+
 ## Date
 
 Authority:
@@ -1816,6 +1971,22 @@ note: `↑` from the start of the block after a TOC selects the TOC instead of e
 
 note: `⇥` on a selected TOC moves focus onward or falls through; it never tabs into TOC text
 
+- `EDIT-TOC-ENTER-201` `proposed` `↵`: with the selection on a TOC block, whether a caret in its empty child or the whole TOC selected, `↵` keeps the TOC atomic: it creates no text inside the TOC, inserts an empty paragraph after it and puts the caret at that paragraph's start
+
+```text
+[toc] (selected)
+next
+=>
+[toc]
+|
+next
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: local MDX TOC contract; primary UX ref: Notion for the block shell; secondary ref: `EDIT-HR-ENTER-001`, where keypresses beside an atomic block create surrounding paragraphs
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:340
+Proof: `packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts:145` "inserts a paragraph after the toc on Enter" puts the caret in the TOC's empty child, runs `break.insert` and asserts exactly the TOC, an empty paragraph and `after`, with the caret at offset 0 of `[1, 0]`, which proves the rule at model level, with no keydown; tag candidate. Code: `packages/plitejs/src/editor/insert-break.ts:39-55` hands a caret in a block void to `packages/plitejs/src/editor/block-void-break.ts:16-58`, which inserts a default block after it and selects it. Drift: a node selection on the TOC makes `↵` do nothing (`packages/plitejs/src/editor/insert-break.ts:43-44`), so only the caret-in-child form of a selected TOC meets the rule. Checked 2026-10-08.
+
 ## Columns
 
 Authority:
@@ -1955,6 +2126,20 @@ of deleting through it
 note: inserting an embed with a selection places it at the selection's parent path as the next block
 
 note: inserting an embed with no selection changes nothing
+
+- `EDIT-MEDIA-UPLOAD-UNCONFIGURED-301` `proposed` `paste or drop of image files`: with no upload transport configured, the files are ignored: nothing is inserted and the document stays unchanged
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: local media and caption contracts; primary UX ref: Notion; secondary ref: Google Docs for file-ish behavior
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:428
+Proof: the image owner reads only `text/plain` on paste and passes files on (`packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts:432-451`), and the upload owner rejects a batch with no client as a `missing-client` configuration failure after its file-type check, inserting nothing (`packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts:707-722`). `packages/platejs/src/features/upload/lib/BaseUploadPlugin.lifecycle.spec.ts:136` "reports missing client without inserting a slot or creating a task" asserts the value unchanged, no task and one `missing-client` failure, but calls `submit` directly with a `.txt` file; `packages/platejs/src/react/features/upload/UploadPlugin.spec.ts:71` "leaves native file drops to the DnD owner by default" drops an image on an unconfigured upload owner and asserts only that the drop is not prevented. A model probe on 2026-10-08 (Bun, package source) pasted `image.png` with an unconfigured upload owner, and with none, and both inserted nothing. No test pastes or drops an image file without a client, and the copied `UploadKit` always configures one. Checked 2026-10-08.
+
+- `EDIT-MEDIA-UPLOAD-NOFILES-301` `proposed` `paste or drop with the upload owner installed`: data that carries no files passes the upload owner untouched and continues to the editor's ordinary insert-data handling
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: local media and caption contracts; primary UX ref: Notion; secondary ref: Google Docs for file-ish behavior
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:429
+Proof: the upload owner calls `next()` when no files arrive (`packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts:880-887`), and a model probe on 2026-10-08 (Bun, package source) pasted `text/plain` `hello` with a configured upload owner and got the text inserted; none of the nine specs that install the upload owner pastes file-less data. The image owner's own pass-through is proven by `packages/platejs/src/features/media/lib/image/BaseImagePlugin.spec.tsx:246` "leaves clipboard data without files to the next handler" and `:213` "leaves non-image text to the next clipboard handler: %s", without an upload owner. Checked 2026-10-08.
 
 - `EDIT-CAPTION-NAV-001` `locked`
 
@@ -2164,6 +2349,13 @@ serialization
 
 - `EDIT-COMMENT-HISTORY-PENDING-001` `locked`: when comment creation sits at the undo head and its live-session removal is awaiting persistence, typing, repeated undo or a remote update keeps editor changes live, returns `busy` for the overlapping replay, settles the claimed comment entry in call order, and preserves the same head after a refusal or a failed settlement
 
+- `EDIT-COMMENT-EDIT-301` `proposed` `typing, deleting, splitting, merging or moving commented text`: the comment stays attached to what remains of its range, text typed at either edge of the range stays outside it, and comments whose ranges overlap each keep their own range through the same edits
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:396
+Proof: `packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts:1325` "maps attachments through block move, split and merge without a view" asserts one comment range keeps covering `lph` through `nodes.move`, `nodes.split` and `nodes.merge` calls rather than keys, and the browser tests in `apps/www/tests/browser/comment.spec.ts` "interior insertion and deletion keep overlapping comments exact through history" (two overlapping comments both gain a typed `X` and lose a deleted character, through undo and redo) and "inward comment boundaries exclude text inserted on either side" (text typed at both edges of one comment stays outside) prove typing, deleting, the edges and overlap; tag candidates. Overlapping ranges through a move, split or merge are unproven, and the browser suite runs outside `pnpm check`. Checked 2026-10-08.
+
 - `EDIT-SUGGESTION-*` `locked`
 
 ```text
@@ -2172,6 +2364,13 @@ insert / delete / accept / reject suggestion
 
 note: suggestions wrap editing intent in metadata instead of committing content
 changes immediately
+
+- `EDIT-SUGGESTION-MD-301` `proposed` `Markdown serialization of a document holding suggestions`: the output carries document text only and never suggestion metadata
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:398
+Proof: `packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts:68` "exports authored documents only through explicit semantic projections" proposes the insertion ` draft` into `Base` and asserts that serializing without a projection throws, that the `accepted` projection writes `Base` with an `authored-lossy-projection` diagnostic, and that the `proposed` projection writes `Base draft` with no `plate-authored` markup, which proves the exclusion for an inserted suggestion; no test serializes a suggested deletion, mark or block change. Tag candidate. Code: the serializer requires the caller to name an `accepted` or `proposed` projection for any authored document (`packages/platejs/src/markdown/lib/MarkdownPlugin.ts:394-403`). Checked 2026-10-08.
 
 - `EDIT-DISCUSSION-*` `locked`
 
@@ -2212,6 +2411,48 @@ default
 note: pasting a link, image or media with an unsafe URL drops only the destination or source, keeps the label, alt text or caption and reports the removal; removing a script URL is lossless
 
 note: paste reports content it left out once to the initiating editor after commit, or when nothing inserts; copied UI warns for lossy loss and stays silent for lossless cleanup
+
+- `EDIT-CLIPBOARD-COVERAGE-EXCLUDE-001` `proposed` `copy across hidden content`: copying a selection that crosses content the app has hidden with an `exclude` copy policy leaves that content out of the plain text, the HTML and the editor fragment, while hidden content with a `model` copy policy is copied from the document even though it is not mounted
+
+Classification: parameter, by the tests in docs/vision/plate.md:129-137; the app picks the copy policy for each hidden range, and copy honoring that policy is an invariant
+Authority: syntax: none; primary UX ref: Google Docs for document-fidelity copy; secondary ref: the 2026-09-11 large-documents contract
+Source: docs/plite/research/2026-09-11-large-documents-contract/promoted-ledger.tsv:5
+Proof: Plite level only: `packages/plitejs/test/dom/clipboard-boundary.ts:1624` "composes model and exclude coverage into every clipboard mimeType", run by `packages/plitejs/test/dom/clipboard-boundary.test.ts`, registers `model` and `exclude` boundaries by hand, calls `writeDOMRangeData` and asserts plain text without the excluded block, HTML without it and a fragment of blocks 0, 1 and 3, but every block is mounted, so it misses the unmounted clause; `apps/plite/tests/plite-browser/donor/examples/dom-coverage-boundaries.test.ts:267` "keeps hidden model updates out of the DOM but available to model-backed copy" proves `model` copy of unmounted content through the example's Copy button, and no browser test covers `exclude`. Code: `packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts:243-275` cuts `exclude` ranges out of the copied slice. Plate reaches the policy only through Plite's `slots.contentBoundary({ copyPolicy })`, its copied details component uses `copyPolicy: 'model'` (`apps/www/src/registry/components/editor/details.tsx:61-74`), and no Plate test copies across a boundary. The source row's note that mixed copy includes excluded text is stale. Checked 2026-10-08.
+
+- `EDIT-CLIPBOARD-BLOCK-TYPE-001` `proposed` `paste of whole blocks`: pasting copied whole text blocks into an empty block, or into a document whose only block is empty, lands them with their copied type and properties, so a copied heading pasted into an empty paragraph stays a heading and copied block-void attributes survive; pasting a single block's text over selected text inside a non-empty block keeps the target block's type
+
+```text
+copy the whole block # Title
+paste into an empty paragraph |
+=>
+# Title|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#231, #570, #788)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0219-0271.md:22
+Proof: Plite core proves it for closed slices: `packages/plitejs/test/clipboard-contract.ts:1373` "slice replacement preserves a copied text-block type over an empty target block", `:1554` "slice replacement preserves a copied text-block type over a single empty document block", `:1648` "slice replacement preserves copied block void attributes over an empty target block" and `:2034` "preserves the target block type when replacing its selected text with a single text-block fragment", run by `packages/plitejs/test/architecture-contracts.test.ts`; `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:6048` "pastes a copied heading into an empty paragraph as a heading" passes only because that example's schema sets `slice.preserveContext` on headings. Drift: a model probe on 2026-10-08 (Bun, package source, happy-dom) copied a heading's text with Plate's own clipboard writer and pasted it into an empty paragraph, and into a document whose only block is empty, and both landed as paragraphs, because Plate's headings do not set `slice.preserveContext`, so the copied slice stays open; a node-selection copy, a closed `fragment.replace` and external `<h1>` HTML keep the heading, an image's attributes survive, and text pasted over a heading's selected text keeps the heading. No Plate test pastes into an empty block. Checked 2026-10-08.
+
+- `EDIT-CLIPBOARD-HTML-BLANK-001` `proposed` `HTML paste with blank lines`: pasting HTML keeps its blank lines: a `<br>` that stands alone as a line, such as `<div><br></div>` or the leading and trailing `<br>`s in `<div><br><br><div>CCC</div><div>DDD</div><br><br></div>`, becomes an empty paragraph, so `<div>a</div><div><br></div><div>b</div>` pastes as three paragraphs, `a`, an empty one and `b`
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#1218, #1332)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1188-1218.md:46-48
+Proof: Plate's HTML reader has the matching rule: `shouldBrBecomeEmptyParagraph` (`packages/platejs/src/lib/plugins/html/HtmlPlugin.ts:1710-1737`) turns a `<br>` outside `<p>` and `<span>` with no non-blank text-node sibling into an empty default block, and a model probe on 2026-10-08 (Bun, package source, happy-dom) pasted both inputs through `insertData` and got `a`, an empty paragraph and `b`, and two empty paragraphs, `CCC`, `DDD` and two empty paragraphs. No Plate test covers these inputs. The Plite browser tests `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1188` "preserves blank lines from contenteditable-style multiline HTML paste" and `:1236` "preserves leading and trailing br-only lines from rich HTML paste" run the paste-html example's own deserializer, not Plite core or Plate. Checked 2026-10-08.
+
+- `EDIT-CLIPBOARD-HTML-LIST-WS-001` `proposed` `HTML paste of nested lists`: pasting nested HTML lists, including mixed ordered and unordered levels, drops the source's structural indentation whitespace between list elements and trims multiline item text, so no source whitespace leaks into list-item text
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#1247)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1220-1259.md:19-20
+Proof: Plate does not meet it. A model probe on 2026-10-08 (Bun, package source, happy-dom) pasted ProseMirror's mixed nested-list fixture and got an item reading `xxxx human ` with a trailing space and `human` moved ahead of its nested items, plus an extra empty list item for an `<li>` that only wraps a nested `<ol>`; `apps/www/src/__tests__/package-integration/list/ListPlugin.slow.tsx:153` "handle li with nested ul correctly" asserts the trailing-space leak (`Item 1 `). `packages/platejs/src/lib/plugins/html/HtmlPlugin.dom.spec.ts:44` "removes whitespace between block elements" covers only `<p>` siblings. The only proof, `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1882` "imports mixed nested ordered and unordered lists from rich HTML paste", runs the paste-html example's own deserializer. Checked 2026-10-08.
+
+- `EDIT-CLIPBOARD-HTML-MARK-001` `proposed` `HTML paste of nested style resets`: when pasted HTML nests an element with an explicit normal style (`font-style: normal` or a non-bold `font-weight`) inside a bold or italic parent, such as a nested list item, that element's text takes its explicit style and does not inherit the parent's mark, while the parent's own text keeps it
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#1347)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md:28
+Proof: Plate does not meet it for inline nesting. Its bold, italic, underline and strikethrough HTML readers veto the mark for the whole matched element when any element inside it resets the style (`someHtmlElement` in `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts:156-158`, `:228-230`, `:302-308`, `:330-336`), and the bold reset matches only `font-weight: normal`; a model probe on 2026-10-08 (Bun, package source, happy-dom) pasted `<b>Parent <span style="font-weight: normal">child</span></b>` and lost bold on both words, and pasted the same with `font-weight: 400` and kept bold on both. `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.spec.tsx:143` "vetoes %s parsing when a descendant resets the style" asserts the veto on fixtures with no parent text of their own. ProseMirror's nested-list fixture passes in Plate only because each item becomes its own block. `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1610` "does not leak parent list item marks into nested pasted list items" runs the paste-html example's own deserializer and never checks the parent items. Checked 2026-10-08.
 
 ### Interactive Preview And Navigation
 
@@ -2313,12 +2554,69 @@ note: every drag has a non-drag equivalent: handle actions on click, tap, Enter 
 
 note: block handles offer Move up, Move down and Cut; column handles offer Move left and Move right; row handles offer Select row, Move up and Move down; the right-click block menu offers Move up, Move down and Cut
 
+- `EDIT-MOUSE-CLICK-001` `proposed` `click or Shift+click`: a plain click inside an expanded text selection collapses it to the clicked offset, and Shift+click extends a collapsed selection from the caret to the clicked offset; the model and native selections agree, and only one highlight paints
+
+```text
+a[[bc]]d
+click between b and c
+=>
+ab|cd
+Shift+click after d
+=>
+ab[[cd]]
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: the WPT primary-button mouse selection tests
+Source: docs/plite/research/2026-06-13-wpt-editing-oracles/README.md:312-318
+Proof: only a Plite example proves it: `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts:197` "Shift+click extends a collapsed text selection" (Plite's plaintext example, Chromium, Firefox and WebKit) asserts the model and native selected text, anchor and focus and no double highlight, and `:130` "clicking inside selected text collapses the selection" asserts an empty native selection and a collapsed model selection but not the clicked offset or the highlight. No Plate or www test clicks inside a selection or Shift+clicks. Checked 2026-10-08.
+
+- `EDIT-SEL-CLICK-READONLY-001` `proposed` `click in a read-only editor`: in a read-only editor, a click inside an expanded selection collapses both the native selection and the editor selection to the click point, so a native click after a programmatic selection never leaves the stale editor selection in place
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: ProseMirror (#1563)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1523-1568.md:24-30
+Proof: only Plite proves it: `apps/plite/tests/plite-browser/donor/examples/read-only.test.ts:48` "clicking inside a read-only selection collapses DOM and Plite selection" (a plain read-only Editable, Chromium, Firefox and WebKit) selects `This example` programmatically, clicks at text offset 5 and asserts an empty native selection and a collapsed model selection, not that it collapsed at the click point. No Plate or www test clicks inside a read-only selection, and Plate's editor content adds its own pointer plugins around the same Editable. Checked 2026-10-08.
+
 ### Platform Shortcuts
 
 - `EDIT-SHORTCUT-*` `locked`
 
 note: shortcuts should escalate through the owning surface from local owner to
 broader document owner instead of looping on one level forever
+
+- `EDIT-SHORTCUT-TRANSPOSE-001` `proposed` `Ctrl+T or insertTranspose`: on Apple platforms, with a collapsed caret inside a text, `Ctrl+T` or a native `insertTranspose` input swaps the characters before and after the caret and leaves the caret after the swapped pair
+
+```text
+a|bc
+Ctrl+T
+=>
+ba|c
+Ctrl+T
+=>
+bca|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137; it applies on Apple platforms, whose text system sends this input
+Authority: syntax: none; primary UX ref: the macOS text system's `Ctrl+T` transpose; secondary ref: Lexical's `Keyboard.spec.mjs`
+Source: docs/editor-test-harvester/lexical/plite-processing-ledger.md:726
+Proof: only Plite proves it: `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts:2350` "applies insertTranspose beforeinput as adjacent character transpose" (Plite's plaintext example, Chromium and WebKit, two synthetic `insertTranspose` events from `a|bc`) asserts `bca` with the caret at 3, and `packages/plitejs/test/react/model-input-strategy-contract.test.ts:634` "transposes adjacent characters from insertTranspose beforeinput" (vitest) asserts `bac` with the caret at 2, then `bca` at 3. Both use synthetic events; no test presses `Ctrl+T`, whose Apple-only keydown maps to the same command only in browsers without `beforeinput` (`packages/plitejs/src/react/editable/keyboard-input-strategy.ts:1134`, `:1158`). Plate renders Plite's Editable, so Plate editors get the `beforeinput` path; Plate's own `transposeCharacter` hotkey (`packages/platejs/src/lib/utils/hotkeys.ts:53`) has no caller, and no Plate test covers it. Code: `applyModelOwnedTransposeCharacterIntent` (`packages/plitejs/src/react/editable/mutation-controller.ts:602`) swaps the characters around the caret, swaps the two characters before it only at the end of the document, and does nothing at the end of any other block or leaf. Checked 2026-10-08.
+
+- `EDIT-SHORTCUT-OPEN-LINE-001` `proposed` `Ctrl+O`: on Apple platforms, `Ctrl+O` with a collapsed caret at the start of a block opens an empty paragraph before that block and keeps the caret on the new empty line, so the following text does not move under the caret; the mid-block case stays open
+
+```text
+foo
+|bar
+=>
+foo
+|
+bar
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137; it applies on Apple platforms, whose text system sends this input
+Authority: syntax: none; primary UX ref: the macOS text system's `Ctrl+O` open line; secondary ref: Lexical regression #399
+Source: docs/editor-test-harvester/lexical/plite-processing-ledger.md:875
+Proof: only a Plite example proves it: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:5032` "opens a line with Mac Ctrl+O without moving past following text" (Chromium desktop with a Mac user agent) asserts `foo`, an empty block and `bar`, the model caret in the empty block, the DOM location and an `open-line` kernel trace. Plate has no binding or test of its own and inherits Plite's. Mid-block, read from the code and not run, Plite opens the empty paragraph above the whole block instead of splitting it (`packages/plitejs/src/react/editable/mutation-controller.ts:136-192`). Checked 2026-10-08.
 
 ### Delete Commands
 
@@ -2337,6 +2635,184 @@ note: a delete command in a code block deletes the current code line like a code
 
 note: a delete command in a math block deletes the current math line like a code-like editing surface instead of structurally exiting the block
 
+### Autocomplete
+
+Authority:
+
+- syntax: none; a trigger and its query stay ordinary document text until completion
+- primary UX ref: Notion for typed mention and slash menus, with the WAI-ARIA Authoring Practices combobox pattern for the popup's keys and announcements
+- secondary ref: Lexical's typeahead menu, cross-checked against Atlassian's type-ahead, ProseKit, Tiptap and BlockNote
+
+Ownership:
+
+- one private combobox owner per mounted Editable opens, maps and ends an occurrence: a typed trigger and the query after it, anchored over the trigger
+- each feature, such as mention, slash, emoji or footnote, keeps its trigger predicate, query policy, options and completed-node insertion; the Mention section owns a completed mention's spacing, deletion and keyboard access
+- the popup's key, Escape, blur and IME behavior below applies to every feature that opens one
+
+Plugin surface:
+
+- a feature opens its popup through `useCombobox` from `platejs/combobox/react`, and the copied `inline-combobox` component renders it
+
+- `EDIT-AUTOCOMPLETE-OPEN-001` `proposed` `typed trigger`: only a trigger typed locally in an Editable opens a popup. Caret placement, undo, redo, paste, yank, drop, a replacement and remote edits never open one, so one collaborator's edit never opens another user's popup
+
+```text
+Hi @jo| (loaded, not typed)
+type h
+=>
+Hi @joh| with no popup
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: Tiptap's `shouldShow` (PR #7384), added after its menus opened for collaborators, as Plate's did before #1461 and PR #4762
+Source: docs/plite/research/2026-10-02-autocomplete-query-representation/shards/005-plate-history.md:111
+Proof: the owner opens an occurrence only from `api.react.subscribeTypedText` (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:427-431`), and Plite reports typed text only for `insertText` and composition commits that end at the caret: `packages/plitejs/test/react/typed-text.test.tsx:343-361` "%s with string data reports nothing" excludes `insertFromPaste`, `insertFromYank`, `insertFromDrop` and `insertReplacementText`, and `:363` "history replay and remote edits report nothing" covers redo and remote inserts, both at the Plite level. At the Plate level, `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:538` "opens only for typed triggers, never for a caret placed after one" (happy-dom: `Hi @jo` loaded with the caret after it, typing `h` opens nothing) proves the caret clause, and `:158` asserts no match after undo; no Plate test pastes or applies a remote edit that inserts a trigger. Drift: an Android keyboard-clipboard paste arrives as `insertText` with no paste signal (`packages/plitejs/src/react/hooks/android-input-manager/android-input-manager.ts:1018-1023`), so it reports typed text and opens a popup; no test or device run covers it. Plan hard law 5 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:240`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-OPEN-002` `proposed` `trigger committed with following text`: a trigger committed together with following text in one insertion, as an IME or Gboard commit can land it, still opens the popup with the following text as its query, and a trigger committed alone through IME composition opens it too
+
+```text
+Hi |
+one insertion of @jo
+=>
+Hi @jo| with the popup open on the query jo
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: Lexical's typeahead menu, which reads the trigger from the text before the caret
+Source: docs/plite/research/2026-10-03-autocomplete-arena/judge.md:42 and :72
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:196` "opens on a trigger inside one longer insertion, as an IME commit lands" (happy-dom: one `insertText` of `@jo` gives the query `jo`) proves the first clause through `insertText`, not a composition, and the www browser test "combobox:an IME-committed trigger opens the popup" in `apps/www/tests/browser/combobox.spec.ts` (Chromium only, CDP composition of `@`) proves the second. No browser case commits `@jo` in one IME commit, and no Gboard device run exists. Code: the trigger scan reads the typed length plus the longest trigger plus one character and accepts a trigger that ends inside the typed text (`packages/platejs/src/features/combobox/lib/combobox.internal.ts:124-151`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-SPAN-001` `proposed` `trigger and query`: a trigger and its query match across adjacent, differently formatted text in one editable text region, and the match stops at a root or block boundary, an inline atom or other inline element, non-editable content and a hard line break
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: Lexical's typeahead menu, cross-checked against BlockNote and CKEditor 5, which read the query from the text before the caret
+Source: docs/plite/research/2026-10-03-autocomplete-arena/contract.md:11
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:213` "matches a trigger typed across formatted leaves" and `:228` "finds a trigger split across leaves when the scan stops short of the run start" (happy-dom) prove a two-character trigger split across leaves, with an empty query; no test covers a query that spans formatting or any of the stops. Code: the trigger scan walks back over sibling text leaves and stops at the first non-text sibling (`packages/platejs/src/features/combobox/lib/combobox.internal.ts:32-47`), the query must share the trigger's root and parent with only text siblings between them (`:191-210`), and a newline ends it (`:77`); non-editable content stops the match only as a non-text element. Drift: a query typed across a format change closes the occurrence; a scratch probe on 2026-10-08 (happy-dom, package source) typed `@j`, turned bold on and typed `o`, and the match ended, because the typed-extent anchor (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:310-313`) does not grow into the new leaf. Plan hard law 3 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:238`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-POLICY-001` `proposed` `query characters`: each feature keeps its own query character policy within a bounded query: a mention or command label may hold spaces after its first character, an emoji query accepts only shortcode characters, a trigger followed directly by whitespace stays prose, and the first-party features cap a query at 75 characters
+
+Classification: parameter, by the tests in docs/vision/plate.md:129-137; each feature sets its own character policy and length cap; a bounded query is an invariant
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: quill-mention's `allowedChars`, whose ASCII-only default ends a query on a space or a non-ASCII letter (#358)
+Source: docs/plite/research/2026-10-03-autocomplete-arena/contract.md:12
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:547` "treats a trigger followed by whitespace as prose" (happy-dom) and the www browser test "combobox:a slash inside prose leaves Enter as a line break" in `apps/www/tests/browser/combobox.spec.ts` prove the prose clause, and "combobox:emoji completes a closed shortcode" proves only that `:` passes the emoji pattern. No test types a multiword label, a non-shortcode emoji character, a newline in a query or a query past 75 characters; `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:513` types a 75-character query but asserts only the next trigger. Code: `isComboboxQuery` (`packages/platejs/src/features/combobox/lib/combobox.internal.ts:69-81`) and the read-time length cap (`:204-206`); the 75-character `maxQueryLength` of the mention, slash and footnote base plugins (`packages/platejs/src/features/mention/lib/BaseMentionPlugin.ts:47`, `packages/platejs/src/features/slash-command/lib/BaseSlashPlugin.ts:11`, `packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts:125`); the emoji feature's shortcode pattern and cap are moving from its base plugin into the copied registry kit in uncommitted work, so this line names no path for them. The copied popup also dismisses a query that ends in whitespace once no option matches (`apps/www/src/registry/components/editor/inline-combobox.tsx:164-169`). Plan hard law 4 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:239`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-PRECEDENCE-001` `proposed` `several triggers in one insertion`: when several installed features find a trigger in the same typed text, the trigger that starts latest wins, and plugin order breaks a tie at one position; each feature keeps its own trigger predicate, veto and insertion
+
+```text
+Hi |
+one insertion of @x /
+=>
+Hi @x /| with the slash popup open, not the mention popup
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137; plugin order is the parameter that breaks a tie
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: BlockNote, which opens on the longest registered trigger that typed text matches
+Source: docs/plite/research/2026-10-03-autocomplete-arena/contract.md:19
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:204` "opens the most recently typed trigger when one insertion holds two" (happy-dom: `@x /` opens slash, not mention) proves the first clause; no test covers a tie at one position or a vetoed later trigger. Code: the owner scans its mounted popups in mount order, takes a candidate only when its trigger starts strictly later than the current winner, and lets a feature's `triggerQuery` veto it (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:284-302`); a scratch probe on 2026-10-08 (happy-dom) found a vetoed later trigger falls back to the earlier one. Drift: mount order equals plugin order only on first mount, because a popup that remounts when its plugin or Editable ref changes joins the end of the list, so a tie then follows remount order. Plan hard law 11 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:246`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-VIEW-001` `proposed` `two views of one document`: only the Editable where the trigger was typed shows or activates its popup. Another mounted Editable of the same document shows no popup and no combobox ARIA, and focusing it ends the occurrence; another root, an inactive projection and a read-only view never open or adopt one
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: Lexical's typeahead menu, which belongs to one editor instance
+Source: docs/plite/research/2026-10-03-autocomplete-arena/contract.md:17
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:371` "keeps an occurrence in the view where the trigger was typed" (happy-dom, two Editables over one editor) asserts the first view's query `jo`, no match and no `aria-controls` in the second, and no match in either after the second takes focus; it does not assert the second root's role, `aria-expanded` or `aria-haspopup`. No test covers another root, an inactive projection or a read-only view, and no browser case mounts two views of one document. Code: an occurrence opens only from a typed-text report naming the owner's own element, in a focused, connected, writable view that is its own DOM root (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:260-266`, `:281`, `:427-431`), the query must share the trigger's root (`packages/platejs/src/features/combobox/lib/combobox.internal.ts:193-195`), and focus in another `[data-editor]` element ends it (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:251-258`). Plan hard law 9 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:244`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-OCCURRENCE-001` `proposed` `option completion`: an offered option belongs to its feature, its occurrence and its query. Replacing or deleting the trigger ends the occurrence, and an option offered for an earlier occurrence never completes a later one, even when the trigger and query text are equal
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: ProseKit, which maps its match range through each transaction
+Source: docs/plite/research/2026-10-03-autocomplete-arena/contract.md:14
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:624` "refuses a match from a dismissed occurrence on a newer one with equal text" and `:670` "ends the occurrence when the trigger is replaced in one change" (happy-dom) prove the equal-text and replacement clauses; no test deletes the trigger alone or completes one feature's option through another popup. Code: a range anchor covers the trigger, each match maps to its occurrence, which `complete` compares, and changed trigger text ends the match (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:62-63`, `:100-107`, `:315`; `packages/platejs/src/features/combobox/lib/combobox.internal.ts:207`). Plan hard law 6 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:241`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-KEYS-001` `proposed` `Enter, Tab, ArrowUp, ArrowDown or Escape`: while a popup is open, it takes unmodified Enter, Tab, ArrowUp, ArrowDown and Escape before any Plate plugin key handler or shortcut; Shift, Alt, Ctrl and Meta chords pass through, and an IME-confirming key follows `EDIT-AUTOCOMPLETE-IME-001`. While the popup is hidden or closed, those keys keep their editor behavior
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: Lexical's typeahead, whose keys competed with table selection until `lexical-table` checked the root's `aria-controls` (#5819, PR #5820)
+Source: docs/plite/research/2026-10-02-autocomplete-query-representation/lead-ledger.tsv:21
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:345` "gives the open popup its keys before the shortcut table, but not Shift chords" (happy-dom) proves Tab against the shortcut table and Shift+Enter passing through, and `:328` "leaves keys to the editor while the popup is hidden" proves the hidden case for ArrowDown; in `apps/www/tests/browser/combobox.spec.ts`, "combobox:mention completes typed text and undo restores it" and "combobox:arrow keys scroll the active option into view" cover Enter and the arrows with the popup open, and "combobox:moving past the typed query closes the popup" and "combobox:a slash inside prose leaves Enter as a line break" cover Enter once it is closed, in Chromium, Firefox and WebKit. No test checks a plugin key handler, an Alt, Ctrl or Meta chord, or a popup inside a table cell, code block or list. Code: the claimed key handler runs before the piped plugin handlers (`packages/platejs/src/react/components/EditorContentView.internal.tsx:241-242`), and the owner offers only those keys (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:52`, `:323-342`). Drift: the copied popup refuses every key while it renders no options (`apps/www/src/registry/components/editor/inline-combobox.tsx:93`), so with only "No results" showing, Enter falls through and splits the block. Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-ESC-001` `proposed` `Escape`: Escape ends the open occurrence and leaves the trigger and query as literal text. The popup stays closed while the user keeps typing, moves the caret away and back, or receives a remote edit, until a trigger is typed again
+
+```text
+Hi @jo| (popup open)
+Escape, type an
+=>
+Hi @joan| with no popup
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: ProseKit's mapped ignore list (#976) and Draft.js mention's `escapedSearch`, against Tiptap, whose menu reopens after Escape and arrow keys (#7371)
+Source: docs/plite/research/2026-10-02-autocomplete-query-representation/lead-ledger.tsv:11
+Proof: the www browser test "combobox:Escape keeps the query as text without reopening" in `apps/www/tests/browser/combobox.spec.ts` (Chromium, Firefox and WebKit: `/h`, Escape, `1` gives `/h1` with no `aria-controls`) proves the first three clauses with a real key, and `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:557` "keeps the literal query when dismissed and does not reopen" and `:570` "stays closed after Escape through a remote edit and a caret return" (happy-dom) prove the typing, remote-edit and caret-return clauses through `dismiss()`, not an Escape key; `:624` shows a newly typed trigger opens again. Escape reaches the owner only while the popup shows (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:327`, `:337-342`), so a hidden popup, such as emoji's with an empty query, leaves Escape to the editor. Plan hard law 5 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:240`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-BLUR-001` `proposed` `outside click or focus moving away`: an outside click, or focus moving to another editor, ends the open occurrence and closes its popup. The trigger and query stay as literal text, typing back inside them does not reopen it, and a click past the query leaves the caret where the click landed
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: BlockNote, whose menu closes on blur, and Draft.js mention, whose list closes when the editor loses focus
+Source: docs/plite/research/2026-10-02-autocomplete-query-representation/shards/005-plate-history.md:112
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:411` "ends when another editor takes focus" (happy-dom) proves the focus clause, and the www browser tests "combobox:an outside click closes the popup and keeps the query" and "combobox:a click past the query closes the popup at the clicked caret" in `apps/www/tests/browser/combobox.spec.ts` (Chromium, Firefox and WebKit) prove the outside click, the literal text, no reopening after typing back inside and the clicked caret. Drift: the package owner does not end an occurrence when focus leaves for a non-editor target; the copied popup closes it through Ariakit's `hideOnInteractOutside` (`apps/www/src/registry/components/editor/inline-combobox.tsx:179-181`, `:218-221`), so a custom popup built on `useCombobox` stays open after an outside click. Plan hard law 12 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:247`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-REMOTE-001` `proposed` `remote edit before the trigger`: a remote edit before the trigger maps the open occurrence, which keeps its trigger, its query text and its popup
+
+```text
+Hi @jo| (popup open on jo)
+remote insert of Oh at the start
+=>
+Oh Hi @jo| with the popup still open on jo
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: BlockNote, which tracks the query start as a Yjs relative position, and ProseKit, which maps its range through `tr.mapping`
+Source: docs/plite/research/2026-10-02-autocomplete-query-representation/lead-ledger.tsv:13
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:266` "keeps the occurrence through a remote edit before the trigger" (happy-dom: a local update tagged `collaboration` inserts `Oh ` at the start, and the text reads `Oh Hi @jo` with the query `jo`) proves the query and match survive; it does not assert the trigger range or the popup's `aria-controls`, and no test runs a real Yjs peer. Code: range anchors over the trigger and the typed extent (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:309-316`). Plan hard law 5 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:240`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-UNDO-001` `proposed` `completion, undo and redo`: completing an option replaces the trigger and query in one update and one undo step. Undo restores the typed trigger, query and caret without reopening the popup, and redo restores the completed content; for a mention, completing `@jo` gives one mention node, undo gives back `@jo` with the caret after it and no popup, and redo gives back the mention
+
+```text
+Hi @jo| (popup open)
+complete Joan
+=>
+Hi [@Joan]|
+undo
+=>
+Hi @jo| with no popup
+redo
+=>
+Hi [@Joan]|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: quill-mention, whose History merge can fold a fast completion into the typing before it, and Plate's v33 undo crash (#3103)
+Source: docs/plite/research/2026-10-02-autocomplete-query-representation/shards/005-plate-history.md:109-110
+Proof: `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:158` "opens on a typed trigger and completes the query as one undo step" (happy-dom) completes `@jo` with a mention and asserts `Hi `, the mention and an empty text, then after undo `Hi @jo` with the caret at offset 6 and no match, then after redo the mention again, which proves every clause but the caret after redo; the www browser test "combobox:mention completes typed text and undo restores it" in `apps/www/tests/browser/combobox.spec.ts` (Chromium, Firefox and WebKit) completes `@biggs` with Enter and asserts the literal query after undo with no mention and no `aria-controls`, without a caret check or redo. Code: `complete` writes in one `new-batch` update (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:120-157`). Plan hard laws 7 and 8 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:242`, `:243`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-PREEDIT-001` `proposed` `IME preedit`: while an IME composes the query after a typed trigger, the popup filters by the live preedit, and the preview writes nothing into the document, moves neither focus nor selection and creates no history
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: Atlassian's type-ahead, which keeps the composing query out of the document
+Source: docs/plite/research/2026-10-03-autocomplete-arena/contract.md:10
+Proof: the www browser test "combobox:IME preedit filters without publishing text" in `apps/www/tests/browser/combobox.spec.ts` (Chromium only, CDP `Input.imeSetComposition` on `/blocks/mention-demo`) asserts that the options follow the preedit `biggs` while the model text stays `@Mention`, and `@biggsMention` after the commit; no test checks focus, selection or history during the preview, and no physical IME has run. Code: while composing, the owner previews the DOM text from the trigger end to the caret and keeps it only when it passes the feature's query policy (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:390-400`). Plan hard law 2 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:237`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-IME-001` `proposed` `IME-confirming key`: while an autocomplete popup is open, a key that confirms an IME composition never selects or completes an option; the composition commits instead. A confirming key is a keydown with `isComposing` set or with keyCode 229, which Safari sends after `compositionend` and virtual keyboards send while composing. Completion also refuses while a composition is active
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: Atlassian's `isComposing` plus keyCode 229 guard, Lexical's keydown gate while composing, and ProseKit's open PR #1743, where Pinyin's commit Enter selected an item
+Source: docs/plite/research/2026-10-02-autocomplete-query-representation/lead-ledger.tsv:7
+Proof: none. No test in `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx` or `apps/www/tests/browser/combobox.spec.ts` presses an IME-confirming key with a popup open; `packages/platejs/src/react/utils/dispatchPlateShortcut.spec.ts` "runs no shortcut for a composing key or an IME-confirm Enter" proves only the shortcut table's guard. Code: the popup's key claim skips `isImeConfirmKeyEvent` (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:323-342`, `packages/platejs/src/react/utils/dispatchPlateShortcut.internal.ts:44-47`), `complete` refuses while `isComposing()` holds (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:108-111`), and Plite runs no Editable `onKeyDown` while it is composing (`packages/plitejs/src/react/editable/keyboard-input-strategy.ts:692-698`). Risk: Plite has no keyCode 229 guard, and a scratch probe on 2026-10-08 (happy-dom) sent Enter with keyCode 229 while a popup was open after the composition ended; the popup did not take it, and Plite split the block, which ends the occurrence. Whether WebKit's real 229 Enter after `compositionend` splits too is unproven; WebKit's confirming Enter on a real IME is open work in `docs/plans/topics/autocomplete.md`. Plan hard law 10 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:245`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-IME-002` `proposed` `click or tap on an option during composition`: clicking or tapping an option while an IME composes the query completes that option: the pointer press lets the editor blur, which ends the composition, and the completed node replaces the trigger and the composed text with the caret after it
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: Atlassian's type-ahead, whose blur commits the raw query before an item is inserted
+Source: docs/plite/research/2026-10-03-autocomplete-arena/contract.md:18
+Proof: the www browser test "combobox:clicking an option during IME composition completes it" in `apps/www/tests/browser/combobox.spec.ts` (Chromium only, CDP composition of `biggs`, then a click on "Biggs Darklighter") asserts one mention node, model text `Mention`, the caret at offset 0 of `[0, 2]` and no `aria-controls`; it does not assert the blur or focus afterwards. Code: the copied popup prevents an option's `mousedown` only while no composition is active (`apps/www/src/registry/components/editor/inline-combobox.tsx:223-226`), and `complete` settles native input and still refuses while a composition is active (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:108-113`). Known gap: under Pixel 5 emulation the blur leaves Plite's model caret past the committed text and the tap refuses (`docs/research/decisions/autocomplete-ownership.md:186-193`); no Android device or iOS run exists. Plan hard law 10 (`docs/plans/2026-10-01-autocomplete-ordinary-text-adoption.md:245`). Checked 2026-10-08.
+
+- `EDIT-AUTOCOMPLETE-A11Y-001` `proposed` `screen reader`: while an autocomplete popup is open, assistive technology announces the caret as inside a combobox and follows the active option, while focus and IME stay in the editor
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137; without it the popup is inaccessible to screen-reader users
+Authority: syntax: none; primary UX ref: the WAI-ARIA Authoring Practices combobox pattern; secondary ref: Atlassian's type-ahead, which gives the focused query element combobox ARIA
+Source: docs/plite/research/2026-10-02-autocomplete-query-representation/shards/005-plate-history.md:103-108
+Proof: none: no screen reader has run (VoiceOver with Safari and Chrome, NVDA with Chrome), and an accessibility-tree read proves only the exposed node. Code: while an occurrence has a match, even with its popup hidden, the editor root takes `role=combobox`, `aria-haspopup=listbox`, `aria-autocomplete=list` and `aria-expanded` and drops `aria-multiline`, takes `aria-controls` while the popup shows and `aria-activedescendant` while an option is active, and gets its own values back afterwards unless the app changed them (`packages/platejs/src/react/features/combobox/comboboxOwner.internal.ts:199-239`). `packages/platejs/src/react/features/combobox/useCombobox.spec.tsx:282` "makes the editor root a combobox for the occurrence and restores it after" (happy-dom) asserts the role, `aria-expanded`, `aria-haspopup` and `aria-multiline` and their restore, not `aria-autocomplete`, `aria-controls` or `aria-activedescendant`; the www mention test finds the root by `getByRole('combobox', { expanded: true })`. Origin: the 2024 reason for Plate's input element (udecode/plate#3168). Checked 2026-10-08.
+
 ### IME And Composition
 
 - `EDIT-IME-*` `locked`
@@ -2345,6 +2821,124 @@ note: IME composition should stay inside the active text owner and must not
 double-apply committed text at block or inline-atom boundaries
 
 note: platform text-editing norms decide IME behavior, with product-specific owner behavior at atoms, code blocks and tables
+
+- `EDIT-IME-NONOVERLAP-KEEP-001` `proposed` `app, model or remote edit outside the composition`: an edit whose range lies outside the active IME composition leaves the composition running under browser ownership, and the composition commits once, at the caret that edit adjusted
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: platform text-editing norms for an IME composition; secondary ref: ProseMirror, which keeps a composition alive through edits elsewhere
+Source: docs/plite/research/2026-06-12-ime-overlap-policy/README.md:32-37
+Proof: only a Plite example proves it: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:2687` "preserves native IME composition when model text changes before it" (Chromium only, real CDP composition on Plite's richtext example) inserts `>` at offset 0 while `段` composes at offset 4 and asserts `>one 段two three`, the selection after the composed text and an allowed `compositionend` in the kernel trace; `:2756` "keeps native IME composition coherent when model delete starts at composition point" deletes `two` from the composition point and asserts the composition still commits, giving `one 段 three`. No test covers a remote-tagged edit, an edit in another block, another browser or Plate. Code: while composing outside Android, DOM writes to the composing node wait until the composition ends (`packages/plitejs/src/react/editable/editable-dom-runtime.ts:785-806`), and the composition target is anchored so it follows the edit (`packages/plitejs/src/react/editable/composition-state.ts:882-895`). An edit that intersects the composition is the open policy question in current-evidence's Open work. Checked 2026-10-08.
+
+- `EDIT-IME-ENTER-COMPOSING-001` `proposed` `↵ during composition`: Enter pressed during an active IME composition belongs to the browser and the IME: the editor neither calls `preventDefault()` nor splits the block or runs any other model command on that keydown, and the IME decides how the composition commits
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: platform text-editing norms for an IME composition; secondary ref: the contenteditable catalog oracles of 2026-06-13
+Source: docs/plite/research/2026-06-13-contenteditable-catalog-oracles/README.md:17-21
+Proof: while Plite is composing, its keydown strategy returns the event handled without `preventDefault()` before any Editable or Plate `onKeyDown` runs (`packages/plitejs/src/react/editable/keyboard-input-strategy.ts:692-698`), and Plate's shortcut table skips a keydown with `isComposing` set or keyCode 229 (`packages/platejs/src/react/utils/dispatchPlateShortcut.internal.ts:44-55`). `packages/plitejs/test/react/keyboard-input-strategy-contract.test.ts:1116` "keeps Enter during active composition browser-owned" (vitest, a mocked composing editor and an `isComposing` event) asserts the event handled, `onKeyDown` not called, no `preventDefault()` and unchanged children, and `packages/platejs/src/react/utils/dispatchPlateShortcut.spec.ts` "runs no shortcut for a composing key or an IME-confirm Enter" proves the shortcut guard; `apps/www/tests/browser/code-block-codemirror.spec.ts` "code-block: composing ${key} leaves code unchanged" proves it for the CodeMirror code view only, with synthetic composition events. No browser test presses Enter during a real composition in a contenteditable paragraph, and no test covers an `insertParagraph` beforeinput during composition. Risk, read from the code and not run: WebKit sends the confirming Enter after `compositionend` with keyCode 229 and `isComposing` false, Plite then clears its composing state and runs its line-break path (`packages/plitejs/src/react/editable/keyboard-input-strategy.ts:692`, `packages/plitejs/src/react/editable/editing-kernel.ts:850`), and Plite has no keyCode 229 guard. Checked 2026-10-08.
+
+- `EDIT-IME-ANDROID-AUTOCORRECT-001` `proposed` `space that accepts an autocorrection`: on Android Chrome with Gboard auto-correction on, the space that accepts a correction replaces the misspelled word in place, so the corrected word appears once and the word typed next follows it with the caret after it
+
+```text
+|
+type becuase, space, go
+=>
+Because go|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Android platform text editing, where a plain `<textarea>` and a bare `contenteditable` on the same device receive `deleteContentBackward` and then `insertText` `because ` for that space, with no composition; secondary ref: Slate #5891
+Source: docs/plite/research/2026-10-02-agentic-e2e-testing/issue-drafts/android-gboard-autocorrect-append.md:27-31
+Proof: none passes. `apps/plite/tests/device/autocorrect-empty.device.ts` "autocorrect on space in an empty editor replaces the word and keeps typing after it (Slate #5891)" runs on Plite's `custom-placeholder` example and declares the rule's failure as a known failure (desired `Because go`, observed `BecuasegoBecause `); `device.knownFailure` passes only while the failure still reproduces (`packages/test/src/device/lane.ts:624-672`). It reproduced in five of five runs on one Android emulator (Pixel 9, API 36, Chrome 146, Gboard 17.0.14) on 2026-10-02 (`docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json`); the device lane is manual, no physical phone has run it, and nothing runs it on a Plate editor. The neutral-page census is `docs/plite/research/2026-10-02-agentic-e2e-testing/shards/010-android-lane-probes.md:59`, `:65-67`. Checked 2026-10-08.
+
+- `EDIT-IME-ANDROID-HANGUL-001` `proposed` `Korean jamo and ↵`: with Gboard Korean 두벌식 on Android Chrome, jamo typed into an empty paragraph under its placeholder, or at the end of a text block, compose into syllables, as Gboard composes a whole word across jamo in a plain `<textarea>`; Enter then ends the composition and splits after the composed word, leaving an empty second block with the caret
+
+```text
+|
+type ㅇ ㅏ ㄴ ㄴ ㅕ ㅇ, then ↵
+=>
+안녕
+|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Android platform text editing, where a plain `<textarea>` and a bare `contenteditable` on the same device compose `한글` across jamo; secondary ref: Slate #5493 and #5883
+Source: docs/plite/research/2026-10-02-agentic-e2e-testing/issue-drafts/android-gboard-korean-composition.md:28-34
+Proof: none passes. `apps/plite/tests/device/korean-placeholder.device.ts` "commits a Korean word typed under the placeholder once, then Enter splits after it (Slate #5493, #5883)" runs on Plite's `custom-placeholder` example, asserts a `compositionstart` was seen and declares two known failures: Plite reads `ㅇㅏㄴㄴㅕㅇ` instead of `안녕`, and Enter splits before the composing jamo. It reproduced in five of five runs on the same Android emulator and Gboard build as `EDIT-IME-ANDROID-AUTOCORRECT-001` on 2026-10-02 (`docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json`); the end-of-text clause rests on one probe trace of Plite's `plaintext` example, not a repeating case, and nothing runs on a Plate editor or a physical phone. The neutral-page census is `docs/plite/research/2026-10-02-agentic-e2e-testing/shards/010-android-lane-probes.md:62-66`. Checked 2026-10-08.
+
+- `EDIT-IME-ANDROID-EMPTY-LEAF-001` `proposed` `first composed keys in an empty paragraph`: on Android Chrome, the keys a Japanese romaji or Chinese Pinyin IME composes into an empty paragraph under its placeholder stay in one composition and commit once, so `h`, `a` gives `は` and never `hあ` or a doubled first letter; Korean jamo follow `EDIT-IME-ANDROID-HANGUL-001`
+
+```text
+| (placeholder shown)
+type h, a with Gboard Japanese romaji, then confirm
+=>
+は|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: platform text-editing norms for an IME composition, though no neutral-page census has typed Japanese or Pinyin on the device; secondary ref: Slate #5883 (Gboard 14.2 Japanese romaji, `hあ`), Slate #5493 and Slate PR 6096, which names Pinyin
+Source: docs/plite/research/2026-10-02-agentic-e2e-testing/shards/005-android-scenarios-from-slate.md:21 and :44-45
+Proof: none. No device, browser or package case composes Japanese or Pinyin on Android: the device lane's keyboard types only English and Korean (`packages/test/src/device/android.ts:32`), and the shard's case 1 (`docs/plite/research/2026-10-02-agentic-e2e-testing/shards/005-android-scenarios-from-slate.md:93`) runs Korean only, which `EDIT-IME-ANDROID-HANGUL-001` states. That Korean case, `apps/plite/tests/device/korean-placeholder.device.ts`, fails under the same placeholder in another way: each jamo commits on its own, as a probe also saw at the end of a text block, rather than a first character doubling. The nearest proof is desktop Chromium on Plite's `custom-placeholder` example: `apps/plite/tests/plite-browser/donor/examples/placeholder.test.ts:133` "commits IME composition from the custom placeholder empty state" composes `a`, `ab` and `abc` through CDP `Input.imeSetComposition` from the placeholder's empty state and asserts `abc` once, the caret at offset 3 and the placeholder hidden; it uses no Android keyboard, Japanese or Pinyin. Nothing runs on a Plate editor or a physical phone. Checked 2026-10-08.
+
+- `EDIT-IME-ANDROID-STRIP-REPLACE-001` `proposed` `suggestion-strip tap`: on Android Chrome, tapping a suggestion-strip candidate that corrects the misspelled word just typed replaces that word in place: exactly one corrected word appears, with no duplicated prefix, the text before it stays unchanged, and the corrected word keeps the marks of the word it replaces, so a word typed at the end of a bold run stays bold, as `EDIT-AFF-MARK-001` says; a collapsed caret follows the word and any space the keyboard commits with it, and the soft keyboard stays shown
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Android platform text editing, where on a neutral page on the same device Gboard answers a tap on `hello` after `helo` with `deleteContentBackward` and then `insertText` `lo `, the corrected suffix and a space; secondary ref: Slate #5643, #5130, #4602 and #5371
+Source: docs/plite/research/2026-10-02-agentic-e2e-testing/shards/005-android-scenarios-from-slate.md:94
+Proof: only a Plite route proves it, on one Android emulator: `apps/plite/tests/device/strip-replace.device.ts` "a suggestion-strip replacement after a bold leaf commits one corrected word (Slate #5643, #5130)" taps the end of the `bold` leaf on Plite's `richtext` example, types ` helo` with Gboard English, taps the `hello` candidate and asserts that the tap sent `deleteContentBackward` then `insertText`, that the paragraph holds `bold hello`, one `hello` and no repeated `hel` prefix, that its bold leaf starts with `bold hello`, a collapsed caret whose preceding text ends in `hello` once a trailing space is trimmed, and the keyboard still shown. It passed five of five warm runs on one Android emulator (Pixel 9, API 36, Chrome 146, Gboard 17.0.14) on 2026-10-02 (`docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json`). It checks the text before the word only as far as `bold `, and the text after it not at all. The case starts from a misspelled prefix because a candidate that only extends the typed prefix sends no replacement (`docs/plans/2026-10-02-proof-device-lane.md:86`); the neutral-page probe is `docs/plite/research/2026-10-02-agentic-e2e-testing/shards/010-android-lane-probes.md:46-48`. The shard's case 2 oracle keeps the bold leaf unchanged; the case expects the bold run to continue instead, which `EDIT-AFF-MARK-001` and `EDIT-AFF-MARK-DELETE-001` both give, since the replaced and the typed text sit at the end of the bold run. The device lane is manual, and nothing runs on a Plate editor or a physical phone. Checked 2026-10-08.
+
+- `EDIT-IME-ANDROID-MARK-TOGGLE-001` `proposed` `toolbar mark at a collapsed caret, then typing`: on Android Chrome, tapping a toolbar mark button such as Bold at a collapsed caret keeps the soft keyboard shown, and the characters typed next land in one leaf carrying that mark, with the caret at the end of that leaf
+
+```text
+plain|
+tap Bold, type ab, then c
+=>
+plain**abc|**
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: platform text-editing norms on Android, where formatting the caret does not dismiss the soft keyboard; secondary ref: Slate #6022 and PR 6027, and Slate #4405
+Source: docs/plite/research/2026-10-02-agentic-e2e-testing/shards/005-android-scenarios-from-slate.md:96
+Proof: only a Plite route proves it, on one Android emulator: `apps/plite/tests/device/bold-toggle.device.ts` "a collapsed Bold toggle keeps the keyboard and types one bold run (Slate #6022)" taps the end of the first block on Plite's `richtext` example, taps that example's own Bold button, whose pointerdown handler prevents the default and toggles the mark (`apps/www/src/app/(app)/examples/plite/_examples/richtext.tsx:577-583`), asserts the keyboard still shown, types `ab` and then `c`, and asserts the block text gains `abc`, one bold leaf `abc`, a collapsed caret in a bold leaf after `abc` and the keyboard still shown. It passed five of five warm runs on one Android emulator (Pixel 9, API 36, Chrome 146, Gboard 17.0.14) on 2026-10-02 (`docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json`). At model level, `packages/plitejs/test/react/android-input-manager-contract.test.ts:1202` "keeps selection on the marked inserted leaf after collapsed mark typing" (vitest, a mocked DOM point) adds bold at a collapsed caret, sends `insertText` through the Android input manager and asserts a bold leaf `w` with the caret at its end. No mark but Bold has run, nothing runs Plate's copied toolbar or a Plate editor on a device, and physical phones are unproven. Checked 2026-10-08.
+
+- `EDIT-IME-ANDROID-MENTION-TAP-001` `proposed` `touch on a mention option`: on Android Chrome, after a mention query typed on the soft keyboard with no composition active, a touch on a combobox option replaces the trigger and query with exactly one mention and leaves a collapsed caret after it with the soft keyboard still shown; Backspace then removes the mention as one atom, as `EDIT-MENTION-BS-START-001` says, without multiplying text, and the keyboard stays shown. A touch during a composition follows `EDIT-AUTOCOMPLETE-IME-002`
+
+```text
+Mention @bi| (popup open)
+touch Biggs Darklighter
+=>
+Mention [@Biggs Darklighter]|
+⌫
+=>
+Mention |
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Notion for typed mention and slash menus; secondary ref: plate#1230 and Slate #5680, #5357, #5052 and #5540
+Source: docs/plite/research/2026-10-02-agentic-e2e-testing/shards/005-android-scenarios-from-slate.md:97
+Proof: one device case runs it on a Plate editor, on one Android emulator: `apps/plite/tests/device/mention-taps.device.ts` "a mention option tap commits once and Backspace removes the mention (autocomplete Android gate)" opens www's `/blocks/mention-demo`, taps the end of its first block, types ` @bi` with Gboard English, which composes nothing there, touches "Biggs Darklighter" and asserts one more mention node than before, the keyboard shown and a collapsed caret; it then presses Backspace twice and asserts the mention count back at its start with the keyboard shown. It reads no text, so it shows neither that the trigger and query are gone nor that no text multiplied, and it does not show which Backspace removed the mention. It passed five of five warm runs on one Android emulator (Pixel 9, API 36, Chrome 146, Gboard 17.0.14) on 2026-10-02 (`docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json`) and again on 2026-10-04 (`docs/research/review-records/2026-10-04-autocomplete-occurrence-host-phase-1b.json`). The planned tap during a Korean composition was cut because no option matches a Korean query (`docs/plans/2026-10-02-proof-device-lane.md:88`), so a touch during a composition stays unproven on a device, and no physical phone has run. Checked 2026-10-08.
+
+- `EDIT-IME-ANDROID-PENDING-TOOLBAR-001` `proposed` `toolbar block-type tap during composition`: on Android Chrome, tapping a toolbar block-type button while a word is still composing, such as a Gboard Korean word, keeps the composing text in the model, applies the block type to its block and removes no block
+
+```text
+text 한| (한 still composing)
+next
+tap the toolbar's heading button
+=>
+# text 한
+next
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: platform text-editing norms for an IME composition, where acting on another control never discards the composed text; secondary ref: Slate #5019, #4861, #5078 and #5893
+Source: docs/plite/research/2026-10-02-agentic-e2e-testing/shards/005-android-scenarios-from-slate.md:98
+Proof: only a Plite route proves it, on one Android emulator: `apps/plite/tests/device/pending-korean-toolbar.device.ts` "a pending Korean word survives a toolbar block-type tap (Slate #5019)" taps the end of the first block on Plite's `richtext` example, types `ㅎㅏㄴ` with Gboard Korean, checks that the last composition event is a `compositionstart` or `compositionupdate`, so the tap lands while the word still composes, taps that example's own heading-one button and asserts the block becomes `heading-one`, its text equals the model text read before the tap, and the block count stays the same. It passed five of five warm runs on one Android emulator (Pixel 9, API 36, Chrome 146, Gboard 17.0.14) on 2026-10-02 (`docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json`). It asserts no text value, and given the `EDIT-IME-ANDROID-HANGUL-001` failure the model likely holds separate jamo rather than `한` (inferred, not read). Code: Plite's DOM plugin maps its pending Android text diffs, selection and action through every transaction change (`packages/plitejs/src/dom/plugin/with-dom.ts:68-106`, `:234-236`). No other language has run, nothing runs Plate's copied toolbar or a Plate editor on a device, and physical phones are unproven. Checked 2026-10-08.
+
+- `EDIT-IME-SWIPE-BACKSPACE-001` `proposed` `⌫ after a swiped word`: after a word entered by swipe typing on a virtual keyboard, in iOS Safari or Android Chrome, the first Backspace keeps the browser's `deleteWordBackward` intent and deletes that whole word exactly once, and later Backspaces delete one character each
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: iOS and Android virtual-keyboard platform behavior, where the first Backspace after a swiped word deletes the word; secondary ref: none inspected; the requirement comes from the 2026-07-25 architecture audit's harvest list (`docs/plans/2026-07-25-multi-editor-full-architecture-audit.md:2609-2614`)
+Source: docs/plite/research/2026-10-02-agentic-e2e-testing/read-log.tsv:356
+Proof: none: no device, browser or package test has run swipe input (a search for `swipe` and `glide` in `apps/plite/tests`, `apps/www/tests`, `packages/plitejs` and `packages/platejs/src` found only the device lane's adb `input swipe` helper on 2026-10-08), and no iOS device lane exists. Checked 2026-10-08.
 
 ## Thematic Break And Atomic Blocks
 
@@ -2450,6 +3044,52 @@ note: remove the selection without corrupting surrounding structure
 
 note: `⌦` on an expanded selection, and `⌫` on a backward expanded selection, use the same structural cleanup as forward `⌫`; inside one paragraph the selected text is deleted in place and the paragraph wrapper stays
 
+- `EDIT-SEL-TYPE-BLOCKS-001` `proposed` `typing over several whole blocks`: typing over an expanded selection that covers several whole sibling blocks replaces them with one block holding the typed text, with the caret after it, and the blocks after the selection stay
+
+```text
+[[one
+two]]
+three
+type x
+=>
+x|
+three
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: ProseMirror (#112)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0086-0126.md:44-52
+Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts:726` "replaces a multi-paragraph selection with typed text" selects from the start of `one` to the end of `two`, types `replacement` and asserts `replacement`, `three` and the caret at offset 11; every block there is a paragraph, so it cannot show which block type wins. No Plate or www test types over whole blocks. Plate routes typing through Plite's `insertText` command (`packages/plitejs/src/react/editable/mutation-controller.ts:1166`), whose whole-block path (`getFullBlockTextReplacement` with `fillDefaultRootChild`, `packages/plitejs/src/core/editor-commands.ts:407-465`) builds the root's default block; a model probe on 2026-10-08 (Bun, package source, happy-dom) turned a fully selected heading and paragraph into one paragraph `X`, two whole list items into a plain paragraph without `listType` or `indent`, and a fully selected blockquote into a bare paragraph, while a selection starting one character into the heading kept the heading. Which type the replacement block takes, and whether list membership or a wholly selected wrapper survives, is open work under `EDIT-GLOBAL-005`. Checked 2026-10-08.
+
+- `EDIT-SEL-TYPE-MARK-001` `proposed` `typing over marked text`: typing over an expanded selection whose selected text all carries the same marks gives the typed text those marks instead of falling back to unmarked text
+
+```text
+plain **[[bold]]** rest
+type x
+=>
+plain **x|** rest
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: ProseMirror (#399)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0345-0431.md:9-14
+Proof: Plite proves it for one whole marked leaf: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:819` "preserves selected text marks when typing a replacement" (Plite's richtext example) and `packages/plitejs/test/primitive-method-runtime-contract.ts:334` "insertText inherits consistent marks from a replaced selected range", run by `packages/plitejs/test/runtime-contracts.test.ts`. No Plate test covers it; a model probe on 2026-10-08 (Bun, package source, happy-dom) gave bold typed text over a bold leaf, over consistently bold text across two blocks and over whole bold blocks, and unmarked text over a mixed selection. Code: `getConsistentRangeTextMarks` requires every non-empty selected leaf to carry the same text properties (`packages/plitejs/src/internal/range-text-marks.ts:35-52`, used by `packages/plitejs/src/transforms-text/insert-text.ts:236-240`). Checked 2026-10-08.
+
+- `EDIT-SEL-CUT-ALL-001` `proposed` `⌫, ⌦ or cut over the whole document`: deleting or cutting a selection that covers the whole document leaves one empty paragraph, never an empty shell of the removed block's type such as an empty heading, and the cut payload pastes back with its original block type
+
+```text
+[[# Title
+body]]
+⌫
+=>
+|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: ProseMirror (#570)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0526-0580.md:13-15
+Proof: Plite proves the empty-paragraph clause: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:729` "normalizes select-all Backspace to one empty paragraph" (Ctrl+A and Backspace over a heading and a paragraph leave one empty paragraph with the caret at its start) and `:6095` "cuts and pastes a fully selected heading as a heading", whose paste-back passes only because that example's schema sets `slice.preserveContext` on headings. No Plate test covers it; `apps/www/tests/browser/suggestion.spec.ts:300` "homepage select-all deletion stays editable" asserts one empty block and the caret but not its type. Drift: a model probe on 2026-10-08 (Bun, package source, happy-dom) cut a selected heading and pasted it back as a paragraph, because Plate's headings do not set `slice.preserveContext` and the copied slice stays open; the browser delete path passes `at` (`packages/plitejs/src/react/editable/mutation-controller.ts:886-892`) and leaves an empty paragraph, but `editor.update.fragment.delete()` without `at` leaves an empty heading shell (`packages/plitejs/src/transforms-text/delete-text-whole-blocks.ts:85-126`). Checked 2026-10-08.
+
 - `EDIT-SEL-STAB-001` `locked` `⇤`
 
 ```text
@@ -2475,6 +3115,20 @@ typing and deletion.
 note: directional affinity for soft inline marks and style spans such as bold,
 italic, strikethrough, highlight, subscript, superscript, underline, and
 document-style text styling marks
+
+- `EDIT-AFF-MARK-DELETE-001` `proposed` `⌫ or ⌦ over marked text`: when Backspace or Delete removes a marked run, or removes an expanded selection whose text all carries the same marks, the collapsed caret keeps those marks active so the next typed text carries them
+
+```text
+plain **[[bold]]**
+⌫, then type x
+=>
+plain **x|**
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: none; primary UX ref: Typora for markdown-native marks; secondary ref: ProseMirror (#517, #1013)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0480-0524.md:17-18
+Proof: Plite proves it when the marked run is the whole block: `packages/plitejs/test/delete-contract.ts:1520` "keeps marks from deleted text active after Backspace removes the marked run" and `:1557` "keeps consistently selected marks active after deleting a marked range", run by `packages/plitejs/test/runtime-contracts.test.ts`, and `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:1139` "keeps selected bold as the active mark after deleting its text" on Plite's richtext example; none deletes a mid-paragraph run, uses Delete or crosses blocks. No Plate test covers it; a model probe on 2026-10-08 (Bun, package source, happy-dom) gave bold typed text after Backspace and after Delete over a bold run inside a paragraph, and after deleting a bold range in both directions and across blocks; marks other than bold were not probed. Code: `setDeletedMarks` stores the deleted text's consistent marks (`packages/plitejs/src/transforms-text/delete-text.ts:1289-1306`). Checked 2026-10-08.
 
 - `EDIT-AFF-LINK-001` `locked`
 
@@ -2711,6 +3365,13 @@ note: current footnote law is parse, serialize, insert, preview, and
 navigation
 note: dedicated toggle behavior is still not part of the footnote package law
 
+- `EDIT-FOOTNOTE-CREATE-201` `proposed` `create definition`: for an identifier whose references have no definition, `editor.update.footnote.createDefinition` creates one definition block for that identifier without inserting another reference and, unless the caller turns focus off, lands a collapsed caret at the start of the definition body; for an identifier that already has a definition, it creates none and moves the caret to that definition instead
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137; turning focus off is a parameter
+Authority: syntax: GFM and GitHub Docs; primary UX ref: Typora; secondary ref: the unresolved-reference repair under `EDIT-FOOTNOTE-NAV-001`
+Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:301
+Proof: `packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.spec.ts:392` "creates one definition and reuses it on later requests" calls `createDefinition` with `focus: false` and asserts the definition at `[1]`, no inserted reference and the selection kept, then calls it again with the default focus and asserts the same definition and the caret at offset 0 of `[1, 0, 0]`, which proves creation, no reference, focus off and reuse; the default focus on a fresh creation is asserted only through `insert`, by `:464` "uses selected content as the initial definition body [EDIT-FOOTNOTE-INSERT-001]", and a model probe on 2026-10-08 (Bun, package source) confirmed it for a direct call. Code: the reuse branch at `packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts:415-439` and the fresh creation at `:467-479`, which never checks that a reference exists. The Plugin surface line for `editor.update.footnote.createDefinition` under Footnotes states the creation half. Checked 2026-10-08.
+
 ## Behavior-Policy Options
 
 These are explicit plugin or kit policy candidates that may matter for Typora
@@ -2901,6 +3562,19 @@ horizontal rule + trailing paragraph
 
 note: current kit inserts the HR immediately when the shorthand closes
 note: this is a current-kit deviation; a command-aligned input rule is the preferred shape, and changing it needs its own plan
+
+- `EDIT-AUTOFMT-BLOCK-NBSP-001` `proposed` `no-break space after a block marker`: a block shorthand accepts a no-break space (U+00A0) after its marker as the trigger space, so `#`, `>`, `-` or `1.` followed by a no-break space converts the block as an ordinary space does
+
+```text
+type # then a no-break space
+=>
+heading block
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137; it holds within the block shorthand rules, which are themselves kit policy (`EDIT-PROFILE-AUTOFMT-BLOCK-*`)
+Authority: syntax: CommonMark / GFM shorthand where applicable; primary UX ref: Typora for markdown shorthand; secondary ref: ProseMirror (#598)
+Source: docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0582-0602.md:15-22
+Proof: Plate does not meet it. Its block input rules declare `trigger: ' '` (`packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts:95`; `packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts:30`, `:79`; `packages/platejs/src/features/list/lib/BaseListPlugin.ts:1850`, `:1870`, `:1903`), the resolved rules are indexed by that exact trigger string (`packages/platejs/src/internal/plugin/resolvePlugins.ts:1835-1847`), and `InputRulesPlugin` looks up the typed text by exact string (`packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts:370-373`); a model probe on 2026-10-08 (Bun, package source, happy-dom) typed `#`, `>` and `-` followed by U+00A0 and each stayed literal text. The only browser proof, `apps/plite/tests/plite-browser/donor/examples/markdown-shortcuts.test.ts:104` "treats non-breaking space as markdown shortcut whitespace", runs the Plite markdown-shortcuts example's own handler, whose trailing-whitespace pattern matches U+00A0, not Plite core or Plate. Checked 2026-10-08.
 
 ### Inline Mark Autoformat
 

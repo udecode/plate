@@ -7,3 +7,7 @@
 ## Path, point, range and operation helpers
 
 - **Core helpers.** The harvest groups 30 Portable Text files (374 indexed test and describe names) as pinning root-aware, deterministic core helpers (report.md:125). Under `portabletext/editor@ad2a52d13d9f:packages/editor` they cover path comparison and navigation (`src/engine/path/`), node traversal (all of `src/node-traversal/` but `get-highest-object-node.test.ts`, which sits in the object family), operation inversion (`src/engine/operation/inverse-operation.test.ts`), dirty paths and path serialization (`src/paths/get-dirty-paths.test.ts`, `src/paths/serialize-path.test.ts`), operation-to-patch translation (`src/internal-utils/operation-to-patches.test.ts`), and transforming a local operation against a remote patch, where keyed paths stay stable and an operation on a removed block is dropped (`src/internal-utils/transform-operation.test.ts`). The root-aware reading is the harvest's summary, drawn from test names rather than assertion bodies (report.md:70).
+
+## Portable Text model
+
+- Portable Text blocks use `_type: 'block'` and `style`; spans carry `marks` arrays that reference `markDefs`; and lists are flat, with `listItem` and `level` on blocks (`portabletext/portabletext@d17f7289:README.md:16-185`). Flat lists and portable annotations work, at the cost of mark-reference indirection. Source: `docs/plite/research/2026-08-17-editor-node-model-standards/README.md:101`, `read-log.tsv:15`.

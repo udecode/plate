@@ -11,16 +11,16 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/plate-ui.json",
-    "https://platejs.org/r/editor-static.json",
+    "https://platejs.org/r/ai.json",
+    "https://platejs.org/r/dnd.json",
     "https://platejs.org/r/editor.json",
-    "https://platejs.org/r/fixed-toolbar.json",
-    "https://platejs.org/r/floating-toolbar.json",
-    "button",
     "https://platejs.org/r/editor-plugins.json",
     "https://platejs.org/r/editor-plugins-static.json",
+    "https://platejs.org/r/editor-static.json",
+    "https://platejs.org/r/fixed-toolbar.json",
+    "https://platejs.org/r/floating-toolbar.json",
     "https://platejs.org/r/use-object-url.json",
-    "https://platejs.org/r/ai.json",
-    "https://platejs.org/r/dnd.json"
+    "button"
   ],
   "files": [
     {

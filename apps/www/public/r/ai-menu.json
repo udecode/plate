@@ -16,14 +16,14 @@
     "unified@^11.0.5"
   ],
   "registryDependencies": [
-    "button",
-    "command",
     "https://platejs.org/r/comment.json",
-    "https://platejs.org/r/floating-popover.json",
     "https://platejs.org/r/editor.json",
     "https://platejs.org/r/use-chat.json",
+    "https://platejs.org/r/editor-plugins-static.json",
     "https://platejs.org/r/editor-static.json",
-    "https://platejs.org/r/editor-plugins-static.json"
+    "https://platejs.org/r/floating-popover.json",
+    "button",
+    "command"
   ],
   "files": [
     {

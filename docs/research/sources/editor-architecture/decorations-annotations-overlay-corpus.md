@@ -30,6 +30,8 @@ related:
 
 # Decorations / annotations overlay corpus
 
+> Current Plite (checked 2026-10-08): Plite kept the decoration and annotation split and cut the widget lane, `Bookmark`, `RangeRef` and the projection store that this page's Slate v2 evidence names. Decorations are `DecorationSource`s passed to `<EditorRoot decorations>` (`packages/plitejs/src/interfaces/decoration.ts:29-37`, `packages/plitejs/src/react/components/plite.tsx:181`), annotations are explicit stores (`packages/plitejs/src/annotations/store.ts:457`), a durable location is an `editor.anchor` handle (`packages/plitejs/src/interfaces/editor.ts:2559-2567`), and Plite exposes no widget target or store lane (`docs/vision/plite.md:597-600`).
+
 ## Purpose
 
 This page compiles the cross-editor evidence behind the Slate v2

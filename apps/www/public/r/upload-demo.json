@@ -8,8 +8,8 @@
     "platejs"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor.json",
     "https://platejs.org/r/dnd.json",
+    "https://platejs.org/r/editor.json",
     "https://platejs.org/r/media.json",
     "https://platejs.org/r/media-toolbar-button.json",
     "https://platejs.org/r/paragraph.json",

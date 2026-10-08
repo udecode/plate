@@ -11,8 +11,8 @@
     "next"
   ],
   "registryDependencies": [
-    "button",
-    "https://platejs.org/r/use-mounted.json"
+    "https://platejs.org/r/use-mounted.json",
+    "button"
   ],
   "files": [
     {

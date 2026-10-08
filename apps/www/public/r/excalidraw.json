@@ -5,10 +5,9 @@
   "description": "A drawing component powered by Excalidraw.",
   "dependencies": [
     "platejs",
-    "@excalidraw/excalidraw",
+    "@excalidraw/excalidraw@0.18.0",
     "diff-match-patch-ts@^0.6.0"
   ],
-  "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/excalidraw.tsx",

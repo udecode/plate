@@ -14,6 +14,8 @@ related:
 
 # Slate v2 overlay architecture cuts
 
+> Current Plite (checked 2026-10-08): two of these cuts were later cut. The `Widget` lane is gone, and Plite exposes no generic widget target or store (`docs/vision/plite.md:597-600`; `docs/research/decisions/plite-view-ownership.md:28`). `Bookmark` and `RangeRef` are gone from `packages/plitejs/src`; a durable location is an `editor.anchor` handle its owner releases, saved as `EditorDocumentRange` JSON (`packages/plitejs/src/interfaces/editor.ts:2559-2567`, `docs/vision/plite.md:613-624`). The decoration and annotation split and app-owned annotation data stand (`packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx:40-45`).
+
 ## Question
 
 What architecture conclusions are strong enough to lock for Slate v2 after the

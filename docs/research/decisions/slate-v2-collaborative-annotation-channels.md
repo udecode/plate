@@ -10,6 +10,8 @@ related:
 
 # Slate v2 collaborative annotations use external channels by default
 
+> Current Plite (checked 2026-10-08): the external-channel default holds. Annotations live in explicit stores outside the document value (`createAnnotationStore`, `packages/plitejs/src/annotations/store.ts:457`), and an `Annotation` takes an `anchor` that needs only `resolve`, plus app-owned `data` (`:25-31`); a refresh can target ids (`:50-53`). `Bookmark` and the projection stores named below are gone from `packages/plitejs/src`. The built-in local anchor is an `Anchor<Range>` from `editor.anchor`, saved as `EditorDocumentRange` JSON (`packages/plitejs/src/interfaces/editor.ts:2559-2567`), and React reads a store through `useAnnotation` and `useAnnotations` (`packages/plitejs/src/react/hooks/use-plite-annotations.tsx:10`, `:24`). Read `Bookmark` below as that anchor.
+
 ## Question
 
 Should comments and annotations default to being stored in the Slate document

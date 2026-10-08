@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { getRegistryIndexComponentPath } from '../../scripts/registry-index.mts';
-import { deriveRegistryPackageDependencies } from '../../scripts/registry-package-dependencies.mts';
+import { deriveRegistryDependencies } from '../../scripts/registry-package-dependencies.mts';
 import {
   createPlateRegistry,
   PLATE_DEFAULT_REGISTRY_BASE,
@@ -16,7 +16,9 @@ import {
 } from './registry-variants';
 
 describe('Plate registry editor files', () => {
-  const { items } = createPlateRegistry();
+  const { items } = deriveRegistryDependencies(createPlateRegistry(), {
+    sourceRoot: import.meta.dir,
+  });
 
   it('uses the supported shadcn preset bases', () => {
     expect(PLATE_REGISTRY_BASES).toEqual(['base', 'radix']);
@@ -101,7 +103,7 @@ describe('Plate registry editor files', () => {
       const selectedRegistry = createPlateRegistry('https://platejs.org', {
         base,
       });
-      const derivedRegistry = deriveRegistryPackageDependencies(
+      const derivedRegistry = deriveRegistryDependencies(
         {
           ...selectedRegistry,
           items: selectedRegistry.items.filter((item) =>
@@ -179,11 +181,6 @@ describe('Plate registry editor files', () => {
   });
 
   it('routes copied editor menus through declared provider adapters', () => {
-    const menuAdapters = {
-      'context-menu': '@plate/editor-context-menu',
-      'dropdown-menu': '@plate/editor-dropdown-menu',
-    } as const;
-
     for (const item of items) {
       for (const file of item.files ?? []) {
         if (!file.path.startsWith('components/editor/')) continue;
@@ -197,10 +194,6 @@ describe('Plate registry editor files', () => {
           expect(moduleName, `${item.name}:${file.path}`).toBe(
             `@/registry/components/editor/${menuName}`
           );
-          expect(
-            item.registryDependencies,
-            `${item.name}:${file.path}`
-          ).toContain(menuAdapters[menuName as keyof typeof menuAdapters]);
           expect(source, `${item.name}:${file.path}`).not.toMatch(
             new RegExp(
               `<${menuName === 'context-menu' ? 'ContextMenu' : 'DropdownMenu'}Trigger\\s+asChild`
@@ -383,8 +376,8 @@ describe('Plate registry editor files', () => {
       const provider = itemsByName.get(name);
 
       expect(provider?.registryDependencies).toEqual([
-        '@plate/files-api',
         '@plate/upload',
+        '@plate/files-api',
       ]);
       expect(provider?.files).toEqual([
         {

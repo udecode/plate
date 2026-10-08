@@ -13,7 +13,6 @@
     "remark-stringify@^11.0.0",
     "unified@^11.0.5"
   ],
-  "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/copilot.tsx",

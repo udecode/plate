@@ -49,7 +49,7 @@ It is intentionally not a prescription for exact features Plate should copy. The
 
 ## Clone Or Update
 
-Run this from `/Users/zbeyens/git/plate` if you want the comparison repos checked out in `..`:
+Run this from the repository root if you want the comparison repos checked out in `..`:
 
 ```bash
 for repo in \
@@ -213,6 +213,8 @@ Take:
 
 `edix` is a scalpel, not the next spine. Worth studying for lightweight surfaces, not for replacing Plate's serious document architecture.
 
+- **edix: an explicit internal clipboard and a DOM-selection adapter.** edix's `internalTransferPlugin` writes the selected fragment as JSON under one app-specific MIME type (default `application/x-editate-editor`) on copy and reads it back on paste, so two editors exchange structure only when they share a schema (`inokawa/edix@528ec15113790a977e35614c3a5f56395d46819e:src/plugins/transfer/internalTransfer.ts:5-31`). `takeSelectionSnapshot` serializes the DOM selection into document positions and keeps its direction (`inokawa/edix@528ec15113790a977e35614c3a5f56395d46819e:src/dom/index.ts:268-306`). Its history plugin starts a new undo entry only after 500 ms without a document change, so it groups edits by time, not by transaction (`inokawa/edix@528ec15113790a977e35614c3a5f56395d46819e:src/plugins/history.ts:9`, `:94-113`). Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:74-171`, a 2026-04-03 read that cited older unpinned paths (`src/extensions/copy/internal.ts`, `src/history.ts`); checked at the local clone on 2026-10-08. Limit: source read only, nothing run.
+
 ### use-editable
 
 Still one of the cleanest small-surface inspirations.
@@ -225,6 +227,8 @@ Why it matters:
 Take:
 
 This is not a full editor framework. It is a strong reminder that not every editable surface deserves the full Plate stack.
+
+- **use-editable keeps the DOM, not a model, as the source of truth.** It lets the browser mutate the `contenteditable` element and records the mutations with a `MutationObserver` (`FormidableLabs/use-editable@008a0b51a9bc7c9812fe74633b4117bd74477627:src/useEditable.ts:192-194`). On flush it reads the element's text and caret, reverts every queued mutation (restoring old text, reinserting removed nodes, removing added ones) and passes the text and caret position to `onChange`, so React renders the new value (`:345-369`). Undo is a local stack of `[position, text]` snapshots that records a new entry only after 500 ms without one and keeps about 500 entries (`:314-337`), and paste inserts only `text/plain` (`:468-474`). That shape fits small plain-text surfaces only. Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:778-885` (2026-04-03, unpinned), checked at the local clone on 2026-10-08. Limit: source read only, nothing run.
 
 ### rich-textarea
 
@@ -267,6 +271,8 @@ Take:
 
 This is useful when thinking about editor infrastructure, not text rendering.
 
+- **urql's exchange-authoring rules.** These are the part of urql's pipeline worth carrying into a future Plate service pipeline. Exchanges run in the order they are passed: operations flow from the start to the end, and results return through the chain in reverse (`urql-graphql/urql@1eb11fcd68cc13d413f42e34a49c798dd97a7506:docs/advanced/authoring-exchanges.md:47-59`). An exchange that filters for the operations it handles must still forward every other kind, because new operation kinds can appear and a filtered-out operation never reaches the exchanges after it (`:150-189`). Exchanges are ordered synchronous first and asynchronous last, so components can receive cached data on their first mount without rerendering (`:191-211`). Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:1289-1343`, a 2026-04-03 read that cited these files unpinned, with urql's core package paths renamed to `platejs` by the slate-to-plite rename; checked at the local clone on 2026-10-08. Limit: no Plate or Plite pipeline uses exchanges; this is pressure for a service layer, not current law.
+
 ### TanStack DB
 
 One of the best non-editor inspirations on the list.
@@ -280,6 +286,8 @@ Why it matters:
 Take:
 
 If Plate wants better projections, indexes, or derived editor state, TanStack DB is a smarter inspiration than another random editor repo.
+
+- **TanStack DB makes derived views incremental.** Live queries compile to a differential-dataflow graph in `@tanstack/db-ivm`, a simplified fork of ElectricSQL's d2ts (`TanStack/db@68366ecaeef6c12a13402b558bd4a68d7519442f:packages/db-ivm/README.md:1-5`, `TanStack/db@68366ecaeef6c12a13402b558bd4a68d7519442f:packages/db/src/query/compiler/index.ts:310`); each collection manages its own indexes (`TanStack/db@68366ecaeef6c12a13402b558bd4a68d7519442f:packages/db/src/collection/indexes.ts:209`); and the React binding subscribes through `useSyncExternalStore` (`TanStack/db@68366ecaeef6c12a13402b558bd4a68d7519442f:packages/react-db/src/useLiveQuery.ts:3`). The 2026-04-03 read judged its optimistic transactions no substitute for editor undo history and placed it as a projection and index layer over editor truth, such as comment or semantic views. Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:1119-1228` (unpinned), checked at the local clone on 2026-10-08. Limit: source read only; no Plate code uses it.
 
 ### VS Code + Language Server Protocol
 
@@ -323,6 +331,8 @@ Why it matters:
 Take:
 
 This is not a framework. It is a signal about where the platform should go next.
+
+- **The four proposals.** The Open UI Richer Text Fields explainer bundles four proposals for native `<input>` and `<textarea>`: an `InputRange()` over a live field value, CSS highlights on those ranges, suggestion or ghost-text APIs on `HTMLInputElement` and `HTMLTextAreaElement`, and a presentational `mask` attribute. As the 2026-04-03 read summarized it, the explainer argues that today's workarounds, such as overlays, injected characters and multiple inputs, break undo and redo, copy and paste and deletion, which native primitives would keep; if they land, many rich-textarea-style surfaces need neither contenteditable nor Plite. Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:1666-1773`, which read `site/src/pages/components/richer-text-fields.explainer.mdx` in an unpinned local open-ui clone. Limit: not rechecked since, no `../open-ui` clone remains, and these were proposals, not shipped platform features, when read.
 
 ## How To Use This List
 
@@ -369,6 +379,8 @@ This is not a mandate to copy them. It is a lens for what deserves deeper resear
 - Do not mistake Tiptap's packaging win for a reason to inherit its whole stack.
 - Do not turn Premirror/Pretext into an immediate blocker for the overlay lane.
 - Do not use EditContext as an excuse to defer hard current-browser design.
+
+- Do not make TanStack DB the document's source of truth or put urql exchanges inside Plite: both are imports for layers above document truth, such as projections and service pipelines. The April 2026 systems objective listed both among its category errors. Source: `52625e85025313eebd4eeb9be2254249ded58676:docs/analysis/editor-global-systems-objective.md:304-317`. Limit: a design judgment, not a measured result.
 
 ## Bottom Line
 

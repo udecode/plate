@@ -6,13 +6,13 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/editor-plugins.json",
+    "https://platejs.org/r/blockquote.json",
     "https://platejs.org/r/editor.json",
     "https://platejs.org/r/fixed-toolbar.json",
-    "https://platejs.org/r/toolbar.json",
-    "https://platejs.org/r/mark-toolbar-button.json",
     "https://platejs.org/r/heading.json",
-    "https://platejs.org/r/blockquote.json",
-    "https://platejs.org/r/editor-plugins.json"
+    "https://platejs.org/r/mark-toolbar-button.json",
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {

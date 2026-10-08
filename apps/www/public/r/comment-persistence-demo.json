@@ -8,15 +8,15 @@
     "platejs"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/suggestion.json",
     "https://platejs.org/r/basic-blocks.json",
     "https://platejs.org/r/comment.json",
     "https://platejs.org/r/comment-toolbar-button.json",
     "https://platejs.org/r/discussion.json",
     "https://platejs.org/r/editor.json",
-    "https://platejs.org/r/suggestion.json",
+    "https://platejs.org/r/link.json",
     "https://platejs.org/r/toolbar.json",
-    "button",
-    "https://platejs.org/r/link.json"
+    "button"
   ],
   "files": [
     {

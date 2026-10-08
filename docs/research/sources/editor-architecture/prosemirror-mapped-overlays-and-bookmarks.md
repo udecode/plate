@@ -14,6 +14,8 @@ related:
 
 # ProseMirror mapped overlays and bookmarks
 
+> Current Plite (checked 2026-10-08): the Slate v2 takeaways below predate the cut of `Bookmark` and of the widget lane. Plite's durable location is an `Anchor` from `editor.anchor`, a live handle that rebases across document changes, and a range anchor saves as `EditorDocumentRange` JSON (`packages/plitejs/src/interfaces/editor.ts:1850-1851`, `:2559-2567`); `packages/plitejs/src` has no `Bookmark` noun, and Plite exposes no widget target or store lane (`docs/vision/plite.md:597-600`, `:613-624`).
+
 ## Purpose
 
 Compile the ProseMirror evidence that mattered to the Slate v2

@@ -90,7 +90,7 @@ function unitOf(path) {
 
 const inRoots = (path) => ROOTS.some((root) => path.startsWith(root));
 
-function homeIndex(tree) {
+export function homeIndex(tree) {
   const rows = new Map(readHomes(tree).map((row) => [row.path, row]));
   const units = new Map();
   for (const path of tree.list()) {
@@ -562,7 +562,10 @@ export function resolve({
         `${item.key} is link-only, but ${posix.basename(item.source)} is not on the link-only list`
       );
     }
-    if (item.kind === 'law' || item.target === SPEC_FILE) {
+    if (
+      item.disposition === 'added' &&
+      (item.kind === 'law' || item.target === SPEC_FILE)
+    ) {
       if (!ONE_RULE.test(item.id ?? '')) {
         problems.push(`${item.key}'s ID ${item.id} is not one rule`);
       }

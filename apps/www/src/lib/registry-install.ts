@@ -43,6 +43,14 @@ export function getRegistryClipboardItemSpecifier(name: string) {
   return `${localRegistryUrl}${getPlateRegistryItemName(item)}`;
 }
 
+export function toShellPackageArguments(dependencies: readonly string[]) {
+  return dependencies
+    .map((dependency) =>
+      /^[\w@/.-]+$/.test(dependency) ? dependency : `"${dependency}"`
+    )
+    .join(' ');
+}
+
 export function getRegistryInstallCommand(name: string) {
   return `npx shadcn@latest add ${getRegistryItemSpecifier(name)}`;
 }

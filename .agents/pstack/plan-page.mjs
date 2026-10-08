@@ -102,6 +102,7 @@ section.plan + section.plan { border-top: 1px solid var(--rule); padding-top: 14
 p { margin: 0 0 8px; max-width: 72ch; }
 ul, ol { margin: 0 0 8px; padding-left: 1.3em; }
 li { margin: 2px 0; }
+.picks .alt { opacity: 0.75; }
 li > ul, li > ol { margin: 2px 0; }
 code { font: 0.86em var(--mono); padding: 0 2px; color: var(--ink); }
 pre { margin: 0; padding: 10px 12px; background: var(--code); border-radius: 6px; }
@@ -201,6 +202,7 @@ const ROLES = [
   [/^public api$/i, 'api'],
   [/^main changes$/i, 'main'],
   [/^defaults$/i, 'picked'],
+  [/^teach$/i, 'teach'],
   [/^close$/i, 'close'],
   [/^(scope|steps|evidence|proof|claims|asks|verification|notes|panel gate)$/i, 'details'],
 ];
@@ -454,12 +456,25 @@ function assertUnfolded(plan, doc, { name, others, paired, where }) {
 
 const DEFAULTS_HEAD = ['decision', 'pick', 'alternative', 'word'];
 const headCell = (cell) => sameText(cell.replace(/[*_`]/g, ''));
+const isDefaultsHead = (head) => DEFAULTS_HEAD.every((cell, index) => headCell(head[index] ?? '') === cell);
+const TIERS = new Map([
+  ['big', 'Big calls'],
+  ['small', 'Small calls'],
+  ['detail', 'Details'],
+]);
+const impactColumn = (head) => head.findIndex((cell) => headCell(cell) === 'impact');
 
 function assertDefaults(plan, where) {
   const section = sectionNamed(plan, 'Defaults');
   if (!section?.lines.some((line) => line.trim())) return;
-  if (!tablesOf(section.lines).some((table) => DEFAULTS_HEAD.every((cell, index) => headCell(table.head[index] ?? '') === cell))) {
+  const tables = tablesOf(section.lines).filter((table) => isDefaultsHead(table.head));
+  if (!tables.length) {
     throw new Error(`## Defaults in ${where} needs a table whose columns start with Decision, Pick, Alternative and Word, one row per call made for the owner`);
+  }
+  for (const { head, rows } of tables) {
+    const impact = impactColumn(head);
+    const wrong = impact < 0 ? null : rows.find((row) => !TIERS.has(headCell(row[impact] ?? '')));
+    if (wrong) throw new Error(`## Defaults in ${where} gives "${wrong[0]}" the impact "${wrong[impact] ?? ''}"; write big, small or detail`);
   }
 }
 
@@ -622,6 +637,52 @@ function tableHtml(head, rows) {
   return `<div class="scroll"><table><thead><tr>${head.map((cell) => `<th>${inline(cell)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
+const clause = (text) => text.trim().replace(/[.!?]+$/u, '');
+
+function picksHtml(lines) {
+  const out = [];
+  let prose = [];
+  const flush = () => {
+    if (prose.length) out.push(blocksHtml(prose));
+    prose = [];
+  };
+  for (let index = 0; index < lines.length; ) {
+    if (isFence(lines[index])) {
+      const { next } = readFence(lines, index);
+      prose.push(...lines.slice(index, next));
+      index = next;
+      continue;
+    }
+    const head = /^\s*\|/.test(lines[index]) && TABLE_RULE.test(lines[index + 1] ?? '') ? splitRow(lines[index]) : null;
+    if (!head || !isDefaultsHead(head)) {
+      prose.push(lines[index]);
+      index += 1;
+      continue;
+    }
+    flush();
+    const rows = [];
+    for (index += 2; index < lines.length && /^\s*\|/.test(lines[index]); index += 1) rows.push(splitRow(lines[index]));
+    const list = (group) =>
+      `<ul class="picks">${group
+        .map(([decision = '', pick = '', alternative = '', word = '']) =>
+          `<li><strong>${inline(clause(decision))}.</strong> ${inline(clause(pick))}. <span class="alt">Other option: ${inline(clause(alternative))}. Say <code>${escapeHtml(word.replace(/`/g, '').trim())}</code> to switch.</span></li>`
+        )
+        .join('')}</ul>`;
+    const impact = impactColumn(head);
+    if (impact < 0) {
+      out.push(list(rows));
+      continue;
+    }
+    const tierOf = (row) => headCell(row[impact] ?? '') || 'unsorted';
+    for (const tier of new Set([...TIERS.keys(), ...rows.map(tierOf)])) {
+      const group = rows.filter((row) => tierOf(row) === tier);
+      if (group.length) out.push(`<h3>${escapeHtml(TIERS.get(tier) ?? tier[0].toUpperCase() + tier.slice(1))}</h3>${list(group)}`);
+    }
+  }
+  flush();
+  return out.join('');
+}
+
 function itemHtml(text) {
   const task = text.match(/^(?:[-*+]\s+)?\[( |x|X)\]\s+([\s\S]*)$/);
   if (!task) return inline(text);
@@ -650,7 +711,7 @@ function listHtml(items, start) {
 }
 
 const SHOT = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
-const SHOT_TYPES = { '.gif': 'image/gif', '.jpeg': 'image/jpeg', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
+const SHOT_TYPES = { '.gif': 'image/gif', '.jpeg': 'image/jpeg', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp' };
 const DEMO_STEP = /^\d+[.)]\s+(.*)$/;
 
 function demoSteps(lines) {
@@ -706,8 +767,43 @@ function demoHtml(section, base) {
       return `<li><p>${inline(text)}</p>${shots.length ? `<div class="shots">${shots.join('')}</div>` : ''}</li>`;
     })
     .join('');
-  const viewer = items.includes('<img ') ? LIGHTBOX : '';
-  return `<section class="demo card"><h2>Demo</h2>${blocksHtml(intro)}<ol class="demo-steps">${items}</ol></section>${viewer}`;
+  return `<section class="demo card"><h2>Demo</h2>${blocksHtml(intro)}<ol class="demo-steps">${items}</ol></section>`;
+}
+
+const TEACH_PARAGRAPHS = 3;
+const TEACH_WORDS = 160;
+
+function assertTeach(plan, where) {
+  const section = sectionNamed(plan, 'Teach');
+  if (!section) return;
+  if (section.lines.some((line) => line.match(SHOT) && line.replace(SHOT, '').trim())) {
+    throw new Error(`## Teach in ${where} puts a picture inside a sentence; give the pictures a line of their own, as ![before](path) ![after](path)`);
+  }
+  const paragraphs = section.lines
+    .join('\n')
+    .split(/\n\s*\n/)
+    .map((block) => block.replace(SHOT, '').trim())
+    .filter(Boolean);
+  const words = wordCount(paragraphs.join(' '));
+  if (paragraphs.length > TEACH_PARAGRAPHS || words > TEACH_WORDS) {
+    throw new Error(`## Teach in ${where} runs ${paragraphs.length} paragraphs and ${words} words, where ${TEACH_PARAGRAPHS} paragraphs and ${TEACH_WORDS} words are the most; keep what someone new needs and leave the rest to the plan's other sections`);
+  }
+}
+
+function teachHtml(section, base) {
+  const parts = [];
+  let prose = [];
+  for (const line of section.lines) {
+    const shots = [...line.matchAll(SHOT)];
+    if (!shots.length || line.replace(SHOT, '').trim()) {
+      prose.push(line);
+      continue;
+    }
+    parts.push(blocksHtml(prose), `<div class="shots">${shots.map(([, label, path]) => inlineShotHtml(label, path, base)).join('')}</div>`);
+    prose = [];
+  }
+  parts.push(blocksHtml(prose));
+  return `<section class="plan"><h2>How it works</h2>${parts.join('')}</section>`;
 }
 
 function blocksHtml(lines) {
@@ -911,12 +1007,13 @@ function longParts(ask) {
   ].filter(Boolean);
 }
 
-const PAGE_PARTS = ['Brief', 'Open questions', 'Defaults'];
+const PAGE_PARTS = ['Brief', 'Teach', 'Open questions', 'Defaults'];
 
 function assertPlain(plan, where) {
   for (const title of PAGE_PARTS) {
-    const code = sectionNamed(plan, title)?.lines.join('\n').match(/`[^`\n]+`/);
-    if (code) throw new Error(`## ${title} in ${where} holds code ${code[0]}; the page shows this section, so write it in plain words and keep code in the plan's other sections`);
+    const lines = sectionNamed(plan, title)?.lines ?? [];
+    const code = lines.find(isFence)?.trim() ?? lines.join('\n').match(/`[^`\n]+`/)?.[0];
+    if (code) throw new Error(`## ${title} in ${where} holds code ${code}; the page shows this section, so write it in plain words and keep code in the plan's other sections`);
   }
 }
 
@@ -1301,6 +1398,7 @@ function page(planPath, { folded = false } = {}) {
     if (stateOf(entry.plan.meta.status ?? '') && !finished(entry.plan.meta.status ?? '')) {
       assertAsks(entry.plan, where);
       assertPlain(entry.plan, where);
+      assertTeach(entry.plan, where);
     }
     if (doc !== plan && isOpen(entry)) assertDelta(entry.plan, doc, { name: where, where: subjectWhere });
   }
@@ -1328,6 +1426,7 @@ function page(planPath, { folded = false } = {}) {
     );
   const sectionHtml = (section, className = 'plan', tag = '') =>
     `<section class="${className}"><h2>${inline(section.title)}${tag ? ` <span class="count">${tag}</span>` : ''}</h2>${blocksHtml(section.lines)}</section>`;
+  const pickedHtml = (section) => `<section class="plan"><h2>Picked for you</h2>${picksHtml(section.lines)}</section>`;
   const changeHtml = (role) =>
     byRole(role)
       .sort((a, b) => lead.indexOf(a.title.toLowerCase()) - lead.indexOf(b.title.toLowerCase()))
@@ -1442,17 +1541,19 @@ function page(planPath, { folded = false } = {}) {
     <div class="meta">${delta ? `<span>Plan <strong>${inline(focus.title || basename(newestOpenIteration.path, '.md'))}</strong></span>` : ''}${roundTag}<span>Updated ${updated} UTC</span></div>
   </header>
   <section class="brief card">${answers}</section>
+  ${byRole('teach', source).map((section) => teachHtml(section, dirname(leader.path))).join('')}
   ${byRole('demo', source).map((section) => demoHtml(section, dirname(leader.path))).join('')}
   ${asking}
-  ${byRole('picked', source).map((section) => sectionHtml({ ...section, title: 'Picked for you' })).join('')}
+  ${byRole('picked', source).map((section) => pickedHtml(section)).join('')}
   ${changes}
   <p class="source">Proof, steps, history and review rounds are in ${files}.</p>
 </main>`;
   };
 
+  const withViewer = (main) => (main.includes('<figure class="shot"><img') ? main.replace(/<\/main>$/, `${LIGHTBOX}\n</main>`) : main);
   const html = `<title>${title}</title>
 ${PAGE_HEAD}
-${brief ? briefMain() : `<main>
+${withViewer(brief ? briefMain() : `<main>
   <header>
     <h1>${title}</h1>
     ${flowHtml(leader, shownStatus, playbooks)}
@@ -1461,12 +1562,13 @@ ${brief ? briefMain() : `<main>
   </header>
   ${(own ? byRole('demo', own) : []).map((section) => demoHtml(section, dirname(planPath))).join('')}
   ${needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : ''}${close ? sectionHtml(close, 'panel') : ''}
+  ${(own ? byRole('teach', own) : []).map((section) => teachHtml(section, dirname(planPath))).join('')}
   ${changeHtml('api')}
   ${changeHtml('lead')}
   ${changeHtml('main')}
   ${own
     ? byRole('picked', own)
-        .map((section) => sectionHtml({ ...section, title: 'Picked for you' }))
+        .map((section) => pickedHtml(section))
         .join('\n  ')
     : ''}
   ${doc.lead.some((line) => line.trim()) ? `<section class="plan">${blocksHtml(doc.lead)}</section>` : ''}
@@ -1482,7 +1584,7 @@ ${brief ? briefMain() : `<main>
       : ''
   }
   ${reviewHistory}
-</main>`}
+</main>`)}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
 window.hljs?.highlightAll();

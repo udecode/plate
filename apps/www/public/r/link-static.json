@@ -5,9 +5,6 @@
     "platejs",
     "diff-match-patch-ts@^0.6.0"
   ],
-  "registryDependencies": [
-    "https://platejs.org/r/suggestion-style.json"
-  ],
   "files": [
     {
       "path": "src/registry/components/editor/link-static.tsx",

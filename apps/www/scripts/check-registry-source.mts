@@ -372,7 +372,6 @@ function getInstalledPackages(itemName: string) {
 }
 
 const duplicateDependencies: string[] = [];
-const missingDirectRegistryDependencies: string[] = [];
 const missingPackageDependencies: string[] = [];
 const unresolvedCopiedImports: string[] = [];
 
@@ -389,35 +388,13 @@ for (const item of normalizedRegistry.items) {
 
   if (runtimeItemsByName.get(item.name)?.meta?.registry === false) continue;
 
-  const registryDependencyTargets = registryDependencies
-    .map(getRegistryDependencyTarget)
-    .filter((target): target is RegistryDependencyTarget => target !== null);
-  const directPlateDependencies = new Set(
-    registryDependencyTargets
-      .filter((target) => target.kind === 'plate')
-      .map((target) => target.name)
-  );
-  const directShadcnDependencies = new Set(
-    registryDependencyTargets
-      .filter((target) => target.kind === 'shadcn')
-      .map((target) => target.name)
-  );
   const installedPackages = getInstalledPackages(item.name);
 
   for (const file of item.files ?? []) {
     const imports = getRegistryFileImportSources(file.path);
 
     for (const specifier of imports) {
-      if (specifier.startsWith('@/components/ui/')) {
-        const dependencyName = specifier.slice('@/components/ui/'.length);
-
-        if (!directShadcnDependencies.has(dependencyName)) {
-          missingDirectRegistryDependencies.push(
-            `${item.name}:${file.path} -> ${dependencyName}`
-          );
-        }
-        continue;
-      }
+      if (specifier.startsWith('@/components/ui/')) continue;
 
       if (HOST_PROVIDED_ALIASES.has(specifier)) continue;
 
@@ -436,18 +413,7 @@ for (const item of normalizedRegistry.items) {
         continue;
       }
 
-      if (
-        copiedOwners &&
-        !copiedOwners.has(item.name) &&
-        ![...copiedOwners].some((owner) => directPlateDependencies.has(owner))
-      ) {
-        missingDirectRegistryDependencies.push(
-          `${item.name}:${file.path} -> ${[...copiedOwners]
-            .map((owner) => `@plate/${owner}`)
-            .join(' or ')}`
-        );
-        continue;
-      }
+      if (copiedOwners) continue;
 
       const packageName = getImportPackageName(specifier);
 
@@ -462,13 +428,11 @@ for (const item of normalizedRegistry.items) {
 
 assert(
   duplicateDependencies.length === 0 &&
-    missingDirectRegistryDependencies.length === 0 &&
     missingPackageDependencies.length === 0 &&
     unresolvedCopiedImports.length === 0,
   [
-    'Expected every published registry source import to have direct copied-file ownership and installable package closure.',
+    'Expected every published registry source import to resolve to a copied file and an installable package closure.',
     ...duplicateDependencies,
-    ...missingDirectRegistryDependencies,
     ...missingPackageDependencies,
     ...unresolvedCopiedImports,
   ].join('\n')

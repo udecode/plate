@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import { toShellPackageArguments } from '@/lib/registry-install';
 import type { FileTree } from '@/lib/rehype-utils';
 import { cn } from '@/lib/utils';
 
@@ -39,7 +40,7 @@ import { useBlockViewer } from './block-viewer';
 export function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
   const { activeFile, dependencies, highlightedFiles, isLoading } =
     useBlockViewer();
-  const deps = dependencies.join(' ');
+  const deps = toShellPackageArguments(dependencies);
 
   const file = highlightedFiles?.find(
     (innerFile) => innerFile.target === activeFile

@@ -14,6 +14,7 @@ import {
   parseRegistryItem,
 } from '@/lib/generated-props';
 import {
+  toShellPackageArguments,
   getRegistryClipboardInstallCommand,
   getRegistryInstallCommand,
 } from '@/lib/registry-install';
@@ -79,7 +80,7 @@ export function ComponentInstallation({
   const tree =
     props.tree ?? parseGeneratedProp(__treeProp__, generatedPropSchemas.tree);
 
-  const dependenciesString = dependencies.join(' ');
+  const dependenciesString = toShellPackageArguments(dependencies);
   const installCommand = getRegistryInstallCommand(name);
   const clipboardInstallCommand = getRegistryClipboardInstallCommand(name);
 

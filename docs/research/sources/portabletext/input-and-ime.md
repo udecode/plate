@@ -1,4 +1,4 @@
-# Portable Text: input and ime
+# Portable Text: input and IME
 
 ## Composition
 

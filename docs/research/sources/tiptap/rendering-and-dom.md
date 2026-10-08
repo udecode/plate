@@ -1,4 +1,4 @@
-# Tiptap: rendering and dom
+# Tiptap: rendering and DOM
 
 ## Focus and read-only
 

@@ -5,16 +5,16 @@
   "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
   "dependencies": [
     "platejs",
-    "katex",
     "react-textarea-autosize",
     "diff-match-patch-ts@^0.6.0",
+    "katex@0.16.22",
     "lucide-react"
   ],
   "registryDependencies": [
     "https://platejs.org/r/equation-toolbar-button.json",
-    "button",
     "https://platejs.org/r/floating-popover.json",
-    "https://platejs.org/r/suggestion-style.json"
+    "https://platejs.org/r/suggestion-style.json",
+    "button"
   ],
   "files": [
     {

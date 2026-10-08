@@ -4,6 +4,8 @@ import {
 } from '@platejs/test/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
+import { routeEmojibase } from './emojibase-route';
+
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 
 const openDemo = async (page: Page, route: string, text: string) => {
@@ -380,6 +382,7 @@ test('combobox:moving past the typed query closes the popup', async ({
 });
 
 test('combobox:emoji completes a closed shortcode', async ({ page }) => {
+  await routeEmojibase(page);
   const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
@@ -390,13 +393,110 @@ test('combobox:emoji completes a closed shortcode', async ({ page }) => {
     );
 
     await page.keyboard.type(':smile:');
-    await expect(page.getByRole('option').first()).toBeVisible();
-    await expect(root).toHaveAttribute('aria-controls');
+    await editor.assert.modelBlockText(0, ':smile:Emoji');
+    await expect(page.getByRole('option').first()).toHaveText(/^😄/);
     await page.keyboard.press('Enter');
     await expect(root).not.toHaveAttribute('aria-controls');
-    await expect
-      .poll(() => editor.get.modelBlockText(0))
-      .toMatch(/^\p{Extended_Pictographic}\uFE0F?Emoji$/u);
+    await editor.assert.modelBlockText(0, '😄Emoji');
+    await editor.assert.focusOwner('editor');
+
+    await page.keyboard.press('ControlOrMeta+z');
+    await editor.assert.modelBlockText(0, ':smile:Emoji');
+    await page.keyboard.press('ControlOrMeta+Shift+z');
+    await editor.assert.modelBlockText(0, '😄Emoji');
+    await page.keyboard.type('x');
+    await editor.assert.modelBlockText(0, '😄xEmoji');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('combobox:emoji stays closed inside a code block', async ({ page }) => {
+  await routeEmojibase(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const { editor, root } = await openDemo(
+      page,
+      '/blocks/emoji-demo',
+      'Emoji'
+    );
+
+    await page.keyboard.press('End');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('```');
+    await expect(root.locator('pre').first()).toBeVisible();
+    await page.keyboard.type('a :smile');
+    await editor.assert.modelBlockText(1, 'a :smile');
+    await expect(root).not.toHaveAttribute('aria-controls');
+    await expect(page.getByRole('option')).toHaveCount(0);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('combobox:emoji Enter while the list loads keeps the query', async ({
+  page,
+}) => {
+  const release = (await routeEmojibase(page)).hold();
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const { editor, root } = await openDemo(
+      page,
+      '/blocks/emoji-demo',
+      'Emoji'
+    );
+    const blocks = await editor.get.modelBlockTexts();
+
+    await page.keyboard.type(':smile');
+    await expect(page.getByText('Loading emoji…')).toBeVisible();
+    await page.keyboard.press('Enter');
+    await editor.assert.modelBlockText(0, ':smileEmoji');
+    expect(await editor.get.modelBlockTexts()).toHaveLength(blocks.length);
+    await expect(root).toHaveAttribute('aria-controls');
+
+    release();
+    await expect(page.getByRole('option').first()).toHaveText(/^😄/);
+    await page.keyboard.press('Enter');
+    await editor.assert.modelBlockText(0, '😄Emoji');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('combobox:emoji works offline after one load and recovers without a reload', async ({
+  page,
+}) => {
+  const emojibase = await routeEmojibase(page);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    let { editor } = await openDemo(page, '/blocks/emoji-demo', 'Emoji');
+
+    await page.keyboard.type(':smile:');
+    await expect(page.getByRole('option').first()).toHaveText(/^😄/);
+
+    emojibase.setOffline(true);
+    ({ editor } = await openDemo(page, '/blocks/emoji-demo', 'Emoji'));
+    await page.keyboard.type(':smile:');
+    await expect(page.getByRole('option').first()).toHaveText(/^😄/);
+    await page.keyboard.press('Enter');
+    await editor.assert.modelBlockText(0, '😄Emoji');
+
+    await page.evaluate(() => localStorage.clear());
+    ({ editor } = await openDemo(page, '/blocks/emoji-demo', 'Emoji'));
+    await page.keyboard.type(':smil');
+    await expect(page.getByText('Emoji unavailable')).toBeVisible();
+
+    emojibase.setOffline(false);
+    await page.keyboard.type('e');
+    await expect(page.getByRole('option').first()).toHaveText(/^😄/);
+    await page.keyboard.press('Enter');
+    await editor.assert.modelBlockText(0, '😄Emoji');
     runtimeErrors.assertNone();
   } finally {
     runtimeErrors.stop();

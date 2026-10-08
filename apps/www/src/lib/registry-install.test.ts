@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import {
+  toShellPackageArguments,
   getRegistryClipboardInstallCommand,
   getRegistryClipboardItemSpecifier,
   getRegistryInstallCommand,
@@ -8,6 +9,20 @@ import {
 } from './registry-install';
 
 describe('registry install commands', () => {
+  it('quotes a package request that holds shell syntax', () => {
+    expect(
+      toShellPackageArguments([
+        'platejs',
+        'katex@0.16.22',
+        'ai@^6.0.0',
+        'yjs@>=13.6.30',
+        "local@file:../O'Brien",
+      ])
+    ).toBe(
+      'platejs katex@0.16.22 "ai@^6.0.0" "yjs@>=13.6.30" "local@file:../O\'Brien"'
+    );
+  });
+
   const localRegistryUrl = 'http://localhost:3000/rd/';
 
   it('uses shadcn directory specifiers for bare Plate items', () => {

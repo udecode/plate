@@ -20,7 +20,7 @@ import {
 } from 'plitejs/react';
 import React, { Suspense } from 'react';
 
-import { EmojiKit, emojiPlugin } from '@/registry/components/editor/emoji';
+import { EmojiKit, EmojiPlugin } from '@/registry/components/editor/emoji';
 import {
   FootnoteDefinitionElement,
   FootnoteKit,
@@ -35,7 +35,7 @@ import { SlashKit } from '@/registry/components/editor/slash';
 const KitsWithoutPopups = [
   MentionPlugin.configure({ component: MentionElement }),
   SlashPlugin,
-  emojiPlugin,
+  EmojiPlugin,
   FootnotePlugin.configure({ component: FootnoteReferenceElement }),
   FootnoteDefinitionPlugin.configure({ component: FootnoteDefinitionElement }),
 ];

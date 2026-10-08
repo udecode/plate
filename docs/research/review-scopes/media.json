@@ -96,7 +96,6 @@
     "packages/plitejs/test/react/caret-engine-contract.test.ts",
     "packages/plitejs/test/react/dom-coverage-boundary-contract.tsx",
     "docs/editor-behavior/markdown-editing-spec.md",
-    "docs/editor-behavior/editor-protocol-matrix.md",
     "content/docs/(plugins)/(elements)/media.mdx",
     "docs/plans/2026-09-21-object-elements-with-editable-children.md",
     "docs/research/raw/2026-09-22-media-arrow-browser-observation.md"

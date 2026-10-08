@@ -4,14 +4,14 @@
   "title": "Code Block CodeMirror",
   "description": "A CodeMirror projection for explicitly high-scale code block editors.",
   "dependencies": [
-    "@codemirror/language",
     "@codemirror/language-data",
     "@codemirror/commands",
     "@lezer/highlight",
     "@codemirror/search",
-    "@codemirror/state",
-    "@codemirror/view",
     "platejs",
+    "@codemirror/language@^6.12.4",
+    "@codemirror/state@^6.7.2",
+    "@codemirror/view@^6.41.0",
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [

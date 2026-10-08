@@ -2,8 +2,6 @@
 
 **Audit of 2026-10-04.** Stop. The deferred gates (P0-P4) ran and chose the target, and S1-S6 installed it. Ordinary Editable mounts the complete DOM. Omission comes from an explicit, dedicated VirtualizedEditable or from the pagination virtualize boolean. Pagination no longer routes through the generic virtualizer. No design question remains open, and only the plan's S7 proof closure is outstanding. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-large-documents-audit` hold the evidence.
 
-**Audit of 2026-10-04.** Stop. The deferred gates (P0-P4) ran and chose the target, and S1-S6 installed it. Ordinary Editable mounts the complete DOM. Omission comes from an explicit, dedicated VirtualizedEditable or from the pagination virtualize boolean. Pagination no longer routes through the generic virtualizer. No design question remains open, and only the plan's S7 proof closure is outstanding. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-large-documents-audit` hold the evidence.
-
 Status: **implementation complete; stable-snapshot closure pending**. The
 dedicated entrypoints, mounted-view runtime and pagination-owned page window are
 installed in production source. Final cross-browser recording must use one
@@ -45,6 +43,8 @@ renderer. DOM presence alone does not certify browser Find, assistive technology
 rich HTML clipboard fidelity, native selection or print.
 
 ## What the deeper investigation changes
+
+> Current Plite (checked 2026-10-08): these are the 2026-09-12 findings that led to the cuts below. The strategy prop they name is gone: `packages/plitejs/src` has no `domStrategy`. Omission needs the explicit `VirtualizedEditable` (`packages/plitejs/src/react/virtualized.tsx:23-31`, `:107`) or `PagedEditable`'s `virtualize` boolean, which defaults to false and then renders every page item and fragment (`packages/plitejs/src/pagination/react.tsx:783`, `:947`, `:1159-1166`, `:1302`).
 
 - Full-to-virtual currently replaces the actual Editable host and loses focus.
   Retaining the outer host alone is insufficient: virtual group keys also change

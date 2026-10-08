@@ -9,9 +9,9 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/editor.json",
     "input-group",
-    "tooltip",
-    "https://platejs.org/r/editor.json"
+    "tooltip"
   ],
   "files": [
     {

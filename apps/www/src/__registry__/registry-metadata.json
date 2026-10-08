@@ -1,5 +1,5 @@
 {
-  "generation": "64669f62881bf7917a0f1e274b0b3ef923e42368b373c71a2a72e37f2be8ef8e",
+  "generation": "cbf6b3f0e1e4a96b0c1c77f83cde2d0b93daf15b1b2c73e301fbf57ed23e2ea7",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -12,7 +12,6 @@
           "devDependencies": [],
           "files": [],
           "name": "plate",
-          "registryDependencies": [],
           "type": "registry:lib"
         },
         {
@@ -28,10 +27,10 @@
           "devDependencies": [],
           "files": [],
           "name": "plate-ui",
+          "type": "registry:style",
           "registryDependencies": [
             "@plate/plate"
-          ],
-          "type": "registry:style"
+          ]
         },
         {
           "dependencies": [
@@ -65,7 +64,6 @@
             ]
           },
           "name": "editor",
-          "registryDependencies": [],
           "title": "Editor",
           "type": "registry:component"
         },
@@ -84,7 +82,6 @@
             }
           ],
           "name": "editor-static",
-          "registryDependencies": [],
           "title": "Static Editor",
           "type": "registry:component"
         },
@@ -108,11 +105,11 @@
             ]
           },
           "name": "diff",
+          "title": "Diff",
+          "type": "registry:component",
           "registryDependencies": [
             "button"
-          ],
-          "title": "Diff",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -153,18 +150,18 @@
             "label": "New"
           },
           "name": "ai-menu",
+          "title": "AI Menu",
+          "type": "registry:component",
           "registryDependencies": [
-            "button",
-            "command",
             "@plate/comment",
-            "@plate/floating-popover",
             "@plate/editor",
             "@plate/use-chat",
+            "@plate/editor-plugins-static",
             "@plate/editor-static",
-            "@plate/editor-plugins-static"
-          ],
-          "title": "AI Menu",
-          "type": "registry:component"
+            "@plate/floating-popover",
+            "button",
+            "command"
+          ]
         },
         {
           "dependencies": [
@@ -203,11 +200,11 @@
             "label": "New"
           },
           "name": "ai-toolbar-button",
+          "title": "AI Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "AI Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -234,26 +231,26 @@
             ]
           },
           "name": "align-toolbar-button",
+          "title": "Align Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "Align Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
             "platejs",
             "use-file-picker@2.1.2",
-            "mammoth",
             "sonner",
-            "validator",
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
             "lucide-react",
+            "mammoth@^1.9.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
-            "unified@^11.0.5"
+            "unified@^11.0.5",
+            "validator@^13.15.15"
           ],
           "description": "A toolbar button to import editor content from a file.",
           "files": [
@@ -276,31 +273,31 @@
             "label": "New"
           },
           "name": "import-toolbar-button",
-          "registryDependencies": [
-            "@plate/editor-dropdown-menu",
-            "@plate/docx-source",
-            "@plate/toolbar"
-          ],
           "title": "Import Toolbar Button",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/docx-source",
+            "@plate/editor-dropdown-menu",
+            "@plate/toolbar"
+          ]
         },
         {
           "dependencies": [
             "platejs",
             "lucide-react",
-            "color-name",
-            "html-to-vdom",
-            "jszip",
-            "juice",
-            "mime-types",
             "sonner",
-            "virtual-dom",
-            "xmlbuilder2",
+            "color-name@^2.0.0",
             "diff-match-patch-ts@^0.6.0",
+            "html-to-vdom@^0.7.0",
+            "jszip@^3.10.1",
+            "juice@^11.0.1",
             "katex@0.16.22",
+            "mime-types@^2.1.35",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
-            "unified@^11.0.5"
+            "unified@^11.0.5",
+            "virtual-dom@^2.1.1",
+            "xmlbuilder2@^3.1.1"
           ],
           "description": "A toolbar button for exporting editor content as HTML, Markdown, or Word.",
           "files": [
@@ -323,17 +320,17 @@
             "label": "New"
           },
           "name": "export-toolbar-button",
+          "title": "Export Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
+            "@plate/editor",
+            "@plate/editor-plugins-static",
             "@plate/docx-export",
             "@plate/docx-source",
             "@plate/editor-dropdown-menu",
-            "@plate/toolbar",
             "@plate/editor-static",
-            "@plate/editor",
-            "@plate/editor-plugins-static"
-          ],
-          "title": "Export Toolbar Button",
-          "type": "registry:component"
+            "@plate/toolbar"
+          ]
         },
         {
           "dependencies": [
@@ -364,11 +361,11 @@
             ]
           },
           "name": "caption",
+          "title": "Caption",
+          "type": "registry:component",
           "registryDependencies": [
             "button"
-          ],
-          "title": "Caption",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -383,7 +380,6 @@
             }
           ],
           "name": "caption-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -418,14 +414,14 @@
             ]
           },
           "name": "font-color-toolbar-button",
+          "title": "Font Color Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
+            "@plate/toolbar",
             "button",
-            "tooltip",
-            "@plate/toolbar"
-          ],
-          "title": "Font Color Toolbar Button",
-          "type": "registry:component"
+            "tooltip"
+          ]
         },
         {
           "dependencies": [
@@ -456,14 +452,14 @@
             ]
           },
           "name": "comment-toolbar-button",
+          "title": "Comment Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/comment",
             "@plate/toolbar",
             "button",
             "dialog"
-          ],
-          "title": "Comment Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -499,18 +495,18 @@
             "label": "New"
           },
           "name": "select-editor",
+          "title": "Select Editor",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor",
             "@plate/floating-popover",
             "@plate/tag"
-          ],
-          "title": "Select Editor",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "@emoji-mart/data@1.2.1",
+            "frimousse@0.4.0",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -534,18 +530,18 @@
             ]
           },
           "name": "emoji-picker",
-          "registryDependencies": [
-            "button",
-            "tooltip",
-            "@plate/emoji",
-            "@plate/floating-popover"
-          ],
           "title": "Emoji Picker",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/emoji-data",
+            "@plate/floating-popover"
+          ]
         },
         {
           "dependencies": [
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
           ],
           "description": "An emoji picker toolbar button.",
           "files": [
@@ -570,12 +566,12 @@
             ]
           },
           "name": "emoji-toolbar-button",
+          "title": "Emoji Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/emoji-picker",
             "@plate/toolbar"
-          ],
-          "title": "Emoji Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -603,11 +599,11 @@
             ]
           },
           "name": "history-toolbar-button",
+          "title": "History Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "History Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -634,12 +630,12 @@
             ]
           },
           "name": "list-toolbar-button",
+          "title": "List Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "List Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -666,11 +662,11 @@
             ]
           },
           "name": "indent-toolbar-button",
+          "title": "Indent Toolbar Buttons",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "Indent Toolbar Buttons",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -732,13 +728,13 @@
             ]
           },
           "name": "insert-toolbar-button",
+          "title": "Insert Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/link",
             "@plate/toolbar"
-          ],
-          "title": "Insert Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -765,12 +761,12 @@
             ]
           },
           "name": "line-height-toolbar-button",
+          "title": "Line Height Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "Line Height Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -801,12 +797,12 @@
             ]
           },
           "name": "link-toolbar-button",
+          "title": "Link Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/link",
             "@plate/toolbar"
-          ],
-          "title": "Link Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -833,11 +829,11 @@
             ]
           },
           "name": "mark-toolbar-button",
+          "title": "Mark Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "Mark Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -865,16 +861,16 @@
             ]
           },
           "name": "media-toolbar",
+          "title": "Media Toolbar",
+          "type": "registry:component",
           "registryDependencies": [
-            "button",
-            "input",
-            "separator",
+            "@plate/media-preview-dialog",
             "@plate/caption",
             "@plate/floating-popover",
-            "@plate/media-preview-dialog"
-          ],
-          "title": "Media Toolbar",
-          "type": "registry:component"
+            "button",
+            "input",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -905,15 +901,15 @@
             ]
           },
           "name": "media-toolbar-button",
+          "title": "Media Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/upload",
-            "@plate/toolbar",
-            "input",
             "@plate/editor-dropdown-menu",
-            "alert-dialog"
-          ],
-          "title": "Media Toolbar Button",
-          "type": "registry:component"
+            "@plate/toolbar",
+            "alert-dialog",
+            "input"
+          ]
         },
         {
           "dependencies": [
@@ -935,13 +931,13 @@
             ]
           },
           "name": "mode-toolbar-button",
-          "registryDependencies": [
-            "@plate/editor-dropdown-menu",
-            "@plate/suggestion",
-            "@plate/toolbar"
-          ],
           "title": "Mode Toolbar Button",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/suggestion",
+            "@plate/editor-dropdown-menu",
+            "@plate/toolbar"
+          ]
         },
         {
           "dependencies": [
@@ -969,12 +965,12 @@
             ]
           },
           "name": "more-toolbar-button",
+          "title": "More Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "More Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1005,7 +1001,6 @@
             ]
           },
           "name": "resize-handle",
-          "registryDependencies": [],
           "title": "Resize Handle",
           "type": "registry:component"
         },
@@ -1034,12 +1029,12 @@
             ]
           },
           "name": "table-toolbar-button",
+          "title": "Table Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "Table Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1066,11 +1061,11 @@
             ]
           },
           "name": "details-toolbar-button",
+          "title": "Details Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "Details Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1098,18 +1093,18 @@
             ]
           },
           "name": "turn-into-toolbar-button",
+          "title": "Turn Into Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "Turn Into Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "yjs",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "yjs@>=13.6.30"
           ],
           "description": "Copied Yjs selection highlights, carets, and labels.",
           "files": [
@@ -1130,7 +1125,6 @@
             ]
           },
           "name": "remote-cursor-overlay",
-          "registryDependencies": [],
           "title": "Remote Cursor Overlay",
           "type": "registry:component"
         },
@@ -1144,13 +1138,13 @@
             }
           ],
           "name": "editor-context-menu",
-          "registryDependencies": [
-            "context-menu"
-          ],
           "title": "Editor Context Menu",
           "type": "registry:component",
           "dependencies": [
             "@base-ui/react"
+          ],
+          "registryDependencies": [
+            "context-menu"
           ]
         },
         {
@@ -1163,13 +1157,13 @@
             }
           ],
           "name": "editor-dropdown-menu",
-          "registryDependencies": [
-            "dropdown-menu"
-          ],
           "title": "Editor Dropdown Menu",
           "type": "registry:component",
           "dependencies": [
             "@base-ui/react"
+          ],
+          "registryDependencies": [
+            "dropdown-menu"
           ]
         },
         {
@@ -1187,7 +1181,6 @@
             }
           ],
           "name": "floating-popover",
-          "registryDependencies": [],
           "title": "Floating Popover",
           "type": "registry:component"
         },
@@ -1207,7 +1200,6 @@
           ],
           "meta": {},
           "name": "toolbar",
-          "registryDependencies": [],
           "title": "Toolbar",
           "type": "registry:component",
           "dependencies": [
@@ -1240,12 +1232,12 @@
             ]
           },
           "name": "suggestion-toolbar-button",
+          "title": "Suggestion Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/suggestion",
             "@plate/toolbar"
-          ],
-          "title": "Suggestion Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1271,11 +1263,11 @@
             ]
           },
           "name": "block-list",
+          "title": "List",
+          "type": "registry:component",
           "registryDependencies": [
             "checkbox"
-          ],
-          "title": "List",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1291,7 +1283,6 @@
             }
           ],
           "name": "block-list-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -1322,7 +1313,6 @@
             ]
           },
           "name": "blockquote",
-          "registryDependencies": [],
           "title": "Blockquote",
           "type": "registry:component"
         },
@@ -1339,7 +1329,6 @@
             }
           ],
           "name": "blockquote-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -1369,7 +1358,6 @@
             ]
           },
           "name": "code",
-          "registryDependencies": [],
           "title": "Code",
           "type": "registry:component"
         },
@@ -1386,7 +1374,6 @@
             }
           ],
           "name": "code-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -1417,11 +1404,11 @@
             ]
           },
           "name": "equation-toolbar-button",
+          "title": "Equation Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "Equation Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1448,14 +1435,14 @@
             ]
           },
           "name": "font-size-toolbar-button",
-          "registryDependencies": [
-            "button",
-            "input",
-            "@plate/floating-popover",
-            "@plate/toolbar"
-          ],
           "title": "Font Size Toolbar Button",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "@plate/toolbar",
+            "button",
+            "input"
+          ]
         },
         {
           "dependencies": [
@@ -1486,7 +1473,6 @@
             ]
           },
           "name": "heading",
-          "registryDependencies": [],
           "title": "Heading",
           "type": "registry:component"
         },
@@ -1504,7 +1490,6 @@
             }
           ],
           "name": "heading-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -1531,11 +1516,11 @@
             ]
           },
           "name": "highlight",
+          "title": "Highlight",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/highlight-style"
-          ],
-          "title": "Highlight",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1550,10 +1535,10 @@
             }
           ],
           "name": "highlight-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/highlight-style"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1582,7 +1567,6 @@
             ]
           },
           "name": "horizontal-rule",
-          "registryDependencies": [],
           "title": "Horizontal Rule",
           "type": "registry:component"
         },
@@ -1599,7 +1583,6 @@
             }
           ],
           "name": "horizontal-rule-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -1633,14 +1616,14 @@
             ]
           },
           "name": "media-image",
-          "registryDependencies": [
-            "@plate/media-toolbar",
-            "@plate/media-preview-dialog",
-            "@plate/caption",
-            "@plate/resize-handle"
-          ],
           "title": "Media Image",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/caption",
+            "@plate/media-preview-dialog",
+            "@plate/media-toolbar",
+            "@plate/resize-handle"
+          ]
         },
         {
           "dependencies": [
@@ -1655,10 +1638,10 @@
             }
           ],
           "name": "media-image-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1690,7 +1673,6 @@
             ]
           },
           "name": "media-preview-dialog",
-          "registryDependencies": [],
           "title": "Media Preview Dialog",
           "type": "registry:component"
         },
@@ -1719,7 +1701,6 @@
             ]
           },
           "name": "kbd",
-          "registryDependencies": [],
           "title": "Keyboard Input",
           "type": "registry:component"
         },
@@ -1736,7 +1717,6 @@
             }
           ],
           "name": "kbd-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -1767,12 +1747,12 @@
             ]
           },
           "name": "media-audio",
-          "registryDependencies": [
-            "@plate/caption",
-            "@plate/resize-handle"
-          ],
           "title": "Media Audio",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/resize-handle",
+            "@plate/caption"
+          ]
         },
         {
           "dependencies": [
@@ -1787,10 +1767,10 @@
             }
           ],
           "name": "media-audio-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1825,13 +1805,13 @@
             ]
           },
           "name": "media-embed",
-          "registryDependencies": [
-            "@plate/media-toolbar",
-            "@plate/caption",
-            "@plate/resize-handle"
-          ],
           "title": "Media Embed",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/caption",
+            "@plate/media-toolbar",
+            "@plate/resize-handle"
+          ]
         },
         {
           "dependencies": [
@@ -1846,10 +1826,10 @@
             }
           ],
           "name": "media-embed-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1880,12 +1860,12 @@
             ]
           },
           "name": "media-file",
-          "registryDependencies": [
-            "@plate/caption",
-            "@plate/resize-handle"
-          ],
           "title": "Media File",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/resize-handle",
+            "@plate/caption"
+          ]
         },
         {
           "dependencies": [
@@ -1901,10 +1881,10 @@
             }
           ],
           "name": "media-file-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1939,12 +1919,12 @@
             ]
           },
           "name": "media-video",
+          "title": "Media Video",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption",
             "@plate/resize-handle"
-          ],
-          "title": "Media Video",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1959,10 +1939,10 @@
             }
           ],
           "name": "media-video-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -1992,7 +1972,6 @@
             ]
           },
           "name": "paragraph",
-          "registryDependencies": [],
           "title": "Paragraph",
           "type": "registry:component"
         },
@@ -2009,7 +1988,6 @@
             }
           ],
           "name": "paragraph-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2037,7 +2015,6 @@
             ]
           },
           "name": "tag",
-          "registryDependencies": [],
           "title": "Tag",
           "type": "registry:component"
         },
@@ -2054,13 +2031,13 @@
             }
           ],
           "name": "basic-blocks-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/blockquote-static",
             "@plate/heading-static",
             "@plate/horizontal-rule-static",
             "@plate/paragraph-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -2075,12 +2052,12 @@
             }
           ],
           "name": "basic-marks-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/code-static",
             "@plate/highlight-static",
             "@plate/kbd-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -2095,7 +2072,6 @@
             }
           ],
           "name": "callout-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2117,7 +2093,6 @@
             }
           ],
           "name": "code-block-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2137,7 +2112,6 @@
             }
           ],
           "name": "code-drawing-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2153,7 +2127,6 @@
             }
           ],
           "name": "column-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2169,9 +2142,6 @@
             }
           ],
           "name": "date-static",
-          "registryDependencies": [
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component"
         },
         {
@@ -2187,13 +2157,12 @@
             }
           ],
           "name": "footnote-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
           "dependencies": [
             "platejs",
-            "@excalidraw/excalidraw",
+            "@excalidraw/excalidraw@0.18.0",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -2204,7 +2173,6 @@
             }
           ],
           "name": "excalidraw",
-          "registryDependencies": [],
           "type": "registry:component",
           "description": "A drawing component powered by Excalidraw.",
           "title": "Excalidraw",
@@ -2232,7 +2200,6 @@
             }
           ],
           "name": "font-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2248,7 +2215,6 @@
             }
           ],
           "name": "indent-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2264,9 +2230,6 @@
             }
           ],
           "name": "link-static",
-          "registryDependencies": [
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component"
         },
         {
@@ -2282,11 +2245,11 @@
             }
           ],
           "name": "list-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/block-list-static",
             "@plate/indent-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -2303,9 +2266,6 @@
             }
           ],
           "name": "math-static",
-          "registryDependencies": [
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component"
         },
         {
@@ -2320,14 +2280,14 @@
             }
           ],
           "name": "media-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/media-audio-static",
             "@plate/media-embed-static",
             "@plate/media-file-static",
             "@plate/media-image-static",
             "@plate/media-video-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -2342,9 +2302,6 @@
             }
           ],
           "name": "mention-static",
-          "registryDependencies": [
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component"
         },
         {
@@ -2360,7 +2317,6 @@
             }
           ],
           "name": "table-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2377,10 +2333,10 @@
             }
           ],
           "name": "toc-static",
+          "type": "registry:component",
           "registryDependencies": [
             "button"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -2395,7 +2351,6 @@
             }
           ],
           "name": "details-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2407,6 +2362,11 @@
             }
           ],
           "name": "editor-plugins-static",
+          "type": "registry:component",
+          "dependencies": [
+            "files-sdk@^2.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/editor-static",
             "@plate/align",
@@ -2417,6 +2377,7 @@
             "@plate/code-drawing-static",
             "@plate/column-static",
             "@plate/date-static",
+            "@plate/details-static",
             "@plate/font-static",
             "@plate/footnote-static",
             "@plate/line-height",
@@ -2427,13 +2388,7 @@
             "@plate/media-static",
             "@plate/mention-static",
             "@plate/table-static",
-            "@plate/toc-static",
-            "@plate/details-static"
-          ],
-          "type": "registry:component",
-          "dependencies": [
-            "files-sdk@^2.6.0",
-            "platejs"
+            "@plate/toc-static"
           ]
         },
         {
@@ -2455,12 +2410,6 @@
             }
           ],
           "name": "ai",
-          "registryDependencies": [
-            "@plate/ai-menu",
-            "@plate/ai-toolbar-button",
-            "@plate/ai-api",
-            "@plate/use-chat"
-          ],
           "type": "registry:component",
           "description": "Streaming edits, command menu, and text highlighting.",
           "title": "AI",
@@ -2480,7 +2429,13 @@
               "ai-pro"
             ],
             "label": "New"
-          }
+          },
+          "registryDependencies": [
+            "@plate/ai-toolbar-button",
+            "@plate/ai-api",
+            "@plate/ai-menu",
+            "@plate/use-chat"
+          ]
         },
         {
           "dependencies": [
@@ -2525,13 +2480,13 @@
             }
           ],
           "name": "basic-blocks",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/blockquote",
             "@plate/heading",
             "@plate/horizontal-rule",
             "@plate/paragraph"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -2546,13 +2501,13 @@
             }
           ],
           "name": "basic-marks",
+          "type": "registry:component",
           "registryDependencies": [
+            "@plate/mark-toolbar-button",
             "@plate/code",
             "@plate/highlight",
-            "@plate/kbd",
-            "@plate/mark-toolbar-button"
-          ],
-          "type": "registry:component"
+            "@plate/kbd"
+          ]
         },
         {
           "files": [
@@ -2563,11 +2518,11 @@
             }
           ],
           "name": "basic-nodes",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/basic-marks"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -2588,10 +2543,6 @@
             }
           ],
           "name": "block-menu",
-          "registryDependencies": [
-            "@plate/editor-context-menu",
-            "@plate/dnd"
-          ],
           "type": "registry:component",
           "description": "A context menu for block-level operations.",
           "title": "Block Menu",
@@ -2608,7 +2559,11 @@
               "block-menu-demo",
               "block-menu-pro"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/dnd",
+            "@plate/editor-context-menu"
+          ]
         },
         {
           "dependencies": [
@@ -2623,7 +2578,6 @@
             }
           ],
           "name": "block-placeholder",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -2639,10 +2593,6 @@
             }
           ],
           "name": "callout",
-          "registryDependencies": [
-            "button",
-            "@plate/emoji-picker"
-          ],
           "type": "registry:component",
           "description": "A callout component for highlighting important information with customizable icons and styles.",
           "title": "Callout",
@@ -2658,13 +2608,17 @@
             "examples": [
               "callout-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/emoji-picker",
+            "button"
+          ]
         },
         {
           "dependencies": [
             "platejs",
             "lowlight",
-            "diff-match-patch-ts",
+            "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
           "files": [
@@ -2680,11 +2634,6 @@
             }
           ],
           "name": "code-block",
-          "registryDependencies": [
-            "command",
-            "@plate/floating-popover",
-            "button"
-          ],
           "type": "registry:component",
           "description": "A code block with syntax highlighting and language selection.",
           "title": "Code Block",
@@ -2702,18 +2651,23 @@
               "code-block-huge-demo",
               "code-block-codemirror-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "button",
+            "command"
+          ]
         },
         {
           "dependencies": [
-            "@codemirror/language",
             "@codemirror/language-data",
             "@codemirror/commands",
             "@lezer/highlight",
             "@codemirror/search",
-            "@codemirror/state",
-            "@codemirror/view",
             "platejs",
+            "@codemirror/language@^6.12.4",
+            "@codemirror/state@^6.7.2",
+            "@codemirror/view@^6.41.0",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -2724,9 +2678,6 @@
             }
           ],
           "name": "code-block-codemirror",
-          "registryDependencies": [
-            "@plate/code-block"
-          ],
           "type": "registry:component",
           "description": "A CodeMirror projection for explicitly high-scale code block editors.",
           "title": "Code Block CodeMirror",
@@ -2740,7 +2691,10 @@
               "code-block-codemirror-demo",
               "code-block-views-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/code-block"
+          ]
         },
         {
           "dependencies": [
@@ -2761,12 +2715,6 @@
             }
           ],
           "name": "code-drawing",
-          "registryDependencies": [
-            "button",
-            "select",
-            "@plate/floating-popover",
-            "@plate/use-mobile"
-          ],
           "type": "registry:component",
           "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
           "title": "Code Drawing",
@@ -2782,7 +2730,13 @@
             "examples": [
               "code-drawing-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "@plate/use-mobile",
+            "button",
+            "select"
+          ]
         },
         {
           "dependencies": [
@@ -2798,13 +2752,6 @@
             }
           ],
           "name": "column",
-          "registryDependencies": [
-            "button",
-            "separator",
-            "tooltip",
-            "@plate/dnd",
-            "@plate/floating-popover"
-          ],
           "type": "registry:component",
           "description": "Resizable column components for layout.",
           "title": "Column",
@@ -2820,7 +2767,14 @@
             "examples": [
               "column-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/dnd",
+            "@plate/floating-popover",
+            "button",
+            "separator",
+            "tooltip"
+          ]
         },
         {
           "dependencies": [
@@ -2854,17 +2808,17 @@
               "comment-review-demo"
             ]
           },
+          "title": "Comment Threads",
+          "type": "registry:component",
           "registryDependencies": [
-            "avatar",
-            "button",
+            "@plate/highlight-style",
             "@plate/basic-marks",
             "@plate/basic-marks-static",
-            "@plate/editor-dropdown-menu",
             "@plate/editor",
-            "@plate/highlight-style"
-          ],
-          "title": "Comment Threads",
-          "type": "registry:component"
+            "@plate/editor-dropdown-menu",
+            "avatar",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -2890,11 +2844,11 @@
             ]
           },
           "description": "Decoration attributes for static comment ranges and overlaps.",
+          "title": "Static Comment Styling",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/highlight-style"
-          ],
-          "title": "Static Comment Styling",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -2921,16 +2875,16 @@
               "discussion-demo"
             ]
           },
+          "title": "Discussion",
+          "type": "registry:component",
           "registryDependencies": [
-            "avatar",
-            "button",
-            "separator",
+            "@plate/suggestion",
             "@plate/comment",
             "@plate/floating-popover",
-            "@plate/suggestion"
-          ],
-          "title": "Discussion",
-          "type": "registry:component"
+            "avatar",
+            "button",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -2951,7 +2905,6 @@
             }
           ],
           "name": "copilot",
-          "registryDependencies": [],
           "type": "registry:component",
           "description": "A text suggestion system that displays AI-generated content after the cursor.",
           "title": "Copilot",
@@ -2984,11 +2937,6 @@
             }
           ],
           "name": "find",
-          "registryDependencies": [
-            "input-group",
-            "tooltip",
-            "@plate/editor"
-          ],
           "type": "registry:component",
           "description": "A search bar over the editor’s current text matches.",
           "title": "Find",
@@ -3001,7 +2949,12 @@
             "examples": [
               "find-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/editor",
+            "input-group",
+            "tooltip"
+          ]
         },
         {
           "dependencies": [
@@ -3016,11 +2969,6 @@
             }
           ],
           "name": "date",
-          "registryDependencies": [
-            "calendar",
-            "popover",
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component",
           "description": "A date field component with calendar picker.",
           "title": "Date",
@@ -3036,7 +2984,12 @@
             "examples": [
               "date-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/suggestion-style",
+            "calendar",
+            "popover"
+          ]
         },
         {
           "dependencies": [
@@ -3052,11 +3005,6 @@
             }
           ],
           "name": "dnd",
-          "registryDependencies": [
-            "button",
-            "tooltip",
-            "@plate/editor-dropdown-menu"
-          ],
           "type": "registry:component",
           "description": "Block drag handles and drop indicators.",
           "title": "Drag and Drop",
@@ -3079,13 +3027,17 @@
             "usage": [
               "createEditor({ plugins: DndKit })"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/editor-dropdown-menu",
+            "tooltip"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "juice",
-            "validator"
+            "juice@^11.0.1",
+            "validator@^13.15.15"
           ],
           "files": [
             {
@@ -3143,8 +3095,11 @@
             }
           ],
           "name": "editor-plugins",
+          "title": "Editor Plugins",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor",
+            "@plate/comment",
             "@plate/ai",
             "@plate/align",
             "@plate/autoformat",
@@ -3155,8 +3110,8 @@
             "@plate/callout",
             "@plate/code-block",
             "@plate/column",
-            "@plate/comment",
             "@plate/date",
+            "@plate/details",
             "@plate/dnd",
             "@plate/emoji",
             "@plate/exit-break",
@@ -3170,21 +3125,17 @@
             "@plate/markdown",
             "@plate/math",
             "@plate/media",
-            "@plate/upload",
             "@plate/mention",
             "@plate/slash",
             "@plate/suggestion",
             "@plate/table",
             "@plate/toc",
-            "@plate/details"
-          ],
-          "title": "Editor Plugins",
-          "type": "registry:component"
+            "@plate/upload"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "@emoji-mart/data@1.2.1",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -3195,9 +3146,6 @@
             }
           ],
           "name": "emoji",
-          "registryDependencies": [
-            "@plate/inline-combobox"
-          ],
           "type": "registry:component",
           "description": "A popup for emoji search and insertion.",
           "title": "Emoji",
@@ -3213,7 +3161,11 @@
             "examples": [
               "emoji-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/emoji-data",
+            "@plate/inline-combobox"
+          ]
         },
         {
           "dependencies": [
@@ -3244,29 +3196,6 @@
             }
           ],
           "name": "fixed-toolbar",
-          "registryDependencies": [
-            "@plate/toolbar",
-            "@plate/tailwind-scrollbar-hide",
-            "@plate/ai-toolbar-button",
-            "@plate/align-toolbar-button",
-            "@plate/comment-toolbar-button",
-            "@plate/emoji-toolbar-button",
-            "@plate/font-color-toolbar-button",
-            "@plate/font-size-toolbar-button",
-            "@plate/history-toolbar-button",
-            "@plate/list-toolbar-button",
-            "@plate/indent-toolbar-button",
-            "@plate/insert-toolbar-button",
-            "@plate/line-height-toolbar-button",
-            "@plate/link-toolbar-button",
-            "@plate/mark-toolbar-button",
-            "@plate/media-toolbar-button",
-            "@plate/mode-toolbar-button",
-            "@plate/more-toolbar-button",
-            "@plate/table-toolbar-button",
-            "@plate/details-toolbar-button",
-            "@plate/turn-into-toolbar-button"
-          ],
           "meta": {
             "examples": [
               "basic-nodes-demo"
@@ -3274,7 +3203,30 @@
           },
           "title": "Fixed Toolbar",
           "type": "registry:component",
-          "description": "A set of commonly used formatting buttons."
+          "description": "A set of commonly used formatting buttons.",
+          "registryDependencies": [
+            "@plate/tailwind-scrollbar-hide",
+            "@plate/ai-toolbar-button",
+            "@plate/align-toolbar-button",
+            "@plate/comment-toolbar-button",
+            "@plate/details-toolbar-button",
+            "@plate/emoji-toolbar-button",
+            "@plate/font-color-toolbar-button",
+            "@plate/font-size-toolbar-button",
+            "@plate/history-toolbar-button",
+            "@plate/indent-toolbar-button",
+            "@plate/insert-toolbar-button",
+            "@plate/line-height-toolbar-button",
+            "@plate/link-toolbar-button",
+            "@plate/list-toolbar-button",
+            "@plate/mark-toolbar-button",
+            "@plate/media-toolbar-button",
+            "@plate/mode-toolbar-button",
+            "@plate/more-toolbar-button",
+            "@plate/table-toolbar-button",
+            "@plate/toolbar",
+            "@plate/turn-into-toolbar-button"
+          ]
         },
         {
           "dependencies": [
@@ -3297,20 +3249,6 @@
             }
           ],
           "name": "floating-toolbar",
-          "registryDependencies": [
-            "@plate/link",
-            "@plate/toolbar",
-            "@plate/use-floating-rect",
-            "@plate/tailwind-scrollbar-hide",
-            "@plate/ai-toolbar-button",
-            "@plate/comment-toolbar-button",
-            "@plate/equation-toolbar-button",
-            "@plate/link-toolbar-button",
-            "@plate/mark-toolbar-button",
-            "@plate/more-toolbar-button",
-            "@plate/suggestion-toolbar-button",
-            "@plate/turn-into-toolbar-button"
-          ],
           "meta": {
             "docs": [
               {
@@ -3324,7 +3262,21 @@
           },
           "title": "Floating Toolbar",
           "type": "registry:component",
-          "description": "A set of formatting buttons for the floating toolbar."
+          "description": "A set of formatting buttons for the floating toolbar.",
+          "registryDependencies": [
+            "@plate/tailwind-scrollbar-hide",
+            "@plate/ai-toolbar-button",
+            "@plate/comment-toolbar-button",
+            "@plate/equation-toolbar-button",
+            "@plate/link",
+            "@plate/link-toolbar-button",
+            "@plate/mark-toolbar-button",
+            "@plate/more-toolbar-button",
+            "@plate/suggestion-toolbar-button",
+            "@plate/toolbar",
+            "@plate/turn-into-toolbar-button",
+            "@plate/use-floating-rect"
+          ]
         },
         {
           "dependencies": [
@@ -3339,14 +3291,6 @@
             }
           ],
           "name": "footnote",
-          "registryDependencies": [
-            "button",
-            "command",
-            "hover-card",
-            "@plate/floating-popover",
-            "@plate/highlight-style",
-            "@plate/inline-combobox"
-          ],
           "type": "registry:component",
           "description": "Inline footnote references, definitions, and a reference picker.",
           "title": "Footnote",
@@ -3359,7 +3303,15 @@
             "examples": [
               "footnote-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/highlight-style",
+            "@plate/floating-popover",
+            "@plate/inline-combobox",
+            "button",
+            "command",
+            "hover-card"
+          ]
         },
         {
           "dependencies": [
@@ -3374,11 +3326,11 @@
             }
           ],
           "name": "font",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/font-size-toolbar-button",
             "@plate/font-color-toolbar-button"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -3393,10 +3345,10 @@
             }
           ],
           "name": "indent",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/indent-toolbar-button"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -3443,17 +3395,17 @@
               "link-pro"
             ]
           },
-          "registryDependencies": [
-            "button",
-            "input",
-            "separator",
-            "@plate/link-toolbar-button",
-            "@plate/suggestion-style",
-            "@plate/use-floating-rect"
-          ],
           "title": "Link",
           "type": "registry:component",
-          "description": "A component for rendering hyperlinks with hover states."
+          "description": "A component for rendering hyperlinks with hover states.",
+          "registryDependencies": [
+            "@plate/link-toolbar-button",
+            "@plate/suggestion-style",
+            "@plate/use-floating-rect",
+            "button",
+            "input",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -3468,12 +3420,12 @@
             }
           ],
           "name": "list",
+          "type": "registry:component",
           "registryDependencies": [
-            "@plate/block-list",
             "@plate/list-toolbar-button",
+            "@plate/block-list",
             "@plate/indent"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -3499,9 +3451,9 @@
         {
           "dependencies": [
             "platejs",
-            "katex",
             "react-textarea-autosize",
             "diff-match-patch-ts@^0.6.0",
+            "katex@0.16.22",
             "lucide-react"
           ],
           "files": [
@@ -3512,12 +3464,6 @@
             }
           ],
           "name": "math",
-          "registryDependencies": [
-            "@plate/equation-toolbar-button",
-            "button",
-            "@plate/floating-popover",
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component",
           "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
           "title": "Math",
@@ -3531,7 +3477,13 @@
             "examples": [
               "equation-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/equation-toolbar-button",
+            "@plate/floating-popover",
+            "@plate/suggestion-style",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -3547,15 +3499,6 @@
             }
           ],
           "name": "media",
-          "registryDependencies": [
-            "@plate/media-audio",
-            "@plate/media-embed",
-            "@plate/media-file",
-            "@plate/media-image",
-            "@plate/media-preview-dialog",
-            "@plate/media-toolbar",
-            "@plate/media-video"
-          ],
           "type": "registry:component",
           "title": "Media",
           "meta": {
@@ -3568,7 +3511,16 @@
               "media-demo",
               "media-pro"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/media-toolbar",
+            "@plate/media-audio",
+            "@plate/media-embed",
+            "@plate/media-file",
+            "@plate/media-image",
+            "@plate/media-preview-dialog",
+            "@plate/media-video"
+          ]
         },
         {
           "dependencies": [
@@ -3588,9 +3540,6 @@
             }
           ],
           "name": "upload",
-          "registryDependencies": [
-            "@plate/use-object-url"
-          ],
           "type": "registry:component",
           "title": "Upload",
           "meta": {
@@ -3602,7 +3551,10 @@
             "examples": [
               "media-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/use-object-url"
+          ]
         },
         {
           "dependencies": [
@@ -3619,9 +3571,6 @@
             }
           ],
           "name": "upload-browser",
-          "registryDependencies": [
-            "@plate/upload"
-          ],
           "type": "registry:component",
           "title": "Browser Upload",
           "meta": {
@@ -3633,7 +3582,10 @@
             "examples": [
               "playground-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/upload"
+          ]
         },
         {
           "dependencies": [
@@ -3648,11 +3600,6 @@
             }
           ],
           "name": "mention",
-          "registryDependencies": [
-            "@plate/suggestion-style",
-            "@plate/inline-combobox",
-            "@plate/use-mounted"
-          ],
           "type": "registry:component",
           "description": "A mention element with customizable prefix and label, powered by a combobox.",
           "title": "Mention",
@@ -3668,7 +3615,12 @@
             "examples": [
               "mention-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/inline-combobox",
+            "@plate/suggestion-style",
+            "@plate/use-mounted"
+          ]
         },
         {
           "dependencies": [
@@ -3696,9 +3648,6 @@
             }
           ],
           "name": "slash",
-          "registryDependencies": [
-            "@plate/inline-combobox"
-          ],
           "type": "registry:component",
           "description": "A command input component for inserting various elements.",
           "title": "Slash Command",
@@ -3716,7 +3665,10 @@
               "slash-command-demo",
               "slash-command-pro"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/inline-combobox"
+          ]
         },
         {
           "dependencies": [
@@ -3731,7 +3683,6 @@
             }
           ],
           "name": "suggestion",
-          "registryDependencies": [],
           "type": "registry:component",
           "description": "Suggestion mode, semantic authored-change attributes, and view-local review state.",
           "title": "Suggestions",
@@ -3776,15 +3727,6 @@
             }
           ],
           "name": "table",
-          "registryDependencies": [
-            "button",
-            "@plate/dnd",
-            "@plate/editor-dropdown-menu",
-            "@plate/floating-popover",
-            "@plate/toolbar",
-            "@plate/tailwind-scrollbar-hide",
-            "@plate/font-color-toolbar-button"
-          ],
           "type": "registry:component",
           "description": "A table component with floating toolbar and border customization.",
           "title": "Table",
@@ -3800,7 +3742,16 @@
             "examples": [
               "table-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/tailwind-scrollbar-hide",
+            "@plate/dnd",
+            "@plate/editor-dropdown-menu",
+            "@plate/floating-popover",
+            "@plate/font-color-toolbar-button",
+            "@plate/toolbar",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -3816,10 +3767,6 @@
             }
           ],
           "name": "toc",
-          "registryDependencies": [
-            "button",
-            "@plate/highlight-style"
-          ],
           "type": "registry:component",
           "description": "A table of contents component with links to document headings.",
           "title": "Table of Contents",
@@ -3836,7 +3783,11 @@
               "toc-demo",
               "toc-pro"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/highlight-style",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -3852,10 +3803,6 @@
             }
           ],
           "name": "details",
-          "registryDependencies": [
-            "@plate/details-toolbar-button",
-            "button"
-          ],
           "type": "registry:component",
           "description": "A semantic disclosure block with an editable summary.",
           "title": "Details",
@@ -3868,7 +3815,11 @@
             "examples": [
               "details-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/details-toolbar-button",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -3927,13 +3878,13 @@
             }
           ],
           "name": "ai-api",
+          "type": "registry:file",
           "registryDependencies": [
             "@plate/copilot-api",
             "@plate/editor-static",
-            "@plate/use-chat",
-            "@plate/editor-plugins-static"
-          ],
-          "type": "registry:file"
+            "@plate/editor-plugins-static",
+            "@plate/use-chat"
+          ]
         },
         {
           "dependencies": [
@@ -3949,7 +3900,6 @@
             }
           ],
           "name": "copilot-api",
-          "registryDependencies": [],
           "type": "registry:file"
         },
         {
@@ -3963,7 +3913,6 @@
             }
           ],
           "name": "files-api",
-          "registryDependencies": [],
           "type": "registry:lib",
           "title": "Files Gateway"
         },
@@ -3984,10 +3933,6 @@
             }
           ],
           "name": "upload-r2",
-          "registryDependencies": [
-            "@plate/files-api",
-            "@plate/upload"
-          ],
           "type": "registry:file",
           "title": "Upload with R2",
           "meta": {
@@ -3996,7 +3941,11 @@
                 "route": "/docs/upload"
               }
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/upload",
+            "@plate/files-api"
+          ]
         },
         {
           "dependencies": [
@@ -4015,10 +3964,6 @@
             }
           ],
           "name": "upload-s3",
-          "registryDependencies": [
-            "@plate/files-api",
-            "@plate/upload"
-          ],
           "type": "registry:file",
           "title": "Upload with S3",
           "meta": {
@@ -4027,7 +3972,11 @@
                 "route": "/docs/upload"
               }
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/upload",
+            "@plate/files-api"
+          ]
         },
         {
           "dependencies": [
@@ -4049,16 +3998,16 @@
             }
           ],
           "name": "settings-dialog",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/ai",
+            "@plate/use-chat",
             "button",
             "command",
             "dialog",
             "input",
-            "popover",
-            "@plate/use-chat"
-          ],
-          "type": "registry:component"
+            "popover"
+          ]
         },
         {
           "dependencies": [
@@ -4080,10 +4029,10 @@
             }
           ],
           "name": "use-chat",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/comment"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "categories": [
@@ -4113,20 +4062,19 @@
             }
           ],
           "name": "editor-ai",
+          "type": "registry:block",
           "registryDependencies": [
             "@plate/plate-ui",
-            "tooltip",
-            "@plate/editor",
             "@plate/comment",
-            "@plate/discussion",
             "@plate/suggestion",
-            "@plate/use-mobile",
-            "@plate/settings-dialog",
-            "@plate/editor-plugins",
             "@plate/ai",
-            "@plate/dnd"
-          ],
-          "type": "registry:block"
+            "@plate/dnd",
+            "@plate/discussion",
+            "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/settings-dialog",
+            "tooltip"
+          ]
         },
         {
           "categories": [
@@ -4145,11 +4093,11 @@
             "descriptionSrc": "/docs/multi-select"
           },
           "name": "editor-select",
+          "type": "registry:block",
           "registryDependencies": [
             "@plate/plate-ui",
             "@plate/select-editor-demo"
-          ],
-          "type": "registry:block"
+          ]
         },
         {
           "categories": [
@@ -4173,12 +4121,12 @@
             }
           ],
           "name": "editor-basic",
+          "type": "registry:block",
           "registryDependencies": [
             "@plate/plate-ui",
-            "@plate/editor",
-            "@plate/basic-nodes"
-          ],
-          "type": "registry:block"
+            "@plate/basic-nodes",
+            "@plate/editor"
+          ]
         },
         {
           "categories": [
@@ -4282,20 +4230,34 @@
             "rsc": true
           },
           "name": "html-export",
+          "type": "registry:block",
           "registryDependencies": [
             "@plate/plate-ui",
-            "@plate/editor-static",
+            "@plate/ai",
+            "@plate/dnd",
             "@plate/editor",
-            "@plate/fixed-toolbar",
-            "@plate/floating-toolbar",
-            "button",
             "@plate/editor-plugins",
             "@plate/editor-plugins-static",
+            "@plate/editor-static",
+            "@plate/fixed-toolbar",
+            "@plate/floating-toolbar",
             "@plate/use-object-url",
-            "@plate/ai",
-            "@plate/dnd"
+            "button"
+          ]
+        },
+        {
+          "dependencies": [
+            "frimousse@0.4.0"
           ],
-          "type": "registry:block"
+          "description": "Loads Emojibase emoji with GitHub shortcodes and ranks emoji searches.",
+          "files": [
+            {
+              "path": "lib/emoji-data.ts",
+              "type": "registry:lib"
+            }
+          ],
+          "name": "emoji-data",
+          "type": "registry:lib"
         },
         {
           "dependencies": [
@@ -4409,21 +4371,21 @@
             ]
           },
           "name": "upload-demo",
+          "title": "Upload Files",
+          "type": "registry:example",
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
-            "@plate/editor",
             "@plate/dnd",
+            "@plate/editor",
             "@plate/media",
             "@plate/media-toolbar-button",
             "@plate/paragraph",
             "@plate/toolbar",
             "@plate/upload",
             "@plate/upload-browser"
-          ],
-          "title": "Upload Files",
-          "type": "registry:example",
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -4445,6 +4407,10 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/basic-marks",
@@ -4456,10 +4422,6 @@
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
             "@plate/toolbar"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -4485,15 +4447,15 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/editor",
             "@plate/suggestion",
             "toggle-group"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -4519,6 +4481,10 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/comment-toolbar-button",
@@ -4529,10 +4495,6 @@
             "@plate/suggestion",
             "@plate/toolbar",
             "button"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -4554,6 +4516,10 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/comment-toolbar-button",
@@ -4563,10 +4529,6 @@
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
             "@plate/toolbar"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -4592,19 +4554,19 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
+            "@plate/suggestion",
             "@plate/basic-blocks",
             "@plate/comment",
             "@plate/comment-toolbar-button",
             "@plate/discussion",
             "@plate/editor",
-            "@plate/suggestion",
-            "@plate/toolbar",
-            "@plate/link"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
+            "@plate/link",
+            "@plate/toolbar"
           ]
         },
         {
@@ -4630,19 +4592,19 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
+            "@plate/suggestion",
             "@plate/basic-blocks",
             "@plate/comment",
             "@plate/comment-toolbar-button",
             "@plate/discussion",
             "@plate/editor",
-            "@plate/suggestion",
-            "@plate/toolbar",
-            "@plate/history-toolbar-button"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
+            "@plate/history-toolbar-button",
+            "@plate/toolbar"
           ]
         },
         {
@@ -4668,20 +4630,20 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
+            "@plate/suggestion",
             "@plate/basic-blocks",
             "@plate/comment",
             "@plate/comment-toolbar-button",
             "@plate/discussion",
             "@plate/editor",
-            "@plate/suggestion",
+            "@plate/link",
             "@plate/toolbar",
-            "button",
-            "@plate/link"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
+            "button"
           ]
         },
         {
@@ -4707,23 +4669,23 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
+            "@plate/suggestion",
             "@plate/basic-blocks",
+            "@plate/basic-blocks-static",
             "@plate/comment",
+            "@plate/comment-static",
             "@plate/comment-toolbar-button",
             "@plate/discussion",
             "@plate/editor",
-            "@plate/suggestion",
-            "@plate/basic-blocks-static",
-            "@plate/comment-static",
             "@plate/editor-static",
             "@plate/link",
             "@plate/link-static",
             "@plate/toolbar"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -4752,14 +4714,14 @@
             ]
           },
           "name": "copilot-demo",
+          "type": "registry:example",
           "registryDependencies": [
+            "@plate/ai",
+            "@plate/dnd",
             "@plate/copilot",
             "@plate/editor",
-            "@plate/editor-plugins",
-            "@plate/ai",
-            "@plate/dnd"
-          ],
-          "type": "registry:example"
+            "@plate/editor-plugins"
+          ]
         },
         {
           "dependencies": [
@@ -4783,12 +4745,12 @@
             ]
           },
           "name": "select-editor-demo",
-          "registryDependencies": [
-            "button",
-            "@plate/select-editor"
-          ],
           "title": "Select Editor Form",
-          "type": "registry:example"
+          "type": "registry:example",
+          "registryDependencies": [
+            "@plate/select-editor",
+            "button"
+          ]
         },
         {
           "files": [
@@ -4798,15 +4760,15 @@
             }
           ],
           "name": "controlled-demo",
-          "registryDependencies": [
-            "@plate/editor",
-            "button",
-            "@plate/editor-plugins"
-          ],
           "type": "registry:example",
           "dependencies": [
             "diff-match-patch-ts@^0.6.0",
             "platejs"
+          ],
+          "registryDependencies": [
+            "@plate/editor-plugins",
+            "@plate/editor",
+            "button"
           ]
         },
         {
@@ -4830,11 +4792,11 @@
             }
           ],
           "name": "huge-document-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "button",
-            "@plate/use-mounted"
-          ],
-          "type": "registry:example"
+            "@plate/use-mounted",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -4853,11 +4815,11 @@
             }
           ],
           "name": "hundreds-editors-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "@plate/editor",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "@plate/editor-plugins",
+            "@plate/editor"
+          ]
         },
         {
           "dependencies": [
@@ -4884,18 +4846,18 @@
             }
           ],
           "name": "multiple-editors-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "separator",
+            "@plate/editor-plugins",
             "@plate/align",
             "@plate/basic-nodes",
             "@plate/dnd",
-            "@plate/media",
             "@plate/editor",
             "@plate/fixed-toolbar",
+            "@plate/media",
             "@plate/turn-into-toolbar-button",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -4910,12 +4872,12 @@
             }
           ],
           "name": "version-history-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "button",
             "@plate/basic-marks",
-            "@plate/diff"
-          ],
-          "type": "registry:example"
+            "@plate/diff",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -4935,12 +4897,12 @@
             }
           ],
           "name": "preview-markdown-demo",
+          "type": "registry:example",
           "registryDependencies": [
+            "@plate/editor-plugins",
             "@plate/basic-nodes",
-            "@plate/editor",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "@plate/editor"
+          ]
         },
         {
           "dependencies": [
@@ -4957,14 +4919,14 @@
             }
           ],
           "name": "markdown-to-editor-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "@plate/editor",
-            "@plate/use-debounce",
-            "@plate/editor-plugins",
             "@plate/ai",
-            "@plate/dnd"
-          ],
-          "type": "registry:example"
+            "@plate/dnd",
+            "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/use-debounce"
+          ]
         },
         {
           "dependencies": [
@@ -4982,12 +4944,9 @@
             }
           ],
           "name": "markdown-streaming-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "button",
-            "@plate/editor",
             "@plate/editor-static",
-            "@plate/editor-plugins-static",
-            "@plate/dnd",
             "@plate/align",
             "@plate/basic-blocks",
             "@plate/basic-marks",
@@ -4996,6 +4955,9 @@
             "@plate/column",
             "@plate/date",
             "@plate/details",
+            "@plate/dnd",
+            "@plate/editor",
+            "@plate/editor-plugins-static",
             "@plate/font",
             "@plate/footnote",
             "@plate/line-height",
@@ -5006,16 +4968,16 @@
             "@plate/media",
             "@plate/mention",
             "@plate/table",
-            "@plate/toc"
-          ],
-          "type": "registry:example"
+            "@plate/toc",
+            "button"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "yjs",
             "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "lucide-react",
+            "yjs@>=13.6.30"
           ],
           "description": "Two-peer Yjs collaboration with cursors, reconnect, schema guards, and history.",
           "files": [
@@ -5025,17 +4987,17 @@
             }
           ],
           "name": "collaboration-demo",
+          "type": "registry:example",
           "registryDependencies": [
+            "@plate/editor-plugins",
             "@plate/basic-nodes",
             "@plate/editor",
             "@plate/remote-cursor-overlay",
             "alert",
             "badge",
             "button",
-            "card",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "card"
+          ]
         },
         {
           "dependencies": [
@@ -5049,16 +5011,16 @@
             }
           ],
           "name": "installation-next-demo",
+          "type": "registry:example",
           "registryDependencies": [
+            "@plate/editor-plugins",
+            "@plate/blockquote",
             "@plate/editor",
             "@plate/fixed-toolbar",
-            "@plate/toolbar",
-            "@plate/mark-toolbar-button",
             "@plate/heading",
-            "@plate/blockquote",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "@plate/mark-toolbar-button",
+            "@plate/toolbar"
+          ]
         },
         {
           "dependencies": [
@@ -5077,13 +5039,13 @@
             }
           ],
           "name": "tabbable-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "@plate/editor",
-            "@plate/editor-plugins",
             "@plate/ai",
-            "@plate/dnd"
-          ],
-          "type": "registry:example"
+            "@plate/dnd",
+            "@plate/editor",
+            "@plate/editor-plugins"
+          ]
         },
         {
           "dependencies": [
@@ -6801,7 +6763,6 @@
           "devDependencies": [],
           "files": [],
           "name": "plate",
-          "registryDependencies": [],
           "type": "registry:lib"
         },
         {
@@ -6817,10 +6778,10 @@
           "devDependencies": [],
           "files": [],
           "name": "plate-ui",
+          "type": "registry:style",
           "registryDependencies": [
             "@plate/plate"
-          ],
-          "type": "registry:style"
+          ]
         },
         {
           "dependencies": [
@@ -6854,7 +6815,6 @@
             ]
           },
           "name": "editor",
-          "registryDependencies": [],
           "title": "Editor",
           "type": "registry:component"
         },
@@ -6873,7 +6833,6 @@
             }
           ],
           "name": "editor-static",
-          "registryDependencies": [],
           "title": "Static Editor",
           "type": "registry:component"
         },
@@ -6897,11 +6856,11 @@
             ]
           },
           "name": "diff",
+          "title": "Diff",
+          "type": "registry:component",
           "registryDependencies": [
             "button"
-          ],
-          "title": "Diff",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -6942,18 +6901,18 @@
             "label": "New"
           },
           "name": "ai-menu",
+          "title": "AI Menu",
+          "type": "registry:component",
           "registryDependencies": [
-            "button",
-            "command",
             "@plate/comment",
-            "@plate/floating-popover",
             "@plate/editor",
             "@plate/use-chat",
+            "@plate/editor-plugins-static",
             "@plate/editor-static",
-            "@plate/editor-plugins-static"
-          ],
-          "title": "AI Menu",
-          "type": "registry:component"
+            "@plate/floating-popover",
+            "button",
+            "command"
+          ]
         },
         {
           "dependencies": [
@@ -6992,11 +6951,11 @@
             "label": "New"
           },
           "name": "ai-toolbar-button",
+          "title": "AI Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "AI Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7023,26 +6982,26 @@
             ]
           },
           "name": "align-toolbar-button",
+          "title": "Align Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "Align Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
             "platejs",
             "use-file-picker@2.1.2",
-            "mammoth",
             "sonner",
-            "validator",
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
             "lucide-react",
+            "mammoth@^1.9.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
-            "unified@^11.0.5"
+            "unified@^11.0.5",
+            "validator@^13.15.15"
           ],
           "description": "A toolbar button to import editor content from a file.",
           "files": [
@@ -7065,31 +7024,31 @@
             "label": "New"
           },
           "name": "import-toolbar-button",
-          "registryDependencies": [
-            "@plate/editor-dropdown-menu",
-            "@plate/docx-source",
-            "@plate/toolbar"
-          ],
           "title": "Import Toolbar Button",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/docx-source",
+            "@plate/editor-dropdown-menu",
+            "@plate/toolbar"
+          ]
         },
         {
           "dependencies": [
             "platejs",
             "lucide-react",
-            "color-name",
-            "html-to-vdom",
-            "jszip",
-            "juice",
-            "mime-types",
             "sonner",
-            "virtual-dom",
-            "xmlbuilder2",
+            "color-name@^2.0.0",
             "diff-match-patch-ts@^0.6.0",
+            "html-to-vdom@^0.7.0",
+            "jszip@^3.10.1",
+            "juice@^11.0.1",
             "katex@0.16.22",
+            "mime-types@^2.1.35",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
-            "unified@^11.0.5"
+            "unified@^11.0.5",
+            "virtual-dom@^2.1.1",
+            "xmlbuilder2@^3.1.1"
           ],
           "description": "A toolbar button for exporting editor content as HTML, Markdown, or Word.",
           "files": [
@@ -7112,17 +7071,17 @@
             "label": "New"
           },
           "name": "export-toolbar-button",
+          "title": "Export Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
+            "@plate/editor",
+            "@plate/editor-plugins-static",
             "@plate/docx-export",
             "@plate/docx-source",
             "@plate/editor-dropdown-menu",
-            "@plate/toolbar",
             "@plate/editor-static",
-            "@plate/editor",
-            "@plate/editor-plugins-static"
-          ],
-          "title": "Export Toolbar Button",
-          "type": "registry:component"
+            "@plate/toolbar"
+          ]
         },
         {
           "dependencies": [
@@ -7153,11 +7112,11 @@
             ]
           },
           "name": "caption",
+          "title": "Caption",
+          "type": "registry:component",
           "registryDependencies": [
             "button"
-          ],
-          "title": "Caption",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7172,7 +7131,6 @@
             }
           ],
           "name": "caption-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -7207,14 +7165,14 @@
             ]
           },
           "name": "font-color-toolbar-button",
+          "title": "Font Color Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
+            "@plate/toolbar",
             "button",
-            "tooltip",
-            "@plate/toolbar"
-          ],
-          "title": "Font Color Toolbar Button",
-          "type": "registry:component"
+            "tooltip"
+          ]
         },
         {
           "dependencies": [
@@ -7245,14 +7203,14 @@
             ]
           },
           "name": "comment-toolbar-button",
+          "title": "Comment Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/comment",
             "@plate/toolbar",
             "button",
             "dialog"
-          ],
-          "title": "Comment Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7288,18 +7246,18 @@
             "label": "New"
           },
           "name": "select-editor",
+          "title": "Select Editor",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor",
             "@plate/floating-popover",
             "@plate/tag"
-          ],
-          "title": "Select Editor",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "@emoji-mart/data@1.2.1",
+            "frimousse@0.4.0",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -7323,18 +7281,18 @@
             ]
           },
           "name": "emoji-picker",
-          "registryDependencies": [
-            "button",
-            "tooltip",
-            "@plate/emoji",
-            "@plate/floating-popover"
-          ],
           "title": "Emoji Picker",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/emoji-data",
+            "@plate/floating-popover"
+          ]
         },
         {
           "dependencies": [
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
           ],
           "description": "An emoji picker toolbar button.",
           "files": [
@@ -7359,12 +7317,12 @@
             ]
           },
           "name": "emoji-toolbar-button",
+          "title": "Emoji Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/emoji-picker",
             "@plate/toolbar"
-          ],
-          "title": "Emoji Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7392,11 +7350,11 @@
             ]
           },
           "name": "history-toolbar-button",
+          "title": "History Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "History Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7423,12 +7381,12 @@
             ]
           },
           "name": "list-toolbar-button",
+          "title": "List Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "List Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7455,11 +7413,11 @@
             ]
           },
           "name": "indent-toolbar-button",
+          "title": "Indent Toolbar Buttons",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "Indent Toolbar Buttons",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7521,13 +7479,13 @@
             ]
           },
           "name": "insert-toolbar-button",
+          "title": "Insert Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/link",
             "@plate/toolbar"
-          ],
-          "title": "Insert Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7554,12 +7512,12 @@
             ]
           },
           "name": "line-height-toolbar-button",
+          "title": "Line Height Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "Line Height Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7590,12 +7548,12 @@
             ]
           },
           "name": "link-toolbar-button",
+          "title": "Link Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/link",
             "@plate/toolbar"
-          ],
-          "title": "Link Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7622,11 +7580,11 @@
             ]
           },
           "name": "mark-toolbar-button",
+          "title": "Mark Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "Mark Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7654,16 +7612,16 @@
             ]
           },
           "name": "media-toolbar",
+          "title": "Media Toolbar",
+          "type": "registry:component",
           "registryDependencies": [
-            "button",
-            "input",
-            "separator",
+            "@plate/media-preview-dialog",
             "@plate/caption",
             "@plate/floating-popover",
-            "@plate/media-preview-dialog"
-          ],
-          "title": "Media Toolbar",
-          "type": "registry:component"
+            "button",
+            "input",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -7694,15 +7652,15 @@
             ]
           },
           "name": "media-toolbar-button",
+          "title": "Media Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/upload",
-            "@plate/toolbar",
-            "input",
             "@plate/editor-dropdown-menu",
-            "alert-dialog"
-          ],
-          "title": "Media Toolbar Button",
-          "type": "registry:component"
+            "@plate/toolbar",
+            "alert-dialog",
+            "input"
+          ]
         },
         {
           "dependencies": [
@@ -7724,13 +7682,13 @@
             ]
           },
           "name": "mode-toolbar-button",
-          "registryDependencies": [
-            "@plate/editor-dropdown-menu",
-            "@plate/suggestion",
-            "@plate/toolbar"
-          ],
           "title": "Mode Toolbar Button",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/suggestion",
+            "@plate/editor-dropdown-menu",
+            "@plate/toolbar"
+          ]
         },
         {
           "dependencies": [
@@ -7758,12 +7716,12 @@
             ]
           },
           "name": "more-toolbar-button",
+          "title": "More Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "More Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7794,7 +7752,6 @@
             ]
           },
           "name": "resize-handle",
-          "registryDependencies": [],
           "title": "Resize Handle",
           "type": "registry:component"
         },
@@ -7823,12 +7780,12 @@
             ]
           },
           "name": "table-toolbar-button",
+          "title": "Table Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "Table Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7855,11 +7812,11 @@
             ]
           },
           "name": "details-toolbar-button",
+          "title": "Details Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "Details Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7887,18 +7844,18 @@
             ]
           },
           "name": "turn-into-toolbar-button",
+          "title": "Turn Into Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor-dropdown-menu",
             "@plate/toolbar"
-          ],
-          "title": "Turn Into Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "yjs",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "yjs@>=13.6.30"
           ],
           "description": "Copied Yjs selection highlights, carets, and labels.",
           "files": [
@@ -7919,7 +7876,6 @@
             ]
           },
           "name": "remote-cursor-overlay",
-          "registryDependencies": [],
           "title": "Remote Cursor Overlay",
           "type": "registry:component"
         },
@@ -7933,11 +7889,11 @@
             }
           ],
           "name": "editor-context-menu",
+          "title": "Editor Context Menu",
+          "type": "registry:component",
           "registryDependencies": [
             "context-menu"
-          ],
-          "title": "Editor Context Menu",
-          "type": "registry:component"
+          ]
         },
         {
           "description": "Provider-neutral dropdown menu behavior for Plate UI.",
@@ -7949,11 +7905,11 @@
             }
           ],
           "name": "editor-dropdown-menu",
+          "title": "Editor Dropdown Menu",
+          "type": "registry:component",
           "registryDependencies": [
             "dropdown-menu"
-          ],
-          "title": "Editor Dropdown Menu",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -7969,7 +7925,6 @@
             }
           ],
           "name": "floating-popover",
-          "registryDependencies": [],
           "title": "Floating Popover",
           "type": "registry:component"
         },
@@ -7989,7 +7944,6 @@
           ],
           "meta": {},
           "name": "toolbar",
-          "registryDependencies": [],
           "title": "Toolbar",
           "type": "registry:component",
           "dependencies": [
@@ -8023,12 +7977,12 @@
             ]
           },
           "name": "suggestion-toolbar-button",
+          "title": "Suggestion Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/suggestion",
             "@plate/toolbar"
-          ],
-          "title": "Suggestion Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8054,11 +8008,11 @@
             ]
           },
           "name": "block-list",
+          "title": "List",
+          "type": "registry:component",
           "registryDependencies": [
             "checkbox"
-          ],
-          "title": "List",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8074,7 +8028,6 @@
             }
           ],
           "name": "block-list-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8105,7 +8058,6 @@
             ]
           },
           "name": "blockquote",
-          "registryDependencies": [],
           "title": "Blockquote",
           "type": "registry:component"
         },
@@ -8122,7 +8074,6 @@
             }
           ],
           "name": "blockquote-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8152,7 +8103,6 @@
             ]
           },
           "name": "code",
-          "registryDependencies": [],
           "title": "Code",
           "type": "registry:component"
         },
@@ -8169,7 +8119,6 @@
             }
           ],
           "name": "code-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8200,11 +8149,11 @@
             ]
           },
           "name": "equation-toolbar-button",
+          "title": "Equation Toolbar Button",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/toolbar"
-          ],
-          "title": "Equation Toolbar Button",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8231,14 +8180,14 @@
             ]
           },
           "name": "font-size-toolbar-button",
-          "registryDependencies": [
-            "button",
-            "input",
-            "@plate/floating-popover",
-            "@plate/toolbar"
-          ],
           "title": "Font Size Toolbar Button",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "@plate/toolbar",
+            "button",
+            "input"
+          ]
         },
         {
           "dependencies": [
@@ -8269,7 +8218,6 @@
             ]
           },
           "name": "heading",
-          "registryDependencies": [],
           "title": "Heading",
           "type": "registry:component"
         },
@@ -8287,7 +8235,6 @@
             }
           ],
           "name": "heading-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8314,11 +8261,11 @@
             ]
           },
           "name": "highlight",
+          "title": "Highlight",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/highlight-style"
-          ],
-          "title": "Highlight",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8333,10 +8280,10 @@
             }
           ],
           "name": "highlight-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/highlight-style"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8365,7 +8312,6 @@
             ]
           },
           "name": "horizontal-rule",
-          "registryDependencies": [],
           "title": "Horizontal Rule",
           "type": "registry:component"
         },
@@ -8382,7 +8328,6 @@
             }
           ],
           "name": "horizontal-rule-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8416,14 +8361,14 @@
             ]
           },
           "name": "media-image",
-          "registryDependencies": [
-            "@plate/media-toolbar",
-            "@plate/media-preview-dialog",
-            "@plate/caption",
-            "@plate/resize-handle"
-          ],
           "title": "Media Image",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/caption",
+            "@plate/media-preview-dialog",
+            "@plate/media-toolbar",
+            "@plate/resize-handle"
+          ]
         },
         {
           "dependencies": [
@@ -8438,10 +8383,10 @@
             }
           ],
           "name": "media-image-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8473,7 +8418,6 @@
             ]
           },
           "name": "media-preview-dialog",
-          "registryDependencies": [],
           "title": "Media Preview Dialog",
           "type": "registry:component"
         },
@@ -8502,7 +8446,6 @@
             ]
           },
           "name": "kbd",
-          "registryDependencies": [],
           "title": "Keyboard Input",
           "type": "registry:component"
         },
@@ -8519,7 +8462,6 @@
             }
           ],
           "name": "kbd-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8550,12 +8492,12 @@
             ]
           },
           "name": "media-audio",
-          "registryDependencies": [
-            "@plate/caption",
-            "@plate/resize-handle"
-          ],
           "title": "Media Audio",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/resize-handle",
+            "@plate/caption"
+          ]
         },
         {
           "dependencies": [
@@ -8570,10 +8512,10 @@
             }
           ],
           "name": "media-audio-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8608,13 +8550,13 @@
             ]
           },
           "name": "media-embed",
-          "registryDependencies": [
-            "@plate/media-toolbar",
-            "@plate/caption",
-            "@plate/resize-handle"
-          ],
           "title": "Media Embed",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/caption",
+            "@plate/media-toolbar",
+            "@plate/resize-handle"
+          ]
         },
         {
           "dependencies": [
@@ -8629,10 +8571,10 @@
             }
           ],
           "name": "media-embed-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8663,12 +8605,12 @@
             ]
           },
           "name": "media-file",
-          "registryDependencies": [
-            "@plate/caption",
-            "@plate/resize-handle"
-          ],
           "title": "Media File",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/resize-handle",
+            "@plate/caption"
+          ]
         },
         {
           "dependencies": [
@@ -8684,10 +8626,10 @@
             }
           ],
           "name": "media-file-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8722,12 +8664,12 @@
             ]
           },
           "name": "media-video",
+          "title": "Media Video",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption",
             "@plate/resize-handle"
-          ],
-          "title": "Media Video",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8742,10 +8684,10 @@
             }
           ],
           "name": "media-video-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/caption-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8775,7 +8717,6 @@
             ]
           },
           "name": "paragraph",
-          "registryDependencies": [],
           "title": "Paragraph",
           "type": "registry:component"
         },
@@ -8792,7 +8733,6 @@
             }
           ],
           "name": "paragraph-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8820,7 +8760,6 @@
             ]
           },
           "name": "tag",
-          "registryDependencies": [],
           "title": "Tag",
           "type": "registry:component"
         },
@@ -8837,13 +8776,13 @@
             }
           ],
           "name": "basic-blocks-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/blockquote-static",
             "@plate/heading-static",
             "@plate/horizontal-rule-static",
             "@plate/paragraph-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8858,12 +8797,12 @@
             }
           ],
           "name": "basic-marks-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/code-static",
             "@plate/highlight-static",
             "@plate/kbd-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -8878,7 +8817,6 @@
             }
           ],
           "name": "callout-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8900,7 +8838,6 @@
             }
           ],
           "name": "code-block-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8920,7 +8857,6 @@
             }
           ],
           "name": "code-drawing-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8936,7 +8872,6 @@
             }
           ],
           "name": "column-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -8952,9 +8887,6 @@
             }
           ],
           "name": "date-static",
-          "registryDependencies": [
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component"
         },
         {
@@ -8970,13 +8902,12 @@
             }
           ],
           "name": "footnote-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
           "dependencies": [
             "platejs",
-            "@excalidraw/excalidraw",
+            "@excalidraw/excalidraw@0.18.0",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -8987,7 +8918,6 @@
             }
           ],
           "name": "excalidraw",
-          "registryDependencies": [],
           "type": "registry:component",
           "description": "A drawing component powered by Excalidraw.",
           "title": "Excalidraw",
@@ -9015,7 +8945,6 @@
             }
           ],
           "name": "font-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -9031,7 +8960,6 @@
             }
           ],
           "name": "indent-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -9047,9 +8975,6 @@
             }
           ],
           "name": "link-static",
-          "registryDependencies": [
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component"
         },
         {
@@ -9065,11 +8990,11 @@
             }
           ],
           "name": "list-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/block-list-static",
             "@plate/indent-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -9086,9 +9011,6 @@
             }
           ],
           "name": "math-static",
-          "registryDependencies": [
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component"
         },
         {
@@ -9103,14 +9025,14 @@
             }
           ],
           "name": "media-static",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/media-audio-static",
             "@plate/media-embed-static",
             "@plate/media-file-static",
             "@plate/media-image-static",
             "@plate/media-video-static"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -9125,9 +9047,6 @@
             }
           ],
           "name": "mention-static",
-          "registryDependencies": [
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component"
         },
         {
@@ -9143,7 +9062,6 @@
             }
           ],
           "name": "table-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -9160,10 +9078,10 @@
             }
           ],
           "name": "toc-static",
+          "type": "registry:component",
           "registryDependencies": [
             "button"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -9178,7 +9096,6 @@
             }
           ],
           "name": "details-static",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -9190,6 +9107,11 @@
             }
           ],
           "name": "editor-plugins-static",
+          "type": "registry:component",
+          "dependencies": [
+            "files-sdk@^2.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/editor-static",
             "@plate/align",
@@ -9200,6 +9122,7 @@
             "@plate/code-drawing-static",
             "@plate/column-static",
             "@plate/date-static",
+            "@plate/details-static",
             "@plate/font-static",
             "@plate/footnote-static",
             "@plate/line-height",
@@ -9210,13 +9133,7 @@
             "@plate/media-static",
             "@plate/mention-static",
             "@plate/table-static",
-            "@plate/toc-static",
-            "@plate/details-static"
-          ],
-          "type": "registry:component",
-          "dependencies": [
-            "files-sdk@^2.6.0",
-            "platejs"
+            "@plate/toc-static"
           ]
         },
         {
@@ -9238,12 +9155,6 @@
             }
           ],
           "name": "ai",
-          "registryDependencies": [
-            "@plate/ai-menu",
-            "@plate/ai-toolbar-button",
-            "@plate/ai-api",
-            "@plate/use-chat"
-          ],
           "type": "registry:component",
           "description": "Streaming edits, command menu, and text highlighting.",
           "title": "AI",
@@ -9263,7 +9174,13 @@
               "ai-pro"
             ],
             "label": "New"
-          }
+          },
+          "registryDependencies": [
+            "@plate/ai-toolbar-button",
+            "@plate/ai-api",
+            "@plate/ai-menu",
+            "@plate/use-chat"
+          ]
         },
         {
           "dependencies": [
@@ -9308,13 +9225,13 @@
             }
           ],
           "name": "basic-blocks",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/blockquote",
             "@plate/heading",
             "@plate/horizontal-rule",
             "@plate/paragraph"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -9329,13 +9246,13 @@
             }
           ],
           "name": "basic-marks",
+          "type": "registry:component",
           "registryDependencies": [
+            "@plate/mark-toolbar-button",
             "@plate/code",
             "@plate/highlight",
-            "@plate/kbd",
-            "@plate/mark-toolbar-button"
-          ],
-          "type": "registry:component"
+            "@plate/kbd"
+          ]
         },
         {
           "files": [
@@ -9346,11 +9263,11 @@
             }
           ],
           "name": "basic-nodes",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/basic-marks"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -9371,10 +9288,6 @@
             }
           ],
           "name": "block-menu",
-          "registryDependencies": [
-            "@plate/editor-context-menu",
-            "@plate/dnd"
-          ],
           "type": "registry:component",
           "description": "A context menu for block-level operations.",
           "title": "Block Menu",
@@ -9391,7 +9304,11 @@
               "block-menu-demo",
               "block-menu-pro"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/dnd",
+            "@plate/editor-context-menu"
+          ]
         },
         {
           "dependencies": [
@@ -9406,7 +9323,6 @@
             }
           ],
           "name": "block-placeholder",
-          "registryDependencies": [],
           "type": "registry:component"
         },
         {
@@ -9422,10 +9338,6 @@
             }
           ],
           "name": "callout",
-          "registryDependencies": [
-            "button",
-            "@plate/emoji-picker"
-          ],
           "type": "registry:component",
           "description": "A callout component for highlighting important information with customizable icons and styles.",
           "title": "Callout",
@@ -9441,13 +9353,17 @@
             "examples": [
               "callout-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/emoji-picker",
+            "button"
+          ]
         },
         {
           "dependencies": [
             "platejs",
             "lowlight",
-            "diff-match-patch-ts",
+            "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
           "files": [
@@ -9463,11 +9379,6 @@
             }
           ],
           "name": "code-block",
-          "registryDependencies": [
-            "command",
-            "@plate/floating-popover",
-            "button"
-          ],
           "type": "registry:component",
           "description": "A code block with syntax highlighting and language selection.",
           "title": "Code Block",
@@ -9485,18 +9396,23 @@
               "code-block-huge-demo",
               "code-block-codemirror-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "button",
+            "command"
+          ]
         },
         {
           "dependencies": [
-            "@codemirror/language",
             "@codemirror/language-data",
             "@codemirror/commands",
             "@lezer/highlight",
             "@codemirror/search",
-            "@codemirror/state",
-            "@codemirror/view",
             "platejs",
+            "@codemirror/language@^6.12.4",
+            "@codemirror/state@^6.7.2",
+            "@codemirror/view@^6.41.0",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -9507,9 +9423,6 @@
             }
           ],
           "name": "code-block-codemirror",
-          "registryDependencies": [
-            "@plate/code-block"
-          ],
           "type": "registry:component",
           "description": "A CodeMirror projection for explicitly high-scale code block editors.",
           "title": "Code Block CodeMirror",
@@ -9523,7 +9436,10 @@
               "code-block-codemirror-demo",
               "code-block-views-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/code-block"
+          ]
         },
         {
           "dependencies": [
@@ -9544,12 +9460,6 @@
             }
           ],
           "name": "code-drawing",
-          "registryDependencies": [
-            "button",
-            "select",
-            "@plate/floating-popover",
-            "@plate/use-mobile"
-          ],
           "type": "registry:component",
           "description": "Create diagrams from code using PlantUML, Graphviz, Flowchart, or Mermaid.",
           "title": "Code Drawing",
@@ -9565,7 +9475,13 @@
             "examples": [
               "code-drawing-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "@plate/use-mobile",
+            "button",
+            "select"
+          ]
         },
         {
           "dependencies": [
@@ -9581,13 +9497,6 @@
             }
           ],
           "name": "column",
-          "registryDependencies": [
-            "button",
-            "separator",
-            "tooltip",
-            "@plate/dnd",
-            "@plate/floating-popover"
-          ],
           "type": "registry:component",
           "description": "Resizable column components for layout.",
           "title": "Column",
@@ -9603,7 +9512,14 @@
             "examples": [
               "column-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/dnd",
+            "@plate/floating-popover",
+            "button",
+            "separator",
+            "tooltip"
+          ]
         },
         {
           "dependencies": [
@@ -9637,17 +9553,17 @@
               "comment-review-demo"
             ]
           },
+          "title": "Comment Threads",
+          "type": "registry:component",
           "registryDependencies": [
-            "avatar",
-            "button",
+            "@plate/highlight-style",
             "@plate/basic-marks",
             "@plate/basic-marks-static",
-            "@plate/editor-dropdown-menu",
             "@plate/editor",
-            "@plate/highlight-style"
-          ],
-          "title": "Comment Threads",
-          "type": "registry:component"
+            "@plate/editor-dropdown-menu",
+            "avatar",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -9673,11 +9589,11 @@
             ]
           },
           "description": "Decoration attributes for static comment ranges and overlaps.",
+          "title": "Static Comment Styling",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/highlight-style"
-          ],
-          "title": "Static Comment Styling",
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -9704,16 +9620,16 @@
               "discussion-demo"
             ]
           },
+          "title": "Discussion",
+          "type": "registry:component",
           "registryDependencies": [
-            "avatar",
-            "button",
-            "separator",
+            "@plate/suggestion",
             "@plate/comment",
             "@plate/floating-popover",
-            "@plate/suggestion"
-          ],
-          "title": "Discussion",
-          "type": "registry:component"
+            "avatar",
+            "button",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -9734,7 +9650,6 @@
             }
           ],
           "name": "copilot",
-          "registryDependencies": [],
           "type": "registry:component",
           "description": "A text suggestion system that displays AI-generated content after the cursor.",
           "title": "Copilot",
@@ -9767,11 +9682,6 @@
             }
           ],
           "name": "find",
-          "registryDependencies": [
-            "input-group",
-            "tooltip",
-            "@plate/editor"
-          ],
           "type": "registry:component",
           "description": "A search bar over the editor’s current text matches.",
           "title": "Find",
@@ -9784,7 +9694,12 @@
             "examples": [
               "find-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/editor",
+            "input-group",
+            "tooltip"
+          ]
         },
         {
           "dependencies": [
@@ -9799,11 +9714,6 @@
             }
           ],
           "name": "date",
-          "registryDependencies": [
-            "calendar",
-            "popover",
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component",
           "description": "A date field component with calendar picker.",
           "title": "Date",
@@ -9819,7 +9729,12 @@
             "examples": [
               "date-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/suggestion-style",
+            "calendar",
+            "popover"
+          ]
         },
         {
           "dependencies": [
@@ -9835,11 +9750,6 @@
             }
           ],
           "name": "dnd",
-          "registryDependencies": [
-            "button",
-            "tooltip",
-            "@plate/editor-dropdown-menu"
-          ],
           "type": "registry:component",
           "description": "Block drag handles and drop indicators.",
           "title": "Drag and Drop",
@@ -9862,13 +9772,17 @@
             "usage": [
               "createEditor({ plugins: DndKit })"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/editor-dropdown-menu",
+            "tooltip"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "juice",
-            "validator"
+            "juice@^11.0.1",
+            "validator@^13.15.15"
           ],
           "files": [
             {
@@ -9926,8 +9840,11 @@
             }
           ],
           "name": "editor-plugins",
+          "title": "Editor Plugins",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/editor",
+            "@plate/comment",
             "@plate/ai",
             "@plate/align",
             "@plate/autoformat",
@@ -9938,8 +9855,8 @@
             "@plate/callout",
             "@plate/code-block",
             "@plate/column",
-            "@plate/comment",
             "@plate/date",
+            "@plate/details",
             "@plate/dnd",
             "@plate/emoji",
             "@plate/exit-break",
@@ -9953,21 +9870,17 @@
             "@plate/markdown",
             "@plate/math",
             "@plate/media",
-            "@plate/upload",
             "@plate/mention",
             "@plate/slash",
             "@plate/suggestion",
             "@plate/table",
             "@plate/toc",
-            "@plate/details"
-          ],
-          "title": "Editor Plugins",
-          "type": "registry:component"
+            "@plate/upload"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "@emoji-mart/data@1.2.1",
             "diff-match-patch-ts@^0.6.0"
           ],
           "files": [
@@ -9978,9 +9891,6 @@
             }
           ],
           "name": "emoji",
-          "registryDependencies": [
-            "@plate/inline-combobox"
-          ],
           "type": "registry:component",
           "description": "A popup for emoji search and insertion.",
           "title": "Emoji",
@@ -9996,7 +9906,11 @@
             "examples": [
               "emoji-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/emoji-data",
+            "@plate/inline-combobox"
+          ]
         },
         {
           "dependencies": [
@@ -10027,29 +9941,6 @@
             }
           ],
           "name": "fixed-toolbar",
-          "registryDependencies": [
-            "@plate/toolbar",
-            "@plate/tailwind-scrollbar-hide",
-            "@plate/ai-toolbar-button",
-            "@plate/align-toolbar-button",
-            "@plate/comment-toolbar-button",
-            "@plate/emoji-toolbar-button",
-            "@plate/font-color-toolbar-button",
-            "@plate/font-size-toolbar-button",
-            "@plate/history-toolbar-button",
-            "@plate/list-toolbar-button",
-            "@plate/indent-toolbar-button",
-            "@plate/insert-toolbar-button",
-            "@plate/line-height-toolbar-button",
-            "@plate/link-toolbar-button",
-            "@plate/mark-toolbar-button",
-            "@plate/media-toolbar-button",
-            "@plate/mode-toolbar-button",
-            "@plate/more-toolbar-button",
-            "@plate/table-toolbar-button",
-            "@plate/details-toolbar-button",
-            "@plate/turn-into-toolbar-button"
-          ],
           "meta": {
             "examples": [
               "basic-nodes-demo"
@@ -10057,7 +9948,30 @@
           },
           "title": "Fixed Toolbar",
           "type": "registry:component",
-          "description": "A set of commonly used formatting buttons."
+          "description": "A set of commonly used formatting buttons.",
+          "registryDependencies": [
+            "@plate/tailwind-scrollbar-hide",
+            "@plate/ai-toolbar-button",
+            "@plate/align-toolbar-button",
+            "@plate/comment-toolbar-button",
+            "@plate/details-toolbar-button",
+            "@plate/emoji-toolbar-button",
+            "@plate/font-color-toolbar-button",
+            "@plate/font-size-toolbar-button",
+            "@plate/history-toolbar-button",
+            "@plate/indent-toolbar-button",
+            "@plate/insert-toolbar-button",
+            "@plate/line-height-toolbar-button",
+            "@plate/link-toolbar-button",
+            "@plate/list-toolbar-button",
+            "@plate/mark-toolbar-button",
+            "@plate/media-toolbar-button",
+            "@plate/mode-toolbar-button",
+            "@plate/more-toolbar-button",
+            "@plate/table-toolbar-button",
+            "@plate/toolbar",
+            "@plate/turn-into-toolbar-button"
+          ]
         },
         {
           "dependencies": [
@@ -10080,20 +9994,6 @@
             }
           ],
           "name": "floating-toolbar",
-          "registryDependencies": [
-            "@plate/link",
-            "@plate/toolbar",
-            "@plate/use-floating-rect",
-            "@plate/tailwind-scrollbar-hide",
-            "@plate/ai-toolbar-button",
-            "@plate/comment-toolbar-button",
-            "@plate/equation-toolbar-button",
-            "@plate/link-toolbar-button",
-            "@plate/mark-toolbar-button",
-            "@plate/more-toolbar-button",
-            "@plate/suggestion-toolbar-button",
-            "@plate/turn-into-toolbar-button"
-          ],
           "meta": {
             "docs": [
               {
@@ -10107,7 +10007,21 @@
           },
           "title": "Floating Toolbar",
           "type": "registry:component",
-          "description": "A set of formatting buttons for the floating toolbar."
+          "description": "A set of formatting buttons for the floating toolbar.",
+          "registryDependencies": [
+            "@plate/tailwind-scrollbar-hide",
+            "@plate/ai-toolbar-button",
+            "@plate/comment-toolbar-button",
+            "@plate/equation-toolbar-button",
+            "@plate/link",
+            "@plate/link-toolbar-button",
+            "@plate/mark-toolbar-button",
+            "@plate/more-toolbar-button",
+            "@plate/suggestion-toolbar-button",
+            "@plate/toolbar",
+            "@plate/turn-into-toolbar-button",
+            "@plate/use-floating-rect"
+          ]
         },
         {
           "dependencies": [
@@ -10122,14 +10036,6 @@
             }
           ],
           "name": "footnote",
-          "registryDependencies": [
-            "button",
-            "command",
-            "hover-card",
-            "@plate/floating-popover",
-            "@plate/highlight-style",
-            "@plate/inline-combobox"
-          ],
           "type": "registry:component",
           "description": "Inline footnote references, definitions, and a reference picker.",
           "title": "Footnote",
@@ -10142,7 +10048,15 @@
             "examples": [
               "footnote-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/highlight-style",
+            "@plate/floating-popover",
+            "@plate/inline-combobox",
+            "button",
+            "command",
+            "hover-card"
+          ]
         },
         {
           "dependencies": [
@@ -10157,11 +10071,11 @@
             }
           ],
           "name": "font",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/font-size-toolbar-button",
             "@plate/font-color-toolbar-button"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -10176,10 +10090,10 @@
             }
           ],
           "name": "indent",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/indent-toolbar-button"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -10226,17 +10140,17 @@
               "link-pro"
             ]
           },
-          "registryDependencies": [
-            "button",
-            "input",
-            "separator",
-            "@plate/link-toolbar-button",
-            "@plate/suggestion-style",
-            "@plate/use-floating-rect"
-          ],
           "title": "Link",
           "type": "registry:component",
-          "description": "A component for rendering hyperlinks with hover states."
+          "description": "A component for rendering hyperlinks with hover states.",
+          "registryDependencies": [
+            "@plate/link-toolbar-button",
+            "@plate/suggestion-style",
+            "@plate/use-floating-rect",
+            "button",
+            "input",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -10251,12 +10165,12 @@
             }
           ],
           "name": "list",
+          "type": "registry:component",
           "registryDependencies": [
-            "@plate/block-list",
             "@plate/list-toolbar-button",
+            "@plate/block-list",
             "@plate/indent"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "dependencies": [
@@ -10282,9 +10196,9 @@
         {
           "dependencies": [
             "platejs",
-            "katex",
             "react-textarea-autosize",
             "diff-match-patch-ts@^0.6.0",
+            "katex@0.16.22",
             "lucide-react"
           ],
           "files": [
@@ -10295,12 +10209,6 @@
             }
           ],
           "name": "math",
-          "registryDependencies": [
-            "@plate/equation-toolbar-button",
-            "button",
-            "@plate/floating-popover",
-            "@plate/suggestion-style"
-          ],
           "type": "registry:component",
           "description": "Displays a LaTeX equation element with an editable popover for inputting and rendering mathematical expressions.",
           "title": "Math",
@@ -10314,7 +10222,13 @@
             "examples": [
               "equation-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/equation-toolbar-button",
+            "@plate/floating-popover",
+            "@plate/suggestion-style",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -10330,15 +10244,6 @@
             }
           ],
           "name": "media",
-          "registryDependencies": [
-            "@plate/media-audio",
-            "@plate/media-embed",
-            "@plate/media-file",
-            "@plate/media-image",
-            "@plate/media-preview-dialog",
-            "@plate/media-toolbar",
-            "@plate/media-video"
-          ],
           "type": "registry:component",
           "title": "Media",
           "meta": {
@@ -10351,7 +10256,16 @@
               "media-demo",
               "media-pro"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/media-toolbar",
+            "@plate/media-audio",
+            "@plate/media-embed",
+            "@plate/media-file",
+            "@plate/media-image",
+            "@plate/media-preview-dialog",
+            "@plate/media-video"
+          ]
         },
         {
           "dependencies": [
@@ -10371,9 +10285,6 @@
             }
           ],
           "name": "upload",
-          "registryDependencies": [
-            "@plate/use-object-url"
-          ],
           "type": "registry:component",
           "title": "Upload",
           "meta": {
@@ -10385,7 +10296,10 @@
             "examples": [
               "media-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/use-object-url"
+          ]
         },
         {
           "dependencies": [
@@ -10402,9 +10316,6 @@
             }
           ],
           "name": "upload-browser",
-          "registryDependencies": [
-            "@plate/upload"
-          ],
           "type": "registry:component",
           "title": "Browser Upload",
           "meta": {
@@ -10416,7 +10327,10 @@
             "examples": [
               "playground-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/upload"
+          ]
         },
         {
           "dependencies": [
@@ -10431,11 +10345,6 @@
             }
           ],
           "name": "mention",
-          "registryDependencies": [
-            "@plate/suggestion-style",
-            "@plate/inline-combobox",
-            "@plate/use-mounted"
-          ],
           "type": "registry:component",
           "description": "A mention element with customizable prefix and label, powered by a combobox.",
           "title": "Mention",
@@ -10451,7 +10360,12 @@
             "examples": [
               "mention-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/inline-combobox",
+            "@plate/suggestion-style",
+            "@plate/use-mounted"
+          ]
         },
         {
           "dependencies": [
@@ -10479,9 +10393,6 @@
             }
           ],
           "name": "slash",
-          "registryDependencies": [
-            "@plate/inline-combobox"
-          ],
           "type": "registry:component",
           "description": "A command input component for inserting various elements.",
           "title": "Slash Command",
@@ -10499,7 +10410,10 @@
               "slash-command-demo",
               "slash-command-pro"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/inline-combobox"
+          ]
         },
         {
           "dependencies": [
@@ -10514,7 +10428,6 @@
             }
           ],
           "name": "suggestion",
-          "registryDependencies": [],
           "type": "registry:component",
           "description": "Suggestion mode, semantic authored-change attributes, and view-local review state.",
           "title": "Suggestions",
@@ -10559,15 +10472,6 @@
             }
           ],
           "name": "table",
-          "registryDependencies": [
-            "button",
-            "@plate/dnd",
-            "@plate/editor-dropdown-menu",
-            "@plate/floating-popover",
-            "@plate/toolbar",
-            "@plate/tailwind-scrollbar-hide",
-            "@plate/font-color-toolbar-button"
-          ],
           "type": "registry:component",
           "description": "A table component with floating toolbar and border customization.",
           "title": "Table",
@@ -10583,7 +10487,16 @@
             "examples": [
               "table-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/tailwind-scrollbar-hide",
+            "@plate/dnd",
+            "@plate/editor-dropdown-menu",
+            "@plate/floating-popover",
+            "@plate/font-color-toolbar-button",
+            "@plate/toolbar",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -10599,10 +10512,6 @@
             }
           ],
           "name": "toc",
-          "registryDependencies": [
-            "button",
-            "@plate/highlight-style"
-          ],
           "type": "registry:component",
           "description": "A table of contents component with links to document headings.",
           "title": "Table of Contents",
@@ -10619,7 +10528,11 @@
               "toc-demo",
               "toc-pro"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/highlight-style",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -10635,10 +10548,6 @@
             }
           ],
           "name": "details",
-          "registryDependencies": [
-            "@plate/details-toolbar-button",
-            "button"
-          ],
           "type": "registry:component",
           "description": "A semantic disclosure block with an editable summary.",
           "title": "Details",
@@ -10651,7 +10560,11 @@
             "examples": [
               "details-demo"
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/details-toolbar-button",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -10710,13 +10623,13 @@
             }
           ],
           "name": "ai-api",
+          "type": "registry:file",
           "registryDependencies": [
             "@plate/copilot-api",
             "@plate/editor-static",
-            "@plate/use-chat",
-            "@plate/editor-plugins-static"
-          ],
-          "type": "registry:file"
+            "@plate/editor-plugins-static",
+            "@plate/use-chat"
+          ]
         },
         {
           "dependencies": [
@@ -10732,7 +10645,6 @@
             }
           ],
           "name": "copilot-api",
-          "registryDependencies": [],
           "type": "registry:file"
         },
         {
@@ -10746,7 +10658,6 @@
             }
           ],
           "name": "files-api",
-          "registryDependencies": [],
           "type": "registry:lib",
           "title": "Files Gateway"
         },
@@ -10767,10 +10678,6 @@
             }
           ],
           "name": "upload-r2",
-          "registryDependencies": [
-            "@plate/files-api",
-            "@plate/upload"
-          ],
           "type": "registry:file",
           "title": "Upload with R2",
           "meta": {
@@ -10779,7 +10686,11 @@
                 "route": "/docs/upload"
               }
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/upload",
+            "@plate/files-api"
+          ]
         },
         {
           "dependencies": [
@@ -10798,10 +10709,6 @@
             }
           ],
           "name": "upload-s3",
-          "registryDependencies": [
-            "@plate/files-api",
-            "@plate/upload"
-          ],
           "type": "registry:file",
           "title": "Upload with S3",
           "meta": {
@@ -10810,7 +10717,11 @@
                 "route": "/docs/upload"
               }
             ]
-          }
+          },
+          "registryDependencies": [
+            "@plate/upload",
+            "@plate/files-api"
+          ]
         },
         {
           "dependencies": [
@@ -10832,16 +10743,16 @@
             }
           ],
           "name": "settings-dialog",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/ai",
+            "@plate/use-chat",
             "button",
             "command",
             "dialog",
             "input",
-            "popover",
-            "@plate/use-chat"
-          ],
-          "type": "registry:component"
+            "popover"
+          ]
         },
         {
           "dependencies": [
@@ -10863,10 +10774,10 @@
             }
           ],
           "name": "use-chat",
+          "type": "registry:component",
           "registryDependencies": [
             "@plate/comment"
-          ],
-          "type": "registry:component"
+          ]
         },
         {
           "categories": [
@@ -10896,20 +10807,19 @@
             }
           ],
           "name": "editor-ai",
+          "type": "registry:block",
           "registryDependencies": [
             "@plate/plate-ui",
-            "tooltip",
-            "@plate/editor",
             "@plate/comment",
-            "@plate/discussion",
             "@plate/suggestion",
-            "@plate/use-mobile",
-            "@plate/settings-dialog",
-            "@plate/editor-plugins",
             "@plate/ai",
-            "@plate/dnd"
-          ],
-          "type": "registry:block"
+            "@plate/dnd",
+            "@plate/discussion",
+            "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/settings-dialog",
+            "tooltip"
+          ]
         },
         {
           "categories": [
@@ -10928,11 +10838,11 @@
             "descriptionSrc": "/docs/multi-select"
           },
           "name": "editor-select",
+          "type": "registry:block",
           "registryDependencies": [
             "@plate/plate-ui",
             "@plate/select-editor-demo"
-          ],
-          "type": "registry:block"
+          ]
         },
         {
           "categories": [
@@ -10956,12 +10866,12 @@
             }
           ],
           "name": "editor-basic",
+          "type": "registry:block",
           "registryDependencies": [
             "@plate/plate-ui",
-            "@plate/editor",
-            "@plate/basic-nodes"
-          ],
-          "type": "registry:block"
+            "@plate/basic-nodes",
+            "@plate/editor"
+          ]
         },
         {
           "categories": [
@@ -11065,20 +10975,34 @@
             "rsc": true
           },
           "name": "html-export",
+          "type": "registry:block",
           "registryDependencies": [
             "@plate/plate-ui",
-            "@plate/editor-static",
+            "@plate/ai",
+            "@plate/dnd",
             "@plate/editor",
-            "@plate/fixed-toolbar",
-            "@plate/floating-toolbar",
-            "button",
             "@plate/editor-plugins",
             "@plate/editor-plugins-static",
+            "@plate/editor-static",
+            "@plate/fixed-toolbar",
+            "@plate/floating-toolbar",
             "@plate/use-object-url",
-            "@plate/ai",
-            "@plate/dnd"
+            "button"
+          ]
+        },
+        {
+          "dependencies": [
+            "frimousse@0.4.0"
           ],
-          "type": "registry:block"
+          "description": "Loads Emojibase emoji with GitHub shortcodes and ranks emoji searches.",
+          "files": [
+            {
+              "path": "lib/emoji-data.ts",
+              "type": "registry:lib"
+            }
+          ],
+          "name": "emoji-data",
+          "type": "registry:lib"
         },
         {
           "dependencies": [
@@ -11192,21 +11116,21 @@
             ]
           },
           "name": "upload-demo",
+          "title": "Upload Files",
+          "type": "registry:example",
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
-            "@plate/editor",
             "@plate/dnd",
+            "@plate/editor",
             "@plate/media",
             "@plate/media-toolbar-button",
             "@plate/paragraph",
             "@plate/toolbar",
             "@plate/upload",
             "@plate/upload-browser"
-          ],
-          "title": "Upload Files",
-          "type": "registry:example",
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -11228,6 +11152,10 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/basic-marks",
@@ -11239,10 +11167,6 @@
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
             "@plate/toolbar"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -11268,15 +11192,15 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/editor",
             "@plate/suggestion",
             "toggle-group"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -11302,6 +11226,10 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/comment-toolbar-button",
@@ -11312,10 +11240,6 @@
             "@plate/suggestion",
             "@plate/toolbar",
             "button"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -11337,6 +11261,10 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/comment-toolbar-button",
@@ -11346,10 +11274,6 @@
             "@plate/mode-toolbar-button",
             "@plate/suggestion",
             "@plate/toolbar"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -11375,19 +11299,19 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
+            "@plate/suggestion",
             "@plate/basic-blocks",
             "@plate/comment",
             "@plate/comment-toolbar-button",
             "@plate/discussion",
             "@plate/editor",
-            "@plate/suggestion",
-            "@plate/toolbar",
-            "@plate/link"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
+            "@plate/link",
+            "@plate/toolbar"
           ]
         },
         {
@@ -11413,19 +11337,19 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
+            "@plate/suggestion",
             "@plate/basic-blocks",
             "@plate/comment",
             "@plate/comment-toolbar-button",
             "@plate/discussion",
             "@plate/editor",
-            "@plate/suggestion",
-            "@plate/toolbar",
-            "@plate/history-toolbar-button"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
+            "@plate/history-toolbar-button",
+            "@plate/toolbar"
           ]
         },
         {
@@ -11451,20 +11375,20 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
+            "@plate/suggestion",
             "@plate/basic-blocks",
             "@plate/comment",
             "@plate/comment-toolbar-button",
             "@plate/discussion",
             "@plate/editor",
-            "@plate/suggestion",
+            "@plate/link",
             "@plate/toolbar",
-            "button",
-            "@plate/link"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
+            "button"
           ]
         },
         {
@@ -11490,23 +11414,23 @@
               }
             ]
           },
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
+            "@plate/suggestion",
             "@plate/basic-blocks",
+            "@plate/basic-blocks-static",
             "@plate/comment",
+            "@plate/comment-static",
             "@plate/comment-toolbar-button",
             "@plate/discussion",
             "@plate/editor",
-            "@plate/suggestion",
-            "@plate/basic-blocks-static",
-            "@plate/comment-static",
             "@plate/editor-static",
             "@plate/link",
             "@plate/link-static",
             "@plate/toolbar"
-          ],
-          "dependencies": [
-            "diff-match-patch-ts@^0.6.0",
-            "platejs"
           ]
         },
         {
@@ -11535,14 +11459,14 @@
             ]
           },
           "name": "copilot-demo",
+          "type": "registry:example",
           "registryDependencies": [
+            "@plate/ai",
+            "@plate/dnd",
             "@plate/copilot",
             "@plate/editor",
-            "@plate/editor-plugins",
-            "@plate/ai",
-            "@plate/dnd"
-          ],
-          "type": "registry:example"
+            "@plate/editor-plugins"
+          ]
         },
         {
           "dependencies": [
@@ -11566,12 +11490,12 @@
             ]
           },
           "name": "select-editor-demo",
-          "registryDependencies": [
-            "button",
-            "@plate/select-editor"
-          ],
           "title": "Select Editor Form",
-          "type": "registry:example"
+          "type": "registry:example",
+          "registryDependencies": [
+            "@plate/select-editor",
+            "button"
+          ]
         },
         {
           "files": [
@@ -11581,15 +11505,15 @@
             }
           ],
           "name": "controlled-demo",
-          "registryDependencies": [
-            "@plate/editor",
-            "button",
-            "@plate/editor-plugins"
-          ],
           "type": "registry:example",
           "dependencies": [
             "diff-match-patch-ts@^0.6.0",
             "platejs"
+          ],
+          "registryDependencies": [
+            "@plate/editor-plugins",
+            "@plate/editor",
+            "button"
           ]
         },
         {
@@ -11613,11 +11537,11 @@
             }
           ],
           "name": "huge-document-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "button",
-            "@plate/use-mounted"
-          ],
-          "type": "registry:example"
+            "@plate/use-mounted",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -11636,11 +11560,11 @@
             }
           ],
           "name": "hundreds-editors-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "@plate/editor",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "@plate/editor-plugins",
+            "@plate/editor"
+          ]
         },
         {
           "dependencies": [
@@ -11667,18 +11591,18 @@
             }
           ],
           "name": "multiple-editors-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "separator",
+            "@plate/editor-plugins",
             "@plate/align",
             "@plate/basic-nodes",
             "@plate/dnd",
-            "@plate/media",
             "@plate/editor",
             "@plate/fixed-toolbar",
+            "@plate/media",
             "@plate/turn-into-toolbar-button",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -11693,12 +11617,12 @@
             }
           ],
           "name": "version-history-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "button",
             "@plate/basic-marks",
-            "@plate/diff"
-          ],
-          "type": "registry:example"
+            "@plate/diff",
+            "button"
+          ]
         },
         {
           "dependencies": [
@@ -11718,12 +11642,12 @@
             }
           ],
           "name": "preview-markdown-demo",
+          "type": "registry:example",
           "registryDependencies": [
+            "@plate/editor-plugins",
             "@plate/basic-nodes",
-            "@plate/editor",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "@plate/editor"
+          ]
         },
         {
           "dependencies": [
@@ -11740,14 +11664,14 @@
             }
           ],
           "name": "markdown-to-editor-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "@plate/editor",
-            "@plate/use-debounce",
-            "@plate/editor-plugins",
             "@plate/ai",
-            "@plate/dnd"
-          ],
-          "type": "registry:example"
+            "@plate/dnd",
+            "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/use-debounce"
+          ]
         },
         {
           "dependencies": [
@@ -11765,12 +11689,9 @@
             }
           ],
           "name": "markdown-streaming-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "button",
-            "@plate/editor",
             "@plate/editor-static",
-            "@plate/editor-plugins-static",
-            "@plate/dnd",
             "@plate/align",
             "@plate/basic-blocks",
             "@plate/basic-marks",
@@ -11779,6 +11700,9 @@
             "@plate/column",
             "@plate/date",
             "@plate/details",
+            "@plate/dnd",
+            "@plate/editor",
+            "@plate/editor-plugins-static",
             "@plate/font",
             "@plate/footnote",
             "@plate/line-height",
@@ -11789,16 +11713,16 @@
             "@plate/media",
             "@plate/mention",
             "@plate/table",
-            "@plate/toc"
-          ],
-          "type": "registry:example"
+            "@plate/toc",
+            "button"
+          ]
         },
         {
           "dependencies": [
             "platejs",
-            "yjs",
             "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "lucide-react",
+            "yjs@>=13.6.30"
           ],
           "description": "Two-peer Yjs collaboration with cursors, reconnect, schema guards, and history.",
           "files": [
@@ -11808,17 +11732,17 @@
             }
           ],
           "name": "collaboration-demo",
+          "type": "registry:example",
           "registryDependencies": [
+            "@plate/editor-plugins",
             "@plate/basic-nodes",
             "@plate/editor",
             "@plate/remote-cursor-overlay",
             "alert",
             "badge",
             "button",
-            "card",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "card"
+          ]
         },
         {
           "dependencies": [
@@ -11832,16 +11756,16 @@
             }
           ],
           "name": "installation-next-demo",
+          "type": "registry:example",
           "registryDependencies": [
+            "@plate/editor-plugins",
+            "@plate/blockquote",
             "@plate/editor",
             "@plate/fixed-toolbar",
-            "@plate/toolbar",
-            "@plate/mark-toolbar-button",
             "@plate/heading",
-            "@plate/blockquote",
-            "@plate/editor-plugins"
-          ],
-          "type": "registry:example"
+            "@plate/mark-toolbar-button",
+            "@plate/toolbar"
+          ]
         },
         {
           "dependencies": [
@@ -11860,13 +11784,13 @@
             }
           ],
           "name": "tabbable-demo",
+          "type": "registry:example",
           "registryDependencies": [
-            "@plate/editor",
-            "@plate/editor-plugins",
             "@plate/ai",
-            "@plate/dnd"
-          ],
-          "type": "registry:example"
+            "@plate/dnd",
+            "@plate/editor",
+            "@plate/editor-plugins"
+          ]
         },
         {
           "dependencies": [

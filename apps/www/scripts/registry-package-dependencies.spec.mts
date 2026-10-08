@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import type { Registry } from 'shadcn/schema';
 
 import { parseModuleImports } from './registry-imports.mts';
-import { deriveRegistryPackageDependencies } from './registry-package-dependencies.mts';
+import { deriveRegistryDependencies } from './registry-package-dependencies.mts';
 
 const temporaryDirectories: string[] = [];
 
@@ -141,7 +141,7 @@ describe('registry package dependency derivation', () => {
       },
     ]);
 
-    const derived = deriveRegistryPackageDependencies(registry, {
+    const derived = deriveRegistryDependencies(registry, {
       entrypointDags: cyclicDags,
       packageManifests,
       sourceRoot,
@@ -168,7 +168,7 @@ describe('registry package dependency derivation', () => {
       },
     ]);
 
-    const derived = deriveRegistryPackageDependencies(registry, {
+    const derived = deriveRegistryDependencies(registry, {
       entrypointDags: cyclicDags,
       packageManifests,
       sourceRoot,
@@ -196,7 +196,7 @@ describe('registry package dependency derivation', () => {
     ]);
 
     expect(() =>
-      deriveRegistryPackageDependencies(registry, {
+      deriveRegistryDependencies(registry, {
         entrypointDags: cyclicDags,
         packageManifests,
         sourceRoot,
@@ -206,6 +206,56 @@ describe('registry package dependency derivation', () => {
     );
   });
 
+  it('rejects an authored bare package that hides its derived version range', () => {
+    const sourceRoot = createSourceRoot({
+      'feature.ts': "import { Feature } from 'platejs/feature';",
+    });
+    const registry = createRegistry([
+      {
+        dependencies: ['peer-a'],
+        files: [{ path: 'feature.ts', type: 'registry:lib' }],
+        name: 'feature',
+        type: 'registry:lib',
+      },
+    ]);
+
+    expect(() =>
+      deriveRegistryDependencies(registry, {
+        entrypointDags: cyclicDags,
+        packageManifests,
+        sourceRoot,
+      })
+    ).toThrow(
+      'feature:feature.ts:1:25 -> platejs/feature via platejs/feature: authored peer-a hides derived peer-a@^1.2.0; delete it.'
+    );
+  });
+
+  it('keeps an authored bare package whose derived requirement has no range', () => {
+    const sourceRoot = createSourceRoot({
+      'feature.ts': "import { Feature } from 'platejs/feature';",
+    });
+    const registry = createRegistry([
+      {
+        dependencies: ['platejs'],
+        files: [{ path: 'feature.ts', type: 'registry:lib' }],
+        name: 'feature',
+        type: 'registry:lib',
+      },
+    ]);
+
+    const derived = deriveRegistryDependencies(registry, {
+      entrypointDags: cyclicDags,
+      packageManifests,
+      sourceRoot,
+    });
+
+    expect(derived.items[0].dependencies).toEqual([
+      'platejs',
+      'peer-a@^1.2.0',
+      'peer-b@~2.3.0',
+    ]);
+  });
+
   it('rejects missing peer versions and unknown public entrypoints', () => {
     const sourceRoot = createSourceRoot({
       'feature.ts': "import { Feature } from 'platejs/feature';",
@@ -213,7 +263,7 @@ describe('registry package dependency derivation', () => {
     });
 
     expect(() =>
-      deriveRegistryPackageDependencies(
+      deriveRegistryDependencies(
         createRegistry([
           {
             files: [{ path: 'feature.ts', type: 'registry:lib' }],
@@ -235,7 +285,7 @@ describe('registry package dependency derivation', () => {
     );
 
     expect(() =>
-      deriveRegistryPackageDependencies(
+      deriveRegistryDependencies(
         createRegistry([
           {
             files: [{ path: 'unknown.ts', type: 'registry:lib' }],
@@ -256,7 +306,7 @@ describe('registry package dependency derivation', () => {
     const sourceRoot = createSourceRoot({
       'math.ts': "import 'platejs/math/katex.css';",
     });
-    const derived = deriveRegistryPackageDependencies(
+    const derived = deriveRegistryDependencies(
       createRegistry([
         {
           files: [{ path: 'math.ts', type: 'registry:lib' }],
@@ -299,7 +349,7 @@ describe('registry package dependency derivation', () => {
       type: 'registry:component' as const,
     });
 
-    const base = deriveRegistryPackageDependencies(
+    const base = deriveRegistryDependencies(
       createRegistry([item('bases/base/toolbar.tsx')]),
       {
         entrypointDags: {},
@@ -307,7 +357,7 @@ describe('registry package dependency derivation', () => {
         sourceRoot,
       }
     );
-    const radix = deriveRegistryPackageDependencies(
+    const radix = deriveRegistryDependencies(
       createRegistry([item('bases/radix/toolbar.tsx')]),
       {
         entrypointDags: {},
@@ -320,7 +370,227 @@ describe('registry package dependency derivation', () => {
     expect(radix.items[0].dependencies).toEqual(['@radix-ui/react-toolbar']);
   });
 
-  it('resolves copied targets through direct registry edges and terminates cycles', () => {
+  it('emits the registry edges a copied import requires after authored policy', () => {
+    const sourceRoot = createSourceRoot({
+      'a.tsx': [
+        "import { Button } from '@/components/ui/button';",
+        "import { value } from './b';",
+      ].join('\n'),
+      'b.ts': 'export const value = 1;',
+    });
+    const registry = createRegistry([
+      {
+        files: [{ path: 'a.tsx', type: 'registry:component' }],
+        name: 'a',
+        registryDependencies: ['@plate/style'],
+        type: 'registry:component',
+      },
+      {
+        files: [{ path: 'b.ts', type: 'registry:lib' }],
+        name: 'b',
+        type: 'registry:lib',
+      },
+      { name: 'style', type: 'registry:style' },
+    ]);
+
+    const derived = deriveRegistryDependencies(registry, {
+      entrypointDags: {},
+      packageManifests: {},
+      sourceRoot,
+    });
+
+    expect(derived.items[0].registryDependencies).toEqual([
+      '@plate/style',
+      '@plate/b',
+      'button',
+    ]);
+  });
+
+  it('rejects an authored registry edge that its own import already requires', () => {
+    const sourceRoot = createSourceRoot({
+      'a.ts': "import { value } from './b';",
+      'b.ts': 'export const value = 1;',
+    });
+    const registry = createRegistry([
+      {
+        files: [{ path: 'a.ts', type: 'registry:lib' }],
+        name: 'a',
+        registryDependencies: ['@plate/b'],
+        type: 'registry:lib',
+      },
+      {
+        files: [{ path: 'b.ts', type: 'registry:lib' }],
+        name: 'b',
+        type: 'registry:lib',
+      },
+    ]);
+
+    expect(() =>
+      deriveRegistryDependencies(registry, {
+        entrypointDags: {},
+        packageManifests: {},
+        sourceRoot,
+      })
+    ).toThrow(
+      'a:a.ts:1:23 -> ./b: registryDependencies lists @plate/b, which this import already installs; delete it.'
+    );
+  });
+
+  it('emits no edge for an import the item installs itself', () => {
+    const sourceRoot = createSourceRoot({
+      'a.ts': "import { value } from './shared';",
+      'shared.ts': 'export const value = 1;',
+    });
+    const registry = createRegistry([
+      {
+        files: [
+          { path: 'a.ts', type: 'registry:lib' },
+          { path: 'shared.ts', type: 'registry:lib' },
+        ],
+        name: 'a',
+        type: 'registry:lib',
+      },
+      {
+        files: [{ path: 'shared.ts', type: 'registry:lib' }],
+        name: 'other',
+        type: 'registry:lib',
+      },
+    ]);
+
+    const derived = deriveRegistryDependencies(registry, {
+      entrypointDags: {},
+      packageManifests: {},
+      sourceRoot,
+    });
+
+    expect(derived.items[0].registryDependencies).toBeUndefined();
+  });
+
+  it('rejects an import that only unpublished items install', () => {
+    const sourceRoot = createSourceRoot({
+      'a.ts': "import { value } from './demo';",
+      'demo.ts': 'export const value = 1;',
+    });
+    const registry = createRegistry([
+      {
+        files: [{ path: 'a.ts', type: 'registry:lib' }],
+        name: 'a',
+        type: 'registry:lib',
+      },
+      {
+        files: [{ path: 'demo.ts', type: 'registry:lib' }],
+        meta: { registry: false },
+        name: 'demo',
+        type: 'registry:lib',
+      },
+    ]);
+
+    expect(() =>
+      deriveRegistryDependencies(registry, {
+        entrypointDags: {},
+        packageManifests: {},
+        sourceRoot,
+      })
+    ).toThrow(
+      'a:a.ts:1:23 -> ./demo: no published registry item installs this target.'
+    );
+  });
+
+  it('keeps an authored pick between two published owners', () => {
+    const sourceRoot = createSourceRoot({
+      'consumer.ts': "import { value } from '@/registry/shared';",
+      'shared.ts': 'export const value = 1;',
+    });
+    const registry = createRegistry([
+      {
+        files: [{ path: 'consumer.ts', type: 'registry:lib' }],
+        name: 'consumer',
+        registryDependencies: ['@plate/shared-a'],
+        type: 'registry:lib',
+      },
+      {
+        files: [{ path: 'shared.ts', type: 'registry:lib' }],
+        name: 'shared-a',
+        type: 'registry:lib',
+      },
+      {
+        files: [{ path: 'shared.ts', type: 'registry:lib' }],
+        name: 'shared-b',
+        type: 'registry:lib',
+      },
+    ]);
+
+    const derived = deriveRegistryDependencies(registry, {
+      entrypointDags: {},
+      packageManifests: {},
+      sourceRoot,
+    });
+
+    expect(derived.items[0].registryDependencies).toEqual(['@plate/shared-a']);
+  });
+
+  it('settles a shared import through an owner another import derives', () => {
+    const sourceRoot = createSourceRoot({
+      'consumer.ts': [
+        "import { only } from '@/registry/only-x';",
+        "import { value } from '@/registry/shared';",
+      ].join('\n'),
+      'only-x.ts': 'export const only = 0;',
+      'shared.ts': 'export const value = 1;',
+    });
+    const registry = createRegistry([
+      {
+        files: [{ path: 'consumer.ts', type: 'registry:lib' }],
+        name: 'consumer',
+        type: 'registry:lib',
+      },
+      {
+        files: [
+          { path: 'only-x.ts', type: 'registry:lib' },
+          { path: 'shared.ts', type: 'registry:lib' },
+        ],
+        name: 'x',
+        type: 'registry:lib',
+      },
+      {
+        files: [{ path: 'shared.ts', type: 'registry:lib' }],
+        name: 'y',
+        type: 'registry:lib',
+      },
+    ]);
+
+    const derived = deriveRegistryDependencies(registry, {
+      entrypointDags: {},
+      packageManifests: {},
+      sourceRoot,
+    });
+
+    expect(derived.items[0].registryDependencies).toEqual(['@plate/x']);
+  });
+
+  it('keeps an authored shadcn edge that no import requires', () => {
+    const sourceRoot = createSourceRoot({
+      'a.ts': 'export const value = 0;',
+    });
+    const registry = createRegistry([
+      {
+        files: [{ path: 'a.ts', type: 'registry:lib' }],
+        name: 'a',
+        registryDependencies: ['button'],
+        type: 'registry:lib',
+      },
+    ]);
+
+    const derived = deriveRegistryDependencies(registry, {
+      entrypointDags: {},
+      packageManifests: {},
+      sourceRoot,
+    });
+
+    expect(derived.items[0].registryDependencies).toEqual(['button']);
+  });
+
+  it('resolves copied targets through derived registry edges and terminates cycles', () => {
     const sourceRoot = createSourceRoot({
       'a.ts': "import { value } from '@/registry/b';",
       'b.ts': 'export const value = 1;',
@@ -329,7 +599,6 @@ describe('registry package dependency derivation', () => {
       {
         files: [{ path: 'a.ts', type: 'registry:lib' }],
         name: 'a',
-        registryDependencies: ['@plate/b'],
         type: 'registry:lib',
       },
       {
@@ -352,17 +621,17 @@ describe('registry package dependency derivation', () => {
       },
     ]);
 
-    const derived = deriveRegistryPackageDependencies(registry, {
+    const derived = deriveRegistryDependencies(registry, {
       entrypointDags: {},
       packageManifests: {},
       sourceRoot,
     });
 
-    expect(derived.items.map((item) => item.dependencies)).toEqual([
-      undefined,
-      undefined,
-      undefined,
-      undefined,
+    expect(derived.items.map((item) => item.registryDependencies)).toEqual([
+      ['@plate/b'],
+      ['@plate/a'],
+      ['@plate/empty-cycle-b'],
+      ['@plate/empty-cycle-a'],
     ]);
   });
 
@@ -375,7 +644,6 @@ describe('registry package dependency derivation', () => {
       {
         files: [{ path: 'consumer.ts', type: 'registry:lib' }],
         name: 'consumer',
-        registryDependencies: ['@plate/shared-a', '@plate/shared-b'],
         type: 'registry:lib',
       },
       {
@@ -391,13 +659,13 @@ describe('registry package dependency derivation', () => {
     ]);
 
     expect(() =>
-      deriveRegistryPackageDependencies(registry, {
+      deriveRegistryDependencies(registry, {
         entrypointDags: {},
         packageManifests: {},
         sourceRoot,
       })
     ).toThrow(
-      'consumer:consumer.ts:1:23 -> @/registry/shared: installed registry target is ambiguous between shared-a, shared-b.'
+      'consumer:consumer.ts:1:23 -> @/registry/shared: installed registry target is ambiguous between shared-a, shared-b; list exactly one of @plate/shared-a, @plate/shared-b.'
     );
   });
 
@@ -407,7 +675,7 @@ describe('registry package dependency derivation', () => {
     });
 
     expect(() =>
-      deriveRegistryPackageDependencies(
+      deriveRegistryDependencies(
         createRegistry([
           {
             files: [{ path: 'missing.ts', type: 'registry:lib' }],
@@ -426,7 +694,7 @@ describe('registry package dependency derivation', () => {
     );
 
     expect(() =>
-      deriveRegistryPackageDependencies(
+      deriveRegistryDependencies(
         createRegistry([
           {
             files: [],

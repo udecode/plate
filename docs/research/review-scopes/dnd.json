@@ -89,7 +89,6 @@
     "content/docs/(plugins)/(functionality)/dnd.mdx",
     "content/docs/(plugins)/(functionality)/dnd.cn.mdx",
     "AGENTS.md",
-    "docs/editor-behavior/editor-protocol-matrix.md",
     "docs/editor-behavior/markdown-editing-spec.md",
     "docs/research/probes/2026-10-01-dnd/REPORT.md",
     "docs/research/decisions/dnd-ownership.md"

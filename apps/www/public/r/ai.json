@@ -14,9 +14,9 @@
     "unified@^11.0.5"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/ai-menu.json",
     "https://platejs.org/r/ai-toolbar-button.json",
     "https://platejs.org/r/ai-api.json",
+    "https://platejs.org/r/ai-menu.json",
     "https://platejs.org/r/use-chat.json"
   ],
   "files": [

@@ -372,9 +372,6 @@
       "- docs/plans/2026-04-23-slate-v2-selection-fresh-editor-methods-architecture-plan.md -> docs/plans/2026-04-23-slate-v2-selection-fresh-editor-methods-architecture-plan.md",
       "- public `Transforms.*` as primary docs/examples API -> docs/examples"
     ],
-    "docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md": [
-      "- docs/slate-v2/decoration-roadmap.md -> docs/slate-v2/decoration-roadmap.md"
-    ],
     "docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md": [
       "- /Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditor.ts -> /Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditor.ts",
       "- /Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts -> /Users/zbeyens/git/lexical/packages/lexical/src/LexicalUpdates.ts",
@@ -868,9 +865,6 @@
       "\"docs/plans/artifacts/official-files-sdk-integration/implementation-proof.json\" -> docs/plans/artifacts/official-files-sdk-integration/implementation-proof.json",
       "\"docs/plans/artifacts/official-files-sdk-integration/production-run-2026-09-20T06-36-10-066Z-summary.json\" -> docs/plans/artifacts/official-files-sdk-integration/production-run-2026-09-20T06-36-10-066Z-summary.json",
       "\"docs/plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md\", -> docs/plans/artifacts/official-files-sdk-integration/testing-methodology-evidence.md"
-    ],
-    "docs/research/sources/editor-architecture/candidates.md": [
-      "Run this from `/Users/zbeyens/git/plate` if you want the comparison repos checked out in `..`: -> /Users/zbeyens/git/plate"
     ],
     "docs/research/sources/editor-architecture/cursor-find-and-widget-geometry.md": [
       "`docs/solutions/patterns/critical-patterns.md` path is stale workflow routing; -> docs/solutions/patterns/critical-patterns.md"

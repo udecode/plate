@@ -11,7 +11,6 @@
     "lucide-react",
     "platejs"
   ],
-  "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/bases/radix/toolbar.tsx",

@@ -35,3 +35,7 @@
 ## Text styles
 
 - **Selection helpers own inline CSS styles.** The `lexical-selection` package holds `$setBlocksType`, block-selection movement, and helpers that patch the inline CSS style string of text nodes through a style cache. Its tests also resolve the selection to a sibling element when a selected node, or a selected node's child, is removed (`facebook/lexical@dd5c41b1:packages/lexical-selection/src/__tests__/unit/LexicalSelection.test.tsx:1973-2089`). Source: `docs/editor-test-harvester/lexical/plite-processing-ledger.md:815-816`. Limit: not rerun.
+
+## Comments
+
+- Lexical's playground `CommentPlugin` keeps threads in an external store, removes marks through document mutation listeners and asynchronous cleanup, and indexes the active comment IDs (facebook/lexical@83e8b4925c6c4f5ecb884036bdfaa2c1a0bb2349:packages/lexical-playground/src/plugins/CommentPlugin/index.tsx:730-905; read 2026-09-21). The external metadata store is sound, but the listener-and-async cleanup is playground glue, not a cleaner reusable annotation engine (docs/plite/research/2026-09-21-annotation-architecture-oss/read-log.tsv:12).

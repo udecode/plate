@@ -18,6 +18,8 @@ related:
 
 # ProseMirror transaction/view DOM runtime
 
+> Current Plite (checked 2026-10-08): the Slate v2 advice below maps to current Plite this way. Commits carry a canonical `DocumentChange`, not an operation list (`docs/vision/plite.md:26-28`); live identity is the opaque `NodeKey`, not runtime ids (`packages/plitejs/src/interfaces/editor.ts:2013-2025`); the durable public location is an `Anchor` from `editor.anchor`, not a bookmark (`packages/plitejs/src/core/anchor.ts:327-341`); and inline overlays are `DecorationSource`s (`packages/plitejs/src/interfaces/decoration.ts:29-37`).
+
 ## Purpose
 
 Compile the ProseMirror evidence that matters to Slate v2's transaction and DOM

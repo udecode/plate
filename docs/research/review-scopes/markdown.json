@@ -137,7 +137,6 @@
     "packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
     "packages/platejs/src/features/toc/lib/BaseTocPlugin.ts",
     "packages/platejs/src/math/lib/BaseEquationPlugin.ts",
-    "packages/platejs/src/emoji/lib/BaseEmojiPlugin.ts",
     "packages/platejs/src/internal/plugin/collectPlateNodeMappings.ts",
     "packages/platejs/src/internal/plugin/pluginFormatOperation.ts",
     "packages/platejs/src/lib/editor/withPlite.ts",

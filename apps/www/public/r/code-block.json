@@ -6,13 +6,13 @@
   "dependencies": [
     "platejs",
     "lowlight",
-    "diff-match-patch-ts",
+    "diff-match-patch-ts@^0.6.0",
     "lucide-react"
   ],
   "registryDependencies": [
-    "command",
     "https://platejs.org/r/floating-popover.json",
-    "button"
+    "button",
+    "command"
   ],
   "files": [
     {

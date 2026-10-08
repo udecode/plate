@@ -74,11 +74,13 @@ When building or changing Plate registry items:
 
 Registry dependency rules:
 
-- prefer bare names like `button`, `command`, and `popover` when an upstream
-  shadcn registry item exists
+- the build derives a bare shadcn edge, such as `button`, from each
+  `@/components/ui/<name>` import; author one only as install policy that no
+  import shows, and use the bare upstream name
 - prefer upstream namespace syntax over raw URLs for non-default registries when
   the namespace already covers the case
-- prefer explicit `@plate/*` for Plate self-dependencies in registry source
+- the build derives `@plate/*` edges from copied imports; author an explicit
+  `@plate/*` edge only as install policy that no import shows
 - public generated registry item JSON must rewrite Plate self-dependencies to
   same-base item URLs such as `https://platejs.org/r/*.json`, so direct URL
   installs resolve transitive Plate items from the same registry base

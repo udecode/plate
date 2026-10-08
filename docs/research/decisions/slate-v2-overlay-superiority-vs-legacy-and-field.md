@@ -13,6 +13,8 @@ related:
 
 # Slate v2 overlay architecture beats legacy Slate and aligns with the best parts of the field
 
+> Current Plite (checked 2026-10-08): the three-lane split this page credits lost its `Widget` lane, and `Bookmark` gave way to `editor.anchor` handles (`docs/vision/plite.md:597-600`, `:613-624`; `docs/research/decisions/plite-view-ownership.md:28`); `packages/plitejs/src` has no `Widget`, `Bookmark` or `RangeRef`.
+
 ## Question
 
 Why is the current Slate v2 overlay architecture better than legacy Slate, and

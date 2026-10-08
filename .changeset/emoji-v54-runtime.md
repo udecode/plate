@@ -4,12 +4,16 @@
 
 Require React and React DOM 19.2 or newer.
 
-Keep emoji picker state, category focus, preview, and frequent storage in the copied `emoji-toolbar-button` registry item. Use `createEmojiSearch(data)` from `platejs/emoji` for dataset-scoped search with ordered, independent results. Custom dataset names, IDs, and keywords are matched without case sensitivity.
+Remove the emoji plugin. `@platejs/emoji` does not move into `platejs`, and Plate no longer depends on `@emoji-mart/data`. Emoji entry lives in copied registry components on frimousse and Emojibase: `emoji` for the `:` popup, `emoji-data` for the catalog, and `emoji-picker` with `emoji-toolbar-button` for the picker. Emoji are plain text, so documents need no migration.
 
-Export `EmojiPluginState` as the complete mutable state contract for `BaseEmojiPlugin`.
+**Migration:** Remove `@platejs/emoji` and `@emoji-mart/data`, add the registry items, and replace `EmojiPlugin` and `EmojiInputPlugin` with the copied `EmojiKit`:
 
-Move emoji insertion to `editor.plugin(EmojiPlugin).update.insert`, isolate search state per emoji dataset, and clean up picker observers when the menu closes. Remove the standalone `insertEmoji` helper.
+```bash
+npx shadcn@latest add @plate/emoji @plate/emoji-picker @plate/emoji-toolbar-button
+```
 
-Always render the frequent section when `showFrequent.value` is enabled, including before category data is populated.
+```tsx
+import { EmojiKit } from '@/components/editor/emoji';
 
-Keep the package React surface limited to `EmojiPlugin`. Copy `emoji-toolbar-button` for the complete picker and `emoji` for inline search. Replace `EmojiInputConfig` with `DefinitionOf<typeof BaseEmojiPlugin>`. Search uses the supplied dataset without shared singleton state; grid construction and frequent-item ranking stay in the copied picker.
+const editor = createEditor({ plugins: [...EmojiKit] });
+```

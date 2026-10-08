@@ -9,7 +9,6 @@
     "plantuml-encoder@^1.4.0",
     "viz.js@^2.1.2"
   ],
-  "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/code-drawing-static.tsx",

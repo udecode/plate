@@ -10,8 +10,8 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "button",
-    "https://platejs.org/r/select-editor.json"
+    "https://platejs.org/r/select-editor.json",
+    "button"
   ],
   "files": [
     {

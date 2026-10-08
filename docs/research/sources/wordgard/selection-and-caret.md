@@ -4,6 +4,8 @@
 
 - In the 2026-09-09 nine-editor performance fixture, Wordgard at revision `b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54` failed macOS line navigation, so it got no speed rank for that operation. Source: `docs/editor-audits/reports/editor-performance-research-iteration-2-2026-09-09.md:29`, `:57`. Limit: the preserved summary names neither the failing gesture nor the output; treat it as a lead, not a reproduced Wordgard bug.
 
+- The cause of Wordgard's macOS line-navigation failure in the 2026-09-09 fixture, as the research read it in source: the default keymap lists the `Mod-ArrowLeft` and `Mod-ArrowRight` word bindings before the Mac `Cmd-ArrowLeft` and `Cmd-ArrowRight` line-side bindings, `Mod` is Cmd on macOS, and the first handler that returns true wins, so Cmd-Arrow moves by word in both directions and exact native navigation oracles fail (`wordgard/wordgard@b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54:src/editor/keymap.ts:107-110`, `:185-192`). Source: `docs/plite/research/2026-09-09-editor-performance-iteration-2/read-log.tsv:7`, `repo-registry.tsv:2`. Limit: a source reading, not a reproduced Wordgard run.
+
 ## Custom selection kinds
 
 - **Custom selection kinds.** `test/test-cellselection.ts` lines 1-179 at b5ad0d0 pin that a registered non-text selection maps every range it contains and keeps its kind through edits, and that table selections cover rectangular cells and keep their direction. Plite's `packages/plitejs/test/selection-protocol.test.ts` defines and maps a custom cell selection. Plate's `packages/platejs/src/features/table/lib/BaseTablePlugin.selection.spec.tsx` and `.slow.tsx` prove the `table-cell` kind, rectangular geometry, mapping and keyboard behavior (report.md:100).

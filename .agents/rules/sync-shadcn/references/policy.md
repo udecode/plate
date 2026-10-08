@@ -115,8 +115,8 @@ Read these before making decisions:
 - `docs/plans/2026-05-23-shadcn-docs-restart-comparison.md`
 - `docs/plans/2026-05-24-shadcn-base-migration-progress.md`
 - [parity](./parity.md)
-- `docs/solutions/developer-experience/2026-05-24-shadcn-registry-install-commands-should-use-configured-namespaces.md`
-- `docs/solutions/developer-experience/2026-05-24-fumadocs-page-tree-search-needs-locale-safe-metadata.md`
+- `docs/research/sources/plate-notes/tooling-and-release.md`: the entries "A Plate registry dependency has three spellings", "Fumadocs search needs a tokenizer language for every locale key" and "Locale docs routes stay thin and share one renderer"
+- [Plate Docs MDX and routes](../../plate-docs/references/mdx.md) for the page tree's `meta.json` and `_plate.items` metadata
 
 - When an accepted sync changes upstream registry style inputs, set
   `SHADCN_STYLE_SOURCE_COMMIT` to the exact reviewed upstream SHA, then run

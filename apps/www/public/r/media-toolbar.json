@@ -9,12 +9,12 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "button",
-    "input",
-    "separator",
+    "https://platejs.org/r/media-preview-dialog.json",
     "https://platejs.org/r/caption.json",
     "https://platejs.org/r/floating-popover.json",
-    "https://platejs.org/r/media-preview-dialog.json"
+    "button",
+    "input",
+    "separator"
   ],
   "files": [
     {

@@ -8,11 +8,11 @@
     "platejs"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/ai.json",
+    "https://platejs.org/r/dnd.json",
     "https://platejs.org/r/copilot.json",
     "https://platejs.org/r/editor.json",
-    "https://platejs.org/r/editor-plugins.json",
-    "https://platejs.org/r/ai.json",
-    "https://platejs.org/r/dnd.json"
+    "https://platejs.org/r/editor-plugins.json"
   ],
   "files": [
     {

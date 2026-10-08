@@ -11,12 +11,12 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "button",
-    "input",
-    "separator",
     "https://platejs.org/r/link-toolbar-button.json",
     "https://platejs.org/r/suggestion-style.json",
-    "https://platejs.org/r/use-floating-rect.json"
+    "https://platejs.org/r/use-floating-rect.json",
+    "button",
+    "input",
+    "separator"
   ],
   "files": [
     {
