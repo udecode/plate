@@ -51,7 +51,7 @@
     "packages/plitejs/src/authored/decisions.ts",
     "packages/plitejs/src/authored/positions.ts",
     "packages/plitejs/src/authored/types.ts",
-    "packages/platejs/src/authored/PlateAuthoredPlugin.ts",
+    "packages/platejs/src/authored/AuthoredPlugin.ts",
     "packages/platejs/src/features/suggestion/BaseSuggestionPlugin.ts",
     "apps/www/src/registry/components/editor/plugins.ts",
     "apps/www/src/registry/examples/demo.tsx",

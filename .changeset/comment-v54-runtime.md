@@ -9,6 +9,7 @@
 - Join successful local thread creation to document history and serialize its replay with later mutations of the same thread
 - Resolve comment attachments and discussion positions in each mounted editor's projection while retaining one conversation and target
 - Export `extractLegacyCommentRanges` from `platejs/migrations` for offline conversion of comment marks into ordered range groups and a sanitized document
+- Record threads, replies and resolutions as the editor's `userId`, or as the local user, `'local'`, when the editor has none
 
 **Migration:** Supply saved comments for the same document revision as the editor value:
 
@@ -19,10 +20,11 @@ import { createEditor } from 'platejs/react';
 const editor = createEditor({
   plugins: [
     CommentsPlugin.configure({
-      initialState: { initialComments, users, currentUserId },
+      initialState: { initialComments, users },
     }),
   ],
   initialValue,
+  userId,
 });
 
 const value = editor.read.value();

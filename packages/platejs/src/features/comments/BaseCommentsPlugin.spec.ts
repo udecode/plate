@@ -1,4 +1,4 @@
-import { DefaultAuthoredPlugin } from '../../authored';
+import { AuthoredPlugin } from '../../authored';
 import {
   createEditor,
   definePlugin,
@@ -27,7 +27,8 @@ const setup = (
   initialComments: CommentsJSON | null = commentsFixture(),
   mutate?: (
     request: CommentMutationRequest
-  ) => CommentMutationDecision | Promise<CommentMutationDecision>
+  ) => CommentMutationDecision | Promise<CommentMutationDecision>,
+  userId = 'alice'
 ) => {
   const editor = createEditor({
     initialValue: value,
@@ -35,11 +36,11 @@ const setup = (
       BaseCommentsPlugin.configure({
         initialState: {
           initialComments,
-          currentUserId: 'alice',
           ...(mutate && { mutate }),
         },
       }),
     ],
+    userId,
   });
   return { editor, ...editor.plugin(BaseCommentsPlugin) };
 };
@@ -427,13 +428,16 @@ describe('Comments durable mutations', () => {
   it('leaves authorization to adapter policy and preserves rich replies', async () => {
     const requests: CommentMutationRequest[] = [];
     let allowed = false;
-    const { api, store } = setup(undefined, (request) => {
-      requests.push(request);
-      return allowed
-        ? { status: 'commit', thread: request.proposed }
-        : { status: 'reject', code: 'forbidden' };
-    });
-    store.set({ currentUserId: 'bob' });
+    const { api } = setup(
+      undefined,
+      (request) => {
+        requests.push(request);
+        return allowed
+          ? { status: 'commit', thread: request.proposed }
+          : { status: 'reject', code: 'forbidden' };
+      },
+      'bob'
+    );
     expect(await api.edit('thread', 'thread-message', body('Denied'))).toEqual({
       status: 'rejected',
       code: 'forbidden',
@@ -591,7 +595,7 @@ describe('Comments local input and lifecycle', () => {
   });
 
   it('retains a pending range through edits and invalid submissions, then creates or cancels it', async () => {
-    const { editor, api, store } = setup(null);
+    const { editor, api } = setup(null);
     expect(api.begin({ anchor: range.anchor, focus: range.anchor })).toBe(true);
     expect(api.getSnapshot().pending?.excerpt).toBe('Alpha Beta');
     expect(await api.create(body('  '))).toEqual({ status: 'invalid' });
@@ -610,8 +614,6 @@ describe('Comments local input and lifecycle', () => {
     }
     expect(editor.read.text.string(attachment.range)).toBe('Alpha Beta');
     api.begin(range);
-    store.set({ currentUserId: null });
-    expect(await api.create(body())).toEqual({ status: 'invalid' });
     expect(api.getSnapshot().pending).not.toBeNull();
     api.cancel();
     expect(api.pendingRange()).toBeNull();
@@ -1123,12 +1125,7 @@ describe('Comments mapping and conversation history', () => {
       const editor = createEditor({
         initialValue: value,
         userId: 'alice',
-        plugins: [
-          DefaultAuthoredPlugin,
-          BaseCommentsPlugin.configure({
-            initialState: { currentUserId: 'alice' },
-          }),
-        ],
+        plugins: [AuthoredPlugin, BaseCommentsPlugin],
       });
       const accepted = createEditorView(editor);
       const proposed = createEditorView(editor, {
@@ -1413,5 +1410,71 @@ describe('Comments mapping and conversation history', () => {
         focus: { path: [1, 0], offset: 4 },
       },
     ]);
+  });
+});
+
+describe('Comments user', () => {
+  it('records the user that authors suggestions in the same editor', async () => {
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [AuthoredPlugin, BaseCommentsPlugin],
+      userId: 'alice',
+    });
+    editor.update((tx) => {
+      tx.authored.propose();
+      tx.text.insert('!', { at: { path: [0, 0], offset: 10 } });
+    });
+    const [change] = editor.plugin(AuthoredPlugin).read.changes().items;
+    const { api } = editor.plugin(BaseCommentsPlugin);
+
+    await api.createThread({
+      id: 'change-thread',
+      body: body(),
+      target: { type: 'change', id: change?.id ?? '' },
+    });
+
+    expect({
+      author: change?.authorId,
+      thread: api.getThread('change-thread')?.userId,
+    }).toEqual({ author: 'alice', thread: 'alice' });
+  });
+
+  it('replies through a view as the user of its editor', async () => {
+    const editor = createEditor({
+      initialValue: value,
+      plugins: [
+        BaseCommentsPlugin.configure({
+          initialState: { initialComments: commentsFixture() },
+        }),
+      ],
+      userId: 'bob',
+    });
+
+    await createEditorView(editor)
+      .plugin(BaseCommentsPlugin)
+      .api.reply('thread', body('Reply'));
+
+    expect(
+      editor.plugin(BaseCommentsPlugin).api.getThread('thread')?.messages.at(-1)
+        ?.userId
+    ).toBe('bob');
+  });
+
+  it('creates a thread as the local user when the editor names no user', async () => {
+    const { api } = createEditor({
+      initialValue: value,
+      plugins: [BaseCommentsPlugin],
+    }).plugin(BaseCommentsPlugin);
+
+    const result = await api.createThread({
+      id: 'local-thread',
+      body: body(),
+      target: { type: 'range', range },
+    });
+
+    expect({ result, userId: api.getThread('local-thread')?.userId }).toEqual({
+      result: { status: 'applied', value: 'local-thread' },
+      userId: 'local',
+    });
   });
 });

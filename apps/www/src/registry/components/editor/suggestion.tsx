@@ -91,7 +91,6 @@ const colorDeclarations = ({
 
 function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
   const editor = useEditor();
-  const currentUserId = editor.runtime.userId ?? '';
   const scopeId = React.useId();
   const colors = React.useRef(new Map<string, SuggestionColor>());
   const collaboratorSlots = React.useRef(new Map<string, number>());
@@ -109,7 +108,7 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
 
         let color = OWN_COLOR;
 
-        if (authorId !== currentUserId) {
+        if (authorId !== editor.userId) {
           let slot = hashAuthor(authorId) % COLLABORATOR_COLORS.length;
 
           for (let offset = 0; offset < COLLABORATOR_COLORS.length; offset++) {
@@ -139,7 +138,7 @@ function SuggestionColorStyles({ editableRef }: EditableSiblingProps) {
         styleRef.current.textContent += rules.join('');
       }
     },
-    [currentUserId, scopeId]
+    [editor.userId, scopeId]
   );
 
   React.useLayoutEffect(() => {

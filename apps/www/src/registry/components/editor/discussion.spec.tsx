@@ -1,15 +1,22 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
-import { BaseLinkPlugin, ElementApi, type Range } from 'platejs';
-import { type AuthoredChange, DefaultAuthoredPlugin } from 'platejs/authored';
-import type { CommentMutationResult } from 'platejs/comments';
+import userEvent from '@testing-library/user-event';
+import {
+  BaseLinkPlugin,
+  ElementApi,
+  type EditorDocumentValue,
+  type Range,
+} from 'platejs';
+import { type AuthoredChange, AuthoredPlugin } from 'platejs/authored';
+import type { CommentMutationResult, CommentsJSON } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   EditorContainer,
   EditorContent,
   EditorRoot,
   createEditor,
+  useCreateEditor,
   useEditor,
 } from 'platejs/react';
 import {
@@ -69,7 +76,6 @@ describe('DiscussionSlots', () => {
       }),
     }).configure({
       slots: DiscussionSlots,
-      initialState: { currentUserId: 'alice' },
     });
     const model = createEditor({
       plugins: [...SuggestionKit, commentsPlugin],
@@ -84,7 +90,7 @@ describe('DiscussionSlots', () => {
       changeId = tx.authored.propose();
       tx.text.insert(' noted', { at: { path: [1, 0], offset: 6 } });
     });
-    const authored = model.plugin(DefaultAuthoredPlugin);
+    const authored = model.plugin(AuthoredPlugin);
     authored.update.decide({
       action: 'accept',
       selection: authored.read.select({ ids: [changeId] }),
@@ -140,8 +146,8 @@ describe('DiscussionSlots', () => {
     });
     await waitFor(() =>
       expect(
-        mountedEditor.plugin(DefaultAuthoredPlugin).read.change(changeId)
-          ?.ranges[0].anchor.path[0]
+        mountedEditor.plugin(AuthoredPlugin).read.change(changeId)?.ranges[0]
+          .anchor.path[0]
       ).toBe(2)
     );
     expect(trigger().parentElement?.parentElement?.textContent).toBe(
@@ -223,7 +229,6 @@ describe('DiscussionSlots', () => {
     );
     const plugin = CommentsPlugin.configure({
       initialState: {
-        currentUserId: 'alice',
         users: { alice: { id: 'alice', name: 'Alice' } },
       },
       decorate: { attributes: commentDecorationAttributes },
@@ -359,13 +364,7 @@ describe('DiscussionSlots', () => {
     });
     const restored = createEditor({
       initialValue: structuredClone(original.read.value()),
-      plugins: [
-        ...SuggestionKit,
-        ...DiscussionKit,
-        CommentsPlugin.configure({
-          initialState: { currentUserId: 'alice' },
-        }),
-      ],
+      plugins: [...SuggestionKit, ...DiscussionKit, CommentsPlugin],
       userId: 'alice',
     });
     function ProjectionControls() {
@@ -376,7 +375,7 @@ describe('DiscussionSlots', () => {
           <button
             onClick={() =>
               editor
-                .plugin(DefaultAuthoredPlugin)
+                .plugin(AuthoredPlugin)
                 .api.setView({ intent: 'edit', projection: 'accepted' })
             }
             type="button"
@@ -386,7 +385,7 @@ describe('DiscussionSlots', () => {
           <button
             onClick={() =>
               editor
-                .plugin(DefaultAuthoredPlugin)
+                .plugin(AuthoredPlugin)
                 .api.setView({ intent: 'edit', projection: 'markup' })
             }
             type="button"
@@ -431,9 +430,9 @@ describe('DiscussionSlots', () => {
     expect(
       view.getByRole('button', { name: 'Accept suggestion' })
     ).toBeTruthy();
-    expect(
-      restored.plugin(DefaultAuthoredPlugin).read.change(changeId)?.status
-    ).toBe('pending');
+    expect(restored.plugin(AuthoredPlugin).read.change(changeId)?.status).toBe(
+      'pending'
+    );
     view.unmount();
   });
 
@@ -445,7 +444,6 @@ describe('DiscussionSlots', () => {
       );
       const plugin = CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: {
             alice: { id: 'alice', name: 'Alice' },
             bob: { id: 'bob', name: 'Bob' },
@@ -615,7 +613,6 @@ describe('DiscussionSlots', () => {
     );
     const commentsPlugin = CommentsPlugin.configure({
       initialState: {
-        currentUserId: 'alice',
         users: {
           alice: { id: 'alice', name: 'Alice' },
           bob: { id: 'bob', name: 'Bob' },
@@ -688,7 +685,6 @@ describe('DiscussionSlots', () => {
     );
     const commentsPlugin = CommentsPlugin.configure({
       initialState: {
-        currentUserId: 'alice',
         users: { alice: { id: 'alice', name: 'Alice' } },
       },
       decorate: { attributes: commentDecorationAttributes },
@@ -746,7 +742,6 @@ it('discovers a suggestion after the first 200 without materializing a global ca
     `./discussion?test=${Math.random().toString(36).slice(2)}`
   );
   const plugin = CommentsPlugin.configure({
-    initialState: { currentUserId: 'alice' },
     decorate: { attributes: commentDecorationAttributes },
     slots: DiscussionSlots,
   });
@@ -791,7 +786,6 @@ it('bounds the number of mounted review cards in a busy block', async () => {
     `./discussion?test=${Math.random().toString(36).slice(2)}`
   );
   const plugin = CommentsPlugin.configure({
-    initialState: { currentUserId: 'alice' },
     decorate: { attributes: commentDecorationAttributes },
     slots: DiscussionSlots,
   });
@@ -846,7 +840,6 @@ it('keeps a blocked decision open and applies related changes only after an expl
   );
   const plugin = CommentsPlugin.configure({
     initialState: {
-      currentUserId: 'alice',
       users: {
         alice: { id: 'alice', name: 'Alice' },
         bob: { id: 'bob', name: 'Bob' },
@@ -855,17 +848,21 @@ it('keeps a blocked decision open and applies related changes only after an expl
     decorate: { attributes: commentDecorationAttributes },
     slots: DiscussionSlots,
   });
-  const editor = createEditor({
+  const alice = createEditor({
     plugins: [...SuggestionKit, plugin],
     userId: 'alice',
     initialValue: [{ type: 'paragraph', children: [{ text: 'Base' }] }],
   });
   let parent = '';
-  editor.update((tx) => {
+  alice.update((tx) => {
     parent = tx.authored.propose();
     tx.text.insert(' draft', { at: { path: [0, 0], offset: 4 } });
   });
-  editor.runtime.userId = 'bob';
+  const editor = createEditor({
+    plugins: [...SuggestionKit, plugin],
+    userId: 'bob',
+    initialValue: alice.read.value(),
+  });
   editor.update((tx) => {
     tx.authored.propose();
     tx.text.insert('!', { at: { path: [0, 0], offset: 7 } });
@@ -898,8 +895,7 @@ it('keeps a blocked decision open and applies related changes only after an expl
   fireEvent.click(view.getByRole('button', { name: 'Reject related' }));
   await waitFor(() =>
     expect(
-      editor.plugin(DefaultAuthoredPlugin).read.changes({ status: 'pending' })
-        .items
+      editor.plugin(AuthoredPlugin).read.changes({ status: 'pending' }).items
     ).toEqual([])
   );
   view.unmount();
@@ -910,7 +906,6 @@ it('restores independent block triggers from saved ranges and rejects invalid in
     `./discussion?test=${Math.random().toString(36).slice(2)}`
   );
   const plugin = CommentsPlugin.configure({
-    initialState: { currentUserId: 'alice' },
     decorate: { attributes: commentDecorationAttributes },
     slots: DiscussionSlots,
   });
@@ -999,9 +994,7 @@ it.each(['range', 'change'] as const)(
       `./discussion?test=${Math.random().toString(36).slice(2)}`
     );
     const source = createEditor({
-      plugins: [
-        CommentsPlugin.configure({ initialState: { currentUserId: 'alice' } }),
-      ],
+      plugins: [CommentsPlugin],
       initialValue: [{ type: 'paragraph', children: [{ text: 'Original' }] }],
     });
     const comments = source.plugin(CommentsPlugin).api;
@@ -1025,7 +1018,6 @@ it.each(['range', 'change'] as const)(
       plugins: [
         CommentsPlugin.configure({
           initialState: {
-            currentUserId: 'alice',
             initialComments: {
               ...saved,
               ranges:
@@ -1075,7 +1067,6 @@ it('groups mixed discussions in every covered block without filling gaps in a su
   );
   const plugin = CommentsPlugin.configure({
     initialState: {
-      currentUserId: 'alice',
       users: {
         alice: { id: 'alice', name: 'Alice' },
         bob: { id: 'bob', name: 'Bob' },
@@ -1136,7 +1127,6 @@ it('retains rich composer input on rejection and pending persistence, then clear
   const { CommentComposer } = await import('./comment');
   const plugin = CommentsPlugin.configure({
     initialState: {
-      currentUserId: 'alice',
       users: {
         alice: { id: 'alice', name: 'Alice' },
         bob: { id: 'bob', name: 'Bob' },
@@ -1210,7 +1200,6 @@ it('updates a mounted author profile without publishing thread or anchor changes
   const { useCommentUser } = await import('./comment');
   const plugin = CommentsPlugin.configure({
     initialState: {
-      currentUserId: 'alice',
       users: {
         alice: { id: 'alice', name: 'Alice' },
         bob: { id: 'bob', name: 'Bob' },
@@ -1242,5 +1231,187 @@ it('updates a mounted author profile without publishing thread or anchor changes
   expect(view.getByText('Alicia')).not.toBeNull();
   expect(anchors).not.toHaveBeenCalled();
   expect(threadIds).not.toHaveBeenCalled();
+  view.unmount();
+});
+
+it('lets an editor without a user comment on and accept a suggestion through its card', async () => {
+  const { DiscussionSlots } = await import(
+    `./discussion?test=${Math.random().toString(36).slice(2)}`
+  );
+  const editor = createEditor({
+    initialValue: [
+      { children: [{ text: 'Review this sentence.' }], type: 'paragraph' },
+    ],
+    plugins: [
+      ...SuggestionKit,
+      CommentsPlugin.configure({
+        decorate: { attributes: commentDecorationAttributes },
+        slots: DiscussionSlots,
+      }),
+    ],
+  });
+  let changeId = '';
+  editor.update((tx) => {
+    changeId = tx.authored.propose();
+    tx.text.insert(' carefully', { at: { offset: 11, path: [0, 0] } });
+  });
+  editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+  const view = render(
+    <EditorRoot editor={editor}>
+      <EditorContainer>
+        <EditorContent aria-label="Suggestions" />
+      </EditorContainer>
+    </EditorRoot>
+  );
+  await waitFor(() =>
+    expect(
+      view.container.querySelector(
+        `[data-editor-authored-change="${changeId}"]`
+      )
+    ).not.toBeNull()
+  );
+  fireEvent.click(
+    view.container.querySelector(`[data-editor-authored-change="${changeId}"]`)!
+  );
+  const user = userEvent.setup();
+  const composer = await view.findByRole('textbox', {
+    name: 'Comment on suggestion',
+  });
+
+  await user.click(composer);
+  await user.keyboard('Looks good');
+  fireEvent.submit(composer.closest('form')!);
+  await waitFor(() =>
+    expect(
+      editor
+        .plugin(CommentsPlugin)
+        .api.getThreads()
+        .map(({ target, userId }) => ({ target, userId }))
+    ).toEqual([{ target: { id: changeId, type: 'change' }, userId: 'local' }])
+  );
+  fireEvent.click(view.getByRole('button', { name: 'Accept suggestion' }));
+
+  await waitFor(() =>
+    expect(editor.read.text.string([])).toBe('Review this carefully sentence.')
+  );
+  view.unmount();
+});
+
+it('hands the document and comments to the next user through a keyed editor', async () => {
+  const { DiscussionSlots } = await import(
+    `./discussion?test=${Math.random().toString(36).slice(2)}`
+  );
+  let mounted!: ReturnType<typeof useEditor>;
+  function Handoff() {
+    const [userId, setUserId] = React.useState('alice');
+    const [snapshot, setSnapshot] = React.useState<{
+      comments: CommentsJSON | null;
+      document: EditorDocumentValue;
+    }>({
+      comments: null,
+      document: {
+        children: [
+          { children: [{ text: 'Review this sentence.' }], type: 'paragraph' },
+        ],
+      },
+    });
+    const editor = useCreateEditor({
+      initialValue: snapshot.document,
+      plugins: [
+        ...SuggestionKit,
+        CommentsPlugin.configure({
+          decorate: { attributes: commentDecorationAttributes },
+          initialState: { initialComments: snapshot.comments },
+          slots: DiscussionSlots,
+        }),
+      ],
+      userId,
+    });
+    mounted = editor;
+
+    return (
+      <EditorRoot
+        authored={{ intent: 'edit', projection: 'markup' }}
+        editor={editor}
+        key={editor.id}
+      >
+        <button
+          onClick={() => {
+            setSnapshot({
+              comments: editor.plugin(CommentsPlugin).api.toJSON(),
+              document: editor.read.value(),
+            });
+            setUserId('bob');
+          }}
+          type="button"
+        >
+          Switch to Bob
+        </button>
+        <EditorContainer>
+          <EditorContent aria-label="Handoff" />
+        </EditorContainer>
+      </EditorRoot>
+    );
+  }
+  const view = render(<Handoff />);
+  let changeId = '';
+  act(() => {
+    mounted.update((tx) => {
+      changeId = tx.plugin(AuthoredPlugin).propose();
+      tx.text.insert(' carefully', { at: { offset: 11, path: [0, 0] } });
+    });
+  });
+  await waitFor(() =>
+    expect(
+      view.container.querySelector(
+        `[data-editor-authored-change="${changeId}"]`
+      )
+    ).not.toBeNull()
+  );
+  fireEvent.click(
+    view.container.querySelector(`[data-editor-authored-change="${changeId}"]`)!
+  );
+  const user = userEvent.setup();
+  const composer = await view.findByRole('textbox', {
+    name: 'Comment on suggestion',
+  });
+
+  await user.click(composer);
+  await user.keyboard('Ready for Bob');
+  fireEvent.submit(composer.closest('form')!);
+  await waitFor(() =>
+    expect(mounted.plugin(CommentsPlugin).api.getThreads()).toHaveLength(1)
+  );
+  act(() => {
+    mounted.update.text.insert('!', { at: { offset: 0, path: [0, 0] } });
+  });
+  const alice = mounted;
+  fireEvent.click(view.getByRole('button', { name: 'Switch to Bob' }));
+  await waitFor(() => expect(mounted).not.toBe(alice));
+  act(() => {
+    mounted.update((tx) => {
+      tx.plugin(AuthoredPlugin).propose();
+      tx.text.insert('?', { at: { offset: 0, path: [0, 0] } });
+    });
+  });
+
+  expect({
+    authors: mounted
+      .plugin(AuthoredPlugin)
+      .read.changes({ status: 'pending' })
+      .items.map(({ authorId }) => authorId)
+      .sort(),
+    text: mounted.read.text.string([]),
+    threads: mounted
+      .plugin(CommentsPlugin)
+      .api.getThreads()
+      .map(({ target, userId }) => ({ target, userId })),
+    userId: mounted.userId,
+  }).toEqual({
+    authors: ['alice', 'bob'],
+    text: '!Review this sentence.',
+    threads: [{ target: { id: changeId, type: 'change' }, userId: 'alice' }],
+    userId: 'bob',
+  });
   view.unmount();
 });

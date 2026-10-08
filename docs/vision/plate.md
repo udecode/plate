@@ -35,6 +35,13 @@ Current priorities:
   copied `Editor` owns presentation, and `EditorProvider` supplies an existing
   editor without mounting a view. The entrypoint identifies the implementation;
   exported names do not repeat Plate or Plite branding.
+- Each `EditorContent` variant is a complete, dedicated component:
+  `EditorContent`, `VirtualizedEditorContent` from `platejs/react/virtualized`
+  and `PagedEditorContent` from `platejs/pagination/react` render the same
+  plugin pipeline around their own editable. No variant takes an editable prop,
+  and no context selects an editable, so an editor nested in a slot renders its
+  own default content. A Plate entrypoint never exports a raw Plite editable
+  such as `PagedEditable`.
 - Public docs teach one Plate API. Only the Performance comparison and From
   Plite to Plate guide (including its translation) name the internal runtime.
   Contributor runtime references live outside the public docs collection. The
@@ -176,8 +183,11 @@ Current priorities:
   narrowing instead of publishing an always-present method family.
 - `platejs` and `platejs/react` call the live editor type `Editor`; package and
   entrypoint establish the layer. React creation uses `useCreateEditor(options,
-  deps?)`, while `useEditor()` and `useOptionalEditor()` retrieve the
-  provider-selected command editor without caller generics. Mounted content
+  deps?)`. Every Plate constructor and creation hook allocates a new editor and
+  refuses an `editor` option. An app renders an existing editor with
+  `EditorRoot` and binds controls to it with `EditorProvider`. `useEditor()`
+  and `useOptionalEditor()` retrieve the provider-selected command editor
+  without caller generics. Mounted content
   supplies an exact view; controller selection is private, scoped, and
   independent of application IDs. A passive `EditorProvider` binds controls to
   an existing command editor without constructing another runtime. Interactions
@@ -364,7 +374,8 @@ Current priorities:
   history result while the same mutation owner finishes. Replaying that history
   entry blocks on replies, canonical divergence or rejection, and settles failed
   when the owner throws, without advancing to the next document change. User
-  records and the current reply identity live in the ordinary plugin store. An
+  records live in the ordinary plugin store, and threads, replies and
+  resolutions record the editor's `userId`. An
   authoritative full-document import prepares its document, comments, users and
   required plugin state in a detached candidate editor and swaps the editor
   owner through a keyed remount; candidate failure preserves the mounted editor,
@@ -390,6 +401,12 @@ Current priorities:
   suggestion schema, mutation engine, review scan, decision command set, or
   global input mode. Human and explicitly tracked AI edits use the same authored
   records and decisions; temporary AI drafts remain outside that lifecycle.
+  Plate attributes every authored write to the editor's `userId`, or to the
+  local user `'local'` when the application passes none, so a solo editor and
+  its AI suggestions need no identity setup. Collaborators pass a stable user,
+  and an editor with a Yjs plugin warns in development at its first write as
+  the local user. Plite still requires a non-empty author at every write and
+  invents none.
   Comments keeps its independent thread lifecycle. Load existing suggestions
   through the complete `initialValue`, preserving authors and change IDs;
   initialization never replays edits under switched identities. `EditorRoot
@@ -1141,10 +1158,10 @@ Current priorities:
   stylesheet, but it never injects a hidden Plate theme or defines an additive
   override protocol around package styling. An asynchronous document export
   captures one complete editor revision before its first await; visible output,
-  diagnostics, and any format-owned retained source or native artifact all
-  derive from that capture. A semantic interchange format carries hidden native
-  state only for a proven current job with one unambiguous authority; exact
-  state otherwise uses canonical persistence. A format that cannot represent an
+  diagnostics, and any format-owned retained source all derive from that
+  capture. A semantic interchange format, Word files included, carries hidden
+  native state only for a proven current job with one unambiguous authority;
+  exact state otherwise uses canonical persistence. A format that cannot represent an
   unresolved conflict returns an explicit diagnostic or failure instead of
   inventing review markup.
   Every serializer accepts one complete document and returns format data with

@@ -33,12 +33,7 @@ for (const retirement of ['finish', 'hide', 'replace', 'stop'] as const) {
   test(`published AI comments survive ${retirement} without adopting manual drafts`, async () => {
     const http = controlledFetch();
     const editor = createEditor({
-      plugins: [
-        ParagraphPlugin,
-        MarkdownPlugin,
-        ...AIKit,
-        CommentsPlugin.configure({ initialState: { currentUserId: 'alice' } }),
-      ],
+      plugins: [ParagraphPlugin, MarkdownPlugin, ...AIKit, CommentsPlugin],
       initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
       userId: 'alice',
     });
@@ -135,12 +130,7 @@ for (const retirement of ['finish', 'hide', 'replace', 'stop'] as const) {
 test('failed Comment requests expose retry without rolling back completed comments', async () => {
   const http = controlledFetch(true);
   const editor = createEditor({
-    plugins: [
-      ParagraphPlugin,
-      MarkdownPlugin,
-      ...AIKit,
-      CommentsPlugin.configure({ initialState: { currentUserId: 'alice' } }),
-    ],
+    plugins: [ParagraphPlugin, MarkdownPlugin, ...AIKit, CommentsPlugin],
     initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
     userId: 'alice',
     selection: {
@@ -238,7 +228,6 @@ for (const [result, retirement] of [
     let mutation: CommentMutationRequest | undefined;
     const commentsPlugin = CommentsPlugin.configure({
       initialState: {
-        currentUserId: 'alice',
         mutate: async (input) => {
           mutation = input;
           started.resolve();

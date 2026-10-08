@@ -1,9 +1,9 @@
-import { property, createEditor as createPliteEditor } from '../../facade';
+import { property } from '../../facade';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { definePlugin } from '../../lib/plugin/definePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { someHtmlElement } from '../../lib/plugins/html/htmlDom';
-import { createEditor, createEditorWithEditor } from './withPlate';
+import { createEditor } from './withPlate';
 
 describe('Editor', () => {
   const MyCustomPlugin = definePlugin('myCustom', {
@@ -101,19 +101,6 @@ describe('Editor', () => {
 
       // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.table;
-    });
-
-    it('extends a raw editor with all plugins atomically', () => {
-      const editor = createEditorWithEditor(createPliteEditor(), {
-        plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
-      });
-
-      expect(editor.api.textFormatting.bold).toBeInstanceOf(Function);
-      expect(editor.api.list.createBulletedList).toBeInstanceOf(Function);
-      expect(editor.api.table.insertTable).toBeInstanceOf(Function);
-
-      // @ts-expect-error -- unavailable plugin APIs must remain excluded
-      editor.api.image;
     });
 
     it('isolates overlapping API names by plugin namespace', () => {

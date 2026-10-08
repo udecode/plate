@@ -1,11 +1,5 @@
-import {
-  createEditor as createPliteEditor,
-  property,
-  schema,
-  target,
-} from '../../facade';
+import { property, schema, target } from '../../facade';
 import { createEditor } from '../../lib/editor';
-import { createEditorWithEditor } from '../../lib/editor/withPlite';
 import type { PluginReference } from '../../lib/plugin';
 import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
@@ -767,46 +761,6 @@ describe('compilePlateModel', () => {
       nested: { value: 1 },
       targets: [{ name: 'configuredTarget' }],
     });
-  });
-
-  it('bootstraps only unchanged supplied editors', () => {
-    const plugin = createElementPlugin('suppliedElement');
-    const untouched = createPliteEditor();
-    const editor = createEditorWithEditor(untouched, {
-      plugins: [plugin],
-    });
-
-    expect(editor).toBe(untouched);
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: '' }], type: 'paragraph' },
-    ]);
-
-    const explicitValue = [
-      { children: [{ text: 'keep me' }], type: 'paragraph' },
-    ];
-    const explicit = createPliteEditor({ initialValue: explicitValue });
-    const explicitEditor = createEditorWithEditor(explicit, {
-      plugins: [plugin],
-    });
-
-    expect(explicitEditor).toBe(explicit);
-    expect(explicitEditor.read.children()).toEqual(explicitValue);
-
-    const updated = createPliteEditor();
-    const updatedValue = [
-      { children: [{ text: 'keep this too' }], type: 'legacy' },
-    ];
-
-    updated.update((tx) => {
-      tx.value.replace({ children: updatedValue });
-    });
-
-    expect(() =>
-      createEditorWithEditor(updated, {
-        plugins: [plugin],
-      })
-    ).toThrow('unchanged document');
-    expect(updated.read.children()).toEqual(updatedValue);
   });
 
   it('compiles top-level target names into schema bindings', () => {

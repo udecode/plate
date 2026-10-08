@@ -69,7 +69,6 @@ export default function CommentPersistenceDemo() {
         ...DiscussionKit,
         CommentsPlugin.configure({
           initialState: {
-            currentUserId: 'alice',
             users: commentUsers,
             initialComments: loaded.comments,
             mutate: persistence.mutate,
@@ -77,6 +76,7 @@ export default function CommentPersistenceDemo() {
         }),
       ],
       initialValue: loaded.document,
+      userId: 'alice',
     },
     [loaded]
   );

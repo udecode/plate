@@ -25,7 +25,6 @@ export function RichTextEditor() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: {
             alice: {
               id: 'alice',

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { authored } from '../authored';
+import { AuthoredPlugin } from '../authored';
 import { createEditor, createEditorView } from '../core';
 import { BaseParagraphPlugin } from '../lib';
 import { HtmlPlugin } from '../lib/plugins/html/HtmlPlugin';
@@ -10,12 +10,9 @@ import { renderStaticHtml } from './renderStaticHtml';
 describe('authored HTML', () => {
   it('renders accepted and proposed semantic projections', async () => {
     const editor = createEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        HtmlPlugin,
-        authored({ authorId: 'alice' }),
-      ],
+      plugins: [BaseParagraphPlugin, HtmlPlugin, AuthoredPlugin],
       initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'proposed' },
@@ -39,12 +36,9 @@ describe('authored HTML', () => {
 
   it('renders one captured projection when the live editor changes', async () => {
     const editor = createEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        HtmlPlugin,
-        authored({ authorId: 'alice' }),
-      ],
+      plugins: [BaseParagraphPlugin, HtmlPlugin, AuthoredPlugin],
       initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'proposed' },

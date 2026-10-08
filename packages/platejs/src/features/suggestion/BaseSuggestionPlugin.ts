@@ -1,4 +1,4 @@
-import { DefaultAuthoredPlugin } from '../../authored';
+import { AuthoredPlugin } from '../../authored';
 import { definePlugin, RangeApi, TextApi } from '../../core';
 import { PLUGINS } from '../../utils';
 import { observeSuggestionChanges } from './suggestion.internal';
@@ -10,13 +10,10 @@ const suggestionModes = {
 
 /** Native authored-change interaction and semantic text decorations. */
 export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
-  dependencies: [DefaultAuthoredPlugin],
+  dependencies: [AuthoredPlugin],
   api: ({ editor }) => ({
     setMode: (mode: keyof typeof suggestionModes) => {
-      const authored = editor.plugin(DefaultAuthoredPlugin);
-      if (mode === suggestionModes.suggesting && !authored.read.canPropose()) {
-        throw new Error('An author ID is required for proposal mode.');
-      }
+      const authored = editor.plugin(AuthoredPlugin);
       const current = authored.read.view();
       authored.api.setView(
         mode === suggestionModes.editing
@@ -33,7 +30,7 @@ export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
   }),
   read: ({ editor }) => ({
     mode: () =>
-      editor.plugin(DefaultAuthoredPlugin).read.view().intent === 'propose'
+      editor.plugin(AuthoredPlugin).read.view().intent === 'propose'
         ? suggestionModes.suggesting
         : suggestionModes.editing,
   }),
@@ -50,7 +47,7 @@ export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
       };
 
       return editor
-        .plugin(DefaultAuthoredPlugin)
+        .plugin(AuthoredPlugin)
         .read.changesAt(textRange)
         .flatMap((change) =>
           change.ranges.flatMap((range, index) => {

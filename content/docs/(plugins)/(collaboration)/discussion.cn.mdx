@@ -56,23 +56,23 @@ export function DiscussionEditor({
   initialValue,
   initialComments,
   users,
-  currentUserId,
+  userId,
 }: {
   initialValue: EditorValueInput;
   initialComments: CommentsJSON;
   users: Record<string, CommentUser>;
-  currentUserId: string;
+  userId: string;
 }) {
   const editor = useCreateEditor({
     plugins: [
       ...EditorKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
-        initialState: { initialComments, users, currentUserId },
+        initialState: { initialComments, users },
       }),
     ],
     initialValue,
-    userId: currentUserId,
+    userId,
   });
 
   return (
@@ -107,9 +107,9 @@ Discussion 按区块组合未解决的记录，并在每个区块内按时间排
 审阅卡片直接调用 authored：
 
 ```tsx
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 const selection = authored.read.select({ ids: [changeId] });
 const result = authored.update.decide({
   action: 'accept',

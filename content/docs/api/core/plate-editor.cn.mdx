@@ -47,27 +47,22 @@ description: Plate 编辑器运行时的 API 参考。
       返回精确插件 descriptor 对应的 portal，用于访问插件
       API、read、update、schema 标识和 store。描述符提供推断类型。
     </APIItem>
-    <APIItem name="runtime" type="Editor['runtime']">
-      Plate 对外公开的 identity 和 lifecycle 状态。已编译插件注册表由 Plate
-      私有管理。
+    <APIItem name="userId" type="string">
+      此编辑器写入和评论时使用的用户，即 `createEditor` 的 `userId`；没有时为本地用户
+      `'local'`。它在编辑器生命周期内固定。
     </APIItem>
   </APIAttributes>
 </API>
 
 ## 运行时状态
 
-React 和 DOM 运行时状态通过 Plate runtime API 读取。`editor.runtime` 只公开编辑器 identity 和 lifecycle 字段；已编译插件注册表属于 Plate 私有实现。
+React 和 DOM 运行时状态通过 Plate runtime API 读取。已编译插件注册表属于 Plate 私有实现。
 
 | 状态        | 读取路径                                                           | 设置者                                               |
 | ----------- | ------------------------------------------------------------------ | ---------------------------------------------------- |
 | composition | `editor.api.react.isComposing()`                                   | Plate React composition runtime。                    |
 | focus       | `editor.api.react.isFocused()`                                     | Plate React focus runtime。                          |
 | read-only   | `editor.read.view.isReadOnly()` 或 `editor.api.react.isReadOnly()` | `createEditor`、`<EditorRoot>` 和 `<EditorContent>`。 |
-
-| 字段            | 类型                          | 说明                                                 |
-| --------------- | ----------------------------- | ---------------------------------------------------- |
-| `userId`        | `string \| null \| undefined` | 通过编辑器选项传入的协作身份。                       |
-| `isNormalizing` | `boolean \| undefined`        | Plate 执行 initial-value normalization 时为 `true`。 |
 
 ## 插件访问
 
@@ -147,7 +142,7 @@ export function useBasicEditor() {
 
 | 步骤                | 行为                                                                                                                           |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Runtime 状态        | 保留 Plate `editor.id`，并初始化 `runtime.userId`。                                                                            |
+| Runtime 状态        | 保留 Plate `editor.id`，并在构造成功后固定 `editor.userId`。                                                                   |
 | 插件访问            | 将已安装 API 发布到 `editor.api[name]`，并通过 `editor.plugin(Plugin)` 解析描述符拥有的 portal。                       |
 | Core plugins        | 解析 core plugins，用相同 name 的自定义插件替换 core plugins，并解析 root plugin。                                             |
 | Components          | 将 `components` 合并到 root-plugin component overrides。                                                                       |

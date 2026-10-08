@@ -1,13 +1,9 @@
 /** @jsxRuntime classic */
 /** @jsx jsxt */
 
-import {
-  createEditor as createPliteEditor,
-  property,
-  type Value,
-} from '../../facade';
+import { property } from '../../facade';
 import { definePlugin } from '../../lib/plugin/definePlugin';
-import { createEditorWithEditor } from '../../react/editor/withPlate';
+import { createEditor } from '../../react/editor/withPlate';
 import { jsxt, type TestEditor } from '../../testing';
 import { SingleLinePlugin } from './SingleLinePlugin';
 
@@ -33,7 +29,7 @@ const output = (
 
 describe('SingleLinePlugin', () => {
   it('merge all blocks into the first block', () => {
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleLinePlugin],
       initialValue: input.children,
     });
@@ -59,7 +55,7 @@ describe('SingleLinePlugin', () => {
       </editor>
     ) as TestEditor;
 
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleLinePlugin],
       initialValue: inputWithLineBreaks.children,
     });
@@ -79,7 +75,7 @@ describe('SingleLinePlugin', () => {
       </editor>
     );
 
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleLinePlugin],
       selection: singleLineInput.selection,
       initialValue: singleLineInput.children,
@@ -102,7 +98,7 @@ describe('SingleLinePlugin', () => {
       </editor>
     );
 
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleLinePlugin],
       selection: singleLineInput.selection,
       initialValue: singleLineInput.children,
@@ -130,7 +126,7 @@ describe('SingleLinePlugin', () => {
       </editor>
     ) as TestEditor;
 
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleLinePlugin],
       initialValue: emptyBlocksInput.children,
     });
@@ -141,7 +137,7 @@ describe('SingleLinePlugin', () => {
   });
 
   it('preserves marks while removing line separators and joining blocks', () => {
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleLinePlugin, TestMarkPlugin],
       initialValue: [
         {

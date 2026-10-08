@@ -102,6 +102,13 @@ const editor = createEditor({
 must be the same object as `doc`. Presence methods and cursor hooks are available
 only for bindings that include awareness.
 
+When the editor also records suggestions or comments, pass each collaborator's
+`createEditor({ userId })`. Without one, every collaborator writes as the local
+user, `'local'`, and the editor warns once in development at its first write or
+comment. A solo editor that uses Yjs only for persistence can pass any stable ID.
+A `userId` stays fixed for the editor's life, and a new editor cannot bind a
+`rootName` in a `Y.Doc` that an earlier editor still holds.
+
 `rootName` names the whole collaboration document: primary children live at `rootName` and named roots in `${rootName}:roots`, one commit that changes several roots becomes one Yjs transaction and one history batch, and awareness rejects a selection whose anchor and focus sit in different roots.
 
 For a normal server-backed room, persist a canonical Yjs update on the server and

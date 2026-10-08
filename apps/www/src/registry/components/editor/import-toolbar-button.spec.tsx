@@ -110,13 +110,7 @@ describe('ImportToolbarButton', () => {
     const before = [{ children: [{ text: 'before' }], type: 'paragraph' }];
     const editor = createEditor({
       initialValue: before,
-      plugins: [
-        BaseParagraphPlugin,
-        MarkdownPlugin,
-        CommentsPlugin.configure({
-          initialState: { currentUserId: 'alice' },
-        }),
-      ],
+      plugins: [BaseParagraphPlugin, MarkdownPlugin, CommentsPlugin],
     });
     const documentBefore = structuredClone(editor.read.value());
     const commentsBefore = editor.plugin(CommentsPlugin).api.toJSON();
@@ -156,13 +150,7 @@ describe('ImportToolbarButton', () => {
     const before = [{ children: [{ text: 'before' }], type: 'paragraph' }];
     const editor = createEditor({
       initialValue: before,
-      plugins: [
-        BaseParagraphPlugin,
-        MarkdownPlugin,
-        CommentsPlugin.configure({
-          initialState: { currentUserId: 'alice' },
-        }),
-      ],
+      plugins: [BaseParagraphPlugin, MarkdownPlugin, CommentsPlugin],
       userId: 'alice',
     });
 
@@ -205,10 +193,7 @@ describe('ImportToolbarButton', () => {
     expect(
       importedEditor.plugin(CommentsPlugin).api.getThread('word:comment')
     ).toBeDefined();
-    expect(importedEditor.runtime.userId).toBe('alice');
-    expect(
-      importedEditor.plugin(CommentsPlugin).store.get('currentUserId')
-    ).toBe('alice');
+    expect(importedEditor.userId).toBe('alice');
     expect(validSource.dispose).not.toHaveBeenCalled();
 
     unsubscribe();

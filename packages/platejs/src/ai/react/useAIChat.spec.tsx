@@ -2,7 +2,7 @@ import { act, render, waitFor } from '@testing-library/react';
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
 import React from 'react';
 
-import { DefaultAuthoredPlugin } from '../../authored';
+import { AuthoredPlugin } from '../../authored';
 import { NodeApi } from '../../core';
 import { createEditor, ParagraphPlugin, EditorRoot } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
@@ -51,7 +51,7 @@ function controlledTransport() {
 it('streams edit output into one native suggestion without changing the view', async () => {
   const source = controlledTransport();
   const editor = createEditor({
-    plugins: [DefaultAuthoredPlugin, ParagraphPlugin, AIChatPlugin],
+    plugins: [AuthoredPlugin, ParagraphPlugin, AIChatPlugin],
     userId: 'alice',
     initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
     selection: {
@@ -131,7 +131,7 @@ it('streams edit output into one native suggestion without changing the view', a
 it('keeps all assistant parts in one cross-block edit suggestion', async () => {
   const source = controlledTransport();
   const editor = createEditor({
-    plugins: [DefaultAuthoredPlugin, ParagraphPlugin, AIChatPlugin],
+    plugins: [AuthoredPlugin, ParagraphPlugin, AIChatPlugin],
     userId: 'alice',
     initialValue: [
       { type: 'paragraph', children: [{ text: 'first' }] },
@@ -196,7 +196,7 @@ it('keeps all assistant parts in one cross-block edit suggestion', async () => {
 it('retries an edit by rejecting the previous request-owned suggestion', async () => {
   const source = controlledTransport();
   const editor = createEditor({
-    plugins: [DefaultAuthoredPlugin, ParagraphPlugin, AIChatPlugin],
+    plugins: [AuthoredPlugin, ParagraphPlugin, AIChatPlugin],
     userId: 'alice',
     initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
     selection: {
@@ -330,7 +330,7 @@ function mountChat(
   { edit = false }: { edit?: boolean } = {}
 ) {
   const editor = createEditor({
-    plugins: [DefaultAuthoredPlugin, ParagraphPlugin, AIChatPlugin],
+    plugins: [AuthoredPlugin, ParagraphPlugin, AIChatPlugin],
     userId: 'alice',
     initialValue: [{ type: 'paragraph', children: [{ text: 'original' }] }],
     selection: {

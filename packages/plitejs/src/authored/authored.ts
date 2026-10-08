@@ -1,6 +1,7 @@
 import { createAnchor } from '../core/anchor';
 import {
   authoredDocumentCapabilityPoint,
+  isAuthorId,
   type NativeAuthoredDocumentCapability,
 } from '../core/authored-document-capability';
 import {
@@ -680,11 +681,7 @@ const currentAuthorId = (state: AuthoredRuntime): string | null => {
       ? state.options.authorId(state.source)
       : state.options.authorId;
 
-  return typeof identity === 'string' &&
-    identity.length > 0 &&
-    !identity.includes('\u0000')
-    ? identity
-    : null;
+  return isAuthorId(identity) ? identity : null;
 };
 
 const setAuthoredView = (editor: Editor, value: AuthoredView) => {

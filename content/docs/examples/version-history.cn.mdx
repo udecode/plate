@@ -19,8 +19,8 @@ description: 保留作者历史，并比较保存的文档版本。
 
 | 部分 | 所有者 | 用途 |
 | --- | --- | --- |
-| `authored({ retainHistory: true })` | `platejs/authored` | 用稳定的作者和 change identity 捕获已接受编辑，并保留其编辑内容。 |
-| `authorId` callback | 应用 | 每个 transaction 解析一次当前选择的已认证作者。 |
+| `AuthoredPlugin.configure({ initialState: { retainHistory: true } })` | `platejs/authored` | 用稳定的作者和 change identity 捕获已接受编辑，并保留其编辑内容。编辑器只在创建时读取一次该选项。 |
+| `userId` | 应用 | 为每个已接受编辑命名作者；没有它时，编辑器以本地用户写入。 |
 | `read.authored.changes(...)` | 原生 authored read | 以分页 `AuthoredChange` record 返回已接受历史。 |
 | `update.authored.revert(...)` | 原生 authored update | 为选中的 retained change 创建补偿贡献。 |
 | `compare(...)` | `platejs/diff` | 比较两个不可变的已保存版本，不修改 editor。 |
@@ -51,12 +51,10 @@ const saved = editor.read.value();
 
 const reloaded = createEditor({
   plugins: [
-    authored({
-      authorId: () => session.user.id,
-      retainHistory: true,
-    }),
+    AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
   ],
   initialValue: saved,
+  userId: session.user.id,
 });
 ```
 

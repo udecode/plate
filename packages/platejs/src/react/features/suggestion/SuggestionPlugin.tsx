@@ -1,4 +1,4 @@
-import { DefaultAuthoredPlugin } from '../../../authored';
+import { AuthoredPlugin } from '../../../authored';
 import { BaseSuggestionPlugin } from '../../../features/suggestion/BaseSuggestionPlugin';
 import { observeSuggestionChanges } from '../../../features/suggestion/suggestion.internal';
 import type { InternalPluginDefinitionOf } from '../../../lib/plugin/pluginDefinitionLookup.internal';
@@ -50,9 +50,7 @@ const suggestionReactAdapter: SuggestionReactAdapter = {
         (publication) => {
           const activeId = store?.getSnapshot().activeId;
           if (!activeId || !publication.changeIds.includes(activeId)) return;
-          const change = editor
-            .plugin(DefaultAuthoredPlugin)
-            .read.change(activeId);
+          const change = editor.plugin(AuthoredPlugin).read.change(activeId);
           if (
             !change ||
             (change.status !== 'pending' && change.status !== 'conflicted')

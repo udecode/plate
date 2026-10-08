@@ -1,7 +1,4 @@
-import {
-  DefaultAuthoredPlugin,
-  type AuthoredChangePublication,
-} from '../../authored';
+import { AuthoredPlugin, type AuthoredChangePublication } from '../../authored';
 import { createEditor } from '../../core';
 import { createEditorView } from '../../facade';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
@@ -13,16 +10,15 @@ const value = [
 ] as const;
 
 describe('BaseSuggestionPlugin', () => {
-  it('rejects suggestion mode without a current author', () => {
+  it('enters suggestion mode as the local user when the editor names no user', () => {
     const editor = createEditor({
       initialValue: value,
       plugins: [BaseSuggestionPlugin],
     });
 
-    expect(() =>
-      editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting')
-    ).toThrow('An author ID is required for proposal mode.');
-    expect(editor.plugin(BaseSuggestionPlugin).read.mode()).toBe('editing');
+    editor.plugin(BaseSuggestionPlugin).api.setMode('suggesting');
+
+    expect(editor.plugin(BaseSuggestionPlugin).read.mode()).toBe('suggesting');
   });
 
   it('owns the editing and suggesting modes over native authored views', () => {
@@ -36,7 +32,7 @@ describe('BaseSuggestionPlugin', () => {
     expect(suggestion.read.mode()).toBe('editing');
     suggestion.api.setMode('suggesting');
     expect(suggestion.read.mode()).toBe('suggesting');
-    expect(editor.plugin(DefaultAuthoredPlugin).read.view()).toEqual({
+    expect(editor.plugin(AuthoredPlugin).read.view()).toEqual({
       intent: 'propose',
       projection: 'markup',
     });
@@ -45,12 +41,12 @@ describe('BaseSuggestionPlugin', () => {
       at: { offset: 8, path: [0, 0] },
     });
     expect(editor.read.value().children).toEqual(value);
-    expect(editor.plugin(DefaultAuthoredPlugin).read.changes().items).toEqual([
+    expect(editor.plugin(AuthoredPlugin).read.changes().items).toEqual([
       expect.objectContaining({ authorId: 'alice', status: 'pending' }),
     ]);
 
     suggestion.api.setMode('editing');
-    expect(editor.plugin(DefaultAuthoredPlugin).read.view()).toEqual({
+    expect(editor.plugin(AuthoredPlugin).read.view()).toEqual({
       intent: 'edit',
       projection: 'markup',
     });
@@ -71,7 +67,7 @@ describe('BaseSuggestionPlugin', () => {
       plugins: [BaseSuggestionPlugin],
       userId: 'alice',
     });
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
     const suggestion = editor.plugin(BaseSuggestionPlugin);
 
     authored.api.setView({ intent: 'edit', projection: 'proposed' });
@@ -94,7 +90,7 @@ describe('BaseSuggestionPlugin', () => {
       userId: 'alice',
     });
     const received: AuthoredChangePublication[] = [];
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
     const stop = authored.api.subscribeChanges((publication) => {
       received.push(publication);
     });
@@ -127,7 +123,7 @@ describe('BaseSuggestionPlugin', () => {
     editor.update.text.insert(' proposed', {
       at: { offset: 8, path: [0, 0] },
     });
-    const change = editor.plugin(DefaultAuthoredPlugin).read.changes().items[0];
+    const change = editor.plugin(AuthoredPlugin).read.changes().items[0];
     const nodeKey = editor.key([0, 0]);
     const refresh = vi.fn();
     const stop = observeSuggestionChanges(editor, refresh);
@@ -141,9 +137,9 @@ describe('BaseSuggestionPlugin', () => {
     refresh.mockClear();
 
     expect(editor.api.history.undo()).toEqual({ status: 'applied' });
-    expect(
-      editor.plugin(DefaultAuthoredPlugin).read.change(change.id)?.status
-    ).toBe('pending');
+    expect(editor.plugin(AuthoredPlugin).read.change(change.id)?.status).toBe(
+      'pending'
+    );
     expect(refresh).toHaveBeenCalledWith({ nodeKeys: [nodeKey] });
     stop();
   });

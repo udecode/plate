@@ -1,7 +1,7 @@
 'use client';
 
 import type { Value } from 'platejs';
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import {
   createEditor,
   EditorContainer,
@@ -136,7 +136,7 @@ const assertBoundedCounterDelta = (
 
 const authoredFingerprint = (editor: Editor) =>
   editor
-    .plugin(DefaultAuthoredPlugin)
+    .plugin(AuthoredPlugin)
     .read.changes()
     .items.map(({ id, revision, status }) => `${id}:${revision}:${status}`)
     .join('|');

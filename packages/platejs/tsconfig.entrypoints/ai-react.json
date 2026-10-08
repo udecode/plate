@@ -25,13 +25,13 @@
       "path": "./ai.json"
     },
     {
+      "path": "./authored.json"
+    },
+    {
       "path": "./core.json"
     },
     {
       "path": "./markdown.json"
-    },
-    {
-      "path": "./proxies.json"
     },
     {
       "path": "./react-core.json"

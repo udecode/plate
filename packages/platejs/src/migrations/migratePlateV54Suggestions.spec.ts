@@ -8,7 +8,7 @@ import {
   target,
 } from 'platejs';
 
-import { authored, projectAuthoredReview } from '../authored';
+import { AuthoredPlugin, projectAuthoredReview } from '../authored';
 import type { EditorDocumentValue } from '../facade';
 import {
   defineDocumentMigrations,
@@ -42,7 +42,7 @@ const migrationPlugins = [
   BaseParagraphPlugin,
   BoldPlugin,
   RootPlugin,
-  authored({ authorId: 'migration' }),
+  AuthoredPlugin,
 ] as const;
 const migrations = defineDocumentMigrations({
   plugins: migrationPlugins,

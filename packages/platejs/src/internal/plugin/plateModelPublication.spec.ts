@@ -1,18 +1,16 @@
-import { defineCommand } from '../../core';
+import { compileEditor } from '../../compiler/compileEditor';
 import {
-  dispatchCommand,
   createEditorView,
   createEditor as createPliteEditor,
   defineRuntimePlugin,
   type Editor as RuntimeEditor,
-  type TransactionSpec,
 } from '../../facade';
 import type {
+  BasePluginInput,
   Editor,
   InternalBaseEditorWithInstalledPlugins,
 } from '../../lib/editor';
 import { createEditor } from '../../lib/editor';
-import { createEditorWithEditor } from '../../lib/editor/withPlite';
 import { definePlugin } from '../../lib/plugin';
 import { defineInputRule } from '../../lib/plugins/input-rules';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
@@ -26,7 +24,6 @@ import {
   withCompiledPlatePluginApiCandidate,
   withCompiledPlatePluginCandidate,
 } from './compilePlateModel';
-import { getPlateRuntimeCandidate } from './plateRuntime';
 import { getPluginStore } from './pluginStore';
 
 describe('Plate model publication', () => {
@@ -133,121 +130,58 @@ describe('Plate model publication', () => {
     ).toBe(getCompiledPlatePlugin(editor, Plugin));
   });
 
-  it('clears private construction state when a plugin stage throws', () => {
-    const editor = createPliteEditor();
-    const BrokenPlugin = definePlugin('brokenStage', {}).extend(() => {
-      throw new Error('broken plugin stage');
+  it('clears private construction state when the initial value throws', () => {
+    let leaked: Editor | undefined;
+    const StatefulPlugin = definePlugin('statefulInitialValue', {
+      initialState: { count: 1 },
     });
 
     expect(() =>
-      createEditorWithEditor(editor, {
-        plugins: [BrokenPlugin],
-        skipInitialization: true,
-      })
-    ).toThrow('broken plugin stage');
-    expect(getPlateModelPublication(editor)).toBeUndefined();
-    expect(getPlateRuntimeCandidate(editor)).toBeUndefined();
-    expect(getPluginStore(editor, BrokenPlugin.name)).toBeUndefined();
-  });
-
-  it('rolls back failed initialization and retries on the same raw editor', () => {
-    let correctionRuns = 0;
-    const correctionPaths: number[][] = [];
-    let shouldThrow = true;
-    const Correction = defineRuntimePlugin('retryableBootstrap', {
-      corrections: [
-        {
-          correct({ entry }) {
-            correctionRuns += 1;
-            correctionPaths.push([...entry[1]]);
-            if (shouldThrow) throw new Error('bootstrap correction failed');
-          },
-          event: 'content',
+      createEditor({
+        initialValue: ({ editor }) => {
+          leaked = editor;
+          throw new Error('load failed');
         },
-      ],
-    });
-    const Plugin = definePlugin('retryableBootstrap', {}).extend(Correction);
-    const initialSelection = {
-      anchor: { offset: 2, path: [0, 0] },
-      focus: { offset: 2, path: [0, 0] },
-      kind: 'text' as const,
-    };
-    const raw = createPliteEditor({
-      initialSelection,
-      initialValue: [{ children: [{ text: 'before' }], type: 'paragraph' }],
-    });
-    const previousSchema = raw.read.schema;
-    const previousIdentity = previousSchema.identity();
-    const previousValue = raw.read.value();
-    const previousVersion = raw.read.runtime.snapshot().version;
-
-    expect(() =>
-      createEditorWithEditor(raw, {
-        initialValue: [{ children: [{ text: 'after' }], type: 'paragraph' }],
-        plugins: [Plugin],
-        shouldNormalizeEditor: true,
+        plugins: [StatefulPlugin],
       })
-    ).toThrow('bootstrap correction failed');
-    expect(correctionRuns).toBeGreaterThan(0);
-    expect(raw.read.value()).toEqual(previousValue);
-    expect(raw.read.selection()).toEqual({
-      anchor: initialSelection.anchor,
-      focus: initialSelection.focus,
-    });
-    expect(raw.read.lastCommit()).toBeNull();
-    expect(raw.read.runtime.snapshot().version).toBe(previousVersion);
-    expect(raw.read.schema).toBe(previousSchema);
-    expect(raw.read.schema.identity()).toBe(previousIdentity);
-    expect(getPlateModelPublication(raw)).toBeUndefined();
-    expect(getPlateRuntimeCandidate(raw)).toBeUndefined();
-    expect(getPluginStore(raw, Plugin.name)).toBeUndefined();
-
-    shouldThrow = false;
-    correctionPaths.length = 0;
-    const editor = createEditorWithEditor(raw, {
-      initialValue: [{ children: [{ text: 'after' }], type: 'paragraph' }],
-      plugins: [Plugin],
-      shouldNormalizeEditor: true,
-    });
-
-    expect(editor).toBe(raw);
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: 'after' }], type: 'paragraph' },
-    ]);
-    expect(correctionPaths).toEqual([[0], [0, 0]]);
-    expect(editor.read.lastCommit()).toBeNull();
-    expect(getPlateModelPublication(editor)).toBeDefined();
-    expect(() => editor.plugin(Plugin)).not.toThrow();
+    ).toThrow('load failed');
+    expect({
+      publication: getPlateModelPublication(leaked!),
+      store: getPluginStore(leaked!, StatefulPlugin.name),
+    }).toEqual({ publication: undefined, store: undefined });
   });
 
-  it('invalidates specs minted before a supplied raw editor is bootstrapped', () => {
-    let spec!: TransactionSpec;
-    const applyPreBootstrapSpec = defineCommand(
-      'plate.apply-pre-bootstrap-spec',
-      { build: () => spec }
-    );
-    const raw = createPliteEditor({
-      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
-    });
-    const previousVersion = raw.read.runtime.snapshot().version;
+  it.each([
+    [
+      'createEditor',
+      (plugins: readonly BasePluginInput[]) => createEditor({ plugins }),
+    ],
+    [
+      'compileEditor',
+      (plugins: readonly BasePluginInput[]) => compileEditor({ plugins }),
+    ],
+  ])(
+    'clears earlier plugin stores when %s fails on a state and selector collision',
+    (_label, build) => {
+      let host: Editor | undefined;
+      const CapturingPlugin = definePlugin('capturingStore', {
+        initialState: { count: 1 },
+      }).extend(({ editor }) => {
+        host = editor;
 
-    spec = raw.read((state) =>
-      state.transaction((tx) => {
-        tx.text.insert('x', { at: { offset: 1, path: [0, 0] } });
-      })
-    );
+        return {};
+      });
+      const CollidingPlugin = definePlugin('collidingStore', {
+        initialState: { value: 2 },
+        selectors: { value: (state) => state.value * 2 },
+      });
 
-    const editor = createEditorWithEditor(raw);
-
-    expect(editor.read.runtime.snapshot().version).toBe(previousVersion);
-    expect(editor.read.lastCommit()).toBeNull();
-    expect(() => dispatchCommand(editor, applyPreBootstrapSpec)).toThrow(
-      'Cannot apply a stale transaction spec.'
-    );
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: 'a' }], type: 'paragraph' },
-    ]);
-  });
+      expect(() => build([CapturingPlugin, CollidingPlugin])).toThrow(
+        'defines "value" as both state and selector'
+      );
+      expect(getPluginStore(host!, CapturingPlugin.name)).toBeUndefined();
+    }
+  );
 
   it('publishes canonical dependency identities per editor', () => {
     const Dependency = definePlugin('canonicalDependency', {

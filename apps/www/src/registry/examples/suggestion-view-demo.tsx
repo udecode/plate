@@ -1,6 +1,6 @@
 'use client';
 
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import {
   EditorRoot,
   useCreateEditor,
@@ -38,7 +38,7 @@ function SuggestionViewContent() {
   const editor = useEditor();
   const projection = useEditorViewState(
     editor,
-    () => editor.plugin(DefaultAuthoredPlugin).read.view().projection
+    () => editor.plugin(AuthoredPlugin).read.view().projection
   );
 
   return (
@@ -46,7 +46,7 @@ function SuggestionViewContent() {
       <ToggleGroup
         aria-label="Document projection"
         onValueChange={(value) => {
-          const authored = editor.plugin(DefaultAuthoredPlugin);
+          const authored = editor.plugin(AuthoredPlugin);
           if (
             value === 'accepted' ||
             value === 'proposed' ||

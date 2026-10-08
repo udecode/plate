@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { DefaultAuthoredPlugin } from '../../../authored';
+import { AuthoredPlugin } from '../../../authored';
 import { TextApi, type NodeKey } from '../../../core';
 import type { Editor } from '../../editor';
 import { useEditorViewState } from '../../plite-react';
@@ -24,9 +24,7 @@ const SuggestionViewContext = React.createContext<SuggestionViewStore | null>(
 
 const changeNodeKeys = (editor: Editor, id: string | null) => {
   const nodeKeys = new Set<NodeKey>();
-  const change = id
-    ? editor.plugin(DefaultAuthoredPlugin).read.change(id)
-    : null;
+  const change = id ? editor.plugin(AuthoredPlugin).read.change(id) : null;
 
   for (const range of change?.ranges ?? []) {
     for (const [, path] of editor.read.nodes.entries({
@@ -106,7 +104,7 @@ export function SuggestionViewProvider({
   const [store] = React.useState(() => createSuggestionViewStore(editor));
   const authoredView = useEditorViewState(
     editor,
-    () => editor.plugin(DefaultAuthoredPlugin).read.view(),
+    () => editor.plugin(AuthoredPlugin).read.view(),
     {
       equalityFn: (left, right) =>
         left?.intent === right.intent && left.projection === right.projection,

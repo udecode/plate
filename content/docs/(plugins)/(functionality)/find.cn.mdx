@@ -37,10 +37,12 @@ npx shadcn@latest add @plate/find
 import { createEditor } from 'platejs/react';
 
 import { FindKit } from '@/components/editor/find';
-import { EditorKit } from '@/components/editor/plugins';
 
 const editor = createEditor({
-  plugins: [...EditorKit, ...FindKit],
+  plugins: [
+    // ...otherPlugins,
+    ...FindKit,
+  ],
 });
 ```
 

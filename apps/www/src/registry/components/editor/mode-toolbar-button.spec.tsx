@@ -1,6 +1,6 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { setEditorReadOnly } from 'platejs';
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import {
   createEditor,
   type Editor,
@@ -62,7 +62,7 @@ it('shows Viewing while readonly even when the suggestion preference is retained
   await waitFor(() =>
     expect(view.getByRole('button', { name: 'Viewing' })).toBeTruthy()
   );
-  expect(mountedEditor!.plugin(DefaultAuthoredPlugin).read.view().intent).toBe(
+  expect(mountedEditor!.plugin(AuthoredPlugin).read.view().intent).toBe(
     'propose'
   );
   fireEvent.keyDown(view.getByRole('button', { name: 'Viewing' }), {
@@ -126,7 +126,7 @@ it('tracks authored view policy changes without a document commit', async () => 
   await waitFor(() =>
     expect(view.getByRole('button', { name: 'Editing' })).toBeTruthy()
   );
-  expect(mountedEditor!.plugin(DefaultAuthoredPlugin).read.view()).toEqual({
+  expect(mountedEditor!.plugin(AuthoredPlugin).read.view()).toEqual({
     intent: 'edit',
     projection: 'markup',
   });
@@ -144,7 +144,7 @@ it('tracks authored view policy changes without a document commit', async () => 
   view.unmount();
 });
 
-it('does not offer Suggestion mode without a current user', async () => {
+it('offers Suggestion mode in an editor with no user', async () => {
   const editor = createEditor({
     plugins: SuggestionKit,
     initialValue: [{ type: 'paragraph', children: [{ text: 'Keep' }] }],
@@ -163,10 +163,8 @@ it('does not offer Suggestion mode without a current user', async () => {
   fireEvent.keyDown(view.getByRole('button', { name: 'Editing' }), {
     key: 'Enter',
   });
-  expect(view.queryByRole('menuitemradio', { name: 'Suggestion' })).toBeNull();
-  expect(() =>
-    editor.plugin(SuggestionPlugin).api.setMode('suggesting')
-  ).toThrow('An author ID is required for proposal mode.');
-  expect(editor.plugin(SuggestionPlugin).read.mode()).toBe('editing');
+  expect(
+    view.queryByRole('menuitemradio', { name: 'Suggestion' })
+  ).not.toBeNull();
   view.unmount();
 });

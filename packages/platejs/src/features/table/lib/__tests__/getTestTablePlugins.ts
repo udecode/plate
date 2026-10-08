@@ -1,5 +1,3 @@
-import { createPliteEditor } from '#platejs-test-internal';
-
 import {
   createEditor as createHeadlessEditor,
   ElementIdPlugin,
@@ -45,7 +43,6 @@ export const createTestBaseTableEditor = (
 ): BaseEditor =>
   createHeadlessEditor({
     ...options,
-    editor: createPliteEditor<Value>(),
     plugins: hasPersistedElementId(options.initialValue)
       ? [ElementIdPlugin, ...options.plugins]
       : options.plugins,
@@ -54,7 +51,7 @@ export const createTestBaseTableEditor = (
 export const createTestTableEditor = (
   options: Omit<
     CreateEditorOptions<Value, readonly BasePluginInput[]>,
-    'editor' | 'initialValue'
+    'initialValue'
   > & {
     initialValue?: InitialValue<Value>;
   }
@@ -72,7 +69,6 @@ export const createTestTableEditor = (
     EditorApplicationSchema | undefined
   >({
     ...rest,
-    editor: createPliteEditor<Value>(),
     initialValue: initialValue ?? [
       { children: [{ text: '' }], type: 'paragraph' },
     ],

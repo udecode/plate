@@ -1,6 +1,7 @@
 'use client';
 
-import { NodeApi, TextApi } from 'platejs';
+import { DocumentChange, NodeApi, TextApi } from 'platejs';
+import { createAuthoredReviewDocument } from 'platejs/authored';
 import type { CommentsJSON } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor, EditorRoot } from 'platejs/react';
@@ -81,7 +82,6 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: {
             alice: {
               id: 'alice',
@@ -105,42 +105,51 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
       ...ExcalidrawKit,
       ...(browserUploads?.plugins ?? []),
     ];
+    const revision = createEditor({ plugins, initialValue: baseline });
+    const capture = () => ({ ...baseline, children: revision.read.children() });
+    revision.update.nodes.insert([suggestion, { text: addedText }], {
+      at: { offset: suggestionOffset, path: [3, 0] },
+    });
+    const inserted = capture();
+    const deletedOffset = addedText.length + sentenceText.indexOf(deletedText);
+    revision.update.text.delete({
+      at: {
+        anchor: { offset: deletedOffset, path: [3, 2] },
+        focus: { offset: deletedOffset + deletedText.length, path: [3, 2] },
+      },
+    });
+    const deleted = capture();
+    revision.update.text.insert(overlapText, {
+      at: { offset: overlapOffset, path: [3, 4] },
+    });
+    const overlapChangeId = 'playground3';
     const current = createEditor({
       plugins,
       userId: 'alice',
-      initialValue: baseline,
+      initialValue: createAuthoredReviewDocument({
+        accepted: baseline,
+        revisions: [
+          {
+            id: 'playground1',
+            authorId: 'alice',
+            createdAt: createdAt - 900_000,
+            change: DocumentChange.between(baseline, inserted),
+          },
+          {
+            id: 'playground2',
+            authorId: 'bob',
+            createdAt: createdAt - 800_000,
+            change: DocumentChange.between(inserted, deleted),
+          },
+          {
+            id: overlapChangeId,
+            authorId: 'charlie',
+            createdAt: createdAt - 700_000,
+            change: DocumentChange.between(deleted, capture()),
+          },
+        ],
+      }),
     });
-
-    current.update((tx) => {
-      tx.history.skip();
-      tx.authored.propose();
-      tx.nodes.insert([suggestion, { text: addedText }], {
-        at: { offset: suggestionOffset, path: [3, 0] },
-      });
-    });
-    current.runtime.userId = 'bob';
-    current.update((tx) => {
-      const offset = addedText.length + sentenceText.indexOf(deletedText);
-
-      tx.history.skip();
-      tx.authored.propose();
-      tx.text.delete({
-        at: {
-          anchor: { offset, path: [3, 2] },
-          focus: { offset: offset + deletedText.length, path: [3, 2] },
-        },
-      });
-    });
-    current.runtime.userId = 'charlie';
-    let overlapChangeId = '';
-    current.update((tx) => {
-      tx.history.skip();
-      overlapChangeId = tx.authored.propose();
-      tx.text.insert(overlapText, {
-        at: { offset: overlapOffset, path: [3, 4] },
-      });
-    });
-    current.runtime.userId = 'alice';
     const threads: CommentsJSON['threads'] = [
       {
         id: 'discussion1',

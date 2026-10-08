@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt, type TestEditorFixture } from '@platejs/test';
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import { createEditor as createProductEditor } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 
@@ -37,7 +37,7 @@ describe('native authored link integration', () => {
     editor.plugin(SuggestionPlugin).api.setMode('suggesting');
     editor.update.text.deleteBackward({ unit: 'character' });
 
-    const change = editor.plugin(DefaultAuthoredPlugin).read.changes({
+    const change = editor.plugin(AuthoredPlugin).read.changes({
       status: 'pending',
     }).items[0];
     const link = editor.read.children()[0].children[1] as unknown as {
@@ -67,7 +67,7 @@ describe('native authored link integration', () => {
       </editor>
     ) as TestEditorFixture;
     const editor = createEditor(input);
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
 
     editor.update.selection.set({
       kind: 'text',
@@ -97,7 +97,7 @@ describe('native authored link integration', () => {
       </editor>
     ) as TestEditorFixture;
     const editor = createEditor(input);
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
 
     editor.plugin(SuggestionPlugin).api.setMode('suggesting');
     editor.update.nodes.remove({ at: [0, 1] });

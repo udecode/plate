@@ -1,4 +1,4 @@
-import { authored, projectAuthoredReview } from '../authored';
+import { AuthoredPlugin, projectAuthoredReview } from '../authored';
 import {
   createEditor,
   type Descendant,
@@ -384,7 +384,7 @@ describe('migratePlateV54 unsafe URLs', () => {
   });
 
   it('neutralizes unsafe URLs in every legacy suggestion revision', () => {
-    const plugins = [BaseLinkPlugin, authored({ authorId: 'migration' })];
+    const plugins = [BaseLinkPlugin, AuthoredPlugin];
     const { output } = migrateDocument(
       {
         children: [

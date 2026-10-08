@@ -1,4 +1,4 @@
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import { createEditor } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 
@@ -17,7 +17,7 @@ describe('SuggestionKit', () => {
       userId: 'alice',
     });
 
-    expect(editor.plugin(DefaultAuthoredPlugin).read.view()).toEqual({
+    expect(editor.plugin(AuthoredPlugin).read.view()).toEqual({
       intent: 'edit',
       projection: 'accepted',
     });
@@ -30,7 +30,7 @@ describe('SuggestionKit', () => {
       userId: 'alice',
     });
     const suggestion = editor.plugin(SuggestionPlugin);
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
 
     expect(suggestion.installed).toBe(true);
     expect(suggestion.read.mode()).toBe('editing');
@@ -57,20 +57,9 @@ describe('SuggestionKit', () => {
     ]);
   });
 
-  it('keeps presentation optional and preserves authored identity checks', () => {
+  it('keeps presentation optional', () => {
     const plain = createEditor({ initialValue: value });
 
     expect(plain.plugin(SuggestionPlugin).installed).toBe(false);
-
-    const editor = createEditor({
-      initialValue: value,
-      plugins: SuggestionKit,
-    });
-
-    expect(() =>
-      editor.plugin(SuggestionPlugin).api.setMode('suggesting')
-    ).toThrow('An author ID is required for proposal mode.');
-    expect(editor.plugin(SuggestionPlugin).read.mode()).toBe('editing');
-    expect(editor.read.children()).toEqual(value);
   });
 });

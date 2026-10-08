@@ -323,6 +323,38 @@
       }
     },
     {
+      "id": "plate-authored-construction",
+      "question": "Does Plate's AuthoredPlugin, a configurable descriptor whose stage returns Plite's authored(), construct an editor within budget of Plite's authored() installed directly, alone and as a dependency, at 1 and 2,000 blocks?",
+      "owner": "plate",
+      "family": "plate-authored",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLATE_AUTHORED_CONSTRUCTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts --output=tmp/plate-authored-construction-benchmark.json",
+      "metrics": {
+        "primary": "plate_authored_construction_normal_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Three runs interleave every arm per cohort after one warm build per arm, with a full collection before each batch: 10 rounds of 40 builds at 1 block and 4 rounds of 5 builds at 2,000 blocks. Each arm's median is the median of its three run p50s. The Plate arm may reach 1.10 times the Plite arm plus 0.05 ms in each cohort, alone and behind a dependent plugin, and a known-bad copy with a 1 ms stage at 1 block and a 20 ms stage at 2,000 blocks must exceed that line. Each build reads back its block count and the installed authored capability."
+      },
+      "correctness": {
+        "command": "bun test ./packages/platejs/src/authored/authored.api.spec.ts",
+        "policy": "Promotion requires that AuthoredPlugin attributes writes to the editor's user, applies the configured retention, writes as the local user without a userId, rejects a NUL userId and warns once beside Yjs."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plate-authored-construction-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": ["docs/plans/2026-10-07-suggestions-review.md"]
+      },
+      "thresholds": {
+        "promotion": "plate_authored_construction_within_budget=1"
+      }
+    },
+    {
       "id": "plite-content-slice-value",
       "question": "What does immutable clone, validation, and preparation cost at 10, 100, 1,000, and 10,000 nodes, and does trusted ContentSlice reuse identity and preparation without size-dependent work?",
       "owner": "plite",

@@ -692,7 +692,7 @@ describe('PlateContent', () => {
     });
   });
 
-  it('renders inside the Plate container without mutating editor runtime', () => {
+  it('renders inside the Plate container', () => {
     const editor = createEditor({
       initialValue: value,
     });
@@ -716,7 +716,6 @@ describe('PlateContent', () => {
     );
     expect(commandEditor).not.toBe(editor);
     expect(commandEditor!.api.dom.scroll()).toBe(getByTestId('plate-shell'));
-    expect(Object.hasOwn(editor.runtime, 'uid')).toBe(false);
     const staleInsert = commandEditor!.update.text.insert;
 
     rendered.unmount();

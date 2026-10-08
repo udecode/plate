@@ -2,7 +2,7 @@
 
 import { MessageSquareTextIcon, MessagesSquareIcon } from 'lucide-react';
 import type { Range } from 'platejs';
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   type Editor,
@@ -44,7 +44,7 @@ const readCommentTarget = (editor: Editor, id: string): CommentTarget => {
       : { status: 'unavailable' };
   }
   if (attachment?.type === 'change') {
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
     const range = authored.installed
       ? authored.read.change(attachment.id)?.ranges[0]
       : undefined;

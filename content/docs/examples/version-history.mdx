@@ -19,8 +19,8 @@ For application revision previews and restores with comments, see [Comments and 
 
 | Piece | Owner | Role |
 | --- | --- | --- |
-| `authored({ retainHistory: true })` | `platejs/authored` | Captures accepted edits with stable author and change identities and retains their edit bodies. |
-| `authorId` callback | application | Resolves the selected author ID once per transaction. |
+| `AuthoredPlugin.configure({ initialState: { retainHistory: true } })` | `platejs/authored` | Captures accepted edits with stable author and change identities and retains their edit bodies. The editor reads the option once, when it is created. |
+| `userId` | application | Names the author of each accepted edit; an editor without one writes as the local user. |
 | `read.authored.changes(...)` | native authored reads | Returns accepted history as cursor-paged `AuthoredChange` records. |
 | `update.authored.revert(...)` | native authored updates | Creates a compensating contribution for the selected retained change. |
 | `compare(...)` | `platejs/diff` | Compares two immutable saved revisions without changing the editor. |
@@ -51,12 +51,10 @@ const saved = editor.read.value();
 
 const reloaded = createEditor({
   plugins: [
-    authored({
-      authorId: () => session.user.id,
-      retainHistory: true,
-    }),
+    AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
   ],
   initialValue: saved,
+  userId: session.user.id,
 });
 ```
 

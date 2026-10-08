@@ -19,7 +19,7 @@ type from `platejs` when declaring a public command boundary.
 
 ### `createEditor`
 
-Creates an `Editor` with the supplied plugins and configuration.
+Creates a new `Editor` with the supplied plugins and configuration. To render an editor you already have, pass it to `EditorRoot`.
 
 <API name="createEditor">
 <APIOptions type="CreateEditorOptions">
@@ -97,6 +97,13 @@ Creates an `Editor` with the supplied plugins and configuration.
   </APIItem>
   <APIItem name="transforms" type="object" optional>
     Transform functions for the editor.
+  </APIItem>
+  <APIItem name="userId" type="string" optional>
+    The user this editor writes and comments as, recorded as the author of
+    authored changes and read back as `editor.userId`. Without it, the editor
+    writes as the local user, `'local'`. Pass one whenever more than one person
+    writes the document. It stays fixed for the editor's life, and a `userId`
+    that contains a NUL character throws.
   </APIItem>
 </APIOptions>
 

@@ -5,10 +5,7 @@ import { describe, expect, it } from 'bun:test';
 
 import { jsxt, type TestEditor } from '#platejs-test-internal';
 
-import {
-  createAuthoredReviewDocument,
-  DefaultAuthoredPlugin,
-} from '../../authored';
+import { createAuthoredReviewDocument, AuthoredPlugin } from '../../authored';
 import {
   BaseParagraphPlugin,
   definePlugin,
@@ -57,7 +54,7 @@ describe('AIChatPlugin read.markdown', () => {
     });
     const accepted = document('Text');
     const model = createEditor({
-      plugins: [DefaultAuthoredPlugin, AIChatPlugin],
+      plugins: [AuthoredPlugin, AIChatPlugin],
       userId: 'alice',
       initialValue: createAuthoredReviewDocument({
         accepted,

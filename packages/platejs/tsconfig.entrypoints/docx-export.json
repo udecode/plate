@@ -22,6 +22,9 @@
   "include": ["../src/docx/export/**/*"],
   "references": [
     {
+      "path": "./authored.json"
+    },
+    {
       "path": "./callout.json"
     },
     {
@@ -35,9 +38,6 @@
     },
     {
       "path": "./math.json"
-    },
-    {
-      "path": "./proxies.json"
     },
     {
       "path": "./standard-basic-nodes.json"

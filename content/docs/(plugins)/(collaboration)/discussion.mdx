@@ -56,23 +56,23 @@ export function DiscussionEditor({
   initialValue,
   initialComments,
   users,
-  currentUserId,
+  userId,
 }: {
   initialValue: EditorValueInput;
   initialComments: CommentsJSON;
   users: Record<string, CommentUser>;
-  currentUserId: string;
+  userId: string;
 }) {
   const editor = useCreateEditor({
     plugins: [
       ...EditorKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
-        initialState: { initialComments, users, currentUserId },
+        initialState: { initialComments, users },
       }),
     ],
     initialValue,
-    userId: currentUserId,
+    userId,
   });
 
   return (
@@ -107,9 +107,9 @@ Discussion groups unresolved records by block and sorts each block chronological
 Review cards call authored directly:
 
 ```tsx
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 const selection = authored.read.select({ ids: [changeId] });
 const result = authored.update.decide({
   action: 'accept',

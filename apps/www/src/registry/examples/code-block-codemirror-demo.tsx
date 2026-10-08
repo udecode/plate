@@ -31,7 +31,6 @@ export default function CodeBlockCodeMirrorDemo({ id }: { id: string }) {
   const editor = useCreateEditor({
     plugins: CodeBlockCodeMirrorDemoKit,
     initialValue: createValue(id),
-    userId: 'demo',
   });
 
   return (

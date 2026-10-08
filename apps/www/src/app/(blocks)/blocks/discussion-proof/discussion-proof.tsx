@@ -177,7 +177,6 @@ const createInitialRevision = () => {
 };
 
 const initialState = {
-  currentUserId: 'alice',
   users: {
     alice: {
       id: 'alice',

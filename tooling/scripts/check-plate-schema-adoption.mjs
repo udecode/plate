@@ -266,6 +266,10 @@ const intentionalProductionExtendStageChains = new Map([
     [[['commands']]],
   ],
   [
+    'packages/platejs/src/authored/AuthoredPlugin.ts',
+    [[['$factory:authored']]],
+  ],
+  [
     'packages/platejs/src/lib/plugins/HistoryPlugin.ts',
     [[['$factory:history']]],
   ],

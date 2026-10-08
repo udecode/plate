@@ -18,15 +18,12 @@ description: \platejs 的 API 参考文档。
 
 ### `createEditor`
 
-生成一个新的 `Editor` 实例，使用一组插件及其配置进行初始化。
+生成一个新的 `Editor` 实例，使用一组插件及其配置进行初始化。要渲染已有的编辑器，请将其传给 `EditorRoot`。
 
 <API name="createEditor">
 <APIOptions type="CreateEditorOptions">
   <APIItem name="id" type="any" optional>
     编辑器的唯一标识符。
-  </APIItem>
-  <APIItem name="editor" type="E" optional>
-    未应用 `createEditor` 的初始编辑器。
   </APIItem>
   <APIItem name="plugins" type="P[]" optional>
     编辑器插件数组。
@@ -87,6 +84,11 @@ description: \platejs 的 API 参考文档。
   </APIItem>
   <APIItem name="transforms" type="object" optional>
     编辑器的转换函数。
+  </APIItem>
+  <APIItem name="userId" type="string" optional>
+    编辑器写入和评论时使用的用户，会记录为 authored changes 的作者，并可通过 `editor.userId` 读取。
+    未传入时，编辑器以本地用户 `'local'` 写入。多人编辑同一文档时请传入它。它在编辑器生命周期内固定；
+    包含 NUL 字符的 `userId` 会抛出错误。
   </APIItem>
 </APIOptions>
 

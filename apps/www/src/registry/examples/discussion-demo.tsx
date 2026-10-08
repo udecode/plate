@@ -23,7 +23,6 @@ export default function DiscussionDemo() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: {
             alice: {
               id: 'alice',

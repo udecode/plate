@@ -1,5 +1,5 @@
 import type { AuthoredChangePublication } from '../../authored';
-import { DefaultAuthoredPlugin } from '../../authored';
+import { AuthoredPlugin } from '../../authored';
 import type { DecorationRefresh, Editor } from '../../core';
 
 export const observeSuggestionChanges = (
@@ -7,7 +7,7 @@ export const observeSuggestionChanges = (
   refresh: (input: DecorationRefresh) => void,
   onPublication?: (publication: AuthoredChangePublication) => void
 ) =>
-  editor.plugin(DefaultAuthoredPlugin).api.subscribeChanges((publication) => {
+  editor.plugin(AuthoredPlugin).api.subscribeChanges((publication) => {
     if (publication.nodeKeys.length > 0) {
       refresh({ nodeKeys: publication.nodeKeys });
     }

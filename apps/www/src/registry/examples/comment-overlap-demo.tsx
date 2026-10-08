@@ -27,13 +27,13 @@ export default function CommentOverlapDemo() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: commentUsers,
           initialComments,
         },
       }),
     ],
     initialValue: fixture.read.value(),
+    userId: 'alice',
   });
 
   return (

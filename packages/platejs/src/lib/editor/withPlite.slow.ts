@@ -1,10 +1,4 @@
-import {
-  createEditor as createPliteEditor,
-  property,
-  schema,
-  target,
-  type Value,
-} from '../../facade';
+import { property, schema, target, type Value } from '../../facade';
 import {
   getCompiledPlateContainerTypes,
   getPlateRuntime,
@@ -390,7 +384,7 @@ describe('createReactEditor', () => {
 
   describe('when default plugins', () => {
     it('have core plugins', () => {
-      const editor = createReactEditor({ editor: createPliteEditor() });
+      const editor = createReactEditor();
 
       expect(editor.id).toBeDefined();
       expect(editor.read((state) => state.history())).toBeDefined();
@@ -408,50 +402,9 @@ describe('createReactEditor', () => {
       expect(editor.read.view.isReadOnly()).toBe(false);
     });
 
-    it('publishes the Plate schema and empty-root default before the first user commit', () => {
-      const editor = createPliteEditor();
-      const observations: Array<{
-        children: unknown;
-        schema: ReturnType<typeof editor.read.schema.identity>;
-      }> = [];
-
-      editor.subscribeCommit(() => {
-        observations.push({
-          children: editor.read.children(),
-          schema: editor.read.schema.identity(),
-        });
-      });
-
-      createReactEditor({ editor });
-
-      expect(observations).toEqual([]);
-      expect(editor.read.schema.identity()).not.toBeNull();
-      expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], type: 'paragraph' },
-      ]);
-
-      editor.update.text.insert('x', {
-        at: { offset: 0, path: [0, 0] },
-      });
-
-      expect(observations).toEqual([
-        {
-          children: [{ children: [{ text: 'x' }], type: 'paragraph' }],
-          schema: editor.read.schema.identity(),
-        },
-      ]);
-
-      editor.api.history.undo();
-
-      expect(editor.read.children()).toEqual([
-        { children: [{ text: '' }], type: 'paragraph' },
-      ]);
-    });
-
     it('rejects an invalid initial root', () => {
       expect(() =>
         createReactEditor({
-          editor: createPliteEditor(),
           initialValue: [
             { children: [{ text: 'stable' }], type: 'not-a-plate-element' },
           ],
@@ -469,13 +422,11 @@ describe('createReactEditor', () => {
 
       expect(() =>
         createReactEditor({
-          editor: createPliteEditor(),
           initialValue: { children, selection } as never,
         })
       ).toThrow('field "selection" is not supported');
       expect(
         createReactEditor({
-          editor: createPliteEditor(),
           initialValue: { children },
           selection,
         }).read.selection()
@@ -494,9 +445,9 @@ describe('createReactEditor', () => {
       });
 
       for (const initialValue of [hidden, accessor]) {
-        expect(() =>
-          createReactEditor({ editor: createPliteEditor(), initialValue })
-        ).toThrow('JSON-compatible data');
+        expect(() => createReactEditor({ initialValue })).toThrow(
+          'JSON-compatible data'
+        );
       }
     });
 
@@ -549,7 +500,6 @@ describe('createReactEditor', () => {
         }),
       });
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [TxPlugin, TestBoldPlugin],
         selection: {
           kind: 'text',
@@ -620,7 +570,6 @@ describe('createReactEditor', () => {
         dependencies: [DependencyPlugin],
       });
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [DependentPlugin],
       });
       const names = getPlateRuntime(editor).pluginList.map(
@@ -661,7 +610,6 @@ describe('createReactEditor', () => {
       });
 
       createReactEditor({
-        editor: createPliteEditor(),
         plugins: [DependentPlugin, ExplicitDependencyPlugin],
       });
 
@@ -670,7 +618,6 @@ describe('createReactEditor', () => {
 
     it('runs update callbacks through the current Plite runtime', () => {
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [TestItalicPlugin],
         selection: {
           kind: 'text',
@@ -710,7 +657,6 @@ describe('createReactEditor', () => {
         }),
       }));
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [InlineTxPlugin],
         selection: {
           kind: 'text',
@@ -748,7 +694,6 @@ describe('createReactEditor', () => {
         },
       });
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [NonSelectableVoidPlugin],
         initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
       });
@@ -797,7 +742,6 @@ describe('createReactEditor', () => {
         type: 'nonSelectableBlock',
       };
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [
           FlowBlockPlugin,
           InlinePlugin,
@@ -859,7 +803,6 @@ describe('createReactEditor', () => {
         }),
       });
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [RowPlugin, CellPlugin, TonePlugin],
         schema: { id: 'plate-core-test', version: 4 },
         initialValue: [
@@ -910,7 +853,6 @@ describe('createReactEditor', () => {
 
     it('wraps directly fittable external content before publishing it', () => {
       const editor = createHeadlessEditor({
-        editor: createPliteEditor(),
         initialValue: [{ text: 'wrapped' }] as unknown as Value,
       });
 
@@ -919,28 +861,15 @@ describe('createReactEditor', () => {
       ]);
     });
 
-    it('preserves an existing document when initialValue is omitted', () => {
-      const rawEditor = createPliteEditor({
-        initialValue: [{ children: [{ text: 'existing' }], type: 'paragraph' }],
-      });
-
-      const editor = createHeadlessEditor({ editor: rawEditor });
-
-      expect(editor.read.children()).toEqual([
-        { children: [{ text: 'existing' }], type: 'paragraph' },
-      ]);
-    });
-
     it('requires explicit initialValue to contain a root element', () => {
-      expect(() =>
-        createHeadlessEditor({ editor: createPliteEditor(), initialValue: [] })
-      ).toThrow('initialValue must contain at least one primary-root element');
+      expect(() => createHeadlessEditor({ initialValue: [] })).toThrow(
+        'initialValue must contain at least one primary-root element'
+      );
     });
 
     it('rejects impossible external content before replacing the document', () => {
       expect(() =>
         createHeadlessEditor({
-          editor: createPliteEditor(),
           initialValue: [
             {
               children: [{ text: 'invalid' }],
@@ -964,12 +893,10 @@ describe('createReactEditor', () => {
         ] as Value,
       };
       const first = createReactEditor({
-        editor: createPliteEditor(),
         ...options,
         plugins: [QuotePlugin, TonePlugin],
       });
       const second = createReactEditor({
-        editor: createPliteEditor(),
         ...options,
         plugins: [TonePlugin, QuotePlugin],
       });
@@ -1000,7 +927,6 @@ describe('createReactEditor', () => {
         targetPlugins: [BadgePlugin] as const,
       });
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [IdentityPlugin, BadgePlugin],
         initialValue: [
           { children: [{ text: 'paragraph' }], type: 'paragraph' },
@@ -1035,7 +961,6 @@ describe('createReactEditor', () => {
         },
       });
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [ContainerPlugin],
       });
 
@@ -1044,15 +969,12 @@ describe('createReactEditor', () => {
       ]);
     });
 
-    it('publishes schema conflicts atomically', () => {
-      const editor = createPliteEditor();
-      const identityBefore = editor.read.schema.identity();
-      const valueBefore = editor.read.value();
+    it('rejects two plugins that declare the same element property', () => {
       const duplicatePropertyPlugin = (name: string) =>
         definePlugin(name, {
           schema: {
             properties: {
-              duplicate: schema.elementProperty(property.string(), {
+              shared: schema.elementProperty(property.string(), {
                 target: target.group('element'),
               }),
             },
@@ -1061,14 +983,9 @@ describe('createReactEditor', () => {
 
       expect(() =>
         createHeadlessEditor({
-          editor,
           plugins: [duplicatePropertyPlugin('a'), duplicatePropertyPlugin('b')],
         })
-      ).toThrow(/duplicate/i);
-      expect(identityBefore?.kind).toBe('derived');
-      expect(editor.read.schema.identity()).toBe(identityBefore);
-      expect(editor.read.value()).toEqual(valueBefore);
-      expect(editor.read.children()).toBe(valueBefore.children);
+      ).toThrow('overlap in declarations from "a" and "b"');
     });
   });
 
@@ -1076,7 +993,6 @@ describe('createReactEditor', () => {
     it('add custom plugins to core plugins', () => {
       const customPlugin = definePlugin('custom', {});
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [customPlugin],
       });
 
@@ -1090,7 +1006,6 @@ describe('createReactEditor', () => {
   describe('when plugins is an empty array', () => {
     it('only have core plugins', () => {
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [],
       });
 
@@ -1107,7 +1022,6 @@ describe('createReactEditor', () => {
         component: Component,
       });
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [Plugin],
       });
 
@@ -1119,7 +1033,6 @@ describe('createReactEditor', () => {
       const customComponent = () => null;
 
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         override: {
           h1: { component: customComponent },
         },
@@ -1138,7 +1051,6 @@ describe('createReactEditor', () => {
       });
 
       let editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [HeadingPlugin],
       });
 
@@ -1146,7 +1058,6 @@ describe('createReactEditor', () => {
       expect(h1Plugin.component).toBe(originalComponent);
 
       editor = createReactEditor({
-        editor: createPliteEditor(),
         override: {
           h1: { component: originalComponent },
         },
@@ -1164,7 +1075,6 @@ describe('createReactEditor', () => {
       const [ReactDOMPlugin] = getPlateCorePlugins();
 
       const editor = createReactEditor({
-        editor: createPliteEditor(),
         plugins: [ParagraphPlugin, ReactDOMPlugin, additionalPlugin],
       });
 
@@ -1203,57 +1113,6 @@ describe('createReactEditor', () => {
     });
   });
 
-  describe('when editor already has plugins', () => {
-    it('does not duplicate core plugins', () => {
-      const existingEditor = createPliteEditor() as any;
-      existingEditor.plugins = [
-        definePlugin('dom', {}),
-        definePlugin('history', {}),
-      ];
-
-      const editor = createReactEditor({ editor: existingEditor });
-
-      const names = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.name
-      );
-      expect(names.filter((name) => name === 'dom')).toHaveLength(1);
-      expect(names.filter((name) => name === 'history')).toHaveLength(1);
-    });
-
-    it('add missing core plugins', () => {
-      const existingEditor = createPliteEditor() as any;
-      existingEditor.pluginList = [
-        definePlugin('dom', {}),
-        definePlugin('history', {}),
-      ];
-
-      const editor = createReactEditor({ editor: existingEditor });
-
-      const names = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.name
-      );
-      coreNames.forEach((name) => {
-        expect(names).toContain(name);
-      });
-    });
-
-    it('does not preserve custom plugins', () => {
-      const customPlugin = definePlugin('custom', {});
-      const existingEditor = createPliteEditor() as any;
-      existingEditor.plugins = [
-        definePlugin('dom', {}),
-        definePlugin('history', {}),
-        customPlugin,
-      ];
-
-      const editor = createReactEditor({ editor: existingEditor });
-
-      expect(
-        getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
-      ).not.toContain('custom');
-    });
-  });
-
   it('forwards maxLength to the Plite runtime', () => {
     const editor = createHeadlessEditor({
       autoSelect: 'end',
@@ -1278,16 +1137,7 @@ describe('createReactEditor', () => {
 
   it('syncs explicit readOnly into the Plite view state', () => {
     const editor = createHeadlessEditor({
-      editor: createPliteEditor(),
       readOnly: true,
-    });
-
-    expect(editor.read.view.isReadOnly()).toBe(true);
-  });
-
-  it('preserves existing Plite readOnly state when readOnly is omitted', () => {
-    const editor = createHeadlessEditor({
-      editor: createPliteEditor({ readOnly: true }),
     });
 
     expect(editor.read.view.isReadOnly()).toBe(true);
@@ -1303,7 +1153,6 @@ describe('createReactEditor', () => {
       },
     });
     const editor = createHeadlessEditor({
-      editor: createPliteEditor(),
       plugins: [CustomParagraphPlugin, BlockquotePlugin],
       initialValue: [{ children: [{ text: 'one' }], type: 'blockquote' }],
     });
@@ -1330,7 +1179,6 @@ describe('createReactEditor', () => {
       schema: { mark: { typeChange: 'drop', property: property.boolean() } },
     });
     const editor = createHeadlessEditor({
-      editor: createPliteEditor(),
       plugins: [HeadingPlugin, TestBoldPlugin, TonePlugin, EphemeralPlugin],
       selection: {
         kind: 'text',
@@ -1358,7 +1206,6 @@ describe('createReactEditor', () => {
   });
 
   it('handle value, selection, and autoSelect options correctly', () => {
-    const editor = createPliteEditor();
     const value = [{ children: [{ text: 'Hello' }], type: 'paragraph' }];
     const selection = {
       kind: 'text' as const,
@@ -1367,7 +1214,6 @@ describe('createReactEditor', () => {
     };
 
     const result = createHeadlessEditor({
-      editor,
       selection,
       shouldNormalizeEditor: true,
       initialValue: value,
@@ -1381,7 +1227,6 @@ describe('createReactEditor', () => {
 
     // Test autoSelect start
     const editorWithAutoSelectStart = createHeadlessEditor({
-      editor: createPliteEditor(),
       autoSelect: 'start',
       initialValue: value,
     });
@@ -1395,7 +1240,6 @@ describe('createReactEditor', () => {
 
     // Test autoSelect end
     const editorWithAutoSelectEnd = createHeadlessEditor({
-      editor: createPliteEditor(),
       autoSelect: 'end',
       initialValue: value,
     });
@@ -1408,7 +1252,6 @@ describe('createReactEditor', () => {
     );
 
     const editorWithElementPathSelection = createHeadlessEditor({
-      editor: createPliteEditor(),
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0] },
@@ -1422,9 +1265,7 @@ describe('createReactEditor', () => {
     });
 
     // Test empty children
-    const editorWithEmptyChildren = createHeadlessEditor({
-      editor: createPliteEditor(),
-    });
+    const editorWithEmptyChildren = createHeadlessEditor({});
     expect(editorWithEmptyChildren.read.children()).toEqual([
       { children: [{ text: '' }], type: 'paragraph' },
     ]);
@@ -1435,7 +1276,6 @@ describe('createReactEditor', () => {
       const htmlString = '<p>Hello, <b>world!</b></p>';
 
       const editor = createHeadlessEditor({
-        editor: createPliteEditor(),
         plugins: [TestBoldPlugin, HtmlPlugin],
         initialValue: ({ editor: innerEditor }) => {
           const result = innerEditor.plugin(HtmlPlugin).api.parse(htmlString);
@@ -1455,15 +1295,6 @@ describe('createReactEditor', () => {
     });
   });
 
-  describe('when the previous editor has an id', () => {
-    it('reuses the raw editor id', () => {
-      const editor = createHeadlessEditor({
-        editor: createPliteEditor({ id: 'old' }),
-      });
-      expect(editor.id).toBe('old');
-    });
-  });
-
   describe('when the id option is provided during creation', () => {
     it('uses the provided id', () => {
       const editor = createHeadlessEditor({
@@ -1475,8 +1306,8 @@ describe('createReactEditor', () => {
 
   describe('when no id is provided', () => {
     it('use a unique id for each editor', () => {
-      const id1 = createHeadlessEditor({ editor: createPliteEditor() }).id;
-      const id2 = createHeadlessEditor({ editor: createPliteEditor() }).id;
+      const id1 = createHeadlessEditor().id;
+      const id2 = createHeadlessEditor().id;
       expect(id1).toBeTruthy();
       expect(id2).toBeTruthy();
       expect(id1).not.toEqual(id2);

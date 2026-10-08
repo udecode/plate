@@ -1,7 +1,7 @@
 import { act, render } from '@testing-library/react';
 import * as React from 'react';
 
-import { DefaultAuthoredPlugin } from '../../../authored';
+import { AuthoredPlugin } from '../../../authored';
 import type { Range } from '../../../core';
 import {
   commentBody,
@@ -42,10 +42,10 @@ const setup = (records: Array<ReturnType<typeof record>>) => {
       CommentsPlugin.configure({
         initialState: {
           initialComments: commentsFixture(records, initialValue),
-          currentUserId: 'alice',
         },
       }),
     ],
+    userId: 'alice',
   });
   return {
     editor,
@@ -339,10 +339,9 @@ it('keeps five shared conversations attached and painted in independently config
     userId: 'alice',
     initialValue,
     plugins: [
-      DefaultAuthoredPlugin,
+      AuthoredPlugin,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           initialComments: commentsFixture(
             ids.map((id) => record(id)),
             initialValue
@@ -428,7 +427,7 @@ it('keeps five shared conversations attached and painted in independently config
 
   await act(async () => {
     views[0]
-      .plugin(DefaultAuthoredPlugin)
+      .plugin(AuthoredPlugin)
       .api.setView({ intent: 'edit', projection: 'markup' });
   });
   expect(mounted.getByTestId('position-0').textContent).toBe('3:6');
@@ -437,7 +436,7 @@ it('keeps five shared conversations attached and painted in independently config
   expect(first.idsAt(projected.anchor)).toEqual(ids);
   await act(async () => {
     views[1]
-      .plugin(DefaultAuthoredPlugin)
+      .plugin(AuthoredPlugin)
       .api.setView({ intent: 'edit', projection: 'accepted' });
   });
   expect(mounted.getByTestId('position-1').textContent).toBe('1:4');
@@ -458,7 +457,7 @@ it('keeps five shared conversations attached and painted in independently config
   stopAttachments();
   stopPaint();
   views[0]
-    .plugin(DefaultAuthoredPlugin)
+    .plugin(AuthoredPlugin)
     .api.setView({ intent: 'edit', projection: 'accepted' });
   await Promise.resolve();
   expect(changed).not.toHaveBeenCalled();

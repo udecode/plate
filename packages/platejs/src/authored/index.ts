@@ -1,5 +1,4 @@
 export {
-  authored,
   authoredProjectionDiagnostics,
   isAuthoredEditor,
   createAuthoredImportedRevisionChange,
@@ -20,7 +19,6 @@ export {
   type AuthoredChangePart,
   type AuthoredChangeReview,
   type AuthoredDecision,
-  type AuthoredPlugin,
   type AuthoredDocumentProjection,
   type AuthoredFormatProjection,
   type AuthoredFormatPropertyChange,
@@ -38,4 +36,4 @@ export {
   type AuthoredStatus,
   type AuthoredView,
 } from 'plitejs/authored';
-export * from './PlateAuthoredPlugin';
+export * from './AuthoredPlugin';

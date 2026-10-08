@@ -74,7 +74,6 @@ export function SuggestionEditor() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: { alice: { id: 'alice', name: 'Alice' } },
         },
       }),
@@ -103,9 +102,9 @@ export function SuggestionEditor() {
 }
 ```
 
-Replace `'alice'` with the authenticated user's ID in both `userId` and Comments' `currentUserId`. `userId` attributes document changes. `currentUserId` identifies the person writing replies, while `users` supplies names and optional avatars.
+Replace `'alice'` with the authenticated user's ID. The editor's `userId` attributes document changes and comments, and `users` supplies names and optional avatars. A solo editor can omit `userId`; it then suggests and comments as the local user, `'local'`.
 
-`SuggestionPlugin` depends on `DefaultAuthoredPlugin`, which reads the editor's `userId` once per write transaction. Suggestion mode is unavailable without a current author, and programmatic attempts to enter it throw. Do not install another `authored(...)` descriptor alongside the kit.
+`SuggestionPlugin` depends on `AuthoredPlugin`, which reads the editor's `userId` once per write transaction. Do not install a second authored descriptor alongside the kit.
 
 </Steps>
 
@@ -156,9 +155,9 @@ To show accepted content without pending proposals, set `{ intent: 'edit', proje
 For proposed content without retained review fragments, set an advanced authored view directly:
 
 ```tsx
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 
 authored.api.setView({
   intent: 'propose',
@@ -234,9 +233,9 @@ Pass `{ changeId }` to amend a pending contribution owned by the current author.
 Authored owns review decisions and their structured results:
 
 ```tsx
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 const selection = authored.read.select({ ids: [changeId] });
 const result = authored.update.decide({
   action: 'accept',
@@ -313,7 +312,7 @@ Preserve input for non-applied results and thrown errors. Comments authorizes du
 
 ### `BaseSuggestionPlugin`
 
-Import from `platejs/suggestion`. It supplies the two suggestion modes and CSS-free semantic decorations, and depends on `DefaultAuthoredPlugin` for change records and identity.
+Import from `platejs/suggestion`. It supplies the two suggestion modes and CSS-free semantic decorations, and depends on `AuthoredPlugin` for change records and identity.
 
 ### `SuggestionPlugin`
 

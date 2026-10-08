@@ -96,6 +96,11 @@ const editor = createEditor({
 `doc` 和 `initialReady` 是必填项。传入 `awareness` 时，`awareness.doc` 必须与 `doc`
 是同一对象。只有带 Awareness 的绑定才拥有 presence 方法和光标 hooks。
 
+编辑器同时记录建议或评论时，为每位协作者传入 `createEditor({ userId })`。未传入时，
+所有协作者都以本地用户 `'local'` 写入，编辑器会在开发环境中于首次写入或评论时警告一次。
+仅用 Yjs 做持久化的单人编辑器可以传入任意稳定 ID。`userId` 在编辑器生命周期内固定，
+新编辑器不能绑定仍被旧编辑器持有的同一 `Y.Doc` 中的 `rootName`。
+
 `rootName` 命名整个协作文档：主文档子节点位于 `rootName`，命名根位于 `${rootName}:roots`；一次修改多个根的提交会成为一个 Yjs 事务和一个历史批次；awareness 会拒绝 anchor 和 focus 位于不同根的选择。
 
 普通服务端房间应在服务端保存规范 Yjs 更新，并省略 `seed`。只有应用已经为全新的空房间选定唯一

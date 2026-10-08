@@ -23,7 +23,7 @@ import type {
   AuthoredChangePart,
   AuthoredResult,
 } from 'platejs/authored';
-import { DefaultAuthoredPlugin, isAuthoredEditor } from 'platejs/authored';
+import { AuthoredPlugin, isAuthoredEditor } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
   type EditableSiblingProps,
@@ -444,7 +444,7 @@ const useDiscussionController = () => {
   const { api: comments } = useEditor().plugin(CommentsPlugin);
   const visibleThreadIds = useVisibleCommentThreadIds();
   const authoredView = useEditorViewState(editor, () => {
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
     return authored.installed ? authored.read.view().projection : null;
   });
   const [store] = React.useState(createDiscussionStore);
@@ -454,7 +454,7 @@ const useDiscussionController = () => {
     const locate = (id: string, thread = comments.getThread(id)) => {
       if (!thread || thread.resolution) return null;
       const attachment = api.attachment(id);
-      const authored = editor.plugin(DefaultAuthoredPlugin);
+      const authored = editor.plugin(AuthoredPlugin);
       const change =
         thread.target.type === 'change' && authored.installed
           ? authored.read.change(thread.target.id)
@@ -518,7 +518,7 @@ const useDiscussionController = () => {
     };
     const unsubscribeAttachments = api.subscribeAttachments(publish);
     const unsubscribeThreads = api.subscribeThreads(publish);
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
     const unsubscribeAuthored = authored.installed
       ? authored.api.subscribeChanges(({ changeIds }) => {
           if (changeIds.some((id) => suggestionThreads.has(id))) {
@@ -825,8 +825,7 @@ function SuggestionDiscussionCard({
   const outcome =
     outcomeState?.changeKey === changeKey ? outcomeState.result : null;
   const details = useEditorSelector(
-    (current) =>
-      current.plugin(DefaultAuthoredPlugin).read.details(change.id) ?? null,
+    (current) => current.plugin(AuthoredPlugin).read.details(change.id) ?? null,
     {
       shouldUpdate: (commit) =>
         !commit ||
@@ -846,7 +845,7 @@ function SuggestionDiscussionCard({
     action: 'accept' | 'reject',
     related: readonly string[] = []
   ) => {
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
     const latest = authored.read.change(change.id);
     if (!latest) {
       setOutcome({ status: 'stale', ids: [change.id] });
@@ -1199,7 +1198,7 @@ function DiscussionPopover({
   )?.range;
   const { api } = editor.plugin(CommentsPlugin);
   const commentRange = (() => {
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
 
     for (const id of activeCommentIds) {
       const attachment = api.attachment(id);

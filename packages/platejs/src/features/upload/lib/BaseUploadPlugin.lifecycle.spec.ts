@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import { authored } from '../../../authored';
+import { AuthoredPlugin } from '../../../authored';
 import {
   createEditor,
   createEditorView,
@@ -251,9 +251,10 @@ describe('Files admission and lifetime', () => {
             },
           },
         }),
-        authored({ authorId: () => 'alice' }),
+        AuthoredPlugin,
       ],
       initialValue: [paragraph()],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'edit', projection: 'markup' },
@@ -307,9 +308,10 @@ describe('Files admission and lifetime', () => {
             },
           },
         }),
-        authored({ authorId: () => 'alice' }),
+        AuthoredPlugin,
       ],
       initialValue: [paragraph('target')],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'edit', projection: 'markup' },

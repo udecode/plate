@@ -3,14 +3,9 @@
 
 import { createEditor } from 'platejs/react';
 
-import {
-  createEditor as createPliteEditor,
-  property,
-  type Value,
-} from '../../facade';
+import { property, type Value } from '../../facade';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { definePlugin } from '../../lib/plugin/definePlugin';
-import { createEditorWithEditor } from '../../react/editor/withPlate';
 import { jsxt, type TestEditor } from '../../testing';
 import { SingleBlockPlugin } from './SingleBlockPlugin';
 import { SingleLinePlugin } from './SingleLinePlugin';
@@ -64,7 +59,7 @@ const output = (
 
 describe('SingleBlockPlugin', () => {
   it('merge all blocks into the first block with soft breaks', () => {
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleBlockPlugin],
       selection: input.selection,
       initialValue: input.children,
@@ -84,7 +79,7 @@ describe('SingleBlockPlugin', () => {
         </hp>
       </editor>
     );
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleBlockPlugin],
       selection: innerInput.selection,
       initialValue: innerInput.children,
@@ -104,7 +99,7 @@ describe('SingleBlockPlugin', () => {
       </editor>
     ) as TestEditor;
 
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleBlockPlugin],
       initialValue: singleBlockInput.children,
     });
@@ -130,7 +125,7 @@ describe('SingleBlockPlugin', () => {
       </editor>
     ) as TestEditor;
 
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleBlockPlugin],
       initialValue: inputWithLineBreaks.children,
     });
@@ -158,7 +153,7 @@ describe('SingleBlockPlugin', () => {
       </editor>
     ) as TestEditor;
 
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleBlockPlugin],
       initialValue: emptyBlocksInput.children,
     });
@@ -169,7 +164,7 @@ describe('SingleBlockPlugin', () => {
   });
 
   it('preserves marks and inline voids while joining blocks', () => {
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleBlockPlugin, TestMarkPlugin, TestInlineVoidPlugin],
       initialValue: [
         {
@@ -222,7 +217,7 @@ describe('SingleBlockPlugin', () => {
       { type: 'paragraph', children: [{ text: 'first' }] },
       second,
     ];
-    const editor = createEditorWithEditor(createPliteEditor<Value>(), {
+    const editor = createEditor({
       plugins: [SingleBlockPlugin, ...plugins],
       initialValue,
     });

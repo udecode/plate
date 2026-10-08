@@ -42,7 +42,6 @@ export default function SuggestionPersistenceDemo() {
         ...DiscussionKit,
         CommentsPlugin.configure({
           initialState: {
-            currentUserId: 'alice',
             users: { alice: { id: 'alice', name: 'Alice' } },
             initialComments: loaded.comments,
           },

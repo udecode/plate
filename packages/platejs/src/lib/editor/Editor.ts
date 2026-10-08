@@ -35,16 +35,12 @@ export type {
   MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
 
-type PluginEditorRuntime = {
-  runtime: {
-    /**
-     * Current user ID for collaborative features (e.g., Yjs). Used to identify
-     * the creator of elements like combobox inputs.
-     */
-    userId?: string | null;
-    /** Whether initial value transformation is currently running. */
-    isNormalizing?: boolean;
-  };
+type PluginEditorUser = {
+  /**
+   * The user this editor writes and comments as, fixed for its life: the
+   * `createEditor` `userId`, or the local user, `'local'`, without one.
+   */
+  readonly userId: string;
 };
 
 type BasePortalFor<P, S, V extends Value> = [
@@ -106,7 +102,7 @@ export type InternalBaseEditorWithPlugins<
   V extends Value,
   P extends AnyBasePluginDefinition,
 > = Omit<EditorWithPlugins<V, P>, 'plugin'> &
-  PluginEditorRuntime &
+  PluginEditorUser &
   PluginRuntime<V, P>;
 
 /** Editor selected by value, runtime plugins, Plate plugins, and schema. */
@@ -154,5 +150,5 @@ export type InternalBaseEditorWithInstalledPlugins<
   InternalEditorWithInstalledPluginDefinitions<V, D, S, TRuntimePlugins>,
   'plugin'
 > &
-  PluginEditorRuntime &
+  PluginEditorUser &
   PluginRuntime<V, S>;

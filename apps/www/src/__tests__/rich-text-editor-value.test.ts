@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import { NodeApi } from 'platejs';
-import { DefaultAuthoredPlugin, projectAuthoredReview } from 'platejs/authored';
+import { AuthoredPlugin, projectAuthoredReview } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
@@ -21,7 +21,7 @@ const loadExample = (
       ...BaseEditorKit,
       SuggestionPlugin,
       CommentsPlugin.configure({
-        initialState: { currentUserId: 'alice', initialComments: comments },
+        initialState: { initialComments: comments },
       }),
     ],
     initialValue: structuredClone(document),
@@ -67,7 +67,7 @@ describe('saved rich-text playground', () => {
         (item) => item.authorId === authorId
       )!;
       const parts = editor
-        .plugin(DefaultAuthoredPlugin)
+        .plugin(AuthoredPlugin)
         .read.details(change.id)?.parts;
 
       expect(parts?.status).toBe('available');
@@ -171,7 +171,7 @@ describe('saved rich-text playground', () => {
     (authorId) => {
       const original = JSON.stringify(richTextEditorValue);
       const editor = loadExample();
-      const authored = editor.plugin(DefaultAuthoredPlugin);
+      const authored = editor.plugin(AuthoredPlugin);
       const changes = authored.read.changes({ status: 'pending' }).items;
       const change = changes.find((item) => item.authorId === authorId)!;
 
@@ -197,16 +197,15 @@ describe('saved rich-text playground', () => {
       );
       expect(JSON.stringify(richTextEditorValue)).toBe(original);
       expect(
-        loadExample()
-          .plugin(DefaultAuthoredPlugin)
-          .read.changes({ status: 'pending' }).items
+        loadExample().plugin(AuthoredPlugin).read.changes({ status: 'pending' })
+          .items
       ).toEqual(changes);
     }
   );
 
   it('rejects the suggested link and text while preserving the other authors and comment anchor', () => {
     const editor = loadExample();
-    const authored = editor.plugin(DefaultAuthoredPlugin);
+    const authored = editor.plugin(AuthoredPlugin);
     const alice = authored.read
       .changes({ status: 'pending' })
       .items.find(({ authorId }) => authorId === 'alice')!;
@@ -242,7 +241,7 @@ describe('saved rich-text playground', () => {
     'rejects %s independently of the other suggestions',
     (authorId) => {
       const editor = loadExample();
-      const authored = editor.plugin(DefaultAuthoredPlugin);
+      const authored = editor.plugin(AuthoredPlugin);
       const change = authored.read
         .changes({ status: 'pending' })
         .items.find((item) => item.authorId === authorId)!;

@@ -144,6 +144,7 @@ export {
   initializePluginEntries,
   initializePlugins,
 } from '../create-editor';
+export { isAuthorId } from '../core/authored-document-capability';
 export type {
   NativeAuthoredDocumentProjection,
   NativeAuthoredProjectionDiagnostic,

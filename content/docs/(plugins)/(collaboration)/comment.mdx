@@ -61,26 +61,25 @@ import { AllCommentsButton, CommentToolbarButton } from "@/components/editor/com
 import { DiscussionKit } from "@/components/editor/discussion";
 import { Editor, EditorContainer } from "@/components/editor/editor";
 import { LinkKit } from "@/components/editor/link";
-import { SuggestionKit } from "@/components/editor/suggestion";
 import { Toolbar } from "@/components/editor/toolbar";
 
-export function CommentsEditor({ value, initialComments, users, currentUserId }: {
+export function CommentsEditor({ value, initialComments, users, userId }: {
   value: EditorValueInput<Value>;
   initialComments: CommentsJSON;
   users: Record<string, CommentUser>;
-  currentUserId: string;
+  userId: string;
 }) {
   const editor = useCreateEditor({
     plugins: [
       ...BasicBlocksKit,
       ...LinkKit,
-      ...SuggestionKit,
       ...DiscussionKit,
       CommentsPlugin.configure({
-        initialState: { initialComments, users, currentUserId },
+        initialState: { initialComments, users },
       }),
     ],
     initialValue: value,
+    userId,
   });
 
   return (
@@ -123,7 +122,7 @@ Await the Comments mutation in `CommentComposer`'s `onSubmit` and treat only `st
 
 ### Read-only and static
 
-Open **All comments** in the read-only document to read, navigate, and reply. Document read-only prevents range creation and text edits; `currentUserId` and `mutate` still control conversation actions. The static snapshot paints the same initial ranges without thread controls.
+Open **All comments** in the read-only document to read, navigate, and reply. Document read-only prevents range creation and text edits. Conversation actions still record the editor's `userId`, and `mutate` still authorizes them. The static snapshot paints the same initial ranges without thread controls.
 
 <ComponentPreview name="comment-review-demo" height="720px" />
 
@@ -213,13 +212,12 @@ const candidate = createEditor({
     ...documentPlugins,
     CommentsPlugin.configure({
       initialState: {
-        currentUserId,
         initialComments: importedComments,
         users: importedUsers,
       },
     }),
   ],
-  userId: currentUserId,
+  userId: editor.userId,
 });
 
 setEditor(candidate);
@@ -236,7 +234,7 @@ composer state or retired mutation queues. Applications that must preserve the
 editor instance need one owner that can commit or discard all of those runtime
 resources together.
 
-If saved opaque ranges contain Authored bindings, install the same Authored runtime used for the saved document when loading `initialComments`. `SuggestionKit` supplies `DefaultAuthoredPlugin`; for a headless Comments-only setup, add the matching Authored plugin from `platejs/authored`. Preserve the full saved document and required authored history. A missing runtime or missing history rejects restoration; saved bindings do not fall back to plain coordinates. Authored remains optional for ordinary range comments.
+If saved opaque ranges contain Authored bindings, install the same Authored runtime used for the saved document when loading `initialComments`. `SuggestionKit` supplies `AuthoredPlugin`; for a headless Comments-only setup, add the matching Authored plugin from `platejs/authored`. Preserve the full saved document and required authored history. A missing runtime or missing history rejects restoration; saved bindings do not fall back to plain coordinates. Authored remains optional for ordinary range comments.
 
 Ordinary reload starts fresh local undo. `getThreads()` reads live conversation records; use `toJSON()` to persist their revision-bound attachments. Do not export the envelope on every keystroke or from attachment subscriptions.
 
@@ -317,7 +315,7 @@ Saved range targets cannot be restored against a changed Yjs room baseline. A st
 | Copied `comment`, `comment-toolbar-button`, and `discussion` items | Style highlights; render forms, cards, live block triggers, Floating Discussion, and document-level discovery |
 | Your application | Pair documents and Comments JSON; supply users, authorize mutations, and persist canonical records |
 
-Comment messages remain separate from document nodes and marks. A message edit notifies that thread's subscribers without resolving anchors or refreshing editor decorations. `users` and `currentUserId` use the plugin store; subscribe with `usePluginStore` and update them through `store.set`.
+Comment messages remain separate from document nodes and marks. A message edit notifies that thread's subscribers without resolving anchors or refreshing editor decorations. `users` uses the plugin store; subscribe with `usePluginStore` and update it through `store.set`. Threads, replies and resolutions record the editor's `userId`, or the local user, `'local'`, when the editor has none.
 
 ## Manual Usage
 
@@ -333,9 +331,10 @@ import { BaseCommentsPlugin } from "platejs/comments";
 
 const editor = createEditor({
   plugins: [BaseParagraphPlugin, BaseCommentsPlugin.configure({
-    initialState: { initialComments: revision.comments, currentUserId: "alice" },
+    initialState: { initialComments: revision.comments },
   })],
   initialValue: revision.document,
+  userId: "alice",
 });
 ```
 

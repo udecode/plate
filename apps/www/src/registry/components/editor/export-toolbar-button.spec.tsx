@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, mock } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { BaseParagraphPlugin, createEditor, createEditorView } from 'platejs';
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot } from 'platejs/react';
 import React from 'react';
@@ -66,13 +66,7 @@ describe('ExportToolbarButton', () => {
     const { ExportToolbarButton } = await import('./export-toolbar-button');
     const editor = createEditor({
       initialValue: [{ children: [{ text: 'ABCDE' }], type: 'paragraph' }],
-      plugins: [
-        BaseParagraphPlugin,
-        DefaultAuthoredPlugin,
-        CommentsPlugin.configure({
-          initialState: { currentUserId: 'alice' },
-        }),
-      ],
+      plugins: [BaseParagraphPlugin, AuthoredPlugin, CommentsPlugin],
       userId: 'alice',
     });
 

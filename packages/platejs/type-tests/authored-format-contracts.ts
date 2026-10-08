@@ -5,7 +5,7 @@ import {
   type ValueOf,
 } from 'platejs';
 import {
-  authored,
+  AuthoredPlugin,
   createAuthoredReviewDocument,
   parseAuthoredDocument,
   projectAuthoredDocument,
@@ -21,10 +21,11 @@ import {
 import { MarkdownPlugin } from 'platejs/markdown';
 import { renderStaticHtml } from 'platejs/static';
 
-const plugins = [authored({ authorId: 'alice' }), MarkdownPlugin] as const;
+const plugins = [AuthoredPlugin, MarkdownPlugin] as const;
 const editor = createEditor({
   plugins,
   initialValue: [{ children: [{ text: 'Document' }], type: 'paragraph' }],
+  userId: 'alice',
 });
 const snapshot = projectAuthoredReview(editor.read.value());
 const projection = projectAuthoredDocument(editor.read.value(), {

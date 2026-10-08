@@ -918,8 +918,6 @@ ConfiguredPropertyPlugin.configure({
 
 // @ts-expect-error The compiled Plate model is a private registry resource.
 void editor.api.plateModel;
-// @ts-expect-error The compiled Plate model is not exposed through runtime.
-void editor.runtime.model;
 
 definePlugin('exclusiveSchema', {
   // @ts-expect-error A plugin cannot own both an element and a mark.

@@ -27,13 +27,13 @@ export default function CommentDemo() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: commentUsers,
           initialComments: snapshot.comments,
         },
       }),
     ],
     initialValue: snapshot.document,
+    userId: 'alice',
   });
 
   return (

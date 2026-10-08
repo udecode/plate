@@ -1,14 +1,7 @@
-import {
-  createEditor as createPliteEditor,
-  defineEditorSchema,
-  schema,
-  property,
-  type Value,
-} from '../../../facade';
+import { defineEditorSchema, schema, property } from '../../../facade';
 import { BaseHeadingPlugin } from '../../../features/basic-nodes/lib/BaseHeadingPlugins';
 import { deleteBackward, deleteForward, insertBreak } from '../../../testing';
 import { createEditor } from '../../editor';
-import { createEditorWithEditor } from '../../editor/withPlite';
 import { definePlugin } from '../../plugin';
 import { BaseParagraphPlugin } from '../paragraph';
 
@@ -39,13 +32,13 @@ describe('OverridePlugin', () => {
       })
     ).toBe(true);
     expect(() =>
-      createEditorWithEditor(createPliteEditor<Value>(), {
+      createEditor({
         plugins: [CalloutPlugin],
         initialValue: [{ children: [{ text: 'unknown' }], type: 'missing' }],
       })
     ).toThrow(/unknown editor element type "missing"/i);
     expect(() =>
-      createEditorWithEditor(createPliteEditor<Value>(), {
+      createEditor({
         plugins: [TonePlugin],
         initialValue: [
           { children: [{ text: 'invalid', tone: true }], type: 'paragraph' },
@@ -54,7 +47,7 @@ describe('OverridePlugin', () => {
     ).toThrow(/text property "tone".*string/i);
   });
 
-  it('selects a previous block void before deleting it', () => {
+  it('selects a previous block void before deleting it [EDIT-ATOMIC-BS-START-001]', () => {
     const VoidPlugin = definePlugin('void', {
       schema: { element: { void: 'block' } },
     });

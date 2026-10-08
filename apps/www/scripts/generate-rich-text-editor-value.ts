@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { createEditor } from 'platejs';
-import { authored } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import type { CommentsJSON } from 'platejs/comments';
 
 import {
@@ -12,14 +12,16 @@ import {
 } from '../src/registry/blocks/editor-ai/components/editor/rich-text-editor-value';
 import { BaseEditorKit } from '../src/registry/components/editor/plugins-static';
 
+const plugins = [...BaseEditorKit, AuthoredPlugin];
+
 // Keep existing-text edits independent of the later suggested link insertion.
-let authorId = 'bob';
-const editor = createEditor({
-  plugins: [...BaseEditorKit, authored({ authorId: () => authorId })],
+const bob = createEditor({
+  plugins,
   initialValue: { children: richTextEditorValue.children },
+  userId: 'bob',
 });
 
-editor.update((tx) => {
+bob.update((tx) => {
   const offset = 'Review and refine content seamlessly. Use  or to '.length;
 
   tx.authored.propose();
@@ -30,9 +32,13 @@ editor.update((tx) => {
     },
   });
 });
-authorId = 'charlie';
+const charlie = createEditor({
+  plugins,
+  initialValue: bob.read.value(),
+  userId: 'charlie',
+});
 let overlapChangeId = '';
-editor.update((tx) => {
+charlie.update((tx) => {
   overlapChangeId = tx.authored.propose();
   tx.text.insert('overlapping ', {
     at: {
@@ -41,7 +47,11 @@ editor.update((tx) => {
     },
   });
 });
-authorId = 'alice';
+const editor = createEditor({
+  plugins,
+  initialValue: charlie.read.value(),
+  userId: 'alice',
+});
 editor.update((tx) => {
   tx.authored.propose();
   tx.nodes.insert(

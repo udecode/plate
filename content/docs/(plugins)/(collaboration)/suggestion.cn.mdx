@@ -72,7 +72,6 @@ export function SuggestionEditor() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: { alice: { id: 'alice', name: 'Alice' } },
         },
       }),
@@ -101,9 +100,9 @@ export function SuggestionEditor() {
 }
 ```
 
-将 `userId` 和 Comments 的 `currentUserId` 中的 `'alice'` 替换为已认证用户的 ID。`userId` 记录文档修改的作者；`currentUserId` 标识回复作者；`users` 提供姓名和可选头像。
+将 `'alice'` 替换为已认证用户的 ID。编辑器的 `userId` 记录文档修改和评论的作者；`users` 提供姓名和可选头像。单人编辑器可以省略 `userId`，此时以本地用户 `'local'` 提出建议和评论。
 
-`SuggestionPlugin` 依赖 `DefaultAuthoredPlugin`，后者在每个写入 transaction 中读取一次 editor 的 `userId`。没有当前作者时，Suggestion 模式不可用；通过代码尝试进入该模式会抛出错误。不要在套件旁安装另一个 `authored(...)` 描述符。
+`SuggestionPlugin` 依赖 `AuthoredPlugin`，后者在每个写入 transaction 中读取一次 editor 的 `userId`。不要在套件旁安装第二个 authored 描述符。
 
 </Steps>
 
@@ -152,9 +151,9 @@ export function SuggestionModeButton() {
 如需显示不含保留审阅片段的 proposed 内容，请直接设置高级 authored view：
 
 ```tsx
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 
 authored.api.setView({
   intent: 'propose',
@@ -230,9 +229,9 @@ editor.update((tx) => {
 Authored 管理审阅决定和结构化结果：
 
 ```tsx
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 const selection = authored.read.select({ ids: [changeId] });
 const result = authored.update.decide({
   action: 'accept',
@@ -308,7 +307,7 @@ if (result.status === 'applied') {
 
 ### `BaseSuggestionPlugin`
 
-从 `platejs/suggestion` 导入。它提供两个建议模式和无 CSS 的语义 decoration，并依赖 `DefaultAuthoredPlugin` 管理 change record 和身份。
+从 `platejs/suggestion` 导入。它提供两个建议模式和无 CSS 的语义 decoration，并依赖 `AuthoredPlugin` 管理 change record 和身份。
 
 ### `SuggestionPlugin`
 

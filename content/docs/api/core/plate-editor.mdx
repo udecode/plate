@@ -47,27 +47,23 @@ The editor owns document reads, transactions, typed plugin access, DOM services,
       Return the descriptor-scoped portal for a plugin's API, update commands,
       schema identity, and store. The descriptor supplies the inferred type.
     </APIItem>
-    <APIItem name="runtime" type="Editor['runtime']">
-      Public Plate runtime-instance and lifecycle state. Compiled plugin
-      registries stay private to Plate.
+    <APIItem name="userId" type="string">
+      The user this editor writes and comments as. It is the `createEditor`
+      `userId`, or the local user, `'local'`, without one, and it stays fixed
+      for the editor's life.
     </APIItem>
   </APIAttributes>
 </API>
 
 ## Runtime state
 
-React and DOM runtime state is read through Plate runtime APIs. Plate exposes only editor identity and lifecycle fields on `editor.runtime`; compiled plugin registries are private implementation data.
+React and DOM runtime state is read through Plate runtime APIs. Compiled plugin registries are private implementation data.
 
 | State       | Read path                                                          | Set by                                                |
 | ----------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
 | composition | `editor.api.react.isComposing()`                                   | Plate React composition runtime.                      |
 | focus       | `editor.api.react.isFocused()`                                     | Plate React focus runtime.                            |
 | read-only   | `editor.read.view.isReadOnly()` or `editor.api.react.isReadOnly()` | `createEditor`, `<EditorRoot>`, and `<EditorContent>`. |
-
-| Field           | Type                          | Notes                                                   |
-| --------------- | ----------------------------- | ------------------------------------------------------- |
-| `userId`        | `string \| null \| undefined` | Collaborative identity passed through editor options.   |
-| `isNormalizing` | `boolean \| undefined`        | `true` while Plate applies initial-value normalization. |
 
 ## Plugin access
 
@@ -152,7 +148,7 @@ The headless `createEditor` performs the shared setup:
 
 | Step                | Behavior                                                                                                                                             |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Runtime state       | Preserves Plate `editor.id` and initializes `runtime.userId`.                                                                                        |
+| Runtime state       | Preserves Plate `editor.id` and, once construction succeeds, fixes `editor.userId`.                                                                 |
 | Plugin access       | Publishes installed APIs under `editor.api[name]` and resolves descriptor-owned portals through `editor.plugin(Plugin)`.                            |
 | Core plugins        | Resolves core plugins, replaces core plugins with custom plugins that share the same name, and resolves the root plugin.                             |
 | Components          | Merges `components` into root-plugin component overrides.                                                                                            |

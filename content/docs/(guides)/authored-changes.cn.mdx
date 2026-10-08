@@ -18,8 +18,8 @@ Authored changes 在一个保存的文档中维护已接受内容、proposal、�
 | ---------------------------------- | ---------------------------------------------------------------------- |
 | 在编辑和建议模式之间切换           | `platejs/suggestion/react` 的 `SuggestionPlugin`                       |
 | 添加复制的高亮和审阅卡片           | [SuggestionKit](/docs/suggestion) 和 [DiscussionKit](/docs/discussion) |
-| 使用 Plate 的 `userId` 记录 change | `platejs/authored` 的 `DefaultAuthoredPlugin`                          |
-| 选择自定义作者解析器或保留历史     | `platejs/authored` 的 `authored(options)`                              |
+| 以编辑器的用户记录 change          | `platejs/authored` 的 `AuthoredPlugin`                                 |
+| 保留已接受历史以执行 revert        | `AuthoredPlugin.configure({ initialState: { retainHistory: true } })`  |
 | 读取、决定、解决或 revert change   | 已安装的 authored plugin portal                                        |
 | 附加对话                           | 使用 `{ type: 'change', id }` target 的 `CommentsPlugin`               |
 
@@ -27,44 +27,42 @@ Suggestion 是 authored change 上的行为和展示层。它不会定义另一�
 
 ## 安装 authored changes
 
-`DefaultAuthoredPlugin` 在每个 transaction 中从 Plate editor 的 `userId` 解析一次作者：
+`AuthoredPlugin` 在每个 transaction 中从 Plate editor 的 `userId` 解析一次作者：
 
 ```tsx title="editor.ts" showLineNumbers
 import { BaseParagraphPlugin, createEditor } from "platejs";
-import { DefaultAuthoredPlugin } from "platejs/authored";
+import { AuthoredPlugin } from "platejs/authored";
 
 const editor = createEditor({
-  plugins: [BaseParagraphPlugin, DefaultAuthoredPlugin],
+  plugins: [BaseParagraphPlugin, AuthoredPlugin],
   initialValue: [
     { type: "paragraph", children: [{ text: "Review this sentence." }] },
   ],
   userId: "alice",
 });
 
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 ```
 
-使用经过认证且稳定的用户 ID。`authored.read.canPropose()` 可检查 resolver
-当前是否提供作者。没有作者时，`SuggestionPlugin` 会拒绝进入 Suggestion
-模式，原生 authored write 也会在 transaction 边界拒绝缺失的身份。
+没有 `userId` 的编辑器以本地用户 `'local'` 写入，因此单人编辑器无需任何设置，AI
+建议也一样。多人编辑同一文档时，请传入经过认证且稳定的用户 ID。
 
-如需自定义解析器或保留已接受历史，请创建一个描述符，并使用同一个描述符访问 portal：
+如需保留已接受历史，请配置同一个描述符。编辑器只在创建时读取一次 `retainHistory`：
 
 ```tsx title="history-editor.ts" showLineNumbers
 import { BaseParagraphPlugin, createEditor } from "platejs";
-import { authored } from "platejs/authored";
-
-const RetainedAuthoredPlugin = authored({
-  authorId: () => session.user.id,
-  retainHistory: true,
-});
+import { AuthoredPlugin } from "platejs/authored";
 
 const historyEditor = createEditor({
-  plugins: [BaseParagraphPlugin, RetainedAuthoredPlugin],
+  plugins: [
+    BaseParagraphPlugin,
+    AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
+  ],
   initialValue,
+  userId: session.user.id,
 });
 
-const retainedAuthored = historyEditor.plugin(RetainedAuthoredPlugin);
+const retainedAuthored = historyEditor.plugin(AuthoredPlugin);
 ```
 
 `retainHistory` 保留选择性 revert 所需的已关闭 edit body。如果应用只需要待处理审阅和作者归属，可以省略它。
@@ -97,7 +95,7 @@ editor.plugin(SuggestionPlugin).api.setMode("suggesting");
 高级 projection 使用 authored portal：
 
 ```tsx
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 
 authored.api.setView({
   intent: "propose",
@@ -120,7 +118,7 @@ Intent 和 projection 属于精确 view。Selection、clipboard input、command 
 先读取一页待处理 change，再为决定捕获绑定 revision 的 selection：
 
 ```tsx
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 const pending = authored.read.changes({
   authorId: "alice",
   limit: 50,
@@ -200,7 +198,7 @@ Plate History 通过 `editor.api.history.undo()` 和 `redo()` 反转本地交互
 const savedDocument = editor.read.value();
 
 const restored = createEditor({
-  plugins: [BaseParagraphPlugin, DefaultAuthoredPlugin],
+  plugins: [BaseParagraphPlugin, AuthoredPlugin],
   initialValue: savedDocument,
   userId: "alice",
 });
@@ -280,11 +278,11 @@ semantic HTML 时，调用 `editor.api.html.serialize({ projection })`。两种 
 | Markdown | Plain Markdown | 不支持；保存 authored JSON |
 | Semantic HTML | Feature-mapped HTML | 不支持；保存 authored JSON |
 | Static HTML | Component-rendered HTML | 不支持；保存 authored JSON |
-| DOCX | Projected Word document | Word revision 加 canonical authored package part |
+| DOCX | Projected Word document | Word revision；精确状态保存 authored JSON |
 
 DOCX review 导出会在 Word 无法表达 native construct 时报告 `lossy-content`
-或 `unsupported-content`。只有调用方授予 authored trust，且可见 Word content
-仍与 authored part 对应时，才能恢复精确 authored data。
+或 `unsupported-content`。需要精确保留该 construct 时，把 authored JSON 与文件
+一起保存。
 
 ## 协作
 
@@ -296,27 +294,22 @@ Yjs adapter 在一个 remote transaction 中应用 authored operation 和决定�
 
 ## API 参考
 
-### `DefaultAuthoredPlugin`
+### `AuthoredPlugin`
 
-从 `platejs/authored` 导入标准描述符。它从 Plate editor 的 `userId` 解析作者，并使用默认 retention。`SuggestionPlugin` 和 `AIChatPlugin` 依赖此描述符。
+从 `platejs/authored` 导入标准描述符。它以 Plate editor 的 `userId` 记录每个 change；编辑器没有 `userId` 时，以本地用户 `'local'` 记录。`SuggestionPlugin` 和 `AIChatPlugin` 依赖此描述符。
 
-### `authored(options)`
-
-从 `platejs/authored` 导入，并创建自定义 authored 描述符。
-
-| 选项            | 类型                                                  | 用途                                                       |
-| --------------- | ----------------------------------------------------- | ---------------------------------------------------------- |
-| `authorId`      | `string \| ((editor) => string \| null \| undefined)` | 必填。每个 transaction 解析一次非空作者 ID。               |
-| `retainHistory` | `boolean`                                             | 保留已关闭 edit body 以执行选择性 revert。默认为 `false`。 |
+| 选项                         | 类型      | 用途                                                                       |
+| ---------------------------- | --------- | -------------------------------------------------------------------------- |
+| `initialState.retainHistory` | `boolean` | 保留已关闭 edit body 以执行选择性 revert。编辑器只在创建时读取一次。默认为 `false`。 |
 
 ### Transaction、读取和更新
 
-执行 `const authored = editor.plugin(DefaultAuthoredPlugin)` 后，可使用以下方法：
+执行 `const authored = editor.plugin(AuthoredPlugin)` 后，可使用以下方法：
 
 | 接口                                      | 用途                                                               |
 | ----------------------------------------- | ------------------------------------------------------------------ |
 | `tx.authored.propose(options?)`           | 开始 proposal、为新 proposal 指定 `{ changeId }`，或修订当前作者的待处理 change。 |
-| `authored.read.canPropose()`              | 检查当前身份是否可以创建 proposal。                                |
+| `authored.read.canPropose()`              | 检查当前身份是否可以创建 proposal；使用 `AuthoredPlugin` 时始终为 true。 |
 | `authored.read.view()`                    | 读取当前 view 的 intent 和 projection。                            |
 | `authored.read.change(id)`                | 读取一个逻辑 change；不存在时返回 `null`。                         |
 | `authored.read.details(id)`               | 读取一条 change 的语义 part 和决定历史；不存在时返回 `null`。      |

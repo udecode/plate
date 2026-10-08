@@ -1,26 +1,16 @@
-import {
-  createEditor as createPliteEditor,
-  type Editor as RuntimeEditor,
-  type RuntimePluginReference,
-  type Value,
-} from '../../facade';
+import type { RuntimePluginReference, Value } from '../../facade';
 import type { GeneratedEditorValue } from '../../internal/editor/generatedEditorTypes';
 import type { EditorApplicationSchema, EditorValueInput } from '../../lib';
 import {
-  applyEditor,
+  assertConstructorOptions,
+  buildEditor,
   type EditorOptions as HeadlessEditorOptions,
   type PlatePluginsFromTuple,
   type RuntimePluginsFromTuple,
 } from '../../lib/editor/withPlite';
 import type { Shortcuts, PluginDefinitionInput } from '../plugin';
 import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
-import type {
-  InferEditorPlugins,
-  InferPlateEditorSchemaPlugins,
-  InternalReactEditorMutationProvider,
-  InternalReactEditorWithInstalledPlugins,
-  Editor,
-} from './Editor';
+import type { Editor } from './Editor';
 import { getPlateCorePlugins } from './getPlateCorePlugins.internal';
 
 type PluginInput = RuntimePluginReference;
@@ -72,52 +62,6 @@ type ReactEditorOptions<
     schema?: TSchema;
   };
 
-export const applyPlateEditor = <
-  V extends Value = Value,
-  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
-  const TSchema extends EditorApplicationSchema | undefined = undefined,
-  E extends RuntimeEditor = RuntimeEditor,
->(
-  e: E,
-  options: ReactEditorOptions<V, TPlugins, TSchema>
-): InternalReactEditorWithInstalledPlugins<
-  V,
-  InferEditorPlugins<PlatePluginsFromTuple<TPlugins>>,
-  InternalReactEditorMutationProvider<
-    PlatePluginsFromTuple<TPlugins>,
-    InferPlateEditorSchemaPlugins<PlatePluginsFromTuple<TPlugins>>,
-    TSchema
-  >,
-  RuntimePluginsFromTuple<TPlugins>
-> => {
-  const { navigationFeedback, plugins = [], readOnly, ...rest } = options;
-  const combinedPlugins = [
-    ...getPlateCorePlugins({ navigationFeedback }),
-    ...plugins,
-  ];
-
-  const editor = applyEditor(
-    e,
-    {
-      readOnly,
-      ...rest,
-      plugins: combinedPlugins,
-    } as unknown as Parameters<typeof applyEditor>[1],
-    false
-  );
-
-  return editor as unknown as InternalReactEditorWithInstalledPlugins<
-    V,
-    InferEditorPlugins<PlatePluginsFromTuple<TPlugins>>,
-    InternalReactEditorMutationProvider<
-      PlatePluginsFromTuple<TPlugins>,
-      InferPlateEditorSchemaPlugins<PlatePluginsFromTuple<TPlugins>>,
-      TSchema
-    >,
-    RuntimePluginsFromTuple<TPlugins>
-  >;
-};
-
 type CreateEditorOptionsForValue<
   V extends Value,
   TPlugins extends readonly RuntimePluginReference[],
@@ -125,8 +69,6 @@ type CreateEditorOptionsForValue<
 > = Partial<Omit<ReactEditorOptions<V, TPlugins, TSchema>, 'plugins'>> & {
   /** Stable logical identity for the created editor. */
   id?: string;
-  /** Existing editor to enhance instead of allocating a new editor. */
-  editor?: RuntimeEditor<any, any>;
   plugins?: TPlugins;
 };
 
@@ -137,28 +79,6 @@ export type CreateEditorOptions<
     | EditorApplicationSchema
     | undefined,
 > = CreateEditorOptionsForValue<V, TPlugins, TSchema>;
-
-export function createEditorWithEditor<
-  V extends Value = Value,
-  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
-  const TSchema extends EditorApplicationSchema | undefined = undefined,
->(
-  editor: RuntimeEditor<any, any>,
-  options: CreateEditorOptions<V, TPlugins, TSchema> = {}
-): Editor<
-  V,
-  RuntimePluginsFromTuple<TPlugins>,
-  PlatePluginsFromTuple<TPlugins>,
-  TSchema
-> {
-  const { id: _id, ...editorOptions } = options;
-  const apply = applyPlateEditor as unknown as (
-    editor: RuntimeEditor,
-    options: unknown
-  ) => unknown;
-
-  return apply(editor, editorOptions) as any;
-}
 
 /**
  * Creates a Plate editor (React version).
@@ -242,20 +162,25 @@ export function createEditor(options: unknown = {}): unknown {
     readonly RuntimePluginReference[],
     EditorApplicationSchema | undefined
   >;
-  const { editor: inputEditor, id, ...editorOptions } = resolvedOptions;
-  const editor =
-    inputEditor ??
-    createPliteEditor({
-      id,
-      lifecycleErrorSink: resolvedOptions.lifecycleErrorSink,
-      maxLength: resolvedOptions.maxLength,
-      readOnly: resolvedOptions.readOnly,
-    });
 
-  return applyPlateEditor<
-    Value,
-    readonly RuntimePluginReference[],
-    EditorApplicationSchema | undefined,
-    RuntimeEditor<Value, any>
-  >(editor as RuntimeEditor<Value, any>, editorOptions);
+  assertConstructorOptions(resolvedOptions);
+  // Named reads keep allocation options that the options object inherits.
+  const {
+    id,
+    lifecycleErrorSink,
+    maxLength,
+    navigationFeedback,
+    plugins = [],
+    readOnly,
+    ...rest
+  } = resolvedOptions;
+
+  return buildEditor({
+    ...rest,
+    id,
+    lifecycleErrorSink,
+    maxLength,
+    plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
+    readOnly,
+  });
 }

@@ -37,10 +37,12 @@ Install `FindKit` with the rest of your editor plugins:
 import { createEditor } from 'platejs/react';
 
 import { FindKit } from '@/components/editor/find';
-import { EditorKit } from '@/components/editor/plugins';
 
 const editor = createEditor({
-  plugins: [...EditorKit, ...FindKit],
+  plugins: [
+    // ...otherPlugins,
+    ...FindKit,
+  ],
 });
 ```
 

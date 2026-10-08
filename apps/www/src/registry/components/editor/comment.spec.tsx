@@ -84,7 +84,6 @@ it.each(['empty', 'rejected', 'invalid', 'stale', 'error', 'pending'] as const)(
       plugins: [
         CommentsPlugin.configure({
           initialState: {
-            currentUserId: 'alice',
             users: { alice: { id: 'alice', name: 'Alice' } },
           },
         }),
@@ -171,7 +170,6 @@ it('awaits resolution and reopening, retains failures, and keeps document undo i
     plugins: [
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: { alice: { id: 'alice', name: 'Alice' } },
           mutate: (request) =>
             request.operation === 'resolve' || request.operation === 'reopen'
@@ -274,7 +272,6 @@ it('preserves the next active thread and its typed reply when an earlier resolve
     plugins: [
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: { alice: { id: 'alice', name: 'Alice' } },
           mutate: (request) =>
             request.operation === 'resolve'

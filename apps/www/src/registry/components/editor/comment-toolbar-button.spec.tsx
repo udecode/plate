@@ -38,7 +38,6 @@ const createCommentsEditor = () =>
     plugins: [
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: { alice: { id: 'alice', name: 'Alice' } },
         },
       }),

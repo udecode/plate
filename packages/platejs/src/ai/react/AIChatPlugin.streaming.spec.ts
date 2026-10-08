@@ -1,6 +1,6 @@
 import remarkMath from 'remark-math';
 
-import { DefaultAuthoredPlugin } from '../../authored';
+import { AuthoredPlugin } from '../../authored';
 import {
   BaseParagraphPlugin,
   definePlugin,
@@ -15,7 +15,7 @@ import { AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = (paragraphType = 'paragraph') => {
   const plugins = [
-    DefaultAuthoredPlugin,
+    AuthoredPlugin,
     BaseParagraphPlugin,
     definePlugin(PLUGINS.codeBlock, {
       formats: ({ defineFormats }) =>

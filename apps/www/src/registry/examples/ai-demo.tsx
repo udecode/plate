@@ -20,13 +20,11 @@ export default function AIDemo() {
       ...DiscussionKit,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'demo',
-          users: { demo: { id: 'demo', name: 'You' } },
+          users: { local: { id: 'local', name: 'You' } },
         },
       }),
     ],
     initialValue: aiValue,
-    userId: 'demo',
   });
 
   return (

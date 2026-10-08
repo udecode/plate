@@ -1,4 +1,6 @@
-import { DefaultAuthoredPlugin } from '../../authored';
+import * as Y from 'yjs';
+
+import { AuthoredPlugin } from '../../authored';
 import {
   BaseParagraphPlugin,
   definePlugin,
@@ -11,6 +13,7 @@ import {
 } from '../../core';
 import { MarkdownPlugin } from '../../markdown';
 import { createEditor as createProductEditor } from '../../react/core';
+import { YjsPlugin } from '../../yjs/react';
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
@@ -41,7 +44,7 @@ const createEditor = (
 ) => {
   const editor = createProductEditor({
     plugins: [
-      DefaultAuthoredPlugin,
+      AuthoredPlugin,
       BaseParagraphPlugin,
       BaseAIPlugin,
       HeadingPlugin,
@@ -233,7 +236,7 @@ describe('AIChatPlugin suggestions', () => {
     ).toHaveLength(0);
   });
 
-  it('cancels only the AI proposal and preserves an independent foreign edit', () => {
+  it('cancels only the AI proposal and preserves an independent accepted edit', () => {
     const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
     const editor = createEditor(
       [
@@ -251,7 +254,6 @@ describe('AIChatPlugin suggestions', () => {
 
     ai.store.set({ toolName: 'edit' });
     ai.api.setPreview('new');
-    Reflect.set(editor.runtime, 'userId', 'bob');
     editor.api.authored.setView({
       intent: 'edit',
       projection: 'accepted',
@@ -268,26 +270,73 @@ describe('AIChatPlugin suggestions', () => {
     );
   });
 
-  it('discards a granular AI change while preserving later author text', () => {
+  it('discards a granular AI change while preserving a later proposal from another author', () => {
     const nodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
-    const editor = createEditor(structuredClone(nodes), nodes);
+    const aliceDoc = new Y.Doc();
+    const bobDoc = new Y.Doc();
+    const sync = (source: Y.Doc, target: Y.Doc) =>
+      Y.applyUpdate(
+        target,
+        Y.encodeStateAsUpdate(source, Y.encodeStateVector(target))
+      );
+    const editor = createProductEditor({
+      plugins: [
+        AuthoredPlugin,
+        BaseParagraphPlugin,
+        BaseAIPlugin,
+        AIChatPlugin,
+        YjsPlugin.create({
+          doc: aliceDoc,
+          initialReady: true,
+          rootName: 'ai',
+          seed: true,
+        }),
+      ],
+      userId: 'alice',
+      initialValue: structuredClone(nodes),
+    });
     const ai = editor.plugin(AIChatPlugin);
-    ai.store.set({ toolName: 'edit' });
+    ai.store.set({
+      chatNodes: [{ node: nodes[0], nodeKey: editor.key([0])! }],
+      chatSelection: null,
+      mode: 'chat',
+      toolName: 'edit',
+    });
     ai.api.setPreview('old new');
-    Reflect.set(editor.runtime, 'userId', 'bob');
-    editor.api.authored.setView({ intent: 'propose', projection: 'markup' });
-    const end = editor.read.points.end([0]);
+    sync(aliceDoc, bobDoc);
+    const bob = createProductEditor({
+      plugins: [
+        AuthoredPlugin,
+        BaseParagraphPlugin,
+        BaseAIPlugin,
+        AIChatPlugin,
+        YjsPlugin.create({ doc: bobDoc, initialReady: true, rootName: 'ai' }),
+      ],
+      userId: 'bob',
+      initialValue: structuredClone(editor.read.value()),
+    });
+    bob.api.authored.setView({ intent: 'propose', projection: 'markup' });
+    const end = bob.read.points.end([0]);
     if (!end) throw new Error('Expected an AI insertion endpoint');
-    editor.update.text.insert('!', { at: end });
+    bob.update.text.insert('!', { at: end });
+    sync(bobDoc, aliceDoc);
+
     const result = ai.api.reset();
-    expect(result?.status).toBe('applied');
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
-    expect(editor.read.text.string([])).toBe('old!');
-    expect(editor.read.authored.view()).toEqual({
-      intent: 'propose',
-      projection: 'markup',
+
+    expect({
+      pending: editor.read.authored
+        .changes({ status: 'pending' })
+        .items.map(({ authorId }) => authorId),
+      proposed: createEditorView(editor, {
+        authored: { intent: 'propose', projection: 'proposed' },
+      }).read.text.string([]),
+      status: result?.status,
+      text: editor.read.text.string([]),
+    }).toEqual({
+      pending: ['bob'],
+      proposed: 'old!',
+      status: 'applied',
+      text: 'old',
     });
   });
 

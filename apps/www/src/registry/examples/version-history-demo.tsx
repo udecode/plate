@@ -1,9 +1,9 @@
 'use client';
 
-import type { EditorStateSchemaApi, Value } from 'platejs';
+import type { EditorDocumentValue, EditorStateSchemaApi, Value } from 'platejs';
 import {
   type AuthoredChange,
-  authored,
+  AuthoredPlugin,
   isAuthoredEditor,
 } from 'platejs/authored';
 import { compare, type TwoWayComparison } from 'platejs/diff';
@@ -20,14 +20,6 @@ import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
 import { Diff } from '@/registry/components/editor/diff';
-
-const readPlateUserId = (editor: object) => {
-  const runtime = Reflect.get(editor, 'runtime');
-  if (!runtime || typeof runtime !== 'object') return null;
-  const userId = Reflect.get(runtime, 'userId');
-
-  return typeof userId === 'string' && userId.length > 0 ? userId : null;
-};
 
 const initialValue: Value = [
   {
@@ -179,23 +171,21 @@ export function VersionDiff({
   return <Diff comparison={result.comparison} />;
 }
 
-function RevisionHistory() {
+function RevisionHistory({
+  onSave,
+  revisions,
+}: {
+  onSave: (revision: unknown) => void;
+  revisions: readonly unknown[];
+}) {
   const editor = useEditor();
-  const [revisions, setRevisions] = React.useState<readonly unknown[]>(() => [
-    structuredClone(editor.read.value()),
-  ]);
 
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-medium">Saved revisions</h2>
         <Button
-          onClick={() =>
-            setRevisions((current) => [
-              ...current,
-              structuredClone(editor.read.value()),
-            ])
-          }
+          onClick={() => onSave(structuredClone(editor.read.value()))}
           size="sm"
           variant="outline"
         >
@@ -219,18 +209,21 @@ function RevisionHistory() {
 
 export default function VersionHistoryDemo() {
   const [authorId, setAuthorId] = React.useState('alice');
+  const [snapshot, setSnapshot] = React.useState<EditorDocumentValue>({
+    children: initialValue,
+  });
   const [result, setResult] = React.useState('');
   const editor = useCreateEditor({
     plugins: [
       ...BasicMarksKit,
-      authored({
-        authorId: readPlateUserId,
-        retainHistory: true,
-      }),
+      AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
     ],
-    initialValue,
-    userId: 'alice',
+    initialValue: snapshot,
+    userId: authorId,
   });
+  const [revisions, setRevisions] = React.useState<readonly unknown[]>(() => [
+    structuredClone(editor.read.value()),
+  ]);
 
   return (
     <div className="flex flex-col gap-4 p-3">
@@ -239,7 +232,7 @@ export default function VersionHistoryDemo() {
         <select
           className="rounded-md border bg-background px-2 py-1"
           onChange={(event) => {
-            Reflect.set(editor.runtime, 'userId', event.target.value);
+            setSnapshot(editor.read.value());
             setAuthorId(event.target.value);
           }}
           value={authorId}
@@ -260,7 +253,12 @@ export default function VersionHistoryDemo() {
             </p>
           )}
         </section>
-        <RevisionHistory />
+        <RevisionHistory
+          onSave={(revision) =>
+            setRevisions((current) => [...current, revision])
+          }
+          revisions={revisions}
+        />
       </EditorRoot>
     </div>
   );

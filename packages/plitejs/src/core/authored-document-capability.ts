@@ -56,3 +56,6 @@ export type NativeAuthoredDocumentCapability = Readonly<{
 
 export const authoredDocumentCapabilityPoint: PluginPoint<NativeAuthoredDocumentCapability> =
   definePluginPoint('plite.authored.document');
+
+export const isAuthorId = (value: unknown): value is string =>
+  typeof value === 'string' && value.length > 0 && !value.includes('\u0000');

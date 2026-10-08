@@ -31,7 +31,6 @@ import {
   type RuntimePluginReference,
   type EditorLifecycleErrorSink,
   type PersistedDocumentInput,
-  setEditorReadOnly,
   type SnapshotInput,
   type EditorTransactionSpecBuilder,
   type Selection,
@@ -39,7 +38,6 @@ import {
   getCompiledEditorSchemaFromApi,
   mapSemanticUpdateMethodArguments,
   repairEditorValue,
-  setEditorMaxLength,
   setEditorStateViewTransform,
   setEditorTransactionViewTransform,
 } from '../../facade';
@@ -103,6 +101,7 @@ import {
   type EditorSchemaIdentity,
   getEditorSchemaIdentity,
 } from './editorApplicationSchema';
+import { defineEditorUser, resolveEditorUserId } from './editorUser.internal';
 
 type PlateSchemaDescriptor = PluginReference;
 
@@ -356,8 +355,7 @@ const normalizeBaseInitialValue = <
   TPlugins extends readonly unknown[],
 >(
   editor: Editor<V, TPlugins>,
-  value: unknown,
-  implicitDocumentIsCurrent: boolean
+  value: unknown
 ): EditorDocumentValue<V> | PersistedDocumentInput<V> => {
   if (value !== undefined) {
     return readPlateInitialValue(value) as
@@ -367,21 +365,11 @@ const normalizeBaseInitialValue = <
 
   const currentValue = editor.read.value() as EditorDocumentValue<V>;
 
-  if (currentValue.children.length > 0) {
-    return implicitDocumentIsCurrent
-      ? {
-          document: currentValue,
-          schema: editor.read.schema.identity(),
-        }
-      : currentValue;
-  }
-
-  const document = editor.read.schema.fitDocument(
-    currentValue
-  ) as EditorDocumentValue<V>;
-
   return {
-    document,
+    document:
+      currentValue.children.length > 0
+        ? currentValue
+        : editor.read.schema.fitDocument(currentValue),
     schema: editor.read.schema.identity(),
   };
 };
@@ -393,12 +381,10 @@ const resolveBaseInitialValue = <
   editor: Editor<V, TPlugins>,
   {
     autoSelect,
-    implicitDocumentIsCurrent,
     initialValue,
     selection,
   }: {
     autoSelect?: boolean | 'end' | 'start';
-    implicitDocumentIsCurrent: boolean;
     initialValue?:
       | ((context: { editor: Editor<V, TPlugins> }) => EditorValueInput<V>)
       | EditorValueInput<V>;
@@ -407,10 +393,7 @@ const resolveBaseInitialValue = <
 ) => {
   const nextValue = normalizeBaseInitialValue<V, TPlugins>(
     editor,
-    typeof initialValue === 'function'
-      ? initialValue({ editor })
-      : initialValue,
-    implicitDocumentIsCurrent
+    typeof initialValue === 'function' ? initialValue({ editor }) : initialValue
   );
   const autoSelection =
     autoSelect === true
@@ -428,17 +411,6 @@ const resolveBaseInitialValue = <
     ...nextValue,
     selection: selectionInput,
   };
-};
-
-const normalizeBaseEditor = (editor: Editor) => {
-  const wasNormalizing = editor.runtime.isNormalizing;
-
-  editor.runtime.isNormalizing = true;
-  try {
-    repairEditorValue(editor);
-  } finally {
-    editor.runtime.isNormalizing = wasNormalizing;
-  }
 };
 
 const createPlateSchemaPlugins = (
@@ -746,18 +718,19 @@ export type EditorOptions<
   TPlugins extends readonly RuntimePluginReference[] = readonly [],
 > = {
   /**
-   * Unique identifier for the editor instance.
-   *
-   * @default nanoid()
+   * Unique identifier for the editor instance. Without one, the editor gets a
+   * generated id.
    */
   id?: string;
   /** Receives failures from plugin lifecycle observers. */
   lifecycleErrorSink?: EditorLifecycleErrorSink<RuntimeEditor<any, any>>;
   /**
-   * Current user ID for collaborative features (e.g., Yjs). Used to identify
-   * the creator of elements like combobox inputs.
+   * The user this editor writes and comments as, recorded as the author of
+   * authored changes. Without a `userId`, the editor writes as the local user,
+   * `'local'`; pass one whenever more than one person writes the document. A
+   * `userId` that contains a NUL character throws.
    */
-  userId?: string | null;
+  userId?: string;
   /**
    * Enable mark/element affinity.
    *
@@ -822,7 +795,7 @@ export type EditorOptions<
   skipInitialization?: boolean;
 };
 
-type ApplyEditorOptions<
+type BaseEditorOptions<
   V extends Value = Value,
   P extends BasePluginInput = CorePlugins[number],
   TPlugins extends readonly RuntimePluginReference[] = readonly [],
@@ -837,8 +810,7 @@ type ApplyEditorOptions<
      * array shorthand. Persisted envelopes must match the compiled current
      * schema identity.
      *
-     * Omit this option to preserve an existing editor document or construct the
-     * schema's default primary-root child for a new editor.
+     * Omit this option to start from the schema's default primary-root child.
      */
     initialValue?:
       | ((context: {
@@ -878,39 +850,20 @@ const prepareInitialPlatePlugins = (
   editor: Editor,
   {
     affinity,
-    maxLength,
     plugins = [],
-    readOnly,
     schema,
-    userId,
   }: Omit<
-    Pick<
-      EditorOptions<readonly BasePluginInput[]>,
-      'affinity' | 'maxLength' | 'plugins' | 'readOnly' | 'schema' | 'userId'
-    >,
+    Pick<EditorOptions<readonly BasePluginInput[]>, 'affinity' | 'schema'>,
     'plugins'
   > & {
     plugins?: readonly BasePluginInput[];
   },
-  pluginConfig: Pick<
-    ApplyEditorOptions,
-    'api' | 'decorate' | 'initialState' | 'inject' | 'override'
-  > = {}
+  rootPluginConfig: object = {}
 ) => {
   const identity = getEditorSchemaIdentity(schema);
-
-  editor.runtime ??= {} as Editor['runtime'];
-  editor.runtime.userId = userId;
-  if (readOnly !== undefined) {
-    setEditorReadOnly(editor, readOnly);
-  }
-  if (maxLength !== undefined) {
-    setEditorMaxLength(editor, maxLength);
-  }
-
   const baseCorePlugins = getCorePlugins({ affinity });
 
-  const internalRootCandidate = createBasePlugin('root', pluginConfig);
+  const internalRootCandidate = createBasePlugin('root', rootPluginConfig);
 
   if (!isBasePluginDescriptor(internalRootCandidate)) {
     throw new Error(
@@ -925,7 +878,6 @@ const prepareInitialPlatePlugins = (
     reactCore: [],
     user: plugins,
   });
-  const publicationBeforePlugin = getPlateModelPublication(editor);
   const applicationPolicy = schema;
   let restoreStateViewTransform: (() => void) | undefined;
   let restoreTransactionViewTransform: (() => void) | undefined;
@@ -933,7 +885,7 @@ const prepareInitialPlatePlugins = (
   const restore = () => {
     restoreStateViewTransform?.();
     restoreTransactionViewTransform?.();
-    if (!publicationBeforePlugin) clearPlateModelPublication(editor);
+    clearPlateModelPublication(editor);
     clearPluginStores(editor);
   };
 
@@ -1004,37 +956,66 @@ const prepareInitialPlatePlugins = (
     };
   } catch (error) {
     restore();
-    clearPlateRuntimeCandidate(editor);
     throw error;
   }
 };
 
-/** Applies the Base plugin model to an editor during construction. */
-export const applyEditor = <
-  V extends Value = Value,
-  P extends BasePluginInput = CorePlugins[number],
-  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
->(
-  e: RuntimeEditor<any, any>,
-  options: ApplyEditorOptions<V, P, TPlugins>,
-  implicitDocumentIsCurrent: boolean
-): InternalBaseEditorWithInstalledPlugins<
-  V,
-  InferBaseEditorPlugins<P[]>,
-  InferBaseEditorSchemaPlugins<P[]>,
-  RuntimePluginsFromTuple<TPlugins>
-> => {
-  if (Object.hasOwn(options, 'migrations')) {
+// A proxy can answer `in` and own-property checks differently, so a key either one sees counts.
+const hasOption = (options: object, key: string) => {
+  if (key in options) return true;
+  for (
+    let object: object | null = options;
+    object !== null;
+    object = Object.getPrototypeOf(object)
+  ) {
+    if (Object.hasOwn(object, key)) return true;
+  }
+
+  return false;
+};
+
+/**
+ * Call this on the options a caller passed, before any copy drops a key.
+ *
+ * @internal
+ */
+export const assertConstructorOptions = (options: object) => {
+  if (hasOption(options, 'editor')) {
+    throw new Error(
+      'Plate editor constructors always create a new editor and take no `editor` option. Pass the document as `initialValue`, and render an existing editor with `EditorRoot`.'
+    );
+  }
+  if (hasOption(options, 'migrations')) {
     throw new Error(
       'Plate editor `migrations` is unsupported. Convert persisted documents with migrateDocument before creating or replacing an editor value.'
     );
   }
+};
+
+type BuildEditorOptions<TEditor extends Editor> = EditorOptions<
+  readonly RuntimePluginReference[]
+> & {
+  initialValue?:
+    | ((context: { editor: TEditor }) => EditorValueInput<Value>)
+    | EditorValueInput<Value>;
+};
+
+/**
+ * Options that are not editor options configure the root plugin.
+ *
+ * @internal
+ */
+export const buildEditor = <TEditor extends Editor = Editor>(
+  options: BuildEditorOptions<TEditor>
+): Editor => {
+  assertConstructorOptions(options);
   const {
     affinity,
     autoSelect,
+    id,
     initialValue,
     initialSelection,
-    lifecycleErrorSink: _lifecycleErrorSink,
+    lifecycleErrorSink,
     maxLength,
     plugins = [],
     readOnly,
@@ -1043,24 +1024,25 @@ export const applyEditor = <
     shouldNormalizeEditor,
     skipInitialization,
     userId,
-    ...pluginConfig
+    ...rootPluginConfig
   } = options;
-  const editor = e as unknown as Editor;
+  const editorUserId = resolveEditorUserId(userId);
+  const editor = createPliteEditor({
+    id,
+    lifecycleErrorSink,
+    maxLength,
+    readOnly,
+  }) as unknown as Editor;
+
+  defineEditorUser(editor, editorUserId);
   const pluginInputs = partitionPluginInputs(plugins);
   let prepared: ReturnType<typeof prepareInitialPlatePlugins> | undefined;
 
   try {
     prepared = prepareInitialPlatePlugins(
       editor,
-      {
-        affinity,
-        maxLength,
-        plugins: pluginInputs.plate,
-        readOnly,
-        schema,
-        userId,
-      },
-      pluginConfig
+      { affinity, plugins: pluginInputs.plate, schema },
+      rootPluginConfig
     );
     const { identity, userPlugins } = prepared;
 
@@ -1079,23 +1061,14 @@ export const applyEditor = <
           ? undefined
           : {
               initialize: shouldNormalizeEditor
-                ? () => normalizeBaseEditor(editor)
+                ? () => repairEditorValue(editor)
                 : undefined,
               initialValue: () =>
                 resolveBaseInitialValue(editor, {
                   autoSelect,
-                  implicitDocumentIsCurrent,
                   initialValue:
                     typeof initialValue === 'function'
-                      ? () =>
-                          initialValue({
-                            editor:
-                              editor as unknown as InternalBaseEditorWithInstalledPlugins<
-                                V,
-                                InferBaseEditorPlugins<P[]>,
-                                InferBaseEditorSchemaPlugins<P[]>
-                              >,
-                          })
+                      ? () => initialValue({ editor: editor as TEditor })
                       : initialValue,
                   selection: selection ?? initialSelection,
                 }),
@@ -1104,12 +1077,7 @@ export const applyEditor = <
       );
     });
 
-    return editor as unknown as InternalBaseEditorWithInstalledPlugins<
-      V,
-      InferBaseEditorPlugins<P[]>,
-      InferBaseEditorSchemaPlugins<P[]>,
-      RuntimePluginsFromTuple<TPlugins>
-    >;
+    return editor;
   } catch (error) {
     prepared?.restore();
     throw error;
@@ -1367,12 +1335,10 @@ type CreateEditorOptionsForValue<
     | EditorApplicationSchema
     | undefined,
 > = Partial<
-  Omit<ApplyEditorOptions<V, BasePluginInput, TPlugins>, 'plugins' | 'schema'>
+  Omit<BaseEditorOptions<V, BasePluginInput, TPlugins>, 'plugins' | 'schema'>
 > & {
   /** Stable logical identity for the created editor. */
   id?: string;
-  /** Existing editor to enhance instead of allocating a new editor. */
-  editor?: RuntimeEditor<any, any>;
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
@@ -1389,30 +1355,36 @@ export type CreateEditorOptions<
     | undefined,
 > = CreateEditorOptionsForValue<V, TPlugins, TSchema>;
 
-export function createEditorWithEditor<
-  V extends Value = Value,
-  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
-  const TSchema extends EditorApplicationSchema | undefined = undefined,
->(
-  editor: RuntimeEditor<any, any>,
-  options: CreateEditorOptions<V, TPlugins, TSchema> = {}
-): Editor<
-  V,
-  RuntimePluginsFromTuple<TPlugins>,
-  PlatePluginsFromTuple<TPlugins>,
-  TSchema
-> {
-  return applyEditor(
-    editor,
-    options as unknown as Parameters<typeof applyEditor>[1],
-    false
-  ) as unknown as Editor<
-    V,
-    RuntimePluginsFromTuple<TPlugins>,
-    PlatePluginsFromTuple<TPlugins>,
-    TSchema
-  >;
-}
+export type PlatePluginsFromTuple<TPlugins extends readonly unknown[]> = [
+  TPlugins[number],
+] extends [BasePluginInput]
+  ? Extract<TPlugins, readonly BasePluginInput[]>
+  : [Extract<TPlugins[number], BasePluginInput>] extends [never]
+    ? readonly []
+    : number extends TPlugins['length']
+      ? ReadonlyArray<Extract<TPlugins[number], BasePluginInput>>
+      : TPlugins extends readonly [infer TPlugin, ...infer TRest]
+        ? TPlugin extends BasePluginInput
+          ? readonly [TPlugin, ...PlatePluginsFromTuple<TRest>]
+          : PlatePluginsFromTuple<TRest>
+        : readonly [];
+
+/** Keep only descriptors authored for the substrate runtime. */
+export type RuntimePluginsFromTuple<TPlugins extends readonly unknown[]> = [
+  TPlugins[number],
+] extends [BasePluginInput]
+  ? readonly []
+  : [Extract<TPlugins[number], BasePluginInput>] extends [never]
+    ? TPlugins
+    : number extends TPlugins['length']
+      ? ReadonlyArray<Exclude<TPlugins[number], BasePluginInput>>
+      : TPlugins extends readonly [infer TPlugin, ...infer TRest]
+        ? TPlugin extends BasePluginInput
+          ? RuntimePluginsFromTuple<TRest>
+          : TPlugin extends RuntimePluginReference
+            ? readonly [TPlugin, ...RuntimePluginsFromTuple<TRest>]
+            : RuntimePluginsFromTuple<TRest>
+        : readonly [];
 
 /**
  * Creates a base Plate editor (non-React version).
@@ -1457,37 +1429,6 @@ export function createEditorWithEditor<
  * @see {@link createEditor} for a React-specific version of editor creation.
  * @see {@link useCreateEditor} for a memoized React version.
  */
-export type PlatePluginsFromTuple<TPlugins extends readonly unknown[]> = [
-  TPlugins[number],
-] extends [BasePluginInput]
-  ? Extract<TPlugins, readonly BasePluginInput[]>
-  : [Extract<TPlugins[number], BasePluginInput>] extends [never]
-    ? readonly []
-    : number extends TPlugins['length']
-      ? ReadonlyArray<Extract<TPlugins[number], BasePluginInput>>
-      : TPlugins extends readonly [infer TPlugin, ...infer TRest]
-        ? TPlugin extends BasePluginInput
-          ? readonly [TPlugin, ...PlatePluginsFromTuple<TRest>]
-          : PlatePluginsFromTuple<TRest>
-        : readonly [];
-
-/** Keep only descriptors authored for the substrate runtime. */
-export type RuntimePluginsFromTuple<TPlugins extends readonly unknown[]> = [
-  TPlugins[number],
-] extends [BasePluginInput]
-  ? readonly []
-  : [Extract<TPlugins[number], BasePluginInput>] extends [never]
-    ? TPlugins
-    : number extends TPlugins['length']
-      ? ReadonlyArray<Exclude<TPlugins[number], BasePluginInput>>
-      : TPlugins extends readonly [infer TPlugin, ...infer TRest]
-        ? TPlugin extends BasePluginInput
-          ? RuntimePluginsFromTuple<TRest>
-          : TPlugin extends RuntimePluginReference
-            ? readonly [TPlugin, ...RuntimePluginsFromTuple<TRest>]
-            : RuntimePluginsFromTuple<TRest>
-        : readonly [];
-
 export function createEditor<
   V extends Value = Value,
   const TPlugins extends readonly RuntimePluginReference[] = readonly [],
@@ -1506,26 +1447,11 @@ export function createEditor<
 >(
   options?: CreateEditorOptions<V, readonly [], TSchema>
 ): Editor<V, readonly [], readonly [], TSchema>;
-export function createEditor({
-  editor: inputEditor,
-  id,
-  ...options
-}: CreateEditorOptionsForValue<
-  Value,
-  readonly RuntimePluginReference[]
-> = {}): unknown {
-  const editor =
-    inputEditor ??
-    createPliteEditor({
-      id,
-      lifecycleErrorSink: options.lifecycleErrorSink,
-      maxLength: options.maxLength,
-      readOnly: options.readOnly,
-    });
-
-  return applyEditor<Value, BasePluginInput, readonly RuntimePluginReference[]>(
-    editor,
-    options,
-    inputEditor === undefined
-  );
+export function createEditor(
+  options: CreateEditorOptionsForValue<
+    Value,
+    readonly RuntimePluginReference[]
+  > = {}
+): unknown {
+  return buildEditor(options);
 }

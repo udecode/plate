@@ -4,7 +4,7 @@ import isEqual from 'lodash/isEqual.js';
 
 import {
   type AuthoredResult,
-  DefaultAuthoredPlugin,
+  AuthoredPlugin,
   isAuthoredEditor,
   projectAuthoredDocument,
 } from '../../authored';
@@ -146,7 +146,7 @@ export const getAIChatCommandEditor = (editor: Editor) =>
 const plateDependencies = [BaseAIPlugin, MarkdownPlugin] as const;
 const dependencies = [
   ...plateDependencies,
-  DefaultAuthoredPlugin,
+  AuthoredPlugin,
   HistoryPlugin,
 ] as const;
 
@@ -1256,7 +1256,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     let applied = false;
     let publishedChangeId: string | null = null;
     commandEditor.update((tx) => {
-      const authored = tx.plugin(DefaultAuthoredPlugin);
+      const authored = tx.plugin(AuthoredPlugin);
       const history = tx.plugin(HistoryPlugin);
       const changeId = authored.propose(
         currentChangeId ? { changeId: currentChangeId } : undefined

@@ -3,16 +3,9 @@ import { describe, expect, it, spyOn } from 'bun:test';
 import fc from 'fast-check';
 
 import { writeDataTransferFragment } from '../../../dom';
-import {
-  ContentSlice,
-  createEditor as createPliteEditor,
-  property,
-  schema,
-  target,
-} from '../../../facade';
+import { ContentSlice, property, schema, target } from '../../../facade';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { createEditor } from '../../editor';
-import { createEditorWithEditor } from '../../editor/withPlite';
 import { definePlugin } from '../../plugin';
 import { BaseParagraphPlugin } from '../paragraph';
 
@@ -1408,14 +1401,10 @@ describe('compilePlateHtmlFormat', () => {
         },
       }),
     }));
-    const editor = createEditorWithEditor(
-      createPliteEditor({
-        lifecycleErrorSink: (error) => reports.push(error),
-      }),
-      {
-        plugins: [AlignPlugin, BoldPlugin, ParagraphPlugin],
-      }
-    );
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => reports.push(error),
+      plugins: [AlignPlugin, BoldPlugin, ParagraphPlugin],
+    });
 
     expect(
       parseHtmlSliceContent(
@@ -1559,14 +1548,10 @@ describe('compilePlateHtmlFormat', () => {
         },
       }),
     }));
-    const editor = createEditorWithEditor(
-      createPliteEditor({
-        lifecycleErrorSink: (error) => reports.push(error),
-      }),
-      {
-        plugins: [LowerPlugin, HigherPlugin, ParagraphPlugin],
-      }
-    );
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => reports.push(error),
+      plugins: [LowerPlugin, HigherPlugin, ParagraphPlugin],
+    });
     const input = new DataTransfer();
 
     input.setData('text/html', '<section>Fallback</section>');
@@ -1613,14 +1598,10 @@ describe('compilePlateHtmlFormat', () => {
           },
         }),
     });
-    const editor = createEditorWithEditor(
-      createPliteEditor({
-        lifecycleErrorSink: (error) => reports.push(error),
-      }),
-      {
-        plugins: [ParagraphPlugin],
-      }
-    );
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => reports.push(error),
+      plugins: [ParagraphPlugin],
+    });
 
     expect(() => parseHtmlSliceContent(editor, '<p>Invalid</p>')).toThrow();
     expect(reports).toHaveLength(0);
@@ -1646,14 +1627,10 @@ describe('compilePlateHtmlFormat', () => {
           },
         }),
     });
-    const editor = createEditorWithEditor(
-      createPliteEditor({
-        lifecycleErrorSink: (error) => reports.push(error),
-      }),
-      {
-        plugins: [ParagraphPlugin],
-      }
-    );
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => reports.push(error),
+      plugins: [ParagraphPlugin],
+    });
     const output = new DataTransfer();
 
     expect(
@@ -1775,14 +1752,10 @@ describe('compilePlateHtmlFormat', () => {
           },
         }),
     });
-    const editor = createEditorWithEditor(
-      createPliteEditor({
-        lifecycleErrorSink: (error) => reports.push(error),
-      }),
-      {
-        plugins: [BaseUrlPlugin, FramePlugin, ImagePlugin, ParagraphPlugin],
-      }
-    );
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => reports.push(error),
+      plugins: [BaseUrlPlugin, FramePlugin, ImagePlugin, ParagraphPlugin],
+    });
     const serialize = (node: any) => {
       const output = new DataTransfer();
       const formats = writeDataTransferFragment(

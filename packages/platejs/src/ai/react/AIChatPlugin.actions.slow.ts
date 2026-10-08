@@ -1,4 +1,4 @@
-import { DefaultAuthoredPlugin } from '../../authored';
+import { AuthoredPlugin } from '../../authored';
 import { BaseParagraphPlugin, createEditorView } from '../../core';
 import {
   BaseTablePlugin as TablePlugin,
@@ -12,7 +12,7 @@ import { AIChatPlugin } from './AIChatPlugin';
 
 const createSuggestionEditor = () => {
   const editor = createEditor({
-    plugins: [DefaultAuthoredPlugin, BaseParagraphPlugin, AIChatPlugin],
+    plugins: [AuthoredPlugin, BaseParagraphPlugin, AIChatPlugin],
     userId: 'u1',
     selection: {
       kind: 'text',
@@ -36,7 +36,7 @@ describe('ai chat action utils', () => {
   it('keeps streaming into an empty paragraph without changing editing mode', async () => {
     const editor = createEditor({
       plugins: [
-        DefaultAuthoredPlugin,
+        AuthoredPlugin,
         BaseParagraphPlugin,
         BaseAIPlugin,
         MarkdownPlugin,
@@ -83,7 +83,7 @@ describe('ai chat action utils', () => {
   it('diffs a table cell update and replaces only its children', () => {
     const editor = createEditor({
       plugins: [
-        DefaultAuthoredPlugin,
+        AuthoredPlugin,
         BaseParagraphPlugin,
         BaseAIPlugin,
         MarkdownPlugin,

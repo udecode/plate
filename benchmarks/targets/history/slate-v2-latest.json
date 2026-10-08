@@ -12,18 +12,18 @@
     }
   },
   "counts": {
-    "targets": 55,
-    "artifacts": 56,
-    "recordedArtifacts": 53,
+    "targets": 56,
+    "artifacts": 57,
+    "recordedArtifacts": 54,
     "missingOptionalArtifacts": 0,
     "missingRequiredArtifacts": 3,
-    "requiredArtifacts": 56,
+    "requiredArtifacts": 57,
     "statusCounts": {
-      "recorded": 52,
+      "recorded": 53,
       "missing-required-artifact": 3
     },
     "latestRunCounts": {
-      "none": 52,
+      "none": 53,
       "passed": 3
     }
   },
@@ -555,6 +555,30 @@
         "importedFrom": "benchmarks/editor/research/benchmark-registry.json",
         "evidenceKitId": "history-compare"
       },
+      "latestRun": null,
+      "recipe": null
+    },
+    {
+      "id": "plate-authored-construction",
+      "family": "plate-authored",
+      "kind": "current",
+      "owner": "plate",
+      "question": "Does Plate's AuthoredPlugin, a configurable descriptor whose stage returns Plite's authored(), construct an editor within budget of Plite's authored() installed directly, alone and as a dependency, at 1 and 2,000 blocks?",
+      "command": "PLATE_AUTHORED_CONSTRUCTION_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts --output=tmp/plate-authored-construction-benchmark.json",
+      "cwd": ".",
+      "metric": "plate_authored_construction_normal_ratio",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "bun test ./packages/platejs/src/authored/authored.api.spec.ts",
+      "artifacts": [
+        {
+          "path": "tmp/plate-authored-construction-benchmark.json",
+          "required": true,
+          "recorded": true
+        }
+      ],
+      "status": "recorded",
+      "migration": null,
       "latestRun": null,
       "recipe": null
     },

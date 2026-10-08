@@ -11,7 +11,7 @@ import {
   type TestEditor,
 } from '#platejs-test-internal';
 
-import { DefaultAuthoredPlugin } from '../../../authored';
+import { AuthoredPlugin } from '../../../authored';
 import type { BasePluginInput, Element, Value } from '../../../core';
 import {
   ContentSlice,
@@ -119,7 +119,7 @@ describe('BaseTablePlugin prepared paste', () => {
 
   it('undoes and redoes edge expansion in an authored markup view', async () => {
     const model = createTarget(
-      [DefaultAuthoredPlugin, ...getTestTablePlugins()],
+      [AuthoredPlugin, ...getTestTablePlugins()],
       'alice'
     );
     model.update.selection.set({

@@ -2,7 +2,6 @@
 
 import { EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
 import { setEditorReadOnly } from 'platejs';
-import { DefaultAuthoredPlugin } from 'platejs/authored';
 import {
   useEditor,
   useEditorSelector,
@@ -37,9 +36,7 @@ const MODE_ITEMS = {
 
 export function ModeToolbarButton() {
   const suggestionsAvailable = useEditorSelector(
-    (editor) =>
-      editor.plugin(SuggestionPlugin).installed &&
-      editor.plugin(DefaultAuthoredPlugin).read.canPropose()
+    (editor) => editor.plugin(SuggestionPlugin).installed
   );
 
   return suggestionsAvailable ? (

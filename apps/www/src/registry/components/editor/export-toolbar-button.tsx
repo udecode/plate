@@ -2,7 +2,7 @@
 
 import { ArrowDownToLineIcon } from 'lucide-react';
 import { createEditorView } from 'platejs';
-import { DefaultAuthoredPlugin, isAuthoredEditor } from 'platejs/authored';
+import { AuthoredPlugin, isAuthoredEditor } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { exportDocx, type DocxComment } from 'platejs/docx/export';
 import { MarkdownPlugin } from 'platejs/markdown';
@@ -89,7 +89,7 @@ export function ExportToolbarButton() {
     React.useState<CleanProjection>();
 
   const authoredState = useEditorSelector((current) => {
-    const authored = current.plugin(DefaultAuthoredPlugin);
+    const authored = current.plugin(AuthoredPlugin);
 
     if (!authored.installed) return 'clean:proposed';
 

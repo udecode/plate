@@ -94,7 +94,6 @@ it('keeps a comment on unchanged JSON text attached', async () => {
       CodeBlockPlugin,
       CommentsPlugin.configure({
         initialState: {
-          currentUserId: 'alice',
           users: { alice: { id: 'alice', name: 'Alice' } },
         },
       }),

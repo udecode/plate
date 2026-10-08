@@ -76,7 +76,7 @@
     "packages/plitejs/src/authored/authored.ts",
     "packages/plitejs/src/dom/plugin/with-dom.ts",
     "packages/plitejs/src/history/history-plugin.ts",
-    "packages/platejs/src/authored/PlateAuthoredPlugin.ts",
+    "packages/platejs/src/authored/AuthoredPlugin.ts",
     "packages/platejs/src/lib/plugins/HistoryPlugin.ts",
     "packages/platejs/src/lib/plugins/dom/plateDOMPlugin.internal.ts"
   ],

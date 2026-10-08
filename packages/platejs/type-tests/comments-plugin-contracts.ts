@@ -32,7 +32,6 @@ BaseCommentsPlugin.configure({
 CommentsPlugin.configure({
   initialState: {
     initialComments: saved,
-    currentUserId: 'alice',
     mutate: async ({ proposed, operation }) => {
       operation satisfies CommentMutationRequest['operation'];
       return operation === 'removeThread'
@@ -76,7 +75,6 @@ CommentsPlugin.extend(({ api, store }) => {
   api.attachment('thread') satisfies CommentAttachment | null;
   api.setActive(['thread']);
   store.get('activeIds') satisfies readonly string[];
-  store.get('currentUserId') satisfies string | null;
   api.subscribeThreads(({ ids }) => {
     ids satisfies readonly string[];
   });

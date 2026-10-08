@@ -8,4 +8,4 @@ Configure each mounted editor's suggestion intent and projection with `EditorRoo
 
 Keep pending suggestions and review controls visible when `SuggestionPlugin` switches subsequent input between suggesting and editing.
 
-Require a current author before entering suggestion mode, and expose `authored.read.canPropose()` so controls can omit unavailable proposal actions.
+Suggest as the editor's `userId`, or as the local user, `'local'`, when the editor has none.

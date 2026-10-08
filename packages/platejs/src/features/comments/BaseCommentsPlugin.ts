@@ -17,6 +17,7 @@ import {
   type Range,
   type Value,
 } from '../../core';
+import { readEditorAuthor } from '../../lib/editor/editorUser.internal';
 import {
   createAnnotationStore,
   type AnnotationAnchor,
@@ -171,7 +172,6 @@ export type CommentsChange = Readonly<{
 
 export type CommentsPluginState = {
   activeIds: readonly string[];
-  currentUserId: string | null;
   /** Loaded once, before mount, against the matching initial document. */
   initialComments: CommentsJSON | null;
   /** Authorize and persist before publication. Throws preserve the previous state. */
@@ -183,7 +183,6 @@ export type CommentsPluginState = {
 
 const initialState: CommentsPluginState = {
   activeIds: [],
-  currentUserId: null,
   initialComments: null,
   mutate: ({ proposed }) => ({ status: 'commit', thread: proposed }),
   users: {},
@@ -996,9 +995,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         pending?: Anchor<Range>
       ) => {
         const id = input.id ?? nanoid();
-        const userId = store.get('currentUserId');
         const body = normalizeBody(input.body);
-        if (!id || !body || !userId || threads.has(id) || destroyed) {
+        if (!id || !body || threads.has(id) || destroyed) {
           return null;
         }
         if (input.target.type === 'range') {
@@ -1006,6 +1004,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           if (RangeApi.isCollapsed(input.target.range)) return null;
         } else if (!input.target.id) return null;
         const createdAt = new Date().toISOString();
+        const userId = readEditorAuthor(commandEditor);
         const thread = prepareCommentThread({
           createdAt,
           excerpt: input.excerpt ?? '',
@@ -1229,9 +1228,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         /** Add the current user's reply to an unresolved thread. */
         reply: (id: string, body: Value): Promise<CommentMutationResult> => {
           const value = normalizeBody(body);
-          const userId = store.get('currentUserId');
           return mutateThread(id, 'reply', (current) =>
-            !value || current.resolution || !userId
+            !value || current.resolution
               ? undefined
               : {
                   ...current,
@@ -1241,24 +1239,25 @@ export const BaseCommentsPlugin = definePlugin('comments', {
                       body: value,
                       createdAt: new Date().toISOString(),
                       id: nanoid(),
-                      userId,
+                      userId: readEditorAuthor(commandEditor),
                     }),
                   ]),
                 }
           );
         },
         /** Close a discussion outside document history. Reopen is its inverse. */
-        resolve: (id: string) => {
-          const userId = store.get('currentUserId');
-          return mutateThread(id, 'resolve', (thread) =>
-            thread.resolution || !userId
+        resolve: (id: string) =>
+          mutateThread(id, 'resolve', (thread) =>
+            thread.resolution
               ? undefined
               : {
                   ...thread,
-                  resolution: { resolvedAt: new Date().toISOString(), userId },
+                  resolution: {
+                    resolvedAt: new Date().toISOString(),
+                    userId: readEditorAuthor(commandEditor),
+                  },
                 }
-          );
-        },
+          ),
         /** Reopen a resolved discussion without touching document history. */
         reopen: (id: string) =>
           mutateThread(id, 'reopen', (thread) =>

@@ -22,10 +22,10 @@
   "include": ["../src/docx/internal/**/*"],
   "references": [
     {
-      "path": "./core.json"
+      "path": "./authored.json"
     },
     {
-      "path": "./proxies.json"
+      "path": "./core.json"
     }
   ]
 }

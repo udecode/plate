@@ -1,0 +1,22 @@
+---
+id: 2026-10-07-editor-user
+date: 2026-10-07
+status: draft
+kind: behavior
+summary: "Read the current user from the editor's userId"
+change: { 'type': 'source', 'date': '2026-10-07', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-07-comment-current-user-from-editor-cfc8f9a2","kind":"behavior","migrationNotes":["Remove currentUserId from CommentsPlugin initialState and pass the same user as createEditor({ userId })."]} -->
+
+- **`comment`**, **`suggestion`**, **`import-toolbar-button`**: Read the current user from `editor.userId`, so comments, replies and suggestion colors follow the editor's user.
+
+<!-- entry: {"id":"2026-10-07-mode-toolbar-button-local-user-3f1c2a7e","kind":"behavior","migrationNotes":[]} -->
+
+- **`mode-toolbar-button`**: Offer Suggestion mode whenever `SuggestionPlugin` is installed, including editors without a `userId`.
+
+<!-- entry: {"id":"2026-10-07-examples-editor-user-8a4d61b0","kind":"behavior","migrationNotes":[]} -->
+
+- **`comment-demo`**, **`comment-overlap-demo`**, **`comment-persistence-demo`**, **`comment-review-demo`**, **`discussion-demo`**, **`suggestion-demo`**, **`suggestion-format-demo`**, **`suggestion-persistence-demo`**, **`playground-demo`**, **`version-history-demo`**, **`ai-demo`**, **`editor-ai`**: Name the user once with the editor's `userId`, or run as the local user without one.

@@ -22,6 +22,9 @@
   "include": ["../src/docx/import/**/*"],
   "references": [
     {
+      "path": "./authored.json"
+    },
+    {
       "path": "./core.json"
     },
     {
@@ -29,9 +32,6 @@
     },
     {
       "path": "./docx-internal.json"
-    },
-    {
-      "path": "./proxies.json"
     }
   ]
 }

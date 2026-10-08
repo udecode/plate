@@ -2,7 +2,7 @@
 title: Native authored-change ownership
 type: decision
 status: accepted
-updated: 2026-10-04
+updated: 2026-10-07
 source_refs:
   - ../../plans/2026-09-12-authored-live-state-implementation.md
   - ../../plans/artifacts/authored-live-state-implementation/final-summary.json
@@ -39,12 +39,13 @@ write is the validation boundary. Plite validates a non-empty identifier. It
 does not authenticate the writer, so application authentication and access
 policy remain outside the engine.
 
-Plate's default authored descriptor resolves the ID from
-`editor.runtime.userId`. An app-owned composition that installs suggestions
-therefore supplies a user ID before allowing edits. A local example may use a
-stable demo identity. Plite does not invent an anonymous or system author,
-silently discard accepted operations, or maintain an unauthored write path
-beside the authored graph.
+Plate's `AuthoredPlugin` resolves the ID from the editor's `userId`, or from
+the local user `'local'` when the application passes none, so a solo editor
+writes and proposes without identity setup. Collaborators pass a stable user;
+the rule lives in [Plate's suggested-edit law](../../vision/plate.md). Plite
+itself does not invent an anonymous or system author, silently discard
+accepted operations, or maintain an unauthored write path beside the authored
+graph. Every write still carries the non-empty author Plate resolved.
 
 The version 4 checkpoint is the current persistence authority:
 

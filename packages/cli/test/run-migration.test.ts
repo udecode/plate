@@ -12,7 +12,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  authored,
+  AuthoredPlugin,
   projectAuthoredReview,
 } from '../../platejs/src/authored/index';
 import { createEditor, definePlugin, schema } from '../../platejs/src/index';
@@ -57,7 +57,7 @@ const createFixture = (
   writeFileSync(
     entryPath,
     `import { definePlugin, schema } from '../../platejs/src/index';
-import { authored } from '../../platejs/src/authored/index';
+import { AuthoredPlugin } from '../../platejs/src/authored/index';
 import { defineDocumentMigrations, migrateV54 } from '../../platejs/src/migrations/index';
 
 const ParagraphPlugin = definePlugin('paragraph', {
@@ -66,7 +66,7 @@ const ParagraphPlugin = definePlugin('paragraph', {
 
 export const EditorKit = [
   ${options.emptyKit ? '' : 'ParagraphPlugin,'}
-  ${options.suggestions ? "authored({ authorId: 'migration' })," : ''}
+  ${options.suggestions ? 'AuthoredPlugin,' : ''}
 ] as const;
 export const OtherEmptyArray = [] as const;
 export const EditorSchema = {
@@ -277,12 +277,12 @@ describe('plate migrate run', () => {
     const output = JSON.parse(result.outputText);
     const cliEditor = createEditor({
       initialValue: output,
-      plugins: [RuntimeParagraphPlugin, authored({ authorId: 'reader' })],
+      plugins: [RuntimeParagraphPlugin, AuthoredPlugin],
       schema: RuntimeSchema,
     });
     const runtimeOutput = migrateDocument(JSON.parse(sourceText), {
       migrations: defineDocumentMigrations({
-        plugins: [RuntimeParagraphPlugin, authored({ authorId: 'reader' })],
+        plugins: [RuntimeParagraphPlugin, AuthoredPlugin],
         schema: RuntimeSchema,
         sourceFingerprints: { 53: 'source-53' },
         steps: { 54: migrateV54 },
@@ -291,7 +291,7 @@ describe('plate migrate run', () => {
     }).output;
     const runtimeEditor = createEditor({
       initialValue: runtimeOutput,
-      plugins: [RuntimeParagraphPlugin, authored({ authorId: 'reader' })],
+      plugins: [RuntimeParagraphPlugin, AuthoredPlugin],
       schema: RuntimeSchema,
     });
     const cli = projectAuthoredReview(cliEditor.read.value());

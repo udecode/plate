@@ -1,6 +1,7 @@
 import React from 'react';
 
 import type { BasePluginInput } from '../../lib/editor';
+import { assertConstructorOptions } from '../../lib/editor/withPlite';
 import {
   type CreateStaticEditorOptions,
   type StaticEditor,
@@ -32,6 +33,8 @@ export function useStaticEditor<
   : TEnabled extends true | undefined
     ? StaticEditor<P>
     : StaticEditor<P> | null {
+  assertConstructorOptions(options);
+
   return React.useMemo(
     (): any => {
       if (options.enabled === false) return null;

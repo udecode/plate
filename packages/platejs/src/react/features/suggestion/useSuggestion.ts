@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { DefaultAuthoredPlugin, type AuthoredChange } from '../../../authored';
+import { AuthoredPlugin, type AuthoredChange } from '../../../authored';
 import { RangeApi, TextApi, type EditorCommit, type Path } from '../../../core';
 import { useEditorViewState } from '../../plite-react';
 import { useEditor, useEditorSelector } from '../../stores';
@@ -48,7 +48,7 @@ export const useSuggestionChanges = (path: Path) => {
   const editor = useEditor();
   const authoredView = useEditorViewState(
     editor,
-    () => editor.plugin(DefaultAuthoredPlugin).read.view(),
+    () => editor.plugin(AuthoredPlugin).read.view(),
     {
       equalityFn: (left, right) =>
         left?.intent === right.intent && left.projection === right.projection,
@@ -65,7 +65,7 @@ export const useSuggestionChanges = (path: Path) => {
       const last = entries.at(-1);
       if (!first || !last) return [];
       const root = current.read.view.root();
-      return current.plugin(DefaultAuthoredPlugin).read.changesAt({
+      return current.plugin(AuthoredPlugin).read.changesAt({
         anchor: {
           offset: 0,
           path: first[1],

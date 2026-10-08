@@ -72,9 +72,6 @@ const EMPTY_COMMENT_IDS = Object.freeze([]) as readonly string[];
 export const useCommentUser = (id: string | null) =>
   usePluginStore(CommentsPlugin, (state) => (id ? state.users[id] : undefined));
 
-const useCurrentCommentUserId = () =>
-  usePluginStore(CommentsPlugin, 'currentUserId');
-
 export const usePendingComment = () => {
   const { api: comments } = useEditor().plugin(CommentsPlugin);
 
@@ -165,8 +162,7 @@ function CommentInput({
   onCancel?: () => void;
   onInteractionChange?: (blocked: boolean) => void;
 }) {
-  const currentUserId = useCurrentCommentUserId();
-  const currentUser = useCommentUser(currentUserId);
+  const currentUser = useCommentUser(useEditor().userId);
   const initialValue = React.useMemo(
     () => cloneCommentValue(initialBody ?? createCommentValue()),
     [initialBody]
@@ -374,9 +370,9 @@ export function CommentThreadCard({
   onInteractionChange?: (blocked: boolean) => void;
   showReply?: boolean;
 }) {
-  const { api: comments } = useEditor().plugin(CommentsPlugin);
+  const editor = useEditor();
+  const { api: comments } = editor.plugin(CommentsPlugin);
   const thread = useCommentThread(id);
-  const currentUserId = useCurrentCommentUserId();
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [replyVersion, setReplyVersion] = React.useState(0);
   const interactionsRef = React.useRef<ReadonlySet<string>>(new Set());
@@ -439,7 +435,7 @@ export function CommentThreadCard({
             setEditingId(next);
           }}
           onInteractionChange={setInteraction}
-          mine={message.userId === currentUserId}
+          mine={message.userId === editor.userId}
           resolved={thread.resolution !== null}
           showExcerpt={thread.target.type === 'range' && index === 0}
           status={thread.status}
@@ -447,22 +443,20 @@ export function CommentThreadCard({
         />
       ))}
 
-      {showReply &&
-        currentUserId &&
-        (!thread.resolution || interactions.has('reply')) && (
-          <CommentComposer
-            ariaLabel="Reply to thread"
-            cancelLabel="Cancel reply"
-            key={replyVersion}
-            onCancel={() => {
-              setReplyInteraction(false);
-              setReplyVersion((version) => version + 1);
-            }}
-            onInteractionChange={setReplyInteraction}
-            onSubmit={(body) => comments.reply(id, body)}
-            placeholder="Reply..."
-          />
-        )}
+      {showReply && (!thread.resolution || interactions.has('reply')) && (
+        <CommentComposer
+          ariaLabel="Reply to thread"
+          cancelLabel="Cancel reply"
+          key={replyVersion}
+          onCancel={() => {
+            setReplyInteraction(false);
+            setReplyVersion((version) => version + 1);
+          }}
+          onInteractionChange={setReplyInteraction}
+          onSubmit={(body) => comments.reply(id, body)}
+          placeholder="Reply..."
+        />
+      )}
     </article>
   );
 }

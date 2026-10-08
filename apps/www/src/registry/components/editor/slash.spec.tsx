@@ -9,7 +9,7 @@ import {
 } from '@testing-library/react';
 import { BaseCodeBlockPlugin } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import {
   createEditor,
   type Editor,
@@ -53,7 +53,7 @@ test.each(['', 'After'])(
       plugins: [
         ParagraphPlugin,
         BaseCodeBlockPlugin,
-        DefaultAuthoredPlugin,
+        AuthoredPlugin,
         AIChatPlugin,
         SuggestionPlugin,
         ...SlashKit,

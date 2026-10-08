@@ -180,14 +180,13 @@ export function ImportToolbarButton({
     const importedEditor = createEditor({
       initialValue,
       plugins,
-      userId: model.runtime.userId,
+      userId: model.userId,
     });
 
     if (commentsInstalled) {
       const currentComments = model.plugin(CommentsPlugin);
 
       importedEditor.plugin(CommentsPlugin).store.set({
-        currentUserId: currentComments.store.get('currentUserId'),
         users: currentComments.store.get('users'),
       });
     }

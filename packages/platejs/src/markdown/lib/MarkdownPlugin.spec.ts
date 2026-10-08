@@ -1,4 +1,4 @@
-import { authored } from '../../authored';
+import { AuthoredPlugin } from '../../authored';
 import {
   BaseParagraphPlugin,
   ContentSlice,
@@ -67,12 +67,9 @@ const createDataTransfer = ({
 describe('MarkdownPlugin', () => {
   it('exports authored documents only through explicit semantic projections', () => {
     const editor = createEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        MarkdownPlugin,
-        authored({ authorId: 'alice' }),
-      ],
+      plugins: [BaseParagraphPlugin, MarkdownPlugin, AuthoredPlugin],
       initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'proposed' },

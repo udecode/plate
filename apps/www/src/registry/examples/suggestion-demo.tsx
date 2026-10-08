@@ -25,7 +25,6 @@ export default function SuggestionDemo() {
         ...DiscussionKit,
         CommentsPlugin.configure({
           initialState: {
-            currentUserId: 'alice',
             users: { alice: { id: 'alice', name: 'Alice' } },
           },
         }),

@@ -38,16 +38,15 @@ docs:
 ### 添加 Kit
 
 ```tsx
-import {
-  createEditor } from 'platejs/react';
+import { createEditor } from 'platejs/react';
 import { AIKit } from '@/components/editor/ai';
 
 const editor = createEditor({
   plugins: [
     // ...otherPlugins,
-  ...AIKit,
+    ...AIKit,
   ],
-  });
+});
 ```
 
 ### 渲染编辑器

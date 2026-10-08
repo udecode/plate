@@ -284,15 +284,16 @@ Restore decoded history as one direct update.
 
 ## Authored changes
 
-Install `authored` when the document needs attributed accepted edits or review proposals. It shares Plate's existing History:
+Install `AuthoredPlugin` when the document needs attributed accepted edits or review proposals, and configure it to retain history. It shares Plate's existing History:
 
 ```tsx
-import { authored } from "platejs/authored";
+import { AuthoredPlugin } from "platejs/authored";
 
 const editor = createEditor({
   plugins: [
-    authored({ authorId: () => session.user.id, retainHistory: true }),
+    AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
   ],
+  userId: session.user.id,
 });
 ```
 

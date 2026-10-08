@@ -106,8 +106,7 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
 
   assert.ok(plitePattern);
   assert.deepEqual(restriction.excludeFiles, [
-    'packages/platejs/src/authored/PlateAuthoredPlugin.ts',
-    'packages/platejs/src/authored/authored.api.spec.ts',
+    'packages/platejs/src/authored/AuthoredPlugin.ts',
     'packages/platejs/src/authored/index.ts',
     'packages/platejs/src/core.tsx',
     'packages/platejs/src/diff/index.ts',
@@ -127,7 +126,7 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'packages/platejs/src/lib/plugin/definePlugin.ts',
     'packages/platejs/src/pagination/index.ts',
     'packages/platejs/src/pagination/react/index.ts',
-    'packages/platejs/src/react/internal/plate-content-editable.internal.ts',
+    'packages/platejs/src/pagination/react/PagedEditorContent.tsx',
     'packages/platejs/src/react/internal/plite-components.ts',
     'packages/platejs/src/react/internal/plite-types.ts',
     'packages/platejs/src/react/plite-react.ts',
@@ -143,6 +142,7 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'apps/www/src/app/(app)/examples/plite/**',
     'apps/plite/src/app/providers.tsx',
     'apps/www/src/app/dev/combobox-typing/page.tsx',
+    'benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts',
     'apps/www/src/app/dev/editor-perf/page.tsx',
   ]);
 });

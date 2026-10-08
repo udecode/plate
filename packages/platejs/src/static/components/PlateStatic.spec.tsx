@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { authored } from '../../authored';
+import { AuthoredPlugin } from '../../authored';
 import {
   createEditorView,
   NodeApi,
@@ -632,8 +632,9 @@ describe('PlateStatic Memoization', () => {
             },
           },
         }),
-        authored({ authorId: 'alice' }),
+        AuthoredPlugin,
       ],
+      userId: 'alice',
       initialValue: {
         children: [
           {

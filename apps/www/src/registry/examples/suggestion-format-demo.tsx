@@ -28,7 +28,6 @@ export default function SuggestionFormatDemo() {
         ...DiscussionKit,
         CommentsPlugin.configure({
           initialState: {
-            currentUserId: 'alice',
             users: { alice: { id: 'alice', name: 'Alice' } },
           },
         }),

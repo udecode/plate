@@ -3,7 +3,7 @@ import {
   type RenderStaticNodeWrapper,
   type RenderStaticNodeWrapperProps,
 } from 'platejs';
-import { DefaultAuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import {
   definePlugin,
   type RenderNodeWrapper,
@@ -55,7 +55,7 @@ const AdaptedWrapperPlugin = toReactPlugin(BaseAdaptedWrapperPlugin, {
 const RuntimeDependencyWrapperPlugin = definePlugin(
   'runtimeDependencyWrapper',
   {
-    dependencies: [DefaultAuthoredPlugin],
+    dependencies: [AuthoredPlugin],
   }
 );
 

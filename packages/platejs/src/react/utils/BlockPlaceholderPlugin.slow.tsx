@@ -10,17 +10,11 @@ import { ParagraphPlugin, useEditor } from 'platejs/react';
 import React from 'react';
 
 import type { EditorDocumentValue, TextSelection } from '../../core';
-import {
-  createEditor as createPliteEditor,
-  property,
-  schema,
-  target,
-  type Value,
-} from '../../facade';
+import { property, schema, target, type Value } from '../../facade';
 import { EditorRoot } from '../components/Plate';
 import { EditorContent } from '../components/PlateContent';
 import type { InternalReactEditorWithInstalledPlugins } from '../editor/Editor';
-import { createEditorWithEditor } from '../editor/withPlate';
+import { createEditor as createReactEditor } from '../editor/withPlate';
 import { useEditorContext } from '../internal/plite-components';
 import { definePlugin } from '../plugin/definePlugin';
 import {
@@ -114,7 +108,7 @@ const createEditor = (options?: {
   selection?: TextSelection;
   value?: EditorDocumentValue<Value> | Value;
 }) =>
-  createEditorWithEditor(createPliteEditor<Value>(), {
+  createReactEditor({
     plugins: [
       ...(options?.elementIds ? [ElementIdPlugin] : []),
       BlockPlaceholderFixtureSchemaPlugin,

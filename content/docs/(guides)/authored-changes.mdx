@@ -18,8 +18,8 @@ Authored changes keep accepted content, proposals, decisions, and stable change 
 | ------------------------------------------------- | ----------------------------------------------------------------------- |
 | Switch between editing and suggesting             | `SuggestionPlugin` from `platejs/suggestion/react`                      |
 | Add copied highlighting and review cards          | [SuggestionKit](/docs/suggestion) and [DiscussionKit](/docs/discussion) |
-| Record changes using Plate's `userId`             | `DefaultAuthoredPlugin` from `platejs/authored`                         |
-| Choose a custom author resolver or retain history | `authored(options)` from `platejs/authored`                             |
+| Record changes as the editor's user               | `AuthoredPlugin` from `platejs/authored`                                |
+| Retain accepted history for revert                | `AuthoredPlugin.configure({ initialState: { retainHistory: true } })`   |
 | Read, decide, resolve, or revert changes          | The installed authored plugin portal                                    |
 | Attach a conversation                             | `CommentsPlugin` with a `{ type: 'change', id }` target                 |
 
@@ -27,45 +27,44 @@ Suggestion is a behavior and presentation layer over authored changes. It does n
 
 ## Install authored changes
 
-`DefaultAuthoredPlugin` resolves the author from the Plate editor's `userId` once per transaction:
+`AuthoredPlugin` resolves the author from the Plate editor's `userId` once per transaction:
 
 ```tsx title="editor.ts" showLineNumbers
 import { BaseParagraphPlugin, createEditor } from "platejs";
-import { DefaultAuthoredPlugin } from "platejs/authored";
+import { AuthoredPlugin } from "platejs/authored";
 
 const editor = createEditor({
-  plugins: [BaseParagraphPlugin, DefaultAuthoredPlugin],
+  plugins: [BaseParagraphPlugin, AuthoredPlugin],
   initialValue: [
     { type: "paragraph", children: [{ text: "Review this sentence." }] },
   ],
   userId: "alice",
 });
 
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 ```
 
-Use an authenticated, stable user ID. `authored.read.canPropose()` reports
-whether the resolver currently supplies one. `SuggestionPlugin` rejects
-entering Suggestion mode without an author, and native authored writes reject
-missing identity at the transaction boundary.
+An editor without a `userId` writes as the local user, `'local'`, so a solo
+editor needs no setup, AI suggestions included. Pass an authenticated, stable
+user ID whenever more than one person writes the document.
 
-For a custom resolver or retained accepted history, create one descriptor and use that same descriptor for portal access:
+To retain accepted history, configure the same descriptor. The editor reads
+`retainHistory` once, when it is created:
 
 ```tsx title="history-editor.ts" showLineNumbers
 import { BaseParagraphPlugin, createEditor } from "platejs";
-import { authored } from "platejs/authored";
-
-const RetainedAuthoredPlugin = authored({
-  authorId: () => session.user.id,
-  retainHistory: true,
-});
+import { AuthoredPlugin } from "platejs/authored";
 
 const historyEditor = createEditor({
-  plugins: [BaseParagraphPlugin, RetainedAuthoredPlugin],
+  plugins: [
+    BaseParagraphPlugin,
+    AuthoredPlugin.configure({ initialState: { retainHistory: true } }),
+  ],
   initialValue,
+  userId: session.user.id,
 });
 
-const retainedAuthored = historyEditor.plugin(RetainedAuthoredPlugin);
+const retainedAuthored = historyEditor.plugin(AuthoredPlugin);
 ```
 
 `retainHistory` keeps closed edit bodies needed for selective revert. Omit it when the application only needs pending review and attribution.
@@ -113,12 +112,12 @@ const imported = proposeAuthoredComparison(editor, { comparison });
 Set the starting intent and projection on `EditorRoot`:
 
 ```tsx
-import { DefaultAuthoredPlugin } from "platejs/authored";
+import { AuthoredPlugin } from "platejs/authored";
 import { EditorContent, EditorRoot, useCreateEditor } from "platejs/react";
 
 export function SuggestionEditor() {
   const editor = useCreateEditor({
-    plugins: [DefaultAuthoredPlugin],
+    plugins: [AuthoredPlugin],
     userId: "alice",
   });
 
@@ -146,7 +145,7 @@ editor.plugin(SuggestionPlugin).api.setMode("suggesting");
 Use the authored portal for advanced projections:
 
 ```tsx
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 
 authored.api.setView({
   intent: "propose",
@@ -169,7 +168,7 @@ Intent and projection belong to the exact view. Selection, clipboard input, comm
 Read a page of pending changes, then capture a revision-bound selection for the decision:
 
 ```tsx
-const authored = editor.plugin(DefaultAuthoredPlugin);
+const authored = editor.plugin(AuthoredPlugin);
 const pending = authored.read.changes({
   authorId: "alice",
   limit: 50,
@@ -249,7 +248,7 @@ Save the complete result of `editor.read.value()`. It contains accepted content 
 const savedDocument = editor.read.value();
 
 const restored = createEditor({
-  plugins: [BaseParagraphPlugin, DefaultAuthoredPlugin],
+  plugins: [BaseParagraphPlugin, AuthoredPlugin],
   initialValue: savedDocument,
   userId: "alice",
 });
@@ -330,12 +329,11 @@ accepted or proposed content only. A successful DOCX result returns a `Blob` in
 | Markdown | Plain Markdown | Not supported; save authored JSON |
 | Semantic HTML | Feature-mapped HTML | Not supported; save authored JSON |
 | Static HTML | Component-rendered HTML | Not supported; save authored JSON |
-| DOCX | Projected Word document | Word revisions plus the canonical authored package part |
+| DOCX | Projected Word document | Word revisions; save authored JSON for exact state |
 
 DOCX review export reports `lossy-content` or `unsupported-content` when Word
-cannot express a native construct. The DOCX authored part restores exact data
-only when the caller grants authored trust and the visible Word content still
-corresponds to that part.
+cannot express a native construct. Save authored JSON beside the file to keep
+that construct exactly.
 
 ## Collaboration
 
@@ -347,27 +345,22 @@ See [Collaboration](/docs/yjs) for setup and compaction ownership.
 
 ## API Reference
 
-### `DefaultAuthoredPlugin`
+### `AuthoredPlugin`
 
-Import the standard descriptor from `platejs/authored`. It resolves the author from the Plate editor's `userId` and uses default retention. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
+Import the standard descriptor from `platejs/authored`. It records each change as the Plate editor's `userId`, or as the local user, `'local'`, when the editor has none. `SuggestionPlugin` and `AIChatPlugin` depend on this descriptor.
 
-### `authored(options)`
-
-Create a custom authored descriptor. Import it from `platejs/authored`.
-
-| Option          | Type                                                  | Purpose                                                            |
-| --------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
-| `authorId`      | `string \| ((editor) => string \| null \| undefined)` | Required. Resolve a nonempty author ID once per transaction.       |
-| `retainHistory` | `boolean`                                             | Keep closed edit bodies for selective revert. Defaults to `false`. |
+| Option                       | Type      | Purpose                                                                                                     |
+| ---------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| `initialState.retainHistory` | `boolean` | Keep closed edit bodies for selective revert. The editor reads it once, when it is created. Defaults to `false`. |
 
 ### Transaction, reads, and updates
 
-After `const authored = editor.plugin(DefaultAuthoredPlugin)`, use these methods:
+After `const authored = editor.plugin(AuthoredPlugin)`, use these methods:
 
 | Surface                                   | Purpose                                                                            |
 | ----------------------------------------- | ---------------------------------------------------------------------------------- |
 | `tx.authored.propose(options?)`           | Start a proposal, assign a new `{ changeId }`, or amend an owned pending change.   |
-| `authored.read.canPropose()`              | Report whether the current identity can author proposals.                          |
+| `authored.read.canPropose()`              | Report whether the current identity can author proposals; always true with `AuthoredPlugin`. |
 | `authored.read.view()`                    | Read this view's intent and projection.                                            |
 | `authored.read.change(id)`                | Read one logical change, or `null`.                                                |
 | `authored.read.details(id)`               | Read one change with semantic parts and decision history, or `null`.               |

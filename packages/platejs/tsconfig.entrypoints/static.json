@@ -28,6 +28,9 @@
       "path": "../../plitejs/tsconfig.entrypoints/react.json"
     },
     {
+      "path": "./authored.json"
+    },
+    {
       "path": "./core.json"
     },
     {
