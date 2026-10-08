@@ -4,8 +4,8 @@ type: source
 status: partial
 source_refs:
   - docs/research/sources/editor-architecture/candidates.md
-  - docs/plans/2026-04-14-slate-v2-decorations-annotations-cluster-research.md
-  - docs/slate-v2/decoration-roadmap.md
+  - docs/plans/2026-04-14-plite-decorations-annotations-cluster-research.md
+  - c70bacbd4a:docs/plite-draft/decoration-roadmap.md
   - ../prosemirror/state/src/selection.ts
   - ../prosemirror/view/src/decoration.ts
   - ../lexical/packages/lexical-mark/src/MarkNode.ts
@@ -25,10 +25,12 @@ source_refs:
 updated: 2026-08-30
 related:
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
-  - docs/slate-v2/decorations-annotations-cluster.md
+  - c70bacbd4a:docs/plite-draft/decorations-annotations-cluster.md
 ---
 
 # Decorations / annotations overlay corpus
+
+> Current Plite (checked 2026-10-08): Plite kept the decoration and annotation split and cut the widget lane, `Bookmark`, `RangeRef` and the projection store that this page's Slate v2 evidence names. Decorations are `DecorationSource`s passed to `<EditorRoot decorations>` (`packages/plitejs/src/interfaces/decoration.ts:29-37`, `packages/plitejs/src/react/components/plite.tsx:181`), annotations are explicit stores (`packages/plitejs/src/annotations/store.ts:457`), a durable location is an `editor.anchor` handle (`packages/plitejs/src/interfaces/editor.ts:2559-2567`), and Plite exposes no widget target or store lane (`docs/vision/plite.md:597-600`).
 
 ## Purpose
 
@@ -40,9 +42,9 @@ It is the research-layer bridge between:
 - the candidate shortlist in
   [docs/research/sources/editor-architecture/candidates.md](docs/research/sources/editor-architecture/candidates.md)
 - the earlier working notes in
-  [2026-04-14-slate-v2-decorations-annotations-cluster-research.md](docs/plans/2026-04-14-slate-v2-decorations-annotations-cluster-research.md)
+  2026-04-14-plite-decorations-annotations-cluster-research.md (`docs/plans/2026-04-14-plite-decorations-annotations-cluster-research.md`)
 - the accepted plan direction in
-  [decoration-roadmap.md](docs/slate-v2/decoration-roadmap.md)
+  decoration-roadmap.md (`c70bacbd4a:docs/plite-draft/decoration-roadmap.md`)
 
 ## Raw layer note
 
@@ -197,17 +199,17 @@ Use the narrower source pages for actual topic reads:
 - compiled pages inspected: none
 - raw paths inspected:
   `../slate`,
-  `packages/slate/src`,
-  `packages/slate-react/src`,
+  the Slate v2 core source directory,
+  the Slate v2 React source directory,
   local plan docs under `docs/plans`
 - direct raw files actually read:
   - `../slate/Readme.md`
-  - `packages/slate/src/interfaces/editor.ts`
-  - `packages/slate/src/editor.ts`
-  - `packages/slate/src/core/draft-helpers.ts`
-  - `packages/slate-react/src/projection-store.ts`
-  - `packages/slate-react/test/projections-and-selection-contract.tsx`
-  - `docs/slate-v2/decorations-annotations-cluster.md`
+  - The historical editor-interface evidence file is no longer available; its reported inspection cannot be checked.
+  - The historical editor-implementation evidence file is no longer available; its reported inspection cannot be checked.
+  - The historical draft-helper evidence file is no longer available; its reported inspection cannot be checked.
+  - The historical projection-store evidence file is no longer available; its reported inspection cannot be checked.
+  - The historical projection-and-selection test evidence file is no longer available; its reported inspection cannot be checked.
+  - `c70bacbd4a:docs/plite-draft/decorations-annotations-cluster.md`
 - official source entrypoints checked:
   - `../slate/Readme.md`
   - local v2 package sources and tests

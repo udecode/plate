@@ -42,7 +42,6 @@
         "platejs",
         "@radix-ui/react-popover"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/bases/radix/floating-popover.tsx",
@@ -64,7 +63,6 @@
         "lucide-react",
         "platejs"
       ],
-      "registryDependencies": [],
       "files": [
         {
           "path": "src/registry/bases/radix/toolbar.tsx",

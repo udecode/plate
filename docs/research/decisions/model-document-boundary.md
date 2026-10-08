@@ -36,8 +36,8 @@ its declared `EditorDocumentValue` result required object metadata. Editor
 construction rejected that input. Direct and persisted document replacement
 accepted it and dropped the malformed field. The same disagreement occurred for
 `meta: []`, `meta: null`, `roots: 7`, `roots: []` and `roots: null`, in both raw
-and explicitly closed-schema editors. The [public-API probe](../../plans/artifacts/model-api-review/document-boundary-probe.mjs)
-and its [results](../../plans/artifacts/model-api-review/document-boundary-probe.json)
+and explicitly closed-schema editors. The public-API probe comparing assertion, construction and direct/persisted replacement
+and its recorded results for six malformed metadata/root containers in each editor mode
 reproduce all 12 mismatches, with valid-document and invalid-node controls.
 
 ## October review: admission by input kind

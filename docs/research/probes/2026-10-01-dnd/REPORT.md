@@ -81,7 +81,7 @@ raw Plite text/void dragging and external-file placement into optional Upload.
 The public-contract census includes `DndPlugin`, its definition/state types,
 `useDraggable`, `useDropLine`, `useDndPlugin`, `DndScrollerOptions`, `DRAG_ITEM_BLOCK`,
 and the drag item, callback, option and return types exported by
-`packages/platejs/src/dnd/react/index.ts`. `useDndNode` and path/hover helpers are
+`cf1572560313960e87226640b93f73f2486c9aab:packages/platejs/src/dnd/react/index.ts`. `useDndNode` and path/hover helpers are
 private implementation comparisons. Hook and preview/scroll options must earn a
 domain job; exposing a backend option alone does not establish that job.
 

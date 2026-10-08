@@ -4,14 +4,16 @@ type: decision
 status: accepted
 updated: 2026-04-15
 source_refs:
-  - docs/research/systems/slate-v2-overlay-architecture.md
+  - c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
   - docs/research/sources/editor-architecture/candidates.md
 related:
-  - docs/research/entities/slate.md
+  - c70bacbd4a:docs/research/entities/slate.md
 ---
 
 # Slate v2 overlay architecture beats legacy Slate and aligns with the best parts of the field
+
+> Current Plite (checked 2026-10-08): the three-lane split this page credits lost its `Widget` lane, and `Bookmark` gave way to `editor.anchor` handles (`docs/vision/plite.md:597-600`, `:613-624`; `docs/research/decisions/plite-view-ownership.md:28`); `packages/plitejs/src` has no `Widget`, `Bookmark` or `RangeRef`.
 
 ## Question
 

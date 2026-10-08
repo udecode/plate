@@ -83,28 +83,28 @@ Slate implication:
 
 Slate v2 already has enough layout substrate:
 
-- `packages/slate-layout/src/index.ts:105` defines box kinds for
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-layout/src/index.ts:105` defines box kinds for
   block, code line, image, table, table cell, and thematic break.
-- `packages/slate-layout/src/index.ts:113` defines split policy
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-layout/src/index.ts:113` defines split policy
   vocabulary: `avoid`, `line`, `page`, and `row`.
-- `packages/slate-layout/src/index.ts:236` defines snapshots with
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-layout/src/index.ts:236` defines snapshots with
   blocks, fragments, page, pages, root, settings, and version.
-- `packages/slate-layout/src/index.ts:277` defines an engine
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-layout/src/index.ts:277` defines an engine
   boundary.
-- `packages/slate-layout/src/index.ts:1349` implements the
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-layout/src/index.ts:1349` implements the
   Pretext-backed page layout engine.
-- `packages/slate-layout/src/index.ts:1698` paginates measured
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-layout/src/index.ts:1698` paginates measured
   blocks into fragments and pages.
 
 The wrong part is the repeated unit used by paged rendering:
 
-- `packages/slate-layout/src/react.tsx:185` maps projected blocks
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-layout/src/react.tsx:185` maps projected blocks
   into `getVirtualizedTopLevelItems`.
-- `packages/slate-layout/src/react.tsx:219` renders every page
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-layout/src/react.tsx:219` renders every page
   surface.
-- `packages/slate-react/src/components/editable-text-blocks.tsx:548`
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-react/src/components/editable-text-blocks.tsx:548`
   exposes only a top-level-item layout hook for virtualization.
-- `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:212`
+- `udecode/slate@8a5f8d9a80915d6817aaa37a5e6dd92ac64cb092:packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:212`
   virtualizes top-level runtime ids, not pages/spreads.
 
 Slate implication:

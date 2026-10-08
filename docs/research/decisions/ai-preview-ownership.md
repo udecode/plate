@@ -62,12 +62,12 @@ is unresolved, publishes it immediately for a live request, then hands all
 later edit, delete and resolve actions to the normal Comments owner. A retired
 request discards only unresolved work. Focused lifecycle and browser proof are
 recorded in
-[the implementation plan](../../plans/2026-09-17-ai-comment-approval-cut.md).
+the implementation plan (`c70bacbd4a:docs/plans/2026-09-17-ai-comment-approval-cut.md`).
 
 The bounded assessment is retained in
-[the review draft](../../plans/artifacts/ai-comment-approval-review.json).
+the September 17 review draft recommending ordinary comment controls for completed AI comments, cancellation fencing for unfinished work and retained Accept/Discard for document edits.
 Formal record/check is blocked by an unrelated missing table evidence path
-(`packages/platejs/src/react/features/table/useTableSelectionDOM.spec.tsx`)
+(`47539814bbfb6dd1050642744671b380344bfb8f:packages/platejs/src/react/features/table/useTableSelectionDOM.spec.tsx`)
 and stale source inventory. The indexed earlier record remains unchanged.
 
 ## The demonstrated failure
@@ -88,7 +88,7 @@ There is also a presentation contract break. The stream adapter calls
 whereas the copied `AILeaf` supplies purple text and the trailing streaming
 indicator only when an AI mark renders. Chrome has no purple AI leaf or its
 pseudo-element during the observed stream. Local `main` source in
-`apps/www/src/registry/ui/ai-node.tsx` contains that purple presentation and
+`ai-node.tsx` (same styling as `a18bab5bba2d73e446523cbd848c5baeb19935f4:apps/www/src/registry/ui/ai-node.tsx`) contains that purple presentation and
 trailing indicator. This is source comparison, not a full main runtime replay.
 
 The native caret and the AI streaming indicator are different. Chrome showed a

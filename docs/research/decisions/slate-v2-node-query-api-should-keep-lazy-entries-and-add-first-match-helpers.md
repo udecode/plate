@@ -45,21 +45,21 @@ of a generator or returning a generator that may be consumed after the boundary.
 
 ## Current Source Evidence
 
-- `packages/slate/src/editor/nodes.ts:6` is still a generator-based
+- `packages/plitejs/src/editor/nodes.ts:40` is still a generator-based
   editor query.
-- `packages/slate/src/interfaces/node.ts:677` is still a
+- `packages/plitejs/src/interfaces/node.ts:1006` is still a
   generator-based raw tree query.
-- `packages/slate/src/core/public-state.ts` exposes
+- `packages/plitejs/src/core/public-state.ts` exposes
   `state.nodes.entries`, `state.nodes.find`, `state.nodes.some`, and
   `state.nodes.toArray`.
-- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx`, `site/examples/ts/richtext.tsx`,
+- `apps/www/src/app/(app)/examples/plite/_examples/inlines.tsx`, `apps/www/src/app/(app)/examples/plite/_examples/richtext.tsx`,
   `site/examples/ts/tables.tsx`, and `site/examples/ts/check-lists.tsx` use
   `find` / `some` for first-match and boolean checks.
-- `packages/slate-dom/src/plugin/with-dom.ts` uses
+- `888f9ccaed74a6145c1a06ef7bfb5dc67d83edf2:packages/plite-dom/src/plugin/with-dom.ts` uses
   `state.nodes.toArray` for read-boundary materialization before creating path
   refs.
-- `packages/slate/test/query-contract.ts` and
-  `packages/slate/test/state-tx-public-api-contract.ts` prove the
+- `packages/plitejs/test/query-contract.ts` and
+  `packages/plitejs/test/state-tx-public-api-contract.ts` prove the
   public query contract through `editor.read`.
 
 ## Reference Systems
@@ -104,7 +104,7 @@ Updated direction:
 - do not teach `editor.read((state) => state.nodes.entries(...))`, because the
   generator may be consumed after the read boundary.
 
-Plan: `docs/plans/2026-05-14-slate-v2-generator-materialization-api-ralplan.md`.
+Plan: `c70bacbd4a:docs/plans/2026-05-14-plite-generator-materialization-api-ralplan.md`.
 
 ## Proof
 

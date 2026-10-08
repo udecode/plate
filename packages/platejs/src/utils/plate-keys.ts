@@ -23,7 +23,6 @@ export const PLUGINS = {
   dnd: 'dnd',
   dom: 'dom',
   elementState: 'elementState',
-  emoji: 'emoji',
   equation: 'equation',
   excalidraw: 'excalidraw',
   exitBreak: 'exitBreak',

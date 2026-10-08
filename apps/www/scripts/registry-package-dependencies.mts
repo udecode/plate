@@ -40,7 +40,7 @@ type DependencyRequirement = {
   range: string | null;
 };
 
-export type DeriveRegistryPackageDependenciesOptions = {
+export type DeriveRegistryDependenciesOptions = {
   sourceRoot: string;
   entrypointDags?: EntrypointDags;
   hostProvidedAliases?: readonly string[];
@@ -223,7 +223,12 @@ function reconcileDependencies(
   for (const [name, requirement] of derivedRequirements) {
     const authored = authoredByName.get(name);
 
-    if (!authored?.range || !requirement.range) continue;
+    if (!authored || !requirement.range) continue;
+    if (!authored.range) {
+      throw new Error(
+        `${requirement.context}: authored ${authored.dependency} hides derived ${name}@${requirement.range}; delete it.`
+      );
+    }
     if (!packageVersionRangesIntersect(authored.range, requirement.range)) {
       throw new Error(
         `${requirement.context}: authored ${authored.dependency} is incompatible with derived ${name}@${requirement.range}.`
@@ -249,19 +254,38 @@ function getPlateDependencyNames(dependencies: readonly string[]) {
   );
 }
 
-function getShadcnDependencyNames(dependencies: readonly string[]) {
-  return new Set(
-    dependencies.map((dependency) =>
-      dependency.startsWith('@shadcn/')
-        ? dependency.slice('@shadcn/'.length)
-        : dependency
-    )
-  );
+function emitRegistryDependencies(
+  authored: readonly string[],
+  requiredPlate: Map<string, string>,
+  requiredShadcn: Map<string, string>
+) {
+  for (const dependency of authored) {
+    const context = dependency.startsWith('@plate/')
+      ? requiredPlate.get(dependency.slice('@plate/'.length))
+      : dependency.includes('://')
+        ? undefined
+        : requiredShadcn.get(dependency.replace(/^@shadcn\//, ''));
+
+    if (context) {
+      throw new Error(
+        `${context}: registryDependencies lists ${dependency}, which this import already installs; delete it.`
+      );
+    }
+  }
+
+  const byName = (left: string, right: string) =>
+    left.localeCompare(right, 'en');
+
+  return [
+    ...authored,
+    ...[...requiredPlate.keys()].sort(byName).map((name) => `@plate/${name}`),
+    ...[...requiredShadcn.keys()].sort(byName),
+  ];
 }
 
-export function deriveRegistryPackageDependencies(
+export function deriveRegistryDependencies(
   registry: Registry,
-  options: DeriveRegistryPackageDependenciesOptions
+  options: DeriveRegistryDependenciesOptions
 ): Registry {
   const dags: EntrypointDags = options.entrypointDags ?? defaultEntrypointDags;
   const packageManifests =
@@ -294,12 +318,11 @@ export function deriveRegistryPackageDependencies(
       if (item.meta?.registry === false) return { ...item };
 
       const requirements = new Map<string, DependencyRequirement>();
-      const directPlateDependencies = getPlateDependencyNames(
-        item.registryDependencies ?? []
-      );
-      const directShadcnDependencies = getShadcnDependencyNames(
-        item.registryDependencies ?? []
-      );
+      const authoredEdges = item.registryDependencies ?? [];
+      const directPlateDependencies = getPlateDependencyNames(authoredEdges);
+      const requiredPlate = new Map<string, string>();
+      const requiredShadcn = new Map<string, string>();
+      const sharedImports: Array<{ context: string; owners: string[] }> = [];
 
       const addEntrypointPeers = (
         initialSpecifier: string,
@@ -409,10 +432,8 @@ export function deriveRegistryPackageDependencies(
           if (specifier.startsWith('@/components/ui/')) {
             const dependencyName = specifier.slice('@/components/ui/'.length);
 
-            if (!directShadcnDependencies.has(dependencyName)) {
-              throw new Error(
-                `${context}: missing direct shadcn registry dependency ${dependencyName}.`
-              );
+            if (!requiredShadcn.has(dependencyName)) {
+              requiredShadcn.set(dependencyName, context);
             }
             continue;
           }
@@ -425,25 +446,24 @@ export function deriveRegistryPackageDependencies(
               throw new Error(`${context}: no installed registry target.`);
             }
 
-            const eligibleOwners = [...owners].filter(
-              (owner) =>
-                owner === item.name || directPlateDependencies.has(owner)
+            if (owners.has(item.name)) continue;
+
+            const publishedOwners = [...owners].filter(
+              (owner) => itemsByName.get(owner)?.meta?.registry !== false
             );
 
-            if (eligibleOwners.length === 0) {
+            if (publishedOwners.length === 0) {
               throw new Error(
-                `${context}: missing direct registry dependency for ${[
-                  ...owners,
-                ]
-                  .map((owner) => `@plate/${owner}`)
-                  .join(' or ')}.`
+                `${context}: no published registry item installs this target.`
               );
             }
-            if (eligibleOwners.length > 1) {
-              throw new Error(
-                `${context}: installed registry target is ambiguous between ${eligibleOwners.join(', ')}.`
-              );
+            if (publishedOwners.length === 1) {
+              if (!requiredPlate.has(publishedOwners[0])) {
+                requiredPlate.set(publishedOwners[0], context);
+              }
+              continue;
             }
+            sharedImports.push({ context, owners: publishedOwners });
             continue;
           }
 
@@ -462,15 +482,37 @@ export function deriveRegistryPackageDependencies(
         }
       }
 
+      for (const { context, owners } of sharedImports) {
+        if (owners.some((owner) => requiredPlate.has(owner))) continue;
+        if (
+          owners.filter((owner) => directPlateDependencies.has(owner))
+            .length !== 1
+        ) {
+          throw new Error(
+            `${context}: installed registry target is ambiguous between ${owners.join(', ')}; list exactly one of ${owners.map((owner) => `@plate/${owner}`).join(', ')}.`
+          );
+        }
+      }
+
       const dependencies = reconcileDependencies(
         item.dependencies ?? [],
         requirements,
         item.name
       );
 
-      return dependencies.length > 0 || item.dependencies
-        ? { ...item, dependencies }
-        : { ...item };
+      const { registryDependencies: _authoredEdges, ...rest } =
+        dependencies.length > 0 || item.dependencies
+          ? { ...item, dependencies }
+          : { ...item };
+      const registryDependencies = emitRegistryDependencies(
+        authoredEdges,
+        requiredPlate,
+        requiredShadcn
+      );
+
+      return registryDependencies.length > 0
+        ? { ...rest, registryDependencies }
+        : rest;
     }),
   };
 }

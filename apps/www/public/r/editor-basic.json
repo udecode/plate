@@ -8,8 +8,8 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/plate-ui.json",
-    "https://platejs.org/r/editor.json",
-    "https://platejs.org/r/basic-nodes.json"
+    "https://platejs.org/r/basic-nodes.json",
+    "https://platejs.org/r/editor.json"
   ],
   "files": [
     {

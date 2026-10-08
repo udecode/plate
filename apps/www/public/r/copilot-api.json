@@ -6,7 +6,6 @@
     "ai@6",
     "next"
   ],
-  "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/app/api/ai/copilot/route.ts",

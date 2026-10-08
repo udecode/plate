@@ -337,14 +337,6 @@ export const entrypointDags = {
           peerDependencies: ['validator'],
         })
       ),
-      emoji: headless(
-        directory('emoji', ['core', 'combobox'], [], {
-          peerDependencies: ['@emoji-mart/data'],
-        })
-      ),
-      'emoji/react': client(
-        directory('emoji/react', ['core', 'emoji', 'react-core'])
-      ),
       excalidraw: headless(
         directory('excalidraw', ['core'], [], {
           peerDependencies: ['@excalidraw/excalidraw'],
@@ -509,8 +501,6 @@ export const entrypointDags = {
         'docx/paste',
         'docx-html',
         'docx-internal',
-        'emoji',
-        'emoji/react',
         'excalidraw',
         'excalidraw/react',
         'html',

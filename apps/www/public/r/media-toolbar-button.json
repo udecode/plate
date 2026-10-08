@@ -13,10 +13,10 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/upload.json",
-    "https://platejs.org/r/toolbar.json",
-    "input",
     "https://platejs.org/r/editor-dropdown-menu.json",
-    "alert-dialog"
+    "https://platejs.org/r/toolbar.json",
+    "alert-dialog",
+    "input"
   ],
   "files": [
     {

@@ -55,7 +55,7 @@ Remove the `"session"` literal, sibling `historyReplay` property and standalone
 `EditorEffectHistoryReplayResult<TValue>` for extracted callback owners such as
 Comments. Do not add `SessionHistory`, `defineSessionEffect`, a history registry
 or a compatibility alias. The
-[compile-only prototype](../../plans/artifacts/2026-09-23-history-session-effect-api/proposed-api.probe.ts)
+September 23 compile-only prototype covering local session replay, shared effects and three expected-invalid declarations
 proves contextual callback inference, local narrowing, valid shared effects and
 rejection of all three invalid shapes.
 
@@ -114,7 +114,7 @@ types, Comments, docs, package reference data and release notes use the accepted
 single-value authoring contract. The
 [first design execution](../review-records/2026-09-23-history-replay-lifecycle-design.json)
 is the immutable predecessor superseded by this correction. The earlier
-[Task plan](../../plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md)
+Task plan (`docs/plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md`)
 adopts and verifies the synchronous replay boundary, grouping, Plate adapter,
 and existing mounted ownership. The
 [async replay review](../review-records/2026-09-23-history-async-replay-api.json)
@@ -249,7 +249,7 @@ is no history-owned follow-up plan or consolation backlog.
 
 ## Original audit evidence
 
-The [disposable probes](../../plans/artifacts/2026-09-15-history-review/transaction.probe.test.ts)
+The September 15 disposable replay-composition probes comparing separate updates with same-transaction undo/redo/edit
 start with two separate batches inserting `a` and `b`:
 
 | Operation                                            | Observed result                                                                                               |
@@ -271,7 +271,7 @@ reads the published head in `applyHistoryAction`, stages one last-wins
 normal transaction builder cannot give that external stack transaction-local
 semantics. A new spelling alone would not repair this contract.
 
-The [availability probe](../../plans/artifacts/2026-09-15-history-review/availability.probe.test.ts)
+The September 15 availability probe counting public `DocumentChange.transform` calls
 retains 20 batches, performs one skipped insert, then evaluates
 `editor.read.history.undos().length > 0`. It observes **20 calls to
 `DocumentChange.transform`**. [The state owner](../../../packages/plitejs/src/history/history-state.ts)
@@ -293,7 +293,7 @@ costly speculative replay on every render.
 React's [input-history owner](../../../packages/plitejs/src/react/editable/input-history.ts)
 uses a private **1000ms** timer and emits explicit merge/push tags. Plite's
 history option defaults to **500ms**; explicit native merge bypasses that
-configured delay. The [controlled-clock diagnostic](../../plans/artifacts/2026-09-15-history-review/grouping.probe.test.ts)
+configured delay. The September 15 controlled-clock diagnostic comparing 50ms/100ms and 5000ms/1500ms delay/pause cases
 proves both directions through the actual native-tag helper and history owner:
 `newBatchDelay: 50` with a 100ms pause merges into one batch; `newBatchDelay: 5000`
 with a 1500ms pause splits into two. This is helper/model proof, not real keyboard
@@ -430,7 +430,7 @@ used a nonexistent `tx.string` helper; that harness error is retained separately
 and is not product evidence. The native sidecar used source inspection only;
 the lead ran the controlled-clock diagnostic after reconciling that finding.
 
-See the [receipt](../../plans/artifacts/2026-09-15-history-review/proof.md)
+See the September 15 audit receipt recording 131 history passes, 31 anchor passes, 13 selected authored/Yjs passes and five expected diagnostic failures
 for commands and preserved outputs. No product source was edited. No new
 runtime candidate, matched performance comparison, browser/device run,
 declaration build or full repository gate is claimed. Structured Autoreview was
@@ -446,7 +446,7 @@ that ownership law are now taught together.
 
 ## Task design follow-up
 
-The [canonical plan](../../plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md)
+The canonical plan (`docs/plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md`)
 selects complete replay services, transaction grouping/restore, lazy head
 availability, one core grouping clock and one exact mounted replay owner.
 It cuts public transaction replay, duplicate array readers and branch-discard
@@ -461,10 +461,10 @@ adapter. Authored rejection followed by an accepted insertion is feasible in
 one update; inline AI generation intentionally becomes a persistent proposal in
 proposed review mode. This is a stated behavior change, not invisible parity.
 
-The [design receipt](../../plans/artifacts/2026-09-15-history-design/proof.md)
+The September 15 design receipt distinguishing disposable candidates, source/DOM fixtures, scale results and declaration controls
 separates disposable candidate, source/DOM fixture, scale and declaration
 evidence from the original audit. The
-[production receipt](../../plans/artifacts/2026-09-15-history-design/production-harness-receipt.md)
+production receipt recording source-stable final packets, 224 passing service rows, 12 grouping cases, six publication comparisons and inconclusive AI timing
 binds the final implementation, frozen baselines and source-stable production
 packets. The immutable audit record is unchanged. All ten ledger units are
 adopted and verified; AI's full feature audit remains separate.

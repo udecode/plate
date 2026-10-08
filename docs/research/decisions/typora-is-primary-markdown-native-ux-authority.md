@@ -18,7 +18,7 @@ editing lane?
 
 ## Decision
 
-Typora wins.
+Typora is the primary reference pool for markdown-first editing feel. It is not a governing default owner for every markdown-native row: the markdown editing spec uses it for the surfaces it lists under Typora, and each row takes the strongest UX authority for its concrete surface (`docs/editor-behavior/markdown-editing-spec.md:66-80`, `:100-120`).
 
 ## Why
 

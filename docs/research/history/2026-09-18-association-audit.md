@@ -1,6 +1,6 @@
 # Feature history migration audit
 
-Observed 2026-09-18. Read-only repository audit; the classified associations are imported into [review-index.json](../review-index.json), not product verification.
+Observed 2026-09-18. Read-only repository audit; the classified associations are imported into `fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/review-index.json`, not product verification.
 
 ## Coverage
 
@@ -61,7 +61,7 @@ The Table and Suggestions summaries and clipboard adoption summary are reconcile
 with their later reported execution. Table’s older native rectangle proposal is
 marked superseded. The latest Comments design remains explicitly gated in its
 current decision. Plate descriptor-portal reversal stays in its existing current
-decision, structural Diff stays design-only, and the [UI closure summary](../../editor-audits/reports/2026-09-07-plate-ui-execution.md)
+decision, structural Diff stays design-only, and the UI closure summary (`c70bacbd4a:docs/editor-audits/reports/2026-09-07-plate-ui-execution.md`)
 preserves the final report and rejected cut. Missing original proof bindings
 remain unknown in imported execution records. Six missing decision links are
 repaired. Primary active plan metadata uses one authoritative lifecycle status;

@@ -1,57 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { readFileSync } from 'node:fs';
 
-import { registryEditor } from '../../registry-editor';
-import { registryFeatures } from '../../registry-features';
-
-const registryItems = [...registryEditor, ...registryFeatures];
-const composedToolbarNames = [
-  'fixed-toolbar',
-  'floating-toolbar',
-  'turn-into-toolbar-button',
-];
-
 describe('composed toolbar registry', () => {
-  it.each(composedToolbarNames)(
-    'ships every relative UI dependency of %s',
-    (itemName) => {
-      const item = registryItems.find(
-        (innerItem) => innerItem.name === itemName
-      );
-
-      expect(item).toBeDefined();
-
-      const itemFiles = new Set(item!.files?.map((file) => file.path));
-      const registryDependencies = new Set(item!.registryDependencies);
-
-      for (const file of item!.files ?? []) {
-        const source = readFileSync(
-          new URL(`../../${file.path}`, import.meta.url),
-          'utf-8'
-        );
-        const relativeImports = source.matchAll(/from ['"]\.\/([^'"]+)['"]/g);
-
-        for (const [, importPath] of relativeImports) {
-          const sourcePath = `components/editor/${importPath}.tsx`;
-
-          if (itemFiles.has(sourcePath)) continue;
-
-          const owner = registryItems.find((candidate) =>
-            candidate.files?.some(
-              (candidateFile) => candidateFile.path === sourcePath
-            )
-          );
-
-          expect(owner, `${sourcePath} has no registry owner`).toBeDefined();
-          expect(
-            registryDependencies,
-            `${item!.name} does not install ${owner!.name}`
-          ).toContain(`@plate/${owner!.name}`);
-        }
-      }
-    }
-  );
-
   it.each([
     ['fixed-toolbar', 'FixedToolbarButtons', 'export function FixedToolbar('],
     [

@@ -57,6 +57,24 @@ function resolveRegistryDependency(name: string, isShadcnContext?: boolean) {
   return { isShadcn: false, name };
 }
 
+// A dependency list holds `@plate/<name>` for a Plate item and a bare name for
+// a shadcn item; check-registry-source rejects a bare name shadcn lacks.
+function resolveRegistryEdge(edge: string) {
+  if (edge.startsWith(PLATE_REGISTRY_NAMESPACE)) {
+    return {
+      isShadcn: false,
+      name: edge.slice(PLATE_REGISTRY_NAMESPACE.length),
+    };
+  }
+
+  return {
+    isShadcn: true,
+    name: edge.startsWith(SHADCN_REGISTRY_NAMESPACE)
+      ? edge.slice(SHADCN_REGISTRY_NAMESPACE.length)
+      : edge,
+  };
+}
+
 function getSeenKey(name: string, isShadcn?: boolean) {
   return `${isShadcn ? 'shadcn' : 'plate'}:${name}`;
 }
@@ -149,10 +167,7 @@ export function getAllFiles(
   const files: string[] = [
     ...(component.files ?? []),
     ...(component.registryDependencies ?? []).flatMap((dep: any) => {
-      const childDependency = resolveRegistryDependency(
-        dep,
-        dependency.isShadcn
-      );
+      const childDependency = resolveRegistryEdge(dep);
 
       return getAllFiles(
         childDependency.name,
@@ -235,10 +250,7 @@ export function getAllDependencies(
   const deps = [
     ...(component.dependencies ?? []),
     ...(component.registryDependencies ?? []).flatMap((dep) => {
-      const childDependency = resolveRegistryDependency(
-        dep,
-        dependency.isShadcn
-      );
+      const childDependency = resolveRegistryEdge(dep);
 
       return getAllDependencies(
         childDependency.name,
@@ -401,9 +413,8 @@ async function getAllItemFiles(
 
   // Recursively get files from dependencies
   for (const dep of item.registryDependencies ?? []) {
-    const childDependency = resolveRegistryDependency(dep, dependency.isShadcn);
+    const childDependency = resolveRegistryEdge(dep);
 
-    // Skip shadcn dependencies unless we're already in a shadcn context
     if (!dependency.isShadcn && childDependency.isShadcn) {
       continue;
     }

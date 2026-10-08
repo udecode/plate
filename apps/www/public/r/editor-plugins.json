@@ -12,6 +12,7 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/comment.json",
     "https://platejs.org/r/ai.json",
     "https://platejs.org/r/align.json",
     "https://platejs.org/r/autoformat.json",
@@ -22,8 +23,8 @@
     "https://platejs.org/r/callout.json",
     "https://platejs.org/r/code-block.json",
     "https://platejs.org/r/column.json",
-    "https://platejs.org/r/comment.json",
     "https://platejs.org/r/date.json",
+    "https://platejs.org/r/details.json",
     "https://platejs.org/r/dnd.json",
     "https://platejs.org/r/emoji.json",
     "https://platejs.org/r/exit-break.json",
@@ -37,13 +38,12 @@
     "https://platejs.org/r/markdown.json",
     "https://platejs.org/r/math.json",
     "https://platejs.org/r/media.json",
-    "https://platejs.org/r/upload.json",
     "https://platejs.org/r/mention.json",
     "https://platejs.org/r/slash.json",
     "https://platejs.org/r/suggestion.json",
     "https://platejs.org/r/table.json",
     "https://platejs.org/r/toc.json",
-    "https://platejs.org/r/details.json"
+    "https://platejs.org/r/upload.json"
   ],
   "files": [
     {

@@ -11,7 +11,7 @@ source_refs:
   - docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md
 related:
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md
-  - docs/plans/2026-04-23-slate-v2-selection-fresh-editor-methods-architecture-plan.md
+  - docs/plans/2026-04-23-plite-selection-fresh-editor-methods-architecture-plan.md
 ---
 
 # Slate v2 should use read/update as the public runtime lifecycle
@@ -95,7 +95,7 @@ editor.update
 
 - public mutable `editor.selection`, `editor.children`, `editor.marks`,
   `editor.operations`
-- public `Transforms.*` as primary docs/examples API
+- public `Transforms.*` as primary documentation and examples API
 - public `editor.apply` and `editor.onChange` as extension points
 - command policy objects
 - `ReactEditor.runCommand`

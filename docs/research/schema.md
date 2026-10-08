@@ -8,7 +8,7 @@ Keep it small. The goal is consistency, not ceremony.
 
 ### `sources/*`
 
-Required frontmatter:
+An area page under `sources/<home>/` takes no frontmatter: a `# Home: topic` title, then `##` sections of `- **Title** text` findings, each naming its evidence. A home's README indexes its pages. A summary page that predates the homes keeps this frontmatter:
 
 ```yaml
 title: ...
@@ -34,18 +34,9 @@ related:
   - ...
 ```
 
-### `open-questions/*`
+### Open questions
 
-Required frontmatter:
-
-```yaml
-title: ...
-type: open-question
-status: open | resolved
-updated: YYYY-MM-DD
-related:
-  - ...
-```
+An open question has no page of its own: it sits on the decision or area page it blocks, naming its owner and the evidence that would close it.
 
 ## Field Meanings
 

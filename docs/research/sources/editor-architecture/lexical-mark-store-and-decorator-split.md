@@ -16,6 +16,8 @@ related:
 
 # Lexical mark/store/decorator split
 
+> Current Plite (checked 2026-10-08): the separate `Widget` lane that section 2 below argues for was cut; Plite exposes no generic widget target or store, and selection or keyed cursor owners feed geometry (`docs/vision/plite.md:597-600`). Annotation data stays in explicit stores that index an app-owned value (`packages/plitejs/src/annotations/store.ts:457`, `packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx:40-45`).
+
 ## Purpose
 
 Compile the Lexical evidence that mattered to the Slate v2 overlay design.

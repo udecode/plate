@@ -226,7 +226,7 @@ Correctness mode (the default, no env): 6 of 6 pass, on the 02:05 production can
   - The streamed final equals a one-chunk response, and the registered column tags never appear as text.
   - Leading hosts survive at more than 90% (see the caveat above).
 
-Task B: toast (apps/www/tests/browser/paste-result-toast.spec.ts)
+Task B: toast (the original toast spec evidence file is no longer available; the reported results below cannot be checked against that spec)
 - 3 of 3 pass on a non-Plite production start of the 02:05 candidate (:3534) and of the final candidate (:3538).
 - Route: /blocks/html-demo, which uses the registry Editor with its default onPasteResult.
   - A lossy paste of `<p>Before graphic</p><svg role="img">…</svg>` shows exactly one `[data-sonner-toast]` reading "Some pasted content was left out.", and still exactly one 500 ms later.
@@ -278,7 +278,7 @@ Receipts (docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/)
   - summarize-matrix.ts (rerun with `node --experimental-strip-types … [matrix-dir]`), analyze-profile.mjs, analyze-trace.mjs, analyze-final.mjs
 - Diagnostics: diagnostics/editable-rich-50000-final-diag.json, docx-html-export-probe.mjs, homepage-404-probe.mjs
 - Reruns: reruns/*.log (Chromium, the dev cross-check, the 02:05 clipboard run, Firefox, WebKit, the final toast run), reruns/build-final.log, reruns/snapshot-final-files.sha256
-- Specs: apps/www/tests/browser/markdown-streaming-contract.spec.ts and apps/www/tests/browser/paste-result-toast.spec.ts.
+- Specs: apps/www/tests/browser/markdown-streaming-contract.spec.ts and a reported toast spec whose evidence file is no longer available.
   - oxfmt, oxlint and a scoped `tsc -p` (www tsconfig) are all clean.
   - The only edits after the last browser run were type annotations.
 

@@ -21,14 +21,15 @@ A subject file never holds a `before` or `after` fence.
 - Optional frontmatter, then `# Title`, then `Status:`, `Topic:` and `Playbook:` lines. `Playbook:` names the playbook poteto-mode picked. That is the project playbook that writes the plan, or pstack's when no project playbook does, such as `feature`, `bug-fix` or `figure-it-out`.
 - `Status:` starts with a state word from `.agents/pstack/status.mjs`, such as `planning`, `building`, `blocked`, `reopened` or `executed`, then says what the plan waits on. The page header shows this sentence, so an ask that is not a decision, such as a commit the owner makes, goes here: `waiting on your answer, then your commit`.
 - `## Brief`: two `###` questions in this order, each answered in at most 40 words: What will change? What could go wrong? The page labels them Changes and Risks. Changes says what the owner gets in at most two sentences, with a short reason when the change needs one. An iteration that a gate opened, not the owner, names in Changes the owner's request it serves and the finding that opened it. Risks says what could hurt the owner. Decisions go in Open questions, and other asks go in `Status:`. An open plan that leads its page needs one.
-- `## Demo`: written once the work does something the owner can try. Numbered steps in the order the owner would try them; each says where to go, what to do and what they should see, in plain words with the exact URL, command or fixture to open. When the step's screen changed, the step ends with its verified frames as `![before](path)` and `![after](path)`, paths relative to the plan file; a new screen has only an after frame. The page shows Demo right after the brief and inlines each frame. A frame missing on the rendering machine shows its path instead. The renderer refuses a Demo with no numbered step.
+- `## Demo`: written once the work does something the owner can try. Numbered steps in the order the owner would try them; each says where to go, what to do and what they should see, in plain words with the exact URL, command or fixture to open. When the step's screen changed, the step ends with its verified frames as `![before](path)` and `![after](path)`, paths relative to the plan file; a new screen has only an after frame. The page shows Demo where the page orders below place it and inlines each frame. A frame missing on the rendering machine shows its path instead. The renderer refuses a Demo with no numbered step.
+- `## Teach`: the thing the plan changes, explained for someone new to it, written with `pstack:teach`'s method from what the run's `how` and `why` work found. Write at most three short paragraphs with no headers: what the thing is, how it works today, then what changes and why. When the change moves parts around, add one before and after picture, with `![before](path) ![after](path)` on a line of its own and paths relative to the plan file. The page shows both images in that section, and the renderer refuses a picture inside a sentence. The page shows Teach as How it works, where the page orders below place it. An open plan that leads its page writes one; the renderer does not refuse a plan without it, and refuses an open plan whose Teach runs past three paragraphs or 160 words.
   When the user's ask quotes a stakeholder's script, such as a demo outline, `## Demo` copies its beats in order and marks each one covered, deferred with its owner, or out of scope. A failure on a covered beat never closes as outside the change.
 - A plan that continues a subject carries only its delta, under the subject's section titles:
   - `## Public API`: one ```` ```ts before ```` and ```` ```ts after ```` pair per call it changes. A deleted call has an empty after fence, and a new call an empty before fence.
   - `## Main changes`: its own changes.
   - Any other subject section: a table whose first column is `Delta`. Each row is `added`, `changed` or `removed`, and its next cell keys it to the subject's row in a table with the same columns. New prose or tables go beside it.
 - A one-off plan carries its own `## Public API` pairs and `## Main changes`.
-- `## Defaults`: a table whose columns start with `Decision | Pick | Alternative | Word`, one row per call made for the owner, in plain words. The word reverses the pick. A row that covers a set gives a reason true of each member, and when the owner's own words name an option, the pick or the alternative is that option in those words. Leave the section out when no call was made.
+- `## Defaults`: a table whose columns start with `Decision | Pick | Alternative | Word`, one row per call made for the owner, in plain words. The word reverses the pick. A row that covers a set gives a reason true of each member, and when the owner's own words name an option, the pick or the alternative is that option in those words. Write each cell in a few plain words. The decision is a short noun phrase, and the pick and the alternative say what the owner gets, never the mechanism behind it. Add a fifth column, `Impact`, holding `big`, `small` or `detail`: big when the pick changes what the owner gets or what it costs, small when it changes a smaller behavior, and detail for something few would notice. The page groups the rows under Big calls, Small calls and Details and shows every row as one line: the decision, the pick, then the alternative with the word that gets it. The renderer refuses any other impact. Leave the section out when no call was made.
 - `## Open questions`: one `### <short header>` per decision, unique on the page, written as a decision memo the owner answers in seconds without reading anything else on the page. Write it for the owner, not for another agent. Use plain everyday words and one thought per sentence, and name what the owner sees happen. Leave out file paths, commands, commit hashes and internal tool names; that evidence goes in the decision log. Every part runs at most 15 words, an option's label at most 3, and a memo holds at most 2 facts. The renderer refuses an open plan's question that skips a part or runs past a budget:
   1. The decision in one line that ends in `?`.
   2. `Why it needs you:` and one sentence on why no safe default exists, naming the Autopilot stop it falls under: a production deploy or release, a push to `main`, a force-push to a shared branch, a message to anyone outside the team, deleting data the run did not create, or a standing stop that the project's own rules name outside the block. Any other call is a `## Defaults` row.
@@ -88,29 +89,33 @@ When the leading plan has a brief, the page shows what a reviewer needs to judge
 
 1. The header.
 2. The brief in one card.
-3. Needs you.
-4. Picked for you, from Defaults.
-5. Public API, from the leading plan.
-6. The `page-lead` sections in their playbook order, each from the leading plan, or from the subject and marked current when the plan has none.
-7. Main changes.
-8. The leading plan's other sections.
-9. One line that names the plan and subject files, which keep the internals: Close, Scope, Steps, Evidence, Proof, Claims, Asks, Verification, Notes, Panel gate, iterations and the review rounds.
+3. How it works, from Teach.
+4. Demo.
+5. Needs you.
+6. Picked for you, from Defaults, one line per row under Big calls, Small calls and Details.
+7. Public API, from the leading plan.
+8. The `page-lead` sections in their playbook order, each from the leading plan, or from the subject and marked current when the plan has none.
+9. Main changes.
+10. The leading plan's other sections.
+11. One line that names the plan and subject files, which keep the internals: Close, Scope, Steps, Evidence, Proof, Claims, Asks, Verification, Notes, Panel gate, iterations and the review rounds.
 
-Write the brief, Needs you and Defaults in Simplified Technical English. Use short sentences, the active voice and common words, and leave out code, file paths and commit hashes. The renderer refuses an open plan whose brief, Open questions or Defaults holds code in backticks. After a build, the Changes and Risks answers also tell the owner what the Close holds: what landed, where the proof stops, any reversal and the warnings of a decision-trail review.
+Write every sentence the page shows in the `pstack:bro` voice. Say it the way one person talks to another, plainly, briefly and with no jargon. Use short sentences, the active voice and common words. The brief, Teach, Needs you and Defaults also leave out code, file paths and commit hashes, apart from a Teach picture's path, and the renderer refuses an open plan whose brief, Teach, Open questions or Defaults holds code, inline or in a fenced block. Sections for engineers, such as Public API and Main changes, keep their code and tables, and the sentences around them use the same voice. After a build, the Changes and Risks answers also tell the owner what the Close holds: what landed, where the proof stops, any reversal and the warnings of a decision-trail review.
 
 Needs you collects the Open questions of every iteration, the leader's first, and an older iteration's question names its plan. Each question's number takes its attention color: red for answer, amber for look and green for safe. Red questions come first, the head counts each color, and the frame takes the most urgent one. Each option is a row with its label, what happens and its cost, under one Then and Cost header. Your pick starts checked, as a radio or, for a `Pick any.` question, a checkbox, and its reason sits under it. A bar at the bottom says go while every pick stands; when the owner changes a pick or answers a question with no pick, it shows a reply to copy, such as go, except Last fixes: Review first. In Needs you and the header, only badges, such as the question numbers and a finished rail stage, have a background; everything else uses text color and borders. An executed plan's older question renders with the parts it has.
 
 Without a brief, the page shows the whole record, with every section open:
 
-1. Needs you.
-2. Close, from the leading iteration's or the one-off plan's `## Close`.
-3. The leading plan's lead paragraph.
-4. Public API, then the `page-lead` sections, then Main changes.
-5. Picked for you, from Defaults.
-6. The subject's lead paragraph and other sections.
-7. History, newest first.
-8. Details.
-9. Review history, from the decision log's `panel` and `review` rows, with the latest round tagged in the header.
+1. Demo, from the leading plan.
+2. Needs you.
+3. Close, from the leading iteration's or the one-off plan's `## Close`.
+4. How it works, from the leading plan's Teach.
+5. The leading plan's lead paragraph.
+6. Public API, then the `page-lead` sections, then Main changes.
+7. Picked for you, from Defaults, one line per row under Big calls, Small calls and Details.
+8. The subject's lead paragraph and other sections.
+9. History, newest first.
+10. Details.
+11. Review history, from the decision log's `panel` and `review` rows, with the latest round tagged in the header.
 
 ## Refusals
 

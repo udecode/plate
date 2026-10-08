@@ -5,7 +5,6 @@
   "dependencies": [
     "files-sdk@2.6.0"
   ],
-  "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/lib/files.ts",

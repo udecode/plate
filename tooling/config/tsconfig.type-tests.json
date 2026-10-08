@@ -71,10 +71,6 @@
       ],
       "platejs/docx/paste": ["../../packages/platejs/src/docx/paste/index.ts"],
       "platejs/dom": ["../../packages/platejs/src/dom/index.ts"],
-      "platejs/emoji": ["../../packages/platejs/src/emoji/index.ts"],
-      "platejs/emoji/react": [
-        "../../packages/platejs/src/emoji/react/index.ts"
-      ],
       "platejs/excalidraw": ["../../packages/platejs/src/excalidraw/index.ts"],
       "platejs/excalidraw/react": [
         "../../packages/platejs/src/excalidraw/react/index.ts"

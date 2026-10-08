@@ -24,7 +24,7 @@ projection cache and decoration publisher. Independent headless measurement,
 canonical document ownership and explicit page omission remain.
 
 Status: implemented and verified through the
-[Task plan](../../plans/2026-09-15-pagination-view-owned-layout.md). Seven
+Task plan (`docs/plans/2026-09-15-pagination-view-owned-layout.md`). Seven
 expected units, seven adopted, zero exclusions. Focused package, production
 cost, source-built Chromium, packed release, generated docs and doctrine proof
 pass. The plan records unrelated concurrent interruptions to aggregate history
@@ -74,7 +74,7 @@ never enter the engine input or replace its output: snapshots still expose
 from the layout lifecycle, despite `PageLayout` describing itself as a reader
 that owns subscriptions, not content.
 
-The [current-source probe](../../plans/artifacts/2026-09-15-pagination-review/contract-probe.json)
+The September 15 source probe of pagination authority, refresh commits and unit layouts
 demonstrates all three consequences:
 
 - The writer produces **11 pages** at 24px line height. A reader at 48px line
@@ -234,25 +234,25 @@ owner.
 
 ## Earlier work and evidence limits
 
-The [May architecture review](../../plans/2026-05-29-plite-pagination-architecture-review.md)
-kept a functioning backbone. The [August rename](../../plans/2026-08-30-rename-page-layout-entrypoints-to-pagination.md)
+The May architecture review (`docs/plans/2026-05-29-plite-pagination-architecture-review.md`)
+kept a functioning backbone. The August rename (`docs/plans/2026-08-30-rename-page-layout-entrypoints-to-pagination.md`)
 explicitly excluded redesigning symbols and runtime. Neither protects the live
 controller or page-break protocol from this audit. The [May source summary](../sources/editor-architecture/pretext-pagination-page-virtualization.md)
 recommended authoritative snapshots; current executable evidence rejects that
 implementation as authority. Keep its caution about measurement-profile drift.
 
-The [exactness plan](../../plans/2026-05-31-exact-virtualized-pagination-plan.md)
+The exactness plan (`docs/plans/2026-05-31-exact-virtualized-pagination-plan.md`)
 never completed its exact-versus-incremental oracle. Its proposed skeletons and
-caches are not accepted current architecture. The [June experiments](../../plans/2026-06-02-pagination-virtualized-stability-perf.md)
+caches are not accepted current architecture. The June experiments (`docs/plans/2026-06-02-pagination-virtualized-stability-perf.md`)
 preserve useful failures: native projected input reordered `abcde` to `bcdea`,
 and refresh scheduling changes regressed the selected timing gate. Their timings
 are historical, not measurements of this checkout.
 
-The [large-document adoption](../../plans/2026-09-11-large-documents-api-review.md)
+The large-document adoption (`docs/plans/2026-09-11-large-documents-api-review.md`)
 already moved page-window ownership onto the page canvas and made omission
 explicit. Current source confirms that part; do not reintroduce generic page
 virtualization or treat old `domStrategy` wording as live API. Its broader
-closure remains separately recorded. The [September selection diagnosis](../../plans/2026-09-10-editor-performance-follow-through.md)
+closure remains separately recorded. The September selection diagnosis (`docs/plans/2026-09-10-editor-performance-follow-through.md`)
 distinguished releasing offscreen selection from a row-count failure. Preserve
 that corrected setup without inheriting historical passes as fresh proof.
 

@@ -1,0 +1,5 @@
+# Wordgard: media and embeds
+
+## Captioned figures
+
+- WordGard has leaf `Image` and `Figure` nodes and a separate `CaptionedFigure` with inline caption content that renders non-atomically (`inlineContent: true`, `atom: false`, `wordgard/wordgard@b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54:src/types/schema.ts:253-265`). `CaptionedFigure` does not opt into selectable or isolating behavior; default body selection needs selectable plus atom, and a generic split in the middle keeps the figure tag and URI on both halves. So direct children work, but on their own they give neither body selection nor safe caption splitting. The split claim comes from reading source, not from running a WordGard test. Evidence at the same commit: `src/schema/image.ts`, `src/doc/node.ts`, `src/state/state.ts`, `src/editor/selection.ts`, `src/command/commands.ts`, `src/command/helper.ts` and `test/test-commands.ts`. Source: `docs/plite/research/2026-09-21-media-object-editable-content/README.md:108` and `rejected-ledger.tsv:4` (2026-09-21; `CaptionedFigure` definition reread 2026-10-08).

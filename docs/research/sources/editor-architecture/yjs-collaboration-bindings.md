@@ -151,7 +151,7 @@ slate-yjs/core pure conversion helpers
 slate-yjs/react external-store cursor hooks
 ```
 
-The package should recreate `packages/slate-yjs` as source, using the current
+The package should recreate `slate-yjs` as source, using the current
 Slate v2 extension/state/tx substrate. The old external `withYjs` family is
 evidence, not the API.
 
@@ -160,7 +160,7 @@ evidence, not the API.
 | Corpus | Strongest files inspected | Disposition | Slate v2 target |
 | --- | --- | --- | --- |
 | Current Slate v2 | `editor-extension.ts:162-233`, `:566-581`; collaboration contract tests | evidenced | extension `setup`/`onCommit`, runtime state, state/tx namespaces |
-| Current `packages/slate-yjs` | `find ../slate-v2/packages/slate-yjs -maxdepth 3 -type f` | source package gap | hard-cut residue and recreate source package |
+| Current Slate v2 `slate-yjs` folder | `find ../slate-v2/packages/slate-yjs -maxdepth 3 -type f` | source package gap | hard-cut residue and recreate source package |
 | External slate-yjs | `withYjs.ts:156-283`, `withYHistory.ts:58-182`, `withCursors.ts:160-269`, `position.ts:10-80` | evidenced, mechanism-only | reuse conversion/origin/undo/cursor lessons, reject wrapper mutation |
 | Lexical Yjs | `Bindings.ts:25-127`, `SyncEditorStates.ts:134-174`, `index.ts:90-150`, `SyncCursors.ts:168-325` | evidenced | package-owned binding, delta precompute, update tags, cursor cleanup |
 | y-prosemirror | `commands.js:12-66`, `undo-plugin.js:23-227`, `cursor-plugin.js:95-296` | evidenced | pause/reconfigure, relative-selection undo, awareness identity |

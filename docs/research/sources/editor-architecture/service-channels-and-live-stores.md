@@ -16,6 +16,8 @@ related:
 
 # Service channels and live stores
 
+> Current Plite (checked 2026-10-08): Plite kept `Decoration` and `Annotation` as separate owners and cut the `Widget` lane that section 1 below supports: selection or keyed cursor owners feed geometry, and Plite exposes no generic widget target or store (`docs/vision/plite.md:597-600`). Annotation data reads through explicit stores, as the TanStack DB lesson suggests (`packages/plitejs/src/annotations/store.ts:457`, `packages/plitejs/src/react/hooks/use-plite-annotations.tsx:10-21`).
+
 ## Purpose
 
 Compile the non-editor references that mattered most to the overlay lane.

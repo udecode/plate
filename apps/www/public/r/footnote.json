@@ -8,12 +8,12 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/highlight-style.json",
+    "https://platejs.org/r/floating-popover.json",
+    "https://platejs.org/r/inline-combobox.json",
     "button",
     "command",
-    "hover-card",
-    "https://platejs.org/r/floating-popover.json",
-    "https://platejs.org/r/highlight-style.json",
-    "https://platejs.org/r/inline-combobox.json"
+    "hover-card"
   ],
   "files": [
     {

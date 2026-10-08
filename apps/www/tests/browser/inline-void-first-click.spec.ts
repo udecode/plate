@@ -230,6 +230,8 @@ test('inline equation opens from the first focus-owning click', async ({
     const originalLatex = await input.inputValue();
 
     await input.fill('x^2 + y^2');
+    await expect(inlineEquation).toHaveAttribute('aria-expanded', 'true');
+    await input.press('Enter');
     await expect(inlineEquation).toHaveAttribute('aria-expanded', 'false');
     await focusOutsideEditor(page);
     await inlineEquation.click();

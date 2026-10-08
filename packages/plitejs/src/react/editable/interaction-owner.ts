@@ -1,3 +1,5 @@
+import { isDOMNode } from '../../dom';
+
 type ExternalHostOwner = Readonly<{
   root: () => HTMLElement | null;
   focus: () => void;
@@ -66,6 +68,14 @@ export const guardExternalTextEvents = <T extends object>(
       return [
         name,
         (event: { target: EventTarget | null; currentTarget: HTMLElement }) => {
+          // React bubbles a portal's events through its React parents, so a
+          // popover an element renders reaches here from outside the editor.
+          if (
+            isDOMNode(event.target) &&
+            !event.currentTarget.contains(event.target)
+          ) {
+            return undefined;
+          }
           const external = getExternalTextHostOwner(event.target);
           if (external && event.currentTarget.contains(external.host)) {
             if (external.owner.root() === event.currentTarget) {

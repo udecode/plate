@@ -21,7 +21,7 @@ It exists to bridge two layers:
 
 - the full private raw corpus in `../raw/typora`
 - the older repo-safe Typora metadata entrypoints that used to live under
-  `docs/editor-behavior/references/typora`
+  the former editor-behavior references folder for Typora
 
 ## Corpus shape
 
@@ -49,13 +49,13 @@ editor-behavior and architecture work.
 Before this pass, Plate already had useful Typora work in the repo:
 
 - a repo-safe Typora metadata subtree under
-  `docs/editor-behavior/references/typora` (now removed after migration)
+  the former editor-behavior references folder for Typora (now removed after migration)
 
 And the editor-behavior stack already relied on Typora heavily:
 
-- [markdown-editing-reference-audit.md](docs/research/history/2026-04-02-markdown-editing-reference-audit.md)
+- markdown-editing-reference-audit.md (`c70bacbd4a:docs/research/history/2026-04-02-markdown-editing-reference-audit.md`)
 - [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
-- [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md)
+- editor-protocol-matrix.md (`c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md`)
 
 That existing work was already good. But it was optimized for the
 editor-behavior law stack, not for a general compiled research layer.

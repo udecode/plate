@@ -131,7 +131,7 @@ and its implementation expose those three consumer jobs directly. Generated
 route. `upload-browser` owns browser object URLs and cleanup. `upload-r2` and
 `upload-s3` each target `app/api/files/route.ts`, depend on `upload` and the
 shared `files-api` policy, and install one provider contract. Source contract,
-installed-SDK gateway/type, generated registry, docs/changelog and both
+installed-SDK gateway/type, generated registry, docs, changelog and both
 Chromium upload paths pass. The prior live R2 proof remains valid because its
 adapter and gateway behavior are unchanged; live S3 remains unexecuted.
 
@@ -172,14 +172,14 @@ the published cross-entrypoint denial status; the copied route must test
 that boundary itself. These are execution proof requirements, not completed
 product tests.
 
-The [official-integration comparison](../../plans/artifacts/upload-draft-asset-protocol/files-sdk-official-review.md)
+The September 19, 2026 official-integration comparison (one Files SDK-backed editor file plugin replacing the generic transport abstraction)
 supersedes the preceding recommendation to keep an app-written transport
 adapter. That abstraction had no surviving requested job after the user's
 clarification. Plate still owns draft identity, admission, completion and
 history. The application owns server authorization and durable media delivery.
 Files SDK's storage keys and expiring URLs do not replace that document law.
 
-The [provider source evidence](../../plans/artifacts/upload-draft-asset-protocol/files-sdk-review.md)
+The provider source evidence from Files SDK 2.6.0 at revision `e87f630c17d5fa3e5f84adb3d81fc540c4b17348` (size-capped R2 uploads use the gateway proxy; React hooks abort on unmount)
 remains applicable: the current bounded R2 gateway path proxies through the
 application server, and SDK React hooks abort on unmount. The plan retains
 editor-owned requests, explicit app access configuration and stable gateway
@@ -232,7 +232,7 @@ server policy and copied presentation.
 
 ## Current evidence
 
-The [observation probe](../../plans/artifacts/2026-09-18-uploads-review/observations.test.ts)
+The September 18, 2026 observation probe covering rejected paste, completion URLs, schema types, secondary roots, batch limits, stale completion and redo
 records seven observations: five defects and two lifetime/restoration gaps.
 Its assertions deliberately describe current behavior, not desired regression
 behavior; its green result means those observations were reproduced.

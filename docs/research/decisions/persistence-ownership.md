@@ -51,7 +51,7 @@ selection mapper; successful conversion returns a complete current envelope.
 The public compiler retains its detached JSON contract. No persistence manager
 or executable artifact identity is added.
 
-The [planning probe](../../plans/artifacts/2026-09-16-persistence-design/ownership-probe.test.ts)
+The September 16 planning probe of v54 code-line review metadata and ElementId admission
 reproduces a previously uncovered v54 combination: flattening a legacy code-line
 insertion retains the inserted text but loses its authored review metadata.
 The plan therefore requires preserving historical review meaning before
@@ -101,14 +101,14 @@ the existing unreleased target remains v54.
 
 ## Decisive evidence
 
-The [current runner](../../../packages/platejs/src/lib/editor/documentMigrations.ts#L290)
+The [current runner](47539814bbfb6dd1050642744671b380344bfb8f:packages/platejs/src/lib/editor/documentMigrations.ts#L290)
 accepts a live editor, passes it to every step, checks each result only for a
 `children` array, and returns a bare document plus numeric source/target values.
 It does not return the target schema envelope or validate the complete output.
 Missing steps are checked during execution, after earlier callbacks may run.
 
-The [audit probe](../../plans/artifacts/2026-09-16-persistence-review/contract-probe.test.ts)
-and [observations](../../plans/artifacts/2026-09-16-persistence-review/contract-probe.json)
+The September 16 migration audit probe with deliberately effectful and mutating callbacks
+and recorded observations of retained writes/input mutations, non-JSON output, repeated raw migration and assumed-current raw input
 reproduce five distinct hazards:
 
 - A step uses its supplied editor to commit a write. The next step is missing,
@@ -228,9 +228,9 @@ their in-memory snapshots do not prove a storage backend.
 The [final-pass review](../review-records/2026-09-16-persistence-immutable-migration-contract.json)
 supersedes the first persistence record's target precision while retaining its
 four-unit verdict and app-owned lineage
-from [registry migration separation](../../plans/2026-08-18-separate-registry-migrations.md)
+from registry migration separation (`docs/plans/2026-08-18-separate-registry-migrations.md`)
 and the single v54 boundary from the
-[version hard cut](../../plans/2026-09-03-hard-cut-plate-migrations-after-v54.md).
+version hard cut (`docs/plans/2026-09-03-hard-cut-plate-migrations-after-v54.md`).
 Those plans do not make the runner's editor dependency a hard law. The state
 review's retention of fields/effects remains appropriate. Authored live-state
 work establishes that pending review facts belong in the saved document, not

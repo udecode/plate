@@ -25,10 +25,10 @@ related:
 **Audit of 2026-10-04.** Pursue. The table-cell target is still right and is built, but only in the uncommitted working tree, with a partial execution outcome and two open owner questions. So committed next still refuses a cell holding list paragraphs and cascades that refusal to the row and the table. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-markdown-audit` hold the evidence.
 
 **Adopt** the redesign with the material correction in the
-[dialect last pass](../../analysis/2026-09-28-markdown-dialect-last-pass.md).
+dialect last pass (`c70bacbd4a:docs/analysis/2026-09-28-markdown-dialect-last-pass.md`).
 The official registry kit must use CommonMark + GFM + math as ordinary
 Markdown; Plate does not promise MDX input. The earlier
-[complete API audit](../../analysis/2026-09-28-markdown-api-review.md) remains
+complete API audit (`c70bacbd4a:docs/analysis/2026-09-28-markdown-api-review.md`) remains
 the surface inventory, but it preserved the wrong default grammar and proposed
 an unsafe implementation order. A prototype selected the tag recognizer below.
 The implementation and closure records establish adoption and proof.

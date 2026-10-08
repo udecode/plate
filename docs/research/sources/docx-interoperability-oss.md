@@ -17,9 +17,9 @@ generation, package retention, preview, and editable package preservation**.
 One capability does not establish another. This is a bounded source comparison,
 not a ranking of all DOCX software or a claim that upstream tests pass.
 
-The [corpus ledger](../../plite/research/2026-09-14-docx-interoperability-oss/corpus-ledger.tsv)
+The corpus ledger (`docs/plite/research/2026-09-14-docx-interoperability-oss/corpus-ledger.tsv`)
 closes all six retained source families. The
-[manifest](../../plite/research/2026-09-14-docx-interoperability-oss/source-manifest.json)
+manifest (`docs/plite/research/2026-09-14-docx-interoperability-oss/source-manifest.json`)
 pins 47 selected current files, including licenses and metadata. Source reads
 use the exact revisions below. Existing clones with older checkouts were read
 with `git show <commit>:<path>`; a local file link can otherwise show older code.
@@ -50,8 +50,8 @@ fixture, so test labels alone overstate distinct coverage. docx-preview's
 inspected harness compares normalized HTML with tracked-change rendering
 enabled; it does not prove comment behavior, edits, export or screenshots.
 
-See the [Pandoc/preview report](../../plite/research/2026-09-14-docx-interoperability-oss/shards/pandoc-preview.md)
-and [SuperDoc report](../../plite/research/2026-09-14-docx-interoperability-oss/shards/superdoc.md)
+See the Pandoc/preview report (`docs/plite/research/2026-09-14-docx-interoperability-oss/shards/pandoc-preview.md`)
+and SuperDoc report (`docs/plite/research/2026-09-14-docx-interoperability-oss/shards/superdoc.md`)
 for exact spans, negative findings and test limitations.
 
 ## Source and adoption boundaries

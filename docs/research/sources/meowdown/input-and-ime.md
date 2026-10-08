@@ -1,4 +1,4 @@
-# Meowdown: input and ime
+# Meowdown: input and IME
 
 ## WebKit early compositionend
 

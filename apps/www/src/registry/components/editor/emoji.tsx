@@ -1,10 +1,11 @@
 'use client';
 
-import emojiMartData, { type EmojiMartData } from '@emoji-mart/data';
-import { createEmojiSearch } from 'platejs/emoji';
-import { EmojiPlugin } from 'platejs/emoji/react';
-import { usePluginStore } from 'platejs/react';
-import * as React from 'react';
+import { BaseCodeBlockPlugin } from 'platejs';
+import type { ComboboxState } from 'platejs/combobox';
+import { definePlugin } from 'platejs/react';
+import type * as React from 'react';
+
+import { useEmojiSearch } from '@/registry/lib/emoji-data';
 
 import {
   InlineCombobox,
@@ -15,19 +16,20 @@ import {
   useInlineComboboxQuery,
 } from './inline-combobox';
 
-const TRAILING_COLON_REGEX = /:$/;
-
 export function EmojiCombobox({
   editableRef,
 }: {
   editableRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const { status } = useEmojiSearch(null);
+
   return (
     <InlineCombobox
       editableRef={editableRef}
       filter={false}
-      plugin={emojiPlugin}
+      plugin={EmojiPlugin}
       hideWhenNoValue
+      loading={status === 'loading'}
     >
       <EmojiComboboxContent />
     </InlineCombobox>
@@ -35,31 +37,29 @@ export function EmojiCombobox({
 }
 
 function EmojiComboboxContent() {
-  const data = usePluginStore(emojiPlugin, 'data');
   const query = useInlineComboboxQuery();
-  const search = React.useMemo(() => createEmojiSearch(data), [data]);
-  const filteredEmojis = React.useMemo(
-    () =>
-      query.trim().length === 0
-        ? []
-        : search(query.replace(TRAILING_COLON_REGEX, ''), { limit: 60 }),
-    [query, search]
-  );
+  const { results, status } = useEmojiSearch(query || null);
 
   return (
     <InlineComboboxContent>
-      <InlineComboboxEmpty>No results</InlineComboboxEmpty>
+      <InlineComboboxEmpty role={status === 'loading' ? 'status' : undefined}>
+        {status === 'loading'
+          ? 'Loading emoji…'
+          : status === 'failed'
+            ? 'Emoji unavailable'
+            : 'No results'}
+      </InlineComboboxEmpty>
 
       <InlineComboboxGroup>
-        {filteredEmojis.map((emoji) => (
+        {results.map((emoji) => (
           <InlineComboboxItem
-            key={emoji.id}
-            value={emoji.name}
+            key={emoji.emoji}
+            value={emoji.label}
             onSelect={(tx) => {
-              tx.plugin(emojiPlugin).insert(emoji);
+              tx.text.insert(emoji.emoji);
             }}
           >
-            {emoji.skins[0].native} {emoji.name}
+            {emoji.emoji} {emoji.label}
           </InlineComboboxItem>
         ))}
       </InlineComboboxGroup>
@@ -67,12 +67,24 @@ function EmojiComboboxContent() {
   );
 }
 
-export const emojiPlugin = EmojiPlugin.extend({
-  initialState: {
-    data: emojiMartData as unknown as EmojiMartData,
-  },
+export const EmojiPlugin = definePlugin('emoji', {
+  editOnly: true,
+  initialState: (): ComboboxState => ({
+    maxQueryLength: 75,
+    queryPattern: /^[\p{L}\p{N}_+\-:]$/u,
+    trigger: ':',
+    triggerPreviousCharPattern: /^\s?$/,
+    triggerQuery: (editor) => {
+      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
+
+      return (
+        !codeBlock.installed ||
+        !editor.read.nodes.some({ type: codeBlock.schema.type })
+      );
+    },
+  }),
 });
 
 export const EmojiKit = [
-  emojiPlugin.configure({ slots: { afterEditable: EmojiCombobox } }),
+  EmojiPlugin.configure({ slots: { afterEditable: EmojiCombobox } }),
 ];

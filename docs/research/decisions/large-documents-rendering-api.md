@@ -2,8 +2,6 @@
 
 **Audit of 2026-10-04.** Stop. The deferred gates (P0-P4) ran and chose the target, and S1-S6 installed it. Ordinary Editable mounts the complete DOM. Omission comes from an explicit, dedicated VirtualizedEditable or from the pagination virtualize boolean. Pagination no longer routes through the generic virtualizer. No design question remains open, and only the plan's S7 proof closure is outstanding. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-large-documents-audit` hold the evidence.
 
-**Audit of 2026-10-04.** Stop. The deferred gates (P0-P4) ran and chose the target, and S1-S6 installed it. Ordinary Editable mounts the complete DOM. Omission comes from an explicit, dedicated VirtualizedEditable or from the pagination virtualize boolean. Pagination no longer routes through the generic virtualizer. No design question remains open, and only the plan's S7 proof closure is outstanding. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-large-documents-audit` hold the evidence.
-
 Status: **implementation complete; stable-snapshot closure pending**. The
 dedicated entrypoints, mounted-view runtime and pagination-owned page window are
 installed in production source. Final cross-browser recording must use one
@@ -15,8 +13,8 @@ valuable cut is to remove pagination's trip through the generic list virtualizer
 Keep its existing canvas coordinates instead of adding an offset-normalizing
 public hook and another CSS marker.
 
-The [Task plan](../../plans/2026-09-11-large-documents-api-review.md) owns scope,
-readiness and execution order. The [research run](../../plite/research/2026-09-11-large-documents-contract/README.md)
+The Task plan (`docs/plans/2026-09-11-large-documents-api-review.md`) owns scope,
+readiness and execution order. The research run (`docs/plite/research/2026-09-11-large-documents-contract/README.md`)
 contains source provenance, counterexamples and proof packets. The immutable
 `2026-09-11-large-documents-rendering-design` record preserves the preceding
 proposal; `2026-09-12-large-documents-deep-contract` records this reassessment.
@@ -45,6 +43,8 @@ renderer. DOM presence alone does not certify browser Find, assistive technology
 rich HTML clipboard fidelity, native selection or print.
 
 ## What the deeper investigation changes
+
+> Current Plite (checked 2026-10-08): these are the 2026-09-12 findings that led to the cuts below. The strategy prop they name is gone: `packages/plitejs/src` has no `domStrategy`. Omission needs the explicit `VirtualizedEditable` (`packages/plitejs/src/react/virtualized.tsx:23-31`, `:107`) or `PagedEditable`'s `virtualize` boolean, which defaults to false and then renders every page item and fragment (`packages/plitejs/src/pagination/react.tsx:783`, `:947`, `:1159-1166`, `:1302`).
 
 - Full-to-virtual currently replaces the actual Editable host and loses focus.
   Retaining the outer host alone is insufficient: virtual group keys also change
@@ -178,12 +178,12 @@ fragment and unit; true permits pagination to omit all three together.
 | Async backend factory, public height/window store, virtualizer config passthrough | Reject | No current independent caller job offsets loading state, extra ownership or implementation leakage |
 | Existing page scan and geometry caches | Defer optimization judgment | Measure surviving work after removing duplication; historical E20/E23 are not acceptance receipts |
 
-The [reconciled manifest](../../plans/artifacts/large-documents-deep/owner-manifest.json)
+The reconciled manifest of 100 declarations and 26 explicit shared blocks
 accounts for 126 bounded rows: 100 declarations and 26 explicit shared blocks.
 It has no missing dedicated declarations; 61 deletion rows and the complete
 survivor/move/gate list are recorded there. These dispositions are not runtime
 acceptance. The earlier manifest's virtual grouping and pagination normalization
-choices are superseded. The [83-path census](../../plans/artifacts/large-documents-deep/consumer-paths.json)
+choices are superseded. The lexical adoption census of 83 paths
 contains 41 product, 32 proof, nine teaching and one generated match. This is a
 bounded lexical adoption census, not an assertion that every match is public or
 that external consumers were enumerated.

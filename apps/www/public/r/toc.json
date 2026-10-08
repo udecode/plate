@@ -9,8 +9,8 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
-    "button",
-    "https://platejs.org/r/highlight-style.json"
+    "https://platejs.org/r/highlight-style.json",
+    "button"
   ],
   "files": [
     {

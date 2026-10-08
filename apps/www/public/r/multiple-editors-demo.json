@@ -7,15 +7,15 @@
     "platejs"
   ],
   "registryDependencies": [
-    "separator",
+    "https://platejs.org/r/editor-plugins.json",
     "https://platejs.org/r/align.json",
     "https://platejs.org/r/basic-nodes.json",
     "https://platejs.org/r/dnd.json",
-    "https://platejs.org/r/media.json",
     "https://platejs.org/r/editor.json",
     "https://platejs.org/r/fixed-toolbar.json",
+    "https://platejs.org/r/media.json",
     "https://platejs.org/r/turn-into-toolbar-button.json",
-    "https://platejs.org/r/editor-plugins.json"
+    "separator"
   ],
   "files": [
     {

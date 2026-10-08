@@ -197,12 +197,14 @@ test('a row removed while its file remains fails', () => {
   );
 });
 
-test('folding puts the pointer line after the frontmatter', () => {
+test('folding keeps every line a citation can name at its number', () => {
+  const text =
+    '---\ntitle: Selection\n---\n# Selection\nKeep the native caret.';
+  const lines = foldText(text, ['plate-notes']).split('\n');
+  assert.deepEqual(lines.slice(0, 5), text.split('\n'));
   assert.equal(
-    foldText('---\ntitle: Selection\n---\n# Selection\n', [
-      'plate-notes',
-    ]).split('\n')[3],
-    '> Folded into plate-notes. Edit the home, not this file.'
+    lines.at(-2),
+    '> Folded into docs/research/sources/plate-notes/README.md. Edit the home, not this file.'
   );
 });
 
@@ -218,10 +220,41 @@ test('folding refuses a file that changed after the compile read it', () => {
   );
 });
 
+test('folding refuses a Markdown file with no home to point at, but freezes another file', () => {
+  assert.throws(
+    () => foldSource(note, original, blobOf(original), []),
+    /no home/
+  );
+  const manifest = '{"files":1}\n';
+  assert.equal(
+    foldSource('docs/transplant/manifest.json', manifest, blobOf(manifest), []),
+    manifest
+  );
+});
+
 test('folding a file that is already folded keeps it', () => {
   assert.equal(
     foldSource(note, folded, blobOf(original), ['plate-notes']),
     folded
+  );
+  const unterminated = '# Limit\nLimit: 10';
+  const foldedUnterminated = foldText(unterminated, ['plite']);
+  assert.equal(
+    foldSource(note, foldedUnterminated, blobOf(unterminated), ['plite']),
+    foldedUnterminated
+  );
+});
+
+test('folding refuses a folded file whose last character changed', () => {
+  assert.throws(
+    () =>
+      foldSource(
+        note,
+        foldText('# Limit\nLimit: 100', ['plite']).replace('\n\n>', '\n>'),
+        blobOf('# Limit\nLimit: 10'),
+        ['plite']
+      ),
+    /changed after the compile read it/
   );
 });
 
@@ -506,6 +539,27 @@ test('resolve fails on a wildcard law ID', () => {
       }),
     /m1's ID EDIT-TABLE-\* is not one rule/
   );
+});
+
+test('resolve accepts units that cite the spec as covered without an ID', () => {
+  const covered = (key, line) =>
+    unit(key, matrix.path, [line, line], {
+      disposition: 'covered',
+      target: 'docs/editor-behavior/markdown-editing-spec.md',
+      span: 'rule',
+    });
+  const result = resolve({
+    batch: 'b2',
+    sources: [matrix],
+    units: [
+      covered('m1', 1),
+      covered('m2', 2),
+      unit('m3', matrix.path, [3, 3]),
+    ],
+    verdicts: accept('m1', 'm2', 'm3'),
+    seed: 's',
+  });
+  assert.equal(result.units.length, 3);
 });
 
 const linkBatch = (path, has = () => false) =>

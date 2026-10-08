@@ -3,6 +3,8 @@ import path from 'node:path';
 
 import { chromium, type Page } from '@playwright/test';
 
+import { routeEmojibase } from '../tests/browser/emojibase-route';
+
 const baselineURL = process.env.PROBE_BASELINE_URL ?? 'http://localhost:3000';
 // Unset, the baseline pairs with itself: the A/A run.
 const candidateURL = process.env.PROBE_CANDIDATE_URL ?? baselineURL;
@@ -257,6 +259,7 @@ const measure = async (
   });
 
   try {
+    await routeEmojibase(page, { allowOtherHosts: true });
     await page.goto(
       `${baseURL}/dev/combobox-typing?${cohort.query}&chars=${chars}`
     );
@@ -270,10 +273,23 @@ const measure = async (
     await page.keyboard.press('End');
     typedKeys.set(page, 0);
     await typeText(page, 'a'.repeat(warmup));
+
+    // Load the emoji list before measuring, so a loading row cannot stand in
+    // for the emoji popup.
+    if (cohort.query.includes('kits=on')) {
+      await typeText(page, ' :s');
+      await page
+        .getByRole('option')
+        .filter({ hasNotText: 'Loading emoji' })
+        .first()
+        .waitFor({ timeout: 5000 });
+      await page.keyboard.press('Escape');
+    }
+
     await page.waitForFunction(
       (count) =>
         ((window as ProbeWindow).__comboboxTypingSamples?.length ?? 0) >= count,
-      warmup
+      typedKeys.get(page) ?? warmup
     );
     await clearSamples(page);
 

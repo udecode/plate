@@ -3,30 +3,32 @@ title: Slate v2 local overlay proof substrate
 type: source
 status: partial
 source_refs:
-  - packages/slate-react/src/projection-store.ts
-  - packages/slate-react/src/annotation-store.ts
-  - packages/slate-react/src/widget-store.ts
-  - packages/slate-react/src/hooks/use-slate-projections.tsx
-  - packages/slate-react/src/hooks/use-decoration-selector.tsx
-  - packages/slate-react/test/projections-and-selection-contract.tsx
-  - packages/slate-react/test/annotation-store-contract.tsx
-  - packages/slate-react/test/widget-layer-contract.tsx
-  - packages/slate/src/interfaces/bookmark.ts
-  - packages/slate/src/interfaces/editor.ts
-  - packages/slate/src/editor.ts
-  - packages/slate/src/range-projection.ts
-  - packages/slate/src/core/get-dirty-paths.ts
-  - packages/slate/src/core/draft-helpers.ts
-  - packages/slate/test/snapshot-contract.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/projection-store.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/annotation-store.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/widget-store.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-slate-projections.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-decoration-selector.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/test/projections-and-selection-contract.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/test/annotation-store-contract.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/test/widget-layer-contract.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/src/interfaces/bookmark.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/src/interfaces/editor.ts
+  - Historical Slate editor implementation evidence file is no longer available.
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/src/range-projection.ts
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/src/core/get-dirty-paths.ts
+  - Draft helpers evidence file is no longer available.
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate/test/snapshot-contract.ts
   - benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx
   - benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx
 updated: 2026-04-28
 related:
-  - docs/research/entities/slate.md
+  - c70bacbd4a:docs/research/entities/slate.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
 ---
 
 # Slate v2 local overlay proof substrate
+
+> Current Plite (checked 2026-10-08): the projection store, widget store, `Bookmark` and `idToPath`/`pathToId` indexes this April 2026 page reads are gone from `packages/plitejs/src`. Live identity is the opaque `NodeKey`, which a snapshot index maps to and from paths (`packages/plitejs/src/interfaces/editor.ts:2013-2025`); a durable location is an `editor.anchor` handle that resolves in its capture view or another view of the same model (`packages/plitejs/src/core/anchor.ts:327-341`); a decoration source reads one node entry and can refresh named node keys (`packages/plitejs/src/interfaces/decoration.ts:25-37`), projecting ranges with `projectRangeInSnapshot` (`packages/plitejs/src/react/decoration-source.ts:748`); and Plite exposes no widget target or store lane (`docs/vision/plite.md:597-600`).
 
 ## Purpose
 

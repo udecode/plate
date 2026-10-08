@@ -5,7 +5,7 @@ status: accepted
 updated: 2026-04-21
 source_refs:
   - docs/research/sources/editor-architecture/candidates.md
-  - docs/plans/2026-04-21-slate-v2-data-model-first-react-perfect-runtime-plan.md
+  - docs/plans/2026-04-21-plite-data-model-first-react-perfect-runtime-plan.md
   - docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md
   - docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md
   - docs/research/sources/editor-architecture/layout-measurement-and-ime-lanes.md
@@ -28,7 +28,7 @@ source_refs:
 related:
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
   - docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md
-  - docs/slate-v2/references/architecture-contract.md
+  - 6bc2fffa0bee6fcb6752d96139c698879682b41b:docs/slate-v2/references/architecture-contract.md
 ---
 
 # Slate v2 should pursue data-model-first core with React-perfect runtime lanes

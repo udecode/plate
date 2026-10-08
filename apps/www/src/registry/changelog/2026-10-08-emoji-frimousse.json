@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-08-emoji-frimousse",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-08-emoji-frimousse.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-08",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Rebuild the emoji popup and picker on frimousse and Emojibase",
+  "targets": [
+    {
+      "name": "emoji-data",
+      "files": ["apps/www/src/registry/lib/emoji-data.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji",
+      "files": ["apps/www/src/registry/components/editor/emoji.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-picker",
+      "files": ["apps/www/src/registry/components/editor/emoji-picker.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/emoji-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout",
+      "files": ["apps/www/src/registry/components/editor/callout.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-08-emoji-data-new-d4c3c91e",
+      "kind": "new",
+      "summary": "Add a shared Emojibase catalog with GitHub shortcodes, loaded on first use from a pinned CDN release, cached in the browser, and ranked by shortcode before label and tag matches.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["emoji-data"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-08",
+          "entry": "2026-10-08-emoji-frimousse",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-08-emoji-popup-local-plugin-5b1e0a72",
+      "kind": "behavior",
+      "summary": "Define `EmojiPlugin` in the copied file, search `emoji-data`, insert the emoji as text, show a loading row that keeps Enter from splitting the block, and keep the popup closed inside code blocks.",
+      "details": [],
+      "migrationNotes": [
+        "Replace emojiPlugin with EmojiPlugin from the copied emoji file."
+      ],
+      "targets": ["emoji"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-08",
+          "entry": "2026-10-08-emoji-frimousse",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-08-emoji-picker-frimousse-9c2f4d18",
+      "kind": "behavior",
+      "summary": "Build the picker on frimousse with keyboard navigation, the ranked `emoji-data` search, a frequent row and an unavailable message, and take the trigger as the child with a required `onEmojiSelect(emoji)`.",
+      "details": [],
+      "migrationNotes": [
+        "Pass the trigger as the picker's child and handle onEmojiSelect(emoji); the data, settings, closeOnSelect and disabled props and EmojiPickerTrigger are gone."
+      ],
+      "targets": ["emoji-picker"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-08",
+          "entry": "2026-10-08-emoji-frimousse",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-08-emoji-toolbar-insert-3e8a6b51",
+      "kind": "behavior",
+      "summary": "Insert the picked emoji at the selection as its own undo step and return focus to the editor; the callout sets its icon from the picker.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["emoji-toolbar-button", "callout"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-08",
+          "entry": "2026-10-08-emoji-frimousse",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

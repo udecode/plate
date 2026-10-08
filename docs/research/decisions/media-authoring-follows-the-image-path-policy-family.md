@@ -8,7 +8,7 @@ source_refs:
 related:
   - docs/research/sources/typora/links-images-and-html-behavior.md
   - docs/editor-behavior/markdown-editing-spec.md
-  - docs/editor-behavior/editor-protocol-matrix.md
+  - c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md
 ---
 
 # Media authoring follows the image path-policy family

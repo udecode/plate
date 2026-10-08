@@ -92,7 +92,7 @@ sections below preserve the earlier evidence and superseded next steps.
 
 ## Initial review and design
 
-The [full assessment](../../analysis/2026-09-28-conversion-boundary-review.md)
+The full assessment (`c70bacbd4a:docs/analysis/2026-09-28-conversion-boundary-review.md`)
 traces all five proposed cuts, reconciles earlier work and links runnable
 probes. The retained dialect and declarative mapping direction stand. A parser
 replacement alone does not invalidate pure mapping declarations.

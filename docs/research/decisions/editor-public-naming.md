@@ -20,7 +20,7 @@ API, DOM/codec boundary, copied UI and public documentation are adopted. A
 protocols, public JSDoc and Plate's emitted declaration provenance. Prior
 branded clipboard, authored HTML/DOCX, mention and media formats are not a
 supported input domain; the adopted codecs have no compatibility fallback.
-[The adoption plan](../../plans/2026-09-12-editor-public-naming-adoption.md)
+The adoption plan (`docs/plans/2026-09-12-editor-public-naming-adoption.md`)
 owns the complete mapping and verification. The assessment below preserves the pre-adoption comparison and
 its original source-only evidence limits. Immutable review records are unchanged.
 
@@ -43,7 +43,7 @@ public symbol to the substrate declaration tree, and contain no public JSDoc
 that teaches Plite. All 253 Plate documentation MDX/JSON files were checked;
 the 27 matching lines occur only in the approved performance comparison, the
 two migration sources, and their generated navigation metadata.
-[The audit artifact](../../../.audit/plate-public-docs/public-api-and-plite-docs-audit.md)
+The September 13 naming audit covering 68 emitted entrypoints, 67 source entrypoints, 3,024 declarations and 253 documentation files
 records the complete dispositions and reproduction commands.
 
 The declaration publication boundary bundles the substrate declarations under
@@ -198,7 +198,7 @@ implemented and no runtime parity claim is made.
   consumes those outputs. DOM names are behavior contracts, not just branding.
 - [Clipboard runtime](../../../packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts:39)
   serializes fragment attributes and format keys into HTML. The
-  [authored HTML codec](../../../packages/platejs/src/static/authoredHtml.ts:17)
+  [authored HTML codec](7cbec2435fff368c4e189d2d400ffec09e53dd18:packages/platejs/src/static/authoredHtml.ts:18)
   recognizes an exact branded envelope; at line 99 a mismatch bypasses
   authored decoding and proceeds to ordinary HTML content. Renaming these is
   an interchange-format change, with a separate data-preservation obligation.

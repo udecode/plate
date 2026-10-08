@@ -28,7 +28,7 @@
     "packages/platejs/src/plain-text.ts"
   ],
   "proof": [
-    "docs/analysis/2026-09-28-conversion-boundary-review.md",
+    "docs/research/sources/plite/conversion-and-export.md",
     "docs/research/probes/2026-09-28-conversion-boundary/property-probe.ts",
     "docs/research/probes/2026-09-28-conversion-boundary/property-probe.log",
     "docs/research/probes/2026-09-28-conversion-boundary/safety/probe.test.ts",

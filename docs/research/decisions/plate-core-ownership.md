@@ -141,7 +141,7 @@ declarations and docs do not expose the compiled carriers. The bridge exports
 only framework hooks and carriers and shares no binding with a public
 `plitejs` or `platejs` entrypoint.
 
-The [production result](../../plans/artifacts/shared-plugin-identity-feasibility/production-result.json)
+The September 13 production result for shared plugin identity at 1/32/128/512 descriptors
 passes the frozen runtime/type budgets. Plite and Plate package suites, builds,
 packed declaration/runtime consumers, SSR, DCE, exact entrypoint sizes,
 API/registry generation and one Chromium exact mounted-view replay pass. The
@@ -184,7 +184,7 @@ store, schema and product context. The
 [lowerer](../../../packages/platejs/src/internal/plugin/resolvePlugins.ts)
 then derives schema-aware mark/element reads and updates and binds product
 lifecycle contexts. Raw Plite has no equivalent authoring job, and its current
-[extension contract](../../../packages/plitejs/src/core/editor-extension.ts)
+[extension contract](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/core/editor-extension.ts)
 deliberately accepts one immutable normalized definition. Its Vision explicitly
 rejects an extension `config` channel.
 
@@ -298,10 +298,10 @@ as `native` or `plate`. [resolvePlugins.ts](../../../packages/platejs/src/intern
 translates dependencies and conflicts, adapts those factory contexts, and
 creates another `defineExtension` descriptor for every resolved plugin.
 
-The neutral [extension owner](../../../packages/plitejs/src/core/editor-extension.ts)
+The neutral [extension owner](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/core/editor-extension.ts)
 already provides nominal identity, immutable descriptors, dependencies,
 candidate publication, lifecycle and typed contribution points. Its
-[contribution tests](../../../packages/plitejs/test/extension-contribution-contract.test.ts)
+[contribution tests](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/test/extension-contribution-contract.test.ts)
 specify ordered, descriptor-owned contributions, dynamic recomputation and
 view access. The DOM clipboard handler is a real
 [consumer](../../../packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts)
@@ -310,7 +310,7 @@ current contribution API can replace Plate's authoring contract unchanged.
 
 There are actual gaps. Raw schema factories receive only `{ name }`, and raw
 `defineExtension` has no Plate-style ordered author/configuration grammar.
-Plate's [authoring tests](../../../packages/platejs/src/lib/plugin/defineBasePlugin.spec.ts)
+Plate's [authoring tests](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/platejs/src/lib/plugin/defineBasePlugin.spec.ts)
 require inferred access to prior-stage capabilities, configuration before
 stage evaluation and independent per-editor configuration. The shared target
 must serve those jobs directly, or deliberately replace their call shapes with
@@ -410,10 +410,10 @@ two different decisions: removing duplicate installed authority and removing
 the public distinction between a product plugin and a substrate extension.
 The first earns its place; the second does not follow from it.
 
-The originating [plan objective](../../plans/2026-09-12-plate-core-api-review.md)
+The originating plan objective (`docs/plans/2026-09-12-plate-core-api-review.md`)
 explicitly removes `editor.plugin`, `tx.plugin`, duplicate installation maps
 and `useEditorPlugin`. Its
-[design contract](../../plans/artifacts/plate-core-api-review/design-contract.md)
+original design contract for one installed capability owner
 rejects separate accessors because the product projection already includes core
 capabilities. That argument treats a richer product contract as redundant
 merely because it reuses a lower contract. The same design keeps plugin
@@ -442,9 +442,9 @@ compatible ancestry, direct transaction groups or private core construction.
 - [LineHeightToolbarButton](../../../apps/www/src/registry/components/editor/line-height-toolbar-button.tsx)
   reads `.inject.nodeProps` from the plugin projection, then runs its inferred
   update. This is a current product-consumer job, not hypothetical layering.
-- [Native adoption tests](../../../packages/platejs/src/lib/plugin/defineBasePlugin.spec.ts)
+- [Native adoption tests](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/platejs/src/lib/plugin/defineBasePlugin.spec.ts)
   show a plugin adopting a raw extension and both descriptors reaching the same
-  API owner. [Raw portal tests](../../../packages/plitejs/test/extension-portal.test.ts)
+  API owner. [Raw portal tests](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/test/extension-portal.test.ts)
   specify presence, source ancestry and policy-scoped updates independently of
   Plate product fields.
 
@@ -634,12 +634,12 @@ mapping decision.
 maintains authoring and consumer caches, schema publication access and product
 stores. Some of this work has a real product job. The installed API lookup and
 descriptor validation overlap the
-[Plite extension owner](../../../packages/plitejs/src/core/editor-extension.ts),
+[Plite extension owner](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/core/editor-extension.ts),
 which already resolves installed descriptors and capability execution. Today's
 Plite exact-descriptor lookup does not by itself implement Plate's configured
 family semantics. Simply deleting the adapter would break valid callers.
 
-[Executable contracts](../../../packages/platejs/src/lib/plugin/defineBasePlugin.spec.ts)
+[Executable contracts](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/platejs/src/lib/plugin/defineBasePlugin.spec.ts)
 show both accessors returning the same service object, adopted raw extensions
 resolving to that service, unrelated same-name descriptors being rejected,
 native and Plate updates combining, and configuration resolving per editor.
@@ -682,7 +682,7 @@ Plite and explicitly replaces framework contracts. The
 runtime and optional peers.
 
 The clear cut is the public export of
-[`getCorePlugins`](../../../packages/platejs/src/lib/plugins/getCorePlugins.ts)
+[`getCorePlugins`](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/platejs/src/lib/plugins/getCorePlugins.ts)
 and its construction-only types. Its nine-descriptor array is consumed by
 editor construction. Source search found no independent app, plugin or CLI
 consumer of the function. Keep automatic defaults and their private assembly;
@@ -703,9 +703,9 @@ the CLI contract.
 | Ordinary live editor and product policy | [EditorKit](../../../apps/www/src/registry/components/editor/plugins.ts), [basic block kit](../../../apps/www/src/registry/components/editor/basic-blocks.tsx)                    | Keep app-owned arrays and Plate imports. No package-owned editor preset.                                                                    |
 | Static/server rendering                 | [BaseEditorKit](../../../apps/www/src/registry/components/editor/plugins-static.ts), [static block kit](../../../apps/www/src/registry/components/editor/basic-blocks-static.tsx) | Keep server-safe descriptor/component binding and the static entrypoint.                                                                    |
 | Headless creation                       | [creation boundary test](../../../packages/platejs/src/lib/editor/createEditor.runtime.spec.ts), root source and manifests                                                        | Keep a root that does not construct the React extension. The test was inspected, not rerun as packed Node proof.                            |
-| Optional feature engines and assets     | Feature exports and [registry dependency selection](../../../apps/www/src/registry/registry-package-dependencies.ts)                                                              | Keep independently consumed subpaths, including math/emoji and explicit virtualization. Do not merge their feature semantics in this audit. |
+| Optional feature engines and assets     | Feature exports and [registry dependency selection](47539814bbfb6dd1050642744671b380344bfb8f:apps/www/src/registry/registry-package-dependencies.ts)                                                              | Keep independently consumed subpaths, including math/emoji and explicit virtualization. Do not merge their feature semantics in this audit. |
 | Detached schema tooling                 | [compileEditor](../../../packages/platejs/src/compiler/compileEditor.ts), [CLI](../../../packages/cli/src/bin.ts)                                                                 | Keep optional compiler/CLI workflows. Ordinary editor setup does not require generated contracts.                                           |
-| Raw substrate and facade consumers      | [Plite extension owner](../../../packages/plitejs/src/core/editor-extension.ts), [packed proof runner](../../../tooling/scripts/check-plite-release-artifacts.mjs)                | Keep the raw distribution and exact facade exceptions. Do not replace them with duplicated package implementations.                         |
+| Raw substrate and facade consumers      | [Plite extension owner](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/core/editor-extension.ts), [packed proof runner](../../../tooling/scripts/check-plite-release-artifacts.mjs)                | Keep the raw distribution and exact facade exceptions. Do not replace them with duplicated package implementations.                         |
 
 Keeping the two distributions and current category of entrypoints beats merging
 all exports into a root, splitting every feature into another npm package,
@@ -722,8 +722,8 @@ Neither question had a direct review record. Both records are initial. The
 [Plite-core review](plite-core-ownership.md) retained atomic extension composition;
 this assessment preserves that law and challenges the separate Plate identity
 translation above it. It does not reopen the completed facet/command cuts.
-The [facade decision](../../plans/2026-08-30-enforce-plate-facade-dogfooding.md)
-and [package ownership decision](../../plans/2026-08-28-finalize-platejs-entrypoint-ownership.md)
+The facade decision (`docs/plans/2026-08-30-enforce-plate-facade-dogfooding.md`)
+and package ownership decision (`docs/plans/2026-08-28-finalize-platejs-entrypoint-ownership.md`)
 are reaffirmed in direction after source inspection. Their old proof is not
 reused as current verification. Earlier plugin-authoring plans preserve static
 isolation and inference requirements, not an irrevocable constructor taxonomy.

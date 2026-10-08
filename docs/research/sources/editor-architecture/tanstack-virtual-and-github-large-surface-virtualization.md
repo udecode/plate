@@ -7,6 +7,8 @@ source_family: tanstack-virtual github-diff-performance
 
 # TanStack Virtual and GitHub Large-Surface Virtualization
 
+> Current Plite (checked 2026-10-08): virtualization is the explicit `VirtualizedEditable` component from `plitejs/react/virtualized`, which takes only `estimatedBlockSize` and `overscan` (`packages/plitejs/src/react/virtualized.tsx:23-31`, `:107`); `packages/plitejs/src` has no `domStrategy` or `renderingStrategy` prop. Its TanStack virtualizer keys rows by top-level `NodeKey` and scrolls to a path through `virtualizer.scrollToIndex` (`packages/plitejs/src/react/virtualized/use-virtualized-root-plan.ts:187`, `:245`), and `@tanstack/react-virtual` is an optional peer at `^3.13.25` (`packages/plitejs/package.json:214`, `:224-226`) that the lockfile resolves to 3.14.3 (`pnpm-lock.yaml:5458`). The sections below record the May 2026 Slate v2 source.
+
 ## Scope
 
 Evidence for the Slate v2 virtualization planning lane.
@@ -121,7 +123,7 @@ Slate implication:
   composition, selection, and materialization targets;
 - do not leak TanStack positioning assumptions into Slate's public editor API.
 
-## Live Slate v2 Current Shape
+## Live Slate v2 shape on 2026-05-03
 
 Current live `Plate repo root` source has:
 
@@ -132,13 +134,13 @@ Current live `Plate repo root` source has:
   runtime-id item keys, dynamic measurement, retained selected/promoted
   indexes, and coalesced missing viewport ranges;
 - an experimental `type: 'virtualized'` option in
-  `packages/slate-react/src/rendering-strategy/create-segment-plan.ts`;
+  `udecode/slate@1b9432d2a7bc4b55010011c9a442365da2f5347c:packages/slate-react/src/rendering-strategy/create-segment-plan.ts`;
 - `DOMCoverageReason = 'viewport-virtualization'` in
-  `packages/slate-dom/src/plugin/dom-coverage.ts`;
+  `packages/plitejs/src/dom/plugin/dom-coverage.ts`;
 - hidden viewport-range `DOMCoverageBoundary` registration in
-  `packages/slate-react/src/rendering-strategy/virtualized-range-boundary.tsx`;
+  `udecode/slate@1b9432d2a7bc4b55010011c9a442365da2f5347c:packages/slate-react/src/rendering-strategy/virtualized-range-boundary.tsx`;
 - virtualized-mode package tests in
-  `packages/slate-react/test/rendering-strategy-and-scroll.tsx`;
+  `udecode/slate@1b9432d2a7bc4b55010011c9a442365da2f5347c:packages/slate-react/test/rendering-strategy-and-scroll.tsx`;
 - a full browser example in
   `site/examples/ts/rendering-strategy-runtime.tsx`;
 - docs warning that virtualized native browser find and screen-reader traversal

@@ -4,10 +4,10 @@ type: source
 status: partial
 updated: 2026-04-15
 source_refs:
-  - /Users/zbeyens/git/slate/docs/Introduction.md
-  - /Users/zbeyens/git/slate/docs/Summary.md
-  - /Users/zbeyens/git/slate/docs/walkthroughs/05-executing-commands.md
-  - /Users/zbeyens/git/slate/docs/api/transforms.md
+  - zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:docs/Introduction.md
+  - zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:docs/Summary.md
+  - zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:docs/walkthroughs/05-executing-commands.md
+  - zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:docs/api/transforms.md
   - https://docs.slatejs.org/
   - https://docs.slatejs.org/walkthroughs/01-installing-slate
 related: []
@@ -60,10 +60,10 @@ reference.
 
 ## High-value pages
 
-- `/Users/zbeyens/git/slate/docs/Introduction.md`
-- `/Users/zbeyens/git/slate/docs/Summary.md`
-- `/Users/zbeyens/git/slate/docs/walkthroughs/05-executing-commands.md`
-- `/Users/zbeyens/git/slate/docs/api/transforms.md`
+- `zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:docs/Introduction.md`
+- `zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:docs/Summary.md`
+- `zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:docs/walkthroughs/05-executing-commands.md`
+- `zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:docs/api/transforms.md`
 
 ## What this source cluster is good for
 

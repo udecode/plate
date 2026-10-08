@@ -1,6 +1,6 @@
 # Authored changes and selective reversal
 
-Page: https://claude.ai/artifact/YXUw7v6yMGstbkq62brFsd
+Page: https://claude.ai/artifact/HmRjqgC5E9htfk2Kn5psAB
 
 Plite's native authored capability records who changed what, keeps pending suggestions reviewable, and decides them atomically. The ledger asks which native contract should retain authorship and reversible edits without requiring a particular review UI (`docs/research/review-scopes/authored.json`). Today the editor's own document is the accepted content. A second full document, the projected one, holds accepted content plus pending changes, and each run of pending-deleted (struck) text is rebuilt as its own small read-only document that markup views paint beside the projected one (`packages/plitejs/src/authored/markup.ts`, `packages/plitejs/src/core/authored-fragment-view.ts`). Every write, accepted edits included, becomes an authored operation in a causal graph, and accept or reject replays operations onto the other document (`packages/plitejs/src/authored/decisions.ts`). The direct checkpoint (2026-09-12) loads that state without replay, and the 2026-10-04 audit kept the contract with a Stop. Suggestions, AI review and copied review UI build on it; `docs/plans/topics/suggestions.md` covers the Plate side. `node tooling/scripts/review-ledger.mjs show authored` prints the scope's full history.
 

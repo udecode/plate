@@ -1,0 +1,18 @@
+---
+id: 2026-10-08-registry-install-dependencies
+date: 2026-10-08
+status: draft
+kind: fix
+summary: 'Install the package versions Plate declares and skip unused files'
+change: { 'type': 'source', 'date': '2026-10-08', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-08-export-toolbar-install-package-versions-plate-a00d3efd","kind":"fix","migrationNotes":[]} -->
+
+- **`export-toolbar-button`**, **`docx`**, **`excalidraw`**, **`code-block`**, **`code-block-codemirror`**, **`remote-cursor-overlay`**, **`collaboration-demo`**: Request the version range Plate declares for each npm package, such as `juice@^11.0.1`, `xmlbuilder2@^3.1.1` and `yjs@>=13.6.30`, instead of the latest version.
+
+<!-- entry: {"id":"2026-10-08-registry-skip-unused-files","kind":"fix","migrationNotes":[]} -->
+
+- **`date-static`**, **`link-static`**, **`math-static`**, **`mention-static`**, **`dnd`**, **`editor-ai`**, **`ai`**, **`ai-api`**, **`ai-menu`**, **`settings-dialog`**, **`export-toolbar-button`**, **`editor-plugins-static`**, **`block-menu`**: Stop installing files nothing imports: `lib/inline-suggestion.ts`, `hooks/use-mobile.ts` and the shadcn `button`. The four static items also stop requesting `class-variance-authority`.

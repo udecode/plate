@@ -10,6 +10,18 @@
 from source, and authored metadata covers only installation policy that source
 cannot express.
 
+`apps/www/scripts/registry-package-dependencies.mts` derives every registry
+edge a copied import needs: `@plate/<item>` from a relative or other `@/`
+import of another item's file, and the shadcn name from
+`@/components/ui/<name>`. It also derives each npm package and the version
+range the package DAG gives it. Never list a registry edge an import already
+gives, or a bare package name whose derived version has a range; the build
+rejects both and names the import. Author `registryDependencies` only for what
+no import shows: a style or CSS item, a companion such as a feature's toolbar
+button, a bundle, a provider, or the one owner to pick when two published items
+install the same imported file and no other import already installs one of
+them.
+
 ## Kits and UI items stay aligned
 
 When you add a new component:
@@ -36,7 +48,8 @@ Do not remove an explicit feature plugin, kit, renderer binding, or dependency
 merely because the application editor installed by the `editor-kit` registry
 item also includes it. Keep the explicit declaration when:
 
-- the example's `registryDependencies` names that feature kit;
+- the example's `registryDependencies` names that feature kit, or the build
+  derives that edge from the example's import;
 - the example exists to teach that feature's installation or component
   binding;
 - removing it would hide which descriptor owns the visible feature.
@@ -64,6 +77,7 @@ The generated registry index `apps/www/src/__registry__/index.tsx` is runtime UI
 ## Style deps are real deps
 
 If a component uses shared CSS vars or style-only registry items, declare them.
+No import shows a style dependency, so it stays authored.
 
 **Incorrect:**
 

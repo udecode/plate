@@ -46,7 +46,7 @@ import {
   REGISTRY_PUBLIC_TARGETS,
 } from './registry-build-targets.mts';
 import { createRegistryIndexSource } from './registry-index.mts';
-import { deriveRegistryPackageDependencies } from './registry-package-dependencies.mts';
+import { deriveRegistryDependencies } from './registry-package-dependencies.mts';
 import { materializeRegistryStyles } from './registry-style-materializer.mts';
 import {
   loadRegistryStyleMaps,
@@ -346,7 +346,7 @@ const docsRegistry = await createDocsRegistry();
 const derivedRegistries = Object.fromEntries(
   PLATE_REGISTRY_BASES.map((base) => [
     base,
-    deriveRegistryPackageDependencies(
+    deriveRegistryDependencies(
       createPlateRegistry(REGISTRY_HOMEPAGE, { base }),
       { sourceRoot }
     ),

@@ -1,4 +1,4 @@
-# Wordgard: input and ime
+# Wordgard: input and IME
 
 ## Visual-line deletion
 

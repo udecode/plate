@@ -9,11 +9,11 @@
     "lucide-react"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/dnd.json",
+    "https://platejs.org/r/floating-popover.json",
     "button",
     "separator",
-    "tooltip",
-    "https://platejs.org/r/dnd.json",
-    "https://platejs.org/r/floating-popover.json"
+    "tooltip"
   ],
   "files": [
     {

@@ -4,19 +4,19 @@
   "description": "Two-peer Yjs collaboration with cursors, reconnect, schema guards, and history.",
   "dependencies": [
     "platejs",
-    "yjs",
     "diff-match-patch-ts@^0.6.0",
-    "lucide-react"
+    "lucide-react",
+    "yjs@>=13.6.30"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/editor-plugins.json",
     "https://platejs.org/r/basic-nodes.json",
     "https://platejs.org/r/editor.json",
     "https://platejs.org/r/remote-cursor-overlay.json",
     "alert",
     "badge",
     "button",
-    "card",
-    "https://platejs.org/r/editor-plugins.json"
+    "card"
   ],
   "files": [
     {

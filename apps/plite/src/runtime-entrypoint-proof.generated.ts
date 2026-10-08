@@ -17,31 +17,30 @@ import * as clientEntrypoint11 from "platejs/docx/export";
 import * as clientEntrypoint12 from "platejs/docx/import";
 import * as clientEntrypoint13 from "platejs/docx/paste";
 import * as clientEntrypoint14 from "platejs/dom";
-import * as clientEntrypoint15 from "platejs/emoji/react";
-import * as clientEntrypoint16 from "platejs/excalidraw/react";
-import * as clientEntrypoint17 from "platejs/footnote/react";
-import * as clientEntrypoint18 from "platejs/html";
-import * as clientEntrypoint19 from "platejs/layout/react";
-import * as clientEntrypoint20 from "platejs/math/react";
-import * as clientEntrypoint21 from "platejs/media/react";
-import * as clientEntrypoint22 from "platejs/mention/react";
-import * as clientEntrypoint23 from "platejs/pagination/react";
-import * as clientEntrypoint24 from "platejs/react";
-import * as clientEntrypoint25 from "platejs/react/virtualized";
-import * as clientEntrypoint26 from "platejs/resizable/react";
-import * as clientEntrypoint27 from "platejs/slash-command/react";
-import * as clientEntrypoint28 from "platejs/suggestion/react";
-import * as clientEntrypoint29 from "platejs/tabbable/react";
-import * as clientEntrypoint30 from "platejs/table/react";
-import * as clientEntrypoint31 from "platejs/tag/react";
-import * as clientEntrypoint32 from "platejs/toc/react";
-import * as clientEntrypoint33 from "platejs/upload/react";
-import * as clientEntrypoint34 from "platejs/yjs/react";
-import * as clientEntrypoint35 from "plitejs/dom";
-import * as clientEntrypoint36 from "plitejs/pagination/react";
-import * as clientEntrypoint37 from "plitejs/react";
-import * as clientEntrypoint38 from "plitejs/react/virtualized";
-import * as clientEntrypoint39 from "plitejs/yjs/react";
+import * as clientEntrypoint15 from "platejs/excalidraw/react";
+import * as clientEntrypoint16 from "platejs/footnote/react";
+import * as clientEntrypoint17 from "platejs/html";
+import * as clientEntrypoint18 from "platejs/layout/react";
+import * as clientEntrypoint19 from "platejs/math/react";
+import * as clientEntrypoint20 from "platejs/media/react";
+import * as clientEntrypoint21 from "platejs/mention/react";
+import * as clientEntrypoint22 from "platejs/pagination/react";
+import * as clientEntrypoint23 from "platejs/react";
+import * as clientEntrypoint24 from "platejs/react/virtualized";
+import * as clientEntrypoint25 from "platejs/resizable/react";
+import * as clientEntrypoint26 from "platejs/slash-command/react";
+import * as clientEntrypoint27 from "platejs/suggestion/react";
+import * as clientEntrypoint28 from "platejs/tabbable/react";
+import * as clientEntrypoint29 from "platejs/table/react";
+import * as clientEntrypoint30 from "platejs/tag/react";
+import * as clientEntrypoint31 from "platejs/toc/react";
+import * as clientEntrypoint32 from "platejs/upload/react";
+import * as clientEntrypoint33 from "platejs/yjs/react";
+import * as clientEntrypoint34 from "plitejs/dom";
+import * as clientEntrypoint35 from "plitejs/pagination/react";
+import * as clientEntrypoint36 from "plitejs/react";
+import * as clientEntrypoint37 from "plitejs/react/virtualized";
+import * as clientEntrypoint38 from "plitejs/yjs/react";
 
 const clientRuntimeEntrypoints = [
   { exports: clientEntrypoint0, runtimeProof: null, specifier: "@platejs/test/browser" },
@@ -59,31 +58,30 @@ const clientRuntimeEntrypoints = [
   { exports: clientEntrypoint12, runtimeProof: null, specifier: "platejs/docx/import" },
   { exports: clientEntrypoint13, runtimeProof: null, specifier: "platejs/docx/paste" },
   { exports: clientEntrypoint14, runtimeProof: null, specifier: "platejs/dom" },
-  { exports: clientEntrypoint15, runtimeProof: null, specifier: "platejs/emoji/react" },
-  { exports: clientEntrypoint16, runtimeProof: null, specifier: "platejs/excalidraw/react" },
-  { exports: clientEntrypoint17, runtimeProof: "plate-plugin-client", specifier: "platejs/footnote/react" },
-  { exports: clientEntrypoint18, runtimeProof: "plate-plugin-client", specifier: "platejs/html" },
-  { exports: clientEntrypoint19, runtimeProof: "plate-plugin-client", specifier: "platejs/layout/react" },
-  { exports: clientEntrypoint20, runtimeProof: null, specifier: "platejs/math/react" },
-  { exports: clientEntrypoint21, runtimeProof: "plate-plugin-client", specifier: "platejs/media/react" },
-  { exports: clientEntrypoint22, runtimeProof: "plate-plugin-client", specifier: "platejs/mention/react" },
-  { exports: clientEntrypoint23, runtimeProof: null, specifier: "platejs/pagination/react" },
-  { exports: clientEntrypoint24, runtimeProof: null, specifier: "platejs/react" },
-  { exports: clientEntrypoint25, runtimeProof: null, specifier: "platejs/react/virtualized" },
-  { exports: clientEntrypoint26, runtimeProof: null, specifier: "platejs/resizable/react" },
-  { exports: clientEntrypoint27, runtimeProof: "plate-plugin-client", specifier: "platejs/slash-command/react" },
-  { exports: clientEntrypoint28, runtimeProof: "plate-plugin-client", specifier: "platejs/suggestion/react" },
-  { exports: clientEntrypoint29, runtimeProof: null, specifier: "platejs/tabbable/react" },
-  { exports: clientEntrypoint30, runtimeProof: "plate-plugin-client", specifier: "platejs/table/react" },
-  { exports: clientEntrypoint31, runtimeProof: "plate-plugin-client", specifier: "platejs/tag/react" },
-  { exports: clientEntrypoint32, runtimeProof: "plate-plugin-client", specifier: "platejs/toc/react" },
-  { exports: clientEntrypoint33, runtimeProof: "plate-plugin-client", specifier: "platejs/upload/react" },
-  { exports: clientEntrypoint34, runtimeProof: null, specifier: "platejs/yjs/react" },
-  { exports: clientEntrypoint35, runtimeProof: null, specifier: "plitejs/dom" },
-  { exports: clientEntrypoint36, runtimeProof: null, specifier: "plitejs/pagination/react" },
-  { exports: clientEntrypoint37, runtimeProof: null, specifier: "plitejs/react" },
-  { exports: clientEntrypoint38, runtimeProof: null, specifier: "plitejs/react/virtualized" },
-  { exports: clientEntrypoint39, runtimeProof: null, specifier: "plitejs/yjs/react" },
+  { exports: clientEntrypoint15, runtimeProof: null, specifier: "platejs/excalidraw/react" },
+  { exports: clientEntrypoint16, runtimeProof: "plate-plugin-client", specifier: "platejs/footnote/react" },
+  { exports: clientEntrypoint17, runtimeProof: "plate-plugin-client", specifier: "platejs/html" },
+  { exports: clientEntrypoint18, runtimeProof: "plate-plugin-client", specifier: "platejs/layout/react" },
+  { exports: clientEntrypoint19, runtimeProof: null, specifier: "platejs/math/react" },
+  { exports: clientEntrypoint20, runtimeProof: "plate-plugin-client", specifier: "platejs/media/react" },
+  { exports: clientEntrypoint21, runtimeProof: "plate-plugin-client", specifier: "platejs/mention/react" },
+  { exports: clientEntrypoint22, runtimeProof: null, specifier: "platejs/pagination/react" },
+  { exports: clientEntrypoint23, runtimeProof: null, specifier: "platejs/react" },
+  { exports: clientEntrypoint24, runtimeProof: null, specifier: "platejs/react/virtualized" },
+  { exports: clientEntrypoint25, runtimeProof: null, specifier: "platejs/resizable/react" },
+  { exports: clientEntrypoint26, runtimeProof: "plate-plugin-client", specifier: "platejs/slash-command/react" },
+  { exports: clientEntrypoint27, runtimeProof: "plate-plugin-client", specifier: "platejs/suggestion/react" },
+  { exports: clientEntrypoint28, runtimeProof: null, specifier: "platejs/tabbable/react" },
+  { exports: clientEntrypoint29, runtimeProof: "plate-plugin-client", specifier: "platejs/table/react" },
+  { exports: clientEntrypoint30, runtimeProof: "plate-plugin-client", specifier: "platejs/tag/react" },
+  { exports: clientEntrypoint31, runtimeProof: "plate-plugin-client", specifier: "platejs/toc/react" },
+  { exports: clientEntrypoint32, runtimeProof: "plate-plugin-client", specifier: "platejs/upload/react" },
+  { exports: clientEntrypoint33, runtimeProof: null, specifier: "platejs/yjs/react" },
+  { exports: clientEntrypoint34, runtimeProof: null, specifier: "plitejs/dom" },
+  { exports: clientEntrypoint35, runtimeProof: null, specifier: "plitejs/pagination/react" },
+  { exports: clientEntrypoint36, runtimeProof: null, specifier: "plitejs/react" },
+  { exports: clientEntrypoint37, runtimeProof: null, specifier: "plitejs/react/virtualized" },
+  { exports: clientEntrypoint38, runtimeProof: null, specifier: "plitejs/yjs/react" },
 ] as const;
 
 export const clientRuntimeEntrypointSpecifiers = clientRuntimeEntrypoints.map(

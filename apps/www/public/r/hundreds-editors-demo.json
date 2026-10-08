@@ -7,8 +7,8 @@
     "platejs"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor.json",
-    "https://platejs.org/r/editor-plugins.json"
+    "https://platejs.org/r/editor-plugins.json",
+    "https://platejs.org/r/editor.json"
   ],
   "files": [
     {

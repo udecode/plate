@@ -294,6 +294,16 @@ for selection, keyboard, pointer, screenshots, undo, geometry or device work.
 Read [the full Potion Yjs reference recipe](./references/potion-yjs.md) only for
 collaboration comparison. Potion proves reference behavior, never a local fix.
 
+### Codex lane
+
+Codex runs interactive browser QA's functional steps by default, so the clicks stay out of Claude's context. Claude keeps every visual and design call, every screenshot it judges, and every claim this section leaves out.
+
+- It covers route, render and interaction checks on a local server Claude started and doctored, such as opening an example, typing into the editor and reading back the rendered text. Native input, clipboard, IME, mobile, download and print claims, Safari or Firefox behavior, and anything an existing Playwright spec owns stay with their current proof owner.
+- Codex drives the owner's Default Chrome profile, `--chrome-profile Ziad`, where Codex's extension is set up; the launch refuses a profile without it. The brief forbids touching any tab Codex did not open, and the checker voids a run that does.
+- Claude writes the brief to the run directory. It names the doctored URL, then each step's action with the exact control or key sequence, and the expected URL or rendered text. For a typing step it names key-by-key typing (`pressSequentially`). The brief tells Codex to open and close its own tab, read the page with `getAXState` at the end of each step, stop at any dialog or control the brief does not name, and answer with a JSON list of `{step, result, url, checked}`, where `result` is `PASS`, `FAIL` or `UNPROVED` and `checked` is the exact text it read, or a list of exact texts.
+- Run `node .agents/pstack/cross.mjs --to codex --computer-use <run dir>/<name>.events.jsonl --chrome-profile Ziad --model gpt-6.1-sol --effort medium --timeout 900 --prompt-file <brief>`, then `node .agents/pstack/cua-steps.mjs <events file> --host localhost --host 127.0.0.1`. Only a step `cua-steps.mjs` returns as `PASS` counts; it catches a forbidden action after the run and cannot stop one.
+- The current runtime's browser is the lane's fallback. When the launch refuses, `cross.mjs` exits non-zero or times out, or `cua-steps.mjs` cannot read the events, Claude runs the whole drive itself. Claude also reruns each step that is not a pass.
+
 ## Evidence
 
 Keep command logs, source/build fingerprints, actual route, host identity,

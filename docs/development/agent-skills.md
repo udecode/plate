@@ -76,7 +76,7 @@ applies to every proof owner. A tiny edit needs direct verification,
 without a playbook, app launch or review panel. Subagents research and review;
 the lead writes the code. The panel review (`/pstack:interrogate`), `architect` and arena run
 without asking wherever a pstack step calls for them and for the rows in the
-`reviews` list of `.agents/pstack.json`: an API or architecture plan (after
+`reviews` list of `.agents/pstack.json`: a plan that changes a public API (after
 `architect`), a PR's diff before it opens and "review PR <number>". For
 anything else, say "panel", "arena" or "full". A plan step that broadly changes
 how agents find, route or finish work gets a paired trial on its first
@@ -118,15 +118,16 @@ For release work, use the current Release Lanes modes:
 | `$release-lanes promote execute` | Execute the promotion workflow. |
 | `$release-lanes verify` | Verify published release state. |
 
-State the publication actions you want. You own commits: a local repair, review
-or plan does not by itself authorize a commit, push, PR, merge, release or
-external message. [AGENTS.md](../../AGENTS.md) owns scope, authority and
+State the publication actions you want. Agents commit and push their work to
+any branch other than `main` and `next` without asking. A local repair, review
+or plan does not by itself authorize a commit or push to `main` or `next`, a
+new PR, a merge, a release or an external message. [AGENTS.md](../../AGENTS.md) owns scope, authority and
 delivery. The [Release Lanes skill](../../.agents/skills/release-lanes/SKILL.md)
 owns release mode details.
 
 ## Read a page and answer it
 
-Each stop that hands work back replies with a page link. The page opens with a rail of the work's stages, from Plan to Reflect, then the line that says what the work waits on, such as your answer or a commit you owe, and two short answers labeled Changes and Risks. On the rail, Plan names the playbook the agent picked, such as feature or bug-fix, and the design, review, writing and audit stages that ran name their pstack skills, such as interrogate or deslop. Under them, Needs you lists each decision as a short memo: the question, why it needs you, one or two facts, each option with what happens and what it costs, and the agent's pick with its reason. Each part runs at most 15 words, in plain words with no file paths or commands. A question's number is red when it needs your answer, amber when it is worth a look and green when the pick is safe, and red questions come first. Change a pick and the bar at the bottom gives you a reply to copy. Picked for you lists the calls the agent made for you, each with the word that reverses it. Under them come the plan's changes: Public API, the review sections and Main changes. Nothing folds, and the plan file under `docs/plans` keeps the proof, steps and history.
+Each stop that hands work back replies with a page link. The page opens with a rail of the work's stages, from Plan to Reflect, then the line that says what the work waits on, such as your answer or a commit you owe, and two short answers labeled Changes and Risks. How it works follows, at most three short paragraphs that explain the thing the work changes, with a before and after picture when parts move. Demo comes next when there is something to try. Every sentence on the page is plain, like one person talking to another. On the rail, Plan names the playbook the agent picked, such as feature or bug-fix, and the design, review, writing and audit stages that ran name their pstack skills, such as interrogate or deslop. Under them, Needs you lists each decision as a short memo: the question, why it needs you, one or two facts, each option with what happens and what it costs, and the agent's pick with its reason. Each part runs at most 15 words, in plain words with no file paths or commands. A question's number is red when it needs your answer, amber when it is worth a look and green when the pick is safe, and red questions come first. Change a pick and the bar at the bottom gives you a reply to copy. Picked for you lists the calls the agent made for you, one line each with the word that reverses it, grouped as Big calls, Small calls and Details. Under them come the plan's changes: Public API, the review sections and Main changes. Nothing folds, and the plan file under `docs/plans` keeps the proof, steps and history.
 
 Answer in your own words in the chat. "go" takes the pick on every decision that has one and authorizes nothing else.
 
@@ -177,8 +178,9 @@ contracts. Edit repository rules in `.agents/rules` and regenerate with
 `pnpm run prepare`. The pstack block in `AGENTS.md`, `.agents/pstack.json` and
 `.agents/pstack/` come from the `sync-pstack` skill, so shared pstack rules
 change there; pstack's own skills come from the pinned plugin. A reflect lesson
-for that shared source runs the `sync-pstack` skill's Lesson mode, which commits
-and pushes it to `udecode/dotai` once its checks pass.
+for that shared source that applies by itself runs the `sync-pstack` skill's
+Lesson mode, which commits and pushes it to `udecode/dotai` once its checks
+pass; every other lesson waits in Backlog for the owner.
 
 The [September 5 skill audit](agent-skill-audit.md) records historical decisions
 and evidence. Use this guide and the current skill files to choose today's route.

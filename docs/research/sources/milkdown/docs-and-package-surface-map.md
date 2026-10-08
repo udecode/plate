@@ -32,9 +32,9 @@ surface shape.
 
 ## High-value pages and packages
 
-- `docs/api/preset-commonmark.md`
-- `docs/api/preset-gfm.md`
-- `docs/api/plugin-indent.md`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:docs/api/preset-commonmark.md`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:docs/api/preset-gfm.md`
+- `zbeyens/milkdown@6a4db480b00db8dd0322b517117dfa2154f3e2e2:docs/api/plugin-indent.md`
 - `@milkdown/preset-commonmark`
 - `@milkdown/preset-gfm`
 - `@milkdown/plugin-indent`

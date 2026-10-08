@@ -6,13 +6,15 @@ updated: 2026-04-14
 source_refs:
   - docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md
   - docs/research/sources/editor-architecture/candidates.md
-  - docs/plans/2026-04-14-slate-v2-decorations-annotations-cluster-research.md
-  - docs/slate-v2/decoration-roadmap.md
+  - docs/plans/2026-04-14-plite-decorations-annotations-cluster-research.md
+  - c70bacbd4a:docs/plite-draft/decoration-roadmap.md
 related:
-  - docs/research/entities/slate.md
+  - c70bacbd4a:docs/research/entities/slate.md
 ---
 
 # Slate v2 overlay architecture cuts
+
+> Current Plite (checked 2026-10-08): two of these cuts were later cut. The `Widget` lane is gone, and Plite exposes no generic widget target or store (`docs/vision/plite.md:597-600`; `docs/research/decisions/plite-view-ownership.md:28`). `Bookmark` and `RangeRef` are gone from `packages/plitejs/src`; a durable location is an `editor.anchor` handle its owner releases, saved as `EditorDocumentRange` JSON (`packages/plitejs/src/interfaces/editor.ts:2559-2567`, `docs/vision/plite.md:613-624`). The decoration and annotation split and app-owned annotation data stand (`packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx:40-45`).
 
 ## Question
 

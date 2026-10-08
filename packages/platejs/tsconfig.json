@@ -29,8 +29,6 @@
       "platejs/docx/import": ["./src/docx/import/index.ts"],
       "platejs/docx/paste": ["./src/docx/paste/index.ts"],
       "platejs/dom": ["./src/dom/index.ts"],
-      "platejs/emoji": ["./src/emoji/index.ts"],
-      "platejs/emoji/react": ["./src/emoji/react/index.ts"],
       "platejs/excalidraw": ["./src/excalidraw/index.ts"],
       "platejs/excalidraw/react": ["./src/excalidraw/react/index.ts"],
       "platejs/find": ["./src/features/find/index.ts"],

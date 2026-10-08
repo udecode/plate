@@ -6,10 +6,10 @@ updated: 2026-04-10
 source_refs:
   - docs/research/sources/typora/markdown-shorthand-and-inline-autoformat.md
   - docs/research/sources/milkdown/input-autoformat-lanes.md
-  - packages/autoformat/src/lib/__tests__/withAutoformat/block/singleCharTrigger.spec.tsx
+  - aa22d82e9a92a8a7296d8cd49f2ed72a96c135ee:packages/autoformat/src/lib/__tests__/withAutoformat/block/singleCharTrigger.spec.tsx
 related:
   - docs/editor-behavior/markdown-editing-spec.md
-  - docs/editor-behavior/editor-protocol-matrix.md
+  - c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md
 ---
 
 # Link automd belongs to the link interaction lane

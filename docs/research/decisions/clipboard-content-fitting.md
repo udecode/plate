@@ -10,7 +10,7 @@ updated: 2026-10-04
 **Audit of 2026-10-04.** Stop. The September 13 Pursue target is in live source. Every paste, including an exact projected selection, runs through one domCommands.insertData command whose feature middleware and canonical fitter decide the result, the projected path composes deletion and insertion into one spec that publishes nothing on decline, and ContentSlice rewrites keep their referenced roots. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-clipboard-audit` hold the evidence.
 
 Status: Review complete — Pursue. The selected design and reported adoption are in
-the [clipboard transfer plan](../../plans/2026-09-13-clipboard-transfer-policy.md).
+the clipboard transfer plan (`docs/plans/2026-09-13-clipboard-transfer-policy.md`).
 That plan is Complete and reports every clipboard-owned proof gate closed.
 The September 18 history migration recovers this later execution claim but
 does not replay it or recover a complete original source/receipt binding.
@@ -115,7 +115,7 @@ policy can operate on an exact projected replacement target atomically.
 
 Projected extraction also calls `state.slice.get`, while ordinary export uses
 `state.slice.export`. This bypasses export middleware. The
-[diff export policy](../../../packages/plitejs/src/diff/lib/excludeDiffFragment.ts)
+[diff export policy](68898220fec48a27b0662862895628094898f066:packages/plitejs/src/diff/lib/excludeDiffFragment.ts)
 is a concrete consumer: it strips diff metadata from both content and roots.
 The projected writer already delegates to the shared DOM payload writer; it
 does not duplicate the whole serializer.
@@ -209,8 +209,8 @@ were reconciled against source in this decision.
 
 This is the initial clipboard record. The historical
 [clipboard command decision](clipboard-and-delete-commands-need-explicit-lanes.md),
-[serialization plan](../../plans/2026-05-23-plite-clipboard-fragment-serialization-ralplan.md)
-and [static payload ownership plan](../../plans/2026-07-03-plate-next-static-clipboard-payload-owner.md)
+serialization plan (`docs/plans/2026-05-23-plite-clipboard-fragment-serialization-ralplan.md`)
+and static payload ownership plan (`docs/plans/2026-07-03-plate-next-static-clipboard-payload-owner.md`)
 provide context. Their preference for model/DOM/view/product ownership survives
 current inspection. Their old paths and proof receipts do not establish current
 behavior. The neighboring native-input review supplies context; its verdict
@@ -218,9 +218,9 @@ is not inherited by clipboard.
 
 ## Proof and limits
 
-Evidence: [probe](../../plans/artifacts/clipboard-root-preservation-probe.ts)
-and [four observations](../../plans/artifacts/clipboard-root-preservation-results.json).
-Run `bun docs/plans/artifacts/clipboard-root-preservation-probe.ts` from the
+Evidence: a public-API probe inserting a portal-owned root in original, limited, closed-rewrite and preserved-rewrite modes
+and four observations: original and preserved rewrites commit successfully; limited and closed rewrites throw missing-root errors with zero commits.
+The historical root-preservation probe was run directly with Bun from the
 repository root. It imports live source and calls public APIs. A first attempt
 used the test-only preload outside a test runner and failed before executing
 the probe; the direct source import is the corrected command.
@@ -228,7 +228,7 @@ the probe; the direct source import is the corrected command.
 241 existing tests passed across 10 files: 87 core slice/fitting tests in six
 files, 98 clipboard and DOM boundary tests in two files, 11 projected clipboard
 tests and 45 projected command tests. Exact commands and captured output are in
-[the proof receipt](../../plans/artifacts/clipboard-review-proof.md).
+the September 13 baseline receipt recording 87 core, 98 clipboard/DOM, 11 projected-clipboard and 45 projected-command passes, with zero failures.
 
 Passing baseline tests do not establish the newly identified combinations.
 No actual browser, native/device, Plate package or performance replay is

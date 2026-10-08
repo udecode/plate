@@ -6,9 +6,9 @@
     "platejs"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/editor-plugins.json",
     "https://platejs.org/r/editor.json",
-    "button",
-    "https://platejs.org/r/editor-plugins.json"
+    "button"
   ],
   "files": [
     {

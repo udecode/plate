@@ -9,11 +9,11 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/editor.json",
-    "https://platejs.org/r/use-debounce.json",
-    "https://platejs.org/r/editor-plugins.json",
     "https://platejs.org/r/ai.json",
-    "https://platejs.org/r/dnd.json"
+    "https://platejs.org/r/dnd.json",
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/editor-plugins.json",
+    "https://platejs.org/r/use-debounce.json"
   ],
   "files": [
     {

@@ -10,6 +10,18 @@ const ROOTS = [
   'docs/editor-issue-harvester/',
   'docs/editor-test-harvester/',
   'docs/plite-issues/',
+  'docs/plite-draft/',
+  'docs/plite-browser/',
+  'docs/transplant/',
+  'docs/sync/',
+  'docs/analysis/',
+  'docs/performance/',
+  'docs/maintainer/',
+  'docs/brainstorms/',
+  'docs/table/',
+  'docs/editor-benchmarks/',
+  'docs/docs-api.md',
+  'docs/plite/',
 ];
 const SOURCES = 'docs/research/sources/';
 const HOMES_FILE = 'docs/research/homes.tsv';
@@ -90,7 +102,7 @@ function unitOf(path) {
 
 const inRoots = (path) => ROOTS.some((root) => path.startsWith(root));
 
-function homeIndex(tree) {
+export function homeIndex(tree) {
   const rows = new Map(readHomes(tree).map((row) => [row.path, row]));
   const units = new Map();
   for (const path of tree.list()) {
@@ -216,15 +228,18 @@ export function blobOf(content) {
     .digest('hex');
 }
 
-const pointerLine = (homes) =>
-  `> Folded into ${homes.join(', ')}. Edit the home, not this file.`;
+const homeFile = (home) =>
+  home === 'law' ? SPEC_FILE : `${SOURCES}${home}/README.md`;
 
-/** `text` with the fold's pointer line, after any YAML frontmatter. */
+const pointerLine = (homes) =>
+  `> Folded into ${homes.map(homeFile).join(', ')}. Edit the home, not this file.`;
+
+/**
+ * `text` with the fold's pointer line as its last line, so every `path:line`
+ * citation of the file keeps naming the same line.
+ */
 export function foldText(text, homes) {
-  const lines = text.split('\n');
-  const end = lines[0] === '---' ? lines.indexOf('---', 1) + 1 : 0;
-  lines.splice(end, 0, pointerLine(homes));
-  return lines.join('\n');
+  return `${text}${text.endsWith('\n') ? '' : '\n'}\n${pointerLine(homes)}\n`;
 }
 
 const readFolded = (text) =>
@@ -321,15 +336,18 @@ export function foldSource(path, content, resolvedBlob, homes) {
   const markdown = path.endsWith('.md');
   const text =
     typeof content === 'string' ? content : content.toString('utf-8');
+  if (markdown && !homes.length) {
+    throw new Error('it has no home to point at; leave it unfolded');
+  }
   if (blobOf(content) === resolvedBlob) {
     return markdown ? foldText(text, homes) : content;
   }
-  const pointer = `${pointerLine(homes)}\n`;
-  const at = text.indexOf(pointer);
+  const body = text.slice(0, -`\n${pointerLine(homes)}\n`.length);
   if (
     markdown &&
-    at !== -1 &&
-    blobOf(text.slice(0, at) + text.slice(at + pointer.length)) === resolvedBlob
+    [body, body.slice(0, -1)].some(
+      (read) => blobOf(read) === resolvedBlob && foldText(read, homes) === text
+    )
   ) {
     return text;
   }
@@ -562,7 +580,10 @@ export function resolve({
         `${item.key} is link-only, but ${posix.basename(item.source)} is not on the link-only list`
       );
     }
-    if (item.kind === 'law' || item.target === SPEC_FILE) {
+    if (
+      item.disposition === 'added' &&
+      (item.kind === 'law' || item.target === SPEC_FILE)
+    ) {
       if (!ONE_RULE.test(item.id ?? '')) {
         problems.push(`${item.key}'s ID ${item.id} is not one rule`);
       }

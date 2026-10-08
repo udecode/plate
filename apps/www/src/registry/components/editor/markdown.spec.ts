@@ -1,10 +1,12 @@
+import { join } from 'node:path';
+
 import { PLUGINS, createEditor } from 'platejs';
 import { compileEditor } from 'platejs/compiler';
 import { createEditor as createReactEditor } from 'platejs/react';
 
-import { registryBlocks } from '@/registry/registry-blocks';
-import { registryFeatures } from '@/registry/registry-features';
+import { createPlateRegistry } from '@/registry/registry';
 
+import { deriveRegistryDependencies } from '../../../../scripts/registry-package-dependencies.mts';
 import { BaseCodeDrawingKit } from './code-drawing-static';
 import { FootnoteKit } from './footnote';
 import { BaseFootnoteKit } from './footnote-static';
@@ -84,7 +86,9 @@ describe('MarkdownKit', () => {
 
   it('keeps renderer-specific Footnote kits in editor presets', () => {
     const items = new Map(
-      [...registryFeatures, ...registryBlocks].map((item) => [item.name, item])
+      deriveRegistryDependencies(createPlateRegistry(), {
+        sourceRoot: join(import.meta.dir, '../..'),
+      }).items.map((item) => [item.name, item])
     );
 
     expect(items.get('markdown')?.registryDependencies).toBeUndefined();

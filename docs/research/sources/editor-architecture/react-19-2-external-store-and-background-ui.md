@@ -8,17 +8,19 @@ source_refs:
   - https://react.dev/reference/react/useTransition
   - https://react.dev/reference/react/useDeferredValue
   - https://react.dev/reference/react/Activity
-  - packages/slate-react/src/hooks/use-slate-selector.tsx
-  - packages/slate-react/src/hooks/use-slate-annotations.tsx
-  - packages/slate-react/src/hooks/use-slate-widgets.tsx
-  - content/docs/slate/walkthroughs/09-performance.md
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-slate-selector.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-slate-annotations.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/hooks/use-slate-widgets.tsx
+  - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:docs/walkthroughs/09-performance.md
 updated: 2026-04-28
 related:
-  - docs/research/systems/slate-v2-overlay-architecture.md
+  - c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
 ---
 
 # React 19.2 external-store and background-ui primitives
+
+> Current Plite (checked 2026-10-08): the Slate v2 hooks that section 3 below lists are gone. Plite reads editor state with `useEditorSelector` (`packages/plitejs/src/react/hooks/use-editor-selector.tsx:98`) and annotations with `useAnnotation(store, id)` and `useAnnotations(store)` over `useSyncExternalStore` (`packages/plitejs/src/react/hooks/use-plite-annotations.tsx:10-21`, `:24`); decorations are sources passed to `<EditorRoot decorations>` (`packages/plitejs/src/react/components/plite.tsx:181`); `packages/plitejs/src` has no widget or projection hook, and the law rules out a widget lane (`docs/vision/plite.md:597-600`); and a search of `apps` and `packages` on 2026-10-08 found no use of React's `Activity`.
 
 ## Purpose
 

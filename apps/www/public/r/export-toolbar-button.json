@@ -6,28 +6,28 @@
   "dependencies": [
     "platejs",
     "lucide-react",
-    "color-name",
-    "html-to-vdom",
-    "jszip",
-    "juice",
-    "mime-types",
     "sonner",
-    "virtual-dom",
-    "xmlbuilder2",
+    "color-name@^2.0.0",
     "diff-match-patch-ts@^0.6.0",
+    "html-to-vdom@^0.7.0",
+    "jszip@^3.10.1",
+    "juice@^11.0.1",
     "katex@0.16.22",
+    "mime-types@^2.1.35",
     "remark-parse@^11.0.0",
     "remark-stringify@^11.0.0",
-    "unified@^11.0.5"
+    "unified@^11.0.5",
+    "virtual-dom@^2.1.1",
+    "xmlbuilder2@^3.1.1"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/editor.json",
+    "https://platejs.org/r/editor-plugins-static.json",
     "https://platejs.org/r/docx-export.json",
     "https://platejs.org/r/docx-source.json",
     "https://platejs.org/r/editor-dropdown-menu.json",
-    "https://platejs.org/r/toolbar.json",
     "https://platejs.org/r/editor-static.json",
-    "https://platejs.org/r/editor.json",
-    "https://platejs.org/r/editor-plugins-static.json"
+    "https://platejs.org/r/toolbar.json"
   ],
   "files": [
     {

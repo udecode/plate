@@ -48,7 +48,7 @@ Separately, successful Comments publication followed by failed History settlemen
 
 **Finding**: The named documentation changes leave public reference pages teaching the removed contract.
 
-**Evidence**: Under `docs/plite/reference/public-docs/libraries/`, `plite-history/history-editor.mdx:35–61` declares Promise returns and rejection semantics. `plite-history/history.mdx:128–132` repeats the signatures; `plite-react/hooks.mdx:175–197` teaches awaiting the call and browser-channel rejection reporting. These paths are absent from the migration list. The proposed grep catches call expressions, but does not catch stale signatures or rejection prose.
+**Evidence**: Under `c70bacbd4a:docs/plite/reference/public-docs/libraries/`, `plite-history/history-editor.mdx:35–61` declares Promise returns and rejection semantics. `plite-history/history.mdx:128–132` repeats the signatures; `plite-react/hooks.mdx:175–197` teaches awaiting the call and browser-channel rejection reporting. These paths are absent from the migration list. The proposed grep catches call expressions, but does not catch stale signatures or rejection prose.
 
 **Suggestion**: Include these owners and search separately for return signatures, completion semantics, error ownership, and call expressions.
 

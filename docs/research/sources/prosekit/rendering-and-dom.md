@@ -1,4 +1,4 @@
-# ProseKit: rendering and dom
+# ProseKit: rendering and DOM
 
 ## Read-only toggling
 

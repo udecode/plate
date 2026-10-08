@@ -7,7 +7,6 @@
     "diff-match-patch-ts@^0.6.0",
     "platejs"
   ],
-  "registryDependencies": [],
   "files": [
     {
       "path": "src/registry/components/editor/paragraph.tsx",

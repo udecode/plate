@@ -7,9 +7,9 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
-    "button",
     "https://platejs.org/r/basic-marks.json",
-    "https://platejs.org/r/diff.json"
+    "https://platejs.org/r/diff.json",
+    "button"
   ],
   "files": [
     {

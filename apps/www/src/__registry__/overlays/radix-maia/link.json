@@ -11,12 +11,12 @@
     "lucide-react"
   ],
   "registryDependencies": [
-    "button",
-    "input",
-    "separator",
     "@plate/link-toolbar-button",
     "@plate/suggestion-style",
-    "@plate/use-floating-rect"
+    "@plate/use-floating-rect",
+    "button",
+    "input",
+    "separator"
   ],
   "files": [
     {

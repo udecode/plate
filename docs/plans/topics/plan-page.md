@@ -1,6 +1,6 @@
 # Plan page
 
-Page: https://claude.ai/artifact/QkmXGRS8ykgdL4YtYCNr1f
+Page: https://claude.ai/artifact/NRgfJHG3SH8PULHUqGy3fn
 
 How a plan and its subject become one page per subject: the files agents write under `docs/plans`, the renderer that checks and draws them, and where each project names its own review sections. Every plan for the page shape is one iteration of this subject; earlier iterations live under the `pstack` subject.
 

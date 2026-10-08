@@ -3,8 +3,8 @@ date: 2026-04-25
 topic: slate-v2-editing-epoch-legacy-timing-recovery-audit
 status: active
 source_repos:
-  - /Users/zbeyens/git/slate
-  - /Users/zbeyens/git/slate-v2
+  - 'zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:'
+  - 'udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:'
 ---
 
 # Slate v2 Editing Epoch Legacy Timing Recovery Audit
@@ -33,7 +33,7 @@ structural editing comes back.
 
 | Legacy timing rule | Legacy location | V2 owner | Status | Evidence |
 | --- | --- | --- | --- | --- |
-| Attach native `beforeinput`, not React's polyfilled event. | `../slate/packages/slate-react/src/components/editable.tsx` native listener comment around React issue 11211 | `packages/slate-react/src/editable/input-router.ts` and `components/editable.tsx` | Recovered | Native `beforeinput` and `input` listeners are attached directly; richtext generated destructive rows pass cross-browser. |
+| Attach native `beforeinput`, not React's polyfilled event. | `zbeyens/slate@945a484df2497e4c448b33f417b0de2a49840032:packages/slate-react/src/components/editable.tsx` native listener comment around React issue 11211 | `udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:packages/slate-react/src/editable/input-router.ts` and `components/editable.tsx` | Recovered | Native `beforeinput` and `input` listeners are attached directly; richtext generated destructive rows pass cross-browser. |
 | Flush queued `selectionchange` before `beforeinput` because IMEs/extensions may set selection immediately before input. | legacy `scheduleOnDOMSelectionChange.flush()` / `onDOMSelectionChange.flush()` before target sync | `components/editable.tsx` beforeinput path | Recovered | Current beforeinput still flushes both queues before resolving native/model ownership. |
 | Do not import target ranges for ordinary delete before delete commands decide the deletion range. | legacy delete-target-range comment | `selection-reconciler`, `model-input-strategy`, `editing-epoch-kernel` | Recovered and strengthened | Destructive keydown is model-owned; duplicate beforeinput is skipped inside the epoch; generated destructive gauntlet covers delete after paste and repeated word-delete. |
 | Expanded selection plus delete should delete the expanded selection even when the input type looks directional. | legacy expanded delete branch | `getEditableCommandFromBeforeInputType`, `mutation-controller` | Recovered | Backspace/Delete selected-range rows pass cross-browser in richtext proof. |
@@ -76,7 +76,7 @@ Current legacy timing recovery is accepted only with these gates:
 
 ```bash
 bun test ./packages/slate-react/test/editing-epoch-kernel-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/selection-controller-contract.ts ./packages/slate-react/test/dom-repair-policy-contract.ts ./packages/slate-react/test/target-runtime-contract.tsx ./packages/slate-react/test/dom-text-sync-contract.ts --bail 1
-bun run --cwd packages/slate-browser test:core --bail 1
+bun run --cwd ./packages/slate-browser test:core --bail 1
 bun --filter slate-browser test:proof
 SLATE_BROWSER_SOAK_BASE_URL=http://localhost:3100 SLATE_BROWSER_SOAK_ITERATIONS=5 bun ./scripts/proof/persistent-browser-soak.mjs
 PLAYWRIGHT_BASE_URL=http://localhost:3100 bunx playwright test ./playwright/integration/examples/richtext.test.ts --project=chromium --project=firefox --project=webkit --project=mobile --grep "generated destructive paste|generated mixed editing conformance|persistent native word-delete" --workers=4 --retries=0

@@ -111,7 +111,7 @@
     "packages/plitejs/src/core/plugin.ts",
     "packages/plitejs/src/interfaces/editor.ts",
     "docs/plans/2026-08-23-fix-plite-react-provider-lifetime.md",
-    "docs/analysis/best-api-review.md",
+    "docs/research/sources/plite/README.md",
     ".agents/skills/best-api/SKILL.md"
   ],
   "relatedScopes": [

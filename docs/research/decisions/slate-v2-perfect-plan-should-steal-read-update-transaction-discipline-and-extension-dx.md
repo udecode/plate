@@ -8,7 +8,7 @@ source_refs:
   - docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md
   - docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md
   - docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md
-  - docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md
+  - c70bacbd4a:docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md
 related:
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md

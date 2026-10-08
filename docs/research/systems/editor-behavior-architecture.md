@@ -6,7 +6,7 @@ updated: 2026-07-23
 related:
   - docs/editor-behavior/markdown-editing-spec.md
   - docs/editor-behavior/markdown-editing-spec.md
-  - docs/editor-behavior/editor-protocol-matrix.md
+  - c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md
   - docs/vision/plate.md
 ---
 
@@ -15,7 +15,7 @@ related:
 This document maps editor-behavior law to runtime and plugin ownership.
 [markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md)
 decides what the editor should do;
-[editor-protocol-matrix.md](../../editor-behavior/editor-protocol-matrix.md)
+editor-protocol-matrix.md (`c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md`)
 enumerates the scenarios. This document decides what stays inline, what belongs
 in `options`, and what earns independent plugin identity.
 
@@ -348,7 +348,7 @@ This architecture doc is the top-level frame.
   defines the authority order and methodology
 - [markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md)
   defines the markdown-first behavior contract
-- [markdown-parity-matrix.md](../../editor-behavior/markdown-parity-matrix.md)
+- markdown-parity-matrix.md (`c70bacbd4a:docs/editor-behavior/markdown-parity-matrix.md`)
   defines syntax support and round-trip expectations
 
 Other behavior contracts may choose different outcomes. Shipped differences

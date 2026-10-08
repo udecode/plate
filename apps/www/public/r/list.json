@@ -6,8 +6,8 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/block-list.json",
     "https://platejs.org/r/list-toolbar-button.json",
+    "https://platejs.org/r/block-list.json",
     "https://platejs.org/r/indent.json"
   ],
   "files": [

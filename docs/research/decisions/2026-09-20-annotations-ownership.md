@@ -82,7 +82,7 @@ evidence boundary without absorbing the separate Comments feature review.
 The September 21 OSS pass compared the current source of ProseMirror, Lexical,
 CodeMirror, Monaco/VS Code, Yjs, Automerge and Quill, plus the public
 Tiptap Comments contract. The full source ledger and exact references are in
-[the research report](../../plite/research/2026-09-21-annotation-architecture-oss/REPORT.md).
+the research report (`docs/plite/research/2026-09-21-annotation-architecture-oss/REPORT.md`).
 
 The ownership direction survives the comparison. No candidate combines the
 required jobs more cleanly:
@@ -153,7 +153,7 @@ the migrated interaction has not been executed or benchmarked.
 
 ## Public deletion policy is inconsistent
 
-The [public-call probe](../../plans/artifacts/annotations-review/deletion-probe.ts)
+The public-call probe comparing ordinary and Authored `drop`/`nearest` anchors
 creates an inward range over `lph` in `Alpha Beta`, deletes that exact text, then
 undoes and redoes. Only installation of Authored differs:
 
@@ -163,7 +163,7 @@ undoes and redoes. Only installation of Authored differs:
 | `nearest` | collapsed at 1 / exact original range | collapsed at 1 / exact original range |
 
 Both return `null` permanently after release. The
-[retained result](../../plans/artifacts/annotations-review/deletion-result.json)
+retained ordinary/Authored deletion-policy result, with `afterRelease: null` in every trace,
 contains all four traces, including redo. This is observed current behavior,
 not a failing test manufactured for a preferred implementation.
 
@@ -273,7 +273,7 @@ Executed: **107/107** core anchor, mapping, range, history and authored-anchor
 cases; **64/64** annotation-store, decoration-manager and decoration-rendering
 React cases. The public deletion probe also completed. Commands, raw logs and
 source identities are retained in
-[the audit proof](../../plans/artifacts/annotations-review/proof.json).
+the September 20 audit receipt recording 107 core passes, 64 React passes, zero failures and a successful deletion probe.
 
 At review time no product code changed and no replacement runtime, browser
 interaction or comparative performance was certified. That boundary remains in

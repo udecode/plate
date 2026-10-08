@@ -8,7 +8,7 @@ source_refs:
   - docs/research/sources/prosemirror/guide-reference-and-example-doc-patterns.md
   - docs/research/sources/lexical/markdown-package-and-shortcuts-doc-patterns.md
   - docs/research/sources/slate/walkthrough-concepts-and-api-doc-patterns.md
-  - .agents/rules/docs-creator.mdc
+  - f03d2b8c2397638acfe8b50abf4e90139778360f:.agents/rules/docs-creator.mdc
 related: []
 ---
 

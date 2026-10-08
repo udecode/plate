@@ -14,12 +14,12 @@
   ],
   "registryDependencies": [
     "https://platejs.org/r/ai.json",
+    "https://platejs.org/r/use-chat.json",
     "button",
     "command",
     "dialog",
     "input",
-    "popover",
-    "https://platejs.org/r/use-chat.json"
+    "popover"
   ],
   "files": [
     {

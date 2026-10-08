@@ -16,18 +16,18 @@
     "unified@^11.0.5"
   ],
   "registryDependencies": [
-    "https://platejs.org/r/link.json",
-    "https://platejs.org/r/toolbar.json",
-    "https://platejs.org/r/use-floating-rect.json",
     "https://platejs.org/r/tailwind-scrollbar-hide.json",
     "https://platejs.org/r/ai-toolbar-button.json",
     "https://platejs.org/r/comment-toolbar-button.json",
     "https://platejs.org/r/equation-toolbar-button.json",
+    "https://platejs.org/r/link.json",
     "https://platejs.org/r/link-toolbar-button.json",
     "https://platejs.org/r/mark-toolbar-button.json",
     "https://platejs.org/r/more-toolbar-button.json",
     "https://platejs.org/r/suggestion-toolbar-button.json",
-    "https://platejs.org/r/turn-into-toolbar-button.json"
+    "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/turn-into-toolbar-button.json",
+    "https://platejs.org/r/use-floating-rect.json"
   ],
   "files": [
     {

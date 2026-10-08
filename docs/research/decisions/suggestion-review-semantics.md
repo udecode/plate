@@ -141,7 +141,7 @@ event and lifecycle owners.
 
 The bounded construction/SSR probe compares style-only wrappers with compiled
 attributes for 1/10/100 plugins and 1/1000 nodes. Its artifacts live under
-`docs/plans/artifacts/content-attributes-probe/`; it is an owner-level cost
+a local probe directory (production, prototype and footnote-overlay results plus probe source); it is an owner-level cost
 guard, not a browser-performance or full suggesting-parity certificate. The
 execution and proof receipt stays in the existing
 `2026-09-13-suggestion-package-over-authored-changes.md` plan.
@@ -238,7 +238,7 @@ complete-operation scale comparisons gate the chosen contract.
 
 This is a Pursue verdict, not implementation acceptance. No product source,
 runtime representation, package export, or test suite changed in this review.
-See the [audit and source index](../../plans/artifacts/google-docs-suggestion-audit/audit.md)
+See the audit and source index conclusions (September 13, 2026: 44 selected contract families; no complete Google Docs parity certified)
 for all dispositions, alternatives, sources, and unresolved Google behavior.
 
 ## Recovered execution history

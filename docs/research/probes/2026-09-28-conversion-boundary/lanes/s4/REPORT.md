@@ -160,7 +160,7 @@ I renamed the console captures from `.log` to `.txt` because `.gitignore` exclud
 To run the AI-flow baseline arm, first put the pre-S5 plugin next to the current one, and delete the copy after the run:
 
 ```sh
-git show a7750ad388:packages/platejs/src/ai/react/AIChatPlugin.ts > packages/platejs/src/ai/react/zz-AIChatPlugin.baseline.ts
+git show a7750ad388b2d4626c0a4eef2d3e0e23454010f4:packages/platejs/src/ai/react/AIChatPlugin.ts > ./packages/platejs/src/ai/react/zz-AIChatPlugin.baseline.ts
 ```
 
 ## Docs

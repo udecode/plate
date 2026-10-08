@@ -6,10 +6,10 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
+    "https://platejs.org/r/mark-toolbar-button.json",
     "https://platejs.org/r/code.json",
     "https://platejs.org/r/highlight.json",
-    "https://platejs.org/r/kbd.json",
-    "https://platejs.org/r/mark-toolbar-button.json"
+    "https://platejs.org/r/kbd.json"
   ],
   "files": [
     {

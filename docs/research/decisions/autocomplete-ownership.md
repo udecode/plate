@@ -189,8 +189,19 @@ evidence and limits. The gates below stay open.
   `Input.imeSetComposition` with `cd`, click outside, and read the model
   selection, which is offset 6 instead of 4. Desktop Chromium lands at 4. The
   same caret fault reproduces at HEAD `cf15725603` without any combobox, where
-  the old input design also never opens its popup under that profile. Owner:
-  Plite native input.
+  the old input design also never opens its popup under that profile. Real
+  Gboard on the `Pixel_9_API_36_Play` emulator did not reproduce it: English
+  Gboard committed each letter as `insertText` with no composition, so
+  `@biggs` left the caret at offset 6, where Pixel 5 emulation put it at 11,
+  and an option tap inserted the mention (one run per step,
+  `docs/plite/research/2026-10-02-agentic-e2e-testing/shards/004-android-device-probe.md:29-31`,
+  `:38-45`). The `mention-taps` device case passed five of five runs
+  (`docs/plite/research/2026-10-02-agentic-e2e-testing/sources/device-runs/2026-10-02T2315Z-final/five-runs-summary.json:54-58`)
+  and again in the Phase 1b acceptance
+  (`docs/plans/2026-10-03-autocomplete-occurrence-host.md:443`), but it taps
+  after committed typing, so it proves plain option taps only. A tap during a
+  composition, a composing keyboard and a physical phone stay unproven.
+  Owner: Plite native input.
 - Review of the public `ReactApi.settleInput()`, including its fallback that
   refuses instead of flushing when Plite resolves no single runtime, and
   autocomplete in owned content roots, where it is not built. Owner: Plite

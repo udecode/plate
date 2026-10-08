@@ -9,12 +9,12 @@
     "diff-match-patch-ts@^0.6.0"
   ],
   "registryDependencies": [
-    "avatar",
-    "button",
-    "separator",
+    "https://platejs.org/r/suggestion.json",
     "https://platejs.org/r/comment.json",
     "https://platejs.org/r/floating-popover.json",
-    "https://platejs.org/r/suggestion.json"
+    "avatar",
+    "button",
+    "separator"
   ],
   "files": [
     {

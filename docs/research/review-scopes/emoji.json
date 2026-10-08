@@ -10,24 +10,24 @@
     "reason": "Unicode insertion is small; search and preference lifetimes deserve one bounded review."
   },
   "owners": [
-    "packages/platejs/src/emoji/"
+    "apps/www/src/registry/lib/emoji-data.ts"
   ],
   "members": [
-    "apps/www/src/registry/components/editor/emoji-picker.spec.tsx",
     "apps/www/src/registry/components/editor/emoji-picker.tsx",
     "apps/www/src/registry/components/editor/emoji-toolbar-button.tsx",
     "apps/www/src/registry/components/editor/emoji.tsx",
     "apps/www/src/registry/examples/values/cn/emoji-value.tsx",
     "apps/www/src/registry/examples/values/emoji-value.tsx",
-    "packages/platejs/package.json",
-    "packages/platejs/src/emoji/",
-    "packages/platejs/src/utils/plate-keys.ts"
+    "apps/www/src/registry/lib/emoji-data.ts"
   ],
   "consumers": [
+    "apps/www/src/registry/components/editor/callout.tsx",
+    "apps/www/src/registry/components/editor/emoji-toolbar-button.tsx",
     "apps/www/src/registry/components/editor/emoji.tsx"
   ],
   "proof": [
-    "packages/platejs/src/emoji/lib/BaseEmojiPlugin.spec.ts"
+    "apps/www/tests/browser/emoji.spec.ts",
+    "apps/www/tests/browser/combobox.spec.ts"
   ],
   "evidenceInputs": [],
   "relatedScopes": [

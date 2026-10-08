@@ -40,7 +40,7 @@ The exact source inputs and commands are in `probe.test.ts`; all 56 named observ
 
 ### Real link/image/video mappings and rendering
 
-- `packages/platejs/src/features/link/lib/BaseLinkPlugin.ts:153` defaults to http/https/mailto/tel. `:235` declares URL as a required string, not a safety-refined property. `:249` validates HTML href; `:261` sanitizes HTML output, returning null at `:268`; `:281` copies Markdown URL into the model and `:305` exports it. `:319` computes safe render attributes without mutating the element. `packages/platejs/src/lib/utils/sanitizeUrl.ts:6` uses URL parsing and supplied schemes, while allowing internal `/`/`#` forms. Link options also deliberately expose an unsafe-sanitization escape hatch; default behavior is the scope of the main probes.
+- `packages/platejs/src/features/link/lib/BaseLinkPlugin.ts:153` defaults to http/https/mailto/tel. `:235` declares URL as a required string, not a safety-refined property. `:249` validates HTML href; `:261` sanitizes HTML output, returning null at `:268`; `:281` copies Markdown URL into the model and `:305` exports it. `:319` computes safe render attributes without mutating the element. `a7750ad388b2d4626c0a4eef2d3e0e23454010f4:packages/platejs/src/lib/utils/sanitizeUrl.ts:6` uses URL parsing and supplied schemes, while allowing internal `/`/`#` forms. Link options also deliberately expose an unsafe-sanitization escape hatch; default behavior is the scope of the main probes.
 - `packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts:122` reads the child image in a figure; `:138` emits its URL as src; `:194` reads Markdown image URLs unchanged; `:208` reads the registered img tag's src; `:231` owns its Markdown encoding.
 - `packages/platejs/src/features/media/lib/BaseMediaPlugin.ts:26` declares media URL as a string; `:36` reads src or a first source child. Real video mappings are `:625` (figure decoder), `:636` (HTML encoder), `:664` (bare video decoder), and `:690` (Markdown decode/encode). The persisted-control-URL probe uses these mappings unchanged.
 - `packages/platejs/src/features/media/lib/media-embed/BaseMediaEmbedPlugin.ts:25` adds http/https URL filtering for HTML embeds, while its Markdown mapping at `:155` copies src. This is source inspection, not an additional embed probe.
@@ -101,7 +101,7 @@ All four requested units reviewed; none excluded or left without a direction. Th
 
 ## Reproduction and receipts
 
-From `/Users/zbeyens/git/plate-2`:
+From the repository root:
 
 ```sh
 git branch --show-current
@@ -114,7 +114,7 @@ Final output:
 
 ```text
 bun test v1.3.12 (700fc117)
-Wrote 56 observations to /Users/zbeyens/git/plate-2/docs/research/probes/2026-09-28-conversion-boundary/safety/results.json
+Wrote 56 observations to docs/research/probes/2026-09-28-conversion-boundary/safety/results.json
  1 pass
  0 fail
  10 expect() calls
