@@ -7,11 +7,10 @@ import {
 import React from 'react';
 
 import {
-  EditorContent,
   type EditorContentProps,
-} from './components/PlateContent';
+  EditorContentView,
+} from './components/EditorContentView.internal';
 import type { Element, RootKey } from './core';
-import { PlateContentEditableContext } from './internal/plate-content-editable.internal';
 
 export type VirtualizedEditorContentProps<
   TElement extends Element = Element,
@@ -30,18 +29,10 @@ export const VirtualizedEditorContent = <
   estimatedBlockSize,
   overscan,
   ...props
-}: VirtualizedEditorContentProps<TElement, TRoot>) => {
-  const value = React.useMemo(
-    () => ({
-      component: VirtualizedEditable,
-      props: { estimatedBlockSize, overscan },
-    }),
-    [estimatedBlockSize, overscan]
-  );
-
-  return (
-    <PlateContentEditableContext value={value}>
-      <EditorContent {...props} />
-    </PlateContentEditableContext>
-  );
-};
+}: VirtualizedEditorContentProps<TElement, TRoot>) => (
+  <EditorContentView
+    {...props}
+    editable={VirtualizedEditable}
+    editableExtra={{ estimatedBlockSize, overscan }}
+  />
+);

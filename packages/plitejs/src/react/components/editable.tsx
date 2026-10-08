@@ -3,6 +3,7 @@ import React, { useCallback, useSyncExternalStore } from 'react';
 import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
 import { type DOMRange, isDOMNode } from '../../dom';
 import { createDOMGeometryKernel } from '../../dom/internal';
+import { getFlatTreeParentElement } from '../../dom/utils/dom';
 import { clearDragScrollRepaint } from '../../dom/utils/drag-session';
 import type {
   EditableHistoryReplayEvent,
@@ -31,6 +32,7 @@ import {
 import { ComposingContext } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { ReadOnlyContext } from '../hooks/use-editor-read-only';
+import { useHydrated } from '../hooks/use-hydrated';
 import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
@@ -55,9 +57,6 @@ type DropCursorRect = {
 };
 
 const DROP_CURSOR_THICKNESS = 2;
-const subscribeHydration = () => () => {};
-const getClientHydrationSnapshot = () => true;
-const getServerHydrationSnapshot = () => false;
 
 const getDropCursorTargetElement = (target: EventTarget | null) => {
   if (!isDOMNode(target)) {
@@ -65,6 +64,28 @@ const getDropCursorTargetElement = (target: EventTarget | null) => {
   }
 
   return target.nodeType === 1 ? (target as HTMLElement) : target.parentElement;
+};
+
+/**
+ * How much CSS transforms scale an element on each axis: its viewport rect
+ * against its layout size. An axis that yields no usable ratio reads 1.
+ *
+ * @internal
+ */
+export const getElementTransformScale = (
+  element: HTMLElement,
+  rect: Pick<DOMRectReadOnly, 'height' | 'width'>
+) => {
+  const axis = (rendered: number, layout: number) => {
+    const scale = layout > 0 ? rendered / layout : 1;
+
+    return Number.isFinite(scale) && scale > 0 ? scale : 1;
+  };
+
+  return {
+    x: axis(rect.width, element.offsetWidth),
+    y: axis(rect.height, element.offsetHeight),
+  };
 };
 
 const getEditableDropCursorRect = ({
@@ -112,16 +133,10 @@ const getEditableDropCursorRect = ({
     }
 
     const rootRect = rootElement.getBoundingClientRect();
-    const rawScaleX =
-      rootElement.offsetWidth > 0
-        ? rootRect.width / rootElement.offsetWidth
-        : 1;
-    const rawScaleY =
-      rootElement.offsetHeight > 0
-        ? rootRect.height / rootElement.offsetHeight
-        : 1;
-    const scaleX = Number.isFinite(rawScaleX) && rawScaleX > 0 ? rawScaleX : 1;
-    const scaleY = Number.isFinite(rawScaleY) && rawScaleY > 0 ? rawScaleY : 1;
+    const { x: scaleX, y: scaleY } = getElementTransformScale(
+      rootElement,
+      rootRect
+    );
     const thickness = DROP_CURSOR_THICKNESS / scaleX;
 
     return {
@@ -146,14 +161,10 @@ const getEditableDropCursorRect = ({
 
   // DOMRects are viewport-space after CSS transforms; absolute children need
   // root-local CSS pixels so the root transform is not applied twice.
-  const rawScaleX =
-    rootElement.offsetWidth > 0 ? rootRect.width / rootElement.offsetWidth : 1;
-  const rawScaleY =
-    rootElement.offsetHeight > 0
-      ? rootRect.height / rootElement.offsetHeight
-      : 1;
-  const scaleX = Number.isFinite(rawScaleX) && rawScaleX > 0 ? rawScaleX : 1;
-  const scaleY = Number.isFinite(rawScaleY) && rawScaleY > 0 ? rawScaleY : 1;
+  const { x: scaleX, y: scaleY } = getElementTransformScale(
+    rootElement,
+    rootRect
+  );
   const localX = (value: number) => (value - rootRect.left) / scaleX;
   const localY = (value: number) => (value - rootRect.top) / scaleY;
 
@@ -345,11 +356,7 @@ export const EditableDOMRoot = (
     () => runtime.supportsBeforeInput,
     () => false
   );
-  const hydrated = useSyncExternalStore(
-    subscribeHydration,
-    getClientHydrationSnapshot,
-    getServerHydrationSnapshot
-  );
+  const hydrated = useHydrated();
   const replacementInputFeaturesAllowed = !hydrated || supportsBeforeInput;
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
@@ -615,7 +622,7 @@ const offsetScrollRect = (
 });
 
 const canScrollAxis = (
-  element: HTMLElement,
+  element: Element,
   style: CSSStyleDeclaration | undefined,
   axis: 'x' | 'y'
 ) => {
@@ -643,29 +650,6 @@ const resolveScrollPadding = (value: string | undefined, size: number) => {
   return value?.trim().endsWith('%') ? (amount / 100) * size : amount;
 };
 
-const getComposedParentElement = (element: HTMLElement) => {
-  if (element.parentElement) {
-    return element.parentElement;
-  }
-
-  const window = element.ownerDocument.defaultView;
-
-  if (!window) {
-    return null;
-  }
-
-  const ShadowRootConstructor = window.ShadowRoot;
-  const root = element.getRootNode();
-
-  if (ShadowRootConstructor && root instanceof ShadowRootConstructor) {
-    const { host } = root;
-
-    return host instanceof window.HTMLElement ? host : null;
-  }
-
-  return null;
-};
-
 const scrollRectIntoViewIfNeeded = ({
   rect,
   startElement,
@@ -676,9 +660,9 @@ const scrollRectIntoViewIfNeeded = ({
   let currentRect = rect;
 
   for (
-    let parent = getComposedParentElement(startElement);
+    let parent = getFlatTreeParentElement(startElement);
     parent;
-    parent = getComposedParentElement(parent)
+    parent = getFlatTreeParentElement(parent)
   ) {
     const style = parent.ownerDocument.defaultView?.getComputedStyle(parent);
     const canScrollY = canScrollAxis(parent, style, 'y');

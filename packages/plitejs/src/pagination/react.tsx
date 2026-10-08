@@ -18,10 +18,14 @@ import { flushSync } from 'react-dom';
 import {
   type Editor,
   type Element,
+  type Node,
   type NodeKey,
   type Path,
   PathApi,
-  SelectionApi,
+  PointApi,
+  type Range,
+  RangeApi,
+  TextApi,
 } from '..';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
 import {
@@ -31,14 +35,27 @@ import {
   useEditorReadOnly,
   useEditorState,
 } from '../react';
-import { defaultScrollSelectionIntoView } from '../react/components/editable';
+import {
+  defaultScrollSelectionIntoView,
+  getElementTransformScale,
+} from '../react/components/editable';
+import {
+  type EditableElementLayout,
+  getElementPlacementBox,
+  pathKey,
+} from '../react/components/editable-element-placement';
+import { ImperativeTextFlowContext } from '../react/components/editable-text-flow';
 import { WindowedEditable } from '../react/components/windowed-editable.internal';
 import {
   DecorationContext,
   type PliteDecorationStore,
 } from '../react/decoration-context';
-import type { DecorationSlice } from '../react/decoration-source';
+import {
+  createContainerDecorationSlice,
+  type DecorationSlice,
+} from '../react/decoration-source';
 import { useElementPath } from '../react/hooks/use-element-path';
+import { useHydrated } from '../react/hooks/use-hydrated';
 import {
   createPretextPageLayoutEngine,
   measurePages,
@@ -52,8 +69,10 @@ import {
   type PageSettingsSource,
 } from './index';
 import {
+  bounds,
   createPageLayoutGeometry,
   type PageLayoutGeometry,
+  toCanvasRect,
 } from './page-geometry.internal';
 import { invalidatePageLayoutEngines } from './page-layout-engine-invalidation.internal';
 import {
@@ -152,7 +171,6 @@ type FragmentContextValue = Readonly<{
 }>;
 
 const FragmentContext = createContext<FragmentContextValue | null>(null);
-const pathKey = (path: Path) => path.join('.');
 
 export const usePageLayoutFragments = (): readonly MountedFragment[] => {
   const context = useContext(FragmentContext);
@@ -498,42 +516,12 @@ const sameSelectedPaths = (
     left.length === right.length &&
     left.every((path, index) => PathApi.equals(path, right[index])));
 
-const selectedPathsFor = (selection: unknown): readonly Path[] => {
-  if (SelectionApi.isNode(selection)) return selection.paths;
-  if (SelectionApi.isText(selection)) {
-    return [selection.anchor.path, selection.focus.path];
-  }
-
-  return [];
-};
+const selectedPathsFor = (selection: Range | null): readonly Path[] =>
+  selection ? [selection.anchor.path, selection.focus.path] : [];
 
 const setRef = <T,>(ref: Ref<T> | undefined, value: T | null) => {
   if (typeof ref === 'function') ref(value);
   else if (ref) ref.current = value;
-};
-
-const toCanvasRect = (
-  rect: PageRect,
-  pageIndex: number,
-  geometry: PageLayoutGeometry
-): PageRect => {
-  const placement = geometry.pagePlacements[pageIndex] ?? { left: 0, top: 0 };
-
-  return {
-    ...rect,
-    left: placement.left + rect.left,
-    top: placement.top + rect.top,
-  };
-};
-
-const bounds = (rects: readonly PageRect[]): PageRect => {
-  if (rects.length === 0) return { height: 0, left: 0, top: 0, width: 0 };
-  const left = Math.min(...rects.map((rect) => rect.left));
-  const top = Math.min(...rects.map((rect) => rect.top));
-  const right = Math.max(...rects.map((rect) => rect.left + rect.width));
-  const bottom = Math.max(...rects.map((rect) => rect.top + rect.height));
-
-  return { height: bottom - top, left, top, width: right - left };
 };
 
 const createPlacementsByPath = (
@@ -569,7 +557,8 @@ const createPlacementsByPath = (
 
 const createElementLayouts = (
   fragments: readonly PageLayoutFragment[],
-  placementsByPath: ReadonlyMap<string, readonly MountedFragment[]>
+  placementsByPath: ReadonlyMap<string, readonly MountedFragment[]>,
+  previous: ReadonlyMap<string, EditableElementLayout>
 ) => {
   const paths = new Map<string, Path>();
 
@@ -589,23 +578,12 @@ const createElementLayouts = (
       bounds(placements.map((placement) => placement.rect))
     );
   });
-  const layouts = new Map<
-    string,
-    Readonly<{
-      height: number;
-      left: number;
-      top: number;
-      width: number;
-    }> | null
-  >();
+  const layouts = new Map<string, EditableElementLayout>();
 
   paths.forEach((path, key) => {
     const rect = canvasBounds.get(key);
 
-    if (!rect) {
-      layouts.set(key, null);
-      return;
-    }
+    if (!rect) return;
     let parent = path.slice(0, -1);
     let parentRect: PageRect | undefined;
 
@@ -613,33 +591,58 @@ const createElementLayouts = (
       parentRect = canvasBounds.get(pathKey(parent));
       parent = parent.slice(0, -1);
     }
-    layouts.set(key, {
+    const layout = {
       height: rect.height,
       left: rect.left - (parentRect?.left ?? 0),
       top: rect.top - (parentRect?.top ?? 0),
       width: rect.width,
-    });
+    };
+    const kept = previous.get(key);
+
+    // An equal layout keeps its object, so its element keeps its placement ref.
+    layouts.set(
+      key,
+      kept &&
+        kept.height === layout.height &&
+        kept.left === layout.left &&
+        kept.top === layout.top &&
+        kept.width === layout.width
+        ? kept
+        : layout
+    );
   });
 
   return layouts;
 };
 
-const fragmentContainsPath = (fragment: PageLayoutFragment, path: Path) => {
-  if (PathApi.equals(fragment.path, path)) return true;
-  if (fragment.type === 'direct-children') {
-    return fragment.children.some((child) =>
-      PathApi.isCommon(child.path, path)
-    );
-  }
+type TextLine = Extract<PageLayoutFragment, { type: 'text' }>['lines'][number];
 
-  return PathApi.isCommon(fragment.path, path);
+const NATIVE_FLOW_BREAK_RULE =
+  "[data-pagination-native-flow-break='true']::after{content:'\\A';white-space:pre}";
+
+/**
+ * A line whose text ends at a hard `\n` already breaks under the run's
+ * `white-space: pre`, so no run carries the native-flow break.
+ */
+const nativeFlowBreakRunIndex = (
+  line: TextLine,
+  readNode: (path: Path) => Node | undefined
+) => {
+  const end = RangeApi.end(line.source);
+  const node = readNode(end.path);
+
+  if (TextApi.isText(node) && node.text[end.offset - 1] === '\n') return -1;
+  return line.runs.findIndex((run) =>
+    PointApi.equals(RangeApi.end(run.source), end)
+  );
 };
 
 const createPaginationBuckets = (
   editor: Editor,
   fragments: readonly PageLayoutFragment[],
   geometry: PageLayoutGeometry,
-  selectedPaths: readonly Path[]
+  selectedPaths: readonly Path[],
+  runOrigins: ReadonlyMap<string, ProjectedRunOrigin>
 ): ReadonlyMap<NodeKey, readonly DecorationSlice[]> => {
   const buckets = new Map<NodeKey, DecorationSlice[]>();
   const textFragmentsByPath = new Map<string, number>();
@@ -675,6 +678,14 @@ const createPaginationBuckets = (
         toCanvasRect(fragment.rect, fragment.pageIndex, geometry);
 
       fragment.lines.forEach((line, lineIndex) => {
+        const breakRunIndex =
+          nativeFlow && lineIndex < fragment.lines.length - 1
+            ? nativeFlowBreakRunIndex(
+                line,
+                (path) => state.nodes.get(path)?.[0]
+              )
+            : -1;
+
         line.runs.forEach((run, runIndex) => {
           const nodeKey = index.keyAt(run.source.anchor.path);
 
@@ -688,27 +699,29 @@ const createPaginationBuckets = (
             run.source.focus.offset
           );
           const rect = toCanvasRect(run.rect, fragment.pageIndex, geometry);
-          const slice: DecorationSlice = Object.freeze({
+          const origin = runOrigins.get(pathKey(run.source.anchor.path));
+          const originLeft = blockRect.left + (origin?.left ?? 0);
+          const originTop = blockRect.top + (origin?.top ?? 0);
+          const slice = createContainerDecorationSlice({
             attributes: Object.freeze(
               nativeFlow
                 ? {
                     'data-pagination-line': true,
                     'data-pagination-native-flow-break':
-                      lineIndex < fragment.lines.length - 1 || undefined,
+                      runIndex === breakRunIndex || undefined,
                     style: Object.freeze({ whiteSpace: 'pre' }),
                   }
                 : {
                     'data-pagination-line': true,
                     style: Object.freeze({
-                      color: '#111827',
                       display: 'inline-block',
                       height: rect.height,
-                      left: rect.left - blockRect.left,
+                      left: rect.left - originLeft,
                       lineHeight: `${rect.height}px`,
                       minWidth: rect.width === 0 ? 1 : undefined,
                       pointerEvents: 'auto',
                       position: 'absolute',
-                      top: rect.top - blockRect.top,
+                      top: rect.top - originTop,
                       whiteSpace: 'pre',
                       width: rect.width,
                     }),
@@ -728,6 +741,17 @@ const createPaginationBuckets = (
   });
 
   return buckets;
+};
+
+const fragmentContainsPath = (fragment: PageLayoutFragment, path: Path) => {
+  if (PathApi.equals(fragment.path, path)) return true;
+  if (fragment.type === 'direct-children') {
+    return fragment.children.some((child) =>
+      PathApi.isCommon(child.path, path)
+    );
+  }
+
+  return PathApi.isCommon(fragment.path, path);
 };
 
 export type PagedEditablePageAttributes = Readonly<{
@@ -768,6 +792,18 @@ const pageDependency = (page: PageSettingsSource) =>
     ? `${page.preset}:${JSON.stringify(page.margins)}`
     : page;
 
+const readEditorVersion = (editor: Editor) =>
+  editor.read(
+    (state) => state.lastCommit()?.version ?? state.runtime.snapshot().version
+  );
+
+const samePageLayoutSnapshot = (
+  left: PageLayoutSnapshot,
+  right: PageLayoutSnapshot
+) =>
+  left.version === right.version &&
+  JSON.stringify(left) === JSON.stringify(right);
+
 const measurePagedEditable = <TElement extends Element>(
   editor: Editor,
   options: MeasurePagesOptions<TElement>
@@ -775,6 +811,128 @@ const measurePagedEditable = <TElement extends Element>(
   // React context erases the schema generic; PagedEditableProps preserves it
   // across the fragmentation, typography, and renderer callbacks.
   measurePages(editor, options as unknown as MeasurePagesOptions);
+
+const createPagedCanvasStyles = (
+  geometry: PageLayoutGeometry,
+  style: CSSProperties | undefined
+): Readonly<Record<'editor' | 'host' | 'overlay' | 'root', CSSProperties>> => ({
+  editor: { inset: 0, pointerEvents: 'auto', position: 'absolute' },
+  host: {
+    ...style,
+    minHeight: geometry.height,
+    position: 'relative',
+    width: geometry.width,
+    zIndex: 0,
+  },
+  overlay: {
+    height: geometry.height,
+    inset: 0,
+    pointerEvents: 'none',
+    position: 'absolute',
+    width: geometry.width,
+    zIndex: 1,
+  },
+  root: {
+    minHeight: geometry.height,
+    position: 'relative',
+    width: geometry.width,
+  },
+});
+
+type ProjectedRunOrigin = Readonly<{ left: number; top: number }>;
+
+/**
+ * Reads, once per projected text node, where its runs' containing box sits
+ * inside its block's placed box, in the box's own CSS pixels. A positioned
+ * inline element, such as a link, is its runs' containing box, so origins are
+ * kept per text node.
+ */
+const readProjectedRunOrigins = (host: HTMLElement) => {
+  const origins = new Map<string, ProjectedRunOrigin>();
+  const boxes = new Map<
+    HTMLElement,
+    { rect: DOMRect; scale: { x: number; y: number } }
+  >();
+  const parentRects = new Map<globalThis.Element, DOMRect>();
+
+  host
+    .querySelectorAll<HTMLElement>('[data-pagination-line]')
+    .forEach((run) => {
+      if (run.style.position !== 'absolute') return;
+      const path = run
+        .closest('[data-editor-node="text"]')
+        ?.getAttribute('data-editor-path');
+      const key = path && pathKey(path.split(',').map(Number));
+
+      if (!key || origins.has(key)) return;
+      const block = run.closest<HTMLElement>(
+        '[data-editor-node="element"]:not([data-editor-inline="true"])'
+      );
+      const parent = run.offsetParent;
+
+      if (!block || !parent) return;
+      let box = boxes.get(block);
+
+      if (!box) {
+        const placed = getElementPlacementBox(block);
+        const rect = placed.getBoundingClientRect();
+
+        box = { rect, scale: getElementTransformScale(placed, rect) };
+        boxes.set(block, box);
+      }
+      let parentRect = parentRects.get(parent);
+
+      if (!parentRect) {
+        parentRect = parent.getBoundingClientRect();
+        parentRects.set(parent, parentRect);
+      }
+
+      origins.set(key, {
+        left:
+          (parentRect.left - box.rect.left) / box.scale.x + parent.clientLeft,
+        top: (parentRect.top - box.rect.top) / box.scale.y + parent.clientTop,
+      });
+    });
+
+  return origins;
+};
+
+const EMPTY_RUN_ORIGINS: ReadonlyMap<string, ProjectedRunOrigin> = new Map();
+
+const sameRunOrigins = (
+  left: ReadonlyMap<string, ProjectedRunOrigin>,
+  right: ReadonlyMap<string, ProjectedRunOrigin>
+) =>
+  left.size === right.size &&
+  [...right].every(([key, origin]) => {
+    const previous = left.get(key);
+
+    return previous?.left === origin.left && previous.top === origin.top;
+  });
+
+/**
+ * Subscribes to the decoration store so it rerenders with every publish; its
+ * layout effect then reads run origins from the runs that publish committed.
+ */
+const RunOriginReader = React.memo(
+  ({
+    host,
+    onRead,
+    store,
+  }: {
+    host: HTMLElement | null;
+    onRead: (host: HTMLElement) => void;
+    store: SurfaceDecorationStore;
+  }) => {
+    useSyncExternalStore(store.subscribe, store.getVersion, store.getVersion);
+    useLayoutEffect(() => {
+      if (host) onRead(host);
+    });
+
+    return null;
+  }
+);
+RunOriginReader.displayName = 'RunOriginReader';
 
 const PagedEditableInner = <TElement extends Element = Element>({
   engine: suppliedEngine,
@@ -813,18 +971,28 @@ const PagedEditableInner = <TElement extends Element = Element>({
     }
   );
   const pageFieldKey = 'margins' in page && 'preset' in page ? null : page.key;
-  const documentVersion = useEditorState(
-    (state) => state.lastCommit()?.version ?? state.runtime.snapshot().version,
-    {
-      shouldUpdate: (change) =>
-        !change ||
-        change.changed.hasAny('document') ||
-        (pageFieldKey !== null && change.dirtyStateKeys.includes(pageFieldKey)),
-    }
+  // Only document and page-field commits advance this version, so a selection
+  // commit re-renders the projection without remeasuring the document.
+  const [documentVersion, setDocumentVersion] = useState(() =>
+    readEditorVersion(editor)
   );
+
+  useLayoutEffect(() => {
+    setDocumentVersion(readEditorVersion(editor));
+    return editor.subscribeCommit((change) => {
+      if (
+        change.changed.hasAny('document') ||
+        (pageFieldKey !== null && change.dirtyStateKeys.includes(pageFieldKey))
+      ) {
+        setDocumentVersion(change.version);
+      }
+    });
+  }, [editor, pageFieldKey]);
   const dependency = pageDependency(page);
-  const previousSnapshot = useRef<PageLayoutSnapshot | null>(null);
+  const canMeasure = useHydrated();
+  const measuredSnapshot = useRef<PageLayoutSnapshot | null>(null);
   const measurement = useMemo(() => {
+    if (!canMeasure) return { error: null, snapshot: null };
     try {
       const snapshot = measurePagedEditable(editor, {
         engine,
@@ -832,23 +1000,28 @@ const PagedEditableInner = <TElement extends Element = Element>({
         page,
         typography,
       });
-      const currentVersion = editor.read(
-        (state) =>
-          state.lastCommit()?.version ?? state.runtime.snapshot().version
-      );
+      const currentVersion = readEditorVersion(editor);
 
       if (currentVersion !== snapshot.version) {
         return { error: null, snapshot: null };
       }
+      const previous = measuredSnapshot.current;
+      // An equal remeasurement keeps the published object, so inline
+      // fragmentation or typography callbacks cannot republish forever.
+      const stable =
+        previous && samePageLayoutSnapshot(previous, snapshot)
+          ? previous
+          : snapshot;
 
-      previousSnapshot.current = snapshot;
-      return { error: null, snapshot };
+      measuredSnapshot.current = stable;
+      return { error: null, snapshot: stable };
     } catch (error) {
-      return { error, snapshot: previousSnapshot.current };
+      return { error, snapshot: null };
     }
     // The semantic page dependency prevents equivalent inline values from recomposing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    canMeasure,
     dependency,
     documentVersion,
     editor,
@@ -889,8 +1062,8 @@ const PagedEditableInner = <TElement extends Element = Element>({
     return bindLayoutHost(editableHost, publishedStore);
   }, [editableHost, publishedStore]);
   useLayoutEffect(() => {
-    publishedStore.setSnapshot(measurement.error ? null : snapshot);
-  }, [measurement.error, publishedStore, snapshot]);
+    publishedStore.setSnapshot(snapshot);
+  }, [publishedStore, snapshot]);
   useEffect(() => {
     const fonts = editableHost?.ownerDocument.fonts;
 
@@ -945,6 +1118,20 @@ const PagedEditableInner = <TElement extends Element = Element>({
   );
   // Promoting a requested path changes which page content is mounted.
   const [promotedPath, setPromotedPath] = useState<Path | null>(null);
+  const [runOrigins, setRunOrigins] =
+    useState<ReadonlyMap<string, ProjectedRunOrigin>>(EMPTY_RUN_ORIGINS);
+  const readRunOrigins = useCallback((host: HTMLElement) => {
+    const read = readProjectedRunOrigins(host);
+
+    // Merging keeps the origins of blocks that left projection, such as a
+    // selected block in native flow, so their absence rebuilds nothing.
+    setRunOrigins((previous) => {
+      const next = new Map(previous);
+
+      read.forEach((origin, key) => next.set(key, origin));
+      return sameRunOrigins(previous, next) ? previous : next;
+    });
+  }, []);
   const windowedItems = useMemo(() => {
     const requiredItemIndexes = new Set(visibleItems.map((item) => item.index));
 
@@ -968,17 +1155,28 @@ const PagedEditableInner = <TElement extends Element = Element>({
     () => new Set(windowedItems.flatMap((item) => item.pageIndexes)),
     [windowedItems]
   );
-  const projectedFragments = useMemo(
-    () =>
-      virtualize
-        ? (snapshot?.fragments ?? []).filter(
-            (fragment) =>
-              visiblePageIndexes.has(fragment.pageIndex) ||
-              selectedPaths.some((path) => fragmentContainsPath(fragment, path))
-          )
-        : (snapshot?.fragments ?? []),
-    [selectedPaths, snapshot?.fragments, virtualize, visiblePageIndexes]
-  );
+  const previousProjectedFragments = useRef<readonly PageLayoutFragment[]>([]);
+  const projectedFragments = useMemo(() => {
+    const next = virtualize
+      ? (snapshot?.fragments ?? []).filter(
+          (fragment) =>
+            visiblePageIndexes.has(fragment.pageIndex) ||
+            selectedPaths.some((path) => fragmentContainsPath(fragment, path))
+        )
+      : (snapshot?.fragments ?? []);
+    const previous = previousProjectedFragments.current;
+
+    // A caret move filters to the same fragments; keeping the array keeps
+    // every placement and element layout.
+    if (
+      next.length === previous.length &&
+      next.every((fragment, index) => fragment === previous[index])
+    ) {
+      return previous;
+    }
+    previousProjectedFragments.current = next;
+    return next;
+  }, [selectedPaths, snapshot?.fragments, virtualize, visiblePageIndexes]);
   const placementsByPath = useMemo(
     () =>
       geometry
@@ -986,13 +1184,20 @@ const PagedEditableInner = <TElement extends Element = Element>({
         : new Map<string, MountedFragment[]>(),
     [geometry, projectedFragments]
   );
-  const elementLayouts = useMemo(
-    () =>
-      geometry
-        ? createElementLayouts(snapshot?.fragments ?? [], placementsByPath)
-        : undefined,
-    [geometry, placementsByPath, snapshot?.fragments]
-  );
+  const previousElementLayouts = useRef<
+    ReadonlyMap<string, EditableElementLayout>
+  >(new Map());
+  const elementLayouts = useMemo(() => {
+    if (!geometry) return undefined;
+    const layouts = createElementLayouts(
+      snapshot?.fragments ?? [],
+      placementsByPath,
+      previousElementLayouts.current
+    );
+
+    previousElementLayouts.current = layouts;
+    return layouts;
+  }, [geometry, placementsByPath, snapshot?.fragments]);
   const localBuckets = useMemo(
     () =>
       geometry
@@ -1000,10 +1205,11 @@ const PagedEditableInner = <TElement extends Element = Element>({
             editor,
             projectedFragments,
             geometry,
-            selectedPaths
+            selectedPaths,
+            runOrigins
           )
         : new Map<NodeKey, readonly DecorationSlice[]>(),
-    [editor, geometry, projectedFragments, selectedPaths]
+    [editor, geometry, projectedFragments, runOrigins, selectedPaths]
   );
   const fragmentContext = useMemo(
     () => ({ placementsByPath }),
@@ -1064,123 +1270,102 @@ const PagedEditableInner = <TElement extends Element = Element>({
     [pageMountPlan]
   );
 
-  if (!snapshot || !geometry) {
-    return (
-      <WindowedEditable
-        {...editableProps}
-        decorationStore={decorationStore}
-        enabled={false}
-        ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-        mountedTopLevelIndexes={[]}
-        ref={editableRef}
-        scrollToPath={() => false}
-        style={style}
-        totalSize={0}
-      />
-    );
-  }
-
   const mountedTopLevelIndexes = [
     ...new Set(windowedItems.flatMap((item) => item.topLevelIndexes)),
   ].sort((left, right) => left - right);
-  const pageByIndex = new Map(
-    snapshot.pages.map((value) => [value.index, value])
-  );
-  const pageArrayIndex = new Map(
-    snapshot.pages.map((value, index) => [value.index, index])
-  );
+  const { pageArrayIndex, pageByIndex } = useMemo(() => {
+    const pages = snapshot?.pages ?? [];
+
+    return {
+      pageArrayIndex: new Map(
+        pages.map((value, index) => [value.index, index])
+      ),
+      pageByIndex: new Map(pages.map((value) => [value.index, value])),
+    };
+  }, [snapshot?.pages]);
+  const canvas = geometry && createPagedCanvasStyles(geometry, style);
 
   return (
     <FragmentContext value={fragmentContext}>
       <div
         data-editor-paged-editable
         data-editor-paged-editable-page-virtualization={
-          virtualize ? 'true' : undefined
+          canvas && virtualize ? 'true' : undefined
         }
         ref={rootRef}
-        style={{
-          minHeight: geometry.height,
-          position: 'relative',
-          width: geometry.width,
-        }}
+        style={canvas?.root}
       >
-        {(virtualize ? windowedItems : pageMountPlan.items).flatMap((item) =>
-          item.pageIndexes.map((pageIndex) => {
-            const layoutPage = pageByIndex.get(pageIndex);
-            const arrayIndex = pageArrayIndex.get(pageIndex);
+        <style href="plite-pagination-native-flow-break" precedence="plite">
+          {NATIVE_FLOW_BREAK_RULE}
+        </style>
+        {geometry &&
+          (virtualize ? windowedItems : pageMountPlan.items).flatMap((item) =>
+            item.pageIndexes.map((pageIndex) => {
+              const layoutPage = pageByIndex.get(pageIndex);
+              const arrayIndex = pageArrayIndex.get(pageIndex);
 
-            if (!layoutPage || arrayIndex === undefined) return null;
-            const placement = geometry.pagePlacements[arrayIndex] ?? {
-              left: 0,
-              top: 0,
-            };
-            const occupied = geometry.occupiedSizes[arrayIndex] ?? layoutPage;
-            const attributes: PagedEditablePageAttributes = {
-              'data-editor-page': true,
-              'data-editor-page-index': layoutPage.index,
-              style: {
-                boxSizing: 'border-box',
-                height: layoutPage.height,
-                overflow: 'hidden',
-                pointerEvents: 'none',
-                position: 'relative',
-                width: layoutPage.width,
-              },
-            };
-
-            return (
-              <div
-                data-editor-page-mount-item-index={item.index}
-                data-editor-page-surface
-                key={layoutPage.index}
-                style={{
-                  height: occupied.height,
-                  left: placement.left,
+              if (!layoutPage || arrayIndex === undefined) return null;
+              const placement = geometry.pagePlacements[arrayIndex] ?? {
+                left: 0,
+                top: 0,
+              };
+              const occupied = geometry.occupiedSizes[arrayIndex] ?? layoutPage;
+              const attributes: PagedEditablePageAttributes = {
+                'data-editor-page': true,
+                'data-editor-page-index': layoutPage.index,
+                style: {
+                  boxSizing: 'border-box',
+                  height: layoutPage.height,
+                  overflow: 'hidden',
                   pointerEvents: 'none',
-                  position: 'absolute',
-                  top: placement.top,
-                  width: occupied.width,
-                }}
-              >
-                {renderPage({ attributes, page: layoutPage })}
-              </div>
-            );
-          })
-        )}
-        <div
-          data-editor-paged-editable-editor-overlay
-          style={{
-            height: geometry.height,
-            inset: 0,
-            pointerEvents: 'none',
-            position: 'absolute',
-            width: geometry.width,
-            zIndex: 1,
-          }}
-        >
-          <div
-            data-editor-paged-editable-editor
-            style={{ inset: 0, pointerEvents: 'auto', position: 'absolute' }}
-          >
-            <WindowedEditable
-              {...editableProps}
-              decorationStore={decorationStore}
-              elementLayouts={elementLayouts}
-              enabled={virtualize}
-              ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-              mountedTopLevelIndexes={mountedTopLevelIndexes}
-              onRequestMount={(index, path) => setPromotedPath(path ?? [index])}
-              ref={editableRef}
-              scrollSelectionIntoView={scrollSelectionIntoView}
-              scrollToPath={scrollToPath}
-              style={{
-                minHeight: geometry.height,
-                position: 'relative',
-                width: geometry.width,
-                zIndex: 0,
-                ...style,
-              }}
-              totalSize={geometry.height}
+                  position: 'relative',
+                  width: layoutPage.width,
+                },
+              };
+
+              return (
+                <div
+                  data-editor-page-mount-item-index={item.index}
+                  data-editor-page-surface
+                  key={layoutPage.index}
+                  style={{
+                    height: occupied.height,
+                    left: placement.left,
+                    pointerEvents: 'none',
+                    position: 'absolute',
+                    top: placement.top,
+                    width: occupied.width,
+                  }}
+                >
+                  {renderPage({ attributes, page: layoutPage })}
+                </div>
+              );
+            })
+          )}
+        <div data-editor-paged-editable-editor-overlay style={canvas?.overlay}>
+          <div data-editor-paged-editable-editor style={canvas?.editor}>
+            <ImperativeTextFlowContext value={false}>
+              <WindowedEditable
+                {...editableProps}
+                decorationStore={decorationStore}
+                elementLayouts={elementLayouts}
+                enabled={Boolean(canvas) && virtualize}
+                ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+                mountedTopLevelIndexes={mountedTopLevelIndexes}
+                onRequestMount={(index, path) =>
+                  setPromotedPath(path ?? [index])
+                }
+                ref={editableRef}
+                scrollSelectionIntoView={scrollSelectionIntoView}
+                scrollToPath={scrollToPath}
+                style={canvas ? canvas.host : style}
+                totalSize={geometry?.height ?? 0}
+              />
+            </ImperativeTextFlowContext>
+            <RunOriginReader
+              host={editableHost}
+              onRead={readRunOrigins}
+              store={decorationStore}
             />
           </div>
         </div>

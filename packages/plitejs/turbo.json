@@ -404,6 +404,7 @@
     "test:partition:pagination": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:pagination",
         "typecheck:partition:react"

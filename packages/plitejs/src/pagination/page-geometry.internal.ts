@@ -3,6 +3,7 @@ import type {
   PageLayoutMode,
   PageLayoutPage,
   PageLayoutSize,
+  PageRect,
 } from './index';
 
 export type PageLayoutGeometry = Readonly<{
@@ -75,4 +76,28 @@ export const createPageLayoutGeometry = ({
   });
 
   return { height: top, occupiedSizes, pagePlacements, width };
+};
+
+export const toCanvasRect = (
+  rect: PageRect,
+  pageIndex: number,
+  geometry: PageLayoutGeometry
+): PageRect => {
+  const placement = geometry.pagePlacements[pageIndex] ?? { left: 0, top: 0 };
+
+  return {
+    ...rect,
+    left: placement.left + rect.left,
+    top: placement.top + rect.top,
+  };
+};
+
+export const bounds = (rects: readonly PageRect[]): PageRect => {
+  if (rects.length === 0) return { height: 0, left: 0, top: 0, width: 0 };
+  const left = Math.min(...rects.map((rect) => rect.left));
+  const top = Math.min(...rects.map((rect) => rect.top));
+  const right = Math.max(...rects.map((rect) => rect.left + rect.width));
+  const bottom = Math.max(...rects.map((rect) => rect.top + rect.height));
+
+  return { height: bottom - top, left, top, width: right - left };
 };

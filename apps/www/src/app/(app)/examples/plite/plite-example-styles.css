@@ -1427,11 +1427,6 @@ details > summary {
     sans-serif;
 }
 
-[data-pagination-native-flow-break='true']::after {
-  content: '\A';
-  white-space: pre;
-}
-
 .editor-android-tests-instructions {
   margin: 0.5rem 0;
   font-weight: 600;

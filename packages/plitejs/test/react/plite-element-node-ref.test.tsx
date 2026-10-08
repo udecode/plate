@@ -19,6 +19,7 @@ import {
   Editable,
   EditorRoot,
   EditorElement,
+  type RenderElementProps,
   useEditorContext,
 } from '../../src/react';
 import { EditorContext, ElementContext } from '../../src/react/context';
@@ -459,5 +460,69 @@ describe('PliteElement node ref binding', () => {
 
     expect(element.getAttribute('data-editor-path')).toBe('1');
     expect(getPliteNodePathFromDOMElement(element)).toEqual([1]);
+  });
+
+  const renderBindingProbe = (seen: Map<string, Array<string | null>>) => {
+    const Probe = ({ attributes, children, element }: RenderElementProps) => {
+      const [first] = element.children;
+      const { text } = first as { text: string };
+      const path = attributes['data-editor-path'];
+
+      React.useLayoutEffect(() => {
+        seen.set(text, [
+          ...(seen.get(text) ?? []),
+          document
+            .querySelector(`[data-probe="${text}"]`)
+            ?.getAttribute('data-editor-path') ?? null,
+        ]);
+      }, [element, path, text]);
+
+      return (
+        <div data-probe={text} {...attributes}>
+          {children}
+        </div>
+      );
+    };
+
+    return (props: RenderElementProps) => <Probe {...props} />;
+  };
+
+  test("keeps an element bound for its renderer's layout effect after its node changes", () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'first' }] }],
+    });
+    const seen = new Map<string, Array<string | null>>();
+
+    render(
+      <EditorRoot editor={editor}>
+        <Editable renderElement={renderBindingProbe(seen)} />
+      </EditorRoot>
+    );
+    act(() => {
+      editor.update.nodes.set({ type: 'heading' }, { at: [0] });
+    });
+
+    expect(seen.get('first')).toEqual(['0', '0']);
+  });
+
+  test("binds a shifted element to its own node in its renderer's layout effect", () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'first' }] }],
+    });
+    const seen = new Map<string, Array<string | null>>();
+
+    render(
+      <EditorRoot editor={editor}>
+        <Editable renderElement={renderBindingProbe(seen)} />
+      </EditorRoot>
+    );
+    act(() => {
+      editor.update.nodes.insert(
+        { type: 'paragraph', children: [{ text: 'new' }] },
+        { at: [0] }
+      );
+    });
+
+    expect(seen.get('first')).toEqual(['0', '1']);
   });
 });

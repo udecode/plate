@@ -47,7 +47,7 @@ const allCohorts = new Map([
     {
       key: 'current',
       label: 'default virtualized pagination',
-      path: '/examples/plite/pagination?page_layout=single&strategy=virtualized',
+      path: '/examples/plite/pagination?page_layout=single&rendering=virtualized',
     },
   ],
   [
@@ -55,7 +55,7 @@ const allCohorts = new Map([
     {
       key: 'rows8',
       label: 'rows=8 virtualized pagination',
-      path: '/examples/plite/pagination?page_layout=single&rows=8&strategy=virtualized',
+      path: '/examples/plite/pagination?page_layout=single&rows=8&rendering=virtualized',
     },
   ],
   [
@@ -63,7 +63,7 @@ const allCohorts = new Map([
     {
       key: 'rows800',
       label: 'rows=800 virtualized pagination',
-      path: '/examples/plite/pagination?page_layout=single&rows=800&strategy=virtualized',
+      path: '/examples/plite/pagination?page_layout=single&rows=800&rendering=virtualized',
     },
   ],
   [
@@ -71,7 +71,7 @@ const allCohorts = new Map([
     {
       key: 'rows800_table',
       label: 'rows=800 table-only virtualized pagination',
-      path: '/examples/plite/pagination?page_layout=single&rows=800&stress_pages=0&strategy=virtualized',
+      path: '/examples/plite/pagination?page_layout=single&rows=800&stress_pages=0&rendering=virtualized',
     },
   ],
 ]);

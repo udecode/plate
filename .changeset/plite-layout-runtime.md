@@ -2,10 +2,8 @@
 'plitejs': major
 ---
 
-Add `createPliteLayout(editor, options)` with atomic `runtime.reconfigure`, React pagination surfaces, discriminated virtualized page and top-level layout data, and a typed error sink that isolates subscriber and page-break write failures after publication. React layout hooks connect only after commit, so StrictMode cannot leak discarded render-time runtimes or subscriptions.
+Add `plitejs/pagination`. `measurePages` measures an editor into pages with `createPretextPageLayoutEngine` or `createEstimatedPageLayoutEngine`, and `pageSettingsCodec` persists page settings.
 
-Export strict versioned codecs for persisted page settings and page-break snapshots.
+Add `PagedEditable`, `usePageLayout` and `usePageLayoutFragments` to `plitejs/pagination/react`, which render one editable on measured pages with page chrome, named roots and optional page virtualization.
 
-Keep the headless root install independent from React. React pagination remains available from `plitejs/pagination/react`.
-
-Install `@chenglou/pretext` when importing `plitejs/pagination` or `plitejs/pagination/react`.
+Keep the headless root install independent from React. Install `@chenglou/pretext` when importing `plitejs/pagination` or `plitejs/pagination/react`.

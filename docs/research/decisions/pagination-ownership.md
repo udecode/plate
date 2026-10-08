@@ -136,15 +136,23 @@ const layout = useLayout(editor, { page, typography, nodeLayout });
 Implemented normal path:
 
 ```tsx
-import { PagedEditable } from 'platejs/pagination/react';
+import { PagedEditorContent } from 'platejs/pagination/react';
+import { EditorRoot } from 'platejs/react';
 
-<PagedEditable
-  page={{ margins: 72, preset: 'letter' }}
-  typography={typography}
-  fragmentation={fragmentation}
-  pageView={{ mode: 'spread', gap: 24 }}
-/>;
+<EditorRoot editor={editor}>
+  <PagedEditorContent
+    page={{ margins: 72, preset: 'letter' }}
+    typography={typography}
+    fragmentation={fragmentation}
+    pageView={{ mode: 'spread', gap: 24 }}
+  />
+</EditorRoot>;
 ```
+
+`PagedEditorContent` is `EditorContent` with Plite's `PagedEditable` as its
+editable, so plugin elements, marks, handlers and slots render on pages. Plate
+does not export the raw `PagedEditable`; raw Plite apps import it from
+`plitejs/pagination/react`.
 
 Custom page chrome and explicit omission remain real jobs. The runtime exposes
 the exact-ref layout read for controls and

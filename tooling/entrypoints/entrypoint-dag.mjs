@@ -245,7 +245,7 @@ export const entrypointDags = {
           { peerDependencies: ['@ai-sdk/react', 'ai', 'react'] }
         )
       ),
-      authored: headless(directory('authored', [], ['plitejs/authored'])),
+      authored: headless(directory('authored', ['core'], ['plitejs/authored'])),
       core: headless(
         privateRoot(['dom', 'history'], ['plitejs', 'plitejs/internal'])
       ),
@@ -397,7 +397,12 @@ export const entrypointDags = {
         })
       ),
       'pagination/react': client(
-        directory('pagination/react', [], ['plitejs/pagination/react'])
+        directory(
+          'pagination/react',
+          ['pagination', 'react-core'],
+          ['plitejs/pagination/react'],
+          { peerDependencies: ['@chenglou/pretext', 'react', 'react-dom'] }
+        )
       ),
       'react-core': client(
         privateDirectory(
@@ -476,15 +481,8 @@ export const entrypointDags = {
     taskPartitions: {
       core: ['core'],
       migrations: ['migrations'],
-      proxies: [
-        'authored',
-        'diff',
-        'dom',
-        'history',
-        'hyperscript',
-        'pagination',
-        'pagination/react',
-      ],
+      proxies: ['diff', 'dom', 'history', 'hyperscript', 'pagination'],
+      'pagination-react': ['pagination/react'],
       react: ['react'],
       'react-core': ['react-core'],
       'react-virtualized': ['react/virtualized'],
@@ -500,6 +498,7 @@ export const entrypointDags = {
         ...publicReactOnlyEntrypoints.map((name) => `${name}/react`),
         'ai',
         'ai/react',
+        'authored',
         'code-block/codemirror',
         'code-drawing',
         'code-drawing/react',

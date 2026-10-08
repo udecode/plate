@@ -129,20 +129,20 @@ export type VirtualizedEditableProps = EditableProps & {
 Plate applications keep Plate imports:
 
 ```tsx
-import { Plate } from 'platejs/react';
-import { VirtualizedPlateContent } from 'platejs/react/virtualized';
+import { EditorRoot } from 'platejs/react';
+import { VirtualizedEditorContent } from 'platejs/react/virtualized';
 
-<Plate editor={editor}>
-  <VirtualizedPlateContent style={{ height: 480, overflowY: 'auto' }} />
-</Plate>;
+<EditorRoot editor={editor}>
+  <VirtualizedEditorContent style={{ height: 480, overflowY: 'auto' }} />
+</EditorRoot>;
 ```
 
 Pagination exposes the same permission as a boolean:
 
 ```tsx
-import { PagedEditable } from 'platejs/pagination/react';
+import { PagedEditorContent } from 'platejs/pagination/react';
 
-<PagedEditable layout={layout} virtualize />;
+<PagedEditorContent page={page} virtualize />;
 ```
 
 Raw pagination imports the same owner from `plitejs/pagination/react`. Existing

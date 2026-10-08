@@ -1,4 +1,4 @@
-import { useCallback, useContext, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useContext, useRef } from 'react';
 
 import type {
   Descendant,
@@ -41,6 +41,7 @@ import {
 } from '../editable/runtime-editor-api';
 import { recordPliteReactRender } from '../render-profiler';
 import { EditableDOMRuntimeContext } from './use-claim-editable-dom-commit';
+import { useHydrated } from './use-hydrated';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 const EDITOR_TO_PATH_TO_ELEMENT = new WeakMap<
@@ -57,7 +58,6 @@ const EDITOR_TO_TEXT_RENDER_REVISIONS = new WeakMap<
   Map<NodeKey, number>
 >();
 const ELEMENT_TO_PATH = new WeakMap<HTMLElement, Path>();
-const subscribeToHydration = () => () => {};
 
 const pathKey = (path: readonly number[]) => path.join('.');
 
@@ -977,22 +977,11 @@ export const usePliteNodeRef = (
   });
 };
 
-/**
- * Publish hydration-safe local tokens only until React mounts.
- *
- * @internal
- */
-export const usePliteNodeKeyHydrated = () =>
-  useSyncExternalStore(
-    subscribeToHydration,
-    () => true,
-    () => false
-  );
-
 export const usePliteNodeKeyDOMValue = (nodeKey: NodeKey | null) => {
-  const isMounted = usePliteNodeKeyHydrated();
+  // Publish hydration-safe local tokens only until React mounts.
+  const hydrated = useHydrated();
 
   if (!nodeKey) return undefined;
 
-  return isMounted ? nodeKey : getNodeKeyDOMValue(nodeKey);
+  return hydrated ? nodeKey : getNodeKeyDOMValue(nodeKey);
 };

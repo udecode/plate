@@ -852,7 +852,6 @@ function createPlateRuntimeIdentityConsumerSource() {
     "    'useOptionalEditorContext',",
     "    'useOptionalEditorReadOnly',",
     "    'useOptionalElement',",
-    "    'useRootEffect',",
     "    'useTextSelector',",
     '  ],',
     '});',
@@ -871,7 +870,6 @@ function createPlateRuntimeIdentityConsumerSource() {
     '  [releasePliteHistory, releasePlateHistory],',
     '  [releasePliteHyperscript, releasePlateHyperscript],',
     '  [releasePliteLayout, releasePlateLayout],',
-    '  [releasePliteLayoutReact, releasePlateLayoutReact],',
     '  [releasePliteYjs, releasePlateYjs],',
     '  [releasePliteYjsReact, releasePlateYjsReact],',
     ']) {',
@@ -880,6 +878,11 @@ function createPlateRuntimeIdentityConsumerSource() {
     '    omitted: [],',
     '  });',
     '}',
+    'releasePlateDeepEqual(',
+    '  releaseFacadeDiff(releasePliteLayoutReact, releasePlateLayoutReact),',
+    "  { identityExceptions: [], omitted: ['PagedEditable'] }",
+    ');',
+    "releasePlateIdentityEqual(typeof releasePlateLayoutReact.PagedEditorContent, 'function');",
     'releasePlateIdentityEqual(releasePlateRoot.definePlugin === releasePliteRoot.definePlugin, false);',
     'releasePlateIdentityEqual(releasePlateRoot.schema, releasePliteRoot.schema);',
     'releasePlateIdentityEqual(releasePlateReact.definePlugin === releasePliteReact.definePlugin, false);',
@@ -1139,6 +1142,22 @@ export function checkPliteReleaseArtifacts({
       assertPackedRuntimeCoverage(packedPackages);
     }
     const peerProofs = createPackedPublicExportPeerProofs(packedPackages);
+    const plateReactProof = peerProofs.find(({ specifiers }) =>
+      specifiers.includes('platejs/react')
+    );
+
+    if (!plateReactProof) {
+      throw new Error(
+        'No packed peer proof covers platejs/react, so its @chenglou/pretext boundary is unchecked.'
+      );
+    }
+    if (
+      plateReactProof.requiredOptionalPackages.includes('@chenglou/pretext')
+    ) {
+      throw new Error(
+        'platejs/react reaches @chenglou/pretext. Keep pagination behind platejs/pagination and platejs/pagination/react.'
+      );
+    }
     const provenHeadlessSpecifiers = new Set();
     const headlessRuntimeIsolationSpecifiers = new Set();
     const transitivePeerOverlaps = new Set();

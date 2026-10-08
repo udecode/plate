@@ -81,6 +81,64 @@ describe('plate oxlint rules', () => {
     valid: [ts("it('visits owners', () => {}, { timeout: 5000 });")],
   });
 
+  tester.run(
+    'no-inline-hydration-flag',
+    plugin.rules['no-inline-hydration-flag'],
+    {
+      invalid: [
+        {
+          // efa5a8a36e, the paged view's measurement gate
+          ...ts(
+            'const subscribeNothing = () => () => {};\nconst canMeasure = useSyncExternalStore(subscribeNothing, () => true, () => false);'
+          ),
+          errors: [{ messageId: 'inline' }],
+        },
+        {
+          // dc927288b2, Editable's hydration flag through module constants
+          ...ts(
+            'const subscribeHydration = () => () => {};\nconst getClientHydrationSnapshot = () => true;\nconst getServerHydrationSnapshot = () => false;\nconst hydrated = useSyncExternalStore(subscribeHydration, getClientHydrationSnapshot, getServerHydrationSnapshot);'
+          ),
+          errors: [{ messageId: 'inline' }],
+        },
+        {
+          // dc927288b2, editable-text-blocks.tsx through React's namespace
+          ...ts(
+            'const hasClientDOM = React.useSyncExternalStore(subscribeClientDOM, () => true, function () { return false; });'
+          ),
+          errors: [{ messageId: 'inline' }],
+        },
+        {
+          ...ts(
+            'function useReady() {\n  function getClientSnapshot() { return true; }\n  const getServerSnapshot = () => false;\n  return useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);\n}'
+          ),
+          errors: [{ messageId: 'inline' }],
+        },
+      ],
+      valid: [
+        ts('const hydrated = useHydrated();'),
+        ts(
+          'function useOnline(store) {\n  let getSnapshot = () => true;\n  if (store) getSnapshot = () => store.online;\n  return useSyncExternalStore(store?.subscribe ?? subscribeNothing, getSnapshot, () => false);\n}'
+        ),
+        ts(
+          'function useStore(store) {\n  let getClientSnapshot = () => true;\n  if (store.getSnapshot) getClientSnapshot = store.getSnapshot;\n  return useSyncExternalStore(store.subscribe, getClientSnapshot, () => false);\n}'
+        ),
+        ts(
+          'function pick(getClient) {\n  return true;\n  function inner() {\n    useSyncExternalStore(subscribe, getClient, () => false);\n  }\n}'
+        ),
+        ts(
+          // A parameter shadows a module snapshot
+          'const getClient = () => true;\nconst getServer = () => false;\nfunction useHostFact(getClient) {\n  return useSyncExternalStore(subscribeHostFacts, getClient, getServer);\n}'
+        ),
+        ts(
+          'const getSnapshot = () => true;\nfunction useOnline(store) {\n  const getSnapshot = () => store.online;\n  return useSyncExternalStore(store.subscribe, getSnapshot, () => false);\n}'
+        ),
+        ts(
+          'const supportsBeforeInput = useSyncExternalStore(runtime.subscribeHostFacts, () => runtime.supportsBeforeInput, () => false);'
+        ),
+      ],
+    }
+  );
+
   tester.run('no-source-text-test', plugin.rules['no-source-text-test'], {
     invalid: [
       {
@@ -96,10 +154,37 @@ describe('plate oxlint rules', () => {
         errors: [{ messageId: 'sourceText' }],
         filename: 'apps/www/src/registry/ui/turn-into-toolbar-button.spec.ts',
       },
+      {
+        ...ts(
+          "let file = fileURLToPath(new URL('../../src/table.ts', import.meta.url));\nif (useFixture) file = fixturePath;\nconst source = readFileSync(file, 'utf-8');"
+        ),
+        errors: [{ messageId: 'sourceText' }],
+      },
+      {
+        ...ts(
+          "let file = fileURLToPath(new URL('../../src/table.ts', import.meta.url));\nfile = file;\nconst source = readFileSync(file, 'utf-8');"
+        ),
+        errors: [{ messageId: 'sourceText' }],
+      },
+      {
+        ...ts(
+          "const base = '../../src';\nlet file = base + '/a.json';\nif (useCode) file = base + '/b.ts';\nreadFileSync(file);"
+        ),
+        errors: [{ messageId: 'sourceText' }],
+      },
+      {
+        ...ts(
+          "let file = '../../src/';\nfile += 'table.ts';\nreadFileSync(file);"
+        ),
+        errors: [{ messageId: 'sourceText' }],
+      },
     ],
     valid: [
       ts(
         "const fixture = readFileSync(new URL('./fixtures/table.json', import.meta.url), 'utf-8');"
+      ),
+      ts(
+        'let file = fixtureA;\nif (useOther) file = fixtureB;\nreadFileSync(file);'
       ),
     ],
   });

@@ -45,6 +45,12 @@ import {
   usePliteNodeKeyDOMValue,
   usePliteNodeRef,
 } from '../hooks/use-plite-node-ref';
+import {
+  type EditableTextPart,
+  type EditableTextRenderPart,
+  partitionTextContainers,
+  wrapDecorationContainers,
+} from './editable-text-containers';
 import { compileTextFlowSegments } from './editable-text-flow';
 import { EditorLeaf } from './plite-leaf';
 import {
@@ -178,15 +184,6 @@ const sameBoundText = (
   }) &&
   sameMarks(left.marks, right.marks);
 
-type EditableTextPart = {
-  decorations: readonly DecorationSlice[];
-  end: number;
-  identity: string;
-  marks: Omit<TextNode, 'text'>;
-  start: number;
-  text: string;
-};
-
 export type RenderLeafProps = {
   attributes: {
     'data-editor-leaf': true;
@@ -259,10 +256,7 @@ const interleaveAuthoredText = (
   text: string,
   marks: Omit<TextNode, 'text'>
 ) => {
-  const parts: Array<
-    | { kind: 'text'; segment: EditableTextPart }
-    | { kind: 'retained'; fragment: NativeAuthoredFragment }
-  > = [];
+  const parts: EditableTextRenderPart[] = [];
   if (!fragments.length) {
     return segments.map((segment) => ({ kind: 'text' as const, segment }));
   }
@@ -538,88 +532,96 @@ const RenderEditableText = ({
     style: getPlitePlaceholderStyle(placeholderStyle),
   };
 
+  const {
+    containers,
+    parts: segmentParts,
+    textContainer,
+  } = partitionTextContainers(parts, decorations);
   const content = parts.length
-    ? parts.map((part, index) => {
-        if (part.kind === 'retained') return renderFragment?.(part.fragment);
-        const { segment } = part;
-        const innermostDecoration = segment.decorations.at(-1);
-        const isTrailing =
-          isLast && index === parts.length - 1 && segment.text.endsWith('\n');
-        const baseContent =
-          segment.text.length === 0 ? (
-            <ZeroWidthString
-              isMarkPlaceholder={fragments.length === 0 && !textRange}
-            />
-          ) : innermostDecoration ? (
-            <DecoratedTextString
-              attributes={innermostDecoration.attributes}
-              isTrailing={isTrailing}
-              text={segment.text}
-            />
-          ) : (
-            <TextString isTrailing={isTrailing} text={segment.text} />
-          );
-        let decoratedSegmentContent: ReactNode = baseContent;
-        const wrapperCount =
-          segment.decorations.length - (innermostDecoration ? 1 : 0);
-
-        for (
-          let decorationIndex = wrapperCount - 1;
-          decorationIndex >= 0;
-          decorationIndex--
-        ) {
-          const decoration = segment.decorations[decorationIndex];
-
-          decoratedSegmentContent = (
-            <span
-              key={getDecorationSliceIdentity(decoration)}
-              {...decoration.attributes}
-            >
-              {decoratedSegmentContent}
-            </span>
-          );
-        }
-        const leafNode = segment.marks;
-        const leafPosition =
-          parts.length > 1 || textRange
-            ? {
-                end: segment.end,
-                isFirst: index === 0 ? (true as const) : undefined,
-                isLast:
-                  index === parts.length - 1 ? (true as const) : undefined,
-                start: segment.start,
-              }
-            : undefined;
-        const leafAttributes = getLeafAttributes(leafPosition);
-
-        const segmentKey = JSON.stringify([
-          nodeKey,
-          renderRevision,
-          segment.identity,
-        ]);
-
-        return (
-          <React.Fragment key={segmentKey}>
-            {renderLeaf ? (
-              <RenderCallback
-                props={{
-                  attributes: leafAttributes,
-                  children: decoratedSegmentContent,
-                  leaf: leafNode,
-                  leafPosition,
-                  path,
-                  text: resolvedMarks,
-                }}
-                render={renderLeaf}
+    ? wrapDecorationContainers(
+        segmentParts.map((part, index) => {
+          if (part.kind === 'retained') return renderFragment?.(part.fragment);
+          const { segment } = part;
+          const innermostDecoration = segment.decorations.at(-1);
+          const isTrailing =
+            isLast && index === parts.length - 1 && segment.text.endsWith('\n');
+          const baseContent =
+            segment.text.length === 0 ? (
+              <ZeroWidthString
+                isMarkPlaceholder={fragments.length === 0 && !textRange}
+              />
+            ) : innermostDecoration ? (
+              <DecoratedTextString
+                attributes={innermostDecoration.attributes}
+                isTrailing={isTrailing}
+                text={segment.text}
               />
             ) : (
-              <EditorLeaf attributes={leafAttributes}>
+              <TextString isTrailing={isTrailing} text={segment.text} />
+            );
+          let decoratedSegmentContent: ReactNode = baseContent;
+          const wrapperCount =
+            segment.decorations.length - (innermostDecoration ? 1 : 0);
+
+          for (
+            let decorationIndex = wrapperCount - 1;
+            decorationIndex >= 0;
+            decorationIndex--
+          ) {
+            const decoration = segment.decorations[decorationIndex];
+
+            decoratedSegmentContent = (
+              <span
+                key={getDecorationSliceIdentity(decoration)}
+                {...decoration.attributes}
+              >
                 {decoratedSegmentContent}
-              </EditorLeaf>
-            )}
-          </React.Fragment>
-        );
-      })
+              </span>
+            );
+          }
+          const leafNode = segment.marks;
+          const leafPosition =
+            parts.length > 1 || textRange
+              ? {
+                  end: segment.end,
+                  isFirst: index === 0 ? (true as const) : undefined,
+                  isLast:
+                    index === parts.length - 1 ? (true as const) : undefined,
+                  start: segment.start,
+                }
+              : undefined;
+          const leafAttributes = getLeafAttributes(leafPosition);
+
+          const segmentKey = JSON.stringify([
+            nodeKey,
+            renderRevision,
+            segment.identity,
+          ]);
+
+          return (
+            <React.Fragment key={segmentKey}>
+              {renderLeaf ? (
+                <RenderCallback
+                  props={{
+                    attributes: leafAttributes,
+                    children: decoratedSegmentContent,
+                    leaf: leafNode,
+                    leafPosition,
+                    path,
+                    text: resolvedMarks,
+                  }}
+                  render={renderLeaf}
+                />
+              ) : (
+                <EditorLeaf attributes={leafAttributes}>
+                  {decoratedSegmentContent}
+                </EditorLeaf>
+              )}
+            </React.Fragment>
+          );
+        }),
+        containers
+      )
     : (() => {
         const placeholderNode = placeholder ? (
           renderPlaceholder ? (
@@ -663,19 +665,25 @@ const RenderEditableText = ({
         const leafNode = resolvedMarks;
         const leafAttributes = getLeafAttributes();
 
-        return renderLeaf ? (
-          <RenderCallback
-            props={{
-              attributes: leafAttributes,
-              children: innerContent,
-              leaf: leafNode,
-              path,
-              text: resolvedMarks,
-            }}
-            render={renderLeaf}
-          />
-        ) : (
-          <EditorLeaf>{innerContent}</EditorLeaf>
+        return wrapDecorationContainers(
+          [
+            renderLeaf ? (
+              <RenderCallback
+                key="empty"
+                props={{
+                  attributes: leafAttributes,
+                  children: innerContent,
+                  leaf: leafNode,
+                  path,
+                  text: resolvedMarks,
+                }}
+                render={renderLeaf}
+              />
+            ) : (
+              <EditorLeaf key="empty">{innerContent}</EditorLeaf>
+            ),
+          ],
+          [textContainer]
         );
       })();
 

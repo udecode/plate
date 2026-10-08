@@ -1088,6 +1088,28 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      description:
+        'Plate content on measured pages, with plugin elements, marks, comments and drag handles.',
+      files: [
+        { path: 'examples/pagination-demo.tsx', type: 'registry:example' },
+      ],
+      meta: {
+        docs: [{ route: '/docs/pagination', title: 'Pagination' }],
+      },
+      name: 'pagination-demo',
+      registryDependencies: [
+        '@plate/basic-blocks',
+        '@plate/basic-marks',
+        '@plate/comment',
+        '@plate/discussion',
+        '@plate/dnd',
+        '@plate/link',
+        '@plate/table',
+      ],
+      title: 'Pagination',
+      type: 'registry:example',
+    },
+    {
       dependencies: ['@platejs/test'],
       description: 'Inline date elements with calendar selection interface.',
       files: [

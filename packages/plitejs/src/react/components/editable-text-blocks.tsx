@@ -86,6 +86,7 @@ import { useEditorReadOnly } from '../hooks/use-editor-read-only';
 import { useEditorSelection } from '../hooks/use-editor-selection';
 import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
 import { useEditorViewState } from '../hooks/use-editor-view-state';
+import { useHydrated } from '../hooks/use-hydrated';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { useMountedNodeRenderSelector } from '../hooks/use-node-selector';
 import { useContentRoot } from '../hooks/use-plite-content-root';
@@ -129,6 +130,11 @@ import {
   isEditableTextNode,
   readEditableDescendantBinding,
 } from './editable-descendant-binding';
+import {
+  type EditableElementLayout,
+  EditableElementLayoutsProvider,
+  useEditableElementPlacementRef,
+} from './editable-element-placement';
 import { EditableExternalText } from './editable-external-text';
 import { sameDescendantBinding } from './editable-node-equality';
 import { getEditableElementRenderer } from './editable-rendered-element';
@@ -154,10 +160,6 @@ import { PliteSpacer } from './plite-spacer';
 import { PliteInlineVoidShell, PliteVoidShell } from './plite-void-shell';
 
 export { isPliteReactDevelopmentEnvironment } from './editable-rendered-element';
-
-const subscribeClientDOM = () => () => {};
-const getClientDOMSnapshot = () => true;
-const getServerDOMSnapshot = () => false;
 
 export type EditableDOMCoverageBoundaryScope =
   | {
@@ -227,30 +229,6 @@ export type EditableElementSlots = {
     slot: string,
     options?: EditableContentRootSlotOptions
   ) => ReactNode;
-};
-
-/** @internal */
-export type EditableElementLayout = Readonly<{
-  height: number;
-  left: number;
-  top: number;
-  width: number;
-}>;
-
-const EditableElementLayoutsContext = React.createContext<ReadonlyMap<
-  string,
-  EditableElementLayout | null
-> | null>(null);
-
-const applyEditableElementLayout = (
-  element: HTMLElement,
-  layout: EditableElementLayout | null
-) => {
-  element.style.height = layout ? `${layout.height}px` : '';
-  element.style.left = layout ? `${layout.left}px` : '';
-  element.style.position = layout ? 'absolute' : '';
-  element.style.top = layout ? `${layout.top}px` : '';
-  element.style.width = layout ? `${layout.width}px` : '';
 };
 
 const createContentBoundaryId = (
@@ -611,6 +589,11 @@ export type RenderElementProps<TElement extends ElementNode = ElementNode> =
           'data-editor-path': string;
           'data-editor-node-key': string;
           'data-editor-void'?: true;
+          /**
+           * Binds and places the element. It changes when the node or its page
+           * placement changes, so a ref merge must change with it and pass a
+           * detach on as a call with `null`.
+           */
           ref: React.RefCallback<HTMLElement>;
         };
         children: ReactNode;
@@ -779,7 +762,6 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
   textRange?: Readonly<{ end: number; start: number }>;
 }) => {
   const editor = useEditorContext();
-  const elementLayouts = React.useContext(EditableElementLayoutsContext);
   const fragment = React.useContext(AuthoredFragmentRootsContext);
   const editableRuntime = useEditableDOMRuntime();
   const coverage = editableRuntime?.domCoverage;
@@ -832,17 +814,17 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
           readAuthoredViewFragmentSlots(editor, key).length > 0
       )
   );
-  const hasClientDOM = React.useSyncExternalStore(
-    subscribeClientDOM,
-    getClientDOMSnapshot,
-    getServerDOMSnapshot
-  );
+  const hasClientDOM = useHydrated();
   const canRenderImperativeTextFlow =
     React.useContext(ImperativeTextFlowContext) &&
     hasClientDOM &&
     !renderChildrenOverride &&
     !hasTextChildFragments;
   const bindNodeRef = usePliteNodeRef(nodeKey, { path, pliteNode: node });
+  const elementRef = useEditableElementPlacementRef(
+    bindNodeRef,
+    node && !isEditableTextNode(node) ? path : null
+  );
 
   if (!node || !path) {
     return null;
@@ -910,14 +892,6 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     );
   }
 
-  const elementLayout = elementLayouts?.get(path.join('.'));
-  const elementRef: React.RefCallback<HTMLElement> =
-    elementLayout === undefined
-      ? bindNodeRef
-      : (element) => {
-          (bindNodeRef as React.RefCallback<HTMLElement>)(element);
-          if (element) applyEditableElementLayout(element, elementLayout);
-        };
   const attributes = {
     'data-editor-inline': inline ? (true as const) : undefined,
     'data-editor-node': 'element' as const,
@@ -1406,9 +1380,11 @@ const EditableInner = <TElement extends ElementNode>({
   scrollSelectionIntoView,
   spellCheck,
   style,
+  elementLayouts,
   viewportPlan = null,
   ...attributes
 }: EditableProps<TElement> & {
+  elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
   viewportPlan?: EditableViewportPlan | null;
 }) => {
   const editor = useEditorContext();
@@ -1697,69 +1673,72 @@ const EditableInner = <TElement extends ElementNode>({
   );
 
   return (
-    <AuthoredFragmentRendererContext value={renderAuthoredFragment}>
-      <PliteEditableRootContext value={editableRoot}>
-        <EditableDOMRoot
-          autoFocus={autoFocus}
-          {...attributes}
-          className={className}
-          deferNativeTextInputRepair={viewportPlan != null}
-          disableDefaultStyles={disableDefaultStyles}
-          viewportRuntime={
-            viewportPlan
-              ? {
-                  mountedTopLevelNodeKeys: viewportPlan.mountedTopLevelNodeKeys,
-                  mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
-                  scrollToPath: scrollViewportPathIntoView,
-                  type: 'virtualized',
-                }
-              : null
-          }
-          id={id}
-          ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-          onBeforeInput={onBeforeInput}
-          onBlurCapture={handleBlurCapture}
-          onDOMBeforeInput={onDOMBeforeInput}
-          onFocusCapture={handleFocusCapture}
-          onHistoryReplay={onHistoryReplay}
-          onKeyDown={onKeyDown}
-          onPaste={onPaste}
-          onDropResult={onDropResult}
-          onPasteResult={onPasteResult}
-          readOnly={effectiveReadOnly}
-          ref={editableRootRef}
-          scrollSelectionIntoView={scrollSelectionIntoView}
-          spellCheck={spellCheck}
-          style={rootStyle}
-        >
-          {viewportPlan && (
-            <EditableCoverageMaterializer
-              materialize={materializeViewportBoundary}
-            />
-          )}
-          <EditableAuthoredRoot
-            placeholder={placeholderValue}
-            placeholderRef={placeholderRef}
-            renderElement={renderElement}
-            renderLeaf={renderLeaf}
-            renderPlaceholder={renderPlaceholder}
-            renderText={renderText}
-            renderVoid={renderVoid}
+    <EditableElementLayoutsProvider layouts={elementLayouts ?? null}>
+      <AuthoredFragmentRendererContext value={renderAuthoredFragment}>
+        <PliteEditableRootContext value={editableRoot}>
+          <EditableDOMRoot
+            autoFocus={autoFocus}
+            {...attributes}
+            className={className}
+            deferNativeTextInputRepair={viewportPlan != null}
+            disableDefaultStyles={disableDefaultStyles}
+            viewportRuntime={
+              viewportPlan
+                ? {
+                    mountedTopLevelNodeKeys:
+                      viewportPlan.mountedTopLevelNodeKeys,
+                    mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
+                    scrollToPath: scrollViewportPathIntoView,
+                    type: 'virtualized',
+                  }
+                : null
+            }
+            id={id}
+            ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+            onBeforeInput={onBeforeInput}
+            onBlurCapture={handleBlurCapture}
+            onDOMBeforeInput={onDOMBeforeInput}
+            onFocusCapture={handleFocusCapture}
+            onHistoryReplay={onHistoryReplay}
+            onKeyDown={onKeyDown}
+            onPaste={onPaste}
+            onDropResult={onDropResult}
+            onPasteResult={onPasteResult}
+            readOnly={effectiveReadOnly}
+            ref={editableRootRef}
+            scrollSelectionIntoView={scrollSelectionIntoView}
+            spellCheck={spellCheck}
+            style={rootStyle}
           >
-            {renderedNodes}
-          </EditableAuthoredRoot>
-          <PliteInactiveSelectionCaret
-            editableRef={inactiveSelectionEditableRef}
-            store={inactiveSelectionStore}
-          />
-          {!effectiveReadOnly && (
-            <PliteViewSelectionCaret
+            {viewportPlan && (
+              <EditableCoverageMaterializer
+                materialize={materializeViewportBoundary}
+              />
+            )}
+            <EditableAuthoredRoot
+              placeholder={placeholderValue}
+              placeholderRef={placeholderRef}
+              renderElement={renderElement}
+              renderLeaf={renderLeaf}
+              renderPlaceholder={renderPlaceholder}
+              renderText={renderText}
+              renderVoid={renderVoid}
+            >
+              {renderedNodes}
+            </EditableAuthoredRoot>
+            <PliteInactiveSelectionCaret
               editableRef={inactiveSelectionEditableRef}
+              store={inactiveSelectionStore}
             />
-          )}
-        </EditableDOMRoot>
-      </PliteEditableRootContext>
-    </AuthoredFragmentRendererContext>
+            {!effectiveReadOnly && (
+              <PliteViewSelectionCaret
+                editableRef={inactiveSelectionEditableRef}
+              />
+            )}
+          </EditableDOMRoot>
+        </PliteEditableRootContext>
+      </AuthoredFragmentRendererContext>
+    </EditableElementLayoutsProvider>
   );
 };
 
@@ -1772,17 +1751,16 @@ export const EditableViewportSurface = <
   ...props
 }: EditableProps<TElement> & {
   decorationStore?: PliteDecorationStore | null;
-  elementLayouts?: ReadonlyMap<string, EditableElementLayout | null>;
+  elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
   viewportPlan: EditableViewportPlan | null;
 }) => {
   const inheritedDecorationStore = React.useContext(DecorationContext);
-  const editable = <EditableInner {...props} viewportPlan={viewportPlan} />;
-  const content = elementLayouts ? (
-    <EditableElementLayoutsContext value={elementLayouts}>
-      {editable}
-    </EditableElementLayoutsContext>
-  ) : (
-    editable
+  const content = (
+    <EditableInner
+      {...props}
+      elementLayouts={elementLayouts}
+      viewportPlan={viewportPlan}
+    />
   );
 
   return decorationStore && decorationStore !== inheritedDecorationStore ? (

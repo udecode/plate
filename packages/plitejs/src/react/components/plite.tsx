@@ -101,6 +101,7 @@ import {
   createPliteViewSelectionDecorationSource,
   usePliteViewSelectionPresence,
 } from '../view-selection-decoration';
+import { ImperativeTextFlowContext } from './editable-text-flow';
 
 const isRootValueChanged = (root: RootKey, commit: EditorCommit) =>
   commit.changed.has('document', toPublicRootOption(root));
@@ -282,6 +283,7 @@ export const PliteRuntimeView = <
   const runtimeContext = useRequiredPliteRuntimeContext();
   const { getView, registerViewEditor } = runtimeContext;
   const parentEditor = useOptionalEditorContext();
+  const inheritedTextFlow = useContext(ImperativeTextFlowContext);
   const contentRootOwner = useContext(PliteContentRootOwnerContext);
   const selectionOwner = root ? parentEditor : null;
   const { selectorContext, onChange } = useEditorSelectorContext();
@@ -369,7 +371,14 @@ export const PliteRuntimeView = <
               value={reactEditor as unknown as EditorContextValue<any>}
             >
               <ReadOnlyContext value={readOnly}>
-                <FocusedContext value={isFocused}>{children}</FocusedContext>
+                <FocusedContext value={isFocused}>
+                  {/* A nested editor renders its text as it would at the top level, even inside a paged view. */}
+                  <ImperativeTextFlowContext
+                    value={parentEditor ? true : inheritedTextFlow}
+                  >
+                    {children}
+                  </ImperativeTextFlowContext>
+                </FocusedContext>
               </ReadOnlyContext>
             </EditorContext>
           </DecorationSourcesContext>

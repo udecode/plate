@@ -65,8 +65,7 @@ const plitejsImportPattern = {
 };
 
 const platePliteBridgePatterns = [
-  'packages/platejs/src/authored/PlateAuthoredPlugin.ts',
-  'packages/platejs/src/authored/authored.api.spec.ts',
+  'packages/platejs/src/authored/AuthoredPlugin.ts',
   'packages/platejs/src/authored/index.ts',
   'packages/platejs/src/core.tsx',
   'packages/platejs/src/diff/index.ts',
@@ -86,7 +85,7 @@ const platePliteBridgePatterns = [
   'packages/platejs/src/lib/plugin/definePlugin.ts',
   'packages/platejs/src/pagination/index.ts',
   'packages/platejs/src/pagination/react/index.ts',
-  'packages/platejs/src/react/internal/plate-content-editable.internal.ts',
+  'packages/platejs/src/pagination/react/PagedEditorContent.tsx',
   'packages/platejs/src/react/internal/plite-components.ts',
   'packages/platejs/src/react/internal/plite-types.ts',
   'packages/platejs/src/react/plite-react.ts',
@@ -202,6 +201,7 @@ export default defineConfig({
         'apps/plite/src/app/providers.tsx',
         // These routes measure raw Plite against Plate on the same fixture.
         'apps/www/src/app/dev/combobox-typing/page.tsx',
+        'benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts',
         'apps/www/src/app/dev/editor-perf/page.tsx',
       ],
       rules: {
@@ -443,6 +443,17 @@ export default defineConfig({
         'plate/no-as-never': 'error',
         'plate/no-one-off-editor-type': 'error',
         'plate/no-second-name': 'error',
+      },
+    },
+    {
+      files: ['packages/plitejs/src/**/*.{ts,tsx}'],
+      excludeFiles: [
+        '**/*.spec.*',
+        '**/*.test.*',
+        'packages/plitejs/src/react/hooks/use-hydrated.ts',
+      ],
+      rules: {
+        'plate/no-inline-hydration-flag': 'error',
       },
     },
     {

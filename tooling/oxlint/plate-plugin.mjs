@@ -268,6 +268,33 @@ const NOT_SOURCE = /\.d\.[cm]?ts$|\.generated\./u;
 
 const SOURCE_DIR = /(?:^|\/)src(?:\/|$)/u;
 
+const resolvedVariable = (context, identifier) =>
+  context.sourceCode
+    .getScope(identifier)
+    .references.find((reference) => reference.identifier === identifier)
+    ?.resolved;
+
+const laterWrites = (variable) =>
+  variable?.references.filter(
+    (reference) => reference.isWrite() && !reference.init
+  ) ?? [];
+
+const writtenValues = (context, identifier) => {
+  const variable = resolvedVariable(context, identifier);
+  const [definition] = variable?.defs ?? [];
+
+  return [
+    definition?.type === 'FunctionName'
+      ? definition.node
+      : definition?.type === 'Variable'
+        ? definition.node.init
+        : undefined,
+    ...laterWrites(variable).map((reference) => reference.writeExpr),
+  ].filter(Boolean);
+};
+
+// Every string a node can contribute, with each value a binding is ever given
+// joined in, so the gate fails closed on any write. Each node is read once.
 const stringParts = (node, context, seen = new Set()) => {
   if (!node || seen.has(node)) return [];
   seen.add(node);
@@ -281,11 +308,9 @@ const stringParts = (node, context, seen = new Set()) => {
     ];
   }
   if (node.type === 'Identifier') {
-    const variable = context.sourceCode
-      .getScope(node)
-      .references.find((reference) => reference.identifier === node)?.resolved;
-    const init = variable?.defs[0]?.node?.init;
-    return init ? stringParts(init, context, seen) : [];
+    return writtenValues(context, node).flatMap((value) =>
+      stringParts(value, context, seen)
+    );
   }
   if (node.type === 'CallExpression' || node.type === 'NewExpression') {
     return node.arguments.flatMap((child) => stringParts(child, context, seen));
@@ -617,6 +642,63 @@ const exceptionFormat = {
   },
 };
 
+const returnedLiteral = (fn) => {
+  if (
+    fn?.type !== 'ArrowFunctionExpression' &&
+    fn?.type !== 'FunctionDeclaration' &&
+    fn?.type !== 'FunctionExpression'
+  ) {
+    return undefined;
+  }
+  if (fn.body.type === 'Literal') return fn.body.value;
+  const [statement] = fn.body.body ?? [];
+  return statement?.type === 'ReturnStatement' &&
+    statement.argument?.type === 'Literal'
+    ? statement.argument.value
+    : undefined;
+};
+
+const noInlineHydrationFlag = {
+  create(context) {
+    // A hydration flag is a literal snapshot, so a binding given more than one
+    // value is not one.
+    const snapshot = (node) => {
+      if (node?.type !== 'Identifier') return returnedLiteral(node);
+      const values = writtenValues(context, node);
+
+      return values.length === 1 ? returnedLiteral(values[0]) : undefined;
+    };
+
+    return {
+      CallExpression(node) {
+        const { callee } = node;
+        const name =
+          callee.type === 'MemberExpression'
+            ? callee.property.name
+            : callee.name;
+        if (name !== 'useSyncExternalStore') return;
+        if (
+          snapshot(node.arguments[1]) !== true ||
+          snapshot(node.arguments[2]) !== false
+        ) {
+          return;
+        }
+        context.report({ messageId: 'inline', node });
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description: 'Plite reads hydration through its one useHydrated hook.',
+    },
+    messages: {
+      inline:
+        'This is the hydration flag. Call `useHydrated` from packages/plitejs/src/react/hooks/use-hydrated.ts instead of another client-true, server-false snapshot pair.',
+    },
+    type: 'problem',
+  },
+};
+
 export { noAsNever };
 
 export default {
@@ -631,6 +713,7 @@ export default {
     ),
     'no-annotated-inferred-callback': noAnnotatedInferredCallback,
     'no-as-never': withBaseline('no-as-never', noAsNever),
+    'no-inline-hydration-flag': noInlineHydrationFlag,
     'no-one-off-editor-type': withBaseline(
       'no-one-off-editor-type',
       noOneOffEditorType

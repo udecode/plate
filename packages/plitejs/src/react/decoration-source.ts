@@ -43,6 +43,23 @@ const DECORATION_SLICE_IDENTITIES = new WeakMap<DecorationSlice, string>();
 export const getDecorationSliceIdentity = (slice: DecorationSlice) =>
   DECORATION_SLICE_IDENTITIES.get(slice) ?? slice.key;
 
+const CONTAINER_DECORATION_SLICES = new WeakSet<DecorationSlice>();
+
+/**
+ * Freezes a slice whose element wraps every leaf in its range once, outside
+ * the leaves and the other decorations, instead of nesting in each segment.
+ */
+export const createContainerDecorationSlice = (slice: DecorationSlice) => {
+  const result = Object.freeze(slice);
+
+  CONTAINER_DECORATION_SLICES.add(result);
+
+  return result;
+};
+
+export const isContainerDecorationSlice = (slice: DecorationSlice) =>
+  CONTAINER_DECORATION_SLICES.has(slice);
+
 const createDecorationSlice = (sourceId: string, slice: DecorationSlice) => {
   const result = Object.freeze(slice);
 

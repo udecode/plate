@@ -230,6 +230,7 @@ const getPaginationTextFont = (
 };
 
 const getPaginationLeafStyle = (marks: Partial<CustomText>): CSSProperties => ({
+  backgroundColor: marks.code ? 'rgba(15, 23, 42, 0.08)' : undefined,
   fontFamily: marks.code ? PAGE_CODE_FONT : undefined,
   fontStyle: marks.italic ? 'italic' : undefined,
   fontWeight: marks.bold ? 700 : undefined,
@@ -712,7 +713,11 @@ const PaginationElement = ({
         paddingLeft: elementType === 'block-quote' ? 12 : undefined,
       }}
     >
-      {children}
+      {elementType === 'block-quote' ? (
+        <div style={{ position: 'relative' }}>{children}</div>
+      ) : (
+        children
+      )}
     </div>
   );
 };
@@ -1003,6 +1008,30 @@ const PaginationSurface = ({
                           page {currentPage.index + 1} | {currentPage.width}x
                           {currentPage.height}px
                         </div>
+                        {layout?.fragments.flatMap((fragment) =>
+                          fragment.type === 'text' &&
+                          fragment.pageIndex === currentPage.index
+                            ? fragment.lines.flatMap((line, lineIndex) =>
+                                line.runs.map((run, runIndex) => (
+                                  <div
+                                    data-path={fragment.path.join(',')}
+                                    data-testid="pagination-run-frame"
+                                    key={`${fragment.path.join(',')}:${lineIndex}:${runIndex}`}
+                                    style={{
+                                      height: run.rect.height,
+                                      left: run.rect.left,
+                                      outline:
+                                        '1px dotted rgba(16, 185, 129, 0.7)',
+                                      pointerEvents: 'none',
+                                      position: 'absolute',
+                                      top: run.rect.top,
+                                      width: run.rect.width,
+                                    }}
+                                  />
+                                ))
+                              )
+                            : []
+                        )}
                       </>
                     )}
                   </div>

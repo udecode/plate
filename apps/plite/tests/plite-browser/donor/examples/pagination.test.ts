@@ -101,12 +101,16 @@ const getTableProof = (editor: PaginationEditor, tablePath: number) =>
         .filter(Boolean)
         .map(Number),
       rowCount: rows.length,
-      rowLayouts: rows.map((row) => ({
-        height: row.style.height,
-        path: row.getAttribute('data-editor-path'),
-        position: row.style.position,
-        top: row.style.top,
-      })),
+      rowLayouts: rows.map((row) => {
+        const placed = getComputedStyle(row);
+
+        return {
+          height: placed.height,
+          path: row.getAttribute('data-editor-path'),
+          position: placed.position,
+          top: placed.top,
+        };
+      }),
       tableCount: root.querySelectorAll(
         '[data-testid="pagination-rich-table"]'
       ).length,
@@ -343,12 +347,14 @@ test.describe(
                 const following = root.querySelector<HTMLElement>(
                   `[data-editor-path="${paths.following}"]`
                 );
-                const imageTop = Number.parseFloat(image?.style.top ?? 'NaN');
+                const placed = (element: HTMLElement | null) =>
+                  element ? getComputedStyle(element) : null;
+                const imageTop = Number.parseFloat(placed(image)?.top ?? 'NaN');
                 const imageHeight = Number.parseFloat(
-                  image?.style.height ?? 'NaN'
+                  placed(image)?.height ?? 'NaN'
                 );
                 const followingTop = Number.parseFloat(
-                  following?.style.top ?? 'NaN'
+                  placed(following)?.top ?? 'NaN'
                 );
                 const mountItems = Array.from(
                   document.querySelectorAll<HTMLElement>(
@@ -425,6 +431,244 @@ test.describe(
 
         expect(overflow.reachable).toBe(true);
         expect(geometry).toBe(true);
+        runtimeErrors.assertNone();
+      } finally {
+        runtimeErrors.stop();
+      }
+    });
+
+    test('paints a marked word on an unselected projected line inside its run', async ({
+      page,
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name !== 'chromium',
+        'Chromium projected paint proof'
+      );
+      const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+      try {
+        const editor = await openPagination(page, {
+          page_layout: 'single',
+          rendering: 'complete',
+          rows: 8,
+          stress_pages: 0,
+        });
+        const measure = () =>
+          editor.root.evaluate((root) => {
+            const leaf = Array.from(
+              root.querySelectorAll<HTMLElement>('[data-editor-leaf]')
+            ).find((candidate) => candidate.textContent === 'code');
+            const run =
+              leaf?.closest<HTMLElement>('[data-pagination-line]') ??
+              leaf?.querySelector<HTMLElement>('[data-pagination-line]');
+
+            leaf?.scrollIntoView({ block: 'center' });
+            return {
+              leafWidth: Math.round(leaf?.getBoundingClientRect().width ?? -1),
+              runPositioned: run?.style.position === 'absolute',
+              runWidth: Math.round(run?.getBoundingClientRect().width ?? -1),
+            };
+          });
+
+        await expect.poll(measure).toMatchObject({ runPositioned: true });
+        await editor.root
+          .locator('[data-editor-node="element"]', {
+            hasText: 'This mixed block carries',
+          })
+          .first()
+          .screenshot({ path: testInfo.outputPath('projected-marked-word.png') });
+        const marked = await measure();
+
+        expect(
+          marked.runPositioned &&
+            marked.leafWidth > 0 &&
+            Math.abs(marked.leafWidth - marked.runWidth) <= 1,
+          `marked word inside its projected run: ${JSON.stringify(marked)}`
+        ).toBe(true);
+        runtimeErrors.assertNone();
+      } finally {
+        runtimeErrors.stop();
+      }
+    });
+
+    for (const view of [
+      { name: 'at full size', scale: 1 },
+      { name: 'under a scale transform', scale: 0.6 },
+    ]) {
+      test(`positions projected runs inside a positioned container at their measured rects ${view.name}`, async ({
+        page,
+      }, testInfo) => {
+        test.skip(
+          testInfo.project.name !== 'chromium',
+          'Chromium projected run placement proof'
+        );
+        const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+        try {
+          if (view.scale !== 1) {
+            await page.addInitScript((scale) => {
+              const style = document.createElement('style');
+
+              style.textContent = `.editor-pagination-scaled-surface{transform:scale(${scale})!important}`;
+              new MutationObserver((_, observer) => {
+                if (!document.head) return;
+                document.head.append(style);
+                observer.disconnect();
+              }).observe(document, { childList: true, subtree: true });
+            }, view.scale);
+          }
+          const editor = await openPagination(page, {
+            debug: 'true',
+            page_layout: 'single',
+            rendering: 'complete',
+            rows: 8,
+            stress_pages: 0,
+          });
+          const quotePath = await getTopLevelPath(editor, 'block-quote');
+          const measure = () =>
+            editor.root.evaluate((root, path) => {
+              const block = root.querySelector<HTMLElement>(
+                `[data-editor-path="${path}"]`
+              );
+              const runs = Array.from(
+                block?.querySelectorAll<HTMLElement>('[data-pagination-line]') ??
+                  []
+              );
+              const frames = Array.from(
+                document.querySelectorAll<HTMLElement>(
+                  `[data-testid="pagination-run-frame"][data-path="${path}"]`
+                )
+              );
+              const deltas = runs.map((run, index) => {
+                const actual = run.getBoundingClientRect();
+                const measured = frames[index]?.getBoundingClientRect();
+
+                return measured
+                  ? Math.max(
+                      Math.abs(actual.left - measured.left),
+                      Math.abs(actual.top - measured.top)
+                    )
+                  : Number.POSITIVE_INFINITY;
+              });
+
+              const surface = root.closest<HTMLElement>(
+                '.editor-pagination-scaled-surface'
+              );
+
+              return {
+                containerInside: block?.contains(runs[0]?.offsetParent ?? null),
+                frames: frames.length,
+                maxDelta: Math.round(Math.max(0, ...deltas) * 10) / 10,
+                runs: runs.length,
+                scale: surface
+                  ? Math.round(
+                      (surface.getBoundingClientRect().width /
+                        surface.offsetWidth) *
+                        100
+                    ) / 100
+                  : null,
+              };
+            }, quotePath);
+
+          await expect.poll(measure).toMatchObject({ containerInside: true });
+          const placement = await measure();
+
+          expect(
+            placement.containerInside &&
+              placement.runs > 0 &&
+              placement.runs === placement.frames &&
+              placement.maxDelta <= 1 &&
+              placement.scale === view.scale,
+            `runs at their measured rects: ${JSON.stringify(placement)}`
+          ).toBe(true);
+          runtimeErrors.assertNone();
+        } finally {
+          runtimeErrors.stop();
+        }
+      });
+    }
+
+    test('types and composes on a selected line of a block split across pages', async ({
+      page,
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name !== 'chromium',
+        'Chromium projected editing proof'
+      );
+      const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+      try {
+        const editor = await openPagination(page, {
+          page_layout: 'single',
+          rendering: 'complete',
+          rows: 8,
+          stress_pages: 0,
+        });
+        const value = (await editor.get.modelValue()) as {
+          children: Array<{ children: Array<{ text: string }> }>;
+        };
+        const initialText = value.children[2]!.children[0]!.text;
+        const growth = ` split-line${' measured-flow'.repeat(300)}`;
+        const blockProof = () =>
+          editor.root.evaluate((root) => {
+            const block = root.querySelector<HTMLElement>(
+              '[data-editor-path="2"]'
+            );
+            const pageHeight = Number.parseFloat(
+              document.querySelector<HTMLElement>('[data-editor-page]')?.style
+                .height ?? 'NaN'
+            );
+            const runs = Array.from(
+              block?.querySelectorAll<HTMLElement>('[data-pagination-line]') ??
+                []
+            );
+
+            return {
+              domText: (block?.textContent ?? '').replace(/﻿/g, ''),
+              projected:
+                runs.length > 0 &&
+                runs.every((run) => run.style.position === 'absolute'),
+              split:
+                Number.parseFloat(
+                  block ? getComputedStyle(block).height : '0'
+                ) > pageHeight,
+            };
+          });
+
+        await editor.selection.collapse({
+          path: [2, 0],
+          offset: initialText.length,
+        });
+        await editor.focus();
+        await page.keyboard.insertText(growth);
+        await expect
+          .poll(blockProof)
+          .toMatchObject({ projected: true, split: true });
+
+        await page.keyboard.type('XYZ');
+        await editor.ime.compose({
+          committedText: 'すし',
+          steps: ['す', 'すし'],
+          text: 'すし',
+        });
+        const expected = `${initialText}${growth}XYZすし`;
+
+        await expect.poll(() => editor.selection.get()).toEqual({
+          anchor: { offset: expected.length, path: [2, 0] },
+          focus: { offset: expected.length, path: [2, 0] },
+        });
+        await expect
+          .poll(async () => {
+            const model = (await editor.get.modelValue()) as {
+              children: Array<{ children: Array<{ text: string }> }>;
+            };
+
+            return {
+              domText: (await blockProof()).domText,
+              modelText: model.children[2]!.children[0]!.text,
+            };
+          })
+          .toEqual({ domText: expected, modelText: expected });
         runtimeErrors.assertNone();
       } finally {
         runtimeErrors.stop();

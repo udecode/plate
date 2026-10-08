@@ -8,8 +8,8 @@ import { useRootNodeKeys } from '../editable/root-selector-sources';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
 import { createEditableViewportPlan } from '../viewport-plan';
+import type { EditableElementLayout } from './editable-element-placement';
 import {
-  type EditableElementLayout,
   EditableViewportSurface,
   type EditableProps,
 } from './editable-text-blocks';
@@ -20,7 +20,7 @@ export type WindowedEditableProps<
   TRoot extends RootKey = RootKey,
 > = EditableProps<TElement, TRoot> & {
   decorationStore?: PliteDecorationStore | null;
-  elementLayouts?: ReadonlyMap<string, EditableElementLayout | null>;
+  elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
   enabled?: boolean;
   mountedTopLevelIndexes: readonly number[];
   onRequestMount?: (index: number, path?: Path) => void;
