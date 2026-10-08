@@ -17,7 +17,7 @@ describe('table insertion', () => {
 
   describe('when inserting a table row', () => {
     it.each([{ allowCellSpanEditing: false }, { allowCellSpanEditing: true }])(
-      'inserts a tr with empty cells (allowCellSpanEditing: $allowCellSpanEditing)',
+      'inserts a tr with empty cells (allowCellSpanEditing: $allowCellSpanEditing) [EDIT-TABLE-ROW-INSERT-001]',
       ({ allowCellSpanEditing }) => {
         const input = (
           <editor>

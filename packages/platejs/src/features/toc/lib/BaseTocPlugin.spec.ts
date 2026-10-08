@@ -303,7 +303,7 @@ describe('BaseTocPlugin.read.headings', () => {
 });
 
 describe('BaseTocPlugin.update.insert', () => {
-  it('inserts the default toc node shape', () => {
+  it('inserts the default toc node shape [EDIT-TOC-INSERT-001]', () => {
     const editor = createEditor({
       plugins: [BaseTocPlugin],
       initialValue: [

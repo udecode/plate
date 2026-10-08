@@ -253,7 +253,7 @@ describe('LinkRules', () => {
     expect(editor.read.children()).toHaveLength(2);
   });
 
-  it('converts markdown link syntax when the closing parenthesis is inserted', () => {
+  it('converts markdown link syntax when the closing parenthesis is inserted [EDIT-INTERACT-LINK-AUTOMD-001]', () => {
     const text = '[Example](https://example.com';
     const editor = createEditor({
       selection: {

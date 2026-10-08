@@ -59,7 +59,7 @@ not regress?
 - compiled pages inspected:
   - `docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md`
   - `docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md`
-  - `docs/research/entities/prosemirror.md`
+  - `docs/research/sources/prosemirror/README.md`
 - raw paths inspected:
   - `../raw/prosemirror/README.md`
   - `../raw/prosemirror/packages/model/src`
@@ -100,7 +100,7 @@ not regress?
 - compiled pages inspected:
   - `docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md`
   - `docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md`
-  - `docs/research/entities/lexical.md`
+  - `docs/research/sources/lexical/README.md`
 - raw paths inspected:
   - `../raw/lexical/README.md`
   - `../raw/lexical/repo/packages/lexical-website/docs`
@@ -147,7 +147,7 @@ not regress?
 - compiled pages inspected:
   - `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md`
   - `docs/research/sources/editor-architecture/tiptap-comments-suggestions-and-node-range.md`
-  - `docs/research/entities/tiptap.md`
+  - `docs/research/sources/tiptap/README.md`
 - raw paths inspected:
   - `../raw/tiptap/README.md`
   - `../raw/tiptap/repo/packages/core/src`

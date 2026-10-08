@@ -469,7 +469,7 @@ describe('AffinityPlugin', () => {
 
   describe('Mark affinity', () => {
     describe('Cursor movement from left to right', () => {
-      it('apply forward affinity when moving right at mark boundary', () => {
+      it('apply forward affinity when moving right at mark boundary [EDIT-AFF-MARK-001]', () => {
         const input = (
           <editor>
             <hp>
@@ -603,7 +603,7 @@ describe('AffinityPlugin', () => {
     });
 
     describe('Cursor movement from right to left', () => {
-      it('apply backward affinity when moving left at mark boundary', () => {
+      it('apply backward affinity when moving left at mark boundary [EDIT-AFF-MARK-001]', () => {
         const input = (
           <editor>
             <hp>
@@ -738,7 +738,7 @@ describe('AffinityPlugin', () => {
 
   describe('Element affinity', () => {
     describe('Cursor movement from left to right', () => {
-      it('apply forward affinity when moving right at element boundary', () => {
+      it('apply forward affinity when moving right at element boundary [EDIT-AFF-LINK-001]', () => {
         const input = (
           <editor>
             <hp>
@@ -780,7 +780,7 @@ describe('AffinityPlugin', () => {
     });
 
     describe('Cursor movement from right to left', () => {
-      it('apply backward affinity when moving left at element boundary', () => {
+      it('apply backward affinity when moving left at element boundary [EDIT-AFF-LINK-001]', () => {
         const input = (
           <editor>
             <hp>

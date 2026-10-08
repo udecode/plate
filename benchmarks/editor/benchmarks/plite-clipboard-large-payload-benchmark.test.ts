@@ -188,19 +188,19 @@ describe('clipboard large-payload benchmark authority', () => {
         baselineMs: 38.57,
         limitMs: 60,
         source:
-          'docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md',
+          '52625e8502:docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md',
       },
       populatedFullSelectionCopy10000P50: {
         baselineMs: 12.16,
         limitMs: 20,
         source:
-          'docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md',
+          '52625e8502:docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md',
       },
       populatedMiddlePlainTextPaste10000Into10000P50: {
         baselineMs: 185.49,
         limitMs: 280,
         source:
-          'docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md',
+          '52625e8502:docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md',
       },
     });
   });

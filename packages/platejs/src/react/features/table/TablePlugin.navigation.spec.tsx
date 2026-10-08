@@ -167,7 +167,7 @@ const createTableEditor = (input: TestEditor) =>
   });
 
 describe('TablePlugin navigation', () => {
-  it('keeps Enter inside the current cell by splitting the current paragraph', () => {
+  it('keeps Enter inside the current cell by splitting the current paragraph [EDIT-TABLE-ENTER-001]', () => {
     const input = (
       <editor>
         <htable>
@@ -208,7 +208,7 @@ describe('TablePlugin navigation', () => {
     );
   });
 
-  it('keeps Backspace at the start of a cell inside the current cell', () => {
+  it('keeps Backspace at the start of a cell inside the current cell [EDIT-TABLE-BS-START-001]', () => {
     const input = (
       <editor>
         <htable>
@@ -350,7 +350,7 @@ describe('TablePlugin navigation', () => {
     });
   });
 
-  it('tabs forward to the next cell', () => {
+  it('tabs forward to the next cell [EDIT-TABLE-TAB-001]', () => {
     const input = (
       <editor>
         <htable>
@@ -435,7 +435,7 @@ describe('TablePlugin navigation', () => {
     expect(editor.read.selection()).toEqual(initialSelection);
   });
 
-  it('moves ArrowDown to the next cell after the last block in a multi-block cell', () => {
+  it('moves ArrowDown to the next cell after the last block in a multi-block cell [EDIT-TABLE-ARROWDOWN-MULTIBLOCK-001]', () => {
     const input = (
       <editor>
         <htable>
@@ -515,7 +515,7 @@ describe('TablePlugin navigation', () => {
     expect(editor.read.selection()).toEqual(initialSelection);
   });
 
-  it('moves ArrowUp to the previous cell before the first block in a multi-block cell', () => {
+  it('moves ArrowUp to the previous cell before the first block in a multi-block cell [EDIT-TABLE-ARROWUP-MULTIBLOCK-001]', () => {
     const input = (
       <editor>
         <htable>

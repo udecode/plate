@@ -22,7 +22,7 @@ import {
 //
 // S5_BENCH=1 runs the S5 acceptance matrix against two servers,
 // PLAYWRIGHT_BASE_URL (candidate) and S5_BASELINE_URL (baseline), and writes
-// receipts under docs/research/probes/2026-09-28-conversion-boundary/lanes/s5/.
+// receipts and its cost budgets under the ignored `.tmp/s5/`, or S5_OUT.
 // Acceptance cells are `static`, `editable` and `ai` (AI chunks arrive 10 ms
 // after the previous one ran, so both arms parse the same prefixes); `ai-live`
 // cells (chunks due on a wall clock) record queueing and run last. Every stream
@@ -83,15 +83,11 @@ const CHUNK = 64;
 const ARRIVAL_MS = 10;
 const STREAM_CAP_MS = 180_000;
 const MATRIX_CAP_MS = 60 * 60_000;
-const OUT =
-  process.env.S5_OUT ??
-  path.resolve(
-    process.cwd(),
-    '../../docs/research/probes/2026-09-28-conversion-boundary/lanes/s5'
-  );
+const OUT = process.env.S5_OUT ?? path.resolve(process.cwd(), '../../.tmp/s5');
 
-// Fixture generators from lanes/s4/ai-flow-benchmark.test.ts (S0 transcripts),
-// so source hashes match S4's receipts.
+// Fixture generators from
+// docs/research/probes/2026-09-28-conversion-boundary/lanes/s4/ai-flow-benchmark.test.ts
+// (S0 transcripts), so source hashes match S4's receipts.
 const answerUnit = (i: number) =>
   `## Step ${i}\n\nUse a \`Map<string, number>\` or Map<string, number> for {key: value} lookups when x<y. See <https://example.com/${i}>.\n\n- keep **order**\n- avoid _churn_\n\n\`\`\`ts\nconst m = new Map<string, number>();\n\`\`\`\n`;
 const cjkUnit = (i: number) =>

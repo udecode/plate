@@ -8,17 +8,17 @@ export declare const CLIPBOARD_ISSUE_TARGET_BUDGETS: Readonly<{
   largePlainTextPaste10000P50: Readonly<{
     baselineMs: 38.57;
     limitMs: 60;
-    source: 'docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md';
+    source: '52625e8502:docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md';
   }>;
   populatedFullSelectionCopy10000P50: Readonly<{
     baselineMs: 12.16;
     limitMs: 20;
-    source: 'docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md';
+    source: '52625e8502:docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md';
   }>;
   populatedMiddlePlainTextPaste10000Into10000P50: Readonly<{
     baselineMs: 185.49;
     limitMs: 280;
-    source: 'docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md';
+    source: '52625e8502:docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md';
   }>;
 }>;
 export declare const createClipboardIssueTargetThresholds: ({

@@ -48,7 +48,7 @@ describe('BaseEquationPlugin', () => {
     );
   });
 
-  it('deleteBackward from the next block selects the equation instead of deleting through it', () => {
+  it('deleteBackward from the next block selects the equation instead of deleting through it [EDIT-MATH-BLOCK-BS-START-001]', () => {
     const editor = createEditor({
       plugins: [BaseEquationPlugin],
       selection: {
@@ -326,7 +326,7 @@ describe('math input rules', () => {
       initialValue: value.children,
     });
 
-  it('converts a completed $...$ sequence into an inline equation on the closing delimiter', () => {
+  it('converts a completed $...$ sequence into an inline equation on the closing delimiter [EDIT-PROFILE-MATH-TRIGGER-002]', () => {
     const input = (
       <editor>
         <hp>

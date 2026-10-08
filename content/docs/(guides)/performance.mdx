@@ -1,10 +1,10 @@
 ---
 title: Performance
-description: A recorded Plate vs Plite large-document benchmark and how to measure your current checkout.
+description: A recorded Plate vs Slate large-document benchmark and how to measure your current checkout.
 ---
 
 Performance is about whether the editor stays usable when the document gets
-large. This page shows a recorded 10k Plate vs Plite snapshot from the docs
+large. This page shows a recorded 10k Plate vs Slate snapshot from the docs
 benchmark route and the command for measuring your current checkout.
 
 ## Recorded snapshot
@@ -13,10 +13,12 @@ This snapshot was captured on June 2, 2026 from the docs benchmark route in
 headless Chrome. The benchmark uses a 10,000-block document with chunked
 rendering enabled.
 
-These numbers describe that checkout and environment. Run the benchmark on the
-version you use before comparing current performance.
+These numbers describe that checkout and environment. The Slate column measures
+Slate itself, which Plate was built on at that checkout, so the snapshot has no
+Plite numbers. Run the benchmark on the version you use before comparing current
+performance.
 
-| Workload | Plite | Plate core | Plate with basic plugins |
+| Workload | Slate | Plate core | Plate with basic plugins |
 | --- | ---: | ---: | ---: |
 | Open a mixed document | `524 ms` | `866 ms` | `881 ms` |
 | Type in a mixed document | `26 ms` | `43 ms` | `35 ms` |

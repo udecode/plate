@@ -37,6 +37,7 @@
     "build:www:ci": "turbo run build --filter=www... --concurrency=2",
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "node tooling/scripts/check.mjs",
+    "kb": "node tooling/scripts/knowledge/kb.mjs",
     "check:core": "node tooling/scripts/check-core.mjs",
     "check:plate-feature": "node tooling/scripts/check-plate-feature.mjs",
     "check:plite": "node tooling/scripts/check-plite.mjs strict",

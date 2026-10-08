@@ -461,7 +461,7 @@ describe('BaseFootnotePlugin updates', () => {
     ).not.toThrow();
   });
 
-  it('uses selected content as the initial definition body', () => {
+  it('uses selected content as the initial definition body [EDIT-FOOTNOTE-INSERT-001]', () => {
     const editor = createEditor({
       plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
       selection: {

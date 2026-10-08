@@ -71,7 +71,11 @@ const multisetDifference = (from = [], minus = []) => {
 const multisetIntersection = (a, b) =>
   multisetDifference(a, multisetDifference(a, b));
 
-const differences = (from, minus) =>
+/**
+ * The grouped findings in `from` that `minus` does not list, counting
+ * repeats, as `<rule> <file>: "<identity>"` lines.
+ */
+export const differences = (from, minus) =>
   Object.entries(from).flatMap(([rule, files]) =>
     Object.entries(files).flatMap(([file, identities]) =>
       multisetDifference(identities, minus[rule]?.[file]).map(

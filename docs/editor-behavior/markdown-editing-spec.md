@@ -760,7 +760,7 @@ Plugin surface:
 - task-list behavior currently rides on the list owner plus the todo metadata
 - no separate footnote-style insert surface is implied here
 
-- `EDIT-LIST-ENTER-001` `locked`
+- `EDIT-TASK-ENTER-001` `locked`
 
 ```text
 - [x] done|
@@ -1390,16 +1390,7 @@ does not trap the user in passive preview-only chrome
 
 ### Link
 
-- `EDIT-AFF-LINK-001` `locked`
-
-```text
-[link|](https://platejs.org)text
-=>
-[linkx](https://platejs.org)text
-```
-
-note: moving in from the linked side extends the link; moving in from the plain
-side stays outside it
+note: typing at a link boundary follows `EDIT-AFF-LINK-001` under Affinity Rules
 
 - `EDIT-LINK-CLICK-001` `locked`
 
@@ -2318,7 +2309,7 @@ so no caret paints while it runs; each view paints one indicator on the edge a
 drop would use, and Escape, leaving the editor or a refused edge clears every
 indicator and changes nothing; dropped files land on the same edges and a
 refused file landing inserts nothing
-note: every drag has a non-drag equivalent: handle actions on click, tap, Enter or Space, the right-click block menu, and `Mod+Shift+ArrowUp` / `Mod+Shift+ArrowDown`, which move the blocks containing the selection past the previous or next admitted sibling edge in one update and one undo entry, keep the caret, announce the move, step a list item over its whole family, and refuse blocks under different parents; the shortcut replaces native select-to-boundary while the DnD kit is installed
+note: every drag has a non-drag equivalent: handle actions on click, tap, Enter or Space, the right-click block menu, and `Mod+Shift+ArrowUp` / `Mod+Shift+ArrowDown`, which move the blocks containing the selection past the previous or next admitted sibling edge in one update and one undo entry, keep the caret, announce the move once however many views of the document are mounted, step a list item over its whole family, and refuse blocks under different parents; the shortcut replaces native select-to-boundary while the DnD kit is installed
 
 note: block handles offer Move up, Move down and Cut; column handles offer Move left and Move right; row handles offer Select row, Move up and Move down; the right-click block menu offers Move up, Move down and Cut
 

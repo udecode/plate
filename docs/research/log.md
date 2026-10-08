@@ -487,7 +487,7 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
 ## [2026-04-04] bootstrap | initialize docs/research
 
 - moved the agent-reference-wiki pattern from `docs/plans/` to
-  [README.md](docs/research/README.md)
+  `ba095aaaf5:docs/research/README.md`
 - established `docs/research` as the compiled layer
 - established `../raw` as the expected private raw evidence layer
 - created the initial research directory scaffold
@@ -540,7 +540,7 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
 - promoted one decision from that evidence:
   [media-authoring-follows-the-image-path-policy-family.md](docs/research/decisions/media-authoring-follows-the-image-path-policy-family.md)
 - opened one explicit unresolved question for the thinner date lane:
-  [date-mdx-payload-contract.md](docs/research/open-questions/date-mdx-payload-contract.md)
+  `ba095aaaf5:docs/research/open-questions/date-mdx-payload-contract.md`
 - updated the research index and Typora source entrypoint to include the new
   pages
 
@@ -611,7 +611,7 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
   and
   [decorations-annotations-overlay-corpus.md](docs/research/sources/editor-architecture/decorations-annotations-overlay-corpus.md)
 - created a new cross-corpus system map:
-  [editor-architecture-landscape.md](docs/research/systems/editor-architecture-landscape.md)
+  `5fdfdf3ce9:docs/research/systems/editor-architecture-landscape.md`
 - created a normalized decision page for the overlay-plan cuts:
   [slate-v2-overlay-architecture-cuts.md](docs/research/decisions/slate-v2-overlay-architecture-cuts.md)
 - added entity pages for the core candidate set actually used in the overlay
@@ -643,7 +643,7 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
   [systems/slate-v2-overlay-architecture.md](docs/research/systems/slate-v2-overlay-architecture.md)
   to reflect the implemented lane as accepted instead of partial
 - updated
-  [systems/editor-architecture-landscape.md](docs/research/systems/editor-architecture-landscape.md)
+  `5fdfdf3ce9:docs/research/systems/editor-architecture-landscape.md`
   with the current Slate v2 position in the candidate field
 - added
   [slate-v2-overlay-superiority-vs-legacy-and-field.md](docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md)
@@ -762,7 +762,7 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
   - [tiptap-extension-command-react-dx.md](docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md)
 - accepted the read/update lifecycle decision:
   [slate-v2-read-update-runtime-architecture.md](docs/research/decisions/slate-v2-read-update-runtime-architecture.md)
-- updated [index.md](docs/research/index.md) and
+- updated `f49b996094:docs/research/index.md` and
   [sources/editor-architecture/README.md](docs/research/sources/editor-architecture/README.md)
 
 ## [2026-04-23] full | deeper steal reject defer architecture analysis
@@ -773,7 +773,7 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
   [slate-v2-perfect-plan-steal-reject-defer-map.md](docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md)
 - accepted the sharper architecture decision:
   [slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md](docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md)
-- updated [index.md](docs/research/index.md) with the new system and decision
+- updated `f49b996094:docs/research/index.md` with the new system and decision
 
 ## [2026-04-23] maintain | Slate v2 perfect architecture pause review
 
@@ -820,7 +820,7 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
   [editor-node-text-mark-dx-landscape.md](docs/research/systems/editor-node-text-mark-dx-landscape.md)
 - accepted the node DX decision:
   [editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md](docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md)
-- updated [index.md](docs/research/index.md) and
+- updated `8b98598b98:docs/research/index.md` and
   [sources/editor-architecture/README.md](docs/research/sources/editor-architecture/README.md)
 
 ## [2026-04-27] maintain | Slate v2 architecture verdict after item 4/5/6 closure
@@ -894,7 +894,7 @@ See [the ledger](reviews.md), [record contract](schema.md#review-history), and
   compiled read/update evidence pages
 - accepted the API decision:
   [slate-v2-state-tx-public-api-and-extension-namespaces.md](docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md)
-- updated [index.md](docs/research/index.md) with the new decision page
+- updated `4c0e00a201:docs/research/index.md` with the new decision page
 
 ## [2026-04-28] maintain | Slate v2 React 19.2 evidence refresh
 

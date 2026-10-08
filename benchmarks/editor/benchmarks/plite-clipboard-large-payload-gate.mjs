@@ -11,7 +11,7 @@ export const isClipboardAuthorityArtifactPath = (
   path.resolve(cwd, CLIPBOARD_AUTHORITY_ARTIFACT_PATH);
 
 const LARGE_PASTE_BASELINE_SOURCE =
-  'docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md';
+  '52625e8502:docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md';
 
 export const CLIPBOARD_ISSUE_TARGET_BUDGETS = Object.freeze({
   largePlainTextPaste10000P50: Object.freeze({

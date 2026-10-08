@@ -381,7 +381,7 @@ callers in `renderFeature` (changed inputs at line 2010 and historical reference
 at line 2096).
 
 `documentLink` always emits a Markdown link without checking target availability.
-A balanced-parenthesis scan of `docs/README.md`, `docs/research/README.md`, and
+A balanced-parenthesis scan of `docs/README.md`, `f6302c37c8:docs/research/README.md`, and
 all 64 generated feature hubs found 131 missing local-link occurrences among
 5,773 local links. This count includes historical references; it does not imply
 131 missing current owners. Examples include `geometry.md:21` linking deleted

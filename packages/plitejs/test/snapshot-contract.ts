@@ -1375,7 +1375,7 @@ it('insertBreak replaces the next soft break with a block split', () => {
   });
 });
 
-it('insertBreak repeatedly splits trailing empty blocks and moves selection to the document end', () => {
+it('insertBreak repeatedly splits trailing empty blocks and moves selection to the document end [EDIT-P-ENTER-EMPTY-001]', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1425,7 +1425,7 @@ it('insertBreak repeatedly splits trailing empty blocks and moves selection to t
   });
 });
 
-it('insertBreak from an empty selectable block void creates a trailing block', () => {
+it('insertBreak from an empty selectable block void creates a trailing block [EDIT-HR-ENTER-001]', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1545,7 +1545,7 @@ it('insertBreak after marked text moves selection into the new block', () => {
   });
 });
 
-it('insertBreak before marked text moves the marked leaf into the new block', () => {
+it('insertBreak before marked text moves the marked leaf into the new block [EDIT-P-ENTER-001]', () => {
   const editor = createEditor();
 
   editorReplace(editor, {

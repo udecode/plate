@@ -144,7 +144,7 @@ describe('BaseMentionPlugin', () => {
     ]);
   });
 
-  it('inserts a trailing space when the mention lands at block end', () => {
+  it('inserts a trailing space when the mention lands at block end [EDIT-MENTION-INSERT-END-001]', () => {
     const innerMentionPlugin = BaseMentionPlugin.configure({
       initialState: { insertSpaceAfterMention: true },
     });
@@ -203,7 +203,7 @@ describe('BaseMentionPlugin', () => {
     expect(editor.read.nodes.get([0, 2])?.[0]).toEqual({ text: '!' });
   });
 
-  it('skips the trailing space when the mention is inserted mid-block', () => {
+  it('skips the trailing space when the mention is inserted mid-block [EDIT-MENTION-INSERT-MID-001]', () => {
     const innerMentionPlugin2 = BaseMentionPlugin.configure({
       initialState: { insertSpaceAfterMention: true },
     });

@@ -93,7 +93,7 @@ These come from reading the source; I didn't run anything.
 - **`busy` refuses document undos too.** While a claim is pending, Cmd+Z returns `busy` even when the head is text typed during the wait.
 - **`read.history.hasUndo()` stays true while pending**, because `S` remains at the head. The controller folds pending into `canUndo`; raw readers such as `document-state.tsx:137` don't.
 - **Dead branches.** `replayNow`'s checks at 929-934 and 946-954 are unreachable, because `replay` already performs them synchronously.
-- **Doc snippet.** `docs/plite/reference/public-docs/libraries/plite-history/history-plugin-setup.mdx:50` calls `undo()` without `await`.
+- **Doc snippet.** `da4898bb61:docs/plite/reference/public-docs/libraries/plite-history/history-plugin-setup.mdx:50` calls `undo()` without `await`.
 
 ---
 

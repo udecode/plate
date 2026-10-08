@@ -25,7 +25,7 @@ architecture evidence used by the Slate v2 read/update runtime plan.
 ### Lexical
 
 - compiled pages inspected:
-  - `docs/research/entities/lexical.md`
+  - `docs/research/sources/lexical/README.md`
   - `docs/research/sources/editor-architecture/lexical-mark-store-and-decorator-split.md`
   - `docs/research/sources/lexical/markdown-package-and-shortcuts-doc-patterns.md`
 - raw paths inspected:
@@ -59,7 +59,7 @@ architecture evidence used by the Slate v2 read/update runtime plan.
 ### ProseMirror
 
 - compiled pages inspected:
-  - `docs/research/entities/prosemirror.md`
+  - `docs/research/sources/prosemirror/README.md`
   - `docs/research/sources/editor-architecture/prosemirror-mapped-overlays-and-bookmarks.md`
   - `docs/research/sources/prosemirror/guide-reference-and-example-doc-patterns.md`
 - raw paths inspected:
@@ -95,7 +95,7 @@ architecture evidence used by the Slate v2 read/update runtime plan.
 ### Tiptap
 
 - compiled pages inspected:
-  - `docs/research/entities/tiptap.md`
+  - `docs/research/sources/tiptap/README.md`
   - `docs/research/sources/editor-architecture/tiptap-comments-suggestions-and-node-range.md`
   - `docs/research/sources/tiptap/input-rules-and-extension-doc-patterns.md`
 - raw paths inspected:

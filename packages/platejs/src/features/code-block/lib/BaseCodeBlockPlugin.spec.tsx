@@ -430,7 +430,7 @@ describe('isCodeBlockEmpty', () => {
   });
 
   describe('deleteBackward', () => {
-    it('keeps deleteBackward local at the start of a non-empty first code line', () => {
+    it('keeps deleteBackward local at the start of a non-empty first code line [EDIT-CB-BS-START-001]', () => {
       const input = (
         <editor>
           <hcodeblock>
@@ -479,7 +479,7 @@ describe('isCodeBlockEmpty', () => {
       );
     });
 
-    it('unwraps an empty code block to a plain paragraph', () => {
+    it('unwraps an empty code block to a plain paragraph [EDIT-CB-BS-START-EMPTY-001]', () => {
       const input = (
         <editor>
           <hcodeblock>

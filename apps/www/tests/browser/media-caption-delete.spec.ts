@@ -4,7 +4,7 @@ import {
 } from '@platejs/test/playwright';
 import { expect, test } from '@playwright/test';
 
-test('Delete clears a fully selected caption without deleting its image', async ({
+test('Delete clears a fully selected caption without deleting its image [EDIT-CAPTION-DELETE-001]', async ({
   page,
 }) => {
   const runtimeErrors = recordBrowserRuntimeErrors(page);
