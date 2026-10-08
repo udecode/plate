@@ -2,11 +2,11 @@
 
 ## Paste during composition and slice metadata
 
-- ProseMirror skips its JavaScript paste handling while a composition is active, except on Android, and otherwise parses the clipboard and dispatches a paste transaction (`src/input.ts:590-667`). Rich paste carries explicit slice metadata: the `data-pm-slice` attribute with open depths and context, WebKit space restoration, and a wrapper map for content such as table rows (`src/clipboard.ts:1-260`). Source: `docs/plite/research/2026-06-12-oss-clipboard-paste-architecture/README.md:18-21`, `read-log.tsv:2-3`. Limit: unpinned local `prosemirror-view` checkout read on 2026-06-12.
+- ProseMirror skips its JavaScript paste handling while a composition is active, except on Android, and otherwise parses the clipboard and dispatches a paste transaction (`src/input.ts:590-667`). Rich paste carries explicit slice metadata: the `data-pm-slice` attribute with open depths and context, WebKit space restoration, and a wrapper map for content such as table rows (`src/clipboard.ts:1-260`). Source: `c70bacbd4a:docs/plite/research/2026-06-12-oss-clipboard-paste-architecture/README.md:18-21`, `read-log.tsv:2-3`. Limit: unpinned local `prosemirror-view` checkout read on 2026-06-12.
 
 ## Clipboard hooks
 
-- prosemirror-view's clipboard hooks: `transformCopied` and `clipboardSerializer` shape a copy, `transformPastedText` and `transformPastedHTML` rewrite pasted text and HTML before parsing, and `transformPasted` rewrites the parsed slice (`ProseMirror/prosemirror-view@ca4c78e9:src/clipboard.ts:6`, `:17`, `:49`, `:68`, `:52`, `:108`). On paste, the `data-pm-slice` attribute a copy wrote (`:34`) rebuilds the slice's open depths and context (`:73-74`), so the metadata steers parsing and never appears as content, and `normalizeSiblings` fits parsed nodes to the paste position (`:122`). Source: `docs/plite/research/2026-06-13-oss-rich-html-paste-clipboard-invariants/read-log.tsv:5`.
+- prosemirror-view's clipboard hooks: `transformCopied` and `clipboardSerializer` shape a copy, `transformPastedText` and `transformPastedHTML` rewrite pasted text and HTML before parsing, and `transformPasted` rewrites the parsed slice (`ProseMirror/prosemirror-view@ca4c78e9:src/clipboard.ts:6`, `:17`, `:49`, `:68`, `:52`, `:108`). On paste, the `data-pm-slice` attribute a copy wrote (`:34`) rebuilds the slice's open depths and context (`:73-74`), so the metadata steers parsing and never appears as content, and `normalizeSiblings` fits parsed nodes to the paste position (`:122`). Source: `c70bacbd4a:docs/plite/research/2026-06-13-oss-rich-html-paste-clipboard-invariants/read-log.tsv:5`.
 
 ## ProseMirror test families
 

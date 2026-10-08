@@ -10,4 +10,4 @@
 
 ## Portable Text model
 
-- Portable Text blocks use `_type: 'block'` and `style`; spans carry `marks` arrays that reference `markDefs`; and lists are flat, with `listItem` and `level` on blocks (`portabletext/portabletext@d17f7289:README.md:16-185`). Flat lists and portable annotations work, at the cost of mark-reference indirection. Source: `docs/plite/research/2026-08-17-editor-node-model-standards/README.md:101`, `read-log.tsv:15`.
+- Portable Text blocks use `_type: 'block'` and `style`; spans carry `marks` arrays that reference `markDefs`; and lists are flat, with `listItem` and `level` on blocks (`portabletext/portabletext@d17f7289:README.md:16-185`). Flat lists and portable annotations work, at the cost of mark-reference indirection. Source: `c70bacbd4a:docs/plite/research/2026-08-17-editor-node-model-standards/README.md:101`, `read-log.tsv:15`.

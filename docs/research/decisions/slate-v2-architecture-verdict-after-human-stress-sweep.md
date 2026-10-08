@@ -10,8 +10,8 @@ source_refs:
   - docs/plans/2026-04-27-plite-internal-runtime-projection-firewall-plan.md
   - docs/plans/2026-04-27-plite-selector-and-live-read-runtime-hard-cut-plan.md
   - docs/plans/2026-04-28-plite-root-runtime-selector-guard-hard-cut-plan.md
-  - docs/plans/2026-04-24-plite-absolute-architecture-closure-plan.md
-  - docs/plans/2026-04-26-plite-human-editing-stress-sweep.md
+  - c70bacbd4a:docs/plans/2026-04-24-plite-absolute-architecture-closure-plan.md
+  - c70bacbd4a:docs/plans/2026-04-26-plite-human-editing-stress-sweep.md
   - c70bacbd4a:docs/solutions/developer-experience/2026-04-27-plite-react-public-selectors-must-stay-model-truth.md
   - 6bc2fffa0bee6fcb6752d96139c698879682b41b:docs/solutions/developer-experience/2026-04-27-slate-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md
   - active goal state
@@ -19,7 +19,7 @@ source_refs:
   - docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md
   - docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md
   - docs/research/decisions/slate-v2-post-closure-architecture-review.md
-  - docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md
+  - c70bacbd4a:docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md
   - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate/src/core/public-state.ts
   - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate/src/create-editor.ts
   - udecode/slate@f0e5ad1ae7caa14027dc57bc38bd457909bd4b97:packages/slate/test/write-boundary-contract.ts

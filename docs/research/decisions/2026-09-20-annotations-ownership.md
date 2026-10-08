@@ -82,7 +82,7 @@ evidence boundary without absorbing the separate Comments feature review.
 The September 21 OSS pass compared the current source of ProseMirror, Lexical,
 CodeMirror, Monaco/VS Code, Yjs, Automerge and Quill, plus the public
 Tiptap Comments contract. The full source ledger and exact references are in
-[the research report](../../plite/research/2026-09-21-annotation-architecture-oss/REPORT.md).
+the research report (`docs/plite/research/2026-09-21-annotation-architecture-oss/REPORT.md`).
 
 The ownership direction survives the comparison. No candidate combines the
 required jobs more cleanly:

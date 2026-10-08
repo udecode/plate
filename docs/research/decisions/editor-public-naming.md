@@ -20,7 +20,7 @@ API, DOM/codec boundary, copied UI and public documentation are adopted. A
 protocols, public JSDoc and Plate's emitted declaration provenance. Prior
 branded clipboard, authored HTML/DOCX, mention and media formats are not a
 supported input domain; the adopted codecs have no compatibility fallback.
-[The adoption plan](../../plans/2026-09-12-editor-public-naming-adoption.md)
+The adoption plan (`docs/plans/2026-09-12-editor-public-naming-adoption.md`)
 owns the complete mapping and verification. The assessment below preserves the pre-adoption comparison and
 its original source-only evidence limits. Immutable review records are unchanged.
 

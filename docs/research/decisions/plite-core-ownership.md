@@ -31,7 +31,7 @@ related:
 and effects, and atomic extension replacement.** These are two cuts within the
 core architecture review; they do not merge independent Plate feature reviews.
 The comparison below records the pre-adoption source. The two cuts are
-implemented locally under [the adoption plan](../../plans/2026-09-11-plite-core-cuts.md);
+implemented locally under the adoption plan (`docs/plans/2026-09-11-plite-core-cuts.md`);
 full handoff remains in progress because the shared checkout has failing
 checks and concurrent source changes.
 

@@ -13,8 +13,8 @@ valuable cut is to remove pagination's trip through the generic list virtualizer
 Keep its existing canvas coordinates instead of adding an offset-normalizing
 public hook and another CSS marker.
 
-The [Task plan](../../plans/2026-09-11-large-documents-api-review.md) owns scope,
-readiness and execution order. The [research run](../../plite/research/2026-09-11-large-documents-contract/README.md)
+The Task plan (`docs/plans/2026-09-11-large-documents-api-review.md`) owns scope,
+readiness and execution order. The research run (`docs/plite/research/2026-09-11-large-documents-contract/README.md`)
 contains source provenance, counterexamples and proof packets. The immutable
 `2026-09-11-large-documents-rendering-design` record preserves the preceding
 proposal; `2026-09-12-large-documents-deep-contract` records this reassessment.

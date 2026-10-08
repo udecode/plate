@@ -146,7 +146,7 @@ See [the decision](decisions/registry-ui-ownership.md) and
   review does not replace the preserved failed browser and timing receipts.
 
 See [the decision](decisions/comments-data-ownership.md),
-[the execution plan](../plans/2026-09-16-comments-history-api.md), and
+the execution plan (`docs/plans/2026-09-16-comments-history-api.md`), and
 [the immutable review](review-records/2026-09-17-comments-mounted-view-ownership.json).
 
 ## [2026-09-17] review | Direct editing with visible suggestions
@@ -251,7 +251,7 @@ See the September 13, 2026 audit conclusion: pursue a complete semantic review c
   suites remain evidence of their original snapshots. No fourth production
   optimization trial or product edit was started.
 
-See [the design](../plans/2026-09-12-authored-loadable-state-design.md),
+See the design (`docs/plans/2026-09-12-authored-loadable-state-design.md`),
 the September 12, 2026 disposable probe conclusion: three fresh-process interleaved pairs per runtime at 10,000 showed narrower subset-decoding cost, but neither Bun nor Node passed the equivalent-runtime semantic gate, and
 [immutable review](review-records/2026-09-12-authored-loadable-state.json).
 
@@ -291,9 +291,9 @@ See [the decision](decisions/authored-change-ownership.md) and
   cases, static dependency reachability and the proposed type sketch. Recorded
   P0–P4 prototype gates and S1–S7 adoption without implementing the API.
 
-See [the research run](../plite/research/2026-09-11-large-documents-contract/README.md),
+See the research run (`docs/plite/research/2026-09-11-large-documents-contract/README.md`),
 [current contract](decisions/large-documents-rendering-api.md) and
-[Task plan](../plans/2026-09-11-large-documents-api-review.md).
+Task plan (`docs/plans/2026-09-11-large-documents-api-review.md`).
 
 ## [2026-09-11] design | Explicit DOM omission
 
@@ -343,7 +343,7 @@ the September 11, 2026 assessment results: 112 tests passed in five files; a 1,0
 - Fixed historical-reference validation so deleting an audited source owner
   leaves its immutable review readable with stale source evidence.
 
-See [the adoption plan](../plans/2026-09-11-plite-core-cuts.md) and
+See the adoption plan (`docs/plans/2026-09-11-plite-core-cuts.md`) and
 the September 11, 2026 receipt conclusion: scoped core, React and history checks passed, but adoption remained in progress and proof partial because strict, integration and release checks failed and final browser evidence was invalidated.
 
 ## [2026-09-11] review | Plite core ownership
@@ -378,7 +378,7 @@ the September 11, 2026 assessment receipt: all four questions reviewed, 180 curr
   external prerequisites and cycles. Individual draft/record routes stay intact.
 
 See [the ledger](fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/reviews.md), [group contract](schema.md#core-architecture-review-groups)
-and [verification plan](../plans/2026-09-11-core-review-groups.md).
+and verification plan (`c70bacbd4a:docs/plans/2026-09-11-core-review-groups.md`).
 
 ## [2026-09-11] maintain | automatic review history and feature ledger
 
@@ -396,7 +396,7 @@ and [verification plan](../plans/2026-09-11-core-review-groups.md).
   record integrity only; product tests and external freshness were not replayed.
 
 See [the ledger](fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/reviews.md), [record contract](schema.md#review-history), and
-[implementation evidence](../plans/2026-09-11-review-history-and-global-ledger.md).
+implementation evidence (`docs/plans/2026-09-11-review-history-and-global-ledger.md`).
 
 ## [2026-08-30] maintain | cursor architecture closure reconciliation
 
@@ -459,7 +459,7 @@ See [the ledger](fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/reviews.
 - reused the existing editor-architecture lane for Lexical, ProseMirror,
   Tiptap, React 19.2, Plate, and slate-yjs evidence
 - refreshed the active Slate Ralplan with a steal/reject/diverge strategy:
-  [2026-05-14-slate-v2-example-memoization-hard-cut-ralplan.md](../plans/2026-05-14-plite-example-memoization-hard-cut-ralplan.md)
+  2026-05-14-slate-v2-example-memoization-hard-cut-ralplan.md (`c70bacbd4a:docs/plans/2026-05-14-plite-example-memoization-hard-cut-ralplan.md`)
 - found no missing compiled research page for this planning question; remaining
   gaps are performance, regression, migration, objection, and high-risk proof
   rows inside the plan
@@ -628,7 +628,7 @@ See [the ledger](fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/reviews.
   ProseMirror, Lexical, Tiptap, local Slate v2 proof, layout/measurement/IME,
   lightweight editable surfaces, and service/store models
 - added a scoped system page:
-  [slate-v2-overlay-architecture.md](docs/research/systems/slate-v2-overlay-architecture.md)
+  slate-v2-overlay-architecture.md (`c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md`)
 - added reusable concepts:
   [overlay-lane-separation.md](52625e85025313eebd4eeb9be2254249ded58676:docs/research/concepts/overlay-lane-separation.md),
   [durable-anchor-vs-live-handle.md](52625e85025313eebd4eeb9be2254249ded58676:docs/research/concepts/durable-anchor-vs-live-handle.md),
@@ -640,7 +640,7 @@ See [the ledger](fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/reviews.
 ## [2026-04-15] maintain | overlay superiority and field-position read
 
 - updated
-  [systems/slate-v2-overlay-architecture.md](docs/research/systems/slate-v2-overlay-architecture.md)
+  systems/slate-v2-overlay-architecture.md (`c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md`)
   to reflect the implemented lane as accepted instead of partial
 - updated
   `5fdfdf3ce9:docs/research/systems/editor-architecture-landscape.md`
@@ -770,7 +770,7 @@ See [the ledger](fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/reviews.
 - deepened the Lexical / ProseMirror / Tiptap architecture lane from raw
   evidence already normalized under `../raw`
 - added the system map:
-  [slate-v2-perfect-plan-steal-reject-defer-map.md](docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md)
+  slate-v2-perfect-plan-steal-reject-defer-map.md (`c70bacbd4a:docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md`)
 - accepted the sharper architecture decision:
   [slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md](docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md)
 - updated `f49b996094:docs/research/index.md` with the new system and decision
@@ -1082,7 +1082,7 @@ See [the ledger](fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/reviews.
 
 - Compiled seven current DOCX source families and explicit corpus dispositions: 67 selected current external files, exact revisions/hashes/licenses, zero issue/PR bodies, no upstream execution. SuperDoc current v2 serializer remains an explicit proprietary-engine evidence gap.
 - Mapped all 10 documents census units and reconciled September 8 boundary work. Main replayed 123 existing package tests; a worker observed 12 additional fixture/demo tests. Two new historical probes confirmed stale sidecar authority and mixed export snapshots.
-- [Decision](decisions/documents-conversion-fidelity.md): Pursue Task design/planning; direct OOXML versus repaired HTML remains a candidate comparison. Product code, doctrine and public docs remain unchanged. [Raw run](../plite/research/2026-09-14-docx-interoperability-oss/README.md), [source synthesis](sources/docx-interoperability-oss.md), [open questions](52625e85025313eebd4eeb9be2254249ded58676:docs/research/open-questions/documents-conversion-proof.md).
+- [Decision](decisions/documents-conversion-fidelity.md): Pursue Task design/planning; direct OOXML versus repaired HTML remains a candidate comparison. Product code, doctrine and public docs remain unchanged. Raw run (`docs/plite/research/2026-09-14-docx-interoperability-oss/README.md`), [source synthesis](sources/docx-interoperability-oss.md), [open questions](52625e85025313eebd4eeb9be2254249ded58676:docs/research/open-questions/documents-conversion-proof.md).
 
 - Post-record freshness: concurrent edits changed shared authored EN guidance and Plate doctrine. Relevant sections were reread and still support the review; the immutable snapshot remains flagged stale rather than being overwritten. DOCX source still matches. See the run’s `post-record-freshness.json`.
 
@@ -1136,7 +1136,7 @@ See [the ledger](fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/reviews.
 
 ## 2026-09-18 — Comments attachment design gate
 
-- The [design plan](../plans/2026-09-18-comments-attachment-discovery.md) specifies
+- The design plan (`docs/plans/2026-09-18-comments-attachment-discovery.md`) specifies
   native replacement laws, live-only placement and a lazy All comments dialog
   using existing Comments records. It keeps the user-selected Floating workflow
   and removes stale placement, the unavailable spill and duplicate demo lists.
@@ -1160,7 +1160,7 @@ See [the ledger](fe0e9599a607643b7b5f333e5efad99b7f1a5e56:docs/research/reviews.
 
 ## 2026-09-18 — Comments attachment bounded design trials
 
-- The [same plan](../plans/2026-09-18-comments-attachment-discovery.md) remains
+- The same plan (`docs/plans/2026-09-18-comments-attachment-discovery.md`) remains
   provisional. The third native candidate's compact frontier and latest
   deletion fence lose earlier partial coverage after save/reload and supported
   retained-history revert. Structural collapse also produces a false expanded

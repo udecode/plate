@@ -2,7 +2,7 @@
 
 ## Table copy and paste
 
-- prosemirror-tables turns pasted cells into a rectangle (`ProseMirror/prosemirror-tables@eb522f25959a1e4515a4ff5ce7e3a939f19c55e9`, the local checkout on 2026-10-08). `pastedCells` reads a slice of rows or cells into an `Area` (`src/copypaste.ts:38`), `fitSlice` fits a slice to a node type (`:109`), `clipCells` clips or repeats cells to fill the target rectangle (`:122`), and `insertCells` writes them (`:324`). Its tests cover cells, rows, partial rows, rowspans, rectangular padding, clipping and repeated cells (`test/copypaste.test.ts:31-152`, read 2026-06-13). Source: `docs/plite/research/2026-06-13-oss-rich-html-paste-clipboard-invariants/read-log.tsv:6-7`.
+- prosemirror-tables turns pasted cells into a rectangle (`ProseMirror/prosemirror-tables@eb522f25959a1e4515a4ff5ce7e3a939f19c55e9`, the local checkout on 2026-10-08). `pastedCells` reads a slice of rows or cells into an `Area` (`src/copypaste.ts:38`), `fitSlice` fits a slice to a node type (`:109`), `clipCells` clips or repeats cells to fill the target rectangle (`:122`), and `insertCells` writes them (`:324`). Its tests cover cells, rows, partial rows, rowspans, rectangular padding, clipping and repeated cells (`test/copypaste.test.ts:31-152`, read 2026-06-13). Source: `c70bacbd4a:docs/plite/research/2026-06-13-oss-rich-html-paste-clipboard-invariants/read-log.tsv:6-7`.
 
 ## Table clipboard
 

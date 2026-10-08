@@ -4,7 +4,7 @@ type: decision
 status: accepted
 updated: 2026-04-30
 related:
-  - docs/research/systems/slate-v2-overlay-architecture.md
+  - c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
 ---
 

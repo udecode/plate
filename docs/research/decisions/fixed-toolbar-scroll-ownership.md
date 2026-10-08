@@ -84,7 +84,7 @@ not reverse the separate AI temporary-draft decision or erase its behavior
 receipts. The broader UI scope remains unassessed.
 
 The execution-ready adoption plan is
-[`2026-09-16-fixed-toolbar-scrollport-layout.md`](../../plans/2026-09-16-fixed-toolbar-scrollport-layout.md).
+`2026-09-16-fixed-toolbar-scrollport-layout.md` (`docs/plans/2026-09-16-fixed-toolbar-scrollport-layout.md`).
 Adoption migrated the complete fixed-toolbar/container census, removed the
 container demo-height contract, rebuilt the registry, and installed both copied
 editor blocks under Base/Nova and Radix/Luma. Focused DOM tests and fresh

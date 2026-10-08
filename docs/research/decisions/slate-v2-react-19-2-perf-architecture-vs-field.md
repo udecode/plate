@@ -11,7 +11,7 @@ source_refs:
   - docs/research/sources/editor-architecture/slate-v2-local-proof-substrate.md
   - docs/research/sources/editor-architecture/candidates.md
 related:
-  - docs/research/systems/slate-v2-overlay-architecture.md
+  - c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md
   - docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md
 ---
 

@@ -31,7 +31,7 @@ plan and its receipt.
 
 ## Design follow-up
 
-The [executed design plan](../../plans/2026-09-15-external-text-ordered-feedback.md)
+The executed design plan (`docs/plans/2026-09-15-external-text-ordered-feedback.md`)
 uses CodeMirror's existing `dispatchTransactions` boundary. Apply the local
 batch, finish observer notification, then publish one composed canonical action.
 Delete queued canonical feedback and rejection resets. Canonical transactions

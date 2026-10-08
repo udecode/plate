@@ -11,7 +11,7 @@ updated: 2026-10-04
 
 Status: **Implemented; adopted and verified** for ledger item 10,
 `collaboration`. The
-[completed lifetime plan](../../plans/2026-09-14-collaboration-lifetimes.md)
+completed lifetime plan (`docs/plans/2026-09-14-collaboration-lifetimes.md`)
 and [implementation review](../review-records/2026-09-14-collaboration-lifetime-implementation.json)
 supersede the earlier deferred assessment. They record the combined lifecycle,
 package, real-provider/browser and balanced composite performance evidence,
@@ -205,8 +205,8 @@ No real network/provider server, browser/native device, performance comparison,
 full history/CRDT soak or proposed implementation was executed. Source review
 was sequential; no independent worker review is claimed.
 
-The [entrypoint cut](../../plans/2026-08-23-hard-cut-yjs-public-entrypoints.md)
-and [cursor presentation plan](../../plans/2026-09-04-yjs-cursor-presentation.md)
+The entrypoint cut (`docs/plans/2026-08-23-hard-cut-yjs-public-entrypoints.md`)
+and cursor presentation plan (`docs/plans/2026-09-04-yjs-cursor-presentation.md`)
 provide history, not current proof. Their package identity and presentation
 boundaries remain useful. Adjacent authored/core review verdicts do not
 transfer to this initial collaboration record.

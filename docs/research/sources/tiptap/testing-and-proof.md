@@ -2,7 +2,7 @@
 
 ## Paste test helper
 
-- Tiptap's Cypress paste helper (`tests/cypress/support/commands.js:74-100`) builds a `DataTransfer`, puts the data under one MIME type and dispatches a cancelable, bubbling synthetic `ClipboardEvent('paste')` on the subject. It never touches the native clipboard, so it proves the editor's paste handler, not browser paste. Source: `docs/plite/research/2026-06-12-testing-oracles/sources/tiptap-summary.md:1-11`, `read-log.tsv:13`. Limit: unpinned local checkout read on 2026-06-12.
+- Tiptap's Cypress paste helper (`tests/cypress/support/commands.js:74-100`) builds a `DataTransfer`, puts the data under one MIME type and dispatches a cancelable, bubbling synthetic `ClipboardEvent('paste')` on the subject. It never touches the native clipboard, so it proves the editor's paste handler, not browser paste. Source: `c70bacbd4a:docs/plite/research/2026-06-12-testing-oracles/sources/tiptap-summary.md:1-11`, `read-log.tsv:13`. Limit: unpinned local checkout read on 2026-06-12.
 
 ## What Tiptap's tests are good for
 

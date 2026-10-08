@@ -25,9 +25,9 @@ output, a public persistent graph and a second diff manager. Seven upstream
 witnesses support the design. They certify none of the plan's 43 production
 acceptance families.
 
-[Implementation](../../plans/2026-09-10-structural-document-diff.md) follows
+Implementation (`docs/plans/2026-09-10-structural-document-diff.md`) follows
 completed native authored changes. The diff plan's prerequisite sentence says
-implementation is not started; the [owning authored plan](../../plans/2026-09-10-native-authored-changes-and-suggestions.md)
+implementation is not started; the owning authored plan (`docs/plans/2026-09-10-native-authored-changes-and-suggestions.md`)
 reports S1–S3 in progress. Treat the owning plan and current source as the
 next reconciliation point. Neither state satisfies prerequisite completion.
 

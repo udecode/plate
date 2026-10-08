@@ -132,7 +132,7 @@ package work and the lease's document, comment and schema checks. No new
 source comparison proves that a direct encoder is faster or more faithful than
 Plate's hybrid for every case.
 
-The earlier [presentation move](../../plans/2026-09-04-move-docx-export-presentation-to-registry.md)
+The earlier presentation move (`docs/plans/2026-09-04-move-docx-export-presentation-to-registry.md`)
 also remains valid: optional themes belong to the registry, while required
 conversion mechanics belong to the package. Promoting mandatory Word mappings
 enforces that distinction; it does not restore an implicit package stylesheet.

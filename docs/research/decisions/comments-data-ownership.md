@@ -74,7 +74,7 @@ repaint are rejected. The execution plan retains the reproduced five-to-four
 discussion failure alongside passing two-view contracts and the final browser
 replay.
 
-The [execution plan](../../plans/2026-09-16-comments-history-api.md) owns current
+The execution plan (`docs/plans/2026-09-16-comments-history-api.md`) owns current
 adoption and proof. The original failed serialization probe, passing design
 prototype, and production timing result are preserved independently. Final
 production serialization passes all 16 cases; browser proof passes 30 comment
@@ -113,7 +113,7 @@ copy anchors into another store. Existing `attachment()` and subscription
 contracts suffice for this job. Keep neutral unavailable wording: an absent
 range can also mean a hidden projection or a missing historical target.
 
-The [design plan](../../plans/2026-09-18-comments-attachment-discovery.md)
+The design plan (`docs/plans/2026-09-18-comments-attachment-discovery.md`)
 specifies a lazy dialog in the existing comment-toolbar item, All/Open/Resolved
 filters and 20-card pages. It removes duplicate demo feeds and the conversation
 card's range-only target label. A private exact-view row owns target status and

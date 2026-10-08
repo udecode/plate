@@ -228,9 +228,9 @@ their in-memory snapshots do not prove a storage backend.
 The [final-pass review](../review-records/2026-09-16-persistence-immutable-migration-contract.json)
 supersedes the first persistence record's target precision while retaining its
 four-unit verdict and app-owned lineage
-from [registry migration separation](../../plans/2026-08-18-separate-registry-migrations.md)
+from registry migration separation (`docs/plans/2026-08-18-separate-registry-migrations.md`)
 and the single v54 boundary from the
-[version hard cut](../../plans/2026-09-03-hard-cut-plate-migrations-after-v54.md).
+version hard cut (`docs/plans/2026-09-03-hard-cut-plate-migrations-after-v54.md`).
 Those plans do not make the runner's editor dependency a hard law. The state
 review's retention of fields/effects remains appropriate. Authored live-state
 work establishes that pending review facts belong in the saved document, not

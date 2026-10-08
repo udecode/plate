@@ -62,7 +62,7 @@ is unresolved, publishes it immediately for a live request, then hands all
 later edit, delete and resolve actions to the normal Comments owner. A retired
 request discards only unresolved work. Focused lifecycle and browser proof are
 recorded in
-[the implementation plan](../../plans/2026-09-17-ai-comment-approval-cut.md).
+the implementation plan (`c70bacbd4a:docs/plans/2026-09-17-ai-comment-approval-cut.md`).
 
 The bounded assessment is retained in
 the September 17 review draft recommending ordinary comment controls for completed AI comments, cancellation fencing for unfinished work and retained Accept/Discard for document edits.

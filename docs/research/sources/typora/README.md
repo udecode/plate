@@ -56,7 +56,6 @@ Decisions:
 
 Other pages:
 
-- [Markdown Editing Reference Audit](../../history/2026-04-02-markdown-editing-reference-audit.md). Typora-versus-Milkdown evidence audit of the EDIT-* markdown editing rules, recording where Plate locked its own decisions, plus Obsidian math-trigger and mode authority notes.
 - [Cursor, Find, and Widget geometry architecture](../editor-architecture/cursor-find-and-widget-geometry.md). The 2026-08-30 Plite/Plate Decoration, Annotation and Widget split, whose Widget lane Plite later cut, plus the Yjs cursor cache, tested against ProseKit popover and search, Tiptap BubbleMenu and CollaborationCaret, Lexical Yjs cursors, y-prosemirror and Typora find.
 
 <!-- index:end -->

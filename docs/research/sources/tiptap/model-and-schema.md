@@ -6,4 +6,4 @@
 
 ## Feature migrations
 
-- Tiptap's mathematics extension ships a manual migration: `createMathMigrateTransaction` and `migrateMathStrings` replace `$...$` LaTeX strings in the document with inline math nodes in one transaction (`ueberdosis/tiptap@91c51be5:packages/extension-mathematics/src/utils.ts:16-100`). Tiptap has no document-level version chain. Source: `docs/plite/research/2026-08-17-document-schema-migrations/read-log.tsv:8`; reread at the pinned commit on 2026-10-08.
+- Tiptap's mathematics extension ships a manual migration: `createMathMigrateTransaction` and `migrateMathStrings` replace `$...$` LaTeX strings in the document with inline math nodes in one transaction (`ueberdosis/tiptap@91c51be5:packages/extension-mathematics/src/utils.ts:16-100`). Tiptap has no document-level version chain. Source: `c70bacbd4a:docs/plite/research/2026-08-17-document-schema-migrations/read-log.tsv:8`; reread at the pinned commit on 2026-10-08.

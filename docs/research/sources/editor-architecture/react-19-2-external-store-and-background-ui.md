@@ -14,7 +14,7 @@ source_refs:
   - udecode/slate@2de4ca7710ec8176c3be5b8ff4779cb5c141f228:docs/walkthroughs/09-performance.md
 updated: 2026-04-28
 related:
-  - docs/research/systems/slate-v2-overlay-architecture.md
+  - c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md
   - docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md
 ---
 

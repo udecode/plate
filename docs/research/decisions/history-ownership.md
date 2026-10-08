@@ -114,7 +114,7 @@ types, Comments, docs, package reference data and release notes use the accepted
 single-value authoring contract. The
 [first design execution](../review-records/2026-09-23-history-replay-lifecycle-design.json)
 is the immutable predecessor superseded by this correction. The earlier
-[Task plan](../../plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md)
+Task plan (`docs/plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md`)
 adopts and verifies the synchronous replay boundary, grouping, Plate adapter,
 and existing mounted ownership. The
 [async replay review](../review-records/2026-09-23-history-async-replay-api.json)
@@ -446,7 +446,7 @@ that ownership law are now taught together.
 
 ## Task design follow-up
 
-The [canonical plan](../../plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md)
+The canonical plan (`docs/plans/2026-09-15-history-explicit-replay-and-one-grouping-authority.md`)
 selects complete replay services, transaction grouping/restore, lazy head
 availability, one core grouping clock and one exact mounted replay owner.
 It cuts public transaction replay, duplicate array readers and branch-discard

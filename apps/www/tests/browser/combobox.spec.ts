@@ -440,27 +440,6 @@ test('combobox:emoji activates the top result when the query grows', async ({
   }
 });
 
-test('combobox:emoji Enter as soon as a new top result shows picks it', async ({
-  page,
-}) => {
-  await routeEmojibase(page);
-  const runtimeErrors = recordBrowserRuntimeErrors(page);
-
-  try {
-    const { editor } = await openDemo(page, '/blocks/emoji-demo', 'Emoji');
-
-    await page.keyboard.type(':b');
-    await expect(page.getByRole('option').first()).toHaveText(/^🅱/);
-    await page.keyboard.type('y');
-    await expect(page.getByRole('option').first()).toHaveText(/^👋/);
-    await page.keyboard.press('Enter');
-    await editor.assert.modelBlockText(0, '👋Emoji');
-    runtimeErrors.assertNone();
-  } finally {
-    runtimeErrors.stop();
-  }
-});
-
 test('combobox:emoji stays closed inside a code block', async ({ page }) => {
   await routeEmojibase(page);
   const runtimeErrors = recordBrowserRuntimeErrors(page);

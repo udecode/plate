@@ -71,7 +71,7 @@ because raw remount samples were not serialized. Broad package typecheck remains
 blocked by unrelated authored TS6307 project-file-list errors. No physical-device,
 publication or release claim is made.
 
-The September 18 [execution checkpoint](../../plans/2026-09-17-table-selection-host-projection-design.md#2026-09-18-repair-cleanup)
+The September 18 execution checkpoint (`docs/plans/2026-09-17-table-selection-host-projection-design.md`)
 repairs Strict Mode cleanup within the same private owner. It records 37 Table
 React cases, three copied-UI cases, four Chromium cases and an actual Chrome
 interaction. Two deletion experiments broke imperative selection painting and

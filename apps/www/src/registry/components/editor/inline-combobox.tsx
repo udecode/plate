@@ -71,7 +71,7 @@ const defaultFilter: FilterFn = (
 
 // The popup's DOM holds the option order. Ariakit sorts its collection a frame
 // after options render and misses a reorder of kept options, which a ranked
-// list makes on every query.
+// list can make on any query.
 const getOptions = (contentElement: HTMLElement | null) =>
   Array.from(
     contentElement?.querySelectorAll<HTMLElement>(
@@ -207,9 +207,9 @@ const InlineCombobox = <P extends PluginReference>({
     getOptions(content)
       .find((option) => option.id === id)
       ?.scrollIntoView({
-      block: 'nearest',
-      inline: 'nearest',
-    });
+        block: 'nearest',
+        inline: 'nearest',
+      });
   }, [moves, store]);
 
   const queryBecameProse =

@@ -2,7 +2,7 @@
 
 ## Marks over inline atoms
 
-- ProseMirror's mark commands do not treat inline atoms as text: `markApplies` skips an inline atom that a range fully covers unless `enterAtoms` is set, and `removeInlineAtoms` splits a range around an inline atom with content so the mark lands only on the text beside it (`ProseMirror/prosemirror-commands@52a84a84:src/commands.ts:578-600`). Source: `docs/plite/research/2026-06-14-firefox-inline-void-select-all-replacement/read-log.tsv:8`; reread at the pinned commit on 2026-10-08.
+- ProseMirror's mark commands do not treat inline atoms as text: `markApplies` skips an inline atom that a range fully covers unless `enterAtoms` is set, and `removeInlineAtoms` splits a range around an inline atom with content so the mark lands only on the text beside it (`ProseMirror/prosemirror-commands@52a84a84:src/commands.ts:578-600`). Source: `c70bacbd4a:docs/plite/research/2026-06-14-firefox-inline-void-select-all-replacement/read-log.tsv:8`; reread at the pinned commit on 2026-10-08.
 
 ## ProseMirror test families
 

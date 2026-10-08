@@ -9,7 +9,7 @@ source_refs:
 updated: 2026-04-04
 related:
   - docs/research/sources/milkdown/corpus-overview.md
-  - docs/research/history/2026-04-02-markdown-editing-reference-audit.md
+  - c70bacbd4a:docs/research/history/2026-04-02-markdown-editing-reference-audit.md
 ---
 
 # Milkdown editor-behavior priority map

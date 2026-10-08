@@ -4,11 +4,11 @@ type: decision
 status: accepted
 updated: 2026-04-15
 source_refs:
-  - docs/research/systems/slate-v2-overlay-architecture.md
+  - c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
   - docs/research/sources/editor-architecture/candidates.md
 related:
-  - docs/research/entities/slate.md
+  - c70bacbd4a:docs/research/entities/slate.md
 ---
 
 # Slate v2 overlay architecture beats legacy Slate and aligns with the best parts of the field

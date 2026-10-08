@@ -108,7 +108,7 @@ it cannot quietly select a weaker native contract.
    proof `runtime-read-performance.spec.ts` exercises other feature routes and
    has been replaced by relevant huge-document/coverage contract entrypoints.
 6. **The earlier easy cut is already present.**
-   September 9's [E19–E23 study](../../plite/research/2026-09-09-editor-performance-iteration-2/virtualization.md)
+   September 9's E19–E23 study (`docs/plite/research/2026-09-09-editor-performance-iteration-2/virtualization.md`)
    proposed deleting hidden-range key arrays. Live
    [virtual planning](04f11c01a9c957c848c697f2522f677f0a71c3f4:packages/plitejs/src/react/dom-strategy/use-virtualized-root-plan.ts)
    uses endpoint keys without those slices. Its hash differs from the recorded

@@ -9,7 +9,7 @@ source_refs:
   - docs/plans/2026-04-14-plite-decorations-annotations-cluster-research.md
   - c70bacbd4a:docs/plite-draft/decoration-roadmap.md
 related:
-  - docs/research/entities/slate.md
+  - c70bacbd4a:docs/research/entities/slate.md
 ---
 
 # Slate v2 overlay architecture cuts

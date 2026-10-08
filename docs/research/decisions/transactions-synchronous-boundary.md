@@ -136,7 +136,7 @@ valid updates, thenable objects/functions and independent read results.
 The initial regression run had 2 passing controls and 27 failures for missing
 rejection. Final focused proof passes 187 tests across 10 files, including
 31 regression cases, plus 12 source-first typecheck tasks and scoped lint.
-The [Patch plan](../../plans/2026-09-11-synchronous-transaction-authors.md) and
+The Patch plan (`docs/plans/2026-09-11-synchronous-transaction-authors.md`) and
 the September 11, 2026 source-stable receipt for dirty revision `5a899edcbea2c31f1bd34dc575c9dd3860c577d0` (187 passing tests across 10 files, 12 typecheck tasks and scoped lint, all with exit code zero)
 record the exact local proof. The original review record and probe remain
 immutable historical evidence. This is local implementation evidence, with no

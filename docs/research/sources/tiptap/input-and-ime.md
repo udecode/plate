@@ -6,4 +6,4 @@
 
 ## Core input
 
-- Tiptap delegates core browser input, selection and paste handling to ProseMirror and is not an independent low-level input engine; on top it adds selection decorations, NodeView mutation-ignore rules, hidden-content selection correction in its details extension and paste metadata hooks. Evidence: a package-level scan of the local Tiptap checkout on 2026-06-13, not line-level reads (`docs/plite/research/2026-06-13-oss-selection-ime-paste-oracle-scout/read-log.tsv:10`, `rejected-ledger.tsv:3`).
+- Tiptap delegates core browser input, selection and paste handling to ProseMirror and is not an independent low-level input engine; on top it adds selection decorations, NodeView mutation-ignore rules, hidden-content selection correction in its details extension and paste metadata hooks. Evidence: a package-level scan of the local Tiptap checkout on 2026-06-13, not line-level reads (`c70bacbd4a:docs/plite/research/2026-06-13-oss-selection-ime-paste-oracle-scout/read-log.tsv:10`, `rejected-ledger.tsv:3`).

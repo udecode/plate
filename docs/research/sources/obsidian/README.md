@@ -31,7 +31,6 @@ Pages in this folder:
 
 Other pages:
 
-- [Markdown Editing Reference Audit](../../history/2026-04-02-markdown-editing-reference-audit.md). Typora-versus-Milkdown evidence audit of the EDIT-* markdown editing rules, recording where Plate locked its own decisions, plus Obsidian math-trigger and mode authority notes.
 - [Scroll, selection, and caret visibility runtime](../editor-architecture/scroll-selection-visibility-runtime.md). Scroll/caret-visibility mechanisms observed in ProseMirror, Lexical, CodeMirror, Tiptap, Milkdown and Obsidian; the Slate v2 part is a target only.
 
 <!-- index:end -->

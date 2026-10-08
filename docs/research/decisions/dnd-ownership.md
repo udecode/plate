@@ -102,24 +102,24 @@ themselves.
 
 ## Retained history
 
-July's [package review](../../plans/2026-07-10-plate-next-dnd-package-review.md)
+July's package review (`docs/plans/2026-07-10-plate-next-dnd-package-review.md`)
 established selected-block preservation, same-ID editor isolation and ordered
 cross-editor publication. The [kit-lifetime work](../../plans/2026-09-06-kit-owned-ai-and-dnd-lifetimes.md)
-and [root-slot cut](../../plans/2026-09-07-ai-dnd-root-slots.md) established
+and root-slot cut (`docs/plans/2026-09-07-ai-dnd-root-slots.md`) established
 automatic setup, exact Editable/ownerDocument cleanup, supplied-manager
 composition and feature-owned integration. Their timing limits remain historical.
 
-The [UI extraction](../../plans/2026-09-07-full-plate-ui-extraction-audit.md)
+The UI extraction (`docs/plans/2026-09-07-full-plate-ui-extraction-audit.md`)
 established payload preparation and inert mounted clones. The
-[preview repair](../../plans/2026-09-18-dnd-preview-origin-regression.md) bound
+preview repair (`docs/plans/2026-09-18-dnd-preview-origin-regression.md`) bound
 those clones to the mounted view. Retain the behavior, not a second cloning or
 geometry owner. The recovered extraction outcome remains historical-unbound;
 its recovery date and plan hash are not test replay or current adoption.
 
-April's [context guard](../../plans/2026-04-10-dnd-missing-context-runtime-guard.md)
+April's context guard (`docs/plans/2026-04-10-dnd-missing-context-runtime-guard.md`)
 is SSR/history context. Current browser hooks require a manager, so the old
 missing-manager guarantee is not silently carried forward. March's
-[coverage proposal](../../plans/2026-03-23-dnd-coverage-pass.md) has no completion
+coverage proposal (`docs/plans/2026-03-23-dnd-coverage-pass.md`) has no completion
 receipt; July superseded its dead-helper proposal.
 
 The [Upload protocol](../../plans/2026-09-19-upload-draft-asset-protocol.md)

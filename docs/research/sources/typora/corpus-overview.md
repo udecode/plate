@@ -53,7 +53,7 @@ Before this pass, Plate already had useful Typora work in the repo:
 
 And the editor-behavior stack already relied on Typora heavily:
 
-- [markdown-editing-reference-audit.md](docs/research/history/2026-04-02-markdown-editing-reference-audit.md)
+- markdown-editing-reference-audit.md (`c70bacbd4a:docs/research/history/2026-04-02-markdown-editing-reference-audit.md`)
 - [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md)
 - editor-protocol-matrix.md (`c70bacbd4a:docs/editor-behavior/editor-protocol-matrix.md`)
 

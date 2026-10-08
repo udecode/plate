@@ -26,7 +26,6 @@ Decisions:
 
 Research runs:
 
-- [2026-08-17-editor-node-model-standards](../../../plite/research/2026-08-17-editor-node-model-standards). Plate's persisted node model (headings, code, lists, media, tables, identity) compared field by field with MDAST/UNIST, ProseMirror, Lexical, Slate (source plus 14 issue/PR threads), BlockNote, Portable Text, Editor.js and Quill.
 - [2026-09-25-document-codec-architecture](../../../plite/research/2026-09-25-document-codec-architecture). Plate/Plite import-export codec API research (adopted). Its shard 004 and read log state source-level facts about ProseMirror (DOM parse vs parseSlice, separate Markdown parser and serializer), Tiptap (detached HTML/Markdown conversion, happy-dom server path), Lexical (conversion needs editor and global DOM context) and Portable Text (detached schema-aware conversion with unknown-node fallback), and compares them as cross-editor conversion architecture.
 
 Issue ledgers and test harvests:

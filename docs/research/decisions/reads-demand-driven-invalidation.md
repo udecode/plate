@@ -88,7 +88,7 @@ cost of a membership question.
 
 ## Proof and limits
 
-The [probe contract](../../plans/2026-09-11-reads-api-review.md) was frozen before
+The probe contract (`docs/plans/2026-09-11-reads-api-review.md`) was frozen before
 measurement. It compares reconstructed canonical commits over the same
 materialized snapshots, with 32/1,024/8,192 paragraphs and 0/1/32/all-paragraph
 watchers. The single watcher reads the unchanged prefix, so the result includes

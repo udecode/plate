@@ -10,7 +10,7 @@ updated: 2026-10-04
 **Audit of 2026-10-04.** Stop. The September 13 Pursue target is in live source. Every paste, including an exact projected selection, runs through one domCommands.insertData command whose feature middleware and canonical fitter decide the result, the projected path composes deletion and insertion into one spec that publishes nothing on decline, and ContentSlice rewrites keep their referenced roots. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-clipboard-audit` hold the evidence.
 
 Status: Review complete — Pursue. The selected design and reported adoption are in
-the [clipboard transfer plan](../../plans/2026-09-13-clipboard-transfer-policy.md).
+the clipboard transfer plan (`docs/plans/2026-09-13-clipboard-transfer-policy.md`).
 That plan is Complete and reports every clipboard-owned proof gate closed.
 The September 18 history migration recovers this later execution claim but
 does not replay it or recover a complete original source/receipt binding.
@@ -209,8 +209,8 @@ were reconciled against source in this decision.
 
 This is the initial clipboard record. The historical
 [clipboard command decision](clipboard-and-delete-commands-need-explicit-lanes.md),
-[serialization plan](../../plans/2026-05-23-plite-clipboard-fragment-serialization-ralplan.md)
-and [static payload ownership plan](../../plans/2026-07-03-plate-next-static-clipboard-payload-owner.md)
+serialization plan (`docs/plans/2026-05-23-plite-clipboard-fragment-serialization-ralplan.md`)
+and static payload ownership plan (`docs/plans/2026-07-03-plate-next-static-clipboard-payload-owner.md`)
 provide context. Their preference for model/DOM/view/product ownership survives
 current inspection. Their old paths and proof receipts do not establish current
 behavior. The neighboring native-input review supplies context; its verdict

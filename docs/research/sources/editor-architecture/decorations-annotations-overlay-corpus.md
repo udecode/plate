@@ -42,7 +42,7 @@ It is the research-layer bridge between:
 - the candidate shortlist in
   [docs/research/sources/editor-architecture/candidates.md](docs/research/sources/editor-architecture/candidates.md)
 - the earlier working notes in
-  [2026-04-14-plite-decorations-annotations-cluster-research.md](docs/plans/2026-04-14-plite-decorations-annotations-cluster-research.md)
+  2026-04-14-plite-decorations-annotations-cluster-research.md (`docs/plans/2026-04-14-plite-decorations-annotations-cluster-research.md`)
 - the accepted plan direction in
   decoration-roadmap.md (`c70bacbd4a:docs/plite-draft/decoration-roadmap.md`)
 

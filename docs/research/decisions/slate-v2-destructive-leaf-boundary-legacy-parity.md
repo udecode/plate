@@ -4,7 +4,7 @@ type: decision
 status: accepted
 updated: 2026-04-25
 source_refs:
-  - docs/plans/2026-04-25-plite-leaf-lifecycle-dom-shape-conformance-plan.md
+  - c70bacbd4a:docs/plans/2026-04-25-plite-leaf-lifecycle-dom-shape-conformance-plan.md
   - docs/research/decisions/slate-v2-read-update-runtime-architecture.md
   - docs/research/decisions/slate-v2-editing-epoch-legacy-timing-recovery-audit.md
 legacy_refs:

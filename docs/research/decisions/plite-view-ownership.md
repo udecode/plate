@@ -201,7 +201,7 @@ without handling this consumer is incomplete.
 
 This supersedes the July React assessment's suggestion of adding another root
 component vocabulary. It reaffirms the
-[August keyed-lifetime repair](../../plans/2026-08-23-fix-plite-react-provider-lifetime.md)
+August keyed-lifetime repair (`docs/plans/2026-08-23-fix-plite-react-provider-lifetime.md`)
 and the [core decision](plite-core-ownership.md)'s private document/view split;
 those decisions did not settle the remaining public React wrapper. Plate's
 document-wide callbacks and plugin render contributions are genuine adapter
@@ -281,7 +281,7 @@ existing implementation. Adoption and proof states remain unchanged. The
 earlier Plate-core execution receipt does not transfer to this review.
 
 Task owns the joint design of direct-domain geometry and the public React mount
-contract in the [Plite view design plan](../../plans/2026-09-12-plite-view-design.md).
+contract in the Plite view design plan (`docs/plans/2026-09-12-plite-view-design.md`).
 API, lifetime, adoption and proof decisions stay in that workflow, which applies
 Best API and Plite Plan internally. The review's cuts remain candidates until
 the plan's evidence accepts their concrete replacement:
@@ -301,7 +301,7 @@ ledger and integrity check pass with 791 source groups, 3,640 files, 62 question
 and 34 historical/current records. These counts describe inventory and history,
 not executed behavior coverage.
 
-The subsequent [Task design plan](../../plans/2026-09-12-plite-view-design.md)
+The subsequent Task design plan (`docs/plans/2026-09-12-plite-view-design.md`)
 resolves both Pursue directions with disposable runtime and scale evidence.
 It selects direct-domain geometry and required-editor React roots with independent
 mounted views, retaining root/authored props. Product adoption and production

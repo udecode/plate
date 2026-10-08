@@ -10,7 +10,7 @@ source_refs:
   - docs/research/sources/editor-architecture/service-channels-and-live-stores.md
   - docs/research/sources/editor-architecture/slate-v2-local-proof-substrate.md
 related:
-  - docs/research/systems/slate-v2-overlay-architecture.md
+  - c70bacbd4a:docs/research/systems/slate-v2-overlay-architecture.md
   - 6bc2fffa0bee6fcb6752d96139c698879682b41b:docs/slate-v2/decoration-roadmap.md
 ---
 

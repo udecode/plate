@@ -22,7 +22,7 @@ source_refs:
   - benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx
 updated: 2026-04-28
 related:
-  - docs/research/entities/slate.md
+  - c70bacbd4a:docs/research/entities/slate.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
 ---
 

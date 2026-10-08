@@ -1,6 +1,7 @@
 # PR 5152 Markdown fixes: CI repair
 
-Status: building; the CI repair sits uncommitted in a worktree until you commit it
+Status: waiting on your commit and push of the worktree repair
+Page: https://claude.ai/artifact/1Y6PNrtjDQWBQXErYz979P
 Playbook: babysit
 
 Babysit of [PR 5152](https://github.com/udecode/plate/pull/5152) by natamox, head `e1fb01295e` on `next` at `c70bacbd4a`. The repair lives uncommitted in the detached worktree `/Users/zbeyens/git/plate-pr-5152`, because the owner commits and this run has no push authority.
@@ -13,7 +14,7 @@ The PR's four Markdown fixes stay as written. Two old tests that expected the br
 
 ### What could go wrong?
 
-The PR's CI stays red after this, because next itself fails five check steps and six Plite browser tests. Only the two failing Markdown tests were this PR's.
+The PR's CI stays red, because next itself fails five check steps and six Plite browser tests. Only the two Markdown tests were this PR's. I tested with this checkout's packages, not a fresh install.
 
 ## Teach
 
@@ -38,3 +39,29 @@ Two tests in the website app still expected the old, lossy output, so CI failed 
 | Delivery | Leave the repair uncommitted in the worktree and draft the PR text | Commit it and push it to the PR branch | push it | big |
 | Failures that are already on next | Leave them to their owners and list them here | Fix them inside this PR | fix next too | small |
 | Shorter trailing-break output | Keep the PR's output | Write only the last break as HTML and change every single-break snapshot | shorter breaks | detail |
+
+## Close
+
+Verdict: the PR should land. Its four fixes repair real round-trip losses at the producer, and its list change removes a second copy of paragraph lowering. The thermo-nuclear review found no structural blocker ([summary](artifacts/5152-markdown-ci/thermo/summary.md)).
+
+Landed, uncommitted, in `/Users/zbeyens/git/plate-pr-5152` on top of `e1fb01295e`:
+
+- `apps/www/src/__tests__/package-integration/markdown-rich/serializeMarkdown.spec.tsx` drops the two tests that pinned the lossy output.
+- `content/docs/(plugins)/(serializing)/markdown.cn.mdx` gets the two table-cell sentences the English page already has.
+
+Proof and its limits:
+
+- The round-trip probe shows base losing a break and adding a backslash for `a<br/><br/>`, dropping a list item's trailing break and throwing on `## https://example.com`, while the PR head round-trips all three ([log](artifacts/5152-markdown-ci/probe-breaks-a2.log)).
+- `pnpm check test` fails the same five cases in the repair worktree and the base worktree, all www tests that import `@emoji-mart/data`, which the linked `node_modules` of this checkout lack. No Markdown case fails in either ([PR](artifacts/5152-markdown-ci/check-test-pr-a1.log), [base](artifacts/5152-markdown-ci/check-test-base-a1.log)). A real install at the PR head was not run, so CI is the first clean-environment run of the repair.
+- The Chinese docs edit is prose only, checked by reading it against the English page. The docs parity script needs a `build:source` first and was not run.
+- Not run: `test-slow`, typecheck, the www build and the browser matrix. PR CI already passed `test-slow`, typecheck and lint on the same product code.
+
+CI after a push stays red on checks that fail the same way on `next`: the main-to-next sync tooling test, `core-audits` (`rg` missing on the runner), `entrypoint-graph`, `www` (`plate` CLI missing) and six Plite Chromium cases that throw `getFlatTreeParentElement is not defined`. A suggested task covers the Plite crash. The EditorStatic reuse oracle timed out on CI and passed 3 of 3 locally in 1.4 s.
+
+Counts: 20 todo items, 17 done, 3 skipped (one babysitter check, the watcher, which needs a push, and bot triage with no bot comments), 0 partial, 0 blocked, 0 open.
+
+## Open work
+
+- Commit the worktree repair and push it to `codex/markdown-regression`, then replace the PR body with [the draft](artifacts/5152-markdown-ci/pr-body-draft.md). owner: zbeyens. stop: the owner pushes it or drops the repair. Tracked on this page.
+- Red checks that fail the same on `next`. owner: zbeyens. stop: `next` CI passes those steps. Tracked on this page; the Plite crash also has a suggested task.
+- Remove the two proof worktrees with `git worktree remove --force /Users/zbeyens/git/plate-pr-5152` after the push, and the same for `/Users/zbeyens/git/plate-base-5152`. owner: zbeyens. stop: the repair is pushed or dropped.

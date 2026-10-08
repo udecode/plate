@@ -58,7 +58,7 @@ remaining job. Schema-default block reset remains the right type-conversion
 owner, and ordinary conversions still need compatible-property preservation.
 The proposed reset option alone does not settle object identity or transfer.
 
-The [source comparison and probes](../../plite/research/2026-09-21-media-object-editable-content/README.md)
+The source comparison and probes (`docs/plite/research/2026-09-21-media-object-editable-content/README.md`)
 cover ProseMirror, WordGard and Lexical. The
 [accepted design](../../plans/2026-09-21-object-elements-with-editable-children.md)
 sets the compiler laws, generic operation matrix, atomic Plate media Enter

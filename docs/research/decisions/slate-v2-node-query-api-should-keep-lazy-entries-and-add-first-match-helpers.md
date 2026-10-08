@@ -104,7 +104,7 @@ Updated direction:
 - do not teach `editor.read((state) => state.nodes.entries(...))`, because the
   generator may be consumed after the read boundary.
 
-Plan: `docs/plans/2026-05-14-plite-generator-materialization-api-ralplan.md`.
+Plan: `c70bacbd4a:docs/plans/2026-05-14-plite-generator-materialization-api-ralplan.md`.
 
 ## Proof
 

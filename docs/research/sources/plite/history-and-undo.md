@@ -2,7 +2,7 @@
 
 ## Selection repair after undo
 
-- When undo or redo restores an expanded view selection, the history focus repair asks only for a force render, and only when history requires one; it never asks for a caret repair, because the view-selection projection draws an expanded selection rather than one native caret. A collapsed selection still gets a focused `repair-caret` that prefers the model selection (`packages/plitejs/src/react/editable/history-focus.ts:135-155`). The skip came from the June 2026 200k-block undo-delete work, where restoring an expanded projected selection had paid DOM caret repair. Source: `docs/plite/research/2026-06-12-huge-doc-architecture/README.md:736-769`. Limit: the June numbers ran on the removed staged lane and are not repeated here.
+- When undo or redo restores an expanded view selection, the history focus repair asks only for a force render, and only when history requires one; it never asks for a caret repair, because the view-selection projection draws an expanded selection rather than one native caret. A collapsed selection still gets a focused `repair-caret` that prefers the model selection (`packages/plitejs/src/react/editable/history-focus.ts:135-155`). The skip came from the June 2026 200k-block undo-delete work, where restoring an expanded projected selection had paid DOM caret repair. Source: `c70bacbd4a:docs/plite/research/2026-06-12-huge-doc-architecture/README.md:736-769`. Limit: the June numbers ran on the removed staged lane and are not repeated here.
 
 ## Transaction extenders and undo batches
 

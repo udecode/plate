@@ -410,7 +410,7 @@ two different decisions: removing duplicate installed authority and removing
 the public distinction between a product plugin and a substrate extension.
 The first earns its place; the second does not follow from it.
 
-The originating [plan objective](../../plans/2026-09-12-plate-core-api-review.md)
+The originating plan objective (`docs/plans/2026-09-12-plate-core-api-review.md`)
 explicitly removes `editor.plugin`, `tx.plugin`, duplicate installation maps
 and `useEditorPlugin`. Its
 original design contract for one installed capability owner
@@ -722,8 +722,8 @@ Neither question had a direct review record. Both records are initial. The
 [Plite-core review](plite-core-ownership.md) retained atomic extension composition;
 this assessment preserves that law and challenges the separate Plate identity
 translation above it. It does not reopen the completed facet/command cuts.
-The [facade decision](../../plans/2026-08-30-enforce-plate-facade-dogfooding.md)
-and [package ownership decision](../../plans/2026-08-28-finalize-platejs-entrypoint-ownership.md)
+The facade decision (`docs/plans/2026-08-30-enforce-plate-facade-dogfooding.md`)
+and package ownership decision (`docs/plans/2026-08-28-finalize-platejs-entrypoint-ownership.md`)
 are reaffirmed in direction after source inspection. Their old proof is not
 reused as current verification. Earlier plugin-authoring plans preserve static
 isolation and inference requirements, not an irrevocable constructor taxonomy.
