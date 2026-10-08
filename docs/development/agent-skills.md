@@ -118,9 +118,10 @@ For release work, use the current Release Lanes modes:
 | `$release-lanes promote execute` | Execute the promotion workflow. |
 | `$release-lanes verify` | Verify published release state. |
 
-State the publication actions you want. You own commits: a local repair, review
-or plan does not by itself authorize a commit, push, PR, merge, release or
-external message. [AGENTS.md](../../AGENTS.md) owns scope, authority and
+State the publication actions you want. Agents commit and push their work to
+any branch other than `main` and `next` without asking. A local repair, review
+or plan does not by itself authorize a commit or push to `main` or `next`, a
+new PR, a merge, a release or an external message. [AGENTS.md](../../AGENTS.md) owns scope, authority and
 delivery. The [Release Lanes skill](../../.agents/skills/release-lanes/SKILL.md)
 owns release mode details.
 

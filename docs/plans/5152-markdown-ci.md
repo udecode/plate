@@ -1,10 +1,10 @@
 # PR 5152 Markdown fixes: CI repair
 
-Status: waiting on your commit and push of the worktree repair
+Status: executed; pushed as 9a0e7ce0e4, CI on next stays red for its own reasons
 Page: https://claude.ai/artifact/1Y6PNrtjDQWBQXErYz979P
 Playbook: babysit
 
-Babysit of [PR 5152](https://github.com/udecode/plate/pull/5152) by natamox, head `e1fb01295e` on `next` at `c70bacbd4a`. The repair lives uncommitted in the detached worktree `/Users/zbeyens/git/plate-pr-5152`, because the owner commits and this run has no push authority.
+Babysit of [PR 5152](https://github.com/udecode/plate/pull/5152) by natamox, head `e1fb01295e` on `next` at `c70bacbd4a`. The repair is pushed to `codex/markdown-regression` as `9a0e7ce0e4`, under the Branch delivery rule the owner added to `AGENTS.md` on 2026-10-09.
 
 ## Brief
 
@@ -36,7 +36,6 @@ Two tests in the website app still expected the old, lossy output, so CI failed 
 | Decision | Pick | Alternative | Word | Impact |
 | --- | --- | --- | --- | --- |
 | Two stale website tests | Delete them, since package tests already check the round trip | Keep them, updated to the new output | keep www tests | small |
-| Delivery | Leave the repair uncommitted in the worktree and draft the PR text | Commit it and push it to the PR branch | push it | big |
 | Failures that are already on next | Leave them to their owners and list them here | Fix them inside this PR | fix next too | small |
 | Shorter trailing-break output | Keep the PR's output | Write only the last break as HTML and change every single-break snapshot | shorter breaks | detail |
 
@@ -44,7 +43,7 @@ Two tests in the website app still expected the old, lossy output, so CI failed 
 
 Verdict: the PR should land. Its four fixes repair real round-trip losses at the producer, and its list change removes a second copy of paragraph lowering. The thermo-nuclear review found no structural blocker ([summary](artifacts/5152-markdown-ci/thermo/summary.md)).
 
-Landed, uncommitted, in `/Users/zbeyens/git/plate-pr-5152` on top of `e1fb01295e`:
+Reversal first: the repair first stayed uncommitted for the owner. The owner then said to always push to branches other than main and next, so it landed as `9a0e7ce0e4` on top of `e1fb01295e`, and the PR body now matches the pushed diff:
 
 - `apps/www/src/__tests__/package-integration/markdown-rich/serializeMarkdown.spec.tsx` drops the two tests that pinned the lossy output.
 - `content/docs/(plugins)/(serializing)/markdown.cn.mdx` gets the two table-cell sentences the English page already has.
@@ -62,6 +61,4 @@ Counts: 20 todo items, 17 done, 3 skipped (one babysitter check, the watcher, wh
 
 ## Open work
 
-- Commit the worktree repair and push it to `codex/markdown-regression`, then replace the PR body with [the draft](artifacts/5152-markdown-ci/pr-body-draft.md). owner: zbeyens. stop: the owner pushes it or drops the repair. Tracked on this page.
 - Red checks that fail the same on `next`. owner: zbeyens. stop: `next` CI passes those steps. Tracked on this page; the Plite crash also has a suggested task.
-- Remove the two proof worktrees with `git worktree remove --force /Users/zbeyens/git/plate-pr-5152` after the push, and the same for `/Users/zbeyens/git/plate-base-5152`. owner: zbeyens. stop: the repair is pushed or dropped.

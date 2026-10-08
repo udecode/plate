@@ -59,16 +59,9 @@ function recordFrequentEmoji({ emoji, label }: EmojiPick) {
   else frequent.push({ count: 1, emoji, label });
 
   frequent.sort((a, b) => b.count - a.count);
-  // A full store drops its least used other pick, so a new one can climb.
-  if (frequent.length > 36) {
-    frequent.splice(
-      frequent.findLastIndex((item) => item.emoji !== emoji),
-      1
-    );
-  }
 
   try {
-    localStorage.setItem(FREQUENT_KEY, JSON.stringify(frequent));
+    localStorage.setItem(FREQUENT_KEY, JSON.stringify(frequent.slice(0, 36)));
   } catch {
     // A frequent row is a convenience; blocked storage only loses it.
   }

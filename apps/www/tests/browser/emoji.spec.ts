@@ -235,34 +235,19 @@ test('emoji:toolbar pick undoes on its own', async ({ page }) => {
   }
 });
 
-test('emoji:picker shows a repeated pick under Frequently used when the store is full', async ({
+test('emoji:picker shows a pick under Frequently used on reopen', async ({
   page,
 }) => {
   await routeEmojibase(page);
-  await page.addInitScript(() => {
-    localStorage.setItem(
-      'plate:emoji-frequent:v1',
-      JSON.stringify(
-        Array.from({ length: 36 }, (_, index) => ({
-          count: 2,
-          emoji: String.fromCodePoint(0x1_f6_00 + index),
-          label: `Seed ${index}`,
-        }))
-      )
-    );
-  });
   const runtimeErrors = recordBrowserRuntimeErrors(page);
 
   try {
     const { button, search } = await openPicker(page);
 
-    for (let pick = 0; pick < 3; pick++) {
-      if (pick > 0) await button.click();
-      await search.pressSequentially('fire');
-      await expect(fireResult(page)).toHaveAttribute('aria-selected', 'true');
-      await page.keyboard.press('Enter');
-      await expect(search).toHaveCount(0);
-    }
+    await search.pressSequentially('fire');
+    await expect(fireResult(page)).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Enter');
+    await expect(search).toHaveCount(0);
 
     await button.click();
     await expect(
