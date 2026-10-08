@@ -7,4 +7,4 @@ argument-hint: '[next | audit <scope> | <proposal, path or plan>]'
 
 Handle $ARGUMENTS.
 
-Run the API review playbook, `.agents/playbooks/api-review.md`, in full: it picks the item, reconciles earlier reviews, compares the design space with the `best-api` lens, gives one Stop, Pursue or Defer verdict from its Verdicts section and writes it into the review page's front matter.
+Run the API review playbook, `.agents/playbooks/api-review.md`, in full: it picks the item, reconciles earlier reviews, compares the design space with the `best-api` lens, gives one Stop, Pursue or Defer verdict from its Verdicts section and writes it into the review page's front matter. Load `pstack:poteto-mode` first, follow the steps of the pstack playbook the API review playbook `extends` with its deltas applied, and run `check-playbooks.mjs` as `AGENTS.md`'s How work runs says, because this entry skips poteto-mode's routing. Its One item per session section titles the session with the ledger item first, and starts any further item in a new session.

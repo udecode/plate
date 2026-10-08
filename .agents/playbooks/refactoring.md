@@ -1,6 +1,6 @@
 ---
 extends: refactoring
-when: Use it to audit or simplify Plate or Plite code ownership, such as "clean up <surface>", "simplify <package>" or a structural audit that deletes, merges, inlines or splits.
+when: Use it to audit or simplify Plate or Plite code ownership, such as "clean up <code surface>", "simplify <package>" or a structural audit that deletes, merges, inlines or splits code; retiring docs goes to `research` instead.
 ---
 
 # Refactoring

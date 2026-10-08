@@ -90,7 +90,7 @@ If `BASE` is empty, run a bootstrap audit:
 
 - compare the whole `../shadcn/apps/v4` source against Plate
 - write a plan
-- ask the user before setting `lastSyncedCommit`
+- record the `lastSyncedCommit` pick as a Defaults row with the commit it would set, then set it
 - do not silently set the baseline
 
 If `BASE` is present, prove ancestry when possible:

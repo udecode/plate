@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-// Runs a prompt in the other agent runtime, read-only, from the current
+// Runs a prompt in the other agent runtime, read-only unless --write, from the current
 // directory, and prints its final answer: Codex on gpt-6.1-sol from Claude
 // Code, Claude on Opus from Codex. Installed by the sync-pstack skill.
-// Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] (--prompt-file <path> | <prompt>)
 
 import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, realpathSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdtempSync, readFileSync, realpathSync } from 'node:fs';
 import { constants, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,12 +29,27 @@ for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
 // killed and abandoned at the deadline.
 // Hooks stay off unless asked for, because a project hook, such as a Stop hook
 // that stages files, would write from a read-only run.
-export function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900, model = MODELS[runtime], effort, hooks = false } = {}) {
+export function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900, model = MODELS[runtime], effort, hooks = false, write = false, events, resume } = {}) {
   const answerFile = join(mkdtempSync(join(tmpdir(), 'pstack-cross-')), 'answer.txt');
   const [command, args] =
     runtime === 'claude'
       ? ['claude', ['-p', '--model', model, ...(effort ? ['--effort', effort] : []), ...(hooks ? [] : ['--settings', '{"disableAllHooks":true}']), '--permission-mode', 'plan', '--', prompt]]
-      : ['codex', ['exec', '-m', model, ...(effort ? ['-c', `model_reasoning_effort=${effort}`] : []), ...(hooks ? [] : ['--disable', 'hooks']), '--sandbox', 'read-only', '-o', answerFile, '--', prompt]];
+      : [
+          'codex',
+          [
+            'exec',
+            ...(resume ? ['resume', resume] : []),
+            '-m',
+            model,
+            ...(effort ? ['-c', `model_reasoning_effort=${effort}`] : []),
+            ...(hooks ? [] : ['--disable', 'hooks']),
+            ...(write ? ['-c', 'sandbox_mode="workspace-write"', '--json'] : ['--sandbox', 'read-only']),
+            '-o',
+            answerFile,
+            '--',
+            prompt,
+          ],
+        ];
   const { CLAUDECODE: _, ...env } = process.env;
   return new Promise((resolve) => {
     let settled = false;
@@ -63,13 +77,17 @@ export function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900, model
     );
     let stdout = '';
     let stderr = '';
-    child.stdout.on('data', (chunk) => (stdout += chunk));
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+      if (write) appendFileSync(events, chunk);
+    });
     child.stderr.on('data', (chunk) => (stderr += chunk));
     child.on('error', (error) => done({ runtime, ok: false, text: error.message }));
     child.on('close', (code, signal) => {
       const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : stdout).trim();
       const failure = `${code === 0 ? 'no answer' : `exit ${code ?? signal}`}: ${stderr.trim().split('\n').slice(-5).join('\n')}`;
-      done(code === 0 && text ? { runtime, ok: true, text } : { runtime, ok: false, text: failure });
+      const session = write ? stdout.match(/"thread_id":"([^"]+)"/u)?.[1] : undefined;
+      done(code === 0 && text ? { runtime, ok: true, text, session } : { runtime, ok: false, text: failure, session });
     });
   });
 }
@@ -79,6 +97,9 @@ async function main(argv) {
   let timeout = 900;
   let model;
   let effort;
+  let events;
+  let resume;
+  let write = false;
   let prompt = '';
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -86,14 +107,23 @@ async function main(argv) {
     else if (arg === '--timeout') timeout = Number(argv[++index]);
     else if (arg === '--model') model = argv[++index];
     else if (arg === '--effort') effort = argv[++index];
+    else if (arg === '--write') write = true;
+    else if (arg === '--events') events = argv[++index];
+    else if (arg === '--resume') resume = argv[++index];
     else if (arg === '--prompt-file') prompt = readFileSync(argv[++index], 'utf8');
     else prompt = arg;
   }
+  const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--write --events <file> [--resume <session>]] (--prompt-file <path> | <prompt>)';
   if (!prompt.trim() || !['claude', 'codex'].includes(to) || !(timeout > 0)) {
-    console.error('Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] (--prompt-file <path> | <prompt>)');
+    console.error(usage);
     return 2;
   }
-  const answer = await ask(to, prompt, { timeout, model, effort });
+  if ((write || events || resume) && (to !== 'codex' || !write || !events)) {
+    console.error(`--write runs only --to codex, needs --events <file>, and is the only mode --resume works in\n${usage}`);
+    return 2;
+  }
+  const answer = await ask(to, prompt, { timeout, model, effort, write, events, resume });
+  if (answer.session) console.info(`session ${answer.session}`);
   (answer.ok ? console.info : console.error)(answer.text);
   return answer.ok ? 0 : 1;
 }

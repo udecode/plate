@@ -90,7 +90,10 @@ and the Build playbook closes it with
 2. Decide the semantic layer and durable production, React-family, and test
    owners before creating files.
 3. Search current Plate foundation builders/type tests and the closest clean package
-   analog. Do not copy a stale file graph.
+   analog. Do not copy a stale file graph. A plugin that wraps a native Plite
+   factory, as `HistoryPlugin` and `YjsPlugin` do, copies every registration of
+   its closest wrapped analog, found by grepping that analog's name across
+   `tooling/` and the lint configuration.
 4. Route reusable public forks to `best-api`; otherwise keep the inferred
    plugin chain inline.
 5. Define initial state, scoped store/API/update methods, relationships, flat
@@ -105,6 +108,8 @@ and the Build playbook closes it with
    - runtime proof when a native runtime callback consumes a staged API;
    - an active-transaction test when a query crosses a state-view boundary;
    - React tests when React behavior changes;
+   - `pnpm --filter platejs build` when a plugin wraps a native factory,
+     because the declaration build reports TS4094 errors the typecheck skips;
 8. Audit for stale helper names, root option helpers, nested updates, explicit
    plugin annotations, empty config aliases, top-level plugin `config`,
    parameter-threaded `editor` / `api` / `read` / `tx` helpers, and one-use

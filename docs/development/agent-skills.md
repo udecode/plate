@@ -47,6 +47,7 @@ These are optional shortcuts for a specific job, not a sequence to run.
 | Review a live Plate package against the v2 target, or repair its findings | `$plate-next <package>`, `$plate-next sync <package>` |
 | Find important behavior with no test, or prune existing tests | `$verify testing audit <scope>`, `$test-audit <scope>` |
 | Measure, diagnose and improve slow behavior | `$benchmark <operation and workload>` |
+| Join a rule or issue to its tagged tests, list the locked rules no running test proves, or check the knowledge stores | `pnpm kb <rule ID or issue ref>`; `pnpm kb gaps`; `pnpm kb check`, the `knowledge` step of `pnpm check` |
 | Research external editor approaches | `$research <feature or question>` |
 | Compare external editor architectures, or harvest their tests | `$research audit <repo>`, `$research harvest <repo>` |
 | Write or audit Plate public documentation | `$plate-docs <page or topic>` |
@@ -56,7 +57,7 @@ These are optional shortcuts for a specific job, not a sequence to run.
 | Work a public issue, PR or security queue | `$maintainer <scope>` |
 | Draft a Plate Beta issue from video or text | `$maintainer issue-draft <video or text>` |
 
-A planning-only request stops at a reviewable plan. Any other request runs to its close. Agents stop only for a call that cannot be undone or has no clear pick, and for production deploys, pushes to `main`, messages to people, shared-resource spend and deletes. Every other call they make shows under Picked for you with the word that reverses it. Add "stop at plan", "stop at design" or "stop before ship" to a request to stop sooner.
+A planning-only request stops at a reviewable plan. Any other request runs to its close. Agents stop only for a production deploy or release, a push to `main`, a force-push to a shared branch, a message to a customer or anyone outside the team, a comment, label or close on a public issue or PR, and deleting data the run did not create. Every other call they make shows under Picked for you with the word that reverses it, and a call with no clear pick takes its most reversible option. Add "stop at plan", "stop at design" or "stop before ship" to a request to stop sooner.
 
 For long unattended work, state a checkable exit condition. pstack's Autonomous
 run keeps going with `/loop` in Claude Code or `/goal` in Codex, and the domain
@@ -73,11 +74,30 @@ and the full principle (`pstack:principle-redesign-from-first-principles`).
 Known owners and accepted plans go directly to their Plate skill. `verify`
 applies to every proof owner. A tiny edit needs direct verification,
 without a playbook, app launch or review panel. Subagents research and review;
-the lead writes the code. The panel review (`/pstack:interrogate`) runs without
-asking only for the rows in the `reviews` list of `.agents/pstack.json`: an API
-or architecture plan (after `architect`), a
-PR's diff before it opens and "review PR <number>". For anything else, say
-"panel", "arena" or "full".
+the lead writes the code. The panel review (`/pstack:interrogate`), `architect` and arena run
+without asking wherever a pstack step calls for them and for the rows in the
+`reviews` list of `.agents/pstack.json`: an API or architecture plan (after
+`architect`), a PR's diff before it opens and "review PR <number>". For
+anything else, say "panel", "arena" or "full". A plan step that broadly changes
+how agents find, route or finish work gets a paired trial on its first
+prototype before the plan's panel. Each round's fixes get `deslop` and
+`no-comments` before the next round, and the comment reviewer only reports;
+the lead applies its edits. A fix that replaces a mechanism's approach in a
+diff round of the current plan is that mechanism's one replacement. It updates
+the plan without `architect` or a plan panel, with `best-api-review` first for
+a Plate or Plite API or architecture, and the next diff round reads it when
+that round earned one. When `best-api-review` rejects the replacement, the
+lead reverts the defective code to its state before this plan changed it and
+narrows the claim instead. When a later critical finding hits
+a mechanism that already had its replacement, the mechanism leaves the review
+loop: the lead reverts it to its code from before this plan changed it, which
+removes it when that code lacked it, narrows the claim, and sends the revert to
+the next review round. When the goal still needs it, a new plan iteration
+rebuilds it, with `best-api-review` first and its own review. A claim about a
+wrong record value is never narrowed and always goes back to planning.
+A removal a reviewer calls incomplete is finished at runtime instead of
+restored, under the removal rule in `AGENTS.md`'s Panel review rule. Before each round the lead pings each seat again, and
+agreement counts once per model family.
 
 Plate Docs owns public page design, examples, installation, API teaching, MDX
 and navigation. `pstack:technical-writing` supplies general prose guidance.
@@ -157,9 +177,8 @@ contracts. Edit repository rules in `.agents/rules` and regenerate with
 `pnpm run prepare`. The pstack block in `AGENTS.md`, `.agents/pstack.json` and
 `.agents/pstack/` come from the `sync-pstack` skill, so shared pstack rules
 change there; pstack's own skills come from the pinned plugin. A reflect lesson
-for that shared source waits as a saved patch in the run's
-`docs/plans/artifacts/<slug>/` until you say to commit and push it to
-`udecode/dotai`.
+for that shared source runs the `sync-pstack` skill's Lesson mode, which commits
+and pushes it to `udecode/dotai` once its checks pass.
 
 The [September 5 skill audit](agent-skill-audit.md) records historical decisions
 and evidence. Use this guide and the current skill files to choose today's route.

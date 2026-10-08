@@ -1,5 +1,5 @@
 ---
-description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, and before claiming a fix works.
+description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, and before claiming a fix works.
 argument-hint: '[package | route | cli | collaboration | testing audit] <target>'
 ---
 
@@ -10,6 +10,9 @@ proof selection, runtime readiness, driving and evidence. Its
 [testing reference](./references/testing.md) owns test shape and runners, and
 `verify testing audit` ([testing-audit.md](./references/testing-audit.md))
 searches for uncovered contracts; `test-audit` prunes existing tests.
+Read the [command recipes](./references/commands.md) in full before the first
+probe, base control, mutant or browser run; they list the probe, base-worktree,
+runner and stale-build mistakes this repository has hit.
 
 ## Completion boundary
 
@@ -33,7 +36,9 @@ For flaky, native, lifecycle, compositor, focus, selection, drag-and-drop or
 device risk, run the final proof five times, warm and without retries. One
 failure keeps the case open. Each run executes the proof command; a cached
 result does not count. A turbo run prints `Cached: N cached, M total`; when the
-claim needs a real run, rerun with `TURBO_FORCE=true`.
+claim needs a real run, rerun with `TURBO_FORCE=true`. The command recipes'
+Command Pitfalls list the other outputs that mean a command exited 0 without
+running, with the form that runs.
 In a checkout that other sessions are editing, run the acceptance check in a
 detached worktree at the base commit plus the task's saved patch, and attribute
 each failure from that run. When attributing a chained `a && b && c` step
@@ -141,9 +146,13 @@ browser matrix, runs in the background with one log per engine that ends in
 its `exit N` line; after an interruption or resume, only those logs count.
 
 - Plate app: `pnpm --filter www dev --port 3297`.
-  This script generates and serves dynamic docs. Set
-  `PLATE_WWW_DEV_SOURCE=1` when the claimed package behavior must use source
-  aliases. If an existing server holds `.next/dev/lock`, use a
+  This script runs `build:registry`, which rewrites tracked registry output,
+  then generates and serves dynamic docs. When the tree must not change, such
+  as during a proof or a panel freeze, run
+  `PLATE_WWW_DYNAMIC_DOCS=1 next dev --port <port>` from `apps/www` with the
+  same env and its own `PLATE_WWW_DIST_DIR`. Set `PLATE_WWW_DEV_SOURCE=1` by
+  default when the tree changes a package the page renders, so the server
+  serves source instead of built output. If an existing server holds `.next/dev/lock`, use a
   separate available output directory through the existing configuration;
   the current `PLATE_WWW_PLITE=1` option selects `.next-plite`.
 - Plite examples for interactive source proof:
@@ -183,7 +192,10 @@ Check the chosen instance before driving and after anything surprising:
    `lsof -a -p <owned-pid> -d cwd -Fn` reads its cwd and
    `lsof -nP -iTCP:<owned-port> -sTCP:LISTEN` identifies the actual listener.
    Inspect the child listener when pnpm/Next uses a wrapper process. A listener
-   from another checkout is not yours to stop or use as final proof.
+   from another checkout is not yours to stop or use as final proof. For the
+   Plate app, read `devSource` from `/api/plite/ready`, and bind the served
+   bytes with an observation only the new code produces, never one the base
+   also shows.
 2. Request the exact local route with `curl --fail --silent --show-error` and
    inspect it through the available browser control. HTTP success proves
    reachability only; the browser must show the expected editor/route without
@@ -296,7 +308,7 @@ never inside the artifact tree.
 
 When an edit touches an owner that cases this work selected depend on through production code, a fixture, harness, config, host or behavior, run each of those cases that is already executable before the edit and record its pass or red result as its pre-edit baseline; a pending, N/A or inferred historical result is not a baseline. After the last edit to that owner, rerun those cases, together when they share state or could invalidate one another, so a new failure belongs to the current change; a green from before that last edit is stale.
 
-A requested or started package, browser, root or CI gate that fails keeps the work open until the same gate passes on the final bytes. Calling the failure unrelated does not close it; only the same check failing the same way at `HEAD` in a detached worktree makes it pre-existing, per `AGENTS.md`'s Tests rule.
+A requested or started package, browser, root or CI gate that fails keeps the work open until the same gate passes on the final bytes. Calling the failure unrelated does not close it; only the same check failing the same way at `HEAD` in a detached worktree makes it pre-existing, per `AGENTS.md`'s Tests rule. A gate that is already red at base proves only who caused the failure, so a keep or close decision that rests on it also needs a green proof that exercises the changed path on the final bytes.
 
 Every proof command names the cwd, package or app it proves. A managed browser proof command names the doctored URL literally, for example `PLAYWRIGHT_BASE_URL=<url>`; a host label with the intended port while the runner uses its default URL is a host mismatch. Evidence carries
 forward only while source and build, environment, identity, auth and

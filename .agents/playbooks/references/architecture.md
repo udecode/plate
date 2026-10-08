@@ -56,7 +56,7 @@ An architecture plan is ready only when every current-state claim has live evide
 
 ## Hard cut
 
-A hard cut removes behavior, so it runs only when the user asks to remove that feature, through the Build playbook. It deletes the feature in one wave, per `pstack:principle-migrate-callers-then-delete-legacy-apis`, never deprecated. Unlike `plate-next`, which freezes scope and defers outside callers, a hard cut reaches every caller.
+A hard cut removes behavior, so it runs only when the user asks to remove that feature, through the Build playbook. A Pursue verdict on a review the user asked for counts as that ask for the hard cuts its plan names, taken as a `look` Defaults row. Any other hard cut waits under Open questions as this project's standing stop. Finishing at runtime a removal that the owner's request, a Pursue plan or an answered Open question already cleared is not a new hard cut. A hard cut deletes the feature in one wave, per `pstack:principle-migrate-callers-then-delete-legacy-apis`, never deprecated. Unlike `plate-next`, which freezes scope and defers outside callers, a hard cut reaches every caller.
 
 - Delete the surface and its glue: exports, commands and flags, routes, UI entrypoints, feature flags, call sites, types, state, tests of the deleted behavior, docs, examples and comments about the old code.
 - Leave no `Not implemented` throws, stub handlers, "feature removed" notices, compatibility aliases, shims, fallback parsing, migration bridges, dead enum or union members, permanently-false flag branches or unused config.

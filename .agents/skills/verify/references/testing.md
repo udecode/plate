@@ -48,15 +48,38 @@ Hard constraints:
   do not anticipate later tests.
 - One logical assertion per test.
 - Failing at the base commit proves only that the behavior was missing. For a
-  guard or a new branch, revert that one condition in place, watch the test
-  fail for its named defect, then restore the file byte for byte (`cmp`
-  against a saved copy).
+  guard or a new branch, revert that one condition with
+  `node .agents/pstack/mutate.mjs --dir <run directory> <spec>`. Its spec names
+  the candidate's `freeze.mjs` commit, and the mutation runs in a fresh export
+  of that commit under the run directory that the helper removes afterwards unless
+  the run is killed, never in this checkout. The helper links this checkout's root and package
+  `node_modules` into that export, so a test resolves this checkout's
+  installed packages, and a test that imports a workspace sibling runs this
+  checkout's copy of it. It copies no env file, and only one run at a time may
+  use a run directory. A test that needs `apps/www/.env.local`, or a Turbopack build
+  that refuses linked `node_modules`, reverts its condition in a
+  `tooling/scripts/proof-worktree.mjs` worktree instead, made with `--install`
+  for Turbopack. Name the assertion's
+  own message as the expected text and read the mutant's log, because the
+  helper only finds that text in the last 16 MB of the output. A premise probe counts only once it fails with the
+  mechanism it credits mutated out, because a base that already has the
+  property cannot catch a probe that bypasses it.
+- A mutant judged through a build, a bundle or emitted declarations counts only
+  after the run shows its bytes reached that artifact. Rebuild the owning
+  partition's declarations before a type test, because `typecheck:contracts`
+  reads declarations, not source. Rebuild the measured app before a browser or
+  benchmark run. Mutate with an import the bundler keeps, because the bundler
+  drops a bare side-effect import in a `sideEffects: false` package.
 - A lossy case asserts that the round trip equals the input apart from the
   reported part, plus the diagnostic; a reported loss narrows the check and
   never removes the case.
 - A new refusal or resource bound ships with a must-still-accept case at
   realistic scale beside its must-refuse case, because over-refusal drops
   user data.
+- Before a fix replaces a rule, reorders its keys or swaps one mechanism for
+  another, add a differential case on an input the old version got right and
+  the new one could get wrong. The old suite and a mutation of the new
+  mechanism cannot see a guarantee that only the old mechanism gave.
 - A regression for Node-native module loading, such as a CommonJS dependency imported by name from an ESM entrypoint, loads the built entrypoint through `node`, because `process.execPath` under Bun launches Bun and hides the failure.
 ## Plate foundation Rules
 

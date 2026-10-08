@@ -57,8 +57,15 @@ Rules:
   as `pnpm --filter plitejs typecheck`, which already runs `typecheck:tests`
   for its test files; run alone in a fresh worktree, `typecheck:tests` fails
   with TS6305 because its partition outputs are not built. Never use
-  `tsc -p test/tsconfig.json` or `tsconfig.test.json`; do not target deleted
-  package roots;
+  `tsc -p test/tsconfig.json` or `tsconfig.test.json` for plitejs; do not target
+  deleted package roots;
+- platejs package typechecks cover source partitions only. To typecheck a
+  platejs spec the task touched, run
+  `pnpm exec tsc -p packages/platejs/tsconfig.test.json --noEmit` from the
+  repository root and compare its errors in the task's files with the same run
+  at `HEAD` in a detached worktree, because that config already reports errors
+  at base. It leaves out `.slow.*` files, so check those through a scratch
+  config in the run directory that extends it and includes them;
 - use `pnpm --filter plite test:plite-browser:chromium ...` for focused Plite
   browser specs; do not send Playwright specs through `bun test` or the
   `apps/www` docs app;
@@ -88,11 +95,31 @@ Rules:
   `apps/plite/scripts/build-browser-if-stale.mjs` for `@platejs/test` and
   `build-app-if-stale.mjs` for the source-based proof app. Let their input and
   output manifests validate reuse. Do not prepend unconditional package builds
-  or set force flags for ordinary proof. An explicit external server still
-  requires checking its serving source identity;
+  or set force flags for ordinary proof. A repeated or acceptance proof sets
+  `PLITE_BROWSER_FORCE_PROOF=1`, because without it the runner replays a
+  matching earlier proof. An explicit external server still requires checking
+  its serving source identity;
+- some commands exit 0 without running what they name. Read the output for
+  these markers and rerun in the form that runs:
+  - `None of the selected packages has a "<script>" script` from
+    `pnpm --filter <package> <script>`: run the script from the package
+    directory, where a missing script exits non-zero;
+  - the Plite runner's `reused N passed … from a matching complete proof`: set
+    `PLITE_BROWSER_FORCE_PROOF=1`;
+  - turbo's `Cached: N cached, M total`: set `TURBO_FORCE=true`;
+  - a benchmark probe that prints no frozen lines and only a receipt: pass the
+    frozen lines, as Benchmark's pre-acceptance step 4 requires;
 - an independent integration runner that resolves workspace `dist` must build
   its actual artifact dependencies before execution. This requirement belongs
   to that runner, not every source-first package or browser check;
+- `pnpm --filter www api-reference` and its `--check` read the declarations in
+  `packages/*/dist`, so in this checkout they read whatever `dist` was last
+  built. After a public API change, regenerate
+  `apps/www/src/generated/api-reference-manifest.json` in a
+  `tooling/scripts/proof-worktree.mjs --install` worktree that builds the
+  changed packages first, such as
+  `pnpm --filter plitejs build && pnpm --filter platejs build && pnpm --filter www api-reference`,
+  and copy the manifest back;
 - when running packed/external-consumer package smoke, start from the live
   export/type contracts such as
   `packages/platejs/test/public-package-import-smoke.slow.ts` and
@@ -118,7 +145,10 @@ Rules:
   may need a separate config with third-party lib checking skipped so
   Playwright/Node ambient declarations do not hide the package result. Record the split as proof scope, not as a product exemption;
 - use `bun test ./path` only with repo-relative Bun test paths from
-  `Plate repo root`, or with package-local paths after recording the package cwd;
+  `Plate repo root`, or with package-local paths after recording the package cwd.
+  A path without `./` is a name filter that makes Bun scan the whole
+  repository, ignored `.tmp` and `docs/plans/artifacts` included, which shows up
+  as EMFILE, ENFILE or a ModuleNotFound under an ignored directory;
 - if root `bun test ./packages/.../<file>.test.ts` says the path filter did not
   match, inspect the actual file and its owning runner before retrying. The
   package entrypoint scripts select their current test files and preload;
@@ -138,6 +168,9 @@ Rules:
   `packages/plitejs` as
   `bun run test:react test/react/<file>.test.tsx`; do not run them through root
   `bun test ./packages/plitejs/test/react/...`;
+- a Vitest run or probe whose printed numbers are evidence passes
+  `--reporter=verbose --silent=false`, because under Claude Code Vitest picks
+  its agent reporter, which hides console output behind a bare pass;
 - do not run `generic-*-contract.ts` or other type-contract files with
   top-level compile examples through `bun test`; they may contain deliberate
   runtime-invalid `@ts-expect-error` calls. Use the owning package `typecheck`
@@ -164,7 +197,9 @@ Rules:
   package script and argument forwarding are verified in the plan;
 ## Source-first package checks
 
-A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it from the package directory and pass each preload its `bunfig.toml` lists under `[test]`, such as `bun --preload ../../config/plite-source-aliases.ts <abs path>` from `packages/platejs`. Bun applies `[test]` preloads only to `bun test`, so a plain `bun run` resolves dependency packages such as `plitejs` from `dist`. Import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/` that the import added, dependency packages included. A scratch file outside the repository cannot resolve bare package names, so it imports by path.
+A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it from the package directory and pass each preload its `bunfig.toml` lists under `[test]`, such as `bun --preload ../../config/plite-source-aliases.ts <abs path>` from `packages/platejs`. Bun applies `[test]` preloads only to `bun test`, so a plain `bun run` resolves dependency packages such as `plitejs` from `dist`. Import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/` that the import added, dependency packages included. A scratch file outside the repository cannot resolve bare package names, so it imports by path. A probe with JSX lives in the run directory, because Bun resolves the JSX runtime it injects from the probe's own folder, which no import path can redirect. A probe that needs a DOM and runs without a preload that registers one, such as `tooling/config/bunTestSetup.ts`, calls `GlobalRegistrator.register()` from `@happy-dom/global-registrator` first and then loads React DOM and the code under test with `await import(...)`. Static imports run before any statement, so a probe that loads Plite before the DOM exists runs its layout effects as passive effects and proves nothing about them.
+
+A `plitejs` React probe runs under Vitest instead, from a config in the run directory that merges `packages/plitejs/vitest.config.mjs`. The config imports `vitest/config` by the absolute path that `readlink -f packages/plitejs/node_modules/vitest` prints, followed by `/dist/config.js`. It sets `test.dir` to its own directory and `include` to the probe files. Run it from `packages/plitejs` as `pnpm exec vitest run --config <config> --reporter=verbose --silent=false`. The jsdom variant reuses `test/react/vitest-setup.ts`. A claim about DOM behavior that jsdom does not implement, such as visibility, `inert`, `showModal()`, slot assignment, layout or scrolling, needs the Chromium variant. That variant adds `test.browser` with a headless `chromium` instance and `provider: playwright()`, imported from the `@vitest/browser-playwright` that `packages/test` resolves. It also sets `server.fs.allow` to the repository and `resolve.dedupe` to `react`, `react-dom` and `@testing-library/react`, and uses its own setup file, which calls `installBrowserHandle()` and runs `cleanup()` in a global `afterEach`.
 
 Default to source-first typecheck. Do not build packages just to run types.
 Inspect the affected package/app `paths` and source-entry graph if stale
@@ -198,7 +233,9 @@ Use root `pnpm lint:fix` when the affected lint scope needs that command.
 packages only when needed. `bun run test` is the fast aggregate test lane;
 `pnpm check` is the CI gate for required handoff proof, not the default
 iteration command. `pnpm check --list` names its steps, and `pnpm check <step>`
-runs one.
+runs one. A proof runs a gate as `pnpm check <step>`, whose `run` is the
+read-only check, never the package script of the same name, which may be that
+step's `fix` writer.
 
 `pnpm check:plite` covers all Plite-family package typechecks/tests, proof-runner
 contracts and Chromium proof through `apps/plite`. Pair package and browser
@@ -235,14 +272,67 @@ about twelve minutes:
 
 ## Base worktree for a HEAD comparison
 
-Add a detached worktree at the base (`git worktree add --detach <path> <sha>`)
-and link this checkout's installed dependencies, as `AGENTS.md`'s Git rule says.
-When the base lockfile differs or a package's links are missing, install with
-scripts instead (`pnpm rebuild` first when an earlier install skipped them) and
+Run `node tooling/scripts/proof-worktree.mjs <path> <sha>`. It adds a detached
+worktree at the base, links this checkout's root and workspace `node_modules`
+and copies each package's untracked `.env` files, as `AGENTS.md`'s Git rule
+says. It exits 1 when the new worktree's status shows anything besides those
+links. Remove it with `git worktree remove --force <path>` when the run ends.
+A package's own `node_modules` links its workspace siblings by relative path.
+Through that link, a sibling import outside the TypeScript path aliases
+resolves to this checkout's source, so a base proof that must run a sibling at
+the base installs in the worktree instead. When the base lockfile differs or a
+package's links are missing, install with scripts instead (`pnpm rebuild` first when an earlier install skipped them) and
 build `@platejs/cli`. A worktree that serves the app with `next dev` needs a real install, `pnpm install --frozen-lockfile --offline --ignore-scripts`, because Turbopack refuses a `node_modules` symlink that points outside the worktree. A step that fails in about a second, such as `plate:
 command not found`, is a broken install, not a result. Never copy candidate
-files into the base worktree; replay them in a second worktree, and require an
-empty `git -C <path> status --porcelain` before labeling any run as base.
+files into the base worktree; replay them in a second worktree, and require the
+helper's clean status, which ignores only its own links, before labeling any
+run as base. A worktree in which a patched build or typecheck ran is never base, even after
+`git apply -R`, because ignored build output such as `dist` and `.source`
+survives; every base control runs in a fresh worktree.
+
+The helper has four modes for these cases:
+
+- `--with <file>` copies a candidate file from this checkout into the new
+  worktree, and the helper prints `candidate:` instead of `base:`, so a new test
+  runs against the base source without labeling that run base. Before creating
+  anything, the helper refuses a `--with` that names no file inside this
+  checkout or reaches it through a symlink.
+- `--install` runs `pnpm install --offline --frozen-lockfile --ignore-scripts`
+  instead of linking `node_modules`. A www server needs it, because Turbopack
+  refuses `node_modules` linked from outside the worktree root. Then run
+  `PLATE_WWW_DYNAMIC_DOCS=1 pnpm build:source:dev` in `apps/www` before
+  `next dev`.
+- `--dir <run directory> --name <name> -- <command>` runs the command in the
+  worktree through `proof.mjs`, removes the worktree and exits with the
+  command's status, or 1 when the command passed and the removal failed. It
+  exits 2 when `proof.mjs` cannot load or refuses its arguments. Before
+  creating anything, the helper refuses a `--dir` whose real location
+  lies inside the worktree. That comparison is case-sensitive and ignores the
+  directories a `--name` adds. A script that starts a server for the command
+  starts it with `set -m` and kills its process group on exit.
+- `--expect-fail <text>`, repeatable beside a command, refuses a run in which
+  the command passes or its output lacks a text. Pass each case's failure line,
+  such as bun's `(fail) <describe> > <title>`. Each text matches anywhere in
+  the last 16 MiB of the command's output, never in the log's command line, so
+  it does not show which case printed it, and a failure line also matches a
+  longer title that starts the same way. Never pass a matcher line such as
+  bun's `error: expect(received).toEqual(expected)`, which every failing case
+  with that matcher prints. Read the log to tie the failure to its defect. A
+  case designed to pass at the base, such as a must-pass control or a case
+  whose defect only a mutation shows, goes to `mutate.mjs` instead. The
+  helper exits 0 when the command fails with every text, and 1 when the command
+  passes, a text is missing or the worktree setup refuses. It exits 2 when
+  `proof.mjs` cannot load or refuses its arguments, or the command cannot
+  start, so read stderr.
+
+Every path argument resolves from the current directory. Each write the helper
+makes into the worktree, a `node_modules` link, a `.env` copy or a `--with`
+copy, checks the directories on its path. Each copy replaces a symlink at its
+own path, and the link replaces only a dangling one. It exits 1 and leaves the
+worktree in place when a directory on that path resolves elsewhere, through a
+symlink the base tracks or the helper's own `node_modules` link. The helper
+does not guard git metadata: a `--with` under `.git`, in any letter case, can
+point the worktree's git commands at another checkout.
 
 ## Local install recovery
 
@@ -250,7 +340,10 @@ When a local-only typecheck/build/dev/test failure does not match the change and
 shows missing-module/package-resolution corruption, corrupted `.bun` files,
 mixed `.bun`/`.pnpm` React paths, package-local `node_modules/react*`,
 `Invalid hook call` or null `resolveDispatcher()`, run `pnpm run reinstall` once
-and rerun the exact failing command before changing product code.
+and rerun the exact failing command before changing product code. Under Vitest
+browser mode, first search the log for `Vite unexpectedly reloaded a test`.
+That line means Vite re-optimized dependencies mid-run, so rerun the command or
+list the dependencies in `optimizeDeps.include` instead of reinstalling.
 
 Reinstall removes root/workspace/app `node_modules`, `.turbo`, `apps/www/.next`
 and `tsconfig.tsbuildinfo`, then runs `pnpm install`. A changed/disappeared failure

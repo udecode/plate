@@ -1,5 +1,5 @@
 ---
-description: Write or audit Plate public documentation, page design, examples, installation, MDX and navigation.
+description: Use before any edit under content/docs, including a one-line fix to existing advice, a Chinese twin or an embedded demo, and to write or audit Plate public documentation, page design, examples, installation, MDX and navigation.
 ---
 
 # Plate Docs
@@ -17,7 +17,8 @@ Handle the requested page, feature or documentation audit. An audit reports
 source-backed gaps; edits stay within the requested scope. General prose in
 plans, reports, READMEs and PR descriptions goes directly to `pstack:technical-writing`.
 For a tiny copy edit, read the text and resolve changed links without loading
-unrelated docs mechanics.
+unrelated docs mechanics; an English page edit still rebuilds the docs
+registry where the verify table's registry row applies.
 
 Read the target page, its nearest useful sibling, and the source that owns each
 changed claim. Start from the current source and public exports. Docs describe
@@ -109,6 +110,7 @@ only when adding, moving, merging or deleting routes or changing navigation.
 | Prose or link only | Read the edited text and resolve changed links; preserve code and metadata |
 | MDX structure or examples | `pnpm --filter www build:source`; verify symbols, imports and fence content against source |
 | Docs source parity or generated docs | `pnpm --filter www check:docs` |
+| An edit to an English `content/docs` page or the root `meta.json`, where the branch's registry-generation rule allows a local build | `pnpm --filter www build:registry` once after the final prose pass, then `pnpm --filter www build:registry --check`; when an earlier link of `check:docs` or the www typecheck chain is red at `HEAD`, run each later link on its own |
 | New/moved route or navigation | Parse changed metadata and request the exact route; inspect pager/sidebar when they changed |
 | Preview or visible component behavior | Resolve the real demo and use [`verify`](../verify/SKILL.md) on that exact route/state |
 | Registry source | [Plate UI](../plate-ui/SKILL.md) and the branch's registry-generation rule |

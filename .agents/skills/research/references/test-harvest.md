@@ -34,7 +34,7 @@ A request to process an existing harvest into "all Slate tests", "all Plate rows
 2. The target repo as a local checkout such as `../lexical`. Never browse GitHub files; clone a missing `owner/repo` to `../repo-name`.
 3. The Plate repo's current test files and package scripts.
 4. Plate package, docs and example owners when the behavior is a plugin, kit, UI, React integration or product policy.
-5. `docs/solutions/` for prior browser, IME, selection and mobile proof lessons.
+5. `docs/research/sources/plate-notes/` and the remaining `docs/solutions/` notes for prior browser, IME, selection and mobile proof lessons.
 6. `issue-harvester`'s Closed-Issue PR/Test Provenance for issue and PR provenance when a test exists because of a known upstream bug.
 7. For lane-plan mode, the Plan playbook, with the Plite layer for `slate-v2` and the Plate layer for `plate`.
 

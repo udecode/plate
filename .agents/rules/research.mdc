@@ -1,5 +1,5 @@
 ---
-description: Research prior art and external editor evidence for any Plate or Plite feature, picking the gap most likely to change a decision; compare external editor architectures through a strict source inventory; harvest portable tests from external editors; and maintain the compiled research layer.
+description: Research prior art and external editor evidence for any Plate or Plite feature, picking the gap most likely to change a decision; compare external editor architectures through a strict source inventory; harvest portable tests from external editors; and maintain the compiled research layer. Use it before writing, moving or compiling any page under docs/research, including lessons compiled from retired internal docs.
 argument-hint: '[audit [sync] | harvest [plan] | maintain | full] <topic, area or repo>'
 ---
 
@@ -33,7 +33,7 @@ It discovers and synthesizes. It does not run measured packets (`benchmark`), cl
 ## Pick what to research
 
 1. **Layer.** Pick it from the architecture reference's Pick the layer (`.agents/playbooks/references/architecture.md`).
-2. **What is known.** Run `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` for the decision, its current review, limits and open questions, and `node tooling/scripts/review-ledger.mjs research <key-or-term>` for prior reads, leads and rejections. Read the matching compiled pages under `docs/research/decisions/` and `docs/research/sources/`, and the candidates in `docs/research/sources/editor-architecture/candidates.md`.
+2. **What is known.** Run `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` for the decision, its current review, limits and open questions, and `node tooling/scripts/review-ledger.mjs research <key-or-term>` for prior reads, leads and rejections. Read the matching compiled pages under `docs/research/decisions/` and `docs/research/sources/`, the candidates in `docs/research/sources/editor-architecture/candidates.md`, and the area's page in `docs/research/sources/plate-notes/`, which holds lessons compiled from retired solution notes.
 3. **The gap.** Choose the one question most likely to change a decision, in this order: an open question or `defer` limit on the decision page; a candidate editor or library not yet compared for this feature; a rejected lead whose reopen condition is now met; evidence whose source changed since it was read.
 4. State the pick, its layer and why it beats the next candidate, then start the run.
 

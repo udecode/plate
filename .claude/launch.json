@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "www-dev-frozen",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["PLATE_WWW_DYNAMIC_DOCS=1", "PLATE_WWW_DEV_SOURCE=1", "PLATE_WWW_DIST_DIR=.next-proof", "pnpm", "--dir", "apps/www", "exec", "next", "dev", "--port", "3297"],
+      "port": 3297
+    }
+  ]
+}

@@ -63,7 +63,7 @@ When a design or review question touches colocation, inlining, helper survival, 
 - What is the user trying to say, and does the call site say exactly that?
 - What is the real import path for every noun, and is that layer its honest owner?
 - Can an owner noun leave a scoped API, can nesting become a flat domain verb, and can inference remove a type, cast, helper or duplicated contract?
-- Is a customization path paying for an advanced case on every basic call?
+- Is a customization path paying for an advanced case on every basic call? Search examples and docs for a placeholder value of a required option, such as the same ID in every demo; each one is a basic call paying for that case.
 - Were invariant, parameter, substitutable capability and app policy classified before a plugin was proposed?
 - Does the API remain coherent after three plausible future additions?
 - Can an agent find the canonical path from types, JSDoc and one example?
@@ -84,9 +84,9 @@ Lead with one recommendation, not a menu. For harsh honest feedback, the first s
 
 Run `repair` when the user corrects an API recommendation in a reusable way, when an accepted design sets or rejects a reusable public API principle, or when a change removes, renames or reinterprets a reusable public API or its canonical pattern. This is an automatic closeout subtask of the API change. In a read-only request, report the exact repair instead of writing it. When the same API mistake comes back a second time, run `/pstack:correct` on its class first, so a type, lint or check stops it before doctrine text changes.
 
-1. Check the correction against live source and the current Vision owner. When it names an API the source lacks or contradicts settled law, stop and ask, because changing settled law is a `best-api-review` question, not a repair.
+1. Check the correction against live source and the current Vision owner. When it names an API the source lacks or contradicts settled law, stop the repair and run `best-api-review` on the correction, because changing settled law is a review question, not a repair.
 2. Edit the one Vision owner of the rule in `VISION.md` or `docs/vision/**`.
-3. Search every artifact that teaches the contract, its skills, examples, recipes, checks, docs and generated mirrors for the rejected names, examples, and call shapes. Update only skills that teach or enforce the changed contract, remove contradictions, and link the Vision owner instead of copying the doctrine.
+3. Search every artifact that teaches the contract, its skills, examples, recipes, checks, docs, generated mirrors and generated reference output, such as the API reference manifest, for the rejected names, examples, and call shapes. When a generator fails at the base, regenerate its output as `verify`'s command recipes say, or list the stale output as open work in the plan's Close. Update only skills that teach or enforce the changed contract, remove contradictions, and link the Vision owner instead of copying the doctrine.
 4. Regenerate skills and their resources per the pstack block's Agent files rule.
 5. Forward-test the affected action on a real API without seeding the expected answer.
 

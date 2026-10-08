@@ -42,10 +42,19 @@ Record before measuring:
 - lockfile/package-manager identity, production or development build mode,
   browser/version, machine, viewport, DPR, and relevant flags;
 - route, fixture, document shape, plugin set, rendering component and options,
-  setup, and action.
+  setup, and action;
+- the host's core count, and its load average beside each measured run;
 - target-specific materiality and noise rule. Reuse an existing budget when it
   is honest; otherwise predeclare both an absolute and relative delta against
   observed baseline variability before reading the candidate result.
+
+On a loaded shared host, every timing line is inconclusive whether it passes
+or misses. Such a result never rewrites a tracked receipt or accepts a
+target, and a speed claim from it narrows to what a deterministic work count
+proves. In Chromium, count per-keystroke work through CDP
+`Performance.getMetrics`: `LayoutCount`, `RecalcStyleCount` and
+`TaskDuration`. Frame latency through `requestAnimationFrame` moves in steps of
+about 16.7 ms, so it cannot resolve work smaller than a frame.
 
 Paths are not identities. A report that says only `currentRepo` or
 `legacyRepo` is provenance-incomplete.

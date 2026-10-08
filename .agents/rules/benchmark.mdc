@@ -20,7 +20,8 @@ conclusive cause gate, the durable fix decision, fix-rerun-resume and the close.
 This skill holds the lanes, harness, cohorts, budgets, comparison law,
 correctness guards and the pre-acceptance probe.
 Read that playbook completely before creating a plan, running a benchmark or
-changing runtime code.
+changing runtime code. Before any benchmark row or result is logged
+`verified`, in any mode, run `pstack:benchmark-checklist` on it.
 
 ## Public Surface
 
@@ -52,19 +53,39 @@ Before the architecture owner may lock that target:
 2. Freeze the absolute/relative budget and noise rule before reading the target
    result. Reuse an honest existing budget when one exists. Run each budget
    line on the baseline first. A line the baseline already fails or nears
-   measures existing cost, so restate it before freezing. Size each line
-   relative to the baseline and above the timer resolution, and run one
-   planted-slowdown control that the line must reject; an absolute tolerance
-   larger than the measured quantity cannot fail.
+   measures existing cost, so restate it before freezing. Set a time budget by
+   how often the operation runs, so a per-keystroke path gets a tight budget
+   and a once-per-gesture choice does not. Size each line relative to the
+   baseline and above the timer resolution, and run one planted-slowdown
+   control that the line must reject; an absolute tolerance larger than the
+   measured quantity cannot fail. jsdom timing cannot measure a style or layout
+   read, so it never decides whether one belongs on the path.
 3. Capture a comparable current-owner baseline. If the proposed path is not
    executable, build the smallest disposable prototype that can falsify its
    claimed owner and scaling law; do not start production implementation.
    Time the baseline only on cohorts where it does the candidate's work; a
    baseline that refuses or reads the input literally is a control, not a
-   comparison.
+   comparison. Run a baseline at a commit in a worktree from
+   `node tooling/scripts/proof-worktree.mjs`, as the Base worktree section of
+   `verify`'s command recipes says, and copy candidate files into a second
+   worktree only through its `--with`.
 4. Run matched baseline/target cohorts and record source identity, fixture,
    action, environment, sampling/noise, deterministic work indicators, timing,
-   and the correctness/native guard.
+   and the correctness/native guard. The probe writes every cohort's
+   measurements to an attempt-indexed log in the run directory before it
+   asserts any line, then asserts every frozen line itself and fails when a
+   budget input is missing. Only a measured run that passes every line, outside
+   the loaded-host case in the methodology, rewrites a tracked receipt. It also
+   runs once on a known-bad input, which must fail with the probe's own
+   assertion text, as Harness Repair asks of a gate. Each cohort reads its
+   mode and workload back from the running page, such as the rendering mode
+   and the block and page counts, and fails when they differ from what its name
+   claims, so an ignored or renamed parameter cannot measure a default. Every
+   arm, the known-bad one included, shows it did the work its name claims; a
+   layout-thrash arm that writes an unchanged value dirties nothing. A Vitest
+   probe that prints its numbers runs with
+   `--reporter=verbose --silent=false`, because Vitest's agent reporter hides
+   them behind a bare pass.
 5. Accept the target only when the result meets the frozen contract and the
    evidence isolates the claimed owner. An inconclusive result leaves the
    decision `defer` or `gate` with the next probe named. Keeping or dismissing
@@ -127,7 +148,7 @@ wrong. A benchmark row measures only what its name says: helper reads such as fu
 Two identical builds prove only that an evaluator raises no false alarm. Prove
 a new or repaired evaluator end to end with at least one known-bad candidate;
 an identical-build result close to a guard means that guard sits inside the
-noise. A change to a shared benchmark summary or stats helper proves itself on one current core artifact and one current React artifact, read from the emitted JSON, before any threshold uses the new field.
+noise. A change to a shared benchmark summary or stats helper proves itself on one current core artifact and one current React artifact, read from the emitted JSON, before any threshold uses the new field. A mutant or candidate measured through a build counts only after the run shows its bytes reached that build, such as through a changed build fingerprint. A `*_SKIP_BUILD=1` run builds nothing and checks nothing for staleness. Before a Plite browser lane, run `node apps/plite/scripts/build-app-if-stale.mjs`, which rebuilds the example app; `build-browser-if-stale.mjs` checks only `@platejs/test`. Before a core lane, rebuild the package `dist` it imports.
 
 `benchmarks/editor` is a standalone npm package with its own lockfile. Its
 Evidence Kit CLI exists only after `pnpm bench:editor:install`, and the root
