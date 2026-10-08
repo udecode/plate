@@ -5,6 +5,7 @@ import {
   createEditor,
   createEditorView,
   defineEditorSchema,
+  NodeApi,
   schema,
 } from '../src';
 import { authored } from '../src/authored';
@@ -741,4 +742,57 @@ describe('authored local history', () => {
     assert.equal(view.api.history.redo().status, 'applied');
     assert.equal(view.read.text.string([0]), 'oneaQb');
   });
+});
+
+const blockPoint = (offset: number, block = 0) => ({
+  path: [block, 0],
+  offset,
+});
+const setupBreakAfterStruckText = () => {
+  const editor = createEditor({
+    plugins: [authored({ authorId: 'alice' }), history()],
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'Generate content' }] },
+    ],
+  });
+  const view = createEditorView(editor, {
+    authored: { intent: 'propose', projection: 'markup' },
+  });
+  const blocks = () => view.read.children().map((node) => NodeApi.string(node));
+  view.update.text.delete({
+    at: { anchor: blockPoint(2), focus: blockPoint(6) },
+  });
+  const ids = () =>
+    editor.read.authored.changes().items.map((change) => change.id);
+  const before = new Set(ids());
+  view.update((tx) => {
+    tx.selection.set(blockPoint(2));
+    tx.break.insert();
+  });
+  const breakId = ids().find((id) => !before.has(id));
+  view.update.text.insert('Q', { at: blockPoint(0, 1) });
+  return { blocks, breakId, editor, view };
+};
+
+it('undoes a suggested break after undoing a suggestion typed after it', () => {
+  const { blocks, view } = setupBreakAfterStruckText();
+  assert.deepEqual(blocks(), ['Ge', 'Qte content']);
+  view.api.history.undo();
+  assert.deepEqual(blocks(), ['Ge', 'te content']);
+  view.api.history.undo();
+  assert.deepEqual(blocks(), ['Gete content']);
+  view.api.history.undo();
+  assert.deepEqual(blocks(), ['Generate content']);
+});
+
+it('rejects a suggested break once the suggestion typed after it is undone', () => {
+  const { blocks, breakId, editor, view } = setupBreakAfterStruckText();
+  assert.ok(breakId);
+  view.api.history.undo();
+  const result = editor.update.authored.decide({
+    action: 'reject',
+    selection: editor.read.authored.select({ ids: [breakId] }),
+  });
+  assert.equal(result.status, 'applied');
+  assert.deepEqual(blocks(), ['Gete content']);
 });

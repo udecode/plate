@@ -697,10 +697,7 @@ export const resolveAuthoredPosition = (
         const resolved = resolveEndpoint(index, endpoint, side);
         if (resolved !== null) return resolved;
       }
-    }
-    if (deletion === 'collapse') {
-      for (const side of order) {
-        const endpoint = target[side];
+      if (deletion === 'collapse') {
         if (!endpoint) continue;
         const offset = endpoint.offset - (side === 'left' ? 1 : 0);
         const removed = recordAtOrBefore(

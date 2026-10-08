@@ -1978,6 +1978,27 @@ export const isIndependentAuthoredChange = (
       (!operation.proposal || operation.independent)
     );
   });
+/**
+ * Direct edits and independently replayable proposals survive their
+ * dependencies' decisions, and an undone proposal edit no longer holds its
+ * content, so only live reviewed proposal operations bind changes.
+ */
+export const reviewedAuthoredDependencies = (
+  state: AuthoredState,
+  change: AuthoredRecord
+) =>
+  new Set(
+    [...records(change.operations)].flatMap(([, id]) => {
+      const operation = readRecord(state.operations, id);
+      return operation?.kind === 'edit' &&
+        operation.proposal &&
+        !operation.independent &&
+        !operation.inverseOf &&
+        isAuthoredEditVisible(state, operation, () => true)
+        ? operation.dependencies
+        : [];
+    })
+  );
 export const authoredRebaseDependants = (
   state: AuthoredState,
   ids: Iterable<string>

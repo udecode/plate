@@ -2429,3 +2429,237 @@ test('rejects a backward paragraph merge and keeps typing', async ({
   ).toBeVisible();
   runtimeErrors.assertNone();
 });
+
+const openPlayground = async (page: Page) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  await page.goto('/blocks/playground', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(page, 'playground', root);
+
+  await editor.ready({ editor: 'visible', text: PLAYGROUND_TITLE });
+
+  return { root, runtimeErrors };
+};
+
+const textPoint = (block: Locator, needle: string, offset: number) =>
+  block.evaluate(
+    (element, target) => {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const text = node as Text;
+        const index = text.data.indexOf(target.needle);
+        if (index === -1) continue;
+        text.parentElement?.scrollIntoView({ block: 'center' });
+        const range = document.createRange();
+        range.setStart(text, index + target.offset);
+        range.collapse(true);
+        const rect = range.getBoundingClientRect();
+        return { x: rect.left + 0.5, y: rect.top + rect.height / 2 };
+      }
+      throw new Error(`Missing text ${target.needle}`);
+    },
+    { needle, offset }
+  );
+
+const clickText = async (
+  page: Page,
+  block: Locator,
+  needle: string,
+  offset: number
+) => {
+  const { x, y } = await textPoint(block, needle, offset);
+  await page.mouse.click(x, y);
+};
+
+/** Suggests deleting `length` characters of `needle` from `offset`. */
+const strikeText = async (
+  page: Page,
+  block: Locator,
+  needle: string,
+  offset: number,
+  length: number
+) => {
+  await clickText(page, block, needle, offset);
+  for (let index = 0; index < length; index++) {
+    await page.keyboard.press('Shift+ArrowRight');
+  }
+  await page.keyboard.press('Backspace');
+};
+
+/** The innermost block starting with `text`, kept while its text changes. */
+const playgroundBlock = async (root: Locator, text: string) => {
+  const blocks = root.locator('[data-editor-node="element"]');
+  const index = await blocks.evaluateAll(
+    (elements, prefix) =>
+      elements.findLastIndex((element) =>
+        element.textContent?.startsWith(prefix)
+      ),
+    text
+  );
+  expect(index).toBeGreaterThanOrEqual(0);
+  return blocks.nth(index);
+};
+
+test('types into deleted text inside a table cell', async ({ page }) => {
+  const { root, runtimeErrors } = await openPlayground(page);
+  const cell = await playgroundBlock(root, 'Comments');
+
+  await enterSuggestionMode(page);
+  await strikeText(page, cell, 'Comments', 2, 4);
+  await clickText(page, cell, 'mmen', 2);
+  await page.keyboard.type('X');
+
+  await expect(cell).toHaveText('CommXents');
+  await expect(cell.locator('[data-editor-retained="delete"]')).toHaveText([
+    'mm',
+    'en',
+  ]);
+  runtimeErrors.assertNone();
+});
+
+test('types into deleted text inside a column', async ({ page }) => {
+  const { root, runtimeErrors } = await openPlayground(page);
+  const column = await playgroundBlock(root, 'First column content');
+
+  await enterSuggestionMode(page);
+  await strikeText(page, column, 'column', 1, 4);
+  await clickText(page, column, 'olum', 2);
+  await page.keyboard.type('X');
+
+  await expect(column).toContainText('First colXumn content');
+  await expect(column.locator('[data-editor-retained="delete"]')).toHaveText([
+    'ol',
+    'um',
+  ]);
+  runtimeErrors.assertNone();
+});
+
+test('blinks the caret painted inside deleted text', async ({ page }) => {
+  const { root, runtimeErrors } = await openPlayground(page);
+  const block = await playgroundBlock(root, 'Generate content');
+
+  await enterSuggestionMode(page);
+  await strikeText(page, block, 'Generate', 2, 4);
+  await clickText(page, block, 'nera', 2);
+
+  const caret = root.locator('[data-editor-view-selection-caret]');
+  await expect(caret).toBeVisible();
+  const opacity = () =>
+    caret.evaluate((element) => getComputedStyle(element).opacity);
+  await expect.poll(opacity, { intervals: [150] }).toBe('0');
+  await expect.poll(opacity, { intervals: [150] }).toBe('1');
+  runtimeErrors.assertNone();
+});
+
+test('keeps the caret before the rest of deleted text when Editing deletes inside it', async ({
+  page,
+}) => {
+  const { root, runtimeErrors } = await openPlayground(page);
+  const block = await playgroundBlock(root, 'Generate content');
+
+  await enterSuggestionMode(page);
+  await strikeText(page, block, 'Generate', 2, 4);
+  await page.getByRole('button', { name: 'Suggestion', exact: true }).click();
+  await page
+    .getByRole('menuitemradio', { name: 'Editing', exact: true })
+    .click();
+  await clickText(page, block, 'nera', 2);
+  await page.keyboard.type('X');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type('Q');
+
+  await expect(block).toContainText('GeneXQate content');
+  await expect(block.locator('[data-editor-retained="delete"]')).toHaveText([
+    'ne',
+    'a',
+  ]);
+  runtimeErrors.assertNone();
+});
+
+test('collapses to the start of a deletion that ends inside deleted text', async ({
+  page,
+}) => {
+  const { root, runtimeErrors } = await openPlayground(page);
+  const block = await playgroundBlock(root, 'Generate content');
+
+  await enterSuggestionMode(page);
+  await strikeText(page, block, 'Generate', 2, 4);
+  await strikeText(page, block, 'Ge', 1, 4);
+  await page.keyboard.type('R');
+
+  await expect(block).toContainText('GRenerate content');
+  runtimeErrors.assertNone();
+});
+
+test('leaves the caret where Editing removed a whole deleted run from a selection', async ({
+  page,
+}) => {
+  const { root, runtimeErrors } = await openPlayground(page);
+  const block = await playgroundBlock(root, 'Generate content');
+
+  await enterSuggestionMode(page);
+  await strikeText(page, block, 'Generate', 2, 4);
+  await page.getByRole('button', { name: 'Suggestion', exact: true }).click();
+  await page
+    .getByRole('menuitemradio', { name: 'Editing', exact: true })
+    .click();
+  const from = await textPoint(block, 'nera', 0);
+  const to = await textPoint(block, ' content', 0);
+  await page.mouse.move(from.x + 1, from.y);
+  await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 8 });
+  await page.mouse.up();
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type('Q');
+
+  await expect(block).toContainText('GeQ content');
+  await expect(block.locator('[data-editor-retained="delete"]')).toHaveCount(0);
+  runtimeErrors.assertNone();
+});
+
+test('strikes the live letters of a word that a Suggesting word delete crosses', async ({
+  page,
+}) => {
+  const { root, runtimeErrors } = await openPlayground(page);
+  const block = await playgroundBlock(root, 'Generate content');
+
+  await enterSuggestionMode(page);
+  await strikeText(page, block, 'Generate', 2, 4);
+  await clickText(page, block, 'te content', 3);
+  await page.keyboard.press('Alt+Backspace');
+
+  await expect
+    .poll(async () => {
+      const runs = await block
+        .locator('[data-editor-retained="delete"]')
+        .allTextContents();
+      return runs.join('');
+    })
+    .toBe('Generate ');
+  runtimeErrors.assertNone();
+});
+
+test('selects the whole word when double-clicking deleted text', async ({
+  page,
+}) => {
+  const { root, runtimeErrors } = await openPlayground(page);
+  const block = await playgroundBlock(root, 'Generate content');
+
+  await enterSuggestionMode(page);
+  await strikeText(page, block, 'Generate', 2, 4);
+  await page.getByRole('button', { name: 'Suggestion', exact: true }).click();
+  await page
+    .getByRole('menuitemradio', { name: 'Editing', exact: true })
+    .click();
+  const { x, y } = await textPoint(block, 'nera', 2);
+  await page.mouse.dblclick(x, y);
+  await page.keyboard.type('W');
+
+  await expect(block).toContainText('W content');
+  await expect(block.locator('[data-editor-retained="delete"]')).toHaveCount(0);
+  runtimeErrors.assertNone();
+});

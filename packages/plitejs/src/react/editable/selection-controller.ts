@@ -482,7 +482,8 @@ const importProjectedDOMSelection = ({
     anchorNode &&
     editorElement.contains(anchorNode) &&
     !readDOMFragmentTarget(anchorNode) &&
-    readAuthoredView(editor)?.projection === 'markup'
+    readAuthoredView(editor)?.projection === 'markup' &&
+    !SelectionApi.isNode(readRuntimeSelection(editor))
   ) {
     // The echo of a model export carries no new caret.
     if (echo) return true;
@@ -534,7 +535,13 @@ const importProjectedDOMSelection = ({
             : undefined
         )
   );
-  writeMarkupSelection(editor, projectedSelection);
+  // A live-text range the browser can paint stays DOM-owned, so a native
+  // drag keeps reporting through the DOM import path.
+  const nativeRange =
+    !isPliteViewSelectionCollapsed(projectedSelection) &&
+    canUseNativeViewSelection(editor, projectedSelection) &&
+    !projectedSelection.segments.parts.some((part) => part.fragment);
+  writeMarkupSelection(editor, nativeRange ? null : projectedSelection);
   if (
     isPliteViewSelectionCollapsed(projectedSelection) &&
     domSelection.anchorNode &&
@@ -551,12 +558,16 @@ const importProjectedDOMSelection = ({
       domSelection.collapse(domPoint[0], domPoint[1]);
     }
   }
-  setEditableModelSelectionPreference({
-    inputController,
-    preferModelSelection: true,
-    reason: 'viewport-backed',
-    selectionSource: 'model-owned',
-  });
+  setEditableModelSelectionPreference(
+    nativeRange
+      ? { inputController, preferModelSelection: false }
+      : {
+          inputController,
+          preferModelSelection: true,
+          reason: 'viewport-backed',
+          selectionSource: 'model-owned',
+        }
+  );
   if (
     !isPliteViewSelectionCollapsed(projectedSelection) &&
     !canUseNativeViewSelection(editor, projectedSelection)

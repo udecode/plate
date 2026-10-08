@@ -737,8 +737,18 @@ export const applyRetainedViewSelectionMarkCommand = (
   ) {
     return false;
   }
-  const groups = retainedSelectionGroups(editor, previous);
-  if (!groups) return false;
+  const selected = retainedSelectionGroups(editor, previous);
+  if (!selected) return false;
+  // Struck text is already a pending deletion, so a Suggesting format
+  // proposes a change to the live text only; a caret inside struck text
+  // still sets the marks of what is typed there.
+  const groups =
+    readAuthoredView(editor)?.intent === 'propose'
+      ? selected.filter(
+          (group) => !group.fragment || group.ranges.every(RangeApi.isCollapsed)
+        )
+      : selected;
+  if (!groups.length) return true;
   const { key } = input;
   const value = 'value' in input ? input.value : true;
   const pendingMarks = withAuthoredViewRead(editor, editor, () =>
@@ -971,7 +981,10 @@ export const applyMarkupInput = (
           neighbourInCaretBlock &&
           range.segments.parts.some((part) => part.fragment)
         ) {
-          if (readAuthoredView(editor)?.intent === 'propose') {
+          const stepsOverStruckCharacter =
+            readAuthoredView(editor)?.intent === 'propose' &&
+            (command.unit ?? 'character') === 'character';
+          if (stepsOverStruckCharacter) {
             // Struck text is already deleted, so a Suggesting delete steps
             // the caret over it without changing content.
             const target = moved.target.fragmentId
@@ -1007,6 +1020,12 @@ export const applyMarkupInput = (
   if (!groups) return true;
   const first = groups[0];
   if (!first) return true;
+  const deletesStruckText =
+    (command.kind === 'delete' ||
+      command.kind === 'delete-both' ||
+      command.kind === 'delete-fragment') &&
+    !isPliteViewSelectionCollapsed(previous) &&
+    previous.segments.parts.some((part) => part.fragment);
   const pendingMarks = withAuthoredViewRead(editor, editor, () =>
     getCurrentMarks(editor)
   );
@@ -1186,6 +1205,31 @@ export const applyMarkupInput = (
   }
   const changed = results?.some((result) => result.changed);
   const result = results?.at(-1);
+  const firstStruckRunDeleted =
+    groups.length > 1 &&
+    !first.owner &&
+    first.fragment?.placement?.kind === 'text' &&
+    !readAuthoredViewFragments(editor, first.fragment.changeId).some(
+      (entry) => entry.id === first.fragment?.id
+    );
+  if (
+    result &&
+    firstStruckRunDeleted &&
+    first.fragment?.placement?.kind === 'text'
+  ) {
+    if (changed) {
+      savePliteViewSelectionHistoryEntry(editor, {
+        undo: undoSelection,
+        redo: null,
+      });
+    }
+    writeModelCaret(
+      editor,
+      first.fragment.placement.point,
+      previous.anchor.affinity
+    );
+    return true;
+  }
   if (result && RangeApi.isRange(result.selection)) {
     if (
       RangeApi.isCollapsed(result.selection) &&
@@ -1199,9 +1243,12 @@ export const applyMarkupInput = (
         strike &&
         readRetainedFragmentIdsAt(editor, result.selection.anchor) !==
           strike.slots;
+      // A delete across struck text leaves the caret where the range began,
+      // before what is left of it.
       const affinity =
         (struck ? strike?.side : undefined) ??
         deleteSide ??
+        (deletesStruckText ? 'backward' : undefined) ??
         result.selection.affinity ??
         (command.kind === 'delete' ? previous.anchor.affinity : undefined);
       if (changed) {

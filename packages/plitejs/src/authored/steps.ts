@@ -31,6 +31,7 @@ import { getDefined } from '../internal/get-defined';
 import {
   authoredContentLocations,
   authoredCounterpartIntervals,
+  authoredInsertionAncestry,
   authoredInsertionOrigin,
   authoredOriginalLocation,
   isLaterAuthoredInsertion,
@@ -180,19 +181,29 @@ export const resolveAuthoredRetainedPosition = (
   );
   if (from === null || to === null) return to ?? from;
   if (from === null || to === null || from >= to) return to;
+  const query = position.right ?? position.left;
   for (const current of authoredPositionSpans(positions, from, to)) {
-    const insertion = authoredInsertionOrigin(state, current.span);
-    const query = position.right ?? position.left;
-    const anchor =
-      insertion?.association === 'left'
-        ? (insertion.position.left ?? insertion.position.right)
-        : (insertion?.position.right ?? insertion?.position.left);
-    if (query && anchor && query.origin === anchor.origin) {
-      if (anchor.offset > query.offset) return current.from;
-      if (anchor.offset < query.offset) continue;
-      if (spanInsertionAssociation(state, current.span) === 'right') {
+    for (const { anchor, insertion, span } of authoredInsertionAncestry(
+      state,
+      positions,
+      current.span
+    )) {
+      if (!query || !anchor || query.origin !== anchor.origin) continue;
+      const replacedFrom =
+        insertion.replacedFrom?.right ?? insertion.replacedFrom?.left;
+      const replacesFromBeforeQuery =
+        replacedFrom?.origin === query.origin &&
+        replacedFrom.offset < query.offset;
+      if (anchor.offset > query.offset && !replacesFromBeforeQuery) {
         return current.from;
       }
+      if (
+        anchor.offset === query.offset &&
+        spanInsertionAssociation(state, span) === 'right'
+      ) {
+        return current.from;
+      }
+      break;
     }
   }
   return to;
@@ -732,13 +743,14 @@ export const partitionAuthoredStructuralEdit = (
       }
       from += section.length;
     }
+    const enclosing = (position: number) =>
+      document
+        .openContextAt(position)
+        .filter((entry) => entry.from < position && position < entry.to)
+        .map((entry) => entry.kind);
     for (const candidate of candidates) {
-      const before = document
-        .openContextAt(candidate.from)
-        .map((entry) => entry.kind);
-      const after = document
-        .openContextAt(candidate.to)
-        .map((entry) => entry.kind);
+      const before = enclosing(candidate.from);
+      const after = enclosing(candidate.to);
       if (jsonEqual(before, after)) regions.push(candidate);
       else {
         let position = candidate.from;

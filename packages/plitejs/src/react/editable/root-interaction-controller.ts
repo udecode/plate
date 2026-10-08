@@ -33,7 +33,10 @@ import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
-import { getPliteRootBoundaryPoint } from '../view-boundary-graph';
+import {
+  getPliteRootBoundaryPoint,
+  type PliteViewBoundaryPoint,
+} from '../view-boundary-graph';
 import {
   createPliteViewSelection,
   readPliteViewSelection,
@@ -44,6 +47,7 @@ import {
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
+  resolveMarkupSelectionMovement,
 } from './content-root-navigation';
 import {
   getContentRootOwnerFromTarget,
@@ -674,6 +678,65 @@ const collapseModelSelectionToProjectedDragAnchor = ({
   }
 
   dispatchCommand(editor, editorCommands.select, { target: range });
+};
+
+// Chrome's word selection stops at the edges of a non-editable struck run, so
+// a double click there takes the word the keyboard word step reads.
+const selectRetainedWordAt = (
+  editor: RootInteractionEditor,
+  root: HTMLElement,
+  retained: HTMLElement,
+  x: number,
+  y: number
+) => {
+  const hit = createDOMGeometryKernel({
+    root,
+    target: retained,
+  }).pointAtCoordinates({ x, y })?.point;
+  const owners = findContentRootOwners(editor);
+  const endpoint = hit
+    ? resolveProjectedDOMSelectionEndpoint({
+        node: hit[0],
+        offset: hit[1],
+        owners,
+      })
+    : null;
+  const owner = resolveKnownOwner(owners, endpoint?.owner);
+  if (!endpoint?.fragmentId || (endpoint.owner && !owner)) return false;
+  const graph = createContentRootViewBoundaryGraph(editor, owners);
+  const step = (
+    from: PliteViewBoundaryPoint,
+    direction: 'backward' | 'forward'
+  ) =>
+    resolveMarkupSelectionMovement({
+      action: { axis: 'word', direction, kind: 'move' },
+      editor,
+      extend: false,
+      graph,
+      owners,
+      selection: null,
+      viewSelection: createPliteViewSelection(graph, {
+        anchor: from,
+        focus: from,
+      }),
+    })?.target;
+  const end = step(
+    {
+      affinity: endpoint.affinity,
+      fragmentId: endpoint.fragmentId,
+      ...(owner ? { owner } : {}),
+      point: endpoint.point,
+    },
+    'forward'
+  );
+  const start = end && step(end, 'backward');
+  if (!start || !end) return false;
+  writeRuntimeSelection(editor, null);
+  writePliteViewSelection(
+    editor,
+    createPliteViewSelection(graph, { anchor: start, focus: end })
+  );
+  return true;
 };
 
 const applyModelProjectedDragSelection = ({
@@ -1485,8 +1548,15 @@ export const useRootInteractionController = ({
           !nativeEditableSelectedTextTarget &&
           !nativeEditableModifiedClick &&
           hasExpandedDOMSelectionInTarget(event.currentTarget);
+        // The selection import turns a native caret on struck text into a
+        // caret inside the fragment, so struck text in a cell stays native.
+        const retainedTextTarget =
+          target.kind === 'native-editable' &&
+          Boolean(target.target.closest('[data-editor-retained]'));
         const nativeEditableTableCellTarget =
-          nativeEditableTextTarget && Boolean(target.target.closest('td, th'));
+          nativeEditableTextTarget &&
+          Boolean(target.target.closest('td, th')) &&
+          !retainedTextTarget;
         const nativeSelectionOwnsInteraction =
           nativeEditableTextTarget &&
           !modelOwnsExpandedSelectionReplacementClick &&
@@ -1906,6 +1976,27 @@ export const useRootInteractionController = ({
         ((projectedDrag && !projectedDrag.browserOwned) ||
           canApplyCoordinateDragSelection(pendingInteraction)) &&
         shouldIgnoreDragTarget(event)
+      ) {
+        event.preventDefault();
+        projectedDrag?.finish();
+        return;
+      }
+
+      const retainedWordTarget =
+        event.detail === 2 && !pointerMoved
+          ? mouseEventTargetToElement(event.target)?.closest<HTMLElement>(
+              '[data-editor-retained]'
+            )
+          : null;
+      if (
+        retainedWordTarget &&
+        selectRetainedWordAt(
+          editor,
+          currentTarget,
+          retainedWordTarget,
+          event.clientX,
+          event.clientY
+        )
       ) {
         event.preventDefault();
         projectedDrag?.finish();

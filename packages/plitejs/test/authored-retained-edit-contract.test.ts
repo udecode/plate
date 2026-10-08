@@ -4,8 +4,10 @@ import { it } from 'node:test';
 import {
   createEditor,
   createEditorView,
+  defineEditorSchema,
   editorCommands,
   NodeApi,
+  schema,
 } from '../src';
 import { authored } from '../src/authored';
 import { records } from '../src/authored/record-tree';
@@ -392,3 +394,161 @@ for (const [label, from, expected] of [
     assert.equal(source.read.text.string([]), expected);
   });
 }
+
+const editingAroundStruckText = () => {
+  let authorId = 'bob';
+  const source = createEditor({
+    plugins: [authored({ authorId: () => authorId }), history()],
+    initialValue: [paragraph('to mark text for removal. Discuss')],
+  });
+  const view = createEditorView(source, { authored: markup });
+  view.update.text.delete({ at: { anchor: point(3), focus: point(24) } });
+  const { id } = source.read.authored.changes().items[0];
+  authorId = 'alice';
+  view.api.authored.setView({ intent: 'edit', projection: 'markup' });
+  const placed = () =>
+    retainedRuntime
+      .readAuthoredViewFragments(view, id)
+      .map((fragment) => [
+        fragment.kind === 'properties'
+          ? ''
+          : fragment.slice.content.map(NodeApi.string).join(''),
+        fragment.placement?.kind === 'text'
+          ? fragment.placement.point.offset
+          : -1,
+      ]);
+  // Types `text` inside the struck run at `at`, one key at a time: the first
+  // key splits the run, the rest follow it as live text.
+  const typeInside = (run: string, at: number, text: string) => {
+    const fragment = retainedRuntime
+      .readAuthoredViewFragments(view, id)
+      .find(
+        (entry) =>
+          entry.kind !== 'properties' &&
+          entry.slice.content.map(NodeApi.string).join('') === run
+      );
+    assert.ok(fragment);
+    const live =
+      fragment.placement?.kind === 'text' ? fragment.placement.point.offset : 0;
+    retainedRuntime.updateAuthoredFragment(
+      createAuthoredFragmentView(view, fragment),
+      (tx) => {
+        tx.selection.set(point(at));
+        tx.text.insert(text[0]);
+      }
+    );
+    [...text.slice(1)].forEach((character, index) => {
+      view.update.text.insert(character, { at: point(live + index + 1) });
+    });
+  };
+  typeInside('mark text for removal', 4, '111');
+  typeInside(' text for removal', 10, '2222');
+  typeInside('removal', 2, '222');
+  assert.equal(view.read.text.string([]), 'to 1112222222. Discuss');
+  return { placed, view };
+};
+
+it('keeps struck runs in place when Editing deletes the first key typed inside them', () => {
+  const { placed, view } = editingAroundStruckText();
+  view.update.text.delete({ at: { anchor: point(10), focus: point(11) } });
+  assert.deepEqual(placed(), [
+    ['mark', 3],
+    [' text for ', 6],
+    ['re', 10],
+    ['moval', 12],
+  ]);
+});
+
+it('keeps struck runs in place when Editing deletes the live text after the last run', () => {
+  const { placed, view } = editingAroundStruckText();
+  view.update.text.delete({ at: { anchor: point(10), focus: point(15) } });
+  assert.equal(view.read.text.string([]), 'to 1112222Discuss');
+  assert.deepEqual(placed(), [
+    ['mark', 3],
+    [' text for ', 6],
+    ['removal', 10],
+  ]);
+});
+
+it('types into struck text whose open ancestor needs more children than the run holds', () => {
+  const columns = defineEditorSchema('schema:retained-columns', {
+    elements: {
+      column: {
+        content: schema.content.types(['paragraph'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
+      columnGroup: {
+        content: schema.content.types(['column'], {
+          default: { type: 'column' },
+          min: 2,
+        }),
+      },
+      paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+    },
+    id: 'retained-columns',
+    root: schema.content.types(['paragraph', 'columnGroup'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const column = (text: string) => ({
+    type: 'column',
+    children: [paragraph(text)],
+  });
+  const source = createEditor({
+    plugins: [columns, authored({ authorId: 'alice' })],
+    initialValue: [
+      {
+        type: 'columnGroup',
+        children: [column('First column'), column('Two')],
+      },
+    ],
+  });
+  const view = createEditorView(source, { authored: markup });
+  const at = (offset: number) => ({ path: [0, 0, 0, 0], offset });
+  view.update.text.delete({ at: { anchor: at(6), focus: at(10) } });
+  const { id } = source.read.authored.changes().items[0];
+  retainedRuntime.updateAuthoredFragment(
+    createAuthoredFragmentView(
+      view,
+      retainedRuntime.readAuthoredViewFragments(view, id)[0]
+    ),
+    (tx) => {
+      tx.selection.set(at(2));
+      tx.text.insert('X');
+    }
+  );
+  assert.equal(view.read.text.string([0, 0]), 'First Xmn');
+  assert.equal(source.read.text.string([0, 0]), 'First column');
+});
+
+it('keeps struck text after the text a Suggesting replace types over it', () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [paragraph('Generate content')],
+  });
+  const view = createEditorView(source, { authored: markup });
+  view.update.text.delete({ at: { anchor: point(2), focus: point(6) } });
+  view.update((tx) => {
+    tx.selection.set({ anchor: point(0), focus: point(4) });
+    tx.text.insert('K');
+  });
+  assert.equal(view.read.text.string([]), 'K content');
+  assert.deepEqual(
+    source.read.authored
+      .changes({ proposals: true })
+      .items.flatMap(({ id }) =>
+        retainedRuntime.readAuthoredViewFragments(view, id)
+      )
+      .flatMap((fragment) =>
+        fragment.kind === 'properties' || fragment.placement?.kind !== 'text'
+          ? []
+          : [fragment.placement.point.offset]
+      ),
+    [1, 1, 1]
+  );
+});

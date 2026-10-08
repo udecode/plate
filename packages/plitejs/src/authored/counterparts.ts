@@ -68,6 +68,7 @@ export const authoredInsertionOrigin = (
 ): Readonly<{
   position: AuthoredPosition;
   association: 'left' | 'right';
+  replacedFrom?: AuthoredPosition;
 }> | null => {
   const operation = authoredOriginOperation(state, span.origin);
   if (!operation) return null;
@@ -104,6 +105,7 @@ export const authoredInsertionOrigin = (
       }
       if (!target.association && target.removed.length > 0) return null;
       let position = target.from;
+      let replacedFrom: AuthoredPosition | undefined;
       if (!target.association) {
         const removed = previous.findLast(
           (current) =>
@@ -115,11 +117,16 @@ export const authoredInsertionOrigin = (
             current.afterFrom.right?.origin === position.right?.origin &&
             current.afterFrom.right?.offset === position.right?.offset
         );
-        if (removed) position = removed.to;
+        if (removed) {
+          position = removed.to;
+          replacedFrom = removed.from;
+        }
       }
       const association =
         target.association ?? (position.left ? 'left' : 'right');
-      return { position, association };
+      return replacedFrom
+        ? { position, association, replacedFrom }
+        : { position, association };
     }
   }
   return null;
@@ -358,3 +365,45 @@ export const authoredCounterpartIntervals = (input: {
   gap?.forEach(append);
   return intervals;
 };
+
+/**
+ * Insertion anchors of `span`, then of each removed char its anchor sits on, so
+ * text typed after a since-deleted char keeps that char's place.
+ *
+ * @yields {{ anchor, insertion, span }} Each anchor with its insertion and span.
+ */
+export function* authoredInsertionAncestry(
+  state: AuthoredState,
+  positions: AuthoredPositions,
+  span: AuthoredSpan
+) {
+  let current = span;
+  const seen = new Set<string>();
+  while (true) {
+    const insertion = authoredInsertionOrigin(state, current);
+    if (!insertion) return;
+    const side = insertion.association;
+    const anchor =
+      side === 'left'
+        ? (insertion.position.left ?? insertion.position.right)
+        : (insertion.position.right ?? insertion.position.left);
+    yield { anchor, insertion, span: current };
+    if (!anchor) return;
+    if (
+      resolveAuthoredPosition(
+        positions,
+        side === 'left'
+          ? { left: anchor, right: null }
+          : { left: null, right: anchor },
+        side
+      ) !== null
+    ) {
+      return;
+    }
+    const offset = side === 'left' ? anchor.offset - 1 : anchor.offset;
+    const key = `${anchor.origin}\u0000${offset}`;
+    if (offset < 0 || seen.has(key)) return;
+    seen.add(key);
+    current = { ...span, origin: anchor.origin, offset, length: 1 };
+  }
+}

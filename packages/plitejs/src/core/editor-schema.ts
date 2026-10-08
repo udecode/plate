@@ -125,6 +125,15 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     ) => boolean;
     /** Register one trusted immutable document installed by the runtime owner. */
     adoptDocumentBaseline: (value: EditorDocumentValue) => void;
+    /**
+     * Register the trusted content of an open slice as an editable baseline.
+     * Its open ancestors keep only the slice's children, so changes inside it
+     * skip their minimum child count.
+     */
+    adoptOpenSliceBaseline: (
+      value: unknown,
+      open: Readonly<{ openEnd: number; openStart: number }>
+    ) => asserts value is EditorDocumentValue<V>;
     /** Fit an external document and preserve one explicit selection through it. */
     fitDocumentWithSelection: <TValue extends Value>(
       value: EditorDocumentValue<TValue>,
@@ -581,6 +590,10 @@ const COMPILED_SCHEMA_BY_API = new WeakMap<
   () => CompiledEditorSchema | null
 >();
 const VALIDATED_DOCUMENT_ROOTS = new WeakMap<object, string>();
+const OPEN_SLICE_ROOTS = new WeakMap<
+  object,
+  Readonly<{ openEnd: number; openStart: number }>
+>();
 // Deep-frozen top-level nodes a document assertion validated, per compiled
 // schema and root: their content cannot change and that schema's validators are
 // deterministic, so a later document sharing them validates only new nodes. A
@@ -3991,9 +4004,10 @@ export const createEditorSchema = <V extends Value = Value>(
       content: CompiledSchemaContentProgram,
       indexes: ReadonlySet<number>,
       owner: string,
-      options: RuntimeTargetOptions
+      options: RuntimeTargetOptions,
+      open = false
     ) => {
-      if (children.length < content.min) {
+      if (!open && children.length < content.min) {
         throw new EditorSchemaValidationError(
           `${owner} requires at least ${content.min} children.`
         );
@@ -4057,6 +4071,26 @@ export const createEditorSchema = <V extends Value = Value>(
       const beforeChildren = beforeRoots[root] ?? [];
       const beforeDocument =
         indexedBefore.get(root) ?? DocumentIndex.fromValue(beforeChildren);
+      const openSlice = OPEN_SLICE_ROOTS.get(beforeChildren);
+      const isOpenAncestor = (path: readonly number[]) => {
+        if (!openSlice || path.length === 0) return false;
+        const spine = (depth: number, side: 'end' | 'start') => {
+          if (path.length > depth) return false;
+          let level: readonly Descendant[] = children;
+          for (const index of path) {
+            if (index !== (side === 'start' ? 0 : level.length - 1)) {
+              return false;
+            }
+            const node = level[index];
+            if (!ElementApi.isElement(node)) return false;
+            level = node.children;
+          }
+          return true;
+        };
+        return (
+          spine(openSlice.openStart, 'start') || spine(openSlice.openEnd, 'end')
+        );
+      };
       const rootChange = getInternalDocumentRootChange(change, root);
       const ownPaths = new Map<string, readonly number[]>();
       const recursivePaths = new Map<string, readonly number[]>();
@@ -4289,11 +4323,13 @@ export const createEditorSchema = <V extends Value = Value>(
                 ? [parent, ...getElementAncestors(children, path)]
                 : [],
             root,
-          }
+          },
+          isOpenAncestor(path)
         );
       }
 
       VALIDATED_DOCUMENT_ROOTS.set(children, authority);
+      if (openSlice) OPEN_SLICE_ROOTS.set(children, openSlice);
     }
 
     for (const [root, children] of Object.entries(afterRoots)) {
@@ -4320,6 +4356,13 @@ export const createEditorSchema = <V extends Value = Value>(
   const api: InternalEditorSchemaApi<V> = Object.freeze({
     adoptDocumentBaseline: (value) => {
       rememberValidatedDocumentRoots(value, getDeclarativeSchema());
+    },
+    adoptOpenSliceBaseline: (value, open) => {
+      const document = value as EditorDocumentValue;
+      rememberValidatedDocumentRoots(document, getDeclarativeSchema());
+      for (const children of Object.values(documentRoots(document))) {
+        OPEN_SLICE_ROOTS.set(children, open);
+      }
     },
     allowsElementType,
     canContain,

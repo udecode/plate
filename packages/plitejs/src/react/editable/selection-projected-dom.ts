@@ -5,6 +5,7 @@ import {
   type Point,
   RangeApi,
   type RootKey,
+  SelectionApi,
   TextApi,
 } from '../..';
 import { readAuthoredView } from '../../core/authored-runtime';
@@ -50,6 +51,7 @@ import {
 } from './content-root-owners';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { toInternalRoot } from './runtime-editor-api';
+import { readRuntimeSelection } from './runtime-selection-state';
 
 type ProjectedDOMSelectionEndpoint = {
   affinity?: 'backward' | 'forward';
@@ -656,7 +658,13 @@ export const resolveProjectedDOMSelection = ({
         affinity:
           selection.focus.affinity === 'forward' ? 'backward' : 'forward',
       })?.key;
-  return readAuthoredView(editor)?.projection !== 'markup' &&
+  // A node selection, such as dragged table cells, has no DOM range, so a
+  // live-text DOM selection over it goes to the DOM import path, which
+  // honors the selection change origin.
+  const markupOwnsLiveSelection =
+    readAuthoredView(editor)?.projection === 'markup' &&
+    !SelectionApi.isNode(readRuntimeSelection(editor));
+  return !markupOwnsLiveSelection &&
     !docked &&
     sameOwner &&
     !selection.segments.parts.some((segment) => segment.fragment)

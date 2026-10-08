@@ -1859,9 +1859,24 @@ const PliteViewSelectionCaretGeometry = ({
   );
   const geometry = useRangeGeometryOwner(owner);
   const rect = geometry?.focusRect;
+  const caretRef = React.useRef<HTMLSpanElement>(null);
+  // Blinks like the native caret and restarts visible after every move.
+  React.useLayoutEffect(() => {
+    const animation = caretRef.current?.animate(
+      [
+        { opacity: 1 },
+        { offset: 0.5, opacity: 1 },
+        { offset: 0.5, opacity: 0 },
+        { opacity: 0 },
+      ],
+      { delay: 500, duration: 1000, iterations: Number.POSITIVE_INFINITY }
+    );
+    return () => animation?.cancel();
+  }, [rect?.left, rect?.top, rect?.height]);
   if (!rect) return null;
   return (
     <span
+      ref={caretRef}
       aria-hidden="true"
       contentEditable={false}
       data-editor-view-selection-caret=""

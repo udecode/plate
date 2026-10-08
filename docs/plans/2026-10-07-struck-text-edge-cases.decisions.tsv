@@ -1,0 +1,9 @@
+ts	phase	decision	why	evidence	result
+2026-10-07T16:26:14Z	build	复现所有者两个场景并定位到核心层位置解析	浏览器结果与无头脚本一致，问题不在输入路径	scope: authored-retained-edit-contract 两条删除线位置用例，修复前失败	fixed: 删除线保持原位，3089 条核心测试通过
+2026-10-07T16:26:14Z	build	表格与分栏内的删除线可点击与输入	单元格单击由模型接管，开放切片祖先触发最少子节点校验	scope: Chromium 表格与分栏用例与列 schema 单元测试	fixed: 两条浏览器用例连续 3 次通过
+2026-10-07T16:26:14Z	build	撤销与审批共用依赖规则，已撤销的操作不计为依赖	0e5d1df318 改变独立重放语义后撤销被拒	scope: authored-history-contract 回车撤销与拒绝两条用例，修复前失败	fixed: 两条用例通过，浏览器回车撤销恢复
+2026-10-07T16:26:14Z	build	修订模式格式只作用于正文	所有者选 A；格式化删除线会连带正文、冲突且无实际用途	scope: retained-marks 11 条，含改名后的 leaves struck text unformatted 用例	fixed: 浏览器修订模式加粗只改正文，无报错
+2026-10-07T16:26:14Z	build	双击删除线复用键盘按词移动求词边界	Chrome 原生选词在不可编辑片段内只选到片段末尾；所有者要求不保留第二套词边界规则	scope: Chromium 双击用例连续 3 次，修订与编辑两种模式探针	fixed: 选中整个词 Generate
+2026-10-07T16:26:14Z	verify	收尾验证	落地前的全量检查	scope: tsc、bun 3089、vitest 1478、ultracite 与 type-aware oxlint 15 个文件、Chromium 30 次运行、16 组容器矩阵	verified: 全部通过；pointer selection 用例仍失败，沿用上一轮记录
+2026-10-07T17:54:42Z	build	修订视图节点选区时正文 DOM 选区回到普通导入，纯正文范围不记为模型所有	所有者报告表格内划选不上；next 与 af8b477822 通过、95eeaf92b7 起失败，逐块二分定位到 resolveProjectedDOMSelection	scope: table-selection.spec.ts 3 次运行；mark-shortcut 与 paste-at-caret 两条	fixed: 两条回退通过，余下两条失败与 next 相同
+2026-10-07T17:54:42Z	verify	suggestion.spec.ts 在 HEAD 与当前代码对比	确认无新增失败并取得新用例修复前失败的证据	scope: suggestion.spec.ts 全量，HEAD 服务器 3299 与当前服务器 3000	verified: 当前 11 条失败均在 HEAD 失败；8 条新用例在 HEAD 失败、当前通过

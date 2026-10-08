@@ -147,7 +147,7 @@ import {
   authoredRebaseDependants,
   authoredOriginOperation,
   authoredDependants,
-  isIndependentAuthoredChange,
+  reviewedAuthoredDependencies,
   authoredState,
   compactAuthoredContent,
   emptyAuthoredState,
@@ -1208,7 +1208,7 @@ const undoAuthoredEdit = (
     ? authoredDependants(state, operation.changeId).filter(
         (change) =>
           change.status !== 'rejected' &&
-          !isIndependentAuthoredChange(state, change)
+          reviewedAuthoredDependencies(state, change).has(operation.changeId)
       )
     : [];
   if (dependants.length) {
@@ -1729,14 +1729,16 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
             ? null
             : readAuthoredViewProjection(live, parent);
         if (!projection) return null;
-        return withEditorDocumentProjection(
-          source,
-          projection.value as EditorDocumentValue,
-          () => read(getEditorStateView(source)),
-          {
-            root: fragment?.root ?? parent.read.view.root() ?? 'main',
-            selection: null,
-          }
+        return source.read(() =>
+          withEditorDocumentProjection(
+            source,
+            projection.value as EditorDocumentValue,
+            () => read(getEditorStateView(source)),
+            {
+              root: fragment?.root ?? parent.read.view.root() ?? 'main',
+              selection: null,
+            }
+          )
         );
       };
       const capturePoint = (
@@ -1883,11 +1885,14 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
         if (!authorId) return null;
         if (edits.length === 1 && !edits[0].target) {
           let changed = false;
-          parent.update((tx) => {
+          const run = (tx: EditorUpdateTransaction) => {
             for (const tag of updateOptions?.tags ?? []) tx.tags.add(tag);
             edits[0].update(tx);
             changed = !getActiveTransactionDocumentChange(source).empty;
-          });
+          };
+          const activeTransaction = getActiveEditorTransaction(parent);
+          if (activeTransaction) run(activeTransaction);
+          else parent.update(run);
           const selection = parent.read.selection();
           return [
             {
@@ -1966,20 +1971,25 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
             const right = endpoint('right');
             return left || right ? { left, right } : position;
           };
-          schema.assertDocument(projection.value);
-          const spec = withEditorDocumentProjection(
-            source,
-            projection.value,
-            () =>
-              withEditorUpdateRootScope(
-                source,
-                fragment?.root ?? parent.read.view.root(),
-                () => getEditorStateView(source).transaction(update)
-              ),
-            {
-              root: fragment?.root ?? parent.read.view.root() ?? 'main',
-              selection: null,
-            }
+          if (fragment?.kind === 'delete') {
+            schema.adoptOpenSliceBaseline(projection.value, fragment.slice);
+          } else schema.assertDocument(projection.value);
+          const { value } = projection;
+          const spec = source.read(() =>
+            withEditorDocumentProjection(
+              source,
+              value,
+              () =>
+                withEditorUpdateRootScope(
+                  source,
+                  fragment?.root ?? parent.read.view.root(),
+                  () => getEditorStateView(source).transaction(update)
+                ),
+              {
+                root: fragment?.root ?? parent.read.view.root() ?? 'main',
+                selection: null,
+              }
+            )
           );
           if (spec.effects.length) {
             throw new Error(
@@ -2138,7 +2148,9 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
               projection.value,
               state
             );
-            parent.update((tx) => tx.selection.set(selection));
+            const activeTransaction = getActiveEditorTransaction(parent);
+            if (activeTransaction) activeTransaction.selection.set(selection);
+            else parent.update((tx) => tx.selection.set(selection));
           }
           return output();
         }

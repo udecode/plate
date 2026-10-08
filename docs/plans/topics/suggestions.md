@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/Gcd9LP7QxTS1psbsqRGDV4
 
-Plite 的 authored changes 与 Plate 的 Suggestion：编辑模式（Editing）直接修改正文，修订模式（Suggesting）把修改记成建议，删除的内容以删除线片段留在修订视图中，评审卡片读取当前内容。本主题从 2026-10-03 开始，依次经过五个迭代：`2026-10-03-suggestion-text-review.md`（文本编辑规则，已被取代）、`2026-10-07-suggestion-final-behavior.md`（最终行为契约）、`2026-10-07-authored-typing-regression-benchmark.md`（打字回退定位）、`2026-10-07-markup-caret-model-selection.md`（光标回到模型选区）与 `2026-10-07-caret-inside-struck-text.md`（删除线内的光标与编辑）。最终行为契约见 `2026-10-07-suggestion-final-behavior.md` 附录 A，被后续迭代改写的行逐行标注了现行行为。
+Plite 的 authored changes 与 Plate 的 Suggestion：编辑模式（Editing）直接修改正文，修订模式（Suggesting）把修改记成建议，删除的内容以删除线片段留在修订视图中，评审卡片读取当前内容。本主题从 2026-10-03 开始，依次经过六个迭代：`2026-10-03-suggestion-text-review.md`（文本编辑规则，已被取代）、`2026-10-07-suggestion-final-behavior.md`（最终行为契约）、`2026-10-07-authored-typing-regression-benchmark.md`（打字回退定位）、`2026-10-07-markup-caret-model-selection.md`（光标回到模型选区）、`2026-10-07-caret-inside-struck-text.md`（删除线内的光标与编辑）与 `2026-10-07-struck-text-edge-cases.md`（删除线编辑的边界情况）。最终行为契约见 `2026-10-07-suggestion-final-behavior.md` 附录 A，被后续迭代改写的行逐行标注了现行行为。
 
 ## Public API
 
@@ -78,3 +78,18 @@ authored.api.setView({
 - 删除线保持不可编辑的 DOM，但光标可进入：点击处自绘光标，方向键逐字移动，删除线内输入、粘贴、回车与输入法提交拆开删除线；修订模式 Backspace 与 Delete 逐字跨过删除线，编辑模式直接删除删除线字符；可局部选中，修订模式复制不含删除线文字。
 - 正文中的折叠光标只存模型选区与侧别，打字不再为整份文档建边界图；删除线旁的按键与点击只为光标所在块建图，不再随删除数量增长。
 - 恢复按位置分组；删除自动格式策略；依赖按操作判定。
+- 删除线片段的位置解析沿着已删字符的插入锚点向上追溯，逐字输入后删掉第一个字符时，后续字符仍保持原来的位置；删掉删除线右边界所在的正文时，位置沿被删字符折叠的方向解析，不再退回左端点。
+- 片段视图对删除线切片的开放祖先只放宽最少子节点数，其余 schema 校验照常，分栏内的删除线可编辑。
+- 片段更新在外层事务中读取并构建变更时绕开外层草稿，Plate 标记插件在事务内调用的加粗、斜体可作用于包含删除线的选区。
+- 撤销与审批共用同一条依赖规则：已撤销的操作不再计为依赖，回车拆段后撤销不再卡住。
+- 结构编辑的区段划分只把真正包住边界的节点视为开放节点，修订模式加粗后再输入不再破坏文档结构。
+- 修订模式的替换记录被替换范围的起点；替换从删除线之前开始时，新文字排在旧删除线之前，旧删除线按文档顺序排在被替换内容之间。
+- 修订模式的格式命令只作用于选区中的正文；删除线内的折叠光标仍设置之后输入文字的格式。外层事务中只含正文的视图更新直接在该事务上执行。
+- 修订视图中，模型持有节点选区（如拖选的表格单元格）时，正文 DOM 选区回到普通导入路径；浏览器能绘制的纯正文范围不再记为模型所有。跨单元格拖选与之后的格式快捷键恢复正常，该回退自 95eeaf92b7 引入。
+- React 层：表格单元格中点击删除线交给原生选区导入；划选删除整段删除线后光标落在原位置；编辑模式删除删除线字符、以及任何跨删除线的选区删除，光标停在范围起点；修订模式按词或按行删除照常划掉正文；双击删除线时用键盘按词移动的同一规则求出词的两端；自绘光标闪烁。
+
+## Open work
+
+- 本分支在 authored 核心层改动约 4600 行，合并前由该模块的设计者审查独立重放语义、删除线位置规则与撤销依赖规则。owner: natamox，stop: 审查完成或所有者决定不审。
+- `suggestion.spec.ts` 中 11 条用例在 HEAD 上即失败，本迭代未处理，其中包括 `expands a pointer selection across deleted text boundaries`。owner: natamox，stop: 逐条判定为过时用例或缺陷并处理。
+- `table-selection.spec.ts` 中 `apply-block-toolbar-actions-to-drag-selected-cells` 与 `hide-block-handles-during-cell-selection` 在 next 合并基点即失败。owner: natamox，stop: 在 next 上修复或判定。

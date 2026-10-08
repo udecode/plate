@@ -18,7 +18,7 @@ import { getDefined } from '../internal/get-defined';
 import type { AuthoredRangeProjection } from './anchors';
 import {
   authoredContentLocations,
-  authoredInsertionOrigin,
+  authoredInsertionAncestry,
   authoredCounterpartIntervals,
 } from './counterparts';
 import type { AuthoredFragmentOrder } from './fragment-order';
@@ -26,6 +26,7 @@ import {
   authoredPositionAt,
   authoredPositionSpans,
   resolveAuthoredPosition,
+  type AuthoredPosition,
   type AuthoredSpan,
 } from './positions';
 import {
@@ -397,18 +398,24 @@ const compileAuthoredMarkupFragments = (
               start,
               end
             )) {
-              const insertion = authoredInsertionOrigin(state, entry.span);
-              const anchor =
-                insertion?.association === 'left'
-                  ? (insertion.position.left ?? insertion.position.right)
-                  : (insertion?.position.right ?? insertion?.position.left);
+              let anchor: AuthoredPosition['left'] = null;
+              let at: number | null = null;
+              for (const ancestor of authoredInsertionAncestry(
+                state,
+                livePositions,
+                entry.span
+              )) {
+                ({ anchor } = ancestor);
+                if (!anchor) break;
+                at = resolveAuthoredPosition(
+                  retained.positions,
+                  { left: anchor, right: anchor },
+                  'right',
+                  'collapse'
+                );
+                if (at !== null) break;
+              }
               if (!anchor) continue;
-              const at = resolveAuthoredPosition(
-                retained.positions,
-                { left: anchor, right: anchor },
-                'right',
-                'collapse'
-              );
               if (at === null || at <= retained.from || at >= retained.to) {
                 continue;
               }
