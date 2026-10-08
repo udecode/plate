@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test';
 import { spawnSync } from 'node:child_process';
 
-for (const dynamic of [false, true]) {
-  test(`docs generation and imports agree in ${dynamic ? 'dynamic' : 'static'} mode`, () => {
+for (const mode of ['static', 'dynamic', 'async'] as const) {
+  test(`docs generation and imports agree in ${mode} mode`, () => {
     const result = spawnSync(
       process.execPath,
       [
@@ -18,14 +18,15 @@ for (const dynamic of [false, true]) {
           ...process.env,
           // Inspect loader configuration without starting a second watcher.
           _FUMADOCS_MDX: '1',
-          PLATE_WWW_DYNAMIC_DOCS: dynamic ? '1' : '0',
+          PLATE_WWW_ASYNC_DOCS: mode === 'async' ? '1' : '0',
+          PLATE_WWW_DYNAMIC_DOCS: mode === 'dynamic' ? '1' : '0',
         },
       }
     );
 
     expect(result.status).toBe(0);
-    const { resolveAlias, rules } = JSON.parse(result.stdout) as {
-      resolveAlias: Record<string, string>;
+    const { resolveAlias = {}, rules } = JSON.parse(result.stdout) as {
+      resolveAlias?: Record<string, string>;
       rules: Record<
         string,
         { loaders: Array<{ options: { outDir: string } }> }
@@ -36,13 +37,14 @@ for (const dynamic of [false, true]) {
         rule.loaders.map((loader) => loader.options.outDir)
       )
     );
-    expect([...directories]).toEqual([dynamic ? '.source-dev' : '.source']);
-    if (dynamic) {
-      expect(resolveAlias['collections/server']).toBe(
-        './.source-dev/dynamic.ts'
-      );
-    } else {
-      expect(resolveAlias['collections/server']).toBeUndefined();
-    }
+    const outDir = {
+      async: '.source-async',
+      dynamic: '.source-dev',
+      static: '.source',
+    }[mode];
+    expect([...directories]).toEqual([outDir]);
+    expect(resolveAlias['collections/server']).toBe(
+      mode === 'dynamic' ? './.source-dev/dynamic.ts' : undefined
+    );
   });
 }

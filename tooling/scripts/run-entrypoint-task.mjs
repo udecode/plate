@@ -106,8 +106,9 @@ const runTests = () => {
           `--config=${path.join(repoRoot, 'bunfig.toml')}`,
           `--cwd=${repoRoot}`,
           'test',
-          ...testFiles.map((filename) =>
-            path.join(definition.packageRoot, filename)
+          // Without `./`, bun treats each path as a substring filter and scans the whole repository for matching test files.
+          ...testFiles.map(
+            (filename) => `./${path.join(definition.packageRoot, filename)}`
           ),
         ],
         repoRoot

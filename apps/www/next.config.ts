@@ -59,10 +59,16 @@ const buildWorkspaceDevAliases = () => {
   };
 };
 
-const withMDX = createMDX({
-  outDir:
-    process.env.PLATE_WWW_DYNAMIC_DOCS === '1' ? '.source-dev' : '.source',
-});
+// Each docs mode generates into its own directory, so a production build never
+// leaves the async form in the `.source` that tests and typecheck read.
+const docsSourceDir =
+  process.env.PLATE_WWW_DYNAMIC_DOCS === '1'
+    ? '.source-dev'
+    : process.env.PLATE_WWW_ASYNC_DOCS === '1'
+      ? '.source-async'
+      : '.source';
+
+const withMDX = createMDX({ outDir: docsSourceDir });
 
 const nextConfig = (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
@@ -128,6 +134,27 @@ const nextConfig = (_phase: string) => {
     reactStrictMode: true,
 
     staticPageGenerationTimeout: 1200,
+
+    ...(docsSourceDir === '.source-async'
+      ? {
+          // tsconfig paths resolve collections/server before resolve.alias
+          // applies, so the request is rewritten before resolution starts.
+          webpack: (webpackConfig, { webpack }) => {
+            webpackConfig.plugins.push(
+              new webpack.NormalModuleReplacementPlugin(
+                /^collections\/server$/,
+                (resource) => {
+                  resource.request = path.join(
+                    APP_ROOT,
+                    '.source-async/server'
+                  );
+                }
+              )
+            );
+            return webpackConfig;
+          },
+        }
+      : {}),
 
     turbopack: {
       root: REPO_ROOT,
