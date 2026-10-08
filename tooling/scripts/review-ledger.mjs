@@ -5,7 +5,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { landed } from '../../.agents/pstack/status.mjs';
+import { landed, stateOf } from '../../.agents/pstack/status.mjs';
 
 export const scopesDir = 'docs/research/review-scopes';
 export const recordsDir = 'docs/research/review-records';
@@ -1159,11 +1159,21 @@ function detailed(ledger, tree, plans, scope) {
 
 const lookupLimit = 10;
 
-export function lookup(root, query, { detail = false } = {}) {
-  assert.ok(isText(query), 'Supply a scope, group, path or search term');
+/** The ledger, tree and plans one or more lookups read. */
+export function lookupContext(root) {
   const ledger = loadLedger(root);
-  const tree = observe(root);
-  const plans = plansOf(root, ledger);
+  return { ledger, tree: observe(root), plans: plansOf(root, ledger) };
+}
+
+export const lookup = (root, query, options) =>
+  lookupIn(lookupContext(root), query, options);
+
+export function lookupIn(
+  { ledger, tree, plans },
+  query,
+  { detail = false } = {}
+) {
+  assert.ok(isText(query), 'Supply a scope, group, path or search term');
   const needle = query.toLowerCase();
   const scopes = [...ledger.scopes.values()].sort(byId);
   const legacy = legacyGroups(ledger);
@@ -1292,28 +1302,75 @@ export function status(root) {
 const report = (ledger) =>
   ledger.warnings.length ? { warnings: ledger.warnings } : {};
 
+const IN_FLIGHT_DAYS = 14;
+
+const changedWithin = (root, path, now) =>
+  Boolean(git(root, ['status', '--porcelain', '--', path])?.trim()) ||
+  now - Number(git(root, ['log', '-1', '--format=%at', '--', path])) * 1000 <
+    IN_FLIGHT_DAYS * 86_400_000;
+
+const uncommittedMembers = (root, scope) =>
+  (scope.members?.length
+    ? (git(root, ['status', '--porcelain', '--', ...scope.members]) ?? '')
+    : ''
+  )
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => line.slice(3))
+    .sort(byCodeUnit);
+
+/** Months-old plans still carry an open Status, so only a plan touched within IN_FLIGHT_DAYS claims its scope. */
+const inFlightPlans = (root, plans, scopeId, now) =>
+  plans
+    .filter(
+      (plan) =>
+        plan.scopes.includes(scopeId) &&
+        ['active', 'held', 'planning'].includes(stateOf(plan.status)) &&
+        changedWithin(root, plan.path, now)
+    )
+    .map((plan) => plan.path)
+    .sort(byCodeUnit);
+
 export function next(root) {
   const ledger = loadLedger(root);
   const tree = observe(root);
   const plans = plansOf(root, ledger);
-  const actionable = (id) =>
+  const open = (id) =>
     ['fork', 'unreviewed', 'pursue-not-adopted'].includes(
       openState(ledger, id, plans).open
     );
+  const inFlight = [...ledger.scopes.keys()]
+    .filter(open)
+    .map((scope) => ({
+      plans: inFlightPlans(root, plans, scope, Date.now()),
+      scope,
+    }))
+    .filter((item) => item.plans.length > 0);
+  const busy = new Set(inFlight.map((item) => item.scope));
+  const actionable = (id) => open(id) && !busy.has(id);
   const unit = orderUnits(ledger).find((item) => item.scopes.some(actionable));
+  const wip = inFlight.length > 0 ? { inFlight } : {};
   if (!unit) {
     return {
       unit: null,
-      reason: 'No scope is open except those deferred on outside evidence.',
+      reason:
+        'No scope is open except those deferred on outside evidence or in flight.',
+      ...wip,
       ...report(ledger),
     };
   }
   return {
     unit: unit.id,
     title: unit.title,
-    scopes: unit.scopes
-      .filter(actionable)
-      .map((id) => compact(ledger, tree, plans, ledger.scopes.get(id))),
+    scopes: unit.scopes.filter(actionable).map((id) => {
+      const scope = ledger.scopes.get(id);
+      const uncommitted = uncommittedMembers(root, scope);
+      return {
+        ...compact(ledger, tree, plans, scope),
+        ...(uncommitted.length > 0 ? { uncommitted } : {}),
+      };
+    }),
+    ...wip,
     ...report(ledger),
   };
 }
@@ -1891,7 +1948,7 @@ function pageProblems(root, ledger, plans, plan) {
       const entry = reconciliationOf(evidence, name);
       if (!entry?.reason) {
         problems.push(
-          `## Evidence does not reconcile ${name} with an action and a reason`
+          `## Evidence does not reconcile ${name} with an action and a reason: name it on one line with retains, reopens or supersedes, then the reason`
         );
       }
     }
@@ -1962,7 +2019,28 @@ export function documentMetadata(text) {
 export function searchResearch(root, query) {
   assert.ok(query?.trim(), 'Supply a research query or semantic key');
   const needle = query.toLowerCase();
-  const matches = [];
+  const { rows, warnings } = researchRows(root);
+  return {
+    query,
+    matches: rows
+      .filter(
+        ({ run, text }) =>
+          text.toLowerCase().includes(needle) ||
+          run.toLowerCase().includes(needle)
+      )
+      .map(({ run, text, ...match }) => match),
+    warnings,
+    limit:
+      'Text/key lookup only; semantic equivalence and source reuse require review. Original headers and status are preserved.',
+  };
+}
+
+/**
+ * Every row of every research run's ledgers, with its run and raw text, and a
+ * warning for each row whose cells do not match its header.
+ */
+export function researchRows(root) {
+  const rows = [];
   const warnings = [];
   for (const run of readdirSync(join(root, 'docs/plite/research'), {
     withFileTypes: true,
@@ -1991,16 +2069,12 @@ export function searchResearch(root, query) {
             issue: 'Header/cell mismatch; inspect original row',
           });
         }
-        if (
-          !line.toLowerCase().includes(needle) &&
-          !run.name.toLowerCase().includes(needle)
-        ) {
-          continue;
-        }
         const row = malformed
           ? null
           : Object.fromEntries(keys.map((key, column) => [key, cells[column]]));
-        matches.push({
+        rows.push({
+          run: run.name,
+          text: line,
           path,
           line: i + 2,
           status: row?.status ?? null,
@@ -2010,13 +2084,7 @@ export function searchResearch(root, query) {
       }
     }
   }
-  return {
-    query,
-    matches,
-    warnings,
-    limit:
-      'Text/key lookup only; semantic equivalence and source reuse require review. Original headers and status are preserved.',
-  };
+  return { rows, warnings };
 }
 
 const usage =
