@@ -1,0 +1,35 @@
+{
+  "hook-generics": {
+    "packages/platejs/src/react/editor/useCreateEditor.ts": [
+      "const TSchema extends EditorApplicationSchema | undefined = undefined,",
+      "const TSchema extends EditorApplicationSchema | undefined = undefined,",
+      "const TSchema extends EditorApplicationSchema | undefined = undefined,",
+      "TEnabled extends boolean | undefined = undefined,",
+      "TEnabled extends boolean | undefined = undefined,",
+      "TEnabled extends boolean | undefined = undefined,",
+      "V extends Value = Value,",
+      "V extends Value = Value,"
+    ],
+    "packages/platejs/src/react/editor/useStaticEditor.ts": [
+      "const P extends readonly BasePluginInput[] = readonly [],",
+      "TEnabled extends boolean | undefined = undefined,"
+    ],
+    "packages/platejs/src/react/editor/withPlate.ts": [
+      "const TSchema extends EditorApplicationSchema | undefined = undefined,",
+      "const TSchema extends EditorApplicationSchema | undefined = undefined,",
+      "const TSchema extends EditorApplicationSchema | undefined = undefined,",
+      "V extends Value = Value,",
+      "V extends Value = Value,"
+    ],
+    "packages/plitejs/src/react/hooks/use-editor.ts": [
+      "const TPlugins extends readonly unknown[] = readonly [],"
+    ],
+    "packages/plitejs/src/react/hooks/use-element.ts": [
+      "export const useElement = <TElement extends Element = Element>(): TElement => {",
+      "export const useOptionalElement = <TElement extends Element = Element>() =>"
+    ],
+    "packages/plitejs/src/react/plugin/with-react.ts": [
+      "const TPlugins extends readonly unknown[] = readonly [],"
+    ]
+  }
+}

@@ -4,8 +4,8 @@ import type { DefinitionOf } from '../../lib/plugin/PluginDefinition';
 import { ElementStatePlugin } from '../../lib/plugins/element-state/ElementStatePlugin';
 import { PLUGINS } from '../../utils';
 import type { Editor } from '../editor/Editor';
+import type { PliteReactEditor } from '../internal/plite-types';
 import {
-  type RootEditor,
   useEditorFocused,
   useEditorReadOnly,
   useEditorRuntimeState,
@@ -46,7 +46,7 @@ const areBlockPlaceholderTargetsEqual = (
 
 const getBlockPlaceholderTarget = (
   editor: Editor,
-  viewEditor: RootEditor,
+  viewEditor: PliteReactEditor,
   state: Readonly<BlockPlaceholderPluginState>,
   view: Readonly<{
     composing: boolean;

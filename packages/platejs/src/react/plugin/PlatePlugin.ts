@@ -87,11 +87,11 @@ import type {
   InternalReactEditorWithInstalledPlugins,
   Editor,
 } from '../editor/Editor';
+import type { PliteReactEditor } from '../internal/plite-types';
 import type {
   Decoration,
   DecorationAttributes,
   DecorationRefresh,
-  RootEditor,
 } from '../plite-react';
 import type { DOMHandlers } from './DOMHandlers';
 
@@ -334,7 +334,7 @@ export type TextNodeProps<
 export type UseViewElementAttributes<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = (
-  context: PluginContext<C> & { view: RootEditor }
+  context: PluginContext<C> & { view: PliteReactEditor }
 ) => readonly ViewElementAttributeEntry[];
 
 export type OnNodeChange<

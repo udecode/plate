@@ -1,5 +1,4 @@
 import React, {
-  type DependencyList,
   type ReactNode,
   createContext,
   useCallback,
@@ -36,7 +35,7 @@ import {
 } from '../../core/commit-publication';
 import { releaseEditorViewLifetime } from '../../core/editor-view-lifetime';
 import { createEditorViewPluginApis } from '../../core/plugin';
-import type { DOMApi, DOMPlugin } from '../../dom';
+import type { DOMApi } from '../../dom';
 import {
   createDOMEditorCapability,
   EDITOR_TO_ROOT_VIEW_EDITORS,
@@ -60,11 +59,7 @@ import {
   type ReactRuntimeEditor,
   toReactRuntimeEditor,
 } from '../plugin/react-editor';
-import type {
-  Editor as ReactEditorType,
-  ReactPlugin,
-  ReactApi,
-} from '../plugin/with-react';
+import type { Editor as ReactEditorType, ReactApi } from '../plugin/with-react';
 import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
@@ -88,15 +83,11 @@ const rootKeyEquality = (
 const selectionChanged = (change?: EditorCommit) =>
   Boolean(change?.selectionChanged);
 
-const selectActiveRoot = (state: EditorStateView<any, any>): RootKey => {
+const selectActiveRoot = (state: ReactEditorState): RootKey => {
   const selection = state.selection();
 
   return SelectionApi.root(selection) ?? MAIN_ROOT_KEY;
 };
-
-const selectPublicActiveRoot = (
-  state: EditorStateView<any, any>
-): RootKey | undefined => toPublicRootOption(selectActiveRoot(state));
 
 type PluginLike = {
   name: string;
@@ -142,34 +133,13 @@ const createReactApi = <V extends Value, TPlugins extends readonly unknown[]>(
     subscribeTypedText: (listener) => subscribeTypedText(editor, listener),
   });
 
-export const createPliteViewEffectQueue = () => {
-  const effects = new Set<() => void>();
+type MountedViewEditor = ReactRuntimeEditor<Value, PluginsOf<ReactEditorType>>;
 
-  return {
-    flush: () => {
-      const pendingEffects = Array.from(effects);
+// PliteRuntimeView bounds its editor by ReactEditorType<any, any>, which
+// cannot prove the core state groups, so its registration erases here.
+type RegisteredViewEditor = ReactRuntimeEditor<any>;
 
-      pendingEffects.forEach((effect) => {
-        if (effects.has(effect)) {
-          effect();
-        }
-      });
-    },
-    hasEffects: () => effects.size > 0,
-    register: (effect: () => void) => {
-      effects.add(effect);
-
-      return () => {
-        effects.delete(effect);
-      };
-    },
-  };
-};
-
-type PliteRuntimeContextValue<
-  V extends Value = Value,
-  TPlugins extends readonly unknown[] = readonly [],
-> = {
+type PliteRuntimeContextValue = {
   focusVersion: number;
   focused: boolean;
   getActiveContentRootOwner: (root: RootKey) => PliteContentRootOwner | null;
@@ -179,30 +149,24 @@ type PliteRuntimeContextValue<
   ) => ReactRuntimeViewEditor<ValueOf<TEditor>, PluginsOf<TEditor>>;
   getContentRootOwnerViewEditor: (
     owner: PliteContentRootOwner
-  ) => ReactRuntimeEditor<V, PluginsOf<ReactEditorType<V, TPlugins>>> | null;
+  ) => MountedViewEditor | null;
   getLastSelectionForRoot: (root: RootKey) => Selection;
-  getMountedViewEditor: (
-    root: RootKey
-  ) => ReactRuntimeEditor<V, PluginsOf<ReactEditorType<V, TPlugins>>> | null;
+  getMountedViewEditor: (root: RootKey) => MountedViewEditor | null;
   getView: (
     options?: EditorViewOptions
-  ) => EditorView<V, PluginsOf<ReactEditorType<V, TPlugins>>>;
+  ) => EditorView<Value, PluginsOf<ReactEditorType>>;
   mountAuthoredFragmentView: (view: object) => () => void;
   registerContentRootOwner: (
-    editor: ReactRuntimeEditor<V, PluginsOf<ReactEditorType<V, TPlugins>>>,
+    editor: MountedViewEditor,
     owner: PliteContentRootOwner
   ) => () => void;
-  registerViewEffect: (effect: () => void) => () => void;
   registerViewEditor: (
-    editor: ReactRuntimeEditor<V, PluginsOf<ReactEditorType<V, TPlugins>>>,
+    editor: RegisteredViewEditor,
     root: RootKey
   ) => () => void;
-  runtime: ReactEditorType<V, TPlugins>;
+  runtime: ReactEditorType;
   selectorContext: EditorSelectorContextValue;
-  setActiveViewEditor: (
-    editor: ReactRuntimeEditor<V, PluginsOf<ReactEditorType<V, TPlugins>>>,
-    root: RootKey
-  ) => void;
+  setActiveViewEditor: (editor: MountedViewEditor, root: RootKey) => void;
 };
 
 type PliteRuntimeProviderProps<
@@ -220,10 +184,8 @@ export type RuntimeStateSelectorOptions<T> = {
   shouldUpdate?: (change?: EditorCommit) => boolean;
 };
 
-export const PliteRuntimeContext = createContext<PliteRuntimeContextValue<
-  any,
-  any
-> | null>(null);
+export const PliteRuntimeContext =
+  createContext<PliteRuntimeContextValue | null>(null);
 
 export type ReactRuntimeViewEditor<
   V extends Value = Value,
@@ -344,17 +306,14 @@ export function useOptionalPliteRuntimeContext() {
   return useContext(PliteRuntimeContext);
 }
 
-export function useRequiredPliteRuntimeContext<
-  V extends Value = any,
-  TPlugins extends readonly unknown[] = any,
->() {
+export function useRequiredPliteRuntimeContext(): PliteRuntimeContextValue {
   const context = useContext(PliteRuntimeContext);
 
   if (!context) {
     throw new Error('Plite roots must be rendered inside <EditorRoot>.');
   }
 
-  return context as unknown as PliteRuntimeContextValue<V, TPlugins>;
+  return context;
 }
 
 export const useMountedEditorRuntimeOwner = (
@@ -409,8 +368,6 @@ export function PliteRuntimeProvider<
   const activeContentRootOwnersRef = useRef(
     new Map<RootKey, PliteContentRootOwner>()
   );
-  const [viewEffectQueue] = useState(createPliteViewEffectQueue);
-  const [viewEffectVersion, setViewEffectVersion] = useState(0);
   const [lastSelectionCache] = useState(createRootSelectionCache);
   const { focused, focusVersion, refreshFocused } =
     useRuntimeFocusState(reactEditor);
@@ -609,17 +566,6 @@ export function PliteRuntimeProvider<
     (root: RootKey) => lastSelectionCache.get(root),
     [lastSelectionCache]
   );
-  const registerViewEffect = useCallback(
-    (effect: () => void) => {
-      const unregister = viewEffectQueue.register(effect);
-
-      setViewEffectVersion((version) => version + 1);
-
-      return unregister;
-    },
-    [viewEffectQueue]
-  );
-
   useIsomorphicLayoutEffect(() => {
     const maybeBatchUpdates =
       REACT_MAJOR_VERSION < 18
@@ -643,10 +589,6 @@ export function PliteRuntimeProvider<
           commit,
           getSchemaInvalidatedNodeKeys(runtime, commit)
         );
-
-        if (viewEffectQueue.hasEffects()) {
-          setViewEffectVersion((version) => version + 1);
-        }
       });
     };
 
@@ -685,16 +627,7 @@ export function PliteRuntimeProvider<
     reactEditor,
     refreshFocused,
     runtime,
-    viewEffectQueue,
   ]);
-
-  useIsomorphicLayoutEffect(() => {
-    if (viewEffectVersion === 0) {
-      return;
-    }
-
-    viewEffectQueue.flush();
-  }, [viewEffectQueue, viewEffectVersion]);
 
   const value = useMemo(
     () => ({
@@ -708,7 +641,6 @@ export function PliteRuntimeProvider<
       getView,
       mountAuthoredFragmentView,
       registerContentRootOwner,
-      registerViewEffect,
       registerViewEditor,
       runtime,
       selectorContext,
@@ -725,7 +657,6 @@ export function PliteRuntimeProvider<
       getView,
       mountAuthoredFragmentView,
       registerContentRootOwner,
-      registerViewEffect,
       registerViewEditor,
       runtime,
       selectorContext,
@@ -734,14 +665,17 @@ export function PliteRuntimeProvider<
   );
 
   return (
-    <PliteRuntimeContext
-      value={value as unknown as PliteRuntimeContextValue<any, any>}
-    >
+    <PliteRuntimeContext value={value as unknown as PliteRuntimeContextValue}>
       <EditorAnnouncementLiveRegion editor={runtime} />
       {children}
     </PliteRuntimeContext>
   );
 }
+
+type ReactEditorState = EditorStateView<
+  ValueOf<ReactEditorType>,
+  PluginsOf<ReactEditorType>
+>;
 
 /**
  * Subscribe to a selected value from the root runtime editor state.
@@ -749,10 +683,11 @@ export function PliteRuntimeProvider<
  * Use this for toolbar, sidebar, and shell UI that reads the whole editor
  * runtime. Use `useRootState` for root-scoped UI in multi-root editors.
  * Inline selectors observe current render values. Use `shouldUpdate` when a
- * commit can be skipped before the selector runs.
+ * commit can be skipped before the selector runs. The selector state holds the
+ * core editor groups; read a plugin's state through `editor.plugin(Plugin)`.
  */
 export function useRuntimeState<T>(
-  selector: (state: EditorStateView<any, any>) => T,
+  selector: (state: ReactEditorState) => T,
   {
     deferred,
     equalityFn = refEquality,
@@ -761,10 +696,7 @@ export function useRuntimeState<T>(
 ): T {
   const { runtime, selectorContext } = useRequiredPliteRuntimeContext();
   const stateSelector = useCallback(
-    () =>
-      runtime.read((state) =>
-        selector(state as unknown as EditorStateView<any, any>)
-      ),
+    () => runtime.read(selector),
     [runtime, selector]
   );
   const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
@@ -804,11 +736,12 @@ export function useRuntimeState<T>(
  * Root-scoped selectors skip commits that cannot affect the requested root.
  * Use this for chrome tied to a known root, such as headers, sidebars, and
  * nested content roots. Use `useRuntimeState` only when the selected value
- * genuinely spans roots.
+ * genuinely spans roots. The selector state holds the core editor groups; read
+ * a plugin's state through `editor.plugin(Plugin)`.
  */
 export function useRootState<T, const TRoot extends RootKey = RootKey>(
   root: NamedRootKey<TRoot> | undefined,
-  selector: (state: EditorStateView<any, any>) => T,
+  selector: (state: ReactEditorState) => T,
   {
     deferred,
     equalityFn = refEquality,
@@ -824,10 +757,7 @@ export function useRootState<T, const TRoot extends RootKey = RootKey>(
   const { getView, selectorContext } = useRequiredPliteRuntimeContext();
   const internalRoot = root ?? MAIN_ROOT_KEY;
   const stateSelector = useCallback(
-    () =>
-      getView({ root }).read((state) =>
-        selector(state as unknown as EditorStateView<any, any>)
-      ),
+    () => getView({ root }).read(selector),
     [getView, root, selector]
   );
   const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
@@ -867,47 +797,17 @@ export function useRootState<T, const TRoot extends RootKey = RootKey>(
   return selectedState;
 }
 
-const usePliteInternalActiveRoot = (): RootKey =>
-  useRuntimeState(selectActiveRoot, {
-    equalityFn: rootKeyEquality,
-    shouldUpdate: selectionChanged,
-  });
-
-/** Read the root key that currently owns the editor selection. */
-export function useActiveRoot(): RootKey | undefined {
-  return useRuntimeState(selectPublicActiveRoot, {
-    equalityFn: rootKeyEquality,
-    shouldUpdate: selectionChanged,
-  });
-}
-
 /** Options for creating a root-specific command editor. */
 export type UseRootEditorOptions = {
   readOnly?: boolean;
 };
 
-/** Command-capable editor view bound to one editor root. */
-export type RootEditor<
-  V extends Value = Value,
-  TPlugins extends readonly unknown[] = readonly [],
-> = ReactEditorType<V, TPlugins> &
-  ReactRuntimeEditor<V, TPlugins> &
-  Omit<EditorView<V, TPlugins>, 'api' | 'plugin' | 'read' | 'update'>;
-
-export function createPliteRootEditor<
-  V extends Value = Value,
-  const TPlugins extends readonly unknown[] = readonly [],
->(
-  {
-    getView,
-    runtime,
-  }: Pick<PliteRuntimeContextValue<V, TPlugins>, 'getView' | 'runtime'>,
+export function createPliteRootEditor(
+  { getView, runtime }: Pick<PliteRuntimeContextValue, 'getView' | 'runtime'>,
   root?: NamedRootKey,
   readOnly?: boolean
-): RootEditor<V, TPlugins> {
-  const editor = createReactRuntimeViewEditor(
-    getView({ readOnly, root })
-  ) as RootEditor<V, TPlugins>;
+): ReactEditorType {
+  const editor = createReactRuntimeViewEditor(getView({ readOnly, root }));
   setPliteViewSelectionStoreKey(editor, runtime);
   return editor;
 }
@@ -917,27 +817,24 @@ export function createPliteRootEditor<
  *
  * The returned object is stable for the requested root and read-only option.
  * Use it for root-specific toolbar/sidebar commands. Pass `readOnly: true`
- * when UI only needs read APIs.
+ * when UI only needs read APIs. Exact plugin capability comes from
+ * `editor.plugin(Plugin)`.
  */
-export function useRootEditor<
-  V extends Value = Value,
-  const TPlugins extends readonly unknown[] = readonly [],
-  const TRoot extends RootKey = RootKey,
->(
+export function useRootEditor<const TRoot extends RootKey = RootKey>(
   root?: NamedRootKey<TRoot>,
   options: UseRootEditorOptions = {}
-): RootEditor<V, TPlugins> {
+): ReactEditorType {
   if (root === MAIN_ROOT_KEY) {
     throw new Error(
       '[Plite] Omit root to create an editor for the primary document.'
     );
   }
 
-  const { getView, runtime } = useRequiredPliteRuntimeContext<V, TPlugins>();
+  const { getView, runtime } = useRequiredPliteRuntimeContext();
   const parentEditor = useOptionalEditorContext();
 
   return useMemo(() => {
-    const editor = createPliteRootEditor<V, TPlugins>(
+    const editor = createPliteRootEditor(
       { getView, runtime },
       root,
       options.readOnly
@@ -947,30 +844,10 @@ export function useRootEditor<
   }, [getView, options.readOnly, root, runtime, parentEditor]);
 }
 
-/**
- * Create a command-capable editor for the active root.
- *
- * Prefer `useRootEditor(root)` when the caller already knows the root.
- */
-export function useActiveEditor<
-  V extends Value = Value,
-  const TPlugins extends readonly unknown[] = readonly [],
->(): RootEditor<V, TPlugins> {
-  return useRootEditor<V, TPlugins>(
-    toPublicRootOption(usePliteInternalActiveRoot())
-  );
-}
-
-/** Options for effects that run with a mounted root editor. */
-export type UseRootEffectOptions<TRoot extends RootKey = RootKey> = {
-  deps?: DependencyList;
-  root?: NamedRootKey<TRoot>;
-};
-
 /** Focus behavior before or after root command callbacks. */
 export type CommandFocusPolicy = 'none' | 'preserve' | 'restore-root';
 
-/** Options for `usePliteCommand`. */
+/** Options for `useCommand`. */
 export type UseCommandOptions<TRoot extends RootKey = RootKey> = {
   focus?: CommandFocusPolicy;
   root?: NamedRootKey<TRoot>;
@@ -982,89 +859,13 @@ const usePliteResolvedRoot = (root: NamedRootKey | undefined): RootKey => {
   }
 
   const editableRoot = useContext(PliteEditableRootContext);
-  const activeRoot = usePliteInternalActiveRoot();
+  const activeRoot = useRuntimeState(selectActiveRoot, {
+    equalityFn: rootKeyEquality,
+    shouldUpdate: selectionChanged,
+  });
 
   return root ?? editableRoot ?? activeRoot;
 };
-
-const useLatestCallbackCell = <T extends (...args: any[]) => any>(
-  callback: T
-) => {
-  const cell = useRef(callback);
-
-  useIsomorphicLayoutEffect(() => {
-    cell.current = callback;
-  }, [callback, cell]);
-
-  return cell;
-};
-
-/**
- * Run an effect with the mounted editor for a root after Plite root effects
- * flush.
- *
- * Use this for commands or measurements that need mounted DOM/root bindings.
- * Pass `root` to target one root. Omit `deps` to rerun after every React render,
- * or pass `deps` for React-style rerun control.
- */
-export function useRootEffect<
-  V extends Value = Value,
-  const TPlugins extends readonly unknown[] = readonly [],
-  const TRoot extends RootKey = RootKey,
->(
-  effect: (editor: RootEditor<V, TPlugins>) => void | (() => void),
-  options: UseRootEffectOptions<TRoot> = {}
-) {
-  const { deps, root } = options;
-  const resolvedRoot = usePliteResolvedRoot(root);
-  const publicRoot = toPublicRootOption(resolvedRoot);
-  const { getMountedViewEditor, registerViewEffect } =
-    useRequiredPliteRuntimeContext();
-  const fallbackEditor = useRootEditor<V, TPlugins>(publicRoot);
-  const effectCell = useLatestCallbackCell(effect);
-  const [cleanupCell] = useState<{
-    current: void | (() => void);
-  }>(() => ({ current: undefined }));
-  const effectDeps =
-    deps === undefined
-      ? undefined
-      : [
-          cleanupCell,
-          effectCell,
-          fallbackEditor,
-          getMountedViewEditor,
-          registerViewEffect,
-          resolvedRoot,
-          ...deps,
-        ];
-
-  useIsomorphicLayoutEffect(
-    () => {
-      const unregister = registerViewEffect(() => {
-        cleanupCell.current?.();
-        cleanupCell.current = undefined;
-
-        const mountedEditor =
-          (getMountedViewEditor(resolvedRoot) as unknown) ?? fallbackEditor;
-        const cleanup = effectCell.current(
-          mountedEditor as RootEditor<V, TPlugins>
-        );
-
-        cleanupCell.current = cleanup;
-      });
-
-      return () => {
-        unregister();
-        cleanupCell.current?.();
-        cleanupCell.current = undefined;
-      };
-    },
-    // Omitted `deps` keeps normal effect semantics: rerun after every React
-    // render. Explicit `deps` keeps hook-owned cells stable while letting
-    // callers opt into precise React-only reruns.
-    effectDeps
-  );
-}
 
 type CommandArgs<TCommand extends EditorCommandDescriptor> = [
   EditorCommandInput<TCommand>,
@@ -1086,39 +887,27 @@ export type CommandDispatcher<TCommand extends EditorCommandDescriptor> = (
  */
 export function useCommand<
   TCommand extends EditorCommandDescriptor,
-  V extends Value = Value,
-  const TPlugins extends readonly unknown[] = readonly [],
   const TRoot extends RootKey = RootKey,
 >(
-  command: TCommand &
-    CompatibleEditorCommand<
-      Editor<V, readonly [...TPlugins, DOMPlugin, ReactPlugin]>,
-      TCommand
-    >,
+  command: TCommand & CompatibleEditorCommand<ReactEditorType, TCommand>,
   options: UseCommandOptions<TRoot> = {}
 ): CommandDispatcher<TCommand> {
   const { focus = 'preserve', root } = options;
   const resolvedRoot = usePliteResolvedRoot(root);
   const publicRoot = toPublicRootOption(resolvedRoot);
   const context = useRequiredPliteRuntimeContext();
-  const fallbackEditor = useRootEditor<V, TPlugins>(publicRoot);
+  const fallbackEditor = useRootEditor(publicRoot);
 
   return useCallback(
     (...input: CommandArgs<TCommand>) => {
-      const mountedEditor =
-        (context.getMountedViewEditor(resolvedRoot) as unknown) ??
-        fallbackEditor;
-      const commandEditor = mountedEditor as RootEditor<V, TPlugins>;
+      const commandEditor =
+        context.getMountedViewEditor(resolvedRoot) ?? fallbackEditor;
 
       if (focus === 'restore-root') {
         focusPliteEditable(commandEditor);
       }
 
-      return dispatchCommand(
-        commandEditor as unknown as Editor,
-        command,
-        ...input
-      );
+      return dispatchCommand(commandEditor, command, ...input);
     },
     [command, context, fallbackEditor, focus, resolvedRoot]
   );

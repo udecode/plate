@@ -59,6 +59,13 @@ type CustomElement = ParagraphElement | LinkElement;
 type CustomValue = CustomElement[];
 
 type ExpectFalse<T extends false> = T;
+type ExpectTrue<T extends true> = T;
+type IsAny<T> = 0 extends 1 & T ? true : false;
+type IsNever<T> = [T] extends [never] ? true : false;
+type Equal<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
 type EditableHasViewportPlan = 'viewportPlan' extends keyof EditableProps
   ? true
   : false;
@@ -93,9 +100,6 @@ const CustomApiPlugin = definePlugin('custom-api', {
 });
 const SpecialCommandPlugin = definePlugin('special-command', {
   read: () => ({ value: () => 1 }),
-});
-const ExtraCommandPlugin = definePlugin('extra-command', {
-  read: () => ({ value: () => 2 }),
 });
 type SpecialCommandEditor = Editor<
   Value,
@@ -374,37 +378,36 @@ const SchemaHookProbe = () => {
 const CommandHookProbe = () => {
   const insertText = useCommand(editorCommands.insertText);
   const insertBreak = useCommand(editorCommands.insertBreak);
-  const runSpecial = useCommand<
-    typeof specialCommand,
-    CustomValue,
-    readonly [typeof SpecialCommandPlugin]
-  >(specialCommand);
-  const runSpecialWithExtra = useCommand<
-    typeof specialCommand,
-    CustomValue,
-    readonly [typeof SpecialCommandPlugin, typeof ExtraCommandPlugin]
-  >(specialCommand);
-  const typedSpecialDispatcher: (input: { amount: number }) => boolean =
-    runSpecial;
 
   insertText({ text: 'typed' });
   insertBreak();
-  runSpecial({ amount: 1 });
-  runSpecialWithExtra({ amount: 1 });
-  typedSpecialDispatcher({ amount: 1 });
 
   // @ts-expect-error insertText requires command input
   insertText();
   // @ts-expect-error insertText text must be a string
   insertText({ text: 1 });
-  // @ts-expect-error plugin-owned command requires SpecialCommandPlugin
-  useCommand<typeof specialCommand, CustomValue>(specialCommand);
-  // @ts-expect-error default runtime lacks SpecialCommandPlugin
+  // @ts-expect-error the mounted React contract does not prove SpecialCommandPlugin
   useCommand(specialCommand);
-  // @ts-expect-error plugin-owned command requires its payload
-  runSpecial();
-  // @ts-expect-error plugin-owned command payload is typed
-  runSpecial({ amount: '1' });
+
+  return null;
+};
+
+const MountedContractProbe = () => {
+  const header = useRootEditor('header');
+  type _HeaderIsMountedContract = [
+    ExpectFalse<IsAny<typeof header>>,
+    ExpectFalse<IsNever<typeof header>>,
+    ExpectTrue<Equal<typeof header, Editor>>,
+  ];
+
+  PliteReact.useRuntimeState((state) =>
+    // @ts-expect-error runtime selector state proves only the core React contract
+    state['special-command'].value()
+  );
+  useRootState('header', (state) =>
+    // @ts-expect-error root selector state proves only the core React contract
+    state['special-command'].value()
+  );
 
   return null;
 };
@@ -543,6 +546,7 @@ void ContextCapabilityProbe;
 void HookProbe;
 void SchemaHookProbe;
 void CommandHookProbe;
+void MountedContractProbe;
 void NoHistoryHookProbe;
 void NamedRootRejectionProbe;
 void EditorRootInferenceProbe;

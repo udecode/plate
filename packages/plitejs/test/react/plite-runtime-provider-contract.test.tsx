@@ -19,6 +19,7 @@ import {
   type Value,
   NodeApi,
   schema,
+  SelectionApi,
   TextApi,
 } from 'plitejs';
 import { authored } from 'plitejs/authored';
@@ -45,7 +46,6 @@ import {
   useEditorFocused,
   useEditorSelector,
   useEditorState,
-  useActiveRoot,
   useChildRoot,
   useContentRoot,
   useRootEditor,
@@ -404,7 +404,9 @@ describe('EditorRoot provider contract', () => {
       'data-editor-root-chrome',
       childRoot
     );
-    expect(contentRootEditor.root).toBe(childRoot);
+    expect(contentRootEditor.read((state) => state.view.root())).toBe(
+      childRoot
+    );
   });
 
   test('usePliteContentRoot requires a slot for multi-slot elements', () => {
@@ -673,7 +675,9 @@ describe('EditorRoot provider contract', () => {
     const headerValues: string[] = [];
 
     const Probe = () => {
-      const activeRoot = useActiveRoot();
+      const activeRoot = useRuntimeState((state) =>
+        SelectionApi.root(state.selection())
+      );
       const headerText = useRootState('header', rootText);
 
       headerEditor = useRootEditor('header');
@@ -958,7 +962,9 @@ describe('EditorRoot provider contract', () => {
     const activeRoots: Array<string | undefined> = [];
 
     const Probe = () => {
-      const activeRoot = useActiveRoot();
+      const activeRoot = useRuntimeState((state) =>
+        SelectionApi.root(state.selection())
+      );
 
       activeRoots.push(activeRoot);
 

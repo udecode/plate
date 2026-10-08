@@ -83,6 +83,7 @@
     "packages/plitejs/src/react/editable/runtime-live-state.ts",
     "packages/plitejs/src/react/editable/runtime-target-bridge.ts",
     "packages/plitejs/src/react/editable/schema-runtime-invalidation.ts",
+    "packages/plitejs/src/react/editable/typed-text.ts",
     "packages/plitejs/src/react/hooks/",
     "packages/plitejs/src/react/index.ts",
     "packages/plitejs/src/react/plugin/",

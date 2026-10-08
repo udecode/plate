@@ -164,7 +164,10 @@ donor checkout as proof after the transplant.
 deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   `useOptionalEditorContext()` retrieve the mounted contract without caller
   generics, and selector hooks infer only their selected result. Exact
-  plugin capabilities come from `editor.plugin(Plugin)`.
+  plugin capabilities come from `editor.plugin(Plugin)`. `pnpm check
+  hook-generics` rejects a type parameter that only the caller chooses on a
+  hook or `createEditor` exported from a client entrypoint, in the forms its
+  tests run.
 - A DOM-scope hook accepts only the DOM capabilities it reads, and an
   identity-only registry uses object keys. Neither requires an erased mutable
   `Editor`, whose unrelated write variance can reject a correctly inferred

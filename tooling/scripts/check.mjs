@@ -33,6 +33,11 @@ export const steps = [
   { name: 'core-audits', run: 'pnpm check:core' },
   { name: 'plite-bridge', run: 'node tooling/scripts/check-plite-bridge.mjs' },
   {
+    name: 'hook-generics',
+    run: 'node tooling/scripts/check-hook-generics.mjs --check',
+    fix: 'node tooling/scripts/check-hook-generics.mjs',
+  },
+  {
     name: 'entrypoint-graph',
     run: 'pnpm entrypoint:turbo:check',
     write: 'pnpm entrypoint:turbo:generate',
@@ -55,6 +60,11 @@ export const steps = [
   {
     name: 'review-ledger',
     run: 'node tooling/scripts/review-ledger.mjs check',
+  },
+  {
+    name: 'knowledge',
+    run: 'node tooling/scripts/knowledge/kb.mjs check',
+    fix: 'node tooling/scripts/knowledge/kb.mjs check --lower',
   },
   { name: 'manifests', run: 'pnpm test:manifests' },
   {

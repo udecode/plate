@@ -154,17 +154,12 @@ export {
 } from './hooks/use-plite-root-chrome';
 export {
   type CommandFocusPolicy,
-  type RootEditor,
   type RuntimeStateSelectorOptions,
   type CommandDispatcher,
   type UseCommandOptions,
   type UseRootEditorOptions,
-  type UseRootEffectOptions,
-  useActiveEditor,
-  useActiveRoot,
   useCommand,
   useRootEditor,
-  useRootEffect,
   useRootState,
   useRuntimeState,
 } from './hooks/use-plite-runtime';

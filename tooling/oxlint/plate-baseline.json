@@ -165,9 +165,6 @@
     "packages/plitejs/src/react/hooks/use-editor-dom-scope.ts": [
       "type DOMScopeEditor = {"
     ],
-    "packages/plitejs/src/react/hooks/use-plite-runtime.tsx": [
-      "export type RootEditor<"
-    ],
     "packages/plitejs/src/react/plugin/with-react.ts": ["export type Editor<"],
     "packages/test/src/device/lane.ts": ["export type DeviceEditor = Pick<"]
   },

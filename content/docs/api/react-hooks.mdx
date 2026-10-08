@@ -19,8 +19,42 @@ hooks for rendered nodes, and targeted hooks for annotations and geometry.
 
 #### `useCreateEditor(options?, deps?): Editor`
 
-Create one component-owned editor. The optional dependency list controls when
-React creates a replacement editor.
+Create one component-owned editor. A change of `id`, of the user that `userId`
+names or of an entry in the optional dependency list creates a replacement
+editor from that render's options; other option changes keep the current
+editor. A missing, empty or `'local'` `userId` all name the local user. Pass `enabled: false`
+while the session that supplies `userId` loads.
+
+The replacement editor starts from the options you pass, so capture the old
+editor's document and comments before you switch users:
+
+```tsx
+const [userId, setUserId] = useState(session.user.id);
+const [snapshot, setSnapshot] = useState(saved);
+const editor = useCreateEditor({
+  initialValue: snapshot.document,
+  plugins: [
+    ...plugins,
+    CommentsPlugin.configure({
+      initialState: { initialComments: snapshot.comments },
+    }),
+  ],
+  userId,
+});
+
+const switchUser = (nextUserId: string) => {
+  setSnapshot({
+    comments: editor.plugin(CommentsPlugin).api.toJSON(),
+    document: editor.read.value(),
+  });
+  setUserId(nextUserId);
+};
+```
+
+A comment change still pending at the switch is missing from the new editor,
+and saving the new editor's comments without a revision check can undo it in
+storage, restoring a removed thread or message. A new editor cannot bind a
+`rootName` in a `Y.Doc` that the old editor still holds.
 
 #### `useEditor(): Editor`
 
@@ -208,13 +242,24 @@ Use these when one editor owns multiple roots or external chrome.
 - Root state hooks read one root.
 - Root editor hooks return a command-capable editor for one root.
 
-Prefer `useRootEditor(root)` when UI knows its root. Use
-`useActiveEditor()` only for UI that should follow the current selection.
+Prefer `useRootEditor(root)` when UI knows its root. For UI that follows the
+current selection, select the root that owns it and pass it to `useRootEditor`:
+
+```tsx
+import { SelectionApi } from "platejs";
+import { useRootEditor, useRuntimeState } from "platejs/react";
+
+const activeRoot = useRuntimeState((state) =>
+  SelectionApi.root(state.selection())
+);
+const editor = useRootEditor(activeRoot);
+```
 
 #### `useRuntimeState<T>(selector, options?): T`
 
 Subscribe to whole-runtime editor state. The selector runs in a read boundary and
-re-renders only when the selected value changes.
+re-renders only when the selected value changes. Its state holds the core editor
+groups; read a plugin's state through `editor.plugin(Plugin)`.
 
 Shared selector options are `equalityFn`, `shouldUpdate`, and `deferred`.
 Selectors always read the latest render closure. Use `shouldUpdate(commit)`
@@ -225,22 +270,15 @@ with `commit.changed` to skip commits that cannot affect the selected value.
 Subscribe to one root's state. The selector skips commits that cannot affect
 that root.
 
-#### `useActiveRoot(): RootKey | undefined`
+#### `useRootEditor(root?, options?)`
 
-Read the extra root key that owns the current selection. It returns `undefined`
-for the primary document.
-
-#### `useRootEditor(root?, options?): RootEditor`
-
-Create a command-capable editor for one root.
+Create a command-capable editor for one root. Its only type argument is the
+root key, inferred from `root`; read a plugin's exact API with
+`editor.plugin(Plugin)`.
 
 Use this for root-specific toolbar or sidebar commands. Pass `{ readOnly:
 true }` when the editor should only read state.
 Omit `root` for the primary document.
-
-#### `useActiveEditor(): RootEditor`
-
-Create a command-capable editor for the root that owns the selection.
 
 #### `useRootChrome(root?, options?): RootChromeController`
 
