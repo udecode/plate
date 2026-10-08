@@ -5,6 +5,9 @@
   "extends": "../tsconfig.type-tests.json",
   "references": [
     {
+      "path": "./authored.json"
+    },
+    {
       "path": "./code-block-codemirror.json"
     },
     {
@@ -45,6 +48,9 @@
     },
     {
       "path": "./migrations.json"
+    },
+    {
+      "path": "./pagination-react.json"
     },
     {
       "path": "./proxies.json"

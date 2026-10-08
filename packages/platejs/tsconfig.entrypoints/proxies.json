@@ -12,6 +12,7 @@
     "tsBuildInfoFile": "../.turbo/entrypoint-types/proxies.tsbuildinfo"
   },
   "exclude": [
+    "../src/pagination/react/**/*",
     "../src/**/*.spec.*",
     "../src/**/*.test.*",
     "../src/**/*.slow.*",
@@ -20,18 +21,13 @@
   ],
   "extends": "../tsconfig.json",
   "include": [
-    "../src/authored/**/*",
     "../src/diff/**/*",
     "../src/dom/**/*",
     "../src/history/**/*",
     "../src/hyperscript/**/*",
-    "../src/pagination/**/*",
-    "../src/pagination/react/**/*"
+    "../src/pagination/**/*"
   ],
   "references": [
-    {
-      "path": "../../plitejs/tsconfig.entrypoints/authored.json"
-    },
     {
       "path": "../../plitejs/tsconfig.entrypoints/diff.json"
     },

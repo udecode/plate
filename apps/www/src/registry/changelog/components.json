@@ -19,6 +19,141 @@
       "2026-08-20-demand-driven-dnd",
       "2026-08-17-flat-editor-registry"
     ],
+    "comment": [
+      "2026-10-07-editor-user",
+      "2026-09-18-comment-discovery",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-10-optional-comment-subscribers",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-05-comment-keyboard-submit",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-03-fix-comment-anchor-history",
+      "2026-09-02-comments-ownership",
+      "2026-08-30-fix-annotation-hover-scroll",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-26-fix-comment-popover-position",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families"
+    ],
+    "suggestion": [
+      "2026-10-07-editor-user",
+      "2026-09-14-suggestion-author-colors",
+      "2026-09-14-suggestion-content-attributes",
+      "2026-09-13-suggestion-examples",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-02-comments-ownership",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-30-fix-annotation-hover-scroll",
+      "2026-08-17-flat-editor-registry",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
+    "import-toolbar-button": [
+      "2026-10-07-editor-user",
+      "2026-09-29-word-export-loss-and-source-reuse",
+      "2026-09-27-document-conversion-contracts",
+      "2026-09-24-export-menu-projection",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "mode-toolbar-button": [
+      "2026-10-07-editor-user",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-08-toolbar-control-values",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-26-plugin-store-state",
+      "2025-11-20-biome-ultracite"
+    ],
+    "comment-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-18-comment-discovery",
+      "2026-09-10-comment-examples"
+    ],
+    "comment-overlap-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-18-comment-discovery",
+      "2026-09-10-comment-examples"
+    ],
+    "comment-persistence-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-18-comment-discovery",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-10-comment-examples"
+    ],
+    "comment-review-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-18-comment-discovery",
+      "2026-09-10-comment-examples"
+    ],
+    "discussion-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-03-fix-comment-anchor-history",
+      "2026-09-02-comments-ownership"
+    ],
+    "suggestion-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-18-comment-discovery",
+      "2026-09-12-suggestions-docs-demo"
+    ],
+    "suggestion-format-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-18-comment-discovery",
+      "2026-09-13-suggestion-examples"
+    ],
+    "suggestion-persistence-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-18-comment-discovery",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-13-suggestion-examples"
+    ],
+    "playground-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-18-default-playground-editing",
+      "2026-09-10-playground-comments",
+      "2026-09-07-playground-details",
+      "2026-08-14-author-editor-runtime",
+      "2026-07-23-explicit-editor-kit-composition"
+    ],
+    "version-history-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-15-structural-diff",
+      "2026-08-31-inline-component-props",
+      "2026-08-20-format-version-history-values",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-12-canonical-node-props",
+      "2025-11-20-biome-ultracite"
+    ],
+    "ai-demo": [
+      "2026-10-07-editor-user",
+      "2026-09-21-ai-edit-suggestions",
+      "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
+      "2025-11-20-biome-ultracite"
+    ],
+    "editor-ai": [
+      "2026-10-07-editor-user",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-13-rename-rich-text-editor",
+      "2026-09-13-suggestion-examples",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-09-02-comments-ownership",
+      "2026-08-28-rename-plate-editor",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-14-author-editor-runtime",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-13-use-runtime-keys-for-toc-docx",
+      "2026-07-24-compose-markdown-footnotes",
+      "2026-07-24-decouple-suggestion-trailing-block",
+      "2026-03-28-render-url-videos-media-node"
+    ],
     "block-menu": [
       "2026-10-02-schema-block-handles",
       "2026-10-01-block-move-actions",
@@ -186,16 +321,6 @@
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
     ],
-    "import-toolbar-button": [
-      "2026-09-29-word-export-loss-and-source-reuse",
-      "2026-09-27-document-conversion-contracts",
-      "2026-09-24-export-menu-projection",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
-    ],
     "markdown": [
       "2026-09-28-markdown-registered-tags",
       "2026-08-17-flat-editor-registry"
@@ -241,11 +366,6 @@
       "2026-09-08-multi-editor-toolbar",
       "2026-08-17-flat-editor-registry"
     ],
-    "ai-demo": [
-      "2026-09-21-ai-edit-suggestions",
-      "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
-      "2025-11-20-biome-ultracite"
-    ],
     "upload-browser": ["2026-09-21-upload-provider-items"],
     "upload-r2": ["2026-09-21-upload-provider-items"],
     "upload-s3": ["2026-09-21-upload-provider-items"],
@@ -286,23 +406,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-13-fix-registry-install-dependencies"
     ],
-    "comment": [
-      "2026-09-18-comment-discovery",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-10-optional-comment-subscribers",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-05-comment-keyboard-submit",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-03-fix-comment-anchor-history",
-      "2026-09-02-comments-ownership",
-      "2026-08-30-fix-annotation-hover-scroll",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-26-fix-comment-popover-position",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families"
-    ],
     "discussion": [
       "2026-09-18-comment-discovery",
       "2026-09-18-fix-comment-popover-scroll",
@@ -325,43 +428,6 @@
       "2026-08-17-flat-editor-registry",
       "2025-11-20-biome-ultracite"
     ],
-    "comment-demo": [
-      "2026-09-18-comment-discovery",
-      "2026-09-10-comment-examples"
-    ],
-    "comment-overlap-demo": [
-      "2026-09-18-comment-discovery",
-      "2026-09-10-comment-examples"
-    ],
-    "comment-persistence-demo": [
-      "2026-09-18-comment-discovery",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-10-comment-examples"
-    ],
-    "comment-review-demo": [
-      "2026-09-18-comment-discovery",
-      "2026-09-10-comment-examples"
-    ],
-    "suggestion-demo": [
-      "2026-09-18-comment-discovery",
-      "2026-09-12-suggestions-docs-demo"
-    ],
-    "suggestion-format-demo": [
-      "2026-09-18-comment-discovery",
-      "2026-09-13-suggestion-examples"
-    ],
-    "suggestion-persistence-demo": [
-      "2026-09-18-comment-discovery",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-13-suggestion-examples"
-    ],
-    "playground-demo": [
-      "2026-09-18-default-playground-editing",
-      "2026-09-10-playground-comments",
-      "2026-09-07-playground-details",
-      "2026-08-14-author-editor-runtime",
-      "2026-07-23-explicit-editor-kit-composition"
-    ],
     "floating-popover": [
       "2026-09-18-fix-comment-popover-scroll",
       "2026-09-07-provider-lifetimes",
@@ -376,15 +442,6 @@
       "2026-08-12-more-toolbar-plugin-transaction",
       "2026-07-26-unify-script-mark",
       "2026-07-24-feature-toolbar-plugin-portals"
-    ],
-    "mode-toolbar-button": [
-      "2026-09-18-item-focus-block-upsert",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-08-toolbar-control-values",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-26-plugin-store-state",
-      "2025-11-20-biome-ultracite"
     ],
     "list-toolbar-button": [
       "2026-09-18-item-focus-block-upsert",
@@ -443,35 +500,7 @@
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
     ],
-    "editor-ai": [
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-13-rename-rich-text-editor",
-      "2026-09-13-suggestion-examples",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-09-02-comments-ownership",
-      "2026-08-28-rename-plate-editor",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-14-author-editor-runtime",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-13-use-runtime-keys-for-toc-docx",
-      "2026-07-24-compose-markdown-footnotes",
-      "2026-07-24-decouple-suggestion-trailing-block",
-      "2026-03-28-render-url-videos-media-node"
-    ],
-    "discussion-demo": [
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-03-fix-comment-anchor-history",
-      "2026-09-02-comments-ownership"
-    ],
     "diff": ["2026-09-15-structural-diff"],
-    "version-history-demo": [
-      "2026-09-15-structural-diff",
-      "2026-08-31-inline-component-props",
-      "2026-08-20-format-version-history-values",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-12-canonical-node-props",
-      "2025-11-20-biome-ultracite"
-    ],
     "remote-cursor-overlay": [
       "2026-09-14-collaboration-plugin-factory",
       "2026-09-04-yjs-cursor-presentation",
@@ -491,19 +520,6 @@
       "2026-07-26-plugin-store-state",
       "2026-07-24-collaboration-runtime",
       "2025-11-20-biome-ultracite"
-    ],
-    "suggestion": [
-      "2026-09-14-suggestion-author-colors",
-      "2026-09-14-suggestion-content-attributes",
-      "2026-09-13-suggestion-examples",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-02-comments-ownership",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-30-fix-annotation-hover-scroll",
-      "2026-08-17-flat-editor-registry",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions"
     ],
     "suggestion-style": [
       "2026-09-14-suggestion-author-colors",

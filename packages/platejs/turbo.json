@@ -27,6 +27,7 @@
       "dependsOn": [
         "lint:partition:ai",
         "lint:partition:ai-react",
+        "lint:partition:authored",
         "lint:partition:callout",
         "lint:partition:callout-react",
         "lint:partition:code-block-codemirror",
@@ -67,6 +68,7 @@
         "lint:partition:mention",
         "lint:partition:mention-react",
         "lint:partition:migrations",
+        "lint:partition:pagination-react",
         "lint:partition:proxies",
         "lint:partition:react",
         "lint:partition:react-core",
@@ -135,6 +137,21 @@
       "inputs": [
         "src/ai/react/**",
         "test/ai/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:authored": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/authored/**",
+        "test/authored/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -922,24 +939,37 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "lint:partition:pagination-react": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/pagination/react/**",
+        "test/pagination/react/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "lint:partition:proxies": {
       "cache": true,
       "dependsOn": [],
       "inputs": [
-        "src/authored/**",
         "src/diff/**",
         "src/dom/**",
         "src/history/**",
         "src/hyperscript/**",
         "src/pagination/**",
-        "src/pagination/react/**",
-        "test/authored/**",
+        "!src/pagination/react/**",
         "test/diff/**",
         "test/dom/**",
         "test/history/**",
         "test/hyperscript/**",
         "test/pagination/**",
-        "test/pagination/react/**",
+        "!test/pagination/react/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -1533,6 +1563,7 @@
       "dependsOn": [
         "test:partition:ai",
         "test:partition:ai-react",
+        "test:partition:authored",
         "test:partition:callout",
         "test:partition:code-block-codemirror",
         "test:partition:code-drawing",
@@ -1564,7 +1595,6 @@
         "test:partition:media",
         "test:partition:mention",
         "test:partition:migrations",
-        "test:partition:proxies",
         "test:partition:react-core",
         "test:partition:resizable-react",
         "test:partition:standard-basic-nodes",
@@ -1623,17 +1653,43 @@
       "dependsOn": [
         "typecheck:partition:ai",
         "typecheck:partition:ai-react",
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
-        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list",
-        "typecheck:partition:table"
+        "typecheck:partition:table",
+        "typecheck:partition:yjs-react"
       ],
       "inputs": [
         "src/ai/react/**",
         "test/ai/react/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "test:partition:authored": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:authored",
+        "typecheck:partition:comments",
+        "typecheck:partition:root",
+        "typecheck:partition:suggestion",
+        "typecheck:partition:yjs",
+        "typecheck:partition:yjs-react"
+      ],
+      "inputs": [
+        "src/authored/**",
+        "test/authored/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -1757,9 +1813,9 @@
       "cache": true,
       "dependsOn": [
         "plitejs#typecheck:partition:core",
+        "typecheck:partition:authored",
         "typecheck:partition:comments",
-        "typecheck:partition:core",
-        "typecheck:partition:proxies"
+        "typecheck:partition:core"
       ],
       "inputs": [
         "src/features/comments/**",
@@ -1779,10 +1835,10 @@
     "test:partition:comments-react": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:comments",
         "typecheck:partition:comments-react",
         "typecheck:partition:core",
-        "typecheck:partition:proxies",
         "typecheck:partition:react-core"
       ],
       "inputs": [
@@ -1827,7 +1883,10 @@
       "cache": true,
       "dependsOn": [
         "plitejs#typecheck:partition:core",
+        "typecheck:partition:authored",
         "typecheck:partition:callout",
+        "typecheck:partition:comments",
+        "typecheck:partition:compiler",
         "typecheck:partition:core",
         "typecheck:partition:details",
         "typecheck:partition:html",
@@ -2112,6 +2171,7 @@
     "test:partition:docx-export": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:callout",
         "typecheck:partition:core",
         "typecheck:partition:docx-export",
@@ -2119,7 +2179,6 @@
         "typecheck:partition:docx-internal",
         "typecheck:partition:layout",
         "typecheck:partition:math",
-        "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block",
         "typecheck:partition:static",
@@ -2164,11 +2223,11 @@
     "test:partition:docx-import": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:docx-html",
         "typecheck:partition:docx-import",
-        "typecheck:partition:docx-internal",
-        "typecheck:partition:proxies"
+        "typecheck:partition:docx-internal"
       ],
       "inputs": [
         "src/docx/import/**",
@@ -2432,6 +2491,7 @@
     "test:partition:markdown": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:code-drawing",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
@@ -2527,11 +2587,11 @@
     "test:partition:migrations": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:details",
         "typecheck:partition:media",
         "typecheck:partition:migrations",
-        "typecheck:partition:proxies",
         "typecheck:partition:root",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block",
@@ -2543,40 +2603,6 @@
       "inputs": [
         "src/migrations/**",
         "test/migrations/**",
-        "$TURBO_ROOT$/config/plite-source-aliases.ts",
-        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
-        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "bunfig.toml"
-      ],
-      "env": ["CI"],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "test:partition:proxies": {
-      "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:authored",
-        "typecheck:partition:proxies",
-        "typecheck:partition:root"
-      ],
-      "inputs": [
-        "src/authored/**",
-        "src/diff/**",
-        "src/dom/**",
-        "src/history/**",
-        "src/hyperscript/**",
-        "src/pagination/**",
-        "src/pagination/react/**",
-        "test/authored/**",
-        "test/diff/**",
-        "test/dom/**",
-        "test/history/**",
-        "test/hyperscript/**",
-        "test/pagination/**",
-        "test/pagination/react/**",
         "$TURBO_ROOT$/config/plite-source-aliases.ts",
         "$TURBO_ROOT$/config/plite-source-test-setup.ts",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
@@ -2895,6 +2921,7 @@
       "dependsOn": [
         "plitejs#typecheck:partition:core",
         "plitejs#typecheck:partition:react",
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
@@ -2922,8 +2949,8 @@
     "test:partition:suggestion": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
-        "typecheck:partition:proxies",
         "typecheck:partition:suggestion"
       ],
       "inputs": [
@@ -2944,8 +2971,8 @@
     "test:partition:suggestion-react": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
-        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:suggestion",
         "typecheck:partition:suggestion-react"
@@ -2991,6 +3018,7 @@
     "test:partition:table": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:proxies",
         "typecheck:partition:react-core",
@@ -3098,6 +3126,7 @@
     "test:partition:upload": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:layout",
         "typecheck:partition:media",
@@ -3200,6 +3229,7 @@
       "dependsOn": [
         "typecheck:partition:ai",
         "typecheck:partition:ai-react",
+        "typecheck:partition:authored",
         "typecheck:partition:callout",
         "typecheck:partition:callout-react",
         "typecheck:partition:code-block-codemirror",
@@ -3240,6 +3270,7 @@
         "typecheck:partition:mention",
         "typecheck:partition:mention-react",
         "typecheck:partition:migrations",
+        "typecheck:partition:pagination-react",
         "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
@@ -3289,6 +3320,7 @@
     "typecheck:contracts": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:code-block-codemirror",
         "typecheck:partition:combobox-react",
         "typecheck:partition:comments",
@@ -3303,6 +3335,7 @@
         "typecheck:partition:math",
         "typecheck:partition:mention",
         "typecheck:partition:migrations",
+        "typecheck:partition:pagination-react",
         "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
@@ -3364,9 +3397,9 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:ai",
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:markdown",
-        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:table"
       ],
@@ -3391,6 +3424,35 @@
       "outputs": [
         ".turbo/entrypoint-types/ai-react/**",
         ".turbo/entrypoint-types/ai-react.tsbuildinfo"
+      ]
+    },
+    "typecheck:partition:authored": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:authored",
+        "typecheck:partition:core"
+      ],
+      "inputs": [
+        "src/authored/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/authored.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/authored/**",
+        ".turbo/entrypoint-types/authored.tsbuildinfo"
       ]
     },
     "typecheck:partition:callout": {
@@ -3924,12 +3986,12 @@
     "typecheck:partition:docx-export": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:callout",
         "typecheck:partition:core",
         "typecheck:partition:docx-internal",
         "typecheck:partition:layout",
         "typecheck:partition:math",
-        "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block",
         "typecheck:partition:static",
@@ -3987,10 +4049,10 @@
     "typecheck:partition:docx-import": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:docx-html",
-        "typecheck:partition:docx-internal",
-        "typecheck:partition:proxies"
+        "typecheck:partition:docx-internal"
       ],
       "inputs": [
         "src/docx/import/**",
@@ -4017,7 +4079,7 @@
     },
     "typecheck:partition:docx-internal": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:proxies"],
+      "dependsOn": ["typecheck:partition:authored", "typecheck:partition:core"],
       "inputs": [
         "src/docx/internal/**",
         "!src/**/*.spec.*",
@@ -4592,10 +4654,39 @@
         ".turbo/entrypoint-types/migrations.tsbuildinfo"
       ]
     },
+    "typecheck:partition:pagination-react": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:pagination",
+        "typecheck:partition:proxies",
+        "typecheck:partition:react-core"
+      ],
+      "inputs": [
+        "src/pagination/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/pagination-react.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/pagination-react/**",
+        ".turbo/entrypoint-types/pagination-react.tsbuildinfo"
+      ]
+    },
     "typecheck:partition:proxies": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:authored",
         "plitejs#typecheck:partition:diff",
         "plitejs#typecheck:partition:dom",
         "plitejs#typecheck:partition:history",
@@ -4603,13 +4694,12 @@
         "plitejs#typecheck:partition:testing"
       ],
       "inputs": [
-        "src/authored/**",
         "src/diff/**",
         "src/dom/**",
         "src/history/**",
         "src/hyperscript/**",
         "src/pagination/**",
-        "src/pagination/react/**",
+        "!src/pagination/react/**",
         "!src/**/*.spec.*",
         "!src/**/*.test.*",
         "!src/**/*.slow.*",
@@ -5204,6 +5294,7 @@
       "dependsOn": [
         "plitejs#typecheck:partition:core",
         "plitejs#typecheck:partition:react",
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:proxies"
       ],
@@ -5232,7 +5323,7 @@
     },
     "typecheck:partition:suggestion": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:proxies"],
+      "dependsOn": ["typecheck:partition:authored", "typecheck:partition:core"],
       "inputs": [
         "src/features/suggestion/**",
         "!src/**/*.spec.*",
@@ -5259,8 +5350,8 @@
     "typecheck:partition:suggestion-react": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
-        "typecheck:partition:proxies",
         "typecheck:partition:react-core",
         "typecheck:partition:suggestion"
       ],

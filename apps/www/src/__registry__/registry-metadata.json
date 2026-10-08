@@ -1,5 +1,5 @@
 {
-  "generation": "c0a21fb518e2b397d01d5c0e8d639d0de72aadfde19e2eedd3ac98538c3822d5",
+  "generation": "64669f62881bf7917a0f1e274b0b3ef923e42368b373c71a2a72e37f2be8ef8e",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -5762,6 +5762,36 @@
             "@plate/dnd"
           ],
           "title": "Discussion",
+          "type": "registry:example"
+        },
+        {
+          "description": "Plate content on measured pages, with plugin elements, marks, comments and drag handles.",
+          "files": [
+            {
+              "path": "examples/pagination-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/pagination",
+                "title": "Pagination"
+              }
+            ],
+            "registry": false
+          },
+          "name": "pagination-demo",
+          "registryDependencies": [
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
+            "@plate/comment",
+            "@plate/discussion",
+            "@plate/dnd",
+            "@plate/link",
+            "@plate/table"
+          ],
+          "title": "Pagination",
           "type": "registry:example"
         },
         {
@@ -12515,6 +12545,36 @@
             "@plate/dnd"
           ],
           "title": "Discussion",
+          "type": "registry:example"
+        },
+        {
+          "description": "Plate content on measured pages, with plugin elements, marks, comments and drag handles.",
+          "files": [
+            {
+              "path": "examples/pagination-demo.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/pagination",
+                "title": "Pagination"
+              }
+            ],
+            "registry": false
+          },
+          "name": "pagination-demo",
+          "registryDependencies": [
+            "@plate/basic-blocks",
+            "@plate/basic-marks",
+            "@plate/comment",
+            "@plate/discussion",
+            "@plate/dnd",
+            "@plate/link",
+            "@plate/table"
+          ],
+          "title": "Pagination",
           "type": "registry:example"
         },
         {

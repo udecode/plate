@@ -20,6 +20,41 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-07-editor-user",
+      "href": "/registry/changelog/2026-10-07-editor-user.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Read the current user from the editor's userId",
+      "change": {
+        "type": "source",
+        "date": "2026-10-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "comment",
+        "suggestion",
+        "import-toolbar-button",
+        "mode-toolbar-button",
+        "comment-demo",
+        "comment-overlap-demo",
+        "comment-persistence-demo",
+        "comment-review-demo",
+        "discussion-demo",
+        "suggestion-demo",
+        "suggestion-format-demo",
+        "suggestion-persistence-demo",
+        "playground-demo",
+        "version-history-demo",
+        "ai-demo",
+        "editor-ai"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-06-dnd-move-beside",
       "href": "/registry/changelog/2026-10-06-dnd-move-beside.json",
       "status": "draft",
