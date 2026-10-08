@@ -151,7 +151,8 @@ Due <date value="2025-01-01" />, ask [Jane](mention:user_123).
 - HTML comment 会被丢弃并报告无损 warning。
 - `<br>`、`<br/>` 与 `<br />` 读取为换行。
 - 只包含一个注册 block tag 的行是 block，即使紧邻 paragraph 文本。出现在
-  paragraph、heading 或 table cell 其他位置的 block tag 保留为文本。
+  paragraph 或 heading 其他位置的 block tag 保留为文本。Table cell 还接受没有子
+  内容的注册 block tag，例如带尺寸的 image。
 - Tag 在同一个 container（例如 paragraph、list item 或 block quote）内配对。
   未闭合的 tag 在 container 末尾闭合，未匹配的闭合 tag 保留为文本。每次修复都会
   报告 `markdown-tag-repair` warning，`reason` 为
@@ -185,8 +186,10 @@ GFM 的一行只能写在一行内，因此 Plate 把 table cell 中的 block �
 - Plate 用 `<br/>` 连接其他 paragraph。解析把它们读取回一个带换行的 paragraph，
   因此序列化会把折叠的边界报告为有损 warning。
 - Heading 或 quote 保留其 inline content，code 或 math block 保留其文本，各自报告
-  有损 warning。序列化会丢弃其他 block（例如 horizontal rule 或带 caption 的
-  image），并按 `lossPolicy` 报告。
+  有损 warning。没有子内容的注册 block tag（例如
+  `<img src="…" width="200" />`）保留其 attribute，并读取回 block。序列化会丢弃
+  其他不支持的 block（例如 horizontal rule 或带 caption 的 image），并按
+  `lossPolicy` 报告。
 - Plate 把合并的 cell 写在其第一个 slot，在被覆盖的 slot 写空 cell。每个 span 报告
   `markdown-property-omitted`。
 - 换行与 `|` 都不会提前结束 cell。在 inline math 中，序列化把 `|` 写为 `\vert`，
