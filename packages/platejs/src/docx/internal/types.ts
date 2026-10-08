@@ -64,19 +64,6 @@ export type DocxDiagnostic =
       severity: 'error';
     }>
   | Readonly<{
-      code: 'native-data-ignored';
-      message: string;
-      part: 'editor/authored.json';
-      reason:
-        | 'digest-mismatch'
-        | 'invalid'
-        | 'projection-mismatch'
-        | 'signature-invalid'
-        | 'signature-missing'
-        | 'unsupported-version';
-      severity: 'warning';
-    }>
-  | Readonly<{
       code: 'decode-failed' | 'invalid-package';
       message: string;
       part?: string;

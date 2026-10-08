@@ -11,7 +11,7 @@ import {
   BaseHeadingPlugin,
   type Descendant,
 } from 'platejs';
-import { authored, projectAuthoredReview } from 'platejs/authored';
+import { AuthoredPlugin, projectAuthoredReview } from 'platejs/authored';
 import { exportDocx } from 'platejs/docx/export';
 import { importDocx } from 'platejs/docx/import';
 import { BaseParagraphPlugin } from 'platejs/react';
@@ -184,7 +184,7 @@ const runImport = async (fixture: Fixture) => {
 
   if (!result.ok) throw new Error(result.diagnostics[0]?.message);
   const restored = createEditor({
-    plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
+    plugins: [BaseParagraphPlugin, AuthoredPlugin],
     initialValue: result.document,
   });
   const proposed = createEditorView(restored, {
@@ -276,7 +276,6 @@ const percentile = (values: readonly number[], fraction: number) => {
 };
 
 test('DOCX fidelity cohort preserves mixed revisions and rich comments', async () => {
-  let authorId = 'alice';
   const HeadingPlugin = BaseHeadingPlugin.configure({
     component: ({ attributes, children, element: headingElement }) =>
       React.createElement(`h${headingElement.level}`, attributes, children),
@@ -285,31 +284,52 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
     BaseParagraphPlugin,
     HeadingPlugin,
     BaseBoldPlugin,
-    authored({ authorId: () => authorId }),
+    AuthoredPlugin,
   ];
-  const editor = createEditor({
+  const alice = createEditor({
     plugins,
     initialValue: [
       { children: [{ text: 'ABCDE' }], type: 'paragraph' },
       { children: [{ text: 'Second' }], type: 'paragraph' },
     ],
-  });
-  const view = createEditorView(editor, {
-    authored: { intent: 'propose', projection: 'markup' },
+    userId: 'alice',
   });
 
-  view.update.text.insert('XY', {
+  createEditorView(alice, {
+    authored: { intent: 'propose', projection: 'markup' },
+  }).update.text.insert('XY', {
     at: {
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     },
   });
-  authorId = 'bob';
-  view.update.nodes.set({ bold: true }, { at: [0, 0] });
-  authorId = 'carol';
-  view.update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
-  authorId = 'dana';
-  view.update.nodes.move({ at: [1], to: [0] });
+  const bob = createEditor({
+    plugins,
+    initialValue: alice.read.value(),
+    userId: 'bob',
+  });
+
+  createEditorView(bob, {
+    authored: { intent: 'propose', projection: 'markup' },
+  }).update.nodes.set({ bold: true }, { at: [0, 0] });
+  const carol = createEditor({
+    plugins,
+    initialValue: bob.read.value(),
+    userId: 'carol',
+  });
+
+  createEditorView(carol, {
+    authored: { intent: 'propose', projection: 'markup' },
+  }).update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
+  const editor = createEditor({
+    plugins,
+    initialValue: carol.read.value(),
+    userId: 'dana',
+  });
+
+  createEditorView(editor, {
+    authored: { intent: 'propose', projection: 'markup' },
+  }).update.nodes.move({ at: [1], to: [0] });
   const snapshot = projectAuthoredReview(editor.read.value());
   const exported = await exportDocx(editor, {
     projection: 'review',
@@ -325,11 +345,7 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
   expect(documentXml).toContain('<w:moveTo');
   expect(documentXml).toContain('<w:rPrChange');
   expect(documentXml).toContain('<w:pPrChange');
-  zip.remove('editor/authored.json');
-  const imported = await importDocx(
-    await zip.generateAsync({ type: 'arraybuffer' }),
-    { plugins }
-  );
+  const imported = await importDocx(exported.blob, { plugins });
 
   if (!imported.ok) throw new Error(imported.diagnostics[0]?.message);
   const restored = createEditor({ plugins, initialValue: imported.document });

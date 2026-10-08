@@ -17,7 +17,10 @@ import {
   type DocxRelationship,
 } from '../../internal/packageParts';
 import type { DocxSourceLease } from '../../internal/source';
-import { isDocxHyperlinkTarget } from '../../internal/sourceEligibility';
+import {
+  docxRootPartOnEdit,
+  isDocxHyperlinkTarget,
+} from '../../internal/sourceEligibility';
 import type { DocxDiagnostic } from '../../internal/types';
 
 const DOCX_MIME =
@@ -212,7 +215,7 @@ const omissionDiagnostic = (
       'active-content': 'it contains or reaches active content',
       conflict: 'the generated package owns the same part',
       'external-relationship': 'it reaches an external relationship',
-      invalidated: 'the editor change invalidated it',
+      invalidated: 'export regenerated the document without it',
       'multiple-sections':
         'header and footer ownership is ambiguous across multiple sections',
       unreachable: 'it is not reachable from a preserved relationship',
@@ -234,16 +237,12 @@ const sourceUnavailableDiagnostic = (reason: 'invalid'): DocxDiagnostic => ({
 const sourceOwnedPart = (part: string) =>
   part === '[Content_Types].xml' ||
   part === '_rels/.rels' ||
-  part === 'word/document.xml' ||
   part === 'word/_rels/document.xml.rels' ||
   part === 'word/styles.xml' ||
   part === 'word/numbering.xml' ||
   part === 'word/settings.xml' ||
   part === 'word/fontTable.xml' ||
   part === 'word/webSettings.xml' ||
-  part === 'docProps/core.xml' ||
-  part === 'docProps/app.xml' ||
-  part === 'editor/authored.json' ||
   part.startsWith('word/theme/') ||
   part.startsWith('word/comments');
 
@@ -342,8 +341,15 @@ export const preserveDocxSource = async (
   const generatedContentTypesSource = generatedEntries.get(
     '[Content_Types].xml'
   );
+  const generatedRootRelationshipsSource = generatedEntries.get('_rels/.rels');
 
-  if (!(sourceContentTypesSource && generatedContentTypesSource)) {
+  if (
+    !(
+      sourceContentTypesSource &&
+      generatedContentTypesSource &&
+      generatedRootRelationshipsSource
+    )
+  ) {
     return Object.freeze({
       blob: generated,
       diagnostics: Object.freeze([sourceUnavailableDiagnostic('invalid')]),
@@ -380,53 +386,52 @@ export const preserveDocxSource = async (
     }
   };
 
-  const generatedRootRelationshipsSource = generatedEntries.get('_rels/.rels');
-  const sourceRootRelationshipsSource =
-    sourcePackage.entries.get('_rels/.rels');
-  const generatedRootRelationships = generatedRootRelationshipsSource
-    ? parseXml(decodeXml(generatedRootRelationshipsSource))
-    : null;
+  const generatedRootRelationships = parseXml(
+    decodeXml(generatedRootRelationshipsSource)
+  );
+  const regeneratedRootParts = new Set<string>();
+  const droppedRootParts = new Set<string>();
 
-  if (sourceRootRelationshipsSource && generatedRootRelationships) {
-    for (const relationship of readRelationships(sourcePackage.entries, '')) {
-      if (
-        /\/(?:officeDocument|metadata\/core-properties|extended-properties)$/i.test(
-          relationship.type
-        )
-      ) {
-        continue;
-      }
-      if (relationship.external) {
-        diagnose(relationship.target || '_rels/.rels', 'external-relationship');
-        continue;
-      }
-      if (activeClaim(relationship.type)) {
-        diagnose(relationship.targetPart ?? '_rels/.rels', 'active-content');
-        continue;
-      }
-      if (!relationship.targetPart) {
-        diagnose(relationship.target || '_rels/.rels', 'unreachable');
-        continue;
-      }
-      const candidate = collectCandidate(
-        relationship.targetPart,
-        sourcePackage.entries,
-        generatedParts,
-        copiedParts,
-        sourceContentTypes,
-        generatedContentTypes
-      );
+  for (const relationship of readRelationships(sourcePackage.entries, '')) {
+    const part = relationship.targetPart;
+    const onEdit = docxRootPartOnEdit(relationship.type);
 
-      if (!candidate.ok) {
-        diagnose(candidate.part, candidate.reason);
-        continue;
-      }
-      acceptCandidate(candidate);
-      appendRelationship(
-        generatedRootRelationships,
-        relationship,
-        nextRelationshipId(generatedRootRelationships, 'rIdSource')
+    if (!(part && onEdit)) {
+      throw new Error(
+        `Retained DOCX root relationship ${relationship.id} was not admitted.`
       );
+    }
+    switch (onEdit) {
+      case 'carry': {
+        const candidate = collectCandidate(
+          part,
+          sourcePackage.entries,
+          generatedParts,
+          copiedParts,
+          sourceContentTypes,
+          generatedContentTypes
+        );
+
+        if (!candidate.ok) {
+          diagnose(candidate.part, candidate.reason);
+          break;
+        }
+        acceptCandidate(candidate);
+        appendRelationship(
+          generatedRootRelationships,
+          relationship,
+          nextRelationshipId(generatedRootRelationships, 'rIdSource')
+        );
+        break;
+      }
+      case 'drop': {
+        droppedRootParts.add(part);
+        break;
+      }
+      case 'regenerate': {
+        regeneratedRootParts.add(part);
+        break;
+      }
     }
   }
 
@@ -556,14 +561,10 @@ export const preserveDocxSource = async (
     generatedContentTypes.document.documentElement.append(override);
   }
 
-  if (generatedRootRelationships) {
-    replacements.set(
-      '_rels/.rels',
-      encodeXml(
-        new XMLSerializer().serializeToString(generatedRootRelationships)
-      )
-    );
-  }
+  replacements.set(
+    '_rels/.rels',
+    encodeXml(new XMLSerializer().serializeToString(generatedRootRelationships))
+  );
   if (generatedDocumentRelationships) {
     replacements.set(
       'word/_rels/document.xml.rels',
@@ -581,8 +582,21 @@ export const preserveDocxSource = async (
   for (const [part, value] of replacements) generatedZip.file(part, value);
 
   for (const part of sourcePackage.entries.keys()) {
-    if (copiedParts.has(part) || sourceOwnedPart(part)) continue;
-    diagnose(part, activePart(part) ? 'active-content' : 'unreachable');
+    if (
+      copiedParts.has(part) ||
+      regeneratedRootParts.has(part) ||
+      sourceOwnedPart(part)
+    ) {
+      continue;
+    }
+    diagnose(
+      part,
+      droppedRootParts.has(part)
+        ? 'invalidated'
+        : activePart(part)
+          ? 'active-content'
+          : 'unreachable'
+    );
   }
 
   throwIfDocxAborted(signal);

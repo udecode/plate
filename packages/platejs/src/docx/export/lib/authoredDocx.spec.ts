@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import React from 'react';
 
-import { authored } from '../../../authored';
+import { AuthoredPlugin } from '../../../authored';
 import {
   createEditor,
   createEditorView,
@@ -22,8 +22,9 @@ import { exportDocx } from './exportDocx';
 describe('authored DOCX', () => {
   it('writes one tracked insertion for contiguous native typing', async () => {
     const editor = createEditor({
-      plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
       initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'markup' },
@@ -46,11 +47,9 @@ describe('authored DOCX', () => {
 
     expect(documentXml.match(/<w:ins\b/g)).toHaveLength(1);
     expect(documentXml).toContain(' draft');
-    expect(zip.file('editor/authored.json')).toBeNull();
   });
 
-  it('writes Word revisions and reloads the exact native envelope', async () => {
-    let authorId = 'alice';
+  it('writes Word revisions that reimport with their authors', async () => {
     const HeadingPlugin = BaseHeadingPlugin.configure({
       component: ({ attributes, children, element }) =>
         React.createElement(`h${element.level}`, attributes, children),
@@ -59,111 +58,71 @@ describe('authored DOCX', () => {
       BaseParagraphPlugin,
       HeadingPlugin,
       BaseBoldPlugin,
-      authored({ authorId: () => authorId }),
+      AuthoredPlugin,
     ] as const;
-    const editor = createEditor({
+    const alice = createEditor({
       plugins,
       initialValue: [{ children: [{ text: 'ABCDE' }], type: 'paragraph' }],
-    });
-    const view = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'markup' },
+      userId: 'alice',
     });
 
-    view.update.text.insert('XY', {
+    createEditorView(alice, {
+      authored: { intent: 'propose', projection: 'markup' },
+    }).update.text.insert('XY', {
       at: {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       },
     });
-    authorId = 'bob';
-    view.update.nodes.set({ bold: true }, { at: [0, 0] });
-    authorId = 'carol';
-    view.update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
+    const bob = createEditor({
+      plugins,
+      initialValue: alice.read.value(),
+      userId: 'bob',
+    });
+
+    createEditorView(bob, {
+      authored: { intent: 'propose', projection: 'markup' },
+    }).update.nodes.set({ bold: true }, { at: [0, 0] });
+    const editor = createEditor({
+      plugins,
+      initialValue: bob.read.value(),
+      userId: 'carol',
+    });
+
+    createEditorView(editor, {
+      authored: { intent: 'propose', projection: 'markup' },
+    }).update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
 
     const result = await exportDocx(editor, {
-      nativeState: 'attach',
       projection: 'review',
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
     const documentXml = await zip.file('word/document.xml')!.async('string');
-    const envelope = await zip.file('editor/authored.json')!.async('string');
-    const contentTypes = await zip.file('[Content_Types].xml')!.async('string');
     expect(documentXml).toContain('<w:ins');
     expect(documentXml).toContain('<w:del');
     expect(documentXml).toContain('<w:delText');
     expect(documentXml).toContain('<w:rPrChange');
     expect(documentXml).toContain('<w:pPrChange');
     expect(documentXml).toContain('w:author="alice"');
-    expect(JSON.parse(envelope).document).toEqual(editor.read.value());
-    expect(JSON.parse(envelope).version).toBe(1);
-    expect(JSON.parse(envelope).parts.length).toBeGreaterThan(1);
-    expect(contentTypes).toContain(
-      'PartName="/editor/authored.json" ContentType="application/vnd.editor.authored+json"'
-    );
     expect(result.diagnostics).toEqual([]);
 
-    const imported = await importDocx(await result.blob.arrayBuffer(), {
-      authoredTrust: { kind: 'same-application' },
+    const reimported = await importDocx(await result.blob.arrayBuffer(), {
       plugins,
     });
 
-    expect(imported.ok).toBe(true);
-    if (!imported.ok) return;
-    expect(imported.document).toEqual(editor.read.value());
-    expect(
-      imported.diagnostics.some(
-        (diagnostic) => diagnostic.code === 'native-data-ignored'
-      )
-    ).toBe(false);
-
-    const editedZip = await JSZip.loadAsync(await result.blob.arrayBuffer());
-
-    editedZip.file('word/document.xml', documentXml.replace('>XY<', '>ZZ<'));
-    const edited = await importDocx(
-      await editedZip.generateAsync({ type: 'arraybuffer' }),
-      { authoredTrust: { kind: 'same-application' }, plugins }
-    );
-
-    expect(edited.ok).toBe(true);
-    if (!edited.ok) return;
-    expect(edited.document).not.toEqual(editor.read.value());
-    expect(edited.diagnostics).toContainEqual(
-      expect.objectContaining({
-        code: 'native-data-ignored',
-        reason: 'digest-mismatch',
-      })
-    );
-
-    zip.file('editor/authored.json', 'invalid');
-    const invalid = await importDocx(
-      await zip.generateAsync({ type: 'arraybuffer' }),
-      { authoredTrust: { kind: 'same-application' }, plugins }
-    );
-
-    expect(invalid.ok).toBe(true);
-    if (!invalid.ok) return;
-    expect(invalid.diagnostics).toContainEqual(
-      expect.objectContaining({
-        code: 'native-data-ignored',
-        reason: 'invalid',
-      })
-    );
-    zip.remove('editor/authored.json');
-    const externalBuffer = await zip.generateAsync({ type: 'arraybuffer' });
-    const external = await importDocx(externalBuffer, { plugins });
-
-    expect(external.ok).toBe(true);
-    if (!external.ok) return;
+    expect(reimported.ok).toBe(true);
+    if (!reimported.ok) return;
     const restored = createEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseHeadingPlugin,
         BaseBoldPlugin,
-        authored({ authorId: 'reader' }),
+        AuthoredPlugin,
       ],
-      initialValue: external.document,
+      initialValue: reimported.document,
+      userId: 'reader',
     });
     const restoredChanges = restored.read.authored.changes().items;
 
@@ -187,7 +146,7 @@ describe('authored DOCX', () => {
     ).toEqual([
       { children: [{ bold: true, text: 'AXYDE' }], level: 1, type: 'heading' },
     ]);
-    expect(external.diagnostics).toEqual([]);
+    expect(reimported.diagnostics).toEqual([]);
 
     const unsupportedXml = documentXml.replace(
       '</w:body>',
@@ -210,10 +169,11 @@ describe('authored DOCX', () => {
     );
   });
 
-  it('uses the pre-await snapshot for Word XML and the native envelope', async () => {
+  it('uses the pre-await snapshot for Word XML', async () => {
     const editor = createEditor({
-      plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
       initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'proposed' },
@@ -234,7 +194,6 @@ describe('authored DOCX', () => {
     };
     const result = await exportDocx(editor, {
       component: MutatingStatic,
-      nativeState: 'attach',
       projection: 'review',
     });
 
@@ -242,20 +201,17 @@ describe('authored DOCX', () => {
     if (!result.ok) return;
     const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
     const documentXml = await zip.file('word/document.xml')!.async('string');
-    const envelope = JSON.parse(
-      await zip.file('editor/authored.json')!.async('string')
-    );
 
     expect(documentXml).toContain(' draft');
     expect(documentXml).not.toContain(' late');
-    expect(envelope.document).toEqual(captured);
     expect(editor.read.value()).not.toEqual(captured);
   });
 
   it('warns when an explicit projection drops pending review data', async () => {
     const editor = createEditor({
-      plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
       initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'proposed' },
@@ -273,11 +229,11 @@ describe('authored DOCX', () => {
   });
 
   it('refuses review output when authored conflicts cannot become Word revisions', async () => {
-    const plugin = authored({ authorId: 'alice' });
-    const plugins = [BaseParagraphPlugin, plugin];
+    const plugins = [BaseParagraphPlugin, AuthoredPlugin];
     const original = createEditor({
       plugins,
       initialValue: [{ children: [{ text: 'First' }], type: 'paragraph' }],
+      userId: 'alice',
     });
     let id = '';
 
@@ -286,8 +242,16 @@ describe('authored DOCX', () => {
       tx.text.insert('!', { at: { offset: 5, path: [0, 0] } });
     });
     const saved = structuredClone(original.read.value());
-    const author = createEditor({ plugins, initialValue: saved });
-    const reviewer = createEditor({ plugins, initialValue: saved });
+    const author = createEditor({
+      plugins,
+      initialValue: saved,
+      userId: 'alice',
+    });
+    const reviewer = createEditor({
+      plugins,
+      initialValue: saved,
+      userId: 'alice',
+    });
     const effects: Array<EditorCommit['effects'][number]> = [];
 
     for (const peer of [author, reviewer]) {
@@ -307,7 +271,11 @@ describe('authored DOCX', () => {
       action: 'accept',
       selection: reviewer.read.authored.select({ ids: [id] }),
     });
-    const merged = createEditor({ plugins, initialValue: saved });
+    const merged = createEditor({
+      plugins,
+      initialValue: saved,
+      userId: 'alice',
+    });
 
     merged.update((tx) => {
       for (const effect of effects) tx.effects.emit(effect.type, effect.value);
@@ -336,13 +304,11 @@ describe('authored DOCX', () => {
   });
 
   it('projects proposed comment ranges into accepted and review output', async () => {
-    const plugins = [
-      BaseParagraphPlugin,
-      authored({ authorId: 'alice' }),
-    ] as const;
+    const plugins = [BaseParagraphPlugin, AuthoredPlugin] as const;
     const editor = createEditor({
       plugins,
       initialValue: [{ children: [{ text: 'ABCDE' }], type: 'paragraph' }],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'proposed' },
@@ -414,8 +380,9 @@ describe('authored DOCX', () => {
 
   it('drops a comment on excluded pending content without rejecting the export', async () => {
     const editor = createEditor({
-      plugins: [BaseParagraphPlugin, authored({ authorId: 'alice' })],
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
       initialValue: [{ children: [{ text: 'ABCDE' }], type: 'paragraph' }],
+      userId: 'alice',
     });
     const view = createEditorView(editor, {
       authored: { intent: 'propose', projection: 'proposed' },
@@ -459,7 +426,7 @@ describe('authored DOCX', () => {
     expect(zip.file('word/comments.xml')).toBeNull();
   });
 
-  it('uses configured serializers for custom review content', async () => {
+  it('writes tracked insertions inside custom schema content', async () => {
     const CustomPlugin = definePlugin('custom', {
       schema: {
         element: schema.element.textBlock(),
@@ -474,11 +441,8 @@ describe('authored DOCX', () => {
       },
     });
     const editor = createEditor({
-      plugins: [
-        CustomPlugin,
-        CustomMarkPlugin,
-        authored({ authorId: 'alice' }),
-      ],
+      plugins: [CustomPlugin, CustomMarkPlugin, AuthoredPlugin],
+      userId: 'alice',
       initialValue: [
         {
           children: [{ customMark: 'domain', text: 'Base' }],
@@ -494,7 +458,6 @@ describe('authored DOCX', () => {
       at: { offset: 4, path: [0, 0] },
     });
     const result = await exportDocx(editor, {
-      nativeState: 'attach',
       projection: 'review',
     });
     expect(result.ok).toBe(true);
@@ -504,10 +467,8 @@ describe('authored DOCX', () => {
     const documentXml = await zip.file('word/document.xml')!.async('string');
 
     expect(documentXml).toContain('Base');
-    expect(documentXml).toContain(' draft');
-    expect(
-      JSON.parse(await zip.file('editor/authored.json')!.async('string'))
-        .document
-    ).toEqual(editor.read.value());
+    expect(documentXml).toMatch(
+      /<w:ins\b[^>]*w:author="alice"[^>]*>(?:(?!<\/w:ins>)[\s\S])* draft/
+    );
   });
 });

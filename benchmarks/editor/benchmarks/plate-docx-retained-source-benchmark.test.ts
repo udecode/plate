@@ -9,7 +9,7 @@ import {
   NodeApi,
   type Descendant,
 } from 'platejs';
-import { authored } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import { exportDocx } from 'platejs/docx/export';
 import { importDocx, type DocxImportResult } from 'platejs/docx/import';
 import { BaseParagraphPlugin } from 'platejs/react';
@@ -23,8 +23,12 @@ const CONTENT_TYPES_NAMESPACE =
   'http://schemas.openxmlformats.org/package/2006/content-types';
 const RELATIONSHIPS_NAMESPACE =
   'http://schemas.openxmlformats.org/package/2006/relationships';
-const PROBE_RELATIONSHIP_TYPE =
-  'http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail';
+const OFFICE_RELATIONSHIPS_NAMESPACE =
+  'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+const IMAGE_RELATIONSHIP_TYPE = `${OFFICE_RELATIONSHIPS_NAMESPACE}/image`;
+const HEADER_RELATIONSHIP_TYPE = `${OFFICE_RELATIONSHIPS_NAMESPACE}/header`;
+const HEADER_PART = 'word/header1.xml';
+const HEADER_RELATIONSHIPS_PART = 'word/_rels/header1.xml.rels';
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 const MEBIBYTE = 1024 * 1024;
 const measured = process.env.BENCH_MEASURE === '1';
@@ -39,7 +43,7 @@ type Cohort = Readonly<{
   overlaySamples: number;
   paragraphs: number;
   revisions: number;
-  rootParts: number;
+  headerImages: number;
   samples: number;
 }>;
 
@@ -62,7 +66,7 @@ const cohorts: readonly Cohort[] = [
     overlaySamples: 10,
     paragraphs: 4,
     revisions: 4,
-    rootParts: 8,
+    headerImages: 8,
     samples: 20,
   },
   {
@@ -71,7 +75,7 @@ const cohorts: readonly Cohort[] = [
     overlaySamples: 10,
     paragraphs: 24,
     revisions: 16,
-    rootParts: 64,
+    headerImages: 64,
     samples: 20,
   },
   {
@@ -80,7 +84,7 @@ const cohorts: readonly Cohort[] = [
     overlaySamples: 5,
     paragraphs: 96,
     revisions: 48,
-    rootParts: 256,
+    headerImages: 256,
     samples: 20,
   },
   {
@@ -89,7 +93,7 @@ const cohorts: readonly Cohort[] = [
     overlaySamples: 3,
     paragraphs: 256,
     revisions: 96,
-    rootParts: 900,
+    headerImages: 900,
     samples: 5,
   },
 ];
@@ -184,32 +188,59 @@ const buildFixture = async (
     }
     body.append(paragraph);
   }
-  if (section) body.append(section);
+  if (!section) throw new Error('Benchmark fixture has no section properties.');
+  const headerReference = element(document, 'headerReference');
+
+  headerReference.setAttributeNS(WORD_NAMESPACE, 'w:type', 'default');
+  headerReference.setAttributeNS(
+    OFFICE_RELATIONSHIPS_NAMESPACE,
+    'r:id',
+    'rIdProbeHeader'
+  );
+  section.insertBefore(headerReference, section.firstChild);
+  body.append(section);
   const documentXml = new XMLSerializer().serializeToString(document);
 
   zip.file('word/document.xml', documentXml);
-  const relationshipsFile = zip.file('_rels/.rels');
+  const documentRelationshipsFile = zip.file('word/_rels/document.xml.rels');
   const contentTypesFile = zip.file('[Content_Types].xml');
 
-  if (!relationshipsFile || !contentTypesFile) {
-    throw new Error('Benchmark fixture has no root package metadata.');
+  if (!documentRelationshipsFile || !contentTypesFile) {
+    throw new Error('Benchmark fixture has no package metadata.');
   }
-  const relationships = new DOMParser().parseFromString(
-    await relationshipsFile.async('string'),
+  const documentRelationships = new DOMParser().parseFromString(
+    await documentRelationshipsFile.async('string'),
     'application/xml'
   );
   const contentTypes = new DOMParser().parseFromString(
     await contentTypesFile.async('string'),
     'application/xml'
   );
-  const relationshipsRoot = relationships.documentElement;
   const contentTypesRoot = contentTypes.documentElement;
-  const probePartNames = Array.from(
-    { length: cohort.rootParts },
-    (_, index) => `retained-source-probe/part-${index}.png`
+  const headerRelationship = documentRelationships.createElementNS(
+    RELATIONSHIPS_NAMESPACE,
+    'Relationship'
   );
-  const partBytes = Math.floor(cohort.opaqueBytes / cohort.rootParts);
-  const remainder = cohort.opaqueBytes % cohort.rootParts;
+
+  headerRelationship.setAttribute('Id', 'rIdProbeHeader');
+  headerRelationship.setAttribute('Target', 'header1.xml');
+  headerRelationship.setAttribute('Type', HEADER_RELATIONSHIP_TYPE);
+  documentRelationships.documentElement.append(headerRelationship);
+  zip.file(
+    'word/_rels/document.xml.rels',
+    new XMLSerializer().serializeToString(documentRelationships)
+  );
+  zip.file(
+    HEADER_PART,
+    `<w:hdr xmlns:w="${WORD_NAMESPACE}"><w:p><w:r><w:t>Probe header</w:t></w:r></w:p></w:hdr>`
+  );
+  const imageTargets = Array.from(
+    { length: cohort.headerImages },
+    (_, index) => `media/probe-${index}.png`
+  );
+  const probePartNames = imageTargets.map((target) => `word/${target}`);
+  const partBytes = Math.floor(cohort.opaqueBytes / cohort.headerImages);
+  const remainder = cohort.opaqueBytes % cohort.headerImages;
 
   for (const [index, partName] of probePartNames.entries()) {
     zip.file(
@@ -222,16 +253,27 @@ const buildFixture = async (
         ),
       ])
     );
-    const relationship = relationships.createElementNS(
-      RELATIONSHIPS_NAMESPACE,
-      'Relationship'
-    );
-
-    relationship.setAttribute('Id', `rProbe${index}`);
-    relationship.setAttribute('Target', partName);
-    relationship.setAttribute('Type', PROBE_RELATIONSHIP_TYPE);
-    relationshipsRoot.append(relationship);
   }
+  zip.file(
+    HEADER_RELATIONSHIPS_PART,
+    `<Relationships xmlns="${RELATIONSHIPS_NAMESPACE}">${imageTargets
+      .map(
+        (target, index) =>
+          `<Relationship Id="rProbe${index}" Type="${IMAGE_RELATIONSHIP_TYPE}" Target="${target}"/>`
+      )
+      .join('')}</Relationships>`
+  );
+  const headerOverride = contentTypes.createElementNS(
+    CONTENT_TYPES_NAMESPACE,
+    'Override'
+  );
+
+  headerOverride.setAttribute(
+    'ContentType',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml'
+  );
+  headerOverride.setAttribute('PartName', `/${HEADER_PART}`);
+  contentTypesRoot.append(headerOverride);
   const hasBinaryDefault = Array.from(contentTypesRoot.children).some(
     (child) =>
       child.localName === 'Default' && child.getAttribute('Extension') === 'png'
@@ -247,7 +289,6 @@ const buildFixture = async (
     binaryDefault.setAttribute('Extension', 'png');
     contentTypesRoot.append(binaryDefault);
   }
-  zip.file('_rels/.rels', new XMLSerializer().serializeToString(relationships));
   zip.file(
     '[Content_Types].xml',
     new XMLSerializer().serializeToString(contentTypes)
@@ -290,13 +331,21 @@ const paragraphText = (nodes: readonly Descendant[]) =>
 
 const assertImport = (fixture: Fixture, imported: SuccessfulImport) => {
   const restored = createEditor({
-    plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
+    plugins: [BaseParagraphPlugin, AuthoredPlugin],
     initialValue: imported.document,
   });
   const proposed = createEditorView(restored, {
     authored: { intent: 'propose', projection: 'proposed' },
   });
 
+  expect(imported.diagnostics).toEqual([
+    expect.objectContaining({
+      action: 'dropped',
+      code: 'unsupported-content',
+      feature: 'header',
+      part: HEADER_PART,
+    }),
+  ]);
   expect(paragraphText(restored.read.children())).toEqual(fixture.accepted);
   expect(paragraphText(proposed.read.children())).toEqual(fixture.proposed);
   expect(
@@ -400,7 +449,8 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
     const fixture = await buildFixture(baseBytes, cohort);
     const baselineImport = async () => {
       const imported = await importDocx(fixture.blob, {
-        plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
+        lossPolicy: 'allow',
+        plugins: [BaseParagraphPlugin, AuthoredPlugin],
       });
 
       if (!imported.ok) throw new Error(imported.diagnostics[0]?.message);
@@ -410,7 +460,8 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
     };
     const retainedImport = async () => {
       const imported = await importDocx(fixture.blob, {
-        plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
+        lossPolicy: 'allow',
+        plugins: [BaseParagraphPlugin, AuthoredPlugin],
         retainSource: true,
       });
 
@@ -446,7 +497,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
 
     const exactFixture = await retainedImport();
     const exactEditor = createEditor({
-      plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
       initialValue: exactFixture.document,
     });
     const semanticExport = async () => {
@@ -503,19 +554,22 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
     const overlayZip = await JSZip.loadAsync(
       await overlayCorrectness.blob.arrayBuffer()
     );
-    const overlayRelationships = await readZipXml(overlayZip, '_rels/.rels');
+    const overlayHeaderRelationships = await readZipXml(
+      overlayZip,
+      HEADER_RELATIONSHIPS_PART
+    );
     const overlayEdges = Array.from(
-      overlayRelationships.getElementsByTagNameNS(
+      overlayHeaderRelationships.getElementsByTagNameNS(
         RELATIONSHIPS_NAMESPACE,
         'Relationship'
       )
     ).filter(
       (relationship) =>
-        relationship.getAttribute('Type') === PROBE_RELATIONSHIP_TYPE
+        relationship.getAttribute('Type') === IMAGE_RELATIONSHIP_TYPE
     );
     let overlayBytes = 0;
 
-    expect(overlayEdges).toHaveLength(cohort.rootParts);
+    expect(overlayEdges).toHaveLength(cohort.headerImages);
     for (const partName of fixture.probePartNames) {
       const part = overlayZip.file(partName);
 
@@ -525,19 +579,48 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       overlayBytes += bytes.byteLength;
     }
     expect(overlayBytes).toBe(
-      cohort.opaqueBytes + PNG_SIGNATURE.length * cohort.rootParts
+      cohort.opaqueBytes + PNG_SIGNATURE.length * cohort.headerImages
     );
+    const overlayDocument = await readZipXml(overlayZip, 'word/document.xml');
+    const overlayDocumentRelationships = await readZipXml(
+      overlayZip,
+      'word/_rels/document.xml.rels'
+    );
+    const overlayHeaderReferenceIds = new Set(
+      localElements(overlayDocument, 'headerReference').map(
+        (reference) =>
+          reference.getAttributeNS(OFFICE_RELATIONSHIPS_NAMESPACE, 'id') ??
+          reference.getAttribute('r:id')
+      )
+    );
+    const overlayHeaderEdges = Array.from(
+      overlayDocumentRelationships.getElementsByTagNameNS(
+        RELATIONSHIPS_NAMESPACE,
+        'Relationship'
+      )
+    ).filter(
+      (relationship) =>
+        relationship.getAttribute('Type') === HEADER_RELATIONSHIP_TYPE &&
+        relationship.getAttribute('Target') === 'header1.xml' &&
+        overlayHeaderReferenceIds.has(relationship.getAttribute('Id'))
+    );
+    const overlayHeaderParts = [HEADER_PART, HEADER_RELATIONSHIPS_PART].filter(
+      (part) => overlayZip.file(part)
+    );
+
+    expect(overlayHeaderEdges).toHaveLength(1);
     const overlayWork = {
-      copiedParts: overlayEdges.length,
+      copiedParts: overlayEdges.length + overlayHeaderParts.length,
       finalPackageValidationLoads: 1,
       generatedPackageLoads: 1,
       packageGenerations: 1,
       preservedBytes: overlayBytes,
-      relationshipEdges: overlayEdges.length,
+      relationshipEdges: overlayEdges.length + overlayHeaderEdges.length,
       sourcePackageLoads: 1,
     };
     const overlayImport = await importDocx(overlayCorrectness.blob, {
-      plugins: [BaseParagraphPlugin, authored({ authorId: 'reader' })],
+      lossPolicy: 'allow',
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
     });
 
     if (!overlayImport.ok) {
@@ -550,11 +633,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
 
     expect(new Uint8Array(exactBytes)).toEqual(new Uint8Array(fixture.bytes));
     const mismatchedEditor = createEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        BaseBoldPlugin,
-        authored({ authorId: 'reader' }),
-      ],
+      plugins: [BaseParagraphPlugin, BaseBoldPlugin, AuthoredPlugin],
       initialValue: exactFixture.document,
     });
     const mismatched = await exportDocx(mismatchedEditor, {
@@ -690,6 +769,7 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
     'packages/platejs/src/docx/import/lib/importDocx.ts',
     'packages/platejs/src/docx/internal/docxPackage.ts',
     'packages/platejs/src/docx/internal/source.ts',
+    'packages/platejs/src/docx/internal/sourceEligibility.ts',
     'packages/platejs/src/docx/export/lib/exportDocx.tsx',
     'packages/platejs/src/docx/export/lib/sourcePreservation.ts',
     'packages/plitejs/src/core/change/document-change.ts',

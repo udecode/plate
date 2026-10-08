@@ -4,13 +4,7 @@ import React from 'react';
 import { createEditor } from '../../../core';
 import { EditorStatic, type EditorStaticProps } from '../../../static';
 import { importDocx } from '../../import/lib/importDocx';
-import {
-  DEFAULT_DOCX_IMPORT_LIMITS,
-  readBoundedDocxPackage,
-} from '../../internal/docxPackage';
-import { findDocxSourceViolations } from '../../internal/sourceEligibility';
 import { exportDocx } from './exportDocx';
-import { addAuthoredDocxEnvelope } from './packageArtifacts';
 
 const WORD_NAMESPACE =
   'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
@@ -212,92 +206,6 @@ describe('retained DOCX source', () => {
     expect(result.diagnostics).toEqual([]);
   });
 
-  it('removes attached native state unless the export opts into it', async () => {
-    const sourceEditor = createEditor({
-      initialValue: [
-        { children: [{ text: 'Original body' }], type: 'paragraph' },
-      ],
-    });
-    const attached = await exportDocx(sourceEditor, {
-      nativeState: 'attach',
-      projection: 'review',
-    });
-
-    expect(attached.ok).toBe(true);
-    if (!attached.ok) return;
-    const imported = await importEligible(attached.blob);
-    const editor = createEditor({ initialValue: imported.document });
-    const result = await exportDocx(editor, {
-      projection: 'review',
-      source: imported.source,
-    });
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
-
-    expect(zip.file('editor/authored.json')).toBeNull();
-    expect(result.diagnostics).toContainEqual(
-      expect.objectContaining({
-        code: 'source-part-omitted',
-        part: 'editor/authored.json',
-      })
-    );
-  });
-
-  it('replaces an existing native envelope on exact reuse', async () => {
-    const sourceEditor = createEditor({
-      initialValue: [
-        { children: [{ text: 'Original body' }], type: 'paragraph' },
-      ],
-    });
-    const attached = await exportDocx(sourceEditor, {
-      nativeState: 'attach',
-      projection: 'review',
-    });
-
-    expect(attached.ok).toBe(true);
-    if (!attached.ok) return;
-    const imported = await importDocx(attached.blob, {
-      authoredTrust: { kind: 'same-application' },
-      plugins: [],
-      retainSource: true,
-    });
-
-    expect(imported.ok && imported.source).toBeTruthy();
-    if (!imported.ok || !imported.source) return;
-    const result = await exportDocx(
-      createEditor({ initialValue: imported.document }),
-      {
-        nativeState: 'attach',
-        projection: 'review',
-        source: imported.source,
-      }
-    );
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
-    const contentTypes = await readText(zip, '[Content_Types].xml');
-    const rootRelationships = await readText(zip, '_rels/.rels');
-
-    expect(contentTypes.match(/editor\/authored\.json/g)).toHaveLength(1);
-    expect(
-      rootRelationships.match(/platejs\.org\/relationships\/authored/g)
-    ).toHaveLength(1);
-    expect(
-      findDocxSourceViolations(
-        await readBoundedDocxPackage(result.blob, DEFAULT_DOCX_IMPORT_LIMITS)
-      )
-    ).toEqual([]);
-    const reopened = await importDocx(result.blob, {
-      authoredTrust: { kind: 'same-application' },
-      plugins: [],
-    });
-
-    expect(reopened.ok && reopened.diagnostics).toEqual([]);
-  });
-
   it('keeps safe hyperlinks through exact reuse and the header overlay', async () => {
     const passive = await addPassiveHeader(await createGeneratedSource());
     const zip = await JSZip.loadAsync(await passive.arrayBuffer());
@@ -393,6 +301,197 @@ describe('retained DOCX source', () => {
     if (reopened.ok) expect(reopened.document).toEqual(editor.read.value());
   });
 
+  it('reports the dropped document properties and thumbnail and keeps custom properties when the body changes', async () => {
+    const generated = await createGeneratedSource();
+    const zip = await JSZip.loadAsync(await generated.arrayBuffer());
+
+    zip.file('docProps/thumbnail.png', PNG);
+    zip.file(
+      'docProps/app.xml',
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Words>2</Words></Properties>'
+    );
+    zip.file(
+      'docProps/app-metadata.xml',
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Client"><vt:lpwstr>Contoso</vt:lpwstr></property></Properties>'
+    );
+    await editText(zip, '[Content_Types].xml', (source) =>
+      source.replace(
+        '</Types>',
+        '<Override PartName="/docProps/thumbnail.png" ContentType="image/png"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/><Override PartName="/docProps/app-metadata.xml" ContentType="application/vnd.openxmlformats-officedocument.custom-properties+xml"/></Types>'
+      )
+    );
+    await addRootRelationship(
+      zip,
+      `<Relationship Id="rIdThumbnail" Type="${PACKAGE_RELATIONSHIPS_NAMESPACE}/metadata/thumbnail" Target="docProps/thumbnail.png"/><Relationship Id="rIdApp" Type="${OFFICE_RELATIONSHIPS_NAMESPACE}/extended-properties" Target="docProps/app.xml"/><Relationship Id="rIdCustom" Type="${OFFICE_RELATIONSHIPS_NAMESPACE}/custom-properties" Target="docProps/app-metadata.xml"/>`
+    );
+    const imported = await importEligible(
+      new Blob([await zip.generateAsync({ type: 'arraybuffer' })])
+    );
+    const edited = await exportDocx(
+      createEditor({
+        initialValue: {
+          ...imported.document,
+          children: [
+            { children: [{ text: 'Edited body' }], type: 'paragraph' },
+          ],
+        },
+      }),
+      { projection: 'review', source: imported.source }
+    );
+
+    expect(edited.ok).toBe(true);
+    if (!edited.ok) return;
+    const output = await JSZip.loadAsync(await edited.blob.arrayBuffer());
+
+    expect(output.file('docProps/thumbnail.png')).toBeNull();
+    expect(output.file('docProps/app.xml')).toBeNull();
+    expect(await readText(output, 'docProps/app-metadata.xml')).toContain(
+      'Contoso'
+    );
+    expect(
+      edited.diagnostics.filter(({ code }) => code === 'source-part-omitted')
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          part: 'docProps/core.xml',
+          reason: 'invalidated',
+        }),
+        expect.objectContaining({
+          part: 'docProps/thumbnail.png',
+          reason: 'invalidated',
+        }),
+        expect.objectContaining({
+          part: 'docProps/app.xml',
+          reason: 'invalidated',
+        }),
+      ])
+    );
+  });
+
+  it('does not report a dropped part that a kept header still carries', async () => {
+    const passive = await addPassiveHeader(await createGeneratedSource());
+    const zip = await JSZip.loadAsync(await passive.arrayBuffer());
+
+    zip.file('docProps/thumbnail.png', PNG);
+    await editText(zip, '[Content_Types].xml', (source) =>
+      source.replace(
+        '</Types>',
+        '<Override PartName="/docProps/thumbnail.png" ContentType="image/png"/></Types>'
+      )
+    );
+    await addRootRelationship(
+      zip,
+      `<Relationship Id="rIdThumbnail" Type="${PACKAGE_RELATIONSHIPS_NAMESPACE}/metadata/thumbnail" Target="docProps/thumbnail.png"/>`
+    );
+    await editText(zip, 'word/_rels/header1.xml.rels', (source) =>
+      source.replace(
+        '</Relationships>',
+        `<Relationship Id="rIdHeaderThumbnail" Type="${OFFICE_RELATIONSHIPS_NAMESPACE}/image" Target="../docProps/thumbnail.png"/></Relationships>`
+      )
+    );
+    const imported = await importEligible(
+      new Blob([await zip.generateAsync({ type: 'arraybuffer' })])
+    );
+    const editor = createEditor({ initialValue: imported.document });
+
+    editor.update.text.insert(' edited', {
+      at: { offset: 'Original body'.length, path: [0, 0] },
+    });
+    const edited = await exportDocx(editor, {
+      projection: 'review',
+      source: imported.source,
+    });
+
+    expect(edited.ok).toBe(true);
+    if (!edited.ok) return;
+    const output = await JSZip.loadAsync(await edited.blob.arrayBuffer());
+    const omitted = edited.diagnostics.flatMap((diagnostic) =>
+      diagnostic.code === 'source-part-omitted' ? [diagnostic.part] : []
+    );
+
+    expect(
+      await output.file('docProps/thumbnail.png')?.async('uint8array')
+    ).toEqual(PNG);
+    expect(omitted).not.toContain('docProps/thumbnail.png');
+  });
+
+  it('warns that Plate metadata is omitted from an unchanged export', async () => {
+    const sourceBlob = await createGeneratedSource();
+    const imported = await importEligible(sourceBlob);
+    const editor = createEditor({
+      initialValue: { ...imported.document, meta: { reviewer: 'Ada' } },
+    });
+    const result = await exportDocx(editor, {
+      projection: 'review',
+      source: imported.source,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(await bytes(result.blob)).toEqual(await bytes(sourceBlob));
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'lossy-content',
+        feature: 'document-metadata',
+      })
+    );
+  });
+
+  it('reports the source comments an edited export without comments omits', async () => {
+    const commented = await exportDocx(
+      createEditor({
+        initialValue: [
+          { children: [{ text: 'Original body' }], type: 'paragraph' },
+        ],
+      }),
+      {
+        comments: [
+          {
+            author: null,
+            body: [{ children: [{ text: 'Source note' }], type: 'paragraph' }],
+            createdAt: null,
+            durableId: null,
+            id: 'source-comment',
+            parentId: null,
+            resolved: null,
+            target: {
+              range: {
+                anchor: { offset: 0, path: [0, 0] },
+                focus: { offset: 8, path: [0, 0] },
+              },
+            },
+          },
+        ],
+        projection: 'review',
+      }
+    );
+
+    if (!commented.ok) throw new Error('Fixture DOCX generation failed.');
+    const imported = await importEligible(commented.blob);
+    const editor = createEditor({ initialValue: imported.document });
+
+    editor.update.text.insert(' edited', {
+      at: { offset: 'Original body'.length, path: [0, 0] },
+    });
+    const edited = await exportDocx(editor, {
+      projection: 'review',
+      source: imported.source,
+    });
+
+    expect(edited.ok).toBe(true);
+    if (!edited.ok) return;
+    const output = await JSZip.loadAsync(await edited.blob.arrayBuffer());
+
+    expect(output.file('word/comments.xml')).toBeNull();
+    expect(
+      edited.diagnostics.filter(
+        (diagnostic) =>
+          diagnostic.code === 'source-part-omitted' &&
+          diagnostic.part === 'word/comments.xml'
+      )
+    ).toEqual([expect.objectContaining({ reason: 'invalidated' })]);
+  });
+
   it.each(Object.entries(HOSTILE_VARIANTS))(
     'retains no source for %s and regenerates the export',
     async (_name, variant) => {
@@ -436,48 +535,6 @@ describe('retained DOCX source', () => {
       expect(result.diagnostics).toEqual([]);
     }
   );
-
-  it('keeps an ineligible source unavailable despite trusted native state', async () => {
-    const editor = createEditor({
-      initialValue: [
-        { children: [{ text: 'Original body' }], type: 'paragraph' },
-      ],
-    });
-    const hostile = await withHostileVariant(
-      await createGeneratedSource(),
-      HOSTILE_VARIANTS['a macro project']
-    );
-    // The envelope's manifest covers the macro part, so trust verifies it.
-    const trusted = await addAuthoredDocxEnvelope(hostile, editor.read.value());
-    const imported = await importDocx(trusted, {
-      authoredTrust: { kind: 'same-application' },
-      lossPolicy: 'allow',
-      plugins: [],
-      retainSource: true,
-    });
-
-    expect(imported.ok).toBe(true);
-    if (!imported.ok) return;
-    expect(imported.diagnostics).not.toContainEqual(
-      expect.objectContaining({ code: 'native-data-ignored' })
-    );
-    expect(imported.source).toBeNull();
-    const result = await exportDocx(
-      createEditor({ initialValue: imported.document }),
-      {
-        nativeState: 'attach',
-        projection: 'review',
-        source: imported.source,
-      }
-    );
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
-
-    expect(zip.file('word/vbaProject.bin')).toBeNull();
-    expect(zip.file('editor/authored.json')).not.toBeNull();
-  });
 
   it('omits section-dependent parts for a multi-section source', async () => {
     const sourceBlob = await addPassiveHeader(

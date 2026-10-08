@@ -45,7 +45,7 @@ const json = JSON.stringify(snapshot.review);
 const document = parseAuthoredDocument(json);
 ```
 
-HTML 与 Markdown 不会把 authored document 隐藏在输出中。
+HTML、Markdown 与 DOCX 不会把 authored document 隐藏在输出中。
 
 ## 序列化 plain text
 
@@ -117,8 +117,11 @@ import { exportDocx } from 'platejs/docx/export';
 const result = await exportDocx(editor, { projection: 'review' });
 ```
 
-Cancellation、package limit、comment、retained source 与 authored trust 参阅
-[DOCX](/docs/docx)。
+Word 文件包含可见的 Word 文档、comment 与 tracked revision。另一个 Plate editor
+需要恢复命名根、metadata 或精确的 authored change 记录时，把 Plate JSON 与文件
+一起保存。
+
+Cancellation、package limit、comment 与 retained source 参阅 [DOCX](/docs/docx)。
 
 ## 处理 result
 

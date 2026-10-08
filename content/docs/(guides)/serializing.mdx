@@ -47,7 +47,7 @@ const json = JSON.stringify(snapshot.review);
 const document = parseAuthoredDocument(json);
 ```
 
-HTML and Markdown do not hide an authored document in their output.
+HTML, Markdown, and DOCX do not hide an authored document in their output.
 
 ## Serialize plain text
 
@@ -120,12 +120,12 @@ import { exportDocx } from 'platejs/docx/export';
 const result = await exportDocx(editor, { projection: 'review' });
 ```
 
-Set `nativeState: 'attach'` only when a review file must carry Plate-only state
-for a trusted exact round trip. Ordinary Word export contains the visible Word
-document without an embedded Plate document.
+A Word file contains the visible Word document, its comments, and its tracked
+revisions. Save Plate JSON beside it when another Plate editor must recover
+named roots, metadata, or exact authored change records.
 
-See [DOCX](/docs/docx) for cancellation, package limits, comments, retained
-source, and authored trust.
+See [DOCX](/docs/docx) for cancellation, package limits, comments, and retained
+source.
 
 ## Handle results
 

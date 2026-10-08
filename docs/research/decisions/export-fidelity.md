@@ -26,11 +26,10 @@ related:
 The [adversarial audit feedback](../../plans/artifacts/2026-09-27-document-conversion-audit-feedback/feedback.md)
 retains document-first format ownership but reopens the blanket conversion
 closure claim. Detached HTML serialization already asserts its projection;
-that proposed repair is a false positive. DOCX cancellation needs repair, and
-ordinary Word review should be assessed separately from exact native-state
-round trips before changing attachment policy. Native import has a live reader
-and tested restoration semantics, so wholesale deletion is not accepted as
-dead-code cleanup. Existing artifact and performance receipts retain their
+that proposed repair is a false positive. DOCX cancellation needs repair. That
+round kept DOCX native-state attachment pending a decision on exact single-file
+round trips; the [2026-10-06 documents plan](../../plans/2026-10-06-documents-review.md)
+found no such job and deleted it. Existing artifact and performance receipts retain their
 original, bounded claims.
 
 **Use document-first conversion at the existing schema and format owners.** The
@@ -91,7 +90,7 @@ performance proof.
   clean interchange output, so static class/data stripping flags and hidden
   authored review envelopes do not exist.
 - DOCX retains its lazy standalone entrypoint, explicit comments, diagnostics,
-  source artifact and native-review guarantees. Required Word semantics live in
+  source artifact and Word revision guarantees. Required Word semantics live in
   package and feature mappings rather than a copied React correctness kit. The
   measured hybrid backend remains the implementation.
 - Copied UI owns projection choice, CSS/document shell, asset policy, filenames,
@@ -129,8 +128,9 @@ contract.
 The September 15 [documents decision](documents-conversion-fidelity.md) already
 identified direct OOXML as a comparison candidate. Retain its source lease,
 one canonical import/export result, independent Word paste owner, bounded
-package work and correspondence checks. No new source comparison proves that a
-direct encoder is faster or more faithful than Plate's hybrid for every case.
+package work and the lease's document, comment and schema checks. No new
+source comparison proves that a direct encoder is faster or more faithful than
+Plate's hybrid for every case.
 
 The earlier [presentation move](../../plans/2026-09-04-move-docx-export-presentation-to-registry.md)
 also remains valid: optional themes belong to the registry, while required
@@ -138,10 +138,11 @@ conversion mechanics belong to the package. Promoting mandatory Word mappings
 enforces that distinction; it does not restore an implicit package stylesheet.
 
 Review preservation is format-specific. Exact Plate review state is canonical
-authored JSON; Word review is DOCX revisions plus its format-owned authored
-part. HTML and Markdown carry visible semantic syntax only. Their hidden
-envelopes and `review` projection duplicate persistence, create competing file
-authorities, and have no production caller. Capture promised comments and
+authored JSON; Word review is DOCX revisions and comments. DOCX, HTML and
+Markdown carry no hidden authored document. Their hidden envelopes were
+deleted, and HTML and Markdown also lost their `review` projections, because
+they duplicated persistence, created competing file authorities, and had no
+production caller. Capture promised comments and
 converter settings alongside the document; a block array alone may exclude
 external thread state. Deliberate filters, unsupported content and conflicts
 need distinct diagnostics at each format owner.

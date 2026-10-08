@@ -194,16 +194,14 @@ export async function downloadEditorDocx() {
 
 `accepted` 忽略待定变更，`proposed` 应用待定变更，`review` 写入 Word tracked-change 标记。Accepted 与 proposed 导出会警告被省略的 pending change，以及被解析到一侧的冲突。只要存在冲突，review 导出就返回 `ok: false` 和 `authored-conflict` 错误，因为 Word 修订无法忠实表达该状态。
 
-普通 Word 输出默认不包含 Plate 专有文档状态。只有可信的精确往返需要该状态时，才在 `review` 导出中设置 `nativeState: "attach"`：
+Review 文件只包含 Word 能显示的内容：文本、批注，以及带作者信息的修订。导入时，这些修订会恢复为 authored change。命名根、文档元数据，以及 authored change 的精确记录（例如原始 ID）不会写入文件。需要保留它们时，按 [Serializing](/docs/serializing) 所述，把 authored JSON 文档与文件一起保存：
 
 ```tsx
-const result = await exportDocx(editor, {
-  nativeState: "attach",
-  projection: "review",
-});
-```
+import { parseAuthoredDocument, projectAuthoredReview } from "platejs/authored";
 
-导入器始终先转换 Word 可见包，再检查附加的 envelope。只有 envelope 版本、已安装 schema、所有包部件摘要和 accepted/proposed Word 投影全部匹配时，才恢复原生元数据和命名根。文件被编辑或损坏时，导入器使用 Word 派生文档，并返回 `native-data-ignored` diagnostic。
+const json = JSON.stringify(projectAuthoredReview(editor.read.value()).review);
+const document = parseAuthoredDocument(json);
+```
 
 ### 内容损失
 
@@ -230,7 +228,7 @@ const result = await exportDocx(editor, {
 - 无法获取的图片；
 - 其他格式的图片。
 
-返回文件前，导出会使用与保留 source 相同的被动词汇检查写出的包；超出该范围的输出会被拒绝，并返回 `invalid-package` 错误。
+返回生成的文件前，导出会使用与保留 source 相同的被动词汇检查写出的包；超出该范围的输出会被拒绝，并返回 `invalid-package` 错误。未变更的 source-aware 导出直接返回保留的文件，该文件在导入时已通过同一检查。
 
 ### 使用源文件导出
 
@@ -239,9 +237,9 @@ const result = await exportDocx(editor, {
 精确检查不通过时，`exportDocx` 会重新生成完整正文。内部关系闭合、可达且无名称冲突时，会保留下列 source 单元：
 
 - 单节文档的页眉和页脚，以及它们引用的图片和超链接；
-- 从包根关系文件可达的包级子图。
+- 自定义文档属性。
 
-重新生成的包会省略 source 正文 XML、只由正文引用的部件（例如脚注和正文图片），以及多节文档的页眉和页脚。Diagnostic 会说明 source 被重写的原因，并标识每个被省略的 source 部件。
+重新生成的包带有自己的核心文档属性，并省略 source 正文 XML、只由正文引用的部件（例如脚注和正文图片）、多节文档的页眉和页脚，以及 source 的核心属性、扩展属性和包缩略图：作者、标题和创建日期等核心属性，统计页数和字数、也包含公司名称等信息的扩展属性，以及展示正文的缩略图。Diagnostic 会说明 source 被重写的原因，并标识每个被省略的 source 部件。链接到正文文本的自定义属性会保留 source 文件中缓存的值，即使编辑已改变该文本。
 
 需要重新生成时，省略 `comments` 表示不生成批注。编辑后若要保留批注，请显式传入应用持有的当前批注。导入的批注范围不会自动重定位。
 
@@ -279,7 +277,7 @@ static mapping。应用提供展示 CSS；需要不同 wrapper 时可以传入�
 | 单节文档的页眉和页脚                          | 使用 source 导出时保留安全且闭合的子图，但不映射到编辑器文档                |
 | 多节页眉和页脚、脚注和尾注                    | 检查并限制对应包部件；编辑 source 后省略并返回 diagnostic                    |
 | 字段、文本框、形状、图表、SmartArt 和嵌入对象 | 转换可访问时保留纯文本，否则报告不支持或省略的内容                         |
-| Plate 命名根和元数据                          | 普通 Word 输出会省略；仅当 `nativeState: "attach"` 写入可信对应 part 时保留 |
+| Plate 命名根和元数据                          | Word 输出会省略并返回 `lossy-content` 警告；保存在 authored JSON 中 |
 | 自定义 Plate、数学、emoji 和媒体节点          | 使用已配置的静态序列化器；不支持的输出返回 diagnostic                      |
 
 ## API 参考
@@ -301,7 +299,7 @@ importDocx(
 ): Promise<DocxImportResult>
 ```
 
-`DocxImportOptions` 必须包含 `plugins`，并可包含 `schema`、`authoredTrust`、
+`DocxImportOptions` 必须包含 `plugins`，并可包含 `schema`、
 协作式 `signal`、`lossPolicy`、部分 `limits` 覆盖和 `retainSource`。Import 会在
 第一次 await 前捕获 detached target，之后不会读取 live editor 或 mutable plugin
 store。每个限制都必须是正的安全整数。字面量 `retainSource: true` 会在成功结果中
@@ -352,7 +350,6 @@ exportDocx(
 | `margins`               | `Margins`                                | 以二十分之一磅为单位的页边距     |
 | `orientation`           | `'landscape' \| 'portrait'`              | 页面方向                         |
 | `pageSize`              | `PageSize`                               | 以二十分之一磅为单位的页面尺寸   |
-| `nativeState`           | `'attach'`                               | 仅在 review 导出中附加 Plate 原生状态 |
 | `signal`                | `AbortSignal`                            | 协作式取消信号                   |
 | `source`                | `DocxSource \| null`                     | 用于精确或安全导出的 source 对应关系 |
 | `stylesheet`            | `string`                                 | DOCX 转换前应用的 CSS            |

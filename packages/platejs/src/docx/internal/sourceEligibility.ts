@@ -1,10 +1,6 @@
 import type { SaxesTagNS } from 'saxes';
 
 import { decideUrl } from '../../internal/utils/urlPolicy';
-import {
-  AUTHORED_DOCX_CONTENT_TYPE,
-  AUTHORED_DOCX_RELATIONSHIP,
-} from './correspondence';
 import type { BoundedDocxPackage } from './docxPackage';
 import {
   contentTypeFor,
@@ -194,23 +190,59 @@ const RELATIONSHIPS_CONTENT_TYPE =
  */
 type RelationshipVocabulary = ReadonlyMap<string, readonly string[]>;
 
-const PACKAGE_VOCABULARY: RelationshipVocabulary = new Map([
+/**
+ * What a source-aware export does with a retained root part once it
+ * regenerates the document: `carry` copies a part independent of the body,
+ * `drop` omits a part and reports it unless a kept header or footer still
+ * carries it, and `regenerate` marks the main document, whose rewrite
+ * `source-rewritten` reports.
+ */
+type RootPartOnEdit = 'carry' | 'drop' | 'regenerate';
+
+const ROOT_PARTS: ReadonlyMap<
+  string,
+  Readonly<{ contentTypes: readonly string[]; onEdit: RootPartOnEdit }>
+> = new Map([
   [
     `${OFFICE_RELATIONSHIPS}/custom-properties`,
-    ['application/vnd.openxmlformats-officedocument.custom-properties+xml'],
+    {
+      contentTypes: [
+        'application/vnd.openxmlformats-officedocument.custom-properties+xml',
+      ],
+      onEdit: 'carry',
+    },
   ],
   [
     `${OFFICE_RELATIONSHIPS}/extended-properties`,
-    ['application/vnd.openxmlformats-officedocument.extended-properties+xml'],
+    {
+      contentTypes: [
+        'application/vnd.openxmlformats-officedocument.extended-properties+xml',
+      ],
+      onEdit: 'drop',
+    },
   ],
-  [OFFICE_DOCUMENT, [MAIN_DOCUMENT]],
+  [OFFICE_DOCUMENT, { contentTypes: [MAIN_DOCUMENT], onEdit: 'regenerate' }],
   [
     `${PACKAGE_RELATIONSHIPS}/metadata/core-properties`,
-    ['application/vnd.openxmlformats-package.core-properties+xml'],
+    {
+      contentTypes: [
+        'application/vnd.openxmlformats-package.core-properties+xml',
+      ],
+      onEdit: 'drop',
+    },
   ],
-  [`${PACKAGE_RELATIONSHIPS}/metadata/thumbnail`, RASTER_TYPES],
-  [AUTHORED_DOCX_RELATIONSHIP, [AUTHORED_DOCX_CONTENT_TYPE]],
+  [
+    `${PACKAGE_RELATIONSHIPS}/metadata/thumbnail`,
+    { contentTypes: RASTER_TYPES, onEdit: 'drop' },
+  ],
 ]);
+
+const PACKAGE_VOCABULARY: RelationshipVocabulary = new Map(
+  Array.from(ROOT_PARTS, ([type, { contentTypes }]) => [type, contentTypes])
+);
+
+export const docxRootPartOnEdit = (type: string): RootPartOnEdit | undefined =>
+  ROOT_PARTS.get(type)?.onEdit;
 
 const CONTENT_VOCABULARY: RelationshipVocabulary = new Map([
   [HYPERLINK, []],
@@ -514,8 +546,7 @@ export const findDocxSourceViolations = (
       violations.push(markup);
     } else if (
       markup === undefined &&
-      !RASTER_SIGNATURES.has(contentType ?? '') &&
-      contentType !== AUTHORED_DOCX_CONTENT_TYPE
+      !RASTER_SIGNATURES.has(contentType ?? '')
     ) {
       // An XML content type on a part the reader did not inspect as XML.
       violations.push(

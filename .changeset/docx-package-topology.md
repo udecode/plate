@@ -12,7 +12,7 @@ Compose the operations needed by the application:
 - `importDocx(source, { plugins, ...options })` from `platejs/docx/import` compiles a detached target without activating plugins, bounds untrusted ZIP/XML work, and returns either one complete editor document with rich comment facts and structured diagnostics or an explicit failure.
 - `exportDocx(editor, options)` from `platejs/docx/export` captures one editor revision before asynchronous work and returns an explicit accepted, proposed, or review DOCX result with structured diagnostics. Accepted and proposed exports warn about pending changes and conflicts; review export refuses conflicts that Word revisions cannot represent faithfully.
 
-Preserve supported Word revisions as authored changes and validate an exact native review envelope against every package part and visible projection before restoring it. Ordinary review export omits Plate-native state; set `nativeState: 'attach'` only for a trusted exact-round-trip review file. Keep comment storage and file download behavior application-owned.
+Preserve supported Word revisions as authored changes. Review export writes Word revisions and comments only; save the authored JSON document from `projectAuthoredReview` beside the file to keep exact review state. Keep comment storage and file download behavior application-owned.
 
 Use the pure `projectAuthoredDocument`, `projectAuthoredReview`, and `projectAuthoredRange` helpers from `platejs/authored` to project detached complete documents, inspect review markup and property changes, and map ranges without constructing an editor runtime.
 

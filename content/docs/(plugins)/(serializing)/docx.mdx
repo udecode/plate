@@ -196,18 +196,14 @@ export async function downloadEditorDocx() {
 
 Choose `accepted` to omit pending changes, `proposed` to apply them, or `review` to write Word tracked-change markup. Accepted and proposed exports warn about omitted pending changes and conflicts resolved to one side. A review export with any conflict returns `ok: false` and an `authored-conflict` error because Word revisions cannot represent that state faithfully.
 
-Visible Word output omits Plate-only document state by default. Set
-`nativeState: "attach"` on a `review` export only when the file must carry a
-correspondence-bound Plate envelope for an exact trusted round trip:
+A review file contains what Word displays: text, comments, and tracked revisions with their authors. Importing it restores those revisions as authored changes. Export does not write named roots, document metadata, or exact authored change records, such as their original IDs, to the file. To keep them, save the authored JSON document beside the file, as [Serializing](/docs/serializing) describes:
 
 ```tsx
-const result = await exportDocx(editor, {
-  nativeState: "attach",
-  projection: "review",
-});
-```
+import { parseAuthoredDocument, projectAuthoredReview } from "platejs/authored";
 
-The importer always converts the Word-visible package before considering an attached envelope. It restores native metadata and named roots only when the envelope version, installed schema, package-part digests, and accepted/proposed Word projections all match. An edited or corrupt package falls back to the Word-derived document with a `native-data-ignored` diagnostic.
+const json = JSON.stringify(projectAuthoredReview(editor.read.value()).review);
+const document = parseAuthoredDocument(json);
+```
 
 ### Content loss
 
@@ -234,7 +230,7 @@ Images are embedded as PNG, JPEG, GIF, or BMP. Set `allowRemoteImages: true` to 
 - an image that cannot be fetched;
 - an image in any other format.
 
-Before returning a file, export checks the written package against the same passive vocabulary that retained sources use. Output outside it is withheld with an `invalid-package` error.
+Before returning a generated file, export checks the written package against the same passive vocabulary that retained sources use. Output outside it is withheld with an `invalid-package` error. An unchanged source-aware export returns the retained file, which passed the same check when it was imported.
 
 ### Source-aware export
 
@@ -243,9 +239,9 @@ With a valid `source`, an unchanged `review` export returns the admitted file by
 If an exact check fails, `exportDocx` regenerates the complete document body. It keeps these source units when their internal relationships are closed, reachable, and nonconflicting:
 
 - headers and footers from a document with one section, including their images and hyperlinks;
-- package-level subgraphs reached from the root relationships file.
+- custom document properties.
 
-The regenerated package omits source body XML, body-only parts such as footnotes and body images, and headers and footers from a document with multiple sections. Diagnostics report why the source was rewritten and identify each omitted source part.
+The regenerated package has its own core document properties. It omits source body XML, body-only parts such as footnotes and body images, and headers and footers from a document with multiple sections. It also omits the source core and extended properties and the package thumbnail: the core properties, such as the author, title and creation date, the extended properties, which count pages and words and hold details such as the company name, and the thumbnail, which pictures the body. Diagnostics report why the source was rewritten and identify each omitted source part. A custom property linked to body text keeps the value cached in the source file, even when the edit changed that text.
 
 When regeneration is required, omitted `comments` means that no comments are generated. Pass the current app-owned comment set explicitly to retain comments after an edit. Imported comment ranges are not relocated automatically.
 
@@ -284,7 +280,7 @@ and may pass a custom root `component` when it needs a different wrapper.
 | Single-section headers and footers                                | Keep safe closed source subgraphs during source-aware export; do not map them into the editor document      |
 | Multiple-section headers and footers, footnotes, and endnotes     | Inspect and bound their package parts; omit them from edited source-aware output with diagnostics           |
 | Fields, text boxes, shapes, charts, SmartArt, and embedded objects | Keep reachable plain text when conversion exposes it; report unsupported or omitted content                 |
-| Plate named roots and metadata                                     | Omit from ordinary Word output; preserve only when `nativeState: "attach"` writes a trusted corresponding part |
+| Plate named roots and metadata                                     | Omit from Word output with a `lossy-content` warning; keep them in authored JSON                            |
 | Custom Plate, math, emoji, and media nodes                         | Use their configured static serializers; unsupported output produces diagnostics                            |
 
 ## API reference
@@ -306,8 +302,8 @@ importDocx(
 ): Promise<DocxImportResult>
 ```
 
-`DocxImportOptions` requires `plugins` and accepts `schema`, `authoredTrust`, a
-cooperative `signal`, `lossPolicy`, partial `limits` overrides, and
+`DocxImportOptions` requires `plugins` and accepts `schema`, a cooperative
+`signal`, `lossPolicy`, partial `limits` overrides, and
 `retainSource`. Import captures that detached target before its first await and
 never reads a live editor or mutable plugin store. Every limit must be a
 positive safe integer. Literal `retainSource: true` conditionally adds
@@ -359,7 +355,6 @@ exportDocx(
 | `margins`               | `Margins`                                | Page margins in twentieths of a point              |
 | `orientation`           | `'landscape' \| 'portrait'`              | Page orientation                                   |
 | `pageSize`              | `PageSize`                               | Page dimensions in twentieths of a point           |
-| `nativeState`           | `'attach'`                               | Attach Plate native state to a review export       |
 | `signal`                | `AbortSignal`                            | Cooperative cancellation signal                    |
 | `source`                | `DocxSource \| null`                     | Retained source correspondence for exact or safe export |
 | `stylesheet`            | `string`                                 | CSS applied before DOCX conversion                 |

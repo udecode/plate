@@ -1,0 +1,6 @@
+lead_key	packet_id	owner	test_or_benchmark	verification_command	decision
+docx-native-state:no-surveyed-editor-embeds-whole-document-native-state-in-docx:source-inventory	plan-packet:2026-10-06-documents-review	best-api-review (docs/plans/2026-10-06-documents-review.md)	none	none	supports the Pursue to hard-cut the DOCX envelope
+docx-native-state:per-part-digests-are-unique-to-plate:inventory	plan-packet:2026-10-06-documents-review	best-api-review (docs/plans/2026-10-06-documents-review.md)	none	none	supports the cut: byte-bound correspondence restores only unchanged packages
+docx-native-state:sidecar-beside-docx-not-inside:superdoc-export-api	plan-packet:2026-10-06-documents-review	best-api-review (docs/plans/2026-10-06-documents-review.md)	none	none	supports canonical authored JSON beside the file as the exact-state path
+docx-native-state:save-copy-vs-export-copy-split:eigenpal-preserveOnExport	plan-packet:2026-10-06-documents-review	Plan playbook on docs/plans/2026-10-06-documents-review.md	regression: an edited source-aware export carries no stale derived part	bun test in packages/platejs on the plan phase test	prior art for closing the stale-copy class at the overlay
+docx-native-state:edits-invalidate-byte-bound-sidecars:opendoc-signature-drop	no-code-decision	best-api-review	none	none	supporting evidence only

@@ -147,51 +147,6 @@ describe('importDocx', () => {
     }
   });
 
-  it('reports the missing hash capability for native correspondence', async () => {
-    const { importDocx } = await loadModule();
-    const hash = '0'.repeat(64);
-    const source = await createDocx(undefined, {
-      'editor/authored.json': JSON.stringify({
-        document: {
-          children: [{ children: [{ text: 'Hello' }], type: 'paragraph' }],
-        },
-        parts: [],
-        projections: { accepted: hash, proposed: hash },
-        version: 1,
-      }),
-    });
-    const cryptoDescriptor = Object.getOwnPropertyDescriptor(
-      globalThis,
-      'crypto'
-    );
-
-    convertToHtmlMock.mockImplementation(async () => ({
-      messages: [],
-      value: '<p>Hello</p>',
-    }));
-    Object.defineProperty(globalThis, 'crypto', {
-      configurable: true,
-      value: undefined,
-    });
-
-    try {
-      await expect(
-        importDocx(source, {
-          authoredTrust: { kind: 'same-application' },
-          plugins: [],
-        })
-      ).rejects.toThrow(
-        'Authored DOCX correspondence verification requires Web Crypto SHA-256 support.'
-      );
-    } finally {
-      if (cryptoDescriptor) {
-        Object.defineProperty(globalThis, 'crypto', cryptoDescriptor);
-      } else {
-        Reflect.deleteProperty(globalThis, 'crypto');
-      }
-    }
-  });
-
   it('retains an eligible source only when requested and releases it idempotently', async () => {
     const { importDocx } = await loadModule();
     convertToHtmlMock.mockImplementation(async () => ({

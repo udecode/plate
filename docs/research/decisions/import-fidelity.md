@@ -21,7 +21,7 @@ related:
 
 # Document import and conversion fidelity
 
-**Audit of 2026-10-04.** Stop. The adopted cross-format import contract holds in live source, and its two remaining outliers, CSV deserialize and the DOCX authoredTrust mode, already have Pursue verdicts in the csv and documents audits. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-imports-audit` hold the evidence.
+**Audit of 2026-10-04.** Stop. The adopted cross-format import contract holds in live source. Its remaining outlier, CSV deserialize, has a Pursue verdict in the csv audit; the [2026-10-06 documents plan](../../plans/2026-10-06-documents-review.md) deleted the other outlier, the DOCX `authoredTrust` mode. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-imports-audit` hold the evidence.
 
 The [adversarial audit feedback](../../plans/artifacts/2026-09-27-document-conversion-audit-feedback/feedback.md)
 reopened implementation closure for HTML transfer parity, fragment admission,
@@ -29,7 +29,7 @@ observable recovery, finalized AI output, DOCX cancellation and comment adoption
 The [corrections](../../plans/2026-09-27-document-conversion-architecture-corrections.md)
 and [closure repairs](../../plans/2026-09-27-document-conversion-closure-repairs.md)
 adopt those repairs. Public naming and format ownership remain settled;
-diagnostic deletion and DOCX native-state deletion are not accepted.
+diagnostic deletion is not accepted. DOCX native state, kept by that round, was deleted on 2026-10-06.
 
 The [opt-in paste-result review](../review-records/2026-09-29-imports-opt-in-paste-result.json)
 retains format-owned loss classification, explicit conversion diagnostics and
@@ -209,9 +209,9 @@ remain available and diagnose omitted model facts.
 Exact review state uses the canonical authored document:
 `JSON.stringify(snapshot.review)` writes its already JSON-compatible model and
 `parseAuthoredDocument(json)` validates the read path. Do not add a parallel
-serializer or rename this to a codec. DOCX keeps its own authored package part,
-`DocxSource`, comments, limits, diagnostics, and package correspondence because
-Word revisions and retained source are real format jobs. HTML and Markdown do
+serializer or rename this to a codec. DOCX keeps `DocxSource`, comments, limits
+and diagnostics because Word revisions and retained source are real format jobs;
+like HTML and Markdown, it carries no hidden authored document. HTML and Markdown do
 not gain a universal retained-source sidecar. CSV remains table/plain-text
 ingress and needs a separate failure-semantics review.
 

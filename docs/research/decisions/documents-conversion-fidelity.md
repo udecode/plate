@@ -16,12 +16,11 @@ related:
   - ../review-scopes/documents.json
   - authored-change-ownership.md
   - clipboard-content-fitting.md
-  - ../open-questions/documents-conversion-proof.md
 ---
 
 # DOCX conversion fidelity and source authority
 
-**Audit of 2026-10-04.** Pursue. The September retained-source and canonical-conversion target is live, but DOCX still ships a hidden Plate envelope (nativeState, authoredTrust, editor/authored.json). The envelope has no production caller and restores only from byte-identical packages. It is a second persistence channel that the hidden-native-payload law forbids and that the September 26 cut already removed from HTML and Markdown. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and record `2026-10-04-documents-audit` hold the evidence.
+**Review of 2026-10-06.** Pursue, adopted. DOCX carries no hidden Plate envelope. The review deleted `nativeState`, `authoredTrust`, `DocxAuthoredTrust`, the `native-data-ignored` diagnostic and `editor/authored.json`. Import always derives the document from the visible Word package, and exact Plate review state persists as canonical authored JSON beside the file. The envelope had no production caller, restored only from byte-identical packages, and leaked edited-out text through source-aware export. The [review and plan](../../plans/2026-10-06-documents-review.md) hold the evidence; record `2026-10-04-documents-audit` gave the first Pursue.
 
 **The semantic converter and explicit retained-source path are adopted and
 implemented.** DOCX file conversion has one canonical import result, one
@@ -31,8 +30,7 @@ artifact for exact unchanged reuse and safe edited package overlay. Word
 clipboard fitting remains the separate `WordPastePlugin` job.
 
 The implementation uses a bounded hybrid pipeline: direct OOXML inspection
-owns package limits, revisions, comments, relationships, and sidecar
-correspondence; one configured Plate codec pass owns application schema. It
+owns package limits, revisions, comments, and relationships; one configured Plate codec pass owns application schema. It
 does not add a universal document engine, Office abstraction, retained package
 model, or public converter registry. `DocxSource` retains the admitted Blob and
 a private immutable semantic baseline outside editor and document state. The
@@ -60,9 +58,9 @@ export.
    transforms Word clipboard HTML/RTF. The design target is an explicit name
    such as `WordPastePlugin` under a paste-specific entrypoint, while file
    import and export retain lazy entrypoints.
-5. **Delete unconditional native-sidecar authority.** `editor/authored.json`
-   may supplement a verified corresponding Word package. It cannot override
-   changed Word content merely because its JSON shape is valid.
+5. **Delete native-sidecar authority.** A DOCX file carries only what Word
+   displays. Exact Plate state persists as canonical authored JSON, and import
+   derives the document from visible OOXML only.
 6. **Delete the parallel review serializer.** Authored owns canonical
    projections and before/after properties; installed codecs own Plate schema;
    DOCX owns Word encoding. A second literal tag/mark map is not a durable
@@ -80,21 +78,22 @@ different source material and owners.
 ```ts
 const model = useModelEditor();
 
-const imported = await importDocx(model, bytes, {
+const imported = await importDocx(bytes, {
   limits,
+  plugins: BaseEditorKit,
   retainSource: true,
   signal,
 });
 
 if (imported.ok) {
   model.update.value.replace(imported.document);
-  const exported = await exportToDocx(model, {
+  const exported = await exportDocx(model, {
     ...options,
     projection: "review",
     source: imported.source,
   });
 
-  imported.source.dispose();
+  imported.source?.dispose();
 }
 
 const plugins = [WordPastePlugin];
@@ -143,10 +142,11 @@ Exact original bytes require the complete matching schema identity, unchanged
 review document, review projection, unchanged or unspecified imported comments,
 and no explicit package metadata or page-layout override. Exact reuse bypasses
 rendering and ZIP work. Edited export regenerates `word/document.xml`, then
-preserves only safe relationship-closed root graphs and one-section
-header/footer graphs. It omits active content, signatures, external
-relationships, conflicts, unreachable parts, and ambiguous multi-section
-headers or footers with structured diagnostics.
+preserves only custom-properties root graphs and one-section header/footer
+graphs; it omits the source core and extended properties and the thumbnail.
+It omits active content, signatures, external relationships, conflicts,
+unreachable parts, and ambiguous multi-section headers or footers with
+structured diagnostics.
 
 Retained bytes remain outside `EditorDocumentValue`, editor metadata, plugin
 state, and generic persistence. No `DocxSession` is warranted: Plate already
@@ -224,11 +224,12 @@ byte reuse through the real file picker/download flow. LibreOffice headlessly
 renders an edited overlay, re-saves it as DOCX, and Plate reimports the native-
 saved file with the edit intact.
 
-The retained-source production benchmark passes 506 assertions across normal,
-large, stress, and pathological cohorts. Retained import p95 ranges from 30.23
-to 943.40 ms within frozen matched-baseline budgets; exact export p95 ranges
-from 0.47 to 1.77 ms; edited overlay p95 ranges from 19.92 to 982.70 ms while
-preserving 8 to 900 closed root graphs. The content-free receipt is
+The retained-source production benchmark passes 664 assertions across normal,
+large, stress, and pathological cohorts that preserve 8 to 900 images in one
+header graph. Retained import p95 ranges from 21.43 to 945.36 ms within frozen
+matched-baseline budgets; exact export p95 ranges from 1.83 to 30.93 ms; edited
+overlay p95 ranges from 17.27 to 958.15 ms. One measured run on a shared host
+produced these numbers; the content-free receipt is
 `benchmarks/editor/benchmarks/results/plate-docx-retained-source-latest.json`.
 
 The proof does not certify Microsoft Word, arbitrary package-preserving

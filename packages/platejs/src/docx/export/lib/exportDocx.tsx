@@ -32,10 +32,6 @@ import { exportHtmlToDocx } from './exportHtmlToDocx.internal';
 import type { Margins, PageSize } from './internal/types';
 import { checkDocxOutput, prepareDocxOutput } from './outputSafety';
 import {
-  addAuthoredDocxEnvelope,
-  removeAuthoredDocxEnvelope,
-} from './packageArtifacts';
-import {
   applyReviewProjection,
   createReviewProjection,
   projectReviewRange,
@@ -71,8 +67,6 @@ export type DocxExportOptions = Readonly<{
   orientation?: 'landscape' | 'portrait';
   /** Page size in twentieths of a point. */
   pageSize?: PageSize;
-  /** Attach Plate's correspondence-bound native review state. Review projection only. */
-  nativeState?: 'attach';
   /** Visible document projection to export. */
   projection: 'accepted' | 'proposed' | 'review';
   /** Cooperative cancellation signal. */
@@ -210,8 +204,7 @@ const captureExport = (
 };
 
 const nativeOnlyDiagnostics = (
-  document: EditorDocumentValue,
-  nativeState: DocxExportOptions['nativeState']
+  document: EditorDocumentValue
 ): readonly DocxDiagnostic[] => {
   const diagnostics: DocxDiagnostic[] = [];
 
@@ -219,10 +212,7 @@ const nativeOnlyDiagnostics = (
     diagnostics.push({
       code: 'lossy-content',
       feature: 'named-root',
-      message:
-        nativeState === 'attach'
-          ? `Named root ${root} is preserved only in attached Plate native state.`
-          : `Named root ${root} is omitted from DOCX output.`,
+      message: `Named root ${root} is omitted from DOCX output.`,
       root,
       severity: 'warning',
     });
@@ -235,10 +225,7 @@ const nativeOnlyDiagnostics = (
     diagnostics.push({
       code: 'lossy-content',
       feature: 'document-metadata',
-      message:
-        nativeState === 'attach'
-          ? 'Plate document metadata is preserved only in attached Plate native state.'
-          : 'Plate document metadata is omitted from DOCX output.',
+      message: 'Plate document metadata is omitted from DOCX output.',
       severity: 'warning',
     });
   }
@@ -281,11 +268,27 @@ class DocxGenerationError extends Error {
   }
 }
 
-type SourceExportResolution = Readonly<{
-  diagnostics: readonly DocxDiagnostic[];
-  exact: boolean;
-  lease?: DocxSourceLease;
-}>;
+type SourceExportResolution =
+  | Readonly<{ kind: 'exact'; lease: DocxSourceLease }>
+  | Readonly<{
+      diagnostics: readonly DocxDiagnostic[];
+      kind: 'render';
+      lease?: DocxSourceLease;
+    }>;
+
+const renderWithoutSource = (
+  diagnostics: readonly DocxDiagnostic[]
+): SourceExportResolution =>
+  Object.freeze({ diagnostics: Object.freeze(diagnostics), kind: 'render' });
+
+const omittedCommentsDiagnostic: DocxDiagnostic = Object.freeze({
+  code: 'source-part-omitted',
+  message:
+    'Source comments were omitted because regenerated output requires the current comment set.',
+  part: 'word/comments.xml',
+  reason: 'invalidated',
+  severity: 'warning',
+});
 
 const sourceUnavailableDiagnostic = (
   reason: 'disposed' | 'invalid' | 'schema-mismatch'
@@ -302,17 +305,27 @@ const resolveSourceExport = (
   editor: Editor,
   capture: ExportCapture,
   options: DocxExportOptions,
-  comments: readonly DocxComment[],
-  commentsSupplied: boolean,
-  lease: DocxSourceLease
+  comments: readonly DocxComment[]
 ): SourceExportResolution => {
+  if (!options.source) return renderWithoutSource([]);
+  const acquisition = acquireDocxSource(options.source);
+
+  if (!acquisition.ok) {
+    return renderWithoutSource([
+      sourceUnavailableDiagnostic(acquisition.reason),
+    ]);
+  }
+  const { lease } = acquisition;
+  const omitted =
+    options.comments === undefined && lease.comments.length > 0
+      ? [omittedCommentsDiagnostic]
+      : [];
+
   if (!docxSourceSchemaMatches(lease.schema, editor.read.schema.identity())) {
-    return Object.freeze({
-      diagnostics: Object.freeze([
-        sourceUnavailableDiagnostic('schema-mismatch'),
-      ]),
-      exact: false,
-    });
+    return renderWithoutSource([
+      sourceUnavailableDiagnostic('schema-mismatch'),
+      ...omitted,
+    ]);
   }
   const reasons: Array<
     Extract<DocxDiagnostic, { code: 'source-rewritten' }>['reason']
@@ -322,7 +335,7 @@ const resolveSourceExport = (
   if (!DocumentChange.between(lease.document, capture.snapshot.review).empty) {
     reasons.push('document-changed');
   }
-  if (commentsSupplied && !dequal(comments, lease.comments)) {
+  if (options.comments !== undefined && !dequal(comments, lease.comments)) {
     reasons.push('comments-changed');
   }
   if (
@@ -333,10 +346,11 @@ const resolveSourceExport = (
   ) {
     reasons.push('output-options-changed');
   }
+  if (reasons.length === 0) return Object.freeze({ kind: 'exact', lease });
 
   return Object.freeze({
-    diagnostics: Object.freeze(
-      reasons.map((reason) => ({
+    diagnostics: Object.freeze([
+      ...reasons.map((reason) => ({
         code: 'source-rewritten' as const,
         message: `The retained DOCX source cannot be returned unchanged because ${
           reason === 'document-changed'
@@ -349,9 +363,10 @@ const resolveSourceExport = (
         }.`,
         reason,
         severity: 'warning' as const,
-      }))
-    ),
-    exact: reasons.length === 0,
+      })),
+      ...omitted,
+    ]),
+    kind: 'render',
     lease,
   });
 };
@@ -427,14 +442,6 @@ export async function exportDocx(
   ) {
     throw new TypeError('DOCX export requires an explicit projection.');
   }
-  if (options.nativeState !== undefined && options.nativeState !== 'attach') {
-    throw new TypeError('nativeState must be "attach" when provided.');
-  }
-  if (options.nativeState === 'attach' && options.projection !== 'review') {
-    throw new TypeError(
-      'Plate native state can be attached only to review DOCX output.'
-    );
-  }
   if (
     options.lossPolicy !== undefined &&
     options.lossPolicy !== 'allow' &&
@@ -469,91 +476,31 @@ export async function exportDocx(
       ok: false,
     });
   }
-  const sourceAcquisition = options.source
-    ? acquireDocxSource(options.source)
-    : undefined;
-  const sourceResolution: SourceExportResolution = options.source
-    ? sourceAcquisition?.ok
-      ? resolveSourceExport(
-          editor,
-          capture,
-          options,
-          comments,
-          options.comments !== undefined,
-          sourceAcquisition.lease
-        )
-      : Object.freeze({
-          diagnostics: Object.freeze([
-            sourceUnavailableDiagnostic(sourceAcquisition?.reason ?? 'invalid'),
-          ]),
-          exact: false,
-        })
-    : Object.freeze({
-        diagnostics: Object.freeze([]),
-        exact: false,
-      });
+  const sourceResolution = resolveSourceExport(
+    editor,
+    capture,
+    options,
+    comments
+  );
 
-  if (sourceAcquisition?.ok && sourceResolution.exact) {
+  const { snapshot } = capture;
+  const nativeOnly = nativeOnlyDiagnostics(snapshot.review);
+
+  if (sourceResolution.kind === 'exact') {
     throwIfDocxAborted(options.signal);
-    if (options.nativeState === 'attach') {
-      const blob = await addAuthoredDocxEnvelope(
-        sourceAcquisition.lease.blob,
-        capture.snapshot.review,
-        options.signal
-      );
-
-      return Object.freeze({
-        blob,
-        diagnostics: Object.freeze([]),
-        ok: true,
-      });
-    }
-    const sanitized = await removeAuthoredDocxEnvelope(
-      sourceAcquisition.lease.blob,
-      options.signal
-    );
 
     return Object.freeze({
-      blob: sanitized.blob,
-      diagnostics: Object.freeze(
-        sanitized.removed
-          ? [
-              {
-                code: 'source-part-omitted' as const,
-                message:
-                  'Attached Plate native state was omitted by the export policy.',
-                part: 'editor/authored.json',
-                reason: 'invalidated' as const,
-                severity: 'warning' as const,
-              },
-            ]
-          : []
-      ),
+      blob: sourceResolution.lease.blob,
+      diagnostics: Object.freeze(nativeOnly),
       ok: true,
     });
   }
-  const { snapshot } = capture;
   const diagnostics: DocxDiagnostic[] = [
     ...sourceResolution.diagnostics,
-    ...nativeOnlyDiagnostics(snapshot.review, options.nativeState),
+    ...nativeOnly,
     ...snapshot.diagnostics,
     ...capture.diagnostics,
   ];
-
-  if (
-    sourceAcquisition?.ok &&
-    options.comments === undefined &&
-    sourceAcquisition.lease.comments.length > 0
-  ) {
-    diagnostics.push({
-      code: 'source-part-omitted',
-      message:
-        'Source comments were omitted because regenerated output requires the current comment set.',
-      part: 'word/comments.xml',
-      reason: 'invalidated',
-      severity: 'warning',
-    });
-  }
 
   try {
     const [rendered, commentBodies] = await Promise.all([
@@ -587,10 +534,6 @@ export async function exportDocx(
       throwIfDocxAborted(signal);
       blob = preservedBlob;
       diagnostics.push(...preservationDiagnostics);
-    }
-    if (options.nativeState === 'attach') {
-      blob = await addAuthoredDocxEnvelope(blob, snapshot.review, signal);
-      throwIfDocxAborted(signal);
     }
     const outputFailure = await checkDocxOutput(blob, signal);
 

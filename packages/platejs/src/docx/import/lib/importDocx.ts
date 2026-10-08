@@ -6,7 +6,6 @@ import mammoth from 'mammoth';
 import {
   createAuthoredImportedRevisionChange,
   createAuthoredReviewDocument,
-  parseAuthoredDocument,
   type AuthoredImportedRevision,
 } from '../../../authored';
 import {
@@ -35,16 +34,6 @@ import {
 } from '../../../lib/plugins/html/HtmlPlugin';
 import { cleanWordHtml } from '../../html/cleanWordHtml.internal';
 import { throwIfDocxAborted } from '../../internal/abort';
-import {
-  AUTHORED_DOCX_PART,
-  docxPartManifestMatches,
-  docxProjectionDigestsMatch,
-  getAuthoredDocxCanonicalPart,
-  getDocxPartManifest,
-  getDocxProjectionDigests,
-  parseAuthoredDocxEnvelope,
-  type DocxCorrespondenceAdapter,
-} from '../../internal/correspondence';
 import { retainDocxSource, type DocxSource } from '../../internal/source';
 import {
   describeDocxSourceViolation,
@@ -85,21 +74,8 @@ const TRACKED_REVISION_ELEMENTS = new Set([
   ...PROPERTY_REVISION_ELEMENTS,
 ]);
 
-export type DocxAuthoredTrust =
-  | Readonly<{ kind: 'same-application' }>
-  | Readonly<{
-      kind: 'signature';
-      verify: (
-        input: Readonly<{
-          canonicalPart: Uint8Array;
-          signature: string;
-        }>
-      ) => boolean;
-    }>;
-
 export type DocxImportOptions<TRetainSource extends boolean = false> =
   Readonly<{
-    authoredTrust?: DocxAuthoredTrust;
     limits?: Partial<DocxImportLimits>;
     lossPolicy?: 'allow' | 'reject';
     plugins: readonly RuntimePluginReference[];
@@ -151,7 +127,6 @@ export type DocxImportResult<TRetainSource extends boolean = false> =
 
 type DocxDomRealm = Readonly<{
   abortError: () => DOMException;
-  correspondence?: DocxCorrespondenceAdapter;
   decodeUtf8: (source: Uint8Array) => string;
   isHtmlElement: (value: unknown) => value is HTMLElement;
   parseHtml: (source: string) => Document;
@@ -178,11 +153,6 @@ type DocxImportTarget<V extends Value> = Readonly<{
     repairs: readonly DocxSchemaRepairDiagnostic[];
   }>;
   markerNonce: string;
-  parseAuthored: (value: unknown) => EditorDocumentValue<V>;
-  projectAuthored: (
-    document: EditorDocumentValue,
-    projection: 'accepted' | 'proposed'
-  ) => EditorDocumentValue;
   schemaIdentity: EditorSchemaIdentity;
   toHtml: typeof mammoth.convertToHtml;
 }>;
@@ -219,7 +189,6 @@ const captureDocxDomRealm = (): DocxDomRealm => {
   const AbortException = globalThis.DOMException;
   const HtmlElement = globalThis.HTMLElement;
   const textNodeType = globalThis.Node?.TEXT_NODE;
-  const subtle = globalThis.crypto?.subtle;
 
   if (
     !Parser ||
@@ -249,19 +218,9 @@ const captureDocxDomRealm = (): DocxDomRealm => {
   };
   const serializeXml = (document: Document) =>
     new Serializer().serializeToString(document);
-  const correspondence = subtle
-    ? Object.freeze({
-        digestSha256: (value: Uint8Array) =>
-          subtle.digest('SHA-256', Uint8Array.from(value)),
-        parseXml: (source: Uint8Array) =>
-          parseXml(decoder.decode(source), 'word/document.xml'),
-        serializeXml,
-      })
-    : undefined;
 
   return Object.freeze({
     abortError: () => new AbortException('Aborted', 'AbortError'),
-    ...(correspondence ? { correspondence } : {}),
     decodeUtf8: (source) => decoder.decode(source),
     isHtmlElement: (value: unknown): value is HTMLElement =>
       value instanceof HtmlElement,
@@ -293,22 +252,10 @@ const compileDocxImportTarget = <V extends Value>(
       plugins: [HtmlPlugin, ...capturedPlugins],
       ...(schema ? { schema } : {}),
     },
-    ({ editor, projectDocument, readState }) =>
+    ({ editor, readState }) =>
       readState((state) => {
         const editorSchema: EditorStateSchemaApi = state.schema;
         const decodeHtml = compileHtmlElementDecoder(editor, state);
-        const parseAuthored = (value: unknown) => {
-          const data = JSON.stringify(value);
-          const document = parseAuthoredDocument(data);
-
-          editorSchema.assertDocument(document);
-
-          return document as EditorDocumentValue<V>;
-        };
-        const projectAuthored = (
-          document: EditorDocumentValue,
-          projection: 'accepted' | 'proposed'
-        ) => projectDocument(document, projection).document;
 
         return Object.freeze({
           assertDocument: (document) => editorSchema.assertDocument(document),
@@ -332,8 +279,6 @@ const compileDocxImportTarget = <V extends Value>(
             });
           },
           markerNonce: createMarkerNonce(),
-          parseAuthored,
-          projectAuthored,
           schemaIdentity: editorSchema.identity(),
           toHtml,
         });
@@ -1348,138 +1293,6 @@ const unsupportedPackageDiagnostics = (
   return diagnostics;
 };
 
-const validateNativeDocument = (
-  target: DocxImportTarget<Value>,
-  value: unknown
-) => target.parseAuthored(value);
-
-const nativeDiagnostic = (
-  reason: Extract<DocxDiagnostic, { code: 'native-data-ignored' }>['reason']
-): DocxDiagnostic => ({
-  code: 'native-data-ignored',
-  message: `Native DOCX data was ignored because its ${
-    {
-      'digest-mismatch': 'package correspondence digest does not match',
-      invalid: 'envelope is invalid',
-      'projection-mismatch': 'visible projection does not match',
-      'signature-invalid': 'signature is invalid',
-      'signature-missing': 'signature is missing',
-      'unsupported-version': 'envelope version is unsupported',
-    }[reason]
-  }.`,
-  part: AUTHORED_DOCX_PART,
-  reason,
-  severity: 'warning',
-});
-
-const readCorrespondingNativeDocument = async (
-  target: DocxImportTarget<Value>,
-  pkg: BoundedDocxPackage,
-  diagnostics: DocxDiagnostic[],
-  trust: DocxAuthoredTrust,
-  visible: Readonly<{
-    accepted: EditorDocumentValue;
-    proposed: EditorDocumentValue;
-  }>,
-  signal?: AbortSignal
-) => {
-  const source = pkg.entries.get(AUTHORED_DOCX_PART);
-
-  if (!source) return null;
-  let envelope: ReturnType<typeof parseAuthoredDocxEnvelope>;
-
-  try {
-    envelope = parseAuthoredDocxEnvelope(source);
-  } catch (error) {
-    diagnostics.push(
-      nativeDiagnostic(
-        error instanceof RangeError ? 'unsupported-version' : 'invalid'
-      )
-    );
-
-    return null;
-  }
-  if (trust.kind === 'signature') {
-    if (!envelope.signature) {
-      diagnostics.push(nativeDiagnostic('signature-missing'));
-
-      return null;
-    }
-    if (
-      !trust.verify({
-        canonicalPart: getAuthoredDocxCanonicalPart(envelope),
-        signature: envelope.signature,
-      })
-    ) {
-      diagnostics.push(nativeDiagnostic('signature-invalid'));
-
-      return null;
-    }
-  }
-  let document: EditorDocumentValue;
-
-  try {
-    document = validateNativeDocument(target, envelope.document);
-  } catch {
-    diagnostics.push(nativeDiagnostic('invalid'));
-
-    return null;
-  }
-  const { correspondence } = target.dom;
-
-  if (!correspondence) {
-    throw new TypeError(
-      'Authored DOCX correspondence verification requires Web Crypto SHA-256 support.'
-    );
-  }
-  throwIfDocxAborted(signal, target.dom.abortError);
-  const manifest = await getDocxPartManifest(
-    pkg.entries,
-    correspondence.digestSha256
-  );
-
-  throwIfDocxAborted(signal, target.dom.abortError);
-
-  if (!docxPartManifestMatches(envelope.parts, manifest)) {
-    diagnostics.push(nativeDiagnostic('digest-mismatch'));
-
-    return null;
-  }
-  const projections = await getDocxProjectionDigests(
-    pkg.entries,
-    correspondence
-  );
-
-  throwIfDocxAborted(signal, target.dom.abortError);
-
-  if (!docxProjectionDigestsMatch(envelope.projections, projections)) {
-    diagnostics.push(nativeDiagnostic('projection-mismatch'));
-
-    return null;
-  }
-  let hiddenAccepted: EditorDocumentValue;
-  let hiddenProposed: EditorDocumentValue;
-
-  try {
-    hiddenAccepted = target.projectAuthored(document, 'accepted');
-    hiddenProposed = target.projectAuthored(document, 'proposed');
-  } catch {
-    diagnostics.push(nativeDiagnostic('invalid'));
-
-    return null;
-  }
-  if (
-    !dequal(hiddenAccepted.children, visible.accepted.children) ||
-    !dequal(hiddenProposed.children, visible.proposed.children)
-  ) {
-    diagnostics.push(nativeDiagnostic('projection-mismatch'));
-
-    return null;
-  }
-
-  return document;
-};
-
 const failed = (
   diagnostic: DocxErrorDiagnostic,
   diagnostics: readonly DocxDiagnostic[] = []
@@ -1545,7 +1358,6 @@ const importBoundedDocx = async <V extends Value>(
   pkg: BoundedDocxPackage,
   limits: DocxImportLimits,
   lossPolicy: 'allow' | 'reject',
-  authoredTrust: DocxAuthoredTrust | undefined,
   signal?: AbortSignal
 ): Promise<DocxImportOutcome<false, V>> => {
   const source = pkg.entries.get('word/document.xml');
@@ -1693,19 +1505,7 @@ const importBoundedDocx = async <V extends Value>(
     });
   });
 
-  const nativeDocument = authoredTrust
-    ? await readCorrespondingNativeDocument(
-        target,
-        pkg,
-        diagnostics,
-        authoredTrust,
-        { accepted, proposed },
-        signal
-      )
-    : null;
-
   throwIfDocxAborted(signal, target.dom.abortError);
-  if (nativeDocument) resultDocument = nativeDocument as EditorDocumentValue<V>;
   try {
     target.assertDocument(resultDocument);
   } catch {
@@ -1738,25 +1538,10 @@ const sourceIneligibleDiagnostic = (
     severity: 'warning' as const,
   });
 
-const captureAuthoredTrust = (
-  trust: DocxAuthoredTrust | undefined
-): DocxAuthoredTrust | undefined => {
-  if (!trust) return undefined;
-  if (trust.kind === 'same-application') {
-    return Object.freeze({ kind: 'same-application' });
-  }
-  if (trust.kind !== 'signature' || typeof trust.verify !== 'function') {
-    throw new TypeError('authoredTrust must be a supported DOCX trust policy.');
-  }
-
-  return Object.freeze({ kind: 'signature', verify: trust.verify });
-};
-
 const runDocxImport = async <V extends Value, TRetainSource extends boolean>(
   target: DocxImportTarget<V>,
   source: ArrayBuffer | Blob,
   options: Readonly<{
-    authoredTrust: DocxAuthoredTrust | undefined;
     limits: DocxImportLimits;
     lossPolicy: 'allow' | 'reject';
     retainSource: TRetainSource;
@@ -1777,7 +1562,6 @@ const runDocxImport = async <V extends Value, TRetainSource extends boolean>(
       pkg,
       options.limits,
       options.lossPolicy,
-      options.authoredTrust,
       options.signal
     );
 
@@ -1843,7 +1627,6 @@ export function importDocx<const TRetainSource extends boolean = false>(
   }
   const dom = captureDocxDomRealm();
   const limits = resolveDocxImportLimits(options.limits);
-  const authoredTrust = captureAuthoredTrust(options.authoredTrust);
   const lossPolicy = options.lossPolicy ?? 'reject';
   const retainSource = (options.retainSource ?? false) as TRetainSource;
   const plugins = Object.freeze([...options.plugins]);
@@ -1854,7 +1637,6 @@ export function importDocx<const TRetainSource extends boolean = false>(
       : source.slice(0, source.size);
 
   return runDocxImport(target, capturedSource, {
-    authoredTrust,
     limits,
     lossPolicy,
     retainSource,
