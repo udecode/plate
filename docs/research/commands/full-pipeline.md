@@ -85,7 +85,7 @@ Expected outputs:
 - updated `docs/research/sources/...` summaries
 - updated `entities/`, `concepts/`, `systems/`, or `decisions/` pages when the
   evidence supports them
-- updated [index.md](docs/research/index.md)
+- updated [schema.md](../schema.md) when a page type changed
 - updated [log.md](docs/research/log.md)
 - explicit `open-questions/...` pages or a concise gap report when important
   holes remain
@@ -117,7 +117,7 @@ For example:
 
 Read:
 
-1. [index.md](docs/research/index.md)
+1. [schema.md](../schema.md)
 2. the relevant `entities/`, `concepts/`, `systems/`, `decisions/`, and
    `sources/` pages
 
@@ -264,7 +264,7 @@ Promote according to page type:
 
 Always update:
 
-- [index.md](docs/research/index.md)
+- [schema.md](../schema.md)
 - [log.md](docs/research/log.md)
 
 The command is incomplete if it improves pages but leaves the entrypoints stale.

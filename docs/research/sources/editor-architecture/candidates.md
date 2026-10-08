@@ -198,6 +198,8 @@ Take:
 
 Study Slate to understand your inheritance and its limits, not because it is the future benchmark.
 
+For a view layer other than React, `plitejs/dom` already exposes `DOMCoverage` and `DOMEditor` to framework adapters; the Slate bindings `worktile/slate-angular` and `Guan-Erjia/slate-vue3` are useful prior art. Retired sources: `52625e8502:docs/plite/reference/public-docs/general/resources.mdx` and `docs/plite/reference/public-docs/libraries/plite-dom.mdx` at commit `52625e8502`.
+
 ### edix
 
 Very good inspiration repo. Not a core replacement candidate.
@@ -292,6 +294,8 @@ Take:
 
 If Plate ever grows semantic services, AI analyzers, structural linting, or document reasoning, this is the right mental model. Semantic services should speak documents, positions, edits, diagnostics and capabilities, never the editor's internal node model; that shapes future Plate semantic features, not the Plite core.
 
+The mechanisms to copy handle latency and stale results. VS Code keeps one provider registry per feature, ranks providers by selector score, exclusivity and registration order, and sets each feature's debounce from its measured latency (`src/vs/editor/common/languageFeatureRegistry.ts`, `services/languageFeatureDebounce.ts`). LSP negotiates capabilities at `initialize`, syncs versioned documents, lets the client cancel requests, lets a server fail a request with `ContentModified` when an internal state change invalidates it, supports client-pulled diagnostics, and loads expensive completion details later through `completionItem/resolve`. None of this belongs on browser-local editing primitives. Retired sources: `52625e8502:docs/analysis/plite-plate-v2-architecture-research.md`, `52625e8502:docs/analysis/plite-gap-matrix.md` and `52625e8502:docs/analysis/editor-global-systems-objective.md`.
+
 ### EditContext API
 
 Important future platform primitive.
@@ -304,6 +308,8 @@ Why it matters:
 Take:
 
 Do not bet Plate on it yet. Track it aggressively. EditContext can decouple text input from DOM mutation, but it does not replace selection mapping, spellcheck, clipboard and drop, accessibility work or undo history, so it is a later DOM-layer candidate and a custom-surface tool, not an answer to today's structural seams.
+
+An experiment would move all composition handling off DOM events. With an active EditContext the browser does not change the editing host's DOM or fire `input` or composition events on it; composition events fire on the EditContext object. `keydown` and `beforeinput` still reach the host, so the editor applies spellcheck replacement (`insertReplacementText`) and drag and drop (`deleteByDrag`, `insertFromDrop`) itself, native spellcheck stops working, and the editor owns undo and the mapping from DOM selection to plain-text offsets (`../edit-context/explainer.md`). Retired source: `52625e8502:docs/analysis/plite-plate-v2-architecture-research.md`.
 
 ### Open UI Richer Text Fields
 

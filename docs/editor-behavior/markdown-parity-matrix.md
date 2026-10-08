@@ -20,10 +20,10 @@ matrix needs to track:
 
 Use this with:
 
-- [markdown-standards.md](./markdown-standards.md)
+- [markdown-editing-spec.md#authority](./markdown-editing-spec.md#authority)
 - [markdown-editing-spec.md](./markdown-editing-spec.md)
 - [editor-protocol-matrix.md](./editor-protocol-matrix.md)
-- [markdown-editing-reference-audit.md](./markdown-editing-reference-audit.md)
+- [markdown-editing-reference-audit.md](../research/history/2026-04-02-markdown-editing-reference-audit.md)
 
 This file is not the exhaustive scenario matrix. It answers:
 

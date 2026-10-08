@@ -4,7 +4,7 @@ type: entity
 status: partial
 updated: 2026-04-14
 related:
-  - docs/research/systems/editor-architecture-landscape.md
+  - docs/research/sources/editor-architecture/candidates.md
   - docs/research/decisions/slate-v2-overlay-architecture-cuts.md
   - docs/slate-v2/decorations-annotations-cluster.md
 ---

@@ -4,7 +4,7 @@ type: system
 status: strong
 updated: 2026-07-23
 related:
-  - docs/editor-behavior/README.md
+  - docs/editor-behavior/markdown-editing-spec.md
   - docs/editor-behavior/markdown-editing-spec.md
   - docs/editor-behavior/editor-protocol-matrix.md
   - docs/vision/plate.md
@@ -344,7 +344,7 @@ public dependency closure, and default/omitted/replaced browser proof.
 
 This architecture doc is the top-level frame.
 
-- [markdown-standards.md](../../editor-behavior/markdown-standards.md)
+- [markdown-editing-spec.md#authority](../../editor-behavior/markdown-editing-spec.md#authority)
   defines the authority order and methodology
 - [markdown-editing-spec.md](../../editor-behavior/markdown-editing-spec.md)
   defines the markdown-first behavior contract
