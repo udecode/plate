@@ -14,7 +14,7 @@
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
-      "computedHash": "f615de216e085a84e31593ad0fa9062232adc40cd87b7c7ab2b8e49abf6500be"
+      "computedHash": "da388f632cd83783c02967446e21941c9ee8291ccb43ba74c23f7d4e9b7c298c"
     },
     "typescript-advanced-types": {
       "source": "wshobson/agents",
