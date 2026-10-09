@@ -48,6 +48,12 @@
       "files": ["apps/www/src/registry/components/editor/callout.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
+    },
+    {
+      "name": "inline-combobox",
+      "files": ["apps/www/src/registry/components/editor/inline-combobox.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [
@@ -116,6 +122,23 @@
       "source": {
         "line": 26,
         "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-08",
+          "entry": "2026-10-08-emoji-frimousse",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-08-inline-combobox-autoselect-7a41c2e9",
+      "kind": "behavior",
+      "summary": "Highlight the top result after each query until an arrow key or a scroll moves away, let Enter pick a result in the frame it appears, and take a `loading` prop that keeps Enter and Tab from editing while options load.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["inline-combobox"],
+      "source": {
+        "line": 30,
+        "row": 5,
         "legacyRelease": {
           "date": "2026-10-08",
           "entry": "2026-10-08-emoji-frimousse",

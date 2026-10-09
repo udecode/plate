@@ -261,6 +261,48 @@ test('emoji:picker shows a pick under Frequently used on reopen', async ({
   }
 });
 
+test('emoji:picker shows a new favorite after many stored picks', async ({
+  page,
+}) => {
+  await routeEmojibase(page);
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'plate:emoji-frequent:v1',
+      JSON.stringify(
+        Array.from({ length: 36 }, (_, index) => ({
+          count: 1,
+          emoji: String.fromCodePoint(0x1_f6_00 + index),
+          label: `Seed ${index}`,
+        }))
+      )
+    );
+  });
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const { button, search } = await openPicker(page);
+    const pickFire = async () => {
+      await search.pressSequentially('fire');
+      await expect(fireResult(page)).toHaveAttribute('aria-selected', 'true');
+      await page.keyboard.press('Enter');
+      await expect(search).toHaveCount(0);
+    };
+
+    await pickFire();
+    await button.click();
+    await pickFire();
+    await button.click();
+    await expect(
+      page
+        .getByRole('group', { name: 'Frequently used' })
+        .getByRole('button', { exact: true, name: 'Fire' })
+    ).toBeVisible();
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
 test('emoji:picker says the list is unavailable when it cannot load', async ({
   page,
 }) => {

@@ -1,6 +1,6 @@
 # PR 5152 Markdown fixes: CI repair
 
-Status: executed; pushed as 9a0e7ce0e4, CI on next stays red for its own reasons
+Status: merged into next as 795d0bc491
 Page: https://claude.ai/artifact/1Y6PNrtjDQWBQXErYz979P
 Playbook: babysit
 
@@ -61,4 +61,5 @@ Counts: 20 todo items, 17 done, 3 skipped (one babysitter check, the watcher, wh
 
 ## Open work
 
+- Merge conflicts with three new `next` commits were fixed by merging `next` into the branch as `1efe622706`, with no force-push. `current-evidence.md` keeps next's Mentions row and the PR's Markdown row. `next`'s own registry output was stale after its emoji commits, so the merge carries a full `build:registry` regeneration, which `build:registry --check` reports fresh. The Markdown partition (275) and the www markdown-rich tests (23) passed on the merged tree. The owner then said to merge, and the PR merged as `795d0bc491` with an admin merge commit while next's red checks still failed.
 - Red checks that fail the same on `next`. owner: zbeyens. stop: `next` CI passes those steps. Tracked on this page; the Plite crash also has a suggested task.

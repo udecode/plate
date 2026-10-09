@@ -61,7 +61,7 @@ function recordFrequentEmoji({ emoji, label }: EmojiPick) {
   frequent.sort((a, b) => b.count - a.count);
 
   try {
-    localStorage.setItem(FREQUENT_KEY, JSON.stringify(frequent.slice(0, 36)));
+    localStorage.setItem(FREQUENT_KEY, JSON.stringify(frequent));
   } catch {
     // A frequent row is a convenience; blocked storage only loses it.
   }

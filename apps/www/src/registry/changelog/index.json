@@ -20,9 +20,10 @@
         "emoji",
         "emoji-picker",
         "emoji-toolbar-button",
-        "callout"
+        "callout",
+        "inline-combobox"
       ],
-      "entries": 4,
+      "entries": 5,
       "diagnostics": []
     },
     {

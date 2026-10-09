@@ -31,6 +31,23 @@
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
     ],
+    "inline-combobox": [
+      "2026-10-08-emoji-frimousse",
+      "2026-10-01-ordinary-text-combobox",
+      "2026-09-08-inline-combobox-input",
+      "2026-08-31-inline-component-props",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-28-consolidate-platejs-dependencies",
+      "2026-08-28-inline-required-value-checks",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2025-12-15-add-option-editor-collaborative-features",
+      "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
+      "2025-11-20-biome-ultracite"
+    ],
     "export-toolbar-button": [
       "2026-10-08-registry-install-dependencies",
       "2026-09-29-word-export-loss-and-source-reuse",
@@ -379,22 +396,6 @@
       "2026-10-01-native-block-drag",
       "2026-09-21-upload-provider-items",
       "2026-09-19-files-sdk-upload-kit"
-    ],
-    "inline-combobox": [
-      "2026-10-01-ordinary-text-combobox",
-      "2026-09-08-inline-combobox-input",
-      "2026-08-31-inline-component-props",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-28-consolidate-platejs-dependencies",
-      "2026-08-28-inline-required-value-checks",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2025-12-15-add-option-editor-collaborative-features",
-      "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
-      "2025-11-20-biome-ultracite"
     ],
     "mention": [
       "2026-10-01-ordinary-text-combobox",

@@ -226,9 +226,9 @@ An exception to a `plate/*` rule goes on the line as `// oxlint-disable-next-lin
 | No `.only` or unconditional `.skip` | rule-only; none in the 2026-10-04 sweep |
 | Docs describe the current state, with no changelog language | rule-only |
 | Local component prop types stay inline | rule-only; the owner declined a lint |
-| A failure is pre-existing only when it fails the same way at `HEAD` in a detached worktree | rule-only |
+| A failure is pre-existing only when it fails the same way at `HEAD` in a detached worktree | rule-only; a `decisions-check.mjs` refusal of an unbacked pre-existing claim is open work in `docs/plans/topics/correct.md` |
 | Focus and selection have one owner | rule-only; its architecture plan is open work in `docs/plans/topics/correct.md` |
-| A test fails for its named defect before the fix lands | `tooling/scripts/proof-worktree.mjs --expect-fail`, run as `verify`'s command recipes (Base worktree) say; running it is rule-only |
+| A test fails for its named defect before the fix lands | `tooling/scripts/proof-worktree.mjs --expect-fail` and `.agents/pstack/mutate.mjs`, run as `verify`'s testing reference says; running them is rule-only, and the check that fails a new case passing at the merge base is open work in `docs/plans/topics/correct.md` |
 | A bug closes on the reporter's own gesture | rule-only; the `proof` subject owns the native lane |
 | Per-keystroke work stays bounded as the document grows | rule-only; `benchmark` owns a read-counter harness |
 | New code calls the existing owner instead of copying it | rule-only |

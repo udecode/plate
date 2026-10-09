@@ -47,8 +47,6 @@ export const plateAdditionalEntries = [
   'src/docx/import/index.ts',
   'src/docx/export/index.ts',
   'src/dom/index.ts',
-  'src/emoji/index.ts',
-  'src/emoji/react/index.ts',
   'src/excalidraw/index.ts',
   'src/excalidraw/react/index.ts',
   'src/history/index.ts',

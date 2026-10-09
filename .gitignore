@@ -33,7 +33,7 @@ templates/my-app
 .history
 apps/www/next-env.d.ts
 **/out/
-node_modules/
+node_modules
 
 # Dependency directories
 jspm_packages/
