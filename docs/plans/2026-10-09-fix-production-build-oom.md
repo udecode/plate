@@ -63,6 +63,16 @@ Boundaries:
 - Tracker sync: N/A, no issue or ticket supplied.
 - Non-goals: no RAM upgrade, Next upgrade, package behavior changes, source docs edits, registry regeneration, template edits, or main/next branch merge.
 
+CI follow-up authorized 2026-10-09:
+- User requested `fix ci` on this exact PR. The completion threshold extends to a green GitHub PR check set after the repair.
+- Failing run https://github.com/udecode/plate/actions/runs/37977117033 at b3b1be19ad33a5cf5be72753814a239448d7a4d8 passes functional tests, lint, and types, then fails test:slowest.
+- CI reports packages/markdown/src/lib/table.spec.ts at 214 ms total versus a 180 ms file limit. media-file-node.spec.tsx has a 112 ms case versus a 90 ms case limit.
+- Testing policy requires whole specs that cross these limits to use the existing *.slow.ts[x] lane. Both lanes still run through pnpm test:all and pnpm check. No threshold change, test deletion, assertion change, or claimed runtime speedup.
+- Allowed scope extends only to table.spec.ts -> table.slow.ts and media-file-node.spec.tsx -> media-file-node.slow.tsx, plus this ledger. User authorization covers this extension to the original four-file config boundary.
+- Reproduction evidence is the real failed CI log. Local machines cannot substitute for CI timing evidence. Proof will run both moved specs in the slow runner, verify byte-identical contents, run pnpm brl for the package file move, rerun pnpm check, and observe final GitHub checks.
+- Browser proof is N/A to test-file classification; no runtime or UI source changes. Prior production browser proof remains applicable to the build patch.
+- Throughput checkpoint: one writer performs the two renames; root owns plan, scoped checks, review, push, and remote CI observation. No parallel suite executions share the timing report.
+
 Output budget strategy:
 - Keep searches bounded to build owners. Save large build/check output under .tmp and inspect tails. Parse Vercel logs to timestamps and text before displaying.
 
@@ -71,16 +81,16 @@ Blocked condition:
 
 Task state:
 - task_type: bug fix
-- task_complexity: normal, four configuration files
-- current_phase: closeout
-- current_phase_status: complete
-- next_phase: final response
-- goal_status: complete
+- task_complexity: normal, four configuration files and two CI test classifications
+- current_phase: CI repair
+- current_phase_status: in progress
+- next_phase: local checks and final remote CI
+- goal_status: active
 
 Current verdict:
 - verdict: valid
 - confidence: high for compiler memory failure; exact resource cause below compiler is unprofiled.
-- next owner: maintainer merge and normal Vercel production deployment; no local implementation remains.
+- next owner: root CI repair, then maintainer merge and normal Vercel production deployment.
 - reason: main Next 16.2.6 Turbopack receives SIGKILL during compilation; next already ships a Webpack build fix on the same machine size.
 
 Pre-solution issue challenge:
@@ -208,7 +218,7 @@ Completion Gates:
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Authenticated Vercel main ERROR/out_of_memory logs precede the patch. |
 | Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | Direct Next 16.2.6 production Webpack build exit 0; representative production pages render. |
 | TypeScript or typed config changed | yes | Run relevant typecheck | Config-only tsc --ignoreConfig passed; Next config loader exercised both phases. |
-| Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A, no package exports or public files changed. |
+| Package exports or file layout changed | yes | Run `pnpm brl` before final verification and keep generated barrel updates | CI follow-up moves one package test file. pnpm brl passed with 52 successful tasks and no generated changes. |
 | Package manifests, lockfile, or install graph changed | yes | Run `pnpm install` and relevant package checks | Scripts only; pnpm install --frozen-lockfile passed without dependency changes. |
 | Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A, no agent rule or skill change. |
 | Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | All local checks ran in /Users/zbeyens/git/plate or apps/www; Vercel logs belong to the plate project. |
@@ -270,6 +280,7 @@ Implementation notes:
 Review fixes:
 - Structured autoreview --mode local passed with no accepted/actionable findings. No extra review cycle required.
 - deslop inspection found no added comments, casts, guards, or abstractions. no-comments is N/A to new lines because the patch adds no comments or suppressions.
+- CI follow-up structured autoreview --mode local passed with no accepted/actionable findings. Reviewer independently confirmed byte-identical test renames, continued slow-suite selection, and no export/runtime changes. deslop and no-comments have no added code or comments to inspect in this follow-up.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
@@ -278,6 +289,11 @@ Error attempts:
 | Successful next commit not available locally | 1 | Fetch origin next read-only | Commit source available after fetch |
 
 Verification evidence:
+- CI follow-up byte comparison against HEAD verifies both renamed files are unchanged: table.slow.ts is 25,290 bytes and media-file-node.slow.tsx is 5,350 bytes.
+- rtk proxy pnpm test:slow -- packages/markdown/src/lib/table.slow.ts apps/www/src/registry/ui/media-file-node.slow.tsx passed with 25 + 6 tests, 0 failures. Log: .tmp/production-build-oom-ci-focused.log.
+- rtk proxy pnpm brl passed with 52/52 tasks and no generated barrel drift. Log: .tmp/production-build-oom-ci-barrels.log.
+- CI follow-up autoreview passed with no accepted/actionable findings; .tmp/production-build-oom-ci-review.log. No test assertion, threshold, or runtime source changes.
+- CI follow-up rtk proxy pnpm check passed, exit 0, including lint, typechecks, fast and slow tests, and test:slowest. Log: .tmp/production-build-oom-ci-check.log. Remote verification follows the push.
 - .tmp/production-build-oom-webpack.log records Next 16.2.6 webpack, both memory flags enabled, Compiled successfully in 70s, all 867/867 static generation entries, and process exit 0.
 - .tmp/production-build-oom-source.log records successful async source generation. No local build:registry run.
 - .tmp/production-build-oom-graph.log records the www dependency graph with 53 build tasks; concurrency is bounded by the script.
