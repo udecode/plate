@@ -127,6 +127,8 @@ const nextConfig = async (_phase: string) => {
       externalDir: isDev,
       // The OOM came from the docs/import graph, not Turbopack's dev cache itself.
       turbopackFileSystemCacheForDev: true,
+      webpackBuildWorker: true,
+      webpackMemoryOptimizations: true,
     },
     productionBrowserSourceMaps: false,
     // https://nextjs.org/docs/basic-features/image-optimization#domains
@@ -172,7 +174,9 @@ const nextConfig = async (_phase: string) => {
         }
       : undefined,
 
-    transpilePackages: ['ts-morph'],
+    ...(isDev
+      ? { transpilePackages: ['ts-morph'] }
+      : { serverExternalPackages: ['ts-morph'] }),
 
     async redirects() {
       return [
