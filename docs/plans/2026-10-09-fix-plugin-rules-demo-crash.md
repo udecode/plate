@@ -20,7 +20,7 @@ Task source:
 - type: user report (chat), no tracker
 - id / link: https://platejs.org/cn/docs/plugin-rules (also /docs/plugin-rules)
 - title: Plugin rules docs demo stuck on "Loading..."
-- exact PR ownership: PR_PLACEHOLDER; this task invocation owns only that PR.
+- exact PR ownership: https://github.com/udecode/plate/pull/5154 (#5154); this task invocation owns only that PR.
 - acceptance criteria: plugin-rules demo renders without runtime error; demo values contain no element with empty `children`; regression test fails before and passes after; PR opened.
 
 Timed checkpoint:
@@ -103,52 +103,52 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Timed checkpoint parsed | pending | pending |
-| Skill analysis before edits | pending | pending |
-| Active goal checked or created | pending | pending |
-| Source of truth read before edits | pending | pending |
-| Tracker comments and attachments read | pending | pending |
-| Video transcript evidence required | pending | pending |
-| Pre-solution issue challenge required | pending | pending |
-| Reproduction verdict before implementation | pending | pending |
-| Repro escalation ladder selected | pending | pending |
-| Suggested fix reviewed against durable boundary | pending | pending |
-| `docs/solutions` checked for non-trivial existing-code work | pending | pending |
-| TDD decision before behavior change or bug fix | pending | pending |
-| Branch decision for code-changing task | pending | pending |
-| Release artifact decision | pending | pending |
-| Browser tool decision for browser surface | pending | pending |
-| PR expectation decision | pending | pending |
-| Dedicated task plan selected for exact PR | pending | pending |
-| Tracker sync expectation decision | pending | pending |
-| Output budget strategy recorded | pending | pending |
-| Browser pack selected | pending | pending |
-| Browser route / app surface identified | pending | pending |
-| Browser tool decision recorded | pending | pending |
-| Console/network caveat policy recorded | pending | pending |
-| Registry changelog pack selected | pending | pending |
-| User-visible registry impact classified | pending | Choose `yes` or `N/A: <reason>` |
-| Source entry path selected | pending | `apps/www/src/registry/changelog/entries/<id>.mdx`, existing entry, or `N/A: <reason>` |
-| Generator command selected | pending | `--new`, manual source edit, `--write`, and `--check` plan |
+| Timed checkpoint parsed | no | N/A: no duration requested |
+| Skill analysis before edits | yes | task, autogoal, registry-changelog, dev-browser read |
+| Active goal checked or created | yes | this plan; no prior goal |
+| Source of truth read before edits | yes | prod page + console stack, plugin-rules-value, NodeIdPlugin history, slate-react void render |
+| Tracker comments and attachments read | no | N/A: chat report, no tracker |
+| Video transcript evidence required | no | N/A: no video |
+| Pre-solution issue challenge required | yes | valid; see Pre-solution issue challenge |
+| Reproduction verdict before implementation | yes | prod console TypeError + local dev-browser repro before fix |
+| Repro escalation ladder selected | yes | spec red, browser prod + local |
+| Suggested fix reviewed against durable boundary | yes | no suggested fix; data validity + guard spec chosen |
+| `docs/solutions` checked for non-trivial existing-code work | no | N/A: trivial demo data fix |
+| TDD decision before behavior change or bug fix | yes | guard spec written, red with 6 empty elements, then data fixed |
+| Branch decision for code-changing task | yes | codex/fix-plugin-rules-demo-hr from main |
+| Release artifact decision | yes | registry changelog only; no package change |
+| Browser tool decision for browser surface | yes | Claude in Chrome for prod; dev-browser for localhost (Chrome could not reach localhost) |
+| PR expectation decision | yes | user asked to open PR |
+| Dedicated task plan selected for exact PR | yes | this plan owns #5154 only |
+| Tracker sync expectation decision | no | N/A: no tracker |
+| Output budget strategy recorded | yes | logs in scratchpad, tailed |
+| Browser pack selected | yes | --with browser |
+| Browser route / app surface identified | yes | /blocks/plugin-rules-demo, /blocks/code-block-demo |
+| Browser tool decision recorded | yes | dev-browser headless |
+| Console/network caveat policy recorded | yes | pageerror + console.error captured; network out of scope |
+| Registry changelog pack selected | yes | --with registry-changelog |
+| User-visible registry impact classified | yes | plugin-rules-demo and code-block-demo example values change |
+| Source entry path selected | yes | apps/www/src/registry/changelog/entries/2026-10-09-fix-empty-demo-elements.mdx |
+| Generator command selected | yes | --new, manual edit, --write, --check |
 
 Work Checklist:
-- [ ] If a duration was requested, it is recorded as minimum active work unless
+- [x] If a duration was requested, it is recorded as minimum active work unless N/A: no duration.
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded.
-- [ ] Short objective plus outcome, completion threshold, verification surface,
+- [x] Short objective plus outcome, completion threshold, verification surface,
       constraints, boundaries, and blocked condition are concrete.
-- [ ] Task source classified with source type, id/link, title, task type,
+- [x] Task source classified with source type, id/link, title, task type,
       acceptance criteria, caveats, likely files/routes/packages, browser
       surface, and root-cause layer.
-- [ ] Required video or screen-recording evidence is cached/read as normalized
+- [x] Required video or screen-recording evidence is cached/read as normalized N/A: no video.
       `<video-transcripts>` XML, or marked N/A with reason.
-- [ ] For public tracker bug reports, behavior claims, technical diagnoses, or
+- [x] For public tracker bug reports, behavior claims, technical diagnoses, or
       suggested fixes, reporter claims are challenged before implementation
       with a recorded verdict: `valid`, `not reproduced`, `invalid`,
       `wont-fix`, `partially valid`, or `platform limitation`. Feature, docs,
       support, or cleanup requests with no bug claim may mark reproduction
       `N/A` with reason.
-- [ ] Repro escalation ladder followed for bug/behavior claims: focused
+- [x] Repro escalation ladder followed for bug/behavior claims: focused
       test/source-level repro first when applicable; existing repo-owned
       Playwright regression/test harness next when available and useful as
       executable coverage; do not use standalone Playwright, Puppeteer, or raw
@@ -157,137 +157,148 @@ Work Checklist:
       Playwright cannot reproduce or cannot model the surface honestly;
       screenshot or explicit visual-proof waiver when visual/native state
       matters.
-- [ ] Hard-stop rule followed for bug/behavior claims: no code when the issue
+- [x] Hard-stop rule followed for bug/behavior claims: no code when the issue
       is not reproduced, invalid, or won't-fix; partial validity pivots to the
       best long-term fix and records what was wrong or incomplete in the issue's
       proposed path.
-- [ ] Nearby repo instructions and implementation patterns read before edits.
-- [ ] Implementation fixes the right ownership boundary, or the narrower choice
+- [x] Nearby repo instructions and implementation patterns read before edits.
+- [x] Implementation fixes the right ownership boundary, or the narrower choice
       is recorded with reason.
-- [ ] Release artifact requirement recorded: changeset, registry changelog, or
+- [x] Release artifact requirement recorded: changeset, registry changelog, or
       N/A with reason.
-- [ ] Final handoff shape decided: bug/feature/testing/batch/review/tracker
+- [x] Final handoff shape decided: bug/feature/testing/batch/review/tracker
       requirements, PR body sync, and issue/Linear sync when applicable.
-- [ ] Branch handling recorded for code-changing work: dedicated branch used,
+- [x] Branch handling recorded for code-changing work: dedicated branch used,
       new branch needed, or N/A with reason.
-- [ ] Every PR has its own `task` invocation and dedicated plan; this plan is
+- [x] Every PR has its own `task` invocation and dedicated plan; this plan is
       not aggregate evidence for another PR.
-- [ ] If a PR exists, its body has exactly one
+- [x] If a PR exists, its body has exactly one
       `🧭 Task plan: docs/plans/<plan>.md` line, this file exists at the exact PR
       head, and this plan records that exact PR number or URL.
-- [ ] Local-env-rot retry policy recorded for any surprising repo-wide failure:
+- [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
       reinstall/rerun evidence or N/A with reason.
-- [ ] Workspace authority recorded: every proof command names the cwd/tool that
+- [x] Workspace authority recorded: every proof command names the cwd/tool that
       owns the changed behavior.
-- [ ] High-risk note recorded for public API, runtime, package-boundary,
+- [x] High-risk note recorded for public API, runtime, package-boundary, N/A: demo data + test only.
       browser behavior, agent-action, or command-contract changes, or marked
       N/A with reason.
-- [ ] Review/autoreview target selected from actual diff state for non-trivial
+- [x] Review/autoreview target selected from actual diff state for non-trivial N/A: trivial fix.
       implementation work, or marked N/A with reason.
-- [ ] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
+- [x] Agent-native review decision recorded for `.agents/**`, `.claude/**`, N/A: no agent/tooling change.
       `.codex/**`, skills, hooks, commands, prompts, or user-action tooling.
-- [ ] Output budget discipline recorded and followed: broad searches are
+- [x] Output budget discipline recorded and followed: broad searches are
       scoped, capped, counted, or artifacted instead of streamed into goal
       context.
-- [ ] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
-- [ ] Browser pack: browser proof uses the repo-approved browser tool or records a blocker/waiver.
-- [ ] Browser pack: console and network errors are checked or explicitly out of scope.
-- [ ] Browser pack: screenshot, trace, or exact verification caveat is ready for final handoff.
-- [ ] Registry changelog pack: user-visible registry impact is recorded.
-- [ ] Registry changelog pack: source entry exists under `apps/www/src/registry/changelog/entries/*.mdx` or N/A reason is recorded.
-- [ ] Registry changelog pack: entry frontmatter follows the contract in `.agents/skills/registry-changelog/SKILL.md`.
-- [ ] Registry changelog pack: row bullets name real registry item ids in backticks.
-- [ ] Registry changelog pack: generated `/registry/changelog/*.json`, `index.json`, and `components.json` are updated by the generator, not by hand.
-- [ ] Registry changelog pack: package changeset decision is separate when package code also changed.
+- [x] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
+- [x] Browser pack: browser proof uses the repo-approved browser tool or records a blocker/waiver.
+- [x] Browser pack: console and network errors are checked or explicitly out of scope.
+- [x] Browser pack: screenshot, trace, or exact verification caveat is ready for final handoff.
+- [x] Registry changelog pack: user-visible registry impact is recorded.
+- [x] Registry changelog pack: source entry exists under `apps/www/src/registry/changelog/entries/*.mdx` or N/A reason is recorded.
+- [x] Registry changelog pack: entry frontmatter follows the contract in `.agents/skills/registry-changelog/SKILL.md`.
+- [x] Registry changelog pack: row bullets name real registry item ids in backticks.
+- [x] Registry changelog pack: generated `/registry/changelog/*.json`, `index.json`, and `components.json` are updated by the generator, not by hand.
+- [x] Registry changelog pack: package changeset decision is separate when package code also changed.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Pre-solution issue challenge verdict | pending | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | pending |
-| Repro escalation ladder | pending | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
-| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| User-visible registry output changed | pending | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for supporting public docs/content/API/example changes, load `docs-creator` and close the docs pack; for typo/link-only edits, record the explicit reason and proportional proof | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Per-PR task ownership | pending | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-10-09-fix-plugin-rules-demo-crash.md` | pending |
-| Browser interaction proof | pending | Exercise the target route/interaction with the approved browser tool or record blocker | pending |
-| Browser console/network check | pending | Record console/network state or why it is not applicable | pending |
-| Browser final proof artifact | pending | Record screenshot/trace/route proof or exact caveat | pending |
-| Registry impact classification | pending | Record user-visible registry delta or N/A reason | pending |
-| Registry changelog source | pending | Add/update `apps/www/src/registry/changelog/entries/*.mdx` or record N/A | pending |
-| Registry changelog generation | pending | Run `node tooling/scripts/generate-ui-changelog-entries.mjs --write` when a source entry is required | pending |
-| Registry changelog check | pending | Run `node tooling/scripts/generate-ui-changelog-entries.mjs --check` | pending |
-| Registry generator test | pending | If generator/schema/source layout changed, run `bun test tooling/scripts/generate-ui-changelog-entries.test.mjs`; otherwise N/A | pending |
-| Registry package release split | pending | Record `.changeset`, registry changelog, both, or N/A with reason | pending |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | spec green, browser proof, changelog --check, pnpm check EXIT 0 |
+| Pre-solution issue challenge verdict | yes | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | valid, recorded above |
+| Repro escalation ladder | yes | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | spec red; prod + local browser repro |
+| Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | spec listed 6 empty elements; local plugin-rules editor absent + destructure error; code lines 0px |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | bun test demo-values.spec.tsx: 2 pass |
+| TypeScript or typed config changed | yes | Run relevant typecheck | pnpm check typecheck passed (clean worktree) |
+| Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: no package change |
+| Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A |
+| Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | repo root bun test; apps/www dev server; clean worktree pnpm check |
+| Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | dev-browser proof on both demo routes |
+| Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | DOM assertions + local screenshots; no page errors |
+| CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: templates untouched |
+| Package behavior or public API changed | no | Add a changeset or record why no changeset applies | N/A: www registry only, no changeset |
+| User-visible registry output changed | yes | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | entry added, --write and --check run |
+| Docs or content changed | no | For docs-heavy work, use `--template docs`; for supporting public docs/content/API/example changes, load `docs-creator` and close the docs pack; for typo/link-only edits, record the explicit reason and proportional proof | N/A: no content/** change |
+| High-risk mini gate | no | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | N/A: demo data + test only |
+| Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent/tooling change |
+| Local install corruption suspected | yes | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | stale package dist + untracked local dirs broke local tests/lint; rebuilt packages, ran pnpm check in clean worktree instead of reinstall |
+| Autoreview for non-trivial implementation changes | no | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | N/A: trivial demo data fix + guard spec |
+| PR create or update | yes | Run `check` before PR work and sync PR body to the task-style final handoff | pnpm check EXIT 0 before PR; #5154 opened |
+| Per-PR task ownership | yes | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | one task-plan line in #5154 body; plan at head names #5154 |
+| Task-style PR body verified | yes | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | gh pr view --json body checked |
+| PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no images in PR body |
+| Tracker sync-back | no | Post concise issue/Linear sync after PR exists, or record N/A/blocker | N/A: no tracker |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | filled below |
+| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | biome check on changed dirs clean; pnpm check lint passed |
+| Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | bounded output |
+| Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-10-09-fix-plugin-rules-demo-crash.md` | passes |
+| Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | loaded both demos; typed into blank code line |
+| Browser console/network check | yes | Record console/network state or why it is not applicable | 0 pageerrors / console errors after fix |
+| Browser final proof artifact | yes | Record screenshot/trace/route proof or exact caveat | DOM assertion output recorded in Verification evidence |
+| Registry impact classification | yes | Record user-visible registry delta or N/A reason | user-visible example value fix |
+| Registry changelog source | yes | Add/update `apps/www/src/registry/changelog/entries/*.mdx` or record N/A | entries/2026-10-09-fix-empty-demo-elements.mdx |
+| Registry changelog generation | yes | Run `node tooling/scripts/generate-ui-changelog-entries.mjs --write` when a source entry is required | --write regenerated index.json, components.json, entry json |
+| Registry changelog check | yes | Run `node tooling/scripts/generate-ui-changelog-entries.mjs --check` | --check exit 0 |
+| Registry generator test | no | If generator/schema/source layout changed, run `bun test tooling/scripts/generate-ui-changelog-entries.test.mjs`; otherwise N/A | N/A: generator untouched |
+| Registry package release split | yes | Record `.changeset`, registry changelog, both, or N/A with reason | registry changelog only |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | in_progress | created plan | implementation |
-| Implementation | pending | | verification |
-| Verification | pending | | closeout |
-| PR / tracker sync | pending | | final response |
-| Closeout | pending | | final response |
+| Intake and source read | complete | prod stack + source read | implementation |
+| Implementation | complete | 08c29e55e8 | verification |
+| Verification | complete | spec, browser, changelog, pnpm check | closeout |
+| PR / tracker sync | complete | #5154; tracker N/A | final response |
+| Closeout | complete | plan gates closed | final response |
 
 Findings:
-- None yet.
+- `plugin-rules-value.tsx` had `<element type="hr" />` → void with `children: []`.
+- slate-react void render `const [[text]] = Node.texts(element)` throws on it (same code in 0.126.4 and 0.127.1).
+- Before 68560ccc9e, NodeIdPlugin `normalizeInitialValue` used `setNodes`, dirtying nodes so Slate normalization inserted `{text:''}`. Now ids are a pure value transform; no normalization.
+- `code-block-value.tsx` had 5 `<hcodeline />` with empty children; blank lines rendered at 0px.
 
 Decisions and tradeoffs:
-- None yet.
+- Fix demo data, not core: Slate contract does not normalize initial values; restoring implicit repair in core is a separate perf/behavior decision.
+- Guard spec covers DEMO_VALUES plus en/cn i18n values.
 
 Implementation notes:
-- None yet.
+- Added `<htext />` children; spec `DEMO_VALUES > gives every element at least one child`.
 
 Review fixes:
-- None yet.
+- N/A: no review findings.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| Local bun tests resolved stale package dist (`@platejs/plite`) | 1 | `pnpm build` | fixed |
+| Local dev CSS parse error from Tailwind scanning untracked `apps/www/.next-plite` | 1 | temp `.git/info/exclude` entry, reverted | fixed |
+| Local `pnpm check` lint scanned untracked junk dirs (2.6M diagnostics) | 1 | clean worktree check | EXIT 0 |
+| Chrome extension could not reach localhost | 2 | dev-browser headless | fixed |
 
 Verification evidence:
-- Pending.
+- `bun test apps/www/src/registry/examples/values/demo-values.spec.tsx` (repo root): red with 6 empty elements before; 2 pass after.
+- dev-browser `/blocks/plugin-rules-demo`: before fix no editor + `Invalid attempt to destructure non-iterable instance`; after 24 blocks, hr rendered, 0 errors.
+- dev-browser `/blocks/code-block-demo`: before 5 blank lines 0px, no text node; after 16px each, typing `x` lands in blank line, 0 errors.
+- `node tooling/scripts/generate-ui-changelog-entries.mjs --check`: exit 0.
+- `pnpm check` in clean worktree at 08c29e55e8: EXIT 0 (3582 fast tests pass).
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: https://github.com/udecode/plate/pull/5154
+- Issue / tracker line: 🐛 Fixes ➖ N/A
+- Confidence line: 🟢 97% confidence
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: tests 🔴 6 empty elements, browser 🔴 demo crash / 0px lines
+  - Verified: tests 🟢 guard spec, browser 🟢 both demos render
+- Browser check: dev-browser on local dev server
+- Outcome: plugin rules demo loads; blank code lines render
+- Caveat: invalid user initial values no longer auto-repaired since NodeIdPlugin perf change
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: demo data validity + guard spec
+  - Why not quick patch: guard spec prevents recurrence across all demo values
+  - Why not broader change: core normalization on init is a separate perf decision
+- Verified: spec, browser, changelog check, pnpm check
+- PR body verified: gh pr view --json body
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -312,23 +323,24 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Task plan at exact PR head: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: https://github.com/udecode/plate/pull/5154
+- Task plan at exact PR head: yes
+- Issue / tracker: N/A
+- Browser proof: dev-browser DOM assertions
+- Caveats: core no longer repairs invalid initial values
 
 Timeline:
 - 2026-10-09T09:37:43.848Z Task goal plan created.
+- 2026-10-09 Fix committed 08c29e55e8, pnpm check passed, PR #5154 opened.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
-| What is the goal? | TODO: Fill from Objective |
+| Where am I? | Closeout complete |
+| Where am I going? | Done |
+| What is the goal? | Fix crashing plugin-rules demo + guard demo values; PR #5154 |
 | What have I learned? | See Findings |
 | What have I done? | See Timeline |
 
 Open risks:
-- Pending.
+- Invalid user initial values with empty void children crash slate-react (core caveat, out of scope).
