@@ -787,31 +787,24 @@ const buildRun = async (
   ) {
     const runFragmentsArray: XMLBuilderType[] = [];
 
-    let vNodes: (VNodeType | VTextType)[] = [vNode as VNodeType];
-    // create temp run fragments to split the paragraph into different runs
-    let tempAttributes: RunAttributes = cloneDeep(attributes);
-    let tempRunFragment = fragment({ namespaceAlias: { w: namespaces.w } }).ele(
-      '@w',
-      'r'
-    );
+    // each queued node carries the run attributes inherited from its formatting ancestors
+    let vNodes: {
+      attributes: ParagraphAttributes;
+      vNode: VNodeType | VTextType;
+    }[] = [{ attributes: cloneDeep(attributes), vNode: vNode as VNodeType }];
     while (vNodes.length) {
-      const tempVNode = vNodes.shift()!;
+      const queuedVNode = vNodes.shift()!;
+      const tempVNode = queuedVNode.vNode;
+      let tempAttributes = queuedVNode.attributes;
       if (isVText(tempVNode)) {
         const textFragment = buildTextElement((tempVNode as VTextType).text);
-        const tempRunPropertiesFragment = buildRunProperties({
-          ...attributes,
-          ...tempAttributes,
-        });
+        const tempRunPropertiesFragment = buildRunProperties(tempAttributes);
+        const tempRunFragment = fragment({
+          namespaceAlias: { w: namespaces.w },
+        }).ele('@w', 'r');
         tempRunFragment.import(tempRunPropertiesFragment);
         tempRunFragment.import(textFragment);
         runFragmentsArray.push(tempRunFragment);
-
-        // re initialize temp run fragments with new fragment
-        tempAttributes = cloneDeep(attributes);
-        tempRunFragment = fragment({ namespaceAlias: { w: namespaces.w } }).ele(
-          '@w',
-          'r'
-        );
       } else if (isVNode(tempVNode)) {
         const tempVn = tempVNode as VNodeType;
         if (
@@ -833,7 +826,7 @@ const buildRun = async (
             'pre',
           ].includes(tempVn.tagName || '')
         ) {
-          tempAttributes = {};
+          tempAttributes = { ...tempAttributes };
           switch (tempVn.tagName) {
             case 'strong':
             case 'b':
@@ -852,20 +845,29 @@ const buildRun = async (
             case 's':
               tempAttributes.strike = true;
               break;
+            // one vertical alignment and one highlight per run: the innermost tag wins
             case 'sub':
               tempAttributes.sub = true;
+              tempAttributes.sup = undefined;
               break;
             case 'sup':
               tempAttributes.sup = true;
+              tempAttributes.sub = undefined;
               break;
             case 'mark':
               tempAttributes.mark = true;
+              tempAttributes.code = undefined;
+              tempAttributes.kbd = undefined;
               break;
             case 'code':
               tempAttributes.code = true;
+              tempAttributes.kbd = undefined;
+              tempAttributes.mark = undefined;
               break;
             case 'kbd':
               tempAttributes.kbd = true;
+              tempAttributes.code = undefined;
+              tempAttributes.mark = undefined;
               break;
           }
           const formattingFragment = buildFormatting(tempVn.tagName || '');
@@ -877,7 +879,7 @@ const buildRun = async (
         } else if (tempVn.tagName === 'span') {
           const spanFragment = await buildRunOrRuns(
             tempVn,
-            { ...attributes, ...tempAttributes },
+            tempAttributes,
             docxDocumentInstance
           );
 
@@ -897,11 +899,9 @@ const buildRun = async (
 
       const tempVn = tempVNode as VNodeType;
       if (tempVn.children?.length) {
-        if (tempVn.children.length > 1) {
-          attributes = { ...attributes, ...tempAttributes };
-        }
-
-        vNodes = tempVn.children.slice().concat(vNodes);
+        vNodes = tempVn.children
+          .map((child) => ({ attributes: tempAttributes, vNode: child }))
+          .concat(vNodes);
       }
     }
     if (runFragmentsArray.length) {
