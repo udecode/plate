@@ -1,6 +1,6 @@
 # Plate on pstack
 
-Page: https://claude.ai/artifact/2rSBBJ5gSUkEtNJv91c2af
+Page: https://claude.ai/artifact/559ZPtXQdgX6DHwS5vacmj
 
 plate-2's agent workflow before pstack (git `HEAD` before 2026-09-30) and now. Every plan below is one iteration of this subject.
 

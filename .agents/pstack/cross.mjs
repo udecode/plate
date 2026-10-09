@@ -2,12 +2,14 @@
 // Installed by the sync-pstack skill.
 
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { existsSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { constants, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { browserLaunch } from './codex-browser.mjs';
 import { ISOLATED_CODEX_ARGS, managedCodexConfig, NO_EXEC_RULES } from './codex-isolation.mjs';
+import { claudeSessionRun } from './lead.mjs';
 
 export const MODELS = { claude: 'opus', codex: 'gpt-6.1-sol' };
 
@@ -44,9 +46,10 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
   }
   stopOnSignals();
   const answerFile = join(mkdtempSync(join(tmpdir(), 'pstack-cross-')), 'answer.txt');
+  const sessionId = randomUUID();
   const [command, args] =
     runtime === 'claude'
-      ? ['claude', ['-p', '--model', model, ...(effort ? ['--effort', effort] : []), ...(hooks ? [] : ['--settings', '{"disableAllHooks":true}']), '--permission-mode', 'plan', '--', prompt]]
+      ? ['claude', ['-p', '--session-id', sessionId, '--model', model, ...(effort ? ['--effort', effort] : []), ...(hooks ? [] : ['--settings', '{"disableAllHooks":true}']), '--permission-mode', 'plan', '--', prompt]]
       : [
           'codex',
           [
@@ -99,7 +102,10 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
       if (computerUse) writeFileSync(computerUse.events, stdout);
       const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : stdout).trim();
       const failure = `${code === 0 ? 'no answer' : `exit ${code ?? signal}`}: ${stderr.trim().split('\n').slice(-5).join('\n')}`;
-      done(code === 0 && text ? { runtime, ok: true, text } : { runtime, ok: false, text: failure });
+      // A Claude seat without --effort runs at the machine's default, which only its transcript records.
+      const ran = runtime === 'claude' ? claudeSessionRun(sessionId) : null;
+      const seat = `${ran?.model ?? model} @${ran?.effort ?? effort ?? 'default'}`;
+      done(code === 0 && text ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat });
     });
   });
 }
@@ -148,6 +154,7 @@ async function main(argv) {
   }
   const answer = await ask(to, prompt, { timeout, model, effort, computerUse: events && { events, chromeProfile } });
   (answer.ok ? console.info : console.error)(answer.text);
+  if (answer.seat) console.error(`seat: ${answer.seat}`);
   return answer.ok ? 0 : 1;
 }
 

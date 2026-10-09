@@ -13,7 +13,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve } from 'node:path';
-import { SEATS, SEVERITIES, STATES, isFence, landed, readFence, reopened, splitRow, stateOf, TABLE_RULE, tablesOf } from './status.mjs';
+import { SEATS, SEVERITIES, STAGE_PHASES, STATES, isFence, landed, readFence, reopened, splitRow, stateOf, TABLE_RULE, tablesOf } from './status.mjs';
 
 const PAGE_HEAD = `<meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1069,6 +1069,13 @@ function seatsHtml(seats) {
 
 const roundTagHtml = (round, seats, suffix = '') => `<span class="round-tag"><span class="badge hue-indigo">Review round ${round}</span>${suffix}${seats ? seatsHtml(seats) : ''}</span>`;
 
+// Each lead row names the model and effort the session that wrote the rows after it ran at.
+function leadTagHtml(planPath) {
+  const leads = logRowsOf(planPath).flatMap((row) => (row.phase === 'lead' ? [row.decision] : []));
+  const runs = leads.filter((label, index) => label !== leads[index - 1]);
+  return runs.length ? `<span class="round-tag"><span class="badge hue-grey">Lead</span>${seatsHtml(runs.join(', '))}</span>` : '';
+}
+
 const SEVERITY_HUES = { critical: 'red', warning: 'amber', nit: 'blue' };
 const RESULT_HUES = { accepted: 'green', applied: 'green', fixed: 'green', verified: 'green', proven: 'green', kept: 'green', dismissed: 'grey', skipped: 'grey', superseded: 'grey', recorded: 'teal', decided: 'teal', corrected: 'teal', reverted: 'pink', deferred: 'amber', partial: 'amber', inconclusive: 'amber', open: 'red', gap: 'red', blocked: 'red' };
 
@@ -1098,16 +1105,6 @@ function logRowsOf(planPath) {
     });
 }
 
-const STAGE_PHASES = {
-  Design: ['architect', 'prototype', 'arena', 'how', 'why', 'design'],
-  Review: ['panel', 'interrogate'],
-  Build: ['build'],
-  Writing: ['writing'],
-  Verify: ['verify', 'proof'],
-  Ship: ['ship', 'delivery'],
-  Reflect: ['reflect', 'lesson'],
-  Audit: ['trail'],
-};
 const STAGE_HINTS = {
   Plan: 'The plan file and its brief; the badges name the playbook poteto-mode picked.',
   Design: 'architect, prototype, arena, how or why explored the design.',
@@ -1480,6 +1477,7 @@ function page(planPath, { folded = false } = {}) {
   const reviewTag = latest
     ? roundTagHtml(latest.round, latest.seats, taggedTitle)
     : '';
+  const leadTag = leadTagHtml(leader.path);
   const roundsHtml = (rounds, heading) =>
     rounds
       .map(
@@ -1538,7 +1536,7 @@ function page(planPath, { folded = false } = {}) {
     <h1>${title}</h1>
     ${flowHtml(leader, shownStatus, playbooks)}
     ${statusLine}
-    <div class="meta">${delta ? `<span>Plan <strong>${inline(focus.title || basename(newestOpenIteration.path, '.md'))}</strong></span>` : ''}${roundTag}<span>Updated ${updated} UTC</span></div>
+    <div class="meta">${delta ? `<span>Plan <strong>${inline(focus.title || basename(newestOpenIteration.path, '.md'))}</strong></span>` : ''}${leadTag}${roundTag}<span>Updated ${updated} UTC</span></div>
   </header>
   <section class="brief card">${answers}</section>
   ${byRole('teach', source).map((section) => teachHtml(section, dirname(leader.path))).join('')}
@@ -1558,7 +1556,7 @@ ${withViewer(brief ? briefMain() : `<main>
     <h1>${title}</h1>
     ${flowHtml(leader, shownStatus, playbooks)}
     ${statusLine}
-    <div class="meta"><code>${escapeHtml(where)}</code>${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${reviewTag}<span>Updated ${updated} UTC</span></div>
+    <div class="meta"><code>${escapeHtml(where)}</code>${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${leadTag}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
   ${(own ? byRole('demo', own) : []).map((section) => demoHtml(section, dirname(planPath))).join('')}
   ${needs || olderNeeds.length ? needsSection(needs?.lines ?? [], olderNeeds) : ''}${close ? sectionHtml(close, 'panel') : ''}

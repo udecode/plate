@@ -45,23 +45,24 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "69d14a228828ed6067bd9375c0314c3f4b985961432886a9406fe089e590d0ae",
+    "block": "bcf0a8d076a6ee88bb6228ca669da1c022fb9f6fd580a381a659d68f1c97ab9a",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
-      ".agents/pstack/cross.mjs": "ec0dbbbff16115528c799a2e9ed76a3871c16da62d3304528c55f4ed8597770e",
+      ".agents/pstack/cross.mjs": "97c0945915ee1aad9dfd5083e6a23276a001cbf3297b3831bce213531adba59a",
       ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
       ".agents/pstack/freeze.mjs": "7adda630479f6c81b865b381411f4fcea3d9a26c3b2103148c4bab84b461c4bb",
+      ".agents/pstack/lead.mjs": "2beae3cdca46116818fb1f5b4f8ac4b78bc16ad0f0e94a9dbaadec1011861cf9",
       ".agents/pstack/mutate.mjs": "05c639f85020c067199699f167ac3920e2645971ccaa30a0aeebbc5f8316a317",
       ".agents/pstack/proof.mjs": "5a65de9344d25559f080c91653e22f59f23def3b5b3c312a319440221b8f2144",
       ".agents/pstack/reply.mjs": "36db86ef0f6af915d4a2ac58fea6be62417234a0b1348462e61c8d4f46fd71a3",
       ".agents/pstack/reread.mjs": "a7826063963cbef31d263004fd41c42b50c0252c7105e1b0ec37ea427448c2cf",
-      ".agents/pstack/decisions-check.mjs": "81e5fdc4cc6cea2696a18b24261d3db476f671bd9d2a0882662c275cdc0f488a",
+      ".agents/pstack/decisions-check.mjs": "ba380253f3826f61ce395e9d497e79e29e46e89183cd49749d094c3e86f1fe97",
       ".agents/pstack/plan-open.mjs": "701ba00e8b651851de566c26a28142606bd0694f109ca52dce274d54966b69fb",
-      ".agents/pstack/plan-page.mjs": "bd092d7208de3ec35da226de706ed69e98199c96c768af359cb159befa2775a3",
-      ".agents/pstack/status.mjs": "6a90a44fbe813229d2aa760bd1d30cd75852c2d161671bd1d84f814813935f47"
+      ".agents/pstack/plan-page.mjs": "16f12de5bcafa5aea6bbd3a388c8ad64e113f08a443d3c6fb17cee12fe45287f",
+      ".agents/pstack/status.mjs": "be0e23111171f10ef00e19cdc6204a10ea2b7e1fa83130333dc18d8c3f8b930f"
     },
-    "source": "51feddbc47a52584fba9198403006249527cfad7"
+    "source": "61f145ebaa46dc523d77e4626b8f5ff351fb87a2"
   },
   "pageTopic": {
     "field": "review_scopes",

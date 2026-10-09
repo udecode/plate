@@ -10,6 +10,10 @@
 //        (stamps the row, checks it, and writes it only when it passes)
 //        node .agents/pstack/decisions-check.mjs append <log> --from <rows.tsv>
 //        (each line holds the five cells; writes every row only when all pass)
+//        Both append forms open the batch with a lead row naming the session's model
+//        and effort, read by lead.mjs, when they differ from the log's last lead row.
+//        Both append forms print the stage a written batch moves the log into, so
+//        the lead renames the session as the Session title rule asks.
 //        Both append forms, unlike the <log> and --all checks, refuse a partial, open, gap,
 //        blocked or inconclusive row without proof: <existing file under <plans>/artifacts/>
 //        or proof: none, and an accepted row unless its proof: names files an earlier row
@@ -19,8 +23,9 @@
 //        (exits 1 when the log is at the cap of panel rounds before a build)
 
 import { appendFileSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, STATUSES, statusOf } from './status.mjs';
+import { basename, dirname, join, resolve } from 'node:path';
+import { currentLead, leadLabel } from './lead.mjs';
+import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -132,10 +137,21 @@ function problems(path) {
   });
 }
 
-function append(path, batch) {
+// The page shows which model and effort wrote each stretch of the log, so a
+// batch from a session whose lead differs from the log's last lead row opens
+// with a new one.
+function leadRow(existing, run) {
+  if (!run) return [];
+  const last = existing.findLast((line) => line.split('\t')[1] === 'lead')?.split('\t')[2];
+  const label = leadLabel(run);
+  return last === label ? [] : [['lead', label, 'read from the session transcript, since an agent cannot see its own effort', `transcript ${basename(run.transcript)}`, `recorded ${run.runtime} session`]];
+}
+
+function append(path, batch, run) {
   const stamp = new Date().toISOString().replace(/\.\d{3}Z$/u, 'Z');
   const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
   const existing = (text ?? '').split('\n');
+  batch = [...leadRow(existing, run), ...batch];
   let opened = existing.some(opens);
   const isWriting = (line) => line.split('\t')[1] === 'writing';
   let written = isWriting(existing.findLast((line) => opens(line) || isWriting(line)) ?? '');
@@ -177,6 +193,15 @@ function append(path, batch) {
   return [];
 }
 
+function lastStage(path, rows) {
+  const phases = existsSync(path)
+    ? readFileSync(path, 'utf8').split('\n').slice(1).filter((line) => line.trim()).map((line) => line.split('\t')[1])
+    : [];
+  const covered = phases.slice(0, rows ?? phases.length);
+  const index = covered.findLastIndex((_, at) => stageOfRow(covered, at));
+  return index < 0 ? null : stageOfRow(covered, index);
+}
+
 const args = process.argv.slice(2);
 if (args[0] === 'rounds') {
   if (!args[1] || !existsSync(args[1])) {
@@ -196,12 +221,19 @@ if (args[0] === 'append') {
           .filter((line) => line.trim())
           .map((line) => line.split('\t'))
       : [args.slice(2)];
-  const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch);
+  const rowsBefore = existsSync(args[1] ?? '') ? readFileSync(args[1], 'utf8').split('\n').slice(1).filter((line) => line.trim()).length : 0;
+  const stageBefore = lastStage(args[1] ?? '', rowsBefore);
+  const run = currentLead(basename(args[1] ?? ''));
+  if (!run) console.error(`No single session transcript holds this command, so ${args[1]} gets no lead row naming the model and effort.`);
+  const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run);
   if (found.length > 0) {
     console.error(`${batch.length > 1 ? 'No row written' : 'Row not written'}:\n${found.join('\n')}`);
     process.exit(1);
   }
   console.info(batch.length > 1 ? `Appended ${batch.length} rows to ${args[1]}.` : `Appended a row to ${args[1]}.`);
+  if (run) console.info(`Lead: ${leadLabel(run)}.`);
+  const stage = lastStage(args[1]);
+  if (stage && stage !== stageBefore) console.info(`Stage: ${stage}. Rename the session now, as the Session title rule asks.`);
   process.exit(0);
 }
 const paths =

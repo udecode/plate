@@ -35,6 +35,27 @@ export const SEATS = /^seats\s/u;
 
 export const SEVERITIES = ['critical', 'warning', 'nit'];
 
+export const STAGE_PHASES = {
+  Design: ['architect', 'prototype', 'arena', 'how', 'why', 'design'],
+  Review: ['panel', 'interrogate'],
+  Build: ['build'],
+  Writing: ['writing'],
+  Verify: ['verify', 'proof'],
+  Ship: ['ship', 'delivery'],
+  Reflect: ['reflect', 'lesson'],
+  Audit: ['trail'],
+};
+
+// Panel rounds before the first build row review the plan; later ones review the code.
+export function stageOfRow(phases, index) {
+  const phase = phases[index];
+  if (STAGE_PHASES.Review.includes(phase)) {
+    const firstBuild = phases.findIndex((each) => STAGE_PHASES.Build.includes(each));
+    return firstBuild < 0 || index < firstBuild ? 'Plan review' : 'Code review';
+  }
+  return Object.keys(STAGE_PHASES).find((stage) => STAGE_PHASES[stage].includes(phase));
+}
+
 // Superseded and cancelled plans close without their work, so only landed ones face the Done gate.
 export const landed = (status) => LANDED.includes(words(status)[0]);
 

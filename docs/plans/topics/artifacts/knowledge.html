@@ -1,0 +1,206 @@
+<title>Plate knowledge layer</title>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --ground: #ffffff; --paper: #ffffff; --ink: #15181d; --muted: #4a535e; --faint: #626b77; --rule: #e4e7eb;
+  --c-red: #c2261c; --c-orange: #b8460b; --c-amber: #946000; --c-lime: #4d7c0f; --c-green: #1f7a3d; --c-teal: #0f766e; --c-cyan: #0e7490; --c-blue: #1d5fc2; --c-indigo: #4338ca; --c-violet: #6d28d9; --c-pink: #c0156b; --c-grey: #5f6874; --badge-ink: #ffffff;
+  --cta: var(--c-orange); --cta-ink: var(--badge-ink); --accent: #2c5b8f; --accent-soft: #eaf1f8;
+  --amber: #9a5b00; --amber-soft: #fbf1df; --green: #2f6b3f; --green-soft: #e5f2e8; --red: #b3362b; --red-soft: #f8e6e3; --code: #f4f5f7;
+  --kw: #8a3f9e; --str: #3d6b21; --fn: #2c5b8f; --num: #a24d12;
+  --sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #111316; --paper: #111316; --ink: #e6e8eb; --muted: #c0c7cf; --faint: #9ea7b2; --rule: #262b31;
+  --c-red: #ff6b5e; --c-orange: #ffa45c; --c-amber: #f5c35b; --c-lime: #b5e05a; --c-green: #7fd99a; --c-teal: #5fd4c6; --c-cyan: #67d1ee; --c-blue: #8ab8ff; --c-indigo: #a5a8ff; --c-violet: #c4a6ff; --c-pink: #ff8cc6; --c-grey: #a7b0ba; --badge-ink: #111316;
+  --cta: var(--c-orange); --cta-ink: var(--badge-ink); --accent: #8db6e6; --accent-soft: #1f2d3d;
+  --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #1a1d21;
+  --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --ground: #111316; --paper: #111316; --ink: #e6e8eb; --muted: #c0c7cf; --faint: #9ea7b2; --rule: #262b31;
+  --c-red: #ff6b5e; --c-orange: #ffa45c; --c-amber: #f5c35b; --c-lime: #b5e05a; --c-green: #7fd99a; --c-teal: #5fd4c6; --c-cyan: #67d1ee; --c-blue: #8ab8ff; --c-indigo: #a5a8ff; --c-violet: #c4a6ff; --c-pink: #ff8cc6; --c-grey: #a7b0ba; --badge-ink: #111316;
+  --cta: var(--c-orange); --cta-ink: var(--badge-ink); --accent: #8db6e6; --accent-soft: #1f2d3d;
+  --amber: #f0b45c; --amber-soft: #33270f; --green: #8fcf9f; --green-soft: #18291d; --red: #f0968c; --red-soft: #3a1c19; --code: #1a1d21;
+  --kw: #d7a1e6; --str: #a8d48a; --fn: #8db6e6; --num: #f0a66e; color-scheme: dark;
+}
+body { background: var(--ground); color: var(--ink); font: 14.5px/1.5 var(--sans); padding: 0 16px; margin: 0; }
+main { max-width: 800px; margin: 0 auto; padding-block: 24px 56px; display: grid; gap: 18px; }
+header { display: grid; gap: 4px; }
+h1 { font-size: 1.4rem; line-height: 1.25; margin: 0; text-wrap: balance; font-weight: 700; }
+h2 { font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; text-wrap: balance; }
+h3, h4, h5 { font-size: 0.95rem; margin: 10px 0 2px; }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; color: var(--faint); font-size: 0.8rem; }
+.panel { min-width: 0; }
+.count { font-size: 0.78rem; color: var(--faint); font-weight: 500; letter-spacing: 0; text-transform: none; }
+.chip { font: 700 0.68rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cta-ink); background: var(--cta); border-radius: 999px; padding: 1px 7px; }
+.needs { display: grid; border: 2px solid var(--frame, var(--c-amber)); border-radius: 12px; padding: 12px 16px 0; min-width: 0; }
+.needs:not(:has(.bar)) { padding-bottom: 12px; }
+.needs-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding-bottom: 4px; }
+.needs-head h2 { margin: 0; color: var(--frame, var(--c-amber)); }
+.lg { color: var(--c); font-size: 0.8rem; font-weight: 600; }
+.lg::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; vertical-align: 1px; }
+.q { display: grid; gap: 4px; padding: 12px 0; border-top: 1px solid var(--rule); min-width: 0; }
+.q h3 { margin: 0; font-size: 1.02rem; line-height: 1.35; display: flex; gap: 9px; align-items: baseline; text-wrap: balance; }
+.n { flex: none; font: 700 0.74rem var(--mono); color: var(--badge-ink); background: var(--c); border-radius: 999px; min-width: 1.65em; text-align: center; padding: 1px 0; }
+.ctx { margin: 0 0 2px 2.25em; font-size: 0.86rem; color: var(--muted); }
+.fact { color: var(--faint); }
+.fact::before { content: "· "; }
+.opts { display: grid; grid-template-columns: 1.3em minmax(7.5em, max-content) minmax(0, 1.2fr) minmax(0, 1fr); gap: 0 12px; margin-left: 2.25em; font-size: 0.9rem; }
+.hd { font: 700 0.62rem var(--sans); letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); padding-bottom: 2px; }
+.o { display: contents; cursor: pointer; }
+.o > * { padding: 4px 0; border-top: 1px solid var(--rule); }
+.o input { margin: 7px 0 0; width: 1.05em; height: 1.05em; accent-color: var(--c); }
+.o b { font-weight: 650; }
+.o .cost { color: var(--muted); }
+.o.is-selected b { color: var(--c); }
+.o .why { grid-column: 3 / -1; border-top: 0; padding: 0 0 4px; margin-top: -2px; color: var(--muted); font-size: 0.82rem; font-style: italic; }
+.why-all, .nopick { margin: 2px 0 0 2.25em; font-size: 0.82rem; color: var(--muted); font-style: italic; }
+.nopick { color: var(--c); font-style: normal; font-weight: 600; }
+.from { color: var(--faint); font-weight: 400; font-size: 0.8rem; }
+.bar { position: sticky; bottom: env(safe-area-inset-bottom, 0px); display: flex; gap: 10px; align-items: center; margin: 4px -16px 0; padding: 9px 16px; background: var(--ground); border-top: 2px solid var(--frame, var(--c-amber)); border-radius: 0 0 10px 10px; }
+.bar code { flex: 1 1 auto; min-width: 0; font: 600 0.88rem var(--mono); overflow-wrap: anywhere; padding: 0; }
+.bar.is-default code { color: var(--c-green); }
+.bar.is-changed code { color: var(--c-amber); }
+.bar.is-missing code { color: var(--c-red); }
+.bar button { padding: 4px 12px; font-weight: 700; color: var(--frame, var(--c-amber)); border-color: var(--frame, var(--c-amber)); }
+.bar button:disabled { opacity: 0.4; cursor: not-allowed; }
+@media (max-width: 620px) {
+  .opts { grid-template-columns: 1.3em minmax(0, 1fr); margin-left: 0; }
+  .hd { display: none; }
+  .o > span { grid-column: 2; border-top: 0; padding: 0; }
+  .o > .cost { padding-bottom: 6px; }
+  .ctx, .why-all, .nopick { margin-left: 0; }
+}
+.topics { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.topic { display: grid; gap: 2px; min-width: 0; }
+.topic-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-weight: 600; }
+.topic-lead { margin: 0; color: var(--ink); }
+.topic-meta { margin: 0; color: var(--faint); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+button { font: 500 0.85rem var(--sans); color: var(--accent); background: none; border: 1px solid var(--rule); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--cta); outline-offset: 2px; }
+section.plan { display: grid; gap: 2px; min-width: 0; }
+section.plan + section.plan { border-top: 1px solid var(--rule); padding-top: 14px; }
+p { margin: 0 0 8px; max-width: 72ch; }
+ul, ol { margin: 0 0 8px; padding-left: 1.3em; }
+li { margin: 2px 0; }
+.picks .alt { opacity: 0.75; }
+li > ul, li > ol { margin: 2px 0; }
+code { font: 0.86em var(--mono); padding: 0 2px; color: var(--ink); }
+pre { margin: 0; padding: 10px 12px; background: var(--code); border-radius: 6px; }
+pre code { padding: 0; }
+.scroll { overflow-x: auto; margin: 0 0 10px; }
+table { border-collapse: collapse; font-size: 0.86rem; min-width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 5px 8px; border-bottom: 1px solid var(--rule); }
+th { font-weight: 600; color: var(--faint); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; }
+blockquote { margin: 0 0 8px; padding-left: 10px; border-left: 3px solid var(--rule); color: var(--muted); }
+a { color: var(--accent); }
+.box { display: inline-block; width: 0.8em; height: 0.8em; border: 1.5px solid var(--faint); border-radius: 3px; margin-right: 6px; vertical-align: -0.08em; }
+.box.done { background: var(--green); border-color: var(--green); }
+.compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin: 4px 0 12px; }
+.pane { min-width: 0; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.pane-head { display: flex; justify-content: space-between; align-items: center; padding: 3px 10px; border-bottom: 1px solid var(--rule); }
+.tally { font: 600 0.75rem var(--mono); }
+.tally.del, .diff .del .sign { color: var(--red); }
+.tally.add, .diff .add .sign { color: var(--green); }
+.pane-body { overflow-x: auto; }
+.diff { display: grid; min-width: 100%; width: max-content; padding: 4px 0; font: 0.82em/1.55 var(--mono); }
+.diff .row { display: grid; grid-template-columns: 4ch 2.5ch 1fr; }
+.diff .row code { font: inherit; padding: 0 14px 0 0; white-space: pre; }
+.diff .num { color: var(--faint); text-align: right; padding-right: 1ch; user-select: none; }
+.diff .sign { text-align: center; user-select: none; }
+.diff .del { background: color-mix(in srgb, var(--red) 12%, transparent); }
+.diff .add { background: color-mix(in srgb, var(--green) 12%, transparent); }
+.diff .filler { display: none; }
+.side { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); }
+@media (min-width: 1280px) {
+  main > :has(.compare) { --wide: min(1200px, calc(100vw - 64px)); box-sizing: border-box; width: var(--wide); margin-inline: calc((100% - var(--wide)) / 2); }
+  main > :has(.compare) > :not(.compare) { margin-inline: calc((var(--wide) - 800px) / 2); }
+  .compare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .diff .filler { display: grid; background: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--rule) 45%, transparent) 6px 7px); }
+}
+.details { border-top: 1px solid var(--rule); padding-top: 10px; display: grid; gap: 14px; }
+.details > summary { cursor: pointer; color: var(--muted); font-size: 0.86rem; }
+.iteration { margin: 6px 0; }
+details.iteration > summary { cursor: pointer; }
+details.iteration[open] > summary { margin-bottom: 4px; }
+.hljs-keyword, .hljs-built_in, .hljs-type { color: var(--kw); }
+.hljs-string, .hljs-regexp { color: var(--str); }
+.hljs-title, .hljs-title.function_, .hljs-title.class_ { color: var(--fn); }
+.hljs-number, .hljs-literal { color: var(--num); }
+.hljs-attr, .hljs-property, .hljs-params { color: var(--ink); }
+.hljs-comment { color: var(--faint); font-style: italic; }
+.source { color: var(--muted); font-size: 0.85rem; margin: 0; }
+.hue-red { --hue: var(--c-red); } .hue-orange { --hue: var(--c-orange); } .hue-amber { --hue: var(--c-amber); } .hue-lime { --hue: var(--c-lime); }
+.hue-green { --hue: var(--c-green); } .hue-teal { --hue: var(--c-teal); } .hue-cyan { --hue: var(--c-cyan); } .hue-blue { --hue: var(--c-blue); }
+.hue-indigo { --hue: var(--c-indigo); } .hue-violet { --hue: var(--c-violet); } .hue-pink { --hue: var(--c-pink); } .hue-grey { --hue: var(--c-grey); }
+.pill { font: 700 0.7rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--badge-ink); background: var(--hue, var(--c-grey)); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+.badge { font: 700 0.66rem var(--sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--badge-ink); background: var(--hue, var(--c-grey)); border-radius: 999px; padding: 1px 7px; white-space: nowrap; }
+.tone { color: var(--hue); font-weight: 600; }
+.seats { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.seat { display: inline-flex; gap: 3px; align-items: center; border: 1.5px solid var(--hue); color: var(--hue); border-radius: 999px; padding: 0 8px; font: 600 0.74rem var(--mono); }
+.seat.missing { --hue: var(--c-red); }
+.round-tag { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.card { border: 1px solid var(--rule); border-top: 3px solid var(--hue, var(--rule)); border-radius: 10px; padding: 10px 14px 12px; min-width: 0; }
+.brief.card { display: grid; gap: 0; padding: 2px 14px; border-top: 1px solid var(--rule); }
+.brief .qa { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 0 14px; padding: 7px 0; min-width: 0; }
+.brief .qa > p { margin: 0; }
+.brief .qa + .qa { border-top: 1px solid var(--rule); }
+.brief .qa > h2 { color: var(--hue); font-size: 0.7rem; margin: 2px 0 0; }
+.brief .qa > :not(h2) { grid-column: 2; }
+.findings { list-style: none; padding: 0; display: grid; gap: 4px; }
+.findings li { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+
+.effort { color: var(--muted); font: 500 0.7rem var(--sans); margin-left: 2px; }
+.status-rest { color: var(--muted); font-size: 0.82rem; }
+.status-line { margin: 0; font-weight: 500; }
+.flow { margin: 8px 0 4px; }
+.fs { --hue: var(--c-blue); }
+.fs.done { --hue: var(--c-green); } .fs.now { --hue: var(--c-amber); } .fs.waiting { --hue: var(--c-orange); } .fs.blocked { --hue: var(--c-red); } .fs.skipped, .fs.stopped { --hue: var(--c-grey); }
+.flow-rail { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 4px; align-items: center; }
+.flow-rail .arrow { color: var(--faint); font-size: 0.8rem; }
+.fs { display: inline-flex; gap: 5px; align-items: baseline; border: 1.5px solid var(--hue); color: var(--hue); border-radius: 999px; padding: 2px 10px; font: 600 0.76rem var(--sans); white-space: nowrap; }
+.fs.done, .fs.waiting, .fs.blocked { color: var(--badge-ink); background: var(--hue); }
+.fs.skipped { border-style: dashed; opacity: 0.75; font-weight: 500; }
+.fs.now, .fs.waiting, .fs.blocked { box-shadow: 0 0 0 3px color-mix(in srgb, var(--hue) 25%, transparent); }
+.fs-meta { font: 700 0.7rem var(--mono); opacity: 0.9; }
+.tool { font: 500 0.68rem var(--mono); border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; opacity: 0.9; }
+.demo-steps { display: grid; gap: 1.25rem; padding-left: 1.4rem; }
+.demo-steps > li > p { margin: 0 0 0.5rem; }
+.shots { display: grid; gap: 1rem; }
+.shot { margin: 0; }
+.shot img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 8px; cursor: zoom-in; }
+.lightbox { padding: 0; border: 0; max-width: 96vw; max-height: 96vh; overflow: auto; background: transparent; }
+.lightbox::backdrop { background: rgb(0 0 0 / 0.8); }
+.lightbox img { display: block; max-width: none; cursor: zoom-out; }
+.shot figcaption { font-size: 0.8rem; opacity: 0.75; margin-top: 0.25rem; }
+.shot.missing { border: 1px dashed var(--rule); border-radius: 8px; padding: 0.5rem 0.75rem; }
+</style>
+<main>
+  <header>
+    <h1>Plate knowledge layer</h1>
+    <div class="flow"><ol class="flow-rail"><li class="fs done" title="The plan file and its brief; the badges name the playbook poteto-mode picked.">Plan</li><li class="arrow" aria-hidden="true">→</li><li class="fs now" title="architect, prototype, arena, how or why explored the design.">Design</li><li class="arrow" aria-hidden="true">→</li><li class="fs left" title="interrogate panel rounds on the plan, before the build.">Plan review</li><li class="arrow" aria-hidden="true">→</li><li class="fs left" title="Code written; the count is checked Steps.">Build</li><li class="arrow" aria-hidden="true">→</li><li class="fs left" title="deslop, no-comments and unslop cleanup passes.">Writing</li><li class="arrow" aria-hidden="true">→</li><li class="fs left" title="interrogate panel rounds on the code.">Code review</li><li class="arrow" aria-hidden="true">→</li><li class="fs left" title="The verify skill or a proof run on the real app.">Verify</li><li class="arrow" aria-hidden="true">→</li><li class="fs left" title="show-me-your-work's decision-trail review: another model checks each decision-log claim against the conversation.">Audit</li><li class="arrow" aria-hidden="true">→</li><li class="fs left" title="The work landed.">Ship</li><li class="arrow" aria-hidden="true">→</li><li class="fs left" title="Lessons saved with reflect.">Reflect</li></ol></div>
+    <p class="status-line">Unknown</p>
+    <div class="meta"><code>docs/plans/topics/knowledge.md</code><span>Updated 2026-10-08 22:06 UTC</span></div>
+  </header>
+  
+  
+  
+  
+  <section class="panel"><h2>Layer and owner</h2><p>The state on 2026-10-06, from eight read-only audits (<code>docs/plans/2026-10-06-knowledge-reorg.decisions.tsv</code>).</p>
+<div class="scroll"><table><thead><tr><th>Knowledge job</th><th>Owner</th><th>Read by</th><th>Written by</th></tr></thead><tbody><tr><td>Behavior law</td><td><code>docs/editor-behavior/markdown-editing-spec.md</code>, beside a protocol matrix, a parity matrix and a roadmap that overlap it</td><td>AGENTS.md close-out paragraph only</td><td>AGENTS.md close-out paragraph</td></tr><tr><td>Behavior proof index</td><td><code>docs/editor-behavior/current-evidence.md</code>, by hand</td><td>no playbook</td><td>AGENTS.md close-out paragraph</td></tr><tr><td>External-editor evidence</td><td>five roots: <code>docs/plite/research/&lt;run&gt;</code>, <code>docs/research/sources</code>, <code>docs/research/decisions</code>, <code>docs/editor-audits</code>, <code>docs/research/raw</code>, plus an untracked <code>../raw</code></td><td>the research rule; <code>review-ledger.mjs research</code> reads only <code>docs/plite/research</code></td><td>the research rule's modes</td></tr><tr><td>Upstream issues</td><td><code>docs/editor-issue-harvester/&lt;repo&gt;</code>, <code>c70bacbd4a:docs/plite-issues</code>, the maintainer queue</td><td>typed <code>issue-harvester</code> and maintainer only</td><td>issue-harvester, maintainer</td></tr><tr><td>Harvested tests</td><td><code>docs/editor-test-harvester/&lt;repo&gt;</code></td><td>typed <code>research harvest</code> only</td><td>research harvest</td></tr><tr><td>Measurements</td><td><code>benchmarks/targets</code>, <code>benchmarks/editor</code>, plans with Cause History, git-ignored <code>tmp/</code></td><td>the benchmark rule and the Perf issue playbook</td><td>benchmark runners</td></tr><tr><td>Lessons</td><td><code>docs/research/sources/plate-notes</code>, 60 waiting <code>c70bacbd4a:docs/solutions</code> notes</td><td>Bug fix and Perf issue playbooks</td><td>none after the 2026-10-06 compile</td></tr><tr><td>Verdicts and adoption</td><td><code>docs/research/review-scopes</code>, <code>review-records</code>, review pages in plan front matter</td><td>the review ledger in API review, Plan and Build</td><td>API review playbook</td></tr><tr><td>Current conclusions</td><td>ledger head, <code>docs/research/decisions/&lt;scope&gt;.md</code> and <code>docs/plans/topics/&lt;subject&gt;.md</code> all claim it</td><td>lookup, plan pages</td><td>API review, plan fold</td></tr><tr><td>Plans and trails</td><td>2,148 plans and 43 decision logs in <code>docs/plans</code></td><td>plan-page, review ledger</td><td>Plan, Build and other playbooks</td></tr><tr><td>Run evidence</td><td><code>docs/research/probes</code> (committed), <code>docs/plans/artifacts</code> (ignored), <code>docs/plite/research</code> runs</td><td>records and plans by path</td><td>ad hoc</td></tr></tbody></table></div></section>
+  
+  
+  <section class="plan"><p>Where Plate keeps what it learns about editors (behavior law and its proof, external-editor research, upstream issues and harvested tests, measurements, lessons, decisions and plans) and which workflow step reads and writes each piece. Every plan below is one iteration of this subject.</p></section>
+  
+  
+  
+  
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+window.hljs?.highlightAll();
+document.querySelectorAll('.diff code').forEach((element) => window.hljs?.highlightElement(element));
+</script>
