@@ -30,15 +30,21 @@ export const codeBlockValue: any = (
     <hcodeblock lang="python">
       <hcodeline># Python class with type hints</hcodeline>
       <hcodeline>from typing import List, Optional</hcodeline>
-      <hcodeline />
+      <hcodeline>
+        <htext />
+      </hcodeline>
       <hcodeline>class TaskManager:</hcodeline>
       <hcodeline>{'    def __init__(self) -> None:'}</hcodeline>
       <hcodeline>{'        self.tasks: List[str] = []'}</hcodeline>
-      <hcodeline />
+      <hcodeline>
+        <htext />
+      </hcodeline>
       <hcodeline>{'    def add_task(self, task: str) -> None:'}</hcodeline>
       <hcodeline>{`        """Add a new task to the list."""`}</hcodeline>
       <hcodeline>{'        self.tasks.append(task)'}</hcodeline>
-      <hcodeline />
+      <hcodeline>
+        <htext />
+      </hcodeline>
       <hcodeline>
         {'    def get_task(self, index: int) -> Optional[str]:'}
       </hcodeline>
@@ -57,7 +63,9 @@ export const codeBlockValue: any = (
       <hcodeline>{'  --secondary-color: #64748b;'}</hcodeline>
       <hcodeline>{'  --border-radius: 0.5rem;'}</hcodeline>
       <hcodeline>{'}'}</hcodeline>
-      <hcodeline />
+      <hcodeline>
+        <htext />
+      </hcodeline>
       <hcodeline>{'.card {'}</hcodeline>
       <hcodeline>{'  background: white;'}</hcodeline>
       <hcodeline>{'  border-radius: var(--border-radius);'}</hcodeline>
@@ -67,7 +75,9 @@ export const codeBlockValue: any = (
       <hcodeline>{'  padding: 1.5rem;'}</hcodeline>
       <hcodeline>{'  transition: transform 0.2s ease-in-out;'}</hcodeline>
       <hcodeline>{'}'}</hcodeline>
-      <hcodeline />
+      <hcodeline>
+        <htext />
+      </hcodeline>
       <hcodeline>{'.card:hover {'}</hcodeline>
       <hcodeline>{'  transform: translateY(-2px);'}</hcodeline>
       <hcodeline>{'}'}</hcodeline>

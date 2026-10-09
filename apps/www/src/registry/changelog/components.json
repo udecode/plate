@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
   "components": {
+    "plugin-rules-demo": ["2026-10-09-fix-empty-demo-elements"],
+    "code-block-demo": ["2026-10-09-fix-empty-demo-elements"],
     "block-discussion": [
       "2026-09-28-keep-comment-selection-visible",
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
