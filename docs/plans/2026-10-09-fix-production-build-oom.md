@@ -1,0 +1,352 @@
+# Fix production build OOM
+
+Objective:
+Port the proven production compiler fix from next to main. Finish when the local production build, browser smoke, required checks, and review pass, with a dedicated PR ready for merge.
+
+Flow mode:
+one-shot execution
+
+Goal plan:
+docs/plans/2026-10-09-fix-production-build-oom.md
+
+Template:
+docs/plans/templates/task.md
+
+Primary template:
+docs/plans/templates/task.md
+
+Applied packs:
+- browser (docs/plans/templates/packs/browser.md)
+
+Task source:
+- type: user report and authenticated Vercel deployment logs
+- id / link: https://vercel.com/udecode/plate/DH6BWZTkhMcgz9L8X6bdTE5z5XH1
+- title: Production main build killed for OOM
+- acceptance criteria: retain the existing 16 GB machine; fix the build compiler configuration; preserve docs, registry output, development Turbopack, and published packages.
+
+Timed checkpoint:
+- requested duration: N/A, none requested.
+- semantics: N/A, no timed run.
+- initial confidence score: N/A, use actual build exit status.
+- improvement loop: Repair only failures introduced by the compiler switch.
+- final score / loop closure: Actual build, browser, and required checks determine closure.
+
+Completion threshold:
+- Direct production Next build exits 0 without rebuilding CI-owned registry output. A production server serves the homepage, docs, and standalone demo in the approved browser. Required check and autoreview pass before PR creation.
+- Vercel deployment success for this exact patch remains a distinct external verification item; do not infer it from local proof or the successful next branch.
+- If a PR is created or updated, this exact task plan exists at the PR head,
+  identifies that exact PR, and the PR body names it exactly once.
+- Task closure is legal only when the source-of-truth acceptance criteria are
+  satisfied or explicitly narrowed, required verification evidence is recorded,
+  code-review and release-artifact gates are closed when applicable, tracker/PR
+  sync is complete or marked N/A with reason, and
+  `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-10-09-fix-production-build-oom.md` passes.
+
+Verification surface:
+- Vercel failing main log and successful next log on equal 8-core, 16 GB machines.
+- Local production Next build --webpack with PLATE_WWW_ASYNC_DOCS=1, after docs generation, using existing CI registry artifacts.
+- Next config loading in both development and production phases; scoped lint; pnpm check; structured autoreview --mode local.
+- Production browser smoke for /, /docs/installation, and /blocks/plugin-rules-demo if that route exists.
+- PR body/head readback and goal-plan checker.
+
+Constraints:
+- Preserve existing user-facing behavior outside the task scope.
+- Prefer the durable ownership boundary over caller-by-caller patches.
+- Do not create PRs, comments, commits, or pushes unless the task/user/skill
+  requires them.
+- Do not add broad ceremony when the task is trivial or docs-only.
+
+Boundaries:
+- Source of truth: user report, Vercel deployment logs, current main, and next repair commits 40bb59c760 and cfff64f430.
+- Allowed edit scope: package.json, apps/www/package.json, apps/www/next.config.ts, apps/www/vercel.json, this plan.
+- Browser surface: production homepage, docs, standalone plugin-rules demo.
+- Tracker sync: N/A, no issue or ticket supplied.
+- Non-goals: no RAM upgrade, Next upgrade, package behavior changes, source docs edits, registry regeneration, template edits, or main/next branch merge.
+
+Output budget strategy:
+- Keep searches bounded to build owners. Save large build/check output under .tmp and inspect tails. Parse Vercel logs to timestamps and text before displaying.
+
+Blocked condition:
+- Missing required verification access or a reproducible unrelated check failure after the applicable environment repair policy. Record the exact command and limitation; do not claim a deployment passed without observing it.
+
+Task state:
+- task_type: bug fix
+- task_complexity: normal, four configuration files
+- current_phase: implementation
+- current_phase_status: complete
+- next_phase: PR / tracker sync
+- goal_status: active
+
+Current verdict:
+- verdict: valid
+- confidence: high for compiler memory failure; exact resource cause below compiler is unprofiled.
+- next owner: build_fix subagent, exclusive ownership of four configuration files; root owns plan and all verification.
+- reason: main Next 16.2.6 Turbopack receives SIGKILL during compilation; next already ships a Webpack build fix on the same machine size.
+
+Pre-solution issue challenge:
+- reporter claim: production deploy fails with OOM; increasing RAM is unacceptable.
+- suggested diagnosis or fix: use the already shipped next compiler fix, without unrelated next architecture changes.
+- repro ladder:
+  - tests / source-level repro: authenticated Vercel ERROR/out_of_memory for main 97dabdb9; failure is during optimized compilation, before static generation.
+  - Playwright / automated browser: N/A, compilation fails before a browser can run.
+  - Browser plugin: post-build smoke required, cannot reproduce compiler resource exhaustion.
+  - screenshot / visual proof: N/A for build failure, compiler output is decisive evidence.
+- reproduction verdict: valid, two production main deployments fail for OOM.
+- validity verdict: valid; no evidence that paid memory expansion is necessary.
+- best long-term fix boundary: app production compiler config plus Vercel build command.
+- harsh honest feedback: Turbo concurrency alone cannot fix the observed single-app compilation failure.
+- hard-stop decision: proceed with existing source-backed repair; verify patched main separately.
+
+Completion rule:
+- Do not call `update_goal(status: complete)` while any required checklist item
+  remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
+- Do not call `update_goal(status: complete)` until every completion threshold
+  above is satisfied, final handoff evidence is recorded, and
+  `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-10-09-fix-production-build-oom.md` passes.
+- Do not create hook state for this goal. This file plus the active goal are the
+  durable state.
+
+Start Gates:
+| Gate | Applies | Evidence |
+|------|---------|----------|
+| Timed checkpoint parsed | no | N/A, no duration requested. |
+| Skill analysis before edits | yes | task, autogoal, poteto-mode bug-fix, how, Vercel deployments-cicd, and required review/style skills read. |
+| Active goal checked or created | no | N/A, user requested a bug fix, not a native persistent goal; this file records task state. |
+| Source of truth read before edits | yes | User report and failing Vercel main logs read before implementation. |
+| Tracker comments and attachments read | no | N/A, no tracker item. |
+| Video transcript evidence required | no | N/A, no video. |
+| Pre-solution issue challenge required | no | N/A, no public tracker diagnosis; source-backed report analysis recorded above. |
+| Reproduction verdict before implementation | yes | Two main deployments ERROR/out_of_memory during compiler execution. |
+| Repro escalation ladder selected | yes | Compiler logs are the matching failure record; browser cannot reproduce compilation. |
+| Suggested fix reviewed against durable boundary | yes | Existing next build repair selected; compiler owner changed, no package or content workaround. |
+| `docs/solutions` checked for non-trivial existing-code work | yes | No relevant docs/solutions match; existing June OOM plans and next repair commits inspected. |
+| TDD decision before behavior change or bug fix | yes | Full production build is the regression proof; synthetic memory unit test would not prove deploy behavior. |
+| Branch decision for code-changing task | yes | Clean checkout fast-forwarded to latest main, then codex/fix-production-build-oom created. |
+| Release artifact decision | no | N/A, private app build config only; no package or registry output change. |
+| Browser tool decision for browser surface | yes | In-app Browser via cua_repl; no separate browser-use tool exposed. |
+| PR expectation decision | yes | task requires verified code-changing work to be committed/pushed/opened as a PR. |
+| Dedicated task plan selected for exact PR | yes | This plan owns one production OOM PR only. |
+| Tracker sync expectation decision | no | N/A, no issue or ticket. |
+| Output budget strategy recorded | yes | Bounded source queries and .tmp log artifacts; initial oversized output recorded above. |
+| Browser pack selected | yes | Production output smoke required by repo for apps/www changes. |
+| Browser route / app surface identified | yes | Homepage, installation docs, standalone plugin-rules demo. |
+| Browser tool decision recorded | yes | Existing in-app Browser selected and exercised through cua_repl. |
+| Console/network caveat policy recorded | yes | Read captured console errors; no complete network trace claimed. Route render and server logs provide scoped request proof. |
+
+Work Checklist:
+- [x] Skill analysis completed before implementation; see Start Gates.
+- [ ] If a duration was requested, it is recorded as minimum active work unless
+      explicitly marked hard stop; when no better metric exists, initial and
+      final confidence scores are recorded.
+- [ ] Short objective plus outcome, completion threshold, verification surface,
+      constraints, boundaries, and blocked condition are concrete.
+- [ ] Task source classified with source type, id/link, title, task type,
+      acceptance criteria, caveats, likely files/routes/packages, browser
+      surface, and root-cause layer.
+- [ ] Required video or screen-recording evidence is cached/read as normalized
+      `<video-transcripts>` XML, or marked N/A with reason.
+- [ ] For public tracker bug reports, behavior claims, technical diagnoses, or
+      suggested fixes, reporter claims are challenged before implementation
+      with a recorded verdict: `valid`, `not reproduced`, `invalid`,
+      `wont-fix`, `partially valid`, or `platform limitation`. Feature, docs,
+      support, or cleanup requests with no bug claim may mark reproduction
+      `N/A` with reason.
+- [ ] Repro escalation ladder followed for bug/behavior claims: focused
+      test/source-level repro first when applicable; existing repo-owned
+      Playwright regression/test harness next when available and useful as
+      executable coverage; do not use standalone Playwright, Puppeteer, or raw
+      DevTools as a substitute for the repo Browser policy;
+      `[@Browser](plugin://browser@openai-bundled)` next when tests or
+      Playwright cannot reproduce or cannot model the surface honestly;
+      screenshot or explicit visual-proof waiver when visual/native state
+      matters.
+- [ ] Hard-stop rule followed for bug/behavior claims: no code when the issue
+      is not reproduced, invalid, or won't-fix; partial validity pivots to the
+      best long-term fix and records what was wrong or incomplete in the issue's
+      proposed path.
+- [ ] Nearby repo instructions and implementation patterns read before edits.
+- [ ] Implementation fixes the right ownership boundary, or the narrower choice
+      is recorded with reason.
+- [ ] Release artifact requirement recorded: changeset, registry changelog, or
+      N/A with reason.
+- [ ] Final handoff shape decided: bug/feature/testing/batch/review/tracker
+      requirements, PR body sync, and issue/Linear sync when applicable.
+- [ ] Branch handling recorded for code-changing work: dedicated branch used,
+      new branch needed, or N/A with reason.
+- [ ] Every PR has its own `task` invocation and dedicated plan; this plan is
+      not aggregate evidence for another PR.
+- [ ] If a PR exists, its body has exactly one
+      `🧭 Task plan: docs/plans/<plan>.md` line, this file exists at the exact PR
+      head, and this plan records that exact PR number or URL.
+- [ ] Local-env-rot retry policy recorded for any surprising repo-wide failure:
+      reinstall/rerun evidence or N/A with reason.
+- [ ] Workspace authority recorded: every proof command names the cwd/tool that
+      owns the changed behavior.
+- [ ] High-risk note recorded for public API, runtime, package-boundary,
+      browser behavior, agent-action, or command-contract changes, or marked
+      N/A with reason.
+- [ ] Review/autoreview target selected from actual diff state for non-trivial
+      implementation work, or marked N/A with reason.
+- [ ] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
+      `.codex/**`, skills, hooks, commands, prompts, or user-action tooling.
+- [ ] Output budget discipline recorded and followed: broad searches are
+      scoped, capped, counted, or artifacted instead of streamed into goal
+      context.
+- [ ] Browser pack: route, interaction path, and expected visible outcome are recorded before proof.
+- [ ] Browser pack: browser proof uses the repo-approved browser tool or records a blocker/waiver.
+- [ ] Browser pack: console and network errors are checked or explicitly out of scope.
+- [ ] Browser pack: screenshot, trace, or exact verification caveat is ready for final handoff.
+
+Completion Gates:
+| Gate | Applies | Required action | Evidence |
+|------|---------|-----------------|----------|
+| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
+| Pre-solution issue challenge verdict | pending | Record reporter claim, suggested fix, repro verdict, validity verdict, durable boundary, and hard-stop/pivot decision before implementation | pending |
+| Repro escalation ladder | pending | For bug/behavior claims, record test/source-level, Playwright, Browser, and screenshot/visual-proof outcomes or N/A/blocker reasons before `not reproduced` | pending |
+| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
+| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
+| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
+| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
+| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
+| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
+| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
+| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
+| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
+| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
+| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
+| User-visible registry output changed | pending | Use the registry-changelog pack: add/update `apps/www/src/registry/changelog/entries/*.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --check`, or record N/A | pending |
+| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for supporting public docs/content/API/example changes, load `docs-creator` and close the docs pack; for typo/link-only edits, record the explicit reason and proportional proof | pending |
+| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
+| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
+| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
+| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
+| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
+| Per-PR task ownership | pending | Verify one task-plan body line, plan at exact head, and exact PR ownership in this plan | pending |
+| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
+| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
+| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
+| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
+| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
+| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
+| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-10-09-fix-production-build-oom.md` | pending |
+| Browser interaction proof | pending | Exercise the target route/interaction with the approved browser tool or record blocker | pending |
+| Browser console/network check | pending | Record console/network state or why it is not applicable | pending |
+| Browser final proof artifact | pending | Record screenshot/trace/route proof or exact caveat | pending |
+
+Phase / pass table:
+| Phase | Status | Evidence | Next |
+|-------|--------|----------|------|
+| Intake and source read | complete | Vercel logs, config source, next repair history | implementation |
+| Implementation | complete | Four build-owner configuration files | verification |
+| Verification | complete | Production build, browser, pnpm check, config types, review pass | PR / tracker sync |
+| PR / tracker sync | in_progress | Required check passed; create one dedicated PR | closeout |
+| Closeout | pending | Read back exact PR head and completed plan | final response |
+
+Findings:
+- Failed main dpl_DH6BWZTkhMcgz9L8X6bdTE5z5XH1 uses Next 16.2.6 Turbopack, turbo run build, 8 cores and 16 GB; compiler is killed after Creating an optimized production build.
+- Successful next dpl_DLGQv9PK3L9x38vYLJrXLmpCX5HH uses the same machine, Next 16.3.2, Webpack, memory optimizations, and build:www:ci. Different graph/version means this is supporting evidence, not proof for patched main.
+- next commit 40bb59c760 owns the compiler and bounded build script; cfff64f430 keeps ts-morph external to avoid an optional source-map-support bundling failure.
+- Local Next 16.2.6 supports the required settings. Main code changes since the previous production success are demo element fixes and registry changelog data, not build/dependency changes.
+
+Decisions and tradeoffs:
+- Fix Root Causes shaped the choice to change the compiler that receives SIGKILL, rather than raising RAM or only lowering Turbo concurrency.
+- Model the Domain shaped a declarative config change using the existing development phase, without introducing another environment flag or helper abstraction.
+- Prove It Works requires a patched-main production build and browser smoke; next branch success alone does not close the task.
+- No synthetic unit test for compiler memory consumption. The real build is the regression check.
+- Throughput checkpoint: the production build is the critical path. One writer owns config files; root prepares plan/browser tooling. Avoid simultaneous memory-heavy build/check processes, then review and independent light checks can overlap.
+- Branch was clean main at intake. Fetch and fast-forward to latest main 97dabdb9, then create codex/fix-production-build-oom. No worktree or unrelated changes.
+- Changeset/registry changelog are N/A because no published package behavior or registry output changes.
+- High-risk note: Webpack can resolve server-only dependencies differently. Externalize ts-morph in production and verify compilation plus representative rendered routes. Keep development Turbopack imports unchanged.
+
+Implementation notes:
+- Four build-owner files changed, 9 added and 2 deleted config lines. Production uses Webpack and external ts-morph; development retains existing Turbopack aliases/transpilation. Vercel command explicitly scopes www dependencies and concurrency=2.
+- No Node heap change, dependency update, registry regeneration, or template edits.
+- pnpm install --frozen-lockfile passed and produced no tracked dependency or generated-rule changes.
+- Local next config loads in both phases with the intended resolver settings. Biome scoped check passed without fixes.
+
+Review fixes:
+- Structured autoreview --mode local passed with no accepted/actionable findings. No extra review cycle required.
+- deslop inspection found no added comments, casts, guards, or abstractions. no-comments is N/A to new lines because the patch adds no comments or suppressions.
+
+Error attempts:
+| Error / failed attempt | Count | Next different move | Resolution |
+|------------------------|-------|---------------------|------------|
+| Initial discovery output exceeded useful scope | 2 | Bound exact tool names and parse log text | Recovered with scoped reads; no secrets exposed |
+| Successful next commit not available locally | 1 | Fetch origin next read-only | Commit source available after fetch |
+
+Verification evidence:
+- .tmp/production-build-oom-webpack.log records Next 16.2.6 webpack, both memory flags enabled, Compiled successfully in 70s, all 867/867 static generation entries, and process exit 0.
+- .tmp/production-build-oom-source.log records successful async source generation. No local build:registry run.
+- .tmp/production-build-oom-graph.log records the www dependency graph with 53 build tasks; concurrency is bounded by the script.
+- Config loader output confirms development transpilePackages=['ts-morph'] and devAliases=true; production serverExternalPackages=['ts-morph'] and devAliases=false.
+- rtk proxy pnpm exec biome check --write package.json apps/www/package.json apps/www/vercel.json apps/www/next.config.ts passed, 4 files, no fixes.
+- Ordinary pnpm exec biome was incorrectly translated into another linter by the local output tool. Direct proxy confirmed Biome 2.5.0 and passed; no product or environment reinstall required.
+- Production server at http://127.0.0.1:3334 served homepage, /docs/installation, and /blocks/plugin-rules-demo in the approved in-app Browser. Demo Editing menu opened with Editing/Viewing/Suggestion items. Captured warning/error console logs were empty. No full network trace captured.
+- .tmp/production-build-oom-review.log records autoreview clean, no accepted/actionable findings, patch is correct. Reviewer confidence 0.84; local real build/browser proof subsequently completed.
+- Config-only tsc first invocation hit TypeScript 6 TS5112 because a file argument requires --ignoreConfig. Retried with the documented flag; result recorded below when complete.
+- pnpm --filter www exec tsc --ignoreConfig --noEmit --skipLibCheck --module esnext --target es2022 --moduleResolution bundler --esModuleInterop next.config.ts passed, exit 0.
+- rtk proxy pnpm check passed, exit 0. Lint, all package typechecks, fast/slow test suites, and slowest-test gate completed. One existing sidebar hook lint warning remains non-failing and outside the patch.
+- git diff --check passed. git status confirms only the four config files and this dedicated task plan differ from main; no template/generated output changes.
+
+Final handoff contract:
+- PR line: pending
+- Issue / tracker line: pending
+- Confidence line: pending
+- Flow table:
+  - Reproduced: tests pending, browser pending
+  - Verified: tests pending, browser pending
+- Browser check: pending
+- Outcome: pending
+- Caveat: pending
+- Design:
+  - Chosen boundary: pending
+  - Why not quick patch: pending
+  - Why not broader change: pending
+- Verified: pending
+- PR body verified: pending
+
+Task-style PR body contract:
+- Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
+  part of the diff and repo policy expects auto release, include that block.
+- Use the accepted kitcn PR #270 visual format. The body starts with an emoji
+  issue/tracker/fix line, for example `🐛 Fixes #123` or `🐛 Fixes ➖ N/A`, then
+  exactly one `🧭 Task plan: docs/plans/<plan>.md` line, then an emoji
+  confidence line like `🟢 95-100% confidence`. The plan must exist at the
+  exact PR head and identify that exact PR.
+- Use this exact table header: `| Phase | 🧪 Tests | 🌐 Browser |`.
+- Use `Reproduced` and `Verified` rows. Mark passing proof with `🟢`, repro or
+  failing proof with `🔴`, and non-applicable cells with `➖ N/A`.
+- Use bold emoji section headings: `**✅ Outcome**`, `**⚠️ Caveat**`,
+  `**🏗️ Design**`, and `**🧪 Verified**`.
+- Never include a line that links to the current PR itself. The current PR URL
+  belongs in the final response, not in its own description.
+- Do not replace this with a generic `Summary` / `Verification` PR body, an
+  adaptive prose body from a git helper skill, plain `## Outcome` sections, or
+  an unrelated generated badge footer unless the caller or repo template
+  explicitly asks for it.
+- Proof is `gh pr view --json body` output or a concise source-backed summary
+  of that output.
+
+Final handoff / sync:
+- PR: pending
+- Task plan at exact PR head: pending
+- Issue / tracker: pending
+- Browser proof: pending
+- Caveats: pending
+
+Timeline:
+- 2026-10-09T18:51:05.944Z Task goal plan created.
+
+Reboot status:
+| Question | Answer |
+|----------|--------|
+| Where am I? | Local verification complete; preparing PR |
+| Where am I going? | PR creation, exact head/plan ownership readback, final handoff |
+| What is the goal? | Reviewable verified production compiler fix within existing memory allocation |
+| What have I learned? | See Findings |
+| What have I done? | See Timeline |
+
+Open risks:
+- Vercel has not run this exact patched main commit yet. Local success and existing next deployment support the fix, but do not prove its final container memory peak.
+- Webpack reports existing Mermaid require analysis and docx duplicate-export warnings; compilation and rendered routes pass. No adjacent package cleanup is included.
