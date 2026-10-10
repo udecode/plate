@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-10-selection-context-menu",
+      "href": "/registry/changelog/2026-10-10-selection-context-menu.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve selected blocks when opening context menus from nested drag handles",
+      "change": {
+        "type": "source",
+        "date": "2026-10-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-menu", "dnd"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-08-emoji-frimousse",
       "href": "/registry/changelog/2026-10-08-emoji-frimousse.json",
       "status": "draft",

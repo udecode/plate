@@ -533,6 +533,23 @@ export function NodeSelectionDrag({
     };
     const onPointerDown = (event: PointerEvent) => {
       if (
+        event.button === 2 &&
+        SelectionApi.isNode(editor.read.runtime.snapshot().selection) &&
+        event.target instanceof ownerWindow.Element &&
+        editable.contains(event.target)
+      ) {
+        const element = event.target.closest(EDITOR_ELEMENT_SELECTOR);
+        const node = element ? editor.api.dom.resolveNode(element) : null;
+        if (
+          ElementApi.isElement(node) &&
+          editor.read.selection.contains(node)
+        ) {
+          event.preventDefault();
+          return;
+        }
+      }
+
+      if (
         gesture ||
         event.button !== 0 ||
         event.target !== editable ||
@@ -582,11 +599,61 @@ export function NodeSelectionDrag({
       if (gesture) gesture.geometryDirty = true;
     };
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (!gesture || event.key !== 'Escape') return;
+    const onKey = (event: KeyboardEvent) => {
+      if (gesture && event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        cancelGesture();
+        return;
+      }
+      if (
+        event.target !== editable ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        (event.key !== 'ArrowUp' &&
+          event.key !== 'ArrowDown' &&
+          event.key !== 'Shift')
+      ) {
+        return;
+      }
+      const { selection } = editor.read.runtime.snapshot();
+      if (!SelectionApi.isNode(selection)) return;
       event.preventDefault();
       event.stopPropagation();
-      cancelGesture();
+      // A focused contenteditable can recreate its native caret before keyup.
+      ownerDocument.getSelection()?.removeAllRanges();
+      if (event.type === 'keyup' || event.key === 'Shift') return;
+      const parent = PathApi.parent(selection.focusPath);
+      if (
+        selection.paths.some(
+          (path) => !PathApi.equals(PathApi.parent(path), parent)
+        )
+      ) {
+        return;
+      }
+      const candidates = getSelectionCandidates(editor, editable).filter(
+        (candidate) => PathApi.equals(PathApi.parent(candidate.path), parent)
+      );
+      const anchor = candidates.findIndex((candidate) =>
+        PathApi.equals(candidate.path, selection.anchorPath)
+      );
+      const focus = candidates.findIndex((candidate) =>
+        PathApi.equals(candidate.path, selection.focusPath)
+      );
+      const next = focus + (event.key === 'ArrowUp' ? -1 : 1);
+      const target = candidates[next];
+      if (anchor === -1 || focus === -1 || !target) return;
+      const selected = event.shiftKey
+        ? candidates.slice(Math.min(anchor, next), Math.max(anchor, next) + 1)
+        : [target];
+      editor.update.selection.setNodes(
+        selected.map((candidate) => candidate.path),
+        {
+          anchor: event.shiftKey ? selection.anchorPath : target.path,
+          focus: target.path,
+        }
+      );
     };
     const unsubscribe = editor.subscribeCommit((commit) => {
       if (gesture && commit.changed.hasAny('document')) {
@@ -596,7 +663,8 @@ export function NodeSelectionDrag({
     });
 
     ownerWindow.addEventListener('blur', cancelGesture);
-    ownerDocument.addEventListener('keydown', onKeyDown, true);
+    ownerDocument.addEventListener('keydown', onKey, true);
+    ownerDocument.addEventListener('keyup', onKey, true);
     ownerDocument.addEventListener('click', onClick, true);
     ownerDocument.addEventListener('pointercancel', onPointerEnd, true);
     ownerDocument.addEventListener('pointerdown', onPointerDown, true);
@@ -612,7 +680,8 @@ export function NodeSelectionDrag({
       unsubscribe();
       cancelGesture();
       ownerWindow.removeEventListener('blur', cancelGesture);
-      ownerDocument.removeEventListener('keydown', onKeyDown, true);
+      ownerDocument.removeEventListener('keydown', onKey, true);
+      ownerDocument.removeEventListener('keyup', onKey, true);
       ownerDocument.removeEventListener('click', onClick, true);
       ownerDocument.removeEventListener('pointercancel', onPointerEnd, true);
       ownerDocument.removeEventListener('pointerdown', onPointerDown, true);
