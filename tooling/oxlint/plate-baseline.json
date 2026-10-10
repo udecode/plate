@@ -318,9 +318,6 @@
     "packages/platejs/src/react/plugin/PlatePlugin.ts": [
       "export type AnyPlugin = AnyPluginRuntime;"
     ],
-    "packages/platejs/src/static/renderStaticHtml.tsx": [
-      "export type StaticHtmlDiagnostic = AuthoredProjectionDiagnostic;"
-    ],
     "packages/plitejs/src/authored/format.ts": [
       "export type AuthoredProjectionDiagnostic = NativeAuthoredProjectionDiagnostic;"
     ],

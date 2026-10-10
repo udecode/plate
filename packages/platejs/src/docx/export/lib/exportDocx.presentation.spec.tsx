@@ -143,7 +143,7 @@ describe('exportDocx presentation', () => {
 
   const image = {
     children: [{ text: 'Chart' }],
-    type: BaseImagePlugin.name,
+    type: 'image',
     url: 'https://platejs.org/chart.png',
   };
   const numbered = {

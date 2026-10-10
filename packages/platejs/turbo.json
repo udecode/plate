@@ -2136,8 +2136,11 @@
         "typecheck:partition:docx-internal",
         "typecheck:partition:layout",
         "typecheck:partition:math",
+        "typecheck:partition:media",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-indent",
+        "typecheck:partition:standard-list",
         "typecheck:partition:static",
         "typecheck:partition:toc"
       ],

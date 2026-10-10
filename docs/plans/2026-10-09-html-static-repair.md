@@ -4,9 +4,9 @@ review_basis: [2026-10-04-html-audit-2]
 work_kind: implementation
 review_commit: 795d0bc49133d7262d00125b35d7558d47b9ba63
 review_inputs:
-  - docs/plans/artifacts/html-static-repair-2026-10-09/browser-base-errors.json
-  - docs/plans/artifacts/html-static-repair-2026-10-09/capture-base-a1.log
-  - docs/plans/artifacts/html-static-repair-2026-10-09/review-all-elements-a3.log
+  - packages/platejs/src/static/renderStaticHtml.tsx
+  - packages/platejs/src/docx/export/lib/exportDocx.tsx
+  - apps/www/src/registry/components/editor/export-toolbar-button.tsx
 ---
 
 # HTML and Word export fixes

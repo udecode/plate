@@ -215,9 +215,13 @@ describe('static HTML presentation', () => {
     expect(data).toContain('data-choice="second"');
   });
 
-  it('draws a presentation component that reads its schema from the configure context', async () => {
+  it('draws a presentation slot that reads its schema from the configure context', async () => {
     const editor = createEditor({
-      plugins: [BaseBlockquotePlugin.configure({ component: EditingOnly })],
+      plugins: [
+        BaseBlockquotePlugin.configure({
+          slots: { afterNodeChildren: () => <EditingOnly /> },
+        }),
+      ],
       initialValue: [
         {
           children: [{ children: [{ text: 'Quoted' }], type: 'paragraph' }],
@@ -229,11 +233,9 @@ describe('static HTML presentation', () => {
     const { data } = await renderStaticHtml(editor, {
       presentation: [
         BaseBlockquotePlugin.configure((context) => ({
-          component: ({ attributes, children }) => (
-            <blockquote {...attributes} data-type={context.schema.type}>
-              {children}
-            </blockquote>
-          ),
+          slots: {
+            afterNodeChildren: () => <span data-type={context.schema.type} />,
+          },
         })),
       ],
     });
