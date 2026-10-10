@@ -274,6 +274,103 @@ describe('NodeSelection', () => {
     );
   });
 
+  it('keeps ArrowDown block navigation DOM work independent of document size', () => {
+    const countWork = (blocks: number) => {
+      const editor = createEditor({
+        initialValue: Array.from({ length: blocks }, (_, index) => ({
+          children: [{ text: `block ${index}` }],
+          type: 'paragraph',
+        })),
+        plugins: [BaseParagraphPlugin],
+      });
+      const view = render(
+        <EditorRoot editor={editor} suppressInstanceWarning>
+          <EditorContent />
+          <NodeSelectionDrag />
+        </EditorRoot>
+      );
+      const editable =
+        view.container.querySelector<HTMLElement>('[data-editor]')!;
+
+      act(() => {
+        editor.update.selection.setNodes([[1]]);
+      });
+      const query = spyOn(Element.prototype, 'querySelectorAll');
+      const measure = spyOn(Element.prototype, 'getBoundingClientRect');
+
+      try {
+        fireEvent.keyDown(editable, { key: 'ArrowDown' });
+
+        expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+          [2],
+        ]);
+
+        return query.mock.calls.length + measure.mock.calls.length;
+      } finally {
+        query.mockRestore();
+        measure.mockRestore();
+        view.unmount();
+      }
+    };
+
+    expect(countWork(300)).toBe(countWork(10));
+  });
+
+  it('stops ArrowDown before a sibling that a content boundary leaves unmounted [EDIT-SEL-BLOCK-ARROW-001]', () => {
+    const ContainerPlugin = definePlugin('selectionHiddenContainer', {
+      schema: {
+        element: {
+          content: schema.content.element(BaseParagraphPlugin, { min: 1 }),
+        },
+      },
+    }).configure({
+      component: (props) => (
+        <EditorElement {...props}>
+          {props.slots.children({ from: 0, to: 0 })}
+          {props.slots.contentBoundary({
+            mounted: false,
+            reason: 'app-collapse',
+            renderPlaceholder: () => null,
+            scope: { from: 1, to: 1, type: 'children' },
+            selectionPolicy: 'skip',
+          })}
+          {props.slots.children({ from: 2, to: 2 })}
+        </EditorElement>
+      ),
+    });
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'selectionHiddenContainer',
+          children: [
+            { type: 'paragraph', children: [{ text: 'visible' }] },
+            { type: 'paragraph', children: [{ text: 'hidden' }] },
+            { type: 'paragraph', children: [{ text: 'after' }] },
+          ],
+        },
+      ],
+      plugins: [BaseParagraphPlugin, ContainerPlugin],
+    });
+    const view = render(
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
+        <NodeSelectionDrag />
+      </EditorRoot>
+    );
+    const editable =
+      view.container.querySelector<HTMLElement>('[data-editor]')!;
+
+    expect(view.container.textContent).not.toContain('hidden');
+    act(() => {
+      editor.update.selection.setNodes([[0, 0]]);
+    });
+    fireEvent.keyDown(editable, { key: 'ArrowDown' });
+
+    expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+      [0, 0],
+    ]);
+  });
+
   it('canonicalizes nested drag candidates', async () => {
     const ContainerPlugin = definePlugin('selectionTestContainer', {
       schema: {

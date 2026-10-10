@@ -3163,6 +3163,16 @@ Authority: syntax: none; primary UX ref: none checked; secondary ref: Slate #584
 Source: c70bacbd4a:docs/plite/references/pr-description.md:93-94
 Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:7310` "removes the current block after browser triple click and Backspace" triple-clicks the first paragraph, presses Backspace, asserts that the first block now holds the second paragraph's text and the removed text is gone, then types `Z` and asserts it lands at offset 1 of that block; mobile skips it. The delete-fragment command keeps the event-time selection for this case (`packages/plitejs/src/react/editable/mutation-controller.ts:860-880`; plate-notes/selection-and-editing.md, 'Delete-fragment commands carry the event-time selection'). Typing after a triple-click instead replaces the block's text and keeps the block (`:7353`). No Plate or www test covers it.
 
+- `EDIT-SEL-BLOCK-ARROW-001` `proposed` `↑ or ↓ with selected blocks`: when every selected block has one parent, `↑` or `↓` selects only the previous or next sibling block and scrolls it into view; at the first or last sibling, or before a sibling that a content boundary leaves unmounted, the block selection stays
+
+- `EDIT-SEL-BLOCK-SHIFT-001` `proposed` `⇧↑ or ⇧↓ with selected blocks`: Shift extends or contracts the block selection one sibling block at a time from its anchor block, through objects such as images
+
+- `EDIT-SEL-BLOCK-YIELD-001` `proposed` `arrows on table cells or one selected object`: a table cell selection keeps `⇧+arrow` cell extension, and `↓` on a single selected image enters its caption
+
+Classification: substitutable capability, by the tests in docs/vision/plate.md:129-137; without these rules, `↑` and `↓` leave a block selection for a caret beside it (inferred from `getSelectableOwnerVerticalNavigationTarget` in `packages/plitejs/src/react/editable/caret-engine.ts`)
+Authority: syntax: none; primary UX ref: none checked; secondary ref: none checked
+Proof: `apps/www/tests/browser/node-selection-input.spec.ts` drives real keys in Chromium: Details body and top-level block moves, Shift extension and contraction, the first-body-block edge, a block range through an image, a stop before an unmounted sibling (`packages/platejs/src/react/components/NodeSelection.spec.tsx`), the reveal of each newly selected block in a short viewport, and table cell `⇧↓`; `apps/www/tests/browser/media-caption.spec.ts:412` covers `↓` into an image caption. Code: `packages/platejs/src/react/components/NodeSelection.tsx` `onKey` in `NodeSelectionDrag`.
+
 ## Affinity Rules
 
 Affinity belongs here because cursor behavior changes the meaning of later

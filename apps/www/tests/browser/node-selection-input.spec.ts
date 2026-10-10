@@ -1,3 +1,4 @@
+import { createBrowserEditorHarness } from '@platejs/test/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
@@ -25,6 +26,128 @@ const selectRow = async (page: Page, text: string, shift = false) => {
   await page.mouse.up();
   if (shift) await page.keyboard.up('Shift');
 };
+
+test('Shift+ArrowDown still extends a table cell selection [EDIT-SEL-BLOCK-YIELD-001]', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  const selectedCells = () =>
+    page
+      .locator('[data-table-cell-selected]')
+      .evaluateAll((cells) => cells.map((cell) => cell.textContent));
+  try {
+    await page.goto('/blocks/playground');
+    await page.getByText('Feature', { exact: true }).click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('Shift+ArrowRight');
+    await expect.poll(selectedCells).toEqual(['Feature', 'Plate (Free & OSS)']);
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect
+      .poll(selectedCells)
+      .toEqual(['Feature', 'Plate (Free & OSS)', 'AI', '✅']);
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('Shift+Arrow extends and contracts a block range through an image [EDIT-SEL-BLOCK-SHIFT-001]', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/blocks/media-demo', { waitUntil: 'commit' });
+    const root = page
+      .locator('[data-editor="true"][contenteditable="true"]')
+      .first();
+    const editor = createBrowserEditorHarness(
+      page,
+      'node-selection:shift-through-image',
+      root
+    );
+    await editor.ready({ editor: 'visible', text: 'Image caption' });
+    const value = (await editor.get.modelValue()) as {
+      children: Array<{ children?: Array<{ text?: string }>; type?: string }>;
+    };
+    const image = value.children.findIndex((node) => node.type === 'image');
+    expect(image).toBeGreaterThan(0);
+    const previous = value.children[image - 1].children!;
+    const end = {
+      offset: previous.at(-1)!.text!.length,
+      path: [image - 1, previous.length - 1],
+    };
+    const modelSelection = () =>
+      root.evaluate((element) =>
+        (
+          element as HTMLElement & {
+            __pliteBrowserHandle?: { getModelSelection: () => unknown };
+          }
+        ).__pliteBrowserHandle?.getModelSelection()
+      );
+    await editor.selection.selectDOM({ anchor: end, focus: end });
+    await page.keyboard.press('ArrowDown');
+    await expect
+      .poll(modelSelection)
+      .toMatchObject({ kind: 'node', paths: [[image]] });
+    for (const [key, paths] of [
+      ['Shift+ArrowDown', [[image], [image + 1]]],
+      ['Shift+ArrowUp', [[image]]],
+      ['Shift+ArrowUp', [[image - 1], [image]]],
+    ] as const) {
+      await page.keyboard.press(key);
+      await expect.poll(modelSelection).toMatchObject({ kind: 'node', paths });
+    }
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('ArrowDown scrolls each newly selected block into view [EDIT-SEL-BLOCK-ARROW-001]', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.setViewportSize({ width: 1280, height: 420 });
+    await page.goto('/blocks/playground');
+    const row = page
+      .locator('[data-editor="true"][contenteditable="true"]')
+      .first()
+      .getByText('Welcome to the Plate Playground!', { exact: true })
+      .first();
+    await row.hover();
+    await row
+      .locator('xpath=ancestor::*[contains(@class,"editor-draggable")][1]')
+      .getByRole('button', { name: 'Drag block', exact: true })
+      .click({ button: 'right' });
+    await page.keyboard.press('Escape');
+    await expect
+      .poll(() => selectedTexts(page))
+      .toEqual(['Welcome to the Plate Playground!']);
+    let selected = await selectedTexts(page);
+    await expect(
+      page.locator('[data-editor="true"][contenteditable="true"]').first()
+    ).toBeFocused();
+    for (let step = 0; step < 10; step++) {
+      await page.keyboard.press('ArrowDown');
+      await expect.poll(() => selectedTexts(page)).not.toEqual(selected);
+      selected = await selectedTexts(page);
+      await expect
+        .poll(() =>
+          page
+            .locator('[data-slot="node-selection-highlight"]')
+            .evaluate((highlight) => {
+              const rect = highlight.parentElement!.getBoundingClientRect();
+              return rect.top >= 0 && rect.top < window.innerHeight;
+            })
+        )
+        .toBe(true);
+    }
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
 for (const { route, bodyText, title } of [
   {
     route: '/blocks/details-demo',
@@ -58,7 +181,7 @@ for (const { route, bodyText, title } of [
         .poll(() => page.evaluate(() => window.getSelection()?.rangeCount ?? 0))
         .toBe(0);
     });
-    test('plain and shift arrows preserve Details block selection', async ({
+    test('plain and shift arrows preserve Details block selection [EDIT-SEL-BLOCK-ARROW-001] [EDIT-SEL-BLOCK-SHIFT-001]', async ({
       page,
     }, info) => {
       const errors = recordBrowserRuntimeErrors(page);

@@ -7,6 +7,7 @@ import {
   ElementApi,
   PathApi,
   SelectionApi,
+  type Descendant,
   type EditorCommit,
   type Element,
   type Path,
@@ -206,6 +207,15 @@ const getSelectionCandidates = (
   editable: HTMLElement
 ): readonly SelectionCandidate[] => {
   const entries = new Map<string, SelectionCandidate>();
+  const targets = new Map<HTMLElement, HTMLElement>();
+
+  editable
+    .querySelectorAll<HTMLElement>('[data-node-selection-target]')
+    .forEach((target) => {
+      const owner = target.closest<HTMLElement>(EDITOR_ELEMENT_SELECTOR);
+
+      if (owner && !targets.has(owner)) targets.set(owner, target);
+    });
 
   editable
     .querySelectorAll<HTMLElement>(EDITOR_ELEMENT_SELECTOR)
@@ -220,20 +230,11 @@ const getSelectionCandidates = (
 
       if (!path) return;
 
-      const target =
-        [
-          ...element.querySelectorAll<HTMLElement>(
-            '[data-node-selection-target]'
-          ),
-        ].find(
-          (candidate) => candidate.closest(EDITOR_ELEMENT_SELECTOR) === element
-        ) ?? element;
-
       entries.set(path.join(','), {
         key: editor.key(node),
         node,
         path,
-        rect: target.getBoundingClientRect(),
+        rect: (targets.get(element) ?? element).getBoundingClientRect(),
       });
     });
 
@@ -619,11 +620,6 @@ export function NodeSelectionDrag({
       }
       const { selection } = editor.read.runtime.snapshot();
       if (!SelectionApi.isNode(selection)) return;
-      event.preventDefault();
-      event.stopPropagation();
-      // A focused contenteditable can recreate its native caret before keyup.
-      ownerDocument.getSelection()?.removeAllRanges();
-      if (event.type === 'keyup' || event.key === 'Shift') return;
       const parent = PathApi.parent(selection.focusPath);
       if (
         selection.paths.some(
@@ -632,28 +628,66 @@ export function NodeSelectionDrag({
       ) {
         return;
       }
-      const candidates = getSelectionCandidates(editor, editable).filter(
-        (candidate) => PathApi.equals(PathApi.parent(candidate.path), parent)
-      );
-      const anchor = candidates.findIndex((candidate) =>
-        PathApi.equals(candidate.path, selection.anchorPath)
-      );
-      const focus = candidates.findIndex((candidate) =>
-        PathApi.equals(candidate.path, selection.focusPath)
-      );
-      const next = focus + (event.key === 'ArrowUp' ? -1 : 1);
-      const target = candidates[next];
-      if (anchor === -1 || focus === -1 || !target) return;
-      const selected = event.shiftKey
-        ? candidates.slice(Math.min(anchor, next), Math.max(anchor, next) + 1)
-        : [target];
-      editor.update.selection.setNodes(
-        selected.map((candidate) => candidate.path),
-        {
-          anchor: event.shiftKey ? selection.anchorPath : target.path,
-          focus: target.path,
-        }
-      );
+      const children =
+        parent.length === 0
+          ? editor.read.children()
+          : (editor.read.nodes.get(parent, { match: ElementApi.isElement })?.[0]
+              .children ?? []);
+      const isCandidate = (node: Descendant | undefined): node is Element =>
+        ElementApi.isElement(node) && isSelectionCandidate(editor, node);
+      const anchor = selection.anchorPath.at(-1) ?? -1;
+      const focus = selection.focusPath.at(-1) ?? -1;
+      const focusNode = children[focus];
+      // A table cell selection keeps its own Shift cell extension, and a lone
+      // selected object keeps Plite's plain arrows, such as ArrowDown caption
+      // entry.
+      if (
+        !isCandidate(children[anchor]) ||
+        !isCandidate(focusNode) ||
+        (!event.shiftKey &&
+          selection.paths.length === 1 &&
+          editor.read.schema.isObject(focusNode))
+      ) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      // A focused contenteditable can recreate its native caret before keyup.
+      ownerDocument.getSelection()?.removeAllRanges();
+      if (event.type === 'keyup' || event.key === 'Shift') return;
+      const step = event.key === 'ArrowUp' ? -1 : 1;
+      let next = focus + step;
+      while (
+        next >= 0 &&
+        next < children.length &&
+        !isCandidate(children[next])
+      ) {
+        next += step;
+      }
+      const targetNode = children[next];
+      // An unmounted sibling, such as one a content boundary hides, ends the
+      // move, so arrows never select hidden content. Stopping instead of
+      // skipping keeps each key to one missed DOM lookup, which queries the
+      // whole editable.
+      if (
+        !isCandidate(targetNode) ||
+        !editor.api.dom.resolveDOMNode(targetNode)
+      ) {
+        return;
+      }
+      const target = [...parent, next];
+      const [from, to] = event.shiftKey
+        ? [Math.min(anchor, next), Math.max(anchor, next)]
+        : [next, next];
+      const selected: Path[] = [];
+      for (let index = from; index <= to; index++) {
+        if (isCandidate(children[index])) selected.push([...parent, index]);
+      }
+      editor.update.selection.setNodes(selected, {
+        anchor: event.shiftKey ? selection.anchorPath : target,
+        focus: target,
+      });
+      editor.api.dom.scrollIntoView(target);
     };
     const unsubscribe = editor.subscribeCommit((commit) => {
       if (gesture && commit.changed.hasAny('document')) {
