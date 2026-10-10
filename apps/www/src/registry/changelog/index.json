@@ -15,8 +15,14 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["export-toolbar-button", "block-list-static", "docx-export"],
-      "entries": 5,
+      "targets": [
+        "export-toolbar-button",
+        "block-list-static",
+        "docx-export",
+        "indent-static",
+        "list-static"
+      ],
+      "entries": 7,
       "diagnostics": []
     },
     {

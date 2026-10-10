@@ -8,7 +8,7 @@ review_inputs: [VISION.md, docs/vision/common.md, docs/vision/plate.md, packages
 
 # Export draws with the app's static kit
 
-Status: awaiting: phase 1 is committed on branch `export-static-presentation`, not pushed; two critical panel findings wait for a new plan iteration
+Status: done: phases 1 to 3 are committed on branch `export-static-presentation`, not pushed
 Playbook: plan
 
 This iteration redoes `docs/plans/2026-10-09-html-static-repair.md` at claude-opus-5-5 @xhigh. That draft ran on gpt-6-astra @medium and claude-opus-5-5 @medium and is now superseded. The plan fixes the two export defects. Exporting a document with a table, an image, a task list or other interactive content crashes, because export draws each block with its editing component. Eighteen kinds of content crash the HTML render, and twelve crash the render step Word export runs. Style props passed to export can also swap out the exported document. The live editor keeps deciding what each block means and how it is configured, and export asks the app's static kit only how to draw each block, by plugin name. An `architect` arena with three runners from two model families converged on this shape, and a blind judge picked it over the draft's second export editor (`docs/plans/artifacts/html-static-repair-redo/architect/synthesis.md`). A three-model panel then reviewed the plan three times, and this revision settles every finding.
@@ -371,7 +371,7 @@ Against today, phase 1 makes every block export in both formats and keeps nested
 
 Against phase 1, phase 2 stops the server HTML block and the AI preview from drifting from the live editor's settings, such as table width and list targets.
 
-- [ ] Move the semantic options both kits share into runtime-neutral policy kits, after a spike proves a base `.configure` and a `toReactPlugin` descriptor compose in one array. Proof: the drift census shows no render-relevant drift.
+- [x] Move the semantic options both kits share into runtime-neutral policy kits, after a spike proves a base `.configure` and a `toReactPlugin` descriptor compose in one array. Proof: the drift census shows no render-relevant drift. (narrowed in `docs/plans/2026-10-10-html-static-kit-drift.md`, which fixes the two drifted options that change a static render, the image targets of indent and list, without shared policy kits; census `docs/plans/artifacts/html-static-kit-drift/probe/drift-a6.log`)
 
 ### Phase 3: Word owns Word
 

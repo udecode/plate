@@ -28,3 +28,11 @@ diagnostics: []
 <!-- entry: {"id":"2026-10-10-block-list-static-task-marker","kind":"fix","migrationNotes":[]} -->
 
 - **`block-list-static`**: Draw the task checkbox inside its `li` and mark the `li` with `data-checked`, so Word export gives each task one paragraph with a ☑ or ☐ list marker.
+
+<!-- entry: {"id":"2026-10-10-indent-static-image-target","kind":"fix","migrationNotes":[]} -->
+
+- **`indent-static`**: Target images like `IndentKit` does, so a static editor loads and indents an image the live editor indented instead of throwing a schema error.
+
+<!-- entry: {"id":"2026-10-10-list-static-image-target","kind":"fix","migrationNotes":[]} -->
+
+- **`list-static`**: Target images like `ListKit` does, so a static editor loads an image in a list and draws it as a list item.

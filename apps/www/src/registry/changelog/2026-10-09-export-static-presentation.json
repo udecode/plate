@@ -38,6 +38,18 @@
       "files": ["apps/www/src/registry/components/editor/docx-export.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
       "diagnostics": []
+    },
+    {
+      "name": "indent-static",
+      "files": ["apps/www/src/registry/components/editor/indent-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-static",
+      "files": ["apps/www/src/registry/components/editor/list-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [
@@ -119,6 +131,40 @@
       "source": {
         "line": 30,
         "row": 5,
+        "legacyRelease": {
+          "date": "2026-10-09",
+          "entry": "2026-10-09-export-static-presentation",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-10-indent-static-image-target",
+      "kind": "fix",
+      "summary": "Target images like `IndentKit` does, so a static editor loads and indents an image the live editor indented instead of throwing a schema error.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["indent-static"],
+      "source": {
+        "line": 34,
+        "row": 6,
+        "legacyRelease": {
+          "date": "2026-10-09",
+          "entry": "2026-10-09-export-static-presentation",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-10-list-static-image-target",
+      "kind": "fix",
+      "summary": "Target images like `ListKit` does, so a static editor loads an image in a list and draws it as a list item.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["list-static"],
+      "source": {
+        "line": 38,
+        "row": 7,
         "legacyRelease": {
           "date": "2026-10-09",
           "entry": "2026-10-09-export-static-presentation",

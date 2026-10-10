@@ -147,4 +147,21 @@ describe('BaseEditorKit', () => {
       diagnostics.filter(({ code }) => code === 'missing-static-presentation')
     ).toEqual([]);
   });
+
+  it('loads an indented list image, which EditorKit can write', () => {
+    expect(() =>
+      createEditor({
+        plugins: BaseEditorKit,
+        initialValue: [
+          {
+            children: [{ text: '' }],
+            indent: 1,
+            listType: 'bulleted',
+            type: 'image',
+            url: 'https://example.com/a.png',
+          },
+        ],
+      })
+    ).not.toThrow();
+  });
 });
