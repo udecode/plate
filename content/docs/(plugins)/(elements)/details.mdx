@@ -163,7 +163,7 @@ if (key !== undefined) {
 }
 ```
 
-Closing a Details node moves a selection inside its body to the end of its Summary. Removing the node prunes its transient key.
+Closing a Details node moves the closing editor's selection out of its body to the end of its Summary. A read-only view moves the owning editor's selection instead. Undo restores a removed Details node with its open state.
 
 ## Serialization
 

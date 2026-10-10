@@ -2086,7 +2086,11 @@
     },
     "test:partition:details": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:details"],
+      "dependsOn": [
+        "typecheck:partition:authored",
+        "typecheck:partition:core",
+        "typecheck:partition:details"
+      ],
       "inputs": [
         "src/features/details/**",
         "test/features/details/**",

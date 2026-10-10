@@ -1685,7 +1685,7 @@ Ownership:
 - open state is transient view state and never persists in the document
 - nested containers keep their own structural keys before Details claims them
 
-- `EDIT-DETAILS-ENTER-001` `locked` `↵`: at the end of an open Summary, the caret moves into the first body block; trailing Summary text moves into a new first body paragraph
+- `EDIT-DETAILS-ENTER-001` `locked` `↵`: at the end of an open Summary, the caret moves into the first body block, and a Details with no body block gets a new empty body paragraph first; trailing Summary text moves into a new first body paragraph
 - `EDIT-DETAILS-ENTER-CLOSED-001` `locked` `↵`: in a closed Summary, the caret moves after the whole Details
 - `EDIT-DETAILS-ENTER-EXIT-001` `locked` `↵`: in the final empty body block, a paragraph is inserted after the Details and the empty body block stays
 - `EDIT-DETAILS-BS-START-001` `locked` `⌫`: at the Summary start, the Details unwraps

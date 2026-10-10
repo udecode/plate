@@ -24,11 +24,6 @@
       "export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {"
     ]
   },
-  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api, contributions, corrections, on, selectors, update] -> [commands]": {
-    "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts": [
-      "export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {"
-    ]
-  },
   "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api] -> [read] -> [update] -> [corrections] -> [readMiddleware] -> [commands]": {
     "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": [
       "export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({"
@@ -104,7 +99,6 @@
   },
   "production extend-stage allowlist expects exact 1 audited chain but found 1; signatures did not match": {
     "packages/platejs/src/ai/react/AIChatPlugin.ts": [""],
-    "packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts": [""],
     "packages/platejs/src/features/list/lib/BaseListPlugin.ts": [""],
     "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": [""],
     "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts": [""],

@@ -47,7 +47,7 @@ describe('BaseDetailsPlugin', () => {
     });
   });
 
-  it('creates a body on Enter after dragging the last body block out', () => {
+  it('creates a body on Enter after dragging the last body block out [EDIT-DETAILS-ENTER-001]', () => {
     const editor = createEditor({
       plugins: [BaseDetailsPlugin],
       initialValue: [
