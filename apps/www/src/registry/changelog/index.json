@@ -16,7 +16,7 @@
         "status": "unresolved"
       },
       "targets": ["export-toolbar-button", "block-list-static"],
-      "entries": 2,
+      "entries": 3,
       "diagnostics": []
     },
     {

@@ -68,6 +68,23 @@
           "section": null
         }
       }
+    },
+    {
+      "id": "2026-10-10-export-toolbar-failure-toast",
+      "kind": "fix",
+      "summary": "Show an error toast when HTML or Word export throws, instead of failing with no message.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-09",
+          "entry": "2026-10-09-export-static-presentation",
+          "section": null
+        }
+      }
     }
   ],
   "diagnostics": []

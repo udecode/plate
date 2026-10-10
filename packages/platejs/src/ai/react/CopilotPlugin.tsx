@@ -165,6 +165,7 @@ const initialState: CopilotPluginState = {
 
 export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
   dependencies,
+  editOnly: { on: false },
   effectTypes: [copilotSuggestionEffect],
   stateFields: [copilotSuggestionField],
   initialState,

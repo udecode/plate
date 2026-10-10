@@ -6,3 +6,4 @@
 - Throw a `TypeError` when `renderStaticHtml` `props` include `editor` or `document`.
 - Take DOCX list levels from the indent of the block a list wraps when the list has no margin of its own.
 - Fix DOCX export failing when an element that the stylesheet styles has a quoted value in its inline style, such as a callout's emoji font list.
+- Mark the drawings of `CopilotPlugin` edit-only, so an export with `presentation` leaves out its ghost text instead of reporting a `missing-static-presentation` diagnostic.
