@@ -11,7 +11,6 @@ import {
   EditorElement,
   useEditor,
   useEditorReadOnly,
-  useEditorSelector,
   useElement,
   useElementSelected,
 } from 'platejs/react';
@@ -125,18 +124,16 @@ export function InlineEquationElement(
   const { element } = props;
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const selected = useElementSelected();
-  const isCollapsed = useEditorSelector((editor) =>
-    editor.read.selection.isCollapsed()
-  );
+  const collapsedSelected = useElementSelected({ mode: 'collapsed' });
   const [popoverState, setPopoverState] = React.useState({
-    open: selected && isCollapsed,
+    open: collapsedSelected,
     selected,
   });
   const openAtPointerDownRef = React.useRef(false);
   const open =
     popoverState.selected === selected
       ? popoverState.open
-      : selected && (popoverState.open || isCollapsed);
+      : selected && (popoverState.open || collapsedSelected);
 
   if (popoverState.selected !== selected) {
     setPopoverState({ open, selected });

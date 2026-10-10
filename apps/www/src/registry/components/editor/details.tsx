@@ -27,34 +27,36 @@ export function DetailsElement(
 
   return (
     <EditorElement {...props} className="relative my-1 pl-6">
-      <Button
-        aria-controls={bodyId}
-        aria-expanded={open}
-        aria-label={open ? 'Collapse details' : 'Expand details'}
-        className="absolute top-0 -left-0.5 size-6 rounded-md p-0 text-muted-foreground"
-        contentEditable={false}
-        size="icon"
-        type="button"
-        variant="ghost"
-        onClick={(event) => {
-          event.preventDefault();
+      <div className="relative -ml-6 pl-6" data-node-selection-target>
+        <Button
+          aria-controls={bodyId}
+          aria-expanded={open}
+          aria-label={open ? 'Collapse details' : 'Expand details'}
+          className="absolute top-0 -left-0.5 size-6 rounded-md p-0 text-muted-foreground"
+          contentEditable={false}
+          size="icon"
+          type="button"
+          variant="ghost"
+          onClick={(event) => {
+            event.preventDefault();
 
-          if (detailsKey !== undefined) api.setOpen(detailsKey, !open);
-        }}
-        onMouseDown={(event) => {
-          event.preventDefault();
-        }}
-      >
-        <ChevronRightIcon
-          className={cn(
-            'transition-transform duration-75',
-            open && 'rotate-90'
-          )}
-          data-icon
-        />
-      </Button>
+            if (detailsKey !== undefined) api.setOpen(detailsKey, !open);
+          }}
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
+        >
+          <ChevronRightIcon
+            className={cn(
+              'transition-transform duration-75',
+              open && 'rotate-90'
+            )}
+            data-icon
+          />
+        </Button>
 
-      {slots.children({ from: 0, to: 0 })}
+        {slots.children({ from: 0, to: 0 })}
+      </div>
 
       <div id={bodyId}>
         {element.children.length > 1

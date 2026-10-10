@@ -47,6 +47,50 @@ describe('BaseDetailsPlugin', () => {
     });
   });
 
+  it('creates a body on Enter after dragging the last body block out', () => {
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin],
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Outer' }] },
+            ...value,
+          ],
+        },
+      ],
+    });
+    const details = editor.plugin(BaseDetailsPlugin);
+    const key = editor.key([0, 1])!;
+
+    details.api.setOpen(key, true);
+    expect(
+      editor.api.transfer.move({
+        nodes: [editor.key([0, 1, 1])!],
+        to: { edge: 'before', key },
+      }).status
+    ).toBe('moved');
+    editor.update.selection.set({ path: [0, 2, 0, 0], offset: 5 });
+    editor.update.break.insert();
+    editor.update.text.insert('New body');
+
+    expect(editor.read.children()[0].children.slice(2)).toMatchObject([
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'New body' }] },
+        ],
+      },
+      { type: 'paragraph', children: [{ text: 'After' }] },
+    ]);
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { path: [0, 2, 1, 0], offset: 8 },
+      focus: { path: [0, 2, 1, 0], offset: 8 },
+    });
+    expect(details.store.get('isOpen', key)).toBe(true);
+  });
+
   it('moves Enter in a closed Summary after the whole Details', () => {
     const editor = createEditor({
       plugins: [BaseDetailsPlugin],

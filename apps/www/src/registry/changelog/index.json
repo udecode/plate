@@ -2,6 +2,60 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-10-details-selection",
+      "href": "/registry/changelog/2026-10-10-details-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Select individual Details body blocks with a selection rectangle",
+      "change": {
+        "type": "source",
+        "date": "2026-10-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["details"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-10-preserve-equation-text-selection",
+      "href": "/registry/changelog/2026-10-10-preserve-equation-text-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep text selection focused when extending across equations",
+      "change": {
+        "type": "source",
+        "date": "2026-10-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["math"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-10-selection-context-menu",
+      "href": "/registry/changelog/2026-10-10-selection-context-menu.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve selected blocks when opening context menus from nested drag handles",
+      "change": {
+        "type": "source",
+        "date": "2026-10-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-menu", "dnd"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-08-emoji-frimousse",
       "href": "/registry/changelog/2026-10-08-emoji-frimousse.json",
       "status": "draft",
