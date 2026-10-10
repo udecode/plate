@@ -1,6 +1,13 @@
 import React, { useCallback, useSyncExternalStore } from 'react';
 
-import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
+import {
+  NodeApi,
+  PointApi,
+  type Path,
+  type Range,
+  RangeApi,
+  type NodeKey,
+} from '../..';
 import { type DOMRange, isDOMNode } from '../../dom';
 import { createDOMGeometryKernel } from '../../dom/internal';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
@@ -36,6 +43,7 @@ import { useHydrated } from '../hooks/use-hydrated';
 import { useRequiredPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
+import { readPliteViewSelection } from '../view-selection';
 import { usePliteViewSelectionPresence } from '../view-selection-decoration';
 import type { MountedTopLevelRange } from '../viewport-commands';
 import { EditableDOMCommitFence } from './editable-dom-commit-fence';
@@ -816,9 +824,36 @@ export const defaultScrollSelectionIntoView = (
       return;
     }
 
+    const scrollRect = toScrollRect(targetRect);
+    let scrollStart = leafEl;
+    const viewSelection = readPliteViewSelection(editor);
+    const focus = viewSelection
+      ? viewSelection.focus.fragmentId
+        ? null
+        : viewSelection.focus.point
+      : selection?.focus;
+    const editable = editor.api.dom.root();
+    if (focus && editable) {
+      const start = editor.read.points.start([]);
+      const end = editor.read.points.end([]);
+      const atStart = start && PointApi.equals(focus, start);
+      const atEnd = end && PointApi.equals(focus, end);
+      if (atStart || atEnd) {
+        scrollStart = editable;
+        const bounds = editable.getBoundingClientRect();
+        const height = scrollRect.bottom - scrollRect.top;
+        if (atStart) {
+          scrollRect.top = bounds.top;
+          scrollRect.bottom = bounds.top + height;
+        } else if (atEnd) {
+          scrollRect.bottom = bounds.bottom;
+          scrollRect.top = bounds.bottom - height;
+        }
+      }
+    }
     scrollRectIntoViewIfNeeded({
-      rect: toScrollRect(targetRect),
-      startElement: leafEl,
+      rect: scrollRect,
+      startElement: scrollStart,
     });
   }
 };

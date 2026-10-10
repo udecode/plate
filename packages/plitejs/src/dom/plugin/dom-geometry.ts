@@ -1312,7 +1312,9 @@ export const createDOMGeometryKernel = ({
     collapsed.setStart(textNode, safeOffset);
     collapsed.collapse(true);
 
-    const collapsedRect = getUsableRangeRect(collapsed);
+    const collapsedRects = getUsableRangeRects(collapsed);
+    const collapsedRect =
+      association === 'forward' ? collapsedRects.at(-1) : collapsedRects[0];
 
     if (collapsedRect) {
       if (mode === 'probe' || collapsedRect.width === 0) return collapsedRect;
@@ -1617,7 +1619,22 @@ export const createDOMGeometryKernel = ({
       }
     }
 
-    return best?.point ?? null;
+    if (best) return best.point;
+
+    for (const string of getOwnedPliteStrings({ root, target: host })) {
+      if (
+        string.hasAttribute('data-editor-zero-width') &&
+        getRectOverlap(string.getBoundingClientRect(), line) >
+          VISUAL_LINE_TOLERANCE
+      ) {
+        return [
+          string.firstChild?.nodeType === 3 ? string.firstChild : string,
+          0,
+        ];
+      }
+    }
+
+    return null;
   };
 
   const pointAtVisualLineEdge = ({

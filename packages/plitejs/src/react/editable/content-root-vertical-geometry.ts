@@ -21,7 +21,11 @@ import {
   resolveUsableRangeRect,
 } from './content-root-coordinate-navigation';
 import type { ContentRootNavigationDirection } from './content-root-navigation-actions';
-import type { ContentRootOwner } from './content-root-owners';
+import {
+  type ContentRootOwner,
+  getContentRootViewBoundaryPoint,
+  readContentRootViewNode,
+} from './content-root-owners';
 import {
   resolveProjectedDOMSelectionEndpoint,
   resolveViewBoundaryDOMPoint,
@@ -88,14 +92,29 @@ export const resolveViewBoundaryVisualMovement = ({
       const node = PliteViewBoundaryGraph.resolvePointNode(graph, point);
       const run = node && graph.textRunsByNode.get(node.key)?.run;
       const terminal = forward ? run?.nodes.at(-1) : run?.nodes[0];
-      const adjacent = terminal
+      let adjacent = terminal
         ? forward
           ? PliteViewBoundaryGraph.nextNode(graph, terminal)
           : PliteViewBoundaryGraph.previousNode(graph, terminal)
         : null;
-      if (!adjacent?.text) {
-        edge = true;
-      } else {
+      while (adjacent) {
+        if (!adjacent.text) {
+          const content = readContentRootViewNode(editor, adjacent);
+          if (
+            !NodeApi.isElement(content) ||
+            !editor.read.schema.isInline(content)
+          ) {
+            return getContentRootViewBoundaryPoint(
+              editor,
+              adjacent,
+              forward ? 'end' : 'start'
+            );
+          }
+          adjacent = forward
+            ? PliteViewBoundaryGraph.nextNode(graph, adjacent)
+            : PliteViewBoundaryGraph.previousNode(graph, adjacent);
+          continue;
+        }
         const next = resolveViewBoundaryDOMPoint(editor, {
           ...(adjacent.fragment ? { fragmentId: adjacent.fragment.id } : {}),
           owner: adjacent.owner,
@@ -107,13 +126,27 @@ export const resolveViewBoundaryVisualMovement = ({
             adjacent.root
           ),
         });
-        host = next && blockHost(next);
-        if (!host) return null;
-        const nextLines = geometry.visualLines(host);
+        const nextHost = next && blockHost(next);
+        const nextLines =
+          nextHost && nextHost !== host ? geometry.visualLines(nextHost) : [];
         const nextLine = forward ? nextLines[0] : nextLines.at(-1);
-        if (!nextLine) return null;
-        line = nextLine;
+        if (nextHost && nextLine) {
+          host = nextHost;
+          line = nextLine;
+          break;
+        }
+        const nextRun = graph.textRunsByNode.get(adjacent.key)?.run;
+        const nextTerminal = forward
+          ? nextRun?.nodes.at(-1)
+          : nextRun?.nodes[0];
+        adjacent = forward
+          ? PliteViewBoundaryGraph.nextNode(graph, nextTerminal ?? adjacent)
+          : PliteViewBoundaryGraph.previousNode(
+              graph,
+              nextTerminal ?? adjacent
+            );
       }
+      if (!adjacent) edge = true;
     }
   }
   const target = edge
@@ -134,7 +167,17 @@ export const resolveViewBoundaryVisualMovement = ({
       offset: target[1],
       owners,
     });
-  return resolved && PliteViewBoundaryGraph.resolvePointNode(graph, resolved)
+  if (!target || !resolved) return null;
+  const backwardRect = geometry.pointRect(target, { association: 'backward' });
+  const forwardRect = geometry.pointRect(target, { association: 'forward' });
+  if (backwardRect && forwardRect && backwardRect.top !== forwardRect.top) {
+    resolved.affinity =
+      Math.abs(backwardRect.top - line.top) <
+      Math.abs(forwardRect.top - line.top)
+        ? 'backward'
+        : 'forward';
+  }
+  return PliteViewBoundaryGraph.resolvePointNode(graph, resolved)
     ? resolved
     : null;
 };

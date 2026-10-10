@@ -411,3 +411,36 @@ describe('Plite DOM geometry kernel', () => {
     dom.window.close();
   });
 });
+
+test('prefers text over an inline zero-width marker without native hit testing', () => {
+  const dom = new JSDOM('<!doctype html><html><body></body></html>');
+  const { document } = dom.window;
+  const root = document.createElement('div');
+  root.dataset.editor = 'true';
+  const marker = document.createElement('span');
+  marker.dataset.editorZeroWidth = 'z';
+  const content = createTextHost(document, 'ab');
+  root.append(marker, content.host);
+  document.body.append(root);
+  setBoundingRect(marker, rect(dom.window, { left: 0, right: 0 }));
+  Object.defineProperty(dom.window.Range.prototype, 'getClientRects', {
+    configurable: true,
+    value(this: Range) {
+      if (this.startContainer !== content.text) return [];
+      return [
+        rect(dom.window, {
+          left: this.startOffset * 10,
+          right: this.endOffset * 10,
+        }),
+      ];
+    },
+  });
+  const point = createDOMGeometryKernel({ root }).pointInVisualLine({
+    host: root,
+    line: rect(dom.window, { left: 0, right: 20 }),
+    x: 18,
+  });
+  expect(point?.[0]).toBe(content.text);
+  expect(point?.[1]).toBe(2);
+  dom.window.close();
+});
