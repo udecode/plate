@@ -138,4 +138,32 @@ describe('pipeRenderElementStatic', () => {
     expect(markup).toContain('Body');
     expect(markup).toContain('data-role="root"');
   });
+
+  it('renders a memoized afterNodeChildren component around the default output', () => {
+    const RootPlugin = definePlugin('rootExtra', {
+      slots: {
+        afterNodeChildren: React.memo(() => <aside data-role="memo" />),
+      },
+    });
+    const editor = createStaticEditor({
+      plugins: [RootPlugin],
+    });
+    const markup = ReactDOMServer.renderToStaticMarkup(
+      pipeRenderElementStatic(editor)({
+        attributes: { 'data-editor-node': 'element' },
+        children: 'Body',
+        element: {
+          children: [{ text: 'Body' }],
+          type: 'quote',
+        },
+        slots: {
+          children: () => null,
+          contentBoundary: ({ children }) => children,
+          contentRoot: () => null,
+        },
+      } satisfies RenderElementProps)
+    );
+
+    expect(markup).toContain('data-role="memo"');
+  });
 });

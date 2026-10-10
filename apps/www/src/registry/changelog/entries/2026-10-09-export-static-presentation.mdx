@@ -1,0 +1,18 @@
+---
+id: 2026-10-09-export-static-presentation
+date: 2026-10-09
+status: draft
+kind: fix
+summary: 'Export every block through the static kit'
+change: { 'type': 'source', 'date': '2026-10-09', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-09-export-toolbar-every-block-through-kit-420422f3","kind":"fix","migrationNotes":[]} -->
+
+- **`export-toolbar-button`**: Fix HTML and Word export throwing on tables, task lists, callouts, columns, code blocks and images by drawing the file with `BaseEditorKit` as `presentation`.
+
+<!-- entry: {"id":"2026-10-09-block-list-static-single-indent","kind":"fix","migrationNotes":[]} -->
+
+- **`block-list-static`**: Drop the per-level `margin-left` on numbered and task lists, so static HTML indents a nested list once and Word takes its level from the block's indent.

@@ -9,9 +9,9 @@ import type {
   StaticHtmlResult,
 } from '../renderStaticHtml';
 import {
-  setStaticComponentOverrides,
+  bindStaticPresentation,
   type StaticComponentOverrides,
-} from './staticComponentOverrides';
+} from './staticPresentation';
 
 // Each runtime loads the React server build that works there. The browser
 // build keeps a Node process alive through its MessagePort, Next's webpack
@@ -28,11 +28,21 @@ export const renderStaticHtmlWithOverrides = async (
   {
     component: Component = EditorStatic,
     document = editor.read.value(),
+    presentation,
     projection,
     props = {},
   }: RenderStaticHtmlOptions = {},
   overrides?: StaticComponentOverrides
 ): Promise<StaticHtmlResult> => {
+  const appearance = { ...props };
+
+  for (const key of ['document', 'editor']) {
+    if (Object.hasOwn(appearance, key)) {
+      throw new TypeError(
+        `Static HTML props cannot include "${key}". Pass the editor to render as the first argument and another document as the document option.`
+      );
+    }
+  }
   if (document.meta?.authored !== undefined && projection === undefined) {
     throw new TypeError(
       'Static HTML serialization requires projection when the document contains authored changes.'
@@ -47,14 +57,27 @@ export const renderStaticHtmlWithOverrides = async (
     document: projected.document,
   }) as unknown as Editor;
 
-  if (overrides) setStaticComponentOverrides(renderEditor, overrides);
+  const missing = bindStaticPresentation(renderEditor, {
+    components: overrides,
+    plugins: presentation,
+  });
   const { renderToStaticMarkup } = await loadStaticRenderer();
   const html = renderToStaticMarkup(
-    React.createElement(Component, { editor: renderEditor, ...props })
+    React.createElement(Component, { ...appearance, editor: renderEditor })
   );
 
   return Object.freeze({
     data: html,
-    diagnostics: projected.diagnostics,
+    diagnostics: Object.freeze([
+      ...projected.diagnostics,
+      ...Array.from(missing, (plugin) =>
+        Object.freeze({
+          code: 'missing-static-presentation' as const,
+          message: `Plugin "${plugin}" has no drawing in the presentation, so its content was drawn without it.`,
+          plugin,
+          severity: 'warning' as const,
+        })
+      ),
+    ]),
   });
 };

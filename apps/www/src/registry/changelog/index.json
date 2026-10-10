@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-09-export-static-presentation",
+      "href": "/registry/changelog/2026-10-09-export-static-presentation.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Export every block through the static kit",
+      "change": {
+        "type": "source",
+        "date": "2026-10-09",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["export-toolbar-button", "block-list-static"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-08-emoji-frimousse",
       "href": "/registry/changelog/2026-10-08-emoji-frimousse.json",
       "status": "draft",

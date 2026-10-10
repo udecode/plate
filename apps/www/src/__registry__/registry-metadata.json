@@ -1,5 +1,5 @@
 {
-  "generation": "3a9edbbcf79557a7dde5cfbeb0386bfe824b8e3bfaf5933f5a5f63626de82eb0",
+  "generation": "5ff4432ea24eed4e4564ab32d3b208966d5f4a8bee495b15f7be10a905e3037e",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -324,10 +324,10 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/editor",
-            "@plate/editor-plugins-static",
             "@plate/docx-export",
             "@plate/docx-source",
             "@plate/editor-dropdown-menu",
+            "@plate/editor-plugins-static",
             "@plate/editor-static",
             "@plate/toolbar"
           ]
@@ -7075,10 +7075,10 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/editor",
-            "@plate/editor-plugins-static",
             "@plate/docx-export",
             "@plate/docx-source",
             "@plate/editor-dropdown-menu",
+            "@plate/editor-plugins-static",
             "@plate/editor-static",
             "@plate/toolbar"
           ]

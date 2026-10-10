@@ -357,6 +357,39 @@ async function getDocumentAsHtml(value: any[]) {
 // const value = [ { type: 'heading', level: 1, children: [{ text: 'My Document' }] } ];
 // getDocumentAsHtml(value).then(console.log);
 ```
+
+`props` takes appearance props for the root element, such as `className` or
+`style`. It throws a `TypeError` for `editor` or `document`. Pass the editor as
+the first argument and another document as the `document` option.
+
+### Export a live editor
+
+A live editor's components are editing UI that needs a mounted Plate editor.
+Pass the app's static kit as `presentation` to draw the export with its static
+components while the live editor keeps the document and plugin settings:
+
+```ts
+import { renderStaticHtml } from 'platejs/static';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+
+const result = await renderStaticHtml(editor, {
+  presentation: BaseEditorKit,
+});
+```
+
+For each element component, mark component, and wrapper slot function an
+installed plugin declares, the plugin of the same name in `presentation`
+supplies the drawing. Drawings the installed plugin marks `editOnly` are left
+out. A drawing `presentation` lacks is left out too, so the content renders
+without it, and `result.diagnostics` names the plugin in a
+`missing-static-presentation` warning. An installed tag name, such as
+`component: 'p'`, stays. An element that no installed plugin renders still
+draws the installed `afterNodeChildren` slots.
+
+Read plugin state through the `editor` prop. A drawing created in a
+`configure((ctx) => ...)` callback reads the presentation's own plugin instead.
+Pass a stable array, because each new array is compiled again.
+
 For more details, see the [HTML Serialization guide](/docs/html).
 
 ## API Reference

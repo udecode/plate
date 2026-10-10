@@ -207,7 +207,7 @@ const document = parseAuthoredDocument(json);
 
 ### Content loss
 
-`exportDocx` rejects content loss by default. When an image cannot be embedded, or a supplied comment has no representable range, the result is `ok: false` with the loss as an error diagnostic. Set `lossPolicy: "allow"` to download the file and receive the same loss as warnings:
+`exportDocx` rejects content loss by default. When an image cannot be embedded, a supplied comment has no representable range, or a node has no drawing in `presentation`, the result is `ok: false` with the loss as an error diagnostic. Set `lossPolicy: "allow"` to download the file and receive the same loss as warnings:
 
 ```tsx
 const result = await exportDocx(editor, {
@@ -264,6 +264,12 @@ DOCX owns its semantic static mappings for code blocks, columns, equations,
 callouts, headings, and tables of contents. The app supplies presentation CSS
 and may pass a custom root `component` when it needs a different wrapper.
 `DOCX_EXPORT_STYLES` is the registry's copied presentation preset.
+
+A live editor's components are editing UI. Pass the app's static kit as
+`presentation` so the body and every comment body draw with static components
+of the same plugin name. A plugin with no static version exports its content
+without its component or wrapper and reports a `missing-static-presentation`
+diagnostic, which counts as lost content under `lossPolicy`.
 
 <ComponentSource name="docx-export" />
 
@@ -355,6 +361,7 @@ exportDocx(
 | `margins`               | `Margins`                                | Page margins in twentieths of a point              |
 | `orientation`           | `'landscape' \| 'portrait'`              | Page orientation                                   |
 | `pageSize`              | `PageSize`                               | Page dimensions in twentieths of a point           |
+| `presentation`          | `readonly BasePluginInput[]`             | Static plugins that draw the body and comment bodies, matched by plugin name |
 | `signal`                | `AbortSignal`                            | Cooperative cancellation signal                    |
 | `source`                | `DocxSource \| null`                     | Retained source correspondence for exact or safe export |
 | `stylesheet`            | `string`                                 | CSS applied before DOCX conversion                 |

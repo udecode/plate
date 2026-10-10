@@ -15,6 +15,7 @@ import type {
   StaticRenderLeafProps as RenderLeafProps,
 } from '../lib';
 import { EditorLeaf } from './components';
+import { getStaticMarkComponent } from './internal/staticPresentation';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps.internal';
 
 export type PliteRenderLeaf = (
@@ -30,11 +31,7 @@ export const pluginRenderLeafStatic = (
     const leafKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
 
     if (leafKey && leaf[leafKey]) {
-      const component =
-        plugin.render.mark?.leafComponent ??
-        (plugin.render.mark?.placement === 'text'
-          ? undefined
-          : plugin.component);
+      const component = getStaticMarkComponent(editor, plugin, 'leaf');
       const Component =
         component && typeof component !== 'string' ? component : undefined;
       const Leaf = Component ?? EditorLeaf;

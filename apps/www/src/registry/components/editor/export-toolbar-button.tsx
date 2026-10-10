@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 import { EditorStatic } from './editor-static';
@@ -112,6 +113,7 @@ export function ExportToolbarButton() {
   const exportToHtml = async () => {
     const result = await renderStaticHtml(model, {
       component: EditorStatic,
+      presentation: BaseEditorKit,
       projection,
       props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
     });
@@ -208,6 +210,7 @@ export function ExportToolbarButton() {
       component: EditorStatic,
       // The download still completes; the toasts below report what was lost.
       lossPolicy: 'allow',
+      presentation: BaseEditorKit,
       projection: wordProjection,
       source: docxSource?.source,
       stylesheet: DOCX_EXPORT_STYLES,

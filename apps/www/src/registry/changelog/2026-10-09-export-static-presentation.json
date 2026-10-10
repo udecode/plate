@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-09-export-static-presentation",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-09-export-static-presentation.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-09",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Export every block through the static kit",
+  "targets": [
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-list-static",
+      "files": [
+        "apps/www/src/registry/components/editor/block-list-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-09-export-toolbar-every-block-through-kit-420422f3",
+      "kind": "fix",
+      "summary": "Fix HTML and Word export throwing on tables, task lists, callouts, columns, code blocks and images by drawing the file with `BaseEditorKit` as `presentation`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-09",
+          "entry": "2026-10-09-export-static-presentation",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-09-block-list-static-single-indent",
+      "kind": "fix",
+      "summary": "Drop the per-level `margin-left` on numbered and task lists, so static HTML indents a nested list once and Word takes its level from the block's indent.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-list-static"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-09",
+          "entry": "2026-10-09-export-static-presentation",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

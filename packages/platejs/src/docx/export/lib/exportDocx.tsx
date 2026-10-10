@@ -10,6 +10,7 @@ import {
   projectAuthoredReview,
 } from '../../../authored';
 import {
+  type BasePluginInput,
   DocumentChange,
   type Editor,
   type EditorDocumentValue,
@@ -17,7 +18,10 @@ import {
 } from '../../../core';
 import type { EditorStaticProps } from '../../../static/components/PlateStatic';
 import { renderStaticHtmlWithOverrides } from '../../../static/internal/renderStaticHtmlWithOverrides';
-import type { RenderStaticHtmlOptions } from '../../../static/renderStaticHtml';
+import type {
+  RenderStaticHtmlOptions,
+  StaticHtmlDiagnostic,
+} from '../../../static/renderStaticHtml';
 import { throwIfDocxAborted } from '../../internal/abort';
 import {
   acquireDocxSource,
@@ -67,6 +71,14 @@ export type DocxExportOptions = Readonly<{
   orientation?: 'landscape' | 'portrait';
   /** Page size in twentieths of a point. */
   pageSize?: PageSize;
+  /**
+   * Static plugins that draw the body and every comment body, such as the
+   * app's static kit; see `renderStaticHtml`. DOCX's own drawings of code
+   * blocks, columns, equations, callouts, headings and tables of contents
+   * take precedence. Each `missing-static-presentation` diagnostic counts as
+   * lost content under `lossPolicy`.
+   */
+  presentation?: readonly BasePluginInput[];
   /** Visible document projection to export. */
   projection: 'accepted' | 'proposed' | 'review';
   /** Cooperative cancellation signal. */
@@ -238,17 +250,18 @@ const renderProjection = async (
   capture: ExportCapture,
   options: DocxExportOptions
 ) => {
-  const { component, fontFamily } = options;
+  const { component, fontFamily, presentation } = options;
   const { document, review } = capture;
   const htmlOptions: Partial<RenderStaticHtmlOptions> = {
     document,
+    presentation,
     props: {
       style: { padding: '0', ...(fontFamily ? { fontFamily } : {}) },
     },
   };
 
   if (component) htmlOptions.component = component;
-  const { data: html } = await renderStaticHtmlWithOverrides(
+  const { data: html, diagnostics } = await renderStaticHtmlWithOverrides(
     editor,
     htmlOptions,
     DOCX_STATIC_COMPONENTS
@@ -256,10 +269,24 @@ const renderProjection = async (
 
   throwIfDocxAborted(options.signal);
 
-  return review
-    ? applyReviewProjection(html, review)
-    : Object.freeze({ diagnostics: Object.freeze([]), html });
+  return Object.freeze({
+    renderDiagnostics: diagnostics,
+    ...(review
+      ? applyReviewProjection(html, review)
+      : { diagnostics: Object.freeze([]), html }),
+  });
 };
+
+const missingDrawings = (
+  renders: ReadonlyArray<readonly StaticHtmlDiagnostic[]>
+): DocxDiagnostic[] => [
+  ...new Map(
+    renders
+      .flat()
+      .filter((diagnostic) => diagnostic.code === 'missing-static-presentation')
+      .map((diagnostic) => [diagnostic.plugin, diagnostic])
+  ).values(),
+];
 
 class DocxGenerationError extends Error {
   constructor(cause: unknown) {
@@ -374,6 +401,7 @@ const resolveSourceExport = (
 // Like HTML and Markdown, omitted named roots and metadata warn under every
 // policy. Other established content loss fails under reject.
 const isContentLoss = (diagnostic: DocxDiagnostic) =>
+  diagnostic.code === 'missing-static-presentation' ||
   diagnostic.code === 'resource-omitted' ||
   (diagnostic.code === 'unsupported-content' &&
     diagnostic.action === 'dropped') ||
@@ -404,6 +432,7 @@ const renderCommentBodies = async (
     comments.map(async (comment) => {
       const htmlOptions: Partial<RenderStaticHtmlOptions> = {
         document: { children: comment.body },
+        presentation: options.presentation,
         props: {
           style: {
             padding: '0',
@@ -414,7 +443,7 @@ const renderCommentBodies = async (
 
       if (options.component) htmlOptions.component = options.component;
 
-      const { data } = await renderStaticHtmlWithOverrides(
+      const rendered = await renderStaticHtmlWithOverrides(
         editor,
         htmlOptions,
         DOCX_STATIC_COMPONENTS
@@ -422,13 +451,16 @@ const renderCommentBodies = async (
 
       throwIfDocxAborted(options.signal);
 
-      return [comment.id, data] as const;
+      return [comment.id, rendered] as const;
     })
   );
 
   throwIfDocxAborted(options.signal);
 
-  return new Map(entries);
+  return Object.freeze({
+    bodies: new Map(entries.map(([id, { data }]) => [id, data])),
+    renderDiagnostics: entries.map(([, { diagnostics }]) => diagnostics),
+  });
 };
 
 /** Convert one immutable editor snapshot to a deliberate DOCX projection. */
@@ -505,15 +537,21 @@ export async function exportDocx(
   try {
     const [rendered, commentBodies] = await Promise.all([
       renderProjection(editor, capture, options),
-      renderCommentBodies(editor, comments, options),
+      renderCommentBodies(editor, capture.comments, options),
     ]);
 
     throwIfDocxAborted(options.signal);
-    diagnostics.push(...rendered.diagnostics);
+    diagnostics.push(
+      ...rendered.diagnostics,
+      ...missingDrawings([
+        rendered.renderDiagnostics,
+        ...commentBodies.renderDiagnostics,
+      ])
+    );
     const preparedComments = prepareDocxComments(
       rendered.html,
       capture.comments,
-      commentBodies
+      commentBodies.bodies
     );
 
     diagnostics.push(...preparedComments.diagnostics);

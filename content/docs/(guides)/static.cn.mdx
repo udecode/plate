@@ -341,6 +341,36 @@ async function getDocumentAsHtml(value: any[]) {
 // const mySlateValue = [ { type: 'heading', level: 1, children: [{ text: 'My Document' }] } ];
 // getDocumentAsHtml(mySlateValue).then(console.log);
 ```
+
+`props` 接收根元素的外观 props，例如 `className` 或 `style`。传入 `editor`
+或 `document` 会抛出 `TypeError`。editor 作为第一个参数传入，另一个 document
+通过 `document` 选项传入。
+
+### 导出 live editor
+
+live editor 的组件是编辑 UI，需要已挂载的 Plate editor。把应用的 static kit
+作为 `presentation` 传入，导出就用它的 static 组件绘制，live editor 仍提供
+document 和插件设置：
+
+```ts
+import { renderStaticHtml } from 'platejs/static';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+
+const result = await renderStaticHtml(editor, {
+  presentation: BaseEditorKit,
+});
+```
+
+对已安装插件声明的每个 element 组件、mark 组件和 wrapper slot 函数，
+`presentation` 中同名的插件提供对应的绘制方式。已安装插件标为 `editOnly` 的绘制会被
+省略。`presentation` 缺少的绘制也会被省略，内容不带该绘制渲染，`result.diagnostics`
+会用一条 `missing-static-presentation` 警告指出该插件。已安装插件的标签名（例如
+`component: 'p'`）保持不变。没有任何已安装插件渲染的元素，仍会绘制已安装插件的
+`afterNodeChildren` slot。
+
+请通过 `editor` prop 读取插件状态。在 `configure((ctx) => ...)` 回调里创建的绘制
+读取的是 presentation 自己的插件。请传入稳定的数组，因为每个新数组都会重新编译。
+
 更多详情请参阅 [HTML 序列化指南](/docs/html)。
 
 ## API 参考

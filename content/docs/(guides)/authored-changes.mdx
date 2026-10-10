@@ -311,13 +311,21 @@ hidden Plate document and cannot restore exact review state.
 ```tsx
 import { exportDocx } from "platejs/docx/export";
 import { renderStaticHtml } from "platejs/static";
+import { BaseEditorKit } from "@/components/editor/plugins-static";
 
 const semanticHtml = editor.api.html.serialize({ projection: "proposed" });
-const styledHtml = await renderStaticHtml(editor, { projection: "proposed" });
-const docx = await exportDocx(editor, { projection: "review" });
+const styledHtml = await renderStaticHtml(editor, {
+  presentation: BaseEditorKit,
+  projection: "proposed",
+});
+const docx = await exportDocx(editor, {
+  presentation: BaseEditorKit,
+  projection: "review",
+});
 ```
 
-`renderStaticHtml` uses the current editor's static components. Semantic HTML
+`renderStaticHtml` and `exportDocx` draw with the static kit passed as
+`presentation`, because a live editor's components are editing UI. Semantic HTML
 uses feature mappings and no application styling. Both HTML forms carry visible
 accepted or proposed content only. A successful DOCX result returns a `Blob` in
 `docx.blob`. Every serializer returns structured `diagnostics`.

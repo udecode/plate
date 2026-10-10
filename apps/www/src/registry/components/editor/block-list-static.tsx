@@ -5,13 +5,14 @@ import {
   ListType,
   type RenderStaticNodeWrapper,
 } from 'platejs';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
 
 export const BlockListStatic: ListWrapper = (props) => {
-  const { indent, listStyle, listType } = props.element;
+  const { listStyle, listType } = props.element;
 
   if (!listType || listType === ListType.Bulleted) return undefined;
 
@@ -19,7 +20,6 @@ export const BlockListStatic: ListWrapper = (props) => {
     return (
       <List
         {...innerProps}
-        indent={typeof indent === 'number' ? indent : undefined}
         listStart={innerProps.editor
           .plugin(BaseListPlugin)
           .read.ordinal(innerProps.path)}
@@ -32,25 +32,21 @@ export const BlockListStatic: ListWrapper = (props) => {
 
 function List(
   props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-    indent?: number;
     listStart?: number;
     listStyle?: string;
     listType: ListType;
   }
 ) {
-  const { indent, listStart, listStyle, listType } = props;
+  const { listStart, listStyle, listType } = props;
   const isTask = listType === ListType.Task;
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
     listStyle ?? (listType === ListType.Numbered ? 'decimal' : 'none');
 
-  // Apply margin-left for indent (24px per level) for DOCX export compatibility
-  const marginLeft = indent ? `${indent * 24}px` : undefined;
-
   return (
     <InnerList
       className="relative m-0 p-0"
-      style={{ listStyleType: markerStyle, marginLeft }}
+      style={{ listStyleType: markerStyle }}
       start={listType === ListType.Numbered ? listStart : undefined}
     >
       {isTask && <TodoMarkerStatic {...props} />}
@@ -73,7 +69,6 @@ function List(
 
 function TodoMarkerStatic(
   props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-    indent?: number;
     listStart?: number;
     listStyle?: string;
     listType: ListType;

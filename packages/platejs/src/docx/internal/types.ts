@@ -112,6 +112,15 @@ export type DocxDiagnostic =
       severity: 'warning';
     }>
   | DocxPolicyDiagnostic<{
+      code: 'missing-static-presentation';
+      message: string;
+      /**
+       * Name of the plugin whose element, mark or slot drawing the
+       * presentation lacked.
+       */
+      plugin: string;
+    }>
+  | DocxPolicyDiagnostic<{
       code: 'lossy-content' | 'resource-omitted';
       feature?: string;
       message: string;

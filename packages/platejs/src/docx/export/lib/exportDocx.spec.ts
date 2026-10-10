@@ -150,6 +150,22 @@ describe('exportDocx', () => {
     expect(documentXml).toContain('>\u00A0\u00A0</w:t>');
   });
 
+  it('exports a callout under a stylesheet that styles table cells', async () => {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'Callout' }], icon: '💡', type: 'callout' },
+      ],
+      plugins: [BaseCalloutPlugin],
+    });
+
+    const result = await exportDocx(editor, {
+      projection: 'proposed',
+      stylesheet: 'th, td { padding: 6pt; }',
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
   it('owns required Word renderers without registry components', async () => {
     const editor = createEditor({
       initialValue: [

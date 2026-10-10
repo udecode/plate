@@ -183,8 +183,15 @@ type ContentGroup = {
 async function findXMLEquivalent(
   docxDocumentInstance: DocxDocumentInstance,
   vNode: VNodeType,
-  xmlFragment: XMLBuilderType
+  xmlFragment: XMLBuilderType,
+  indentedAncestor: VNodeType | null
 ): Promise<void> {
+  const childIndentedAncestor =
+    vNode.properties?.style?.['margin-left'] &&
+    !['ol', 'ul'].includes(vNode.tagName || '')
+      ? vNode
+      : indentedAncestor;
+
   // Check if this element contains list children (for paragraphs that wrap lists)
   const hasListChildren =
     vNodeHasChildren(vNode) &&
@@ -324,7 +331,8 @@ async function findXMLEquivalent(
           await convertVTreeToXML(
             docxDocumentInstance,
             group.node,
-            xmlFragment
+            xmlFragment,
+            childIndentedAncestor
           );
         }
       }
@@ -565,8 +573,8 @@ async function findXMLEquivalent(
     }
     case 'ol':
     case 'ul': {
-      // Get indent level from the list element
-      const indentLevel = getIndentLevel(vNode);
+      // A list drawn without its own margin takes its indented ancestor's indent.
+      const indentLevel = getIndentLevel(vNode, indentedAncestor);
 
       // Get existing numbering ID for this type+level, if any
       const { lastListNumberingId: existingId } = getListTracking(
@@ -621,7 +629,12 @@ async function findXMLEquivalent(
     for (let index = 0; index < (vNode.children || []).length; index++) {
       const childVNode = (vNode.children || [])[index];
 
-      await convertVTreeToXML(docxDocumentInstance, childVNode, xmlFragment);
+      await convertVTreeToXML(
+        docxDocumentInstance,
+        childVNode,
+        xmlFragment,
+        childIndentedAncestor
+      );
     }
   }
 }
@@ -660,20 +673,27 @@ function getIndentLevel(
 export async function convertVTreeToXML(
   docxDocumentInstance: DocxDocumentInstance,
   vTree: VTree | null,
-  xmlFragment: XMLBuilderType
+  xmlFragment: XMLBuilderType,
+  indentedAncestor: VNodeType | null = null
 ): Promise<XMLBuilderType | string> {
   if (!vTree) {
     return '';
   }
   if (Array.isArray(vTree) && vTree.length) {
     for (const vNode of vTree) {
-      await convertVTreeToXML(docxDocumentInstance, vNode, xmlFragment);
+      await convertVTreeToXML(
+        docxDocumentInstance,
+        vNode,
+        xmlFragment,
+        indentedAncestor
+      );
     }
   } else if (isVNode(vTree)) {
     await findXMLEquivalent(
       docxDocumentInstance,
       vTree as VNodeType,
-      xmlFragment
+      xmlFragment,
+      indentedAncestor
     );
   } else if (isVText(vTree)) {
     const paragraphFragment = await buildParagraph(

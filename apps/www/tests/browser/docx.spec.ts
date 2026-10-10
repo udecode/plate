@@ -247,3 +247,108 @@ test('the export menu applies one suggestion projection to every format', async 
     errors.stop();
   }
 });
+
+test('the export menu exports interactive blocks to HTML and Word', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(180_000);
+  const errors = recordBrowserRuntimeErrors(page);
+  const exportButton = page.getByRole('button', { name: 'Export' });
+
+  const downloadExport = async (
+    name: 'Export as HTML' | 'Export as Word',
+    filename: string
+  ) => {
+    await expect(exportButton).toHaveAttribute('aria-expanded', 'false');
+    await exportButton.click();
+    const download = page.waitForEvent('download', { timeout: 30_000 });
+
+    await page.getByRole('menuitem', { exact: true, name }).click();
+    const artifact = await download;
+    const path = testInfo.outputPath(filename);
+
+    await artifact.saveAs(path);
+
+    return path;
+  };
+  const readDocumentXml = async (path: string) => {
+    const word = await JSZip.loadAsync(await readFile(path));
+
+    return word.file('word/document.xml')!.async('string');
+  };
+
+  try {
+    const editor = await openDocxDemo(page);
+    const startNewBlock = async () => {
+      await editor.click();
+      await page.keyboard.press(
+        process.platform === 'darwin' ? 'Meta+ArrowDown' : 'Control+End'
+      );
+      await page.keyboard.press('Enter');
+    };
+    const slashInsert = async (query: string, text: string) => {
+      await startNewBlock();
+      await page.keyboard.type(`/${query}`);
+      await page.keyboard.press('Enter');
+      await page.keyboard.type(text);
+    };
+
+    await slashInsert('to-do', 'TASK-ITEM');
+    await slashInsert('callout', 'CALLOUT-TEXT');
+    await slashInsert('code block', 'CODE-TEXT');
+    await startNewBlock();
+    page.once('dialog', (dialog) =>
+      dialog.accept('https://platejs.org/og.png')
+    );
+    await page.locator('button:has(svg.lucide-plus)').first().click();
+    await page.getByRole('menuitem', { exact: true, name: 'Image' }).click();
+    await slashInsert('3 columns', 'COLUMN-TEXT');
+    await slashInsert('table', 'TABLE-CELL');
+
+    const html = await readFile(
+      await downloadExport('Export as HTML', 'blocks.html'),
+      'utf-8'
+    );
+
+    for (const text of [
+      'TASK-ITEM',
+      'CALLOUT-TEXT',
+      'CODE-TEXT',
+      'COLUMN-TEXT',
+      'TABLE-CELL',
+      'https://platejs.org/og.png',
+      '<table',
+    ]) {
+      expect(html).toContain(text);
+    }
+
+    const wordXml = await readDocumentXml(
+      await downloadExport('Export as Word', 'blocks.docx')
+    );
+
+    for (const text of [
+      'TASK-ITEM',
+      'CALLOUT-TEXT',
+      'CODE-TEXT',
+      'COLUMN-TEXT',
+      'TABLE-CELL',
+      '<w:tbl>',
+    ]) {
+      expect(wordXml).toContain(text);
+    }
+
+    await editor
+      .locator('table [data-editor-string]', { hasText: 'TABLE-CELL' })
+      .selectText();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.type(' EDITED');
+    await expect(editor.locator('table')).toContainText('TABLE-CELL EDITED');
+    const task = editor.getByRole('checkbox').first();
+
+    await task.click();
+    await expect(task).toBeChecked();
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});

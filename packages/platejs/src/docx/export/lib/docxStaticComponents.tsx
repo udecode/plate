@@ -14,7 +14,7 @@ import {
   EditorElement,
   type EditorElementProps,
 } from '../../../static/components/plite-nodes';
-import type { StaticComponentOverrides } from '../../../static/internal/staticComponentOverrides';
+import type { StaticComponentOverrides } from '../../../static/internal/staticPresentation';
 
 const CodeBlockDocx = (
   props: EditorElementProps<typeof BaseCodeBlockPlugin>
