@@ -9,9 +9,11 @@ import {
 } from '../internal/plugin/compilePlateModel';
 import type { AnyPluginBase, Editor } from '../lib';
 import { EditorElement } from './components/plite-nodes';
+import { hasStaticPresentation } from './internal/staticPresentation';
 import {
   type PliteRenderElement,
   pluginRenderElementStatic,
+  renderStaticAfterNodeChildren,
 } from './pluginRenderElementStatic.internal';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps.internal';
 
@@ -50,15 +52,17 @@ export const pipeRenderElementStatic = (
       <EditorElement {...ctxProps}>
         {props.children}
 
-        {getPlateRuntime(editor).pluginCache.slots.afterNodeChildren.map(
-          (name) => {
-            const innerPlugin = (getCompiledPlatePlugin(editor, name) ??
-              failInvariant('Expected value to be defined')) as any;
-            const Component = innerPlugin.slots.afterNodeChildren;
+        {hasStaticPresentation(editor)
+          ? renderStaticAfterNodeChildren(editor, ctxProps)
+          : getPlateRuntime(editor).pluginCache.slots.afterNodeChildren.map(
+              (name) => {
+                const innerPlugin = (getCompiledPlatePlugin(editor, name) ??
+                  failInvariant('Expected value to be defined')) as any;
+                const Component = innerPlugin.slots.afterNodeChildren;
 
-            return <Component key={name} {...ctxProps} />;
-          }
-        )}
+                return <Component key={name} {...ctxProps} />;
+              }
+            )}
       </EditorElement>
     );
   };

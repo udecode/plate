@@ -22,6 +22,7 @@ import {
   paragraphBordersObject,
   verticalAlignValues,
 } from './constants';
+import { buildMath } from './math';
 import namespaces from './namespaces';
 import {
   cmRegex,
@@ -310,6 +311,7 @@ type DocxDocumentInstance = {
   createFont: (fontFamily: string) => string;
   createMediaFile: (base64Uri: string) => MediaFileResponse;
   createNumbering: (type: 'ol' | 'ul', properties?: VNodeProperties) => number;
+  taskNumberingId: (checked: boolean) => number;
   getBookmark: (htmlId: string) => { id: number; name: string } | undefined;
   htmlString: string;
   relationshipFilename: string;
@@ -502,6 +504,14 @@ export const buildList = async (
       node.children?.length &&
       ['ul', 'ol', 'li'].includes(node.tagName || '')
     ) {
+      const checked =
+        node.tagName === 'li'
+          ? node.properties?.attributes?.['data-checked']
+          : undefined;
+      const numberingId =
+        checked === 'true' || checked === 'false'
+          ? docxDocumentInstance.taskNumberingId(checked === 'true')
+          : current.numberingId;
       const children = node.children.reduce<VNodeObject[]>(
         (accumulator, child) => {
           const childNode = child as VNodeType;
@@ -572,7 +582,7 @@ export const buildList = async (
               : paragraph,
             level: current.level,
             type: current.type,
-            numberingId: current.numberingId,
+            numberingId,
           });
 
           return accumulator;
@@ -691,7 +701,7 @@ type FormattingOptions = {
   fontSize?: number;
 };
 
-const fixupColorCode = (colorCodeString: string): string => {
+const parseColorCode = (colorCodeString: string): string | undefined => {
   if (Object.hasOwn(colorNames, colorCodeString.toLowerCase())) {
     const [red, green, blue] =
       colorNames[colorCodeString.toLowerCase() as keyof typeof colorNames];
@@ -742,8 +752,11 @@ const fixupColorCode = (colorCodeString: string): string => {
       return hex3ToHex(red, green, blue);
     }
   }
-  return '000000';
+  return undefined;
 };
+
+const fixupColorCode = (colorCodeString: string) =>
+  parseColorCode(colorCodeString) ?? '000000';
 
 const buildRunFontFragment = (fontName: string = defaultFont): XMLBuilderType =>
   fragment({ namespaceAlias: { w: namespaces.w } })
@@ -1068,14 +1081,14 @@ const modifiedStyleAttributesBuilder = (
       modifiedAttributes.color = fixupColorCode(style.color);
     }
 
-    if (
+    // A background parseColorCode cannot read is dropped, not painted black.
+    const backgroundColor =
       style['background-color'] &&
       !colorlessColors.includes(style['background-color'])
-    ) {
-      modifiedAttributes.backgroundColor = fixupColorCode(
-        style['background-color']
-      );
-    }
+        ? parseColorCode(style['background-color'])
+        : undefined;
+
+    if (backgroundColor) modifiedAttributes.backgroundColor = backgroundColor;
 
     if (
       style['vertical-align'] &&
@@ -1279,6 +1292,9 @@ const buildRun = async (
   initialAttributes: ParagraphAttributes,
   docxDocumentInstance?: DocxDocumentInstance
 ): Promise<XMLBuilderType | XMLBuilderType[]> => {
+  if (isVNode(vNode) && (vNode as VNodeType).tagName === 'math') {
+    return buildMath(vNode as VNodeType);
+  }
   let attributes = initialAttributes;
   const trackedRevision = (() => {
     if (!isVNode(vNode)) return null;
@@ -1539,35 +1555,6 @@ const buildRunOrRuns = async (
   attributes: ParagraphAttributes,
   docxDocumentInstance?: DocxDocumentInstance
 ): Promise<XMLBuilderType | XMLBuilderType[]> => {
-  // Check for OMML equation data attribute
-  if (
-    isVNode(vNode) &&
-    (vNode as VNodeType).properties &&
-    (
-      (vNode as VNodeType).properties ??
-      failInvariant('Expected value to be defined')
-    ).attributes &&
-    (
-      (vNode as VNodeType).properties ??
-      failInvariant('Expected value to be defined')
-    ).attributes?.['data-equation-omml']
-  ) {
-    const ommlString =
-      (
-        (vNode as VNodeType).properties ??
-        failInvariant('Expected value to be defined')
-      ).attributes?.['data-equation-omml'] ??
-      failInvariant('Expected value to be defined');
-    try {
-      // Parse the OMML string and create a fragment
-      const ommlFragment = fragment().ele(ommlString);
-      return ommlFragment;
-    } catch {
-      // If parsing fails, fall through to normal text handling
-      console.warn('Failed to parse OMML, falling back to text');
-    }
-  }
-
   if (isVNode(vNode) && (vNode as VNodeType).tagName === 'span') {
     let runFragments: XMLBuilderType[] = [];
     const vn = vNode as VNodeType;

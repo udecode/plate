@@ -1,6 +1,47 @@
 {
   "schemaVersion": 1,
   "components": {
+    "export-toolbar-button": [
+      "2026-10-09-export-static-presentation",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-29-word-export-loss-and-source-reuse",
+      "2026-09-27-document-conversion-contracts",
+      "2026-09-24-export-menu-projection",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-15-compose-docx-export-kit",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "block-list-static": [
+      "2026-10-09-export-static-presentation",
+      "2026-09-30-static-list-table-known-paths",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "docx-export": [
+      "2026-10-09-export-static-presentation",
+      "2026-09-24-export-menu-projection",
+      "2026-09-07-docx-bookmarks",
+      "2026-09-02-comments-ownership",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "indent-static": [
+      "2026-10-09-export-static-presentation",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "list-static": [
+      "2026-10-09-export-static-presentation",
+      "2026-09-03-huge-code-block-demo",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
     "emoji-data": ["2026-10-08-emoji-frimousse"],
     "emoji": [
       "2026-10-08-emoji-frimousse",
@@ -47,20 +88,6 @@
       "2025-12-15-add-option-editor-collaborative-features",
       "2025-12-14-fix-combobox-opening-popover-all-users-collaboration",
       "2025-11-20-biome-ultracite"
-    ],
-    "export-toolbar-button": [
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-29-word-export-loss-and-source-reuse",
-      "2026-09-27-document-conversion-contracts",
-      "2026-09-24-export-menu-projection",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-15-compose-docx-export-kit",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
     ],
     "docx": [
       "2026-10-08-registry-install-dependencies",
@@ -420,13 +447,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "block-list-static": [
-      "2026-09-30-static-list-table-known-paths",
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "table-static": [
       "2026-09-30-static-list-table-known-paths",
       "2026-08-17-finalize-v54-ast-profile",
@@ -476,13 +496,6 @@
       "2026-09-24-export-menu-projection",
       "2026-09-02-comments-ownership",
       "2026-08-18-isolate-docx-file-io"
-    ],
-    "docx-export": [
-      "2026-09-24-export-menu-projection",
-      "2026-09-07-docx-bookmarks",
-      "2026-09-02-comments-ownership",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-17-flat-editor-registry"
     ],
     "history-toolbar-button": [
       "2026-09-23-history-replay-lifecycle",
@@ -855,11 +868,6 @@
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
-    "list-static": [
-      "2026-09-03-huge-code-block-demo",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "editor-static": [
       "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry",
@@ -1049,7 +1057,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-12-fix-font-size-selection-highlight"
     ],
-    "indent-static": ["2026-08-17-flat-editor-registry"],
     "line-height-static": ["2026-08-17-flat-editor-registry"],
     "media-static": ["2026-08-17-flat-editor-registry"],
     "toc-static": ["2026-08-17-flat-editor-registry"],

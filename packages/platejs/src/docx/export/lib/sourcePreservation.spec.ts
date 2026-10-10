@@ -206,6 +206,50 @@ describe('retained DOCX source', () => {
     expect(result.diagnostics).toEqual([]);
   });
 
+  it('rebuilds an unchanged source when the caller passes a stylesheet', async () => {
+    const sourceBlob = await addPassiveHeader(await createGeneratedSource());
+    const imported = await importEligible(sourceBlob);
+    const editor = createEditor({ initialValue: imported.document });
+    const result = await exportDocx(editor, {
+      projection: 'review',
+      source: imported.source,
+      stylesheet: 'span { color: #123456; }',
+    });
+
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+
+    expect(await readText(zip, 'word/document.xml')).toMatch(
+      /<w:color w:val="123456"\/>/i
+    );
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'source-rewritten',
+        reason: 'output-options-changed',
+      })
+    );
+  });
+
+  it('rebuilds an unchanged source when the caller passes a font family', async () => {
+    const sourceBlob = await addPassiveHeader(await createGeneratedSource());
+    const imported = await importEligible(sourceBlob);
+    const editor = createEditor({ initialValue: imported.document });
+    const result = await exportDocx(editor, {
+      fontFamily: 'Arial',
+      projection: 'review',
+      source: imported.source,
+    });
+
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    expect(await bytes(result.blob)).not.toEqual(await bytes(sourceBlob));
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'source-rewritten',
+        reason: 'output-options-changed',
+      })
+    );
+  });
+
   it('keeps safe hyperlinks through exact reuse and the header overlay', async () => {
     const passive = await addPassiveHeader(await createGeneratedSource());
     const zip = await JSZip.loadAsync(await passive.arrayBuffer());

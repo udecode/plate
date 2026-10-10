@@ -11,6 +11,7 @@ export const BaseIndentKit = [
       PLUGINS.blockquote,
       PLUGINS.codeBlock,
       PLUGINS.details,
+      PLUGINS.image,
     ],
   }),
 ];

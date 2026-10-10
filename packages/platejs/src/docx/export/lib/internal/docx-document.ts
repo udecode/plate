@@ -162,6 +162,8 @@ export interface RelationshipXMLOutput {
 
 /** Numbering object */
 export interface NumberingObject {
+  /** A bullet list's own marker in place of the default bullets. */
+  marker?: Readonly<{ font: string; text: string }>;
   numberingId: number;
   properties: NumberingProperties;
   type: 'ol' | 'ul';
@@ -358,6 +360,8 @@ async function generateSectionXML(
 
 class DocxDocument {
   private readonly bookmarks = new Map<string, number>();
+  private readonly listNumbering = new Map<string, number>();
+  private readonly taskNumbering = new Map<boolean, number>();
   allowRemoteImages: boolean;
   availableDocumentSpace: number;
   complexScriptFontSize: number;
@@ -756,91 +760,95 @@ class DocxDocument {
     const abstractNumberingFragments = fragment();
     const numberingFragments = fragment();
 
-    this.numberingObjects.forEach(({ numberingId, type, properties }) => {
-      const abstractNumberingFragment = fragment({
-        namespaceAlias: { w: namespaces.w },
-      })
-        .ele('@w', 'abstractNum')
-        .att('@w', 'abstractNumId', String(numberingId));
+    this.numberingObjects.forEach(
+      ({ marker, numberingId, type, properties }) => {
+        const abstractNumberingFragment = fragment({
+          namespaceAlias: { w: namespaces.w },
+        })
+          .ele('@w', 'abstractNum')
+          .att('@w', 'abstractNumId', String(numberingId));
 
-      Array.from({ length: 8 }, (_, level) => level).forEach((level) => {
-        const levelFragment = fragment({ namespaceAlias: { w: namespaces.w } })
-          .ele('@w', 'lvl')
-          .att('@w', 'ilvl', String(level))
-          .ele('@w', 'start')
-          .att(
-            '@w',
-            'val',
-            type === 'ol' ? properties.attributes?.['data-start'] || '1' : '1'
-          )
-          .up()
-          .ele('@w', 'numFmt')
-          .att(
-            '@w',
-            'val',
-            type === 'ol'
-              ? this.ListStyleBuilder.getListStyleType(
-                  properties.style?.['list-style-type']
-                )
-              : 'bullet'
-          )
-          .up()
-          .ele('@w', 'lvlText')
-          .att(
-            '@w',
-            'val',
-            type === 'ol'
-              ? this.ListStyleBuilder.getListPrefixSuffix(
-                  properties.style,
-                  level
-                )
-              : getBulletChar(level)
-          )
-          .up()
-          .ele('@w', 'lvlJc')
-          .att('@w', 'val', 'left')
-          .up()
-          .ele('@w', 'pPr')
-          .ele('@w', 'tabs')
-          .ele('@w', 'tab')
-          .att('@w', 'val', 'num')
-          .att('@w', 'pos', String(level * 360 + 360))
-          .up()
-          .up()
-          .ele('@w', 'ind')
-          .att('@w', 'left', String(level * 360 + 360))
-          .att('@w', 'hanging', '360')
-          .up()
-          .up()
-          .up();
+        Array.from({ length: 8 }, (_, level) => level).forEach((level) => {
+          const levelFragment = fragment({
+            namespaceAlias: { w: namespaces.w },
+          })
+            .ele('@w', 'lvl')
+            .att('@w', 'ilvl', String(level))
+            .ele('@w', 'start')
+            .att(
+              '@w',
+              'val',
+              type === 'ol' ? properties.attributes?.['data-start'] || '1' : '1'
+            )
+            .up()
+            .ele('@w', 'numFmt')
+            .att(
+              '@w',
+              'val',
+              type === 'ol'
+                ? this.ListStyleBuilder.getListStyleType(
+                    properties.style?.['list-style-type']
+                  )
+                : 'bullet'
+            )
+            .up()
+            .ele('@w', 'lvlText')
+            .att(
+              '@w',
+              'val',
+              type === 'ol'
+                ? this.ListStyleBuilder.getListPrefixSuffix(
+                    properties.style,
+                    level
+                  )
+                : (marker?.text ?? getBulletChar(level))
+            )
+            .up()
+            .ele('@w', 'lvlJc')
+            .att('@w', 'val', 'left')
+            .up()
+            .ele('@w', 'pPr')
+            .ele('@w', 'tabs')
+            .ele('@w', 'tab')
+            .att('@w', 'val', 'num')
+            .att('@w', 'pos', String(level * 360 + 360))
+            .up()
+            .up()
+            .ele('@w', 'ind')
+            .att('@w', 'left', String(level * 360 + 360))
+            .att('@w', 'hanging', '360')
+            .up()
+            .up()
+            .up();
 
-        if (type === 'ul') {
-          levelFragment.last().import(
-            fragment({ namespaceAlias: { w: namespaces.w } })
-              .ele('@w', 'rPr')
-              .ele('@w', 'rFonts')
-              .att('@w', 'ascii', 'Symbol')
-              .att('@w', 'hAnsi', 'Symbol')
-              .att('@w', 'hint', 'default')
-              .up()
-              .up()
-          );
-        }
-        abstractNumberingFragment.import(levelFragment);
-      });
-      abstractNumberingFragment.up();
-      abstractNumberingFragments.import(abstractNumberingFragment);
+          if (type === 'ul') {
+            levelFragment.last().import(
+              fragment({ namespaceAlias: { w: namespaces.w } })
+                .ele('@w', 'rPr')
+                .ele('@w', 'rFonts')
+                .att('@w', 'ascii', marker?.font ?? 'Symbol')
+                .att('@w', 'hAnsi', marker?.font ?? 'Symbol')
+                .att('@w', 'hint', 'default')
+                .up()
+                .up()
+            );
+          }
+          abstractNumberingFragment.import(levelFragment);
+        });
+        abstractNumberingFragment.up();
+        abstractNumberingFragments.import(abstractNumberingFragment);
 
-      numberingFragments.import(
-        fragment({ namespaceAlias: { w: namespaces.w } })
-          .ele('@w', 'num')
-          .att('@w', 'numId', String(numberingId))
-          .ele('@w', 'abstractNumId')
-          .att('@w', 'val', String(numberingId))
-          .up()
-          .up()
-      );
-    });
+        numberingFragments.import(
+          fragment({ namespaceAlias: { w: namespaces.w } })
+            .ele('@w', 'num')
+            .att('@w', 'numId', String(numberingId))
+            .ele('@w', 'abstractNumId')
+            .att('@w', 'val', String(numberingId))
+            .up()
+            .up()
+        );
+      }
+    );
 
     numberingXML.root().import(abstractNumberingFragments);
     numberingXML.root().import(numberingFragments);
@@ -898,9 +906,50 @@ class DocxDocument {
     }
   }
 
-  createNumbering(type: 'ol' | 'ul', properties: NumberingProperties): number {
+  listNumberingId(
+    type: 'ol' | 'ul',
+    level: number,
+    properties: NumberingProperties
+  ): number {
+    const key = `${type}_${level}`;
+    const existing = this.listNumbering.get(key);
+
+    if (existing !== undefined) return existing;
+    const id = this.createNumbering(type, properties);
+
+    this.listNumbering.set(key, id);
+
+    return id;
+  }
+
+  taskNumberingId(checked: boolean): number {
+    const existing = this.taskNumbering.get(checked);
+
+    if (existing !== undefined) return existing;
+    // Symbol, the bullet font, has no ballot box glyphs.
+    const id = this.createNumbering(
+      'ul',
+      {},
+      { font: 'Segoe UI Symbol', text: checked ? '☑' : '☐' }
+    );
+
+    this.taskNumbering.set(checked, id);
+
+    return id;
+  }
+
+  resetListNumbering() {
+    this.listNumbering.clear();
+  }
+
+  createNumbering(
+    type: 'ol' | 'ul',
+    properties: NumberingProperties,
+    marker?: NumberingObject['marker']
+  ): number {
     this.lastNumberingId += 1;
     this.numberingObjects.push({
+      marker,
       numberingId: this.lastNumberingId,
       type,
       properties,

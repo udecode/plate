@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 import { EditorStatic } from './editor-static';
@@ -110,13 +111,15 @@ export function ExportToolbarButton() {
     (mountedProjection === 'accepted' ? 'accepted' : 'proposed');
 
   const exportToHtml = async () => {
-    const result = await renderStaticHtml(model, {
-      component: EditorStatic,
-      projection,
-      props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
-    });
+    try {
+      const result = await renderStaticHtml(model, {
+        component: EditorStatic,
+        presentation: BaseEditorKit,
+        projection,
+        props: { style: { padding: '0 calc(50% - 350px)', paddingBottom: '' } },
+      });
 
-    const html = `<!DOCTYPE html>
+      const html = `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -128,8 +131,12 @@ export function ExportToolbarButton() {
   </body>
 </html>`;
 
-    downloadBlob(new Blob([html], { type: 'text/html' }), 'plate.html');
-    toastWarnings(result.diagnostics);
+      downloadBlob(new Blob([html], { type: 'text/html' }), 'plate.html');
+      toastWarnings(result.diagnostics);
+    } catch (error) {
+      console.error('Could not export HTML.', error);
+      toast.error('The HTML file could not be exported.');
+    }
   };
 
   const exportToMarkdown = () => {
@@ -153,81 +160,90 @@ export function ExportToolbarButton() {
   const exportToWord = async (
     requestedProjection?: CleanProjection | 'review'
   ) => {
-    let omittedCommentCount = 0;
-    const docxComments: DocxComment[] = [];
+    try {
+      let omittedCommentCount = 0;
+      const docxComments: DocxComment[] = [];
 
-    if (commentsInstalled) {
-      const commentEditor = isAuthoredEditor(model)
-        ? createEditorView(model, {
-            authored: { intent: 'edit', projection: 'proposed' },
-          })
-        : model;
-      const comments = commentEditor.plugin(CommentsPlugin);
-      const users = comments.store.get('users');
+      if (commentsInstalled) {
+        const commentEditor = isAuthoredEditor(model)
+          ? createEditorView(model, {
+              authored: { intent: 'edit', projection: 'proposed' },
+            })
+          : model;
+        const comments = commentEditor.plugin(CommentsPlugin);
+        const users = comments.store.get('users');
 
-      comments.api.getThreads().forEach((thread) => {
-        if (thread.status !== 'published') return;
-        const attachment = comments.api.attachment(thread.id);
+        comments.api.getThreads().forEach((thread) => {
+          if (thread.status !== 'published') return;
+          const attachment = comments.api.attachment(thread.id);
 
-        if (attachment?.type !== 'range' || attachment.status !== 'attached') {
-          omittedCommentCount += 1;
+          if (
+            attachment?.type !== 'range' ||
+            attachment.status !== 'attached'
+          ) {
+            omittedCommentCount += 1;
 
-          return;
-        }
-        const parentId = thread.messages[0]
-          ? `${thread.id}:${thread.messages[0].id}`
-          : null;
+            return;
+          }
+          const parentId = thread.messages[0]
+            ? `${thread.id}:${thread.messages[0].id}`
+            : null;
 
-        thread.messages.forEach((message, index) => {
-          const user = users[message.userId];
-          const name = user?.name ?? 'Unknown';
-          const initials = name
-            .split(/\s+/)
-            .filter(Boolean)
-            .map((part) => part[0])
-            .join('')
-            .slice(0, 4);
+          thread.messages.forEach((message, index) => {
+            const user = users[message.userId];
+            const name = user?.name ?? 'Unknown';
+            const initials = name
+              .split(/\s+/)
+              .filter(Boolean)
+              .map((part) => part[0])
+              .join('')
+              .slice(0, 4);
 
-          docxComments.push({
-            author: { ...(initials ? { initials } : {}), name },
-            body: message.body,
-            createdAt: message.createdAt,
-            durableId: null,
-            id: `${thread.id}:${message.id}`,
-            parentId: index === 0 ? null : parentId,
-            resolved: index === 0 ? thread.resolution !== null : null,
-            target: { range: attachment.range },
+            docxComments.push({
+              author: { ...(initials ? { initials } : {}), name },
+              body: message.body,
+              createdAt: message.createdAt,
+              durableId: null,
+              id: `${thread.id}:${message.id}`,
+              parentId: index === 0 ? null : parentId,
+              resolved: index === 0 ? thread.resolution !== null : null,
+              target: { range: attachment.range },
+            });
           });
         });
+      }
+      const wordProjection =
+        requestedProjection ?? (unresolved ? projection : ('review' as const));
+      const result = await exportDocx(model, {
+        comments: docxComments,
+        component: EditorStatic,
+        // The download still completes; the toasts below report what was lost.
+        lossPolicy: 'allow',
+        presentation: BaseEditorKit,
+        projection: wordProjection,
+        source: docxSource?.source,
+        stylesheet: DOCX_EXPORT_STYLES,
       });
-    }
-    const wordProjection =
-      requestedProjection ?? (unresolved ? projection : ('review' as const));
-    const result = await exportDocx(model, {
-      comments: docxComments,
-      component: EditorStatic,
-      // The download still completes; the toasts below report what was lost.
-      lossPolicy: 'allow',
-      projection: wordProjection,
-      source: docxSource?.source,
-      stylesheet: DOCX_EXPORT_STYLES,
-    });
 
-    if (!result.ok) {
-      toast.error(
-        result.diagnostics.find(({ severity }) => severity === 'error')
-          ?.message ?? 'The Word document could not be exported.'
-      );
+      if (!result.ok) {
+        toast.error(
+          result.diagnostics.find(({ severity }) => severity === 'error')
+            ?.message ?? 'The Word document could not be exported.'
+        );
 
-      return;
-    }
+        return;
+      }
 
-    downloadBlob(result.blob, 'plate.docx');
-    toastWarnings(result.diagnostics);
-    if (omittedCommentCount > 0) {
-      toast.warning(
-        `${omittedCommentCount} comment thread${omittedCommentCount === 1 ? '' : 's'} could not be attached to the Word document.`
-      );
+      downloadBlob(result.blob, 'plate.docx');
+      toastWarnings(result.diagnostics);
+      if (omittedCommentCount > 0) {
+        toast.warning(
+          `${omittedCommentCount} comment thread${omittedCommentCount === 1 ? '' : 's'} could not be attached to the Word document.`
+        );
+      }
+    } catch (error) {
+      console.error('Could not export Word.', error);
+      toast.error('The Word document could not be exported.');
     }
   };
 

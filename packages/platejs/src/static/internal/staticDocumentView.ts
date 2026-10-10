@@ -4,6 +4,7 @@ import {
   readAuthoredView,
 } from '../../facade';
 import type { Editor } from '../../lib';
+import { inheritStaticPresentation } from './staticPresentation';
 
 type RootReader = Readonly<{
   authored: unknown;
@@ -36,6 +37,7 @@ export const getStaticDocumentView = (
 
   if (!view) {
     view = createEditorView(editor, { document });
+    inheritStaticPresentation(editor, view);
     byDocument.set(document, view);
   }
 
@@ -68,6 +70,7 @@ export const getStaticRootView = (reader: Editor, root: string): Editor => {
 
   const view = createEditorView(base, { root }) as unknown as Editor;
 
+  inheritStaticPresentation(base, view);
   byRoot.set(root, { authored, readOnly, view });
   rootViewBases.set(view, base);
 

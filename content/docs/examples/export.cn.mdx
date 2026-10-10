@@ -22,14 +22,18 @@ registry 中的 `export-toolbar-button` 在浏览器中将当前文档下载为 
 
 | 格式 | 实现 | 输出 |
 | ---- | ---- | ---- |
-| HTML | `platejs/static` 的 `renderStaticHtml(model, { component: EditorStatic, projection })` | `plate.html` |
+| HTML | `platejs/static` 的 `renderStaticHtml(model, { component: EditorStatic, presentation: BaseEditorKit, projection })` | `plate.html` |
 | Markdown | `model.api.markdown.serialize({ projection })` | `plate.md` |
-| Word | `platejs/docx/export` 的 `exportDocx(model, { component: EditorStatic, projection, stylesheet: DOCX_EXPORT_STYLES })` | `plate.docx` |
+| Word | `platejs/docx/export` 的 `exportDocx(model, { component: EditorStatic, presentation: BaseEditorKit, projection, stylesheet: DOCX_EXPORT_STYLES })` | `plate.docx` |
 
 所有格式都从 `useModelEditor()` 捕获同一份完整 document 和明确的 authored
 projection。导出读取 model，而不是 DOM，因此 selection、placeholder 和 review
-decoration 不会进入文件。当前 editor 提供已编译的 schema、format mapping 和 static
-component 绑定；导出不会创建第二个 conversion editor。
+decoration 不会进入文件。当前 editor 提供已编译的 schema、format mapping 和插件
+设置；static kit 只提供绘制方式。
+
+editor 自身的组件是编辑 UI，所以 HTML 和 Word 把应用的 static kit 作为
+`presentation` 传入。导出用同名插件的 static 组件绘制每个节点。插件没有
+static 组件时，导出不带组件绘制其内容，并添加 `missing-static-presentation` 警告。
 
 HTML 文件内联应用自身的 stylesheet，并复制页面的 `body` class。跨域
 stylesheet 保留为 link。

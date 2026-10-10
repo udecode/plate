@@ -15,6 +15,7 @@ import type {
 } from '../lib/plugin/BasePlugin';
 import type { RenderTextProps } from '../lib/types/RenderTextProps';
 import { EditorText } from './components';
+import { getStaticMarkComponent } from './internal/staticPresentation';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps.internal';
 
 export type PliteRenderText = (
@@ -30,7 +31,7 @@ export const pluginRenderTextStatic = (
     const textKey = getCompiledPlateModelBinding(editor, plugin)?.propertyKey;
 
     if (textKey && text[textKey]) {
-      const { component } = plugin;
+      const component = getStaticMarkComponent(editor, plugin, 'text');
       const Component =
         component && typeof component !== 'string' ? component : undefined;
       const Text = Component ?? EditorText;

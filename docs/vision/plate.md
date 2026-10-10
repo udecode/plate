@@ -1268,6 +1268,14 @@ Current priorities:
   instead of disabling reuse. Feature presentation reads take the known path, as
   in `read.list.ordinal(path)` and `read.cell({ at: path })`, instead of
   resolving a node, which indexes a document view.
+- A live editor's components are editing UI, so exporting a live editor draws
+  through the app's static kit, passed as `presentation` to `renderStaticHtml`
+  and `exportDocx`. The live editor keeps the document, schema and plugin
+  settings; the kit supplies only the drawing of each installed plugin, matched
+  by plugin name, also on an element no plugin renders. A drawing the kit lacks
+  is left out and the render returns a `missing-static-presentation`
+  diagnostic, which Word export counts as lost content. The kit compiles as a
+  detached operation, without activating its plugins.
 - Derive required package and registry-item dependencies from each copied
   item's resolved source graph and the package DAG. Authored registry metadata
   owns only installation policy that source cannot express: intentional

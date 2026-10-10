@@ -125,7 +125,6 @@ editor.update.value.replace(imported.document);
 const exported = await exportDocx(editor, {
   projection: "review",
   source: imported.source,
-  stylesheet,
 });
 
 imported.source?.dispose();
@@ -205,7 +204,7 @@ const document = parseAuthoredDocument(json);
 
 ### 内容损失
 
-`exportDocx` 默认拒绝内容损失。图片无法嵌入，或传入的批注没有可表示的范围时，结果为 `ok: false`，并以错误 diagnostic 报告该损失。设置 `lossPolicy: "allow"` 可以下载文件，并以警告形式接收相同的损失：
+`exportDocx` 默认拒绝内容损失。图片无法嵌入、传入的批注没有可表示的范围，或节点在 `presentation` 中没有绘制方式时，结果为 `ok: false`，并以错误 diagnostic 报告该损失。设置 `lossPolicy: "allow"` 可以下载文件，并以警告形式接收相同的损失：
 
 ```tsx
 const result = await exportDocx(editor, {
@@ -232,7 +231,7 @@ const result = await exportDocx(editor, {
 
 ### 使用源文件导出
 
-传入有效 `source` 时，未改动的 `review` 导出会逐字节返回导入的文件。精确复用要求使用同一个编译 schema、review 文档未改动、批注未传入或完全相同，并且没有传入 `title`、`margins`、`orientation` 或 `pageSize`。该路径不会重新生成内容，因此也不会调用静态渲染器。
+传入有效 `source` 时，未改动的 `review` 导出会逐字节返回导入的文件。精确复用要求使用同一个编译 schema、review 文档未改动、批注未传入或完全相同，并且没有传入 `title`、`margins`、`orientation`、`pageSize`、`stylesheet` 或 `fontFamily`。该路径不会重新生成内容，因此 `component` 和 `presentation` 不起作用。
 
 精确检查不通过时，`exportDocx` 会重新生成完整正文。内部关系闭合、可达且无名称冲突时，会保留下列 source 单元：
 
@@ -259,8 +258,25 @@ const result = await exportDocx(editor, {
 ### Static rendering 与样式
 
 DOCX 包拥有 code block、column、equation、callout、heading 和目录的语义
-static mapping。应用提供展示 CSS；需要不同 wrapper 时可以传入自定义 root
-`component`。`DOCX_EXPORT_STYLES` 是 registry 可复制的展示预设。
+static mapping。除了元素自身的值（例如 callout 的颜色），它们不设置颜色、
+字体或字号。这些由应用的 `stylesheet` 设置，它可以选中：
+
+- `editor-<插件名>`，每个绘制元素上的 class，例如 `.editor-codeBlock`；
+- callout 里的 `table > tbody > tr > td`，第一个单元格放图标；
+- `[data-docx-preserve-whitespace]`，code block 的文本；
+- `[data-empty]`，空公式或空目录的占位文字。
+
+需要不同 wrapper 时可以传入自定义 root `component`。`DOCX_EXPORT_STYLES` 是
+registry 可复制的展示预设。
+
+公式导出为由 KaTeX MathML 生成的 Word 公式。转换器尚不支持的写法（如矩阵），会把
+TeX 作为文本放进一个 Word 公式里导出。任务列表项，即带 `data-checked` 的
+`li`，导出时带 ☑ 或 ☐ 列表符号。
+
+live editor 的组件是编辑 UI。把应用的 static kit 作为 `presentation` 传入，
+正文和每条批注正文都会用同名插件的 static 组件绘制。没有 static 版本的
+插件，其内容会不带组件或 wrapper 导出，并报告一条
+`missing-static-presentation` diagnostic；在 `lossPolicy` 下它算作内容损失。
 
 <ComponentSource name="docx-export" />
 
@@ -278,7 +294,9 @@ static mapping。应用提供展示 CSS；需要不同 wrapper 时可以传入�
 | 多节页眉和页脚、脚注和尾注                    | 检查并限制对应包部件；编辑 source 后省略并返回 diagnostic                    |
 | 字段、文本框、形状、图表、SmartArt 和嵌入对象 | 转换可访问时保留纯文本，否则报告不支持或省略的内容                         |
 | Plate 命名根和元数据                          | Word 输出会省略并返回 `lossy-content` 警告；保存在 authored JSON 中 |
-| 自定义 Plate、数学、emoji 和媒体节点          | 使用已配置的静态序列化器；不支持的输出返回 diagnostic                      |
+| 公式                                          | 导出为 Word 公式；转换器不支持该写法时，把 TeX 放进 Word 公式。导入时把 Word 公式读成 `equation` 和 `inlineEquation` 节点，TeX 由公式结构重建；未安装这两个插件时读成 TeX 文本。与批注、修订或文字同处一段，或位于列表项、缩进段落中的行间公式读成行内公式 |
+| 任务列表                                      | 以带 `data-checked` 的 `li` 绘制的项导出时带 ☑ 或 ☐ 列表符号              |
+| 自定义 Plate、emoji 和媒体节点                | 使用已配置的静态序列化器；不支持的输出返回 diagnostic                      |
 
 ## API 参考
 
@@ -345,14 +363,15 @@ exportDocx(
 | `comments`              | `readonly DocxComment[]`                 | 使用 proposed 投影坐标的批注记录 |
 | `allowRemoteImages`     | `boolean`                                | 获取远程 HTTP(S) 图片并嵌入；默认 `false` |
 | `component`             | `React.ComponentType<EditorStaticProps>` | 可选 static editor wrapper       |
-| `fontFamily`            | `string`                                 | 文档正文字体                     |
+| `fontFamily`            | `string`                                 | 文档正文字体；会重新生成未改动的 `source` |
 | `lossPolicy`            | `'allow' \| 'reject'`                    | 内容被省略时失败，或以警告返回；默认 `'reject'` |
 | `margins`               | `Margins`                                | 以二十分之一磅为单位的页边距     |
 | `orientation`           | `'landscape' \| 'portrait'`              | 页面方向                         |
 | `pageSize`              | `PageSize`                               | 以二十分之一磅为单位的页面尺寸   |
+| `presentation`          | `readonly BasePluginInput[]`             | 绘制正文和批注正文的 static 插件，按插件名匹配 |
 | `signal`                | `AbortSignal`                            | 协作式取消信号                   |
 | `source`                | `DocxSource \| null`                     | 用于精确或安全导出的 source 对应关系 |
-| `stylesheet`            | `string`                                 | DOCX 转换前应用的 CSS            |
+| `stylesheet`            | `string`                                 | 设置 Word 外观的 CSS；会重新生成未改动的 `source` |
 | `title`                 | `string`                                 | 文档元数据标题                   |
 
 成功结果包含 `blob` 和结构化 `diagnostics`。失败结果只包含 `diagnostics`。

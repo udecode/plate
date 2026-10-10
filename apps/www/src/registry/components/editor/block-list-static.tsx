@@ -5,13 +5,14 @@ import {
   ListType,
   type RenderStaticNodeWrapper,
 } from 'platejs';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
 
 export const BlockListStatic: ListWrapper = (props) => {
-  const { indent, listStyle, listType } = props.element;
+  const { listStyle, listType } = props.element;
 
   if (!listType || listType === ListType.Bulleted) return undefined;
 
@@ -19,7 +20,6 @@ export const BlockListStatic: ListWrapper = (props) => {
     return (
       <List
         {...innerProps}
-        indent={typeof indent === 'number' ? indent : undefined}
         listStart={innerProps.editor
           .plugin(BaseListPlugin)
           .read.ordinal(innerProps.path)}
@@ -32,28 +32,23 @@ export const BlockListStatic: ListWrapper = (props) => {
 
 function List(
   props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-    indent?: number;
     listStart?: number;
     listStyle?: string;
     listType: ListType;
   }
 ) {
-  const { indent, listStart, listStyle, listType } = props;
+  const { listStart, listStyle, listType } = props;
   const isTask = listType === ListType.Task;
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
     listStyle ?? (listType === ListType.Numbered ? 'decimal' : 'none');
 
-  // Apply margin-left for indent (24px per level) for DOCX export compatibility
-  const marginLeft = indent ? `${indent * 24}px` : undefined;
-
   return (
     <InnerList
       className="relative m-0 p-0"
-      style={{ listStyleType: markerStyle, marginLeft }}
+      style={{ listStyleType: markerStyle }}
       start={listType === ListType.Numbered ? listStart : undefined}
     >
-      {isTask && <TodoMarkerStatic {...props} />}
       <li
         className={
           isTask
@@ -64,7 +59,11 @@ function List(
               )
             : undefined
         }
+        data-checked={
+          isTask ? String(props.element.checked === true) : undefined
+        }
       >
+        {isTask && <TodoMarkerStatic {...props} />}
         {props.children}
       </li>
     </InnerList>
@@ -73,7 +72,6 @@ function List(
 
 function TodoMarkerStatic(
   props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-    indent?: number;
     listStart?: number;
     listStyle?: string;
     listType: ListType;
@@ -82,19 +80,17 @@ function TodoMarkerStatic(
   const checked = props.element.checked === true;
 
   return (
-    <div contentEditable={false}>
-      <button
-        className={cn(
-          'peer -left-6 pointer-events-none absolute top-1 size-4 shrink-0 rounded-sm border border-primary bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
-          props.className
-        )}
-        data-state={checked ? 'checked' : 'unchecked'}
-        type="button"
-      >
-        <div className={cn('flex items-center justify-center text-current')}>
-          {checked && <CheckIcon className="size-4" />}
-        </div>
-      </button>
-    </div>
+    <button
+      className={cn(
+        'peer -left-6 pointer-events-none absolute top-1 size-4 shrink-0 rounded-sm border border-primary bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
+        props.className
+      )}
+      data-state={checked ? 'checked' : 'unchecked'}
+      type="button"
+    >
+      <div className={cn('flex items-center justify-center text-current')}>
+        {checked && <CheckIcon className="size-4" />}
+      </div>
+    </button>
   );
 }

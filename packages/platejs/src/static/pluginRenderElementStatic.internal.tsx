@@ -13,12 +13,39 @@ import type {
 } from '../lib';
 import { createPluginContext } from '../lib/plugin/createPluginContext.internal';
 import { EditorElement } from './components/plite-nodes';
-import { getStaticComponentOverride } from './internal/staticComponentOverrides';
+import {
+  getStaticElementComponent,
+  getStaticSlot,
+} from './internal/staticPresentation';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps.internal';
 
 export type PliteRenderElement = (
   props: RenderElementProps
 ) => React.ReactNode | undefined;
+
+export const renderStaticAfterNodeChildren = (editor: Editor, props: object) =>
+  getPlateRuntime(editor).pluginCache.slots.afterNodeChildren.map((name) => {
+    const innerPlugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
+    const innerComponent = getStaticSlot(
+      editor,
+      innerPlugin,
+      'afterNodeChildren'
+    );
+    const pluginContext = createPluginContext(editor, innerPlugin);
+
+    if (typeof innerComponent !== 'function') return null;
+
+    const rendered = Reflect.apply(innerComponent, undefined, [
+      {
+        ...props,
+        ...pluginContext,
+      },
+    ]) as React.ReactNode;
+
+    return <React.Fragment key={name}>{rendered}</React.Fragment>;
+  });
 
 export const pluginRenderElementStatic = (
   editor: Editor,
@@ -26,8 +53,7 @@ export const pluginRenderElementStatic = (
 ): PliteRenderElement =>
   function render(initialNodeProps) {
     let nodeProps = initialNodeProps;
-    const nodeComponent =
-      getStaticComponentOverride(editor, plugin.name) ?? plugin.component;
+    const nodeComponent = getStaticElementComponent(editor, plugin);
     const Component =
       nodeComponent && typeof nodeComponent !== 'string'
         ? nodeComponent
@@ -50,7 +76,11 @@ export const pluginRenderElementStatic = (
           getCompiledPlatePlugin(editor, name) ??
           failInvariant('Expected value to be defined');
         const wrapperContext = createPluginContext(editor, wrapperPlugin);
-        const renderBelow = wrapperPlugin.slots.wrapNodeChildren;
+        const renderBelow = getStaticSlot(
+          editor,
+          wrapperPlugin,
+          'wrapNodeChildren'
+        );
         const hoc =
           typeof renderBelow === 'function'
             ? Reflect.apply(renderBelow, undefined, [
@@ -76,27 +106,10 @@ export const pluginRenderElementStatic = (
       <Element {...defaultProps} {...nodeProps}>
         {children}
 
-        {getPlateRuntime(editor).pluginCache.slots.afterNodeChildren.map(
-          (name) => {
-            const innerPlugin =
-              getCompiledPlatePlugin(editor, name) ??
-              failInvariant('Expected value to be defined');
-            const innerComponent = innerPlugin.slots.afterNodeChildren;
-            const pluginContext = createPluginContext(editor, innerPlugin);
-
-            if (typeof innerComponent !== 'function') return null;
-
-            const rendered = Reflect.apply(innerComponent, undefined, [
-              {
-                ...defaultProps,
-                ...nodeProps,
-                ...pluginContext,
-              },
-            ]) as React.ReactNode;
-
-            return <React.Fragment key={name}>{rendered}</React.Fragment>;
-          }
-        )}
+        {renderStaticAfterNodeChildren(editor, {
+          ...defaultProps,
+          ...nodeProps,
+        })}
       </Element>
     );
 
@@ -105,7 +118,7 @@ export const pluginRenderElementStatic = (
         getCompiledPlatePlugin(editor, name) ??
         failInvariant('Expected value to be defined');
       const wrapperContext = createPluginContext(editor, wrapperPlugin);
-      const renderAbove = wrapperPlugin.slots.wrapNode;
+      const renderAbove = getStaticSlot(editor, wrapperPlugin, 'wrapNode');
       const hoc =
         typeof renderAbove === 'function'
           ? Reflect.apply(renderAbove, undefined, [
