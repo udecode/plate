@@ -1244,9 +1244,6 @@ export const useEditableSelectionReconciler = ({
           coverage: runtime.domCoverage,
           domSelection,
           editor,
-          scrollSelectionIntoView: shouldSkipSelectionScroll(editor)
-            ? undefined
-            : scrollSelectionIntoView,
           onDOMSelectionWillChange: () => {
             state.isUpdatingSelection = true;
             state.selectionChangeOrigin = 'programmatic-export';

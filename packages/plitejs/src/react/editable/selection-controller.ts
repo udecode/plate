@@ -43,7 +43,6 @@ import {
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,
   findContentRootOwners,
-  getRegisteredRootViewEditor,
   isRangeAcrossContentRootOwners,
 } from './content-root-owners';
 import { applyDOMCoverageSelectionPolicy } from './dom-coverage-selection';
@@ -1514,31 +1513,27 @@ export const syncEditableDOMSelectionToEditor = ({
             range.endOffset,
           ] as const);
       if (
-        domSelection.anchorNode !== anchorNode ||
-        domSelection.anchorOffset !== anchorOffset ||
-        domSelection.focusNode !== focusNode ||
-        domSelection.focusOffset !== focusOffset
+        domSelection.anchorNode === anchorNode &&
+        domSelection.anchorOffset === anchorOffset &&
+        domSelection.focusNode === focusNode &&
+        domSelection.focusOffset === focusOffset
       ) {
-        state.isUpdatingSelection = true;
-        state.selectionChangeOrigin = 'programmatic-export';
-        const restoreScroll = preserveScroll
-          ? captureScrollOffsets(editorElement)
-          : null;
-        domSelection.setBaseAndExtent(
-          anchorNode,
-          anchorOffset,
-          focusNode,
-          focusOffset
-        );
-        restoreScrollOffsets(restoreScroll, domPhaseScheduler);
-        scheduleClearSelectionUpdate('clear-exported-view-range-update');
+        return;
       }
-      if (!preserveScroll) {
-        // The view's direction can differ from the model's representative range.
-        const focusRange = range.cloneRange();
-        focusRange.collapse(viewSelection.segments.backward);
-        scrollSelectionIntoView(editor, focusRange);
-      }
+
+      state.isUpdatingSelection = true;
+      state.selectionChangeOrigin = 'programmatic-export';
+      const restoreScroll = preserveScroll
+        ? captureScrollOffsets(editorElement)
+        : null;
+      domSelection.setBaseAndExtent(
+        anchorNode,
+        anchorOffset,
+        focusNode,
+        focusOffset
+      );
+      restoreScrollOffsets(restoreScroll, domPhaseScheduler);
+      scheduleClearSelectionUpdate('clear-exported-view-range-update');
       return;
     }
     if (collapsedViewSelection) {
@@ -1584,26 +1579,6 @@ export const syncEditableDOMSelectionToEditor = ({
         { timing: 'animation-frame' }
       );
       scheduleClearSelectionUpdate(`clear-${label}-update`);
-      if (viewSelection && !preserveScroll) {
-        const focusEditor =
-          viewSelection.focus.point.root &&
-          viewSelection.focus.point.root !==
-            (editor.read.view.root() ?? MAIN_ROOT_KEY)
-            ? getRegisteredRootViewEditor(
-                editor,
-                viewSelection.focus.point.root
-              )
-            : editor;
-        const point =
-          focusEditor &&
-          resolveViewBoundaryDOMPoint(focusEditor, viewSelection.focus);
-        if (point) {
-          const focusRange = editorElement.ownerDocument.createRange();
-          focusRange.setStart(point[0], point[1]);
-          focusRange.collapse(true);
-          scrollSelectionIntoView(editor, focusRange);
-        }
-      }
       return;
     }
 
@@ -1624,9 +1599,6 @@ export const syncEditableDOMSelectionToEditor = ({
         coverage: runtime.domCoverage,
         domSelection,
         editor,
-        scrollSelectionIntoView: preserveScroll
-          ? undefined
-          : scrollSelectionIntoView,
         forceDOMRangeRebuild: options?.forceModelExport,
         onDOMSelectionWillChange: () => {
           state.isUpdatingSelection = true;

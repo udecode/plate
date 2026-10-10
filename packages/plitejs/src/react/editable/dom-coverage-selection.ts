@@ -172,7 +172,6 @@ export const applyDOMCoverageSelectionPolicy = ({
   editorElement,
   forceDOMRangeRebuild = false,
   onDOMSelectionWillChange,
-  scrollSelectionIntoView,
   selection,
 }: {
   coverage: DOMCoverageSession;
@@ -181,10 +180,6 @@ export const applyDOMCoverageSelectionPolicy = ({
   editorElement?: HTMLElement;
   forceDOMRangeRebuild?: boolean;
   onDOMSelectionWillChange?: () => void;
-  scrollSelectionIntoView?: (
-    editor: ReactRuntimeEditor,
-    range: globalThis.Range
-  ) => void;
   selection: ModelRange;
 }) => {
   const boundaries = coverage.getBoundariesForRange(selection);
@@ -210,18 +205,6 @@ export const applyDOMCoverageSelectionPolicy = ({
 
   onDOMSelectionWillChange?.();
   applyDOMRangeProjection(domSelection, projection, forceDOMRangeRebuild);
-
-  if (scrollSelectionIntoView) {
-    const focusRange = resolveDOMRangeInRoot(
-      editor,
-      {
-        anchor: selection.focus,
-        focus: selection.focus,
-      },
-      editorElement
-    );
-    if (focusRange) scrollSelectionIntoView(editor, focusRange);
-  }
 
   return true;
 };

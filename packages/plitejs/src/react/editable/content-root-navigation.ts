@@ -84,12 +84,13 @@ import {
   after as editorAfter,
   failInvariant,
   before as editorBefore,
+  dispatchCommand,
+  editorCommands,
   getEditorRuntimeOwner,
   toInternalRoot,
 } from './runtime-editor-api';
 import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
-import { canUseNativeViewSelection } from './selection-projected-dom';
 
 export {
   type ContentRootOwner,
@@ -137,6 +138,17 @@ const rootedRange = (point: Point, root: RootKey): Range => {
   };
 };
 
+const selectContentRoot = (
+  editor: ReactRuntimeEditor,
+  target: NonNullable<Parameters<typeof writeRuntimeSelection>[1]>
+) => {
+  if (editor.read.view.isReadOnly()) {
+    writeRuntimeSelection(editor, target);
+  } else {
+    dispatchCommand(editor, editorCommands.select, { target });
+  }
+};
+
 const toViewBoundaryPoint = ({
   owner,
   point,
@@ -180,13 +192,7 @@ const collapseNativeSelectionForProjectedSelection = (
 
   const clear = () => {
     const current = readPliteViewSelection(editor);
-    if (
-      !current ||
-      isPliteViewSelectionCollapsed(current) ||
-      canUseNativeViewSelection(editor, current)
-    ) {
-      return;
-    }
+    if (!current || isPliteViewSelectionCollapsed(current)) return;
     domSelection.removeAllRanges();
   };
 
@@ -227,7 +233,7 @@ const collapseModelSelectionForProjectedSelection = (
     return;
   }
 
-  writeRuntimeSelection(editor, range);
+  selectContentRoot(editor, range);
 };
 
 const getRootViewEditor = ({
@@ -1286,13 +1292,9 @@ const moveMarkupSelection = ({
           focus: {
             point: rootPlitePoint(selection.focus, root),
             affinity:
-              (SelectionApi.isText(selection)
-                ? selection.affinity
-                : undefined) ??
-              (!RangeApi.isCollapsed(selection) &&
-              RangeApi.isBackward(selection)
+              !RangeApi.isCollapsed(selection) && RangeApi.isBackward(selection)
                 ? 'forward'
-                : 'backward'),
+                : 'backward',
           },
         })
       : null);
@@ -1330,17 +1332,6 @@ const moveMarkupSelection = ({
         );
       if (!boundary) return false;
       target = boundary;
-    } else if (!initialNode.text) {
-      const adjacent = forward
-        ? PliteViewBoundaryGraph.nextNode(graph, initialNode)
-        : PliteViewBoundaryGraph.previousNode(graph, initialNode);
-      const boundary = getContentRootViewBoundaryPoint(
-        editor,
-        adjacent ?? initialNode,
-        adjacent ? (forward ? 'start' : 'end') : forward ? 'end' : 'start'
-      );
-      if (!boundary) return false;
-      target = boundary;
     } else if (action.axis === 'line' || action.axis === 'vertical') {
       const next = resolveViewBoundaryVisualMovement({
         axis: action.axis,
@@ -1353,6 +1344,17 @@ const moveMarkupSelection = ({
       });
       if (!next) return false;
       target = next;
+    } else if (!initialNode.text) {
+      const adjacent = forward
+        ? PliteViewBoundaryGraph.nextNode(graph, initialNode)
+        : PliteViewBoundaryGraph.previousNode(graph, initialNode);
+      const boundary = getContentRootViewBoundaryPoint(
+        editor,
+        adjacent ?? initialNode,
+        adjacent ? (forward ? 'start' : 'end') : forward ? 'end' : 'start'
+      );
+      if (!boundary) return false;
+      target = boundary;
     } else {
       const entry = graph.textRunsByNode.get(initialNode.key);
       if (!entry || !initialNode.text) return false;
@@ -1473,19 +1475,13 @@ const moveMarkupSelection = ({
     );
   if (extend && ordinary && !isPliteViewSelectionCollapsed(projected)) {
     writePliteViewSelection(editor, null);
-    writeRuntimeSelection(
-      editor,
-      SelectionApi.text(
-        {
-          anchor: projected.anchor.point,
-          focus: projected.focus.point,
-        },
-        { affinity: target.affinity }
-      )
-    );
+    selectContentRoot(editor, {
+      anchor: projected.anchor.point,
+      focus: projected.focus.point,
+    });
   } else if (!extend && !target.fragmentId) {
     writePliteViewSelection(editor, docked ? projected : null);
-    writeRuntimeSelection(
+    selectContentRoot(
       editor,
       SelectionApi.text(
         { anchor: target.point, focus: target.point },
@@ -1859,7 +1855,7 @@ export const applyContentRootNavigation = ({
 
   event.preventDefault();
   writePliteViewSelection(editor, null);
-  writeRuntimeSelection(targetEditor, rootedRange(target.point, target.root));
+  selectContentRoot(targetEditor, rootedRange(target.point, target.root));
 
   if (targetEditor !== editor) {
     focusEditor?.(targetEditor);

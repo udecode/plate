@@ -1634,7 +1634,6 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
   runtime.inputController.preferModelSelectionForInputRef.current = true;
   runtime.androidInputManagerRef.current = null;
   let renderTick = 0;
-  const scroll = vi.fn();
 
   editorReplace(editor, {
     children: [
@@ -1666,7 +1665,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     useEditableSelectionReconciler({
       viewportBackedSelection: false,
       runtime,
-      scrollSelectionIntoView: scroll,
+      scrollSelectionIntoView: vi.fn(),
     });
 
     return (
@@ -1694,6 +1693,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
     vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
     vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    const resolveDOMRange = vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot');
 
     act(() => {
       renderTick += 1;
@@ -1701,7 +1701,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
     });
 
     expect(domSelection.rangeCount).toBe(0);
-    expect(scroll).not.toHaveBeenCalled();
+    expect(resolveDOMRange).not.toHaveBeenCalled();
     expect(state.selectionChangeOrigin).toBe('programmatic-export');
     expect(state.isUpdatingSelection).toBe(true);
 
@@ -1851,183 +1851,165 @@ test('forced DOM coverage export rebuilds a fresh native range', () => {
   }
 });
 
-test.each([
-  { anchorOffset: 1, focusOffset: 1 },
-  { anchorOffset: 3, focusOffset: 0 },
-])(
-  'selection reconciler scrolls the visible focus across DOM coverage ($anchorOffset, $focusOffset)',
-  ({ anchorOffset, focusOffset }) => {
-    vi.useFakeTimers();
+test('selection reconciler preserves visible anchor text across DOM coverage boundaries', () => {
+  vi.useFakeTimers();
 
-    const editor = createEditor<Value>();
-    const runtime = new EditableDOMRuntime({ editor });
-    const coverage = runtime.domCoverage;
-    const { rootRef } = runtime;
-    const { state } = runtime;
-    runtime.inputController.preferModelSelectionForInputRef.current = true;
-    runtime.androidInputManagerRef.current = null;
-    let renderTick = 0;
-    const scroll = vi.fn<(editor: unknown, range: globalThis.Range) => void>();
+  const editor = createEditor<Value>();
+  const runtime = new EditableDOMRuntime({ editor });
+  const coverage = runtime.domCoverage;
+  const { rootRef } = runtime;
+  const { state } = runtime;
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
+  let renderTick = 0;
 
-    editorReplace(editor, {
-      children: [
-        { type: 'paragraph', children: [{ text: 'one' }] },
-        { type: 'hidden', children: [{ text: 'secret' }] },
-        { type: 'paragraph', children: [{ text: 'two' }] },
-      ],
-      selection: {
-        kind: 'text',
-        anchor: { path: [0, 0], offset: anchorOffset },
-        focus: { path: [2, 0], offset: focusOffset },
-      },
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'one' }] },
+      { type: 'hidden', children: [{ text: 'secret' }] },
+      { type: 'paragraph', children: [{ text: 'two' }] },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [2, 0], offset: 1 },
+    },
+  });
+  coverage.registerBoundary({
+    anchor: { type: 'placeholder' },
+    boundaryId: 'hidden-block',
+    copyPolicy: 'model',
+    coveredPathRanges: [{ anchor: [1], focus: [1] }],
+    coveredRuntimeRanges: [],
+    ownerPath: [],
+    ownerNodeKey: null,
+    reason: 'app-hidden',
+    selectionPolicy: 'skip',
+    state: 'intentionally-hidden',
+    version: 1,
+  });
+
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      viewportBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
     });
-    coverage.registerBoundary({
-      anchor: { type: 'placeholder' },
-      boundaryId: 'hidden-block',
-      copyPolicy: 'model',
-      coveredPathRanges: [{ anchor: [1], focus: [1] }],
-      coveredRuntimeRanges: [],
-      ownerPath: [],
-      ownerNodeKey: null,
-      reason: 'app-hidden',
-      selectionPolicy: 'skip',
-      state: 'intentionally-hidden',
-      version: 1,
-    });
 
-    const Harness = () => {
-      useEditableSelectionReconciler({
-        viewportBackedSelection: false,
-        runtime,
-        scrollSelectionIntoView: scroll,
-      });
-
-      return (
-        <div
-          data-editor="true"
-          data-render-tick={renderTick}
-          data-selection-test-root
-          ref={rootRef}
-        >
-          <span data-editor-node="text" data-editor-path="0,0">
-            <span data-editor-leaf="true">
-              <span data-editor-string="true">one</span>
-            </span>
+    return (
+      <div
+        data-editor="true"
+        data-render-tick={renderTick}
+        data-selection-test-root
+        ref={rootRef}
+      >
+        <span data-editor-node="text" data-editor-path="0,0">
+          <span data-editor-leaf="true">
+            <span data-editor-string="true">one</span>
           </span>
-          <button type="button">hidden shell</button>
-          <span data-editor-node="text" data-editor-path="2,0">
-            <span data-editor-leaf="true">
-              <span data-editor-string="true">two</span>
-            </span>
+        </span>
+        <button type="button">hidden shell</button>
+        <span data-editor-node="text" data-editor-path="2,0">
+          <span data-editor-leaf="true">
+            <span data-editor-string="true">two</span>
           </span>
-        </div>
-      );
-    };
+        </span>
+      </div>
+    );
+  };
 
-    try {
-      const { container, rerender } = render(<Harness />);
-      const root = container.querySelector(
-        '[data-selection-test-root]'
-      ) as HTMLElement | null;
-      const [firstString, secondString] = container.querySelectorAll(
-        '[data-editor-string]'
-      );
-      const firstElement = firstString?.closest(
-        '[data-editor-node]'
-      ) as HTMLElement | null;
-      const secondElement = secondString?.closest(
-        '[data-editor-node]'
-      ) as HTMLElement | null;
-      const firstText = firstString?.firstChild;
-      const secondText = secondString?.firstChild;
-      const domSelection = document.getSelection();
+  try {
+    const { container, rerender } = render(<Harness />);
+    const root = container.querySelector(
+      '[data-selection-test-root]'
+    ) as HTMLElement | null;
+    const [firstString, secondString] = container.querySelectorAll(
+      '[data-editor-string]'
+    );
+    const firstElement = firstString?.closest(
+      '[data-editor-node]'
+    ) as HTMLElement | null;
+    const secondElement = secondString?.closest(
+      '[data-editor-node]'
+    ) as HTMLElement | null;
+    const firstText = firstString?.firstChild;
+    const secondText = secondString?.firstChild;
+    const domSelection = document.getSelection();
 
-      if (
-        !root ||
-        !firstElement ||
-        !secondElement ||
-        !firstText ||
-        !secondText ||
-        !domSelection
-      ) {
-        throw new Error('Expected rendered text and document selection');
-      }
-
-      const [firstNode] = editor.read((innerState) =>
-        innerState.nodes.get([0, 0])
-      )!;
-      const [secondNode] = editor.read((innerState2) =>
-        innerState2.nodes.get([2, 0])
-      )!;
-      if (!TextApi.isText(firstNode) || !TextApi.isText(secondNode)) {
-        throw new Error('Expected the selected text nodes');
-      }
-      const keyToElement: NonNullable<
-        ReturnType<typeof EDITOR_TO_KEY_TO_ELEMENT.get>
-      > = new WeakMap();
-
-      EDITOR_TO_ELEMENT.set(editor, root);
-      EDITOR_TO_KEY_TO_ELEMENT.set(editor, keyToElement);
-      EDITOR_TO_WINDOW.set(editor, window);
-      ELEMENT_TO_NODE.set(root, editor);
-      ELEMENT_TO_NODE.set(firstElement, firstNode);
-      ELEMENT_TO_NODE.set(secondElement, secondNode);
-      NODE_TO_ELEMENT.set(editor, root);
-      NODE_TO_ELEMENT.set(firstNode, firstElement);
-      NODE_TO_ELEMENT.set(secondNode, secondElement);
-      keyToElement.set(editor.api.dom.findKey(firstNode), firstElement);
-      keyToElement.set(editor.api.dom.findKey(secondNode), secondElement);
-
-      domSelection.removeAllRanges();
-      domSelection.setBaseAndExtent(firstText, 1, firstText, 1);
-
-      vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
-      vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(
-        document
-      );
-      vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
-      vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
-      const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
-
-      act(() => {
-        renderTick += 1;
-        rerender(<Harness />);
-      });
-
-      if (focusOffset > 0) {
-        expect(setBaseAndExtent).toHaveBeenLastCalledWith(
-          firstText,
-          anchorOffset,
-          secondText,
-          focusOffset
-        );
-      } else {
-        expect(domSelection.rangeCount).toBe(0);
-      }
-      expect(scroll).toHaveBeenCalledTimes(1);
-      const focusRange = scroll.mock.calls[0][1];
-      expect(focusRange.collapsed).toBe(true);
-      expect(focusRange.startContainer).toBe(secondText);
-      expect(focusRange.startOffset).toBe(focusOffset);
-      expect(state.selectionChangeOrigin).toBe('programmatic-export');
-      expect(state.isUpdatingSelection).toBe(true);
-
-      act(() => {
-        vi.runOnlyPendingTimers();
-      });
-
-      expect(state.isUpdatingSelection).toBe(false);
-    } finally {
-      coverage.destroy();
-      EDITOR_TO_ELEMENT.delete(editor);
-      EDITOR_TO_KEY_TO_ELEMENT.delete(editor);
-      EDITOR_TO_WINDOW.delete(editor);
-      NODE_TO_ELEMENT.delete(editor);
-      vi.useRealTimers();
-      vi.restoreAllMocks();
+    if (
+      !root ||
+      !firstElement ||
+      !secondElement ||
+      !firstText ||
+      !secondText ||
+      !domSelection
+    ) {
+      throw new Error('Expected rendered text and document selection');
     }
+
+    const [firstNode] = editor.read((innerState) =>
+      innerState.nodes.get([0, 0])
+    )!;
+    const [secondNode] = editor.read((innerState2) =>
+      innerState2.nodes.get([2, 0])
+    )!;
+    if (!TextApi.isText(firstNode) || !TextApi.isText(secondNode)) {
+      throw new Error('Expected the selected text nodes');
+    }
+    const keyToElement: NonNullable<
+      ReturnType<typeof EDITOR_TO_KEY_TO_ELEMENT.get>
+    > = new WeakMap();
+
+    EDITOR_TO_ELEMENT.set(editor, root);
+    EDITOR_TO_KEY_TO_ELEMENT.set(editor, keyToElement);
+    EDITOR_TO_WINDOW.set(editor, window);
+    ELEMENT_TO_NODE.set(root, editor);
+    ELEMENT_TO_NODE.set(firstElement, firstNode);
+    ELEMENT_TO_NODE.set(secondElement, secondNode);
+    NODE_TO_ELEMENT.set(editor, root);
+    NODE_TO_ELEMENT.set(firstNode, firstElement);
+    NODE_TO_ELEMENT.set(secondNode, secondElement);
+    keyToElement.set(editor.api.dom.findKey(firstNode), firstElement);
+    keyToElement.set(editor.api.dom.findKey(secondNode), secondElement);
+
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(firstText, 1, firstText, 1);
+
+    vi.spyOn(ReactEditor, 'isFocused').mockReturnValue(true);
+    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolveRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
+
+    act(() => {
+      renderTick += 1;
+      rerender(<Harness />);
+    });
+
+    expect(setBaseAndExtent).toHaveBeenLastCalledWith(
+      firstText,
+      1,
+      secondText,
+      1
+    );
+    expect(state.selectionChangeOrigin).toBe('programmatic-export');
+    expect(state.isUpdatingSelection).toBe(true);
+
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+
+    expect(state.isUpdatingSelection).toBe(false);
+  } finally {
+    coverage.destroy();
+    EDITOR_TO_ELEMENT.delete(editor);
+    EDITOR_TO_KEY_TO_ELEMENT.delete(editor);
+    EDITOR_TO_WINDOW.delete(editor);
+    NODE_TO_ELEMENT.delete(editor);
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   }
-);
+});
 
 test('read-only triple-click stays native and does not update model selection', () => {
   const editor = createEditor<Value>();

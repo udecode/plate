@@ -88,9 +88,12 @@ export const canUseNativeViewSelection = (
     !!runtime &&
     !runtime.viewportRuntime &&
     !isPliteViewSelectionCollapsed(selection) &&
-    (!!selection.segments.parts[0]?.nodes[0]?.text ||
-      !!selection.segments.parts.at(-1)?.nodes.at(-1)?.text) &&
-    selection.segments.parts.every((part) => part.root === root && !part.owner)
+    selection.segments.parts.every(
+      (part) =>
+        part.root === root &&
+        !part.owner &&
+        part.nodes.every((node) => !!node.text)
+    )
   );
 };
 

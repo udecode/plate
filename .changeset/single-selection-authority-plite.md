@@ -7,5 +7,3 @@ Use `editor.update.selection.setNodes(targets, { anchor, focus })` or `tx.select
 Read the active plain directed `Range` with `editor.read.selection()`, `state.selection()`, or `tx.selection()`. Use `selection.ranges()` for every exact range and `selection.nodes()` for exact selected-node membership. The public `primaryRange()` and `replacementRange()` projections are not part of the selection surface.
 
 Apply marks and block formatting across the content of every selected node container.
-
-Keep repeated Shift+ArrowUp and Shift+ArrowDown text selection moving through suggested changes, inline objects, wrapped lines, and empty paragraphs without losing focus or jumping, and scroll fully to document boundaries.

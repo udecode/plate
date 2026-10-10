@@ -218,88 +218,53 @@ it.each([
   }
 );
 
-it.each([false, true])(
-  'keeps one native selection layer and scrolls its focus (backward: %s)',
-  async (backward) => {
-    const source = createEditor({
-      plugins: [authored({ authorId: 'alice' })],
-      initialValue: [paragraph('AXYZB')],
+it('keeps one native selection layer when a retained selection precedes mounting', async () => {
+  const source = createEditor({
+    plugins: [authored({ authorId: 'alice' })],
+    initialValue: [paragraph('AXYZB')],
+  });
+  const parent = createReactRuntimeViewEditor(
+    createEditorView(source, { authored: markup })
+  );
+  parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
+  parent.update.selection.set(point(0));
+  writePliteViewSelection(
+    parent,
+    createPliteViewSelection(createContentRootViewBoundaryGraph(parent, []), {
+      anchor: { point: point(0) },
+      focus: { point: point(2) },
+    })
+  );
+  const mounted = render(
+    <EditorRoot editor={parent}>
+      <Editable />
+    </EditorRoot>
+  );
+  const root = mounted.getByRole('textbox');
+  const runtime = getMountedEditableDOMRuntime(parent, root);
+  const native = window.getSelection();
+  assert.ok(runtime && native);
+  await act(async () => {
+    root.focus();
+    syncEditableDOMSelectionToEditor({
+      editor: parent,
+      editorElement: root,
+      scrollSelectionIntoView: () => {},
+      viewportBackedSelection: false,
+      state: runtime.state,
     });
-    const parent = createReactRuntimeViewEditor(
-      createEditorView(source, { authored: markup })
-    );
-    parent.update.text.delete({ at: { anchor: point(1), focus: point(4) } });
-    parent.update.selection.set(point(0));
-    writePliteViewSelection(
-      parent,
-      createPliteViewSelection(createContentRootViewBoundaryGraph(parent, []), {
-        anchor: { point: point(backward ? 2 : 0) },
-        focus: { point: point(backward ? 0 : 2) },
-      })
-    );
-    const mounted = render(
-      <EditorRoot editor={parent}>
-        <Editable />
-      </EditorRoot>
-    );
-    const root = mounted.getByRole('textbox');
-    const runtime = getMountedEditableDOMRuntime(parent, root);
-    const native = window.getSelection();
-    assert.ok(runtime && native);
-    const scroll = vi.fn<(editor: unknown, range: globalThis.Range) => void>();
-    await act(async () => {
-      root.focus();
-      syncEditableDOMSelectionToEditor({
-        editor: parent,
-        editorElement: root,
-        scrollSelectionIntoView: scroll,
-        viewportBackedSelection: false,
-        state: runtime.state,
-      });
-      runtime.domPhaseScheduler.flush();
-    });
-    assert.equal(scroll.mock.calls.length, 1);
-    const scrolledRange = scroll.mock.calls[0][1];
-    assert.equal(scrolledRange.collapsed, true);
-    assert.equal(scrolledRange.startContainer, native.focusNode);
-    assert.equal(scrolledRange.startOffset, native.focusOffset);
-    scroll.mockClear();
-    await act(async () => {
-      syncEditableDOMSelectionToEditor({
-        editor: parent,
-        editorElement: root,
-        scrollSelectionIntoView: scroll,
-        viewportBackedSelection: false,
-        state: runtime.state,
-      });
-    });
-    assert.equal(scroll.mock.calls.length, 1);
-    scroll.mockClear();
-    await act(async () => {
-      syncEditableDOMSelectionToEditor({
-        editor: parent,
-        editorElement: root,
-        scrollSelectionIntoView: scroll,
-        viewportBackedSelection: false,
-        state: runtime.state,
-        options: { preserveScroll: true },
-      });
-    });
-    assert.equal(scroll.mock.calls.length, 0);
-    assert.equal(native.rangeCount, 1);
-    assert.equal(native.toString(), 'AXYZB');
-    assert.equal(document.activeElement, root);
-    assert.equal(
-      root.querySelectorAll('[data-editor-view-selection]').length,
-      0
-    );
-    assert.equal(
-      root.querySelectorAll('[data-editor-inactive-selection]').length,
-      0
-    );
-    mounted.unmount();
-  }
-);
+    runtime.domPhaseScheduler.flush();
+  });
+  assert.equal(native.rangeCount, 1);
+  assert.equal(native.toString(), 'AXYZB');
+  assert.equal(document.activeElement, root);
+  assert.equal(root.querySelectorAll('[data-editor-view-selection]').length, 0);
+  assert.equal(
+    root.querySelectorAll('[data-editor-inactive-selection]').length,
+    0
+  );
+  mounted.unmount();
+});
 
 it('shares retained projection state while keeping mounted DOM views independent', async () => {
   const authoring = authored({ authorId: 'alice' });
