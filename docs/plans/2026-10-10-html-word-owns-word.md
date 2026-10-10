@@ -3,7 +3,7 @@ review_scopes: [documents, html, exports]
 review_basis: []
 work_kind: implementation
 review_commit: 0b6281ac2b80a22ff7baf048ebd9c530251e9b02
-review_inputs: [docs/plans/artifacts/html-word-owns-word/panel-r2-probes/katex-common-a1.log, docs/plans/artifacts/html-word-owns-word/how-explorer/answer.txt, docs/plans/artifacts/html-word-owns-word/base-probe/word-base-a3.log, docs/plans/artifacts/html-word-owns-word/base-probe/task-paragraphs-a1.log, docs/plans/artifacts/html-word-owns-word/premise-probe/premise-a1.log, docs/plans/artifacts/html-word-owns-word/premise-probe/override-classes-a1.log, docs/plans/artifacts/html-word-owns-word/architect/judge/opus/answer.md, docs/plans/artifacts/html-word-owns-word/panel-r1-probes/omml-reimport-a2.log, docs/plans/artifacts/html-word-owns-word/panel-r1-probes/katex-attrs-a1.log]
+review_inputs: [packages/platejs/src/docx/export/lib/exportDocx.lists.spec.tsx, packages/platejs/src/docx/export/lib/exportDocx.spec.ts, packages/platejs/src/docx/export/lib/sourcePreservation.spec.ts, packages/platejs/src/docx/import/lib/importDocx.math.slow.tsx, apps/www/src/registry/components/editor/docx-export.spec.tsx, apps/www/tests/browser/docx.spec.ts]
 ---
 
 # Word export follows Word's own rules
@@ -171,6 +171,7 @@ Every inline value the eight components set today, and where it goes:
 - Round 2 anchored the hex color patterns so `#0000` stops shading black. Round 3 found that this turned `!important` and opaque alpha colors black, so the anchoring was reverted.
 - Main changes said the Close would flag the research note that cited the raw `data-equation-omml` sink. The run updated `docs/research/sources/plite/conversion-and-export.md` instead.
 - The plan had no performance check. The run added one after the build.
+- Main changes said import reports each revision inside math with the existing lost-revision diagnostic. The build reports one `unsupported-content` warning with feature `tracked-revision` per equation that held any revision, naming its part, as the changeset says. The pull request's babysit added this line after the pull request opened (`docs/plans/2026-10-11-html-pr-5157.md`).
 
 ### What landed
 
@@ -189,7 +190,7 @@ Every inline value the eight components set today, and where it goes:
 - The plan panel ran three rounds and the diff panel three, each with Opus, Astra and Sol. Every critical finding was applied or reverted, and the decision log holds each row.
 - No Word, LibreOffice or Pages is on this machine, so how Word draws the equations and markers is not checked. `x'` round-trips with a different MathML token class. Tasks re-import as bullets and callouts as two-cell tables. A Word-authored equation of normal text only imports its text as TeX. `pnpm check entrypoint-graph`'s import-migration half needs an `rg` binary this machine lacks.
 
-- Review inputs the plan cites: `docs/plans/artifacts/html-word-owns-word/panel-r2-probes/katex-common-a1.log`, `docs/plans/artifacts/html-word-owns-word/how-explorer/answer.txt`, `docs/plans/artifacts/html-word-owns-word/base-probe/word-base-a3.log`, `docs/plans/artifacts/html-word-owns-word/base-probe/task-paragraphs-a1.log`, `docs/plans/artifacts/html-word-owns-word/premise-probe/premise-a1.log`, `docs/plans/artifacts/html-word-owns-word/premise-probe/override-classes-a1.log`, `docs/plans/artifacts/html-word-owns-word/architect/judge/opus/answer.md`, `docs/plans/artifacts/html-word-owns-word/panel-r1-probes/omml-reimport-a2.log`, `docs/plans/artifacts/html-word-owns-word/panel-r1-probes/katex-attrs-a1.log`.
+- Review inputs, the tracked tests that prove the plan: `packages/platejs/src/docx/export/lib/exportDocx.lists.spec.tsx` (tests a and h), `packages/platejs/src/docx/export/lib/exportDocx.spec.ts` (b to e and i), `packages/platejs/src/docx/export/lib/sourcePreservation.spec.ts` (k), `packages/platejs/src/docx/import/lib/importDocx.math.slow.tsx` (f and g), `apps/www/src/registry/components/editor/docx-export.spec.tsx` (j) and `apps/www/tests/browser/docx.spec.ts`. The probe logs the plan read stay in its ignored run directory, which a fresh checkout does not have.
 
 Of 22 items in Steps and Completion Gates, 20 are done, 1 is partial (the `pnpm check` steps above), 1 is skipped (`/pstack:correct`, tracked in `docs/plans/topics/correct.md`), 0 are blocked and 0 are open.
 
