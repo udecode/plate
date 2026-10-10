@@ -8,7 +8,7 @@ review_inputs: [VISION.md, docs/vision/common.md, docs/vision/plate.md, packages
 
 # Export draws with the app's static kit
 
-Status: done: phases 1 to 3 are committed on branch `export-static-presentation`, not pushed
+Status: done: phases 1 to 3 are committed on branch `export-static-presentation`, in a pull request into next that waits on your merge
 Playbook: plan
 
 This iteration redoes `docs/plans/2026-10-09-html-static-repair.md` at claude-opus-5-5 @xhigh. That draft ran on gpt-6-astra @medium and claude-opus-5-5 @medium and is now superseded. The plan fixes the two export defects. Exporting a document with a table, an image, a task list or other interactive content crashes, because export draws each block with its editing component. Eighteen kinds of content crash the HTML render, and twelve crash the render step Word export runs. Style props passed to export can also swap out the exported document. The live editor keeps deciding what each block means and how it is configured, and export asks the app's static kit only how to draw each block, by plugin name. An `architect` arena with three runners from two model families converged on this shape, and a blind judge picked it over the draft's second export editor (`docs/plans/artifacts/html-static-repair-redo/architect/synthesis.md`). A three-model panel then reviewed the plan three times, and this revision settles every finding.
@@ -553,6 +553,21 @@ The review (`trail-review/answer.txt`) raised eight warnings and no critical fin
 - The AI dismissal rests on an editor built with an empty preview extension, not a rendered AI preview. Test j now covers AI-highlighted text under both Word policies.
 - "Never decided or tested" overstated the `why` lane, which found no record and called its conclusion inferred. The plan now says no source the lane read records the choice, and labels it inferred.
 - The capture target is outside the numbered phases. Open work names its separate plan, with an owner and a stop.
+
+### Phases 2 and 3
+
+Phase 3 landed through `docs/plans/2026-10-10-html-word-owns-word.md`, and phase 2 through `docs/plans/2026-10-10-html-static-kit-drift.md`, which narrowed it to the two options that change a static render. Each iteration's Close holds its own proof and limits.
+
+Review inputs the plan read: `VISION.md`, `docs/vision/common.md`, `docs/vision/plate.md`, `packages/platejs/src/static/renderStaticHtml.tsx`, `packages/platejs/src/static/internal/renderStaticHtmlWithOverrides.tsx`, `packages/platejs/src/static/internal/staticComponentOverrides.ts`, `packages/platejs/src/static/internal/staticDocumentView.ts`, `packages/platejs/src/static/pluginRenderElementStatic.internal.tsx`, `packages/platejs/src/static/pluginRenderLeafStatic.internal.tsx`, `packages/platejs/src/static/pluginRenderTextStatic.internal.tsx`, `packages/platejs/src/internal/plugin/pluginStore.ts`, `packages/platejs/src/docx/export/lib/exportDocx.tsx`, `packages/platejs/src/docx/export/lib/docxStaticComponents.tsx`, `packages/platejs/src/docx/export/lib/internal/render-document-file.ts`, `apps/www/src/registry/components/editor/export-toolbar-button.tsx`, `apps/www/src/registry/components/editor/plugins.ts`, `apps/www/src/registry/components/editor/plugins-static.ts`, `apps/www/src/registry/components/editor/block-list-static.tsx`, `apps/www/src/registry/components/editor/ai.tsx`, `apps/www/src/registry/components/editor/dnd.tsx`, `tooling/entrypoints/entrypoint-dag.mjs`.
+
+### Pull request panel
+
+Before the pull request into `next`, a three-model panel reviewed the branch diff in two rounds. Round 1 found two critical defects, and each fix landed with a test that fails before it:
+
+- A Word list item that holds only a display equation imported as a block equation and lost its list. Import now keeps that paragraph and imports its equation inline.
+- `renderStaticHtml` props with `editor` or `document` set to `undefined` passed the type and threw. The guard now rejects only a defined value.
+
+Round 2 found nothing critical. One warning and six nits wait in the decision log with their owners. `pnpm check` passes 23 of 25 steps. The review-ledger and knowledge steps fail the same way on `origin/next` (`666f02406e`), for the emoji and authored review plans and `docs/plans/topics/emoji.md`. The owner chose to open the pull request with those two failures stated in its description. The docx guide and the changeset now say that a display equation in a list item or an indented paragraph imports inline, and that `props` throw only for a set `editor` or `document`.
 
 ## Evidence
 

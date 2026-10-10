@@ -2,7 +2,7 @@
 review_scopes: [html]
 review_basis: []
 work_kind: implementation
-review_commit: e087f26713
+review_commit: e087f2671348bc5fe0fc1d8b06a4bb5393df365a
 review_inputs: [apps/www/src/registry/components/editor/indent-static.tsx, apps/www/src/registry/components/editor/list-static.tsx, apps/www/src/registry/components/editor/plugins-static.spec.ts]
 ---
 
@@ -70,5 +70,7 @@ Now both lists name images. The static editor loads the document and draws the i
 **What landed.** `BaseIndentKit` and `BaseListKit` target images, like `IndentKit` and `ListKit`. A static editor now loads a document with an indented image or an image in a list, and draws the image as a list item at its indent. Before the change, the server HTML block, the AI command route and the AI preview threw a schema error on such a document. The registry changelog has an entry for each kit.
 
 **Proof and limits.** The new test fails at `e087f26713` with the schema error and passes on the change. The probe loaded and rendered such a document through the server block's kit, and Chromium shows the image as a bullet item at 24 px with a nested item at 48 px. The www typecheck passes, the static kit, HTML export block, Word export and list tests pass (12 fast, 22 slow), and the registry output is fresh. No route renders a chosen document on the server, so the browser check opened HTML that a script rendered through the server block's path. The AI command route was not run; it builds its editor from `BaseEditorKit` and the live document the same way (`apps/www/src/registry/app/api/ai/command/route.ts:50-54`). The census still shows drift that only editing reads: the table's 600 px default width, editing state of images, links and uploads, the React table plugin's selection ref, and column and toggle corrections that differ only by component.
+
+**Review inputs.** The plan read `apps/www/src/registry/components/editor/indent-static.tsx`, `apps/www/src/registry/components/editor/list-static.tsx` and `apps/www/src/registry/components/editor/plugins-static.spec.ts`.
 
 **Open work.** Two items, listed under Open work.
