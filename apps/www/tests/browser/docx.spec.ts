@@ -85,9 +85,11 @@ test('a Word file imports and exports through the toolbar', async ({
 
     expect(artifact.suggestedFilename()).toBe('plate.docx');
     expect(path).not.toBeNull();
-    const bytes = await readFile(path);
+    const word = await JSZip.loadAsync(await readFile(path));
+    const wordXml = await word.file('word/document.xml')!.async('string');
 
-    expect(bytes).toEqual(input);
+    expect(wordXml).toContain('A Test of Headers');
+    expect(wordXml).toContain('<w:sz w:val="48"/>');
     errors.assertNone();
   } finally {
     errors.stop();

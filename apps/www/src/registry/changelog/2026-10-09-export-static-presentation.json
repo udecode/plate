@@ -32,6 +32,12 @@
       ],
       "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
+    },
+    {
+      "name": "docx-export",
+      "files": ["apps/www/src/registry/components/editor/docx-export.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
     }
   ],
   "entries": [
@@ -79,6 +85,40 @@
       "source": {
         "line": 22,
         "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-09",
+          "entry": "2026-10-09-export-static-presentation",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-10-docx-export-stylesheet-owns-word-look",
+      "kind": "fix",
+      "summary": "Move the Word look of callouts, code blocks, and empty equation and table of contents placeholders into `DOCX_EXPORT_STYLES`, because the package's DOCX drawings leave colors, fonts and sizes to the stylesheet.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["docx-export"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-09",
+          "entry": "2026-10-09-export-static-presentation",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-10-block-list-static-task-marker",
+      "kind": "fix",
+      "summary": "Draw the task checkbox inside its `li` and mark the `li` with `data-checked`, so Word export gives each task one paragraph with a ☑ or ☐ list marker.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-list-static"],
+      "source": {
+        "line": 30,
+        "row": 5,
         "legacyRelease": {
           "date": "2026-10-09",
           "entry": "2026-10-09-export-static-presentation",

@@ -22,6 +22,142 @@ import { EditorStatic, type EditorStaticProps } from '../../../static';
 import { importDocx } from '../../import/lib/importDocx';
 import { exportDocx } from './exportDocx';
 
+const exportEquationXml = async (latex: string, inline = false) => {
+  const editor = createEditor({
+    initialValue: inline
+      ? [
+          {
+            children: [
+              { text: 'Inline ' },
+              { children: [{ text: '' }], latex, type: 'inlineEquation' },
+            ],
+            type: 'paragraph',
+          },
+        ]
+      : [{ children: [{ text: '' }], latex, type: 'equation' }],
+    plugins: [BaseEquationPlugin, BaseInlineEquationPlugin],
+  });
+  const result = await exportDocx(editor, { projection: 'proposed' });
+
+  if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+  const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+
+  return zip.file('word/document.xml')!.async('string');
+};
+
+const xmlText = (text: string) =>
+  text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+
+describe('exportDocx equations', () => {
+  it('exports a block equation as Word math', async () => {
+    const xml = await exportEquationXml('\\frac{a}{b}');
+
+    expect(xml).toMatch(/<m:oMathPara[ >]/);
+    expect(xml).toContain('<m:f>');
+    expect(xml).not.toContain('\\frac');
+  });
+
+  it('exports an inline equation as Word math beside its text', async () => {
+    const xml = await exportEquationXml('x^2', true);
+
+    expect(xml).toContain('<m:sSup>');
+    expect(xml).not.toMatch(/<m:oMathPara[ >]/);
+    expect(xml).toContain('Inline ');
+  });
+
+  it('keeps a math font such as double-struck', async () => {
+    const xml = await exportEquationXml('\\mathbb{R}');
+
+    expect(xml).toContain('<m:scr m:val="double-struck"/>');
+  });
+
+  it('converts common notation instead of falling back to its TeX', async () => {
+    const sources = [
+      'f(x, y)',
+      "x'",
+      '\\binom{n}{k}',
+      'a\\quad b',
+      '\\left(x\\right)',
+      '\\big(x\\big)',
+      '\\overline{x}',
+      '\\underline{x}',
+      '\\sum_{i=1}^n i',
+      '\\int_0^1 x\\,dx',
+      '\\alpha \\le \\infty',
+      '\\sin x',
+    ];
+    const fellBack: string[] = [];
+
+    for (const source of sources) {
+      const xml = await exportEquationXml(source);
+
+      if (!/<m:oMath[ >]/.test(xml) || xml.includes(xmlText(source))) {
+        fellBack.push(source);
+      }
+    }
+
+    expect(fellBack).toEqual([]);
+  });
+
+  it('keeps malformed TeX as one normal-text math run', async () => {
+    const xml = await exportEquationXml('\\frac{');
+
+    expect(xml).toMatch(
+      /<m:oMath[^>]*>\s*<m:r>\s*<m:rPr>\s*<m:nor\/>\s*<\/m:rPr>\s*<m:t[^>]*>\\frac\{<\/m:t>\s*<\/m:r>\s*<\/m:oMath>/
+    );
+  });
+
+  it('keeps notation Word math cannot express as its TeX', async () => {
+    const xml = await exportEquationXml('\\raisebox{1em}{x}');
+
+    expect(xml).toContain('<m:nor/>');
+    expect(xml).toContain('\\raisebox{1em}{x}');
+  });
+
+  it('writes a text-only equation as its TeX', async () => {
+    const xml = await exportEquationXml('\\text{50\\% off}');
+
+    expect(xml).toContain('<m:nor/>');
+    expect(xml).toContain('\\text{50\\% off}');
+  });
+
+  it('writes text beside math that draws nothing as its TeX', async () => {
+    const xml = await exportEquationXml('\\text{a}\\hspace{0pt}');
+
+    expect(xml).toMatch(/<m:oMath[ >]/);
+    expect(xml).toContain('<m:nor/>');
+    expect(xml).toContain('\\text{a}\\hspace{0pt}');
+  });
+
+  it('keeps a nine-em space as Word math', async () => {
+    expect(await exportEquationXml('x\\hspace{9em}y')).not.toContain(
+      '<m:nor/>'
+    );
+  });
+
+  it('keeps a space too wide for Word math as its TeX', async () => {
+    const xml = await exportEquationXml('x\\hspace{1000000000em}y');
+
+    expect(xml).toContain('<m:nor/>');
+    expect(xml).toContain('x\\hspace{1000000000em}y');
+  });
+
+  it('stacks a symbol over a relation', async () => {
+    expect(await exportEquationXml('\\overset{+}{=}')).toContain('<m:limUpp>');
+  });
+
+  it('stacks a symbol over a letter', async () => {
+    expect(await exportEquationXml('\\overset{+}{x}')).toContain('<m:limUpp>');
+  });
+
+  it('keeps a stretchy brace as its TeX', async () => {
+    const xml = await exportEquationXml('\\overbrace{a+b}^{n}');
+
+    expect(xml).toContain('<m:nor/>');
+    expect(xml).toContain('\\overbrace{a+b}^{n}');
+  });
+});
+
 describe('exportDocx', () => {
   afterEach(() => {
     mock.restore();
@@ -166,6 +302,50 @@ describe('exportDocx', () => {
     expect(result.ok).toBe(true);
   });
 
+  it('shades both callout cells with the callout color', async () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          backgroundColor: '#fde68a',
+          children: [{ text: 'Warm' }],
+          icon: '🔥',
+          type: 'callout',
+        },
+      ],
+      plugins: [BaseCalloutPlugin],
+    });
+
+    const result = await exportDocx(editor, { projection: 'proposed' });
+
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
+
+    expect(documentXml.match(/w:fill="fde68a"/gi)).toHaveLength(2);
+  });
+
+  it('leaves callout cells unshaded for a color Word cannot read', async () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          backgroundColor: 'rgba(253, 230, 138, 0.5)',
+          children: [{ text: 'Warm' }],
+          icon: '🔥',
+          type: 'callout',
+        },
+      ],
+      plugins: [BaseCalloutPlugin],
+    });
+
+    const result = await exportDocx(editor, { projection: 'proposed' });
+
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
+
+    expect(documentXml).not.toContain('w:fill="000000"');
+  });
+
   it('owns required Word renderers without registry components', async () => {
     const editor = createEditor({
       initialValue: [
@@ -244,8 +424,6 @@ describe('exportDocx', () => {
     const documentXml = await zip.file('word/document.xml')!.async('string');
 
     expect(documentXml).toContain('Package heading');
-    expect(documentXml).toContain('E = mc^2');
-    expect(documentXml).toContain('x^2 + y^2');
     expect(documentXml).toContain('Callout body');
     expect(documentXml).toContain('First column');
     expect(documentXml).toContain('Second column');

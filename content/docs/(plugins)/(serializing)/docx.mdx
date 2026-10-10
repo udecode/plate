@@ -127,7 +127,6 @@ editor.update.value.replace(imported.document);
 const exported = await exportDocx(editor, {
   projection: "review",
   source: imported.source,
-  stylesheet,
 });
 
 imported.source?.dispose();
@@ -234,7 +233,7 @@ Before returning a generated file, export checks the written package against the
 
 ### Source-aware export
 
-With a valid `source`, an unchanged `review` export returns the admitted file byte for byte. Exact reuse requires the same compiled schema, an unchanged review document, unchanged or omitted comments, and no `title`, `margins`, `orientation`, or `pageSize` override. Static renderer options are bypassed on this path because no content is regenerated.
+With a valid `source`, an unchanged `review` export returns the admitted file byte for byte. Exact reuse requires the same compiled schema, an unchanged review document, unchanged or omitted comments, and no `title`, `margins`, `orientation`, `pageSize`, `stylesheet`, or `fontFamily` option. `component` and `presentation` do not apply on this path, because export regenerates nothing.
 
 If an exact check fails, `exportDocx` regenerates the complete document body. It keeps these source units when their internal relationships are closed, reachable, and nonconflicting:
 
@@ -261,9 +260,22 @@ The same configured static renderer handles the main document and rich comment b
 ### Static rendering and styles
 
 DOCX owns its semantic static mappings for code blocks, columns, equations,
-callouts, headings, and tables of contents. The app supplies presentation CSS
-and may pass a custom root `component` when it needs a different wrapper.
+callouts, headings, and tables of contents. They set no color, font, or font
+size beyond an element's own values, such as a callout's color. The app's
+`stylesheet` sets them and can select:
+
+- `editor-<plugin name>`, the class on each drawn element, such as `.editor-codeBlock`;
+- `table > tbody > tr > td` inside a callout, whose first cell holds the icon;
+- `[data-docx-preserve-whitespace]`, the text of a code block;
+- `[data-empty]`, the placeholder of an empty equation or table of contents.
+
+The app may pass a custom root `component` when it needs a different wrapper.
 `DOCX_EXPORT_STYLES` is the registry's copied presentation preset.
+
+Equations export as Word math built from KaTeX's MathML. An equation that uses
+notation Word math cannot express exports its TeX as text inside a Word
+equation. A task list item, an `li` with `data-checked`, exports with a ☑ or ☐
+list marker.
 
 A live editor's components are editing UI. Pass the app's static kit as
 `presentation` so the body and every comment body draw with static components
@@ -287,7 +299,9 @@ diagnostic, which counts as lost content under `lossPolicy`.
 | Multiple-section headers and footers, footnotes, and endnotes     | Inspect and bound their package parts; omit them from edited source-aware output with diagnostics           |
 | Fields, text boxes, shapes, charts, SmartArt, and embedded objects | Keep reachable plain text when conversion exposes it; report unsupported or omitted content                 |
 | Plate named roots and metadata                                     | Omit from Word output with a `lossy-content` warning; keep them in authored JSON                            |
-| Custom Plate, math, emoji, and media nodes                         | Use their configured static serializers; unsupported output produces diagnostics                            |
+| Equations                                                          | Export as Word math, or as TeX inside a Word equation when Word math cannot express the notation. Import reads Word math into `equation` and `inlineEquation` nodes, with TeX rebuilt from the equation's structure, or into TeX text when those plugins are not installed. A display equation that shares its paragraph with a comment, tracked change or text imports inline |
+| Task lists                                                         | Give an item drawn as an `li` with `data-checked` a ☑ or ☐ list marker                                      |
+| Custom Plate, emoji, and media nodes                               | Use their configured static serializers; unsupported output produces diagnostics                            |
 
 ## API reference
 
@@ -356,7 +370,7 @@ exportDocx(
 | `comments`              | `readonly DocxComment[]`                 | Comment records in proposed-projection coordinates |
 | `allowRemoteImages`     | `boolean`                                | Fetch remote HTTP(S) images to embed; defaults to `false` |
 | `component`             | `React.ComponentType<EditorStaticProps>` | Optional static editor wrapper                     |
-| `fontFamily`            | `string`                                 | Document body font                                 |
+| `fontFamily`            | `string`                                 | Document body font; rebuilds an unchanged `source` |
 | `lossPolicy`            | `'allow' \| 'reject'`                    | Fail on dropped content, or return it as warnings; defaults to `'reject'` |
 | `margins`               | `Margins`                                | Page margins in twentieths of a point              |
 | `orientation`           | `'landscape' \| 'portrait'`              | Page orientation                                   |
@@ -364,7 +378,7 @@ exportDocx(
 | `presentation`          | `readonly BasePluginInput[]`             | Static plugins that draw the body and comment bodies, matched by plugin name |
 | `signal`                | `AbortSignal`                            | Cooperative cancellation signal                    |
 | `source`                | `DocxSource \| null`                     | Retained source correspondence for exact or safe export |
-| `stylesheet`            | `string`                                 | CSS applied before DOCX conversion                 |
+| `stylesheet`            | `string`                                 | CSS that sets the Word look; rebuilds an unchanged `source` |
 | `title`                 | `string`                                 | Document metadata title                            |
 
 A successful result contains `blob` and structured `diagnostics`. A failed result contains only `diagnostics`.

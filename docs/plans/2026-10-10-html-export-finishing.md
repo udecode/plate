@@ -11,7 +11,7 @@ review_inputs: [apps/www/src/registry/components/editor/export-toolbar-button.ts
 Status: awaiting: built on branch export-static-presentation and not pushed
 Playbook: bug-fix
 
-The owner asked for item A of the export finishing list ("先从 A 开始吧"). A held three small fixes. The export menu showed nothing when an export threw. Copilot's ghost text made every export of an editor with Copilot warn, and strict Word refused the file. The third item would have turned a drawing that throws during Word export into a warning. This iteration lands the first two and drops the third, because the static guide already says such a drawing rejects the export.
+The owner asked to start with item A of the export finishing list. A held three small fixes. The export menu showed nothing when an export threw. Copilot's ghost text made every export of an editor with Copilot warn, and strict Word refused the file. The third item would have turned a drawing that throws during Word export into a warning. This iteration lands the first two and drops the third, because the static guide already says such a drawing rejects the export.
 
 ## Brief
 

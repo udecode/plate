@@ -51,9 +51,15 @@ export type DocxExportOptions = Readonly<{
   allowRemoteImages?: boolean;
   /** Word comments whose ranges address the proposed editor projection. */
   comments?: readonly DocxComment[];
-  /** React component used for static HTML rendering. */
+  /**
+   * React component used for static HTML rendering. It does not stop an
+   * unchanged `source` from returning its original file.
+   */
   component?: React.ComponentType<EditorStaticProps>;
-  /** Font family for the document body. */
+  /**
+   * Font family for the document body. Passing it rebuilds an unchanged
+   * `source` instead of returning its original file.
+   */
   fontFamily?: string;
   /**
    * `reject` fails the export when content would be dropped, such as an image
@@ -76,7 +82,8 @@ export type DocxExportOptions = Readonly<{
    * app's static kit; see `renderStaticHtml`. DOCX's own drawings of code
    * blocks, columns, equations, callouts, headings and tables of contents
    * take precedence. Each `missing-static-presentation` diagnostic counts as
-   * lost content under `lossPolicy`.
+   * lost content under `lossPolicy`. It does not stop an unchanged `source`
+   * from returning its original file.
    */
   presentation?: readonly BasePluginInput[];
   /** Visible document projection to export. */
@@ -89,7 +96,18 @@ export type DocxExportOptions = Readonly<{
    * from editor content.
    */
   source?: DocxSource | null;
-  /** Exact CSS stylesheet applied before DOCX conversion. */
+  /**
+   * Exact CSS stylesheet applied before DOCX conversion. Passing it rebuilds
+   * an unchanged `source` instead of returning its original file.
+   *
+   * DOCX's own drawings set no color, font or font size beyond an element's
+   * own values, such as a callout's color, so the stylesheet owns them. Each
+   * drawn element has the class `editor-<plugin name>`. A callout draws
+   * `table > tbody > tr > td`, its first cell holding the icon; a code block
+   * draws `[data-docx-preserve-whitespace]`; an empty equation or table of
+   * contents marks its placeholder `[data-empty]`. A task list item marks its
+   * `li` with `data-checked`, which becomes a ☑ or ☐ list marker.
+   */
   stylesheet?: string;
   /** Document metadata title. */
   title?: string;
@@ -369,7 +387,9 @@ const resolveSourceExport = (
     options.title !== undefined ||
     options.margins !== undefined ||
     options.orientation !== undefined ||
-    options.pageSize !== undefined
+    options.pageSize !== undefined ||
+    options.stylesheet !== undefined ||
+    options.fontFamily !== undefined
   ) {
     reasons.push('output-options-changed');
   }

@@ -53,6 +53,7 @@ import {
   resolveDocxImportLimits,
   type BoundedDocxPackage,
 } from './docxPackage';
+import { instrumentWordMath, materializeEquations } from './wordMath';
 
 export { DocxSource } from '../../internal/source';
 export type {
@@ -152,6 +153,7 @@ type DocxImportTarget<V extends Value> = Readonly<{
     document: EditorDocumentValue<V>;
     repairs: readonly DocxSchemaRepairDiagnostic[];
   }>;
+  hasElement: (type: string) => boolean;
   markerNonce: string;
   schemaIdentity: EditorSchemaIdentity;
   toHtml: typeof mammoth.convertToHtml;
@@ -167,7 +169,14 @@ type CommentMetadata = Omit<DocxComment, 'body' | 'target'>;
 
 type Marker = Readonly<{
   id: string;
-  kind: 'comment-end' | 'comment-start' | 'revision-end' | 'revision-start';
+  kind:
+    | 'comment-end'
+    | 'comment-start'
+    | 'equation-block'
+    | 'equation-end'
+    | 'equation-inline'
+    | 'revision-end'
+    | 'revision-start';
   mode?: 'delete' | 'insert';
   token: string;
 }>;
@@ -278,6 +287,7 @@ const compileDocxImportTarget = <V extends Value>(
               repairs: Object.freeze(report.repairs.map(repairDiagnostic)),
             });
           },
+          hasElement: (type) => editorSchema.element(type) !== null,
           markerNonce: createMarkerNonce(),
           schemaIdentity: editorSchema.identity(),
           toHtml,
@@ -443,6 +453,12 @@ const createMarkerCodec = (documentXml: string, markerNonce: string) => {
     },
   };
 };
+
+const equationMarkers = (codec: ReturnType<typeof createMarkerCodec>) => ({
+  block: codec.marker('equation-block', 'math').token,
+  end: codec.marker('equation-end', 'math').token,
+  inline: codec.marker('equation-inline', 'math').token,
+});
 
 const wordElement = (document: Document, name: string) =>
   document.createElementNS(WORD_NAMESPACE, `w:${name}`);
@@ -1210,7 +1226,15 @@ const importProjection = async (
         nodes = target.decodeHtml(wrapper, (loss) => losses.push(loss));
       }
       if (nodes?.every((node) => ElementApi.isElement(node))) {
-        bodyById.set(id, [...nodes]);
+        bodyById.set(
+          id,
+          rootValue(
+            materializeEquations(nodes, equationMarkers(codec), {
+              block: false,
+              inline: false,
+            })
+          )
+        );
         diagnostics.push(
           ...losses.map((loss) => mappingLossDiagnostic(loss, 'comment'))
         );
@@ -1247,7 +1271,13 @@ const importProjection = async (
 
   if (!nodes) throw new Error('DOCX HTML could not be decoded.');
 
-  return { bodyById, nodes };
+  return {
+    bodyById,
+    nodes: materializeEquations(nodes, equationMarkers(codec), {
+      block: target.hasElement('equation'),
+      inline: target.hasElement('inlineEquation'),
+    }),
+  };
 };
 
 const unsupportedPackageDiagnostics = (
@@ -1374,6 +1404,32 @@ const importBoundedDocx = async <V extends Value>(
   const documentXml = target.dom.decodeUtf8(source);
   const codec = createMarkerCodec(documentXml, target.markerNonce);
   const document = target.dom.parseXml(documentXml, 'word/document.xml');
+  const rewritten = new Map<string, string>();
+  const commentsSource = pkg.entries.get('word/comments.xml');
+
+  instrumentWordMath(
+    document,
+    equationMarkers(codec),
+    diagnostics,
+    'word/document.xml'
+  );
+  if (commentsSource) {
+    const commentsDocument = target.dom.parseXml(
+      target.dom.decodeUtf8(commentsSource),
+      'word/comments.xml'
+    );
+
+    instrumentWordMath(
+      commentsDocument,
+      equationMarkers(codec),
+      diagnostics,
+      'word/comments.xml'
+    );
+    rewritten.set(
+      'word/comments.xml',
+      target.dom.serializeXml(commentsDocument)
+    );
+  }
   const revisions = collectDocxRevisions(document, limits, diagnostics);
   const comments = commentMetadata(target.dom, pkg.entries, limits);
 
@@ -1381,9 +1437,8 @@ const importBoundedDocx = async <V extends Value>(
   instrumentContentRevisions(document, codec, diagnostics);
   instrumentComments(document, codec);
   throwIfDocxAborted(signal, target.dom.abortError);
-  const normalized = await pkg.toArrayBuffer(
-    new Map([['word/document.xml', target.dom.serializeXml(document)]])
-  );
+  rewritten.set('word/document.xml', target.dom.serializeXml(document));
+  const normalized = await pkg.toArrayBuffer(rewritten);
   throwIfDocxAborted(signal, target.dom.abortError);
   let projection: Awaited<ReturnType<typeof importProjection>>;
 

@@ -20,3 +20,11 @@ diagnostics: []
 <!-- entry: {"id":"2026-10-10-export-toolbar-failure-toast","kind":"fix","migrationNotes":[]} -->
 
 - **`export-toolbar-button`**: Show an error toast when HTML or Word export throws, instead of failing with no message.
+
+<!-- entry: {"id":"2026-10-10-docx-export-stylesheet-owns-word-look","kind":"fix","migrationNotes":[]} -->
+
+- **`docx-export`**: Move the Word look of callouts, code blocks, and empty equation and table of contents placeholders into `DOCX_EXPORT_STYLES`, because the package's DOCX drawings leave colors, fonts and sizes to the stylesheet.
+
+<!-- entry: {"id":"2026-10-10-block-list-static-task-marker","kind":"fix","migrationNotes":[]} -->
+
+- **`block-list-static`**: Draw the task checkbox inside its `li` and mark the `li` with `data-checked`, so Word export gives each task one paragraph with a ☑ or ☐ list marker.

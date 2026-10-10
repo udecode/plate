@@ -1620,6 +1620,7 @@
         "typecheck:partition:react-core",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list",
+        "typecheck:partition:static",
         "typecheck:partition:table",
         "typecheck:partition:yjs-react"
       ],

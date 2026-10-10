@@ -329,7 +329,7 @@ The same three seats reviewed only the round 2 revision, frozen at `e28da64627`.
 
 ## Build
 
-Execution authority: the owner's "go" on 2026-10-09 after the plan was settled. The lead writes the code on `next` from base `666f02406e936864cc61e5ccb6824321df4d9a42`; subagents only research and review. The owner first ruled out commits and pushes. On 2026-10-10 the owner asked to cut a branch and commit: "现在你先切个分支出去吧，然后可以 commit 一下". Push still waits for the owner. The packet is phase 1 below.
+Execution authority: the owner's "go" on 2026-10-09 after the plan was settled. The lead writes the code on `next` from base `666f02406e936864cc61e5ccb6824321df4d9a42`; subagents only research and review. The owner first ruled out commits and pushes. On 2026-10-10 the owner asked to cut a branch and commit. Push still waits for the owner. The packet is phase 1 below.
 
 | Gate | Applies | Evidence |
 | --- | --- | --- |
@@ -375,9 +375,9 @@ Against phase 1, phase 2 stops the server HTML block and the AI preview from dri
 
 ### Phase 3: Word owns Word
 
-Against phase 2, phase 3 makes Word output follow the app's look and removes the package's hidden theme.
+Against phase 2, phase 3 makes Word output follow the app's look and removes the package's hidden theme. `docs/plans/2026-10-10-html-word-owns-word.md` plans and builds it as one iteration.
 
-- [ ] Shrink `DOCX_STATIC_COMPONENTS` to Word-required conversion, one entry at a time, and move its colors, fonts and spacing into the copied `docx-export.tsx` stylesheet. Proof: a Word check per removed entry.
+- [x] Shrink `DOCX_STATIC_COMPONENTS` to Word-required conversion, one entry at a time, and move its colors, fonts and spacing into the copied `docx-export.tsx` stylesheet. Proof: a Word check per removed entry. (built as one iteration in `docs/plans/2026-10-10-html-word-owns-word.md`; Word XML check `docs/plans/artifacts/html-word-owns-word/browser/final-word-xml-a4.log`)
 
 ## Settled decisions
 
@@ -412,15 +412,15 @@ The owner settled the `presentation` option on 2026-10-09, without waiting for t
 
 Each item stays here until this plan folds into the subject file, which then lists it under Open work.
 
-- Styled Word returns the original file byte for byte when the document is unchanged, so a requested look never reaches it. owner: natamox. stop: phase 3's plan, or 2026-11-30.
+- Styled Word returns the original file byte for byte when the document is unchanged, so a requested look never reaches it. Built in `docs/plans/2026-10-10-html-word-owns-word.md`, where a stylesheet or font family rebuilds the file. owner: natamox. stop: that plan's close, or 2026-11-30.
 - Live decoration sources, such as find highlights and active comment marks, run during export. The registry's `EditorKit` installs neither today. owner: natamox. stop: a plan that installs either in an exporting editor, or 2026-11-30.
 - A component that throws while Word renders escapes `exportDocx` as a thrown error, not a diagnostic (`exportDocx.tsx:384-395`, `:571-583`). owner: natamox. stop: phase 1's panel, which decides whether the missing-presentation warning is enough.
 - A setting or highlighter change made while an export waits for the renderer reaches that export, as it does today (`capture-law-probe/probe-a1.log`). Capturing every render dependency needs contracts at the owners, because the code highlighter keeps a shared mutable engine behind a plain object (panel round 3). owner: natamox. stop: a separate plan for export capture, or 2026-11-30.
 - A wrapper written as an object with a `match` never draws in a static render, as today. The registry's three are editing UI, but a third-party wrapper that draws content this way is lost without a diagnostic. owner: natamox. stop: the capture plan above, or a third-party report.
-- Word's converter keeps list-numbering state at module level, so two Word exports running at once can share numbering IDs (`render-document-file.ts:631`, `:720`). owner: natamox. stop: phase 3, or 2026-11-30.
+- Word's converter keeps list-numbering state at module level, so two Word exports running at once can share numbering IDs (`render-document-file.ts:631`, `:720`). Built in `docs/plans/2026-10-10-html-word-owns-word.md`, which moves the state onto each document. owner: natamox. stop: that plan's close, or 2026-11-30.
 - The authored switchover must still redo Word revisions, comment range mapping and the toolbar's projected view, as Fit with the authored redesign lists, because it deletes the nouns that code calls today. owner: natamox, who adds these three items to the authored plan's Phase 2 step, or builds them in this plan if that switchover lands before phase 1. stop: the authored Phase 2 lands.
-- Word's equation override writes LaTeX source, while the static kit draws KaTeX. owner: natamox. stop: phase 3's equation entry.
-- The static task-list marker draws a `<button>`. owner: natamox. stop: phase 3, or 2026-11-30.
+- Word's equation override writes LaTeX source, while the static kit draws KaTeX. Built in `docs/plans/2026-10-10-html-word-owns-word.md`, which writes Word math. owner: natamox. stop: that plan's close.
+- The static task-list marker draws a `<button>`. Built in `docs/plans/2026-10-10-html-word-owns-word.md`, where the item's `li` carries `data-checked` and Word draws a ☑ or ☐ marker. owner: natamox. stop: that plan's close, or 2026-11-30.
 - With a presentation, an element that no installed plugin renders ran the live editor's `afterNodeChildren` slots (api-build round 3, critical). The 2026-10-10 iteration `docs/plans/2026-10-10-html-presentation-context.md` fixed it on branch `export-static-presentation`; this item closes when that branch lands. owner: natamox. stop: the branch lands on `next`.
 - The presentation compiled through `buildEditor`, which activated its plugins, and a drawing created in a `configure((ctx) => ...)` callback read the presentation's own state (api-build round 3, critical). The 2026-10-10 iteration compiles it detached, so nothing activates and a context read while drawing throws; a drawing that copies plain context values inside its callback still draws the presentation's configuration, which that plan's Open work tracks. owner: natamox. stop: the branch lands on `next`, with the rest tracked in the 2026-10-10 plan.
 - The final-path benchmark's 100-paragraph warm line could not reject its planted slowdown in either run, because one baseline outlier widened the allowance (`docs/plans/artifacts/html-static-repair-redo/perf-gate/final/evaluate-a2.log`). owner: natamox. stop: the next change to the export perf contract, or 2026-11-30.
@@ -489,9 +489,9 @@ This close handed back the redone plan before the build.
 
 ### After the redo
 
-The owner asked, after the hand-back: "评论，审阅这块，最近也在重构，计划文档在里面好像已经有了，ziad 起草的，里面关系到数据协议的变化，我觉得可以协同着起来看，然后来定一个最佳的实现方案" (comments and review are being refactored too, in a plan Ziad drafted that changes the data protocol; look at both together and settle the best implementation). Fit with the authored redesign now lines the two plans up. The `presentation` target stands, because the review tree changes how suggestions are stored, not which components draw. The revision parts of Word export move to the authored cutover as asks. This change came after the panel's three-round cap, so the build's diff panel reviews it; saying "another round" runs a plan panel first.
+After the hand-back, the owner noted that comments and review are being refactored too, in a plan Ziad drafted that changes the data protocol, and asked to look at both together and settle the best implementation. Fit with the authored redesign now lines the two plans up. The `presentation` target stands, because the review tree changes how suggestions are stored, not which components draw. The revision parts of Word export move to the authored cutover as asks. This change came after the panel's three-round cap, so the build's diff panel reviews it; saying "another round" runs a plan panel first.
 
-The owner then wrote: "现在你觉得最佳的实现方案是什么，不用和别人讨论了，我觉得我们现在可以定下来" (what is the best implementation now; no need to discuss it with others; we can settle it now). The plan no longer waits on a talk with Ziad. Its picks stand as the settled direction, and the build starts on the owner's go.
+The owner then asked to settle the best implementation now, without discussing it with others. The plan no longer waits on a talk with Ziad. Its picks stand as the settled direction, and the build starts on the owner's go.
 
 ### Reversals and deviations
 

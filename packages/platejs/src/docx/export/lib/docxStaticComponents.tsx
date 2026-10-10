@@ -9,31 +9,26 @@ import {
   BaseColumnPlugin,
 } from '../../../features/layout';
 import { BaseTocPlugin, type Heading } from '../../../features/toc';
-import { BaseEquationPlugin, BaseInlineEquationPlugin } from '../../../math';
+import {
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
+  type EquationElement,
+  getEquationHtml,
+} from '../../../math';
 import {
   EditorElement,
   type EditorElementProps,
 } from '../../../static/components/plite-nodes';
 import type { StaticComponentOverrides } from '../../../static/internal/staticPresentation';
 
+/** Without `border: 'none'`, the converter draws a black grid around a layout table. */
+const layoutTable = { border: 'none', width: '100%' } as const;
+
 const CodeBlockDocx = (
   props: EditorElementProps<typeof BaseCodeBlockPlugin>
 ) => (
   <EditorElement {...props}>
-    <div
-      data-docx-preserve-whitespace=""
-      style={{
-        backgroundColor: '#f5f5f5',
-        border: '1px solid #e0e0e0',
-        fontFamily: "'Courier New', Consolas, monospace",
-        fontSize: '10pt',
-        margin: '8pt 0',
-        padding: '12pt',
-        whiteSpace: 'pre-wrap',
-      }}
-    >
-      {props.children}
-    </div>
+    <div data-docx-preserve-whitespace="">{props.children}</div>
   </EditorElement>
 );
 
@@ -43,12 +38,7 @@ const ColumnItemDocx = (
   <EditorElement
     {...props}
     as="td"
-    style={{
-      border: 'none',
-      padding: '4px 8px',
-      verticalAlign: 'top',
-      width: props.element.width ?? 'auto',
-    }}
+    style={{ border: 'none', width: props.element.width }}
   >
     {props.children}
   </EditorElement>
@@ -56,14 +46,7 @@ const ColumnItemDocx = (
 
 const ColumnDocx = (props: EditorElementProps<typeof BaseColumnPlugin>) => (
   <EditorElement {...props}>
-    <table
-      style={{
-        border: 'none',
-        borderCollapse: 'collapse',
-        tableLayout: 'fixed',
-        width: '100%',
-      }}
-    >
+    <table style={layoutTable}>
       <tbody>
         <tr>{props.children}</tr>
       </tbody>
@@ -71,20 +54,37 @@ const ColumnDocx = (props: EditorElementProps<typeof BaseColumnPlugin>) => (
   </EditorElement>
 );
 
+const escapeHtml = (text: string) =>
+  text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+
+const equationMathml = (element: EquationElement, displayMode: boolean) => {
+  try {
+    return getEquationHtml({
+      element,
+      options: {
+        displayMode,
+        output: 'mathml',
+        throwOnError: true,
+        trust: false,
+      },
+    });
+  } catch {
+    return `<math${displayMode ? ' display="block"' : ''}><semantics><annotation encoding="application/x-tex">${escapeHtml(element.latex)}</annotation></semantics></math>`;
+  }
+};
+
 const EquationDocx = (props: EditorElementProps<typeof BaseEquationPlugin>) => (
   <EditorElement {...props}>
-    <p
-      style={{
-        color: props.element.latex ? undefined : '#888',
-        fontFamily: 'Cambria Math, Consolas, monospace',
-        fontSize: '12pt',
-        fontStyle: props.element.latex ? undefined : 'italic',
-        margin: '8pt 0',
-        textAlign: 'center',
-      }}
-    >
-      {props.element.latex || '[Empty equation]'}
-    </p>
+    {props.element.latex ? (
+      <p
+        // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] KaTeX generates this MathML with trust disabled, and the fallback escapes the equation source.
+        dangerouslySetInnerHTML={{
+          __html: equationMathml(props.element, true),
+        }}
+      />
+    ) : (
+      <p data-empty="">[Empty equation]</p>
+    )}
     {props.children}
   </EditorElement>
 );
@@ -93,66 +93,47 @@ const InlineEquationDocx = (
   props: EditorElementProps<typeof BaseInlineEquationPlugin>
 ) => (
   <EditorElement {...props} as="span">
-    <span
-      style={{
-        color: props.element.latex ? undefined : '#888',
-        fontFamily: 'Cambria Math, Consolas, monospace',
-        fontStyle: props.element.latex ? undefined : 'italic',
-      }}
-    >
-      {props.element.latex || '[equation]'}
-    </span>
+    {props.element.latex ? (
+      <span
+        // oxlint-disable-next-line react/no-danger -- [P0 behavior-boundary] KaTeX generates this MathML with trust disabled, and the fallback escapes the equation source.
+        dangerouslySetInnerHTML={{
+          __html: equationMathml(props.element, false),
+        }}
+      />
+    ) : (
+      <span data-empty="">[equation]</span>
+    )}
     {props.children}
   </EditorElement>
 );
 
+// The converter shades table cells, not tables.
 const CalloutDocx = ({
   children,
   ...props
-}: EditorElementProps<typeof BaseCalloutPlugin>) => (
-  <EditorElement {...props}>
-    <table
-      style={{
-        backgroundColor: props.element.backgroundColor || '#f4f4f5',
-        border: 'none',
-        borderCollapse: 'collapse',
-        borderRadius: '4px',
-        marginBottom: '4pt',
-        marginTop: '4pt',
-        width: '100%',
-      }}
-    >
-      <tbody>
-        <tr>
-          <td
-            style={{
-              border: 'none',
-              fontFamily:
-                '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',
-              fontSize: '18px',
-              padding: '8px 4px 8px 8px',
-              verticalAlign: 'top',
-              width: '30px',
-            }}
-          >
-            <span data-editor-prevent-deserialization>
-              {props.element.icon || '💡'}
-            </span>
-          </td>
-          <td
-            style={{
-              border: 'none',
-              padding: '8px 8px 8px 4px',
-              verticalAlign: 'top',
-            }}
-          >
-            {children}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </EditorElement>
-);
+}: EditorElementProps<typeof BaseCalloutPlugin>) => {
+  const cell = {
+    backgroundColor: props.element.backgroundColor,
+    border: 'none',
+  };
+
+  return (
+    <EditorElement {...props}>
+      <table style={layoutTable}>
+        <tbody>
+          <tr>
+            <td style={{ ...cell, width: '30px' }}>
+              <span data-editor-prevent-deserialization>
+                {props.element.icon || '💡'}
+              </span>
+            </td>
+            <td style={cell}>{children}</td>
+          </tr>
+        </tbody>
+      </table>
+    </EditorElement>
+  );
+};
 
 const HeadingDocx = (props: EditorElementProps<typeof BaseHeadingPlugin>) => {
   const Tag = `h${props.element.level}` as const;
@@ -174,31 +155,15 @@ const TocDocx = (props: EditorElementProps<typeof BaseTocPlugin>) => {
 
   return (
     <EditorElement {...props}>
-      <div style={{ marginBottom: '12pt', padding: '8pt 0' }}>
+      <div>
         {headings.length > 0 ? (
           headings.map((heading) => (
-            <p
-              key={heading.key}
-              style={{
-                margin: '4pt 0',
-                paddingLeft:
-                  heading.depth === 2
-                    ? '24pt'
-                    : heading.depth === 3
-                      ? '48pt'
-                      : '0',
-              }}
-            >
-              <a
-                href={`#${heading.key}`}
-                style={{ color: '#0066cc', textDecoration: 'underline' }}
-              >
-                {heading.title}
-              </a>
+            <p key={heading.key}>
+              <a href={`#${heading.key}`}>{heading.title}</a>
             </p>
           ))
         ) : (
-          <p style={{ color: '#666', fontSize: '10pt' }}>
+          <p data-empty="">
             Create a heading to display the table of contents.
           </p>
         )}
