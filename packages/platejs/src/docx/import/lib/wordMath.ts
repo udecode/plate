@@ -526,9 +526,11 @@ export const materializeEquations = (
       node.children.length === 1 && TextApi.isText(node.children[0])
         ? splitEquations(node.children[0].text, markers)
         : [];
+    const keepsLayout = 'listType' in node || 'indent' in node;
 
     if (
       kinds.block &&
+      !keepsLayout &&
       rest.length === 0 &&
       before === '' &&
       after === '' &&

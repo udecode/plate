@@ -1,7 +1,10 @@
 import JSZip from 'jszip';
 import katex from 'katex';
+import React from 'react';
 
 import { createEditor } from '../../../core';
+import { BaseIndentPlugin } from '../../../features/indent';
+import { BaseListPlugin } from '../../../features/list';
 import { BaseParagraphPlugin } from '../../../lib';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '../../../math';
 import { exportDocx } from '../../export/lib/exportDocx';
@@ -412,6 +415,69 @@ describe('importDocx Word math', () => {
 
     if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
 
+    expect(equations(result.document.children)).toEqual([
+      { latex: 'x', type: 'inlineEquation' },
+    ]);
+  });
+
+  it('keeps a list item that holds only a display equation in its list', async () => {
+    const listPlugins = [
+      ...plugins,
+      BaseIndentPlugin,
+      BaseListPlugin.configure({
+        slots: {
+          wrapNodeChildren: ({ element }) =>
+            element.listType
+              ? ({ children }) => (
+                  <ol>
+                    <li>{children}</li>
+                  </ol>
+                )
+              : undefined,
+        },
+      }),
+    ];
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'LISTMATH' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Second' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+      plugins: listPlugins,
+    });
+    const exported = await exportDocx(editor, { projection: 'proposed' });
+
+    if (!exported.ok) throw new Error(JSON.stringify(exported.diagnostics));
+    const zip = await JSZip.loadAsync(await exported.blob.arrayBuffer());
+    const xml = (await zip.file('word/document.xml')?.async('string')) ?? '';
+
+    zip.file(
+      'word/document.xml',
+      xml.replace(
+        /<w:r>(?:(?!<w:r>)[\s\S])*?LISTMATH<\/w:t>\s*<\/w:r>/,
+        `<m:oMathPara ${M}><m:oMath>${run('x')}</m:oMath></m:oMathPara>`
+      )
+    );
+    const result = await importDocx(
+      await zip.generateAsync({ type: 'arraybuffer' }),
+      { plugins: listPlugins }
+    );
+
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+
+    expect(result.document.children[0]).toMatchObject({
+      indent: 1,
+      listType: 'numbered',
+    });
     expect(equations(result.document.children)).toEqual([
       { latex: 'x', type: 'inlineEquation' },
     ]);
