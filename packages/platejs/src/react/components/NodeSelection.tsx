@@ -220,11 +220,20 @@ const getSelectionCandidates = (
 
       if (!path) return;
 
+      const target =
+        [
+          ...element.querySelectorAll<HTMLElement>(
+            '[data-node-selection-target]'
+          ),
+        ].find(
+          (candidate) => candidate.closest(EDITOR_ELEMENT_SELECTOR) === element
+        ) ?? element;
+
       entries.set(path.join(','), {
         key: editor.key(node),
         node,
         path,
-        rect: element.getBoundingClientRect(),
+        rect: target.getBoundingClientRect(),
       });
     });
 
@@ -283,7 +292,13 @@ export type NodeSelectionDragProps = Omit<
   'children'
 >;
 
-/** Renders a drag rectangle and updates node selection during pointer drags. */
+/**
+ * Renders a drag rectangle and updates node selection during pointer drags.
+ *
+ * A renderer can mark a descendant wrapper with `data-node-selection-target`
+ * to limit its hit area. The wrapper must belong to that editor element,
+ * outside any nested editor element; otherwise the full element is used.
+ */
 export function NodeSelectionDrag({
   className,
   style,

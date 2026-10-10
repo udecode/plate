@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "components": {
+    "details": ["2026-10-10-details-selection", "2026-08-29-semantic-details"],
     "emoji-data": ["2026-10-08-emoji-frimousse"],
     "emoji": [
       "2026-10-08-emoji-frimousse",
@@ -912,7 +913,6 @@
       "2026-08-16-direct-react-component-families"
     ],
     "use-widget-floating": ["2026-08-31-transient-editor-geometry"],
-    "details": ["2026-08-29-semantic-details"],
     "details-static": ["2026-08-29-semantic-details"],
     "details-toolbar-button": ["2026-08-29-semantic-details"],
     "details-demo": ["2026-08-29-semantic-details"],

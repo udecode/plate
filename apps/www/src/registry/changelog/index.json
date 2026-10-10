@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-10-details-selection",
+      "href": "/registry/changelog/2026-10-10-details-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Select individual Details body blocks with a selection rectangle",
+      "change": {
+        "type": "source",
+        "date": "2026-10-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["details"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-08-emoji-frimousse",
       "href": "/registry/changelog/2026-10-08-emoji-frimousse.json",
       "status": "draft",

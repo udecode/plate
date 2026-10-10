@@ -191,6 +191,89 @@ describe('NodeSelection', () => {
     });
   });
 
+  it('uses an owned header target without selecting its container for body drags', async () => {
+    const ContainerPlugin = definePlugin('selectionHeaderContainer', {
+      schema: {
+        element: {
+          content: schema.content.element(BaseParagraphPlugin, { min: 1 }),
+        },
+      },
+    }).configure({
+      component: ({ children, ...props }) => (
+        <EditorElement {...props}>
+          <div contentEditable={false} data-node-selection-target="true">
+            Header
+          </div>
+          {children}
+        </EditorElement>
+      ),
+    });
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'selectionHeaderContainer',
+          children: [{ type: 'paragraph', children: [{ text: 'body' }] }],
+        },
+      ],
+      plugins: [BaseParagraphPlugin, ContainerPlugin],
+    });
+    const view = render(
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
+        <NodeSelectionHighlight />
+        <NodeSelectionDrag />
+      </EditorRoot>
+    );
+    const editable =
+      view.container.querySelector<HTMLElement>('[data-editor]')!;
+    const elements = editable.querySelectorAll<HTMLElement>(
+      '[data-editor-node="element"]'
+    );
+    const header = editable.querySelector<HTMLElement>(
+      '[data-node-selection-target]'
+    )!;
+    for (const [element, rect] of [
+      [elements[0], new DOMRect(20, 40, 160, 100)],
+      [header, new DOMRect(20, 40, 160, 30)],
+      [elements[1], new DOMRect(40, 80, 140, 40)],
+    ] as const) {
+      Object.defineProperty(element, 'getBoundingClientRect', {
+        configurable: true,
+        value: () => rect,
+      });
+    }
+    const drag = (top: number, bottom: number) => {
+      fireEvent.pointerDown(editable, {
+        button: 0,
+        clientX: 0,
+        clientY: top,
+        pointerId: 1,
+      });
+      fireEvent.pointerMove(document, {
+        clientX: 100,
+        clientY: bottom,
+        pointerId: 1,
+      });
+      fireEvent.pointerUp(document, {
+        clientX: 100,
+        clientY: bottom,
+        pointerId: 1,
+      });
+    };
+    drag(90, 100);
+    await waitFor(() =>
+      expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+        [0, 0],
+      ])
+    );
+    drag(45, 55);
+    await waitFor(() =>
+      expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+        [0],
+      ])
+    );
+  });
+
   it('canonicalizes nested drag candidates', async () => {
     const ContainerPlugin = definePlugin('selectionTestContainer', {
       schema: {
@@ -234,6 +317,15 @@ describe('NodeSelection', () => {
       });
     }
 
+    const nestedTarget = elements![1].querySelector<HTMLElement>(
+      '[data-editor-node="text"]'
+    )!;
+    nestedTarget.setAttribute('data-node-selection-target', 'true');
+    Object.defineProperty(nestedTarget, 'getBoundingClientRect', {
+      configurable: true,
+      value: () => new DOMRect(20, 20, 80, 10),
+    });
+
     fireEvent.pointerDown(editable!, {
       button: 0,
       clientX: 0,
@@ -260,6 +352,18 @@ describe('NodeSelection', () => {
           '[data-slot="node-selection-highlight"]'
         )
       ).toHaveLength(1);
+    });
+    fireEvent.pointerDown(editable!, {
+      button: 0,
+      clientX: 0,
+      clientY: 90,
+      pointerId: 2,
+    });
+    fireEvent.pointerUp(document, { clientX: 60, clientY: 95, pointerId: 2 });
+    await waitFor(() => {
+      expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+        [0],
+      ]);
     });
   });
 
