@@ -169,14 +169,7 @@ type CommentMetadata = Omit<DocxComment, 'body' | 'target'>;
 
 type Marker = Readonly<{
   id: string;
-  kind:
-    | 'comment-end'
-    | 'comment-start'
-    | 'equation-block'
-    | 'equation-end'
-    | 'equation-inline'
-    | 'revision-end'
-    | 'revision-start';
+  kind: 'comment-end' | 'comment-start' | 'revision-end' | 'revision-start';
   mode?: 'delete' | 'insert';
   token: string;
 }>;
@@ -438,6 +431,11 @@ const createMarkerCodec = (documentXml: string, markerNonce: string) => {
   );
 
   return {
+    equation: Object.freeze({
+      block: `${prefix}equation-block${suffix}`,
+      end: `${prefix}equation-end${suffix}`,
+      inline: `${prefix}equation-inline${suffix}`,
+    }),
     marker,
     parse(
       text: string
@@ -453,12 +451,6 @@ const createMarkerCodec = (documentXml: string, markerNonce: string) => {
     },
   };
 };
-
-const equationMarkers = (codec: ReturnType<typeof createMarkerCodec>) => ({
-  block: codec.marker('equation-block', 'math').token,
-  end: codec.marker('equation-end', 'math').token,
-  inline: codec.marker('equation-inline', 'math').token,
-});
 
 const wordElement = (document: Document, name: string) =>
   document.createElementNS(WORD_NAMESPACE, `w:${name}`);
@@ -1229,7 +1221,7 @@ const importProjection = async (
         bodyById.set(
           id,
           rootValue(
-            materializeEquations(nodes, equationMarkers(codec), {
+            materializeEquations(nodes, codec.equation, {
               block: false,
               inline: false,
             })
@@ -1273,7 +1265,7 @@ const importProjection = async (
 
   return {
     bodyById,
-    nodes: materializeEquations(nodes, equationMarkers(codec), {
+    nodes: materializeEquations(nodes, codec.equation, {
       block: target.hasElement('equation'),
       inline: target.hasElement('inlineEquation'),
     }),
@@ -1409,7 +1401,7 @@ const importBoundedDocx = async <V extends Value>(
 
   instrumentWordMath(
     document,
-    equationMarkers(codec),
+    codec.equation,
     diagnostics,
     'word/document.xml'
   );
@@ -1421,7 +1413,7 @@ const importBoundedDocx = async <V extends Value>(
 
     instrumentWordMath(
       commentsDocument,
-      equationMarkers(codec),
+      codec.equation,
       diagnostics,
       'word/comments.xml'
     );
