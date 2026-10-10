@@ -425,10 +425,15 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           if (state.points.isEnd(selection.anchor, summary[1])) {
             const firstBodyPoint = state.points.start(details[1].concat(1));
 
-            if (!firstBodyPoint) return exitAfterDetails();
-
             return state.transaction((tx) => {
-              tx.selection.set(firstBodyPoint);
+              if (firstBodyPoint) {
+                tx.selection.set(firstBodyPoint);
+              } else {
+                tx.nodes.insert(
+                  { children: [{ text: '' }], type: paragraphType },
+                  { at: details[1].concat(1), select: true }
+                );
+              }
             });
           }
 
