@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-10-preserve-equation-text-selection",
+      "href": "/registry/changelog/2026-10-10-preserve-equation-text-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep text selection focused when extending across equations",
+      "change": {
+        "type": "source",
+        "date": "2026-10-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["math"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-10-selection-context-menu",
       "href": "/registry/changelog/2026-10-10-selection-context-menu.json",
       "status": "draft",

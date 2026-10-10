@@ -2,6 +2,17 @@
   "schemaVersion": 1,
   "components": {
     "details": ["2026-10-10-details-selection", "2026-08-29-semantic-details"],
+    "math": [
+      "2026-10-10-preserve-equation-text-selection",
+      "2026-09-07-equation-drafts",
+      "2026-08-31-fix-inline-equation-first-click",
+      "2026-08-29-fix-block-equation-layout",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
     "block-menu": [
       "2026-10-10-selection-context-menu",
       "2026-10-08-registry-install-dependencies",
@@ -778,16 +789,6 @@
       "2026-09-07-docx-bookmarks",
       "2026-08-31-inline-component-props",
       "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "math": [
-      "2026-09-07-equation-drafts",
-      "2026-08-31-fix-inline-equation-first-click",
-      "2026-08-29-fix-block-equation-layout",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
     "block-list": [
