@@ -36,8 +36,8 @@ export const renderStaticHtmlWithOverrides = async (
 ): Promise<StaticHtmlResult> => {
   const appearance = { ...props };
 
-  for (const key of ['document', 'editor']) {
-    if (Object.hasOwn(appearance, key)) {
+  for (const key of ['document', 'editor'] as const) {
+    if (appearance[key] !== undefined) {
       throw new TypeError(
         `Static HTML props cannot include "${key}". Pass the editor to render as the first argument and another document as the document option.`
       );

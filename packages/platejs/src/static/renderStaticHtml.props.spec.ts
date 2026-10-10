@@ -32,4 +32,12 @@ describe('static HTML props', () => {
       name: 'TypeError',
     });
   });
+
+  it('renders when props set editor or document to undefined', async () => {
+    const result = await renderStaticHtml(createShownEditor(), {
+      props: { document: undefined, editor: undefined },
+    });
+
+    expect(result.data).toContain('Shown');
+  });
 });
