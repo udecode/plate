@@ -8,7 +8,7 @@ review_inputs: [VISION.md, docs/vision/common.md, docs/vision/plate.md, packages
 
 # Export draws with the app's static kit
 
-Status: done: phases 1 to 3 are committed on branch `export-static-presentation`, in a pull request into next that waits on your merge
+Status: done: phases 1 to 3 are in pull request #5157 into next, waiting on your merge; folded into the html subject
 Playbook: plan
 
 This iteration redoes `docs/plans/2026-10-09-html-static-repair.md` at claude-opus-5-5 @xhigh. That draft ran on gpt-6-astra @medium and claude-opus-5-5 @medium and is now superseded. The plan fixes the two export defects. Exporting a document with a table, an image, a task list or other interactive content crashes, because export draws each block with its editing component. Eighteen kinds of content crash the HTML render, and twelve crash the render step Word export runs. Style props passed to export can also swap out the exported document. The live editor keeps deciding what each block means and how it is configured, and export asks the app's static kit only how to draw each block, by plugin name. An `architect` arena with three runners from two model families converged on this shape, and a blind judge picked it over the draft's second export editor (`docs/plans/artifacts/html-static-repair-redo/architect/synthesis.md`). A three-model panel then reviewed the plan three times, and this revision settles every finding.
@@ -568,6 +568,28 @@ Before the pull request into `next`, a three-model panel reviewed the branch dif
 - `renderStaticHtml` props with `editor` or `document` set to `undefined` passed the type and threw. The guard now rejects only a defined value.
 
 Round 2 found nothing critical. One warning and six nits wait in the decision log with their owners. `pnpm check` passes 23 of 25 steps. The review-ledger and knowledge steps fail the same way on `origin/next` (`666f02406e`), for the emoji and authored review plans and `docs/plans/topics/emoji.md`. The owner chose to open the pull request with those two failures stated in its description. The docx guide and the changeset now say that a display equation in a list item or an indented paragraph imports inline, and that `props` throw only for a set `editor` or `document`.
+
+### Reflect
+
+One reviewer (claude-opus-5-5 @high) read the session from the owner's request to stop chasing edge cases to the end, through the judgment, tooling and divergent lenses (`docs/plans/artifacts/html-static-repair-redo/reflect/reviewer.md`). No lesson qualified to apply without the owner. The lead corrected its own memory, which had let a request for speed drop the decision-trail review and reflect, and started the trail review the Word plan still owed.
+
+Backlog. Each item has owner: natamox and stop: the owner takes or drops it.
+
+- Owner corrections that contradict written rules, such as quoting the owner verbatim in logs and briefs, or standing push authority against reading the PR text first, go to AGENTS.md's lessons for the shared source, naming each conflicting sentence.
+- When one approval covers a chain of public steps, its preview shows the text each step publishes, such as the PR title and body.
+- Before writing a plan, probe what the change breaks. Here a load probe turned a two-day design into a two-line fix.
+- After a commit, push or PR, republish every affected plan page, and keep delivery state out of `Status:`. `plan-open` could refuse a done plan whose subject is not folded.
+- The reply language slipped again in progress lines, a repeat, so its class goes to `/pstack:correct`.
+- The `verify` command recipes gain three pitfalls: `rg` here is a shell function that child processes cannot see, so a check needs a PATH shim; Bun escapes quotes in error text, so `--expect-fail` needs a quote-free substring; and www specs run through `tooling/scripts/test-suite.mjs`. The entrypoint migrate script should also report its spawn error.
+- A Word list fixture needs the list plugin's `wrapNodeChildren` slot to export numbering, and a round-trip test asserts its intermediate file before the defect.
+- `plan-open` runs the review ledger's page check, and `plan-page.mjs` reports every refusal in one run.
+- `decisions-check.mjs` names a backticked `proof:` label in its error, and a writing row cites the skill call it records.
+- A subject page's rail shows only the newest iteration; it should show the subject's history instead of rows copied between logs.
+- `proof.mjs` records a tree hash, so a freshness check compares bytes, not file times.
+- Remote branch state comes from `git ls-remote` or a fresh fetch, never from a tracking ref.
+- Panel seats state how often real use reaches each finding.
+
+Rejected: reloading the page skill after a compaction, which AGENTS.md already requires; BSD `grep` lacking `-P`, general shell knowledge; the note that no outside context was handed over, which changes nothing; and a class guard for kit drift, which the html subject's Open work already holds.
 
 ## Evidence
 

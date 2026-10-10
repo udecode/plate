@@ -8,7 +8,7 @@ review_inputs: [apps/www/src/registry/components/editor/export-toolbar-button.ts
 
 # Export failure message and Copilot ghost text
 
-Status: awaiting: built on branch export-static-presentation and not pushed
+Status: done: in pull request #5157 into next; folded into the html subject
 Playbook: bug-fix
 
 The owner asked to start with item A of the export finishing list. A held three small fixes. The export menu showed nothing when an export threw. Copilot's ghost text made every export of an editor with Copilot warn, and strict Word refused the file. The third item would have turned a drawing that throws during Word export into a warning. This iteration lands the first two and drops the third, because the static guide already says such a drawing rejects the export.
@@ -76,5 +76,7 @@ Now each export catches the crash and says the file could not be exported. Copil
 **What landed.** For A1, the export toolbar shows "The HTML file could not be exported." or "The Word document could not be exported." when that export throws. For A2, the drawings of `CopilotPlugin` are edit-only, so an export with a presentation leaves out the ghost text with no diagnostic, and strict Word export succeeds.
 
 **Proof and limits.** A1 ran in Chromium on the docx demo. Before the fix, a forced crash left no file, no message and an uncaught page error. After it, the menu showed the message and no page error. The control exported both files, and the repository's Word and HTML browser spec passed all 4 tests on the final bytes. The crash came from a tagged probe in the static paragraph drawing, because the demo documents export without one, as the control run shows. The run drove that check with a throwaway Playwright script, because the Codex browser lane needs a Chrome profile this machine does not have. A2 ran through `renderStaticHtml` and `exportDocx` with the copilot demo's plugin set. No page mounts both Copilot and the export menu, so A2 has no browser check.
+
+**Review inputs.** The plan read `apps/www/src/registry/components/editor/export-toolbar-button.tsx` and `packages/platejs/src/ai/react/CopilotPlugin.tsx`.
 
 **Open work.** One cleanup item, listed under Open work.

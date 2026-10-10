@@ -8,7 +8,7 @@ review_inputs: [apps/www/src/registry/components/editor/indent-static.tsx, apps/
 
 # Static kit loads indented images
 
-Status: done: committed on branch `export-static-presentation`, not pushed
+Status: done: in pull request #5157 into next; folded into the html subject
 Playbook: bug-fix
 
 The owner asked to build item B, phase 2 of `docs/plans/2026-10-09-html-static-repair-redo.md`: renders without a live editor should follow the live editor's settings. Those renders are the server HTML block, the AI preview, the AI command route and any app that renders stored documents on the server. They build an editor from `BaseEditorKit`, whose options were copied from `EditorKit` by hand and have drifted. A census of every plugin both kits install found two drifted options that change a static render. The live indent and list plugins target images, and the static ones do not. Because the static editor's schema is closed, it does not just draw such an image plainly. It refuses to load any document that holds an indented image.

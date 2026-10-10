@@ -8,7 +8,7 @@ review_inputs: [docs/plans/artifacts/html-word-owns-word/panel-r2-probes/katex-c
 
 # Word export follows Word's own rules
 
-Status: done: committed on branch `export-static-presentation`, not pushed
+Status: done: in pull request #5157 into next; folded into the documents subject
 Playbook: plan
 
 The owner asked to build item C of the export finishing list as one plan instead of splitting it. It is phase 3 of `docs/plans/2026-10-09-html-static-repair-redo.md`, "Word owns Word". Base reproductions on the real `exportDocx` with the registry kit and stylesheet show four Word defects: two concurrent exports mix list numbering (10 of 10 rounds), equations export as LaTeX text, task items lose their checked state and gain an empty bullet line, and callout colors never reach Word. A fifth item is that an imported Word file that has not changed exports as the original file, so the app's stylesheet never reaches it. The eight private Word components also still carry a hidden visual theme, which the 2026-09-04 plan already moved out of the package for everything else. Build execution follows the Build playbook.
@@ -21,7 +21,7 @@ Concurrent Word exports keep their own list numbering, equations become real Wor
 
 ### What could go wrong?
 
-Rebuilding an unchanged imported file drops what import cannot read, such as text boxes, and warns on every export. Re-imported equations render the same, but their TeX reads differently, like α for \alpha. No Word here checks equations.
+Rebuilding an unchanged imported file drops what import cannot read, such as text boxes, and warns on every export. Re-imported equations render the same by the test's check, which ignores bracket sizing, but their TeX reads differently, like α for \alpha. No Word here checks equations.
 
 ## Teach
 
@@ -109,7 +109,7 @@ Every inline value the eight components set today, and where it goes:
 | --- | --- | --- | --- | --- |
 | Unchanged imported Word file | Rebuild it with the app's styles, so the look applies, dropping what import cannot read and warning on every export (look) | Download the original file untouched | keep original file for unchanged imports | big |
 | Word equations on re-import | Bring them back as equations whose TeX renders the same, such as α for \alpha (look) | Report them as lost content | report imported equations as lost | small |
-| Equations Word math cannot express | Keep the LaTeX inside a Word equation, with no warning | Warn, so strict Word export refuses the file | warn on unconverted equations | small |
+| Equations the converter does not cover | Keep the LaTeX inside a Word equation, with no warning | Warn, so strict Word export refuses the file | warn on unconverted equations | small |
 | Matrices and tagged equations | Keep their LaTeX inside a Word equation | Convert them too, with more code | convert matrices | small |
 | Task boxes in Word | A ☑ or ☐ list marker | A clickable Word checkbox | clickable Word checkboxes | small |
 | Spacing and rounding Word never showed | Drop it, as Word already ignores it | Teach the converter more CSS, which changes spacing in every Word file | map more CSS | small |
@@ -135,7 +135,7 @@ Every inline value the eight components set today, and where it goes:
 | Gate | Artifact |
 | --- | --- |
 | `pstack:blast-radius` on the `stylesheet` and `fontFamily` change before code moves | `docs/plans/artifacts/html-word-owns-word/blast-radius/writeup.md`, `docs/plans/artifacts/html-word-owns-word/blast-radius/rebuild-path-a1.log` |
-| Each step's red test at base through `proof-worktree.mjs --expect-fail` | `docs/plans/artifacts/html-word-owns-word/red/`, run through `proof.mjs` in a detached base worktree; `docs/plans/artifacts/html-word-owns-word/panel-d2-red/` and `docs/plans/artifacts/html-word-owns-word/panel-d3-red/` through `proof-worktree.mjs --expect-fail` |
+| Each step's red test at base through `proof-worktree.mjs --expect-fail` | `docs/plans/artifacts/html-word-owns-word/red/`, run through `proof-worktree.mjs --expect-fail` at base; `docs/plans/artifacts/html-word-owns-word/panel-d2-red/` and `docs/plans/artifacts/html-word-owns-word/panel-d3-red/` through `proof-worktree.mjs --expect-fail` |
 | `pnpm check` steps the edits reach (platejs typecheck partitions, entrypoint graph, barrels, knowledge) | partial: `docs/plans/artifacts/html-word-owns-word/build/check-barrels-a1.log`, `docs/plans/artifacts/html-word-owns-word/build/check-entrypoint-graph-a2.log` (the import-migration half needs an `rg` binary this machine lacks), `docs/plans/artifacts/html-word-owns-word/docs/kb-check-head-a1.log` (K7 fails the same way at HEAD) |
 | Writing passes on the code: `deslop`, then `no-comments` | `docs/plans/artifacts/html-word-owns-word/comment-sicko/reply.md`, `docs/plans/artifacts/html-word-owns-word/comment-sicko/reply-d1-fixes.md`, `docs/plans/artifacts/html-word-owns-word/comment-sicko/reply-d2-fixes.md` |
 | `api-build` panel on the diff, because `stylesheet` and `source` change what a public option promises | three rounds: `docs/plans/artifacts/html-word-owns-word/panel-d1/`, `docs/plans/artifacts/html-word-owns-word/panel-d2/`, `docs/plans/artifacts/html-word-owns-word/panel-d3/` |
@@ -167,16 +167,15 @@ Every inline value the eight components set today, and where it goes:
 - `wordMath.ts` was budgeted at about 250 lines and is about 500. The extra lines are comment-range moves, revision flattening, the math and text escape tables, the closed delimiter table, the part walk and `materializeEquations`.
 - Main changes said an equation made only of `mtext` takes the TeX fallback. The build checks the converted Word math instead, so any equation that converts to normal-text runs only takes the fallback, which is the bullet's stated goal.
 - Decision E6 put the vocabulary in one shared table. The bar characters moved into `math.ts` and the function names into `wordMath.ts`, because each has one reader.
-- The diff panel tried two ways to keep a commented display equation a block: an inline import with a warning, then moving the comment's markers into the block. Each drew a critical finding, so round 3 reverted to the build's rule. A display equation is a block only when alone in its paragraph, and imports inline beside a comment, tracked change or text, keeping both.
+- The diff panel tried two ways to keep a commented display equation a block: an inline import with a warning, then moving the comment's markers into the block. Each drew a critical finding, so round 3 reverted to the build's rule. A display equation is a block only when alone in its paragraph, and imports inline beside a comment, tracked change or text. A strict-import test shows one commented equation keeping its comment; no test covers a tracked change beside it.
 - Round 2 anchored the hex color patterns so `#0000` stops shading black. Round 3 found that this turned `!important` and opaque alpha colors black, so the anchoring was reverted.
 - Main changes said the Close would flag the research note that cited the raw `data-equation-omml` sink. The run updated `docs/research/sources/plite/conversion-and-export.md` instead.
-- The plan's first ten red tests ran through `proof.mjs` in a detached base worktree, not `proof-worktree.mjs --expect-fail`. The review rounds' tests used `proof-worktree.mjs --expect-fail`.
 - The plan had no performance check. The run added one after the build.
 
 ### What landed
 
 - Concurrent Word exports keep their own list numbering, because the numbering cache lives on each `DocxDocument`.
-- Equations export as Word math built from KaTeX's MathML. Notation Word math cannot express, such as matrices, stretchy braces and spaces wider than 100 em, exports its TeX inside a Word equation.
+- Equations export as Word math built from KaTeX's MathML. Notation the converter does not cover, such as matrices, stretchy braces and spaces wider than 100 em, exports its TeX inside a Word equation.
 - Import reads Word math back as `equation` and `inlineEquation` nodes in the body and as TeX text in comment bodies. Every delimiter KaTeX's `\left` accepts maps back to TeX, and tracked revisions and formatting changes inside math are flattened and reported.
 - Task items export as one paragraph with a ☑ or ☐ list marker at their level, from the copied `block-list-static.tsx`'s `li[data-checked]`.
 - The Word components draw structure only, and the copied `docx-export.tsx` stylesheet holds the callout, code block and placeholder look. A background color the converter cannot read leaves the cell unshaded instead of black.
@@ -193,6 +192,18 @@ Every inline value the eight components set today, and where it goes:
 - Review inputs the plan cites: `docs/plans/artifacts/html-word-owns-word/panel-r2-probes/katex-common-a1.log`, `docs/plans/artifacts/html-word-owns-word/how-explorer/answer.txt`, `docs/plans/artifacts/html-word-owns-word/base-probe/word-base-a3.log`, `docs/plans/artifacts/html-word-owns-word/base-probe/task-paragraphs-a1.log`, `docs/plans/artifacts/html-word-owns-word/premise-probe/premise-a1.log`, `docs/plans/artifacts/html-word-owns-word/premise-probe/override-classes-a1.log`, `docs/plans/artifacts/html-word-owns-word/architect/judge/opus/answer.md`, `docs/plans/artifacts/html-word-owns-word/panel-r1-probes/omml-reimport-a2.log`, `docs/plans/artifacts/html-word-owns-word/panel-r1-probes/katex-attrs-a1.log`.
 
 Of 22 items in Steps and Completion Gates, 20 are done, 1 is partial (the `pnpm check` steps above), 1 is skipped (`/pstack:correct`, tracked in `docs/plans/topics/correct.md`), 0 are blocked and 0 are open.
+
+### Attention
+
+reviewed by gpt-6.1-sol @xhigh (`docs/plans/artifacts/html-word-owns-word/trail-review/sol.md`), after the build, because the first close skipped this review.
+
+- Critical: the first close skipped this review and reflect, citing the owner's ask to stop chasing edge cases, while AGENTS.md says a request for speed never drops a gate. Both ran on 2026-10-10 during the pull request's preparation.
+- Warning: the performance hand-back named only the 8 ms the isolated stages measure. Import was slower in 27 of 39 pairs, and the larger gaps between batches stay unexplained, as Proof and limits says.
+- Warning: the display-equation revert claimed comments and tracked changes both survive. The proof covers one commented equation, so the claim above now says that.
+- Warning: the round-trip test's comparison ignores `fence` and `stretchy`, so "renders the same" holds only up to bracket sizing; the deferred oracle finding limits that claim.
+- Warning: the entrypoint and knowledge gates were partial or stale at this close. The pull request's `pnpm check` later passed the entrypoint step with a PATH shim for `rg` and showed only the knowledge failure that also fails on `next` (`docs/plans/artifacts/html-static-repair-redo/pr/pnpm-check-a2.log`).
+- Warning: "notation Word math cannot express" described this converter's coverage as a Word limit. The plan, the docx guide and the changeset now say "notation the converter does not cover".
+- Nit: a listed deviation said the first red tests skipped `proof-worktree.mjs --expect-fail`; the transcript shows they used it, so the deviation is removed.
 
 ### Open work
 

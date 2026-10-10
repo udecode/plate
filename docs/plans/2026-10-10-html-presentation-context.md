@@ -8,7 +8,7 @@ review_inputs: [packages/platejs/src/static/internal/staticPresentation.ts, pack
 
 # Static kit drawings read only the rendered editor
 
-Status: awaiting: built on branch export-static-presentation and not pushed; F2 is partly open, and the plan folds into the subject with phase 1
+Status: done: in pull request #5157 into next; folded into the html subject, where the F2 remainder stays open
 Playbook: plan
 
 This iteration continues the html subject after `docs/plans/2026-10-09-html-static-repair-redo.md`, whose phase 1 is committed on branch `export-static-presentation` (`d718b7fa6c`, `d295f31731`) and not pushed. The owner asked to start preparing the next step after the recommended order put this iteration first. It works on the two critical findings that phase 1's third code-review round left open, which AGENTS.md's Panel review rule sends back to planning. It fixes the first and only narrows the second. In the first, an element no plugin renders still runs the live editor's `afterNodeChildren` slots under a presentation. In the second, the presentation compile activates plugins with no cleanup, and a drawing built in a `configure((ctx) => ...)` callback reads the compile editor's state. An `architect` arena with three runners from two model families agreed on the approach (`docs/plans/artifacts/html-presentation-context/architect/synthesis.md`). The plan panel then cut its one contested part, a check that spots drawings built in setup callbacks when the kit loads, after three designs of it failed review. What remains is the detached compile, the fallback branch and a missing-drawing report for component-object slots.
@@ -294,6 +294,10 @@ Reviewed by gpt-6.1-sol @xhigh, the decision-trail review over the frozen commit
 #### Counts
 
 Seven step boxes and fourteen completion gates: all done, with F2 narrowed as above. Code review ran two rounds; round 2 raised no critical finding. The plan panel ran its three allowed rounds.
+
+### Review inputs
+
+The plan read `packages/platejs/src/static/internal/staticPresentation.ts`, `packages/platejs/src/static/pipeRenderElementStatic.internal.tsx`, `packages/platejs/src/static/pluginRenderElementStatic.internal.tsx`, `packages/platejs/src/static/renderStaticHtml.tsx`, `packages/platejs/src/lib/editor/withPlite.ts` and `docs/vision/plate.md`.
 
 ## Evidence
 
