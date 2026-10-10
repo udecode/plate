@@ -269,7 +269,7 @@ static mapping。除了元素自身的值（例如 callout 的颜色），它们
 需要不同 wrapper 时可以传入自定义 root `component`。`DOCX_EXPORT_STYLES` 是
 registry 可复制的展示预设。
 
-公式导出为由 KaTeX MathML 生成的 Word 公式。Word 公式无法表达的写法，会把
+公式导出为由 KaTeX MathML 生成的 Word 公式。转换器尚不支持的写法（如矩阵），会把
 TeX 作为文本放进一个 Word 公式里导出。任务列表项，即带 `data-checked` 的
 `li`，导出时带 ☑ 或 ☐ 列表符号。
 
@@ -294,7 +294,7 @@ live editor 的组件是编辑 UI。把应用的 static kit 作为 `presentation
 | 多节页眉和页脚、脚注和尾注                    | 检查并限制对应包部件；编辑 source 后省略并返回 diagnostic                    |
 | 字段、文本框、形状、图表、SmartArt 和嵌入对象 | 转换可访问时保留纯文本，否则报告不支持或省略的内容                         |
 | Plate 命名根和元数据                          | Word 输出会省略并返回 `lossy-content` 警告；保存在 authored JSON 中 |
-| 公式                                          | 导出为 Word 公式；Word 公式无法表达时，把 TeX 放进 Word 公式。导入时把 Word 公式读成 `equation` 和 `inlineEquation` 节点，TeX 由公式结构重建；未安装这两个插件时读成 TeX 文本。与批注、修订或文字同处一段，或位于列表项、缩进段落中的行间公式读成行内公式 |
+| 公式                                          | 导出为 Word 公式；转换器不支持该写法时，把 TeX 放进 Word 公式。导入时把 Word 公式读成 `equation` 和 `inlineEquation` 节点，TeX 由公式结构重建；未安装这两个插件时读成 TeX 文本。与批注、修订或文字同处一段，或位于列表项、缩进段落中的行间公式读成行内公式 |
 | 任务列表                                      | 以带 `data-checked` 的 `li` 绘制的项导出时带 ☑ 或 ☐ 列表符号              |
 | 自定义 Plate、emoji 和媒体节点                | 使用已配置的静态序列化器；不支持的输出返回 diagnostic                      |
 
