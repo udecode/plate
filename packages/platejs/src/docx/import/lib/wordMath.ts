@@ -73,7 +73,7 @@ const TEXT_ESCAPES: Readonly<Record<string, string>> = {
 };
 
 const escape = (text: string, escapes: Readonly<Record<string, string>>) =>
-  Array.from(text.replaceAll('⁡', ''))
+  Array.from(text.replaceAll('\u2061', ''))
     .map((char) => escapes[char] ?? char)
     .join('');
 
@@ -284,7 +284,7 @@ const toTex = (
       return `\\left${open}${items.join(` ${separator} `)}\\right${close}`;
     }
     case 'acc': {
-      const char = propertyValue(element, 'chr') ?? '̂';
+      const char = propertyValue(element, 'chr') ?? '\u0302';
       const accent = WORD_MATH_ACCENTS.find(
         (entry) => entry.combining === char
       );

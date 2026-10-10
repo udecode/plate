@@ -25,15 +25,15 @@ export const WORD_MATH_ACCENTS: ReadonlyArray<
     tex: string;
   }>
 > = [
-  { chars: ['^', 'ˆ'], combining: '̂', tex: '\\hat' },
-  { chars: ['ˇ'], combining: '̌', tex: '\\check' },
-  { chars: ['~', '˜'], combining: '̃', tex: '\\tilde' },
-  { chars: ['ˊ', '´'], combining: '́', tex: '\\acute' },
-  { chars: ['ˋ', '`'], combining: '̀', tex: '\\grave' },
-  { chars: ['˙'], combining: '̇', tex: '\\dot' },
-  { chars: ['¨'], combining: '̈', tex: '\\ddot' },
-  { chars: ['ˉ', '¯'], combining: '̄', tex: '\\bar' },
-  { chars: ['⃗', '→'], combining: '⃗', tex: '\\vec' },
-  { chars: ['˘'], combining: '̆', tex: '\\breve' },
-  { chars: ['˚'], combining: '̊', tex: '\\mathring' },
+  { chars: ['^', 'ˆ'], combining: '\u0302', tex: '\\hat' },
+  { chars: ['ˇ'], combining: '\u030C', tex: '\\check' },
+  { chars: ['~', '˜'], combining: '\u0303', tex: '\\tilde' },
+  { chars: ['ˊ', '´'], combining: '\u0301', tex: '\\acute' },
+  { chars: ['ˋ', '`'], combining: '\u0300', tex: '\\grave' },
+  { chars: ['˙'], combining: '\u0307', tex: '\\dot' },
+  { chars: ['¨'], combining: '\u0308', tex: '\\ddot' },
+  { chars: ['ˉ', '¯'], combining: '\u0304', tex: '\\bar' },
+  { chars: ['\u20D7', '→'], combining: '\u20D7', tex: '\\vec' },
+  { chars: ['˘'], combining: '\u0306', tex: '\\breve' },
+  { chars: ['˚'], combining: '\u030A', tex: '\\mathring' },
 ];

@@ -55,7 +55,7 @@ const attribute = (node: MathNode, name: string) =>
   node.properties?.attributes?.[name];
 
 /** The line KaTeX draws for `\overline` and `\underline`. */
-const BAR_CHARS = new Set(['‾', '¯', '_', '̲']);
+const BAR_CHARS = new Set(['‾', '¯', '_', '\u0332']);
 
 const children = (node: MathNode) =>
   (node.children ?? []).filter((child) => child.tagName !== undefined);
@@ -151,7 +151,7 @@ const convert = (node: MathNode): string => {
       // KaTeX wraps a stacked symbol, such as `\overset{+}{=}`, in a token element.
       if (children(node).length > 0) return join(children(node));
 
-      return textOf(node) === '⁡' ? '' : token(node);
+      return textOf(node) === '\u2061' ? '' : token(node);
     }
     case 'mtext': {
       return run(textOf(node), '<m:nor/>');
