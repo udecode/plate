@@ -39,11 +39,17 @@ export type RenderStaticHtmlOptions<
    * leaves it out. The editor keeps the document and every other plugin
    * setting. A drawing this list lacks is left out, so the content renders
    * plainly, and adds a `missing-static-presentation` diagnostic; an installed
-   * tag name, such as `component: 'p'`, stays instead. An element no installed
-   * plugin renders still draws the installed `afterNodeChildren` slots. A
-   * drawing reads plugin state through its `editor` prop; one created in a
-   * `configure((ctx) => ...)` callback reads the separate editor this list is
-   * compiled in. Pass a stable array: each new array is compiled again.
+   * tag name, such as `component: 'p'`, stays instead. `afterNodeChildren`
+   * draws from this list on an element no installed plugin renders too, and an
+   * installed `afterNodeChildren` component, `React.memo` included, with no
+   * function here is reported missing. A drawing reads plugin state through its
+   * `editor` prop. This list compiles without activating its plugins, so a
+   * drawing created in a `configure((ctx) => ...)` callback is unsupported:
+   * calling a context getter, or a kept `store`, `read` or `update`, while
+   * drawing throws; a plain value the callback copied out, such as a
+   * destructured `plugin` or `name`, keeps this list's own configuration; and
+   * `ctx.editor` reads return an empty document or throw. Pass a stable array:
+   * each new array is compiled again.
    */
   presentation?: readonly BasePluginInput[];
   /** Required when the captured document contains authored changes. */

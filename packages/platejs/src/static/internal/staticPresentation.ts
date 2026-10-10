@@ -9,7 +9,7 @@ import type {
   BasePluginInput,
   Editor,
 } from '../../lib';
-import { buildEditor } from '../../lib/editor/withPlite';
+import { withPlateFormatCompilation } from '../../lib/editor/withPlite';
 
 export type StaticComponentOverrides = Readonly<
   Record<string, React.ComponentType<any> | undefined>
@@ -39,7 +39,10 @@ const compilePeers = (plugins: readonly BasePluginInput[]) => {
     return compiled.peers;
   }
 
-  const peers = getPlateRuntime(buildEditor({ plugins })).plugins;
+  const peers = withPlateFormatCompilation(
+    { plugins },
+    ({ editor }) => getPlateRuntime(editor).plugins
+  );
 
   COMPILED.set(plugins, { peers, plugins: [...plugins] });
 
@@ -73,6 +76,9 @@ export const bindStaticPresentation = (
   return missing;
 };
 
+export const hasStaticPresentation = (editor: Editor) =>
+  !!PRESENTATIONS.get(editor)?.peers;
+
 export const inheritStaticPresentation = (base: Editor, view: Editor) => {
   const presentation = PRESENTATIONS.get(base);
 
@@ -88,7 +94,8 @@ const resolveDrawing = <T>(
   editor: Editor,
   plugin: DrawnPlugin,
   feature: 'render' | 'slots',
-  read: (plugin: DrawnPlugin) => T | null | undefined
+  read: (plugin: DrawnPlugin) => T | null | undefined,
+  readInstalled: (plugin: DrawnPlugin) => unknown = read
 ) => {
   const own = read(plugin) ?? undefined;
   const presentation = PRESENTATIONS.get(editor);
@@ -99,7 +106,7 @@ const resolveDrawing = <T>(
   const drawing = peer ? (read(peer) ?? undefined) : undefined;
 
   if (drawing !== undefined) return drawing;
-  if (!isComponent(own)) return own;
+  if (!isComponent(readInstalled(plugin))) return own;
   presentation.missing.add(plugin.name);
 
   return undefined;
@@ -125,19 +132,31 @@ export const getStaticMarkComponent = (
   );
 
 /**
- * `pluginRenderElementStatic` calls the returned slot as a plain function, so a
- * slot in any other shape, such as a `wrapNode` wrapper descriptor
+ * Static rendering calls the returned slot as a plain function, so a slot in
+ * any other shape, such as a `wrapNode` wrapper descriptor
  * (`{ component, match }`) or a `React.memo` `afterNodeChildren`, is skipped.
- * An installed slot in that shape is not reported; a presentation slot in that
- * shape counts as missing when the installed slot is a function.
+ * With a presentation, an installed `afterNodeChildren` component, memo
+ * included, is reported missing when the presentation has no function for it;
+ * an installed wrapper in another shape is editing UI and is not reported.
  */
 export const getStaticSlot = (
   editor: Editor,
   plugin: DrawnPlugin,
   slot: 'afterNodeChildren' | 'wrapNode' | 'wrapNodeChildren'
-) =>
-  resolveDrawing(editor, plugin, 'slots', ({ slots }) => {
+) => {
+  const readFunction = ({ slots }: DrawnPlugin) => {
     const drawing = slots[slot];
 
     return typeof drawing === 'function' ? drawing : undefined;
-  });
+  };
+
+  return resolveDrawing(
+    editor,
+    plugin,
+    'slots',
+    readFunction,
+    slot === 'afterNodeChildren'
+      ? ({ slots }) => slots.afterNodeChildren
+      : readFunction
+  );
+};

@@ -23,6 +23,30 @@ export type PliteRenderElement = (
   props: RenderElementProps
 ) => React.ReactNode | undefined;
 
+export const renderStaticAfterNodeChildren = (editor: Editor, props: object) =>
+  getPlateRuntime(editor).pluginCache.slots.afterNodeChildren.map((name) => {
+    const innerPlugin =
+      getCompiledPlatePlugin(editor, name) ??
+      failInvariant('Expected value to be defined');
+    const innerComponent = getStaticSlot(
+      editor,
+      innerPlugin,
+      'afterNodeChildren'
+    );
+    const pluginContext = createPluginContext(editor, innerPlugin);
+
+    if (typeof innerComponent !== 'function') return null;
+
+    const rendered = Reflect.apply(innerComponent, undefined, [
+      {
+        ...props,
+        ...pluginContext,
+      },
+    ]) as React.ReactNode;
+
+    return <React.Fragment key={name}>{rendered}</React.Fragment>;
+  });
+
 export const pluginRenderElementStatic = (
   editor: Editor,
   plugin: AnyBasePluginPortal | AnyPluginBase
@@ -82,31 +106,10 @@ export const pluginRenderElementStatic = (
       <Element {...defaultProps} {...nodeProps}>
         {children}
 
-        {getPlateRuntime(editor).pluginCache.slots.afterNodeChildren.map(
-          (name) => {
-            const innerPlugin =
-              getCompiledPlatePlugin(editor, name) ??
-              failInvariant('Expected value to be defined');
-            const innerComponent = getStaticSlot(
-              editor,
-              innerPlugin,
-              'afterNodeChildren'
-            );
-            const pluginContext = createPluginContext(editor, innerPlugin);
-
-            if (typeof innerComponent !== 'function') return null;
-
-            const rendered = Reflect.apply(innerComponent, undefined, [
-              {
-                ...defaultProps,
-                ...nodeProps,
-                ...pluginContext,
-              },
-            ]) as React.ReactNode;
-
-            return <React.Fragment key={name}>{rendered}</React.Fragment>;
-          }
-        )}
+        {renderStaticAfterNodeChildren(editor, {
+          ...defaultProps,
+          ...nodeProps,
+        })}
       </Element>
     );
 

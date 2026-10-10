@@ -362,14 +362,17 @@ const result = await renderStaticHtml(editor, {
 ```
 
 对已安装插件声明的每个 element 组件、mark 组件和 wrapper slot 函数，
-`presentation` 中同名的插件提供对应的绘制方式。已安装插件标为 `editOnly` 的绘制会被
-省略。`presentation` 缺少的绘制也会被省略，内容不带该绘制渲染，`result.diagnostics`
-会用一条 `missing-static-presentation` 警告指出该插件。已安装插件的标签名（例如
-`component: 'p'`）保持不变。没有任何已安装插件渲染的元素，仍会绘制已安装插件的
-`afterNodeChildren` slot。
+`presentation` 中同名的插件提供对应的绘制方式，没有任何已安装插件渲染的元素也一样。
+已安装插件标为 `editOnly` 的绘制会被省略。`presentation` 缺少的绘制也会被省略，内容
+不带该绘制渲染，`result.diagnostics` 会用一条 `missing-static-presentation` 警告指出
+该插件。已安装插件以组件形式（例如 `React.memo`）写的 `afterNodeChildren` 也算一种
+绘制，`presentation` 需要以函数形式提供它。已安装插件的标签名（例如
+`component: 'p'`）保持不变。
 
-请通过 `editor` prop 读取插件状态。在 `configure((ctx) => ...)` 回调里创建的绘制
-读取的是 presentation 自己的插件。请传入稳定的数组，因为每个新数组都会重新编译。
+请把绘制声明为值，并通过 `editor` prop 读取插件状态。`presentation` 编译时不会激活
+其中的插件。不支持在 `configure((ctx) => ...)` 回调里创建绘制。这样的绘制可能在绘制时
+抛错，导致导出失败，也可能绘制出 presentation 自己的配置。请传入稳定的数组，因为每个
+新数组都会重新编译。
 
 更多详情请参阅 [HTML 序列化指南](/docs/html)。
 

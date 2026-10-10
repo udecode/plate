@@ -1,6 +1,12 @@
 import React from 'react';
 
-import { createEditor, definePlugin, property, schema } from '../core';
+import {
+  createEditor,
+  defineEditorSchema,
+  definePlugin,
+  property,
+  schema,
+} from '../core';
 import { BaseBlockquotePlugin } from '../features/basic-nodes/lib';
 import { BaseParagraphPlugin } from '../lib';
 import { renderStaticHtml } from './renderStaticHtml';
@@ -8,6 +14,18 @@ import { renderStaticHtml } from './renderStaticHtml';
 const EditingOnly = (): React.ReactNode => {
   throw new Error('Editing component rendered during export.');
 };
+
+const NoteSchema = defineEditorSchema('schema:presentation-note', {
+  elements: {
+    note: { content: schema.content.text({ default: 'text', min: 1 }) },
+    paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+  },
+  root: schema.content.types(['paragraph', 'note'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+});
 
 describe('static HTML presentation', () => {
   it('draws an element with its static peer instead of the editing component', async () => {
@@ -215,7 +233,7 @@ describe('static HTML presentation', () => {
     expect(data).toContain('data-choice="second"');
   });
 
-  it('draws a presentation slot that reads its schema from the configure context', async () => {
+  it('stops the export when a presentation slot reads its configure context', async () => {
     const editor = createEditor({
       plugins: [
         BaseBlockquotePlugin.configure({
@@ -230,17 +248,37 @@ describe('static HTML presentation', () => {
       ],
     });
 
-    const { data } = await renderStaticHtml(editor, {
+    await expect(
+      renderStaticHtml(editor, {
+        presentation: [
+          BaseBlockquotePlugin.configure((context) => ({
+            slots: {
+              afterNodeChildren: () => <span data-type={context.schema.type} />,
+            },
+          })),
+        ],
+      })
+    ).rejects.toThrow('Plate runtime is not installed.');
+  });
+
+  it('compiles the presentation without activating its plugins', async () => {
+    let activations = 0;
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin],
+      initialValue: [{ children: [{ text: 'Plain' }], type: 'paragraph' }],
+    });
+
+    await renderStaticHtml(editor, {
       presentation: [
-        BaseBlockquotePlugin.configure((context) => ({
-          slots: {
-            afterNodeChildren: () => <span data-type={context.schema.type} />,
+        definePlugin('watcher', {
+          activate: () => {
+            activations += 1;
           },
-        })),
+        }),
       ],
     });
 
-    expect(data).toContain('data-type="blockquote"');
+    expect(activations).toBe(0);
   });
 
   it('reports an afterNodeChildren peer the static render cannot call', async () => {
@@ -262,6 +300,94 @@ describe('static HTML presentation', () => {
           },
         }),
       ],
+    });
+
+    expect(diagnostics).toMatchObject([
+      { code: 'missing-static-presentation', plugin: 'tail' },
+    ]);
+  });
+
+  it('reports an installed memo afterNodeChildren the presentation lacks', async () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        definePlugin('tail', {
+          slots: { afterNodeChildren: React.memo(EditingOnly) },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'Plain' }], type: 'paragraph' }],
+    });
+
+    const { diagnostics } = await renderStaticHtml(editor, {
+      presentation: [BaseParagraphPlugin],
+    });
+
+    expect(diagnostics).toMatchObject([
+      { code: 'missing-static-presentation', plugin: 'tail' },
+    ]);
+  });
+
+  it('reports an installed memo afterNodeChildren whose peer is a memo too', async () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        definePlugin('tail', {
+          slots: { afterNodeChildren: React.memo(EditingOnly) },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'Plain' }], type: 'paragraph' }],
+    });
+
+    const { diagnostics } = await renderStaticHtml(editor, {
+      presentation: [
+        definePlugin('tail', {
+          slots: {
+            afterNodeChildren: React.memo(() => <aside data-static-tail="" />),
+          },
+        }),
+      ],
+    });
+
+    expect(diagnostics).toMatchObject([
+      { code: 'missing-static-presentation', plugin: 'tail' },
+    ]);
+  });
+
+  it('draws the afterNodeChildren of an element no plugin renders from the presentation', async () => {
+    const editor = createEditor({
+      plugins: [
+        NoteSchema,
+        definePlugin('tail', {
+          slots: { afterNodeChildren: () => <EditingOnly /> },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'Unowned' }], type: 'note' }],
+    });
+
+    const { data } = await renderStaticHtml(editor, {
+      presentation: [
+        definePlugin('tail', {
+          slots: { afterNodeChildren: () => <aside data-static-tail="" /> },
+        }),
+      ],
+    });
+
+    expect(data).toContain('data-static-tail');
+  });
+
+  it('reports the afterNodeChildren of an element no plugin renders when the presentation lacks it', async () => {
+    const editor = createEditor({
+      plugins: [
+        NoteSchema,
+        definePlugin('tail', {
+          slots: { afterNodeChildren: () => <EditingOnly /> },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'Unowned' }], type: 'note' }],
+    });
+
+    const { diagnostics } = await renderStaticHtml(editor, {
+      presentation: [],
     });
 
     expect(diagnostics).toMatchObject([

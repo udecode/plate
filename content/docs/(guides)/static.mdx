@@ -379,16 +379,19 @@ const result = await renderStaticHtml(editor, {
 
 For each element component, mark component, and wrapper slot function an
 installed plugin declares, the plugin of the same name in `presentation`
-supplies the drawing. Drawings the installed plugin marks `editOnly` are left
-out. A drawing `presentation` lacks is left out too, so the content renders
-without it, and `result.diagnostics` names the plugin in a
-`missing-static-presentation` warning. An installed tag name, such as
-`component: 'p'`, stays. An element that no installed plugin renders still
-draws the installed `afterNodeChildren` slots.
+supplies the drawing, also on an element that no installed plugin renders.
+Drawings the installed plugin marks `editOnly` are left out. A drawing
+`presentation` lacks is left out too, so the content renders without it, and
+`result.diagnostics` names the plugin in a `missing-static-presentation`
+warning. An installed `afterNodeChildren` written as a component, such as
+`React.memo`, counts as a drawing, so `presentation` needs a function for it.
+An installed tag name, such as `component: 'p'`, stays.
 
-Read plugin state through the `editor` prop. A drawing created in a
-`configure((ctx) => ...)` callback reads the presentation's own plugin instead.
-Pass a stable array, because each new array is compiled again.
+Declare drawings as values and read plugin state through the `editor` prop.
+`presentation` compiles without activating its plugins. Drawings created in a
+`configure((ctx) => ...)` callback are not supported. Such a drawing can throw
+when it draws, which rejects the export, or draw the presentation's own
+configuration. Pass a stable array, because each new array is compiled again.
 
 For more details, see the [HTML Serialization guide](/docs/html).
 
