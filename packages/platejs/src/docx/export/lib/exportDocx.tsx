@@ -18,10 +18,7 @@ import {
 } from '../../../core';
 import type { EditorStaticProps } from '../../../static/components/PlateStatic';
 import { renderStaticHtmlWithOverrides } from '../../../static/internal/renderStaticHtmlWithOverrides';
-import type {
-  RenderStaticHtmlOptions,
-  StaticHtmlDiagnostic,
-} from '../../../static/renderStaticHtml';
+import type { StaticHtmlResult } from '../../../static/renderStaticHtml';
 import { throwIfDocxAborted } from '../../internal/abort';
 import {
   acquireDocxSource,
@@ -263,44 +260,35 @@ const nativeOnlyDiagnostics = (
   return diagnostics;
 };
 
-const renderProjection = async (
+const renderDocxHtml = async (
   editor: Editor,
-  capture: ExportCapture,
-  options: DocxExportOptions
+  document: EditorDocumentValue,
+  { component, fontFamily, presentation, signal }: DocxExportOptions
 ) => {
-  const { component, fontFamily, presentation } = options;
-  const { document, review } = capture;
-  const htmlOptions: Partial<RenderStaticHtmlOptions> = {
-    document,
-    presentation,
-    props: {
-      style: { padding: '0', ...(fontFamily ? { fontFamily } : {}) },
-    },
-  };
-
-  if (component) htmlOptions.component = component;
-  const { data: html, diagnostics } = await renderStaticHtmlWithOverrides(
+  const rendered = await renderStaticHtmlWithOverrides(
     editor,
-    htmlOptions,
+    {
+      component,
+      document,
+      presentation,
+      props: {
+        style: { padding: '0', ...(fontFamily ? { fontFamily } : {}) },
+      },
+    },
     DOCX_STATIC_COMPONENTS
   );
 
-  throwIfDocxAborted(options.signal);
+  throwIfDocxAborted(signal);
 
-  return Object.freeze({
-    renderDiagnostics: diagnostics,
-    ...(review
-      ? applyReviewProjection(html, review)
-      : { diagnostics: Object.freeze([]), html }),
-  });
+  return rendered;
 };
 
 const missingDrawings = (
-  renders: ReadonlyArray<readonly StaticHtmlDiagnostic[]>
+  renders: readonly StaticHtmlResult[]
 ): DocxDiagnostic[] => [
   ...new Map(
     renders
-      .flat()
+      .flatMap(({ diagnostics }) => diagnostics)
       .filter((diagnostic) => diagnostic.code === 'missing-static-presentation')
       .map((diagnostic) => [diagnostic.plugin, diagnostic])
   ).values(),
@@ -443,46 +431,6 @@ const generateDocx = async (html: string, options: DocxExportOptions) => {
   }
 };
 
-const renderCommentBodies = async (
-  editor: Editor,
-  comments: readonly DocxComment[],
-  options: DocxExportOptions
-) => {
-  const entries = await Promise.all(
-    comments.map(async (comment) => {
-      const htmlOptions: Partial<RenderStaticHtmlOptions> = {
-        document: { children: comment.body },
-        presentation: options.presentation,
-        props: {
-          style: {
-            padding: '0',
-            ...(options.fontFamily ? { fontFamily: options.fontFamily } : {}),
-          },
-        },
-      };
-
-      if (options.component) htmlOptions.component = options.component;
-
-      const rendered = await renderStaticHtmlWithOverrides(
-        editor,
-        htmlOptions,
-        DOCX_STATIC_COMPONENTS
-      );
-
-      throwIfDocxAborted(options.signal);
-
-      return [comment.id, rendered] as const;
-    })
-  );
-
-  throwIfDocxAborted(options.signal);
-
-  return Object.freeze({
-    bodies: new Map(entries.map(([id, { data }]) => [id, data])),
-    renderDiagnostics: entries.map(([, { diagnostics }]) => diagnostics),
-  });
-};
-
 /** Convert one immutable editor snapshot to a deliberate DOCX projection. */
 export async function exportDocx(
   editor: Editor,
@@ -555,23 +503,29 @@ export async function exportDocx(
   ];
 
   try {
-    const [rendered, commentBodies] = await Promise.all([
-      renderProjection(editor, capture, options),
-      renderCommentBodies(editor, capture.comments, options),
+    const [main, commentRenders] = await Promise.all([
+      renderDocxHtml(editor, capture.document, options),
+      Promise.all(
+        capture.comments.map(async ({ body, id }) => ({
+          id,
+          ...(await renderDocxHtml(editor, { children: body }, options)),
+        }))
+      ),
     ]);
 
     throwIfDocxAborted(options.signal);
+    const rendered = capture.review
+      ? applyReviewProjection(main.data, capture.review)
+      : { diagnostics: [], html: main.data };
+
     diagnostics.push(
       ...rendered.diagnostics,
-      ...missingDrawings([
-        rendered.renderDiagnostics,
-        ...commentBodies.renderDiagnostics,
-      ])
+      ...missingDrawings([main, ...commentRenders])
     );
     const preparedComments = prepareDocxComments(
       rendered.html,
       capture.comments,
-      commentBodies.bodies
+      new Map(commentRenders.map(({ data, id }) => [id, data]))
     );
 
     diagnostics.push(...preparedComments.diagnostics);
