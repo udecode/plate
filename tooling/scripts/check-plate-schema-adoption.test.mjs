@@ -1791,8 +1791,8 @@ test('allows only exact audited production extend stages at their owner path', (
       `definePlugin('details', { })
         .extend(() => ({
           api: () => ({}),
+          contributions: [],
           corrections: [],
-          on: {},
           selectors: {},
           update: () => ({}),
         }))

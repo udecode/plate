@@ -1,3 +1,4 @@
+import { AuthoredPlugin } from '../../../authored';
 import {
   BaseParagraphPlugin,
   createEditor,
@@ -6,6 +7,7 @@ import {
   NodeApi,
   SelectionApi,
 } from '../../../core';
+import { createEditorView } from '../../../facade';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import {
   BaseDetailsPlugin,
@@ -23,6 +25,116 @@ const BaseInlinePlugin = definePlugin('testInline', {
 });
 
 describe('BaseDetailsPlugin', () => {
+  it('closes Details in a read-only view and moves the writable selection to its Summary', () => {
+    const editor = createEditor({
+      plugins,
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ],
+    });
+    editor.update.selection.set({ path: [0, 1, 0], offset: 2 });
+    const view = createEditorView(editor, { readOnly: true });
+    const details = view.plugin(BaseDetailsPlugin);
+    const key = view.key([0])!;
+
+    details.api.setOpen(key, true);
+    details.api.setOpen(key, false);
+
+    expect(details.store.get('isOpen', key)).toBe(false);
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { path: [0, 0, 0], offset: 5 },
+      focus: { path: [0, 0, 0], offset: 5 },
+    });
+  });
+
+  it('restores a removed open Details as open on undo', () => {
+    const editor = createEditor({
+      plugins,
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'Before' }] },
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ],
+    });
+    const details = editor.plugin(BaseDetailsPlugin);
+
+    details.api.setOpen(editor.key([1])!, true);
+    editor.update.nodes.remove({ at: [1] });
+    editor.api.history.undo();
+
+    expect(details.store.get('isOpen', editor.key([1])!)).toBe(true);
+  });
+
+  it('keeps loaded authored Details open through edits and closes in the calling view', () => {
+    const authoredPlugins = [BaseDetailsPlugin, AuthoredPlugin];
+    const initial = createEditor({
+      plugins: authoredPlugins,
+      userId: 'alice',
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'Review' }] },
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ],
+    });
+    const proposing = createEditorView(initial, {
+      authored: { intent: 'propose', projection: 'markup' },
+    });
+    proposing.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 1 },
+        },
+      });
+      tx.text.insert('r', { at: { path: [0, 0], offset: 0 } });
+    });
+    const editor = createEditor({
+      plugins: authoredPlugins,
+      userId: 'alice',
+      initialValue: initial.read.value(),
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'edit', projection: 'markup' },
+    });
+    const details = view.plugin(BaseDetailsPlugin);
+    const key = view.key([1])!;
+    const acceptedDetails = editor.plugin(BaseDetailsPlugin);
+    const acceptedKey = editor.key([1])!;
+
+    details.api.setOpen(key, true);
+    acceptedDetails.api.setOpen(acceptedKey, true);
+    view.update.selection.set({ path: [1, 1, 0], offset: 2 });
+    view.update.break.insert();
+
+    expect(details.store.get('isOpen', key)).toBe(true);
+    expect(acceptedDetails.store.get('isOpen', acceptedKey)).toBe(true);
+    expect(view.read.text.string([1, 2])).toBe('dy');
+    view.update.text.insert('X');
+    expect(view.read.text.string([1, 2])).toBe('Xdy');
+    expect(details.store.get('isOpen', key)).toBe(true);
+    details.api.setOpen(key, false);
+    expect(view.read.selection()).toMatchObject({
+      anchor: { path: [1, 0, 0], offset: 5 },
+      focus: { path: [1, 0, 0], offset: 5 },
+    });
+  });
+
   it('publishes semantic Details and Summary schema identities', () => {
     const editor = createEditor({
       plugins,
@@ -85,7 +197,7 @@ describe('BaseDetailsPlugin', () => {
     expect(details?.hasAttribute('name')).toBe(false);
   });
 
-  it('keeps open state transient and prunes removed keys', () => {
+  it('keeps open state out of the document', () => {
     const editor = createEditor({
       plugins,
       initialValue: [
@@ -107,10 +219,6 @@ describe('BaseDetailsPlugin', () => {
 
     expect(details.store.get('isOpen', key)).toBe(true);
     expect(editor.read.children()[0]).not.toHaveProperty('open');
-
-    editor.update.nodes.remove({ at: [0] });
-
-    expect(details.store.get().openKeys).toEqual(new Set());
   });
 
   it('moves a body selection to Summary before closing', () => {
@@ -215,6 +323,9 @@ describe('BaseDetailsPlugin', () => {
         type: 'details',
       },
     ]);
+    expect(
+      editor.plugin(BaseDetailsPlugin).store.get('isOpen', editor.key([0])!)
+    ).toBe(true);
   });
 
   it('wraps a text block with inline content as Summary', () => {

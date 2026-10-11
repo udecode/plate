@@ -224,12 +224,16 @@ function Draggable(props: RenderNodeWrapperProps) {
         : [];
     });
   };
-  const openActions = () => {
+  const selectBlocks = () => {
     const keys = nodes();
 
     if (!keys.every((key) => editor.read.selection.contains(key))) {
       editor.update.selection.setNodes(keys);
     }
+    return keys;
+  };
+  const openActions = () => {
+    const keys = selectBlocks();
     setBesideActions(besideOf(keys));
     setActionsOpen(true);
   };
@@ -286,6 +290,7 @@ function Draggable(props: RenderNodeWrapperProps) {
                 style={{ top: `${buttonTop + 3}px` }}
                 type="button"
                 onClick={openActions}
+                onContextMenu={selectBlocks}
                 onDragStart={(event) => startBlockDrag(editor, event, element)}
               >
                 <GripVertical />

@@ -97,11 +97,18 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         );
       }),
     ],
-    api: () => ({
+    api: ({ editor: commandEditor }) => ({
       setOpen: (key: NodeKey, open: boolean) => {
-        if (!open) {
-          const detailsEntry = editor.read.nodes.get(key);
-          const selection = editor.read.selection();
+        // The plugin store holds open state for every view of the document,
+        // so a read-only caller moves the owner's selection out of the body
+        // it hides. Another authored view keeps its own selection.
+        const writable = [commandEditor, editor].find(
+          (candidate) => !candidate.read.view.isReadOnly()
+        );
+
+        if (!open && writable) {
+          const detailsEntry = writable.read.nodes.get(key);
+          const selection = writable.read.selection();
 
           if (detailsEntry && ElementApi.isElementType(detailsEntry[0], type)) {
             const detailsPath = detailsEntry[1];
@@ -117,9 +124,9 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
             );
 
             if (isInBody) {
-              const point = editor.read.points.end(detailsPath.concat(0));
+              const point = writable.read.points.end(detailsPath.concat(0));
 
-              if (point) editor.update.selection.set(point);
+              if (point) writable.update.selection.set(point);
             }
           }
         }
@@ -202,22 +209,6 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         },
       },
     ],
-    on: {
-      commit({ commit, editor: currentEditor, store: currentStore }) {
-        if (!commit.changed.hasAny('document')) return;
-
-        const current = currentStore.get().openKeys;
-        const next = new Set(
-          [...current].filter((key) => {
-            const entry = currentEditor.read.nodes.get(key);
-
-            return entry && ElementApi.isElementType(entry[0], type);
-          })
-        );
-
-        if (next.size !== current.size) currentStore.set({ openKeys: next });
-      },
-    },
     selectors: {
       isOpen: (state, key: NodeKey) => state.openKeys.has(key),
     },
@@ -402,10 +393,15 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           if (state.points.isEnd(selection.anchor, summary[1])) {
             const firstBodyPoint = state.points.start(details[1].concat(1));
 
-            if (!firstBodyPoint) return exitAfterDetails();
-
             return state.transaction((tx) => {
-              tx.selection.set(firstBodyPoint);
+              if (firstBodyPoint) {
+                tx.selection.set(firstBodyPoint);
+              } else {
+                tx.nodes.insert(
+                  { children: [{ text: '' }], type: paragraphType },
+                  { at: details[1].concat(1), select: true }
+                );
+              }
             });
           }
 

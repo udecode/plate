@@ -2088,6 +2088,7 @@
       "cache": true,
       "dependsOn": [
         "plitejs#typecheck:partition:authored",
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:details"
       ],
