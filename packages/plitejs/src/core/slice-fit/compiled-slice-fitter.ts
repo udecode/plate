@@ -1734,6 +1734,7 @@ export const compileSliceFitter = <V extends Value>(
       );
       const step = builder.applyTrustedCanonical(rawChange, {
         indexedAfter,
+        origin: 'slice',
         runtimeCandidates,
       });
 
@@ -1749,7 +1750,7 @@ export const compileSliceFitter = <V extends Value>(
     }
 
     const rawStep = profileCoreDuration('slice-fit-changeset-apply', () =>
-      builder.apply(rawChange, { classify: false })
+      builder.apply(rawChange, { classify: false, origin: 'slice' })
     );
     const constructionStep = profileCoreDuration(
       'slice-fit-canonical-change-finalize',

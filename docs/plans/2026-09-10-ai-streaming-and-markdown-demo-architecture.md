@@ -329,7 +329,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | pending | Resolve every readiness condition | pending |
 | Fresh source evidence | pending | Recheck decision-changing current claims | pending |
-| Best API review | pending | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | pending |
+| Verdict | pending | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | pending |
 | Pre-acceptance scale proof | pending | For scale-sensitive decisions, record the matched baseline/target result across applicable cohorts with frozen budget, deterministic cost, timing/noise, source identities, and correctness guard; otherwise source-backed N/A | pending |
 | Production scale rerun contract | pending | Put the exact final production-path cohort/budget rerun and correctness guard in every applicable execution slice; planning-only work records its future owner/command | pending |
 | Conditional risk and adoption | pending | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | pending |

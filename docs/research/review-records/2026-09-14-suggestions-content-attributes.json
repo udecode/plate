@@ -5,7 +5,7 @@
   "date": "2026-09-14",
   "question": "How should optional SuggestionPlugin presentation reach the content root while generic Editor skins remain independent?",
   "model": "GPT-6 / Codex; exact model variant unavailable",
-  "method": "best-api-review/history-v2",
+  "method": "verdict/history-v2",
   "trigger": "The user rejected suggestion-specific selectors in generic Editor skins, requested a strict Plate UI skill repair, and asked whether plugin content attributes belong in core. Continuing implementation authorization covers the bounded repair.",
   "requirements": [
     "Generic live/static Editor skins contain no optional feature imports, selectors, classes, data-attribute knowledge or presentation branches.",
@@ -100,7 +100,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "1fa76acafbc99819722bfe1454b0ae9cd3c94d82387991d09d4182982a9d2de2",
       "pnpm-lock.yaml": "c5d7bd6cc28fc66d9df9487315553937af41ec1cbfd4a88362a8d22609c81e5a",
-      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/skills/verdict/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
       ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
     },
     "directories": {},

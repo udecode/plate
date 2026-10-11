@@ -192,7 +192,7 @@ reviewed by codex:gpt-6.1-sol @xhigh (`docs/plans/artifacts/2026-10-07-suggestio
 
 - Warning, fixed: the construction benchmark first ran before both diff rounds changed the constructors. It reran on the final bytes within budget (`docs/plans/artifacts/2026-10-07-suggestions-editor-input/build/bench/authored-construction-a2.log`).
 - Warning, fixed: the narrowed cast check had no proof file or acceptance record. The cast audit now has a log (`docs/plans/artifacts/2026-10-07-suggestions-editor-input/build/cast-audit-a1.log`), a labeled partial row and an accepted row.
-- Warning, dismissed: the reviewer read diff round 1's own-property walk as a replacement that needed a `best-api-review`. The final check keeps the approved `in` test and adds the walk, and every entry still refuses on the options the caller passed, so it extends the approved check.
+- Warning, dismissed: the reviewer read diff round 1's own-property walk as a replacement that needed a `verdict`. The final check keeps the approved `in` test and adds the walk, and every entry still refuses on the options the caller passed, so it extends the approved check.
 - Nit, fixed: round 2's `deslop` row recorded a pass that was not run. It ran and simplified one test row, and round 2's mutants passed again on the new bytes.
 - Nit, fixed: `pnpm check` passes 20 of 25 steps, not 19, once the `public-types` fix runs.
 
@@ -219,9 +219,9 @@ Accepted:
 - Agreement among seats of one model family counts as one sample.
 - `verify` triggers for probes and browser controls run inside an API review.
 
-Rejected, each already covered or not decision-changing: a caller census as best-api-review's first step, a removed-export sweep by name, Open work items that park picks, a writing pass scoped by prose, a correction pass inside a feature's close, limit sentences about code the plan does not change, running the later links of a chain that fails at HEAD, a benchmark target recipe and the `cli-test` build order.
+Rejected, each already covered or not decision-changing: a caller census as verdict's first step, a removed-export sweep by name, Open work items that park picks, a writing pass scoped by prose, a correction pass inside a feature's close, limit sentences about code the plan does not change, running the later links of a chain that fails at HEAD, a benchmark target recipe and the `cli-test` build order.
 
-Backlog, with owners and stops in the lessons plan: the frozen tree, the inline-string hook and `plan-open.mjs` reading a box one way, all three built; a check that refuses a replacement without its owed `best-api-review`; `decisions-check.mjs` refusals that name their fix; a typecheck step for platejs specs; `cli-test` building plitejs first; a `--continue` flag for `check-core.mjs`; a known-failure list for `pnpm check`; and seat exit codes in completion notices.
+Backlog, with owners and stops in the lessons plan: the frozen tree, the inline-string hook and `plan-open.mjs` reading a box one way, all three built; a check that refuses a replacement without its owed `verdict`; `decisions-check.mjs` refusals that name their fix; a typecheck step for platejs specs; `cli-test` building plitejs first; a `--continue` flag for `check-core.mjs`; a known-failure list for `pnpm check`; and seat exit codes in completion notices.
 
 ### Counts
 
@@ -229,7 +229,7 @@ Phase 4's 6 step boxes and 16 completion gates make 22 items: 21 done, 1 partial
 
 ## Open work
 
-- After the cut, `createStaticEditor` is `createEditor` with narrower types, and `useStaticEditor` is a memoized base editor that does not key on `userId`. owner: zbeyens, who decides whether they keep separate names. stop: a `best-api-review` of the static entrypoint records the decision. Tracked in `docs/plans/topics/suggestions.md` Open work.
+- After the cut, `createStaticEditor` is `createEditor` with narrower types, and `useStaticEditor` is a memoized base editor that does not key on `userId`. owner: zbeyens, who decides whether they keep separate names. stop: a `verdict` of the static entrypoint records the decision. Tracked in `docs/plans/topics/suggestions.md` Open work.
 - Every unknown option key, such as a typo or `useStaticEditor`'s `enabled`, falls into the root plugin's definition. The same decision settles three review flags: typing the root plugin's keys in `buildEditor`, letting React `createEditor` pass its options untouched so every inherited option survives as it does in core and static, and folding the per-entry refusals into one check that returns the options it checked. owner: zbeyens, who decides whether Plate constructors take a closed option set. stop: a constructor-options plan records that decision as a Defaults row. Tracked in `docs/plans/topics/suggestions.md` Open work.
 - The failure-path restores, the empty-document fit, `resolvePlugins`' publication guard and its `clearPluginStores` at entry, and `buildEditor`'s runtime-candidate clear, which no test fails without, may be dead or duplicated for fresh editors, but plan panel round 1 found an early compile failure and a root minimum of 0 that reach two of them. owner: zbeyens, who decides whether a cleanup plan proves each one. stop: that cleanup plan's Close, or the owner dropping the item. Tracked in `docs/plans/topics/suggestions.md` Open work.
 - `apps/www/src/generated/api-reference-manifest.json` still lists the removed `currentUserId` 3 times (`rg -c currentUserId` on 2026-10-08), because `api-reference:check` fails at HEAD on `HistoryApi` and the manifest regenerates only from built declarations. owner: zbeyens, who regenerates it once that check passes. stop: `rg -c currentUserId apps/www/src/generated/api-reference-manifest.json` finds none. Tracked in `docs/plans/topics/suggestions.md` Open work.

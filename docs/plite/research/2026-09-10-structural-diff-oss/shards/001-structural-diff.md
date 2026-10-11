@@ -20,7 +20,7 @@ Scope: 13 locally inspected repositories spanning structural matching, rich-text
 | [codeberg.org/mergiraf/mergiraf](https://codeberg.org/mergiraf/mergiraf/src/commit/b9a78df83d48a89961310dde67898dd1b355690e/src/matching.rs) | three-way-structure | One-to-one matchings; schema/language semantics and post-render structural validation matter. |
 | [microsoft/vscode](https://github.com/microsoft/vscode/blob/df2411cf7d8f2e0cfc79109a3bc8eaab2c69165b/src/vs/editor/common/diff/defaultLinesDiffComputer/computeMovedLines.ts) | moved-line-refinement | Move refinement has heuristic length and similarity gates; never adopt code-oriented thresholds as rich-text laws. |
 
-## Best API Review verdict
+## Verdict verdict
 
 **Pursue the revised plan.** Keep ordinary accepted JSON, immutable span correspondence and canonical native mutation/position owners. Effects compose on spans. Three-way comparison retains every branch contribution, and pure resolution derives a target without discarding that comparison. Native proposal creation owns live review import.
 

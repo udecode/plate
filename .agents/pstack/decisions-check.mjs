@@ -233,7 +233,7 @@ if (args[0] === 'append') {
   console.info(batch.length > 1 ? `Appended ${batch.length} rows to ${args[1]}.` : `Appended a row to ${args[1]}.`);
   if (run) console.info(`Lead: ${leadLabel(run)}.`);
   const stage = lastStage(args[1]);
-  if (stage && stage !== stageBefore) console.info(`Stage: ${stage}. Rename the session now, as the Session title rule asks.`);
+  if (stage && stage !== stageBefore) console.info(`Stage: ${stage}. Rename the session now, as .agents/pstack/rules/title.md says.`);
   process.exit(0);
 }
 const paths =

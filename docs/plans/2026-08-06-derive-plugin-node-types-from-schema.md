@@ -112,7 +112,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All in-scope gates pass; browser is explicitly blocked by unrelated generated-registry drift. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final bounded source audit and diff check are fresh. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Schema is the sole unique AST-shape owner; retained refinements and one private cycle breaker are classified. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Schema is the sole unique AST-shape owner; retained refinements and one private cycle breaker are classified. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Runtime tests pass; Browser was attempted and blocked by missing `apps/www/src/registry/components/editor/plate-types.ts`. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | See Verification evidence. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | See Final handoff prepared. |

@@ -11,7 +11,7 @@ describe(getDocxTestName(name), () => {
   testDocxDeserializer({
     expected: (
       <editor>
-        <hp indent={1} lineHeight="115%" listType="numbered">
+        <hp indent={1} lineHeight="115%" listId="a" listType="numbered">
           One
         </hp>
         <hp indent={1} lineHeight="115%">

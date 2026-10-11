@@ -3,7 +3,7 @@
 Status: Complete.
 
 Objective:
-Repair Best API Review so every ledger item accounts for earlier work before another recommendation or audit, as the user requested. The autocomplete queue answer missed completed combobox work because `unassessed` was treated as a statement about history.
+Repair Verdict so every ledger item accounts for earlier work before another recommendation or audit, as the user requested. The autocomplete queue answer missed completed combobox work because `unassessed` was treated as a statement about history.
 
 The shared method lives in `../dotai/skills/best-api-review/SKILL.md`. Plate owns its command routing in `AGENTS.md` and `.agents/rules/best-api/references/review.md`. Installed skill copies come from those owners.
 
@@ -39,7 +39,7 @@ Verification surface:
 Verification evidence:
 
 - Dotai `scripts/validate-skills` passes. `node scripts/build-workflow.mjs --check` verifies all 8 skills, 42 bundle files and local references.
-- The Skills CLI installs only `best-api-review` from `../dotai` for this project's Codex and Claude Code runtimes. The lock keeps its relative local source path.
+- The Skills CLI installs only `verdict` from `../dotai` for this project's Codex and Claude Code runtimes. The lock keeps its relative local source path.
 - Skiller apply and the canonical resource sync run. Byte comparisons match the shared source with both installed skills and Plate's reference with both generated resources.
 - The global resource check found unrelated generated skills stale during concurrent workflow maintenance. This task proves its own skill/reference parity; it does not claim that global gate passed.
 - Actual compact autocomplete lookup reports `current: null`, zero compact review summaries, 3 total history records, 3 later execution records, 4 associated plans and 28 historical candidates. Missing review state therefore cannot establish missing work.
@@ -51,4 +51,4 @@ Verification evidence:
 Open risks:
 The global resource check remains red during unrelated concurrent workflow maintenance. One successful replay does not guarantee every future agent will comply. Other installed copies do not receive this local source change until their owner requests a sync.
 
-Next action: use the repaired history intake for the next selected ledger item. Other project and global skill installations require their own requested sync of `best-api-review`.
+Next action: use the repaired history intake for the next selected ledger item. Other project and global skill installations require their own requested sync of `verdict`.

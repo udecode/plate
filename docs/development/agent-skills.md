@@ -13,14 +13,14 @@ Plate adds playbooks on top of pstack's in [`.agents/playbooks/`](../../.agents/
 
 | Stop | You say | What runs | It stops with |
 | --- | --- | --- | --- |
-| Next item | "next" | [API review](../../.agents/playbooks/api-review.md): `review-ledger.mjs next` and `status` | The open ledger unit, why it is open, its prior work and the release counts |
-| Review | "review <scope>", then "again" or "panel" to iterate | API review: `best-api-review` | A Stop, Pursue or Defer verdict with the current and proposed call site |
+| Next item | "next" | [Verdict](../../.agents/playbooks/verdict.md): `review-ledger.mjs next` and `status` | The open ledger unit, why it is open, its prior work and the release counts |
+| Review | "review <scope>", then "again" or "panel" to iterate | `verdict` | A Stop, Pursue or Defer verdict with the current and proposed call site |
 | Plan | "plan" | [Plan](../../.agents/playbooks/plan.md), with its architecture reference for API or architecture work | The ready plan and its open questions |
 | Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify` and the plan's landed `Status:` | The done report, ending with the next item |
 
 Bugs go through [Bug fix](../../.agents/playbooks/bug-fix.md) and finishing a PR or the current tree through [Babysit](../../.agents/playbooks/babysit.md). "review PR <number>" on someone else's PR runs a review-only panel through Babysit and returns findings without editing anything. A structural cleanup runs [Refactoring](../../.agents/playbooks/refactoring.md), and a slowness report runs [Perf issue](../../.agents/playbooks/perf-issue.md) with `benchmark`.
 
-Best API Review assesses whether a direction earns more work, Best API designs
+Verdict assesses whether a direction earns more work, Best API designs
 its public contract, and the Plan playbook owns adoption and proof for the Plate or
 Plite layer. A review alone does not start implementation.
 
@@ -65,6 +65,14 @@ plans stay in use.
 
 ## Apply the project rules
 
+Agents load [AGENTS.md](../../AGENTS.md) on every turn. It holds the rules
+every task needs and one line per process that names the rule file to read when
+that process starts, such as [the panel rules](../../.agents/pstack/rules/panel.md)
+or [the plan page rules](../../.agents/pstack/rules/pages.md); the sync renders
+those files into `.agents/pstack/rules/`. Code rules and the rules table live in
+[CODING_STANDARDS.md](../../CODING_STANDARDS.md), which agents read before they
+write, review or clean up code.
+
 **Redesign from First Principles governs `next` beta.** Start from current user
 jobs and hard laws. Existing and proposed APIs, owners and abstractions must
 earn their place. Choose the durable target before planning adoption; preserve
@@ -82,22 +90,8 @@ anything else, say "panel", "arena" or "full". A plan step that broadly changes
 how agents find, route or finish work gets a paired trial on its first
 prototype before the plan's panel. Each round's fixes get `deslop` and
 `no-comments` before the next round, and the comment reviewer only reports;
-the lead applies its edits. A fix that replaces a mechanism's approach in a
-diff round of the current plan is that mechanism's one replacement. It updates
-the plan without `architect` or a plan panel, with `best-api-review` first for
-a Plate or Plite API or architecture, and the next diff round reads it when
-that round earned one. When `best-api-review` rejects the replacement, the
-lead reverts the defective code to its state before this plan changed it and
-narrows the claim instead. When a later critical finding hits
-a mechanism that already had its replacement, the mechanism leaves the review
-loop: the lead reverts it to its code from before this plan changed it, which
-removes it when that code lacked it, narrows the claim, and sends the revert to
-the next review round. When the goal still needs it, a new plan iteration
-rebuilds it, with `best-api-review` first and its own review. A claim about a
-wrong record value is never narrowed and always goes back to planning.
-A removal a reviewer calls incomplete is finished at runtime instead of
-restored, under the removal rule in `AGENTS.md`'s Panel review rule. Before each round the lead pings each seat again, and
-agreement counts once per model family.
+the lead applies its edits. How rounds, fixes and reverts work lives in
+[the panel rules](../../.agents/pstack/rules/panel.md).
 
 Plate Docs owns public page design, examples, installation, API teaching, MDX
 and navigation. `pstack:technical-writing` supplies general prose guidance.
@@ -152,7 +146,7 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 | --- | --- |
 | [benchmark](../../.agents/skills/benchmark/SKILL.md) | Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. |
 | [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review or repair a Plate or Plite public call shape with the Plate API lens. |
-| [best-api-review](../../.agents/skills/best-api-review/SKILL.md) | Reconcile earlier reviews, then judge whether a Plate or Plite API or architecture direction earns further work before detailed design or implementation, and write the verdict into the review page's front matter. |
+| [verdict](../../.agents/skills/verdict/SKILL.md) | Reconcile earlier reviews, then judge whether a Plate or Plite API or architecture direction earns further work before detailed design or implementation, and write the verdict into the review page's front matter. |
 | [changeset](../../.agents/skills/changeset/SKILL.md) | Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice. |
 | [issue-harvester](../../.agents/skills/issue-harvester/SKILL.md) | Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence. |
 | [maintainer](../../.agents/skills/maintainer/SKILL.md) | Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof. |
@@ -175,7 +169,11 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 
 The linked skills and [project instructions](../../AGENTS.md) own the current
 contracts. Edit repository rules in `.agents/rules` and regenerate with
-`pnpm run prepare`. The pstack block in `AGENTS.md`, `.agents/pstack.json` and
+`pnpm run prepare`, which runs Skiller and then
+`node .agents/rules/plate-next/scripts/sync-resources.mjs`; that script copies
+rule resources and deletes retired generated skills, and its `--check` flag
+confirms the mirrors. Skiller also rewrites the quoting in `.mdc` frontmatter,
+so a quoting-only diff after it is Skiller's, not the run's. The pstack block in `AGENTS.md`, `.agents/pstack.json` and
 `.agents/pstack/` come from the `sync-pstack` skill, so shared pstack rules
 change there; pstack's own skills come from the pinned plugin. A reflect lesson
 for that shared source that applies by itself runs the `sync-pstack` skill's
@@ -184,3 +182,7 @@ pass; every other lesson waits in Backlog for the owner.
 
 The [September 5 skill audit](agent-skill-audit.md) records historical decisions
 and evidence. Use this guide and the current skill files to choose today's route.
+
+## Retired commands
+
+The owner retired Plate's typed aliases on 2026-10-01 and the vendor `prototype` skill on 2026-10-02. Older plans, ledger records and decision pages still name them. Read `$task design plan <goal>`, `$plate-plan` and `$plite-plan` as "plan" through the Plan playbook, `$task execute` as "go", `$patch` as the Bug fix playbook, `$autoclosure` as the Babysit playbook, `$editor-audit` and `$editor-test-harvester` as `research audit` and `research harvest`, `$clawsweeper` and `issue-harvester slate` as the retired Slate claims mode, which `git log -- .agents/rules/issue-harvester/references/slate-claims.md` keeps, and `$prototype` as pstack's Prototype playbook. `best-api-review` became `verdict` on 2026-10-10, and its playbook `api-review.md` became `verdict.md`.

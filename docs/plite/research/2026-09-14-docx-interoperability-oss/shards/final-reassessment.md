@@ -1,6 +1,6 @@
 # Documents final adversarial reassessment
 
-Read-only Best API Review reassessment, 2026-09-14. This corrects and extends
+Read-only Verdict reassessment, 2026-09-14. This corrects and extends
 the earlier source audit without rewriting its historical observations.
 
 ## Conclusion

@@ -139,7 +139,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Finish every slice and resolve benchmark candidate verdicts | pass: all slices complete; baseline retained and all private candidates rejected |
 | Fresh source evidence | yes | Reinspect final owners/diff before broad replay | pass: final source/API/teaching sweep followed by strict closure |
-| Best API review | yes | Confirm no provider, diagnostic leak, lifecycle leak or second model remains | pass: deleted-surface sweep is clean outside the negative type assertion |
+| Verdict | yes | Confirm no provider, diagnostic leak, lifecycle leak or second model remains | pass: deleted-surface sweep is clean outside the negative type assertion |
 | Pre-acceptance scale proof | yes | Run matched baseline/prototypes under the frozen contract | pass: 1/2/4 views and 1k/10k/100k dense/distributed cohorts |
 | Production scale rerun contract | yes | Rerun the winning retained production path with identical cohorts and correctness guard | pass: baseline retained, zero promotions/failures, stable source |
 | Conditional risk and adoption | yes | Close React lifetime, two-view browser, docs/doctrine and package boundaries | pass: focused contracts, real browser journeys, generated docs and strict package proof |

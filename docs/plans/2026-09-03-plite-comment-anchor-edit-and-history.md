@@ -592,7 +592,7 @@ Completion Gates:
 | --- | --- | --- |
 | Binary plan readiness | yes | Every decision has one target, owner, adoption path, proof, and failure condition. |
 | Fresh source evidence | yes | All decision-changing claims were re-read from the current checkout. |
-| Best API review | yes | Public calls and exports remain unchanged; wrong policy is private. |
+| Verdict | yes | Public calls and exports remain unchanged; wrong policy is private. |
 | Pre-acceptance scale proof | yes | Both final receipts accept the owner under frozen budgets. |
 | Production scale rerun | passed | Two refreshed actual-path receipts pass all 12 comparisons, grouped edits, and depth/release bounds; every recorded source fingerprint matches. |
 | Correctness coverage | source replay required | 73 core/history/soak and 11 Plate Comments tests passed. The 80/80 Chromium and 50/50 DOM receipts passed on their recorded inputs; shared Editable source changed afterward and requires replay. |

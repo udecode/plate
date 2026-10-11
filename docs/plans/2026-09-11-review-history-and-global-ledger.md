@@ -1,7 +1,7 @@
 # Review history and global feature ledger
 
 Objective:
-Implement automatic history-aware reviews across the shared Best API Review method and Plate's research/docs workflows, then build the complete current-source feature review ledger with historical context and dependency-aware priority.
+Implement automatic history-aware reviews across the shared Verdict method and Plate's research/docs workflows, then build the complete current-source feature review ledger with historical context and dependency-aware priority.
 
 Flow mode:
 Local implementation and ledger construction, authorized by the user's September 11 follow-up. The earlier assessment is [design context](2026-09-11-repeatable-architecture-review-history.md).
@@ -18,7 +18,7 @@ Constraints:
 - Preserve historical records and failed/rejected alternatives. Unknown past models, commits, or implementation outcomes remain unknown.
 - Inventory all current Plate/Plite capabilities, including shared kernel behavior, React/DOM, codecs, UI composition, collaboration, and tooling entrypoints. Group shared questions without silently dropping features.
 - Do not perform every full feature review while constructing the queue. Preliminary payoff is not a completed architecture verdict.
-- No product changes, external discovery crawl, new checkout, commit, push, PR, publication, or scheduling. Shared Best API Review source and its current Plate installation are authorized; other projects receive named sync suggestions only.
+- No product changes, external discovery crawl, new checkout, commit, push, PR, publication, or scheduling. Shared Verdict source and its current Plate installation are authorized; other projects receive named sync suggestions only.
 
 Boundaries:
 Shared source: /Users/zbeyens/git/dotai/skills/best-api-review. Plate source: .agents/AGENTS.md, affected .agents/rules and references, research and editor-behavior documentation, history/ledger artifacts, and narrowly owned helper/tests. Regenerate installed mirrors through their existing owners.
@@ -28,11 +28,11 @@ An unavailable canonical source or generator may prevent final synchronization; 
 
 Work Checklist:
 - [x] Capture the accepted target and latest correction. Source: user and the prior assessment; automatic repeat review replaces the proposed flag.
-- [x] Confirm current source ownership and branch before mutation. Evidence: next; shared Best API Review source and local skills-lock provenance found.
+- [x] Confirm current source ownership and branch before mutation. Evidence: next; shared Verdict source and local skills-lock provenance found.
 - [x] Inspect required workflow, source-install, helper, and doctrine contracts; keep a decision trail for material choices.
 - [x] Define a compact ledger/history schema with immutable reviews, current-source identity, semantic scope IDs, independent statuses, and AI-last ordering.
 - [x] Implement lookup, recording, validation, and generated current/historical views; exercise meaningful failure and reuse cases.
-- [x] Update shared Best API Review and all affected current-project routes/docs; preserve automatic review and explicit research/implementation scope.
+- [x] Update shared Verdict and all affected current-project routes/docs; preserve automatic review and explicit research/implementation scope.
 - [x] Enumerate current source/export/registry/proof feature inputs, map all to review scopes, and retain exclusions/coverage counts.
 - [x] Reconcile plans and current owners/consumers for every scope; import material prior iterations, especially code block, Comments, authored changes/Suggestions, diff, and performance.
 - [x] Repair selected editor-behavior evidence navigation without falsely promoting historical coverage; connect research index/schema/log and existing decision pages.
@@ -44,7 +44,7 @@ Work Checklist:
 Method obligations:
 - Maintain Workflow owns reusable source and project adaptation; user authority includes this local implementation and current-project install. Do not refresh all skills or other projects.
 - Task and Autogoal own one lifecycle and this plan. Poteto Mode supplies direct owned implementation and focused proof. Show Me Your Work records material decisions with existing evidence links.
-- Best API Review keeps the full design-space comparison and Stop/Pursue/Defer. History is default, and a prior conclusion cannot replace a newly requested review.
+- Verdict keeps the full design-space comparison and Stop/Pursue/Defer. History is default, and a prior conclusion cannot replace a newly requested review.
 - Plite Research keeps ledgers, negative results, exact source provenance, and separate external cursors. This task adds lookup and imports existing evidence; it does not claim a fresh GitHub research pass.
 - Research Wiki keeps compiled summaries distinct from raw evidence. Technical Writing preserves facts, dates, uncertainty, and historical claims.
 - Agent Native Reviewer checks actual routes, commands, source/mirror ownership and truthful proof. Product browser, package behavior, registry generation, and PR Autoreview are not applicable unless the scope changes; no Autoreview on next.
@@ -55,13 +55,13 @@ Implement the history/lookup contract and test it first; update the workflow/doc
 Evidence:
 Implemented the shared method, Plate routing, helper and generated ledger. The index maps 388 members (including all 85 canonical capability names) into 35 semantic scopes, preserves 14 historical records and links 855 filename-discovered candidate plans. Every scope has a question, reasoned preliminary payoff, current owner/consumer/proof entry points and independent states. Five compiled decisions reconcile the most material recent iterations. Candidate links are routing context, not completed reviews.
 
-Named local installation updated only Best API Review in skills-lock.json. Dotai validation and pnpm install passed; 12 installed skill/reference mirrors matched their owners. Documentation verification resolved 1,035 local targets and the five current-decision history links. Final checks passed: 388 members over 3518 current source/config/proof files, 35 scopes and 14 preserved records; all 15 helper tests; scoped lint; 1035 local Markdown targets; and 12 source/mirror comparisons. The [verification receipt](artifacts/review-history-implementation/verification.json) records commands, scope and SHA-256 fingerprints. Build caches, declarations and temporary proof copies are excluded; root and benchmark command manifests are included.
+Named local installation updated only Verdict in skills-lock.json. Dotai validation and pnpm install passed; 12 installed skill/reference mirrors matched their owners. Documentation verification resolved 1,035 local targets and the five current-decision history links. Final checks passed: 388 members over 3518 current source/config/proof files, 35 scopes and 14 preserved records; all 15 helper tests; scoped lint; 1035 local Markdown targets; and 12 source/mirror comparisons. The [verification receipt](artifacts/review-history-implementation/verification.json) records commands, scope and SHA-256 fingerprints. Build caches, declarations and temporary proof copies are excluded; root and benchmark command manifests are included.
 
 Open risks:
 The repository changes concurrently. A passing record/hash check proves source identity, not product correctness. Historical coverage must be labeled when it cannot be replayed within this documentation task.
 
 Next action:
-Complete. Use the ledger for the next explicitly selected feature review. Suggested named downstream add/sync: Best API Review from local Dotai to better-convex, plate and informed-fe-v3; those configured destinations were inspected and remain unchanged.
+Complete. Use the ledger for the next explicitly selected feature review. Suggested named downstream add/sync: Verdict from local Dotai to better-convex, plate and informed-fe-v3; those configured destinations were inspected and remain unchanged.
 
 
 Agent Native Reviewer action map:
@@ -70,7 +70,7 @@ This is the parent agent’s source/tool audit, not an independent model review.
 
 | Action | Route and source owner | Evidence | Status |
 | --- | --- | --- | --- |
-| Repeat an architecture review | AGENTS → Task Best API Review adapter → shared Best API Review | Same-model and new-model repeat fixtures reuse identical source while preserving separate records; source and 12 mirrors match | pass |
+| Repeat an architecture review | AGENTS → Task Verdict adapter → shared Verdict | Same-model and new-model repeat fixtures reuse identical source while preserving separate records; source and 12 mirrors match | pass |
 | Review a proposed feature | Add a semantic scope with current comparison dependencies; `draft` and `record` | Proposed-scope fixture captures real comparator inputs without inventing feature members | pass |
 | Locate prior investigations | `lookup` and `research`; existing research index and raw TSV owners | Real Comments history, authored lookup and exact structural-diff lead lookup; rejected rows and original headers preserved | pass |
 | Preserve uncertain or malformed evidence | Historical records and raw-cell warnings | Unknown past provenance stays unknown; malformed June row cannot yield a shifted status | pass |

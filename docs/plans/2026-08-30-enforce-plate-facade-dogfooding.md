@@ -147,7 +147,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | complete | Resolve every readiness condition | Exact bridge inventory, adoption, doctrine, strict packed proof, and correction review are complete. |
 | Fresh source evidence | complete | Recheck decision-changing current claims | Parser-backed source audit checks all 823 production source files; the final package matrix checks packed artifacts. |
-| Best API review | complete | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted target completes the exhaustive facade with `platejs/testing` and deletes package-wide/test-wide raw-import authority. |
+| Verdict | complete | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted target completes the exhaustive facade with `platejs/testing` and deletes package-wide/test-wide raw-import authority. |
 | Conditional risk and adoption | complete | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Vision/agent doctrine updated; browser, registry, public docs, and issue provenance do not apply to this structural package boundary. |
 | Verification recorded | complete | Record fresh planning proof and exact execution gates | Focused package checks and the final strict 80-subpath packed matrix are recorded below. |
 | Handoff prepared | complete | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff below records the additive public testing subpath, no breaking change, proof, and no known remaining risk. |

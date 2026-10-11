@@ -167,7 +167,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Complete closure proof | Descriptor-child scan is zero; final source-first, runtime, declaration, docs, registry, and browser gates pass. |
 | Fresh source evidence | yes | Recheck exact current owners and absence scans | Core graph owners, Code Block owners, registry composition, doctrine, docs, and release prose were reread after implementation. |
-| Best API review | yes | Reject or repair P0/P1 findings | PASS: no P0/P1 findings; the normal path has one relationship and ordinary optional composition. |
+| Verdict | yes | Reject or repair P0/P1 findings | PASS: no P0/P1 findings; the normal path has one relationship and ordinary optional composition. |
 | Conditional risk and adoption | yes | Complete docs, release, browser, type, and runtime proof | EN/CN docs, Changesets, generated skill, 19 source-first package checks, 222 tests, and the live demo pass. |
 | Verification recorded | yes | Record exact final commands and browser result | Exact commands and route signals are recorded below. |
 | Handoff prepared | yes | Record exact ownership, breaks, proof, and residual risk | Source-frozen ownership, hard cuts, proof, and root-lint caveat are recorded below. |

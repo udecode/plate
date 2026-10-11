@@ -338,7 +338,7 @@ editor.plugin(ImagePlugin).update.insert({
 ### `UploadPlugin`
 
 管理持久化媒体草稿位和编辑器上传任务。`platejs/upload` 中的
-`BaseUploadPlugin` 拥有无 React 的相同状态机；React 插件增加可选的原生 DOM 拖放适配器。
+`BaseUploadPlugin` 拥有无 React 的相同状态机；React 插件还会按区块拖拽的放置规则放置拖入的文件。
 
 <API name="UploadPlugin">
 <APIOptions type="UploadPluginState">
@@ -361,8 +361,8 @@ editor.plugin(ImagePlugin).update.insert({
 </APIOptions>
 </API>
 
-React 版 `UploadPlugin` 还接受 `nativeDrop: boolean`（默认 `false`）。
-启用后，拖入的文件会落在指针所在的边缘，并遵循与[区块拖拽](/docs/dnd)相同的放置规则。被拒绝的拖放不会插入任何内容。
+React 版 `UploadPlugin` 会把拖入的文件放在指针所在区块的边缘，并遵循与[区块拖拽](/docs/dnd)相同的放置规则。被拒绝的拖放不会插入任何内容。
+只安装 `BaseUploadPlugin` 的编辑器会像粘贴一样处理拖入的文件，不经过放置规则和否决。
 
 ## API
 

@@ -97,7 +97,10 @@ only when live source proves the change is type-only or cannot change repeated
 or hot runtime work.
 
 After implementation, rerun the same contract on the final production path and
-source identity, then run the correctness guard. A disposable prototype proves
+source identity, then run the correctness guard. While a fix is still changing,
+check it with one quick pass of the affected rows; the full interleaved protocol
+runs once, on the final tree, and again only when a later change touches the
+measured path or a result misses its budget. A disposable prototype proves
 the design decision only; it never proves the shipped implementation.
 
 ## Comparison Law

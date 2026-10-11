@@ -136,7 +136,7 @@ Paths without a package prefix below are relative to `packages/plitejs/src`.
 | Idle projected-selection source | Always installed | Existing presence hook controls source lifetime | Plite composition | Absent selection produces no paint | Same source factory; activation, clear, reactivation and retirement | Missing first paint or stale range | cut |
 | Empty manager query work | Builds unused inputs | Track version then return while empty | Decoration manager | No source consumes the result | Dynamic registration and active-source contracts | Later source reads stale data | cut |
 | Reads and snapshots | Distinct live and historical lifetimes | Same owners and lifetimes | Core | Both lifetimes serve current jobs | No migration; existing lifecycle proof | Consolidation loses draft or historical semantics | keep |
-| Generic selector store | Existing adapter | No replacement in this plan | React | Its independent cost remains unattributed | Earlier E06 defer remains excluded; Best API Review owns any separate reassessment | Scope expansion without attribution | defer |
+| Generic selector store | Existing adapter | No replacement in this plan | React | Its independent cost remains unattributed | Earlier E06 defer remains excluded; Verdict owns any separate reassessment | Scope expansion without attribution | defer |
 
 The highest-value change removes path enumeration from precise and unrelated
 commit queries. Removing idle decoration demand comes next: it is necessary to

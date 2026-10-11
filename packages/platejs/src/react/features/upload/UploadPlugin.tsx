@@ -5,20 +5,19 @@ import { toReactPlugin } from '../../core';
 const carriesFiles = (dataTransfer: DataTransfer | null) =>
   !!dataTransfer && Array.from(dataTransfer.types).includes('Files');
 
-/** React adapter for upload drafts, with opt-in native file drops. */
-export const UploadPlugin = toReactPlugin(BaseUploadPlugin)
-  .extend({
-    initialState: { nativeDrop: false },
-  })
-  .extend(({ schema: { type }, store }) => {
+/**
+ * React adapter for upload drafts. A file drop lands where the landing rules
+ * admit it, at a block edge under the pointer; a drop no edge admits is
+ * consumed without an upload.
+ */
+export const UploadPlugin = toReactPlugin(BaseUploadPlugin).extend(
+  ({ schema: { type } }) => {
     const fileDropBlock = { children: [{ text: '' }], kind: 'file', type };
 
     return {
       on: {
         dragOver: ({ editor, event }) => {
-          if (!store.get('nativeDrop') || !carriesFiles(event.dataTransfer)) {
-            return undefined;
-          }
+          if (!carriesFiles(event.dataTransfer)) return undefined;
 
           const target = editor.api.dom.resolveDropTarget(event, {
             files: fileDropBlock,
@@ -31,9 +30,7 @@ export const UploadPlugin = toReactPlugin(BaseUploadPlugin)
           return true;
         },
         drop: ({ editor, event }) => {
-          if (!store.get('nativeDrop') || !carriesFiles(event.dataTransfer)) {
-            return undefined;
-          }
+          if (!carriesFiles(event.dataTransfer)) return undefined;
 
           const target = editor.api.dom.resolveDropTarget(event, {
             files: fileDropBlock,
@@ -57,6 +54,7 @@ export const UploadPlugin = toReactPlugin(BaseUploadPlugin)
         },
       },
     };
-  });
+  }
+);
 
 export type UploadDefinition = DefinitionOf<typeof UploadPlugin>;

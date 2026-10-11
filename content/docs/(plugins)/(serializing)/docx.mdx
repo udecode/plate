@@ -155,6 +155,10 @@ Supported Word insertions, deletions, moves, run property changes, and paragraph
 
 If a revision cannot map to the installed schema, the importer keeps the Word-visible proposed content and reports the loss in `diagnostics`.
 
+### Import list numbering
+
+Numbered and bulleted Word paragraphs become list items, and each item joins the list of its Word numbering definition. Word counts every instance of a definition in one sequence per level. A list therefore continues past other paragraphs and across instances, and lists of different definitions that interleave keep their own numbers. A level restarts after a paragraph at the level its `lvlRestart` names or a shallower one, which by default is the level just above it. An instance's start override resets its level once, at the instance's first paragraph at that level. That item imports with the override as `listRestart`, and the items after it count on from it, so an inserted item renumbers the rest the way Word does. Each item's `listLevels` hold its definition's level starts, `lvlRestart` rules and level text, with its instance's format and level text overrides applied. Word ignores a start or `lvlRestart` inside a level override, and so does the import. A paragraph whose instance shows its level as bullets imports as a bulleted item and does not count.
+
 ## Export a DOCX file
 
 `exportDocx` captures the editor once before asynchronous rendering. Pass the visible projection explicitly.
@@ -218,6 +222,10 @@ const result = await exportDocx(editor, {
 ```
 
 Named roots, document metadata, removed link destinations, and other properties DOCX cannot represent are warnings under both policies. An `accepted` export omits a comment whose annotated content that projection excludes, and reports a warning, as Word does when the annotated suggestion is rejected.
+
+### Lists
+
+Each Plate list becomes one Word list. Its `listLevels` give the list's level starts, `lvlRestart` rules and level text. An item with `listRestart`, or one whose number Word would not reach, gets a numbering instance of its own that overrides that level's start, as Word's Restart Numbering writes it. The items after it count on from it in the list's own instance. Word and a re-import then show the numbers the editor shows, and the restart stays on that item. Word draws one marker style per list level, so an item whose `listStyle` differs from the first item at its level keeps that first style and reports a `list-marker` warning under both policies. A Word list level is numbered or bulleted, as its first item is, and the exporter writes one set of level rules per list. An item of the other kind at its level is therefore not part of its list in Word, and an item whose `listLevels` differ from its list's first item takes that item's rules. Each reports a `list-structure` warning, and `lossPolicy: 'reject'` fails the export. Word has no start that applies only when an item opens its level, so an item with `listStart` exports its shown number and reports a `list-start` warning under both policies.
 
 ### Links and images
 

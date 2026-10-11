@@ -388,7 +388,7 @@ and verification plan (`c70bacbd4a:docs/plans/2026-09-11-core-review-groups.md`)
   and both performance iterations without promoting historical proof.
 - Added append-only review records, fingerprint-aware lookup and cross-run
   TSV search. Unknown historical models/source versions remain unknown.
-- Connected Best API Review, Plite Research, Research Wiki and Editor Audit
+- Connected Verdict, Plite Research, Research Wiki and Editor Audit
   through their owned sources. Repeated reviews reconsider the design without
   a special flag or an automatic external discovery run.
 - Added current editor-behavior navigation while retaining the historical

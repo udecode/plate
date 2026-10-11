@@ -9,7 +9,7 @@ Plate's lifecycle runs as project playbooks on top of pstack's, so a plain reque
 
 ## Scope
 
-In: five playbooks in `.agents/playbooks/`, the `task`, `patch` and `autoclosure` aliases, lifecycle moved out of `architecture` and `best-api-review`, `review-ledger.mjs next` and `status`, `callSites` on Pursue records, the doctrine-bump warning, the entry-point docs, and the pin bump to pstack v0.9.54.
+In: five playbooks in `.agents/playbooks/`, the `task`, `patch` and `autoclosure` aliases, lifecycle moved out of `architecture` and `verdict`, `review-ledger.mjs next` and `status`, `callSites` on Pursue records, the doctrine-bump warning, the entry-point docs, and the pin bump to pstack v0.9.54.
 
 ## Decisions
 

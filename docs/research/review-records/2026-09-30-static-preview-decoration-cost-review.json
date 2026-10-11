@@ -5,7 +5,7 @@
   "date": "2026-09-30",
   "question": "Which schema and renderer contracts should HTML ingress and static output share, and which interactive dependencies can be removed?",
   "model": "Claude Opus 5.5",
-  "method": "best-api-review/history-v3; redesign-from-first-principles; measured cost comparison",
+  "method": "verdict/history-v3; redesign-from-first-principles; measured cost comparison",
   "trigger": "The 2026-09-29 static-document execution left decoration reads at 21-58% of React time at 50 KB on S5 snapshot w, and left per-block decoration caching, which would need a declaration for document-reading sources, to its own decision. The user asked whether the proposed next steps (decoration read cost, per-block caching, the flaky schema benchmark, foreign-document placement and HTML leftovers) were the right target and what was missing.",
   "requirements": [
     "A streamed preview costs work in proportion to what changed and stays equal to a fresh render.",
@@ -70,7 +70,7 @@
       "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
       "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
       "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
-      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/skills/verdict/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
       ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
       "packages/platejs/src/static/components/PlateStatic.tsx": "57608045c0036398969839545981aed18f663404d8b8801b33353890d3f8db9e",
       "packages/platejs/src/static/components/PlateStatic.reuse-oracle.spec.tsx": "826c31b9ec2746c7596b4c13820207fc853dbbacddc59a249ce552f461eb0023",

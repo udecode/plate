@@ -433,6 +433,22 @@ const listItemFixtures: Record<string, Value> = {
       type: 'codeBlock',
     },
   ],
+  'a list with level rules': [
+    {
+      children: [{ text: 'a' }],
+      indent: 1,
+      listLevels: { '2': { start: 3 } },
+      listType: 'numbered',
+      type: 'paragraph',
+    },
+    {
+      children: [{ text: 'b' }],
+      indent: 2,
+      listLevels: { '2': { start: 3 } },
+      listType: 'numbered',
+      type: 'paragraph',
+    },
+  ],
   'code block in a list': [
     {
       children: [{ text: 'const a = 1;\n' }],

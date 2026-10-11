@@ -1,4 +1,5 @@
 import { type Element, PLUGINS } from '../../../core';
+import { getDocumentListOrdinal } from '../../../features/list/lib/listIndex.internal';
 import { failInvariant } from '../../internal/failInvariant';
 import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
 import { setMarkdownStructureKeys } from '../internal/markdownMappings';
@@ -12,6 +13,8 @@ import { reportOmittedProperties } from './reportOmittedProperties';
 const LIST_KEYS: ReadonlySet<string> = new Set([
   'checked',
   'indent',
+  'listId',
+  'listLevels',
   'listRestart',
   'listStart',
   'listStyle',
@@ -21,10 +24,31 @@ const LIST_KEYS: ReadonlySet<string> = new Set([
 type SerializableListElement = Element & {
   checked?: boolean;
   indent?: number;
+  listId?: string;
   listRestart?: number;
   listStart?: number;
   listStyle?: string;
   listType: string;
+};
+
+// An ordered Markdown list starts at the number its first item shows, so a
+// list split by other blocks or interleaved with another keeps its numbers.
+const getListStart = (
+  node: SerializableListElement,
+  options: SerializeMdContext
+) => {
+  if (node.listType !== 'numbered') return undefined;
+
+  const start =
+    getDocumentListOrdinal(
+      options.document,
+      options.modelLocation(node)?.root ?? 'main',
+      node
+    ) ??
+    node.listRestart ??
+    node.listStart;
+
+  return start === 1 ? undefined : start;
 };
 
 export const getSerializableListStyle = (
@@ -53,6 +77,8 @@ const representedListProperties = (
   if (!task || (paragraph && typeof node.checked === 'boolean')) {
     represented.add('listType');
   }
+  // Markdown groups an item with its list; the id itself is not written.
+  represented.add('listId');
   if (task && paragraph) represented.add('checked');
   if ((node.indent ?? 1) === depth + 1) represented.add('indent');
   if (getSerializableListStyle(node) === undefined) {
@@ -60,8 +86,10 @@ const representedListProperties = (
   }
   // The first item of an ordered list writes its number as the list start.
   if (first && list.ordered) {
-    if (node.listRestart !== undefined) represented.add('listRestart');
-    if (node.listRestart === undefined || node.listRestart === node.listStart) {
+    const start = list.start ?? 1;
+
+    if (node.listRestart === start) represented.add('listRestart');
+    if (node.listStart === undefined || node.listStart === start) {
       represented.add('listStart');
     }
   }
@@ -84,7 +112,7 @@ export const listToMdastTree = (
     children: [],
     ordered: nodes[0].listType === 'numbered',
     spread: options.spread ?? false,
-    start: nodes[0].listRestart ?? nodes[0].listStart,
+    start: getListStart(nodes[0], options),
     type: 'list',
   };
 
@@ -94,6 +122,7 @@ export const listToMdastTree = (
     indent: number;
     list: MdList;
     parent: MdListItem | null;
+    listId: SerializableListElement['listId'];
     listStyle: SerializableListElement['listStyle'];
     listType: SerializableListElement['listType'];
   }> = [
@@ -101,6 +130,7 @@ export const listToMdastTree = (
       depth: 0,
       indent: nodes[0].indent ?? 1,
       list: root,
+      listId: nodes[0].listId,
       parent: null,
       listStyle: getSerializableListStyle(nodes[0]),
       listType: nodes[0].listType,
@@ -131,7 +161,8 @@ export const listToMdastTree = (
       stackTop.list.children.length > 0;
     const hasSameIndentBoundary =
       stackTop.indent === currentIndent &&
-      (stackTop.listType !== node.listType ||
+      (stackTop.listId !== node.listId ||
+        stackTop.listType !== node.listType ||
         stackTop.listStyle !== getSerializableListStyle(node) ||
         hasExplicitRestart) &&
       !!stackTop.parent;
@@ -142,7 +173,7 @@ export const listToMdastTree = (
         children: [],
         ordered: node.listType === 'numbered',
         spread: options.spread ?? false,
-        start: node.listRestart ?? node.listStart,
+        start: getListStart(node, options),
         type: 'list',
       };
 
@@ -155,6 +186,7 @@ export const listToMdastTree = (
         depth: stackTop.depth,
         indent: currentIndent,
         list: siblingList,
+        listId: node.listId,
         parent: stackTop.parent,
         listStyle: getSerializableListStyle(node),
         listType: node.listType,
@@ -232,7 +264,7 @@ export const listToMdastTree = (
         children: [],
         ordered: nextNode.listType === 'numbered',
         spread: options.spread ?? false,
-        start: nextNode.listRestart ?? nextNode.listStart,
+        start: getListStart(nextNode, options),
         type: 'list',
       };
 
@@ -244,6 +276,7 @@ export const listToMdastTree = (
         depth: stackTop.depth + 1,
         indent: nextNode.indent ?? 1,
         list: nestedList,
+        listId: nextNode.listId,
         parent: listItem,
         listStyle: getSerializableListStyle(nextNode),
         listType: nextNode.listType,

@@ -5,7 +5,7 @@
   "date": "2026-09-17",
   "question": "What owns table topology, cell coordinates, selection, clipboard and layout?",
   "model": "GPT-6 / Codex",
-  "method": "Best API Review; Redesign from First Principles; Benchmark three-lane owner comparison; production adoption and native closure",
+  "method": "Verdict; Redesign from First Principles; Benchmark three-lane owner comparison; production adoption and native closure",
   "trigger": "Execute the revalidated table host-delivery benchmark, select the least-general passing owner, adopt it completely, and perform a harsh final omission audit.",
   "requirements": [
     "Keep table geometry, span closure, exact sparse cells, row/table projection and held native ranges in Plate while using the mounted view host lifetime.",
@@ -48,7 +48,7 @@
   "source": {
     "files": {
       ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec",
-      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/skills/verdict/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
       "apps/www/package.json": "dedd5e93b76023363430b12bb4e9a46d05ab1f71a5ad2f25878967c8058fce90",
       "apps/www/playwright.config.ts": "a205a2ae686426226a8e49bf5f5a4bdb81accc8dc495ac38ca568f4ebaa252bf",
       "apps/www/scripts/run-table-perf.mts": "5dc9b0bc90c9e113bdea89e45312c3151d2f45343544865f9eefc3719361af98",

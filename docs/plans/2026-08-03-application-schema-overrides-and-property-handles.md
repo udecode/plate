@@ -184,7 +184,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every architecture and adoption choice | Decision ledger and seven slices have one verdict and binary exits. |
 | Fresh source evidence | yes | Recheck decision-changing live owners | Current source inventory and exact owner reads are recorded under Verification evidence. |
-| Best API review | yes | Resolve all P0/P1 shape questions | Identity, handles, override scope, property-key rejection, and normal/advanced paths are final. |
+| Verdict | yes | Resolve all P0/P1 shape questions | Identity, handles, override scope, property-key rejection, and normal/advanced paths are final. |
 | Conditional risk and adoption | yes | Cover type depth, runtime remap, migration, docs, registry, browser, and doctrine | Each has an owner and proof row below. |
 | Verification recorded | yes | Record planning proof and exact execution gates | Planning commands and execution commands are listed below. |
 | Handoff prepared | yes | State ownership, breaks, order, proof, and risks | Final handoff section is complete. |

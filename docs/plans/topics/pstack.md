@@ -1,6 +1,6 @@
 # Plate on pstack
 
-Page: https://claude.ai/artifact/559ZPtXQdgX6DHwS5vacmj
+Page: https://claude.ai/artifact/LFHiwSeDHVK1okqGjtnZY6
 
 plate-2's agent workflow before pstack (git `HEAD` before 2026-09-30) and now. Every plan below is one iteration of this subject.
 
@@ -151,8 +151,8 @@ Every command typed before pstack, each on the same line as what replaces it tod
 The v2 loop: next item, review, plan and build.
 
 ```text before
-$best-api-review            pick the next item
-$best-api-review <scope>    judge an API
+$verdict            pick the next item
+$verdict <scope>    judge an API
 $wait-what                  before/after snippets
 $task plan <goal>
 $plate-plan <question>
@@ -374,7 +374,7 @@ architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 - **Plate's lifecycle is project playbooks on pstack's.** Plan, Build, Bug fix, Refactoring, Perf issue, Babysit and API review extend pstack playbooks with anchored changes; a pstack upgrade that rewords an anchored step fails loudly, and a step that contradicts the block is replaced, not added to.
 - **Fewer skills, each with one owner.** `research` absorbed editor audits and test harvests, `maintainer` issue drafting, `plate-plugins` feature delivery, the Plan playbook's architecture reference the hard cut, the registry law and Plate Review's audit; failed-fix recovery lives only in the Bug fix playbook.
 - **Law lives in Vision once.** `VISION.md`, `docs/vision/**` and `docs/editor-behavior/**` hold every durable Plate and Plite rule, and a skill links to its rule instead of restating it. Before a rule left a skill, an obligation inventory quoted its new home, and a coverage check found an inventory row for every removed line. The doctrine fingerprint rows and the P1 autoreview gate are gone; the block's Review rule replaces them.
-- **best-api is the Plate API lens, and best-api-review its entry.** best-api's `design`, `review`, `audit` and `repair` modes keep their jobs in about 100 lines. `review` ranks findings on the architecture reference's one P0 to P3 scale, and `repair` first checks the correction against live source and Vision, then edits the one Vision owner and every example, recipe, check and doc that still teaches the rejected shape. best-api-review is a 22-line entry into the API review playbook, which owns ledger intake, the history reconcile and the record.
+- **best-api is the Plate API lens, and verdict its entry.** best-api's `design`, `review`, `audit` and `repair` modes keep their jobs in about 100 lines. `review` ranks findings on the architecture reference's one P0 to P3 scale, and `repair` first checks the correction against live source and Vision, then edits the one Vision owner and every example, recipe, check and doc that still teaches the rejected shape. verdict is a 22-line entry into the Verdict playbook, which owns ledger intake, the history reconcile and the record.
 - **plate-next has no registry.** `plate-next <package>` is a read-only Refactoring audit with the Plate v2 lens over a manifest of every file `git ls-files` lists. `plate-next sync [package]` repairs each package's findings, records one `verification` execution per plan, and finishes when the plan has no unchecked or deferred row. A doctrine change no longer marks a package stale.
 - **One of each.** One whole-scope review (the Refactoring playbook with the architecture reference's Audit), one P0 to P3 scale, one doctrine repair path, one gitcrawl home in issue-harvester and one public evidence packet in maintainer. `test-audit` prunes existing tests, and `verify testing audit` looks for important behavior with no test.
 - **Checks enforce what skill text used to say.** `check-package-kit-exports.mjs` fails a package that exports a `*Kit` array, `check-plate-feature.mjs` keeps only the feature surface inventory, the benchmark and regression validators take `plite` and `plate` layer labels, and `check-package-declaration-brands.mjs` rejects `InternalBaseEditorWithInstalledPlugins` in public declarations outside one known `platejs/math` leak. The rule and playbook files went from 19,445 lines to 10,533 on 2026-10-05.
@@ -398,6 +398,7 @@ architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 - **Drift from pstack is audited, and the copies are cut.** `node skills/sync-pstack/scripts/audit.mjs <project>` in dotai lists each skill's typed uses, routes and stale copies, and the sentences that repeat pstack or the block; sync-pstack's Audit mode hands the report to an interrogate panel. Typed counts include only what a person wrote. Every block rule carries an overrides note or an adds marker, and `verify` flags one with neither.
 - **What pstack covers is gone.** dotai cut autogoal and gpt-pro; Ellie cut improve, its prototype rule, next-dev-loop, two process docs and nine vendor skills; plate-2 retired sync-vision, folded plate-architecture into `.agents/playbooks/references/architecture.md`, dropped maintainer's heartbeat and the feature pack's process copies, and uninstalled four vendor skills.
 - **Reviews have no round cap.** The block follows pstack, which limits no rounds: a round reruns after an applied critical fix and stops when no critical finding remains or each is dismissed. A design changed for a reason other than a review's findings is reviewed again before its first behavior edit, so nothing waits for an "another round" word.
+- **Agents load only what every task needs.** `AGENTS.md` is 32 KB, down from 111 KB. Code rules and the rules table live in `CODING_STANDARDS.md`, which the Code pointer sends agents to before they plan or make a code change. The shared block keeps the rules every task needs plus one pointer per process, and `sync-pstack` renders eight rule files into `.agents/pstack/rules/` from its `RULE_FILES` table. A `pushBranches` setting replaces Plate's prose push grants, and `pnpm lint:task` lints a task's own files with the flags `pnpm check` uses.
 
 ## Open work
 
@@ -431,7 +432,7 @@ architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 - The 11 audits in `docs/editor-audits/index.json` point at 112 ledger paths under the git-ignored `docs/plans/artifacts/`; new audits go to `docs/editor-audits/`, and the old ledgers have not moved. owner: Ziad, tracked here.
 - The v259 history types export from `plitejs` but not from the `platejs` root, so `docs/vision/plite.md` names only the `plitejs` entrypoint. owner: Ziad, tracked here.
 - `plate-next sync`'s completion check is instruction text that no trial or control has exercised. owner: Ziad, tracked here.
-- A typed `best-api review <surface>` routes into the API review playbook in both runtimes and both trees, which continues into planning on Pursue; decide whether it should stop at best-api's own review verdict. owner: Ziad, tracked here.
+- A typed `best-api review <surface>` routes into the Verdict playbook in both runtimes and both trees, which continues into planning on Pursue; decide whether it should stop at best-api's own review verdict. owner: Ziad, tracked here.
 - Another session's open plan, `docs/plans/2026-10-05-history-sync-replay-result.md`, cites `node .agents/rules/plate-next/scripts/version.mjs validate` as a checked proof and `best-api.mdc`'s replay rule as evidence; this build deleted the script and moved the rule to `docs/vision/plate.md` and `docs/vision/plite.md`. owner: Ziad, tracked here.
 - No guard stops an `rm` on a variable or relative path, which this run did twice; a Claude Code PreToolUse hook could refuse it (a settings change that needs your word). owner: Ziad, tracked here.
 - Two pushed lessons show in one runtime each: Claude's skills-cut walkthrough omits the frozen quotes and independent reader, and Codex loads no sync-pstack when asked for paired trials, so it never sees the cited-rubric rule. owner: Ziad, tracked here.
@@ -453,3 +454,14 @@ architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 - Ellie's shared checkout holds another session's uncommitted `AGENTS.md` edit outside the block, so its next pull of `38da0d918` merges with it. owner: Ziad. stop: that checkout pulls `next`. Tracked here.
 - A subject page led by an older open iteration hides a newer executed one, so `docs/plans/2026-10-07-cut-review-cap.md` does not show on this page while `docs/plans/2026-10-05-plate-beside-pstack.md` stays open. owner: Ziad. stop: the renderer lists executed iterations newer than the leader, or that plan closes. Tracked here.
 - The first real review loop without a round cap, the pagination build of 2026-10-06, ran 2 plan rounds and 7 diff rounds. 5 diff rounds applied critical findings, and 4 of those were in the previous round's fix (`docs/plans/2026-10-06-pagination-review.decisions.tsv`, panel rows). `docs/plans/2026-10-07-pagination-reflect-lessons.md` takes a mechanism out of the loop once a replacement draws a critical finding. owner: Ziad; stop: the next build with three or more diff rounds shows whether that bound holds, or 2026-11-07; tracked here.
+- Ellie still needs dotai `21e5354` and `d29c329`. Another session's uncommitted edit to Ellie's `AGENTS.md` blocks a clean push. owner: Ziad. stop: that edit lands, then sync Ellie and push its `next`.
+- Two of two revised how-it-works trials failed the explorer-and-check item the baseline passed. The cause is unknown; the Extraction rule is byte-identical in both, which does not rule out an effect of the restructuring. owner: Ziad. stop: a rerun at three or more runs per side shows parity or names the cause.
+- The trials could not reach three of R7's gates: a panel's seat launch, a plan written to `docs/plans` with its page, and a real PR repair. owner: Ziad. stop: a trial with edits allowed in a throwaway checkout runs them, or you drop them.
+- Ellie has no smoke of the new pointers. owner: Ziad. stop: `sync-pstack smoke` on Ellie after its next sync.
+- Codex's use of the new pointers is unproven. owner: Ziad. stop: a Codex transcript shows it opening `CODING_STANDARDS.md` before a code plan, or you drop the item.
+- The Codex `project_doc_max_bytes` sentence. owner: Ziad. stop: every managed project's rendered `AGENTS.md` is at most 32,768 bytes, then drop the sentence from the block.
+- Two new rule-file paths have no test, so they are unverified parts of R5: the refusal diff for an edited rule file, and removing a rule file whose section becomes skipped. owner: Ziad. stop: a test for each lands in dotai, or you drop them.
+- Deferred refactors from the code-quality review: one shared drift path for the block and files, removing a renamed rule file, splitting the template engine out of `sync-pstack.mjs`, and the audit's placeholder shingling. owner: Ziad. stop: you take or drop each.
+- Smoke conflicts that predate this change: a fork PR's push remote, a stacked PR's target against "a PR targets `next`", editing another person's PR body, and the unattended-run triggers. owner: Ziad. stop: you take or drop each.
+- The panel rule moved as is, at 15 KB. owner: Ziad. stop: you say "rewrite panel" or drop it.
+- The CI workflow test hits EMFILE in its bun preload here. owner: Ziad. stop: it runs on a machine without that limit, or you drop it.

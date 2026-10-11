@@ -5,7 +5,7 @@
   "date": "2026-10-01",
   "question": "Which native drag owner and UI policies should block dragging and drop indicators reuse?",
   "model": "claude-opus-5-5",
-  "method": "best-api-review/history-v3",
+  "method": "verdict/history-v3",
   "trigger": "The user accepted the harsh review of the DnD audit and asked to interrogate the plan: the audit's Plite-owned transfer target, four amendments (fix data-loss defects first, delete React DnD by default, keep DndPlugin only if DndKit installation needs it, keep reproductions as committed tests) and the working-tree fix diff for the defects. Fix and review authority only; the user owns commits.",
   "requirements": [
     "A drag never loses content. A move removes its source only after the whole payload lands; a refused, partial or lossy landing keeps the source.",
@@ -121,8 +121,8 @@
       "docs/vision/common.md": "d4e12fc4b28bd7d6cd077be54853ee8c873e051cf9dcc93a7e6e43fd32347129",
       "package.json": "b8ed87d615e8bc1837713cc590298496aba461a43ee5b3aa54a5913f9c11b72b",
       "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
-      ".agents/skills/best-api-review/SKILL.md": "93d267cefcecbc7c0bd4c1f789f66b349011ef918a74fbfd1946394464bb7207",
-      ".agents/rules/best-api-review.mdc": "de8b58158d422c4cf9d8e7ea9df4d445040ae375c3c7612489fb789b519c1b71"
+      ".agents/skills/verdict/SKILL.md": "93d267cefcecbc7c0bd4c1f789f66b349011ef918a74fbfd1946394464bb7207",
+      ".agents/rules/verdict.mdc": "de8b58158d422c4cf9d8e7ea9df4d445040ae375c3c7612489fb789b519c1b71"
     },
     "directories": {
       "packages/platejs/src/dnd": "da599ff63feb90d98d047e41ccf4a4488c6489b8647c34c1efbcda98c95520a3"

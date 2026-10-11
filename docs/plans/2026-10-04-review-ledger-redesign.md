@@ -29,7 +29,7 @@ The review ledger records what Plate decided about each review question, what wa
 - The ledger is 487 immutable record files, one hand-edited file per scope (67), `review-groups.json`, `review-documents.json` and the write-once `review-legacy.json`. The 835 KB index, `reviews.md` and the 67 generated hubs are gone. Nothing is generated or committed as a view.
 - `review-ledger.mjs` has nine commands. `record` checks only the record and creates its file atomically, so another session's files, inputs or broken state cannot block it.
 - A Pursue closes only when its one standing implementation or workflow execution is completed. Before, 34 of 197 Pursues closed the moment they were recorded.
-- `AGENTS.md`, the best-api-review and research rules, the API review and Build playbooks, `schema.md`, 41 decision pages, about 30 docs and `pageTopic.hub` point at the new files.
+- `AGENTS.md`, the verdict and research rules, the API review and Build playbooks, `schema.md`, 41 decision pages, about 30 docs and `pageTopic.hub` point at the new files.
 
 **Proof.** Evidence paths are relative to `docs/plans/artifacts/2026-10-04-review-ledger-redesign/`, a local copy that git ignores.
 
@@ -91,12 +91,12 @@ The synthesizer rejected 11 findings, among them three duplicates of the new pst
 
 ## Public API
 
-Agents drive the ledger through these commands; the before fences are the procedure in `.agents/rules/best-api-review.mdc` and `.agents/playbooks/build.md` at `fe0e9599a6`.
+Agents drive the ledger through these commands; the before fences are the procedure in `.agents/rules/verdict.mdc` and `.agents/playbooks/build.md` at `fe0e9599a6`.
 
 Recording a review drops the validate, check, render and check ritual.
 
 ```sh before
-# .agents/rules/best-api-review.mdc
+# .agents/rules/verdict.mdc
 node tooling/scripts/review-ledger.mjs draft table > docs/plans/artifacts/table-review.json
 node tooling/scripts/review-ledger.mjs validate docs/plans/artifacts/table-review.json
 node tooling/scripts/review-ledger.mjs check
@@ -106,7 +106,7 @@ node tooling/scripts/review-ledger.mjs check
 ```
 
 ```sh after
-# .agents/rules/best-api-review.mdc
+# .agents/rules/verdict.mdc
 node tooling/scripts/review-ledger.mjs draft table > docs/plans/artifacts/2026-10-06-table-review.json
 node tooling/scripts/review-ledger.mjs record docs/plans/artifacts/2026-10-06-table-review.json --dry-run
 node tooling/scripts/review-ledger.mjs record docs/plans/artifacts/2026-10-06-table-review.json
@@ -131,7 +131,7 @@ node tooling/scripts/review-ledger.mjs record docs/plans/artifacts/<outcome>.jso
 A redraft after moved sources is gone, because `record` no longer refuses on moved sources.
 
 ```sh before
-# .agents/rules/best-api-review.mdc
+# .agents/rules/verdict.mdc
 node tooling/scripts/review-ledger.mjs draft table --from docs/plans/artifacts/table-review.json
 ```
 
@@ -141,7 +141,7 @@ node tooling/scripts/review-ledger.mjs draft table --from docs/plans/artifacts/t
 Mapping another session's new files and re-baselining the inventory is gone; `coverage` reports unowned files and never blocks.
 
 ```sh before
-# .agents/rules/best-api-review.mdc
+# .agents/rules/verdict.mdc
 node tooling/scripts/review-ledger.mjs refresh
 node tooling/scripts/review-ledger.mjs render
 node tooling/scripts/review-ledger.mjs check
@@ -176,7 +176,7 @@ Deleted, with the surviving owner of each job:
 | `docs/research/reviews.md` and `docs/research/features/*.md` (67 hubs, 2.7 MB) | queue and per-scope history views | `status` and `show` print on demand |
 | `render`, `validate`, `queue`, `draft-execution`, `discover`, `--from` | view writing, dry run, queue, execution draft, census, redraft | deleted, `record --dry-run`, `status`, `draft <plan.md>` (front matter or a classified document), `coverage`, deleted |
 | decision page keys `current_review`, `reconciled_executions`, `review_history`, `review_scope` | hand mirrors of ledger state | `lookup` and `show`; page bodies stay |
-| the six files every draft hashed (`VISION.md`, `docs/vision/common.md`, `package.json`, `pnpm-lock.yaml`, the best-api-review skill and rule) | doctrine and method drift | `VISION.md` and `docs/vision/*.md` as a separate law clock; `method` names the method revision |
+| the six files every draft hashed (`VISION.md`, `docs/vision/common.md`, `package.json`, `pnpm-lock.yaml`, the verdict skill and rule) | doctrine and method drift | `VISION.md` and `docs/vision/*.md` as a separate law clock; `method` names the method revision |
 
 Callers that change, found with this grep (80 files before the change on 2026-10-04: 42 decision pages, 3 topic files and 35 others, counting the ledger script, its test and two generated skills; `docs/plans/topics/proof.md` breaks "ledger hub" across a line and is added by hand). After the change it finds one file, `docs/research/review-documents.json`, whose match is a historical rationale string quoting an old link:
 
@@ -184,7 +184,7 @@ Callers that change, found with this grep (80 files before the change on 2026-10
 git grep -l --untracked -E 'review-index\.json|(^|[^-a-z])reviews\.md|research/features/|draft-execution|review-ledger\.mjs (refresh|render|validate|queue|discover)|current_review|reconciled_executions|review_history|review_scope:|feature hub|ledger hub' -- ':!docs/research/review-records' ':(glob,exclude)docs/plans/*.md' ':(glob,exclude)docs/plans/*.tsv' ':!docs/research/history' ':!docs/plite/research' ':!docs/research/features' ':!docs/research/reviews.md' ':!docs/research/review-index.json' ':!docs/research/raw' ':!docs/research/probes' ':!docs/research/log.md' ':!apps/www/public' ':!apps/www/src/registry/changelog'
 ```
 
-- Agent instructions: `AGENTS.md` (Feature review history), `.agents/rules/best-api-review.mdc`, `.agents/rules/research.mdc`, `.agents/playbooks/api-review.md`, `.agents/playbooks/build.md`, then `pnpm install` regenerates `.agents/skills/*`.
+- Agent instructions: `AGENTS.md` (Feature review history), `.agents/rules/verdict.mdc`, `.agents/rules/research.mdc`, `.agents/playbooks/verdict.md`, `.agents/playbooks/build.md`, then `pnpm install` regenerates `.agents/skills/*`.
 - Hooks: `tooling/scripts/autostage-next.mjs` stages new review records but leaves an edited or deleted one unstaged, so `check` keeps reporting it. `.gitignore` ignores the temporary file `record` links from.
 - Config: `.agents/pstack.json` `pageTopic.hub` becomes `docs/research/review-scopes/{topic}.json`. `plan-page.mjs` keeps working unchanged: it checks that the file exists and falls back to the id for a title. Its header labels that path "History"; that label is plan-page's to change in dotai.
 - Docs: `docs/research/schema.md` (Review history), `docs/research/README.md`, `docs/research/index.md`, `docs/research/commands/maintain.md`, `docs/research/systems/README.md`, `docs/research/systems/editor-architecture-landscape.md`, `docs/README.md`, `docs/analysis/best-api-review.md`, `docs/editor-behavior/README.md`, `current-evidence.md`, `editor-protocol-matrix.md`, `markdown-editing-reference-audit.md`, `markdown-parity-matrix.md` and `master-roadmap.md`, `docs/plite/agent-start.md`, `docs/plite/overview.md`, `docs/plite/ledgers/README.md`, `docs/plite/table-fragment-semantics.md`, `docs/plite-browser/overview.md`, `docs/plite-draft/overview.md`, `archive/README.md`, `ledgers/README.md` and `master-roadmap.md`, `docs/performance/README.md`, the two `docs/table` snapshots, the 42 decision pages, and the topic files `autocomplete.md`, `dnd.md`, `proof.md` and `plan-page.md`. Human links go to `docs/research/schema.md#review-history` and `show <scope>`.
@@ -295,7 +295,7 @@ A new review record keeps today's authored fields and replaces `source` with `in
 - **required reconciliation** for a review of `s` with `previous` P: P, every other head of `s`, and every bound execution of `s` that no review of `s` already reconciles (2 on the records of 2026-10-04). Dates play no part, because a record's date is when it was drafted. Every entry needs an action and a reason; a changed verdict cannot `retains` its previous.
 - **execution previous**: an implementation or workflow execution must name in `previous` every execution standing for its basis reviews; `draft <plan.md>` fills it.
 - **freshness(record)**: `stale` when a source input changed, went missing or an upstream moved; `unknown` when there is no captured source, a legacy feature digest exists, or an upstream clone is missing; otherwise `matching`. Law is reported beside it. Directory digests use the old formula over git-listed files in per-segment name order, skipping the old ignored directory names, which reproduces 60 of 63 legacy directory digests.
-- **Legacy reading**: `source.files`, `source.directories` and proof evidence compare as today, except `package.json`, `pnpm-lock.yaml` and the best-api-review skill and rule, which are not compared; `VISION.md` and `docs/vision/*` count as law; `plan.sha256`, `binding` other than `historical-unbound`, and `reconciliation[].question` are ignored. 356 records carry feature digests and so never read `matching`; the count is the number of record files with a non-empty `source.features`.
+- **Legacy reading**: `source.files`, `source.directories` and proof evidence compare as today, except `package.json`, `pnpm-lock.yaml` and the verdict skill and rule, which are not compared; `VISION.md` and `docs/vision/*` count as law; `plan.sha256`, `binding` other than `historical-unbound`, and `reconciliation[].question` are ignored. 356 records carry feature digests and so never read `matching`; the count is the number of record files with a non-empty `source.features`.
 
 ### Commands
 
@@ -328,7 +328,7 @@ Phase 1, preparation in a detached sandbox worktree. It changes nothing in the c
 
 Phase 2, one cutover, built in a sandbox and applied to the checkout as one patch. Revert by reverse-applying that patch, because other sessions edit the same files.
 
-- [x] In a sandbox worktree carrying the current working tree, replace `review-ledger.mjs`, its tests and `autostage-next.mjs`, run the migration, delete the index, `reviews.md` and the hubs, strip the four control keys from the 42 decision pages, repoint every caller the grep lists, rewrite the ledger procedure in `AGENTS.md`, `best-api-review.mdc`, `research.mdc`, `api-review.md` and `build.md`, rewrite `docs/research/schema.md` Review history and the other docs, and repoint `pageTopic.hub`. Proof: the migration report, `check` exits 0, `status` equals the pinned expectation, `lookup table` stays under 15 KB, and the grep returns only history. Done: scratch redesign/wt3 at c10590ab8c; check exit 0, status pinned, lookup table 5.9 KB, caller grep leaves only a historical rationale string in review-documents.json.
+- [x] In a sandbox worktree carrying the current working tree, replace `review-ledger.mjs`, its tests and `autostage-next.mjs`, run the migration, delete the index, `reviews.md` and the hubs, strip the four control keys from the 42 decision pages, repoint every caller the grep lists, rewrite the ledger procedure in `AGENTS.md`, `verdict.mdc`, `research.mdc`, `verdict.md` and `build.md`, rewrite `docs/research/schema.md` Review history and the other docs, and repoint `pageTopic.hub`. Proof: the migration report, `check` exits 0, `status` equals the pinned expectation, `lookup table` stays under 15 KB, and the grep returns only history. Done: scratch redesign/wt3 at c10590ab8c; check exit 0, status pinned, lookup table 5.9 KB, caller grep leaves only a historical rationale string in review-documents.json.
 - [x] Cross-session acceptance in that sandbox. Proof: with another session's untracked source file, a moved input in another scope, a `VISION.md` edit, a half-written and a misshaped foreign record, a foreign dependency cycle, a foreign plan with two Status lines and a deleted document path, `record --dry-run` succeeds for `link` and `status` and `next` still answer; with a stale `previous` it refuses; two concurrent `record` processes on one id leave one file; a deleted staged record stays visible to `check` after the Stop hook runs. Done: scratch redesign/acceptance/acceptance.txt and race.txt in sandbox wt5 (dry-run, status and next exit 0 beside every foreign state; stale previous exit 1; one record file from two racing processes); hook proof in scratch redesign/build/wt2-check-delete-new-*.txt.
 - [x] Fresh-context trials, per `AGENTS.md` Routing, before the patch reaches the checkout. Proof: a fresh session in a sandbox with the old tool and instructions and one in the cutover sandbox each run "next" and record a prepared review draft there; both transcripts are saved, and the new one needs no step the old one did not. Trials record only in sandboxes. Done: scratch redesign/trials/a and trials/b (old arm 72 steps with check failing; new arm 45 steps, no refusal).
 - [x] Copy every file the patch touches to scratch, apply the patch to the checkout, rerun the migration on the real tree, and run `pnpm install`. Proof: the real-tree migration report, `check` exits 0, `status` equals the pinned expectation, `sync-resources.mjs --check` passes, the generated skills carry the new text, and `node .agents/pstack/plan-page.mjs --index` lists the ledger topics. Done: scratch redesign/main-pre-apply (86 files); build/migrate-main.txt, main-check.txt, main-status.txt, main-tests.txt; pnpm install exit 0; sync-resources --check exit 0; plan-page --index lists 4 feature topics and 63 with no page yet.

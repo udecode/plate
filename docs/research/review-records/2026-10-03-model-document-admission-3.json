@@ -5,7 +5,7 @@
   "date": "2026-10-03",
   "question": "What is the smallest schema-valid document and identity contract that all editors and codecs must preserve?",
   "model": "claude-opus-5-5",
-  "method": "best-api-review/history-v3",
+  "method": "verdict/history-v3",
   "trigger": "A second panel round on 2026-10-03-model-document-admission-2 found no critical and nine warnings. Its Plate probe passed an option createEditor ignores. Plate construction, the root-bound view and reconfigure migrate hide the caller's raw object from the checks it placed. Sharing Plite's envelope reader would close the historical migration input it kept open. Its source bindings missed files its evidence read. This review corrects the target and its evidence.",
   "requirements": [
     "Preserve one schema-valid immutable JSON document model with primary children, optional object metadata and named-root maps.",
@@ -149,8 +149,8 @@
       "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
       "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
       "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
-      ".agents/skills/best-api-review/SKILL.md": "dfd33f5c1c1a8245fc9decb786cb698fd2dcf3e8fe0aeedb3bdb49c38bbd73d5",
-      ".agents/rules/best-api-review.mdc": "30961f7006a8d5cdf63a9e2b6ffd09c629fa089983e1381e1ec3282233ef4b3b"
+      ".agents/skills/verdict/SKILL.md": "dfd33f5c1c1a8245fc9decb786cb698fd2dcf3e8fe0aeedb3bdb49c38bbd73d5",
+      ".agents/rules/verdict.mdc": "30961f7006a8d5cdf63a9e2b6ffd09c629fa089983e1381e1ec3282233ef4b3b"
     },
     "directories": {
       "packages/platejs/src/lib/editor": "5cec268e810dde503e00fe7f035c5a70a71cb5b16b9a490d5958cbde830ddba3"

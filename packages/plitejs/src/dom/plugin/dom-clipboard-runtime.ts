@@ -22,6 +22,7 @@ import {
   getActiveCommandEditor,
 } from '../../core/command-registry';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
+import { importContentSlice } from '../../core/import-content-slice';
 import { getInstalledPlugin } from '../../core/plugin';
 import {
   getSelection as getEditorSelection,
@@ -727,7 +728,9 @@ export const readDOMFragmentData = <V extends Value>(
       // Headless host adapters use the ambient decoder.
     }
 
-    return decodeClipboardSlice(fragment.value, window);
+    const slice = decodeClipboardSlice<V>(fragment.value, window);
+
+    return slice ? importContentSlice(editor, slice) : null;
   }
 
   return null;
@@ -750,9 +753,10 @@ export const readDOMClipboardSlice = <V extends Value>(
     // Headless host adapters use the ambient decoder.
   }
 
-  const slice = payload.value
+  const decoded = payload.value
     ? decodeClipboardSlice<V>(payload.value, window)
     : null;
+  const slice = decoded ? importContentSlice(editor, decoded) : null;
 
   return slice
     ? Object.freeze({ kind: 'slice', slice })

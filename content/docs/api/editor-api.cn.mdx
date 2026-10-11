@@ -99,6 +99,19 @@ const selectedBlocks = editor.read.nodes.blocks();
 `nodes.block(options?)` 读取最近的 schema 块。`nodes.blocks(options?)` 读取
 所有相关 schema 块，并默认使用当前选区，包括精确节点选区。
 
+某个能力把节点留在文档中却不算作内容时，例如待定建议删除的文本，
+`nodes.isContent(node)` 对它返回 `false`。没有这样的能力时，每个节点都是内容。
+根据元素子节点推导值的代码跳过这些节点，并仍然按每个子节点的真实路径写入：
+
+```ts
+editor.update((tx) => {
+  tx.nodes.children(groupPath).forEach((column, index) => {
+    if (!tx.nodes.isContent(column)) return;
+    tx.nodes.set({ width: "50%" }, { at: [...groupPath, index] });
+  });
+});
+```
+
 ## 选区查询
 
 选区检查使用明确的方法，不使用布尔查询标志。

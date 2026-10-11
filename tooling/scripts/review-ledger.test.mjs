@@ -124,7 +124,7 @@ function plan(
   );
   put(
     path,
-    `---\n${keys.join('\n')}\n---\n\n# Plan\n\nThe lead paragraph.\n\nStatus: ${state}\nPlaybook: api-review\n\n## Public API\n\nCurrent and proposed call sites.\n\n## Close\n\nLanded with fixture proof${inputs ? ` in ${inputs.join(', ')}` : ''}.\n\n## Evidence\n\nModel: fixture-model\n\nRead [the evidence](../evidence.md).\n\n${reconciled.join('\n')}\n\n### Requirements\n\n- Keep one owner.\n\n### Lanes\n\n- Keep the owner.\n- Delete the owner.\n`
+    `---\n${keys.join('\n')}\n---\n\n# Plan\n\nThe lead paragraph.\n\nStatus: ${state}\nPlaybook: verdict\n\n## Public API\n\nCurrent and proposed call sites.\n\n## Close\n\nLanded with fixture proof${inputs ? ` in ${inputs.join(', ')}` : ''}.\n\n## Evidence\n\nModel: fixture-model\n\nRead [the evidence](../evidence.md).\n\n${reconciled.join('\n')}\n\n### Requirements\n\n- Keep one owner.\n\n### Lanes\n\n- Keep the owner.\n- Delete the owner.\n`
   );
 }
 
@@ -970,6 +970,53 @@ test('check fails on a review_inputs path that no tree or commit holds', (t) => 
     () => check(root),
     /review_inputs path docs\/proof\/gone\.md is in no tree or commit/
   );
+});
+
+test('check fails on a review_inputs path that only an ignored file holds', (t) => {
+  const { root, put, git, commit } = fixture(t);
+  put('.gitignore', 'docs/plans/artifacts/\n');
+  commit();
+  put('docs/plans/artifacts/run/probe-a1.log', 'exit=0\n');
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'pursue',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
+  plan(put, 'docs/plans/2026-09-02-comments.md', {
+    scopes: ['comments'],
+    basis: ['2026-09-01-comments'],
+    state: 'building',
+    commit: headOf(git),
+    inputs: ['docs/plans/artifacts/run/probe-a1.log'],
+  });
+
+  assert.throws(
+    () => check(root),
+    /review_inputs path docs\/plans\/artifacts\/run\/probe-a1\.log is git-ignored, so a fresh checkout lacks it/
+  );
+});
+
+test('check accepts a review_inputs file the author has not committed yet', (t) => {
+  const { root, put, git } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'pursue',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
+  put('docs/proof/new.md', 'Passed.');
+  plan(put, 'docs/plans/2026-09-02-comments.md', {
+    scopes: ['comments'],
+    basis: ['2026-09-01-comments'],
+    state: 'building',
+    commit: headOf(git),
+    inputs: ['docs/proof/new.md'],
+  });
+
+  assert.equal(check(root).ok, true);
 });
 
 test('check fails on a misspelled review front-matter key', (t) => {

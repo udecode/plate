@@ -53,7 +53,7 @@ this interaction in the exercise.
 
 # Baseline review results
 
-Date: 2026-09-18. Method: supplied Best API Review baseline skill and Plate adapter. Reviewer: Codex; exact model identifier unavailable in this exercise. Evidence consists exclusively of the supplied case facts. Review IDs below are local to each case.
+Date: 2026-09-18. Method: supplied Verdict baseline skill and Plate adapter. Reviewer: Codex; exact model identifier unavailable in this exercise. Evidence consists exclusively of the supplied case facts. Review IDs below are local to each case.
 
 ## 1. Unchanged Table
 
@@ -102,7 +102,7 @@ Date: 2026-09-18. Method: supplied Best API Review baseline skill and Plate adap
 
 # Candidate review exercises
 
-Method: supplied candidate Best API Review and Plate adapter. Evidence: only `cases.md`; no repository inspection, external research, or runtime replay. These are review artifacts, not records inserted into the repository ledger. Historical model identity and source paths beyond the supplied record IDs are unknown.
+Method: supplied candidate Verdict and Plate adapter. Evidence: only `cases.md`; no repository inspection, external research, or runtime replay. These are review artifacts, not records inserted into the repository ledger. Historical model identity and source paths beyond the supplied record IDs are unknown.
 
 ## 1. Unchanged Table — Stop
 
@@ -418,7 +418,7 @@ was corrected during the review. The current schema requires scope/basis
 agreement with the plan, matching the helper; this is not an open finding.
 
 No other actionable defect was identified in the bounded action chain.
-Installed Best API Review is byte-identical to Dotai; the project lock names
+Installed Verdict is byte-identical to Dotai; the project lock names
 that local source and the Claude destination resolves to the same installation.
 Task adapter/workflow resource mirrors are exact. Both generated layer-plan
 skills resolve the feature-history closure reference. The four changed primary
@@ -491,6 +491,6 @@ older plan.
 
 Shared-source verification: Dotai `scripts/validate-skills`,
 `python3 scripts/check-pstack-preservation.py`, and workflow manifest build/check
-pass. Named Best API Review installation matches Dotai; current-project
+pass. Named Verdict installation matches Dotai; current-project
 `pnpm install` regenerated rule mirrors and resource sync reports exact. No
 global destination, other project, product runtime or publication is claimed.

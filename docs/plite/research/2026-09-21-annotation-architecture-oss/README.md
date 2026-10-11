@@ -44,7 +44,7 @@ matched performance benchmark currently proves the proposed runtime shape.
 
 ## Expected promotion owner
 
-Best API Review for the value verdict, then Task design plan with Plite Plan and
+Verdict for the value verdict, then Task design plan with Plite Plan and
 Benchmark for accepted substrate, adoption, and scale proof.
 
 ## Exclusions

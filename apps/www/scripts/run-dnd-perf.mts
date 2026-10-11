@@ -1,4 +1,5 @@
 import { writeFile } from 'node:fs/promises';
+import { loadavg } from 'node:os';
 
 import { chromium } from '@playwright/test';
 
@@ -21,9 +22,45 @@ const getArg = (name: string) => {
   return index === -1 ? undefined : process.argv[index + 1];
 };
 
-const RESTING = JSON.stringify(getArg('rest') ?? 'Block 5');
+const CELLS = process.argv.includes('--cells');
+const RESTING = JSON.stringify(
+  getArg('rest') ?? (CELLS ? 'Cell 2' : 'Block 5')
+);
+const FIRST = JSON.stringify(CELLS ? 'Cell 1' : 'Block 5');
+const SECOND = JSON.stringify(CELLS ? 'Cell 3' : 'Block 7');
 const STRIP = process.argv.includes('--strip');
 const SCROLL = process.argv.includes('--scroll');
+const BLOCKS = Number(getArg('blocks') ?? 1000);
+const FILES = Number(getArg('files') ?? 0);
+const REFUSE = process.argv.includes('--refuse');
+
+// Negative controls for the file lane: each breaks one fact its readback
+// checks (upload claims, block count, moving line), so the run must fail.
+const CONTROL_NO_UPLOAD = process.argv.includes('--control-no-upload');
+const CONTROL_PAGE_BLOCKS = Number(getArg('control-page-blocks') ?? BLOCKS);
+const CONTROL_STILL_MOVING = process.argv.includes('--control-still-moving');
+
+if (FILES > 0 && (STRIP || SCROLL)) {
+  console.error(
+    '--files measures its own pointer path; drop --strip and --scroll'
+  );
+  process.exit(2);
+}
+if (
+  FILES === 0 &&
+  (CONTROL_NO_UPLOAD || CONTROL_PAGE_BLOCKS !== BLOCKS || CONTROL_STILL_MOVING)
+) {
+  console.error('the --control-* flags check the file lane; add --files');
+  process.exit(2);
+}
+// A busy loop on file dragovers, planted to prove the budget lines catch a slowdown.
+const PLANT = Number(getArg('plant') ?? 0);
+
+const PLANTED_DELAY = `window.addEventListener('dragover', (event) => {
+  if (!event.dataTransfer || !Array.from(event.dataTransfer.types).includes('Files')) return;
+  const end = performance.now() + ${PLANT};
+  while (performance.now() < end) {}
+}, true);`;
 
 const LISTENER_COUNTER = `(() => {
   const types = ${JSON.stringify(DRAG_TYPES)};
@@ -95,8 +132,8 @@ const MEASURE = `(async () => {
     handle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0, ...handlePoint }));
     drag('dragstart', handle, handlePoint);
   });
-  const first = blockElement('Block 5');
-  const second = blockElement('Block 7');
+  const first = blockElement(${FIRST});
+  const second = blockElement(${SECOND});
   const resting = blockElement(${RESTING});
   const restingRect = resting.getBoundingClientRect();
   const restAt = ${STRIP}
@@ -153,6 +190,86 @@ const MEASURE = `(async () => {
   return { drop, indicator, moving, order, preview, scroll, still, teardown };
 })()`;
 
+// The file lane hovers without dropping, so no upload starts.
+const MEASURE_FILES = `(async () => {
+  const samples = ${SAMPLES};
+  const flush = () => new Promise((resolve) => {
+    const channel = new MessageChannel();
+    channel.port1.onmessage = () => {
+      const second = new MessageChannel();
+      second.port1.onmessage = () => resolve();
+      second.port2.postMessage(null);
+    };
+    channel.port2.postMessage(null);
+  });
+  const time = async (dispatch) => {
+    const start = performance.now();
+    dispatch();
+    await flush();
+    return performance.now() - start;
+  };
+  const blockElement = (text) =>
+    [...document.querySelectorAll('[data-editor-node="element"]')].find(
+      (element) => element.textContent === text
+    );
+  const data = new DataTransfer();
+  for (let index = 0; index < ${FILES}; index++) {
+    data.items.add(new File([new Uint8Array([137, 80, 78, 71])], 'drop-' + index + '.png', { type: 'image/png' }));
+  }
+  const at = (element, fraction) => {
+    const rect = element.getBoundingClientRect();
+    return { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height * fraction };
+  };
+  let dragovers = 0;
+  let claimed = 0;
+  const drag = (type, target, point) => {
+    const proceeded = target.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer: data, ...point }));
+    if (type === 'dragover') {
+      dragovers++;
+      if (!proceeded) claimed++;
+    }
+  };
+  const first = blockElement(${FIRST});
+  const second = blockElement(${SECOND});
+  const resting = blockElement(${RESTING});
+  const blockCount = [...document.querySelectorAll('[data-editor-node="element"]')].filter(
+    (element) => /^Block \\d+$/.test(element.textContent)
+  ).length;
+  const inColumn = [first, second, resting].map((element) => !!element && !!element.closest('.editor-column'));
+  const restAt = at(resting, 0.75);
+  const pointAt = (target, fraction) =>
+    ${CONTROL_STILL_MOVING} ? [resting, restAt] : [target, at(target, fraction)];
+  const settle = async () => {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await flush();
+  };
+  drag('dragenter', resting, restAt);
+  const still = [];
+  for (let index = 0; index < samples; index++) {
+    still.push(await time(() => drag('dragover', resting, restAt)));
+  }
+  await settle();
+  const indicator =
+    document.querySelector('[data-drop-indicator]')?.getAttribute('data-drop-indicator') ?? null;
+  const moving = [];
+  for (let index = 0; index < samples; index++) {
+    const [target, point] = pointAt(index % 2 === 0 ? first : second, index % 4 < 2 ? 0.25 : 0.75);
+    moving.push(await time(() => drag('dragover', target, point)));
+  }
+  // Untimed proof that the moving lane moves the line: its four positions must
+  // each draw a distinct line, or none under --refuse.
+  const landings = [];
+  for (const [element, fraction] of [[first, 0.25], [first, 0.75], [second, 0.25], [second, 0.75]]) {
+    const [target, point] = pointAt(element, fraction);
+    drag('dragover', target, point);
+    await settle();
+    const line = document.querySelector('[data-drop-indicator]');
+    landings.push(line ? line.getAttribute('data-drop-indicator') + ' ' + line.style.transform : null);
+  }
+  drag('dragleave', resting, restAt);
+  return { blockCount, claimed, dragovers, inColumn, indicator, landings, moving, still };
+})()`;
+
 const percentile = (samples: readonly number[], value: number) => {
   const sorted = [...samples].sort((left, right) => left - right);
 
@@ -168,17 +285,30 @@ const summarize = (samples: readonly number[]) => ({
 });
 
 const url = getArg('url') ?? 'http://localhost:3297';
-const blocks = Number(getArg('blocks') ?? 1000);
 const out = getArg('out');
+const query = [
+  `blocks=${CONTROL_PAGE_BLOCKS}`,
+  ...(process.argv.includes('--columns') ? ['columns'] : []),
+  ...(FILES > 0 && !CONTROL_NO_UPLOAD ? ['upload'] : []),
+  ...(REFUSE ? ['refuse'] : []),
+].join('&');
+const loadBefore = loadavg();
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { height: 900, width: 1280 } });
+// Each lane runs in its own page, so one lane's drag cannot shape the next.
+const openPage = async () => {
+  const opened = await browser.newPage({
+    viewport: { height: 900, width: 1280 },
+  });
 
-await page.addInitScript(LISTENER_COUNTER);
-await page.goto(
-  `${url}/dev/dnd-perf?blocks=${blocks}${process.argv.includes('--columns') ? '&columns' : ''}`
-);
-await page.getByText('Block 3', { exact: true }).waitFor();
-await page.waitForTimeout(500);
+  await opened.addInitScript(LISTENER_COUNTER);
+  if (PLANT > 0) await opened.addInitScript(PLANTED_DELAY);
+  await opened.goto(`${url}/dev/dnd-perf?${query}`);
+  await opened.getByText('Block 3', { exact: true }).waitFor();
+  await opened.waitForTimeout(500);
+
+  return opened;
+};
+const page = await openPage();
 
 const rest = await page.evaluate(COUNT_LISTENERS);
 
@@ -207,10 +337,72 @@ const timings = (await page.evaluate(MEASURE)) as {
   still: number[];
   teardown: number;
 };
+
+await page.close();
+
+const measureFiles = async () => {
+  const filePage = await openPage();
+  const measured = (await filePage.evaluate(MEASURE_FILES)) as {
+    blockCount: number;
+    claimed: number;
+    dragovers: number;
+    inColumn: boolean[];
+    indicator: string | null;
+    landings: Array<string | null>;
+    moving: number[];
+    still: number[];
+  };
+
+  await filePage.close();
+
+  return {
+    ...measured,
+    count: FILES,
+    moving: summarize(measured.moving),
+    plant: PLANT,
+    refuse: REFUSE,
+    still: summarize(measured.still),
+  };
+};
+const files = FILES > 0 ? await measureFiles() : null;
+
+await browser.close();
+
+// Timings from a page that does not match the flags measure another cohort,
+// so the run exits before it reports them.
+if (files) {
+  const expectedIndicator = REFUSE ? null : 'y';
+  const drawn = files.landings.filter(Boolean);
+  const landingsMatch = REFUSE
+    ? drawn.length === 0
+    : drawn.length === files.landings.length &&
+      new Set(drawn).size === files.landings.length;
+  const mismatches = [
+    files.blockCount !== BLOCKS &&
+      `the page rendered ${files.blockCount} blocks, not ${BLOCKS}`,
+    files.claimed !== files.dragovers &&
+      `the upload handler claimed ${files.claimed} of ${files.dragovers} file dragovers`,
+    files.indicator !== expectedIndicator &&
+      `still indicator ${files.indicator} is not ${expectedIndicator}`,
+    !landingsMatch &&
+      `landings ${files.landings.join(' | ')} are not ${REFUSE ? 'empty' : 'four distinct lines'}`,
+    !files.inColumn.every((inColumn) => inColumn === CELLS) &&
+      `column membership ${files.inColumn.join(',')} is not ${CELLS}`,
+  ].filter(Boolean);
+
+  if (mismatches.length > 0) {
+    console.error(`cohort readback failed: ${mismatches.join('; ')}`);
+    process.exit(1);
+  }
+}
+
 const result = {
-  blocks,
+  blocks: BLOCKS,
+  cells: CELLS,
   columns: process.argv.includes('--columns'),
+  files,
   indicator: timings.indicator,
+  load: { after: loadavg(), before: loadBefore },
   rest: JSON.parse(RESTING),
   strip: STRIP,
   listeners: { activated, rest },
@@ -232,4 +424,3 @@ const result = {
 
 console.log(JSON.stringify(result));
 if (out) await writeFile(out, `${JSON.stringify(result, null, 2)}\n`);
-await browser.close();

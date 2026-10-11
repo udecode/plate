@@ -1363,7 +1363,7 @@
     "mode": "Research only; source and test inspection",
     "reserved_for_lead": [
       "Local Plite/Plate comparison",
-      "Final Best API Review verdict"
+      "Final Verdict verdict"
     ],
     "only_written_file": "docs/plite/research/2026-09-17-table-substrate-ownership/shards/lexical.json",
     "stop_reason": "Decision-relevant ownership evidenced; no implementation, plan, doctrine, common-ledger change, or new goal."

@@ -161,26 +161,36 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
             );
           }
 
-          const firstSummaryIndex = node.children.findIndex((child) =>
+          // A child a pending suggestion deletes is not content, so the first
+          // content child is where the summary belongs.
+          const content = node.children.flatMap((child, index) =>
+            tx.nodes.isContent(child) ? [{ child, index }] : []
+          );
+          const firstIndex = content[0]?.index ?? node.children.length;
+          const summary = content.find(({ child }) =>
             ElementApi.isElementType(child, summaryType)
           );
 
-          if (firstSummaryIndex === -1) {
+          if (!summary) {
             tx.nodes.insert(
               { children: [{ text: '' }], type: summaryType },
-              { at: path.concat(0) }
+              { at: path.concat(firstIndex) }
             );
-          } else if (firstSummaryIndex !== 0) {
+          } else if (summary.index !== firstIndex) {
             tx.nodes.move({
-              at: path.concat(firstSummaryIndex),
-              to: path.concat(0),
+              at: path.concat(summary.index),
+              to: path.concat(firstIndex),
             });
           }
 
+          let first = true;
+
           tx.nodes.children(path).forEach((child, index) => {
-            if (index > 0 && ElementApi.isElementType(child, summaryType)) {
+            if (!tx.nodes.isContent(child)) return;
+            if (!first && ElementApi.isElementType(child, summaryType)) {
               tx.nodes.set({ type: paragraphType }, { at: path.concat(index) });
             }
+            first = false;
           });
         },
       },

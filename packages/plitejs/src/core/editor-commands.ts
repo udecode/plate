@@ -382,7 +382,14 @@ const fillDefaultRootChild = (
     toPublicRoot(root),
     index
   );
-  const textNode = marks ? { ...marks, text } : { text };
+  // New text drops the properties the schema drops on copy, such as review
+  // marks of the text it replaces.
+  const textNode = marks
+    ? state.schema.copy(
+        { ...marks, text },
+        { at: [index], root: toPublicRoot(root) }
+      )
+    : { text };
 
   if (!defaultChild) return null;
   if (NodeApi.isText(defaultChild)) return textNode;

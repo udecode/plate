@@ -5,8 +5,8 @@
   "date": "2026-09-24",
   "question": "What does each export format promise, and should DOM raster capture, static HTML and document codecs share anything beyond a menu?",
   "model": "Claude Opus 5.5 (claude-opus-5-5[1m]) / Claude Code",
-  "method": "best-api-review/history-v3; audit mode; redesign-from-first-principles; source probe",
-  "trigger": "User invoked /best-api-review audit exports; first review of the unassessed exports scope.",
+  "method": "verdict/history-v3; audit mode; redesign-from-first-principles; source probe",
+  "trigger": "User invoked /verdict audit exports; first review of the unassessed exports scope.",
   "requirements": [
     "One export action must produce the document projection the user chose or can see; it must not silently mix accepted, proposed and markup content across formats.",
     "Accepted roots stay the canonical document; accepted, proposed and markup are exact view projections (docs/vision/plite.md). Pending authored changes must not become another saved document.",
@@ -75,7 +75,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
       "pnpm-lock.yaml": "77bf6f360dc7b3199b947dc167649fbc39007b81b4f9bd5364660757e7d4a703",
-      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/skills/verdict/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
       ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d"
     },
     "directories": {},

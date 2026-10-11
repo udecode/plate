@@ -186,7 +186,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Execute every accepted slice and close every proof row | All original slices and the accepted DnD/Table/AI closure packet pass |
 | Fresh source evidence | yes | Recheck decision-changing current claims before edits and at final audit | Final source, stale-symbol, generated-output, and diff audits are recorded below |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | The accepted hard cut is implemented; the final P1 review reports no actionable finding |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding | The accepted hard cut is implemented; the final P1 review reports no actionable finding |
 | Conditional risk and adoption | yes | Complete runtime, history, collaboration, named-root, clipboard, docs, registry, doctrine, and browser gates | All assigned runtime, package, docs, registry, doctrine, and Browser rows pass |
 | Verification recorded | yes | Replace planning baselines with fresh implementation proof | Fresh focused, strict, Browser, generation, and audit evidence is recorded below |
 | Handoff prepared | yes | Record final ownership, breaks, proof, risks, and changed files | Current handoff records final ownership, hard breaks, green proof, and no open implementation blocker |

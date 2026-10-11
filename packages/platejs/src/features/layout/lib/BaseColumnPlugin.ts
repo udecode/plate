@@ -155,20 +155,32 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
 
 export type ColumnElement = ElementOf<typeof BaseColumnItemPlugin>;
 
-const widthsOf = (group: Element, columnType: string) => {
-  const columns = group.children.filter(
-    (column): column is ColumnElement =>
-      ElementApi.isElementType(column, columnType) &&
-      typeof column.width === 'string'
-  );
+/**
+ * A group's content columns with their real indexes and parsed widths, or null
+ * when a content child is not a sized column. A column a pending suggestion
+ * deletes is not content, so it keeps its width out of every sum.
+ */
+const columnsOf = (
+  group: Element,
+  columnType: string,
+  isContent: (node: Node) => boolean
+) => {
+  const columns: Array<{ index: number; width: number }> = [];
 
-  return columns.length === group.children.length
-    ? columns.map((column) => {
-        const parsed = Number.parseFloat(column.width);
+  for (const [index, column] of group.children.entries()) {
+    if (!isContent(column)) continue;
+    if (
+      !ElementApi.isElementType(column, columnType) ||
+      typeof column.width !== 'string'
+    ) {
+      return null;
+    }
+    const parsed = Number.parseFloat(column.width);
 
-        return Number.isNaN(parsed) ? 0 : parsed;
-      })
-    : null;
+    columns.push({ index, width: Number.isNaN(parsed) ? 0 : parsed });
+  }
+
+  return columns;
 };
 
 export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
@@ -193,30 +205,33 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
       correct({ editor: innerEditor, entry: [node, path], tx }) {
         if (!ElementApi.isElement(node)) return;
 
-        const widths = widthsOf(
+        const columns = columnsOf(
           node,
-          innerEditor.plugin(BaseColumnItemPlugin).schema.type
+          innerEditor.plugin(BaseColumnItemPlugin).schema.type,
+          tx.nodes.isContent
         );
 
-        if (!widths) return;
+        if (!columns?.length) return;
 
-        const sum = widths.reduce((total, width) => total + width, 0);
+        const sum = columns.reduce((total, { width }) => total + width, 0);
 
         if (Math.abs(sum - 100) < 1e-6) return;
 
         // An inserted column makes a group over-full; scaling keeps every
         // column's share, where the additive repair can push one below zero.
         const resize = (width: number) =>
-          sum > 100 ? (width * 100) / sum : width + (100 - sum) / widths.length;
+          sum > 100
+            ? (width * 100) / sum
+            : width + (100 - sum) / columns.length;
 
-        widths.forEach((width, index) => {
+        for (const { index, width } of columns) {
           tx.nodes.set(
             { width: `${resize(width)}%` },
             {
               at: path.concat([index]),
             }
           );
-        });
+        }
       },
     },
   ],
@@ -266,13 +281,17 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
           state.nodes.get(columnPath)?.[0],
           columnType
         ) ||
-        group.children.length >= 5
+        group.children.filter(state.nodes.isContent).length >= 5
       ) {
         return next();
       }
 
       const index = columnPath.at(-1) as number;
-      const facing = group.children[end ? index + 1 : index - 1];
+      const facing = (
+        end
+          ? group.children.slice(index + 1)
+          : group.children.slice(0, index).reverse()
+      ).find(state.nodes.isContent);
       const onlyTradesPlaces =
         ElementApi.isElement(facing) &&
         facing.children.length === payload.nodes.length &&
@@ -280,16 +299,18 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
 
       if (onlyTradesPlaces) return next();
 
-      const widths = widthsOf(group, columnType);
+      const columns = columnsOf(group, columnType, state.nodes.isContent);
 
-      if (!widths?.every((width) => width > 0)) return next();
+      if (!columns?.length || !columns.every(({ width }) => width > 0)) {
+        return next();
+      }
 
       return {
         ancestor: 1,
         edge: end ? ('after' as const) : ('before' as const),
         payload: [],
         shell: column(
-          `${widths.reduce((total, width) => total + width, 0) / widths.length}%`
+          `${columns.reduce((total, { width }) => total + width, 0) / columns.length}%`
         ),
       };
     }),
@@ -311,19 +332,28 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
       if (!columnGroup) return;
 
       const [{ children }, path] = columnGroup;
-      const columnChildren = children.filter((child): child is Element =>
-        ElementApi.isElement(child)
+
+      if (!children.every((child) => ElementApi.isElement(child))) return;
+
+      // A column a pending suggestion deletes keeps its place and its width.
+      const live = children.flatMap((column, index) =>
+        ElementApi.isElement(column) && tx.nodes.isContent(column)
+          ? [{ column, index }]
+          : []
       );
-
-      if (columnChildren.length !== children.length) return;
-
-      const currentCount = children.length;
+      const setWidths = (indexes: readonly number[]) => {
+        indexes.forEach((index, position) => {
+          tx.nodes.set(
+            { width: nextWidths[position] },
+            { at: path.concat([index]) }
+          );
+        });
+      };
+      const currentCount = live.length;
       const targetCount = nextWidths.length;
 
       if (currentCount === targetCount) {
-        nextWidths.forEach((width, index) => {
-          tx.nodes.set({ width }, { at: path.concat([index]) });
-        });
+        setWidths(live.map(({ index }) => index));
 
         return;
       }
@@ -340,35 +370,33 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
             type: columnType,
             width: nextWidths[currentCount + index] || `${100 / targetCount}%`,
           })),
-          { at: path.concat([currentCount]) }
+          { at: path.concat([children.length]) }
         );
 
-        nextWidths.forEach((width, index) => {
-          tx.nodes.set({ width }, { at: path.concat([index]) });
-        });
+        setWidths([
+          ...live.map(({ index }) => index),
+          ...Array.from(
+            { length: targetCount - currentCount },
+            (_, offset) => children.length + offset
+          ),
+        ]);
 
         return;
       }
 
-      const keepColumnIndex = targetCount - 1;
-      const keepColumnPath = path.concat([keepColumnIndex]);
-
-      if (!tx.nodes.get(keepColumnPath)) return;
+      const kept = live.slice(0, targetCount);
+      const keepColumnPath = path.concat([kept[targetCount - 1].index]);
 
       tx.nodes.replaceChildren(
-        columnChildren
-          .slice(keepColumnIndex)
-          .flatMap((column) => column.children),
+        live.slice(targetCount - 1).flatMap(({ column }) => column.children),
         { at: keepColumnPath }
       );
 
-      for (let index = currentCount - 1; index > keepColumnIndex; index--) {
+      for (const { index } of live.slice(targetCount).reverse()) {
         tx.nodes.remove({ at: path.concat([index]) });
       }
 
-      nextWidths.forEach((width, index) => {
-        tx.nodes.set({ width }, { at: path.concat([index]) });
-      });
+      setWidths(kept.map(({ index }) => index));
     };
     const insertColumnGroup = (
       { columns = 2 }: { columns?: number } = {},

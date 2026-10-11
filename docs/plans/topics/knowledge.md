@@ -17,7 +17,7 @@ The state on 2026-10-06, from eight read-only audits (`docs/plans/2026-10-06-kno
 | Harvested tests | `docs/editor-test-harvester/<repo>` | typed `research harvest` only | research harvest |
 | Measurements | `benchmarks/targets`, `benchmarks/editor`, plans with Cause History, git-ignored `tmp/` | the benchmark rule and the Perf issue playbook | benchmark runners |
 | Lessons | `docs/research/sources/plate-notes`, 60 waiting `c70bacbd4a:docs/solutions` notes | Bug fix and Perf issue playbooks | none after the 2026-10-06 compile |
-| Verdicts and adoption | `docs/research/review-scopes`, `review-records`, review pages in plan front matter | the review ledger in API review, Plan and Build | API review playbook |
+| Verdicts and adoption | `docs/research/review-scopes`, `review-records`, review pages in plan front matter | the review ledger in API review, Plan and Build | Verdict playbook |
 | Current conclusions | ledger head, `docs/research/decisions/<scope>.md` and `docs/plans/topics/<subject>.md` all claim it | lookup, plan pages | API review, plan fold |
 | Plans and trails | 2,148 plans and 43 decision logs in `docs/plans` | plan-page, review ledger | Plan, Build and other playbooks |
 | Run evidence | `docs/research/probes` (committed), `docs/plans/artifacts` (ignored), `docs/plite/research` runs | records and plans by path | ad hoc |

@@ -1,0 +1,88 @@
+# Coding standards
+
+Read this file in full before you write, review or deslop any source, test or tooling file. `AGENTS.md` holds the workflow; this file holds the code rules and what enforces each one.
+
+## TypeScript and inference
+
+- Type inference is mandatory for Plate/Plite callback APIs. Do not add explicit callback parameter annotations like `(tx: EditorUpdateTransaction)` to silence TypeScript when the API should infer them; fix the owning generic/API type instead. `plate/no-annotated-inferred-callback` rejects them on editor reads, updates, transactions and selector hooks; other callback APIs stay a judgment call. Explicit annotations are only acceptable at exported public signatures or true external boundary adapters. pstack's `typescript-best-practices` does not override this law. Neither it nor `pstack:principle-type-system-discipline` decides duration types here: a plain number admits a negative duration, so validate a duration at its boundary and brand it, and a typed escape hatch stays only with a specific reason and a deletion gate.
+- These TypeScript bans also override `pstack:typescript-best-practices`. Plate and Plite source never repairs inference with `satisfies` on a builder result, a local helper or `Pick` type alias, or `Parameters<typeof fn>` plumbing; fix the owning API type so the call site stays inferred. A local whose initializer infers its type takes no annotation; only empty arrays, deliberate narrowing or widening, exported signatures and external boundary callbacks are annotated. Production source never uses `any`; a deliberate local test escape is the only exception. No `unknown` cast or structural guard hides a missing typed Plite or Plate API; repair the owning API type instead.
+- Prefer inline when used once; extract constants only when reused.
+
+## Components
+
+- Inline local component prop types at the signature. Keep named prop types for real cross-file or published contracts; `docs/vision/plate.md` owns the convention and `plate-ui` applies it. Apply it during implementation and review, without a dedicated lint gate.
+
+## Comments and JSDoc
+
+- JSDoc must be first-class for agents. The `no-comments` pass keeps public JSDoc and the intentional `@ts-expect-error` assertions that prove invalid public calls are rejected. It also keeps a non-obvious reason in our own code until an authorized, verified structural change makes it redundant, and a constraint comment whose type, test or lint encoding is not authorized stays in place with the missing encoding reported. A comment whose claim is still ambiguous or unverified after the check stays in place as an open finding; the `no-comments` and comment-sicko rule to delete on doubt does not apply.
+
+## Tests
+
+- Before writing or changing a test, invoke the `verify` skill and read the shared Tests rule in `.agents/pstack/rules/tests.md` and `verify`'s [testing reference](.agents/rules/verify/references/testing.md); it holds Plate's test shape, runners, type-test and assertion rules. Beyond the pstack block's Tests rule, do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior. The block's `.skip` ban does not cover a runtime capability gate, a skip that runs only when the browser, platform or engine lacks what the test needs; an unconditional `.skip` or `.only` stays banned.
+- Write a throwaway probe as a scratch script run from the package directory with its `[test]` preloads passed as `--preload`, as `verify`'s command recipes say, and importing by absolute path, never as a `*.spec.*` file in the repository, where the Stop hook stages it. A probe that needs a DOM and runs without a preload that registers one registers it before it loads React or the code under test, as `verify`'s command recipes describe.
+- A test that proves a rule of `docs/editor-behavior/markdown-editing-spec.md` ends its title with the rule's tag, such as `[EDIT-TABLE-TAB-001]`, and `pnpm kb gaps` lists the locked rules that no running test carries. Add a tag only after reading the test's fixture, action and assertions against the rule's scenario, because the tag turns a claim into proof that `pnpm kb gaps` accepts. `pnpm kb <rule ID or issue ref>` joins a rule or issue to the tests tagged with it, and `pnpm kb check` is the `knowledge` step of `pnpm check`.
+
+## Generated output
+
+- Templates: `templates/**` is CI-controlled output. Never manually edit or commit template source, manifests, or lockfiles. Fix the source registry, package, or workflow inputs and let CI regenerate templates. If local verification rewrites template files, restore them before handoff.
+- Barrels: If you change package exports, move public files, add/remove files under exported folders, or CI says `pnpm brl` produced changes, run `pnpm brl` before final verification/commit and include the generated barrel updates.
+- On `next`, run `pnpm --filter www build:registry` when registry source changes or current generated registry output is required for verification, and include its generated registry output. Do not edit generated registry files by hand. Other branches keep registry generation in CI unless the user explicitly authorizes it.
+
+## Lint and format
+
+- Ultracite owns repository formatting and linting through Oxfmt and Oxlint. Run `pnpm lint:fix` at the root or the owning package's `lint:fix` script. When other sessions have work in the tree, run `pnpm lint:task <files…>` on the task's files instead. It runs `ultracite fix`, `oxfmt`, `ultracite check` and `oxlint --type-aware` on them, says how many of the paths lint ignores, such as `docs/**`, `AGENTS.md`, `.agents/**` and `.claude/**`, and exits 2 when it ignores them all. A lint-clean claim covers only the files it linted.
+- Never run Prettier directly on source files covered by Ultracite; the workspace exposes Prettier only as a transitive dependency and has no active Prettier configuration, so its defaults violate repository style.
+
+## Third-party material
+
+- Commit only material permitted under applicable EU copyright law. Copying or adapting third-party code, tests, fixtures or documentation requires a verified license, permission or other valid legal basis, with all applicable conditions satisfied, including notices and source-disclosure obligations. Lawful references, independent implementations and compliant reuse are allowed; omit material whose legal basis remains unresolved.
+
+## Rules and enforcement
+
+This is the rule table `/pstack:correct` keeps. Each code rule below names what enforces it. When the owner corrects a mistake, fix it and add its row. When the mistake of a rule-only row comes back, that is a repeat; fix it at the highest level that works, in the same change, through `/pstack:correct`. Drop a row once its mistake cannot happen.
+
+Gates are not weakened to get green. Before changing a rule or gate that blocks code, decide whether the rule is stale or the code is defective. Justify the better rule and repair its source before aligning consumers; never silently violate a gate or weaken it just to clear a failure, and never weaken a completion or proof gate because a past run found it annoying. When an expectation conflicts with evidence safety, record the conflict and take the safer option.
+
+`pnpm check` runs `tooling/scripts/check.mjs`, the step list CI runs. `pnpm check <step>` runs one step, and `pnpm generate` runs every step's writer. A rule marked baseline fails on any finding its baseline does not list. `tooling/oxlint/plate-baseline.json` lists the `plate/*` lint findings and `tooling/scripts/plate-schema-adoption-baseline.json` the Plate schema adoption findings, each by rule, file and the trimmed text of the line it flags, so trading a fixed finding for a new one in the same file fails unless both lines read the same. Both run through `tooling/scripts/finding-baseline.mjs`. `pnpm lint:baseline` and `node tooling/scripts/check-plate-schema-adoption.mjs` only drop entries the tree no longer holds. A baseline that lists a finding its base commit's copy does not fails, so a widened rule's new finds are fixed or excepted. The base commit is `HEAD` unless `PLATE_BASELINE_BASE` names another. A run that adds or re-keys a baseline sets it to the run's intake base until the change ships, because an owner's mid-run commit is not a reviewed base.
+
+Prove a new `plate/*` rule on a real past mistake; a hand-written case named after a commit does not count. In a scratch worktree, write `git show <sha>:<old path>` to the file's current path, run `PLATE_LINT_BASELINE=report-all pnpm exec oxlint -c oxlint.config.ts <file>`, require the `plate(<rule>)` diagnostic with the fixed file as the control, and log each command with its exit status.
+
+An exception to a `plate/*` rule goes on the line as `// oxlint-disable-next-line plate/<rule> -- <reason>; expires <YYYY-MM-DD>; approved <name>`. It lasts at most 90 days, and a human approves it before it lands; the rule checks only the format and the dates. A run that needs an unapproved exception leaves it as open work for its owner and keeps going.
+
+| Rule | Enforced by |
+| --- | --- |
+| A green local check means a green CI | `tooling/scripts/check.mjs`; `tooling/scripts/ci-workflow.test.mjs` fails when `ci.yml` runs any other lint, test, typecheck or check command |
+| Every check, test or typecheck script in the root and www `package.json` runs in `pnpm check` or names why it stays manual | `ci-workflow.test.mjs` against `manualOnly` in `check.mjs` |
+| Generated output matches its source | `pnpm check` steps barrels, entrypoint-graph, registry-changelog, bench-report, skill-mirrors and www; fix with `pnpm generate` |
+| Callbacks to editor reads, updates and selector hooks infer their parameters | `plate/no-annotated-inferred-callback` |
+| A hook or `createEditor` exported from a client entrypoint of `plitejs` or `platejs` takes no type parameter only its caller chooses, in the forms `tooling/scripts/check-hook-generics.test.mjs` runs | `pnpm check hook-generics` (baseline) |
+| Source widens a callee instead of casting to `never` | `plate/no-as-never` (baseline) |
+| No `unknown` cast or structural guard hides a missing typed API | rule-only; text in TypeScript and inference, and a `/pstack:correct` sample of the `as unknown as` hits is open work in `docs/plans/topics/correct.md` |
+| No one-off structural `*Editor` type | `plate/no-one-off-editor-type` (baseline) |
+| A rename moves the owner and its callers; no alias, shim or `@deprecated` second name | `plate/no-second-name` (baseline) |
+| Plate source and www reach plitejs through its entrypoints | `no-restricted-imports` for `^plitejs`; `plate/no-relative-plite-source` for relative paths (baseline) |
+| Tests assert behavior, not source text | `plate/no-source-text-test` (baseline) |
+| A test that mocks a Plate module spreads the real module into the mock | `plate/mock-spreads-module` (baseline) |
+| A test outside `*.slow.*` keeps the 5,000 ms deadline | `plate/no-raised-test-timeout` (baseline) |
+| A gate is not weakened to get green | the shrink-only baseline, its base-commit check and `plate/exception-format`; benchmark budget changes are rule-only |
+| A blocking test asserts correctness and work counts; wall-clock and memory budgets run only in a measured run, which alone rewrites tracked results | `pnpm bench:docx` (`BENCH_MEASURE=1`) for the two docx benchmarks; other timed tests are rule-only |
+| New Plate code passes the schema adoption audit | `check:core` runs `check-plate-schema-adoption.mjs --check` (baseline) |
+| A test never regenerates `apps/www/.source`, which other tests read | `tooling/config/bunTestSetup.ts` sets `_FUMADOCS_MDX=1`, which skips fumadocs codegen when a test imports `next.config.ts` |
+| `templates/**` is CI output | rule-only |
+| No `.only` or unconditional `.skip` | rule-only; none in the 2026-10-04 sweep |
+| Docs describe the current state, with no changelog language | rule-only; text in `plate-docs` |
+| A removed or renamed public API leaves no live teaching of its name | `tooling/scripts/teaching-sweep.mjs`, run in `best-api` repair's search step, lists each hit by lifecycle and each English page's Chinese twin; acting on the hits and finding a paraphrase without the name's words are rule-only, and a gate on names the API reference manifest drops is open work in `docs/plans/topics/correct.md` |
+| Local component prop types stay inline | rule-only; the owner declined a lint |
+| A failure is pre-existing only when it fails the same way at `HEAD` in a detached worktree | rule-only; a `decisions-check.mjs` refusal of an unbacked pre-existing claim is open work in `docs/plans/topics/correct.md` |
+| Focus and selection have one owner | rule-only; its architecture plan is open work in `docs/plans/topics/correct.md` |
+| A test fails for its named defect before the fix lands | `tooling/scripts/proof-worktree.mjs --expect-fail` and `.agents/pstack/mutate.mjs`, run as `verify`'s testing reference says; running them is rule-only, and the check that fails a new case passing at the merge base is open work in `docs/plans/topics/correct.md` |
+| A bug closes on the reporter's own gesture | rule-only; the `proof` subject owns the native lane |
+| Per-keystroke work stays bounded as the document grows | for list code, the keystroke cost cases in `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx` count list work for typing, Enter, Backspace, indent and a typed number at 10 and 300 lists; for the authored review tree, `packages/plitejs/test/authored-tree-work.test.ts` counts the review marks that typing in either intent, a bold toggle, an Enter inside a link and a split-link piece removal read at 100 and 2,000 blocks; elsewhere rule-only, and `benchmark` owns a read-counter harness |
+| New code calls the existing owner instead of copying it | rule-only; text in the Review rule of `.agents/pstack/rules/panel.md` |
+| Plite reads hydration through its one `useHydrated` hook, in the forms `tooling/oxlint/plate-plugin.test.mjs` runs | `plate/no-inline-hydration-flag`; other forms are rule-only |
+| Knowledge stores in their known formats parse fully, rule IDs are unique, test tags name a real rule or issue row, and law, research pages, subjects and scope files cite, through inline links and root paths, only what a fresh checkout has, except a subject's Open work line that cites a run directory under `docs/plans/artifacts/` and a probe's JSON capture; another editor's file is cited as `<owner>/<repo>@<commit>:<path>` | `pnpm check knowledge` (K0, K1, K4 and K12; K7 baseline) |
+| A file folded into a home stays as its `docs/research/folded.tsv` row records, and new knowledge goes to its home | `pnpm check knowledge` (K15); a row's own edits are caught once the base commit holds it |
+| A ledger recommendation never offers a scope another session's open plan is working through | `node tooling/scripts/review-ledger.mjs next` skips it and lists it under `inFlight`, and lists the offered scope's uncommitted member files under `uncommitted`; judging those files is rule-only, in `.agents/playbooks/verdict.md` |
+| Decision rows cite real paths and fresh proof | `.agents/pstack/decisions-check.mjs` checks row shape and that each cited run-directory path exists; fresh proof is rule-only and changes in udecode/dotai |
+| A local check sees only what a fresh checkout has | `pnpm check review-ledger` for a plan's `review_inputs` and a review page's links, which count only when git tracks them, lists them untracked and not ignored, or history holds them; elsewhere rule-only, and each www docs mode generates into its own directory (`apps/www/next.config.ts`, `apps/www/next.config.test.ts`), so a production build cannot overwrite the generated docs that tests read |
+| A repeated mistake gets architecture, types, a lint or a test before rule text | this table, kept through `/pstack:correct` |

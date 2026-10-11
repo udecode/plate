@@ -32,6 +32,7 @@ import {
   type CompiledModelBinding,
 } from '../../../internal/plugin/compilePlateModel';
 import {
+  createContentFormatDocument,
   createPluginFormatModelView,
   createPluginFormatOperationContext,
 } from '../../../internal/plugin/pluginFormatOperation';
@@ -1791,6 +1792,8 @@ export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
   'data-editor-natural-width',
   'data-indent',
   'data-language',
+  'data-list-id',
+  'data-list-levels',
   'data-list-restart',
   'data-list-start',
   'data-list-style',
@@ -2917,7 +2920,7 @@ const encodeCompiledHtml = (
   operation: HtmlEncodeOperation
 ) => {
   const reportMappingErrors = operation.reportMappingErrors ?? true;
-  const document = operation.document ?? state.value();
+  const document = operation.document ?? createContentFormatDocument(slice);
   const reportLoss = (path: Path) =>
     operation.onLoss
       ? (loss: HtmlMappingLoss) =>
@@ -2933,9 +2936,10 @@ const encodeCompiledHtml = (
   const encodeNode = (
     node: Descendant,
     parentType: string | null,
-    relativePath: Path
+    modelPath: Path,
+    sourcePath: Path
   ): string => {
-    const path = state.nodes.path(node) ?? relativePath;
+    const path = state.nodes.path(node) ?? sourcePath;
     const onLoss = reportLoss(path);
     const onUnsafe = (removal: HtmlUnsafeRemoval) =>
       operation.onUnsafe(
@@ -2971,7 +2975,7 @@ const encodeCompiledHtml = (
           state,
           parentType,
           document,
-          path,
+          modelPath,
           operation.getFormatContext,
           operation.operationKey,
           onLoss
@@ -3020,7 +3024,9 @@ const encodeCompiledHtml = (
     if (!ElementApi.isElement(node)) return '';
     const encodeChildren = () =>
       node.children
-        .map((child, index) => encodeNode(child, node.type, [...path, index]))
+        .map((child, index) =>
+          encodeNode(child, node.type, [...modelPath, index], [...path, index])
+        )
         .join('');
     const structuralRules = serializerIndex.elementsByType.get(node.type) ?? [];
     let structuralRule: CompiledHtmlRule | undefined;
@@ -3033,7 +3039,7 @@ const encodeCompiledHtml = (
         state,
         parentType,
         document,
-        path,
+        modelPath,
         operation.getFormatContext,
         operation.operationKey,
         onLoss
@@ -3108,7 +3114,7 @@ const encodeCompiledHtml = (
         state,
         parentType,
         document,
-        path,
+        modelPath,
         operation.getFormatContext,
         operation.operationKey,
         onLoss
@@ -3150,7 +3156,7 @@ const encodeCompiledHtml = (
         state,
         parentType,
         document,
-        path,
+        modelPath,
         operation.getFormatContext,
         operation.operationKey,
         onLoss
@@ -3212,7 +3218,7 @@ const encodeCompiledHtml = (
   };
 
   return slice.content
-    .map((node, index) => encodeNode(node, null, [index]))
+    .map((node, index) => encodeNode(node, null, [index], [index]))
     .join('');
 };
 

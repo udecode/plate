@@ -5,13 +5,13 @@ Plate's adopted canonical DOCX import/export contract after its implementation?
 
 Scope: retained-package editing, unknown-part preservation, tracked revisions,
 comment ranges, package resource limits, detached versus editor-bound APIs, and
-proof methods that can change the `documents` Best API Review verdict.
+proof methods that can change the `documents` Verdict verdict.
 
 Stop rule: stop after one mature OOXML SDK and at least two current browser or
 headless DOCX engines have been inspected locally, and every new design lead is
 promoted, merged into an existing lead, or rejected with a reopening condition.
 
-Expected promotion owner: `best-api-review` for the `documents` scope, followed
+Expected promotion owner: `verdict` for the `documents` scope, followed
 by Task for any accepted design work.
 
 Exclusions: DOCX layout/UI parity, Word paste media and table policy, math,

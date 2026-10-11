@@ -15,6 +15,7 @@ import {
 import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
 import { BaseIndentPlugin } from '../../indent';
 import { BaseImagePlugin } from '../../media';
+import { BaseTablePlugin } from '../../table';
 import {
   BaseListPlugin,
   BULLETED_LIST_STYLES,
@@ -25,6 +26,7 @@ import {
   OrderedListRules,
   TaskListRules,
 } from './BaseListPlugin';
+import { getListIndexMetrics } from './listIndex.internal';
 
 const createEditor = (
   options: Omit<CreateEditorOptions, 'plugins'> & {
@@ -57,6 +59,21 @@ const parseHtmlChildren = (
   return result.document.children;
 };
 
+const decodedNumbers = (html: string) => {
+  const children = parseHtmlChildren(
+    createEditor({ selection: undefined }),
+    html
+  );
+  const loaded = createEditor({
+    initialValue: children as never,
+    selection: undefined,
+  });
+
+  return loaded.read
+    .children()
+    .map((_, index) => loaded.read.list.ordinal([index]) ?? null);
+};
+
 describe('BaseListPlugin canonical model', () => {
   it('accepts signed integer starts and rejects fractional ordinals', () => {
     const editor = createEditor();
@@ -81,7 +98,7 @@ describe('BaseListPlugin canonical model', () => {
     );
   });
 
-  it('repairs incompatible persisted list properties', () => {
+  it('repairs incompatible list properties and keeps starts latent', () => {
     const editor = createEditor({
       initialValue: [
         {
@@ -125,23 +142,29 @@ describe('BaseListPlugin canonical model', () => {
       {
         children: [{ text: 'Bulleted' }],
         indent: 1,
+        listId: expect.any(String),
+        listStart: 4,
         listType: 'bulleted',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Numbered' }],
         indent: 1,
+        listId: expect.any(String),
         listRestart: 5,
+        listStart: 4,
         listType: 'numbered',
         type: 'paragraph',
       },
       {
         children: [{ text: 'Task' }],
         indent: 1,
+        listId: expect.any(String),
+        listStart: 2,
         listType: 'task',
         type: 'paragraph',
       },
-      { children: [{ text: 'Plain' }], type: 'paragraph' },
+      { children: [{ text: 'Plain' }], listRestart: 3, type: 'paragraph' },
     ]);
   });
 
@@ -194,6 +217,7 @@ describe('BaseListPlugin canonical model', () => {
       {
         children: [{ text: 'Item' }],
         indent: 1,
+        listId: expect.any(String),
         listType: 'bulleted',
         type: 'paragraph',
       },
@@ -274,10 +298,13 @@ describe('BaseListPlugin canonical model', () => {
       type: ListType.Numbered,
     });
 
+    const id = editor.read.children()[0].listId;
+
     expect(editor.read.children()).toEqual([
       {
         children: [{ text: 'One' }],
         indent: 1,
+        listId: id,
         listStart: 4,
         listType: 'numbered',
         type: 'paragraph',
@@ -285,6 +312,7 @@ describe('BaseListPlugin canonical model', () => {
       {
         children: [{ text: 'Two' }],
         indent: 1,
+        listId: id,
         listType: 'numbered',
         type: 'paragraph',
       },
@@ -345,7 +373,7 @@ describe('BaseListPlugin canonical model', () => {
     });
   });
 
-  it('applies an explicit restart to the selected list boundary', () => {
+  it('restarts numbering at the selected item', () => {
     const editor = createEditor({
       initialValue: ['One', 'Two', 'Three'].map((text) => ({
         children: [{ text }],
@@ -355,18 +383,39 @@ describe('BaseListPlugin canonical model', () => {
       })),
       selection: {
         kind: 'text',
-        anchor: { offset: 0, path: [2, 0] },
-        focus: { offset: 5, path: [2, 0] },
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 3, path: [1, 0] },
       },
     });
 
-    editor.update.list.toggle({
-      listRestart: 7,
-      type: ListType.Numbered,
+    editor.update.list.restart({ start: 7 });
+
+    expect([0, 1, 2].map((index) => editor.read.list.ordinal([index]))).toEqual(
+      [1, 7, 8]
+    );
+  });
+
+  it('continues numbering again after a restart', () => {
+    const editor = createEditor({
+      initialValue: ['One', 'Two', 'Three'].map((text) => ({
+        children: [{ text }],
+        indent: 1,
+        listType: 'numbered' as const,
+        type: 'paragraph',
+      })),
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 3, path: [1, 0] },
+      },
     });
 
-    expect(editor.read.children()[0]).not.toHaveProperty('listRestart');
-    expect(editor.read.children()[2]).toHaveProperty('listRestart', 7);
+    editor.update.list.restart();
+    editor.update.list.continue();
+
+    expect([0, 1, 2].map((index) => editor.read.list.ordinal([index]))).toEqual(
+      [1, 2, 3]
+    );
   });
 
   it('keeps a conditional start latent until the item becomes first', () => {
@@ -489,6 +538,33 @@ describe('BaseListPlugin canonical model', () => {
 
     expect(editor.read.children()[0]).toHaveProperty('listRestart', 4);
     expect(editor.read.children()[1]).not.toHaveProperty('listRestart');
+  });
+
+  it('keeps a new task checked after Enter at the end of a checked task [EDIT-TASK-ENTER-001]', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          checked: true,
+          children: [{ text: 'done' }],
+          indent: 1,
+          listType: 'task',
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+    });
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()[1]).toMatchObject({
+      checked: true,
+      children: [{ text: '' }],
+      listType: 'task',
+    });
   });
 
   it('changes one list sequence without crossing explicit boundaries', () => {
@@ -709,17 +785,17 @@ describe('BaseListPlugin canonical model', () => {
     });
   });
 
-  it('indents and outdents through semantic list fields', () => {
-    const editor = createEditor();
-
-    editor.update.list.indent({
-      listStyle: ListStyle.Circle,
-      type: ListType.Bulleted,
-    });
-    expect(editor.read.children()[0]).toMatchObject({
-      indent: 1,
-      listStyle: 'circle',
-      listType: 'bulleted',
+  it('outdents a root list item to a plain paragraph', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Item' }],
+          indent: 1,
+          listStyle: 'circle',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+      ],
     });
 
     editor.update.list.outdent();
@@ -729,39 +805,58 @@ describe('BaseListPlugin canonical model', () => {
     });
   });
 
-  it('clears fields incompatible with an indented list kind', () => {
-    const editor = createEditor({
-      initialValue: [
-        {
-          children: [{ text: 'Seven' }],
-          indent: 1,
-          listRestart: 7,
-          listStyle: 'lower-alpha',
-          listType: 'numbered',
-          type: 'paragraph',
+  it.each([
+    [
+      'Backspace at its start',
+      'Two',
+      (editor: ReturnType<typeof createEditor>) =>
+        editor.update.text.deleteBackward(),
+    ],
+    [
+      'Enter on it while empty',
+      '',
+      (editor: ReturnType<typeof createEditor>) => editor.update.break.insert(),
+    ],
+    [
+      'an outdent',
+      'Two',
+      (editor: ReturnType<typeof createEditor>) => editor.update.list.outdent(),
+    ],
+    [
+      'a toggle',
+      'Two',
+      (editor: ReturnType<typeof createEditor>) =>
+        editor.update.list.toggle({ type: ListType.Numbered }),
+    ],
+  ] as const)(
+    'keeps the next items counting after %s takes an item out [EDIT-LIST-ID-403]',
+    (_label, text, takeOut) => {
+      const item = (value: string) => ({
+        children: [{ text: value }],
+        indent: 1,
+        listType: ListType.Numbered,
+        type: 'paragraph',
+      });
+      const editor = createEditor({
+        initialValue: [item('One'), item(text), item('Three')],
+        selection: {
+          anchor: { offset: 0, path: [1, 0] },
+          focus: { offset: 0, path: [1, 0] },
+          kind: 'text',
         },
-      ],
-    });
+      });
 
-    editor.update.list.indent({ type: ListType.Bulleted });
+      takeOut(editor);
 
-    expect(editor.read.children()[0]).toEqual({
-      children: [{ text: 'Seven' }],
-      indent: 2,
-      listType: 'bulleted',
-      type: 'paragraph',
-    });
-
-    editor.update.list.indent({ type: ListType.Task });
-
-    expect(editor.read.children()[0]).toEqual({
-      checked: false,
-      children: [{ text: 'Seven' }],
-      indent: 3,
-      listType: 'task',
-      type: 'paragraph',
-    });
-  });
+      expect(
+        editor.read
+          .children()
+          .map((node, index) =>
+            node.listType ? editor.read.list.ordinal([index]) : null
+          )
+      ).toEqual([1, null, 2]);
+    }
+  );
 
   it('reads active state by kind and optional marker', () => {
     const editor = createEditor({
@@ -808,6 +903,59 @@ describe('BaseListPlugin canonical model', () => {
         listStyle: 'square',
         listType: 'bulleted',
       },
+    ]);
+  });
+
+  it.each([
+    ['only on the wrapper', '<li>A</li>'],
+    [
+      'on the wrapper and the item, as the static list renders it',
+      `<li data-list-id="a" data-list-levels='{"2":{"start":3}}' data-list-type="numbered">A</li>`,
+    ],
+  ])(
+    'takes list identity from a list wrapper %s without reporting it lost',
+    (_name, listItem) => {
+      const result = createEditor({ selection: undefined }).api.html.parse(
+        `<ol data-list-id="a" data-list-levels='{"2":{"start":3}}'>${listItem}</ol>`
+      );
+
+      expect(result.ok && result.document.children).toMatchObject([
+        { listLevels: { '2': { start: 3 } }, listType: 'numbered' },
+      ]);
+      expect(result.ok && result.document.children[0].listId).toEqual(
+        expect.any(String)
+      );
+      expect(result.diagnostics).toEqual([]);
+    }
+  );
+
+  it('keeps the identity of a list wrapper that holds its content without items', () => {
+    expect(
+      decodedNumbers(
+        `<ol data-list-type="numbered" data-list-id="a" data-list-levels='{"1":{"start":7}}'>A</ol>`
+      )
+    ).toEqual([7]);
+  });
+
+  it('keeps a list wrapper level rules off an item of another list', () => {
+    const result = createEditor({ selection: undefined }).api.html.parse(
+      `<ol data-list-id="a" data-list-levels='{"1":{"start":5}}'><li data-list-id="b">B</li></ol>`
+    );
+
+    expect(result.ok && result.document.children[0].listLevels).toBeUndefined();
+  });
+
+  it('keeps the order of the lists an HTML item nests', () => {
+    expect(
+      parseHtmlChildren(
+        createEditor({ selection: undefined }),
+        '<ul><li>Parent<ol><li>One</li></ol><ul><li>Two</li><li>Three</li></ul></li></ul>'
+      )
+    ).toMatchObject([
+      { children: [{ text: 'Parent' }], listType: 'bulleted' },
+      { children: [{ text: 'One' }], indent: 2, listType: 'numbered' },
+      { children: [{ text: 'Two' }], indent: 2, listType: 'bulleted' },
+      { children: [{ text: 'Three' }], indent: 2, listType: 'bulleted' },
     ]);
   });
 
@@ -871,98 +1019,50 @@ describe('BaseListPlugin canonical model', () => {
     }
   );
 
-  it('preserves isolated ordinals without freezing a copied sequence', () => {
+  it('decodes an ordered list start on its own list', () => {
+    expect(
+      decodedNumbers(
+        '<ol start="5"><li data-list-type="numbered">Five</li></ol>'
+      )
+    ).toEqual([5]);
+  });
+
+  it('continues an ordered list whose start follows the earlier one', () => {
+    expect(
+      decodedNumbers(
+        '<ol start="4"><li>Four</li><li>Five</li></ol><p>Note</p><ol start="6"><li>Six</li></ol>'
+      )
+    ).toEqual([4, 5, null, 6]);
+  });
+
+  it('starts a separate list where an ordered list start does not follow', () => {
+    expect(
+      decodedNumbers(
+        '<ol><li>One</li></ol><ol start="5"><li>Five</li></ol><ol><li>One again</li></ol>'
+      )
+    ).toEqual([1, 5, 1]);
+  });
+
+  it('continues a root list past a deeper list between its runs', () => {
+    expect(
+      decodedNumbers(
+        '<ol start="1"><li data-indent="1">One</li></ol><ol start="1"><li data-indent="2">Nested</li></ol><ol start="2"><li data-indent="1">Two</li></ol>'
+      )
+    ).toEqual([1, 1, 2]);
+  });
+
+  it('keeps encoded starts and restarts from Plate HTML', () => {
     const editor = createEditor({ selection: undefined });
 
     expect(
       parseHtmlChildren(
         editor,
-        '<ol start="5"><li data-list-type="numbered">Five</li></ol>'
-      )
-    ).toMatchObject([{ listStart: 5, listType: 'numbered' }]);
-    const sequence = parseHtmlChildren(
-      editor,
-      '<ol start="5"><li data-list-type="numbered">Five</li></ol><ol start="6"><li data-list-type="numbered">Six</li></ol>'
-    );
-
-    if (!sequence) throw new TypeError('Expected decoded list sequence');
-
-    expect(sequence).toMatchObject([
-      { listStart: 5, listType: 'numbered' },
-      { listType: 'numbered' },
-    ]);
-    expect(sequence[1]).not.toHaveProperty('listStart');
-    const externalBoundary = parseHtmlChildren(
-      editor,
-      '<ol><li>One</li></ol><ol start="5"><li>Five</li></ol>'
-    );
-
-    expect(externalBoundary).toMatchObject([
-      { listType: 'numbered' },
-      { listRestart: 5, listType: 'numbered' },
-    ]);
-    expect(
-      parseHtmlChildren(
-        editor,
-        '<ol><li>One</li></ol><ol><li>One again</li></ol>'
+        '<ol start="4"><li data-list-start="4" data-list-type="numbered">Four</li></ol><ol start="5"><li data-list-restart="5" data-list-type="numbered">Five</li></ol>'
       )
     ).toMatchObject([
-      { listType: 'numbered' },
-      { listRestart: 1, listType: 'numbered' },
+      { listStart: 4, listType: 'numbered' },
+      { listRestart: 5, listType: 'numbered' },
     ]);
-    const multiItemSequence = parseHtmlChildren(
-      editor,
-      '<ol start="4"><li data-list-type="numbered">Four</li><li data-list-type="numbered">Five</li></ol><ol start="6"><li data-list-type="numbered">Six</li></ol>'
-    );
-
-    if (!multiItemSequence) {
-      throw new TypeError('Expected decoded multi-item list sequence');
-    }
-
-    expect(multiItemSequence[2]).not.toHaveProperty('listStart');
-    const conditional = parseHtmlChildren(
-      editor,
-      '<ol start="4"><li data-list-start="4" data-list-type="numbered">Four</li></ol>'
-    );
-
-    expect(conditional).toMatchObject([{ listStart: 4, listType: 'numbered' }]);
-    expect(conditional?.[0]).not.toHaveProperty('listRestart');
-    const mixedRootIndents = parseHtmlChildren(
-      editor,
-      '<ol start="1"><li data-list-type="numbered">One</li></ol><ol start="2"><li data-indent="1" data-list-type="numbered">Two</li></ol>'
-    );
-
-    if (!mixedRootIndents) {
-      throw new TypeError('Expected decoded root list sequence');
-    }
-
-    expect(mixedRootIndents[1]).not.toHaveProperty('listStart');
-    const mixedDefaultStyles = parseHtmlChildren(
-      editor,
-      '<ol start="1"><li data-list-style="decimal" data-list-type="numbered">One</li></ol><ol start="2"><li data-list-type="numbered">Two</li></ol>'
-    );
-
-    if (!mixedDefaultStyles) {
-      throw new TypeError('Expected decoded default-marker sequence');
-    }
-
-    expect(mixedDefaultStyles[1]).not.toHaveProperty('listStart');
-    const nestedSequence = parseHtmlChildren(
-      editor,
-      '<ol start="1"><li data-indent="1" data-list-type="numbered">One</li></ol><ol start="1"><li data-indent="2" data-list-type="numbered">Nested</li></ol><ol start="2"><li data-indent="1" data-list-type="numbered">Two</li></ol>'
-    );
-
-    if (!nestedSequence) {
-      throw new TypeError('Expected decoded nested list sequence');
-    }
-
-    expect(nestedSequence[2]).not.toHaveProperty('listStart');
-    expect(
-      parseHtmlChildren(
-        editor,
-        '<ol start="5"><li data-list-restart="5" data-list-type="numbered">Five</li></ol>'
-      )
-    ).toMatchObject([{ listRestart: 5, listType: 'numbered' }]);
   });
 
   it('decodes checked HTML items as task lists', () => {
@@ -1050,7 +1150,11 @@ describe('BaseListPlugin canonical model', () => {
           type: 'paragraph',
         },
       ],
-      selection: SelectionApi.nodes([[2]]),
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [2, 0] },
+      },
     });
     const data = new DataTransfer();
 
@@ -1061,7 +1165,9 @@ describe('BaseListPlugin canonical model', () => {
       'text/html'
     );
 
-    expect(body.querySelector('ol')?.getAttribute('start')).toBe('2');
+    expect(
+      [...body.querySelectorAll('ol')].map((list) => list.getAttribute('start'))
+    ).toEqual(['1', '1', '2']);
   });
 
   it('supports all three markdown input-rule kinds', () => {
@@ -1170,6 +1276,44 @@ describe('BaseListPlugin canonical model', () => {
     });
     expect(editor.read.children()[1]).not.toHaveProperty('listRestart');
     expect(editor.read.list.ordinal(editor.read.children()[1])).toBe(6);
+  });
+
+  it('joins the list before a note when the typed number continues it', () => {
+    const editor = createProductEditor({
+      initialValue: [
+        {
+          children: [{ text: 'One' }],
+          indent: 1,
+          listId: 'a',
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Two' }],
+          indent: 1,
+          listId: 'a',
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        { children: [{ text: 'Note' }], type: 'paragraph' },
+        { children: [{ text: '3. Three' }], type: 'paragraph' },
+      ],
+      plugins: [
+        BaseListPlugin.configure({
+          inputRules: [OrderedListRules.markdown()],
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [3, 0] },
+        focus: { offset: 2, path: [3, 0] },
+      },
+    });
+
+    editor.update.text.insert(' ');
+    editor.update.nodes.remove({ at: [0] });
+
+    expect(editor.read.list.ordinal([2])).toBe(2);
   });
 
   it('treats only numbered nodes as ordered', () => {
@@ -1342,6 +1486,409 @@ describe('BaseListPlugin transfer steps', () => {
       'moved',
     ]);
   });
+});
+
+describe('BaseListPlugin list identity', () => {
+  const listItem = (text: string, extra: Record<string, unknown> = {}) => ({
+    children: [{ text }],
+    indent: 1,
+    listType: ListType.Numbered,
+    type: 'paragraph',
+    ...extra,
+  });
+  const note = (text: string) => ({ children: [{ text }], type: 'paragraph' });
+  const numbersOf = (editor: ReturnType<typeof createEditor>) =>
+    editor.read
+      .children()
+      .map((node, index) =>
+        node.listType ? (editor.read.list.ordinal([index]) ?? null) : null
+      );
+
+  it('keeps the default list one list through Plate HTML', () => {
+    const editor = createEditor({
+      initialValue: [listItem('One'), note('Note'), listItem('Two')],
+      selection: SelectionApi.nodes([[0], [1], [2]]),
+    });
+    const data = new DataTransfer();
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    expect(decodedNumbers(data.getData('text/html'))).toEqual([1, null, 2]);
+  });
+
+  it('continues a list from its first item onto the list before it', () => {
+    const editor = createEditor({
+      initialValue: [
+        listItem('One', { listId: 'a' }),
+        note('Note'),
+        listItem('Two', { listId: 'b' }),
+        listItem('Three', { listId: 'b' }),
+      ],
+      selection: {
+        anchor: { offset: 0, path: [2, 0] },
+        focus: { offset: 0, path: [2, 0] },
+        kind: 'text',
+      },
+    });
+
+    editor.update.list.continue();
+
+    expect(numbersOf(editor)).toEqual([1, null, 2, 3]);
+  });
+
+  it('toggles one item of a mixed list without changing the other kinds', () => {
+    const editor = createEditor({
+      initialValue: [
+        listItem('One', { listId: 'a' }),
+        listItem('Bullet', { listId: 'a', listType: ListType.Bulleted }),
+        listItem('Two', { listId: 'a' }),
+      ],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+        kind: 'text',
+      },
+    });
+
+    editor.update.list.toggle({ type: ListType.Bulleted });
+
+    expect(editor.read.children().map((node) => node.listType)).toEqual([
+      ListType.Bulleted,
+      ListType.Bulleted,
+      ListType.Numbered,
+    ]);
+  });
+
+  it('keeps a level start through Shift+Tab and Tab', () => {
+    const levels = { '2': { start: 5 } };
+    const editor = createEditor({
+      initialValue: [
+        listItem('One', { listId: 'w', listLevels: levels }),
+        listItem('Nested', { indent: 2, listId: 'w', listLevels: levels }),
+      ],
+      selection: {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+        kind: 'text',
+      },
+    });
+
+    editor.update.list.outdent();
+    expect(numbersOf(editor)).toEqual([1, 2]);
+
+    editor.plugin(BaseIndentPlugin).update.increase();
+    expect(numbersOf(editor)).toEqual([1, 5]);
+  });
+
+  it('gives an item an edit inserts without an id the list it lands in', () => {
+    const editor = createEditor({
+      initialValue: [
+        listItem('One', { listId: 'a' }),
+        listItem('Three', { listId: 'a' }),
+      ],
+    });
+
+    editor.update.nodes.insert(listItem('Two'), { at: [1] });
+
+    expect(editor.read.children()[1]).toHaveProperty('listId', 'a');
+    expect(numbersOf(editor)).toEqual([1, 2, 3]);
+  });
+
+  it('keeps a latent start through a kind change and shows it when it applies', () => {
+    const editor = createEditor({
+      initialValue: [
+        listItem('One', { listId: 'a' }),
+        listItem('Four', { listId: 'a', listStart: 4 }),
+      ],
+      selection: {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+        kind: 'text',
+      },
+    });
+
+    editor.update.list.toggle({ type: ListType.Bulleted });
+    expect(editor.read.children()[1]).toHaveProperty('listStart', 4);
+
+    editor.update.nodes.remove({ at: [0] });
+    editor.update.list.toggle({ type: ListType.Numbered });
+    expect(numbersOf(editor)).toEqual([4]);
+  });
+
+  it('gives parsed list items outside list elements fresh ids', () => {
+    const [first, second] = parseHtmlChildren(
+      createEditor({ selection: undefined }),
+      '<p data-list-type="bulleted" data-indent="1" data-list-id="x">A</p><p data-list-type="bulleted" data-indent="1" data-list-id="x">B</p>'
+    );
+
+    expect(first).toHaveProperty('listId', second.listId);
+    expect(first.listId).not.toBe('x');
+  });
+
+  it('keeps a bulleted item latent start through Plate HTML', () => {
+    const editor = createEditor({
+      initialValue: [
+        listItem('Bullet', { listStart: 4, listType: ListType.Bulleted }),
+      ],
+      selection: SelectionApi.nodes([[0]]),
+    });
+    const data = new DataTransfer();
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    expect(
+      parseHtmlChildren(
+        createEditor({ selection: undefined }),
+        data.getData('text/html')
+      )[0]
+    ).toMatchObject({ listStart: 4, listType: ListType.Bulleted });
+  });
+
+  it('keeps the start of a nested HTML list', () => {
+    expect(
+      decodedNumbers('<ol><li>Parent<ol start="5"><li>Five</li></ol></li></ol>')
+    ).toEqual([1, 5]);
+  });
+
+  it('keeps the list identity and level rules a list element names', () => {
+    const levels = '{&quot;1&quot;:{&quot;label&quot;:&quot;%1)&quot;}}';
+    const children = parseHtmlChildren(
+      createEditor({ selection: undefined }),
+      ['a', 'b', 'a', 'b']
+        .map(
+          (id, index) =>
+            `<ol data-list-id="${id}" data-list-levels="${levels}" start="${[1, 1, 2, 2][index]}"><li>${id}</li></ol>`
+        )
+        .join('')
+    );
+    const loaded = createEditor({
+      initialValue: children as never,
+      selection: undefined,
+    });
+
+    expect(children.map((node) => node.listId === children[0].listId)).toEqual([
+      true,
+      false,
+      true,
+      false,
+    ]);
+    expect(children[1].listId).toBe(children[3].listId);
+    expect(children[0]).toMatchObject({
+      listLevels: { '1': { label: '%1)' } },
+    });
+    expect(numbersOf(loaded)).toEqual([1, 1, 2, 2]);
+
+    loaded.update.nodes.remove({ at: [1] });
+
+    expect(numbersOf(loaded)).toEqual([1, 2, 1]);
+  });
+
+  it('keeps the start of a later nested HTML list under another item', () => {
+    expect(
+      decodedNumbers(
+        '<ol><li>P1<ol><li>C1</li></ol></li><li>P2<ol start="2"><li>C2</li></ol></li></ol>'
+      )
+    ).toEqual([1, 1, 2, 2]);
+  });
+
+  it('keeps a default-list item in its list when its properties change', () => {
+    const editor = createEditor({
+      initialValue: [
+        listItem('A'),
+        listItem('B', { listId: 'b' }),
+        listItem('C'),
+      ],
+      selection: undefined,
+    });
+
+    editor.update.list.restart({ at: [0], start: 7 });
+
+    expect(editor.read.children()[0]).not.toHaveProperty('listId');
+    expect(numbersOf(editor)).toEqual([7, 1, 8]);
+
+    editor.update.nodes.set({ listType: ListType.Bulleted }, { at: [0] });
+    editor.update.nodes.set({ listType: ListType.Numbered }, { at: [0] });
+
+    expect(editor.read.children()[0]).not.toHaveProperty('listId');
+  });
+
+  it('continues a typed number at the same cost in a longer document', () => {
+    const recountFor = (notes: number) => {
+      const editor = createProductEditor({
+        initialValue: [
+          ...Array.from({ length: notes }, (_note, index) =>
+            listItem(`${index}`, { listId: 'far' })
+          ),
+          listItem('One', { listId: 'a' }),
+          note('Note'),
+          { children: [{ text: '2.' }], type: 'paragraph' },
+        ],
+        plugins: [
+          BaseListPlugin.configure({
+            inputRules: [OrderedListRules.markdown()],
+          }),
+        ],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 2, path: [notes + 2, 0] },
+          focus: { offset: 2, path: [notes + 2, 0] },
+        },
+      });
+
+      editor.read.list.ordinal([0]);
+
+      const before = getListIndexMetrics().visited;
+
+      editor.update.text.insert(' ');
+
+      expect(editor.read.children()[notes + 2]).toHaveProperty('listId', 'a');
+      expect(editor.read.list.ordinal([notes + 2])).toBe(2);
+
+      return getListIndexMetrics().visited - before;
+    };
+
+    expect(recountFor(1000)).toBe(recountFor(10));
+  });
+
+  it('starts a new list where a typed number follows a list in a table cell', () => {
+    const editor = createProductEditor({
+      initialValue: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [listItem('One', { listId: 'cell' })],
+                  type: 'tableCell',
+                },
+              ],
+              type: 'tableRow',
+            },
+          ],
+          type: 'table',
+        },
+        { children: [{ text: '2. Two' }], type: 'paragraph' },
+      ],
+      plugins: [
+        BaseTablePlugin,
+        BaseListPlugin.configure({
+          inputRules: [OrderedListRules.markdown()],
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [1, 0] },
+        focus: { offset: 2, path: [1, 0] },
+      },
+    } as never);
+
+    editor.update.text.insert(' ');
+
+    expect(editor.read.children()[1]).toMatchObject({
+      listType: ListType.Numbered,
+    });
+    expect(editor.read.children()[1].listId).not.toBe('cell');
+    expect(editor.read.list.ordinal([1])).toBe(2);
+  });
+});
+
+describe('BaseListPlugin keystroke cost', () => {
+  const listed = (text: string, listId: string) => ({
+    children: [{ text }],
+    indent: 1,
+    listId,
+    listType: ListType.Numbered,
+    type: 'paragraph',
+  });
+  const paragraph = (text: string) => ({
+    children: [{ text }],
+    type: 'paragraph',
+  });
+  type KeystrokeEditor = ReturnType<typeof createProductEditor>;
+  const keystrokes: Array<
+    [string, (editor: KeystrokeEditor, at: number) => void]
+  > = [
+    ['typing in an item', (editor) => editor.update.text.insert('x')],
+    ['Enter at the end of an item', (editor) => editor.update.break.insert()],
+    [
+      'Enter after typing in an item',
+      (editor) => {
+        editor.update.text.insert('x');
+        editor.update.break.insert();
+      },
+    ],
+    [
+      'Backspace at the start of an item',
+      (editor, at) => {
+        editor.update.selection.set({
+          anchor: { offset: 0, path: [at + 2, 0] },
+          focus: { offset: 0, path: [at + 2, 0] },
+          kind: 'text',
+        });
+        editor.update.text.deleteBackward();
+      },
+    ],
+    ['indenting an item', (editor) => editor.update.indent.increase()],
+    [
+      'a typed number that continues the list',
+      (editor, at) => {
+        editor.update.selection.set({
+          anchor: { offset: 2, path: [at + 4, 0] },
+          focus: { offset: 2, path: [at + 4, 0] },
+          kind: 'text',
+        });
+        editor.update.text.insert(' ');
+      },
+    ],
+  ];
+
+  it.each(keystrokes)(
+    'counts the same list work for %s with 10 or 300 other lists',
+    (_name, keystroke) => {
+      const recountFor = (lists: number) => {
+        const at = lists * 11;
+        const editor = createProductEditor({
+          initialValue: [
+            ...Array.from({ length: lists }, (_list, list) => [
+              ...Array.from({ length: 10 }, (_item, index) =>
+                listed(`${list}.${index}`, `l${list}`)
+              ),
+              paragraph('Between'),
+            ]).flat(),
+            listed('One', 'a'),
+            listed('Two', 'a'),
+            listed('Three', 'a'),
+            paragraph('Note'),
+            paragraph('4.'),
+          ],
+          plugins: [
+            BaseIndentPlugin,
+            BaseListPlugin.configure({
+              inputRules: [OrderedListRules.markdown()],
+            }),
+          ],
+          selection: {
+            kind: 'text',
+            anchor: { offset: 3, path: [at + 1, 0] },
+            focus: { offset: 3, path: [at + 1, 0] },
+          },
+        } as never);
+
+        editor.read.list.ordinal([0]);
+
+        const children = editor.read.children();
+        const before = getListIndexMetrics().visited;
+
+        keystroke(editor, at);
+
+        expect(editor.read.children()).not.toBe(children);
+
+        return getListIndexMetrics().visited - before;
+      };
+
+      expect(recountFor(300)).toBe(recountFor(10));
+    }
+  );
 });
 
 void BaseParagraphPlugin;

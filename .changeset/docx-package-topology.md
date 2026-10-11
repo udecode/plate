@@ -10,7 +10,7 @@ Compose the operations needed by the application:
 
 - `WordPastePlugin` from `platejs/docx/paste` owns pasted CSS inlining and Word clipboard normalization.
 - `importDocx(source, { plugins, ...options })` from `platejs/docx/import` compiles a detached target without activating plugins, bounds untrusted ZIP/XML work, and returns either one complete editor document with rich comment facts and structured diagnostics or an explicit failure.
-- `exportDocx(editor, options)` from `platejs/docx/export` captures one editor revision before asynchronous work and returns an explicit accepted, proposed, or review DOCX result with structured diagnostics. Accepted and proposed exports warn about pending changes and conflicts; review export refuses conflicts that Word revisions cannot represent faithfully.
+- `exportDocx(editor, options)` from `platejs/docx/export` captures one editor revision before asynchronous work and returns an explicit accepted, proposed, or review DOCX result with structured diagnostics. Accepted and proposed exports warn about pending changes and conflicts; review export refuses conflicts that Word revisions cannot represent faithfully. Numbered paragraphs export as Word lists that start, restart and change marker style where the editor's numbering does, at each item's indent level, `decimal-leading-zero` markers included.
 
 Preserve supported Word revisions as authored changes. Review export writes Word revisions and comments only; save the authored JSON document from `projectAuthoredReview` beside the file to keep exact review state. Keep comment storage and file download behavior application-owned.
 

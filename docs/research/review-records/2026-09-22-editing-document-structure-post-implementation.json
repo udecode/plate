@@ -5,7 +5,7 @@
   "date": "2026-09-22",
   "question": "Does the implemented fixed-prefix schema satisfy complete, atomic editing and its stated proof gates?",
   "model": "GPT-6 / Codex",
-  "method": "best-api-review/history-v3",
+  "method": "verdict/history-v3",
   "trigger": "User switched models and requested another audit of the completed document-structure implementation.",
   "requirements": [
     "Preserve one canonical owner for ordered document structure across Plate and raw Plite.",
@@ -101,7 +101,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
       "pnpm-lock.yaml": "77bf6f360dc7b3199b947dc167649fbc39007b81b4f9bd5364660757e7d4a703",
-      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/skills/verdict/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
       ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
       "docs/plans/artifacts/document-structure/post-implementation-audit.md": "a4c314105844fd615c5878375fe9aed73fdf0ccaef577f2ca9ee510b82906443",
       "docs/plans/2026-09-22-document-structure-in-the-canonical-schema.md": "46a2a9bd703bcfe94bc380352dffb6030ef5a41012fd80c17d9ba0af584cdcf5",

@@ -174,7 +174,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Pass: public shape, private owners, adoption, failure laws and proof commands are closed below. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Pass: 61 immutable-review sources match; the final caller sweep is saved as `caller-recheck.txt`. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | Pass: complete services, narrow reads and transaction-only grouping/restore are selected; no open P0/P1 remains. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding | Pass: complete services, narrow reads and transaction-only grouping/restore are selected; no open P0/P1 remains. |
 | Pre-acceptance scale proof | yes | Compare current and target owners across applicable cohorts | Pass for architecture selection on causal work: deterministic work/correctness passes throughout; changed fan-out and 217 service timing/cost cells pass. Seven same-work service cells and two AI widths remain timing-inconclusive and are not reclassified. |
 | Production scale rerun contract | yes | Record the exact final-path rerun | Pass: S6 preserved frozen baselines and reran the service, grouping, publication and AI cohorts against final production imports. |
 | Conditional risk and adoption | yes | Resolve triggered risk/browser/Benchmark/provenance work | Pass: browser/native, package, docs, release-artifact and doctrine owners are assigned; external research and publication are scoped N/A. |

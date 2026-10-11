@@ -2,12 +2,7 @@
 import VText from 'virtual-dom/vnode/vtext.js';
 import { fragment } from 'xmlbuilder2';
 
-import {
-  convertVTreeToXML,
-  getListTracking,
-  resetListTracking,
-  setListTracking,
-} from './render-document-file';
+import { convertVTreeToXML } from './render-document-file';
 import * as xmlBuilder from './xml-builder';
 import { buildImage } from './xml-builder';
 
@@ -43,22 +38,6 @@ describe('renderDocumentFile', () => {
     expect(docxDocument.createMediaFile).not.toHaveBeenCalled();
 
     fetchSpy.mockRestore();
-  });
-
-  it('tracks numbering ids by list type and indent level and resets them', () => {
-    resetListTracking();
-    setListTracking('ul', 3, 0);
-    setListTracking('ul', 7, 1);
-    setListTracking('ol', 9, 0);
-
-    expect(getListTracking('ul', 0)).toEqual({ lastListNumberingId: 3 });
-    expect(getListTracking('ul', 1)).toEqual({ lastListNumberingId: 7 });
-    expect(getListTracking('ol', 0)).toEqual({ lastListNumberingId: 9 });
-
-    resetListTracking();
-
-    expect(getListTracking('ul', 0)).toEqual({ lastListNumberingId: null });
-    expect(getListTracking('ol', 0)).toEqual({ lastListNumberingId: null });
   });
 
   it('returns an empty string for null trees and imports paragraphs for text nodes', async () => {

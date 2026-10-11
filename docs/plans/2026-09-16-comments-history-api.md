@@ -87,7 +87,7 @@ retained range also resolves in its capture projection. A semantic reply
 rebuilds the index and restores five discussions, proving the missing view
 publication; it is not a repair.
 
-The Best API Review verdict is **Pursue** the native projection repair. Keep
+The Verdict verdict is **Pursue** the native projection repair. Keep
 one retained target, extend its existing resolution owner with
 `anchor.resolve(view?)`, and make native annotation indexes resolve and observe
 their exact view. Comments retains one model-lifetime conversation/anchor map;
@@ -242,7 +242,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All rows below have final verdicts and owners. |
 | Fresh source evidence | yes | Recheck decision-changing claims | Current source was read on 2026-09-16; anchor source hash returned to `6df095b8…` after the disposable prototype. |
-| Best API review | yes | Resolve every P0/P1 finding | Generic checkpoint cut; initialization, sync, attachment provenance, mutation failure, and collaboration boundaries are explicit. |
+| Verdict | yes | Resolve every P0/P1 finding | Generic checkpoint cut; initialization, sync, attachment provenance, mutation failure, and collaboration boundaries are explicit. |
 | Pre-acceptance scale proof | yes | Pass frozen target comparison | `authored-range-save-result.json`: all 16 rows pass; 10,000 authored full-cohort p95 22.492 ms under 100 ms. |
 | Production scale rerun contract | yes | Carry the same comparison into implementation | Slice 1 reruns the exact artifact against production code and preserves source identity and correctness guards. |
 | Conditional risk and adoption | yes | Resolve history/collaboration/docs/browser work | Risks and exact execution proof are listed below; publication and release are outside scope. |

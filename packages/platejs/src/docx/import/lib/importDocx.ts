@@ -53,6 +53,10 @@ import {
   resolveDocxImportLimits,
   type BoundedDocxPackage,
 } from './docxPackage';
+import {
+  type DocxListItem,
+  readDocxNumbering,
+} from './numbering/readDocxNumbering';
 
 export { DocxSource } from '../../internal/source';
 export type {
@@ -167,7 +171,12 @@ type CommentMetadata = Omit<DocxComment, 'body' | 'target'>;
 
 type Marker = Readonly<{
   id: string;
-  kind: 'comment-end' | 'comment-start' | 'revision-end' | 'revision-start';
+  kind:
+    | 'comment-end'
+    | 'comment-start'
+    | 'list-item'
+    | 'revision-end'
+    | 'revision-start';
   mode?: 'delete' | 'insert';
   token: string;
 }>;
@@ -426,8 +435,13 @@ const createMarkerCodec = (documentXml: string, markerNonce: string) => {
     `${prefix}(comment-end|comment-start|revision-end|revision-start)_(delete|insert|none)_([^${suffix}]+)${suffix}`,
     'g'
   );
+  const listPattern = new RegExp(
+    `${prefix}list-item_none_[^${suffix}]+${suffix}`,
+    'g'
+  );
 
   return {
+    listMarkers: (text: string) => text.match(listPattern) ?? [],
     marker,
     parse(
       text: string
@@ -483,6 +497,89 @@ const replaceWithMarkedCopies = (
     markerFor(source, codec.marker('revision-start', id, 'insert').token),
     proposed,
     markerFor(source, codec.marker('revision-end', id, 'insert').token)
+  );
+};
+
+// Mammoth drops a paragraph's list identity, so each numbered paragraph
+// carries a marker run to the item Mammoth renders for it.
+const instrumentNumbering = (
+  dom: DocxDomRealm,
+  entries: BoundedDocxPackage['entries'],
+  document: Document,
+  codec: ReturnType<typeof createMarkerCodec>
+) => {
+  const part = (name: string) => {
+    const source = entries.get(name);
+
+    if (!source) return undefined;
+    try {
+      return dom.parseXml(dom.decodeUtf8(source), name);
+    } catch {
+      return undefined;
+    }
+  };
+  const items = new Map<string, DocxListItem>();
+
+  for (const [paragraph, item] of readDocxNumbering(document, {
+    numbering: part('word/numbering.xml'),
+    styles: part('word/styles.xml'),
+  })) {
+    const { token } = codec.marker('list-item', String(items.size));
+    const properties = Array.from(paragraph.children).find(
+      (child) => child.localName === 'pPr'
+    );
+    const run = markerRun(document, token);
+
+    if (properties) properties.after(run);
+    else paragraph.prepend(run);
+    items.set(token, item);
+  }
+
+  return items;
+};
+
+const applyListMarkers = (
+  node: Node,
+  codec: ReturnType<typeof createMarkerCodec>,
+  items: ReadonlyMap<string, DocxListItem>,
+  dom: DocxDomRealm
+) => {
+  if (node.nodeType !== dom.textNodeType) {
+    for (const child of Array.from(node.childNodes)) {
+      applyListMarkers(child, codec, items, dom);
+    }
+
+    return;
+  }
+
+  const text = node.textContent ?? '';
+  const tokens = codec.listMarkers(text);
+
+  if (tokens.length === 0) return;
+
+  const element =
+    node.parentElement?.closest('li') ??
+    node.parentElement?.closest('p, h1, h2, h3, h4, h5, h6');
+
+  for (const token of tokens) {
+    const item = items.get(token);
+
+    if (!(item && dom.isHtmlElement(element))) continue;
+
+    const { dataset, style } = element;
+
+    dataset.indent = String(item.indent);
+    dataset.listId = item.listId;
+    dataset.listType = item.listType;
+    if (item.listLevels) dataset.listLevels = JSON.stringify(item.listLevels);
+    if (item.listRestart !== undefined) {
+      dataset.listRestart = String(item.listRestart);
+    }
+    if (item.listStyle) style.listStyleType = item.listStyle;
+  }
+  node.textContent = tokens.reduce(
+    (remaining, token) => remaining.replace(token, ''),
+    text
   );
 };
 
@@ -1151,6 +1248,7 @@ const importProjection = async (
   target: DocxImportTarget<Value>,
   arrayBuffer: ArrayBuffer,
   codec: ReturnType<typeof createMarkerCodec>,
+  lists: ReadonlyMap<string, DocxListItem>,
   diagnostics: DocxDiagnostic[],
   signal?: AbortSignal
 ) => {
@@ -1171,6 +1269,25 @@ const importProjection = async (
   }
   const mammothDocument = target.dom.parseHtml(mammothResult.value);
   const bodyById = new Map<string, Value>();
+
+  applyListMarkers(mammothDocument.body, codec, lists, target.dom);
+  // Mammoth wraps a list that skips a level in an item no paragraph stands
+  // behind; the nested items carry their own levels.
+  for (const item of lists.size > 0
+    ? Array.from(mammothDocument.body.querySelectorAll('li'))
+    : []) {
+    if (
+      !item.hasAttribute('data-list-type') &&
+      item.children.length > 0 &&
+      Array.from(item.childNodes).every((child) =>
+        target.dom.isHtmlElement(child)
+          ? ['OL', 'UL'].includes(child.tagName)
+          : !child.textContent?.trim()
+      )
+    ) {
+      item.replaceWith(...Array.from(item.childNodes));
+    }
+  }
 
   for (const dl of Array.from(mammothDocument.querySelectorAll('dl'))) {
     const definitions = Array.from(dl.querySelectorAll('dt[id^="comment-"]'));
@@ -1376,6 +1493,7 @@ const importBoundedDocx = async <V extends Value>(
   const document = target.dom.parseXml(documentXml, 'word/document.xml');
   const revisions = collectDocxRevisions(document, limits, diagnostics);
   const comments = commentMetadata(target.dom, pkg.entries, limits);
+  const lists = instrumentNumbering(target.dom, pkg.entries, document, codec);
 
   instrumentPropertyRevisions(document, codec, diagnostics);
   instrumentContentRevisions(document, codec, diagnostics);
@@ -1392,6 +1510,7 @@ const importBoundedDocx = async <V extends Value>(
       target,
       normalized,
       codec,
+      lists,
       diagnostics,
       signal
     );

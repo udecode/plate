@@ -94,6 +94,7 @@ const exactPublicPackageRuntimeExportExpectations = {
   'plitejs/authored': [
     'authored',
     'authoredProjectionDiagnostics',
+    'authoredTreeProof',
     'createAuthoredImportedRevisionChange',
     'createAuthoredReviewDocument',
     'isAuthoredEditor',

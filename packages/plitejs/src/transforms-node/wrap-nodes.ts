@@ -98,9 +98,11 @@ export const wrapNodes = ((
       const index = getDefined(target.at(-1));
 
       applyBuiltDocumentChange(editor, (builder, root) =>
-        builder.replaceChildren(root, parentPath, index, 1, [
-          { ...wrapper, children: [node] },
-        ])
+        builder.withOrigin('wrap', () =>
+          builder.replaceChildren(root, parentPath, index, 1, [
+            { ...wrapper, children: [node] },
+          ])
+        )
       );
       return;
     }
@@ -263,12 +265,14 @@ export const wrapNodes = ((
         applyBuiltDocumentChange(
           editor,
           (builder, root) =>
-            builder.replaceChildren(
-              root,
-              commonPath,
-              firstChildIndex,
-              movePaths.length,
-              [{ ...wrapper, children: movedChildren }]
+            builder.withOrigin('wrap', () =>
+              builder.replaceChildren(
+                root,
+                commonPath,
+                firstChildIndex,
+                movePaths.length,
+                [{ ...wrapper, children: movedChildren }]
+              )
             ),
           {
             nodeKeyTransfers: movedChildren.map((child, index) => ({

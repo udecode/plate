@@ -109,7 +109,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | pass | Resolve every readiness condition | Core/adopters/docs/doctrine implemented; only final review remains. |
 | Fresh source evidence | pass | Recheck decision-changing current claims | Final Core portal/compiler/types and every adoption audit reread after implementation. |
-| Best API review | pass | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Final law recorded below; no unresolved P0/P1 API question. |
+| Verdict | pass | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Final law recorded below; no unresolved P0/P1 API question. |
 | Conditional risk and adoption | pass | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Docs, changeset, registry, Browser route, collision/wrong-kind/type inference cases covered; device testing remains the accepted non-goal. |
 | Verification recorded | pass | Record fresh planning proof and exact execution gates | Commands and results recorded below. |
 | Handoff prepared | pass | Prepare concise ownership, breaks, proof, risks, and execution order | Recorded below. |

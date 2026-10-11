@@ -6,7 +6,7 @@ docs:
     title: List Toolbar Button
 ---
 
-列表将支持的块转换为扁平列表项。列表种类、标记样式、明确编号边界、任务状态和缩进分别存储。
+列表将支持的块转换为扁平列表项。列表种类、标记样式、列表标识、编号起始值、任务状态和缩进分别存储。
 
 <ComponentPreview name="list-demo" />
 
@@ -16,10 +16,12 @@ docs:
 
 - listType 为 bulleted、numbered 或 task。
 - listStyle 可选，用于 CSS 标记样式。
-- listStart 保存条件开始值，仅在该项是序列第一项时生效。
-- listRestart 强制该项成为有序列表的新边界。
+- listId 标识该项所属的列表。列表会跨过其他块继续编号，两个列表也可以交错。
+- listLevels 按层级保存列表的起始值和重启规则，与 Word 的存储方式一致。
+- listStart 在该项开启其层级时生效；listRestart 强制该项的编号。
 - checked 只属于任务项。
 - 显示编号通过读取计算，不重写后续节点。
+- 提供“重新编号”和“继续编号”命令。
 
 </PackageInfo>
 
@@ -40,19 +42,26 @@ const value = [
   {
     type: 'paragraph',
     listType: 'numbered',
+    listId: 'steps',
     listStart: 4,
     indent: 1,
     children: [{ text: '四' }],
   },
   {
     type: 'paragraph',
+    children: [{ text: '步骤之间的说明。' }],
+  },
+  {
+    type: 'paragraph',
     listType: 'numbered',
+    listId: 'steps',
     indent: 1,
     children: [{ text: '五' }],
   },
   {
     type: 'paragraph',
     listType: 'task',
+    listId: 'todo',
     checked: false,
     indent: 1,
     children: [{ text: '发布' }],
@@ -60,9 +69,21 @@ const value = [
 ];
 ~~~
 
-第二项不保存 5。Plate 通过 editor.read.list.ordinal(at) 计算，`at` 是该项的路径、节点或键；已知路径的静态渲染器直接传入路径。
+第三个块不保存 5。Plate 通过 editor.read.list.ordinal(at) 计算，`at` 是该项的路径、节点或键；已知路径的静态渲染器直接传入路径。
 
-listStart 保存潜在作者意图。存在兼容的前一项时 Plate 会忽略它，但仍保留该字段；如果后续编辑让该项成为第一项，它就会生效。当该项即使存在兼容前项也必须开启新序列时，使用 listRestart。
+### 编号
+
+Plate 按文档顺序为每个列表单独编号。其他列表的块和普通块夹在它的项之间时，列表不会结束。有序项显示：
+
+- 设置了 listRestart 时，显示该值；
+- 否则在该层级仍打开时，显示列表在同层级上一项的编号加一；
+- 否则依次使用 listStart、listLevels 中该层级的 start，最后是 1。
+
+列表中的任意项都会关闭更深的层级，因此嵌套列表会在每个父项下重新编号。listLevels 中层级的 `restartAfter` 规则可以改变这一点。值为 `0` 时该层级从不重启，值为 `n` 时只在第 `n` 层或更浅层级的项之后重启。每个编号项从自己的 listLevels 读取该规则，值等于或深于其自身层级时按默认规则处理。
+
+没有 listId 的项构成所在根的默认列表。值中包含多个列表时，为每个列表设置自己的 id。命令、输入的列表标记和编辑会为新项分配 id：它加入前面同层级的兼容项，否则加入它嵌套所在的项，否则加入后面的兼容项；64 个块之内都没有时，开启新列表。
+
+listStart 保存潜在作者意图。该项延续所在列表时 Plate 保留它，并在后续编辑让该项开启其层级时应用它。listRestart 即使在列表内部也会强制编号。
 
 两个字段都是有符号安全整数，因此零和负数的有序列表起始值仍然有效。
 
@@ -82,18 +103,20 @@ list.update.toggle({
   type: ListType.Numbered,
   listStart: 4,
 });
-list.update.toggle({
-  type: ListType.Numbered,
-  listRestart: 4,
-});
 list.update.toggle({ type: ListType.Task });
+
+list.update.restart();
+list.update.restart({ start: 4 });
+list.update.continue();
 ~~~
+
+`restart` 强制选中有序项的编号，默认为 1。`continue` 移除该重启；在列表第一项上，它会把整个列表并入同层级中最近的前一个有序列表，使编号接续下去。
 
 ## HTML 和 Markdown
 
-HTML ul 和 ol 映射到 listType。明确的 CSS list-style-type 映射到 listStyle。自然边界的 ol start 映射到 listStart；兼容序列后的 ol 边界映射到 listRestart。Plate 剪贴板 HTML 在私有列表元数据中携带这两个字段。
+HTML ul 和 ol 映射到 listType。明确的 CSS list-style-type 映射到 listStyle。Plate HTML 用 `data-list-id` 标识每项所属的列表，用 `data-list-levels` 保存层级规则。每次粘贴或解析都会为每个来源列表分配新的 id，因此粘贴的列表不会因为 id 相同而并入无关列表；第一个粘贴的列表会并入它落入的兼容列表。在其他 HTML 中，每个 ul 或 ol 是一个列表；start 接续同层级前一个 ol 的 ol 会并入它，项下的第一个嵌套列表会并入该项的列表。Word HTML 保留 Word 的列表标识。
 
-MDAST list.ordered 映射到 listType。两种开始策略都会序列化为当前可见的 list.start，非默认的结构化 MDAST start 会反序列化为 listRestart。Markdown 无法保留条件开始与强制重启的区别。任务复选框映射到 task 和 checked。在 GFM table cell 中，列表段落写为 inline `<ul>`、`<ol start>` 与 `<li>` HTML，并读取回列表；参见 [Markdown](/docs/markdown#table-cell)。
+MDAST list.ordered 映射到 listType。Markdown 没有列表标识，因此解析出的项不带 listId。每个有序列表的 start 会解析为其第一项上的 listRestart，使不同的 Markdown 列表保持分开。起始值非默认的第一个嵌套列表解析为 listStart。序列化时，Plate 在列表变化处开始新的 Markdown 列表，并把每个有序列表第一项的可见编号写为 list.start。任务复选框映射到 task 和 checked。在 GFM table cell 中，列表段落写为 inline `<ul>`、`<ol start>` 与 `<li>` HTML，并读取回列表；参见 [Markdown](/docs/markdown#table-cell)。
 
 ## API
 
@@ -102,7 +125,8 @@ MDAST list.ordered 映射到 listType。两种开始策略都会序列化为当�
 | ListType | bulleted、numbered 和 task 常量。 |
 | ListStyle | CSS 标记常量。 |
 | update.toggle(options) | 设置或移除列表语义。 |
-| update.indent(options) | 增加缩进并设置列表语义。 |
+| update.restart(options?) | 强制选中有序项的编号；`start` 默认为 1。 |
+| update.continue(options?) | 移除选中项的重启，或从列表第一项起把列表接到前一个列表上。 |
 | update.outdent(options) | 减少缩进。 |
 | update.clear(options?) | 仅清除选中列表项的列表属性与缩进，保留区块类型和文本。 |
 | update.insert(input, options?) | 插入指定类型的段落列表项，并由插件负责构造与位置。 |

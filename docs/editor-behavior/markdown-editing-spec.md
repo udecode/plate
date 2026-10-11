@@ -21,6 +21,8 @@ This file is also intentionally non-exhaustive. It defines the readable law:
 
 It is family-complete for the current in-scope editor behavior. Scenario permutations live as notes under each family, and [current-evidence.md](./current-evidence.md) maps spec families to their proof owners and lists the matrix-era evidence gaps.
 
+Before closing accepted editor-behavior work, reconcile it with this law. When the implementation or proof changed or clarified intended behavior, edit the affected family section, including its Authority lines when the winning reference moved and the behavior classification `docs/vision/plate.md` requires, and tag the proving test as `CODING_STANDARDS.md`'s Tests section says. Record in [current-evidence.md](./current-evidence.md) only what a tag cannot say, such as a rule family or a surface limit. A rule whose test is missing or renamed is listed there as an evidence gap, never as tested. When the change alters reusable packaging doctrine, run `best-api repair`. When it only restored settled law, tag the proof and update the affected coverage without rewriting the normative law. When the work changed a shipped surface, update its public docs through `plate-docs` in the same change. Verdict may flag this duty but stays read-only.
+
 ## Behavior Contract
 
 - contract id: `markdown_typora`
@@ -759,7 +761,24 @@ this predictably.
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: CommonMark; primary UX ref: Typora; secondary ref: Milkdown
 Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/markdown-parity-matrix.md:86
-Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx:427` "clears an explicit start from the sibling created by a split" runs `break.insert` at offset 3 of `OneTwo` with `listStart: 7` and asserts `listStart: 7` on the first item, none on the second and ordinal 8, without the split text or the caret; `:452` "drops an explicit start for direct node splits" and `:473` "drops a forced restart from split siblings" split with `nodes.split`, not `↵`. A model probe on 2026-10-08 (Bun, package source) ran `↵` on a `listRestart: 4` item and on a `listStart: 7` item and got ordinals 4 and 5, and 7 and 8, with the caret at offset 0 of `[1, 0]` both times. Tag candidate for the `listStart` structure; the caret and the restart case have no test. Code: the list's `↵` override clears `listStart` and `listRestart` from the new item (`packages/platejs/src/features/list/lib/BaseListPlugin.ts:1678-1693`), and the schema also drops both on split (`:652-673`). Checked 2026-10-08.
+Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx:469` "clears an explicit start from the sibling created by a split" runs `break.insert` at offset 3 of `OneTwo` with `listStart: 7` and asserts `listStart: 7` on the first item, none on the second and ordinal 8, without the split text or the caret; `:494` "drops an explicit start for direct node splits" and `:515` "drops a forced restart from split siblings" split with `nodes.split`, not `↵`. A model probe on 2026-10-08 (Bun, package source) ran `↵` on a `listRestart: 4` item and on a `listStart: 7` item and got ordinals 4 and 5, and 7 and 8, with the caret at offset 0 of `[1, 0]` both times. Tag candidate for the `listStart` structure; the caret and the restart case have no test. Code: the schema drops `listStart` and `listRestart` from the new item on any split, `↵` included (`packages/platejs/src/features/list/lib/BaseListPlugin.ts:359-380`). Checked 2026-10-10.
+
+- `EDIT-LIST-ID-403` `proposed` `⌫`, `↵`, `⇤` and toggling a list off: taking an item out of a numbered list leaves one list, so the items after it count on from the item before it
+
+```text
+1. One
+2. |Two
+3. Three
+=> ⌫
+1. One
+|Two
+2. Three
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: list identity: Word and Google Docs, where a list continues past a paragraph between its items; syntax: CommonMark, whose list ends at the paragraph, so serialize starts the next ordered list at its shown number
+Deviation: Markdown has no list identity, so a paragraph between items splits the source list in two. Plate keeps the item's list and numbers past the paragraph, as Word and Google Docs do. That is the stronger mainstream precedent for a numbered document, and it was the owner's direction on 2026-10-10.
+Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx:825` "keeps the next items counting after %s takes an item out" takes the middle item out by `deleteBackward` at its start, `break.insert` on it while empty, `list.outdent` and `list.toggle`, and asserts the numbers 1, none, 2. Checked 2026-10-10.
 
 - `EDIT-LIST-ENTER-EMPTY-001` `locked` `↵`
 
@@ -817,7 +836,7 @@ Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx:427` "cle
 - |Item
 ```
 
-- `EDIT-LIST-START-MD-401` `proposed` `Markdown parse and serialize`: an ordered list keeps its explicit start number, including `0` and the start of a list that follows an interrupting paragraph, through parse, value replacement and serialize
+- `EDIT-LIST-START-MD-401` `proposed` `Markdown parse and serialize`: an ordered list keeps its explicit start number, including `0` and the start of a list that follows an interrupting paragraph, through parse, value replacement and serialize; parse gives each ordered list its start as a forced restart on its first item, so separate Markdown lists never count as one
 
 ```text
 1. First list item
@@ -833,7 +852,7 @@ the same markdown after parse, value replacement and serialize
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: CommonMark ordered-list start numbers; primary UX ref: Typora; secondary ref: Milkdown
 Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/markdown-parity-matrix.md:86 and :225
-Proof: `packages/platejs/src/markdown/lib/deserializer/deserializeMdList.spec.tsx:16` "preserves ordered-list starts after setValue normalizes the value" parses the scenario and asserts `listStart: 2` on `Second list item` before and after `value.replace`; `:84` "preserves an ordered list that starts at zero" asserts `listStart: 0` and serializes exactly `0. Zero` and `1. One`; and `packages/platejs/src/markdown/lib/serializer/standardList.spec.ts:264` "serialize restarted ordered lists separated by a paragraph" writes the parsed shape back to the scenario's markdown. Together they prove the rule, though no single test runs parse, replacement and serialize; tag candidates. Checked 2026-10-08.
+Proof: `packages/platejs/src/markdown/lib/deserializer/deserializeMdList.spec.tsx:16` "preserves ordered-list starts after setValue normalizes the value" parses the scenario and asserts `listRestart: 2` on `Second list item` before and after `value.replace`; `:84` "preserves an ordered list that starts at zero" asserts `listRestart: 0` and serializes exactly `0. Zero` and `1. One`; and `packages/platejs/src/markdown/lib/serializer/standardList.spec.ts:272` "serialize restarted ordered lists separated by a paragraph" writes the parsed shape back to the scenario's markdown. Together they prove the rule, though no single test runs parse, replacement and serialize; tag candidates. Checked 2026-10-08; the parse shape moved from `listStart` to `listRestart` on 2026-10-10, because parsed lists carry no list id.
 
 ## Task List
 

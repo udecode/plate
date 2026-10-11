@@ -44,3 +44,5 @@ export type {
   AuthoredStatus,
   AuthoredView,
 } from './types';
+
+export { authoredTreeProof } from './tree/proof-plugin';

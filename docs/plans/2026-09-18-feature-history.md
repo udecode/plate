@@ -80,7 +80,7 @@ Verification evidence:
   109 absent historical inputs remain labeled unavailable. Generation/check
   passes for 64 hubs and 809 source groups. Compact lookup is 7.7/8.4/9.0 KB
   for Table/Suggestions/Comments versus prior 197/344/295 KB JSON observations.
-- Dotai skill, preservation and manifest validators pass. Named Best API Review
+- Dotai skill, preservation and manifest validators pass. Named Verdict
   installation and generated Plate resource mirrors are exact. Formatting and
   scoped diff whitespace checks pass. Autoreview is not run on `next`.
 

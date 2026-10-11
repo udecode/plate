@@ -139,7 +139,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every execution-shaping decision | Public shape, invariants, laws, adoption, proof, and release treatment are fixed below. |
 | Fresh source evidence | yes | Recheck decision-changing claims on current next | Source census and disposable probes ran on 2026-09-21. |
-| Best API review | yes | Resolve all material call-shape findings | object is the only new public fact; keyboardSelectable is deleted and no isContent or builder is added. |
+| Verdict | yes | Resolve all material call-shape findings | object is the only new public fact; keyboardSelectable is deleted and no isContent or builder is added. |
 | Pre-acceptance scale proof | no | Record source-backed N/A | No scale-sensitive owner changes; see Scale contract. |
 | Production scale rerun contract | no | Record source-backed N/A | No performance claim or scale-sensitive path is accepted. |
 | Conditional risk and adoption | yes | Assign browser, docs, behavior, release, and collaboration work | Slices S2–S5 and the proof matrix name each owner and gate. |

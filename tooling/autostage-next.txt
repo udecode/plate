@@ -5,6 +5,7 @@
 
 docs/**
 AGENTS.md
+CODING_STANDARDS.md
 .agents/**
 .changeset/**
 benchmarks/**

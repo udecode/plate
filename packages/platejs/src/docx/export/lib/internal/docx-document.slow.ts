@@ -17,6 +17,63 @@ const createDocxDocument = (overrides = {}) =>
   });
 
 describe('DocxDocument', () => {
+  it('writes each bullet level its symbol font inside the level', () => {
+    const document = createDocxDocument();
+
+    document.openList('ul', { attributes: { 'data-list-id': 'tasks' } }, 0);
+    document.createNumbering('ul', {});
+
+    const levels = [
+      ...new DOMParser()
+        .parseFromString(document.generateNumberingXML(), 'application/xml')
+        .getElementsByTagName('w:lvl'),
+    ];
+
+    expect(levels).toHaveLength(16);
+    expect(
+      levels.every(
+        (level) =>
+          level.getElementsByTagName('w:rPr')[0]?.parentElement === level
+      )
+    ).toBe(true);
+  });
+
+  it('writes one definition for a list that mixes bullets and numbers', () => {
+    const document = createDocxDocument();
+    const open = (type: 'ol' | 'ul', level: number, start?: number) => {
+      const counter = document.openList(
+        type,
+        { attributes: { 'data-list-id': 'm' }, start },
+        level
+      );
+
+      counter.next += 1;
+
+      return counter.numberingId;
+    };
+    const instances = [
+      open('ul', 0),
+      open('ol', 1, 1),
+      open('ol', 1, 2),
+      open('ul', 0),
+      open('ol', 1, 1),
+    ];
+    const numbering = new DOMParser().parseFromString(
+      document.generateNumberingXML(),
+      'application/xml'
+    );
+    const formats = [...numbering.getElementsByTagName('w:lvl')]
+      .slice(0, 2)
+      .map((level) =>
+        level.getElementsByTagName('w:numFmt')[0]?.getAttribute('w:val')
+      );
+
+    expect(new Set(instances).size).toBe(1);
+    expect(numbering.getElementsByTagName('w:abstractNum')).toHaveLength(1);
+    expect(numbering.getElementsByTagName('w:num')).toHaveLength(1);
+    expect(formats).toEqual(['bullet', 'decimal']);
+  });
+
   it('keeps remote images disabled unless explicitly enabled', () => {
     expect(createDocxDocument().allowRemoteImages).toBe(false);
     expect(

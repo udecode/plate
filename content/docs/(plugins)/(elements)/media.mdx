@@ -358,7 +358,7 @@ direct inline children store captions. Extends `MediaPluginState`.
 
 Plugin for persisted media draft slots and editor-owned upload tasks. The
 headless `BaseUploadPlugin` from `platejs/upload` owns the same state machine;
-the React plugin adds the optional native DOM drop adapter.
+the React plugin also lands dropped files through the block-drag landing rules.
 
 <API name="UploadPlugin">
 <APIOptions type="UploadPluginState">
@@ -384,9 +384,10 @@ the React plugin adds the optional native DOM drop adapter.
 </APIOptions>
 </API>
 
-The React `UploadPlugin` also accepts `nativeDrop: boolean` (default `false`).
-When enabled, dropped files land at the edge under the pointer, through the same
-landing rules as a [block drag](/docs/dnd). A refused drop inserts nothing.
+The React `UploadPlugin` lands dropped files at the block edge under the pointer,
+through the same landing rules as a [block drag](/docs/dnd). A refused drop
+inserts nothing. An editor with only `BaseUploadPlugin` treats a dropped file
+like a pasted one, without landing rules or vetoes.
 
 ## API
 

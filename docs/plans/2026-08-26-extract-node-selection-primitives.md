@@ -186,7 +186,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All implementation, adoption, release, doctrine, package, registry, browser, and handoff rows pass. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final searches find only the two accepted public components and the renamed table marker; rejected wrappers and styling props are absent. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | Final verdict: two sibling primitives, ordinary DOM props, no root/provider/hook/plugin. Required positioning, hit testing, and accessibility moved into Core. No P0/P1 remains. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding | Final verdict: two sibling primitives, ordinary DOM props, no root/provider/hook/plugin. Required positioning, hit testing, and accessibility moved into Core. No P0/P1 remains. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work | Package/registry adoption, browser, release, docs doctrine, and agent sync completed; public issue provenance is N/A. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Commands and Browser evidence are recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff section is complete. |

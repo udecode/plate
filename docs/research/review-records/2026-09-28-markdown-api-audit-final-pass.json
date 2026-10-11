@@ -5,7 +5,7 @@
   "date": "2026-09-28",
   "question": "Which canonical mappings preserve document meaning through Markdown parse/serialize, and where must loss be explicit?",
   "model": "GPT-6 / Codex",
-  "method": "best-api-review/history-v3",
+  "method": "verdict/history-v3",
   "trigger": "Explicit repeat request after a model switch: adversarially review the Markdown audit as a last pass and find anything omitted.",
   "requirements": [
     "Reconcile the current review, settled persisted-identity law and later conversion execution before changing the target.",
@@ -146,7 +146,7 @@
       "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
       "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
       "pnpm-lock.yaml": "b454aad2b2feff4f1d9e47e0205006fd264b4509f5deb86408a998fcd892c446",
-      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/skills/verdict/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
       ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
       "docs/plans/2026-08-13-separate-runtime-keys-and-persisted-element-ids.md": "4c0ed7c5fe807e4b244c87b31776ecf00245de8946fc25d18e509e7d36c997be",
       "docs/plans/2026-09-24-document-first-export-contracts.md": "996d9fe5fe13cc81f884d80ba88a41d6352bf2b656d53e6cba9ccfae604fe818"

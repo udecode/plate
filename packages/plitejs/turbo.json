@@ -264,7 +264,9 @@
         "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:diff",
-        "typecheck:partition:history"
+        "typecheck:partition:dom",
+        "typecheck:partition:history",
+        "typecheck:partition:yjs"
       ],
       "inputs": [
         "src/authored/**",

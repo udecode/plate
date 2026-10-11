@@ -154,7 +154,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every scoped readiness condition | Migration packages build and import through the new subpaths; root entrypoints remain clean |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final source sweeps found migration symbols only in migration/release owners and no media legacy transform in the current plugin |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | Accepted versioned opt-in plugin shape implemented without a generic registry |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding | Accepted versioned opt-in plugin shape implemented without a generic registry |
 | Conditional risk and adoption | yes | Complete risk/docs/browser/provenance work | Ambiguity, configured types, initial/deferred loads, primary/named roots, exports, release teaching, and browser caveat covered |
 | Verification recorded | yes | Record exact execution gates | Verification evidence below |
 | Handoff prepared | yes | Prepare ownership, breaks, proof, risks, and execution order | Final handoff section complete |

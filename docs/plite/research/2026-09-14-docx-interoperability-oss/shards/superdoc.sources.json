@@ -4,7 +4,7 @@
   "observed_on": "2026-09-14",
   "freshness_checked_at_utc": "2026-09-14T18:05:00Z",
   "timestamp_precision": "minute approximation; clock tool at completion read 2026-09-14T18:05:43Z",
-  "method": "bounded best-api-review OSS sidecar; Codex GPT-6; no independent worker",
+  "method": "bounded verdict OSS sidecar; Codex GPT-6; no independent worker",
   "repositories": [
     {
       "repo_key": "github.com/superdoc/docx-editor",

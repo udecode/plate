@@ -5,8 +5,8 @@
   "date": "2026-10-05",
   "question": "Which edit grouping and replay rules preserve user intent, and can competing history owners be removed?",
   "model": "Claude Opus 5.5",
-  "method": "best-api-review/history-v4",
-  "trigger": "The owner objected to writing `void editor.api.history.undo()`, asked whether to disable the floating-promise lint, and asked for a harsh first-principles best-api-review of async editor operations: whether an async history API is dangerous for synchronous expectations and whether to support it at all. This scope was closed by the 2026-10-04 Stop; it is not the unit `next` returns.",
+  "method": "verdict/history-v4",
+  "trigger": "The owner objected to writing `void editor.api.history.undo()`, asked whether to disable the floating-promise lint, and asked for a harsh first-principles verdict of async editor operations: whether an async history API is dangerous for synchronous expectations and whether to support it at all. This scope was closed by the 2026-10-04 Stop; it is not the unit `next` returns.",
   "requirements": [
     "One user-visible undo and redo order across document edits and comment-thread creation: Undo C/B/A, Redo A/B/C (TaskHub-22 AC1, AC2).",
     "A refused, stale, thrown or concurrent comment replay leaves the branch head in place and never skips B to A (AC4, AC5); comment persistence stays server-first (AC7).",

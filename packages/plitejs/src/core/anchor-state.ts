@@ -111,6 +111,12 @@ export type AnchorChangeContext = Readonly<{
   ) => number | null;
   memoize: <T>(key: string, read: () => T) => T;
   replace: boolean;
+  /**
+   * Whether the runtime's node key paths describe `after`. A recorder's
+   * rewrite of a draft leaves them on the draft it rewrote, so anchors map
+   * by position.
+   */
+  runtimePaths: boolean;
   structural: (root: string) => boolean;
 }>;
 
@@ -380,9 +386,11 @@ export const enterAnchorScope = (editor: Editor, value: EditorDocumentValue) =>
     state: createActiveAnchorState(value),
   });
 
+export const hasScopedAnchorListeners = (editor: object) =>
+  (getActiveAnchorState(editor)?.listeners.size ?? 0) > 0;
+
 export const hasActiveAnchors = (editor: object) =>
-  (getActiveAnchorState(editor)?.listeners.size ?? 0) > 0 ||
-  (BOUND_ANCHORS.get(editor) ?? 0) > 0;
+  hasScopedAnchorListeners(editor) || (BOUND_ANCHORS.get(editor) ?? 0) > 0;
 
 export const getAnchorStateValue = (editor: Editor) =>
   getActiveAnchorState(editor)?.value;
@@ -412,6 +420,7 @@ const createAnchorChangeContext = (
   beforeIndexes: Map<string, DocumentIndex>,
   afterIndexes: Map<string, DocumentIndex>,
   replace: boolean,
+  runtimePaths: boolean,
   commit?: EditorCommit
 ): AnchorChangeContext => {
   const memo = new Map<string, unknown>();
@@ -468,6 +477,7 @@ const createAnchorChangeContext = (
       return value;
     },
     replace,
+    runtimePaths,
     structural: (root) =>
       commit?.changed.has('structure', toPublicRoot(root)) ?? true,
   };
@@ -1092,7 +1102,11 @@ export const notifyAnchorChanges = (
   editor: Editor,
   change: DocumentChange,
   indexedAfter?: ReadonlyMap<string, DocumentIndex>,
-  options: Readonly<{ commit?: EditorCommit; replace?: boolean }> = {}
+  options: Readonly<{
+    commit?: EditorCommit;
+    replace?: boolean;
+    runtimePaths?: boolean;
+  }> = {}
 ) => {
   const state = getActiveAnchorState(editor);
 
@@ -1110,6 +1124,7 @@ export const notifyAnchorChanges = (
     beforeIndexes,
     afterIndexes,
     options.replace === true,
+    options.runtimePaths !== false,
     options.commit
   );
 

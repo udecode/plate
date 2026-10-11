@@ -15,6 +15,7 @@ import {
   getPlateRuntime,
 } from './compilePlateModel';
 import {
+  createContentFormatDocument,
   createPluginFormatModelView,
   createPluginFormatOperationContext,
 } from './pluginFormatOperation';
@@ -129,7 +130,7 @@ export const serializePlatePlainText = (
   state: EditorCoreStateView
 ): StructuralPlainTextResult => {
   const { formats, getContext } = compile(editor);
-  const document = state.value();
+  const document = createContentFormatDocument(input);
   const operationKey = Object.freeze({});
 
   return serializeStructuralPlainText(input, state, (context) => {
@@ -141,7 +142,7 @@ export const serializePlatePlainText = (
         ...createPluginFormatModelView(
           document,
           context.node,
-          state.nodes.path(context.node) ?? context.path,
+          context.path,
           context.root
         ),
         rootText: context.rootText,

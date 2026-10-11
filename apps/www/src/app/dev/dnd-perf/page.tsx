@@ -1,12 +1,18 @@
 'use client';
 
-import { EditorRoot, useCreateEditor } from 'platejs/react';
+import { transferVeto } from 'platejs';
+import { definePlugin, EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { ColumnKit } from '@/registry/components/editor/column';
 import { DndKit } from '@/registry/components/editor/dnd';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
+import { UploadKit } from '@/registry/components/editor/upload';
+
+const RefuseFileDropsPlugin = definePlugin('refuseFileDrops', {
+  contributions: [transferVeto.of(({ payload }) => payload.kind === 'files')],
+});
 
 const paragraph = (text: string) => ({
   children: [{ text }],
@@ -18,9 +24,13 @@ const paragraph = (text: string) => ({
 function DndPerfEditor({
   blocks,
   columns,
+  refuse,
+  upload,
 }: {
   blocks: number;
   columns: boolean;
+  refuse: boolean;
+  upload: boolean;
 }) {
   const value = Array.from({ length: blocks }, (_, index) =>
     paragraph(`Block ${index}`)
@@ -40,7 +50,13 @@ function DndPerfEditor({
           ...value.slice(10),
         ]
       : value,
-    plugins: [...BasicBlocksKit, ...DndKit, ...(columns ? ColumnKit : [])],
+    plugins: [
+      ...BasicBlocksKit,
+      ...DndKit,
+      ...(columns ? ColumnKit : []),
+      ...(upload ? UploadKit : []),
+      ...(refuse ? [RefuseFileDropsPlugin] : []),
+    ],
   });
 
   return (
@@ -56,6 +72,8 @@ export default function DndPerfPage() {
   const [options, setOptions] = React.useState<{
     blocks: number;
     columns: boolean;
+    refuse: boolean;
+    upload: boolean;
   } | null>(null);
 
   React.useEffect(() => {
@@ -66,6 +84,8 @@ export default function DndPerfPage() {
     setOptions({
       blocks: Number.isSafeInteger(value) && value > 0 ? value : 1000,
       columns: params.has('columns'),
+      refuse: params.has('refuse'),
+      upload: params.has('upload'),
     });
   }, []);
 

@@ -141,7 +141,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Done: decisions D1–D7 resolved; slices and proof concrete |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Done 2026-09-28 against commit `a54dd033ba` |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | Done: see Best API verdict; no open P0/P1 |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding | Done: see Best API verdict; no open P0/P1 |
 | Pre-acceptance scale proof | yes | Matched baseline/target result | Done: derived 1.02× hand-written, overlapping ranges, identical documents |
 | Production scale rerun contract | yes | Exact rerun per slice | Done: tracked Markdown benchmark in S1 and S3 |
 | Conditional risk and adoption | yes | Complete triggered work | Done: docs, doctrine, checker and changeset owners named in S4 |

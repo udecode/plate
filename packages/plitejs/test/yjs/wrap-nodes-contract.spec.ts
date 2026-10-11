@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import type { Descendant } from '../../src/index';
+import { history } from '../../src/history';
+import {
+  createEditor,
+  type Descendant,
+  defineEditorSchema,
+  schema,
+} from '../../src/index';
 import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
@@ -94,6 +100,32 @@ describe('plitejs/yjs wrapNodes collaboration contract', () => {
     assert.deepEqual(getPeerTopLevelTypes(b), ['quote']);
   });
 
+  it('preserves concurrent remote text when an offline nested wrap reconnects', () => {
+    const peers = createSeededYjsHistoryPeers({
+      children: [
+        { type: 'section', children: [paragraph('alpha')] },
+      ] as Descendant[],
+      clientIds: ['a', 'b', 'c'],
+      numericClientIds: clientIds,
+    });
+    const [a, b] = peers;
+
+    disconnectYjsPeer(b);
+    b.editor.update.nodes.wrap({ children: [], type: 'quote' }, { at: [0, 0] });
+    a.editor.update.text.insert('!', { at: { path: [0, 0, 0], offset: 5 } });
+    syncConnectedPeers(peers);
+    connectYjsPeerAndSync(b, peers);
+
+    for (const peer of peers) {
+      assert.deepEqual(readPeerChildren(peer), [
+        {
+          type: 'section',
+          children: [{ type: 'quote', children: [paragraph('alpha!')] }],
+        },
+      ]);
+    }
+  });
+
   it('splits text inside a wrapped block through a canonical change', () => {
     const peer = createPeer('b');
 
@@ -179,4 +211,52 @@ describe('plitejs/yjs wrapNodes collaboration contract', () => {
     assertPeerTexts(peers, ['alpha!']);
     assert.deepEqual(getPeerTopLevelTypes(b), ['quote']);
   });
+
+  for (const wrapFirst of [true, false]) {
+    it(`keeps a concurrent append when an inline wrap splits its text (${wrapFirst ? 'wrap' : 'append'} delivered first)`, () => {
+      const InlineLinkSchema = defineEditorSchema('schema:yjs-inline-link', {
+        elements: {
+          link: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            inline: true,
+          },
+        },
+        root: schema.content.not(schema.content.text()),
+        unknown: 'preserve',
+      });
+      const [a, b] = createSeededYjsHistoryPeers({
+        children: initialValue(),
+        clientIds: ['a', 'b'],
+        createEditor: () =>
+          createEditor({ plugins: [InlineLinkSchema, history()] }),
+        numericClientIds: clientIds,
+      });
+
+      b.editor.update.nodes.wrap(
+        { children: [], type: 'link' },
+        {
+          at: {
+            anchor: { path: [0, 0], offset: 1 },
+            focus: { path: [0, 0], offset: 3 },
+          },
+          split: true,
+        }
+      );
+      appendRemoteText(a);
+      syncConnectedPeers(wrapFirst ? [b, a] : [a, b]);
+
+      for (const peer of [a, b]) {
+        assert.deepEqual(readPeerChildren(peer), [
+          {
+            type: 'paragraph',
+            children: [
+              { text: 'a' },
+              { type: 'link', children: [{ text: 'lp' }] },
+              { text: 'ha!' },
+            ],
+          },
+        ]);
+      }
+    });
+  }
 });

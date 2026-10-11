@@ -133,7 +133,7 @@ Completion Gates:
 | --- | --- | --- |
 | Binary readiness | yes | `pnpm check:plite` passed in 116418ms after a fresh 79-batch Chromium proof passed 710 tests |
 | Fresh source evidence | yes | Final authored-source sweeps find no deleted package/plugin/namespace or rejected read alias in live source |
-| Best API review | yes | The accepted target follows the maximum-value hard-cut gate: one Plite authority, one singular range read, one plural projection, and exact node membership |
+| Verdict | yes | The accepted target follows the maximum-value hard-cut gate: one Plite authority, one singular range read, one plural projection, and exact node membership |
 | Conditional browser risk | yes | Exact child-root replay passed five fresh Chromium runs; NodeSelection manual Browser drag and focused Playwright passed |
 | Generated and doctrine parity | yes | Registry build and barrels passed; source/mirror doctrine contains the repo-wide hard-cut counterfactual and canonical-read law |
 | P1 autoreview | yes | Three mandatory helper invocations exhausted the repository cap before model execution; no clean-review claim is made and manual source audit found no verified P0/P1 defect |

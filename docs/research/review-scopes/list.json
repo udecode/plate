@@ -37,10 +37,17 @@
     "packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts",
     "packages/platejs/src/features/indent/lib/index.ts",
     "packages/platejs/src/features/list/index.ts",
+    "packages/platejs/src/features/list/lib/BaseListPlugin.authored-tree.spec.ts",
     "packages/platejs/src/features/list/lib/BaseListPlugin.slow.tsx",
     "packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx",
     "packages/platejs/src/features/list/lib/BaseListPlugin.ts",
     "packages/platejs/src/features/list/lib/index.ts",
+    "packages/platejs/src/features/list/lib/listIdentity.internal.ts",
+    "packages/platejs/src/features/list/lib/listIndex.internal.slow.ts",
+    "packages/platejs/src/features/list/lib/listIndex.internal.spec.ts",
+    "packages/platejs/src/features/list/lib/listIndex.internal.ts",
+    "packages/platejs/src/features/list/lib/listNumbering.internal.spec.ts",
+    "packages/platejs/src/features/list/lib/listNumbering.internal.ts",
     "packages/platejs/src/utils/plate-keys.ts"
   ],
   "consumers": [

@@ -5,7 +5,7 @@
   "date": "2026-09-17",
   "question": "What owns table topology, cell coordinates, selection, clipboard and layout?",
   "model": "GPT-6 (exact runtime variant unavailable)",
-  "method": "best-api-review/history-v2 + plite-research; first-principles cross-layer comparison",
+  "method": "verdict/history-v2 + plite-research; first-principles cross-layer comparison",
   "trigger": "User explicitly requests deep first-principles table redesign and promotion assessment across Plite/Plate, especially selection and resizing, using external editor source research.",
   "requirements": [
     "One canonical document/change/selection authority with root identity, direction, mapping and history.",
@@ -96,7 +96,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
       "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
-      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/skills/verdict/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
       ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec",
       "packages/platejs/src/features/table/lib/types.ts": "374528fe899c740ca0a3dd7a12d4ce1be6efeb39b640c633983d22304fcfde2e",
       "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": "46caf4f36fb5cd298438d119f527cfbea733f81dcc0899972b45d362f2d43c2a",

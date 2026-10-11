@@ -6,7 +6,12 @@ import type {
 } from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import { normalizeNodeMatch } from '../utils/node-match';
-import { getCorrectionUpdateView, getMutationVersion } from './public-state';
+import { isEditorContent } from './content';
+import {
+  getCorrectionUpdateView,
+  getMutationVersion,
+  withDraftSource,
+} from './public-state';
 
 export const matchesEditorCorrection = (
   entry: NodeEntry,
@@ -32,13 +37,19 @@ export const runEditorCorrection = <
   entry: NodeEntry,
   correction: EditorCorrection<Editor<V, TPlugins>>
 ) => {
+  // A non-content entry, such as a struck suggestion, stays as recorded until
+  // its capability decides it.
+  if (!isEditorContent(editor, entry[0])) return false;
+
   const before = getMutationVersion(editor);
 
-  correction.correct({
-    editor,
-    entry,
-    tx: getCorrectionUpdateView(editor),
-  } as EditorCorrectionContext<Editor<V, TPlugins>>);
+  withDraftSource(editor, 'correction', () =>
+    correction.correct({
+      editor,
+      entry,
+      tx: getCorrectionUpdateView(editor),
+    } as EditorCorrectionContext<Editor<V, TPlugins>>)
+  );
 
   return getMutationVersion(editor) !== before;
 };

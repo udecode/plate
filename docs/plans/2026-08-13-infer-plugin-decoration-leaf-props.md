@@ -76,7 +76,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve target call shapes | Direct descriptor contracts accepted |
 | Fresh source evidence | yes | Re-audit current checkout | Four scoped `rg` audits return zero matches |
-| Best API review | yes | Resolve P0/P1 shape risks | Compact public `DefinitionOf` carrier avoids internal recursive expansion |
+| Verdict | yes | Resolve P0/P1 shape risks | Compact public `DefinitionOf` carrier avoids internal recursive expansion |
 | Verification recorded | yes | Record exact commands/results | Verification evidence below |
 | Handoff prepared | yes | State changes, proof, blockers | This plan and final response |
 | P2 autoreview | yes | Run scoped P2 review | Three attempts documented; helper blocked by oversized untracked input, shared-tree mutation, then idle reviewer |

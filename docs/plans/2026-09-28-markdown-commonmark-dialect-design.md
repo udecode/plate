@@ -125,7 +125,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | D1–D22 implemented or explicitly superseded; S1–S6 complete |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Three source inventories and the prototype gates rerun today |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Target call sites; D4, D5, D10, D16, D22 |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Target call sites; D4, D5, D10, D16, D22 |
 | Pre-acceptance scale proof | yes | Matched baseline/target result | Scale contract: no gross regression; B4 attributed to the shared tokenizer |
 | Production scale rerun contract | yes | Exact final production-path rerun | S6, Benchmark owner, same cohorts and budgets |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work | Consumer inventory, S3 browser proof, S5 docs/doctrine, Open risks |

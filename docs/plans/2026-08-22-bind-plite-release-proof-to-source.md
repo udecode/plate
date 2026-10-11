@@ -115,7 +115,7 @@ Start Gates:
 | Prompt requirements captured | yes | The accepted feedback, scope, non-goals, claim-width law, proof surface, stop condition, deliverables, and final local-only handoff are copied above before implementation. |
 | Active goal and plan verified | yes | No active goal existed; a new goal names this exact plan and binary threshold. |
 | Current owners read | yes | Read live public proof API/tests/exports/docs, raw receipt validator/runner, soak runner, root release scripts, Plite CI/release workflows, Plite Vision, and the architecture claim. |
-| Best API target resolved | yes | Best API review rejects public constructors that turn caller assertions into evidence; keep only truthful structural validators and one deep executable manifest gate. |
+| Best API target resolved | yes | Verdict rejects public constructors that turn caller assertions into evidence; keep only truthful structural validators and one deep executable manifest gate. |
 | Mode and execution boundary resolved | yes | Standard one-shot execution; user explicitly authorized the accepted item 3 repair; no remote mutation. |
 | Docs pack selected | yes | Internal package reference, Plite claim policy, and Vision need current-state repair. |
 | `docs-creator` loaded | yes | Read the source workflow, complete style reference, and Guide/System lane before changing `content/docs/(guides)/browser.mdx`. |
@@ -124,7 +124,7 @@ Start Gates:
 | Docs style doctrine read | yes | Read `docs-creator` style-and-structure and the Guide/System lane; current-state voice, exact ownership, real imports, and source-backed claims apply. |
 | Documented source owner identified | yes | Browser package owns proof API; Plite Vision/absolute claim own claim width; release scripts/workflow own publication enforcement. |
 | Agent-native pack selected | yes | Best API doctrine must learn that public proof APIs verify provenance rather than manufacture evidence. |
-| Agent-facing action surface identified | yes | Future Best API reviews must reject self-asserted pass flags presented as proof. |
+| Agent-facing action surface identified | yes | Future Verdicts must reject self-asserted pass flags presented as proof. |
 | Source rule versus generated mirror boundary identified | yes | Edit `.agents/rules/best-api.mdc` and its smallest source reference if needed; regenerate `.agents/skills/best-api/**` with `pnpm install`. |
 | `agent-native-reviewer` loaded or waiver recorded | yes | Required at closeout after doctrine repair; load before running it. |
 | Package/API pack selected | yes | Published `@platejs/browser/core` release-proof exports change. |
@@ -173,7 +173,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | FAILED: the required fresh P1 autoreview did not pass before the three-invocation cap. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Passed: final source audits, contract proof, docs proof, lint, diff, and workflow parsing use the current checkout. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Passed: the fake public proof builder is hard-cut and the remaining public validator accepts unknown input plus an exact commit. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Passed: the fake public proof builder is hard-cut and the remaining public validator accepts unknown input plus an exact commit. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | Passed within scope: provenance and package adoption are covered; Benchmark is N/A because no performance claim exists; browser docs rendering is explicitly unavailable due unrelated registry failures. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Passed: exact commands, counts, boundaries, and failures are recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Passed: implementation is ready for a new-scope review, with no release or remote mutation claimed. |

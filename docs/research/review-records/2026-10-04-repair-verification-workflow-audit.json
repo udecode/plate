@@ -5,12 +5,12 @@
   "date": "2026-10-04",
   "question": "Which repair and proof boundaries prevent repeated editor defects without duplicate rules, proxy completion or compulsory publication?",
   "model": "Claude Opus 5.5",
-  "method": "best-api-review/history-v3",
-  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 34. It is not the unit next returned, which was reads.",
+  "method": "verdict/history-v3",
+  "trigger": "The owner asked for a verdict audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 34. It is not the unit next returned, which was reads.",
   "requirements": [
     "One entry for individual and related bug repairs, including diagnosis-only requests.",
     "A green proxy never closes a failing or unexecuted reporter interaction; the reporter assertion must run (AGENTS.md Pokayoke).",
-    "Failed-fix recovery revokes earlier green claims and escalates to best-api-review on a second failed fix or cross-layer compensation.",
+    "Failed-fix recovery revokes earlier green claims and escalates to verdict on a second failed fix or cross-layer compensation.",
     "Repeated or corpus regression work keeps its validator, plan template and proof receipts.",
     "Commits, pushes and PRs wait for the user's word (AGENTS.md Delivery).",
     "One owner per rule; no duplicate repair coordinators."
@@ -86,8 +86,8 @@
       "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
       "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
       "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
-      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
-      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b",
+      ".agents/skills/verdict/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/verdict.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b",
       ".agents/playbooks/bug-fix.md": "ab6cacb171a29329acc218361e614d9a590c6b4d2f0971462c742b9a8f16c4c4",
       ".agents/rules/verify/references/corpus.md": "e37d3b85d69be6cd520502dff29df1725ae2cae2f9675d1b20387bad68230cff",
       ".agents/rules/verify/scripts/validate-regression-plan.mjs": "ef0f018e74aa278fd137a7f46b8ad76c60ebbccdbcc2e0926abffbadb140c50e"

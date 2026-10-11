@@ -2,7 +2,7 @@
 title: Upload lifetime and draft asset ownership
 type: decision
 status: accepted
-updated: 2026-10-04
+updated: 2026-10-10
 source_refs:
   - ../../../packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts
   - ../../../packages/platejs/src/react/features/upload/UploadPlugin.tsx
@@ -24,6 +24,8 @@ related:
 ---
 
 # Upload lifetime and draft asset ownership
+
+**Build of 2026-10-10.** The React UploadPlugin's nativeDrop option is gone. The plugin's dragOver and drop handlers take every external drag that carries files. They land its files at the block edge under the pointer through the block-drag landing rules, and consume a drop that no edge admits. The copied DnD kit draws the drop line. An editor with only BaseUploadPlugin still handles dropped files as a paste, without landing rules or vetoes. The [uploads review](../../plans/2026-10-09-uploads-review.md) holds the plan, the proof and its limits; the audit below stays as history.
 
 **Audit of 2026-10-04.** Pursue. The browser-provider rename and the draft lifetime laws hold, but the React UploadPlugin's nativeDrop option lost its only reason when DnD stopped routing files. With the package default (false), every external file drop falls through Plite's default drop into the insertData interceptor, the policy-less path the DnD design says a drop must never take, while the docs say dropped files become uploads only when the option is on. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-uploads-audit` and `2026-10-04-uploads-audit-2` hold the evidence.
 

@@ -22,25 +22,25 @@ Blocked condition:
 An unavailable canonical source could leave its edit owner unresolved; inspect available provenance and report the precise limit without inventing ownership.
 
 Work Checklist:
-- [x] Read the user-named Best API Review and Plite Research methods and applicable first-principles and workflow routing. Evidence: current generated skills, Best API decision sections, Task workflow, and Maintain Workflow ownership method.
+- [x] Read the user-named Verdict and Plite Research methods and applicable first-principles and workflow routing. Evidence: current generated skills, Best API decision sections, Task workflow, and Maintain Workflow ownership method.
 - [x] Resolve standing goal applicability and authority. Evidence: Autogoal entrypoint and full method; native goal was absent; current branch read as next before artifact creation.
 - [x] Inspect editor-behavior's specification, scenario, parity, reference, and roadmap contracts. Evidence: file map and exact-path checks below.
 - [x] Inspect compiled research decisions/schema/log, dated research ledgers, and independent external audit cursors. Evidence: 44 research directories, header inventory, research schema, and 11 registered external audits.
 - [x] Inspect representative recent iterations and source/helper consumers for actual history and deduplication behavior. Evidence: September 9 performance iteration, September 10 authored changes and structural diff, prior-candidate reconciler, and research helper dispatch.
 - [x] Compare reuse, consolidation, a new store, and skill-local history; select one minimal target with exact file dispositions. Evidence: alternatives and selected ownership below.
 - [x] Define stable identity, evidence freshness, re-review triggers, model provenance, negative-result reuse, and historical backfill rules. Evidence: repeated-review contract below.
-- [x] Verify canonical editable workflow sources and recommend the first bounded follow-up. Evidence: shared Best API Review source exists and matches its Plate installation; project adaptations identified below.
+- [x] Verify canonical editable workflow sources and recommend the first bounded follow-up. Evidence: shared Verdict source exists and matches its Plate installation; project adaptations identified below.
 - [x] Save a source-linked assessment and validate local links. Evidence: 44 local links resolve; the final plan checker is the closing verification command.
 
 Method obligations:
-- Best API Review: treat existing document and skill boundaries as deletable, distinguish facts from judgments, and recommend one next owner without executing downstream work.
+- Verdict: treat existing document and skill boundaries as deletable, distinguish facts from judgments, and recommend one next owner without executing downstream work.
 - Plite Research: examine the existing query/read/lead/rejection/promotion owners and commit-aware evidence. Its external-search counts, promotion run, and new research ledgers are not applicable because this task assesses the workflow rather than researching external editor designs.
 - Maintain Workflow: distinguish shared source from project adaptation and generated installations. Proposed workflow changes are not applied by this assessment.
 - Autogoal and Task: retain one assessment plan, source-linked obligations, scope and proof limits. Browser, package tests, registry generation, doctrine repair, and Agent Native Reviewer are not applicable because no workflow or product source changes are made.
 - Technical Writing: preserve measured counts and their limits; label proposed files and behavior; verify links and distinguish this assessment from implementation.
 
 Evidence and findings:
-**Pursue: connect the existing research and decision owners before building the global review queue.** Keep behavioral contracts in editor-behavior, normalized decisions in the compiled research layer, dated review evidence beside the existing run artifacts, and upstream audit cursors with Editor Audit. Add one shared review index. Neither Best API Review nor each model needs its own history store.
+**Pursue: connect the existing research and decision owners before building the global review queue.** Keep behavioral contracts in editor-behavior, normalized decisions in the compiled research layer, dated review evidence beside the existing run artifacts, and upstream audit cursors with Editor Audit. Add one shared review index. Neither Verdict nor each model needs its own history store.
 
 ## What exists and what is missing
 
@@ -53,7 +53,7 @@ The repository already implements most of the intended storage boundaries:
 - Dated Plite research contains 44 immediate run directories. Among their immediate TSV files, 41 lead ledgers have 11 distinct ordered headers; 40 read logs have 17; 38 rejection ledgers have 10. These are schema-shape counts, not a count of erroneous rows. Some differences are legitimate extra fields, but future lookup cannot assume one uniform historical format.
 - [Performance iteration 2](../plite/research/2026-09-09-editor-performance-iteration-2/README.md) already reconciles earlier candidates. Its [reconciler](../plite/research/2026-09-09-editor-performance-iteration-2/reconcile-prior-candidates.mjs) hardcodes the preceding run's queue and matrices. This proves the job is real and supplies a useful example; it is not a general cross-run lookup.
 - [Authored changes](../plite/research/2026-09-10-authored-changes/README.md) retains decisions and rejected alternatives. [Structural diff OSS validation](../plite/research/2026-09-10-structural-diff-oss/README.md) records exact upstream commits in source refs. Neither run, nor September 9 performance iteration 2, is linked by its exact run-directory name from the current research index or log.
-- [The July Best API Review](../analysis/best-api-review.md) lives at an undated filename. Treat its conclusions as dated evidence, then reconcile them with current owners.
+- [The July Verdict](../analysis/best-api-review.md) lives at an undated filename. Treat its conclusions as dated evidence, then reconcile them with current owners.
 
 Exact-path inspection of backticked, non-glob source references found 69 missing paths out of 125 unique literal paths in [the parity matrix](../editor-behavior/markdown-parity-matrix.md), and 17 out of 22 in [the protocol matrix](../editor-behavior/editor-protocol-matrix.md). The scan included paths starting with packages/, apps/, or content/ and excluded whitespace, wildcard, and line-suffixed values. These are stale-reference observations, not missing-feature counts or behavior-test failures. They are sufficient to reject inheriting current coverage from the prose without reconciliation.
 
@@ -113,9 +113,9 @@ No system can promise zero repeated reading. The useful guarantee is that each r
 
 ## Workflow changes proposed
 
-The existing [Best API Review source](../../../dotai/skills/best-api-review/SKILL.md) at `/Users/zbeyens/git/dotai/skills/best-api-review/SKILL.md` matches the installed Plate copy byte for byte. Edit that shared source for the generic method. Keep the exact storage paths, IDs, commands, priority rules, and proof links in [Plate's review adapter](../../.agents/rules/task/references/best-api-review.md).
+The existing [Verdict source](../../../dotai/skills/best-api-review/SKILL.md) at `/Users/zbeyens/git/dotai/skills/best-api-review/SKILL.md` matches the installed Plate copy byte for byte. Edit that shared source for the generic method. Keep the exact storage paths, IDs, commands, priority rules, and proof links in [Plate's review adapter](../../.agents/rules/task/references/best-api-review.md).
 
-Best API Review needs two compact responsibilities: consult the project's prior-decision/evidence index before expensive investigation, and persist material Stop/Pursue/Defer outcomes with prior-review relation and source basis. Keep ordinary small questions lightweight and reuse the existing artifact. Persisting a negative decision is not permission to create a task or a consolation backlog.
+Verdict needs two compact responsibilities: consult the project's prior-decision/evidence index before expensive investigation, and persist material Stop/Pursue/Defer outcomes with prior-review relation and source basis. Keep ordinary small questions lightweight and reuse the existing artifact. Persisting a negative decision is not permission to create a task or a consolation backlog.
 
 Update [the Plite Research source](../../.agents/rules/plite-research.mdc) for lookup across runs, consistent future identity/version fields, and promotion links to the decision being informed. Update [Research Wiki's source](../../.agents/rules/research-wiki.mdc) and its existing schema/maintenance docs to compile the current view from dated evidence. The dated raw research should not be moved into the compiled layer wholesale.
 

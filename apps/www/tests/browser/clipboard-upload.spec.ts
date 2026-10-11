@@ -114,6 +114,63 @@ test('file paste starts after draft commit and aborts cleanly on undo', async ({
     });
 });
 
+const dropImageFile = async (page: Page, target: Locator) => {
+  const box = await target.boundingBox();
+  const dataTransfer = await page.evaluateHandle(() => {
+    const transfer = new DataTransfer();
+
+    transfer.items.add(
+      new File(['image bytes'], 'dropped.png', { type: 'image/png' })
+    );
+
+    return transfer;
+  });
+
+  expect(box).not.toBeNull();
+  const event = {
+    clientX: box!.x + box!.width / 2,
+    clientY: box!.y + 2,
+    dataTransfer,
+  };
+  await target.dispatchEvent('dragenter', event);
+  await target.dispatchEvent('dragover', event);
+  await target.dispatchEvent('drop', event);
+};
+
+test('a file dropped on the top half of a block lands before it', async ({
+  page,
+}) => {
+  const { editor, root } = await openProof(page);
+
+  await dropImageFile(page, root.locator('[data-editor-node-key]').first());
+
+  await expect
+    .poll(() => editor.get.modelValue())
+    .toMatchObject({
+      children: [
+        { kind: 'image', type: 'upload' },
+        { children: [{ text: 'target' }], type: 'paragraph' },
+      ],
+    });
+  await expect
+    .poll(() => getProof(page))
+    .toMatchObject({
+      fileName: 'dropped.png',
+      starts: 1,
+    });
+});
+
+test('a file drop leaves focus where it was', async ({ page }) => {
+  const { root } = await openProof(page);
+  const picker = page.getByTestId('upload-picker').locator('button').first();
+
+  await picker.focus();
+  await dropImageFile(page, root.locator('[data-editor-node-key]').first());
+
+  await expect.poll(() => getProof(page)).toMatchObject({ starts: 1 });
+  await expect(picker).toBeFocused();
+});
+
 test('file picker starts from the committed editor view', async ({ page }) => {
   const { editor } = await openProof(page);
   const chooserPromise = page.waitForEvent('filechooser');

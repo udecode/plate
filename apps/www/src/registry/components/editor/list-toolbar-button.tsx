@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/registry/components/editor/dropdown-menu';
 import {
@@ -180,6 +181,25 @@ export function NumberedListToolbarButton() {
               }}
             >
               Upper Roman (I, II, III)
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              finalFocus={() => editor.api.dom.focus()}
+              onSelect={() => {
+                editor.plugin(ListPlugin).update.restart();
+              }}
+            >
+              Restart numbering
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              finalFocus={() => editor.api.dom.focus()}
+              onSelect={() => {
+                editor.plugin(ListPlugin).update.continue();
+              }}
+            >
+              Continue numbering
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>

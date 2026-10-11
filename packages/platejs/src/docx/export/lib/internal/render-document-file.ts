@@ -68,6 +68,11 @@ type DocxDocumentInstance = {
   createMediaFile: (base64Uri: string) => MediaFileResponse;
   createNumbering: (type: 'ol' | 'ul', properties?: VNodeProperties) => number;
   getBookmark: (htmlId: string) => { id: number; name: string } | undefined;
+  openList: (
+    type: 'ol' | 'ul',
+    properties: VNodeProperties,
+    level: number
+  ) => { readonly numberingId: number; next: number };
   registerBookmark: (htmlId: string) => void;
   htmlString: string;
   relationshipFilename: string;
@@ -89,9 +94,6 @@ type DocxDocumentInstance = {
     };
   };
 };
-
-// Regex for parsing numeric values from margin-left
-const MARGIN_NUMBER_REGEX = /(\d+)/;
 
 // Inline elements that should be grouped into a single paragraph
 const INLINE_ELEMENTS = new Set([
@@ -185,32 +187,6 @@ async function findXMLEquivalent(
   vNode: VNodeType,
   xmlFragment: XMLBuilderType
 ): Promise<void> {
-  // Check if this element contains list children (for paragraphs that wrap lists)
-  const hasListChildren =
-    vNodeHasChildren(vNode) &&
-    (vNode.children || []).some(
-      (child) =>
-        isVNode(child) &&
-        ['ul', 'ol'].includes((child as VNodeType).tagName || '')
-    );
-
-  // Reset list tracking for non-list elements to break consecutive list sequences
-  // But don't reset for container elements that might wrap lists
-  // Also don't reset for paragraphs that contain lists (Plate's list rendering pattern)
-  const containerElements = [
-    'ol',
-    'ul',
-    'html',
-    'body',
-    'div',
-    'section',
-    'article',
-    'main',
-  ];
-  if (!containerElements.includes(vNode.tagName || '') && !hasListChildren) {
-    resetListTracking();
-  }
-
   if (
     vNode.tagName === 'div' &&
     (vNode.properties?.attributes?.class === 'page-break' ||
@@ -415,37 +391,12 @@ async function findXMLEquivalent(
             );
             xmlFragment.import(paragraphFragment);
           }
-          // Process list children separately with tracking
-          // Get indent level from parent paragraph
-          const indentLevel = getIndentLevel(vNode);
-
           for (const listChild of listChildren) {
-            const listNode = listChild as VNodeType;
-            // Get existing numbering ID for this type+level, if any
-            const { lastListNumberingId: existingId } = getListTracking(
-              listNode.tagName || '',
-              indentLevel
-            );
-
-            let numberingId: number;
-            if (existingId !== null) {
-              // Reuse existing numbering for this type+level
-              numberingId = existingId;
-            } else {
-              // Create new numbering for this type+level
-              numberingId = docxDocumentInstance.createNumbering(
-                (listNode.tagName || 'ul') as 'ol' | 'ul',
-                listNode.properties
-              );
-            }
-
-            setListTracking(listNode.tagName || '', numberingId, indentLevel);
             await buildList(
-              listNode,
+              listChild,
               docxDocumentInstance,
               xmlFragment,
-              numberingId,
-              indentLevel
+              vNode
             );
           }
           return;
@@ -565,37 +516,7 @@ async function findXMLEquivalent(
     }
     case 'ol':
     case 'ul': {
-      // Get indent level from the list element
-      const indentLevel = getIndentLevel(vNode);
-
-      // Get existing numbering ID for this type+level, if any
-      const { lastListNumberingId: existingId } = getListTracking(
-        vNode.tagName,
-        indentLevel
-      );
-
-      let numberingId: number;
-      if (existingId !== null) {
-        // Reuse existing numbering for this type+level
-        numberingId = existingId;
-      } else {
-        // Create a new numbering ID for a new list sequence
-        numberingId = docxDocumentInstance.createNumbering(
-          vNode.tagName,
-          vNode.properties
-        );
-      }
-
-      // Update tracking with indent level
-      setListTracking(vNode.tagName, numberingId, indentLevel);
-
-      await buildList(
-        vNode,
-        docxDocumentInstance,
-        xmlFragment,
-        numberingId,
-        indentLevel
-      );
+      await buildList(vNode, docxDocumentInstance, xmlFragment);
       return;
     }
     case 'img': {
@@ -621,40 +542,16 @@ async function findXMLEquivalent(
     for (let index = 0; index < (vNode.children || []).length; index++) {
       const childVNode = (vNode.children || [])[index];
 
-      await convertVTreeToXML(docxDocumentInstance, childVNode, xmlFragment);
+      if (
+        isVNode(childVNode) &&
+        ['ul', 'ol'].includes((childVNode as VNodeType).tagName || '')
+      ) {
+        await buildList(childVNode, docxDocumentInstance, xmlFragment, vNode);
+      } else {
+        await convertVTreeToXML(docxDocumentInstance, childVNode, xmlFragment);
+      }
     }
   }
-}
-
-// Track consecutive lists to share numbering IDs
-// Use a map to track numbering per indent level: { 'ol_0': id, 'ol_1': id, ... }
-const listNumberingByLevel = new Map<string, number>();
-let _lastListType: string | null = null;
-let _lastIndentLevel = 0;
-
-// Helper to extract indent level from vNode or parent paragraph
-function getIndentLevel(
-  vNode: VNodeType | null,
-  parentVNode: VNodeType | null = null
-): number {
-  // Check margin-left style which indicates indent level
-  const marginLeft =
-    vNode?.properties?.style?.['margin-left'] ||
-    parentVNode?.properties?.style?.['margin-left'];
-
-  if (marginLeft) {
-    // Parse margin-left value (e.g., "24px", "48px")
-    const match = marginLeft.match(MARGIN_NUMBER_REGEX);
-    if (match) {
-      const px = Number.parseInt(match[1], 10);
-      // Assuming 24px per indent level in Plate
-      // Subtract 1 because Plate uses indent=1 for first level, but Word uses level=0
-      const plateIndent = Math.round(px / 24);
-      return Math.max(0, plateIndent - 1);
-    }
-  }
-
-  return 0;
 }
 
 export async function convertVTreeToXML(
@@ -686,39 +583,9 @@ export async function convertVTreeToXML(
   return xmlFragment;
 }
 
-export function resetListTracking(): void {
-  listNumberingByLevel.clear();
-  _lastListType = null;
-  _lastIndentLevel = 0;
-}
-
-export function getListTracking(
-  listType: string,
-  indentLevel = 0
-): { lastListNumberingId: number | null } {
-  const key = `${listType}_${indentLevel}`;
-  return {
-    lastListNumberingId: listNumberingByLevel.get(key) || null,
-  };
-}
-
-export function setListTracking(
-  type: string,
-  numberingId: number,
-  indentLevel = 0
-): void {
-  _lastListType = type;
-  _lastIndentLevel = indentLevel;
-  const key = `${type}_${indentLevel}`;
-  listNumberingByLevel.set(key, numberingId);
-}
-
 async function renderDocumentFile(
   docxDocumentInstance: DocxDocumentInstance
 ): Promise<XMLBuilderType> {
-  // Reset list tracking at the start of each document render
-  resetListTracking();
-
   const vTree = convertHTML(docxDocumentInstance.htmlString);
   const registerBookmarks = (tree: VTree) => {
     if (Array.isArray(tree)) {

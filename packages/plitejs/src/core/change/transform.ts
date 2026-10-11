@@ -50,9 +50,9 @@ export const canonicalJsonKey = (value: unknown): string => {
   return `${typeof value}:${JSON.stringify(value)}`;
 };
 
-export const normalizeSetValues = (values: readonly unknown[]) => {
+export const normalizeSetValues = <T>(values: readonly T[]) => {
   assertEditorJsonValue(values, 'Set-valued node property');
-  const unique: unknown[] = [];
+  const unique: T[] = [];
 
   for (const value of values) {
     if (!unique.some((item) => jsonEqual(item, value))) {

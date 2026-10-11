@@ -5,8 +5,8 @@
   "date": "2026-09-15",
   "question": "Which document conversion laws should DOCX file import, export and Word paste share, and where must fidelity limits be explicit?",
   "model": "GPT-6 / Codex",
-  "method": "best-api-review/history-v2; Plite Research pinned local OSS inspection; Redesign from First Principles; GitHub issue and pull-request failure-history review",
-  "trigger": "The user requested a fresh documents Best API Review after broader current GitHub OSS research and asked for harsh honest feedback.",
+  "method": "verdict/history-v2; Plite Research pinned local OSS inspection; Redesign from First Principles; GitHub issue and pull-request failure-history review",
+  "trigger": "The user requested a fresh documents Verdict after broader current GitHub OSS research and asked for harsh honest feedback.",
   "requirements": [
     "Keep the adopted semantic import result, immutable projection-aware export capture, structured diagnostics, bounded package admission and WordPastePlugin boundary unless stronger evidence disproves them.",
     "Treat import, edit and export from one first-party editor as an existing user job whose unrelated admitted DOCX content should survive where correspondence can be proved.",
@@ -129,7 +129,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
       "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
-      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/skills/verdict/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
       ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
     },
     "directories": {

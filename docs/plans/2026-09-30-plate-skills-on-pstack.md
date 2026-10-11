@@ -19,7 +19,7 @@ Out of scope: product code, the review-ledger schema, the issue-ledger consolida
 - Merge only skills that own the same decision. Domain skills that own different decisions stay separate (the 2026-09-05 audit rejected a general master skill).
 - `/plan` is a built-in Claude Code command, so the merged plan skill is `architecture`.
 - `task` stays the ordinary plan-and-execute skill. `architecture` handles architecture and API adoption only.
-- `best-api-review` becomes Plate-owned; only plate-2 installs it.
+- `verdict` becomes Plate-owned; only plate-2 installs it.
 
 ## Steps
 
@@ -27,7 +27,7 @@ Out of scope: product code, the review-ledger schema, the issue-ledger consolida
 
 - [x] F1 `sync-plate-ui` works in downstream apps again: its plan lives in `.plate-ui-sync/runs/**`, with no poteto-mode or `.agents/pstack` dependency.
 - [x] F2 No skill asks to copy a deleted template (maintainer, release-lanes, slate-ar, clawsweeper, editor-test-harvester, sync-vision). Proof: `grep -rn "templates/" .agents/rules/*.mdc` lists only the benchmark and plate-feature templates.
-- [x] F3 best-api-review's Pursue hands coupled work to `$task plan` and clear adoption to `architecture`; no route names pstack's Multi-phase plan; plate-plan's "bounded challenge" credits the Architecture decisions section.
+- [x] F3 verdict's Pursue hands coupled work to `$task plan` and clear adoption to `architecture`; no route names pstack's Multi-phase plan; plate-plan's "bounded challenge" credits the Architecture decisions section.
 - [x] F4 No live route names the deleted `patch` except through the restored `patch` entry point.
 - [x] F6 A project exception allows runtime capability-gated `.skip`.
 - [x] F7 The PR template and `CONTRIBUTING.md` name `apps/www/src/registry/changelog/entries/*.mdx`.
@@ -49,7 +49,7 @@ Out of scope: product code, the review-ledger schema, the issue-ledger consolida
 - [x] M5 `sync-shadcn` gains a `parity` mode; `shadcn-parity` alias.
 - [x] M6 `benchmark` absorbs slate-ar as `references/autoresearch.md`; `slate-ar` alias.
 - [x] M7 slate-migration is retired. Retired in `.agents/rules/plate-next/scripts/sync-resources.mjs`.
-- [x] M8 `best-api-review` is one Plate-owned rule; the dotai install and `best-api/references/review.md` are gone; `review-ledger.mjs` reads the new path.
+- [x] M8 `verdict` is one Plate-owned rule; the dotai install and `best-api/references/review.md` are gone; `review-ledger.mjs` reads the new path.
 - [x] Callers repointed: `AGENTS.md` routing, vision docs, research command docs, `CONTRIBUTING.md`, `version.mjs` required skills, `sync-resources.mjs` retired paths, the doctrine version.
 
 ### Phase 3. Trims
@@ -64,7 +64,7 @@ Out of scope: product code, the review-ledger schema, the issue-ledger consolida
 
 - [x] S6 `sync-pstack discover` counts typed invocations, and setup keeps every typed command unless the owner drops it.
 - [x] F5 An optional `regen` config field renders the project's regeneration command; plate-2 uses `pnpm install`.
-- [x] plate-2 owns `best-api-review` (owner's choice); dotai's copy is removed in dotai commit 4587e6e.
+- [x] plate-2 owns `verdict` (owner's choice); dotai's copy is removed in dotai commit 4587e6e.
 
 ### Phase 5. Closest to pstack (owner: "go all")
 
@@ -86,7 +86,7 @@ Out of scope: product code, the review-ledger schema, the issue-ledger consolida
 - [x] Focused tests: version, sync-resources, check-plate-feature, plate-review-score, benchmark-contract, collect-vision-diff, release. Ran `bun test` on the 8 files: 137 pass.
 - [x] No dangling link this run created; two predate it (moved product files). Scan: the generated-skill link check in `docs/plans/2026-09-30-plate-skills-on-pstack.decisions.tsv`.
 - [x] `sync-pstack check` passes for plate-2.
-- [x] Read-only smoke tests in Claude Code and Codex route `$task plan`, `$research`, `$plite-plan`, `$patch`, `$testing audit` and `$best-api-review` to their owners.
+- [x] Read-only smoke tests in Claude Code and Codex route `$task plan`, `$research`, `$plite-plan`, `$patch`, `$testing audit` and `$verdict` to their owners.
 - [x] `pnpm lint:fix` on touched code; changes left uncommitted for the owner.
 
 ## Deferred

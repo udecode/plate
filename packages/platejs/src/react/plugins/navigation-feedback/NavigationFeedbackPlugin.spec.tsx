@@ -139,6 +139,27 @@ describe('NavigationFeedbackPlugin', () => {
     rendered.unmount();
   });
 
+  it('paints an element that an insert before it shifted', () => {
+    const { editor, rendered, roots, views } = mount();
+    const key = editor.key([1])!;
+
+    act(() => {
+      editor.update.nodes.insert(
+        { children: [{ text: 'zero' }], type: 'paragraph' },
+        { at: [0] }
+      );
+    });
+    act(() => {
+      views[0].plugin(NavigationFeedbackPlugin).api.flashTarget({ key });
+    });
+    expect(
+      [...roots[0].querySelectorAll('[data-nav-target]')].map(
+        (target) => target.textContent
+      )
+    ).toEqual(['two']);
+    rendered.unmount();
+  });
+
   it('rejects keys from another content root without replacing the current target', () => {
     const FigurePlugin = definePlugin('figure', {
       schema: {

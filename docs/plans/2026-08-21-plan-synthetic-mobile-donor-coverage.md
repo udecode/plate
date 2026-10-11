@@ -169,7 +169,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every planning-readiness condition | Candidate accounting, winner, exact case, owner, slices, proof, claim boundary, and stop conditions are complete. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Local donor heads, exact Quill source/test, Plite host codecs, browser case, raw receipt registry, and device availability were read on 2026-08-21. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | No public call shape changes. Keep `text/uri-list` as an internal built-in host-codec fallback; reject a public normalizer or new browser-harness method. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | No public call shape changes. Keep `text/uri-list` as an internal built-in host-codec fallback; reject a public normalizer or new browser-harness method. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | Browser execution is fully specified. Benchmark, public docs, collaboration, and release workflow changes do not apply. A patch changeset for `@platejs/plite-dom` does apply during execution. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Source hashes, bad ref, red-first test, focused commands, 5/5 projects, strict Plite checks, Browser inspection, and final fingerprints are recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff section is complete. |

@@ -42,7 +42,7 @@ Verification surface:
 - Live selection interfaces/protocol/state/query, Plite DOM/React input owners,
   `packages/selection/**`, Cursor, AI, Table, registry/docs consumers, manifests,
   and `tooling/e2e/node-selection.test.ts`.
-- Best API review of one/many node construction, generic selection reads,
+- Verdict of one/many node construction, generic selection reads,
   deletion scope, and rejection of block-specific command verbs.
 - Focused unit/type/browser rows, strict Plite handoff, authored stale-symbol
   sweeps, barrels, changesets, and CI-generated registry/template closure.

@@ -5,7 +5,7 @@
   "date": "2026-09-12",
   "question": "Which public contract and current-state representation can eliminate authored reload reconstruction while preserving causal, anchor, retention and editable-view laws?",
   "model": "GPT-6 / Codex (exact variant unavailable)",
-  "method": "Best API design; redesign from first principles; embedded Benchmark pre-acceptance comparison; best-api-review/history-v2",
+  "method": "Best API design; redesign from first principles; embedded Benchmark pre-acceptance comparison; verdict/history-v2",
   "trigger": "User go on the preceding loadable-state design recommendation; design and disposable probes only.",
   "requirements": [
     "Remove full operation reduction and pending-edit replay as the authority for opening current state; reconsider all public owners and stored copies before preserving them.",
@@ -87,7 +87,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "428735d5c24257f110e967222ba2f146600261e9c48f5bcb10dd8391cf1d3641",
       "pnpm-lock.yaml": "c5d7bd6cc28fc66d9df9487315553937af41ec1cbfd4a88362a8d22609c81e5a",
-      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/skills/verdict/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
       ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
     },
     "directories": {},

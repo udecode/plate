@@ -121,7 +121,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | API, ownership, adoption, slices, proofs, budgets, and stop conditions are fixed below. |
 | Fresh source evidence | yes | Recheck decision-changing claims | Live checkout evidence was refreshed on 2026-08-29 and recorded below. |
-| Best API review | yes | Resolve every P0/P1 finding | The hard-cut review deletes each P0/P1 compatibility or duplicate-owner candidate. |
+| Verdict | yes | Resolve every P0/P1 finding | The hard-cut review deletes each P0/P1 compatibility or duplicate-owner candidate. |
 | Conditional risk and adoption | yes | Cover migration, docs, browser, SSR, and release | Every triggered owner has an execution slice and falsifiable proof. |
 | Verification recorded | yes | Record planning proof and execution gates | Source searches, external standard evidence, self-review, and checker output are recorded below. |
 | Handoff prepared | yes | Prepare ownership, breaks, proof, risks, and order | The final handoff names all five. |

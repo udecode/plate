@@ -20,6 +20,42 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-10-fix-static-list-indent",
+      "href": "/registry/changelog/2026-10-10-fix-static-list-indent.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix double indentation of static numbered and task lists",
+      "change": {
+        "type": "source",
+        "date": "2026-10-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-list-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-10-list-restart-continue",
+      "href": "/registry/changelog/2026-10-10-list-restart-continue.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Restart and continue list numbering from the numbered list menu",
+      "change": {
+        "type": "source",
+        "date": "2026-10-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["list-toolbar-button", "block-list", "block-list-static"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-10-preserve-equation-text-selection",
       "href": "/registry/changelog/2026-10-10-preserve-equation-text-selection.json",
       "status": "draft",
