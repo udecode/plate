@@ -46,7 +46,8 @@ export const convertNodesSerialize = (
         const hasDifferentListStyle =
           isNextIndent &&
           firstList &&
-          (next.listType !== firstList.listType ||
+          (next.listId !== firstList.listId ||
+            next.listType !== firstList.listType ||
             getSerializableListStyle(next) !==
               getSerializableListStyle(firstList)) &&
           (next.indent ?? 1) === (firstList.indent ?? 1);

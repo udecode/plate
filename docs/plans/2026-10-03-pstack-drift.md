@@ -136,7 +136,7 @@ $cross-review <plan>    (session discovery feeding /pstack:interrogate)
   - maintainer drops its dormant heartbeat, standing orders and fallback ladder;
   - the feature pack's Plate-only rules move to `plate-plugins` before its process copies go;
   - sync-shadcn's "invoke again" and its plan location are fixed;
-  - **best-api dedup moves to its own plan**, at your answer on 2026-10-03. The read-only map found 253 rules, 36 with conflicting copies (5 where best-api is out of date, 2 that need your ruling: AI previews and whether `api` may mutate) and seven files that require each law change in both Vision and best-api. This build only repoints best-api-review's plate-architecture link.
+  - **best-api dedup moves to its own plan**, at your answer on 2026-10-03. The read-only map found 253 rules, 36 with conflicting copies (5 where best-api is out of date, 2 that need your ruling: AI previews and whether `api` may mutate) and seven files that require each law change in both Vision and best-api. This build only repoints verdict's plate-architecture link.
   - sync-vision's committed-range baseline accounting (`lastSyncedCommit` and its six-way classification) has no successor; panel round 1 flagged it and you retired the lane anyway. Its promotion rule moves to `VISION.md` and its taste-capture rule to `docs/vision/common.md`.
   - plate-architecture had about 45 caller lines, not 15. Another session had staged an edit to its Page sections intro (rendering through the Plan playbook's `page-lead` frontmatter); the new reference carries that wording.
 - **User scope.** Every orphan dotai cut on 2026-09-30 is backed up and deleted, typed ones too, because each has a pstack replacement.
@@ -164,7 +164,7 @@ The note that names "Reversible work and external actions" moves back above the 
 | numbered-checkout, product-fidelity | Ellie's `task:checkout` helper and its document-sharing journey |
 | docuseal, rate-limiter-flexible, sentry-sdk-setup | Ellie's DocuSeal data and IM parity; a kept skill's parent |
 | sync-pstack, test-audit, walkthrough, video-transcripts | No pstack equivalent; used or routed |
-| The domain skills | verify, design, atlas, react, trpc, prisma, pcc-api, to-prd, to-issues, best-api, best-api-review, plate-next, plate-ui, plate-docs, plate-plugins, changeset, benchmark, research, maintainer, release-lanes, issue-harvester, sync-shadcn, sync-plate-ui |
+| The domain skills | verify, design, atlas, react, trpc, prisma, pcc-api, to-prd, to-issues, best-api, verdict, plate-next, plate-ui, plate-docs, plate-plugins, changeset, benchmark, research, maintainer, release-lanes, issue-harvester, sync-shadcn, sync-plate-ui |
 
 ## Defaults
 

@@ -119,7 +119,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Direct declaration builds pass; no workaround remains. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final production symbol audit and emitted declaration audit are clean. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Existing direct-inference doctrine was applied; no public call shape changed. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Existing direct-inference doctrine was applied; no public call shape changed. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Browser attempt is recorded as blocked by unrelated stale registry generation; package behavior tests cover this non-rendering type repair. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact commands and counts are in the proof matrix and verification section. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff below is complete. |

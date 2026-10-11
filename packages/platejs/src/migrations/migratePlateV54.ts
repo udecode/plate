@@ -15,17 +15,9 @@ import type {
 import { migratePlateV54Ast } from './migratePlateV54Ast.internal';
 import { migratePlateV54CodeBlocks } from './migratePlateV54CodeBlocks.internal';
 import { migratePlateV54Inputs } from './migratePlateV54Inputs.internal';
-import {
-  type MigrationListSiblingOptions,
-  migratePlateV54Profile,
-} from './migratePlateV54Profile.internal';
+import { migratePlateV54Profile } from './migratePlateV54Profile.internal';
 import { migratePlateV54Suggestions } from './migratePlateV54Suggestions.internal';
 import { migratePlateV54Urls } from './migratePlateV54Urls.internal';
-
-export type MigratePlateV54Options = Readonly<{
-  /** Frozen v53 list sibling policy used to interpret historical numbering. */
-  list?: MigrationListSiblingOptions;
-}>;
 
 type PlateV54Shape = Readonly<{
   ast: EditorDocumentValue;
@@ -57,14 +49,13 @@ const mapBetween = (
 
 const shapeDocument = (
   context: DocumentMigrationContext,
-  document: EditorDocumentValue,
-  options: MigratePlateV54Options
+  document: EditorDocumentValue
 ): PlateV54Shape => {
   const inputs = migratePlateV54Inputs(document);
-  const profile = migratePlateV54Profile(
-    { ...context, document: inputs.document },
-    { list: options.list }
-  );
+  const profile = migratePlateV54Profile({
+    ...context,
+    document: inputs.document,
+  });
   const ast = migratePlateV54Ast({ ...context, document: profile });
   const urls = migratePlateV54Urls({ ...context, document: ast });
   const codeBlocks = migratePlateV54CodeBlocks({
@@ -83,8 +74,7 @@ const shapeDocument = (
 };
 
 export type PlateV54Migration = (
-  context: DocumentMigrationContext,
-  options?: MigratePlateV54Options
+  context: DocumentMigrationContext
 ) => DocumentMigrationStepResult;
 
 /**
@@ -92,10 +82,10 @@ export type PlateV54Migration = (
  * media whose stored URL the current schema rejects keep their label, caption,
  * alt text or file name as ordinary content.
  */
-export const migrateV54: PlateV54Migration = (context, options = {}) => {
+export const migrateV54: PlateV54Migration = (context) => {
   const schema = context.target.schema as InternalEditorSchemaApi;
   const legacy = migratePlateV54Suggestions(context.document);
-  const shapedSource = shapeDocument(context, context.document, options);
+  const shapedSource = shapeDocument(context, context.document);
   // The code-block stage falls back to `mapped` outside code, so URL-stage
   // points must win there too.
   const mapThroughUrls = ({
@@ -166,12 +156,12 @@ export const migrateV54: PlateV54Migration = (context, options = {}) => {
   }
 
   const accepted = context.target.schema.fitDocument(
-    shapeDocument(context, legacy.accepted, options).document
+    shapeDocument(context, legacy.accepted).document
   );
   let previous = accepted;
   const revisions = legacy.revisions.map((revision) => {
     const proposed = context.target.schema.fitDocument(
-      shapeDocument(context, revision.proposed, options).document
+      shapeDocument(context, revision.proposed).document
     );
     const change = DocumentChange.between(previous, proposed);
 

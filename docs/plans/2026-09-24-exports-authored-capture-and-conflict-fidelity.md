@@ -19,7 +19,7 @@ Markdown and DOCX conversion as separate format adapters; do not invent an
 export subsystem, cache or checkpoint owner.
 
 Task source:
-The user's 2026-09-24 `go` after the final exports Best API Review.
+The user's 2026-09-24 `go` after the final exports Verdict.
 
 Template:
 `.agents/skills/autogoal/assets/templates/major-task.md` with `package-api` and

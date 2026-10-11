@@ -1922,7 +1922,7 @@
     ],
     "kind": "plan",
     "disposition": "historical",
-    "rationale": "Audit the documents ledger question against current Plate and bounded current OSS source, compile reusable research, and issue one Best API Review verdict. Completion threshold: Seven scoped corpora have official discovery, exact local source reads or explicit evidence gaps, and dispositions; every documents census group is covered by a semantic audit unit; current and strongest target owners are compared; ledgers, wiki index/log, immutable revie",
+    "rationale": "Audit the documents ledger question against current Plate and bounded current OSS source, compile reusable research, and issue one Verdict verdict. Completion threshold: Seven scoped corpora have official discovery, exact local source reads or explicit evidence gaps, and dispositions; every documents census group is covered by a semantic audit unit; current and strongest target owners are compared; ledgers, wiki index/log, immutable revie",
     "reviewBasis": [],
     "workKind": "research"
   },
@@ -2434,7 +2434,7 @@
     ],
     "kind": "report",
     "disposition": "historical",
-    "rationale": "# Documents final adversarial reassessment Read-only Best API Review reassessment, 2026-09-14. This corrects and extends the earlier source audit without rewriting its historical observations. ## Conclusion The `Pursue` verdict survives, but the earlier target was incomplete. The largest remaining public cuts are: 1. delete `exportAuthoredToDocx` in favor of one projection-aware `exportToDocx` result; 2. delete `ImportDocxResult.nodes` and always",
+    "rationale": "# Documents final adversarial reassessment Read-only Verdict reassessment, 2026-09-14. This corrects and extends the earlier source audit without rewriting its historical observations. ## Conclusion The `Pursue` verdict survives, but the earlier target was incomplete. The largest remaining public cuts are: 1. delete `exportAuthoredToDocx` in favor of one projection-aware `exportToDocx` result; 2. delete `ImportDocxResult.nodes` and always",
     "reviewBasis": []
   },
   {
@@ -2454,7 +2454,7 @@
     ],
     "kind": "report",
     "disposition": "historical",
-    "rationale": "# Documents: Plate source audit Read-only sidecar consolidation, 2026-09-14. Repository: `/Users/zbeyens/git/plate-2`. Method: Best API Review and Redesign from First Principles. Main owns external research, durable review records, four DOCX package-partition runs, and the authority reproduction. This sidecar did not change product/research/ledger files, run builds, create goals, consult external sources, or duplicate main's reproduction. This fi",
+    "rationale": "# Documents: Plate source audit Read-only sidecar consolidation, 2026-09-14. Repository: `/Users/zbeyens/git/plate-2`. Method: Verdict and Redesign from First Principles. Main owns external research, durable review records, four DOCX package-partition runs, and the authority reproduction. This sidecar did not change product/research/ledger files, run builds, create goals, consult external sources, or duplicate main's reproduction. This fi",
     "reviewBasis": []
   },
   {
@@ -2474,7 +2474,7 @@
     ],
     "kind": "report",
     "disposition": "historical",
-    "rationale": "# DOCX post-implementation OSS reassessment Question: Does current OSS evidence justify replacing or materially changing Plate's adopted canonical DOCX import/export contract after its implementation? Scope: retained-package editing, unknown-part preservation, tracked revisions, comment ranges, package resource limits, detached versus editor-bound APIs, and proof methods that can change the `documents` Best API Review verdict. Stop rule: stop aft",
+    "rationale": "# DOCX post-implementation OSS reassessment Question: Does current OSS evidence justify replacing or materially changing Plate's adopted canonical DOCX import/export contract after its implementation? Scope: retained-package editing, unknown-part preservation, tracked revisions, comment ranges, package resource limits, detached versus editor-bound APIs, and proof methods that can change the `documents` Verdict verdict. Stop rule: stop aft",
     "reviewBasis": []
   },
   {
@@ -2484,7 +2484,7 @@
     ],
     "kind": "report",
     "disposition": "historical",
-    "rationale": "# Retained source and package editing Read-only source and GitHub history reassessment for the `documents` Best API Review on 2026-09-15. All repositories were inspected from local clones at the revisions in `source-manifest.json`. GitHub issue and pull-request pages supplied failure history and intent, not implementation proof. ## What the strongest engines actually own | Engine | Canonical authority | Preservation mechanism | Important limit | ",
+    "rationale": "# Retained source and package editing Read-only source and GitHub history reassessment for the `documents` Verdict on 2026-09-15. All repositories were inspected from local clones at the revisions in `source-manifest.json`. GitHub issue and pull-request pages supplied failure history and intent, not implementation proof. ## What the strongest engines actually own | Engine | Canonical authority | Preservation mechanism | Important limit | ",
     "reviewBasis": []
   },
   {

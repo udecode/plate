@@ -350,6 +350,7 @@ test('dropping three filesystem images completes without DOM ownership errors', 
     };
     await target.dispatchEvent('dragenter', event);
     await target.dispatchEvent('dragover', event);
+    await expect(page.locator('[data-drop-indicator="y"]')).toHaveCount(1);
     await target.dispatchEvent('drop', event);
 
     const expectedOperations = ['drop-1.png', 'drop-2.png', 'drop-3.png']

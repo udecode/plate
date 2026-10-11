@@ -39,11 +39,11 @@ Work Checklist:
 - [x] Capture current owner/consumer/evidence inputs and source fingerprints for
   all four questions. Sources: review-history schema; source identity rule.
 - [x] Compare the full design space for each question and materially distinct
-  consumer; preserve independent feature jobs. Source: Best API Review audit.
+  consumer; preserve independent feature jobs. Source: Verdict audit.
 - [x] Run decisive focused checks; separate facts, judgments and proof gaps.
   Sources: Best API scale gate; Plite Plan ownership; Verify Plate.
 - [x] Record four verdicts, prior relation, current decision and one ranked next
-  owner; regenerate and check the ledger. Source: Task Best API Review adapter.
+  owner; regenerate and check the ledger. Source: Task Verdict adapter.
 - [x] Reconcile coverage and original obligations, inspect result, close goal.
   Sources: Autogoal checklist retention; Task proof/handoff.
 

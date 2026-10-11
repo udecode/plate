@@ -1,6 +1,6 @@
 # Documents: Plate source audit
 
-Read-only sidecar consolidation, 2026-09-14. Repository: `/Users/zbeyens/git/plate-2`. Method: Best API Review and Redesign from First Principles. Main owns external research, durable review records, four DOCX package-partition runs, and the authority reproduction. This sidecar did not change product/research/ledger files, run builds, create goals, consult external sources, or duplicate main's reproduction. This file is the only requested output mutation.
+Read-only sidecar consolidation, 2026-09-14. Repository: `/Users/zbeyens/git/plate-2`. Method: Verdict and Redesign from First Principles. Main owns external research, durable review records, four DOCX package-partition runs, and the authority reproduction. This sidecar did not change product/research/ledger files, run builds, create goals, consult external sources, or duplicate main's reproduction. This file is the only requested output mutation.
 
 **Verdict: pursue a focused file-conversion fidelity redesign.** The largest useful cuts are unconditional native-sidecar authority and the duplicate review serializer. Compare direct OOXML file conversion against the HTML intermediary before selecting the durable target. Keep clipboard lifecycle, detached file import, and snapshot export as separate jobs; do not merge CSV, pagination, comments, media, tables, lists, or authored-state ownership into a documents framework. No runtime target or performance improvement is accepted from source inspection.
 

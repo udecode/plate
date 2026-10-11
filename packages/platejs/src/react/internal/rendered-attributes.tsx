@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { NodeKey } from '../../facade';
+import type { Element, NodeKey } from '../../facade';
 import {
   clonePlateRenderedAttributes,
   EMPTY_RENDERED_ATTRIBUTES,
@@ -11,6 +11,7 @@ import type {
   ViewElementAttributeEntry,
   ViewElementAttributes,
 } from '../plugin/PlatePlugin';
+import type { PliteReactEditor } from './plite-types';
 import { useIsomorphicLayoutEffect } from './react-helpers';
 
 export type PlateRenderedAttributeStoreMetrics = Readonly<{
@@ -239,6 +240,12 @@ export function PlateRenderedAttributeProvider({
     </PlateRenderedAttributeContext>
   );
 }
+
+export const getElementNodeKey = (view: PliteReactEditor, element: Element) => {
+  const path = view.read.nodes.path(element);
+
+  return path ? view.key(path) : null;
+};
 
 export const usePlateRenderedAttributes = (nodeKey: NodeKey | null) => {
   const store = React.useContext(PlateRenderedAttributeContext);

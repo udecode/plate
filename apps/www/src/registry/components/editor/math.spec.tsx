@@ -88,9 +88,9 @@ mock.module('platejs/react', () => ({
     update: { selection: { set: mock() } },
   }),
   useEditorReadOnly: () => readOnly,
-  useEditorSelector: () => selectionCollapsed,
   useElement: () => element,
-  useElementSelected: () => selected,
+  useElementSelected: (options?: { mode?: string }) =>
+    selected && (options?.mode !== 'collapsed' || selectionCollapsed),
 }));
 
 mock.module('@/components/ui/button', () => ({

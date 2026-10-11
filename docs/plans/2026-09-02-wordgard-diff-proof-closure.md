@@ -160,7 +160,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Decision ledger and execution slices below are complete |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Frozen Wordgard `b5ad0d0`; live Plite/Plate owners cited below |
-| Best API review | no | No public shape change | Current APIs stay intact; donor mechanisms are rejected |
+| Verdict | no | No public shape change | Current APIs stay intact; donor mechanisms are rejected |
 | Pre-acceptance scale proof | no | Constant bounded projection change | One suffix check and one rendering-only character apply only to trailing-newline text; no benchmark claim |
 | Production scale rerun contract | yes | Rerun package and strict Plite gates | Focused owner proof plus `pnpm check:plite` must pass |
 | Conditional risk and adoption | yes | Resolve browser and donor risks | Three failure modes and browser route recorded below |

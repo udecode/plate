@@ -66,10 +66,17 @@ const nodes = () => editor.read.transfer.nodes({ node: element });
 editor.api.transfer.move({ announce, nodes: nodes(), to });
 ```
 
-The Upload plugin owns file drops.
+The React Upload plugin owns file drops and lands them at the edge under the pointer, with no option to set. The DnD kit draws the line.
 
-```ts
-UploadPlugin.configure({ initialState: { nativeDrop: true } });
+```tsx
+// apps/www/src/registry/examples/upload-demo.tsx
+plugins: [
+  ParagraphPlugin.configure({ component: ParagraphElement }),
+  ...DndKit,
+  ...MediaKit,
+  ...UploadKit,
+  ...(browserUploads?.plugins ?? []),
+],
 ```
 
 Code moves blocks through one action that reports its outcome.
@@ -134,7 +141,7 @@ Source: `docs/plite/research/2026-10-02-dnd-landing-policy/editors.tsv`.
 | `transfer.source` and `transfer.landing` reads, `transferVeto` point | Plite | `plitejs` | `transfer.source` expands, `transfer.landing` only redirects, `transferVeto` refuses, and the schema admits (`landing plan` Landing law) |
 | Hover dry pass | Plite | `plitejs` | The indicator paints only admitted edges (`plan` ledger) |
 | List family source and landing | Plate | `platejs`, `src/features/list` | The feature owns its rule (`plan` Landing policy) |
-| Upload `files` landing, draft veto, `nativeDrop` | Plate | `platejs`, `src/features/upload` and `src/react/features/upload` | Upload owns file admission (`plan` ledger) |
+| Upload `files` landing and draft veto | Plate | `platejs`, `src/features/upload` and `src/react/features/upload` | Upload owns file admission (`plan` ledger) |
 | Native block drag: `drag.start`, `resolveDropTarget`, sessions | Plite | `plitejs`, `src/dom/plugin/dom-drag.ts`, `src/dom/utils/drag-session.ts` | One event system for text, files and blocks (`plan` ledger) |
 | Per-view `useDropIndicator` | Plite | `plitejs`, `src/react/hooks/use-drop-indicator.ts` | One indicator host per view (`plan` ledger) |
 | `data-editor-dragging` paint | Plite, with copied CSS | `plitejs` DOM; registry `dnd.tsx` | One source for drag paint (`plan` ledger) |
@@ -173,7 +180,7 @@ Phase 3 deleted React DnD and `platejs/dnd/react`, and left no backend option. T
 | `DndScrollerOptions` | Plite drag autoscroll | `plan` Removed public nouns |
 | `DRAG_ITEM_BLOCK`, `DragItemNode`, `ElementDragItemNode`, `FileDragItemNode` | Session source; `DataTransfer` stays at the boundary | `plan` Removed public nouns |
 | `CanDropCallback`, `onDropHandler` | `transferVeto`; the drag selects `at` | `plan` Removed public nouns; `landing plan` |
-| `onDropFiles` state | Upload `nativeDrop` | `dnd-ownership.md`; `plan` Files and Upload |
+| `onDropFiles` state | The React `UploadPlugin`, which lands every file drop | `dnd-ownership.md`; `plan` Files and Upload; [uploads review](../2026-10-09-uploads-review.md) |
 | Body `dragging` class | `data-editor-dragging` | `plan` Removed public nouns |
 | Hover-time focus and selection collapse | None; hover never mutates selection | `plan` Removed public nouns |
 | `REFUSED_MOVE`, whole-children freshness, raw cross-editor inserts, `completeCrossEditorDrag` | Abort inside `transfer`; live content at drop | `plan` Phase 1 |
@@ -193,14 +200,14 @@ Phase 3 deleted React DnD and `platejs/dnd/react`, and left no backend option. T
 | Caller | Breaks because | Change | Source |
 | --- | --- | --- | --- |
 | App code importing `platejs/dnd/react` | The export is gone | Copy the native kit; see Public API | `plan` Phase 3 |
-| Apps configuring `DndPlugin` `onDropFiles` | The option is gone | Upload `nativeDrop: true`; see Public API | `plan` Files and Upload |
+| Apps configuring `DndPlugin` `onDropFiles` | The option is gone | Install the React `UploadPlugin`; see Public API | `plan` Files and Upload; [uploads review](../2026-10-09-uploads-review.md) |
 | Apps supplying a React DnD manager or backend | No backend option remains | Custom driver: `resolveDropTarget`, then `transfer.move` or `.copy` | `plan` React DnD and touch |
 | Headless editors adopting `editor.api.transfer` | A missing plugin is a type error | Add `transfer()`; `react()` and Plate already include it | `plan` Public calls |
 | Copied `dnd.tsx` | It imports deleted hooks and the plugin, and restates handle depths | Re-copy: native handle from the schema, indicator, actions menu, shortcut | `plan` Phase 3; `README`; `landing plan` |
 | Copied `column.tsx`, `table.tsx` | `canDropNode`, item types and orientation are gone | Native `onDragStart`; rules live in features | `plan` Phase 1, Gesture |
 | Copied `media-image.tsx`, `media-video.tsx` | Their custom handles used React DnD | The same native `onDragStart` | `plan` Scope, Gesture |
 | Copied `block-menu.tsx` | Not broken; gains items | Move up, Move down and Cut | `plan` Non-drag move |
-| Upload kit | `DndKit` no longer routes files | Set `nativeDrop: true` in the Upload kit | `plan` Files and Upload |
+| Upload kit | `DndKit` no longer routes files | None; the React `UploadPlugin` lands file drops itself | `plan` Files and Upload; [uploads review](../2026-10-09-uploads-review.md) |
 | CSS and tests reading body `.dragging` | The class is no longer set | Read `data-editor-dragging` | `plan` Removed public nouns |
 | A landing middleware returning `{ admit, to }`: Column, List and Table here, and any app middleware | `TransferLanding` is gone | Return an edge or call `next()`; refuse through `transferVeto` | `landing plan` Blast radius |
 | A caller of `editor.read.transfer.source`: copied `dnd.tsx` and the docs | The read is gone | Call `editor.read.transfer.nodes({ node })` | `landing plan` Blast radius |

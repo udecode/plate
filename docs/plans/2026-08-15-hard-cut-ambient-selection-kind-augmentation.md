@@ -140,7 +140,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Execution ledger defines binary source/type/runtime/proof gates. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Exact owner refresh is the first execution slice. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Installed inference is the accepted target; ambient/global/open-string alternatives are rejected. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Installed inference is the accepted target; ambient/global/open-string alternatives are rejected. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/benchmark/provenance work or give one scoped N/A reason | High-risk selection/type adoption is covered by compile/runtime and direct collaboration checks; browser only if a runnable affected behavior exists. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Proof matrix below names source, compile, runtime, release, doctrine, and review gates. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff fields are defined below and will be replaced with actual evidence. |

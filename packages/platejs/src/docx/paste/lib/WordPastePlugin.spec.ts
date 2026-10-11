@@ -37,6 +37,24 @@ const insertHtml = (
   return editor;
 };
 
+// Pasted ids are fresh, so each list reads as a letter in first-seen order,
+// followed by its item's number or `-`.
+const listsOf = (editor: ReturnType<typeof insertHtml>) => {
+  const ids = new Map<unknown, string>();
+
+  return editor.read.children().map((node, index) => {
+    if (!Reflect.has(node, 'listType')) return null;
+
+    const id = Reflect.get(node, 'listId');
+
+    if (!ids.has(id)) ids.set(id, String.fromCharCode(97 + ids.size));
+
+    return `${ids.get(id)}${
+      editor.plugin(BaseListPlugin).read.ordinal([index]) ?? '-'
+    }`;
+  });
+};
+
 describe('WordPastePlugin', () => {
   it('leaves ordinary html to the installed html format', () => {
     const editor = insertHtml('<p>plain html</p>');
@@ -95,7 +113,7 @@ describe('WordPastePlugin', () => {
     );
   });
 
-  it('preserves list sequence boundaries and nested ordinals', () => {
+  it('numbers each Word list identity on its own', () => {
     const editor = insertHtml(
       [
         '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>Parent one</p>',
@@ -116,9 +134,10 @@ describe('WordPastePlugin', () => {
     expect(children.map((node) => Reflect.get(node, 'listRestart'))).toEqual([
       undefined,
       undefined,
-      1,
-      2,
+      undefined,
+      undefined,
     ]);
+    expect(listsOf(editor)).toEqual(['a1', 'a1', 'b1', 'a2']);
   });
 
   it('keeps alpha and roman inference scoped to each Word list identity', () => {
@@ -149,7 +168,7 @@ describe('WordPastePlugin', () => {
     }
   );
 
-  it('preserves explicit starts across interleaved Word sequences', () => {
+  it('keeps interleaved Word lists apart without restarts', () => {
     const editor = insertHtml(
       [
         '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>A1</p>',
@@ -162,7 +181,8 @@ describe('WordPastePlugin', () => {
 
     expect(
       editor.read.children().map((node) => Reflect.get(node, 'listRestart'))
-    ).toEqual([undefined, 1, 2, 2]);
+    ).toEqual([undefined, undefined, undefined, undefined]);
+    expect(listsOf(editor)).toEqual(['a1', 'b1', 'a2', 'b2']);
   });
 
   it('uses the final component of compound Word markers', () => {
@@ -179,14 +199,15 @@ describe('WordPastePlugin', () => {
 
     expect(
       editor.read.children().map((node) => Reflect.get(node, 'listRestart'))
-    ).toEqual([undefined, undefined, 1, undefined]);
+    ).toEqual([undefined, undefined, undefined, undefined]);
+    expect(listsOf(editor)).toEqual(['a1', 'a2', 'b1', 'b2']);
   });
 
   it.each([
     ['a paragraph', '<p class="MsoNormal">Break</p>'],
     ['an unmatched block', '<hr>'],
     ['a container boundary', '</div><div>'],
-  ])('emits a restart after %s', (_label, boundary) => {
+  ])('continues one Word list past %s', (_label, boundary) => {
     const editor = insertHtml(
       [
         boundary === '</div><div>' ? '<div>' : '',
@@ -201,9 +222,29 @@ describe('WordPastePlugin', () => {
       .children()
       .filter((node) => Reflect.has(node, 'listType'));
 
-    expect(listItems.at(-1)).toEqual(
-      expect.objectContaining({ listRestart: 2 })
+    expect(listItems.map((node) => Reflect.has(node, 'listRestart'))).toEqual([
+      false,
+      false,
+    ]);
+    expect(listsOf(editor).filter(Boolean)).toEqual(['a1', 'a2']);
+  });
+
+  it('restarts a Word list only where its marker resets', () => {
+    const editor = insertHtml(
+      [
+        '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">1.</span>One</p>',
+        '<p style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">2.</span>Two</p>',
+        '<p class="MsoNormal">Break</p>',
+        '<p style="mso-list:l0 level1 lfo2"><span style="mso-list:Ignore">1.</span>Again</p>',
+        '<p style="mso-list:l0 level1 lfo2"><span style="mso-list:Ignore">2.</span>More</p>',
+      ].join(''),
+      { plugins: [BaseListPlugin] }
     );
+
+    expect(
+      editor.read.children().map((node) => Reflect.get(node, 'listRestart'))
+    ).toEqual([undefined, undefined, undefined, 1, undefined]);
+    expect(listsOf(editor)).toEqual(['a1', 'a2', null, 'a1', 'a2']);
   });
 
   it('normalizes Word indentation and suppresses Word images only', () => {

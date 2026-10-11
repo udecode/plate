@@ -261,7 +261,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Source, package, Browser, review, release, barrel, lint, and deletion gates are green. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final bounded source audit finds only intentional release/changelog migration prose; `packages/caption` and package-manager references are absent. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted target is direct Media inline children with distinct node/text selection; final autoreview is clean. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted target is direct Media inline children with distinct node/text selection; final autoreview is clean. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/benchmark/provenance work or give one scoped N/A reason | Published inline and single-block caption-property data normalizes before fitting; ambiguous dual sources reject without loss. Browser applies; benchmark and public provenance are N/A because no performance claim or public queue item exists. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact package totals, strict Chromium result, audits, and Browser receipts are recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Ownership, hard cuts, proof, and CI-owned generated residuals are recorded below. |

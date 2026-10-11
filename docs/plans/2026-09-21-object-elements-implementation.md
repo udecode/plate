@@ -39,7 +39,7 @@ Constraints:
 - Treat the full matrix as verified only after every managed project completes.
 
 Blocked condition:
-- A design contradiction or an unrecoverable transaction failure would return the affected slice to Best API Review. No such condition occurred.
+- A design contradiction or an unrecoverable transaction failure would return the affected slice to Verdict. No such condition occurred.
 
 Work Checklist:
 - [x] S1: object schema input, validation, compiled/public query and identity;

@@ -2,7 +2,7 @@
 
 Status: Complete — direction reviewed; product design and implementation open
 
-Scope: Best API Review of the media object boundary in Plite, ProseMirror,
+Scope: Verdict of the media object boundary in Plite, ProseMirror,
 WordGard and Lexical. This is a bounded source comparison, not an
 implementation plan or a full editor audit.
 

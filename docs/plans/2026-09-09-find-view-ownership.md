@@ -10,7 +10,7 @@ Verification surface:
 Copied Find source/spec, actual Find demo with a same-model two-view example, existing Find browser cases, BaseFindPlugin tests, source types, EN/CN docs, registry and doctrine output.
 
 Constraints:
-User said “go” after the source-backed Best API Review. Local design, implementation and proof are authorized; next branch confirmed. No commits, publication, other checkout, parallel agents or unrelated product fixes. No independent query sessions or generic per-view plugin store.
+User said “go” after the source-backed Verdict. Local design, implementation and proof are authorized; next branch confirmed. No commits, publication, other checkout, parallel agents or unrelated product fixes. No independent query sessions or generic per-view plugin store.
 
 Boundaries:
 BaseFindPlugin retains query/results, document invalidation, navigation, selection and decorations. The copied kit uses existing slots.wrapRoot for exact-view integration. A copied useFind hook exposes only view-owned open/close commands; it owns neither search results nor effects per caller. Custom controls mount in that view's slots. Root composition owns its bar and local pending draft. All open bars follow the committed model query when no local draft is pending.
@@ -19,7 +19,7 @@ Blocked condition:
 A missing actual browser capability limits that proof after a concrete attempt. All independent proof continues; actionable source or test failures remain work.
 
 Work Checklist:
-- [x] Capture a failing opening-focus test without manually focusing the input; preserve existing acceptance and caller inventory. Sources: accepted Best API Review, Patch, Testing.
+- [x] Capture a failing opening-focus test without manually focusing the input; preserve existing acceptance and caller inventory. Sources: accepted Verdict, Patch, Testing.
 - [x] Choose the smallest public contract and exact-view lifecycle; compare keep, delete, owner move and new primitive. Preserve inferred callbacks. Sources: Best API, Plate Plan, Plate UI, VISION.
 - [x] Replace copied plugin UI state/commands with view composition. Keep typed headless calls and narrow result subscriptions; verify deferred draft commits cannot revive a closed query. Sources: Plate UI, Poteto Refactoring/Bug fix.
 - [x] Prove command-control scaling, same-model views, nested providers, pending input, read-only search, detach and surviving views. Sources: Best API scale gate, Verify Plate.

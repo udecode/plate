@@ -96,7 +96,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | passed | Resolve every readiness condition | Canonical API compiles; authored stale calls and repeated block predicates are zero; strict proof passed |
 | Fresh source evidence | passed | Recheck decision-changing current claims | Final whole-diff census found and migrated the remaining AI callers and Plite docs examples |
-| Best API review | passed | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Hard-cut target implemented; remaining generic node traversal has no repeated block-specific user job |
+| Verdict | passed | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Hard-cut target implemented; remaining generic node traversal has no repeated block-specific user job |
 | Conditional risk and adoption | passed | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | Browser selection interaction passed; Benchmark N/A because no performance claim; docs, changesets, doctrine, registry, and mirrors completed |
 | Verification recorded | passed | Record fresh planning proof and exact execution gates | See Verification evidence |
 | Handoff prepared | passed | Prepare concise ownership, breaks, proof, risks, and execution order | See Final handoff prepared |

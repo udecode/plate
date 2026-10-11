@@ -65,7 +65,7 @@ accessible focus and view-local geometry. Shared roots and independent
 documents must remain distinct. Feature reviews such as math and emoji remain
 separate, as the user requested.
 
-Acceptance follows [Best API Review](../../../.agents/skills/best-api-review/SKILL.md)
+Acceptance follows [Verdict](../../../.agents/skills/verdict/SKILL.md)
 and [Plate routing](cf1572560313960e87226640b93f73f2486c9aab:.agents/rules/task/references/best-api-review.md):
 
 - [x] Assess React, selection, native input, accessibility and geometry, with

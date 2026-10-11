@@ -184,7 +184,7 @@ The frame does not impose a fixed height by itself.
 | `EditorPreview`              | Static read-only rendering with Plate fragment copy support.                                     |
 | `EditorContainer`         | Editor container `div` plus `beforeContainer` and `afterContainer` plugin slots.                 |
 | `NodeSelectionHighlight` | Highlight overlays for selected selectable blocks.                                               |
-| `NodeSelectionDrag`      | Blank-space pointer-drag selection and its drag rectangle.                                       |
+| `NodeSelectionDrag`      | Blank-space pointer-drag selection, its drag rectangle, and arrow keys that move block selection. |
 | `EditorElement`           | Default element renderer for block and inline elements.                                          |
 | `EditorLeaf`              | Default persisted-mark renderer for a text segment.                                               |
 | `EditorText`              | Default wrapper around every rendered segment of one text node.                                  |
@@ -280,7 +280,7 @@ export function FigureElement({
 ## Node selection
 
 Plate stores node selection in the editor model. Plate React provides two
-independent DOM primitives for its visual presentation and pointer-drag input.
+independent DOM primitives for its visual presentation and its pointer and keyboard input.
 Compose them as siblings after `EditorContent` under the same `EditorRoot` provider.
 
 ```tsx title="components/editor.tsx"
@@ -309,13 +309,23 @@ writes intersecting blocks through the editor's selection API. Selection
 candidates must pass `editor.read.schema.isBlockContent(element)` and
 `editor.read.nodes.isSelectable(element)`.
 
+While the selected blocks share one parent, `ArrowUp` and `ArrowDown` select
+the previous or next sibling block and scroll it into view. A sibling that a
+content boundary leaves unmounted ends the move. `Shift` extends or contracts
+the selection from its anchor block. A table cell selection keeps its own
+`Shift` cell extension, and a single selected object keeps its own arrows
+without `Shift`.
+
 Escape, pointer cancellation, window blur, and readonly transitions stop the
 current drag and discard pending movement. Previously published selection stays
 in the model. Shift anchors follow node identity across document changes.
 
 Structural internals opt out with `blockContent: false`. A block that owns
 custom highlight geometry sets `data-node-selection-highlight="self"` and can
-read its exact state with `useElementSelected({ mode: "node" })`.
+read its exact state with `useElementSelected({ mode: "node" })`. A block whose
+selectable area is smaller than its element, such as a Details header above its
+body, marks that descendant with `data-node-selection-target`, and drag
+selection measures only that descendant.
 
 | Primitive                | DOM contract                                                                                                                  |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |

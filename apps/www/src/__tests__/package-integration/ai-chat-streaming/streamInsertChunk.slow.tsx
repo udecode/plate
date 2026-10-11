@@ -3,6 +3,7 @@
 import { jsxt } from '@platejs/test';
 import { AIChatPlugin } from 'platejs/ai/react';
 
+import { nameListIds } from '../list/nameListIds';
 import { createTestEditor } from './__tests__/createTestEditor';
 
 jsxt;
@@ -21,6 +22,11 @@ const streamChunks = (chunks: string[]) => {
   editor.plugin(AIChatPlugin).api.accept();
   return editor;
 };
+
+const withoutListIds = (nodes: readonly any[]): any[] =>
+  nodes.map(({ listId: _listId, ...node }) =>
+    node.children ? { ...node, children: withoutListIds(node.children) } : node
+  );
 
 const getStreamedMarkdown = (chunks: string[]) => {
   const editor = streamChunks(chunks);
@@ -193,7 +199,7 @@ describe('AIChatPlugin response drafts', () => {
           <hp>
             <htext>chunk1</htext>
           </hp>
-          <hp indent={1} listType="bulleted">
+          <hp indent={1} listId="a" listType="bulleted">
             <htext bold>chunk2</htext>
           </hp>
           <hp>
@@ -202,7 +208,7 @@ describe('AIChatPlugin response drafts', () => {
         </fragment>
       ) as any;
 
-      expect(editor.read.children()).toEqual(output);
+      expect(nameListIds(editor.read.children())).toEqual(output);
     });
 
     it('preserves ordered list numbering after a paragraph break', () => {
@@ -210,19 +216,19 @@ describe('AIChatPlugin response drafts', () => {
 
       const output = (
         <fragment>
-          <hp indent={1} listType="numbered">
+          <hp indent={1} listId="a" listRestart={1} listType="numbered">
             <htext>1</htext>
           </hp>
           <hp>
             <htext>xxx</htext>
           </hp>
-          <hp indent={1} listStart={2} listType="numbered">
+          <hp indent={1} listId="b" listRestart={2} listType="numbered">
             <htext>2</htext>
           </hp>
         </fragment>
       ) as any;
 
-      expect(editor.read.children()).toEqual(output);
+      expect(nameListIds(editor.read.children())).toEqual(output);
     });
   });
 
@@ -317,7 +323,7 @@ describe('AIChatPlugin response drafts', () => {
     ])('matches editor.api.markdown.parse for %s', (_label, chunks) => {
       const { editor, expected } = getStreamedMarkdown(chunks);
 
-      expect(editor.read.children()).toEqual(expected);
+      expect(withoutListIds(editor.read.children())).toEqual(expected);
     });
   });
 });

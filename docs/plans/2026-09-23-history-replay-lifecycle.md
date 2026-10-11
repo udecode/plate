@@ -138,7 +138,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All rows resolved; see ledger, slices and proof matrix. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Probe run 2026-09-23 against the current checkout: 9/9 current-behavior receipts plus the claim-model check. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Rows 1-4 and 9; rejected alternatives recorded. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Rows 1-4 and 9; rejected alternatives recorded. |
 | Pre-acceptance scale proof | no | Source-backed N/A | Scale contract. |
 | Production scale rerun contract | no | Source-backed N/A | Scale contract. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | Conditional evidence below. |

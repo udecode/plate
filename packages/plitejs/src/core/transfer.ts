@@ -13,7 +13,9 @@ import { type Range, RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { removeNodes } from '../transforms-node';
 import { deleteText } from '../transforms-text';
+import type { Anchor } from './anchor';
 import { readAuthoredView } from './authored-runtime';
+import { DocumentIndex } from './change/document-index';
 import { isDocumentView } from './document-view-read';
 import { editorReads } from './editor-reads';
 import {
@@ -36,7 +38,9 @@ import {
 import { definePlugin } from './plugin';
 import { getConfiguredPluginRegistry } from './plugin-registry';
 import {
+  measureDraftInsertion,
   replaceSliceAtBlockBoundary,
+  withDraftMove,
   withEditorUpdateRootScope,
 } from './public-state';
 import { executeEditorRead } from './read-registry';
@@ -534,6 +538,31 @@ const runTransfer = (
   );
   let landed: NodeSelection | Range | null = null;
   const select = typeof input.to !== 'string';
+  // The landing's edges, held across the commit, where a recorder may rewrite
+  // the draft commands wrote.
+  let held: HeldLanding | null = null;
+  const hold = (range: Range) => {
+    const [start, end] = RangeApi.edges(range);
+
+    held = {
+      end: editor.anchor(end, { association: 'backward', deletion: 'nearest' }),
+      kind: 'range',
+      start: editor.anchor(start, {
+        association: 'forward',
+        deletion: 'nearest',
+      }),
+    };
+  };
+  const holdNodes = (nodes: NodeSelection) => {
+    held = {
+      first: editor.anchor(nodes.anchorPath, { deletion: 'nearest' }),
+      kind: 'nodes',
+      last: editor.anchor(nodes.focusPath, { deletion: 'nearest' }),
+    };
+  };
+
+  const asMove = <T>(role: 'landing' | 'source', run: () => T): T =>
+    copy ? run() : withDraftMove(getEditorRuntimeOwner(editor), { role }, run);
 
   try {
     editor.update((tx) => {
@@ -579,14 +608,17 @@ const runTransfer = (
       const selectLanded = (keys: readonly NodeKey[]) => {
         const paths = keys.map(pathOf);
 
-        landed = SelectionApi.nodes(paths as [Path, ...Path[]]);
+        const nodes = SelectionApi.nodes(paths as [Path, ...Path[]]);
+
+        landed = nodes;
         draft.current = {
           children: tx.nodes.children(),
           landed: {
             paths: [...paths, ...carried.map(({ key }) => pathOf(key))],
           },
         };
-        if (select) tx.selection.set(landed);
+        holdNodes(nodes);
+        if (select) tx.selection.set(nodes);
       };
 
       if (landing.kind === 'wrap') {
@@ -629,6 +661,9 @@ const runTransfer = (
 
       const removeSource = () => {
         if (copy) return;
+        asMove('source', removeSourceSteps);
+      };
+      const removeSourceSteps = () => {
         if (source.root === targetRoot) {
           if (source.kind === 'text') {
             tx.text.delete({ at: source.range });
@@ -667,21 +702,45 @@ const runTransfer = (
         removeSource();
 
         const point = start.resolve();
+        const placed = measureDraftInsertion(
+          editor,
+          targetRoot,
+          () =>
+            !!point &&
+            !!slice &&
+            asMove('landing', () => tx.slice.replace(slice, { at: point }))
+        );
 
-        if (!point || !slice || !tx.slice.replace(slice, { at: point })) {
-          refuse('schema');
-        }
+        if (!placed.result) refuse('schema');
 
         const startPoint = start.resolve();
         const endPoint = end.resolve();
 
         if (!startPoint || !endPoint) refuse('schema');
 
-        landed = selectionRange(startPoint as Point, endPoint as Point);
+        // The inserted text bounds the landing: point anchors at a text's
+        // edge miss a slice that lands as leaves of its own.
+        const index = DocumentIndex.fromValue(tx.nodes.children());
+        const pointAt = (position: number, assoc: -1 | 1, fallback: Point) => {
+          const found = index.pointAt(position, assoc);
+
+          return found
+            ? { ...fallback, offset: found.offset, path: [...found.path] }
+            : fallback;
+        };
+        const span = placed.text;
+
+        landed = span
+          ? selectionRange(
+              pointAt(span.from, 1, startPoint as Point),
+              pointAt(span.to, -1, endPoint as Point)
+            )
+          : selectionRange(startPoint as Point, endPoint as Point);
         draft.current = {
           children: tx.nodes.children(),
           landed: { range: landed },
         };
+        hold(landed);
         if (select) tx.selection.set(landed);
 
         return;
@@ -697,10 +756,12 @@ const runTransfer = (
       const boundary = insertionPath(targetPath, landing.edge.edge);
 
       if (
-        !replaceSliceAtBlockBoundary(
-          getEditorRuntimeOwner(editor),
-          slice as never,
-          boundary
+        !asMove('landing', () =>
+          replaceSliceAtBlockBoundary(
+            getEditorRuntimeOwner(editor),
+            slice as never,
+            boundary
+          )
         )
       ) {
         refuse('schema');
@@ -712,11 +773,15 @@ const runTransfer = (
         first + i,
       ]);
 
-      landed = SelectionApi.nodes(paths as [Path, ...Path[]]);
+      const nodes = SelectionApi.nodes(paths as [Path, ...Path[]]);
+
+      landed = nodes;
       draft.current = { children: tx.nodes.children(), landed: { paths } };
-      if (select) tx.selection.set(landed);
+      holdNodes(nodes);
+      if (select) tx.selection.set(nodes);
     });
   } catch (error) {
+    releaseHeld(held);
     if (error instanceof TransferRefusalError) {
       return { reason: error.reason, status: 'refused' };
     }
@@ -728,7 +793,7 @@ const runTransfer = (
     release();
   }
 
-  const at = landed as NodeSelection | Range | null;
+  const at = readHeld(held, landed);
 
   if (!at) return { reason: 'schema', status: 'refused' };
   if (!copy) return { at, status: 'moved' };
@@ -746,6 +811,52 @@ const runTransfer = (
             : 'read-only-source',
     status: 'copied',
   };
+};
+
+type HeldLanding =
+  | Readonly<{ end: Anchor<Point>; kind: 'range'; start: Anchor<Point> }>
+  | Readonly<{ first: Anchor<Path>; kind: 'nodes'; last: Anchor<Path> }>;
+
+const releaseHeld = (held: HeldLanding | null) => {
+  if (held?.kind === 'range') {
+    held.start.release();
+    held.end.release();
+  } else if (held) {
+    held.first.release();
+    held.last.release();
+  }
+};
+
+const readHeld = (
+  held: HeldLanding | null,
+  landed: NodeSelection | Range | null
+): NodeSelection | Range | null => {
+  if (!held || !landed) return landed;
+
+  const edges =
+    held.kind === 'range'
+      ? [held.start.resolve(), held.end.resolve()]
+      : [held.first.resolve(), held.last.resolve()];
+
+  releaseHeld(held);
+
+  const [start, end] = edges;
+
+  if (!start || !end) return landed;
+  if (held.kind === 'range') {
+    return selectionRange(start as Point, end as Point);
+  }
+
+  const first = start as Path;
+  const parent = first.slice(0, -1);
+  const from = first.at(-1) as number;
+  const to = (end as Path).at(-1) as number;
+  const rest = Array.from(
+    { length: Math.max(0, to - from) },
+    (_, offset): Path => [...parent, from + offset + 1]
+  );
+
+  return SelectionApi.nodes([first, ...rest]);
 };
 
 type CachedCheck = Readonly<{ check: TransferCheck; key: readonly unknown[] }>;

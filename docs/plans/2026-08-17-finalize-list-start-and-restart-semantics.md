@@ -130,7 +130,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Final live-source audit, focused proof, full CI, generated contract, docs, release notes, and review are closed |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final `rg` audits verify no rejected live field, correct imports, DOCX restart metadata, and source/mirror doctrine |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Two-field target implemented; unrelated AI heading-level P1 rejected as a separate pre-existing bug class |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Two-field target implemented; unrelated AI heading-level P1 rejected as a separate pre-existing bug class |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Runtime, migration, HTML, Markdown, DOCX, AI, docs, generated schema, and changesets covered; browser visual proof N/A because the change is a model/codec contract and the current Browser surface is unavailable |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact commands and pass counts are recorded below |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff rows completed below |

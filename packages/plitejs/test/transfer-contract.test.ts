@@ -817,6 +817,43 @@ describe('schema-derived landing', () => {
     );
   });
 
+  it('moves an empty container, holding its landing by node paths', () => {
+    const Empty = defineEditorSchema('transfer-empty-quote', {
+      elements: {
+        paragraph: { content: schema.content.text() },
+        quote: { content: schema.content.types(['paragraph']) },
+      },
+      id: 'transfer-empty-quote',
+      root: schema.content.types(['paragraph', 'quote'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = createEditor({
+      initialValue: [
+        { type: 'quote', children: [] },
+        { type: 'paragraph', children: [{ text: 'x' }] },
+      ] as never,
+      plugins: [Empty, transfer()],
+    });
+
+    const outcome = editor.api.transfer.move({
+      nodes: [editor.key([0])!],
+      to: { edge: 'after', key: editor.key([1])! },
+    });
+
+    assert.deepEqual(outcome, {
+      at: { anchorPath: [1], focusPath: [1], kind: 'node', paths: [[1]] },
+      status: 'moved',
+    });
+    assert.deepEqual(editor.read.children(), [
+      { type: 'paragraph', children: [{ text: 'x' }] },
+      { type: 'quote', children: [] },
+    ]);
+  });
+
   it('keeps a schemaless editor to root edges', () => {
     const editor = createEditor({
       initialValue: [block('quote', paragraph('inside')), paragraph('moved')],

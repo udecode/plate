@@ -203,6 +203,14 @@ export default defineConfig({
         'apps/www/src/app/dev/combobox-typing/page.tsx',
         'benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts',
         'apps/www/src/app/dev/editor-perf/page.tsx',
+        // Phase 1 proof surfaces of the authored review tree, which installs
+        // a raw Plite plugin; the phase's revert removes them.
+        'apps/www/src/app/dev/authored-review/page.tsx',
+        'packages/platejs/src/features/table/lib/BaseTablePlugin.authored-tree.spec.ts',
+        'packages/platejs/src/features/details/lib/BaseDetailsPlugin.authored-tree.spec.ts',
+        'packages/platejs/src/features/layout/lib/BaseColumnPlugin.authored-tree.spec.ts',
+        'packages/platejs/src/features/list/lib/BaseListPlugin.authored-tree.spec.ts',
+        'packages/platejs/src/features/tag/lib/BaseMultiSelectPlugin.authored-tree.spec.ts',
       ],
       rules: {
         'no-restricted-imports': [

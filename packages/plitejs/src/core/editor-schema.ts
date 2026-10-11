@@ -36,6 +36,7 @@ import {
 import { DocumentIndex } from './change/document-index';
 import type { DocumentPropertyContext, RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
+import { normalizeSetValues } from './change/transform';
 import { cloneFrozen, isOwnedJsonValue } from './clone';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import {
@@ -167,10 +168,15 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       ancestors?: readonly Element[]
     ) => readonly Descendant[];
     copyNodeAt: (node: Descendant, path: Path, root?: RootKey) => Descendant;
+    /**
+     * `children` reads the ancestors at `path` from that root instead of the
+     * editor's document, for a draft that has moved away from it.
+     */
     elementPropertiesForSplitAt: (
       element: Element,
       path: Path,
-      root?: RootKey
+      root?: RootKey,
+      children?: readonly Descendant[]
     ) => Readonly<Record<string, unknown>>;
     elementPropertiesForTypeChangeAt: (
       element: Element,
@@ -434,9 +440,6 @@ const toSchemaValidationLocation = (
   };
 };
 
-const canonicalPropertyKey = (value: unknown) =>
-  JSON.stringify(snapshotEditorJsonValue(value, 'Schema property value'));
-
 const canonicalizePropertyValue = (
   owner: string,
   descriptor: PropertyValueDescriptor,
@@ -449,24 +452,16 @@ const canonicalizePropertyValue = (
       throw new EditorSchemaValidationError(`${owner} must be an array.`);
     }
 
-    const items = new Map<string, EditorJsonValue>();
-
     const itemDescriptor = (
       descriptor as PropertyValueDescriptor & {
         item: PropertyValueDescriptor;
       }
     ).item;
 
-    for (const item of value) {
-      const next = canonicalizePropertyValue(owner, itemDescriptor, item);
-
-      items.set(canonicalPropertyKey(next), next);
-    }
-
-    canonical = Object.freeze(
-      [...items]
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([, item]) => item)
+    canonical = normalizeSetValues(
+      value.map((item) =>
+        canonicalizePropertyValue(owner, itemDescriptor, item)
+      )
     );
   } else {
     try {
@@ -2456,16 +2451,18 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const getElementTargetOptionsAt = (
     path: Path,
-    root: RootKey = 'main'
+    root: RootKey = 'main',
+    children: readonly Descendant[] = getDocumentRoot(getDocument(), root)
   ): RuntimeTargetOptions => ({
-    ancestors: getElementAncestors(getDocumentRoot(getDocument(), root), path),
+    ancestors: getElementAncestors(children, path),
     root,
   });
 
   const elementPropertiesForSplitAt = (
     element: Element,
     path: Path,
-    root: RootKey = 'main'
+    root: RootKey = 'main',
+    children?: readonly Descendant[]
   ) => {
     const schema = getDeclarativeSchema();
 
@@ -2473,7 +2470,7 @@ export const createEditorSchema = <V extends Value = Value>(
     const type = getElementType(element) ?? '';
     const context = toCompiledTargetContext(
       type,
-      getElementTargetOptionsAt(path, root)
+      getElementTargetOptionsAt(path, root, children)
     );
 
     return Object.freeze(
@@ -2743,20 +2740,10 @@ export const createEditorSchema = <V extends Value = Value>(
             property.descriptor,
             previous
           );
-    const items = new Map<string, EditorJsonValue>();
-
-    for (const item of [
+    return normalizeSetValues([
       ...(previousItems as readonly EditorJsonValue[]),
       ...(canonical as readonly EditorJsonValue[]),
-    ]) {
-      items.set(canonicalPropertyKey(item), item);
-    }
-
-    return Object.freeze(
-      [...items]
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([, item]) => item)
-    );
+    ]) as EditorJsonValue;
   };
 
   const mergeTextPropertyAt = (

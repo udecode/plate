@@ -31,7 +31,7 @@ Work Checklist:
 - [x] Freeze and execute baseline exercises before changing instructions.
 - [x] Merge Regression coordination into conditional Patch corpus/failed-fix methods; migrate helpers and active callers before retiring discovery.
 - [x] Keep diagnosis-only read-only and reuse the protected upstream diagnosis method; integrate bug red/green into Patch without duplicating shared TDD.
-- [x] Route workflow repair to Maintain Workflow; preserve Verify Plate, Testing, Benchmark and Best API Review ownership.
+- [x] Route workflow repair to Maintain Workflow; preserve Verify Plate, Testing, Benchmark and Verdict ownership.
 - [x] Preserve semantic schema, receipts, exact interaction, cumulative acceptance, architecture escalation and local/public completion boundaries.
 - [x] Regenerate and verify affected installs, executable helpers and reference reachability.
 - [x] Run identical revised exercises and inspect artifacts blind; resolve material regressions before adoption.

@@ -49,7 +49,7 @@ test framework would introduce another place for these rules to disagree.
 | Diagnosing Bugs | Keep protected `mattpocock/skills` source; local adapter makes fixed hypothesis counts/minimization conditional and allows early architecture review. |
 | TDD | Repair shared Dotai source: product exceptions can be valid RED; a tracer test proves only its actual boundary; ownership repair need not wait for a temporary workaround. |
 | Maintain Verification Skill | Repair shared maintained adaptation: workflow audits trace escaped proof; product coverage selects the preserved full live-pass method. Bound independent source delegation instead of one agent per file. |
-| Best API Review | Keep the current first-principles method. Trigger it for repeated invariant failures, competing owners and workaround chains; a Stop verdict does not invent an adoption plan. |
+| Verdict | Keep the current first-principles method. Trigger it for repeated invariant failures, competing owners and workaround chains; a Stop verdict does not invent an adoption plan. |
 
 The August 26 [test-escalation decision](2026-08-26-regression-proof-escalation-repair.md)
 aimed to prevent redundant E2E tests. Preserve that goal; reject its blanket ban
@@ -161,7 +161,7 @@ feature-development requests; its bug-fix red/green loop needs no extra lifecycl
 
 Keep Verify Plate shared: new features, read-only verification, CLI consumers
 and release artifacts need it independently of a bug. Keep Testing's test-authoring
-and suite-health job shared for the same reason. Benchmark and Best API Review
+and suite-health job shared for the same reason. Benchmark and Verdict
 retain independent measurement and design decisions. Task remains the general
 execution owner; Patch's workflow-repair mode routes to Maintain Workflow.
 

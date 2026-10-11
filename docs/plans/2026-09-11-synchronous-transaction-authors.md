@@ -83,7 +83,7 @@ Task state:
 
 Work Checklist:
 - [x] Capture scope, authority, accepted owner comparison and exact case.
-  Sources: Patch Reproduce/Classify; Task workflow; Best API Review decision.
+  Sources: Patch Reproduce/Classify; Task workflow; Verdict decision.
 - [x] Record fresh current-source reproduction and durable red proof for direct,
   configured, portal, active-extension, pure and extended-spec paths, including
   delayed failure and recovery. Sources: Patch Red Proof; Poteto Bug fix.
@@ -99,7 +99,7 @@ Work Checklist:
   delta against main before the changeset decision. Sources: Patch, Changeset.
 - [x] Reconcile review/adoption evidence without editing immutable records;
   verify affected local links and generated review ledger if changed.
-  Source: Task Best API Review adapter.
+  Source: Task Verdict adapter.
 - [x] Inspect final diff, reconcile every original checklist and applicability,
   finish evidence/handoff and run check-complete before closing the native goal.
   Sources: Autogoal checklist retention; Task/Patch handoff.

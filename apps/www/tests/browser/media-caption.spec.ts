@@ -409,7 +409,7 @@ test('arrow keys traverse the image owner before its caption', async ({
   }
 });
 
-test('ArrowDown from the media demo paragraph stops on the image before its caption', async ({
+test('ArrowDown from the media demo paragraph stops on the image before its caption [EDIT-SEL-BLOCK-YIELD-001]', async ({
   page,
 }, testInfo) => {
   await page.goto('/blocks/media-demo', { waitUntil: 'commit' });

@@ -51,7 +51,7 @@ and feature mappings own HTML accounting. Registry UI owns presentation only.
 Blocked condition:
 
 None. A render-dependency contract that cannot stay correct under React
-Server Components stops step 3 and returns to Best API review.
+Server Components stops step 3 and returns to Verdict.
 
 Work Checklist:
 

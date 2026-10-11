@@ -23,6 +23,7 @@ import {
 } from 'platejs/react';
 import { TablePlugin } from 'platejs/table/react';
 
+import { nameListIds } from '../list/nameListIds';
 import { readTestFile } from './readTestFile';
 
 jsx;
@@ -91,6 +92,6 @@ export const testDocxDeserializer = ({
       createClipboardData(readTestFile(`./${filename}.html`))
     );
 
-    expect(actual.read.children()).toEqual(expected.children);
+    expect(nameListIds(actual.read.children())).toEqual(expected.children);
   });
 };

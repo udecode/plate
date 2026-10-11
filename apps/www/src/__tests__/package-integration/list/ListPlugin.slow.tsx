@@ -27,6 +27,8 @@ import {
 } from 'platejs/react';
 import { TablePlugin } from 'platejs/table/react';
 
+import { nameListIds } from './nameListIds';
+
 jsxt;
 
 const targetPluginConfig = {
@@ -93,7 +95,7 @@ describe('when insertData disc and decimal from gdocs', () => {
       )
     );
 
-    expect(editor.read.children()).toEqual([
+    expect(nameListIds(editor.read.children())).toEqual([
       {
         children: [
           {
@@ -101,6 +103,7 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 1,
+        listId: 'a',
         listType: 'bulleted',
         type: 'paragraph',
       },
@@ -111,6 +114,7 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 2,
+        listId: 'a',
         listType: 'bulleted',
         type: 'paragraph',
       },
@@ -121,6 +125,7 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 1,
+        listId: 'b',
         listType: 'numbered',
         type: 'paragraph',
       },
@@ -131,6 +136,7 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 2,
+        listId: 'b',
         listStyle: 'lower-alpha',
         listType: 'numbered',
         type: 'paragraph',
@@ -142,6 +148,7 @@ describe('when insertData disc and decimal from gdocs', () => {
           },
         ],
         indent: 4,
+        listId: 'b',
         listType: 'numbered',
         type: 'paragraph',
       },
@@ -182,7 +189,7 @@ describe('when insertData with nested ul inside li', () => {
       )
     );
 
-    expect(editor.read.children()).toEqual([
+    expect(nameListIds(editor.read.children())).toEqual([
       {
         children: [
           {
@@ -191,6 +198,7 @@ describe('when insertData with nested ul inside li', () => {
           },
         ],
         indent: 1,
+        listId: 'a',
         listType: 'bulleted',
         type: 'paragraph',
       },
@@ -202,6 +210,7 @@ describe('when insertData with nested ul inside li', () => {
           },
         ],
         indent: 2,
+        listId: 'a',
         listType: 'bulleted',
         type: 'paragraph',
       },
@@ -212,6 +221,7 @@ describe('when insertData with nested ul inside li', () => {
           },
         ],
         indent: 3,
+        listId: 'a',
         listType: 'bulleted',
         type: 'paragraph',
       },
@@ -222,6 +232,7 @@ describe('when insertData with nested ul inside li', () => {
           },
         ],
         indent: 1,
+        listId: 'a',
         listType: 'bulleted',
         type: 'paragraph',
       },

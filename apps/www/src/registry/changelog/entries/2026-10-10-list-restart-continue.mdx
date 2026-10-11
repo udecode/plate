@@ -1,0 +1,16 @@
+---
+id: 2026-10-10-list-restart-continue
+date: 2026-10-10
+status: draft
+kind: new
+summary: 'Restart and continue list numbering from the numbered list menu'
+change: { 'type': 'source', 'date': '2026-10-10', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-10-list-toolbar-restart-continue-numbering-from-a1457cba","kind":"new","migrationNotes":[]} -->
+
+- **`list-toolbar-button`**: Add Restart numbering and Continue numbering to the numbered list menu.
+- **`block-list`**, **`block-list-static`**: Name each list with `data-list-id` and its level rules with `data-list-levels`, so HTML and DOCX export keep each list and its levels.
+- **`block-list-static`**: Write each item's indent, list id, level rules, restart, start, type and checked state on its `li`, so pasting the static HTML keeps them.

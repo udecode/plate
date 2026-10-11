@@ -108,7 +108,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Meet every completion threshold | Source/package complete; browser blocker recorded |
 | Fresh source evidence | yes | Re-audit exact consumers after edits | Zero stale component-map references |
-| Best API review | yes | Direct plugin config verdict accepted | Final P2 review clean |
+| Verdict | yes | Direct plugin config verdict accepted | Final P2 review clean |
 | Conditional risk and adoption | yes | Prove merge and registry install boundary | 7/7 exact integration; metadata updated |
 | Verification recorded | yes | Record exact commands/results | Recorded below |
 | Handoff prepared | yes | Summarize ownership, hard cut, proof, risks | Prepared below |

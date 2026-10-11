@@ -1,3 +1,4 @@
+import { hasEditorContent } from '../core/content';
 import { isEditorNodeSelectable } from '../core/editor-read-execution';
 import { getEditorSchema } from '../core/editor-runtime';
 import type { EditorStaticApi } from '../interfaces/editor';
@@ -14,8 +15,21 @@ import {
   canUseAdjacentCharacterFastPath,
   getAdjacentCharacterPoint,
 } from './adjacent-character-point';
+import { stepContent } from './after';
 
 const beforeBase: EditorStaticApi['before'] = (editor, at, options = {}) => {
+  if (options.content && hasEditorContent(editor)) {
+    return stepContent(
+      editor,
+      at,
+      options.distance ?? 1,
+      'backward',
+      options.unit ?? 'offset',
+      (point, unit) =>
+        beforeBase(editor, point, { distance: 1, unit, voids: options.voids })
+    );
+  }
+
   const anchor = editorPoint(editor, [], { edge: 'start' });
   const focus = editorPoint(editor, at, { edge: 'start' });
   const { distance = 1, unit = 'offset', voids = false } = options;
@@ -71,6 +85,7 @@ export const before: EditorStaticApi['before'] = (editor, at, options = {}) => {
   const { afterMatch, match, matchBlockStart, matchByRegex, matchString } =
     options;
   const stepOptions = {
+    content: options.content,
     distance: options.distance,
     unit: options.unit,
     voids: options.voids,
@@ -140,10 +155,11 @@ export const before: EditorStaticApi['before'] = (editor, at, options = {}) => {
         return false;
       }
 
-      const beforeString = editorString(editor, {
-        anchor: beforePoint,
-        focus: previousBeforePoint,
-      });
+      const beforeString = editorString(
+        editor,
+        { anchor: beforePoint, focus: previousBeforePoint },
+        { content: options.content }
+      );
       let beforeStringToMatch = beforeString;
 
       if (

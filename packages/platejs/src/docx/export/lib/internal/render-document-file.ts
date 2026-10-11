@@ -67,14 +67,13 @@ type DocxDocumentInstance = {
   createFont: (fontFamily: string) => string;
   createMediaFile: (base64Uri: string) => MediaFileResponse;
   createNumbering: (type: 'ol' | 'ul', properties?: VNodeProperties) => number;
-  listNumberingId: (
-    type: 'ol' | 'ul',
-    level: number,
-    properties?: VNodeProperties
-  ) => number;
-  resetListNumbering: () => void;
   taskNumberingId: (checked: boolean) => number;
   getBookmark: (htmlId: string) => { id: number; name: string } | undefined;
+  openList: (
+    type: 'ol' | 'ul',
+    properties: VNodeProperties,
+    level: number
+  ) => { readonly numberingId: number; next: number };
   registerBookmark: (htmlId: string) => void;
   htmlString: string;
   relationshipFilename: string;
@@ -96,9 +95,6 @@ type DocxDocumentInstance = {
     };
   };
 };
-
-// Regex for parsing numeric values from margin-left
-const MARGIN_NUMBER_REGEX = /(\d+)/;
 
 // Inline elements that should be grouped into a single paragraph
 const INLINE_ELEMENTS = new Set([
@@ -187,43 +183,22 @@ type ContentGroup = {
   type: 'block' | 'inline';
 };
 
+const INDENT_CLASS_REGEX = /\beditor-indent-\d+\b/;
+
+const isIndented = (vNode: VNodeType) =>
+  !['ol', 'ul'].includes(vNode.tagName || '') &&
+  Boolean(
+    vNode.properties?.style?.['margin-left'] ||
+    INDENT_CLASS_REGEX.test(vNode.properties?.attributes?.class ?? '')
+  );
+
 async function findXMLEquivalent(
   docxDocumentInstance: DocxDocumentInstance,
   vNode: VNodeType,
   xmlFragment: XMLBuilderType,
-  indentedAncestor: VNodeType | null
+  indentedAncestor: VNodeType | undefined
 ): Promise<void> {
-  const childIndentedAncestor =
-    vNode.properties?.style?.['margin-left'] &&
-    !['ol', 'ul'].includes(vNode.tagName || '')
-      ? vNode
-      : indentedAncestor;
-
-  // Check if this element contains list children (for paragraphs that wrap lists)
-  const hasListChildren =
-    vNodeHasChildren(vNode) &&
-    (vNode.children || []).some(
-      (child) =>
-        isVNode(child) &&
-        ['ul', 'ol'].includes((child as VNodeType).tagName || '')
-    );
-
-  // Reset list tracking for non-list elements to break consecutive list sequences
-  // But don't reset for container elements that might wrap lists
-  // Also don't reset for paragraphs that contain lists (Plate's list rendering pattern)
-  const containerElements = [
-    'ol',
-    'ul',
-    'html',
-    'body',
-    'div',
-    'section',
-    'article',
-    'main',
-  ];
-  if (!containerElements.includes(vNode.tagName || '') && !hasListChildren) {
-    docxDocumentInstance.resetListNumbering();
-  }
+  const childIndentedAncestor = isIndented(vNode) ? vNode : indentedAncestor;
 
   if (
     vNode.tagName === 'div' &&
@@ -399,23 +374,12 @@ async function findXMLEquivalent(
             );
             xmlFragment.import(paragraphFragment);
           }
-          // Process list children separately with tracking
-          // Get indent level from parent paragraph
-          const indentLevel = getIndentLevel(vNode);
-
           for (const listChild of listChildren) {
-            const listNode = listChild as VNodeType;
-
             await buildList(
-              listNode,
+              listChild,
               docxDocumentInstance,
               xmlFragment,
-              docxDocumentInstance.listNumberingId(
-                (listNode.tagName || 'ul') as 'ol' | 'ul',
-                indentLevel,
-                listNode.properties
-              ),
-              indentLevel
+              vNode
             );
           }
           return;
@@ -536,18 +500,11 @@ async function findXMLEquivalent(
     case 'ol':
     case 'ul': {
       // A list drawn without its own margin takes its indented ancestor's indent.
-      const indentLevel = getIndentLevel(vNode, indentedAncestor);
-
       await buildList(
         vNode,
         docxDocumentInstance,
         xmlFragment,
-        docxDocumentInstance.listNumberingId(
-          vNode.tagName,
-          indentLevel,
-          vNode.properties
-        ),
-        indentLevel
+        indentedAncestor
       );
       return;
     }
@@ -574,46 +531,33 @@ async function findXMLEquivalent(
     for (let index = 0; index < (vNode.children || []).length; index++) {
       const childVNode = (vNode.children || [])[index];
 
-      await convertVTreeToXML(
-        docxDocumentInstance,
-        childVNode,
-        xmlFragment,
-        childIndentedAncestor
-      );
+      if (
+        isVNode(childVNode) &&
+        ['ul', 'ol'].includes((childVNode as VNodeType).tagName || '')
+      ) {
+        await buildList(
+          childVNode,
+          docxDocumentInstance,
+          xmlFragment,
+          childIndentedAncestor ?? vNode
+        );
+      } else {
+        await convertVTreeToXML(
+          docxDocumentInstance,
+          childVNode,
+          xmlFragment,
+          childIndentedAncestor
+        );
+      }
     }
   }
-}
-
-// Helper to extract indent level from vNode or parent paragraph
-function getIndentLevel(
-  vNode: VNodeType | null,
-  parentVNode: VNodeType | null = null
-): number {
-  // Check margin-left style which indicates indent level
-  const marginLeft =
-    vNode?.properties?.style?.['margin-left'] ||
-    parentVNode?.properties?.style?.['margin-left'];
-
-  if (marginLeft) {
-    // Parse margin-left value (e.g., "24px", "48px")
-    const match = marginLeft.match(MARGIN_NUMBER_REGEX);
-    if (match) {
-      const px = Number.parseInt(match[1], 10);
-      // Assuming 24px per indent level in Plate
-      // Subtract 1 because Plate uses indent=1 for first level, but Word uses level=0
-      const plateIndent = Math.round(px / 24);
-      return Math.max(0, plateIndent - 1);
-    }
-  }
-
-  return 0;
 }
 
 export async function convertVTreeToXML(
   docxDocumentInstance: DocxDocumentInstance,
   vTree: VTree | null,
   xmlFragment: XMLBuilderType,
-  indentedAncestor: VNodeType | null = null
+  indentedAncestor?: VNodeType
 ): Promise<XMLBuilderType | string> {
   if (!vTree) {
     return '';

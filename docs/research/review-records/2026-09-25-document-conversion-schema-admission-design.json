@@ -24,7 +24,7 @@
       {
         "path": "docs/research/review-records/2026-09-25-imports-schema-admission-recovery.json",
         "sha256": "5fca276d618a2fbbed03a118339c81509a1aa58c229637b5a82e65481e8da122",
-        "claim": "Records the superseding source-fingerprinted Best API Review, candidate commits, hard-cut alternatives, transfer diagnostic finding, and implementation proof limits."
+        "claim": "Records the superseding source-fingerprinted Verdict, candidate commits, hard-cut alternatives, transfer diagnostic finding, and implementation proof limits."
       },
       {
         "path": "docs/analysis/editor-architecture-candidates.md",

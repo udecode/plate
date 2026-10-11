@@ -5,7 +5,7 @@
   "date": "2026-09-21",
   "question": "Does Plite need an object-like schema role for selectable media with editable children, or can narrower intrinsic-content and existing flag repairs solve the job more cleanly?",
   "model": "GPT-5 / Codex",
-  "method": "best-api-review/history-v3; redesign-from-first-principles; model-switch final-pass reassessment",
+  "method": "verdict/history-v3; redesign-from-first-principles; model-switch final-pass reassessment",
   "trigger": "The user switched models and requested a fresh last pass of the same review, specifically questioning whether media needs a void-like node type that still exposes editable children.",
   "requirements": [
     "Keep media captions as ordinary canonical children with normal text selection, history, clipboard and collaboration ownership.",
@@ -72,7 +72,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
       "pnpm-lock.yaml": "c30b05901aa8f2ecb6c6a62b6e37d963ed743eb8538c444517cd3117ae202a17",
-      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/skills/verdict/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
       ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
       "packages/plitejs/src/interfaces/schema.ts": "6bf2dbf0970d8d12307a697a09089791973ce4b5fb1bb5281c7633c40e77a444",
       "packages/plitejs/src/core/schema-compiler.ts": "a8c0dfeb881d7f4166d6517a7358f66dac89f5f2bccd0fa2a804cf5ed283b226",

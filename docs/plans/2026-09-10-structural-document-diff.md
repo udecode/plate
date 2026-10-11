@@ -709,7 +709,7 @@ Open risks:
 OSS validation checkpoint (research and specification complete, 2026-09-10): [research ledgers](../plite/research/2026-09-10-structural-diff-oss/README.md).
 
 - [x] R1: Search web and GitHub, dedupe prior research, inspect selected real source/tests and pin identities; Plite Research.
-- [x] R2: Reassess whole-model and public-noun alternatives against external evidence; Best API Review.
+- [x] R2: Reassess whole-model and public-noun alternatives against external evidence; Verdict.
 - [x] R3: Reconcile the required comparison jobs and supported OSS leads into explicit plan/proof requirements; user scope and Plite Plan.
 - [x] R4: Close source/lead/packet denominators, verify artifacts and give one bounded verdict; Plite Research, Task and Autogoal.
 

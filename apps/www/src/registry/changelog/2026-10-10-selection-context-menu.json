@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-10-selection-context-menu",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-10-selection-context-menu.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-10",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Preserve selected blocks when opening context menus from nested drag handles",
+  "targets": [
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd",
+      "files": ["apps/www/src/registry/components/editor/dnd.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-10-block-menu-preserve-blocks-when-opening-f926c2db",
+      "kind": "fix",
+      "summary": "Preserve selected blocks when opening context menus from nested drag handles",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-menu", "dnd"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-10",
+          "entry": "2026-10-10-selection-context-menu",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

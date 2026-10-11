@@ -216,4 +216,31 @@ describe('plitejs/yjs set_node collaboration contract', () => {
       ]);
     }
   });
+
+  it('marks the end of a text leaf while keeping a concurrent append', () => {
+    const [a, b] = createPeers(['a', 'b']);
+
+    b.editor.update.nodes.set(
+      { bold: true },
+      {
+        at: {
+          anchor: { path: [0, 0], offset: 3 },
+          focus: { path: [0, 0], offset: 5 },
+        },
+        match: NodeApi.isText,
+        split: true,
+      }
+    );
+    appendRemoteText(a);
+    syncConnectedPeers([b, a]);
+
+    for (const peer of [a, b]) {
+      assert.deepEqual(readPeerChildren(peer), [
+        {
+          type: 'paragraph',
+          children: [{ text: 'alp' }, { bold: true, text: 'ha!' }],
+        },
+      ]);
+    }
+  });
 });

@@ -14,6 +14,20 @@ describe('editor.api.markdown.serialize list', () => {
     expect(parseTestMarkdown(editor, result.data)).toEqual(document);
   });
 
+  it('numbers an indent 0 item as the level above an indent 1 item', () => {
+    const input = [0, 1, 0].map((indent, index) => ({
+      children: [{ text: 'ABC'[index] }],
+      indent,
+      listId: 'z',
+      listType: 'numbered',
+      type: 'paragraph',
+    }));
+
+    expect(
+      serializeTestMarkdown(editor, { document: { children: input } }).data
+    ).toBe('1. A\n   1. B\n2. C\n');
+  });
+
   it('keeps a bare URL inside a list item', () => {
     const input = [
       {

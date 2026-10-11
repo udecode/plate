@@ -5,7 +5,7 @@
   "date": "2026-10-05",
   "question": "Which independently consumed entrypoints justify their distribution boundary, and which facades or optional-dependency boundaries can disappear?",
   "model": "Claude Opus 5.5",
-  "method": "best-api-review/history-v4",
+  "method": "verdict/history-v4",
   "trigger": "next returned the plate-core unit after the reads close on 2026-10-05. The ledger marked the 2026-10-04 Pursue stale because three method files and four vision files changed, and the owner's go on the pick page chose a fresh review.",
   "requirements": [
     "Plate apps install and import platejs only; dedicated raw proof apps import plitejs (VISION.md:44).",

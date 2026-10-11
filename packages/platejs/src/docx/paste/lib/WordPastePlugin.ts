@@ -9,7 +9,6 @@ import {
   PLUGINS,
 } from '../../../core';
 import {
-  isHtmlBlockElement,
   removeHtmlNodesBetweenComments,
   traverseHtmlElements,
 } from '../../../lib/plugins/html/htmlDom';
@@ -118,22 +117,6 @@ const getDeclaredListStyles = (html: string) => {
   return styles;
 };
 
-const hasStructuralBoundary = (
-  previous: HTMLElement,
-  current: globalThis.Element
-) => {
-  if (previous.parentElement !== current.parentElement) return true;
-
-  let sibling = previous.nextElementSibling;
-
-  while (sibling && sibling !== current) {
-    if (isHtmlBlockElement(sibling)) return true;
-    sibling = sibling.nextElementSibling;
-  }
-
-  return sibling !== current;
-};
-
 const isWordPayload = (html: string) =>
   isWordHtml(new DOMParser().parseFromString(html, 'text/html').body);
 
@@ -164,10 +147,8 @@ const prepareWordHtml = (input: string, rtf: string) => {
     return Math.round(value.includes('in') ? (parsed * 72) / 36 : parsed / 36);
   };
   const orderedStyleBySequence = new Map<string, string>();
-  const lastOrdinalBySequence = new Map<string, number>();
-  const activeSequenceByIndent = new Map<number, string>();
+  const countByList = new Map<string, { last: number[]; open: boolean[] }>();
   const declaredListStyles = getDeclaredListStyles(input);
-  let previousListElement: HTMLElement | undefined;
 
   body.querySelectorAll('p, h1, h2, h3, h4, h5, h6').forEach((element) => {
     const htmlElement = element as HTMLElement;
@@ -180,12 +161,6 @@ const prepareWordHtml = (input: string, rtf: string) => {
       ) ||
         element.outerHTML.includes('<!--[if !supportLists]-->'))
     ) {
-      if (
-        previousListElement &&
-        hasStructuralBoundary(previousListElement, element)
-      ) {
-        activeSequenceByIndent.clear();
-      }
       const listItem = document.createElement(
         element.tagName === 'P' ? 'li' : element.tagName.toLowerCase()
       );
@@ -268,48 +243,30 @@ const prepareWordHtml = (input: string, rtf: string) => {
       if (listStyle !== 'disc' && listStyle !== 'decimal') {
         listItem.dataset.listStyle = listStyle;
       }
-      for (const activeIndent of activeSequenceByIndent.keys()) {
-        if (activeIndent > indent) {
-          activeSequenceByIndent.delete(activeIndent);
-        }
-      }
+      // Each Word list counts on its own across other blocks, as a Plate list
+      // does, so only a marker that differs from that count becomes a restart.
+      const listId = identity?.[1] ?? 'word';
+      const count = countByList.get(listId) ?? { last: [], open: [] };
+
+      countByList.set(listId, count);
+      count.open.length = Math.min(count.open.length, indent + 1);
+      listItem.dataset.listId = listId;
       if (listStyle !== 'disc') {
         const ordinal = parseListOrdinal(markerText, listStyle);
-        const activeSequence = activeSequenceByIndent.get(indent);
-        const activeStyle = activeSequence
-          ? orderedStyleBySequence.get(activeSequence)
-          : undefined;
-        const activeOrdinal = activeSequence
-          ? lastOrdinalBySequence.get(activeSequence)
-          : undefined;
-        const expectedOrdinal =
-          activeStyle === listStyle && activeOrdinal !== undefined
-            ? activeOrdinal + 1
-            : 1;
-        const needsBoundary =
-          ordinal !== undefined &&
-          (ordinal !== expectedOrdinal ||
-            (activeSequence !== undefined && activeSequence !== sequenceKey));
+        const expected = count.open[indent] ? count.last[indent] + 1 : 1;
 
-        if (needsBoundary) {
+        if (ordinal !== undefined && ordinal !== expected) {
           listItem.dataset.listRestart = String(ordinal);
         }
-        if (ordinal !== undefined) {
-          lastOrdinalBySequence.set(sequenceKey, ordinal);
-        }
-        activeSequenceByIndent.set(indent, sequenceKey);
-      } else {
-        activeSequenceByIndent.delete(indent);
+        count.last[indent] = ordinal ?? expected;
+        count.open[indent] = true;
       }
       listItem.innerHTML = clonedElement.innerHTML;
       element.replaceWith(listItem);
-      previousListElement = listItem;
 
       return;
     }
 
-    activeSequenceByIndent.clear();
-    previousListElement = undefined;
     const indent = getIndent(htmlElement, 'marginLeft');
     const textIndent = getIndent(htmlElement, 'textIndent');
 

@@ -120,7 +120,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Source, tests, docs, generated contracts, release artifacts, and browser interaction are complete. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final `rg` confirms no stale live symbols; generated cell types contain only `tableCell` with optional `header`. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted one descriptor plus semantic property; rejected helper alias and second plugin. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted one descriptor plus semantic property; rejected helper alias and second plugin. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Migration, docs, registry, codecs, generated types, and browser interaction are covered. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact commands and results are recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Public break, migration, proof, and unrelated SSR caveat are ready. |

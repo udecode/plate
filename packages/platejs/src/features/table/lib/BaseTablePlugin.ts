@@ -536,6 +536,34 @@ const initialState: TablePluginState = {
 const MAX_IMPORTED_TABLE_CONSTRAINT_WORK = 10_000;
 const TABLE_WIDTH_CONSTRAINT_EPSILON = 0.001;
 
+/**
+ * The table without the rows and cells a pending suggestion deletes, or the
+ * table itself when it has none.
+ */
+const contentTable = (
+  table: Element,
+  isContent: (node: Node) => boolean
+): Element => {
+  let changed = false;
+  const rows: Descendant[] = [];
+
+  for (const row of table.children) {
+    if (!isContent(row)) {
+      changed = true;
+    } else if (ElementApi.isElement(row)) {
+      const cells = row.children.filter(isContent);
+      const struck = cells.length < row.children.length;
+
+      changed ||= struck;
+      rows.push(struck ? { ...row, children: cells } : row);
+    } else {
+      rows.push(row);
+    }
+  }
+
+  return changed ? { ...table, children: rows } : table;
+};
+
 const isTableCell = (editor: Editor, node: Node): node is TableCellElement =>
   ElementApi.isElement(node) &&
   node.type === editor.plugin(BaseTableCellPlugin).schema.type;
@@ -2111,9 +2139,8 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
 
           if (node.type === context.schema.type) {
             const table = node;
-            const repair = planTableMutation(
-              createDetachedTableContext(table, path),
-              {
+            const planRepair = (target: Element) =>
+              planTableMutation(createDetachedTableContext(target, path), {
                 createCell: ({ children, header, sourceRow }) =>
                   createTableCell(context.editor, {
                     children: children ? [...children] : undefined,
@@ -2121,8 +2148,24 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
                     row: sourceRow,
                   }),
                 kind: 'repair',
+              });
+            const content = contentTable(table, tx.nodes.isContent);
+
+            // Rows and cells a pending suggestion deletes stay until it is
+            // decided, so only a table whose remaining content is broken needs
+            // a repair.
+            if (content !== table) {
+              const proposed = planRepair(content);
+
+              if (
+                proposed.kind === 'plan' &&
+                proposed.operations.length === 0
+              ) {
+                return;
               }
-            );
+            }
+
+            const repair = planRepair(table);
 
             if (repair.kind !== 'plan') {
               context.editor

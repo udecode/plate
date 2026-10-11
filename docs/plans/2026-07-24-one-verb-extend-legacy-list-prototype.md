@@ -141,7 +141,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Retain prototype; no attributable type/runtime regression |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final source-first typecheck, runtime tests, declaration emit, scoped topology audit |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | Accepted repeated `.extend()` checkpoint model; no hard cut in this packet |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding | Accepted repeated `.extend()` checkpoint model; no hard cut in this packet |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work | One-file adoption, Core/Plite owner repair, package proof, Browser A/B |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact commands and results below |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff section below |

@@ -1,9 +1,55 @@
-import { render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import React from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 
-import type { Element } from '../../../core';
+import {
+  createEditorView,
+  definePlugin,
+  schema,
+  type Element,
+} from '../../../core';
+import { EditorElement } from '../../components/plate-nodes';
 import { createEditor, EditorRoot, EditorContent } from '../../core';
+import { BlockquotePlugin } from '../basic-nodes/BasicNodesPlugins';
+import { CodeBlockPlugin } from '../code-block/CodeBlockPlugin';
+import { TablePlugin } from '../table/TablePlugin';
 import { ListPlugin } from './ListPlugin';
+
+const item = (text: string, extra: Record<string, unknown> = {}) =>
+  ({
+    children: [{ text }],
+    indent: 1,
+    listType: 'numbered',
+    type: 'paragraph',
+    ...extra,
+  }) as Element;
+
+const paragraph = (text: string, extra: Record<string, unknown> = {}) =>
+  ({ children: [{ text }], type: 'paragraph', ...extra }) as Element;
+
+const mountList = (
+  initialValue: Element[],
+  { views = 1 }: { views?: number } = {}
+) => {
+  const editor = createEditor({
+    initialValue,
+    plugins: [ListPlugin, TablePlugin],
+  });
+  const { container } = render(
+    <EditorRoot editor={editor} suppressInstanceWarning>
+      {Array.from({ length: views }, (_, index) => (
+        <EditorContent key={index} />
+      ))}
+    </EditorRoot>
+  );
+  const numbers = () =>
+    [...container.querySelectorAll('ol')].map((list) =>
+      Number(list.getAttribute('start'))
+    );
+
+  return { editor, numbers };
+};
 
 describe('ListPlugin rendering', () => {
   it('renders ordered and unordered list wrappers', () => {
@@ -41,5 +87,394 @@ describe('ListPlugin rendering', () => {
     expect(container.querySelector('ul > li')?.textContent).toBe('Bullet');
     expect(container.querySelectorAll('ol, ul')).toHaveLength(2);
     expect(container.textContent).toContain('Plain');
+  });
+});
+
+describe('ListPlugin live numbering', () => {
+  it('renumbers after an insert at the top', () => {
+    const { editor, numbers } = mountList([item('A'), item('B')]);
+
+    act(() => {
+      editor.update.nodes.insert(item('Z'), { at: [0] });
+    });
+
+    expect(numbers()).toEqual([1, 2, 3]);
+  });
+
+  it('renumbers after a start change', () => {
+    const { editor, numbers } = mountList([item('A'), item('B')]);
+
+    act(() => {
+      editor.update.nodes.set({ listStart: 4 }, { at: [0] });
+    });
+
+    expect(numbers()).toEqual([4, 5]);
+  });
+
+  it('renumbers after a middle paragraph becomes a numbered item', () => {
+    const { editor, numbers } = mountList([
+      item('A'),
+      paragraph('P', { indent: 1 }),
+      item('B'),
+    ]);
+
+    act(() => {
+      editor.update.nodes.set({ listType: 'numbered' }, { at: [1] });
+    });
+
+    expect(numbers()).toEqual([1, 2, 3]);
+  });
+
+  it('renumbers only the interleaved list an inserted item joins', () => {
+    const { editor, numbers } = mountList([
+      item('A1', { listId: 'a' }),
+      item('B1', { listId: 'b' }),
+      item('A2', { listId: 'a' }),
+    ]);
+
+    act(() => {
+      editor.update.nodes.insert(item('A0', { listId: 'a' }), { at: [0] });
+    });
+
+    expect(numbers()).toEqual([1, 2, 1, 3]);
+  });
+
+  it('renumbers an item behind a deeper paragraph after it moves', () => {
+    const { editor, numbers } = mountList([
+      item('A'),
+      paragraph('P', { indent: 2 }),
+      item('B'),
+    ]);
+
+    act(() => {
+      editor.update.nodes.insert(item('Z'), { at: [0] });
+    });
+    act(() => {
+      editor.update.nodes.set({ listStart: 5 }, { at: [0] });
+    });
+
+    expect(numbers()).toEqual([5, 6, 7]);
+  });
+
+  it('renumbers a list inside a table cell', () => {
+    const { editor, numbers } = mountList([
+      {
+        children: [
+          {
+            children: [{ children: [item('A'), item('B')], type: 'tableCell' }],
+            type: 'tableRow',
+          },
+        ],
+        type: 'table',
+      },
+    ]);
+
+    act(() => {
+      editor.update.nodes.insert(item('Z'), { at: [0, 0, 0, 0] });
+    });
+
+    expect(numbers()).toEqual([1, 2, 3]);
+  });
+
+  it('renumbers every view of the document', () => {
+    const { editor, numbers } = mountList([item('A'), item('B')], {
+      views: 2,
+    });
+
+    act(() => {
+      editor.update.nodes.insert(item('Z'), { at: [0] });
+    });
+
+    expect(numbers()).toEqual([1, 2, 3, 1, 2, 3]);
+  });
+});
+
+const startsIn = (container: ParentNode) =>
+  [...container.querySelectorAll('ol')].map((list) =>
+    Number(list.getAttribute('start'))
+  );
+
+const FigurePlugin = definePlugin('figure', {
+  component: (props) => (
+    <EditorElement {...props}>
+      <figcaption>{props.slots.contentRoot('caption')}</figcaption>
+      {props.children}
+    </EditorElement>
+  ),
+  schema: {
+    element: {
+      blockContent: true,
+      contentRoots: {
+        caption: {
+          content: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+      void: 'block',
+    },
+  },
+});
+
+describe('ListPlugin view lifecycle', () => {
+  it('renders interleaved numbers on the server', () => {
+    const editor = createEditor({
+      initialValue: [
+        item('A1', { listId: 'a' }),
+        item('B1', { listId: 'b' }),
+        item('A2', { listId: 'a' }),
+        item('B2', { listId: 'b' }),
+      ],
+      plugins: [ListPlugin],
+    });
+    const html = renderToString(
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
+      </EditorRoot>
+    );
+
+    expect(
+      [...html.matchAll(/<ol[^>]*start="(-?\d+)"/g)].map((match) =>
+        Number(match[1])
+      )
+    ).toEqual([1, 1, 2, 2]);
+  });
+
+  it('renumbers after hydrating server markup', async () => {
+    const value = [item('A'), item('B')];
+    const container = document.createElement('div');
+
+    container.innerHTML = renderToString(
+      <EditorRoot
+        editor={createEditor({ initialValue: value, plugins: [ListPlugin] })}
+        suppressInstanceWarning
+      >
+        <EditorContent />
+      </EditorRoot>
+    );
+    document.body.append(container);
+
+    const editor = createEditor({ initialValue: value, plugins: [ListPlugin] });
+
+    await act(async () => {
+      hydrateRoot(
+        container,
+        <EditorRoot editor={editor} suppressInstanceWarning>
+          <EditorContent />
+        </EditorRoot>
+      );
+    });
+    act(() => {
+      editor.update.nodes.insert(item('Z'), { at: [0] });
+    });
+
+    expect(startsIn(container)).toEqual([1, 2, 3]);
+    container.remove();
+  });
+
+  it('renumbers an item whose list element was replaced', () => {
+    const { editor, numbers } = mountList([item('A'), item('B'), item('C')]);
+
+    act(() => {
+      editor.update.nodes.set({ listType: 'bulleted' }, { at: [1] });
+    });
+    act(() => {
+      editor.update.nodes.set({ listType: 'numbered' }, { at: [1] });
+    });
+    act(() => {
+      editor.update.nodes.insert(item('Z'), { at: [0] });
+    });
+
+    expect(numbers()).toEqual([1, 2, 3, 4]);
+  });
+
+  it('renumbers every mounted list after more commits than the change log keeps', () => {
+    const { editor, numbers } = mountList([item('A'), item('B')]);
+
+    act(() => {
+      for (let index = 0; index < 70; index += 1) {
+        editor.update.nodes.insert(item(`Z${index}`), { at: [0] });
+      }
+    });
+
+    expect(numbers()).toEqual(
+      Array.from({ length: 72 }, (_, index) => index + 1)
+    );
+  });
+
+  it('keeps renumbering a view after another view detaches', () => {
+    const editor = createEditor({
+      initialValue: [item('A'), item('B')],
+      plugins: [ListPlugin],
+    });
+    const views = (count: number) => (
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        {Array.from({ length: count }, (_, index) => (
+          <EditorContent key={index} />
+        ))}
+      </EditorRoot>
+    );
+    const { container, rerender } = render(views(2));
+
+    rerender(views(1));
+    act(() => {
+      editor.update.nodes.insert(item('Z'), { at: [0] });
+    });
+
+    expect(startsIn(container)).toEqual([1, 2, 3]);
+  });
+
+  it('renumbers after a commit inside a transition', async () => {
+    const { editor, numbers } = mountList([item('A'), item('B')]);
+
+    await act(async () => {
+      React.startTransition(() => {
+        editor.update.nodes.insert(item('Z'), { at: [0] });
+      });
+    });
+
+    expect(numbers()).toEqual([1, 2, 3]);
+  });
+
+  it('renumbers a list in a content root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          {
+            childRoots: { caption: 'caption:1' },
+            children: [{ text: '' }],
+            type: 'figure',
+          },
+        ],
+        roots: { 'caption:1': [item('A'), item('B')] },
+      },
+      plugins: [ListPlugin, FigurePlugin],
+    } as never);
+    const { container } = render(
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent />
+      </EditorRoot>
+    );
+
+    act(() => {
+      createEditorView(editor, { root: 'caption:1' }).update.nodes.insert(
+        item('Z'),
+        { at: [0] }
+      );
+    });
+
+    expect(startsIn(container)).toEqual([1, 2, 3]);
+  });
+});
+
+const pressShiftTab = (
+  initialValue: Element[],
+  selection: {
+    anchor: { offset: number; path: number[] };
+    focus: { offset: number; path: number[] };
+  }
+) => {
+  const editor = createEditor({
+    initialValue,
+    plugins: [
+      CodeBlockPlugin,
+      ListPlugin.configure({ targetPlugins: ['paragraph', 'codeBlock'] }),
+      BlockquotePlugin,
+    ],
+    selection: { kind: 'text', ...selection },
+  } as never);
+  const { container } = render(
+    <EditorRoot editor={editor} suppressInstanceWarning>
+      <EditorContent />
+    </EditorRoot>
+  );
+  const editable = container.querySelector('[contenteditable="true"]');
+
+  if (!editable) throw new Error('Expected editable root');
+
+  fireEvent.keyDown(editable, { code: 'Tab', key: 'Tab', shiftKey: true });
+
+  return editor;
+};
+
+const caret = (path: number[], offset = 0) => ({
+  anchor: { offset, path },
+  focus: { offset, path },
+});
+
+describe('ListPlugin keys', () => {
+  it('leaves a root numbered item unchanged on Shift+Tab, with no undo step', () => {
+    const editor = pressShiftTab([item('A')], caret([0, 0]));
+
+    expect(editor.read.children()).toEqual([item('A')]);
+    expect(editor.read.history.hasUndo()).toBe(false);
+  });
+
+  it('outdents only the deeper block of a selection that holds a root item', () => {
+    const editor = pressShiftTab([item('A'), paragraph('P', { indent: 2 })], {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 1, path: [1, 0] },
+    });
+
+    expect(editor.read.children()).toEqual([
+      item('A'),
+      paragraph('P', { indent: 1 }),
+    ]);
+  });
+
+  it('leaves Shift+Tab in a code block list item to the code block [EDIT-CB-STAB-001]', () => {
+    const editor = pressShiftTab(
+      [
+        {
+          children: [{ text: '  foo' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'codeBlock',
+        },
+      ],
+      caret([0, 0], 4)
+    );
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ text: 'foo' }],
+        indent: 1,
+        listType: 'numbered',
+        type: 'codeBlock',
+      },
+    ]);
+  });
+
+  it('outdents every selected block of a quote that holds a root item [EDIT-SEL-STAB-001]', () => {
+    const editor = pressShiftTab(
+      [
+        {
+          children: [item('A', { listType: 'bulleted' }), paragraph('P')],
+          type: 'blockquote',
+        },
+      ],
+      {
+        anchor: { offset: 0, path: [0, 0, 0] },
+        focus: { offset: 1, path: [0, 1, 0] },
+      }
+    );
+
+    expect(editor.read.children()).toEqual([paragraph('A'), paragraph('P')]);
+  });
+
+  it('takes a root item out of the list and the quote on Shift+Tab [EDIT-BQ-LIST-STAB-001]', () => {
+    const editor = pressShiftTab(
+      [
+        {
+          children: [item('Item', { listType: 'bulleted' })],
+          type: 'blockquote',
+        },
+      ],
+      caret([0, 0, 0])
+    );
+
+    expect(editor.read.children()).toEqual([paragraph('Item')]);
   });
 });

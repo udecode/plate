@@ -68,13 +68,58 @@ export type DocumentChangeConstructionPolicy = (
   preparation?: object
 ) => DocumentChange;
 
+/** @internal */
+export type DraftStepOrigin =
+  | 'canonical'
+  | 'change'
+  | 'insert-node'
+  | 'merge'
+  | 'migration'
+  | 'move'
+  | 'props'
+  | 'remove-node'
+  | 'replace'
+  | 'root'
+  | 'slice'
+  | 'split'
+  | 'text'
+  | 'unwrap'
+  | 'wrap';
+
+// Canonical construction or a migration inside a scope is never the edit the
+// scope names.
+const UNSCOPED_ORIGINS: ReadonlySet<DraftStepOrigin> = new Set([
+  'canonical',
+  'migration',
+]);
+
+/**
+ * Whether a step comes from a plugin correction, whatever primitive wrote it.
+ *
+ * @internal
+ */
+export type DraftStepSource = 'command' | 'correction';
+
+/** @internal */
+export type DraftStepMove = Readonly<{
+  role: 'landing' | 'source';
+}>;
+
+/** @internal */
+export type DraftStep = Readonly<{
+  change: DocumentChange;
+  move: DraftStepMove | null;
+  origin: DraftStepOrigin;
+  source: DraftStepSource;
+}>;
+
 export type PreparedDocumentChange = Readonly<{
   after: JsonEditorValue;
   authority: object;
   before: JsonEditorValue;
   canonical: boolean;
   change: DocumentChange;
-  steps: readonly DocumentChange[];
+  steps: readonly DraftStep[];
   indexedAfter: ReadonlyMap<string, DocumentIndex>;
   indexedBefore: ReadonlyMap<string, DocumentIndex>;
   indexes: ReadonlyMap<string, DocumentIndex>;
@@ -93,7 +138,10 @@ export const PREPARED_DOCUMENT_CHANGES = new WeakMap<
 /** Builds and applies canonical document steps against one immutable draft. */
 export class ChangeDraft {
   private accumulated: DocumentChange;
-  private readonly appliedSteps: DocumentChange[] = [];
+  private readonly appliedSteps: DraftStep[] = [];
+  private stepMove: DraftStepMove | null = null;
+  private stepOrigin: DraftStepOrigin | null = null;
+  private stepSource: DraftStepSource = 'command';
   private readonly assertCanonical?: (
     value: JsonEditorValue,
     change: DocumentChange
@@ -191,7 +239,65 @@ export class ChangeDraft {
 
   /** Canonical steps retain movement identity lost by composition. @internal */
   get steps(): readonly DocumentChange[] {
+    return this.appliedSteps.map((step) => step.change);
+  }
+
+  /** @internal */
+  get draftSteps(): readonly DraftStep[] {
     return this.appliedSteps;
+  }
+
+  /**
+   * Keep the steps of a draft this one replaces, such as a schema rebind that
+   * replays the accumulated change, so each original step stays recordable.
+   *
+   * @internal
+   */
+  keepSteps(steps: readonly DraftStep[]) {
+    this.appliedSteps.length = 0;
+    this.appliedSteps.push(...steps);
+  }
+
+  private originOf(origin: DraftStepOrigin | undefined): DraftStepOrigin {
+    return origin && UNSCOPED_ORIGINS.has(origin)
+      ? origin
+      : (this.stepOrigin ?? origin ?? 'change');
+  }
+
+  /** Label the steps `run` applies, such as a wrap built as a replacement. @internal */
+  withOrigin<T>(origin: DraftStepOrigin, run: () => T): T {
+    const previous = this.stepOrigin;
+
+    this.stepOrigin = origin;
+    try {
+      return run();
+    } finally {
+      this.stepOrigin = previous;
+    }
+  }
+
+  /** @internal */
+  withSource<T>(source: DraftStepSource, run: () => T): T {
+    const previous = this.stepSource;
+
+    this.stepSource = source;
+    try {
+      return run();
+    } finally {
+      this.stepSource = previous;
+    }
+  }
+
+  /** @internal */
+  withMove<T>(move: DraftStepMove, run: () => T): T {
+    const previous = this.stepMove;
+
+    this.stepMove = move;
+    try {
+      return run();
+    } finally {
+      this.stepMove = previous;
+    }
   }
 
   get value() {
@@ -338,7 +444,11 @@ export class ChangeDraft {
     }
 
     this.accumulated = accumulated;
-    this.appliedSteps.push(...payload.steps);
+    this.appliedSteps.push(
+      ...payload.steps.map((step) =>
+        this.stepMove && !step.move ? { ...step, move: this.stepMove } : step
+      )
+    );
     if (accumulated === payload.change) {
       this.runtimeCandidatesByChange.set(
         accumulated,
@@ -406,6 +516,7 @@ export class ChangeDraft {
     options: Readonly<{
       classify?: boolean;
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+      origin?: DraftStepOrigin;
     }> = {}
   ): DocumentChangeStep {
     const before = this.current;
@@ -497,7 +608,14 @@ export class ChangeDraft {
       this.accumulated = this.accumulated.empty
         ? classifiedChange
         : this.accumulated.compose(classifiedChange, this.source);
-      if (!classifiedChange.empty) this.appliedSteps.push(classifiedChange);
+      if (!classifiedChange.empty) {
+        this.appliedSteps.push({
+          change: classifiedChange,
+          move: this.stepMove,
+          origin: this.originOf(options.origin),
+          source: this.stepSource,
+        });
+      }
     }
     this.canonical = false;
     this.current = current;
@@ -583,6 +701,7 @@ export class ChangeDraft {
     change: DocumentChange,
     options: Readonly<{
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+      origin?: DraftStepOrigin;
       runtimeCandidates?: ReadonlyMap<
         string,
         readonly DocumentChangeRuntimeCandidate[]
@@ -590,7 +709,10 @@ export class ChangeDraft {
     }> = {}
   ): DocumentChangeStep {
     if (!options.indexedAfter) {
-      const step = this.apply(change, { classify: false });
+      const step = this.apply(change, {
+        classify: false,
+        origin: options.origin,
+      });
 
       this.runtimeCandidatesByChange.set(step.change, step.runtimeCandidates);
       this.canonical = true;
@@ -750,7 +872,14 @@ export class ChangeDraft {
     this.accumulated = this.accumulated.empty
       ? canonicalChange
       : this.accumulated.compose(canonicalChange, this.source);
-    if (!canonicalChange.empty) this.appliedSteps.push(canonicalChange);
+    if (!canonicalChange.empty) {
+      this.appliedSteps.push({
+        change: canonicalChange,
+        move: this.stepMove,
+        origin: this.originOf(options.origin),
+        source: this.stepSource,
+      });
+    }
     this.runtimeCandidatesByChange.set(
       canonicalChange,
       frozenRuntimeCandidates
@@ -779,7 +908,7 @@ export class ChangeDraft {
    */
   finalize(
     preparation?: object,
-    options: Readonly<{ classify?: boolean }> = {}
+    options: Readonly<{ classify?: boolean; origin?: DraftStepOrigin }> = {}
   ): DocumentChangeStep | null {
     if (this.canonical && !this.validationPending) return null;
 
@@ -816,7 +945,10 @@ export class ChangeDraft {
     }
     const step =
       constructionChange && !constructionChange.empty
-        ? this.apply(constructionChange, options)
+        ? this.apply(constructionChange, {
+            ...options,
+            origin: options.origin ?? 'canonical',
+          })
         : null;
 
     if (this.accumulated.empty) {
@@ -908,7 +1040,8 @@ export class ChangeDraft {
         {
           createRoots: [root],
         }
-      )
+      ),
+      'root'
     );
   }
 
@@ -932,7 +1065,8 @@ export class ChangeDraft {
         {
           deleteRoots: [root],
         }
-      )
+      ),
+      'root'
     );
   }
 
@@ -941,6 +1075,7 @@ export class ChangeDraft {
 
     return this.applyRoot(
       root,
+      'insert-node',
       insertNodeChange(document, path, node),
       document.withInsertedNode(path, node)
     );
@@ -956,13 +1091,18 @@ export class ChangeDraft {
 
     return this.applyRoot(
       root,
+      'text',
       insertTextChange(document, path, offset, text),
       document.withText(path, offset, offset, text)
     );
   }
 
   mergeNode(root: string, path: readonly number[]) {
-    return this.applyRoot(root, mergeNodeChange(this.getIndex(root), path));
+    return this.applyRoot(
+      root,
+      'merge',
+      mergeNodeChange(this.getIndex(root), path)
+    );
   }
 
   moveNode(
@@ -973,7 +1113,11 @@ export class ChangeDraft {
   ) {
     const document = this.getIndex(root);
     const wasCanonical = this.canonical;
-    const step = this.applyRoot(root, moveNodeChange(document, path, newPath));
+    const step = this.applyRoot(
+      root,
+      'move',
+      moveNodeChange(document, path, newPath)
+    );
 
     if (wasCanonical && options.preservesRepresentation) {
       this.canonical = true;
@@ -988,6 +1132,7 @@ export class ChangeDraft {
 
     return this.applyRoot(
       root,
+      'remove-node',
       removeNodeChange(document, path),
       document.withRemovedNode(path)
     );
@@ -1009,7 +1154,11 @@ export class ChangeDraft {
       throw new Error(`Removed text does not match the draft at [${path}].`);
     }
 
-    return this.applyRoot(root, removeTextChange(document, path, offset, text));
+    return this.applyRoot(
+      root,
+      'text',
+      removeTextChange(document, path, offset, text)
+    );
   }
 
   replaceChildren(
@@ -1023,6 +1172,7 @@ export class ChangeDraft {
 
     return this.applyRoot(
       root,
+      'replace',
       replaceChildrenChange(document, path, index, removeCount, children),
       document.withSplicedNodes(path, index, removeCount, children)
     );
@@ -1037,6 +1187,7 @@ export class ChangeDraft {
 
     return this.applyRoot(
       root,
+      'replace',
       reconcileChildrenStep(document, [], 0, document.value.length, children)
         .change
     );
@@ -1058,6 +1209,7 @@ export class ChangeDraft {
 
     return this.applyRoot(
       root,
+      'slice',
       RootChange.create(document, {
         from: fromPosition,
         insert,
@@ -1074,6 +1226,7 @@ export class ChangeDraft {
   ) {
     return this.applyRoot(
       root,
+      'props',
       setNodeChange(
         this.getIndex(root),
         path,
@@ -1097,6 +1250,7 @@ export class ChangeDraft {
   ) {
     return this.applyRoot(
       root,
+      'props',
       setNodesChange(
         this.getIndex(root),
         updates,
@@ -1114,12 +1268,14 @@ export class ChangeDraft {
   ) {
     return this.applyRoot(
       root,
+      'split',
       splitNodeChange(this.getIndex(root), path, position, properties)
     );
   }
 
   private applyRoot(
     root: string,
+    origin: DraftStepOrigin,
     change: RootChange,
     indexedAfter?: DocumentIndex
   ) {
@@ -1127,15 +1283,17 @@ export class ChangeDraft {
       createInternalDocumentChange(
         change.empty ? new Map() : new Map([[root, change]])
       ),
+      origin,
       indexedAfter ? new Map([[root, indexedAfter]]) : undefined
     );
   }
 
   private applyConstructed(
     change: DocumentChange,
+    origin: DraftStepOrigin,
     indexedAfter?: ReadonlyMap<string, DocumentIndex>
   ): DocumentChangeStep {
-    return this.apply(change, { indexedAfter });
+    return this.apply(change, { indexedAfter, origin });
   }
 
   private getIndex(root: string) {

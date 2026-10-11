@@ -178,7 +178,7 @@ Decision pages under `decisions/` hold the compiled conclusion in prose. The led
 The records written before the front-matter cutover keep their original shape and are history: nothing writes them, and a later review page supersedes one instead of editing it. The 487 oldest predate per-record digests and are read as follows:
 
 - `source.files`, `source.directories`, proof evidence and upstreams compare against the tree as before. Directory digests keep their formula over git-listed files.
-- `package.json`, `pnpm-lock.yaml` and the best-api-review skill and rule, which every old draft hashed, are not compared; `VISION.md` and `docs/vision/*` count toward the law clock.
+- `package.json`, `pnpm-lock.yaml` and the verdict skill and rule, which every old draft hashed, are not compared; `VISION.md` and `docs/vision/*` count toward the law clock.
 - `source.features` digests are not evaluated, so the 356 records that carry them never read `matching`. Count them as the record files with a non-empty `source.features`.
 - `plan.sha256`, `binding` other than `historical-unbound`, and `reconciliation[].question` are ignored.
 

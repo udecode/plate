@@ -142,7 +142,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every runtime and type readiness condition | Strict Plite passed all four stages in 444142ms; final NodeSelection receipt passed five repeats |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final authored sweep has no rejected selection owner or direct node-key parser; `packages/selection` is absent |
-| Best API review | yes | Resolve the reusable public call shape | Exact paths plus optional root is the sole structural payload; ranges are projections; no alias, plugin, namespace, or Plate Core owner survived |
+| Verdict | yes | Resolve the reusable public call shape | Exact paths plus optional root is the sole structural payload; ranges are projections; no alias, plugin, namespace, or Plate Core owner survived |
 | Conditional risk and adoption | yes | Complete triggered browser and adopter proof | Named roots, Table rectangular selection, AI, Yjs, clipboard, delete, undo, typing, and navigation passed focused and strict proof; Benchmark and public provenance are N/A |
 | Verification recorded | yes | Record fresh execution gates | Package, strict Chromium, registry, barrel, changeset, stale-symbol, lint, and exact unrelated blocker evidence is below |
 | Handoff prepared | yes | Prepare ownership, breaks, proof, risks, and execution order | Implementation, adoption, proof, review resolution, and unrelated checkout limits are recorded below |

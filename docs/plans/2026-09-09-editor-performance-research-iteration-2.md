@@ -16,7 +16,7 @@ Template: docs/plans/templates/benchmark.md
 
 - request: Second experimental exercise after the first five phases; complete operation/architecture accounting, explicit reference comparisons, new techniques, Compiler and virtualization, independent experiment selection.
 - scope: Captured current editing source, complete operation catalog and all registered targets. Product, minimal engine, owner, DOM strategy and native proof retain separate contracts.
-- invocation: $benchmark through the user's Best API Review, Improve and Editor Audit request; all nine default lanes retained with explicit research gaps.
+- invocation: $benchmark through the user's Verdict, Improve and Editor Audit request; all nine default lanes retained with explicit research gaps.
 - candidate-identity: fingerprint: source-inventory.json contains 4,338 initial per-file hashes; each packet records its own frozen source and bundles. Initial HEAD a6afd55c30e97c74fe895d1ad005ca75413110f3 alone is insufficient.
 - plate-main-identity: ref: origin/main at 8f65d77f8b4709833436e63661e4d061f709258f; no equal-contract production host measured. Existing ../plate is 93c1874c4bc5e7dc02342fb97495f24da2d67d16 on codex/pr5119-template-verification.
 - plite-identity: fingerprint: common-comparison-summary.json, compiler-comparison-summary.json and per-owner sourceBefore/sourceAfter maps in the current next checkout.
@@ -77,7 +77,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 | --- | --- | --- |
 | User requirements and standing goal captured | yes | Intake ledger below and native goal created at 17:22:04Z |
-| Domain methods and Task authority read | yes | Benchmark, Editor Audit, Best API Review, Improve, Plate Review, Plite Research, Verify Plate, Task, Poteto Mode and Show Me Your Work obligations retained |
+| Domain methods and Task authority read | yes | Benchmark, Editor Audit, Verdict, Improve, Plate Review, Plite Research, Verify Plate, Task, Poteto Mode and Show Me Your Work obligations retained |
 | All lanes and identities inventoried | yes | Nine-lane table, initial source and reference inventories |
 | Host/fixture/oracle validity | yes | Invalid unchunked packet and stale owned host preserved, corrected and replayed |
 | Duration or only-lane narrowing | no | N/A: neither requested |
@@ -243,7 +243,7 @@ This iteration is independent of the first five phases. Historical results are p
 | U02 | Research additional techniques, explicitly VS Code | User request; Plite Research | 23-reference registry; VS Code probe and technique dossiers |
 | U03 | Score every local architecture lane independently | User request; Plate Review weighted rubric and caps | 93 seven-axis architecture assessments with caps |
 | U04 | Inventory every human editor operation from public commands, UI, tests and proof targets; measure applicable cells or expose a precise gap | User request; Benchmark comparison law | 212 operations; 34 measured common operations; 178 exact complete-operation timing gaps; all 752 cases associated |
-| U05 | Rank a falsifiable experiment roadmap with predicted value separate from measured gain | User request; Best API Review | 26 independently falsifiable dossiers; eight Pursue, 15 Defer, three Stop |
+| U05 | Rank a falsifiable experiment roadmap with predicted value separate from measured gain | User request; Verdict | 26 independently falsifiable dossiers; eight Pursue, 15 Defer, three Stop |
 | U06 | Research React 19 Compiler through current official evidence and source from real performant projects | User request | 1,547-file paired Babel inventories and four-arm runtime controls; official/source research |
 | U07 | Give virtualization a separate substantial section with native-behavior constraints and experiments | User request | Separate substantial virtualization.md and boundary probe |
 | U08 | Avoid a cascading implementation plan: bound one experiment, define stop/reject criteria, re-rank after evidence | User request | Independent experiment portfolio and evidence-triggered re-ranking |
@@ -252,8 +252,8 @@ This iteration is independent of the first five phases. Historical results are p
 | A03 | Capture reference clean state, full HEAD, upstream, source URL, license; verify final identity | Editor Audit: audit and Verification | 23 unchanged final HEADs and inspected licenses; named references clean; Slate scratch paths retained |
 | A04 | Reconcile all prior relevant P0-P3 candidates after fresh mapping | Editor Audit: Prior candidates | 65 once: 25 reaffirmed, 31 superseded, nine rejected |
 | A05 | Full test-source inventory and applicable issue refresh, or exact null/stale provenance; dispose each portable invariant | Editor Audit; Editor Test Harvester; Issue Harvester | 675/538 test sites; 73/93 live issue metadata rows; 58 portable invariant-family dispositions with provenance limits |
-| A06 | Screen keep/configure, change API, add primitive, delete/merge/inline, move owner and replace architecture; one Stop/Pursue/Defer per candidate | Best API Review | Strict matrices and dossiers retain hard-cut counterfactuals and decisions |
-| A07 | Give material candidates current/proposed shapes, deletion, adoption, dependencies, proof and one next owner | Editor Audit; Best API Review | Current/proposed shapes, adoption/proof gates and one next owner per dossier |
+| A06 | Screen keep/configure, change API, add primitive, delete/merge/inline, move owner and replace architecture; one Stop/Pursue/Defer per candidate | Verdict | Strict matrices and dossiers retain hard-cut counterfactuals and decisions |
+| A07 | Give material candidates current/proposed shapes, deletion, adoption, dependencies, proof and one next owner | Editor Audit; Verdict | Current/proposed shapes, adoption/proof gates and one next owner per dossier |
 | I01 | Inventory all eight Improve lanes with complete governed sets and applicability | Improve: Inventory the rules and project | All eight lanes: architecture owners, correctness oracles, nine perf lanes, runner DX, test/issue harvest, research claims, registry routes, workflow conformance |
 | I02 | One confirmed defect expands the full affected performance pattern; keep product findings as research dispositions and repair authorized harness defects | Improve; user research scope | Full Compiler diagnostic pattern and all 48 targets; authorized harness fixes only |
 | B01 | Preserve nine ordered benchmark lanes, comparison signatures, native guards, sample math and provenance | Benchmark; methodology.md | Nine-lane/signature tables and packet fingerprints; main-host gap explicit |

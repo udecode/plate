@@ -15,7 +15,10 @@ import { isHtmlVoidElementTag, EditorElement } from '../components';
 import type { Editor } from '../editor/Editor';
 import { usePlateRenderContext } from '../internal/plate-context';
 import { useEditorContext } from '../internal/plite-components';
-import { usePlateRenderedAttributes } from '../internal/rendered-attributes';
+import {
+  getElementNodeKey,
+  usePlateRenderedAttributes,
+} from '../internal/rendered-attributes';
 import { useEditorReadOnly } from '../plite-react';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
 import type { AnyResolvedPlugin } from '../plugin/PlatePlugin';
@@ -157,7 +160,7 @@ function FastElementBody({
     readOnly,
   });
   const renderedAttributes = usePlateRenderedAttributes(
-    viewEditor.key(path) ?? null
+    getElementNodeKey(viewEditor, element)
   );
   const mergedAttributes = mergePlateRenderedAttributes(
     injectedAttributes,
@@ -260,7 +263,7 @@ function FastIntrinsicElementBody({
     readOnly,
   });
   const renderedAttributes = usePlateRenderedAttributes(
-    viewEditor.key(path) ?? null
+    getElementNodeKey(viewEditor, element)
   );
   const mergedAttributes = mergePlateRenderedAttributes(
     injectedAttributes,
@@ -356,7 +359,7 @@ function DefaultElementWithPath({
   const viewEditor = useEditorContext();
   const path = getRenderedElementPath(editor, props.element, props.attributes);
   const renderedAttributes = usePlateRenderedAttributes(
-    viewEditor.key(path) ?? null
+    getElementNodeKey(viewEditor, props.element)
   );
   const ctxProps = getRenderNodeProps({
     editor,

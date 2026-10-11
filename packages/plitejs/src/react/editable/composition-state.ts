@@ -18,6 +18,7 @@ import {
   isAndroidDOMHost,
   isWebKitDOMHost,
 } from '../../dom/internal';
+import { createTypedText } from '../../transforms-text/insert-text';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
@@ -664,7 +665,7 @@ export const commitChromeCompositionEndFallback = ({
         Object.keys(placeholderMarks).length > 0
       ) {
         tx.nodes.insert(
-          { text, ...placeholderMarks },
+          createTypedText(editor, text, placeholderMarks, target.anchor.path),
           { at: target, select: true }
         );
         return;
@@ -1051,7 +1052,18 @@ export const applyEditableCompositionStart = ({
       );
     }
 
-    if (marks && Object.keys(marks).length > 0) {
+    const caretText = selection
+      ? readRuntimeText(editor, selection.anchor.path)
+      : null;
+
+    // Marks the caret's text already holds come with typing inside it, as
+    // they do outside composition, so a document recorder decides the
+    // composed text's review marks from where it lands.
+    if (
+      marks &&
+      Object.keys(marks).length > 0 &&
+      !(caretText && TextApi.equals(caretText, marks as Text, { loose: true }))
+    ) {
       EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, marks);
       writeRuntimeMarks(editor, marks);
     }

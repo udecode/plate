@@ -6,6 +6,7 @@ import {
   type Text,
   TextApi,
 } from '..';
+import { isEditorContent } from '../core/content';
 import { getEditorSchema, hasEditorRuntime } from '../core/editor-runtime';
 import { getDefined } from '../internal/get-defined';
 import { formatDebugValue } from '../utils/format-debug-value';
@@ -168,6 +169,12 @@ export type NodeTextRangeQuery =
     ) => Iterable<NodeTextRangeMatch> | readonly NodeTextRangeMatch[]);
 
 export interface NodeFindTextRangesOptions {
+  /**
+   * Search only content text of a live editor root: text a capability keeps
+   * without counting it as content, such as struck suggestions, is skipped,
+   * and a match may run across it.
+   */
+  content?: boolean;
   /**
    * Match string queries by exact case. Regular expressions use their own
    * flags.
@@ -796,6 +803,10 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
   ): Range[] {
     const ranges: Range[] = [];
     const schema = NodeApi.isEditor(root) ? getEditorSchema(root) : null;
+    const isContent = (node: Text) =>
+      !options.content ||
+      !NodeApi.isEditor(root) ||
+      isEditorContent(root, node);
 
     const collectTextRun = (
       node: Descendant,
@@ -803,7 +814,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       entries: Array<NodeEntry<Text>>
     ): boolean => {
       if (NodeApi.isText(node)) {
-        entries.push([node, path]);
+        if (isContent(node)) entries.push([node, path]);
 
         return true;
       }
@@ -816,6 +827,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
 
     const visit = (node: Node | NodeTextRangeRoot, path: Path) => {
       if (NodeApi.isText(node as Node)) {
+        if (!isContent(node as Text)) return;
         ranges.push(
           ...getTextEntryRanges(
             [[node as Text, path]],

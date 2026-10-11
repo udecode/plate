@@ -133,7 +133,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "428735d5c24257f110e967222ba2f146600261e9c48f5bcb10dd8391cf1d3641",
       "pnpm-lock.yaml": "f51d0958f39bb24a506899859afa452a9bf986ebdba9e46e35e3a38be050e41a",
-      ".agents/skills/best-api-review/SKILL.md": "84ef21567cef9e4ab38e2560da0ea691e6f43c14c9dbbb4bc4b2d819e784edee",
+      ".agents/skills/verdict/SKILL.md": "84ef21567cef9e4ab38e2560da0ea691e6f43c14c9dbbb4bc4b2d819e784edee",
       ".agents/rules/task/references/best-api-review.md": "127de795d7a4adcdcd1c5420d11810a09b78ed07f3c798543efd840ea2887aa6"
     },
     "directories": {

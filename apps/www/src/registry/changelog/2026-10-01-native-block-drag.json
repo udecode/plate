@@ -126,7 +126,7 @@
     {
       "id": "2026-10-01-native-block-drag-5",
       "kind": "behavior",
-      "summary": "The kit enables `nativeDrop`, so dropped files land at the edge under the pointer.",
+      "summary": "Dropped files land at the edge under the pointer.",
       "details": [],
       "migrationNotes": [],
       "targets": ["upload"],

@@ -122,6 +122,21 @@ const tableNode = editor.read.nodes.find({
 An array selects any listed type. Add `match: (node, path) => ...` for computed
 conditions and static type narrowing.
 
+`nodes.isContent(node)` answers `false` for a node that a capability keeps in
+the document but out of its content, such as text a pending suggestion deletes.
+Without such a capability every node is content. Code that derives a value from
+an element's children skips those nodes and still writes at each child's real
+path:
+
+```typescript
+editor.update((tx) => {
+  tx.nodes.children(groupPath).forEach((column, index) => {
+    if (!tx.nodes.isContent(column)) return;
+    tx.nodes.set({ width: "50%" }, { at: [...groupPath, index] });
+  });
+});
+```
+
 ## Updating state
 
 #### `editor.update.<group>.<method>()`

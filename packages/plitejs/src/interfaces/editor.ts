@@ -982,6 +982,13 @@ export type EditorStateNodesApi<V extends Value = Value> = {
       options?: EditorNodeGetOptions<ValueTreeNode<V>>
     ): NodeEntry | undefined;
   };
+  /**
+   * Whether a node is content. A capability that keeps non-content nodes in
+   * the document, such as struck suggestions, answers false for them, so code
+   * that derives a value from children or the document can skip them while
+   * keeping each child's real path. Without one, every node is content.
+   */
+  isContent: (node: Node) => boolean;
   isSelectable: (element: Node) => boolean;
   isEmpty: (element: Element) => boolean;
   last: (at: NodeTarget, options?: EditorLastOptions) => NodeEntry | undefined;
@@ -3613,6 +3620,12 @@ export interface EditorBlockOptions<
 }
 
 export interface EditorAfterOptions {
+  /**
+   * Step by content: text a capability keeps in the document without counting
+   * it as content, such as struck suggestions, is skipped, so `distance`
+   * counts only content characters and block boundaries.
+   */
+  content?: boolean;
   distance?: number;
   unit?: TextUnitAdjustment;
   voids?: boolean;
@@ -3624,6 +3637,12 @@ export interface EditorBeforeOptions {
    * before it.
    */
   afterMatch?: boolean;
+  /**
+   * Step by content: text a capability keeps in the document without counting
+   * it as content, such as struck suggestions, is skipped, so `distance`
+   * counts only content characters and block boundaries.
+   */
+  content?: boolean;
   distance?: number;
   /** Return the current block start when a match is not found before crossing blocks. */
   matchBlockStart?: boolean;
@@ -3753,6 +3772,11 @@ export interface EditorPreviousOptions<
 }
 
 export interface EditorStringOptions {
+  /**
+   * Read only content text: text a capability keeps in the document without
+   * counting it as content, such as struck suggestions, is skipped.
+   */
+  content?: boolean;
   voids?: boolean;
 }
 

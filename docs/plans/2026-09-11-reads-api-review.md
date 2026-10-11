@@ -41,7 +41,7 @@ Work Checklist:
 - [x] Verify the single next-owner invocation and complete the goal-plan audit.
 
 Method obligations:
-[Best API Review](../../.agents/skills/best-api-review/SKILL.md) owns verdict,
+[Verdict](../../.agents/skills/verdict/SKILL.md) owns verdict,
 alternatives, cited evidence, prior relation and next owner.
 [Plate routing](../../.agents/rules/task/references/best-api-review.md) owns
 history, source inputs and ledger verification.

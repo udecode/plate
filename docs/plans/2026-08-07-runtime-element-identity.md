@@ -131,7 +131,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every identity, ownership, adoption, and proof decision | The lifecycle, responsibility, decision, execution, and proof tables cover every requested law. |
 | Fresh source evidence | yes | Recheck every decision-changing claim | Live Plite, Plite History, Plate Core, direct consumers, and Lexical source were inspected. |
-| Best API review | yes | Resolve P0 and P1 call-shape findings | One runtime target path, one persisted lookup, and one editor policy remain; the replacement-plugin design is rejected. |
+| Verdict | yes | Resolve P0 and P1 call-shape findings | One runtime target path, one persisted lookup, and one editor policy remain; the replacement-plugin design is rejected. |
 | Conditional risk and adoption | yes | Resolve history, collaboration, browser, generated-type, and benchmark gates | Each material risk has a named owner, failure test, and quantitative exit. |
 | Verification recorded | yes | Record planning proof and exact execution gates | Source receipts and exact commands and routes are recorded below. |
 | Handoff prepared | yes | State ownership, breaks, risks, and execution order | The handoff names all public cuts, owners, order, and execution risks. |

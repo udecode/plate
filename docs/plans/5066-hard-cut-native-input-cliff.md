@@ -126,7 +126,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All responsibilities, decisions, breaks, adoption, slices, risks, and proof gates are resolved below. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Exact HEAD `a18bab5...`; source fingerprints and live issue #5066 refreshed on 2026-08-17. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | P0 implicit fast-path cliffs rejected; selected hard cut keeps normal call sites unchanged and removes public text-sync flags. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | P0 implicit fast-path cliffs rejected; selected hard cut keeps normal call sites unchanged and removes public text-sync flags. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/benchmark/provenance work or give one scoped N/A reason | High-risk runtime/browser/perf, issue provenance, Plate/docs/examples, and collaboration commit law are concrete below; release and physical-device claims are out of scope. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Source/adoption audit, diagnostic metrics, test owners, browser claims, and execution commands are recorded. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff section is complete. |

@@ -166,7 +166,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Core/CLI compile, generation/check, exports, and deterministic CLI tests are green. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final exact-symbol audit confirms the rejected runtime APIs and paths are absent from active source. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted target is implemented exactly: authored runtime values, optional static compiler output. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted target is implemented exactly: authored runtime values, optional static compiler output. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Core, CLI, www hosts, docs, release prose, and rules adopted; Browser caveat is recorded below. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact commands and boundaries are recorded under Verification evidence. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final ownership, breaks, proof, and residual shared-tree caveats are recorded. |

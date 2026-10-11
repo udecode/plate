@@ -24,7 +24,7 @@ current stack and its drift evidence. Stop when each candidate has a
 source-cited answer for what it can observe that the current stack cannot,
 and at what cost.
 
-Promotion owner: `best-api-review` for the verdict; `verify` for any adopted
+Promotion owner: `verdict` for the verdict; `verify` for any adopted
 proof lane.
 
 Exclusions: no product code, no installs into the repository, no paid model

@@ -48,7 +48,7 @@ maintainer, sync-vision, issue-harvester: typed, or loaded by a playbook that ro
 - **Plate Review's laws are back** in `plate-architecture audit`: the ownership and lifetime table, cache test, score caps and P0 to P3 scale. The scorer script stays deleted.
 - **One owner per rule.** Failed-fix recovery lives only in the Bug fix playbook. `AGENTS.md` lost its lifecycle sections to the playbooks where they fire. `plate-plugins` and `plate-ui` point to `AGENTS.md`'s routing table.
 - **Playbooks stop contradicting the block.** Build extends only pstack's Feature, and the lead writes the code in every playbook. No playbook inherits a pstack step that commits, pushes, replies on a PR without your word, writes snapshots or runs a separate writing pass the block forbids.
-- **pstack is invoked, not restated.** Hard cuts and high-risk layers run `pstack:blast-radius`; `best-api-review` runs `pstack:why` before deleting a workaround; the Perf issue playbook points to its validator instead of copying its schema.
+- **pstack is invoked, not restated.** Hard cuts and high-risk layers run `pstack:blast-radius`; `verdict` runs `pstack:why` before deleting a workaround; the Perf issue playbook points to its validator instead of copying its schema.
 - **Failed fixes count only after the reporter assertion runs.** A crashed proof host is repaired and the same attempt restarts; the owner review compares deleting or merging owners before adding compensation.
 - **Tests earn their place.** The testing audit and `issue-harvester` rank tests by the defect they catch, and score zero what a type, lint rule or existing test already catches.
 
@@ -60,7 +60,7 @@ maintainer, sync-vision, issue-harvester: typed, or loaded by a playbook that ro
 - **Keep Plate Review's scorer deleted, restore its laws as text.** Say "restore scorer" to bring the script back.
 - **Keep `issue-harvester` separate from `research`.** Say "merge issue-harvester" to reverse.
 - **Defer the `best-api` doctrine dedup against `docs/vision/plate.md`.** Say "dedup best-api" to run a measured pass.
-- **Keep `best-api review`.** The plan said to fold it into `best-api-review`, but `best-api-review` itself says it does not replace detailed call-shape design, and the Babysit playbook and `plate-next` call `best-api review` for that. Say "fold best-api review" to reverse.
+- **Keep `best-api review`.** The plan said to fold it into `verdict`, but `verdict` itself says it does not replace detailed call-shape design, and the Babysit playbook and `plate-next` call `best-api review` for that. Say "fold best-api review" to reverse.
 
 ## Outcome
 
@@ -73,7 +73,7 @@ Every code-quality law the audits found holds again where it fired before pstack
 3. - [x] **Regression corpus.** `validate-regression-plan.mjs`, `capture-proof-receipt.mjs`, their contract and tests, `references/corpus.md` and `templates/regression.md` restored under `.agents/rules/verify/`. Proof: 103/103 across the corpus and version tests, its decision-log row.
 4. - [x] **Plate Review laws.** `plate-architecture.mdc` Audit section. Proof: its decision-log row.
 5. - [x] **Playbooks stop contradicting the block.** Proof: a grep of all 7 `sync-pstack playbook` renders finds no inherited commit, push, snapshot or extra writing-pass step, and the remaining delegate lines fall under the block's widened lead-writes-code rule; its decision-log rows (the first superseded).
-6. - [x] **One owner per rule.** Narrowed as the Defaults and its decision-log row state: Plan pages and the Feature review lookup stay in `AGENTS.md`, `maintainer` keeps its route table, `best-api-review` keeps its verdict-to-owner table, and `best-api review` stays. Proof: its decision-log row.
+6. - [x] **One owner per rule.** Narrowed as the Defaults and its decision-log row state: Plan pages and the Feature review lookup stay in `AGENTS.md`, `maintainer` keeps its route table, `verdict` keeps its verdict-to-owner table, and `best-api review` stays. Proof: its decision-log row.
 7. - [x] **Invoke pstack.** Proof: `node .agents/skills/benchmark/scripts/validate-benchmark-plan.mjs .agents/rules/benchmark/templates/benchmark.md --complete` names each unresolved record, so `perf-issue.md` no longer copies the schema; its decision-log row.
 8. - [x] **Invocation and hints.** Proof: dotai `9f76200` (hint parser), `sync-pstack verify` passed, `sync-pstack smoke` runs in Claude Code and Codex (next, a bug, clean up a PR, `$prototype`, an issue triage, go, plan and review) reached the right playbook 16 of 16; Codex's go answer was wrong until `build.md` stopped go on a Done plan, re-smoked in both; its decision-log rows.
 9. - [x] **Close.** `bun x skiller@latest apply` and `node .agents/rules/plate-next/scripts/sync-resources.mjs --check` (exact); `node .agents/rules/plate-next/scripts/version.mjs validate`; `node --test` on the corpus, version and benchmark tests, 124/124; lint skip: `.agents/**` is ignored by `oxlint.config.ts` and `oxfmt.config.ts`; same-family decision-trail review and fresh law-loss recheck, findings applied per the decision log; one `unslop` pass; plan page republished.

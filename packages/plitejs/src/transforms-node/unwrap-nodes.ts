@@ -111,7 +111,9 @@ export const unwrapNodes = ((
     applyBuiltDocumentChange(
       editor,
       (builder, root) =>
-        builder.replaceChildren(root, parentPath, index, 1, children),
+        builder.withOrigin('unwrap', () =>
+          builder.replaceChildren(root, parentPath, index, 1, children)
+        ),
       {
         nodeKeyTransfers: children.map((child, offset) => ({
           path: [...parentPath, index + offset],

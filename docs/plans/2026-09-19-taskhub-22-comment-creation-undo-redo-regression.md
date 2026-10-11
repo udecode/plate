@@ -198,7 +198,7 @@ Completion Gates:
 | Cumulative reporter evidence closure | complete | Map every still-applicable base acceptance and later reporter delta to a phase-specific executable oracle | AC1-AC8 map to the three selected cases; no contradictory delta. |
 | Reporter oracle closure | complete | Resolve positive and forbidden states for all nine observations and every applicable interaction phase per case | Package model/safety and browser focus oracles are green; non-applicable visual rows remain N/A. |
 | Failed-fix interrupt closure | complete | Prove every claimed-fix failure invalidated prior proof and repaired the escape or demonstrated its existing rejecting gate | No claimed-fix failure; intermediate suite failures were migration/lint misses and were rerun green. |
-| Architecture pressure closure | complete | Prove every second failure or architecture trigger has a Best API Review verdict and any required design/adoption evidence | Review artifact selects one Plite History order with session-only async effects; ledger recording is separately deferred on a pre-existing review-index baseline. |
+| Architecture pressure closure | complete | Prove every second failure or architecture trigger has a Verdict verdict and any required design/adoption evidence | Review artifact selects one Plite History order with session-only async effects; ledger recording is separately deferred on a pre-existing review-index baseline. |
 | Proof receipt closure | complete | Validate generated final receipts against unchanged issue-owned inputs | Commands, source boundary, host, result, and final dirty ref are recorded below. |
 | Measurement-owner closure | N/A | Bind measured render owners when applicable | N/A: no render-count, profiler, or performance claim. |
 | Affected-corpus replay closure | complete | Replay all cases affected by the last shared-owner edit | Plite 21/21 and Plate 135/135 package task partitions passed after final edits. |
@@ -402,7 +402,7 @@ Decisions and tradeoffs:
 
 Review fixes:
 
-- Best API review verdict: pursue the one async History order and cut the
+- Verdict verdict: pursue the one async History order and cut the
   parallel Comments stack/message-surgery alternatives.
 - Agent Native Reviewer: source rule and generated skill are exact; package and
   browser routes are discoverable; no actionable findings.

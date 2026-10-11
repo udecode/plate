@@ -125,19 +125,24 @@ const editor = createEditor({
 envelope。
 
 ```ts title="src/editor.ts" showLineNumbers
-import { ParagraphPlugin } from "platejs/react";
-import { defineDocumentMigrations, migrateV54 } from "platejs/migrations";
+import { ListPlugin, ParagraphPlugin } from "platejs/react";
+import {
+  defineDocumentMigrations,
+  migrateListIdentity,
+  migrateV54,
+} from "platejs/migrations";
 
 import { fingerprint as v53Fingerprint } from "./migrations/v54-upgrade-plate/from";
+import { fingerprint as v54Fingerprint } from "./migrations/v55-list-identity/from";
 
-export const EditorKit = [ParagraphPlugin] as const;
-export const EditorSchema = { id: "acme-document", version: 54 } as const;
+export const EditorKit = [ParagraphPlugin, ListPlugin] as const;
+export const EditorSchema = { id: "acme-document", version: 55 } as const;
 
 export const EditorMigrations = defineDocumentMigrations({
   plugins: EditorKit,
   schema: EditorSchema,
-  sourceFingerprints: { 53: v53Fingerprint },
-  steps: { 54: migrateV54 },
+  sourceFingerprints: { 53: v53Fingerprint, 54: v54Fingerprint },
+  steps: { 54: migrateV54, 55: migrateListIdentity },
 });
 ```
 
@@ -163,10 +168,15 @@ export function DocumentEditor({ persisted }) {
 }
 ```
 
-直接持久化 converter 返回的 envelope。版本 54 的 definition 转换版本 53 的
-envelope 时会运行步骤 54。缺失步骤、错误 schema ID、未来版本或指纹不匹配都会直接
+直接持久化 converter 返回的 envelope。这个版本 55 的 definition 转换版本 53 的
+envelope 时会运行步骤 54 和 55。缺失步骤、错误 schema ID、未来版本或指纹不匹配都会直接
 报错。每个受支持的历史 envelope 版本都要在 `sourceFingerprints` 中绑定生成的精确
 指纹。
+
+`migrateListIdentity` 为每个列表项分配 `listId`。列表插件按 `listId` 编号，因此该步骤
+为每段相邻列表项分配自己的 id，或使用这些项已经共有的那个 id，每个编号都保持不变。列表插件的 `listId` 和
+`listLevels` 属性属于编译指纹，因此把该步骤注册在 schema 首次包含它们的版本下。再次
+运行不会产生任何变化。
 
 原始历史文档没有源身份。在对应的导入边界显式提供它：
 

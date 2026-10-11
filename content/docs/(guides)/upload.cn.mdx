@@ -132,12 +132,58 @@ editor.plugin(UploadPlugin).api.cancel(draftKey);
 `getSnapshot` 和 `subscribe` 订阅。进度使用 SDK 的 `AggregateProgress`：
 `loaded`、`total` 和 `fraction`（`0` 到 `1`）。组件卸载不会重启上传。
 
+## 拖入的文件
+
+React 版 `UploadPlugin` 会把拖入编辑器的文件放在指针所在区块的边缘，并遵循与
+[区块拖拽](/docs/dnd)相同的放置规则。被拒绝的拖放不会插入任何内容。文件悬停时，
+复制的 DnD 套件会画出放置指示线。只安装 `BaseUploadPlugin` 的编辑器会像粘贴一样
+处理拖入的文件：替换放置点处的空区块或插入到该区块之后，不经过放置规则和否决，
+拖入内容带有 HTML 时以 HTML 为准。
+
+要保留上传、但拒绝拖入的文件，就否决文件的放置。否决需要 React 版 `UploadPlugin`：
+
+```tsx
+import { transferVeto } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const RefuseFileDropsPlugin = definePlugin('refuseFileDrops', {
+  contributions: [transferVeto.of(({ payload }) => payload.kind === 'files')],
+});
+```
+
+要自己处理拖入的文件，就在 `UploadPlugin` 之前放一个同时接管 `dragover` 和 `drop` 的插件。
+插件处理器按插件顺序运行，第一个返回 `true` 的处理器会阻止后面的处理器：
+
+```tsx
+import { definePlugin } from 'platejs/react';
+
+const carriesFiles = (event: React.DragEvent) =>
+  event.dataTransfer.types.includes('Files');
+
+export const MyFileDropPlugin = definePlugin('myFileDrop', {
+  on: {
+    dragOver: ({ event }) => {
+      if (!carriesFiles(event)) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'copy';
+      return true;
+    },
+    drop: ({ event }) => {
+      if (!carriesFiles(event)) return;
+      event.preventDefault();
+      // 在这里处理 event.dataTransfer.files。
+      return true;
+    },
+  },
+});
+```
+
 ## API 参考
 
 | 接口 | 用途 |
 | --- | --- |
 | `platejs/upload` 的 `BaseUploadPlugin` | 无 React 的草稿 schema、接收、任务和完成逻辑。 |
-| `platejs/upload/react` 的 `UploadPlugin` | React 适配器，可选原生文件拖放。 |
+| `platejs/upload/react` 的 `UploadPlugin` | React 适配器，把拖入的文件放在指针所在区块的边缘。 |
 | `UploadPlugin.configure({ initialState })` | 配置 `client: UploadClient`、同步 `getUrl: (file: UploadOutcome) => string`、`rules`、`maxFiles` 和 `onError`。 |
 | `editor.plugin(UploadPlugin).update.submit(files, options)` | 插入已验证批次或填充草稿；`slot` 与块位置选项不能混用。 |
 | `editor.plugin(UploadPlugin).api.cancel(key)` | 中止一个草稿的实时任务。 |

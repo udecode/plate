@@ -38,7 +38,7 @@ projection; preserve open structural edges and referenced roots; apply schema
 copy policy and transfer trust boundaries; fit at the destination; preserve
 cut safety, atomic changes, selection and history; keep product format policy
 outside the neutral substrate. Requirements come from the clipboard ledger,
-Best API Review, Task workflow and the root/scoped Vision.
+Verdict, Task workflow and the root/scoped Vision.
 
 - [x] Inspect the 10 groups, public contracts, different consumers and prior evidence.
 - [x] Compare the material alternatives and resolve the value verdict.

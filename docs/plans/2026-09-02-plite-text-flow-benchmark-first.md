@@ -766,7 +766,7 @@ Completion Gates:
 | ----------------------------- | ------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | Binary planning readiness     | yes     | Resolve all benchmark, architecture, API, adoption, and phase decisions                         | All sections and receipts are concrete.                                                                                        |
 | Fresh source evidence         | yes     | Recheck decision-changing owners                                                                | Live Plite, Plate, PM, CM, WG, Lexical, and Slate owners were read in this activation.                                         |
-| Best API review               | yes     | Resolve P0/P1 call-shape questions                                                              | Public decoration calls stay; CodeLine hard cut is gated; no public runtime control is added.                                  |
+| Verdict               | yes     | Resolve P0/P1 call-shape questions                                                              | Public decoration calls stay; CodeLine hard cut is gated; no public runtime control is added.                                  |
 | Pre-acceptance scale proof    | yes     | Record matched baselines, target-law probes, counters, identities, and correctness limits       | Result tables and artifact directory satisfy the planning claim.                                                               |
 | Production scale rerun        | yes     | Register, capture current red, and rerun `react-text-flow-browser-matrix` on production imports | `production-chromium-phase2.json` passes every row with max ratio 0.98.                                                        |
 | Conditional risk and adoption | yes     | Resolve every triggered risk or assign a phase veto                                             | Native, custom renderer, syntax, migration, collaboration, and virtual-mode decisions are explicit.                            |
@@ -804,7 +804,7 @@ Review fixes:
   proved insufficient.
 - Added real Lowlight and incremental Lezer source-cost probes so DOM work is not
   blamed for syntax parsing.
-- Kept public decoration APIs unchanged after Best API review.
+- Kept public decoration APIs unchanged after Verdict.
 
 Error attempts:
 

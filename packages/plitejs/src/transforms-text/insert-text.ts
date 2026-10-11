@@ -45,13 +45,38 @@ import { getDefaultInsertLocation } from '../utils';
 import { deleteText } from './delete-text';
 import { isFullDocumentRange } from './full-document-range';
 
+/**
+ * New text takes the marks of the text it replaces or the marks set for it,
+ * without the properties the schema drops on copy, such as review marks.
+ */
+export const createTypedText = (
+  editor: Editor,
+  text: string,
+  marks: TextMarks | null,
+  path: Path,
+  root = getEditorUpdateRoot(editor)
+) =>
+  marks
+    ? (getEditorSchema(editor).copyNodeAt(
+        { text, ...marks },
+        path,
+        root
+      ) as Text)
+    : { text };
+
 const createFullDocumentTextReplacement = (
   editor: Editor,
   text: string,
   marks: TextMarks | null = null
 ) => {
   const first = editorGetChildren(editor)[0];
-  const textNode = marks ? { text, ...marks } : { text };
+  const textNode = createTypedText(
+    editor,
+    text,
+    marks,
+    first && 'children' in first ? [0, 0] : [0],
+    getEditorUpdateRoot(editor)
+  );
 
   if (first && 'children' in first) {
     return [
@@ -307,7 +332,13 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
             insertNodes(
               editor as Editor,
-              { text, ...normalizedReplacementMarks },
+              createTypedText(
+                editor,
+                text,
+                normalizedReplacementMarks,
+                nextAt.path,
+                nextAt.root
+              ),
               {
                 at: nextAt,
                 select: !explicitAtPreservesNullSelection,
@@ -377,7 +408,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
           insertNodes(
             editor as Editor,
-            { text, ...marks },
+            createTypedText(editor, text, marks, path, root),
             { at, select: !explicitAtPreservesNullSelection, voids }
           );
           setCurrentMarks(editor, null);

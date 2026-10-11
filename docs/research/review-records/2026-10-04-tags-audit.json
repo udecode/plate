@@ -5,8 +5,8 @@
   "date": "2026-10-04",
   "question": "Which selected values and editing rules should a tag/form editor persist, and can duplicate selection stores disappear?",
   "model": "Claude Opus 5.5",
-  "method": "best-api-review/history-v3",
-  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 42. It is not the unit next returned, which was reads.",
+  "method": "verdict/history-v3",
+  "trigger": "The owner asked for a verdict audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as unreviewed at queue position 42. It is not the unit next returned, which was reads.",
   "requirements": [
     "The form receives the selected values in controlled and uncontrolled use (select-editor-demo with react-hook-form).",
     "Caret navigation between chips, backspace deletion, copy/paste and drag reorder of tags (multi-select.mdx).",
@@ -62,8 +62,8 @@
       "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
       "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
       "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
-      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
-      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+      ".agents/skills/verdict/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/verdict.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
     },
     "directories": {
       "packages/platejs/src/features/tag": "9e08aea9f3eb7fc9ceed54020d754ff5098a443ac6a68f8e9efd190ef0c35041"

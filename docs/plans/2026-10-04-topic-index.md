@@ -30,7 +30,7 @@ node .agents/pstack/plan-page.mjs --index
 - **Ledger topics with no page show too.** When `pageTopic.hub` is set, every hub file without a subject file appears as a topic with no page yet, so plate-2's index covers all 67 review-ledger topics.
 - **The skill keeps it current, locally.** `--index` renders every subject's page into `<plans>/artifacts/topics/` beside `index.html`, and plan-page's Render mode runs it after every subject render. The index is never published. Approved wording, reversed by the owner: "republishes the index after every subject publish, to the `Page:` line in `<plans>/topics/README.md`".
 - **Local pages are the durable copy.** A published claude.ai page is where the owner comments on one hand-back; when its link no longer opens, the next publish makes a new page. Codex sessions render the page and reply with its file path instead of skipping it.
-- **plate-2's 22 topics without a subject file wait for the audit.** The approved step seeded a subject file for each of the 22 ledger topics whose plans name one, so their 67 plans became iterations. 21 of those pages refuse without a "What other editors do" section, and while the files existed their plans refused to render at all, so the seeds are removed. The owner answered "audit", so plate-2's API review playbook now has its first stop and the ledger triage audit create a missing subject file with its editor comparison and what has landed and been proven, so each page renders when one of them reaches its topic.
+- **plate-2's 22 topics without a subject file wait for the audit.** The approved step seeded a subject file for each of the 22 ledger topics whose plans name one, so their 67 plans became iterations. 21 of those pages refuse without a "What other editors do" section, and while the files existed their plans refused to render at all, so the seeds are removed. The owner answered "audit", so plate-2's Verdict playbook now has its first stop and the ledger triage audit create a missing subject file with its editor comparison and what has landed and been proven, so each page renders when one of them reaches its topic.
 - **Ellie gets the same index**, with one subject today.
 - **Needs you keeps every unanswered question.** A subject page shows Needs you from its leading iteration only, so a newer plan hides an older iteration's open question, as this plan would hide the plan-page subject's pending "Reflect lessons" question. Needs you collects the Open questions of every iteration, each labeled with its plan, and the index marks a subject that waits on you.
 
@@ -53,9 +53,9 @@ node .agents/pstack/plan-page.mjs --index
 
 ## Close
 
-Reversals: the approved step 4 seeded a subject file for each of plate-2's 22 ledger topics and published their pages; the seeds broke their renders and are removed, and the owner answered "audit", so the API review playbook's first stop and the ledger triage audit create each subject file with its editor comparison. The approved index republished to claude.ai after every subject publish; the owner reversed it, so the index and every page stay local and only a hand-back page is published, for comments.
+Reversals: the approved step 4 seeded a subject file for each of plate-2's 22 ledger topics and published their pages; the seeds broke their renders and are removed, and the owner answered "audit", so the Verdict playbook's first stop and the ledger triage audit create each subject file with its editor comparison. The approved index republished to claude.ai after every subject publish; the owner reversed it, so the index and every page stay local and only a hand-back page is published, for comments.
 
-What landed: `plan-page.mjs --index` renders every subject's page and `<plans>/artifacts/topics/index.html`, listing hub topics with no page yet, and Needs you keeps every iteration's open question. dotai 8729e19, 191efc6 and bd6c8cd carry it, and both projects run it. plate-2's index shows 6 pages, 63 topics with no page yet and 2 that wait on you; Ellie's shows 1 page. plate-2's `.agents/playbooks/api-review.md` change for the audit stays uncommitted for the owner.
+What landed: `plan-page.mjs --index` renders every subject's page and `<plans>/artifacts/topics/index.html`, listing hub topics with no page yet, and Needs you keeps every iteration's open question. dotai 8729e19, 191efc6 and bd6c8cd carry it, and both projects run it. plate-2's index shows 6 pages, 63 topics with no page yet and 2 that wait on you; Ellie's shows 1 page. plate-2's `.agents/playbooks/verdict.md` change for the audit stays uncommitted for the owner.
 
 Proof: `node --test skills/sync-pstack/scripts/sync-pstack.test.mjs` passes 86, and the old and new renderer over every plan in both projects differ only in the 3 intended bodies. Read-only smokes in both runtimes route a topic hand-back through the local render, the publish for comments and the local index, with Codex leaving the publish to the lead. They prove routing only. This session's republish of the plan-page and pstack pages from the new account, with fresh Page lines for the dead links, is the one real hand-back so far.
 
@@ -63,7 +63,7 @@ Counts: 6 steps, 6 done, 0 skipped, 0 blocked, 0 open.
 
 Open work, moved to the plan-page subject's Open work with owner Ziad:
 
-- plate-2's 22 ledger topics with plans and no subject file get their pages when the API review playbook's first stop or a ledger triage audit reaches them.
+- plate-2's 22 ledger topics with plans and no subject file get their pages when the Verdict playbook's first stop or a ledger triage audit reaches them.
 - The Claude smoke flagged that the block calls the rendered file the durable page while `docs/plans/artifacts/` is gitignored, so the page lasts only on the machine that rendered it.
 - The Claude smoke flagged that a plan the reviews list does not name ends with an `AskUserQuestion`, while Plan pages says the hand-back reply is the page link alone.
 

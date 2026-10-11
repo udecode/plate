@@ -277,6 +277,7 @@ type VNodeProperties = {
   id?: string;
   rowSpan?: number;
   src?: string;
+  start?: number;
   style?: Record<string, string>;
 };
 
@@ -314,6 +315,11 @@ type DocxDocumentInstance = {
   taskNumberingId: (checked: boolean) => number;
   getBookmark: (htmlId: string) => { id: number; name: string } | undefined;
   htmlString: string;
+  openList: (
+    type: 'ol' | 'ul',
+    properties: VNodeProperties,
+    level: number
+  ) => { readonly numberingId: number; next: number };
   relationshipFilename: string;
   tableRowCantSplit: boolean;
   zip: {
@@ -447,37 +453,106 @@ export const buildImage = async (
 };
 
 type VNodeObject = {
+  instance?: { readonly numberingId: number; next: number };
+  pendingListOpen?: Readonly<{
+    properties: VNodeProperties;
+    type: 'ol' | 'ul';
+  }>;
   level: number;
   node: VNodeType | VTextType;
   numberingId: number;
   type: string;
 };
 
+const INDENT_CLASS_REGEX = /\beditor-indent-(\d+)\b/;
+const MARGIN_NUMBER_REGEX = /(\d+)/;
+
+// Plate indent 1 maps to Word level 0. The host's indent class holds the exact
+// indent; a margin alone assumes BaseIndentPlugin's default 24px offset.
+const getIndentLevel = (vNode: VNodeType, hostVNode?: VNodeType) => {
+  const indent =
+    hostVNode?.properties?.attributes?.class?.match(INDENT_CLASS_REGEX);
+
+  if (indent) return Math.max(0, Number(indent[1]) - 1);
+
+  const marginLeft =
+    vNode.properties?.style?.['margin-left'] ||
+    hostVNode?.properties?.style?.['margin-left'];
+  const match = marginLeft?.match(MARGIN_NUMBER_REGEX);
+
+  return match
+    ? Math.max(0, Math.round(Number.parseInt(match[1], 10) / 24) - 1)
+    : 0;
+};
+
+/**
+ * Builds the numbered paragraphs of an HTML list. Its level comes from the
+ * host block's Plate indent class, else from the list's own left margin, else
+ * from the host's.
+ */
+const itemStart = (properties: VNodeProperties, itemIndex: number) =>
+  (typeof properties.start === 'number' ? properties.start : 1) + itemIndex - 1;
+
+// Plate writes a restart on the item, and Word restarts through the instance
+// that item's paragraph uses, so the restart travels with that open.
+const withItemRestart = (
+  properties: VNodeProperties,
+  item: VNodeType | VTextType | undefined
+) => {
+  const restart = isVNode(item)
+    ? (item as VNodeType).properties?.attributes?.['data-list-restart']
+    : undefined;
+
+  return restart === undefined
+    ? properties
+    : {
+        ...properties,
+        attributes: { ...properties.attributes, 'data-list-restart': restart },
+      };
+};
+
+const firstItem = (list: VNodeType) =>
+  list.children?.find(
+    (child) =>
+      isVNode(child) && (child as VNodeType).tagName?.toLowerCase() === 'li'
+  );
+
 export const buildList = async (
   vNode: VNodeType,
   docxDocumentInstance: DocxDocumentInstance,
   xmlFragment: XMLBuilderType,
-  existingNumberingId: number | null = null,
-  baseIndentLevel = 0
-): Promise<void[]> => {
-  const listElements: void[] = [];
+  hostVNode?: VNodeType
+): Promise<void> => {
+  const level = getIndentLevel(vNode, hostVNode);
+  const list = docxDocumentInstance.openList(
+    (vNode.tagName || 'ul') as 'ol' | 'ul',
+    withItemRestart(vNode.properties ?? {}, firstItem(vNode)),
+    level
+  );
   let vNodeObjects: VNodeObject[] = [
     {
+      instance: list,
       node: vNode,
-      level: baseIndentLevel,
+      level,
       type: vNode.tagName || '',
-      numberingId:
-        existingNumberingId ||
-        docxDocumentInstance.createNumbering(
-          (vNode.tagName || 'ul') as 'ol' | 'ul',
-          vNode.properties
-        ),
+      numberingId: list.numberingId,
     },
   ];
 
   while (vNodeObjects.length) {
     const current =
       vNodeObjects.shift() ?? failInvariant('Expected value to be defined');
+
+    if (current.pendingListOpen) {
+      const instance = docxDocumentInstance.openList(
+        current.pendingListOpen.type,
+        current.pendingListOpen.properties,
+        current.level
+      );
+
+      current.instance = instance;
+      current.numberingId = instance.numberingId;
+    }
 
     if (
       isVText(current.node) ||
@@ -496,6 +571,8 @@ export const buildList = async (
           docxDocumentInstance
         )
       );
+
+      if (current.instance) current.instance.next += 1;
     }
 
     const node = current.node as VNodeType;
@@ -512,6 +589,7 @@ export const buildList = async (
         checked === 'true' || checked === 'false'
           ? docxDocumentInstance.taskNumberingId(checked === 'true')
           : current.numberingId;
+      let items = 0;
       const children = node.children.reduce<VNodeObject[]>(
         (accumulator, child) => {
           const childNode = child as VNodeType;
@@ -520,14 +598,31 @@ export const buildList = async (
             return accumulator;
           }
           if (['ul', 'ol'].includes(childNode.tagName || '')) {
+            const type = (childNode.tagName || 'ul') as 'ol' | 'ul';
+            const plateList =
+              childNode.properties?.attributes?.['data-list-id'] !== undefined;
+
             accumulator.push({
               node: child,
               level: current.level + 1,
               type: childNode.tagName || '',
-              numberingId: docxDocumentInstance.createNumbering(
-                (childNode.tagName || 'ul') as 'ol' | 'ul',
-                childNode.properties
-              ),
+              numberingId: plateList
+                ? 0
+                : docxDocumentInstance.createNumbering(
+                    type,
+                    childNode.properties
+                  ),
+              ...(plateList
+                ? {
+                    pendingListOpen: {
+                      properties: withItemRestart(
+                        childNode.properties ?? {},
+                        firstItem(childNode)
+                      ),
+                      type,
+                    },
+                  }
+                : {}),
             });
 
             return accumulator;
@@ -572,17 +667,38 @@ export const buildList = async (
                 : []
           );
 
+          const item =
+            isVNode(child) && (childNode.tagName || '').toLowerCase() === 'li';
+          const itemIndex = item ? (items += 1) : 0;
+          const listType = (node.tagName || 'ul') as 'ol' | 'ul';
+
           accumulator.push({
             node: isVNode(child)
-              ? (childNode.tagName || '').toLowerCase() === 'li'
+              ? item
                 ? child
                 : (childNode.tagName || '').toLowerCase() !== 'p'
                   ? paragraph
                   : child
               : paragraph,
+            instance: current.instance,
             level: current.level,
             type: current.type,
             numberingId,
+            ...(itemIndex > 1 &&
+            node.properties?.attributes?.['data-list-id'] !== undefined
+              ? {
+                  pendingListOpen: {
+                    properties: withItemRestart(
+                      {
+                        ...node.properties,
+                        start: itemStart(node.properties, itemIndex),
+                      },
+                      child
+                    ),
+                    type: listType,
+                  },
+                }
+              : {}),
           });
 
           return accumulator;
@@ -593,8 +709,6 @@ export const buildList = async (
       vNodeObjects = children.concat(vNodeObjects);
     }
   }
-
-  return listElements;
 };
 
 // Types for attributes and options
@@ -2687,7 +2801,8 @@ const buildTableCell = async (
                 await buildList(
                   listVn,
                   docxDocumentInstance,
-                  tableCellFragment
+                  tableCellFragment,
+                  divVn
                 );
               }
             } else {

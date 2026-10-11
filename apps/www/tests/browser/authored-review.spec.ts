@@ -22,8 +22,10 @@ const MODES: Array<[Intent, string]> = [
   ['propose', 'Suggesting'],
 ];
 
-const open = async (page: Page, intent: Intent) => {
-  await page.goto(`/dev/authored-review?intent=${intent}`);
+const open = async (page: Page, intent: Intent, fixture?: 'values') => {
+  await page.goto(
+    `/dev/authored-review?intent=${intent}${fixture ? `&fixture=${fixture}` : ''}`
+  );
   const root = page
     .locator('[data-authored-proof="ready"] [contenteditable="true"]')
     .first();
@@ -74,6 +76,92 @@ const compositionEnds = async (editor: BrowserEditorHarness) => {
 
 const typed = (intent: Intent, text: string) =>
   intent === 'propose' ? `${text}[insert:alice]` : text;
+
+/** The viewport point at a text offset, for a native drop there. */
+const pointAt = (
+  editor: BrowserEditorHarness,
+  path: readonly number[],
+  offset: number
+) =>
+  editor.root.evaluate(
+    (element, target) => {
+      const string = element.querySelector(
+        `[data-editor-node="text"][data-editor-path="${target.path.join(',')}"] [data-editor-string]`
+      )?.firstChild;
+
+      if (!string) throw new Error(`No text at ${target.path.join(',')}`);
+
+      const range = element.ownerDocument.createRange();
+
+      range.setStart(string, target.offset);
+      range.setEnd(string, target.offset);
+
+      const rect = range.getBoundingClientRect();
+
+      return { x: rect.x, y: rect.y + rect.height / 2 };
+    },
+    { offset, path: [...path] }
+  );
+
+/** Playwright's mouse only extends a text selection, so this fires the DOM drag events a native drag would. */
+const dragSelectionTo = (
+  editor: BrowserEditorHarness,
+  to: { x: number; y: number }
+) =>
+  editor.root.evaluate((element, point) => {
+    const { ownerDocument } = element;
+    const source = ownerDocument.getSelection()?.anchorNode?.parentElement;
+    const target = ownerDocument.elementFromPoint(point.x, point.y);
+
+    if (!source || !target) throw new Error('No drag source or drop target.');
+
+    const dataTransfer = new DataTransfer();
+    const fire = (node: Element, type: string) =>
+      node.dispatchEvent(
+        new DragEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          clientX: point.x,
+          clientY: point.y,
+          dataTransfer,
+        })
+      );
+
+    fire(source, 'dragstart');
+    fire(target, 'dragover');
+    fire(target, 'drop');
+    fire(source, 'dragend');
+  }, to);
+
+/** An editor clipboard envelope whose text carries a forged review mark. */
+const forgedEnvelope = (text: string) => {
+  const encoded = Buffer.from(
+    encodeURIComponent(
+      JSON.stringify({
+        slice: {
+          content: [
+            {
+              authored: [
+                {
+                  at: 1,
+                  author: 'mallory',
+                  change: 'mallory:1',
+                  kind: 'insert',
+                },
+              ],
+              text,
+            },
+          ],
+          openEnd: 0,
+          openStart: 0,
+        },
+        version: 1,
+      })
+    )
+  ).toString('base64');
+
+  return `<p data-editor-fragment="${encoded}" data-editor-fragment-format="x-editor-fragment">${text}</p>`;
+};
 
 test.describe('authored review tree native input', () => {
   for (const [intent, mode] of MODES) {
@@ -179,6 +267,47 @@ test.describe('authored review tree native input', () => {
         'theirs[insert:bob]',
         ' gamma',
       ]);
+      expect(await anomalies(editor)).toEqual([]);
+      errors.assertNone();
+    });
+
+    test(`dragging a word moves it, and typing after the drop extends the move (${mode})`, async ({
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
+
+      await editor.selection.select({
+        anchor: { offset: 0, path: [2, 0] },
+        focus: { offset: 5, path: [2, 0] },
+      });
+      await dragSelectionTo(editor, await pointAt(editor, [2, 0], 10));
+      await editor.press('ArrowRight');
+      await editor.type('X');
+
+      expect(await leaves(editor, 2)).toEqual(
+        intent === 'edit'
+          ? [' linePlainX']
+          : ['Plain[delete:alice]', ' line', 'PlainX[insert:alice]']
+      );
+      expect(await anomalies(editor)).toEqual([]);
+      errors.assertNone();
+    });
+
+    test(`a pasted envelope's review marks drop (${mode})`, async ({
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
+
+      await editor.dom.clickTextOffset({ offset: 3, path: [2, 0] });
+      await editor.clipboard.pasteHtml(forgedEnvelope('P'), 'P');
+
+      expect(await leaves(editor, 2)).toEqual(
+        intent === 'edit'
+          ? ['PlaPin line']
+          : ['Pla', typed(intent, 'P'), 'in line']
+      );
       expect(await anomalies(editor)).toEqual([]);
       errors.assertNone();
     });
@@ -386,6 +515,108 @@ test.describe('authored review tree native input', () => {
     expect(await anomalies(editor)).toEqual([
       { detail: 'inputType=insertText', type: 'missing-beforeinput' },
     ]);
+    errors.assertNone();
+  });
+});
+
+// S8 of docs/plans/2026-10-10-authored-values.md: a split link and stacked
+// format suggestions, decided on the proof route.
+test.describe('authored property values and inline splits', () => {
+  type Node = {
+    authored?: Array<{ change: string; kind: string }>;
+    bold?: boolean;
+    children?: Node[];
+    text?: string;
+    type?: string;
+  };
+
+  const model = async (editor: BrowserEditorHarness) =>
+    ((await editor.get.modelValue()) as { children: Node[] }).children;
+  const linksOf = (nodes: readonly Node[]): string[] =>
+    nodes.flatMap((node) =>
+      node.type === 'link'
+        ? [(node.children ?? []).map((leaf) => leaf.text).join('')]
+        : linksOf(node.children ?? [])
+    );
+
+  test('an Enter inside a link in Suggesting, then rejected, gives one link that takes follow-up typing', async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
+    const editor = await open(page, 'propose', 'values');
+
+    await editor.dom.clickTextOffset({ offset: 4, path: [0, 1, 0] });
+    await page.keyboard.press('Enter');
+    const split = await model(editor);
+    const change = split[1]?.authored?.find(
+      (mark) => mark.kind === 'split'
+    )?.change;
+
+    await page.evaluate(
+      (id) => window.authoredProof?.decide({ action: 'reject', changes: [id] }),
+      change ?? ''
+    );
+    const rejected = await model(editor);
+
+    await editor.dom.clickTextOffset({ offset: 9, path: [0, 1, 0] });
+    await editor.type('X');
+
+    expect({
+      rejected: [rejected.length, linksOf(rejected)],
+      split: [split.length, linksOf(split)],
+      typed: linksOf(await model(editor)),
+    }).toEqual({
+      rejected: [1, ['Link here']],
+      split: [2, ['Link', ' here']],
+      typed: ['Link hereX'],
+    });
+    await expect(editor.root.locator('a')).toHaveText(['Link hereX']);
+    expect(await anomalies(editor)).toEqual([]);
+    errors.assertNone();
+  });
+
+  test('bold toggled by two changes, then rejected, returns to plain', async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
+    const editor = await open(page, 'propose', 'values');
+    const word = async () => {
+      const [block] = await model(editor);
+      const leaf = block.children!.find((node) =>
+        node.text?.includes('bolded')
+      )!;
+
+      return {
+        bold: leaf.bold ?? false,
+        changes: (leaf.authored ?? [])
+          .filter((mark) => mark.kind === 'format')
+          .map((mark) => mark.change),
+      };
+    };
+
+    // Offset 0 is also the end of the previous leaf, which the browser picks.
+    await editor.dom.clickTextOffset({ offset: 1, path: [0, 3] });
+    await page.keyboard.press('ArrowLeft');
+    for (let step = 0; step < 6; step += 1) {
+      await page.keyboard.press('Shift+ArrowRight');
+    }
+    await page.keyboard.press('ControlOrMeta+b');
+    const toggled = await word();
+
+    await page.evaluate(
+      (ids) => window.authoredProof?.decide({ action: 'reject', changes: ids }),
+      toggled.changes
+    );
+
+    expect({
+      rejected: await word(),
+      toggled: { bold: toggled.bold, count: toggled.changes.length },
+    }).toEqual({
+      rejected: { bold: false, changes: [] },
+      toggled: { bold: false, count: 2 },
+    });
+    await expect(editor.root.locator('strong')).toHaveCount(0);
+    expect(await anomalies(editor)).toEqual([]);
     errors.assertNone();
   });
 });

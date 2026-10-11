@@ -56,6 +56,8 @@ const EditorSchema = {
 URL 被当前 Schema 拒绝，迁移会将其链接文本、标题、`alt` 文本或文件名保留为普通内容。已存储的
 提及、表情、斜杠命令和脚注输入节点会变为普通文本形式的触发符与已输入的查询。
 
+`migrateListIdentity` 为每个列表项保存 `listId`，每段相邻项一个 id，使不带列表 id 保存的文档保持原有编号。把它注册在首次包含列表插件 `listId` 和 `listLevels` 的 Schema 版本下。
+
 ## 代表性功能结构
 
 Plate 包定义局部节点结构，应用安装的插件元组和 Schema 决定完整语法。需要提交精确 `Value` 类型时使用 `plate generate`。

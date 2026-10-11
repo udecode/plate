@@ -5,8 +5,8 @@
   "date": "2026-10-04",
   "question": "What becomes observable when updates commit, nest, fail or repair content, and which overlapping mutation authorities can disappear?",
   "model": "Claude Opus 5.5",
-  "method": "best-api-review/history-v3",
-  "trigger": "The owner asked for a best-api-review audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 3. It is not the unit next returned, which was reads.",
+  "method": "verdict/history-v3",
+  "trigger": "The owner asked for a verdict audit of every open ledger unit, frozen from status at fe0e9599a6 on 2026-10-04 (39 units), and judged afresh because earlier verdicts came from a weaker model. It asked for verdicts only, so no plan, build or panel follows in this run. This scope was open as pursue-unbound at queue position 3. It is not the unit next returned, which was reads.",
   "requirements": [
     "Publish document, selection and metadata through one canonical draft and commit; an uncaught failure before publication discards the draft.",
     "Public transaction authors complete synchronously; nested public updates reject and escaped transaction methods cannot write later.",
@@ -96,8 +96,8 @@
       "docs/vision/common.md": "8a8274ea0097c322e79a7c9047131da7c1b0c1d417d18ee69bcbec70fc3f3c5e",
       "package.json": "4cd1f30b530a70e3c12f04efd4cbc53c64c1fac853949a01c6c3e6638df4db03",
       "pnpm-lock.yaml": "b1ef4ef603097f0f4b4208b51387b7da633c5ad678d121f8836d9eedf56bfbe3",
-      ".agents/skills/best-api-review/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
-      ".agents/rules/best-api-review.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
+      ".agents/skills/verdict/SKILL.md": "f09d5659966d2dbe16f7e6f94b6df904818dfb45fb2fd233188e3edc9095c93d",
+      ".agents/rules/verdict.mdc": "f41cae8a25ba2ee4d6039b7840a4d9cb83a5362e249f8a858619e746f467355b"
     },
     "directories": {
       "packages/platejs/src/lib/editor": "2a228290dcb02bb3bc33fc76d12e497d66139103b9f0abbb8e2608eaf1c45f6e"

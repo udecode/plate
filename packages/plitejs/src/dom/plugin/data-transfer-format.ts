@@ -25,6 +25,7 @@ import {
 import { createDetachedContentSlice } from '../../core/content-slice';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
+import { importContentSlice } from '../../core/import-content-slice';
 import {
   getPluginContributions,
   reportEditorLifecycleError,
@@ -948,7 +949,9 @@ export const createDataTransferTransactionSpec = <V extends Value>(
         phase = 'decode';
         const decoded = format.decode(context);
 
-        slice = decoded ? ContentSliceApi.fromJSON<V>(decoded) : null;
+        slice = decoded
+          ? importContentSlice(editor, ContentSliceApi.fromJSON<V>(decoded))
+          : null;
       }
     } catch (error) {
       // The lifecycle error channel owns a throwing attempt, including its

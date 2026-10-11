@@ -115,7 +115,7 @@ Completion Gates:
 | Fragment and incomplete dependency protection | yes | pass | retained-only corpus, two-fragment package case, and homepage dependency-outside case |
 | Undo/redo and follow-up input | yes | pass | decision plus accepted suffix undo/redo; native `x` lands at `Cox` |
 | Cmd+A and consecutive Enter | yes | pass | both homepage cases included in the 25-run stability ledger |
-| Best API Review | yes | pass | `2026-09-23-suggestions-direct-delete-retained-selection` supersedes forced-proposal semantics; no public API |
+| Verdict | yes | pass | `2026-09-23-suggestions-direct-delete-retained-selection` supersedes forced-proposal semantics; no public API |
 | Runtime errors | yes | pass | strict Playwright recorder empty for every selected case |
 | Visual artifact | yes | pass | inspected final screenshot: selected section and green retained paint are absent; unselected `Co` and Rich Content remain |
 | Autoreview | no | N/A | branch is `next`; no PR or explicit review request |

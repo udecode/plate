@@ -638,7 +638,7 @@ Current intake evidence:
 - Native Browser reproduction: from Try selecting text offset 14, one ArrowRight lands inside Date zero-width child, not following text.
 - #5126 tracker transcript cache reused verbatim and normalized in memory to <video-transcripts>; no new transcript/public comment needed.
 
-Date architecture decision (Best API review + Plite Plan boundary):
+Date architecture decision (Verdict + Plite Plan boundary):
 - Strongest justified cut: do not add Date-specific key/delete handlers, a skip option, or a second navigation policy. Reuse the existing schema selectable flag and canonical collapsed-delete owner.
 - Ideal caller stays DateKit; the Date descriptor declares selectable:false. No consumer API or serialized value changes.
 - Evidence: selection.move and mounted caret traversal use selectable. keyboardSelectable is not the inline-text traversal owner. Current getCollapsedDeleteTarget assumes a traversed boundary means another character must be consumed; that is false when a nonselectable inline void was crossed.

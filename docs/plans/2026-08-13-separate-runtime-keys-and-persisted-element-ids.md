@@ -106,7 +106,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All accepted source contracts and focused proof complete. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final `rg` audits find no live persisted-ID dependency in TOC/DOCX/AI. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Key-to-ID conversion and explicit persistence policy are recorded in best-api and Vision. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Key-to-ID conversion and explicit persistence policy are recorded in best-api and Vision. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Docs and release artifacts pass; browser blocker is exact and outside this owner. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | See Verification evidence and Error attempts. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff below. |

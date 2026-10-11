@@ -1,6 +1,6 @@
 # Effort on the page, and redo
 
-Status: executed: dotai pushed; plate-2 waits for your commit
+Status: executed: dotai, Ellie and plate-2 all carry it
 Topic: pstack
 Playbook: feature
 
@@ -47,7 +47,7 @@ redo <plan, page link or PR>
 | Where the effort lives | A lead row in the decision log, written by the append helper | A Lead line in the plan that the agent writes | lead line |
 | How a seat's effort is known | Read from the seat's own transcript, so the seat still runs at its usual effort | Always pass the models sheet's default effort to the Opus seat | pin seat effort |
 | Where redo lives | A shared dotai skill, so every pstack project gets it | A plate-2 project playbook | plate only |
-| Which projects sync now | plate-2 only; Ellie gets it at its next sync | Sync Ellie too | sync all |
+| Which projects sync | Every managed project, plate-2 and Ellie, on every dotai change (your word) | Only the project the request names | named only |
 | Subject page link | The old pstack page link no longer opens, so the page moved to https://claude.ai/artifact/559ZPtXQdgX6DHwS5vacmj | Keep the old link, https://claude.ai/artifact/2rSBBJ5gSUkEtNJv91c2af | old page |
 | Review | None: you asked for fast, so no architect, panel, smoke or trail review | Run them on the diff now | full |
 
@@ -65,7 +65,7 @@ redo <plan, page link or PR>
 
 ## Close
 
-What landed: udecode/dotai `61f145e` adds `lead.mjs`, the append lead row, the seat line in `cross.mjs`, the page header's Lead tag and the `redo` skill. plate-2 is synced from it and has `redo` installed. Those changes wait for your commit. The commit also carries another session's uncommitted session-title work in dotai, as dotai's rules require.
+What landed: udecode/dotai `61f145e` adds `lead.mjs`, the append lead row, the seat line in `cross.mjs`, the page header's Lead tag and the `redo` skill. plate-2 and Ellie are synced from dotai `25b9e1e` and have `redo` installed. Ellie is pushed as `909896ed2`, and you committed plate-2 as `666f02406e`. The commit also carries another session's uncommitted session-title work in dotai, as dotai's rules require.
 
 Why your mate's page showed no effort: nothing recorded the lead's effort, and the Opus seat's effort was only ever on its own machine. A page made after this sync shows both.
 
@@ -75,5 +75,5 @@ Counts for five steps: 5 done, 0 partial, 0 skipped, 0 blocked, 0 open.
 
 ## Open work
 
-- Ellie still runs the old helpers until its next sync. owner: Ziad. stop: the next `sync-pstack sync`. Tracked here.
+
 - Run `redo` once on a real lower-effort plan, such as the mate's HTML and Word export plan, to prove it end to end. owner: Ziad. stop: the first redo request. Tracked here.

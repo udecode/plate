@@ -318,12 +318,17 @@ Current priorities:
   whose attributes are only `className`, `placeholder`, `style` and primitive
   `aria-*` and `data-*` values; Plate privately owns source identity,
   compiled-plugin precedence, publication, cleanup, and per-`NodeKey`
-  subscriptions. A feature may bind benchmarked high-frequency interaction state
-  directly to canonical mounted node hosts when the state is private,
-  view-local, and outside React component props. Compose the existing host ref,
-  prove host replacement, detach, cleanup, hydration, native behavior and
-  production scale, and
-  add no public hook, store, registry or generic channel. Per-node
+  subscriptions. A feature may bind benchmarked high-frequency interaction
+  state, or dense presentation derived from its own index such as list numbers,
+  directly to canonical mounted node hosts when the value is private,
+  view-local, and outside React component props. Reach the hosts through the
+  existing host ref or the view's `api.dom` lookups. The view's `api.dom` does
+  not resolve a content root it renders, and resolving every mounted host costs
+  ten times as much as reading its key. So the hosts of a content root, and a
+  rewrite of every mounted host, read the full key each host carries in
+  `data-editor-node-key`. Prove host replacement,
+  detach, cleanup, hydration, native behavior and production scale, and add no
+  public hook, store, registry or generic channel. Per-node
   `render.attributes` and `inject.nodeProps.transformProps` stay pure and
   hook-free. Structural product rendering uses components and plugin render
   slots. Ordinary callers never assemble Decoration sources, attribute stores,
@@ -608,6 +613,12 @@ Current priorities:
   recognize historical ASTs. Plate feature code relies on the transaction's
   corrections and adds no explicit normalization call; `docs/vision/plite.md`
   holds the one explicit repair.
+- A correction, command or read that derives a value from an element's
+  children, such as column widths that sum to 100 or a duplicate check, asks
+  `nodes.isContent(node)` for each child, skips the ones that are not content
+  and writes at each child's real path, never through a filtered list that
+  lost them. A capability that keeps nodes in the document but out of its
+  content, such as a suggestion that strikes a column, answers the predicate.
 - Plugin constructors own every independent author contribution: `api`, `read`,
   `selectors`, `update`, flat native Plite fields, `formats`, and ordinary Plate
   fields and their context callbacks. There is no nested plugin-definition
@@ -1140,9 +1151,10 @@ Current priorities:
   `editor.api.transfer`. Keep optional SDKs and backends out of generic editor components,
   and keep dedicated render-attribute hooks private to their existing host.
   Do not provide a generic plugin hook runner or session framework.
-- Dropped files land through the React `UploadPlugin` with `nativeDrop` and the
-  `files` option of `resolveDropTarget`, so file landings pass the same landing
-  rules and a refused landing inserts nothing. Move up and Move down step the
+- Dropped files land through the React `UploadPlugin` and the `files` option of
+  `resolveDropTarget`, so file landings pass the same landing rules and a
+  refused landing inserts nothing; an editor with only `BaseUploadPlugin`
+  handles them as a paste, without landing rules or vetoes. Move up and Move down step the
   selected blocks among their siblings through `editor.api.transfer.move`, and a
   step whose blocks span parents refuses.
 - A copied feature with mutually exclusive external backends keeps one
@@ -1485,7 +1497,7 @@ schema, then map them directly to the `plugins` and `schema` editor options.
 That schema owns its `id` and `version`; do not duplicate lineage in
 `schemaIdentity` or a generator-only definition. The CLI/schema generator is
 optional advanced tooling for exact static contracts and artifacts, and CI
-checks committed generated contracts with `plate generate --check`. Improve
+checks committed generated contracts with `plate generate --check`. Ordinary editor setup, plugin authoring, registry UI and public docs never require generated application contracts. Improve
 onboarding through templates, docs, and registry flows without hiding critical
 editor decisions. Both exports carry human-readable names, and the kit is a
 readonly plugin array.

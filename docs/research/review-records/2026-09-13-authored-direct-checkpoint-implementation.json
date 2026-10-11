@@ -5,7 +5,7 @@
   "date": "2026-09-13",
   "question": "Does the directly loadable authored checkpoint merit replacing load-time operation reduction and pending-projection replay?",
   "model": "GPT-6 / Codex",
-  "method": "best-api-review/history-v2; redesign-from-first-principles; Best API hard-cut and scale gates; Plite Plan; Benchmark",
+  "method": "verdict/history-v2; redesign-from-first-principles; Best API hard-cut and scale gates; Plite Plan; Benchmark",
   "trigger": "The user authorized full implementation and a pivot if continued optimization could not beat the current architecture at 10,000 tracked changes.",
   "requirements": [
     "Keep the existing initialValue and editor.read.value() public calls and native accepted, proposed, and markup semantics.",
@@ -70,7 +70,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "428735d5c24257f110e967222ba2f146600261e9c48f5bcb10dd8391cf1d3641",
       "pnpm-lock.yaml": "c5d7bd6cc28fc66d9df9487315553937af41ec1cbfd4a88362a8d22609c81e5a",
-      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/skills/verdict/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
       ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec",
       "packages/plitejs/src/core/initial-value.ts": "7c5658a56d2849a46f6c507ddf9b3986c6d053a3b8d69a3203028cb6c5ea6ac0",
       "packages/plitejs/src/core/public-state.ts": "7fb39319c4a8c81e4af4b83b87dcadddae2fcbb97e27e1a747b8e4edadeabdb9",

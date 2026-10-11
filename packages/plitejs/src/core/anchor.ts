@@ -1280,6 +1280,14 @@ export function createAnchor<TValue extends AnchorValue>(
     return true;
   };
 
+  const runtimePathOf = (
+    nodeKey: NodeKey | null,
+    context: AnchorChangeContext | undefined
+  ) =>
+    nodeKey && context?.runtimePaths !== false
+      ? pathOfNodeKey(runtimeEditor, root, nodeKey)
+      : null;
+
   const resolveMappedPoint = (
     state: PointState,
     change: DocumentChange,
@@ -1289,9 +1297,7 @@ export function createAnchor<TValue extends AnchorValue>(
     preserveSamePathOffset: boolean,
     context?: AnchorChangeContext
   ): MappedPoint | null => {
-    const runtimePath = state.nodeKey
-      ? pathOfNodeKey(runtimeEditor, root, state.nodeKey)
-      : null;
+    const runtimePath = runtimePathOf(state.nodeKey, context);
     // Skipped edits can shift absolute positions without changing this point.
     const position = mapAnchorPosition(
       change,
@@ -1447,9 +1453,7 @@ export function createAnchor<TValue extends AnchorValue>(
 
       const stableNodeKey =
         pathMode === 'node' ? pathNodeKey : pathBoundaryParentNodeKey;
-      const runtimePath = stableNodeKey
-        ? pathOfNodeKey(runtimeEditor, root, stableNodeKey)
-        : null;
+      const runtimePath = runtimePathOf(stableNodeKey, context);
 
       if (runtimePath) {
         if (pathMode === 'node') {
@@ -1549,9 +1553,7 @@ export function createAnchor<TValue extends AnchorValue>(
           Math.max(sourceFrom, sourceTo)
         );
       const sourceNodesKeepIdentity = pointStates.every((state) => {
-        const runtimePath = state.nodeKey
-          ? pathOfNodeKey(runtimeEditor, root, state.nodeKey)
-          : null;
+        const runtimePath = runtimePathOf(state.nodeKey, context);
         if (!runtimePath) return false;
 
         try {
@@ -1600,9 +1602,7 @@ export function createAnchor<TValue extends AnchorValue>(
             associations[index]
           );
           if (!point) return null;
-          const runtimePath = state.nodeKey
-            ? pathOfNodeKey(runtimeEditor, root, state.nodeKey)
-            : null;
+          const runtimePath = runtimePathOf(state.nodeKey, context);
           return {
             point: withPublicPointRoot(point, root, state.includeRoot),
             runtimeStable:

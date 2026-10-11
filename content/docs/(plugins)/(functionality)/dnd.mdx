@@ -20,7 +20,7 @@ docs:
 - Click a handle for Move up, Move down and Cut. `Mod+Shift+ArrowUp` and `Mod+Shift+ArrowDown` move the blocks around the caret.
 - With columns installed, drop a block beside another block to place both side by side in a new column group, or to add a column beside a block that already sits in one. Beside a top-level block, the editor's side padding works too. The handle menu offers the same as Move beside previous and Move beside next.
 - A block drops wherever its schema allows, such as inside a blockquote, a details body, a column or a table cell. Table rows, columns, lists, the details summary and uploads keep their own rules, so the indicator only shows edges the drop can use.
-- Dropped files become uploads when `UploadPlugin` accepts native drops.
+- With the React `UploadPlugin` installed, dropped files become uploads at the edge under the pointer.
 
 </PackageInfo>
 
@@ -68,7 +68,7 @@ Drop a block on the inline-end edge of a top-level block, the right edge in left
 
 ### File drops
 
-The React `UploadPlugin` places dropped files when `nativeDrop` is `true`; the copied [Upload](/docs/upload) kit enables it. A file drop shows the same indicator and lands only where one upload block per file can go. A browser that hides the file count while dragging gets an indicator checked for one block. The drop itself checks every file. A refused drop inserts nothing.
+The React `UploadPlugin` places dropped files, and the copied [Upload](/docs/upload) kit installs it. A file drop shows the same indicator and lands only where one upload block per file can go. A browser that hides the file count while dragging gets an indicator checked for one block. The drop itself checks every file. A refused drop inserts nothing.
 
 ## Custom drag handle
 

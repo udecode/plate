@@ -40,7 +40,7 @@ Break between lists.
       {
         children: [{ text: 'Second list item' }],
         indent: 1,
-        listStart: 2,
+        listRestart: 2,
         listType: 'numbered',
         type: 'paragraph',
       },
@@ -68,7 +68,7 @@ Break between lists.
       {
         children: [{ text: 'Second list item' }],
         indent: 1,
-        listStart: 2,
+        listRestart: 2,
         listType: 'numbered',
         type: 'paragraph',
       },
@@ -81,6 +81,25 @@ Break between lists.
     ]);
   });
 
+  it('keeps the starts of two sublists under one item', () => {
+    const innerEditor = createTestEditor();
+
+    innerEditor.update.value.replace(
+      parseTestMarkdown(
+        innerEditor,
+        '1. Parent\n\n   2. Two\n\n   Between\n\n   5. Five\n'
+      )
+    );
+
+    expect(
+      innerEditor.read
+        .children()
+        .map((node, index) =>
+          node.listType ? innerEditor.read.list.ordinal([index]) : null
+        )
+    ).toEqual([1, 2, null, 5]);
+  });
+
   it('preserves an ordered list that starts at zero', () => {
     const value = parseTestMarkdown(editor, '0. Zero\n1. One');
 
@@ -88,7 +107,7 @@ Break between lists.
       {
         children: [{ text: 'Zero' }],
         indent: 1,
-        listStart: 0,
+        listRestart: 0,
         listType: 'numbered',
       },
       {
@@ -146,6 +165,7 @@ Break between lists.
       {
         children: [{ text: 'Item A' }],
         indent: 1,
+        listRestart: 1,
         listType: 'numbered',
         type: 'paragraph',
       },
@@ -233,6 +253,7 @@ Break between lists.
       {
         children: [{ text: 'a' }],
         indent: 1,
+        listRestart: 1,
         listType: 'numbered',
         type: 'paragraph',
       },

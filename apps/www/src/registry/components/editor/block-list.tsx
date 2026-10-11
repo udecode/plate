@@ -50,6 +50,12 @@ function List(
   return (
     <InnerList
       className="relative m-0 p-0"
+      data-list-id={props.element.listId ?? ''}
+      data-list-levels={
+        props.element.listLevels
+          ? JSON.stringify(props.element.listLevels)
+          : undefined
+      }
       style={{ listStyleType: markerStyle }}
       start={listType === ListType.Numbered ? listStart : undefined}
     >

@@ -7,6 +7,7 @@ import {
   ElementApi,
   PathApi,
   SelectionApi,
+  type Descendant,
   type EditorCommit,
   type Element,
   type Path,
@@ -206,6 +207,15 @@ const getSelectionCandidates = (
   editable: HTMLElement
 ): readonly SelectionCandidate[] => {
   const entries = new Map<string, SelectionCandidate>();
+  const targets = new Map<HTMLElement, HTMLElement>();
+
+  editable
+    .querySelectorAll<HTMLElement>('[data-node-selection-target]')
+    .forEach((target) => {
+      const owner = target.closest<HTMLElement>(EDITOR_ELEMENT_SELECTOR);
+
+      if (owner && !targets.has(owner)) targets.set(owner, target);
+    });
 
   editable
     .querySelectorAll<HTMLElement>(EDITOR_ELEMENT_SELECTOR)
@@ -224,7 +234,7 @@ const getSelectionCandidates = (
         key: editor.key(node),
         node,
         path,
-        rect: element.getBoundingClientRect(),
+        rect: (targets.get(element) ?? element).getBoundingClientRect(),
       });
     });
 
@@ -283,7 +293,13 @@ export type NodeSelectionDragProps = Omit<
   'children'
 >;
 
-/** Renders a drag rectangle and updates node selection during pointer drags. */
+/**
+ * Renders a drag rectangle and updates node selection during pointer drags.
+ *
+ * A renderer can mark a descendant wrapper with `data-node-selection-target`
+ * to limit its hit area. The wrapper must belong to that editor element,
+ * outside any nested editor element; otherwise the full element is used.
+ */
 export function NodeSelectionDrag({
   className,
   style,
@@ -518,6 +534,23 @@ export function NodeSelectionDrag({
     };
     const onPointerDown = (event: PointerEvent) => {
       if (
+        event.button === 2 &&
+        SelectionApi.isNode(editor.read.runtime.snapshot().selection) &&
+        event.target instanceof ownerWindow.Element &&
+        editable.contains(event.target)
+      ) {
+        const element = event.target.closest(EDITOR_ELEMENT_SELECTOR);
+        const node = element ? editor.api.dom.resolveNode(element) : null;
+        if (
+          ElementApi.isElement(node) &&
+          editor.read.selection.contains(node)
+        ) {
+          event.preventDefault();
+          return;
+        }
+      }
+
+      if (
         gesture ||
         event.button !== 0 ||
         event.target !== editable ||
@@ -567,11 +600,94 @@ export function NodeSelectionDrag({
       if (gesture) gesture.geometryDirty = true;
     };
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (!gesture || event.key !== 'Escape') return;
+    const onKey = (event: KeyboardEvent) => {
+      if (gesture && event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        cancelGesture();
+        return;
+      }
+      if (
+        event.target !== editable ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        (event.key !== 'ArrowUp' &&
+          event.key !== 'ArrowDown' &&
+          event.key !== 'Shift')
+      ) {
+        return;
+      }
+      const { selection } = editor.read.runtime.snapshot();
+      if (!SelectionApi.isNode(selection)) return;
+      const parent = PathApi.parent(selection.focusPath);
+      if (
+        selection.paths.some(
+          (path) => !PathApi.equals(PathApi.parent(path), parent)
+        )
+      ) {
+        return;
+      }
+      const children =
+        parent.length === 0
+          ? editor.read.children()
+          : (editor.read.nodes.get(parent, { match: ElementApi.isElement })?.[0]
+              .children ?? []);
+      const isCandidate = (node: Descendant | undefined): node is Element =>
+        ElementApi.isElement(node) && isSelectionCandidate(editor, node);
+      const anchor = selection.anchorPath.at(-1) ?? -1;
+      const focus = selection.focusPath.at(-1) ?? -1;
+      const focusNode = children[focus];
+      // A table cell selection keeps its own Shift cell extension, and a lone
+      // selected object keeps Plite's plain arrows, such as ArrowDown caption
+      // entry.
+      if (
+        !isCandidate(children[anchor]) ||
+        !isCandidate(focusNode) ||
+        (!event.shiftKey &&
+          selection.paths.length === 1 &&
+          editor.read.schema.isObject(focusNode))
+      ) {
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
-      cancelGesture();
+      // A focused contenteditable can recreate its native caret before keyup.
+      ownerDocument.getSelection()?.removeAllRanges();
+      if (event.type === 'keyup' || event.key === 'Shift') return;
+      const step = event.key === 'ArrowUp' ? -1 : 1;
+      let next = focus + step;
+      while (
+        next >= 0 &&
+        next < children.length &&
+        !isCandidate(children[next])
+      ) {
+        next += step;
+      }
+      const targetNode = children[next];
+      // An unmounted sibling, such as one a content boundary hides, ends the
+      // move, so arrows never select hidden content. Stopping instead of
+      // skipping keeps each key to one missed DOM lookup, which queries the
+      // whole editable.
+      if (
+        !isCandidate(targetNode) ||
+        !editor.api.dom.resolveDOMNode(targetNode)
+      ) {
+        return;
+      }
+      const target = [...parent, next];
+      const [from, to] = event.shiftKey
+        ? [Math.min(anchor, next), Math.max(anchor, next)]
+        : [next, next];
+      const selected: Path[] = [];
+      for (let index = from; index <= to; index++) {
+        if (isCandidate(children[index])) selected.push([...parent, index]);
+      }
+      editor.update.selection.setNodes(selected, {
+        anchor: event.shiftKey ? selection.anchorPath : target,
+        focus: target,
+      });
+      editor.api.dom.scrollIntoView(target);
     };
     const unsubscribe = editor.subscribeCommit((commit) => {
       if (gesture && commit.changed.hasAny('document')) {
@@ -581,7 +697,8 @@ export function NodeSelectionDrag({
     });
 
     ownerWindow.addEventListener('blur', cancelGesture);
-    ownerDocument.addEventListener('keydown', onKeyDown, true);
+    ownerDocument.addEventListener('keydown', onKey, true);
+    ownerDocument.addEventListener('keyup', onKey, true);
     ownerDocument.addEventListener('click', onClick, true);
     ownerDocument.addEventListener('pointercancel', onPointerEnd, true);
     ownerDocument.addEventListener('pointerdown', onPointerDown, true);
@@ -597,7 +714,8 @@ export function NodeSelectionDrag({
       unsubscribe();
       cancelGesture();
       ownerWindow.removeEventListener('blur', cancelGesture);
-      ownerDocument.removeEventListener('keydown', onKeyDown, true);
+      ownerDocument.removeEventListener('keydown', onKey, true);
+      ownerDocument.removeEventListener('keyup', onKey, true);
       ownerDocument.removeEventListener('click', onClick, true);
       ownerDocument.removeEventListener('pointercancel', onPointerEnd, true);
       ownerDocument.removeEventListener('pointerdown', onPointerDown, true);

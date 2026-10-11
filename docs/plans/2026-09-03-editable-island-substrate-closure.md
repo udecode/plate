@@ -907,7 +907,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every architecture, adoption, and proof owner | Decision ledger and three phases contain no open design choice. |
 | Fresh source evidence | yes | Recheck decision-changing live owners | Schema, representation, render, event, coverage, commit, decorations, docs, tests, and Plate code-block source were read at the planning ref. |
-| Best API review | yes | Resolve hard-cut and inference findings | One normal usage shape and exact adapter/session contracts are locked; aliases and raw editor access are rejected. |
+| Verdict | yes | Resolve hard-cut and inference findings | One normal usage shape and exact adapter/session contracts are locked; aliases and raw editor access are rejected. |
 | Pre-acceptance scale proof | yes | Pass matched baseline/target probe | V2 receipt passes all planning budgets across four sizes, three fixtures, and three fan-out cohorts. |
 | Production scale rerun contract | yes | Carry exact final cohorts and stricter runtime counters into Phase 2/3 | Frozen production-substrate contract and command owner are recorded above. |
 | Conditional risk and adoption | yes | Resolve browser, collaboration, docs, release, and failure cases | Each applies with a named phase/proof or has a scoped reason for inapplicability. |

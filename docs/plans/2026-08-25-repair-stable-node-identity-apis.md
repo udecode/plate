@@ -99,7 +99,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | passed | Resolve every readiness condition | All checklist rows and proof owners closed. |
 | Fresh source evidence | passed | Recheck decision-changing current claims | Final source, caller, docs, doctrine, and diff audits completed after the last code edit. |
-| Best API review | passed | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Hard-cut verdict executed: schema target reused, unsafe overload deleted, existing DOM owner widened. |
+| Verdict | passed | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Hard-cut verdict executed: schema target reused, unsafe overload deleted, existing DOM owner widened. |
 | Conditional risk and adoption | passed | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | English/Chinese docs, Markdown adopter, browser route, doctrine mirrors, and package release metadata closed. Registry work did not apply because no registry source changed. |
 | Verification recorded | passed | Record fresh planning proof and exact execution gates | Focused, package, docs, browser, development, and strict results are recorded below. |
 | Handoff prepared | passed | Prepare concise ownership, breaks, proof, risks, and execution order | Ownership, deliberate break, evidence, and residual scope are recorded below. |

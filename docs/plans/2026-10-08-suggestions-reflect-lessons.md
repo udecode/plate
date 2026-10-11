@@ -124,7 +124,7 @@ reviewed by codex:gpt-6.1-sol @xhigh, twice: `docs/plans/artifacts/2026-10-08-su
 ## Open work
 
 - The seven backlog items this run does not build, each tracked in `docs/plans/topics/correct.md` Open work at the fold. owner: zbeyens. stop: each item's own stop below.
-  - A check that refuses a mechanism's replacement, or a new plan iteration, without the `best-api-review` the Build playbook owes. owner: zbeyens, through `/pstack:correct`. stop: the next sync-pstack lesson batch, or 2026-11-08.
+  - A check that refuses a mechanism's replacement, or a new plan iteration, without the `verdict` the Build playbook owes. owner: zbeyens, through `/pstack:correct`. stop: the next sync-pstack lesson batch, or 2026-11-08.
   - `decisions-check.mjs` refusals that name their fix, and a single-row refusal that points at `--from`. owner: zbeyens, through sync-pstack. stop: the next sync-pstack lesson batch, or 2026-11-08.
   - A `pnpm check` step that typechecks platejs specs and `.slow.*` files against a shrink-only baseline. owner: zbeyens. stop: the step lands or `check.mjs` lists it as manual.
   - The `cli-test` step builds plitejs before it runs. owner: zbeyens. stop: the step changes.

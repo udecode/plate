@@ -46,10 +46,29 @@ function List(
   return (
     <InnerList
       className="relative m-0 p-0"
+      data-list-id={props.element.listId ?? ''}
+      data-list-levels={
+        props.element.listLevels
+          ? JSON.stringify(props.element.listLevels)
+          : undefined
+      }
       style={{ listStyleType: markerStyle }}
       start={listType === ListType.Numbered ? listStart : undefined}
     >
       <li
+        data-checked={
+          isTask ? String(props.element.checked === true) : undefined
+        }
+        data-indent={props.element.indent}
+        data-list-id={props.element.listId ?? ''}
+        data-list-levels={
+          props.element.listLevels
+            ? JSON.stringify(props.element.listLevels)
+            : undefined
+        }
+        data-list-restart={props.element.listRestart}
+        data-list-start={props.element.listStart}
+        data-list-type={listType}
         className={
           isTask
             ? cn(
@@ -58,9 +77,6 @@ function List(
                   'text-muted-foreground line-through'
               )
             : undefined
-        }
-        data-checked={
-          isTask ? String(props.element.checked === true) : undefined
         }
       >
         {isTask && <TodoMarkerStatic {...props} />}

@@ -36,21 +36,6 @@ type MigrationListSiblingState = {
   nodes: Pick<EditorCoreStateView['nodes'], 'get'>;
 };
 
-export type MigrationListSiblingOptions = {
-  breakOnEqIndentNeqList?: boolean;
-  breakOnLowerIndent?: boolean;
-  breakQuery?: (
-    siblingNode: Element,
-    currentNode: Element
-  ) => boolean | undefined;
-  eqIndent?: boolean;
-  getPreviousEntry?: (
-    entry: NodeEntry<Element>,
-    state: MigrationListSiblingState
-  ) => NodeEntry<Element> | undefined;
-  query?: (siblingNode: Element, currentNode: Element) => boolean | undefined;
-};
-
 const isAbsentCaption = (children: readonly Descendant[]) =>
   children.length === 0 ||
   (children.length === 1 &&
@@ -59,13 +44,13 @@ const isAbsentCaption = (children: readonly Descendant[]) =>
     Object.keys(children[0]).every((key) => key === 'text'));
 
 /** Upgrade the frozen first-party profile inside the Plate v54 migration. */
-export const migratePlateV54Profile = (
-  {
-    document,
-    target: conversionTarget,
-  }: Pick<DocumentMigrationContext, 'document' | 'target'>,
-  options: Readonly<{ list?: MigrationListSiblingOptions }> = {}
-): EditorDocumentValue => {
+export const migratePlateV54Profile = ({
+  document,
+  target: conversionTarget,
+}: Pick<
+  DocumentMigrationContext,
+  'document' | 'target'
+>): EditorDocumentValue => {
   const ownsProperty = (
     key: string,
     placement: 'element' | 'text',
@@ -104,7 +89,6 @@ export const migratePlateV54Profile = (
   >();
   const typeMigrations = new Map<string, string>();
   const firstPartyElementTypes = new Set<string>();
-  const configuredListSiblingOptions = options.list;
 
   for (const entry of V53_FIRST_PARTY_IDENTITIES) {
     if (!entry.kind.startsWith('element-')) continue;
@@ -580,9 +564,7 @@ export const migratePlateV54Profile = (
       const listRestart =
         restart !== undefined && restart !== 0 ? restart : undefined;
       const listStart =
-        listRestart === undefined &&
-        restartPolite !== undefined &&
-        restartPolite !== 0
+        restartPolite !== undefined && restartPolite !== 0
           ? restartPolite
           : undefined;
 
@@ -599,32 +581,15 @@ export const migratePlateV54Profile = (
         listStyleType: _listStyleType,
         ...withoutLegacyList
       } = element;
-      const next = {
+      // A start that does not apply yet stays: a forced restart wins over a
+      // conditional start, and a bullet or task keeps both until it numbers.
+      element = {
         ...withoutLegacyList,
         listType,
         ...(listStyle === undefined ? {} : { listStyle }),
-        ...(listType === 'numbered' && listRestart !== undefined
-          ? { listRestart }
-          : {}),
-        ...(listType === 'numbered' && listStart !== undefined
-          ? { listStart }
-          : {}),
+        ...(listRestart === undefined ? {} : { listRestart }),
+        ...(listStart === undefined ? {} : { listStart }),
       };
-
-      if (
-        listType !== 'numbered' &&
-        (Object.hasOwn(next, 'listRestart') || Object.hasOwn(next, 'listStart'))
-      ) {
-        const {
-          listRestart: inner_listRestart,
-          listStart: inner_listStart,
-          ...withoutStart
-        } = next;
-
-        element = withoutStart;
-      } else {
-        element = next;
-      }
     }
 
     if (imageType && element.type === imageType) {
@@ -799,28 +764,19 @@ export const migratePlateV54Profile = (
         : element.listStyle;
     const isHeading = (element: Element) =>
       headingType !== undefined && element.type === headingType;
-    const getPreviousEntry =
-      configuredListSiblingOptions?.getPreviousEntry ??
-      (([, path]: NodeEntry<Element>) => {
-        if (!PathApi.hasPrevious(path)) return undefined;
+    const getPreviousEntry = ([, path]: NodeEntry<Element>) => {
+      if (!PathApi.hasPrevious(path)) return undefined;
 
-        return state.nodes.get(PathApi.previous(path), {
-          match: ElementApi.isElement,
-        });
+      return state.nodes.get(PathApi.previous(path), {
+        match: ElementApi.isElement,
       });
+    };
     const getPreviousListEntry = (
       entry: NodeEntry<Element>
     ): NodeEntry<Element> | undefined => {
-      const {
-        breakOnEqIndentNeqList = true,
-        breakOnLowerIndent = true,
-        breakQuery,
-        eqIndent = true,
-        query,
-      } = configuredListSiblingOptions ?? {};
       const [element] = entry;
       const indent = getListIndent(element);
-      let previous = getPreviousEntry(entry, state);
+      let previous = getPreviousEntry(entry);
 
       while (previous) {
         const [previousElement] = previous;
@@ -829,32 +785,15 @@ export const migratePlateV54Profile = (
           previousElement.listType === element.listType &&
           getListStyle(previousElement) === getListStyle(element);
 
-        if (
-          (previousIndent === indent &&
-            sameSequence &&
-            isHeading(previousElement) !== isHeading(element)) ||
-          breakQuery?.(previousElement, element)
-        ) {
-          return undefined;
-        }
-        if (breakOnLowerIndent && previousIndent < indent) return undefined;
-        if (
-          breakOnEqIndentNeqList &&
-          previousIndent === indent &&
-          !sameSequence
-        ) {
-          return undefined;
-        }
-        if (
-          sameSequence &&
-          isHeading(previousElement) === isHeading(element) &&
-          (!query || query(previousElement, element)) &&
-          (!eqIndent || previousIndent === indent)
-        ) {
-          return previous;
+        if (previousIndent < indent) return undefined;
+        if (previousIndent === indent) {
+          return sameSequence &&
+            isHeading(previousElement) === isHeading(element)
+            ? previous
+            : undefined;
         }
 
-        previous = getPreviousEntry(previous, state);
+        previous = getPreviousEntry(previous);
       }
 
       return undefined;

@@ -174,6 +174,14 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             return;
           }
 
+          if (
+            (event.target as HTMLElement).closest(
+              '[data-editor-prevent-deselect]'
+            )
+          ) {
+            return;
+          }
+
           const selectable = (event.target as HTMLElement).closest<HTMLElement>(
             '[data-editor-node="element"]'
           );

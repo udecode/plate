@@ -74,7 +74,7 @@ A new browser runner, invented feature inventory, blanket test sweep or Autorevi
 
 | Method | What it changed in this review |
 | --- | --- |
-| [Best API Review](../../../../.agents/skills/best-api-review/SKILL.md) and [Best API](../../../../.agents/skills/best-api/SKILL.md) | Applied the hard-cut test to the proposed owner; kept one Pursue verdict and withheld runtime/API acceptance. |
+| [Verdict](../../../../.agents/skills/verdict/SKILL.md) and [Best API](../../../../.agents/skills/best-api/SKILL.md) | Applied the hard-cut test to the proposed owner; kept one Pursue verdict and withheld runtime/API acceptance. |
 | [Plate Plan](../../../../.agents/skills/plate-plan/SKILL.md) and [Plite Plan](../../../../.agents/skills/plite-plan/SKILL.md) | Separated neutral revision mechanics from Plate policy and required concurrency, multi-view, persistence and adoption proof. Their downstream plan workflows were not started. |
 | [Architect](../../../../.agents/skills/architect/SKILL.md) | Applied grounding, two distinct whole-model sketches and module-depth/red-flag checks. No synthesized implementation contract or Arena completion is claimed. |
 | [How](../../../../.agents/skills/how/SKILL.md) and [Why](../../../../.agents/skills/why/SKILL.md) | Rechecked current state/effect/transport flow and the explicit Comments motivation. Used the supplied plans for rationale; no wider historical or seven-source investigation is claimed. |

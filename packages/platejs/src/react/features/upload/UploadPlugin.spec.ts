@@ -12,15 +12,18 @@ import type {
 import { pipeHandler } from '../../utils/pipeHandler.internal';
 import { UploadPlugin } from './UploadPlugin';
 
-const createDropEvent = () => {
+const createDropEvent = (types = ['Files']) => {
   const preventDefault = mock();
   const stopPropagation = mock();
 
   return {
     event: {
       dataTransfer: {
-        files: [new File(['image'], 'image.png', { type: 'image/png' })],
-        types: ['Files'],
+        dropEffect: 'none',
+        files: types.includes('Files')
+          ? [new File(['image'], 'image.png', { type: 'image/png' })]
+          : [],
+        types,
       },
       nativeEvent: {},
       preventDefault,
@@ -38,7 +41,6 @@ Object.assign(client, { upload: async () => new Promise(() => {}) });
 
 const configured = (
   state: {
-    nativeDrop?: boolean;
     onError?: (failure: UploadFailure) => void;
     rules?: UploadRules;
   } = {}
@@ -68,18 +70,8 @@ describe('UploadPlugin', () => {
     expect(editor.plugin(UploadPlugin).component).toBe(Component);
   });
 
-  it('leaves native file drops to the DnD owner by default', () => {
-    const editor = createSelectedEditor();
-    const { event, preventDefault, stopPropagation } = createDropEvent();
-
-    pipeHandler(editor, { handlerKey: 'onDrop' })?.(event);
-
-    expect(preventDefault).not.toHaveBeenCalled();
-    expect(stopPropagation).not.toHaveBeenCalled();
-  });
-
-  it('admits native file drops at the resolved landing', () => {
-    const editor = createSelectedEditor(configured({ nativeDrop: true }));
+  it('lands a file drop at the resolved edge with no drop configuration', () => {
+    const editor = createSelectedEditor(configured());
     const { event, preventDefault, stopPropagation } = createDropEvent();
     spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue({
       edge: 'after',
@@ -95,13 +87,53 @@ describe('UploadPlugin', () => {
     ]);
   });
 
-  it('consumes a refused file landing without an upload', () => {
-    const editor = createSelectedEditor(configured({ nativeDrop: true }));
+  it('accepts a file drag with no drop configuration', () => {
+    const editor = createSelectedEditor(configured());
     const { event, preventDefault } = createDropEvent();
-    spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue(null);
+    spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue({
+      edge: 'after',
+      key: editor.key([0])!,
+    });
+
+    pipeHandler(editor, { handlerKey: 'onDragOver' })?.(event);
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(event.dataTransfer.dropEffect).toBe('copy');
+  });
+
+  it('uploads the files of a drop that also carries HTML', () => {
+    const editor = createSelectedEditor(configured());
+    const { event } = createDropEvent(['Files', 'text/html']);
+    spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue({
+      edge: 'after',
+      key: editor.key([0])!,
+    });
 
     pipeHandler(editor, { handlerKey: 'onDrop' })?.(event);
 
+    expect(editor.read.children()).toMatchObject([
+      { kind: 'image', type: 'upload' },
+    ]);
+  });
+
+  it('passes a drag without files through', () => {
+    const editor = createSelectedEditor(configured());
+    const { event, preventDefault } = createDropEvent(['text/html']);
+
+    const handled = pipeHandler(editor, { handlerKey: 'onDrop' })?.(event);
+
+    expect(handled).toBeFalsy();
+    expect(preventDefault).not.toHaveBeenCalled();
+  });
+
+  it('consumes a refused file landing without an upload', () => {
+    const editor = createSelectedEditor(configured());
+    const { event, preventDefault } = createDropEvent();
+    spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue(null);
+
+    const handled = pipeHandler(editor, { handlerKey: 'onDrop' })?.(event);
+
+    expect(handled).toBe(true);
     expect(preventDefault).toHaveBeenCalledTimes(1);
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: 'paragraph' },

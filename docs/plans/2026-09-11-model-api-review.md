@@ -13,7 +13,7 @@ Constraints:
 Assessment only. No product edits, implementation plan, public API adoption, publication, other checkout or full feature audit. Preserve immutable history, independent adoption/proof states and concurrent source changes. Current API and accepted plans are evidence, not hard laws. No external discovery unless a decisive fact requires it.
 
 Boundaries:
-The user selected model with Best API Review. Go authorizes this assessment and its local research artifacts, not downstream implementation. The standing Autogoal request applies to this substantial review; use this one plan. No Autoreview on next.
+The user selected model with Verdict. Go authorizes this assessment and its local research artifacts, not downstream implementation. The standing Autogoal request applies to this substantial review; use this one plan. No Autoreview on next.
 
 Blocked condition:
 A decisive owner, consumer or proof source is inaccessible and no narrower source observation can resolve the verdict. Continue independent comparisons and report the exact gap.
@@ -30,7 +30,7 @@ Work Checklist:
 
 Method obligations:
 - Task workflow (.agents/rules/task/references/workflow.md): current-checkout authority, no publication, bounded proof and no Autoreview on next.
-- Best API Review (.agents/skills/best-api-review/SKILL.md) and Plate adapter (.agents/rules/task/references/best-api-review.md): fresh reconsideration, all material lanes, live owner plus real consumers, current/strongest-target flow, one verdict/next invocation, immutable recording.
+- Verdict (.agents/skills/verdict/SKILL.md) and Plate adapter (.agents/rules/task/references/best-api-review.md): fresh reconsideration, all material lanes, live owner plus real consumers, current/strongest-target flow, one verdict/next invocation, immutable recording.
 - Redesign from First Principles and Best API: ideal first, maximum-value hard cut, target before adoption cost, current-user value, type/runtime hard laws and scale-sensitive acceptance limits. Read the schema/identity leaf and relevant owner decision sections.
 - Plite Plan and Plate Plan: respect raw model versus product/lowering ownership; use their decision method without starting adoption workflows.
 - Autogoal: retain applicable obligations here; check the original list before closing.
@@ -57,7 +57,7 @@ Method reconciliation:
 
 | Obligation and source | Result |
 | --- | --- |
-| Best API Review and Plate adapter: fresh question/history, six lanes, source/consumer evidence, current/target flow, verdict and one real next owner | Complete in the decision page and immutable record. Patch exists at .agents/skills/patch/SKILL.md and its one-behavior invocation is verified; not executed. |
+| Verdict and Plate adapter: fresh question/history, six lanes, source/consumer evidence, current/target flow, verdict and one real next owner | Complete in the decision page and immutable record. Patch exists at .agents/skills/patch/SKILL.md and its one-behavior invocation is verified; not executed. |
 | Best API and schema/identity leaf: largest justified cut, lifetime laws, target before adoption cost and scale gate | Removed competing shape admission in the target. Kept demonstrated independent identity jobs. No new store, cache, index, subscription, representation or full-tree traversal was selected; no performance claim. A runtime/traversal change during adoption needs the scale probe. |
 | Plite/Plate Plan ownership and decision methods | Neutral validation remains Plite-owned; Plate root policy and app migrations remain their owners. No adoption workflow or implementation plan started. |
 | Task, Verify Plate and Testing: current checkout, exact affected proof, truthful limits | next; 46 package tests and exact diagnostic replay. No browser, typecheck, package-release or public behavior completion claim. Autoreview prohibited on next. |
