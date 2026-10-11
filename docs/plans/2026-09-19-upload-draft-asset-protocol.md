@@ -154,7 +154,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every design and adoption choice | Target API, state machine, ledger, slices, and proof matrix are complete. |
 | Fresh source evidence | yes | Reconcile changed authority owners before execution | Commits `ae4cf47fe8` and `b2835dba73` changed only commit start-time capture/formatting in the three stale Plite files. They do not change NodeKey mutation, replacement annotations, or skipped-history mapping. Slice 1 proves the relied-on contracts on current source. |
-| Best API review | yes | Delete weaker nouns and split protocol | Dedicated `MediaUploadPlugin`, one `submit`, private completion, and no aliases are locked. |
+| Verdict | yes | Delete weaker nouns and split protocol | Dedicated `MediaUploadPlugin`, one `submit`, private completion, and no aliases are locked. |
 | Pre-acceptance scale proof | no | Preserve the current task/subscription/scan law | Scale contract below records the exact unchanged runtime law and re-open condition. |
 | Production scale rerun contract | no | Reopen only if execution changes runtime topology | No speed or capacity claim is planned. |
 | Conditional risk and adoption | yes | Cover roots, replacement, history, copied UI, docs, releases, and browser paths | Each appears in a numbered slice and proof row. |

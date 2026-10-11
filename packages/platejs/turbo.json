@@ -2086,7 +2086,11 @@
     },
     "test:partition:details": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:details"],
+      "dependsOn": [
+        "plitejs#typecheck:partition:authored",
+        "typecheck:partition:core",
+        "typecheck:partition:details"
+      ],
       "inputs": [
         "src/features/details/**",
         "test/features/details/**",
@@ -2400,6 +2404,7 @@
     "test:partition:layout": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:layout",
         "typecheck:partition:layout-react",
@@ -2805,11 +2810,13 @@
     "test:partition:standard-list": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:media",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-indent",
-        "typecheck:partition:standard-list"
+        "typecheck:partition:standard-list",
+        "typecheck:partition:table"
       ],
       "inputs": [
         "src/features/list/**",
@@ -2831,8 +2838,11 @@
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-nodes-react",
+        "typecheck:partition:standard-code-block-react",
         "typecheck:partition:standard-list",
-        "typecheck:partition:standard-list-react"
+        "typecheck:partition:standard-list-react",
+        "typecheck:partition:table-react"
       ],
       "inputs": [
         "src/react/features/list/**",
@@ -2951,6 +2961,8 @@
     "test:partition:table": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:authored",
+        "plitejs#typecheck:partition:dom",
         "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:proxies",
@@ -3000,7 +3012,11 @@
     },
     "test:partition:tag": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:tag"],
+      "dependsOn": [
+        "plitejs#typecheck:partition:authored",
+        "typecheck:partition:core",
+        "typecheck:partition:tag"
+      ],
       "inputs": [
         "src/features/tag/**",
         "test/features/tag/**",
@@ -5136,6 +5152,7 @@
     "typecheck:partition:standard-list-react": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:core",
         "typecheck:partition:react-core",
         "typecheck:partition:standard-list"
       ],

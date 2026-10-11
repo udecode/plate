@@ -598,7 +598,7 @@ not-assessed and proof not-replayed; the next owner is Benchmark.
 
 Objective:
 Assess the next pending ledger question, `large-documents`, under the user's
-Best API Review request. Decide whether current rendering and partial DOM
+Verdict request. Decide whether current rendering and partial DOM
 ownership earns retention or a stronger change. Assessment only.
 
 Completion threshold:
@@ -638,16 +638,16 @@ do not convert missing evidence into Stop or unverified runtime acceptance.
 
 Work Checklist:
 - [x] Select next pending scope and inspect ledger/history without merging
-  independent features. Sources: user; Best API Review; Task review adapter.
+  independent features. Sources: user; Verdict; Task review adapter.
 - [x] Ground current jobs and hard laws, then sketch ideal ownership before
   choosing a direction. Sources: Redesign from First Principles; Vision;
   Best API maximum-value cut and Plite Plan ownership methods.
 - [x] Inspect all eight inventory groups and materially different consumers;
   reconcile prior virtualization/performance alternatives and source freshness.
-  Sources: Best API Review scope and evidence rules; review ledger.
+  Sources: Verdict scope and evidence rules; review ledger.
 - [x] Compare all six material design lanes and trace cost, ownership,
   lifetime, selection/find/clipboard/export and native regressions.
-  Sources: Best API Review; Best API scale gate; Plite degraded-mode doctrine.
+  Sources: Verdict; Best API scale gate; Plite degraded-mode doctrine.
 - [x] Run the smallest useful proof, or state the decisive missing experiment;
   separate behavior, scale, browser/native and source claims.
   Sources: Verify Plate; Benchmark pre-acceptance gate; Task proof workflow.
@@ -655,7 +655,7 @@ Work Checklist:
   expected/reviewed/excluded/unresolved counts and one next invocation if useful.
   Persist the immutable record, refresh/render/check the ledger, reconcile all
   obligations and complete the review goal. Sources: Task review adapter;
-  Best API Review return format; Autogoal checklist retention.
+  Verdict return format; Autogoal checklist retention.
 
 Evidence:
 The queue selects `large-documents` first after Plite core. There is no prior

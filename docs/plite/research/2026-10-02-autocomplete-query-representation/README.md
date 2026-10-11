@@ -7,7 +7,7 @@ reader ARIA, input rules inside the query, undo and collaboration.
 
 Scope: `autocomplete`. Layer: Plate product UX, with Plite input and IME.
 Governing review: `2026-10-01-autocomplete-ordinary-text-prototype` (pursue
-ordinary text). This run feeds a `best-api-review` of whether to return to an
+ordinary text). This run feeds a `verdict` of whether to return to an
 input element.
 
 Evidence gap: the October 1 reviews cite Lexical and Tiptap as design support
@@ -17,7 +17,7 @@ isolates the query in its own input.
 Stop rule: one shard per editor family, plus Plate's own history. Stop when
 every family has a source-cited row for each dimension, or a named gap.
 
-Promotion owner: `best-api-review` for the verdict; `verify` for any test
+Promotion owner: `verdict` for the verdict; `verify` for any test
 packet.
 
 Exclusions: no product code, no measured packets, no closed-source editors

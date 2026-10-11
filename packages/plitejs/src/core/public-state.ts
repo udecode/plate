@@ -147,6 +147,7 @@ import {
   clearStagedAnchorHistory,
   commitAnchorTransaction,
   enterAnchorScope,
+  hasScopedAnchorListeners,
   notifyAnchorChanges,
   prepareAnchorPublication,
   suspendAnchorScopes,
@@ -161,7 +162,12 @@ import {
   type NativeAuthoredTransaction,
 } from './authored-runtime';
 import { notifyEditorChangeListeners } from './change-events';
-import { ChangeDraft, type DocumentChangeStep } from './change/builder';
+import {
+  ChangeDraft,
+  type DocumentChangeStep,
+  type DraftStepMove,
+  type DraftStepSource,
+} from './change/builder';
 import {
   classifyDocumentChangeRoot,
   classifyRootChangeWithRuntimeCandidates,
@@ -175,11 +181,20 @@ import {
   DocumentChange,
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
-import { isFrozenArray, type JsonEditorValue } from './change/tokens';
+import {
+  isFrozenArray,
+  type JsonEditorValue,
+  type PreparedTokenSlice,
+} from './change/tokens';
 import { cloneFrozen, cloneValue, freezeOwnedJsonValue } from './clone';
 import { createEditorCommit } from './commit';
+import { isEditorContent } from './content';
 import { ContentSlice } from './content-slice';
 import { rewriteContentRootReferences } from './content-slice-roots';
+import {
+  getEditorDocumentRecorder,
+  runEditorDraftGuards,
+} from './document-recorder';
 import {
   EDITOR_DOCUMENT_FIELDS,
   EDITOR_SNAPSHOT_FIELDS,
@@ -337,6 +352,7 @@ type TransactionSnapshot = {
   baseRuntimeIndexes: Record<string, () => SnapshotIndex>;
   baseSnapshots: Record<string, EditorSnapshot>;
   builder: ChangeDraft;
+  builderValidation?: 'configuration-publication';
   afterCommitHandlers: TransactionAfterCommitHandler[];
   annotations: Map<
     string,
@@ -713,10 +729,6 @@ type EditorTransactionGuard = (context: {
 }) => void | (() => void);
 
 const TRANSACTION_GUARDS = new WeakMap<Editor, Set<EditorTransactionGuard>>();
-const DRAFT_GUARDS = new WeakMap<
-  Editor,
-  Set<(written: EditorDocumentValue) => void>
->();
 const PREPARING_COMMIT = new WeakSet<Editor>();
 
 export type EditorHistoryReplayReceipt = Readonly<{
@@ -1070,26 +1082,174 @@ export const registerEditorTransactionGuard = (
   };
 };
 
-/**
- * Register an internal guard over the corrected draft, in the projection the
- * update wrote, before authored publication reduces it to accepted content.
- */
-export const registerEditorDraftGuard = (
+// A view's transaction runs on its runtime owner.
+const getDraftSnapshot = (editor: Editor) =>
+  getTransactionSnapshot(editor) ??
+  getTransactionSnapshot(getEditorRuntimeOwner(editor));
+
+/** @internal */
+export const withDraftMove = <T>(
   editor: Editor,
-  guard: (written: EditorDocumentValue) => void
-) => {
-  const owner = getEditorRuntimeOwner(editor);
-  const guards = DRAFT_GUARDS.get(owner) ?? new Set();
+  move: DraftStepMove,
+  run: () => T
+): T => {
+  const snapshot = getDraftSnapshot(editor);
 
-  guards.add(guard);
-  DRAFT_GUARDS.set(owner, guards);
+  return snapshot ? snapshot.builder.withMove(move, run) : run();
+};
 
-  return () => {
-    guards.delete(guard);
-    if (guards.size === 0 && DRAFT_GUARDS.get(owner) === guards) {
-      DRAFT_GUARDS.delete(owner);
+/** @internal */
+export const withDraftSource = <T>(
+  editor: Editor,
+  source: DraftStepSource,
+  run: () => T
+): T => {
+  const snapshot = getDraftSnapshot(editor);
+
+  return snapshot ? snapshot.builder.withSource(source, run) : run();
+};
+
+type DraftSpan = Readonly<{ from: number; to: number }>;
+
+/**
+ * Run draft edits and return the span of the text characters they inserted
+ * into `root`, in the draft after them, or `null` when they inserted none.
+ * Corrections move the span but add nothing to it.
+ *
+ * @internal
+ */
+export const measureDraftInsertion = <T>(
+  editor: Editor,
+  root: string,
+  run: () => T
+): Readonly<{ result: T; text: DraftSpan | null }> => {
+  const snapshot = getDraftSnapshot(editor);
+  const first = snapshot?.builder.draftSteps.length ?? 0;
+  const result = run();
+  let text: DraftSpan | null = null;
+
+  for (const step of snapshot?.builder.draftSteps.slice(first) ?? []) {
+    const change = getInternalDocumentRootChange(step.change, root);
+
+    if (!change) continue;
+    text &&= {
+      from: change.mapPos(text.from, -1) ?? text.from,
+      to: change.mapPos(text.to, 1) ?? text.to,
+    };
+    if (step.origin === 'canonical') continue;
+
+    let position = 0;
+
+    for (let index = 0; index < change.sections.length; index += 2) {
+      const length = getDefined(change.sections[index]);
+      const inserted = getDefined(change.sections[index + 1]);
+
+      if (inserted < 0) {
+        position += length;
+        continue;
+      }
+
+      const slice = change.data[index / 2] as PreparedTokenSlice | null;
+      const offsets = slice?.offsets ?? [];
+
+      for (const [offset, token] of (slice?.tokens ?? []).entries()) {
+        if (token.kind !== 'text') continue;
+
+        const from = position + getDefined(offsets[offset]);
+        const to = from + token.text.length;
+
+        text = text
+          ? { from: Math.min(text.from, from), to: Math.max(text.to, to) }
+          : { from, to };
+      }
+      position += inserted;
     }
-  };
+  }
+
+  return { result, text };
+};
+
+const runEditorDocumentRecorder = (editor: Editor) => {
+  const recorder = getEditorDocumentRecorder(editor);
+  const context = getTransactionSpecContext(editor);
+  const snapshot = context?.snapshot;
+
+  if (!recorder || !context || !snapshot) return;
+  if (snapshot.activeChange.change.empty) return;
+
+  const { selectionRoot } = context;
+  const recorded = recorder({
+    after: snapshot.builder.value as EditorDocumentValue,
+    before: getChangeValue(snapshot.roots) as EditorDocumentValue,
+    change: snapshot.activeChange.change,
+    selection: context.selection,
+    selectionBefore: snapshot.selection,
+    selectionBeforeRoot: snapshot.selectionRoot,
+    selectionRoot,
+    steps: snapshot.builder.draftSteps,
+    tags: getActiveEditorUpdateTags(editor),
+  });
+
+  if (!recorded) return;
+  // Anchors made while commands ran sit in the plain draft: they move to the
+  // recorded draft, and the recorded change then applies from the base in a
+  // fresh scope.
+  if (recorded.anchorChange && hasScopedAnchorListeners(editor)) {
+    const written = snapshot.builder.value;
+
+    notifyAnchorChanges(
+      editor,
+      recorded.anchorChange((root) =>
+        DocumentIndex.fromValue(
+          root === MAIN_ROOT_KEY
+            ? written.children
+            : (written.roots?.[root] ?? [])
+        )
+      ),
+      recorded.indexedAfter,
+      { runtimePaths: false }
+    );
+  }
+  context.exitAnchorScope();
+  context.exitAnchorScope = enterAnchorScope(
+    editor,
+    getChangeValue(snapshot.roots) as EditorDocumentValue
+  );
+  for (const restore of snapshot.runtimeIndexRollbacks.values()) restore();
+  snapshot.runtimeIndexRollbacks.clear();
+  snapshot.rootIndexes = {};
+  snapshot.discardedNodeKeys.clear();
+  snapshot.builder = createEditorDocumentChangeBuilder(
+    editor,
+    getChangeValue(snapshot.roots),
+    snapshot.builderValidation ? { validation: snapshot.builderValidation } : {}
+  );
+  snapshot.activeChange = { change: snapshot.builder.change };
+  // The recorded selection is already in recorded coordinates, so applying the
+  // recorded change must not map it.
+  context.selection = null;
+  context.selectionRoot = snapshot.selectionRoot;
+  if (!recorded.change.empty) {
+    applyTransactionSpecDocumentChangeStep(
+      editor,
+      snapshot.builder.apply(
+        recorded.change,
+        recorded.indexedAfter ? { indexedAfter: recorded.indexedAfter } : {}
+      ),
+      { notifyTransactionListeners: false }
+    );
+  }
+  context.selection = cloneValue(recorded.selection);
+  context.selectionRoot = selectionRoot;
+  if (!recorded.change.empty) {
+    const constructed = snapshot.builder.finalize();
+    if (constructed) {
+      applyTransactionSpecDocumentChangeStep(editor, constructed, {
+        notifyTransactionListeners: false,
+        selectionMapping: 'representation',
+      });
+    }
+  }
 };
 
 /** Reject an external side effect while an editor transaction is speculative. */
@@ -4138,6 +4298,8 @@ const getStateView = <
                 return !match || match(entry[0], entry[1]) ? entry : undefined;
               }))({ at, options });
           })) as EditorStateNodesApi<V>['get'],
+        isContent: (node: import('../interfaces/node').Node) =>
+          isEditorContent(editor, node),
         isSelectable: (element: import('../interfaces/node').Node) =>
           isEditorNodeSelectable(editor, element),
         isEmpty: (element: import('../interfaces/element').Element) =>
@@ -8138,9 +8300,13 @@ const rebindTransactionBuilderToCurrentSchema = (
     { validation: 'configuration-publication' }
   );
 
-  if (!accumulated.empty) builder.apply(accumulated);
+  if (!accumulated.empty) {
+    builder.apply(accumulated);
+    builder.keepSteps(snapshot.builder.draftSteps);
+  }
 
   snapshot.builder = builder;
+  snapshot.builderValidation = 'configuration-publication';
   snapshot.activeChange = { change: builder.change };
 };
 
@@ -9257,7 +9423,9 @@ export const runEditorTransaction = (
         });
         applyTransactionSpecDocumentChangeStep(
           editor,
-          snapshot.builder.apply(pluginPublication.documentChange),
+          snapshot.builder.apply(pluginPublication.documentChange, {
+            origin: 'migration',
+          }),
           { notifyTransactionListeners: false }
         );
         reconcileExclusiveElementOwnedRoots(editor);
@@ -9279,11 +9447,17 @@ export const runEditorTransaction = (
           'Install authored changes before editing a document with authored data.'
         );
       }
-      for (const guard of [
-        ...(DRAFT_GUARDS.get(getEditorRuntimeOwner(editor)) ?? []),
-      ]) {
-        guard(snapshot.builder.value as EditorDocumentValue);
-      }
+      runEditorDraftGuards(
+        editor,
+        'plain',
+        snapshot.builder.value as EditorDocumentValue
+      );
+      runEditorDocumentRecorder(editor);
+      runEditorDraftGuards(
+        editor,
+        'recorded',
+        snapshot.builder.value as EditorDocumentValue
+      );
       authoredTransaction?.finish({
         // Authored publication resets the draft before inheriting projection keys.
         discardedNodeKeys: new Set(snapshot.discardedNodeKeys),

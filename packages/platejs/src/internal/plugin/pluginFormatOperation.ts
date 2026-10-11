@@ -36,6 +36,23 @@ const nodeAt = (
   return current;
 };
 
+/**
+ * The content being encoded as a whole document, so format mappings number and
+ * nest a slice from its own first block.
+ */
+export const createContentFormatDocument = (
+  input: Readonly<{
+    content: readonly Descendant[];
+    meta?: EditorDocumentValue['meta'];
+    roots?: Readonly<Record<string, readonly Descendant[]>>;
+  }>
+) =>
+  ({
+    children: input.content,
+    ...(input.meta ? { meta: input.meta } : {}),
+    ...(input.roots ? { roots: input.roots } : {}),
+  }) as EditorDocumentValue;
+
 /** Build structural context from the same immutable document operation view. */
 export const createPluginFormatModelView = <V extends Value>(
   document: EditorDocumentValue<V>,

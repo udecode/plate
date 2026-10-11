@@ -5,7 +5,7 @@
   "date": "2026-10-01",
   "question": "Which owner should recognize triggered editor text, retain its query, present current options and atomically accept completion across mounted views?",
   "model": "claude-opus-5-5",
-  "method": "best-api-review/history-v3",
+  "method": "verdict/history-v3",
   "trigger": "User requested a last harsh audit of the completed autocomplete design plan before any adoption.",
   "requirements": [
     "Compose and edit native text without accepting completion during IME, including keyCode 229.",
@@ -88,8 +88,8 @@
       "docs/vision/common.md": "d4e12fc4b28bd7d6cd077be54853ee8c873e051cf9dcc93a7e6e43fd32347129",
       "package.json": "b8ed87d615e8bc1837713cc590298496aba461a43ee5b3aa54a5913f9c11b72b",
       "pnpm-lock.yaml": "77c924c6504939744af6166220e28ae996dfc0b6b70118b3f49caa4fade95707",
-      ".agents/skills/best-api-review/SKILL.md": "022099274738cf0b9d759d3f102b4952e66795071a064f222abeb4d870a6bf40",
-      ".agents/rules/best-api-review.mdc": "731017b50586e605ab26c4d4d1c79770b2757227f4ad319aa470c00f77e071bf"
+      ".agents/skills/verdict/SKILL.md": "022099274738cf0b9d759d3f102b4952e66795071a064f222abeb4d870a6bf40",
+      ".agents/rules/verdict.mdc": "731017b50586e605ab26c4d4d1c79770b2757227f4ad319aa470c00f77e071bf"
     },
     "directories": {
       "packages/platejs/src/features/combobox": "ef09da1b232cb267a77a6943c7b7ecf42a8991afa58c873145f12d237a06308f",

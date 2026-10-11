@@ -704,7 +704,7 @@ describe('markdown tables', () => {
         {
           children: [{ text: 'step' }],
           indent: 1,
-          listStart: 3,
+          listRestart: 3,
           listType: 'numbered',
         },
         { children: [{ text: 'sub\n\n' }], indent: 2, listType: 'bulleted' },
@@ -719,13 +719,14 @@ describe('markdown tables', () => {
       ).toMatchObject({ children: [{ text: 'b' }], listRestart: 5 });
     });
 
-    it('round-trips a cell list starting at 0', () => {
+    it('keeps a cell list start of 0 through Markdown', () => {
       const content = [
         paragraph('a', { indent: 1, listStart: 0, listType: 'numbered' }),
       ];
 
+      // Markdown carries only the number, which reads back as a forced `listRestart`.
       expect(bodyCellChildren(write(headed(content)).data)[0][0]).toMatchObject(
-        content
+        [{ indent: 1, listRestart: 0, listType: 'numbered' }]
       );
     });
 

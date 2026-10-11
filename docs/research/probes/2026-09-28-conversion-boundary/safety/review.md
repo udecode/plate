@@ -1,6 +1,6 @@
 # Conversion-boundary safety review
 
-Date: 2026-09-28. Status: Complete. Method: Best API Review / Redesign from First Principles. Model: GPT-6. Scope: bounded source review and package probes, not a browser exploit audit. Branch checked before writing: `next`. All writes are inside this artifact directory. No product, tests-tree, documentation-owner, review-ledger, Git index, commit, or task-message changes.
+Date: 2026-09-28. Status: Complete. Method: Verdict / Redesign from First Principles. Model: GPT-6. Scope: bounded source review and package probes, not a browser exploit audit. Branch checked before writing: `next`. All writes are inside this artifact directory. No product, tests-tree, documentation-owner, review-ledger, Git index, commit, or task-message changes.
 
 **Pursue one private, role-aware safety policy owned by Plate.** Current conversion acceptance does not imply safe persisted URLs, and DOCX does not always inherit the public HTML parser's checks. Keep the format-specific APIs and diagnostics. A universal URL ban, a public SafetyPlugin, or URL rules in neutral Plite persistence would be the wrong target.
 

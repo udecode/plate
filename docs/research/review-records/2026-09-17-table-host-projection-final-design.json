@@ -99,7 +99,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
       "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
-      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/skills/verdict/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
       ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec",
       "docs/plans/artifacts/2026-09-17-table-host-projection/host-binding-result.json": "b13b6da96a2ef3f5f10f26090c416ea801b010a2e7c82d0a41a7ace029ce8b1c",
       "packages/plitejs/src/dom/plugin/dom-root-runtime.ts": "91555dfc2f9784366712efe9a2369d7462ca0105bc3bb6a9775f357c6f616d48",

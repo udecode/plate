@@ -2684,9 +2684,24 @@ export class RootChange {
         })
       );
     };
-    const indexed = profileCoreDuration('change-set-apply-indexed', () =>
-      this.applyIndexed(document, replacements, propertyChanges, work)
-    );
+    const indexed = profileCoreDuration('change-set-apply-indexed', () => {
+      if (propertyChanges.length === 0 || replacements.length === 0) {
+        return this.applyIndexed(document, replacements, propertyChanges, work);
+      }
+
+      // A property edit keeps every token position, so the properties apply
+      // first and the replacements then apply at their own positions.
+      const withProperties = this.applyIndexed(
+        document,
+        [],
+        propertyChanges,
+        work
+      );
+
+      return withProperties
+        ? this.applyIndexed(withProperties, replacements, [], work)
+        : null;
+    });
 
     if (indexed) {
       recordStats(false);

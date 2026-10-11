@@ -188,7 +188,7 @@ Completion Gates:
 | ------------------------------- | ------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
 | Binary readiness                | pass    | Resolve every target and execution gate                | All eight slices are implemented and every scoped proof exit is closed.                                       |
 | Fresh source evidence           | pass    | Recheck decision-changing current claims               | Final checks run against the current checkout; the archived design probe retains its exact commit and hashes. |
-| Best API review                 | pass    | Resolve every P0/P1 call-shape finding                 | One canonical result, one snapshot export, three truthful subpaths, and `WordPastePlugin` are live.           |
+| Verdict                 | pass    | Resolve every P0/P1 call-shape finding                 | One canonical result, one snapshot export, three truthful subpaths, and `WordPastePlugin` are live.           |
 | Pre-acceptance scale proof      | pass    | Meet frozen cohorts/budgets with correctness           | Four design cohorts passed with 20.9x to 753.0x warm-median improvement.                                      |
 | Production scale rerun contract | pass    | Run final source against frozen budgets                | Production benchmark passed 2 tests and 470 assertions across all four cohorts.                               |
 | Conditional risk and adoption   | pass    | Complete triggered security/docs/browser/package work  | Bounded parsing, current docs, Chromium workflow, registry generation, and packed packages pass.              |

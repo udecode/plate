@@ -39,7 +39,7 @@ Applied packs:
 
 Major source:
 
-- type: current source plus immutable Best API Review history
+- type: current source plus immutable Verdict history
 - id / link: `docs/research/review-records/2026-09-13-shared-plugin-identity-feasibility.json`
 - title: Shared plugin identity feasibility
 - decision to make: whether one public descriptor family and installed portal

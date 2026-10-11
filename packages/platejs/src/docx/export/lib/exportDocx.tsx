@@ -10,9 +10,13 @@ import {
   projectAuthoredReview,
 } from '../../../authored';
 import {
+  type Descendant,
+  type Element,
   DocumentChange,
   type Editor,
   type EditorDocumentValue,
+  ElementApi,
+  type Path,
   type Range,
 } from '../../../core';
 import type { EditorStaticProps } from '../../../static/components/PlateStatic';
@@ -233,6 +237,99 @@ const nativeOnlyDiagnostics = (
   return diagnostics;
 };
 
+// Each Plate list exports as one Word definition, which draws one marker style
+// per level, so an item shows the style of the first item at its level.
+const opensWordList = (node: Element) =>
+  node.listType === 'numbered' || node.listType === 'task';
+
+const listDiagnostics = (
+  document: EditorDocumentValue
+): readonly DocxDiagnostic[] => {
+  const diagnostics: DocxDiagnostic[] = [];
+  const styles = new Map<string, unknown>();
+  const kinds = new Map<string, boolean>();
+  const rules = new Map<string, string>();
+  const warn = (
+    feature: 'list-marker' | 'list-start' | 'list-structure',
+    path: Path,
+    message: string
+  ) => {
+    diagnostics.push({
+      code: 'lossy-content',
+      feature,
+      message,
+      path,
+      severity: 'warning',
+    });
+  };
+  const visit = (nodes: readonly Descendant[], parentPath: Path) => {
+    nodes.forEach((node, index) => {
+      if (!ElementApi.isElement(node)) return;
+
+      const path = [...parentPath, index];
+
+      if (
+        node.listType === 'numbered' ||
+        node.listType === 'bulleted' ||
+        node.listType === 'task'
+      ) {
+        const listId = typeof node.listId === 'string' ? node.listId : '';
+        const level = `${listId}:${
+          typeof node.indent === 'number' ? node.indent : 1
+        }`;
+        const numbered = node.listType === 'numbered';
+        const levelRules = JSON.stringify(node.listLevels ?? null);
+
+        if (opensWordList(node)) {
+          if (!kinds.has(level)) {
+            kinds.set(level, numbered);
+          } else if (kinds.get(level) !== numbered) {
+            warn(
+              'list-structure',
+              path,
+              `The list item at ${path.join('.')} is not part of its list in Word, because the first item at its list level is ${numbered ? 'not numbered' : 'numbered'}.`
+            );
+          }
+          if (!rules.has(listId)) {
+            rules.set(listId, levelRules);
+          } else if (rules.get(listId) !== levelRules) {
+            warn(
+              'list-structure',
+              path,
+              `The list item at ${path.join('.')} takes the level rules of its list's first item in Word.`
+            );
+          }
+          if (typeof node.listStart === 'number') {
+            warn(
+              'list-start',
+              path,
+              `Word keeps no start that applies only when an item opens its level, so the list item at ${path.join('.')} exports its shown number without its listStart.`
+            );
+          }
+        }
+        if (numbered) {
+          const style = node.listStyle ?? 'decimal';
+
+          if (!styles.has(level)) {
+            styles.set(level, style);
+          } else if (styles.get(level) !== style) {
+            warn(
+              'list-marker',
+              path,
+              `The list item at ${path.join('.')} shows the marker style of its list level's first item in Word.`
+            );
+          }
+        }
+      }
+      visit(node.children, path);
+    });
+  };
+
+  visit(document.children, []);
+
+  return diagnostics;
+};
+
 const renderProjection = async (
   editor: Editor,
   capture: ExportCapture,
@@ -371,14 +468,14 @@ const resolveSourceExport = (
   });
 };
 
-// Like HTML and Markdown, omitted named roots and metadata warn under every
-// policy. Other established content loss fails under reject.
 const isContentLoss = (diagnostic: DocxDiagnostic) =>
   diagnostic.code === 'resource-omitted' ||
   (diagnostic.code === 'unsupported-content' &&
     diagnostic.action === 'dropped') ||
   (diagnostic.code === 'lossy-content' &&
     diagnostic.feature !== 'document-metadata' &&
+    diagnostic.feature !== 'list-marker' &&
+    diagnostic.feature !== 'list-start' &&
     diagnostic.feature !== 'named-root');
 
 const generateDocx = async (html: string, options: DocxExportOptions) => {
@@ -498,6 +595,7 @@ export async function exportDocx(
   const diagnostics: DocxDiagnostic[] = [
     ...sourceResolution.diagnostics,
     ...nativeOnly,
+    ...listDiagnostics(capture.document),
     ...snapshot.diagnostics,
     ...capture.diagnostics,
   ];

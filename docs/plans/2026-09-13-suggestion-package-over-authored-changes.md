@@ -93,7 +93,7 @@ decision to move suggestion selectors into generic live/static Editor skins.
 That decision violated the existing Plate UI and Vision ownership law; passing
 browser tests did not validate it.
 
-Current acceptance, from the user's Plate UI repair and Best API Review request:
+Current acceptance, from the user's Plate UI repair and Verdict request:
 
 - [x] Repair `.agents/rules/plate-ui.mdc` to cover import-free coupling through
   CSS selectors and feature data attributes, preserving native editor styling.
@@ -347,7 +347,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve design, adoption, proof, and handoff | All decision rows, implementation slices, proof, and ledger adoption are closed. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final owners, generated output, runtime behavior, and ledger state were checked on 2026-09-14. |
-| Best API review | yes | Resolve package/call-shape findings | Focused package facade, exact-view state, neutral markers, and native change records resolve the review gaps. |
+| Verdict | yes | Resolve package/call-shape findings | Focused package facade, exact-view state, neutral markers, and native change records resolve the review gaps. |
 | Pre-acceptance scale proof | yes | Pass matched current-versus-target probe | JSON receipt passes all four cohorts and three correctness guards. |
 | Production scale rerun contract | yes | Fix final-path owner and command | Slice 6 and Scale contract name the package and browser reruns. |
 | Conditional risk and adoption | yes | Cover package, registry, docs, browser, release, and doctrine owners | Adoption manifest and execution slices enumerate each owner. |

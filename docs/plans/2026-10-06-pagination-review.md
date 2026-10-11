@@ -143,7 +143,7 @@ import { PagedEditorContent } from 'platejs/pagination/react';
 
 ## Steps
 
-Execution authority: the owner asked "next item is ?", the API review playbook took `pagination` and its Pursue continues into this plan, and under `AGENTS.md`'s Panel review and Autopilot rules a panel-reviewed plan goes on to its build as a `look` default whose word is "hold". Commits stay with the owner.
+Execution authority: the owner asked "next item is ?", the Verdict playbook took `pagination` and its Pursue continues into this plan, and under `AGENTS.md`'s Panel review and Autopilot rules a panel-reviewed plan goes on to its build as a `look` default whose word is "hold". Commits stay with the owner.
 
 ### Completion Gates
 

@@ -2,7 +2,7 @@
 
 Status: closed: all 39 verdicts recorded in 17195da367
 Page: https://claude.ai/artifact/LwmSwZHtEPSJbhaYnfUVSY
-Playbook: api-review
+Playbook: verdict
 
 Every open unit in the review ledger has a fresh verdict: 24 Pursue, 14 Stop and 1 Defer. The audit set is the 39 units that `node tooling/scripts/review-ledger.mjs status` listed as open at `fe0e9599a6` on 2026-10-04. Eleven earlier Pursue verdicts became Stop because their target already landed in source, and two Defers became Stop because the evidence they waited for now exists. Ten Pursue verdicts stand, seven of them re-aimed at a newer gap. The one Defer left is search, which waits on a benchmark. Each Pursue below names its current and proposed call site and one next invocation. No plan, build, panel or commit ran.
 
@@ -281,7 +281,7 @@ The 24 Pursue units in queue order, each with its current and proposed call site
 
 ## Evidence
 
-- Each unit ran the `best-api-review` audit method with `.agents/playbooks/api-review.md`, framed by its ledger question, its current owners and consumers, the six change lanes and the strongest deletion or replacement.
+- Each unit ran the `verdict` audit method with `.agents/playbooks/verdict.md`, framed by its ledger question, its current owners and consumers, the six change lanes and the strongest deletion or replacement.
 - Each unit gets one record, `docs/research/review-records/2026-10-04-<scope>-audit.json`, with its requirements, alternatives, reconciliation of earlier records and proof limits.
 - The intake `node tooling/scripts/review-ledger.mjs check` already failed, because the live tree has a `plitejs/react/editable/typed-text` inventory group the index does not map. The same check at `HEAD` in a detached worktree fails differently, because the `HEAD` index maps `application/ai-command` and `application/ai-copilot` groups the `HEAD` tree lacks. The live failure comes from another session's uncommitted work, not from this audit.
 - The decision trail is `docs/plans/2026-10-04-ledger-triage-audit.decisions.tsv`.

@@ -16,13 +16,13 @@ Exclusions: No claim of exhaustive GitHub issue coverage, production readiness, 
 
 Work checklist:
 - [x] Read latest Comments plans and earliest motivation, recording superseded assumptions. Source: user. Evidence: assessment and read-log plan rows.
-- [x] Trace Suggestions/Discussion consumers and Plite operations/history/Yjs/lifetimes. Source: Best API Review and project routing. Evidence: current source rows and executable model probe.
+- [x] Trace Suggestions/Discussion consumers and Plite operations/history/Yjs/lifetimes. Source: Verdict and project routing. Evidence: current source rows and executable model probe.
 - [x] Search web and GitHub; initialize and maintain all six research ledgers, dedupe and evidence grades. Source: Plite Research. Evidence: 18 query rows, 8 retained leads and 7 merged support rows.
 - [x] Inspect promising editor/CRDT source locally at identified refs; record exact sources, licenses, issues/PRs and rejection reasons. Source: Plite Research. Evidence: 14 repositories, 9 focused deep source reads, 5 issue bodies, 0 PRs.
 - [x] Define Google Docs behavior laws; distinguish confirmed behavior from inferred architecture. Source: user and research accuracy. Evidence: public API views, position differences and developer-preview write intent; no storage inference presented as fact.
-- [x] Compare keep/configure, existing-owner repair, new primitives, deletion/merger, owner moves and replacement architecture. Source: Best API Review. Evidence: assessment alternatives table, including native accepted-base and woven models.
+- [x] Compare keep/configure, existing-owner repair, new primitives, deletion/merger, owner moves and replacement architecture. Source: Verdict. Evidence: assessment alternatives table, including native accepted-base and woven models.
 - [x] Evaluate author identity, per-author accept/reject, durable history, concurrent edits, structural changes, persistence and permissions. Source: user. Evidence: assessment ownership, history and dependency sections.
-- [x] Deliver one verdict, proposed ownership/API sketch, strongest alternative and decisive proof/scale gaps with one next invocation. Source: Best API Review. Evidence: assessment; Pursue design, provisional runtime.
+- [x] Deliver one verdict, proposed ownership/API sketch, strongest alternative and decisive proof/scale gaps with one next invocation. Source: Verdict. Evidence: assessment; Pursue design, provisional runtime.
 - [x] Reconcile sources/counts/ledgers, preserve assessment boundary and record stopping checkpoint. Source: Plite Research and Autogoal. Evidence: validation receipt and shard summary; native goal closed after artifact validation.
 
 State: assessment and follow-up skill audit complete. **Pursue native authored-change semantics over the owning Plite transaction, change and state/effect contracts.** Remove the independent Plate Suggestion mutation engine. The public entrypoint and physical representation remain unselected; concurrent decision semantics, native proof and a paired scale experiment are still required.
@@ -35,7 +35,7 @@ Verification: the two current-owner Suggestion observations reproduced again on 
 
 Changed scope: this research directory only, including ledgers, assessment, source metadata, decision trail and disposable probe. External source clones were created outside the Plate checkout; existing checkouts were not switched or edited. No product code, implementation plan, workflow doctrine, commit, push, PR or external message was changed.
 
-Method reconciliation: Best API Review's six design lanes and strongest missing primitive were considered; Plate and Plite ownership methods were applied without invoking downstream planning. Poteto's domain, design-space and type-discipline methods informed the competing sketches. Technical Writing preserved claims and source distinctions. Show Me Your Work's trail was checked against executed actions; no independent reviewer is claimed under the user's sequential-only scope. The future Best API doctrine-repair obligation is recorded without making those edits. Next research shard: none; the remaining work belongs to the single recommended design owner. Needs user attention: none for this assessment.
+Method reconciliation: Verdict's six design lanes and strongest missing primitive were considered; Plate and Plite ownership methods were applied without invoking downstream planning. Poteto's domain, design-space and type-discipline methods informed the competing sketches. Technical Writing preserved claims and source distinctions. Show Me Your Work's trail was checked against executed actions; no independent reviewer is claimed under the user's sequential-only scope. The future Best API doctrine-repair obligation is recorded without making those edits. Next research shard: none; the remaining work belongs to the single recommended design owner. Needs user attention: none for this assessment.
 
 ## Follow-up skill audit
 

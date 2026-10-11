@@ -179,7 +179,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | API winner, losers, owners, cuts, adoption, risks, slices, and proof gates are resolved. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Current Core option/order, migrations, CLI, schema compiler, docs, plans, and pinned main version were read this turn. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | `migrations` plus plugin-owned `prepareDocument` is selected; `migrateDocument` remains the runner verb, not a one-off option. `transformInitialValue`, migration plugins, normalizers, CLI-only, per-node versions, and parallel aliases are rejected. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | `migrations` plus plugin-owned `prepareDocument` is selected; `migrateDocument` remains the runner verb, not a one-off option. `transformInitialValue`, migration plugins, normalizers, CLI-only, per-node versions, and parallel aliases are rejected. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Five high-risk scenarios plus docs/registry/browser/release/History/Yjs owners and N/A research/provenance/device rows are recorded. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Source evidence plus seven execution slices and eight proof claims are recorded. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff fields are complete. |

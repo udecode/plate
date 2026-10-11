@@ -277,7 +277,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve target, decisions and adoption | Complete: five public combinations and projection-preserving modes shipped in the checkout |
 | Fresh source | yes | Check fingerprints/decision-changing claims | Complete: production probe and managed browser runs bound source identity |
-| Best API review | yes | Resolve material call-shape findings | Complete: intent, projection and resolved publication have separate owners |
+| Verdict | yes | Resolve material call-shape findings | Complete: intent, projection and resolved publication have separate owners |
 | Pre-acceptance scale | yes | Passing matched native-owner probe | Complete: `result.json`, four cohorts |
 | Warm/large/stress/cold/payload | yes | Record bounded receipt/scope | Complete: raw samples, counters, payload and failed receipt preserved |
 | Complete operation/final production rerun | yes | Run final owner and mounted contracts | Complete: production probe, native typing/mounted and www performance suites pass |

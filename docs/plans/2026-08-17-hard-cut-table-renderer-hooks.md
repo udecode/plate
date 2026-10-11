@@ -134,7 +134,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Source, adoption, proof, review, and artifacts complete. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final old/new symbol and file audits pass. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Exact target implemented; doctrine already rejects state-to-props hooks and permits durable DOM lifecycle hooks. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Exact target implemented; doctrine already rejects state-to-props hooks and permits durable DOM lifecycle hooks. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Package, registry, docs, browser, changeset, and changelog complete; provenance N/A. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Commands, counts, Browser ledger, ref, and hashes recorded. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff fields completed below. |

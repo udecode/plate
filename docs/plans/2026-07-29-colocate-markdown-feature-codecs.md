@@ -144,7 +144,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Focused suites, 20-package typechecks, strict Plite closure, and Browser proof pass. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final audits find 53 feature codec declarations, five intrinsics, zero central feature registries, and zero feature imports of `@platejs/markdown`. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Feature-owned root `codecs` plus the Core-owned Markdown authoring contract remains the accepted shape. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Feature-owned root `codecs` plus the Core-owned Markdown authoring contract remains the accepted shape. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Multi-owner ordering, missing-feature behavior, mark composition, per-call overrides, docs, Browser, and release artifacts are covered. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | See Verification evidence. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff below is complete. |

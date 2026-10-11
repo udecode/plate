@@ -113,7 +113,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Decision ledger, slices, proof matrix, and risks are resolved. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Current source, focused tests, production owners/consumers, docs, benchmark harness, and audit evidence reread. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Current public calls kept; read output/lifecycle hard cut and rejected alternatives recorded. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Current public calls kept; read output/lifecycle hard cut and rejected alternatives recorded. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/benchmark/provenance work or give one scoped N/A reason | Six high-risk cases, Plate adoption, browser/benchmark/docs gates, and scoped N/A rows recorded. |
 | Verification recorded | yes | Record fresh execution proof and exact local boundary | Strict Plite, 40/40 production interaction rows, 111 benchmark correctness tests, docs/typecheck/lint/generated checks, and matching source fingerprints recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Local-only handoff and unverified pushed/release boundary are explicit. |

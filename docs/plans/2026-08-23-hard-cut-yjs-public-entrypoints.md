@@ -202,7 +202,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Owners, hard cut, adopters, slices, proof, release artifact, docs, risks, and stop boundary are resolved below. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Source audit used HEAD `33557a72cc6b393c4646af46cf0348f0e49efa99`; local `main` and `origin/main` package manifests were read separately. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | Accepted target is root Plite/Yjs, `/react` Plite hooks, `/plate` Plate adapters, and no `/core`; final `best-api repair`, mirror regeneration, and resource parity pass. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding | Accepted target is root Plite/Yjs, `/react` Plite hooks, `/plate` Plate adapters, and no `/core`; final `best-api repair`, mirror regeneration, and resource parity pass. |
 | Conditional risk and adoption | yes | Resolve triggered risk/browser/Benchmark/provenance work | Browser, docs, release, and adoption apply and are specified; Benchmark, external research, and issue/PR provenance do not apply for this package-shape plan. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | See Proof matrix and Verification evidence. |
 | Handoff prepared | yes | Prepare ownership, breaks, proof, risks, and execution order | See Final handoff prepared. |

@@ -77,12 +77,9 @@ declare global {
       hheading: HyperscriptIntrinsicAttributes;
       himg: HyperscriptIntrinsicAttributes;
       hinlineequation: HyperscriptIntrinsicAttributes;
-      hli: HyperscriptIntrinsicAttributes;
-      hlic: HyperscriptIntrinsicAttributes;
       hmediaembed: HyperscriptIntrinsicAttributes;
       hmention: HyperscriptIntrinsicAttributes;
       hnli: HyperscriptIntrinsicAttributes;
-      hol: HyperscriptIntrinsicAttributes;
       hp: HyperscriptIntrinsicAttributes;
       hplaceholder: HyperscriptIntrinsicAttributes;
       hsummary: HyperscriptIntrinsicAttributes;
@@ -100,7 +97,6 @@ declare global {
       htoc: HyperscriptIntrinsicAttributes;
       htodoli: HyperscriptIntrinsicAttributes;
       htr: HyperscriptIntrinsicAttributes;
-      hul: HyperscriptIntrinsicAttributes;
       hvideo: HyperscriptIntrinsicAttributes;
       selection: HyperscriptIntrinsicAttributes;
       text: HyperscriptIntrinsicAttributes;
@@ -130,12 +126,9 @@ export const elements = {
   hheading: { type: 'heading' },
   himg: { type: 'image' },
   hinlineequation: { type: 'inlineEquation' },
-  hli: { type: 'listItem' },
-  hlic: { type: 'listItemContent' },
   hmediaembed: { type: 'mediaEmbed' },
   hmention: { type: 'mention' },
   hnli: { type: 'nli' },
-  hol: { type: 'numberedList' },
   hp: { type: 'paragraph' },
   hplaceholder: { type: 'placeholder' },
   hsummary: { type: 'summary' },
@@ -145,7 +138,6 @@ export const elements = {
   htoc: { type: 'toc' },
   htodoli: { type: 'todoList' },
   htr: { type: 'tableRow' },
-  hul: { type: 'bulletedList' },
   hvideo: { type: 'video' },
 } as const satisfies HyperscriptShorthands;
 

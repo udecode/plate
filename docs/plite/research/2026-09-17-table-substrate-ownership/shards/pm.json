@@ -3,7 +3,7 @@
   "date": "2026-09-17",
   "status": "complete-bounded-source-evidence",
   "scope": {
-    "assignment": "ProseMirror tables/state and Tiptap table extension ownership evidence for the lead's table first-principles Best API Review.",
+    "assignment": "ProseMirror tables/state and Tiptap table extension ownership evidence for the lead's table first-principles Verdict.",
     "write_boundary": "Only docs/plite/research/2026-09-17-table-substrate-ownership/shards/pm.json.",
     "excluded": [
       "Local Plite/Plate comparison and final verdict (lead-owned)",

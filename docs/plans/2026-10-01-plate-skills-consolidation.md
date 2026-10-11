@@ -18,8 +18,8 @@ Every command typed before pstack, each on the same line as what replaces it tod
 The v2 loop: next item, review, plan and build.
 
 ```text before
-$best-api-review            pick the next item
-$best-api-review <scope>    judge an API
+$verdict            pick the next item
+$verdict <scope>    judge an API
 $wait-what                  before/after snippets
 $task plan <goal>
 $plate-plan <question>
@@ -137,7 +137,7 @@ $changeset
 $changeset (registry changelog reference)
 $release-lanes
 $plate-next <package>
-$best-api-review <scope>
+$verdict <scope>
 $sync-shadcn parity <surface>
 $sync-shadcn
 $sync-plate-ui
@@ -226,12 +226,12 @@ In:
 - Wire `thermo-nuclear-code-quality-review` and `blast-radius` into Build and Babysit.
 - Repair the review ledger's evidence paths that the earlier setup broke.
 
-Out: `sync-plate-ui`, `sync-vision`, `release-lanes`, `changeset`, `issue-harvester` and `best-api-review` keep their names and content. pstack's own files stay untouched.
+Out: `sync-plate-ui`, `sync-vision`, `release-lanes`, `changeset`, `issue-harvester` and `verdict` keep their names and content. pstack's own files stay untouched.
 
 ## Decisions
 
 - **Every law stays.** A trim cuts only a rule that restates a pstack principle, replaced by a pointer to that principle, or a rule that is stale. Each cut is logged with its disposition.
-- **Naming.** Plate knowledge skills are `plate-` plus a topic noun. A playbook that only adds Plate law to one pstack playbook takes that playbook's name. The v2 loop stops keep their words (`api-review`, `plan`, `build`). `best-api`, `best-api-review`, `benchmark`, `research` and `verify` keep their names: none clashes with pstack, `verify` is pstack's own name for the project's verification skill, and the `best-api` names anchor the ledger history.
+- **Naming.** Plate knowledge skills are `plate-` plus a topic noun. A playbook that only adds Plate law to one pstack playbook takes that playbook's name. The v2 loop stops keep their words (`api-review`, `plan`, `build`). `best-api`, `verdict`, `benchmark`, `research` and `verify` keep their names: none clashes with pstack, `verify` is pstack's own name for the project's verification skill, and the `best-api` names anchor the ledger history.
 - **No aliases, no compatibility.** The owner dropped backward compatibility. Every cut name goes under `dropped` in `.agents/pstack.json`, so `sync-pstack verify` treats it as intended.
 - **Split law over thermo-nuclear.** Thermo-nuclear's size-based split advice stays overridden: a file splits only when the new owner has durable behavior or proof ownership.
 

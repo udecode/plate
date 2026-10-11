@@ -508,7 +508,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary planning readiness | yes | Resolve target, adoption and evidence limits | Target contracts, Decision ledger, S1-S8 and F01-F32 |
 | Fresh source evidence | yes | Bind current facts and prototype inputs | Source fingerprints and final validation artifact |
-| Best API review | yes | Resolve call shape and duplication before adoption | Concrete imports/calls, typed outcomes, exact-view policy and hard-cut comparison |
+| Verdict | yes | Resolve call shape and duplication before adoption | Concrete imports/calls, typed outcomes, exact-view policy and hard-cut comparison |
 | Pre-acceptance scale evidence | yes | Match current/target design operations under frozen contracts | Edit/read 18-row receipt and checkpoint receipt; scope excludes unimplemented native production path |
 | Production scale rerun | yes | Run identical fixtures through installed native owners plus visible/native/memory guards | Installed scale, checkpoint, mounted-view, typing, retention, collaboration and source-bound receipts pass |
 | Warm/cold/stress/fan-out/payload | yes, design scope | Preserve every pass and supported cohort | Both contracts/receipts with percentiles, cold measurements, byte sizes and work counts |

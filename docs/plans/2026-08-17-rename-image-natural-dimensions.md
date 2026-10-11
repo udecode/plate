@@ -128,7 +128,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Runtime, migration, upload lifecycle, codec provenance, generated contract, docs/research, release, review, and CI gates are closed |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final audits prove zero intermediate live names and only frozen v53 `initial*` inputs remain |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Natural target implemented; empty upload `name` data-loss finding accepted and fixed; unrelated migration-export finding rejected as a prior intentional hard cut |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Natural target implemented; empty upload `name` data-loss finding accepted and fixed; unrelated migration-export finding rejected as a prior intentional hard cut |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | HTML provenance, partial dimensions, standalone images, exact-File replacement races, v53 collisions, registry adoption, docs, generator, and release covered; browser N/A with focused DOM/component proof |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact commands and pass counts recorded below |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff rows completed below |

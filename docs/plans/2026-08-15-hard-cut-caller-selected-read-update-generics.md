@@ -120,7 +120,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Four hard cuts implemented with zero positive legacy calls and exact negative type contracts |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final `rg`, owner source, diff, API reference, changeset, doctrine, and test audits are fresh |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Caller generic honesty law is recorded; P2 review holes were fixed at the callback and Yjs extraction owners |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Caller generic honesty law is recorded; P2 review holes were fixed at the callback and Yjs extraction owners |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Runtime validation, docs, changesets, API manifest, doctrine, mirrors, and browser-smoke proof complete; direct docs Browser block recorded |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact commands and results are listed below |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final ownership, adoption, proof, and two unrelated checkout blockers are recorded below |

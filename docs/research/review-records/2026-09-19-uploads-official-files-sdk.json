@@ -5,7 +5,7 @@
   "date": "2026-09-19",
   "question": "Should Files SDK become the official Plate upload contract through one platejs/files plugin, mirrored SDK methods, or core?",
   "model": "GPT-6 (Codex)",
-  "method": "best-api-review/history-v3",
+  "method": "verdict/history-v3",
   "trigger": "User rejects the cost of SDK replaceability and proposes adopting Files SDK as the official API, with one file plugin or core ownership.",
   "requirements": [
     "Use one officially supported Files SDK integration rather than maintaining generic provider/SDK adapter contracts.",
@@ -91,7 +91,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "540c4ad1419f4b1d836afc3f9d9b92a9df11d8811ca2ad45c4131ab9dead461d",
       "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
-      ".agents/skills/best-api-review/SKILL.md": "6efbd1969db986962f154708c20e4f359c11cfc914e3dcf8deaf205bed00fa65",
+      ".agents/skills/verdict/SKILL.md": "6efbd1969db986962f154708c20e4f359c11cfc914e3dcf8deaf205bed00fa65",
       ".agents/rules/task/references/best-api-review.md": "c1647f7156572e48e349a35d4ff6dce7075e4c230854e3f7dc216644e7521c63",
       "docs/plans/artifacts/upload-draft-asset-protocol/files-sdk-official-review.md": "9cb82630cd31ea17a1ea1473f32a9d55a5242a547527e2b1300f461c11a7cac5",
       "docs/plans/artifacts/upload-draft-asset-protocol/files-sdk-review.md": "fc765b3d6bf2a938e3121111c1f1dbba8239fe922a92e6502c0fa15400fcb853",

@@ -156,7 +156,7 @@ Work Checklist:
 - [x] Outcome, scope, non-goals, constraints and owners are concrete.
 - [x] Current API/docs/tests/exports claims cite live source and the immutable
       review artifacts.
-- [x] Reusable public call shape has one governing Best API Review verdict and
+- [x] Reusable public call shape has one governing Verdict verdict and
       a compiled target type probe.
 - [x] The scale-sensitive input-rule target has a passing executable
       current-owner versus disposable-target benchmark receipt.
@@ -179,7 +179,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every architecture/API/adoption/proof decision | pass: decision ledger and seven slices below |
 | Fresh source evidence | yes | Recheck decision-changing owners and governing review | pass: live sources match the reproduced contract; benchmark receipt carries source hashes |
-| Best API review | yes | Resolve atomic outcome, factory job and false public executor nouns | pass: strict read/match then apply contract and owner-bound overload compile |
+| Verdict | yes | Resolve atomic outcome, factory job and false public executor nouns | pass: strict read/match then apply contract and owner-bound overload compile |
 | Pre-acceptance scale proof | yes | Compare matched baseline/target under frozen cohorts and budgets | pass: all 12 benchmark cases pass; nonmatches open zero target transactions and accepted cases open one |
 | Production scale rerun contract | yes | Rerun identical contract on final production middleware | pass: 12/12 final-source cohorts meet the frozen budget; receipt linked below |
 | Conditional risk and adoption | yes | Cover public breaks, docs, registry, behavior law and structural edge cases | pass: adoption and proof are explicit per slice |

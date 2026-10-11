@@ -68,7 +68,7 @@ non-void isolating text blocks and already share the same command. True block
 voids cannot contain an editable caption and already insert a fresh default
 block through the Plite void-boundary path.
 
-The Best API Review record is
+The Verdict record is
 `2026-09-21-media-caption-clean-reset-ownership`.
 
 ## Subsequent object/content review

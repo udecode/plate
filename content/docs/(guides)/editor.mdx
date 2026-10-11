@@ -135,23 +135,28 @@ value. Target-version steps run in ascending order and the converter returns a
 complete current envelope.
 
 ```ts title="src/editor.ts" showLineNumbers
-import { ParagraphPlugin } from "platejs/react";
-import { defineDocumentMigrations, migrateV54 } from "platejs/migrations";
+import { ListPlugin, ParagraphPlugin } from "platejs/react";
+import {
+  defineDocumentMigrations,
+  migrateListIdentity,
+  migrateV54,
+} from "platejs/migrations";
 
 import { fingerprint as v53Fingerprint } from "./migrations/v54-upgrade-plate/from";
+import { fingerprint as v54Fingerprint } from "./migrations/v55-list-identity/from";
 
-export const EditorKit = [ParagraphPlugin] as const;
+export const EditorKit = [ParagraphPlugin, ListPlugin] as const;
 
 export const EditorSchema = {
   id: "acme-document",
-  version: 54,
+  version: 55,
 } as const;
 
 export const EditorMigrations = defineDocumentMigrations({
   plugins: EditorKit,
   schema: EditorSchema,
-  sourceFingerprints: { 53: v53Fingerprint },
-  steps: { 54: migrateV54 },
+  sourceFingerprints: { 53: v53Fingerprint, 54: v54Fingerprint },
+  steps: { 54: migrateV54, 55: migrateListIdentity },
 });
 ```
 
@@ -184,10 +189,18 @@ Save the returned envelope directly:
 await saveDocument(current);
 ```
 
-A version 53 envelope converted by a version 54 definition runs step 54. Plate
+A version 53 envelope converted by this version 55 definition runs steps 54
+and 55. Plate
 rejects a missing step, a different schema ID, a future version, or a fingerprint
 mismatch. Register every supported historical envelope fingerprint in
 `sourceFingerprints`.
+
+`migrateListIdentity` gives each list item a `listId`. The list plugin numbers
+items by `listId`, so the step gives each run of adjacent list items its own id,
+or the one id its items already hold, and every number stays the same. The list
+plugin's `listId` and `listLevels` properties are part of the compiled
+fingerprint, so register the step under the first version whose schema has
+them. Running it again changes nothing.
 
 Raw historical documents have no source identity. Supply it at that import
 boundary:

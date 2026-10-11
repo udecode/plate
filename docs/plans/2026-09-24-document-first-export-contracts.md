@@ -155,13 +155,13 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every design decision and dependency | Target API, decision ledger, slices and proof matrix are complete. |
 | Fresh source evidence | yes | Recheck decision-changing owners and callers | Source sweep was refreshed on 2026-09-24 after the model switch. |
-| Best API review | pass | Resolve P0/P1 call-shape findings | Hard cuts and exact replacements are fixed below. |
+| Verdict | pass | Resolve P0/P1 call-shape findings | Hard cuts and exact replacements are fixed below. |
 | Pre-acceptance scale proof | pass | Compare matched baseline and prototype | Probe receipt passes all four cohorts with exact output. |
 | Production scale rerun contract | pass | Rerun final source and add complete DOCX measurement | Both final-source receipts pass; DOCX covers 0/10/100 comments, source reuse, projections and LibreOffice reopen. |
 | Conditional risk and adoption | pass | Cover roots, metadata, custom codecs, review, comments and source | Focused, package, browser and artifact proof cover the assigned cases. |
 | Verification recorded | pass | Record fresh execution proof | Verification evidence lists passing commands and receipts. |
 | Handoff prepared | pass | State ownership, breaks, order, proof and risks | Final handoff is complete. |
-| P1 autoreview | N/A | Skip helper review on next | Project rules prohibit Autoreview on next; Best API review supplied the technical gate. |
+| P1 autoreview | N/A | Skip helper review on next | Project rules prohibit Autoreview on next; Verdict supplied the technical gate. |
 | Goal plan complete | pass | Run check-complete.mjs | Recorded in Verification evidence. |
 | Public API / package boundary proof | pass | Audit public exports and manifests | Package manifests, barrels and caller sweep are represented. |
 | Runtime scale contract | pass | Close the embedded architecture probe | Receipt records fingerprints, cohorts, timing and counts. |

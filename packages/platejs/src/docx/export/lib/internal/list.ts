@@ -4,6 +4,7 @@ export type ListStyleType =
   | 'decimal'
   | 'decimal-bracket'
   | 'decimal-bracket-end'
+  | 'decimal-leading-zero'
   | 'lower-alpha'
   | 'lower-alpha-bracket-end'
   | 'lower-roman'
@@ -13,6 +14,7 @@ export type ListStyleType =
 
 export type DocxListStyleType =
   | 'decimal'
+  | 'decimalZero'
   | 'lowerLetter'
   | 'lowerRoman'
   | 'upperLetter'
@@ -54,6 +56,9 @@ class ListStyleBuilder {
       case 'decimal-bracket-end': {
         return 'decimal';
       }
+      case 'decimal-leading-zero': {
+        return 'decimalZero';
+      }
       case undefined: {
         return this.defaults.defaultOrderedListStyleType;
       }
@@ -88,7 +93,8 @@ class ListStyleBuilder {
       case 'decimal-bracket': {
         return `(%${lvl + 1})`;
       }
-      case 'decimal': {
+      case 'decimal':
+      case 'decimal-leading-zero': {
         return `%${lvl + 1}.`;
       }
     }

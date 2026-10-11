@@ -1,6 +1,6 @@
 # DOCX interoperability OSS sidecar — SuperDoc
 
-Observed 2026-09-14, final freshness check at approximately 18:05 UTC. Method: bounded Best API Review / first-principles comparison, Codex GPT-6. Main owns the broader corpus artifact and final Plate synthesis. This report does not select a Plate architecture.
+Observed 2026-09-14, final freshness check at approximately 18:05 UTC. Method: bounded Verdict / first-principles comparison, Codex GPT-6. Main owns the broader corpus artifact and final Plate synthesis. This report does not select a Plate architecture.
 
 **Decisive result:** Current SuperDoc supplies public v2 integration/export contract evidence, but its actual DOCX engine is proprietary and absent from the public Git tree. The inspected OSS boundary does not prove arbitrary DOCX roundtrip retention.
 
@@ -29,7 +29,7 @@ Web discovery corroborated the current public contract: [v2 documentation landin
 
 Narrow proof ideas for Main: test invalid export intent causes zero document work; an active edited session must not silently return its original uploaded file after serialization failure. For a separately justified package-retention implementation, independently authored DOCX fixtures should verify untouched-part hashes and relationship reachability after no-op save and one local edit; compare review/final/original exports semantically while the live source document remains unchanged. These are proposed acceptance checks, not upstream engine tests or behavior reported as passing.
 
-## Bounded Best API Review input for Main
+## Bounded Verdict input for Main
 
 The maximum-value hard-cut counterfactual is to remove a mandatory lossy HTML/editor-tree reconstruction from the **DOCX package-retention** job if that representation cannot retain the required package information. Either a package-backed editing owner or an explicit retained-package companion must earn its complexity against independently verified retention laws. Current SuperDoc publicly claims the former direction; its OSS boundary does not prove the implementation.
 

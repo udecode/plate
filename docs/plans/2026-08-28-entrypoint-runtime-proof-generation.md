@@ -110,7 +110,7 @@ Completion Gates:
 | --- | --- | --- |
 | Binary readiness | yes | 46 runtime exports exactly match 46 DAG rows |
 | Fresh source evidence | yes | Final local DAG, packages, generated source, server consumers, docs, and mirrors audited |
-| Best API review | yes | N/A: no reusable public call shape changed |
+| Verdict | yes | N/A: no reusable public call shape changed |
 | Verification recorded | yes | See Verification evidence |
 | Handoff prepared | yes | See Final handoff prepared |
 | P1 autoreview | yes | N/A: branch is `next`; repository law forbids `autoreview` on `next` |

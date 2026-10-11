@@ -129,7 +129,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All four package builds, source-first typechecks, package tests, app integration tests, docs checks, lint, and the affected Plite gate pass. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final package manifests, barrels, consumers, shared keys, and scoped stale-name searches were reread after generation and lint. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | `best-api repair` confirms three single-capability leaves plus a dependency composer; no aliases or optional peers. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | `best-api repair` confirms three single-capability leaves plus a dependency composer; no aliases or optional peers. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | All consumers/docs/releases migrated. Browser route is blocked by unrelated missing generated registry modules; package-facing type/docs proof and Plite Chromium smoke pass. Issue provenance is N/A. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact commands and outcomes are recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Ownership, public breaks, adoption, proof, and the browser limitation are recorded below. |

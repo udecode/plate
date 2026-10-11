@@ -1,7 +1,7 @@
 # Document conversion architecture research
 
 Status: adopted and verified. The public API decision was promoted through
-Best API Review and implemented by the final Task plan. This directory keeps
+Verdict and implemented by the final Task plan. This directory keeps
 the fixed-source research, generated API inventory, and implementation
 reconciliation; it does not authorize a commit, release, or publication.
 

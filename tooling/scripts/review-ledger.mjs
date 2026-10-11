@@ -71,8 +71,8 @@ const skippedDirectories = new Set([
 const legacyPolicyInputs = new Set([
   'package.json',
   'pnpm-lock.yaml',
-  '.agents/skills/best-api-review/SKILL.md',
-  '.agents/rules/best-api-review.mdc',
+  '.agents/skills/verdict/SKILL.md',
+  '.agents/rules/verdict.mdc',
 ]);
 const isLaw = (path) => path === 'VISION.md' || path.startsWith('docs/vision/');
 
@@ -749,17 +749,21 @@ export function plansOf(root, ledger) {
     .sort((a, b) => b.path.localeCompare(a.path));
 }
 
-/**
- * A plan's lifecycle labels. It counts as landed only when every label is a
- * landed word, so a reopened Status beside an old completion is not landed.
- */
-export function planStatus(text) {
-  const labels = [
+/** A plan's lifecycle labels: every `Status`, `status` and `goal_status` line. */
+export const planLabels = (text) =>
+  [
     ...text.matchAll(
       /^(?:[-*][ \t]+)?(?:\*\*)?(?:[Ss]tatus|goal_status)(?:\*\*)?:[ \t]*(\S.*)$/gm
     ),
     ...text.matchAll(/^[Ss]tatus:[ \t]*\r?\n[ \t]*-[ \t]+(.+)$/gm),
   ].map((match) => match[1].replaceAll('**', '').trim());
+
+/**
+ * A plan counts as landed only when every label is a landed word, so a
+ * reopened Status beside an old completion is not landed.
+ */
+export function planStatus(text) {
+  const labels = planLabels(text);
   const verdicts = new Set(labels.map((label) => landed(label)));
   return {
     status: labels[0] ?? '',
@@ -1715,6 +1719,7 @@ export function check(root) {
     }
   }
   const plans = plansOf(root, ledger);
+  const unignored = unignoredPaths(root);
   for (const plan of plans) {
     const problems = [
       ...(plan.invalid ? [`invalid ${plan.invalid.join(', ')}`] : []),
@@ -1731,7 +1736,7 @@ export function check(root) {
           ? []
           : [`${id} is not a review of ${plan.scopes.join(', ')}`];
       }),
-      ...pageProblems(root, ledger, plans, plan),
+      ...pageProblems(root, unignored, ledger, plans, plan),
     ];
     if (plan.conflict) {
       warnings.push(
@@ -1793,9 +1798,26 @@ function scopesOfReview(ledger, id) {
   return record?.kind === 'review' ? [record.scope] : null;
 }
 
-const inTreeOrHistory = (root, path) =>
-  existsSync(join(root, path)) ||
+const unignoredPaths = (root) => {
+  const paths = new Set();
+  for (const file of (
+    git(root, ['ls-files', '-z', '-co', '--exclude-standard']) ?? ''
+  ).split('\0')) {
+    for (let end = file.length; end > 0; end = file.lastIndexOf('/', end - 1)) {
+      paths.add(file.slice(0, end));
+    }
+  }
+  return paths;
+};
+
+const inTreeOrHistory = (root, unignored, path) =>
+  unignored.has(path.replace(/\/$/, '')) ||
   Boolean(git(root, ['log', '--all', '-1', '--format=%H', '--', path])?.trim());
+
+const absence = (root, path) =>
+  existsSync(join(root, path))
+    ? 'is git-ignored, so a fresh checkout lacks it; commit it or cite a tracked file'
+    : 'is in no tree or commit';
 
 function sectionOf(text, heading, level = '##') {
   const lines = text.split(/\r?\n/);
@@ -1864,17 +1886,15 @@ function reconciliationOf(evidence, id) {
   return null;
 }
 
-function pageProblems(root, ledger, plans, plan) {
+function pageProblems(root, unignored, ledger, plans, plan) {
   const problems = [];
   const text = read(root, plan.path);
   const inputs = (plan.inputs ?? []).filter((input) => !input.startsWith('!'));
   for (const path of inputs) {
-    if (
-      path.startsWith('/') ||
-      path.split('/').includes('..') ||
-      !inTreeOrHistory(root, path)
-    ) {
+    if (path.startsWith('/') || path.split('/').includes('..')) {
       problems.push(`review_inputs path ${path} is in no tree or commit`);
+    } else if (!inTreeOrHistory(root, unignored, path)) {
+      problems.push(`review_inputs path ${path} ${absence(root, path)}`);
     }
   }
   if (executes(plan) && plan.landed) {
@@ -1921,8 +1941,8 @@ function pageProblems(root, ledger, plans, plan) {
   for (const target of linksOf(plan.path, text)) {
     if (target.startsWith('..')) {
       problems.push(`link ${target} leaves the repository`);
-    } else if (!inTreeOrHistory(root, target)) {
-      problems.push(`link ${target} is in no tree or commit`);
+    } else if (!inTreeOrHistory(root, unignored, target)) {
+      problems.push(`link ${target} ${absence(root, target)}`);
     }
   }
   if (

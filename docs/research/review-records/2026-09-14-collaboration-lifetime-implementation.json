@@ -5,7 +5,7 @@
   "date": "2026-09-14",
   "question": "Which native change and identity contracts should providers reuse for local, remote and reconnect behavior?",
   "model": "GPT-6 / Codex",
-  "method": "best-api-review/history-v2; Task full execution; Redesign from First Principles; Plite Plan and Plate Plan adoption; Benchmark composite proof; Maintain Workflow doctrine repair; Agent Native Reviewer closure audit",
+  "method": "verdict/history-v2; Task full execution; Redesign from First Principles; Plite Plan and Plate Plan adoption; Benchmark composite proof; Maintain Workflow doctrine repair; Agent Native Reviewer closure audit",
   "trigger": "The user authorized execution of the full corrected collaboration lifetime plan after the adversarial defer review, then asked to complete all implementation, proof and ledger reconciliation work.",
   "requirements": [
     "Keep Y.Doc, provider connection and provider-specific initial readiness resources app-owned; require explicit doc and initialReady inputs and grant seed authority only through an exclusive external decision.",
@@ -61,7 +61,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "9785e2b7e74266092509bec521d76a0738e80775b44b3874e4fd5bd49b68b848",
       "pnpm-lock.yaml": "87c2ccedbae4674e84c7a7f3498db6123240b3a271904d3f1b44fbe3153edee7",
-      ".agents/skills/best-api-review/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
+      ".agents/skills/verdict/SKILL.md": "fa72d55ca21b8ac79b2a4883f596629067ade9ed88909d7bb1672cd1b0071aa5",
       ".agents/rules/task/references/best-api-review.md": "6171cd929ab5c29431cf2e1a80f0f410f81064d18b622717e2b280a3695963ec"
     },
     "directories": {

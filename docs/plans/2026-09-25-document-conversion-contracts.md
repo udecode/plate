@@ -83,7 +83,7 @@ Work Checklist:
 - [x] Benchmark and correctness-check the strongest Node HTML target and reject
       the failed alternatives.
 - [x] Run delete/merge/inline/reuse and three bounded saturation challenges.
-- [x] Record the superseding Best API Review and update the compiled decision.
+- [x] Record the superseding Verdict and update the compiled decision.
 - [x] Write the exact adoption, caller migration, proof, package, and rollback
       plan.
 - [x] Re-audit the public conversion vocabulary and hidden authored payloads;

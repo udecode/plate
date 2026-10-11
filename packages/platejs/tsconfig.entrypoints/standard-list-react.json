@@ -22,6 +22,9 @@
   "include": ["../src/react/features/list/**/*"],
   "references": [
     {
+      "path": "./core.json"
+    },
+    {
       "path": "./react-core.json"
     },
     {

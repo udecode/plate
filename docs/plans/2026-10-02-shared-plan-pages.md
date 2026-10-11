@@ -38,7 +38,7 @@ Page order: Needs you, Public API, the project's pageLead sections, Main changes
 - **All four plate sections plus the editors table.** Picked by the owner. Each appears only when it applies.
 - **Scale receipt stays conditional, not in `pageLead`.** It renders only from Benchmark plans. Say "lead with scale" to reverse.
 - **Page freshness stays a written rule.** You declined a Stop hook that would block a turn while a changed plan's page is stale. Say "add the page guard" to reverse.
-- **Review pages stay hand-built for now.** A recorded review has no markdown form the renderer can read; giving it one is a change to `best-api-review`'s record, tracked under Follow-ups. Say "render reviews" to reverse.
+- **Review pages stay hand-built for now.** A recorded review has no markdown form the renderer can read; giving it one is a change to `verdict`'s record, tracked under Follow-ups. Say "render reviews" to reverse.
 
 ## Steps
 
@@ -55,5 +55,5 @@ Each step names its proof. Commits: dotai `d3d2ab7`, Ellie `c4302872f`. plate-2 
 
 ## Follow-ups
 
-- Deferred, owner: zbeyens, tracked in this plan. Give a recorded best-api-review a markdown form, so `plan-page.mjs` renders review pages and the Public API pair check covers them.
+- Deferred, owner: zbeyens, tracked in this plan. Give a recorded verdict a markdown form, so `plan-page.mjs` renders review pages and the Public API pair check covers them.
 - Deferred, owner: zbeyens, tracked in this plan. sync-pstack setup does not check that `docs/plans/artifacts/` is git-ignored in a new project; both current projects ignore it.

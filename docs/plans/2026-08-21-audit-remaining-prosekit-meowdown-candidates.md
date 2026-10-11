@@ -122,7 +122,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Seven concept rows have one owner and a resolved verdict. The exact Plite red gate justified one private runtime repair, and every executable row is green. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Current drag state, test inventories, mobile scenario registry, Markdown corpus, and donor cases were re-read on 2026-08-21. |
-| Best API review | no | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | N/A: keep cross-editor drag authority private. The plan rejects new public fields and exports. |
+| Verdict | no | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | N/A: keep cross-editor drag authority private. The plan rejects new public fields and exports. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | Browser and raw-device gates are exact below. Benchmark, issue, release, and public docs work do not apply because this is behavior planning with no performance, tracker, delivery, or teaching change. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Source-audit results and the execution proof matrix are recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff records the private Plite repair, Plate Markdown and DnD follow-ups, hardware-gated iOS row, proof, and no public API change. |

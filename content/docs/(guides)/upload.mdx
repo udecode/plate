@@ -145,12 +145,62 @@ element. A custom renderer can read
 `AggregateProgress` with `loaded`, `total`, and `fraction` (`0` to `1`).
 Unmounting a renderer does not restart an upload.
 
+## Dropped files
+
+The React `UploadPlugin` lands files dropped into the editor at the block edge
+under the pointer, through the same landing rules as a
+[block drag](/docs/dnd). A refused drop inserts nothing. The copied DnD kit
+draws the drop line while files hover. An editor with only `BaseUploadPlugin`
+treats a dropped file like a pasted one. It replaces the empty block at the drop
+point or inserts after that block, without landing rules or vetoes, and HTML in
+the drop wins.
+
+To keep uploads but refuse dropped files, veto the files landing. The veto needs
+the React `UploadPlugin`:
+
+```tsx
+import { transferVeto } from 'platejs';
+import { definePlugin } from 'platejs/react';
+
+export const RefuseFileDropsPlugin = definePlugin('refuseFileDrops', {
+  contributions: [transferVeto.of(({ payload }) => payload.kind === 'files')],
+});
+```
+
+To handle dropped files yourself, list a plugin before `UploadPlugin` that
+claims both `dragover` and `drop`. Plugin handlers run in plugin order, and the
+first that returns `true` stops the rest:
+
+```tsx
+import { definePlugin } from 'platejs/react';
+
+const carriesFiles = (event: React.DragEvent) =>
+  event.dataTransfer.types.includes('Files');
+
+export const MyFileDropPlugin = definePlugin('myFileDrop', {
+  on: {
+    dragOver: ({ event }) => {
+      if (!carriesFiles(event)) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'copy';
+      return true;
+    },
+    drop: ({ event }) => {
+      if (!carriesFiles(event)) return;
+      event.preventDefault();
+      // Handle event.dataTransfer.files here.
+      return true;
+    },
+  },
+});
+```
+
 ## API reference
 
 | Surface | Purpose |
 | --- | --- |
 | `BaseUploadPlugin` from `platejs/upload` | Headless draft schema, admission, task, and completion owner. |
-| `UploadPlugin` from `platejs/upload/react` | React adapter with an optional native file drop handler. |
+| `UploadPlugin` from `platejs/upload/react` | React adapter that lands dropped files at the block edge under the pointer. |
 | `UploadPlugin.configure({ initialState })` | Set `client: UploadClient`, synchronous `getUrl: (file: UploadOutcome) => string`, `rules`, `maxFiles`, and `onError`. |
 | `editor.plugin(UploadPlugin).update.submit(files, options)` | Insert a validated batch or fill a draft slot. Slot and block placement options are mutually exclusive. |
 | `editor.plugin(UploadPlugin).api.cancel(key)` | Abort the live task for one draft. |

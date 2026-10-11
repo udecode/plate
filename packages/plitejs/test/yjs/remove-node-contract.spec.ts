@@ -212,4 +212,34 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
     redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'gamma']);
   });
+
+  it('merges concurrent leaf removals that each merge the same block', () => {
+    const peers = createSeededYjsHistoryPeers({
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'B' },
+            { bold: true, text: 'as' },
+            { italic: true, text: 'XY' },
+            { text: 'e' },
+          ],
+        },
+      ],
+      clientIds: ['a', 'b'],
+    });
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.remove({ at: [0, 1] });
+      tx.nodes.unset('italic', { at: [0, 1] });
+    });
+    b.editor.update((tx) => {
+      tx.nodes.remove({ at: [0, 2] });
+      tx.nodes.unset('bold', { at: [0, 1] });
+    });
+    syncConnectedPeers(peers);
+
+    assertPeerTexts(peers, ['Be']);
+  });
 });

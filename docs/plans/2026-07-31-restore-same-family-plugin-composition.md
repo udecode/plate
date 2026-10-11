@@ -151,7 +151,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | complete | Resolve every readiness condition | Same-author-lineage configuration composition, exact identity, and collision paths all have focused proof. |
 | Fresh source evidence | complete | Recheck decision-changing current claims | Re-read resolver, builder stage/configuration owners, TableKit, and final demo after implementation. |
-| Best API review | complete | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Final contract is direct terminal configuration composition; divergent authoring branches fail rather than silently dropping capabilities. |
+| Verdict | complete | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Final contract is direct terminal configuration composition; divergent authoring branches fail rather than silently dropping capabilities. |
 | Conditional risk and adoption | complete | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Core, registry caller, EN/CN docs, release prose, doctrine, generated mirrors, and Browser route covered. |
 | Verification recorded | complete | Record fresh planning proof and exact execution gates | See Verification evidence. |
 | Handoff prepared | complete | Prepare concise ownership, breaks, proof, risks, and execution order | See Final handoff prepared. |

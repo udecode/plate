@@ -92,7 +92,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve all readiness conditions | Target, breaks, adoption denominator, slices, proof, risks, and non-goals are fixed below. |
 | Fresh source evidence | yes | Recheck decision-changing claims | Copied/package owners and every current render site were re-read before target lock. |
-| Best API review | yes | Resolve P0/P1 call-shape findings | `EditorFrame` separates composition without retargeting `EditorContainer`; effect extraction, internal wrapping, duplicated wrappers, and package obstruction APIs are rejected. |
+| Verdict | yes | Resolve P0/P1 call-shape findings | `EditorFrame` separates composition without retargeting `EditorContainer`; effect extraction, internal wrapping, duplicated wrappers, and package obstruction APIs are rejected. |
 | Pre-acceptance scale proof | N/A | No runtime benchmark | Replacement adds no loop, subscription, cache, timer, observer, or measurement. |
 | Production scale rerun contract | N/A | No benchmark rerun | Browser correctness covers bounded geometry; no latency/throughput claim. |
 | Conditional risk and adoption | yes | Complete docs, registry, install, browser, and shared-toolbar work | Slices 2-5 own it. |

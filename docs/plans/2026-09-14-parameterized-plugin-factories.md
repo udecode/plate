@@ -23,7 +23,7 @@ Template:
 
 Major source:
 
-- type: accepted Best API Review record
+- type: accepted Verdict record
 - id / link: `2026-09-14-plugin-factory-mapping`
 - title: typed plugin-factory mapping
 - decision to make: select the exact factory object, type witness, mapping,
@@ -814,7 +814,7 @@ Final handoff contract:
 
 Timeline:
 
-- 2026-09-14: accepted Best API Review direction reopened under breaking freedom.
+- 2026-09-14: accepted Verdict direction reopened under breaking freedom.
 - 2026-09-14: selected explicit factory-object syntax and bounded `.require()` /
   `.map()` semantics.
 - 2026-09-14: focused mapped-factory HKT feasibility probe passed and was removed.

@@ -30,23 +30,23 @@ Each row is a call this plan made for the owner. The word reverses it.
 
 | Decision | Pick | Alternative | Word |
 | --- | --- | --- | --- |
-| Where the lanes run | Locally only, with no workflow or CI job; the Plite CI planner ignores the device lane's files, because any change under `packages/test/src` otherwise starts the full browser matrix | A nightly Linux runner with KVM | ci lane |
-| Android driver | Stock Chrome over `adb` and CDP (`adb forward localabstract:chrome_devtools_remote`, `connectOverCDP(url, { noDefaults: true })`); every input is an `adb shell input` touch or gesture | Appium UiAutomator2, or agent-device, whose test keyboard bypasses Gboard | appium lane |
-| Input witness | Structural: Gboard at the version setup recorded, a guard on the whole CDP connection that refuses every `Input.*` call, exclusive device ownership, and trusted events inside lane gesture windows | A calibrated signature per key or input class | signature witness |
-| Key map | Read from `uiautomator dump --windows` at setup for each layout the cases use; a worker checks the active layout and fails closed on a cache miss | Keys located from screenshots | screenshot keys |
+| Where the lanes run | Locally only, with no workflow or CI job; the Plite CI planner ignores the device lane's files, because any change under packages/test/src otherwise starts the full browser matrix | A nightly Linux runner with KVM | ci lane |
+| Android driver | Stock Chrome over adb and CDP (adb forward localabstract:chrome_devtools_remote, connectOverCDP(url, { noDefaults: true })); every input is an adb shell input touch or gesture | Appium UiAutomator2, or agent-device, whose test keyboard bypasses Gboard | appium lane |
+| Input witness | Structural: Gboard at the version setup recorded, a guard on the whole CDP connection that refuses every Input.* call, exclusive device ownership, and trusted events inside lane gesture windows | A calibrated signature per key or input class | signature witness |
+| Key map | Read from uiautomator dump --windows at setup for each layout the cases use; a worker checks the active layout and fails closed on a cache miss | Keys located from screenshots | screenshot keys |
 | First Android cases | From Slate's issue history (shard 005) | The 16-row raw-mobile matrix | matrix first |
-| Composition keyboard | Gboard Korean, because English Gboard commits one letter at a time even in a plain `<textarea>` (shard 009) | English composition | english composition |
-| Mention case | www's `/blocks/mention-demo`, which runs Plate's combobox and `settleInput()` | The Plite mentions example | plite mentions |
-| Release gate | Keeps its trust model. Device results are `verify` evidence kept as Playwright reports, and receipt schema 2 waits for Phase 3 | Change the gate now | gate now |
-| Handle installation | Test apps call `installBrowserHandle()` from `plitejs/react`, or its `platejs/react` facade, before their first mount; a `NODE_ENV` gate would break the Plite suite, which runs against a production export | Attach on every mount | always attach |
-| platejs.org production | Drops the handle; a www test build that a benchmark reads sets `NEXT_PUBLIC_PLATE_BROWSER_HANDLE=1` | Keep the handle on platejs.org | keep on platejs.org |
+| Composition keyboard | Gboard Korean, because English Gboard commits one letter at a time even in a plain <textarea> (shard 009) | English composition | english composition |
+| Mention case | www's /blocks/mention-demo, which runs Plate's combobox and settleInput() | The Plite mentions example | plite mentions |
+| Release gate | Keeps its trust model. Device results are verify evidence kept as Playwright reports, and receipt schema 2 waits for Phase 3 | Change the gate now | gate now |
+| Handle installation | Test apps call installBrowserHandle() from plitejs/react, or its platejs/react facade, before their first mount; a NODE_ENV gate would break the Plite suite, which runs against a production export | Attach on every mount | always attach |
+| platejs.org production | Drops the handle; a www test build that a benchmark reads sets NEXT_PUBLIC_PLATE_BROWSER_HANDLE=1 | Keep the handle on platejs.org | keep on platejs.org |
 | Trace retention | On whenever the handle is installed; one DOM-only production benchmark keeps a baseline | Retention off | retention off |
-| Clipboard transport | One `clipboardTransport` per project: `'native'` on Chromium and Firefox, `'event'` on WebKit, Pixel 5 and mobile WebKit. A paste fails when it did not apply or the page threw, and records its transport | A per-call option across 77 call sites, or Firefox alone on `'handle'` | per-call transport, firefox handle |
-| `'browser-handle'` selection reason | Changes only after a probe. The probe found typing model-owned after a click and after a handle selection, so the reason stays (decision log, 21:50:14Z) | Change it without the probe | skip the probe |
+| Clipboard transport | One clipboardTransport per project: 'native' on Chromium and Firefox, 'event' on WebKit, Pixel 5 and mobile WebKit. A paste fails when it did not apply or the page threw, and records its transport | A per-call option across 77 call sites, or Firefox alone on 'handle' | per-call transport, firefox handle |
+| 'browser-handle' selection reason | Changes only after a probe. The probe found typing model-owned after a click and after a handle selection, so the reason stays (decision log, 21:50:14Z) | Change it without the probe | skip the probe |
 | Pixel 5 project | Scenarios and labels unchanged; it is the only routine browser coverage of Plite's Android path | Relabel it | relabel emulation |
 | Lane order | The #5137 lane first, the cheapest open gate, needing no device | Android first | android first |
-| Bugs the lanes find | Local drafts through Maintainer's issue-draft mode, each with an `owner:` row in the decision log | Filing, which needs the owner | none |
-| tester-army `e2e` | Not adopted, for the reasons in the governing review | Adopt it | adopt e2e |
+| Bugs the lanes find | Local drafts through Maintainer's issue-draft mode, each with an owner: row in the decision log | Filing, which needs the owner | none |
+| tester-army e2e | Not adopted, for the reasons in the governing review | Adopt it | adopt e2e |
 | iOS Safari | A probe in this plan | An iOS lane | ios lane |
 
 ## Open work
@@ -704,7 +704,7 @@ releases trust local evidence.
       quarantine row in the decision log.
 - [x] Decide how a release trusts local device evidence, for example a Closed by `docs/research/review-records/2026-10-02-proof-release-trust.json`.
       signed local attestation the gate verifies, before any receipt schema
-      change. Proof: a `best-api-review` record for the `proof` scope.
+      change. Proof: a `verdict` record for the `proof` scope.
       Closed by review `2026-10-02-proof-release-trust`, verdict defer,
       recorded right after this plan's execution record: the gate keeps its
       trust model, and when a release needs raw Android proof it trusts a

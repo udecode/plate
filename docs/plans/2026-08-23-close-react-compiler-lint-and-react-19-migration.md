@@ -152,7 +152,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | complete | Complete every accepted execution slice | All ten slices are complete; the four-rule inventory is zero outside the render-probe boundary, and repository, app, Browser, API and review proof is recorded below |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Forced Oxlint inventory, manifests, app configs, compiler config, installed Next types, registry source, public exports/docs, and artifact checks refreshed 2026-08-24 |
-| Best API review | yes | Resolve every P0/P1 call-shape finding | One P0 hard cut accepted into this plan: delete `PlateEditorWithStore` and `.store` grafting; no other public shape changes admitted |
+| Verdict | yes | Resolve every P0/P1 call-shape finding | One P0 hard cut accepted into this plan: delete `PlateEditorWithStore` and `.store` grafting; no other public shape changes admitted |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work | Public API adoption, changeset, copied-registry inputs, browser proof, React runtime artifacts, and static-export limits are explicit below |
 | Verification recorded | complete | Record focused, browser, repository, artifact, and review evidence | `CI=1 pnpm check`, `CI=1 pnpm check:plite:dev`, focused contracts/builds, Browser routes, cached API runtime proof and clean P1 review are recorded below |
 | Handoff prepared | complete | Prepare final ownership, changes, proof, and residual-risk handoff | Final ownership, public break, verification and the CI-owned generated-index boundary are recorded below |
@@ -363,7 +363,7 @@ Review fixes:
   rendering, leaving zero production exceptions.
 - Red-team narrowed the immutability test policy from a broad test override to
   an extracted `test/render-probes/**` boundary.
-- Best API review promoted the render mutation in `useEditor()` from a local
+- Verdict promoted the render mutation in `useEditor()` from a local
   refactor to a complete public hard cut with docs, types and changeset.
 - The `useMemo(() => cancelable(), [])` idea was rejected as lint laundering;
   the stateless test fixture is module-owned instead.

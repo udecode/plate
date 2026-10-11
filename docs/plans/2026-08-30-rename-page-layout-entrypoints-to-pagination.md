@@ -98,7 +98,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | complete | Resolve every readiness condition | Both packages expose only `pagination[/react]`; no alias remains. |
 | Fresh source evidence | complete | Recheck decision-changing current claims | Live implementation, exports, current docs/example, DAG, and package topology read on 2026-08-30. |
-| Best API review | complete | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | One-word `pagination` entrypoint accepted; symbol-family redesign explicitly out of scope. |
+| Verdict | complete | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | One-word `pagination` entrypoint accepted; symbol-family redesign explicitly out of scope. |
 | Conditional risk and adoption | complete | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | Browser proved the new route and old-route 404; performance, provenance, collaboration behavior, and runtime redesign are N/A because behavior did not change. |
 | Verification recorded | complete | Record fresh planning proof and exact execution gates | Focused/package/docs/packed/Browser/doctrine evidence is recorded below. |
 | Handoff prepared | complete | Prepare concise ownership, breaks, proof, risks, and execution order | Exact break, preserved symbols, proof, and current-tree boundary are recorded below. |

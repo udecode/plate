@@ -154,7 +154,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All decisions, cuts, adoption owners, execution slices, proof rows, and risks below have a final verdict. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Live source confirms one shared portal/author schema projection, normalized primary-mark duplication, generated nested handles, and repeated first-party key plumbing. |
-| Best API review | yes | Resolve every P0/P1 call-shape finding | The target distinguishes normal semantic use, advanced primary identity, author-only additional handles, and generic schema inspection. |
+| Verdict | yes | Resolve every P0/P1 call-shape finding | The target distinguishes normal semantic use, advanced primary identity, author-only additional handles, and generic schema inspection. |
 | Conditional risk and adoption | yes | Resolve docs, registry, browser, release, generator, migration, and typing work | Each triggered owner has an execution slice and proof row; device and external-research gates have scoped reasons below. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Source audit commands, counts, checker, typecheck, package test, generation, lint, and Browser gates are specified below. |
 | Handoff prepared | yes | Prepare ownership, breaks, proof, risks, and execution order | Final handoff section is complete. |

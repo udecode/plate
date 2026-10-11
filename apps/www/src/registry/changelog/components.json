@@ -1,6 +1,35 @@
 {
   "schemaVersion": 1,
   "components": {
+    "block-list-static": [
+      "2026-10-10-fix-static-list-indent",
+      "2026-10-10-list-restart-continue",
+      "2026-09-30-static-list-table-known-paths",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "list-toolbar-button": [
+      "2026-10-10-list-restart-continue",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-07-16-list-toolbar-wiring"
+    ],
+    "block-list": [
+      "2026-10-10-list-restart-continue",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
     "emoji-data": ["2026-10-08-emoji-frimousse"],
     "emoji": [
       "2026-10-08-emoji-frimousse",
@@ -420,13 +449,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "block-list-static": [
-      "2026-09-30-static-list-table-known-paths",
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "table-static": [
       "2026-09-30-static-list-table-known-paths",
       "2026-08-17-finalize-v54-ast-profile",
@@ -560,13 +582,6 @@
       "2026-08-12-more-toolbar-plugin-transaction",
       "2026-07-26-unify-script-mark",
       "2026-07-24-feature-toolbar-plugin-portals"
-    ],
-    "list-toolbar-button": [
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-07-16-list-toolbar-wiring"
     ],
     "align-toolbar-button": [
       "2026-09-18-item-focus-block-upsert",
@@ -786,17 +801,6 @@
       "2026-08-24-react-compiler-owned-editor-state",
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
-    ],
-    "block-list": [
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
     ],
     "media-upload": ["2026-09-07-media-upload-lifetime"],
     "media-toolbar-button": [

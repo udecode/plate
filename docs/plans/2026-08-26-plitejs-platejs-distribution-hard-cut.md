@@ -279,7 +279,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve package, API, adoption, release, and proof decisions | The target tables and nine execution phases contain no product-choice gap. |
 | Fresh source evidence | yes | Recheck decision-changing current owners | Package manifests, barrels, constructor hooks, Changesets config, and artifact checker were read on 2026-08-26. |
-| Best API review | yes | Carry the accepted call shape into `best-api repair` during execution | The public API cut table names every editor-instance replacement and retained distinct job. |
+| Verdict | yes | Carry the accepted call shape into `best-api repair` during execution | The public API cut table names every editor-instance replacement and retained distinct job. |
 | Conditional risk and adoption | yes | Assign all triggered docs, browser, release, and package work | Conditional evidence and proof matrix name each owner and gate. |
 | Verification recorded | yes | Record planning proof and exact execution commands | Verification evidence and proof matrix provide both. |
 | Handoff prepared | yes | State ownership, breaks, order, proof, and user authority | Final handoff prepared section is complete. |

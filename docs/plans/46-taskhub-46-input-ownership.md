@@ -55,7 +55,7 @@ Input working alongside inactive appearance is an illegal state.
 - Current native clearing occurs in selection import, root drag release, and
   DOM export. The inactive coordinator and projected decoration are separate
   paint producers. Determine actual producer before choosing a repair.
-- Best API Review required after repeated failures: compare retaining native
+- Verdict required after repeated failures: compare retaining native
   transport for representable semantic ranges with merging inactive/focus owners;
   reject toolbar focus compensation and another independent boolean gate.
 

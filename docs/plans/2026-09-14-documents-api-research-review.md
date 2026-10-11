@@ -4,7 +4,7 @@ Status: Complete.
 
 Objective:
 
-Audit the documents ledger question against current Plate and bounded current OSS source, compile reusable research, and issue one Best API Review verdict.
+Audit the documents ledger question against current Plate and bounded current OSS source, compile reusable research, and issue one Verdict verdict.
 
 Completion threshold:
 

@@ -4,4 +4,5 @@
 
 export * from './documentMigrations';
 export * from './extractLegacyCommentRanges';
+export * from './migrateListIdentity';
 export * from './migratePlateV54';

@@ -151,7 +151,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Decision ledger, slices, proof matrix, risk rows, and final handoff are complete. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Live code, current docs, current browser tests, public exports, and 2021 history were read on 2026-09-02. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | P0 verdict: remove `BaseCodeLinePlugin`, `CodeLinePlugin`, `PLUGINS.codeLine`, and `CodeLineElement`; expose only `CodeBlockPlugin` and optional `CodeHighlightPlugin`. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding | P0 verdict: remove `BaseCodeLinePlugin`, `CodeLinePlugin`, `PLUGINS.codeLine`, and `CodeLineElement`; expose only `CodeBlockPlugin` and optional `CodeHighlightPlugin`. |
 | Pre-acceptance scale proof | yes | Record a matched baseline/target result | Ten measured Chromium iterations after one warm-up across 100/1,000/5,000/10,000 lines passed the frozen 5,000-line budget. |
 | Production scale rerun contract | yes | Name exact final-path rerun | Benchmark reruns `CODEBLOCK_PROBE_ITERATIONS=10 bun docs/plans/artifacts/2026-09-02-remove-code-line-model/huge-code-block-probe.mjs` after replacing the disposable target with production imports. |
 | Conditional risk and adoption | yes | Resolve triggered risk/browser/docs/release work | Five risk scenarios and every direct Plate, persisted-data, collaboration, registry, docs, and browser owner are assigned below. |

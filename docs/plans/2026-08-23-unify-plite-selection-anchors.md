@@ -21,7 +21,7 @@ Applied packs:
 
 Mode:
 - `standard` accepted-plan execution. The user accepted the item 5 target with
-  `ok go` immediately after the Best API review.
+  `ok go` immediately after the Verdict.
 
 Completion threshold:
 - `SelectionApi` predicates reject values outside their promised narrowed
@@ -119,7 +119,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All scoped code, caller, docs, doctrine, generated, proof, and review rows pass. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final bounded searches found zero rejected API matches and one shared mapping owner. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted target implemented; final P1 autoreview found zero findings. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted target implemented; final P1 autoreview found zero findings. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/Benchmark/provenance work or give one scoped N/A reason | All direct callers and the browser demo pass; Benchmark, release, public issue, and native-device proof do not apply to this claim. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Red/green, focused, package, docs, browser, broad, source-audit, and review evidence is recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final ownership, break, proof boundary, and external commit state are explicit below. |

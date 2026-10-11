@@ -5,13 +5,14 @@ import {
   ListType,
   type RenderStaticNodeWrapper,
 } from 'platejs';
+import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
 
 export const BlockListStatic: ListWrapper = (props) => {
-  const { indent, listStyle, listType } = props.element;
+  const { listStyle, listType } = props.element;
 
   if (!listType || listType === ListType.Bulleted) return undefined;
 
@@ -19,7 +20,6 @@ export const BlockListStatic: ListWrapper = (props) => {
     return (
       <List
         {...innerProps}
-        indent={typeof indent === 'number' ? indent : undefined}
         listStart={innerProps.editor
           .plugin(BaseListPlugin)
           .read.ordinal(innerProps.path)}
@@ -32,29 +32,44 @@ export const BlockListStatic: ListWrapper = (props) => {
 
 function List(
   props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-    indent?: number;
     listStart?: number;
     listStyle?: string;
     listType: ListType;
   }
 ) {
-  const { indent, listStart, listStyle, listType } = props;
+  const { listStart, listStyle, listType } = props;
   const isTask = listType === ListType.Task;
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
     listStyle ?? (listType === ListType.Numbered ? 'decimal' : 'none');
 
-  // Apply margin-left for indent (24px per level) for DOCX export compatibility
-  const marginLeft = indent ? `${indent * 24}px` : undefined;
-
   return (
     <InnerList
       className="relative m-0 p-0"
-      style={{ listStyleType: markerStyle, marginLeft }}
+      data-list-id={props.element.listId ?? ''}
+      data-list-levels={
+        props.element.listLevels
+          ? JSON.stringify(props.element.listLevels)
+          : undefined
+      }
+      style={{ listStyleType: markerStyle }}
       start={listType === ListType.Numbered ? listStart : undefined}
     >
       {isTask && <TodoMarkerStatic {...props} />}
       <li
+        data-checked={
+          isTask ? String(props.element.checked === true) : undefined
+        }
+        data-indent={props.element.indent}
+        data-list-id={props.element.listId ?? ''}
+        data-list-levels={
+          props.element.listLevels
+            ? JSON.stringify(props.element.listLevels)
+            : undefined
+        }
+        data-list-restart={props.element.listRestart}
+        data-list-start={props.element.listStart}
+        data-list-type={listType}
         className={
           isTask
             ? cn(
@@ -73,7 +88,6 @@ function List(
 
 function TodoMarkerStatic(
   props: Parameters<NonNullable<ReturnType<ListWrapper>>>[0] & {
-    indent?: number;
     listStart?: number;
     listStyle?: string;
     listType: ListType;

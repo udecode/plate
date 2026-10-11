@@ -502,7 +502,7 @@ End state:
     unclosed inline delimiter (the joiner trade-off), and a full partial parse
     could record segments so identity starts at the second preview instead of
     the third.
-- 2026-09-29: closure Best API review, first findings fixed.
+- 2026-09-29: closure Verdict, first findings fixed.
   - P0: a continued partial parse could split a list item's continuation
     paragraph or a following list from its list (8–42 mismatched prefixes on
     three list sources). A segment now starts only at an unindented line

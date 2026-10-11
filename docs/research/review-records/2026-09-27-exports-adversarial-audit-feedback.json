@@ -5,7 +5,7 @@
   "date": "2026-09-27",
   "question": "Which document, projection, schema, format and presentation contracts should own all exports, and which editing-runtime requirements can disappear?",
   "model": null,
-  "method": "best-api-review/history-v3",
+  "method": "verdict/history-v3",
   "trigger": "User requests harsh honest feedback on a supplied document-conversion audit after implementation closure.",
   "requirements": [
     "Preserve format-owned operations, canonical schema authority, observable loss and exact fragment boundaries.",
@@ -100,7 +100,7 @@
       "docs/vision/common.md": "2619f635ddca4bc719b398938f98386a5990f2b785db39fa28d4f039319c2cf0",
       "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
       "pnpm-lock.yaml": "fc434e928ce02e264a2060c3a0ad4b0a18c5b3f4824d1a4afa39c2a269bf0181",
-      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/skills/verdict/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
       ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
       "docs/plans/artifacts/2026-09-27-document-conversion-audit-feedback/feedback.md": "50fbfdf924f5c5c8f989e995337328b8771e70b7de829b8380651db2b2a56a1d",
       "docs/plans/artifacts/2026-09-27-document-conversion-audit-feedback/probe.test.ts": "c95ac29bdb1f1274da59721b4845d5b1410346ff888163e141d388eb931c0393",

@@ -41,6 +41,7 @@ import type {
   SchemaTextBlockOptions,
 } from '../interfaces/schema';
 import { getDefined } from '../internal/get-defined';
+import { normalizeSetValues } from './change/transform';
 import { cloneFrozen } from './clone';
 import { getCompiledSchemaPropertyId } from './schema-compiler';
 import type { EditorSchemaSource } from './schema-source.internal';
@@ -199,8 +200,6 @@ const cloneFrozenDeclaration = <TValue>(
   }
 };
 
-const structuralKey = (value: unknown) => JSON.stringify(value);
-
 const assertPropertyValidation = (
   value: Readonly<{
     validate?: unknown;
@@ -291,22 +290,10 @@ const cloneDescriptorValue = (
       if (!Array.isArray(value)) throw new Error(`${owner} must be an array.`);
 
       const setDescriptor = descriptor as PropertySetDescriptor;
-      const unique = new Map<string, unknown>();
-
-      for (const item of value) {
-        const cloned = cloneDescriptorValue(
-          setDescriptor.item,
-          item,
-          `${owner} item`
-        );
-
-        unique.set(structuralKey(cloned), cloned);
-      }
-
-      const cloned = Object.freeze(
-        [...unique]
-          .sort(([left], [right]) => left.localeCompare(right))
-          .map(([, item]) => item)
+      const cloned = normalizeSetValues(
+        value.map((item) =>
+          cloneDescriptorValue(setDescriptor.item, item, `${owner} item`)
+        )
       );
 
       validatePropertyValue(descriptor, cloned, owner);
@@ -470,23 +457,11 @@ const defineSet = <
       throw new Error('property.set default must be an array.');
     }
 
-    const unique = new Map<string, PropertyValueOf<TItemDescriptor>>();
-
-    for (const value of options.default) {
-      const cloned = cloneDescriptorValue(
-        item,
-        value,
-        'property.set default item'
-      ) as PropertyValueOf<TItemDescriptor>;
-
-      unique.set(structuralKey(cloned), cloned);
-    }
-
-    defaultValue = Object.freeze(
-      [...unique]
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([, value]) => value)
-    );
+    defaultValue = normalizeSetValues(
+      options.default.map((value) =>
+        cloneDescriptorValue(item, value, 'property.set default item')
+      )
+    ) as ReadonlyArray<PropertyValueOf<TItemDescriptor>>;
     validatePropertyValue(
       {
         item,

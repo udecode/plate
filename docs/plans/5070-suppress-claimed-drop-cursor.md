@@ -88,7 +88,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All decision and execution rows resolve. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Current source plus exact Chrome held drag on `2b206974844c62c487337da12733293db10f674b`. |
-| Best API review | yes | Resolve public shape | Keep the existing handled signal; fix its ignored result. |
+| Verdict | yes | Resolve public shape | Keep the existing handled signal; fix its ignored result. |
 | Conditional risk and adoption | yes | Resolve browser/provenance work | Three failures and exact proof named below. |
 | Verification recorded | yes | Name focused planning and execution proof | Commands and exact assertions are in the proof matrix. |
 | Handoff prepared | yes | Prepare ownership, proof, risks, order | Final handoff below. |

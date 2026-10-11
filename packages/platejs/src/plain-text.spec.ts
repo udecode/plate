@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import { ContentSlice, defineEditorSchema, schema } from './core';
+import { ContentSlice, defineEditorSchema, definePlugin, schema } from './core';
 import { writeDataTransferFragment } from './dom';
 import { BaseHorizontalRulePlugin } from './features/basic-nodes';
 import { BaseLinkPlugin } from './features/link';
@@ -121,6 +121,14 @@ const ContentRootSchema = defineEditorSchema('plain-text-content-roots', {
   version: 1,
 });
 
+const numbered = (text: string, extra: Record<string, unknown> = {}) => ({
+  children: [{ text }],
+  indent: 1,
+  listType: ListType.Numbered,
+  type: 'paragraph',
+  ...extra,
+});
+
 describe('serializePlainText', () => {
   it('uses feature-owned structural formats', () => {
     const editor = createEditor({ initialValue: document, plugins });
@@ -203,5 +211,73 @@ describe('serializePlainText', () => {
         },
       ],
     });
+  });
+
+  it('numbers a run from its first item start', () => {
+    const editor = createEditor({
+      initialValue: [numbered('A', { listStart: 3 }), numbered('B')],
+      plugins,
+    });
+
+    expect(serializePlainText(editor).data).toBe('3. A\n4. B');
+  });
+
+  it('numbers a partial copy from its first copied item', () => {
+    const editor = createEditor({
+      initialValue: ['A', 'B', 'C', 'D'].map((text) => numbered(text)),
+      plugins,
+    });
+    const output = new DataTransfer();
+
+    writeDataTransferFragment(
+      editor,
+      output,
+      ContentSlice.closed(editor.read.children().slice(2))
+    );
+
+    const html = new DOMParser().parseFromString(
+      output.getData('text/html'),
+      'text/html'
+    );
+
+    expect(output.getData('text/plain')).toBe('1. C\n2. D');
+    expect(
+      [...html.querySelectorAll('ol')].map((list) => list.getAttribute('start'))
+    ).toEqual(['1', '2']);
+  });
+
+  it('numbers a list in a content root', () => {
+    const RootHolderPlugin = definePlugin('plainTextRootHolder', {
+      schema: {
+        element: {
+          blockContent: true,
+          contentRoots: {
+            body: {
+              content: schema.content.type(BaseParagraphPlugin.name, {
+                default: { type: BaseParagraphPlugin.name },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      },
+    });
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          {
+            childRoots: { body: 'body' },
+            children: [{ text: '' }],
+            type: RootHolderPlugin.name,
+          },
+        ],
+        roots: { body: [numbered('One'), numbered('Two')] },
+      },
+      plugins: [...plugins, RootHolderPlugin],
+    });
+
+    expect(serializePlainText(editor).data).toBe('1. One\n2. Two');
   });
 });

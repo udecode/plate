@@ -110,7 +110,7 @@ Tests 1 to 5 run in the plitejs React suite with `pnpm exec vitest run test/reac
 
 | Gate | Source | Artifact |
 | --- | --- | --- |
-| Execution authority | Build playbook | Autopilot after two plan panel rounds with no critical finding left: Build is a `look` default whose word is "hold" (Defaults); the user's request was `/best-api-review accessibility`, whose playbook continues a Pursue into this plan; build base `52625e8502`, and `HEAD` `da4898bb61` changes no file this build edits |
+| Execution authority | Build playbook | Autopilot after two plan panel rounds with no critical finding left: Build is a `look` default whose word is "hold" (Defaults); the user's request was `/verdict accessibility`, whose playbook continues a Pursue into this plan; build base `52625e8502`, and `HEAD` `da4898bb61` changes no file this build edits |
 | Panel on the plan | AGENTS.md reviews list `api-plan` | Rounds 1 and 2 on frozen commits `fa1421aba4` and `daf32db403`, three seats each; decision rows under phase `panel` |
 | Blast radius on a public API change | Build playbook | skip: no public API changes |
 | Hard-cut sweep | Architecture reference, Hard cut | skip: no public surface is removed |
@@ -175,7 +175,7 @@ Review inputs this work read beyond the scope's own files: `packages/plitejs/src
 
 The owner answered the Ship question "Ship (Recommended)", so the two guard tests from `docs/plans/artifacts/2026-10-06-accessibility-announcement-host/panel-diff-2/unreviewed/` are in `packages/plitejs/test/react/screen-reader-announcement.test.tsx`; no panel reviewed them, and each fails on the bytes it guards against (`build/ship-silent-on-watermark.log`, `build/ship-aria-on-case-sensitive.log`).
 
-Side task done in this session at the owner's request: the DnD docs no longer tell readers to mount a second view with `suppressInstanceWarning`, and the API reference describes the prop as silencing the duplicate `platejs` package warning (`content/docs/(plugins)/(functionality)/dnd.mdx`, its Chinese twin, `content/docs/api/core/plate-components.mdx` and its twin); the demo and the Plite example drop the prop; `pnpm --filter www build:registry` regenerated the docs payloads, which also refreshed seven docs payloads stale from other sessions' content edits. `pnpm --filter www check:docs` stopped at `api-reference:check` on a `HistoryApi` classification error that these edits do not touch; no run at `HEAD` shows it predates them, and the docs source parity check passed on its own. Evidence: `docs/plans/artifacts/2026-10-06-accessibility-announcement-host/dnd-docs/`. The DnD chip also asked whether `suppressInstanceWarning` earns its place: it is a per-root switch for a page-level condition (two copies of the `platejs` module), so it silences nothing unless every root sets it, and outside tests only dev pages and the probes set it. The `best-api` lens points at cutting the prop and warning once from the module; that public cut belongs to a `best-api-review`, not this run.
+Side task done in this session at the owner's request: the DnD docs no longer tell readers to mount a second view with `suppressInstanceWarning`, and the API reference describes the prop as silencing the duplicate `platejs` package warning (`content/docs/(plugins)/(functionality)/dnd.mdx`, its Chinese twin, `content/docs/api/core/plate-components.mdx` and its twin); the demo and the Plite example drop the prop; `pnpm --filter www build:registry` regenerated the docs payloads, which also refreshed seven docs payloads stale from other sessions' content edits. `pnpm --filter www check:docs` stopped at `api-reference:check` on a `HistoryApi` classification error that these edits do not touch; no run at `HEAD` shows it predates them, and the docs source parity check passed on its own. Evidence: `docs/plans/artifacts/2026-10-06-accessibility-announcement-host/dnd-docs/`. The DnD chip also asked whether `suppressInstanceWarning` earns its place: it is a per-root switch for a page-level condition (two copies of the `platejs` module), so it silences nothing unless every root sets it, and outside tests only dev pages and the probes set it. The `best-api` lens points at cutting the prop and warning once from the module; that public cut belongs to a `verdict`, not this run.
 
 ### Decision-trail review
 
@@ -203,8 +203,8 @@ Applied in this checkout under the standing reflect authority:
 - `verify`: `pnpm --filter www dev` rewrites registry output, so a proof launches `next dev` directly; source mode is the default, read from `/api/plite/ready`, and bound by an observation only the new code produces.
 - `verify` command recipes: the Vitest reporter flags, a `plitejs` probe recipe for jsdom and Chromium, and the Vite reload check before a reinstall.
 - `review-ledger.mjs`: the reconcile refusal names `retains`, `reopens` and `supersedes`.
-- API review playbook: a Pursue publishes its page before continuing. Plan playbook: list a losing candidate's extra cases before grafting.
-- `AGENTS.md` Playbooks paragraph and `best-api-review`: a direct playbook entry loads poteto-mode, runs `check-playbooks.mjs` and follows the base playbook.
+- Verdict playbook: a Pursue publishes its page before continuing. Plan playbook: list a losing candidate's extra cases before grafting.
+- `AGENTS.md` Playbooks paragraph and `verdict`: a direct playbook entry loads poteto-mode, runs `check-playbooks.mjs` and follows the base playbook.
 - `plate-docs` description: fires before any edit under `content/docs`. Edited directly, without the description-optimization loop the routing named, so its trigger is unproven.
 
 The six shared-source lessons wait as a patch under Open work.

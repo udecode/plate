@@ -375,7 +375,7 @@ framework contract and its distribution, without reviewing feature behavior.
 ## Obligations and evidence
 
 - [x] Read prior ledger/history and verify source observations. Source:
-  `.agents/skills/best-api-review/SKILL.md` and
+  `.agents/skills/verdict/SKILL.md` and
   `.agents/rules/task/references/best-api-review.md`.
 - [x] Review both questions and representative headless, React, static,
   optional-feature and tooling consumers. Expected questions: 2.

@@ -181,7 +181,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All 13 rows implemented; stale applicable API audit is clean. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final source, public barrel, docs, rule, and changeset audits recorded below. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding | Accepted 13-row audit implemented without aliases. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding | Accepted 13-row audit implemented without aliases. |
 | Conditional risk and adoption | yes | Complete triggered risk/browser/docs work | Identity, assertions, metadata, History/Yjs, docs, and Browser proofs pass; benchmarks remain out of scope because no performance claim changed. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Exact commands and counts recorded below. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff section is complete. |

@@ -118,7 +118,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Inventory, implementation, proof, review, and handoff rows are complete. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Final manifest audit reports 32 targets, 32 passes, zero missing and zero violations. |
-| Best API review | no | Record no public shape change | Public package names, exports, entrypoints, and call sites are unchanged. |
+| Verdict | no | Record no public shape change | Public package names, exports, entrypoints, and call sites are unchanged. |
 | Conditional risk and adoption | yes | Complete triggered runtime/build risks | Direct/shared hooks, ESM, compact ESM, dynamic import AST support, CommonJS, missing chunks, and sibling React entries are covered. |
 | Verification recorded | yes | Record fresh execution gates | 17/17 verifier tests; 47/47 build tasks; lint pass; 32/32 audit; diff check pass. |
 | Handoff prepared | yes | Prepare ownership, proof, risks, and package list | Recorded below. |

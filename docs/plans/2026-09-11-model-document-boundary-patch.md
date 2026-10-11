@@ -56,7 +56,7 @@ root cause, red-before-green proof, a durable owner, focused verification, and a
 changeset when the current `main` release baseline has a package delta. Autogoal
 retains this checklist through completion.
 Show Me Your Work records only material decisions and verified checkpoints.
-The accepted Best API Review target in
+The accepted Verdict target in
 `docs/research/decisions/model-document-boundary.md` governs the shape: reject
 malformed containers consistently without creating another document model.
 Autoreview does not run on `next`; browser proof does not apply to this pure

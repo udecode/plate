@@ -62,7 +62,7 @@ establishes value, not a final replacement signature.
 
 ## Scope and acceptance
 
-The [ledger](../schema.md#review-history), [review method](../../../.agents/skills/best-api-review/SKILL.md)
+The [ledger](../schema.md#review-history), [review method](../../../.agents/skills/verdict/SKILL.md)
 and [Plite](../../vision/plite.md) / [Plate](../../vision/plate.md) laws require
 one review of synchronization and presence. Separate feature items remain
 separate; this review does not absorb comments, authored changes or history.

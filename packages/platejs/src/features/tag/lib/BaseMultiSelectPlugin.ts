@@ -61,12 +61,14 @@ export const BaseMultiSelectPlugin = BaseTagPlugin.extend(
         correct({ entry: [node, path], tx }) {
           if (
             isTagElement(node, type) &&
+            tx.nodes.isContent(node) &&
             tx.nodes.some({
               at: [],
               type: plugin,
               match: (candidate, candidatePath) =>
                 candidate.value === node.value &&
-                !PathApi.equals(candidatePath, path),
+                !PathApi.equals(candidatePath, path) &&
+                tx.nodes.isContent(candidate),
             })
           ) {
             tx.nodes.remove({ at: path });

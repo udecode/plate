@@ -91,7 +91,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | All decision and execution rows resolve. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Current source and exact Chrome on `2b206974844c62c487337da12733293db10f674b`. |
-| Best API review | yes | Resolve P0/P1 public shape | One button semantic and one class-name hard cut selected. |
+| Verdict | yes | Resolve P0/P1 public shape | One button semantic and one class-name hard cut selected. |
 | Conditional risk and adoption | yes | Complete browser/registry/provenance work | Failure cases and exact proof named below. |
 | Verification recorded | yes | Record planning and execution proof | Proof matrix is concrete. |
 | Handoff prepared | yes | Prepare ownership, breaks, proof, risks, order | Final handoff below. |

@@ -116,7 +116,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | complete | Resolve every readiness condition | Owning packages, behavior tests, release generators, doctrine, and browser proof pass; unrelated aggregate failures are recorded below |
 | Fresh source evidence | complete | Recheck decision-changing current claims | Final source audits show no production AI durable-ID dependency or stale request API |
-| Best API review | complete | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Public calls stay unchanged; private ownership and request-token law recorded in Vision and `best-api` |
+| Verdict | complete | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Public calls stay unchanged; private ownership and request-token law recorded in Vision and `best-api` |
 | Conditional risk and adoption | complete | Complete triggered risk/browser/benchmark/provenance work or give one scoped N/A reason | Chromium editing row passes; www AI route blocker recorded; benchmark and provenance are scoped N/A |
 | Verification recorded | complete | Record fresh planning proof and exact execution gates | Exact commands and counts are recorded below |
 | Handoff prepared | complete | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff section is complete |

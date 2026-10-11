@@ -113,6 +113,20 @@ describe('plitejs/yjs merge_node collaboration contract', () => {
     assertPeerTexts(peers, ['alpha!beta']);
   });
 
+  it('keeps a peer’s typing in the right block when blocks with different properties merge', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [paragraph('ab'), paragraph('cd', { align: 'center' })]
+    );
+    const [a, b] = peers;
+
+    mergeSecondParagraph(a);
+    b.editor.update.text.insert('Z', { at: { path: [1, 0], offset: 2 } });
+    syncConnectedPeers(peers);
+
+    assertPeerTexts(peers, ['abcdZ']);
+  });
+
   it('merges adjacent text leaves through a canonical change', () => {
     const peers = createPeers(['a', 'b', 'c'], textMergeValue());
     const [a, b] = peers;

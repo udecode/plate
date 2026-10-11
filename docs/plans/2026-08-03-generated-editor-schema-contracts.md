@@ -124,7 +124,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | yes | Resolve every readiness condition | Decision ledger has one owner and verdict per responsibility; seven dependency-ordered slices have binary exits. |
 | Fresh source evidence | yes | Recheck decision-changing current claims | Live reads and the direct www TypeScript command are recorded under Verification evidence. |
-| Best API review | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Ideal call sites, raw/generated boundary, standard-operation law, and rejected alternatives are final. |
+| Verdict | yes | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Ideal call sites, raw/generated boundary, standard-operation law, and rejected alternatives are final. |
 | Conditional risk and adoption | yes | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Three failure scenarios, package/registry/docs/browser adoption, migration boundary, and device N/A are explicit. |
 | Verification recorded | yes | Record fresh planning proof and exact execution gates | Proof matrix names compile, declaration, runtime, codegen, migration, package, and Browser gates. |
 | Handoff prepared | yes | Prepare concise ownership, breaks, proof, risks, and execution order | Final handoff section is complete. |

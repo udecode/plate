@@ -158,7 +158,7 @@ Execution slices:
 | Collaboration/retention | Authored effect + Yjs | direct checkpoint keeps decisions, anchors and delayed-peer facts | authored/Yjs partitions | complete |
 | Product interaction | Plate input/suggestion UI | cursor, Enter and first-paint decoration behave synchronously to the user | Chromium E2E | complete |
 | Production optimization | Benchmark + Plite core | frozen load/edit/decision/save/payload gates pass | final benchmark packet | complete |
-| Durable closure | Task + Best API Review | Vision, decision page, review ledger and task receipt agree | ledger/checker | complete |
+| Durable closure | Task + Verdict | Vision, decision page, review ledger and task receipt agree | ledger/checker | complete |
 
 Proof matrix:
 

@@ -44,6 +44,9 @@ behavior, imports, requirements and examples.
   Preserve established headings and anchors across comparable pages.
 - Explain a non-obvious choice briefly. Runtime concepts can need more context
   than a UI component; density must not hide ownership or lifecycle behavior.
+- Document only the latest state. Never write changelog-style language ("has
+  been removed", "new feature", "previously", "now supports"), migration notes
+  or "what changed"; write as if no prior version exists.
 For a substantial style or page-shape decision, compare the nearest Plate
 sibling with a relevant page in `../shadcn/apps/v4/content/docs/`. Component
 examples include `components/base/button.mdx`, `chart.mdx` and `sidebar.mdx`;

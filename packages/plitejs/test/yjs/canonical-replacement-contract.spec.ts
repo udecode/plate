@@ -155,6 +155,20 @@ describe('plitejs/yjs canonical replacement collaboration contract', () => {
     assertCanonicalYjsTrace(peer);
   });
 
+  it('sends a property removal that merges a leaf into its neighbor', () => {
+    const peers = createSeededYjsHistoryPeers({
+      children: multiLeafValue(),
+      clientIds: ['a', 'b'],
+      numericClientIds,
+    });
+    const [a, b] = peers;
+
+    a.editor.update.nodes.unset('bold', { at: [0, 1] });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(b.editor.read.children(), [paragraph('alpha beta')]);
+  });
+
   it('preserves moved-node identity for a compatible replacement', () => {
     const peer = createPeer('b', undefined, [
       quote([paragraph('left')]),

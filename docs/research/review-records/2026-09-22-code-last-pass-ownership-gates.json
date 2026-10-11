@@ -5,7 +5,7 @@
   "date": "2026-09-22",
   "question": "Which canonical text, editing and syntax-presentation contract should native code blocks use?",
   "model": "GPT-6 / Codex",
-  "method": "best-api-review/history-v3",
+  "method": "verdict/history-v3",
   "trigger": "User requested a fresh final code audit after switching models; review only, with no product implementation authority.",
   "requirements": [
     "Reconcile the current September 22 code review and prior CodeMirror/native/external-text history without treating historical proof as current runtime proof.",
@@ -96,7 +96,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "23c86cd31d48a09c2ae64a5e287cd80b020a9c91ea2d34880a108c20918686e1",
       "pnpm-lock.yaml": "c30b05901aa8f2ecb6c6a62b6e37d963ed743eb8538c444517cd3117ae202a17",
-      ".agents/skills/best-api-review/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
+      ".agents/skills/verdict/SKILL.md": "cfb7ff732219ceebc1adb604a0eb0cc04c7e1ccecb7f70a2eb5bff5d7e0e5ea9",
       ".agents/rules/task/references/best-api-review.md": "b928b15bc4b5a47d6deaa6b3196d1a2a472cfb37c4d542374478ea74434a749d",
       "docs/plans/artifacts/2026-09-22-code-api-audit/last-pass.md": "268555a63f7efeea8b86f8d6c98bcdcb9b74cdd24098f51141233c1f11124111",
       "docs/plans/artifacts/2026-09-22-code-api-audit/review.md": "f49afecb0bd3a221d020f56cec3f530c0b3a52bff002496d5b8fbc7a1d4c2733",

@@ -164,7 +164,7 @@ Completion Gates:
 | --- | --- | --- | --- |
 | Binary readiness | pass | Resolve every readiness condition | All executable source/test/type/docs/review gates pass; Browser has the exact forbidden-generated-output caveat recorded below |
 | Fresh source evidence | pass | Recheck decision-changing current claims | Final 53-row source/export scan has zero unmapped or stale package symbols |
-| Best API review | pass | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted terminal-consumer law implemented with no compatibility aliases |
+| Verdict | pass | Resolve/reject every P0/P1 call-shape finding, or record no public shape change | Accepted terminal-consumer law implemented with no compatibility aliases |
 | Conditional risk and adoption | pass | Complete triggered risk/docs/browser/provenance work or give one scoped N/A reason | Package/docs/release adoption is complete; Browser blocker is exact and source-backed |
 | Verification recorded | pass | Record fresh planning proof and exact execution gates | Final focused and root proof plus the Browser caveat are recorded below |
 | Handoff prepared | pass | Prepare concise ownership, breaks, proof, risks, and execution order | Ownership, public breaks, proof, review disposition, and the Browser caveat are complete |

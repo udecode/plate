@@ -6,8 +6,8 @@ import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 import { DocumentChange } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
+import { registerEditorDraftGuard } from './document-recorder';
 import { type JsonValue, TransferRefusalError } from './landing';
-import { registerEditorDraftGuard } from './public-state';
 import type { TransferDiagnostic } from './transfer-types';
 
 export const rootChildren = (value: JsonValue, root: RootKey) =>
@@ -92,8 +92,9 @@ export const textTokens = (fragment: readonly Descendant[]) => {
       const isFirst = index === 0;
       const isLast = index === nodes.length - 1;
 
+      // An empty text holds no content, whatever properties it carries.
       if (NodeApi.isText(node)) {
-        tokens.push(JSON.stringify(node));
+        if (node.text !== '') tokens.push(JSON.stringify(node));
         return;
       }
 
@@ -112,9 +113,7 @@ export const textTokens = (fragment: readonly Descendant[]) => {
 
   visit(fragment, true, true);
 
-  const emptyText = JSON.stringify({ text: '' });
-
-  return tokens.filter((token) => token !== emptyText).join('\u0000');
+  return tokens.join('\u0000');
 };
 
 export const selectionRange = (from: Point, to: Point): Range => ({
@@ -175,15 +174,21 @@ export const guardLanding = (
   check: (landed: DraftLanding, after: JsonValue) => boolean,
   diagnostics: TransferDiagnostic[]
 ) =>
-  registerEditorDraftGuard(editor, (written) => {
-    const landing = draft.current;
+  // The landing is checked as commands wrote it, before a recorder adds
+  // review marks, which are not a loss.
+  registerEditorDraftGuard(
+    editor,
+    (written) => {
+      const landing = draft.current;
 
-    if (!landing) return;
-    draft.current = null;
-    if (check(landing, written)) return;
-    if (!copy) throw new TransferRefusalError('lossy');
-    diagnostics.push({
-      impact: 'lossy',
-      message: 'Some dragged content does not fit here.',
-    });
-  });
+      if (!landing) return;
+      draft.current = null;
+      if (check(landing, written)) return;
+      if (!copy) throw new TransferRefusalError('lossy');
+      diagnostics.push({
+        impact: 'lossy',
+        message: 'Some dragged content does not fit here.',
+      });
+    },
+    'plain'
+  );

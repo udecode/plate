@@ -9,7 +9,10 @@ import type { RenderElementProps } from '../../lib';
 import { type EditorNodeProps, EditorElement } from '../components';
 import type { Editor } from '../editor/Editor';
 import { useEditorContext } from '../internal/plite-components';
-import { usePlateRenderedAttributes } from '../internal/rendered-attributes';
+import {
+  getElementNodeKey,
+  usePlateRenderedAttributes,
+} from '../internal/rendered-attributes';
 import { useEditorReadOnly, useClaimEditableDOMCommit } from '../plite-react';
 import { createPluginContext } from '../plugin/createPluginContext.internal';
 import type { AnyResolvedPlugin } from '../plugin/PlatePlugin';
@@ -33,7 +36,7 @@ function ElementContent({
   const readOnly = useEditorReadOnly();
   const viewEditor = useEditorContext();
   const renderedAttributes = usePlateRenderedAttributes(
-    viewEditor.key(initialProps.path) ?? null
+    getElementNodeKey(viewEditor, initialProps.element)
   );
 
   useClaimEditableDOMCommit();

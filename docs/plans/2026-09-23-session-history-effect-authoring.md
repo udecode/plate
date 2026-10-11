@@ -22,7 +22,7 @@ Template:
 `docs/plans/templates/task.md`
 
 Task source:
-- The user accepted the final Best API review and authorized full execution.
+- The user accepted the final Verdict and authorized full execution.
 - Governing review: `docs/research/review-records/2026-09-23-history-session-effect-authoring-final.json`.
 - Governing decision: `docs/research/decisions/history-ownership.md`.
 

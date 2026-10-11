@@ -5,7 +5,7 @@
   "date": "2026-09-23",
   "question": "When Editing + Markup deletion fully selects retained suggestion content, should the gesture stay proposed or resolve the covered pending changes and disappear from the editing view?",
   "model": "GPT-5 / Codex",
-  "method": "best-api-review/history-v3 with redesign-from-first-principles and Plite ownership review",
+  "method": "verdict/history-v3 with redesign-from-first-principles and Plite ownership review",
   "trigger": "A 2026-09-23 reporter video contradicts pushed commit bda11bb012: multi-block Backspace across seeded suggestions publishes a new green deletion proposal instead of removing the selected content from the editing view.",
   "requirements": [
     "Editing + Markup Backspace removes the reporter-selected multi-block content from the rendered editing view.",
@@ -107,7 +107,7 @@
       "docs/vision/common.md": "af10ef40604652383fb8d941cb3527f29e3c60721c04ba429987c87a67acda21",
       "package.json": "540c4ad1419f4b1d836afc3f9d9b92a9df11d8811ca2ad45c4131ab9dead461d",
       "pnpm-lock.yaml": "c6b33e8288e736bbc39048f976d38c5231860d5cb4ea22895765e85a4c9754ff",
-      ".agents/skills/best-api-review/SKILL.md": "6efbd1969db986962f154708c20e4f359c11cfc914e3dcf8deaf205bed00fa65",
+      ".agents/skills/verdict/SKILL.md": "6efbd1969db986962f154708c20e4f359c11cfc914e3dcf8deaf205bed00fa65",
       ".agents/rules/task/references/best-api-review.md": "c1647f7156572e48e349a35d4ff6dce7075e4c230854e3f7dc216644e7521c63",
       "packages/plitejs/src/interfaces/editor.ts": "167ca35ce8321ca41fd854cc46e9f5dd8b632f212559ee5c7dd5df745fc68f2d",
       "packages/plitejs/src/react/editable/projected-selection-target.ts": "953969dc6d5974f71ba108b861469befc7e9cc73215f509c1ed6ad4065da9a9a",

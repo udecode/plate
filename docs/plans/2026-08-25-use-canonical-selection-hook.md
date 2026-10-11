@@ -21,7 +21,7 @@ Applied packs:
 - browser (docs/plans/templates/packs/browser.md)
 
 Task source:
-- type: direct user instruction following an accepted Best API review
+- type: direct user instruction following an accepted Verdict
 - id / link: N/A
 - title: Replace redundant selection-only selectors
 - acceptance criteria: replace all 3 exact

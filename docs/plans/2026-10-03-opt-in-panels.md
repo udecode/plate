@@ -80,7 +80,7 @@ pstack:thermo-nuclear-code-quality-review, pstack:unslop, pstack:deslop
   | Project | Stage | Work | Tool |
   | --- | --- | --- | --- |
   | plate-2 | Plan | A plan with an API or architecture target | architect, then one panel on the finished plan |
-  | plate-2 | Plan | A best-api-review Pursue record | Panel on the record |
+  | plate-2 | Plan | A verdict Pursue record | Panel on the record |
   | plate-2 | Review | Someone else's PR | Review-only panel |
   | both | Build | Before opening a PR | Panel on the diff |
   | Ellie | Build | High-risk code (auth or access, patient data, the database or migrations, customer sends) before push | Panel on the diff, in a detached worktree |
@@ -104,7 +104,7 @@ pstack:thermo-nuclear-code-quality-review, pstack:unslop, pstack:deslop
 
 1. - [x] **dotai.** The block's Panel rule renders `reviews`; `bigWork` and the generic big-work list go; the trail-review rule narrows; cross-review leaves the skills, the block, `references/adapt.md`, the README and the catalog; sync-pstack learns "from now on <work> runs <tool>" and its verify check. Proof: tests that fail first for the rendered list and the playbook check, `scripts/validate-skills`. Done: dotai f47122c, 6b0a360, 3351651, 8fb6f60 and c7e67a0, pushed to main; `node --test skills/sync-pstack/scripts/sync-pstack.test.mjs` 84 pass, and the two new tests fail on f47122c~1.
 2. - [x] **Models.** `architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh` in `~/.claude/pstack-models.md` and `~/.codex/pstack-models.md`. Done: both sheets, line 24 and line 20.
-3. - [x] **Projects.** The starting rows and `dropped: cross-review` in both configs, then `apply` and `verify`. plate-2's `plan.md` drops the interrogate on the winner, `api-review.md` leaves PR numbers to the new route, and `babysit.md` adds the review-only path; plate-2 stays uncommitted. Ellie commits and pushes `next`. Done: Ellie 19e023edd on `next`; `sync-pstack verify` exit 0 in both projects.
+3. - [x] **Projects.** The starting rows and `dropped: cross-review` in both configs, then `apply` and `verify`. plate-2's `plan.md` drops the interrogate on the winner, `verdict.md` leaves PR numbers to the new route, and `babysit.md` adds the review-only path; plate-2 stays uncommitted. Ellie commits and pushes `next`. Done: Ellie 19e023edd on `next`; `sync-pstack verify` exit 0 in both projects.
 4. - [x] **User scope.** Back up and remove the global cross-review install; check for dangling links. Done: `npx skills@1.5.25 remove -g cross-review -y`; no cross-review entry or dangling link in the three user skill directories.
 5. - [x] **Guides.** Update the Plate v2 and Ellie workflow guides. Done: https://claude.ai/code/artifact/2aff4561-601c-4cef-83c8-37c0c3a4a2d0 (rev 53) and https://claude.ai/code/artifact/ac1f36ff-4f72-4348-b452-a2ac9d4d29d6 (rev 11).
 6. - [x] **Proof.** Plain-request smokes in both runtimes: an API plan in plate-2 runs cross-family architect and one plan panel; a feature plan in Ellie asks Build now / Panel first / Hold with no panel; "review PR 5139" runs a review-only panel; "from now on best-api design runs architect" edits the table; a high-risk Ellie change gets the diff panel before push. Then the decision-trail review before the dotai push, and `/pstack:reflect`. Done: scratch smoke/*.txt, logged in the decision log's proof rows; trail review in scratch trail-review/answer.md; `/pstack:reflect` runs after this close, and its lessons wait for the owner's approval.

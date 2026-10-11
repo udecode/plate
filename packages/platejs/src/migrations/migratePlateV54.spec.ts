@@ -1,10 +1,11 @@
 import {
   BaseParagraphPlugin,
   type BasePluginInput,
+  createEditor as createProductEditor,
   definePlugin,
 } from 'platejs';
 
-import { ElementApi, PathApi, property, schema, target } from '../core';
+import { ElementApi, property, schema, target } from '../core';
 import { BaseHeadingPlugin } from '../features/basic-nodes';
 import { BaseCodeBlockPlugin } from '../features/code-block';
 import { BaseListPlugin } from '../features/list';
@@ -19,7 +20,7 @@ import {
   type DocumentMigrations,
   migrateDocument as runDocumentMigration,
 } from './documentMigrations';
-import { type MigratePlateV54Options, migrateV54 } from './migratePlateV54';
+import { migrateV54 } from './migratePlateV54';
 import {
   V53_ELEMENT_TYPE_OWNERS,
   V53_FIRST_PARTY_IDENTITIES,
@@ -46,30 +47,23 @@ migrationPlugins.push(
   })
 );
 
-const defineV54Migrations = (
-  plugins: readonly BasePluginInput[],
-  list?: MigratePlateV54Options['list']
-) =>
+const defineV54Migrations = (plugins: readonly BasePluginInput[]) =>
   defineDocumentMigrations({
     plugins,
     schema: MigrationSchema,
     sourceFingerprints: { 53: 'plate-v53' },
-    steps: {
-      54: list ? (context) => migrateV54(context, { list }) : migrateV54,
-    },
+    steps: { 54: migrateV54 },
   });
 
 const migrationPlan = defineV54Migrations(migrationPlugins);
 
 const createEditor = ({
-  migrationList,
   plugins = migrationPlugins,
 }: Readonly<{
-  migrationList?: MigratePlateV54Options['list'];
   plugins?: readonly BasePluginInput[];
   [key: string]: unknown;
 }>) => ({
-  migrations: defineV54Migrations(plugins, migrationList),
+  migrations: defineV54Migrations(plugins),
 });
 
 const migrateDocument = (
@@ -909,7 +903,7 @@ describe('migratePlateV54 profile', () => {
     });
   });
 
-  it('normalizes derived starts across configured page traversal', () => {
+  it('keeps the start of a numbered item that opens a page', () => {
     const PagePlugin = definePlugin('page', {
       schema: ({ plugins }) => ({
         element: {
@@ -920,46 +914,15 @@ describe('migratePlateV54 profile', () => {
         },
       }),
     });
-    const list: NonNullable<MigratePlateV54Options['list']> = {
-      getPreviousEntry: ([, path], state) => {
-        if (PathApi.hasPrevious(path)) {
-          return state.nodes.get(PathApi.previous(path), {
-            match: ElementApi.isElement,
-          });
-        }
-        if (path[0] === 0) return undefined;
-
-        const pagePath = [path[0] - 1];
-        const page = state.nodes.get(pagePath, {
-          match: ElementApi.isElement,
-        })?.[0];
-        const child = page?.children.at(-1);
-
-        return page && child && ElementApi.isElement(child)
-          ? [child, [...pagePath, page.children.length - 1]]
-          : undefined;
-      },
-    };
     const editor = createEditor({
-      migrationList: list,
-      migrations: migrationPlan,
-      plugins: [
-        PagePlugin,
-        BaseListPlugin.configure({
-          initialState: {
-            getSiblingListOptions: list,
-          },
-        }),
-      ],
-      schema: MigrationSchema,
-      skipInitialization: true,
+      plugins: [PagePlugin, BaseListPlugin],
     });
-    const page = (text: string, listStart: number) => ({
+    const page = (text: string, listStart?: number) => ({
       children: [
         {
           children: [{ text }],
           indent: 1,
-          listStart,
+          ...(listStart === undefined ? {} : { listStart }),
           listStyleType: 'decimal',
           type: 'p',
         },
@@ -967,19 +930,30 @@ describe('migratePlateV54 profile', () => {
       type: 'page',
     });
     const result = migrateDocument(
-      { children: [page('One', 1), page('Two', 2)] },
+      { children: [page('One'), page('Two', 2)] },
       { editor, migrations: migrationPlan }
     ).document;
     const secondPage = result.children[1];
-    const secondItem = ElementApi.isElement(secondPage)
-      ? secondPage.children[0]
-      : undefined;
 
-    expect(secondItem).toMatchObject({ listType: 'numbered' });
-    expect(secondItem).not.toHaveProperty('listStart');
+    expect(
+      ElementApi.isElement(secondPage) ? secondPage.children[0] : undefined
+    ).toMatchObject({ listStart: 2, listType: 'numbered' });
+
+    const live = createProductEditor({
+      initialValue: result.children,
+      plugins: [PagePlugin, BaseListPlugin],
+    });
+    const livePage = live.read.children()[1];
+
+    expect(
+      ElementApi.isElement(livePage) &&
+        ElementApi.isElement(livePage.children[0])
+        ? live.read.list.ordinal(livePage.children[0])
+        : undefined
+    ).toBe(2);
   });
 
-  it('preserves boundaries when custom page traversal does not continue', () => {
+  it('preserves list boundaries across page containers', () => {
     const PagePlugin = definePlugin('page', {
       schema: ({ plugins }) => ({
         element: {
@@ -991,19 +965,7 @@ describe('migratePlateV54 profile', () => {
       }),
     });
     const editor = createEditor({
-      migrations: migrationPlan,
-      plugins: [
-        PagePlugin,
-        BaseListPlugin.configure({
-          initialState: {
-            getSiblingListOptions: {
-              getPreviousEntry: () => undefined,
-            },
-          },
-        }),
-      ],
-      schema: MigrationSchema,
-      skipInitialization: true,
+      plugins: [PagePlugin, BaseListPlugin],
     });
     const page = (
       text: string,
@@ -1274,5 +1236,62 @@ describe('migratePlateV54 profile', () => {
       listType: 'numbered',
     });
     expect(result.children[2]).not.toHaveProperty('listStart');
+  });
+
+  it('keeps v53 starts latent beside a forced restart and on bullets and tasks', () => {
+    const editor = createEditor({ plugins: [BaseListPlugin] });
+    const legacyItem = (
+      text: string,
+      listStyleType: string,
+      starts: Readonly<{ listRestart?: number; listRestartPolite?: number }>
+    ) => ({
+      children: [{ text }],
+      indent: 1,
+      listStyleType,
+      type: 'p',
+      ...starts,
+    });
+    const result = migrateDocument(
+      {
+        children: [
+          legacyItem('Forced', 'decimal', {
+            listRestart: 7,
+            listRestartPolite: 2,
+          }),
+          { children: [{ text: 'Break' }], type: 'p' },
+          legacyItem('Bullet', 'disc', { listRestart: 4 }),
+          { children: [{ text: 'Break' }], type: 'p' },
+          legacyItem('Task', 'todo', { listRestartPolite: 3 }),
+        ],
+      },
+      { editor, migrations: migrationPlan }
+    ).document;
+
+    expect(result.children[0]).toMatchObject({ listRestart: 7, listStart: 2 });
+    expect(result.children[2]).toMatchObject({
+      listRestart: 4,
+      listType: 'bulleted',
+    });
+    expect(result.children[4]).toMatchObject({
+      listStart: 3,
+      listType: 'task',
+    });
+
+    const live = createProductEditor({
+      initialValue: result.children.map((child, index) =>
+        index === 0 ? child : { ...child, listId: `list-${index}` }
+      ),
+      plugins: [BaseListPlugin],
+    });
+    const ordinal = (index: number) =>
+      live.read.list.ordinal(live.read.children()[index]);
+
+    expect(ordinal(0)).toBe(7);
+    live.update.list.continue({ at: [0] });
+    expect(ordinal(0)).toBe(2);
+
+    live.update.list.toggle({ at: [2], type: 'numbered' });
+    live.update.list.toggle({ at: [4], type: 'numbered' });
+    expect([ordinal(2), ordinal(4)]).toEqual([4, 3]);
   });
 });
