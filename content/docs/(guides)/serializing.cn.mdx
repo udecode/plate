@@ -113,9 +113,16 @@ source 与 Word revision 都属于 package workflow。
 
 ```ts
 import { exportDocx } from 'platejs/docx/export';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 
-const result = await exportDocx(editor, { projection: 'review' });
+const result = await exportDocx(editor, {
+  presentation: BaseEditorKit,
+  projection: 'review',
+});
 ```
+
+live editor 的组件是编辑 UI，所以把应用的 static kit 作为 `presentation` 传入来
+绘制文件。
 
 Word 文件包含可见的 Word 文档、comment 与 tracked revision。另一个 Plate editor
 需要恢复命名根、metadata 或精确的 authored change 记录时，把 Plate JSON 与文件

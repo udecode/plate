@@ -260,13 +260,21 @@ Markdown 不包含隐藏 Plate document，也不能恢复完整 review state。
 ```tsx
 import { exportDocx } from "platejs/docx/export";
 import { renderStaticHtml } from "platejs/static";
+import { BaseEditorKit } from "@/components/editor/plugins-static";
 
 const semanticHtml = editor.api.html.serialize({ projection: "proposed" });
-const styledHtml = await renderStaticHtml(editor, { projection: "proposed" });
-const docx = await exportDocx(editor, { projection: "review" });
+const styledHtml = await renderStaticHtml(editor, {
+  presentation: BaseEditorKit,
+  projection: "proposed",
+});
+const docx = await exportDocx(editor, {
+  presentation: BaseEditorKit,
+  projection: "review",
+});
 ```
 
-`renderStaticHtml` 使用当前 editor 的 static component。需要不含应用样式的
+`renderStaticHtml` 与 `exportDocx` 用作为 `presentation` 传入的 static kit
+绘制，因为 live editor 的组件是编辑 UI。需要不含应用样式的
 semantic HTML 时，调用 `editor.api.html.serialize({ projection })`。两种 HTML
 都只携带可见的 accepted 或 proposed content。成功的 DOCX result 在
 `docx.blob` 中返回 `Blob`。每个 serializer 都返回结构化 `diagnostics`。

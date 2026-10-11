@@ -3,12 +3,14 @@ import { expect, test } from 'bun:test';
 import { act, render } from '@testing-library/react';
 import React from 'react';
 
+import { BaseParagraphPlugin } from '../../lib';
 import {
   createEditor,
   ParagraphPlugin,
   EditorRoot,
   EditorContent,
 } from '../../react/core';
+import { renderStaticHtml } from '../../static/renderStaticHtml';
 import { CopilotPlugin } from './CopilotPlugin';
 
 test('a completion callback can reject a sentinel without leaving loading active', async () => {
@@ -38,6 +40,26 @@ test('reject cancels an in-flight request before any suggestion has arrived', as
   expect(signals[0].aborted).toBe(true);
   expect(plugin.store.get('suggestionText')).toBeNull();
   expect(plugin.store.get('isLoading')).toBe(false);
+});
+
+test('an export with a presentation leaves out the ghost text and reports nothing missing', async () => {
+  const editor = createEditor({
+    plugins: [
+      ParagraphPlugin,
+      CopilotPlugin.configure({
+        initialState: { renderGhostText: () => 'GHOST' },
+      }),
+    ],
+    initialValue: [{ type: 'paragraph', children: [{ text: 'Draft' }] }],
+  });
+
+  const { data, diagnostics } = await renderStaticHtml(editor, {
+    presentation: [BaseParagraphPlugin],
+  });
+
+  expect(diagnostics).toEqual([]);
+  expect(data).toContain('Draft');
+  expect(data).not.toContain('GHOST');
 });
 
 function setup() {

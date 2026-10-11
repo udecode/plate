@@ -1,10 +1,11 @@
-import { afterAll, describe, expect, it, mock } from 'bun:test';
+import { afterAll, describe, expect, it, mock, spyOn } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { BaseParagraphPlugin, createEditor, createEditorView } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { EditorRoot } from 'platejs/react';
+import * as actualStatic from 'platejs/static';
 import React from 'react';
 
 mock.module('@/registry/components/editor/dropdown-menu', () => ({
@@ -52,9 +53,13 @@ const exportDocx = mock(
   }
 );
 
+const renderStaticHtml = mock(actualStatic.renderStaticHtml);
+
 mock.module('platejs/docx/export', () => ({ exportDocx }));
+mock.module('platejs/static', () => ({ ...actualStatic, renderStaticHtml }));
+const toastError = mock();
 mock.module('sonner', () => ({
-  toast: { error: mock(), success: mock(), warning: mock() },
+  toast: { error: toastError, success: mock(), warning: mock() },
 }));
 
 const originalCreateObjectURL = URL.createObjectURL;
@@ -110,6 +115,54 @@ describe('ExportToolbarButton', () => {
     expect(exportOptions?.lossPolicy).toBe('allow');
     expect(click).toHaveBeenCalledTimes(1);
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:test');
+  });
+
+  const clickFailedExport = async (name: string) => {
+    const { ExportToolbarButton } = await import('./export-toolbar-button');
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'ABC' }], type: 'paragraph' }],
+      plugins: [BaseParagraphPlugin],
+    });
+    const consoleError = spyOn(console, 'error').mockImplementation(() => {});
+    toastError.mockClear();
+    const view = render(
+      <EditorRoot editor={editor}>
+        <ExportToolbarButton />
+      </EditorRoot>
+    );
+
+    try {
+      await act(async () => {
+        fireEvent.click(view.getByRole('button', { name }));
+      });
+    } finally {
+      view.unmount();
+      consoleError.mockRestore();
+    }
+  };
+
+  it('reports an HTML export that throws', async () => {
+    renderStaticHtml.mockImplementationOnce(async () => {
+      throw new Error('A component threw while drawing.');
+    });
+
+    await clickFailedExport('Export as HTML');
+
+    expect(toastError).toHaveBeenCalledWith(
+      'The HTML file could not be exported.'
+    );
+  });
+
+  it('reports a Word export that throws', async () => {
+    exportDocx.mockImplementationOnce(async () => {
+      throw new Error('A component threw while drawing.');
+    });
+
+    await clickFailedExport('Export as Word');
+
+    expect(toastError).toHaveBeenCalledWith(
+      'The Word document could not be exported.'
+    );
   });
 });
 

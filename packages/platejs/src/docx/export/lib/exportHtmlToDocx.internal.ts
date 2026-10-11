@@ -41,6 +41,7 @@ export const exportHtmlToDocx = async (
   const styleElement = stylesheet ? `<style>${stylesheet}</style>` : '';
   const fullHtml = `<html lang="en"><head><meta charset="utf-8" />${styleElement}</head><body>${bodyHtml}</body></html>`;
   const inlinedHtml = juice(fullHtml, {
+    decodeStyleAttributes: true,
     preserveFontFaces: false,
     preserveMediaQueries: false,
     removeStyleTags: false,

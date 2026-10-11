@@ -149,7 +149,7 @@ export const editorComponents: Registry['items'] = [
       label: 'New',
     },
     name: 'export-toolbar-button',
-    registryDependencies: ['@plate/editor', '@plate/editor-plugins-static'],
+    registryDependencies: ['@plate/editor'],
     title: 'Export Toolbar Button',
     type: 'registry:component',
   },

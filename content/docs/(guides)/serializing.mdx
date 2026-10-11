@@ -116,9 +116,16 @@ retained source, and Word revisions are part of its package workflow.
 
 ```ts
 import { exportDocx } from 'platejs/docx/export';
+import { BaseEditorKit } from '@/components/editor/plugins-static';
 
-const result = await exportDocx(editor, { projection: 'review' });
+const result = await exportDocx(editor, {
+  presentation: BaseEditorKit,
+  projection: 'review',
+});
 ```
+
+A live editor's components are editing UI, so pass the app's static kit as
+`presentation` to draw the file.
 
 A Word file contains the visible Word document, its comments, and its tracked
 revisions. Save Plate JSON beside it when another Plate editor must recover

@@ -57,6 +57,7 @@ import {
   type DocxListItem,
   readDocxNumbering,
 } from './numbering/readDocxNumbering';
+import { instrumentWordMath, materializeEquations } from './wordMath';
 
 export { DocxSource } from '../../internal/source';
 export type {
@@ -156,6 +157,7 @@ type DocxImportTarget<V extends Value> = Readonly<{
     document: EditorDocumentValue<V>;
     repairs: readonly DocxSchemaRepairDiagnostic[];
   }>;
+  hasElement: (type: string) => boolean;
   markerNonce: string;
   schemaIdentity: EditorSchemaIdentity;
   toHtml: typeof mammoth.convertToHtml;
@@ -287,6 +289,7 @@ const compileDocxImportTarget = <V extends Value>(
               repairs: Object.freeze(report.repairs.map(repairDiagnostic)),
             });
           },
+          hasElement: (type) => editorSchema.element(type) !== null,
           markerNonce: createMarkerNonce(),
           schemaIdentity: editorSchema.identity(),
           toHtml,
@@ -441,6 +444,11 @@ const createMarkerCodec = (documentXml: string, markerNonce: string) => {
   );
 
   return {
+    equation: Object.freeze({
+      block: `${prefix}equation-block${suffix}`,
+      end: `${prefix}equation-end${suffix}`,
+      inline: `${prefix}equation-inline${suffix}`,
+    }),
     listMarkers: (text: string) => text.match(listPattern) ?? [],
     marker,
     parse(
@@ -1327,7 +1335,15 @@ const importProjection = async (
         nodes = target.decodeHtml(wrapper, (loss) => losses.push(loss));
       }
       if (nodes?.every((node) => ElementApi.isElement(node))) {
-        bodyById.set(id, [...nodes]);
+        bodyById.set(
+          id,
+          rootValue(
+            materializeEquations(nodes, codec.equation, {
+              block: false,
+              inline: false,
+            })
+          )
+        );
         diagnostics.push(
           ...losses.map((loss) => mappingLossDiagnostic(loss, 'comment'))
         );
@@ -1364,7 +1380,13 @@ const importProjection = async (
 
   if (!nodes) throw new Error('DOCX HTML could not be decoded.');
 
-  return { bodyById, nodes };
+  return {
+    bodyById,
+    nodes: materializeEquations(nodes, codec.equation, {
+      block: target.hasElement('equation'),
+      inline: target.hasElement('inlineEquation'),
+    }),
+  };
 };
 
 const unsupportedPackageDiagnostics = (
@@ -1491,6 +1513,32 @@ const importBoundedDocx = async <V extends Value>(
   const documentXml = target.dom.decodeUtf8(source);
   const codec = createMarkerCodec(documentXml, target.markerNonce);
   const document = target.dom.parseXml(documentXml, 'word/document.xml');
+  const rewritten = new Map<string, string>();
+  const commentsSource = pkg.entries.get('word/comments.xml');
+
+  instrumentWordMath(
+    document,
+    codec.equation,
+    diagnostics,
+    'word/document.xml'
+  );
+  if (commentsSource) {
+    const commentsDocument = target.dom.parseXml(
+      target.dom.decodeUtf8(commentsSource),
+      'word/comments.xml'
+    );
+
+    instrumentWordMath(
+      commentsDocument,
+      codec.equation,
+      diagnostics,
+      'word/comments.xml'
+    );
+    rewritten.set(
+      'word/comments.xml',
+      target.dom.serializeXml(commentsDocument)
+    );
+  }
   const revisions = collectDocxRevisions(document, limits, diagnostics);
   const comments = commentMetadata(target.dom, pkg.entries, limits);
   const lists = instrumentNumbering(target.dom, pkg.entries, document, codec);
@@ -1499,9 +1547,8 @@ const importBoundedDocx = async <V extends Value>(
   instrumentContentRevisions(document, codec, diagnostics);
   instrumentComments(document, codec);
   throwIfDocxAborted(signal, target.dom.abortError);
-  const normalized = await pkg.toArrayBuffer(
-    new Map([['word/document.xml', target.dom.serializeXml(document)]])
-  );
+  rewritten.set('word/document.xml', target.dom.serializeXml(document));
+  const normalized = await pkg.toArrayBuffer(rewritten);
   throwIfDocxAborted(signal, target.dom.abortError);
   let projection: Awaited<ReturnType<typeof importProjection>>;
 

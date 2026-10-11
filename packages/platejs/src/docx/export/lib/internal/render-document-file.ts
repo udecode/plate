@@ -67,6 +67,7 @@ type DocxDocumentInstance = {
   createFont: (fontFamily: string) => string;
   createMediaFile: (base64Uri: string) => MediaFileResponse;
   createNumbering: (type: 'ol' | 'ul', properties?: VNodeProperties) => number;
+  taskNumberingId: (checked: boolean) => number;
   getBookmark: (htmlId: string) => { id: number; name: string } | undefined;
   openList: (
     type: 'ol' | 'ul',
@@ -182,11 +183,23 @@ type ContentGroup = {
   type: 'block' | 'inline';
 };
 
+const INDENT_CLASS_REGEX = /\beditor-indent-\d+\b/;
+
+const isIndented = (vNode: VNodeType) =>
+  !['ol', 'ul'].includes(vNode.tagName || '') &&
+  Boolean(
+    vNode.properties?.style?.['margin-left'] ||
+    INDENT_CLASS_REGEX.test(vNode.properties?.attributes?.class ?? '')
+  );
+
 async function findXMLEquivalent(
   docxDocumentInstance: DocxDocumentInstance,
   vNode: VNodeType,
-  xmlFragment: XMLBuilderType
+  xmlFragment: XMLBuilderType,
+  indentedAncestor: VNodeType | undefined
 ): Promise<void> {
+  const childIndentedAncestor = isIndented(vNode) ? vNode : indentedAncestor;
+
   if (
     vNode.tagName === 'div' &&
     (vNode.properties?.attributes?.class === 'page-break' ||
@@ -203,37 +216,6 @@ async function findXMLEquivalent(
 
     xmlFragment.import(paragraphFragment);
     return;
-  }
-
-  // Handle block equation with OMML
-  if (
-    vNode.tagName === 'div' &&
-    vNode.properties &&
-    vNode.properties.attributes &&
-    vNode.properties.attributes['data-equation-omml']
-  ) {
-    const ommlString = vNode.properties.attributes['data-equation-omml'];
-    try {
-      // Create a paragraph containing the OMML
-      const paragraphFragment = fragment({
-        namespaceAlias: { w: namespaces.w },
-      })
-        .ele('@w', 'p')
-        .ele('@w', 'pPr')
-        .ele('@w', 'jc')
-        .att('@w', 'val', 'center')
-        .up()
-        .up();
-      // Parse and import the OMML
-      const ommlFragment = fragment().ele(ommlString);
-      paragraphFragment.first().import(ommlFragment);
-      paragraphFragment.first().up();
-
-      xmlFragment.import(paragraphFragment);
-      return;
-    } catch {
-      console.warn('Failed to parse OMML for block equation');
-    }
   }
 
   // Handle div elements - check if they contain only inline children
@@ -300,7 +282,8 @@ async function findXMLEquivalent(
           await convertVTreeToXML(
             docxDocumentInstance,
             group.node,
-            xmlFragment
+            xmlFragment,
+            childIndentedAncestor
           );
         }
       }
@@ -516,7 +499,13 @@ async function findXMLEquivalent(
     }
     case 'ol':
     case 'ul': {
-      await buildList(vNode, docxDocumentInstance, xmlFragment);
+      // A list drawn without its own margin takes its indented ancestor's indent.
+      await buildList(
+        vNode,
+        docxDocumentInstance,
+        xmlFragment,
+        indentedAncestor
+      );
       return;
     }
     case 'img': {
@@ -546,9 +535,19 @@ async function findXMLEquivalent(
         isVNode(childVNode) &&
         ['ul', 'ol'].includes((childVNode as VNodeType).tagName || '')
       ) {
-        await buildList(childVNode, docxDocumentInstance, xmlFragment, vNode);
+        await buildList(
+          childVNode,
+          docxDocumentInstance,
+          xmlFragment,
+          childIndentedAncestor ?? vNode
+        );
       } else {
-        await convertVTreeToXML(docxDocumentInstance, childVNode, xmlFragment);
+        await convertVTreeToXML(
+          docxDocumentInstance,
+          childVNode,
+          xmlFragment,
+          childIndentedAncestor
+        );
       }
     }
   }
@@ -557,20 +556,27 @@ async function findXMLEquivalent(
 export async function convertVTreeToXML(
   docxDocumentInstance: DocxDocumentInstance,
   vTree: VTree | null,
-  xmlFragment: XMLBuilderType
+  xmlFragment: XMLBuilderType,
+  indentedAncestor?: VNodeType
 ): Promise<XMLBuilderType | string> {
   if (!vTree) {
     return '';
   }
   if (Array.isArray(vTree) && vTree.length) {
     for (const vNode of vTree) {
-      await convertVTreeToXML(docxDocumentInstance, vNode, xmlFragment);
+      await convertVTreeToXML(
+        docxDocumentInstance,
+        vNode,
+        xmlFragment,
+        indentedAncestor
+      );
     }
   } else if (isVNode(vTree)) {
     await findXMLEquivalent(
       docxDocumentInstance,
       vTree as VNodeType,
-      xmlFragment
+      xmlFragment,
+      indentedAncestor
     );
   } else if (isVText(vTree)) {
     const paragraphFragment = await buildParagraph(

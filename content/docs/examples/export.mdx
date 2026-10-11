@@ -24,15 +24,20 @@ component to add the menu to an editor toolbar.
 
 | Format   | Implementation | Output |
 | -------- | -------------- | ------ |
-| HTML     | `renderStaticHtml(model, { component: EditorStatic, projection })` from `platejs/static` | `plate.html` |
+| HTML     | `renderStaticHtml(model, { component: EditorStatic, presentation: BaseEditorKit, projection })` from `platejs/static` | `plate.html` |
 | Markdown | `model.api.markdown.serialize({ projection })` | `plate.md` |
-| Word     | `exportDocx(model, { component: EditorStatic, projection, stylesheet: DOCX_EXPORT_STYLES })` from `platejs/docx/export` | `plate.docx` |
+| Word     | `exportDocx(model, { component: EditorStatic, presentation: BaseEditorKit, projection, stylesheet: DOCX_EXPORT_STYLES })` from `platejs/docx/export` | `plate.docx` |
 
 Every format captures the same complete document and explicit authored
 projection from `useModelEditor()`. Export reads model content rather than the
 DOM, so selection, placeholders, and review decorations do not enter the file.
-The current editor supplies its compiled schema, format mappings, and static component
-bindings; export does not create a second conversion editor.
+The current editor supplies its compiled schema, format mappings, and plugin
+settings; the static kit supplies only the drawings.
+
+The editor's own components are editing UI, so HTML and Word pass the app's
+static kit as `presentation`. Export draws each node with the static component
+of the same plugin name. When a plugin has no static component, export draws its
+content without one and adds a `missing-static-presentation` warning.
 
 The HTML file inlines the app's own stylesheets and copies the page's `body`
 classes. Cross-origin stylesheets stay as links.

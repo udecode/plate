@@ -83,4 +83,17 @@ hr {
 sup { vertical-align: super; font-size: 8pt; }
 sub { vertical-align: sub; font-size: 8pt; }
 mark { background-color: #ffff00; }
+.editor-callout > table > tbody > tr > td { background-color: #f4f4f5; }
+.editor-callout > table > tbody > tr > td:first-child {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols;
+  font-size: 18px;
+}
+.editor-codeBlock > [data-docx-preserve-whitespace] {
+  background-color: #f5f5f5;
+  font-family: 'Courier New', Consolas, monospace;
+  font-size: 10pt;
+}
+.editor-equation [data-empty],
+.editor-inlineEquation [data-empty] { color: #888; }
+.editor-toc [data-empty] { color: #666; font-size: 10pt; }
 `.trim();

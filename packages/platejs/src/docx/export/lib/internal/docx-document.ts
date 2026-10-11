@@ -162,6 +162,8 @@ export interface RelationshipXMLOutput {
 
 /** Numbering object */
 export interface NumberingObject {
+  /** A bullet list's own marker in place of the default bullets. */
+  marker?: Readonly<{ font: string; text: string }>;
   numberingId: number;
   /** Set on the one Word definition of a Plate list. */
   plateList?: PlateListDefinition;
@@ -444,6 +446,7 @@ class DocxDocument {
   >();
   private readonly numberingOverrides: NumberingOverride[] = [];
   private readonly openLists = new Map<string, OpenList>();
+  private readonly taskNumbering = new Map<boolean, number>();
   allowRemoteImages: boolean;
   availableDocumentSpace: number;
   complexScriptFontSize: number;
@@ -843,7 +846,7 @@ class DocxDocument {
     const numberingFragments = fragment();
 
     this.numberingObjects.forEach(
-      ({ numberingId, plateList, type, properties }) => {
+      ({ marker, numberingId, plateList, type, properties }) => {
         const abstractNumberingFragment = fragment({
           namespaceAlias: { w: namespaces.w },
         })
@@ -894,7 +897,7 @@ class DocxDocument {
               levelType === 'ol'
                 ? (rules?.label ??
                     this.ListStyleBuilder.getListPrefixSuffix(style, level))
-                : getBulletChar(level)
+                : (marker?.text ?? getBulletChar(level))
             )
             .up()
             .ele('@w', 'lvlJc')
@@ -919,8 +922,8 @@ class DocxDocument {
               fragment({ namespaceAlias: { w: namespaces.w } })
                 .ele('@w', 'rPr')
                 .ele('@w', 'rFonts')
-                .att('@w', 'ascii', 'Symbol')
-                .att('@w', 'hAnsi', 'Symbol')
+                .att('@w', 'ascii', marker?.font ?? 'Symbol')
+                .att('@w', 'hAnsi', marker?.font ?? 'Symbol')
                 .att('@w', 'hint', 'default')
                 .up()
                 .up()
@@ -1017,9 +1020,30 @@ class DocxDocument {
     }
   }
 
-  createNumbering(type: 'ol' | 'ul', properties: NumberingProperties): number {
+  taskNumberingId(checked: boolean): number {
+    const existing = this.taskNumbering.get(checked);
+
+    if (existing !== undefined) return existing;
+    // Symbol, the bullet font, has no ballot box glyphs.
+    const id = this.createNumbering(
+      'ul',
+      {},
+      { font: 'Segoe UI Symbol', text: checked ? '☑' : '☐' }
+    );
+
+    this.taskNumbering.set(checked, id);
+
+    return id;
+  }
+
+  createNumbering(
+    type: 'ol' | 'ul',
+    properties: NumberingProperties,
+    marker?: NumberingObject['marker']
+  ): number {
     this.lastNumberingId += 1;
     this.numberingObjects.push({
+      marker,
       numberingId: this.lastNumberingId,
       type,
       properties,
