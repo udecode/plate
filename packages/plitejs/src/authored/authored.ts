@@ -314,6 +314,16 @@ const VIEW_SELECTIONS = new WeakMap<
   ReturnType<typeof getEditorRuntime>,
   AuthoredViewSelection
 >();
+const RESOLVED_VIEW_SELECTIONS = new WeakMap<
+  ReturnType<typeof getEditorRuntime>,
+  {
+    captured: AuthoredViewSelection;
+    positions: AuthoredPositionRoots;
+    value: EditorDocumentValue;
+    state: AuthoredState;
+    result: { selection: Selection; root: string };
+  }
+>();
 const FRAGMENT_VIEWS = new WeakMap<
   object,
   Readonly<{
@@ -659,20 +669,37 @@ const readBoundFragmentProjection = (
 };
 
 const readViewSelection = (view: Editor, live: AuthoredRuntime) => {
-  const captured = VIEW_SELECTIONS.get(getEditorRuntime(view)) ?? null;
+  const runtime = getEditorRuntime(view);
+  const captured = VIEW_SELECTIONS.get(runtime) ?? null;
   const accepted = authoredView(view).projection === 'accepted';
-  const selection = resolveAuthoredSelection(
-    captured,
-    accepted ? live.acceptedPositions : live.projectedPositions,
-    accepted ? live.accepted : live.projected,
-    getEditorStateView(live.source).getField(authoredState)
-  );
-  return {
+  const positions = accepted ? live.acceptedPositions : live.projectedPositions;
+  const value = accepted ? live.accepted : live.projected;
+  const state = getEditorStateView(live.source).getField(authoredState);
+  const cached = RESOLVED_VIEW_SELECTIONS.get(runtime);
+  if (
+    cached &&
+    cached.captured === captured &&
+    cached.positions === positions &&
+    cached.value === value &&
+    cached.state === state
+  ) {
+    return cached.result;
+  }
+  const selection = resolveAuthoredSelection(captured, positions, value, state);
+  const result = {
     selection,
     root: selection
       ? (SelectionApi.root(selection) ?? 'main')
       : (captured?.root ?? 'main'),
   };
+  RESOLVED_VIEW_SELECTIONS.set(runtime, {
+    captured,
+    positions,
+    value,
+    state,
+    result,
+  });
+  return result;
 };
 
 const currentAuthorId = (state: AuthoredRuntime): string | null => {

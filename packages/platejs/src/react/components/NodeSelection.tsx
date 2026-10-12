@@ -200,7 +200,8 @@ const intersects = (selection: SelectionRect, target: DOMRect) =>
 
 type SelectionEntry = Readonly<{ key: NodeKey; node: Element; path: Path }>;
 
-type SelectionCandidate = SelectionEntry & Readonly<{ rect: DOMRect }>;
+type SelectionCandidate = SelectionEntry &
+  Readonly<{ rect: DOMRect; target: HTMLElement }>;
 
 const getSelectionCandidates = (
   editor: Editor,
@@ -230,11 +231,14 @@ const getSelectionCandidates = (
 
       if (!path) return;
 
+      const target = targets.get(element) ?? element;
+
       entries.set(path.join(','), {
         key: editor.key(node),
         node,
         path,
-        rect: (targets.get(element) ?? element).getBoundingClientRect(),
+        target,
+        rect: target.getBoundingClientRect(),
       });
     });
 
@@ -327,6 +331,7 @@ export function NodeSelectionDrag({
           baseAnchor?: NodeKey;
           baseEntries: readonly SelectionEntry[];
           candidates: readonly SelectionCandidate[];
+          candidatesDirty: boolean;
           current: { x: number; y: number };
           geometryDirty: boolean;
           lastAnchorPath?: Path;
@@ -334,10 +339,12 @@ export function NodeSelectionDrag({
           lastPaths: readonly Path[] | null;
           pointerId: number;
           start: { x: number; y: number };
+          origin: { key?: NodeKey; x: number; y: number };
+          frameTime: number | null;
         }
       | undefined;
 
-    const updateSelection = () => {
+    const updateSelection = (frameTime?: number) => {
       frame = undefined;
       if (!gesture) return;
       if (editor.read.view.isReadOnly()) {
@@ -345,15 +352,67 @@ export function NodeSelectionDrag({
         return;
       }
 
-      const nextRect = rectFromPoints(gesture.start, gesture.current);
-      if (gesture.geometryDirty) {
+      const container = editor.api.dom.scroll() ?? editable;
+      const containerRect = container.getBoundingClientRect();
+      const top = Math.max(0, containerRect.top);
+      const bottom = Math.min(ownerWindow.innerHeight, containerRect.bottom);
+      if (frameTime !== undefined) {
+        const elapsed =
+          gesture.frameTime === null
+            ? 1000 / 60
+            : Math.min(frameTime - gesture.frameTime, 32);
+        gesture.frameTime = frameTime;
+        const distance =
+          gesture.current.y < top + 40
+            ? gesture.current.y - top - 40
+            : gesture.current.y > bottom - 40
+              ? gesture.current.y - bottom + 40
+              : 0;
+        const scroll =
+          container.scrollHeight > container.clientHeight
+            ? container
+            : ownerDocument.scrollingElement;
+        if (distance !== 0 && scroll) {
+          const previous = scroll.scrollTop;
+          // Match upstream SelectionArea's speed divider at a 60Hz frame rate.
+          const step =
+            Math.sign(distance) * Math.ceil(Math.abs(distance) / 0.7);
+          scroll.scrollTop += step * (elapsed / (1000 / 60));
+          if (scroll.scrollTop !== previous) {
+            gesture.geometryDirty = true;
+            scheduleUpdate();
+          }
+        }
+      }
+      const editableRect = editable.getBoundingClientRect();
+      if (gesture.candidatesDirty) {
         gesture.candidates = getSelectionCandidates(editor, editable);
         gesture.baseEntries = getSelectionEntries(
           editor,
           gesture.baseEntries.map(({ key }) => key)
         );
+        gesture.candidatesDirty = false;
+        gesture.geometryDirty = false;
+      } else if (gesture.geometryDirty) {
+        gesture.candidates = gesture.candidates.map((candidate) => ({
+          ...candidate,
+          rect: candidate.target.getBoundingClientRect(),
+        }));
         gesture.geometryDirty = false;
       }
+      const originKey = gesture.origin.key;
+      const origin = gesture.candidates.find(
+        ({ key }) => key === originKey
+      )?.rect;
+      gesture.start = {
+        x:
+          (origin?.left ?? editableRect.left - editable.scrollLeft) +
+          gesture.origin.x,
+        y:
+          (origin?.top ?? editableRect.top - editable.scrollTop) +
+          gesture.origin.y,
+      };
+      const nextRect = rectFromPoints(gesture.start, gesture.current);
       const entries = getSelectableEntries(
         gesture.candidates,
         nextRect,
@@ -363,9 +422,28 @@ export function NodeSelectionDrag({
       const selectionElement = selectionElementRef.current;
 
       if (selectionElement) {
-        selectionElement.style.height = `${nextRect.height}px`;
-        selectionElement.style.transform = `translate3d(${nextRect.left}px, ${nextRect.top}px, 0)`;
-        selectionElement.style.width = `${nextRect.width}px`;
+        // Clip the paint, not the hit area: selected blocks can be offscreen.
+        const left = Math.max(
+          nextRect.left,
+          editableRect.left,
+          containerRect.left,
+          0
+        );
+        const clippedTop = Math.max(nextRect.top, editableRect.top, top);
+        const right = Math.min(
+          nextRect.left + nextRect.width,
+          editableRect.right,
+          containerRect.right,
+          ownerWindow.innerWidth
+        );
+        const clippedBottom = Math.min(
+          nextRect.top + nextRect.height,
+          editableRect.bottom,
+          bottom
+        );
+        selectionElement.style.height = `${Math.max(0, clippedBottom - clippedTop)}px`;
+        selectionElement.style.transform = `translate3d(${left}px, ${clippedTop}px, 0)`;
+        selectionElement.style.width = `${Math.max(0, right - left)}px`;
       }
       if (entries.length === 0) {
         if (gesture.lastPaths === null || gesture.lastPaths.length > 0) {
@@ -447,39 +525,63 @@ export function NodeSelectionDrag({
           ? editor.read.nodes.block({ at: selection.anchor })?.[0]
           : undefined;
       const nextRect = rectFromPoints(point, point);
+      const editableRect = editable.getBoundingClientRect();
+      const candidates = getSelectionCandidates(editor, editable);
+      const distance = (rect: DOMRect) =>
+        Math.max(rect.top - point.y, point.y - rect.bottom, 0);
+      const origin = candidates
+        .filter(({ rect }) => rect.height > 0 && rect.width > 0)
+        .reduce<SelectionCandidate | undefined>(
+          (nearest, candidate) =>
+            !nearest ||
+            distance(candidate.rect) < distance(nearest.rect) ||
+            (distance(candidate.rect) === distance(nearest.rect) &&
+              candidate.rect.height < nearest.rect.height)
+              ? candidate
+              : nearest,
+          undefined
+        );
 
       setSelectionRect(nextRect);
 
       gesture = {
         baseEntries: shiftKey ? getSelectionEntries(editor, selectedKeys) : [],
         baseAnchor: baseAnchor ? editor.key(baseAnchor) : undefined,
-        candidates: getSelectionCandidates(editor, editable),
+        candidates,
+        candidatesDirty: false,
         current: point,
         geometryDirty: false,
         lastPaths: null,
         pointerId,
         start: point,
+        origin: {
+          key: origin?.key,
+          x:
+            point.x -
+            (origin?.rect.left ?? editableRect.left - editable.scrollLeft),
+          y:
+            point.y -
+            (origin?.rect.top ?? editableRect.top - editable.scrollTop),
+        },
+        frameTime: null,
       };
+      candidateObserver.observe(editable, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['data-node-selection-target'],
+      });
+      sizeObserver.observe(editable);
       editable.focus({ preventScroll: true });
     };
     const moveGesture = (point: { x: number; y: number }) => {
       if (!gesture) return;
       gesture.current = point;
       scheduleUpdate();
-
-      const scroll = editor.api.dom.scroll?.();
-      const bounds = scroll?.getBoundingClientRect();
-      const top = bounds?.top ?? 0;
-      const bottom = bounds?.bottom ?? ownerWindow.innerHeight;
-      const delta = point.y < top + 32 ? -12 : point.y > bottom - 32 ? 12 : 0;
-
-      if (delta !== 0) {
-        if (scroll) scroll.scrollBy({ top: delta });
-        else ownerWindow.scrollBy({ top: delta });
-        gesture.geometryDirty = true;
-      }
     };
     const cancelGesture = () => {
+      candidateObserver.disconnect();
+      sizeObserver.disconnect();
       if (frame !== undefined) ownerWindow.cancelAnimationFrame(frame);
       frame = undefined;
       if (finishFrame !== undefined) {
@@ -497,6 +599,8 @@ export function NodeSelectionDrag({
     const finishGesture = () => {
       if (!gesture) return;
 
+      candidateObserver.disconnect();
+      sizeObserver.disconnect();
       if (frame !== undefined) ownerWindow.cancelAnimationFrame(frame);
       updateSelection();
       if (!gesture) return;
@@ -597,8 +701,29 @@ export function NodeSelectionDrag({
       event.stopPropagation();
     };
     const onGeometryChange = () => {
-      if (gesture) gesture.geometryDirty = true;
+      if (gesture) {
+        gesture.geometryDirty = true;
+        scheduleUpdate();
+      }
     };
+    const candidateObserver = new ownerWindow.MutationObserver((records) => {
+      if (!gesture) return;
+      const selector = `${EDITOR_ELEMENT_SELECTOR},[data-node-selection-target]`;
+      const hasCandidates = (node: Node) =>
+        node instanceof ownerWindow.Element &&
+        (node.matches(selector) || node.querySelector(selector) !== null);
+      if (
+        records.some(
+          (record) =>
+            record.type === 'attributes' ||
+            [...record.addedNodes, ...record.removedNodes].some(hasCandidates)
+        )
+      ) {
+        gesture.candidatesDirty = true;
+        scheduleUpdate();
+      }
+    });
+    const sizeObserver = new ownerWindow.ResizeObserver(onGeometryChange);
 
     const onKey = (event: KeyboardEvent) => {
       if (gesture && event.key === 'Escape') {
@@ -691,7 +816,7 @@ export function NodeSelectionDrag({
     };
     const unsubscribe = editor.subscribeCommit((commit) => {
       if (gesture && commit.changed.hasAny('document')) {
-        gesture.geometryDirty = true;
+        gesture.candidatesDirty = true;
         scheduleUpdate();
       }
     });

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
+import { waitForSelectionSync } from '../../../../packages/test/src/playwright/selection-snapshots';
 
 for (const route of ['/blocks/details-demo', '/blocks/playground']) {
   test(`selects only a Details body row on ${route}`, async ({
@@ -8,6 +9,7 @@ for (const route of ['/blocks/details-demo', '/blocks/playground']) {
   }, testInfo) => {
     const errors = recordBrowserRuntimeErrors(page);
     try {
+      await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
       await page.goto(route);
       const root = page
         .locator('[data-editor="true"][contenteditable="true"]')
@@ -40,6 +42,7 @@ for (const route of ['/blocks/details-demo', '/blocks/playground']) {
         await page.keyboard.press('Enter');
         await page.keyboard.type(text);
       }
+      await waitForSelectionSync(root);
       const row = page.getByText('probe-two', { exact: true });
       const paragraph = row.locator(
         'xpath=ancestor::*[@data-editor-node="element"][1]'
@@ -53,7 +56,10 @@ for (const route of ['/blocks/details-demo', '/blocks/playground']) {
               element.parentElement?.getAttribute('data-editor-path')
             )
           );
-      await row.scrollIntoViewIfNeeded();
+      // Keep the single-row hit-area check outside the edge autoscroll zone.
+      await row.evaluate((element) =>
+        element.scrollIntoView({ block: 'center' })
+      );
       const rowBox = await row.boundingBox();
       const outerBox = await outer.boundingBox();
       if (!rowBox || !outerBox) throw new Error('Missing Details geometry');
