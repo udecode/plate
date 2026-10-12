@@ -29,10 +29,10 @@ Welcome to the table.
 
 The bug form is written for execution, not storytelling.
 
-Maintainers usually work bugs through Codex using [`task`](.agents/skills/task/SKILL.md) or [`major-task`](.agents/skills/major-task/SKILL.md).
-
-- Focused local regressions fit `task`
-- Cross-package, public API, architecture, and performance work often fit `major-task`
+Maintainers use pstack and the [project playbooks](.agents/playbooks) for local work.
+The [maintainer skill](.agents/skills/maintainer/SKILL.md) owns public intake;
+[verify](.agents/skills/verify/SKILL.md) owns proof of the reported behavior.
+See the [workflow guide](docs/development/agent-skills.md) for routing and checks.
 
 If a field cannot be answered from evidence, write exactly `NOT_ENOUGH_INFO`.
 
@@ -65,9 +65,9 @@ Issues without enough grounded evidence may be labeled `needs reproduction`, dep
     - `pnpm check`
 - If you changed package exports or public file layout, run `pnpm brl`.
 - If you changed published packages under `packages/`, add a changeset.
-- If you changed only registry code under `apps/www/src/registry/**`, update `docs/components/changelog.mdx` instead of adding a package changeset.
+- If you changed only registry code under `apps/www/src/registry/**`, add a source entry under `apps/www/src/registry/changelog/entries` through the [changeset skill](.agents/skills/changeset/SKILL.md).
 - If you changed browser-facing UI, include screenshots or a short recording.
-- If you have access to Codex, run `codex review --base origin/main` locally before opening or updating your PR. Treat that as the current highest standard of AI review, even if GitHub Codex review also runs.
+- Maintainer-assisted work follows the review gates in [the workflow guide](docs/development/agent-skills.md).
 - Do not submit refactor-only PRs unless a maintainer explicitly requested that refactor for an active fix or deliverable.
 - Do not submit test-only or CI-only PRs that merely try to make known `main` failures pass.
 - Ensure CI checks pass.
@@ -84,7 +84,7 @@ If a review bot leaves review conversations on your PR, you are expected to hand
 - Reply and leave it open only when you need maintainer judgment.
 - Do not leave "fixed" bot review conversations for maintainers to clean up for you.
 - If Codex leaves comments, address every relevant one or resolve it with a short explanation when it is not applicable to your change.
-- If GitHub Codex review does not trigger for some reason, run `codex review --base origin/main` locally anyway and treat that output as required review work.
+- Review your diff even when a hosted review bot is unavailable. Codex users can run `codex review --base origin/main`. Maintainer-assisted work also follows the project review gates.
 
 This applies to both human-authored and AI-assisted PRs.
 
@@ -98,7 +98,7 @@ Please include in your PR:
 - [ ] Note the degree of testing: untested / lightly tested / fully tested
 - [ ] Include prompts or session logs if possible
 - [ ] Confirm you understand what the code does
-- [ ] If you have access to Codex, run `codex review --base origin/main` locally and address the findings before asking for review
+- [ ] Review the diff and address relevant findings before asking for review. Maintainer-assisted work also completes the project review gates.
 - [ ] Resolve or reply to bot review conversations after you address them
 
 AI PRs are first-class citizens here. We just want transparency so reviewers know what to look for.

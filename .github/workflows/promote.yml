@@ -121,9 +121,9 @@ jobs:
             echo "- Dry run: \`${DRY_RUN}\`"
             echo "- Next: review and merge the promote PR with **Create a merge commit**."
             echo ""
-            echo "After the promote PR lands on main and release.yml publishes latest, run the release-lanes autogoal workflow. It syncs main directly into next, restores beta pre mode in the sync commit when needed, and verifies the beta lane:"
+            echo "After the promote PR lands on main and release.yml publishes latest, run the release-lanes skill to sync main into next and verify the beta lane:"
             echo '```bash'
-            echo "node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs --template release-lanes --title 'release lane maintenance'"
+            echo 'release-lanes sync'
             echo "# then follow the release-lanes skill"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Walkthrough"
+  short_description: "Annotate real final-state demo screenshots"
+  default_prompt: "Use $walkthrough to explain this completed change with concise annotated visuals."
+policy:
+  allow_implicit_invocation: true
