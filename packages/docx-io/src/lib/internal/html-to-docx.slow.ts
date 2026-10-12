@@ -18,6 +18,17 @@ async function loadZipFromBlob(blob: Blob): Promise<JSZip> {
   return JSZip.loadAsync(arrayBuffer);
 }
 
+const RUN_PATTERN = /<w:r>[\s\S]*?<\/w:r>/g;
+const RUN_TEXT_PATTERN = /<w:t[^>]*>([\s\S]*?)<\/w:t>/;
+const RUN_PROPERTY_PATTERN = /<w:(\w+)[^>]*\/>/g;
+
+function getTextRuns(docXml: string): [string, string[]][] {
+  return (docXml.match(RUN_PATTERN) ?? []).map((run) => [
+    run.match(RUN_TEXT_PATTERN)?.[1] ?? '',
+    [...run.matchAll(RUN_PROPERTY_PATTERN)].map((match) => match[1]).sort(),
+  ]);
+}
+
 describe('htmlToDocxBlob', () => {
   describe('basic functionality', () => {
     it('returns a Blob', async () => {
@@ -120,6 +131,104 @@ describe('htmlToDocxBlob', () => {
       const docXml = await zip.file('word/document.xml')!.async('string');
       expect(docXml).toContain('Strikethrough text');
       expect(docXml).toContain('<w:strike');
+    });
+
+    it.each<{ html: string; runs: [string, string[]][] }>([
+      {
+        html: '<p><em><b>bold italic</b></em></p>',
+        runs: [['bold italic', ['b', 'i']]],
+      },
+      {
+        html: '<p><b><em>bold italic</em></b></p>',
+        runs: [['bold italic', ['b', 'i']]],
+      },
+      {
+        html: '<p><u><em><b>all three</b></em></u></p>',
+        runs: [['all three', ['b', 'i', 'u']]],
+      },
+      {
+        html: '<p><span><u><em><b>x</b></em></u></span></p>',
+        runs: [['x', ['b', 'i', 'u']]],
+      },
+      {
+        html: '<p><em><span><b>bold italic</b></span></em></p>',
+        runs: [['bold italic', ['b', 'i']]],
+      },
+      {
+        html: '<p><del><ins>x</ins></del></p>',
+        runs: [['x', ['strike', 'u']]],
+      },
+      {
+        html: '<p><sup><b>x</b></sup></p>',
+        runs: [['x', ['b', 'vertAlign']]],
+      },
+      {
+        html: '<p><kbd><em>x</em></kbd></p>',
+        runs: [['x', ['highlight', 'i']]],
+      },
+      {
+        html: '<p><mark><code>x</code></mark></p>',
+        runs: [['x', ['highlight']]],
+      },
+      {
+        html: '<p><sub><sup>x</sup></sub></p>',
+        runs: [['x', ['vertAlign']]],
+      },
+      {
+        html: '<p><b>a <em>b</em></b></p>',
+        runs: [
+          ['a ', ['b']],
+          ['b', ['b', 'i']],
+        ],
+      },
+      {
+        html: '<p><b><em>x</em> tail</b></p>',
+        runs: [
+          ['x', ['b', 'i']],
+          [' tail', ['b']],
+        ],
+      },
+      {
+        html: '<p><em>a <b>x</b> c</em></p>',
+        runs: [
+          ['a ', ['i']],
+          ['x', ['b', 'i']],
+          [' c', ['i']],
+        ],
+      },
+      {
+        html: '<p><em>a</em><b>b</b></p>',
+        runs: [
+          ['a', ['i']],
+          ['b', ['b']],
+        ],
+      },
+      {
+        html: '<p><b><em>p <s>q</s></em><u>r</u></b></p>',
+        runs: [
+          ['p ', ['b', 'i']],
+          ['q', ['b', 'i', 'strike']],
+          ['r', ['b', 'u']],
+        ],
+      },
+    ])('applies every enclosing formatting tag to each text run of $html', async ({
+      html,
+      runs,
+    }) => {
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(getTextRuns(docXml)).toEqual(runs);
+    });
+
+    it('keeps the innermost highlight when highlight tags nest', async () => {
+      const result = await htmlToDocxBlob('<p><mark><code>x</code></mark></p>');
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('<w:highlight w:val="lightGray"/>');
+      expect(docXml).not.toContain('<w:highlight w:val="yellow"/>');
     });
   });
 
