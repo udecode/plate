@@ -1,28 +1,28 @@
 # Sync pstack from plate-2
 
-Status: building
+Status: executed
 Playbook: authoring-a-skill
 
 ## Brief
 
 ### What will change?
 
-Plate gets a subset of the current plate-2 workflow with the same 23 skill names. Its
-methods use Plate's existing Slate packages, and the old parallel workflow is
-removed. The result ships as one pull request.
+Plate now has the same 23 skill names as plate-2, with methods adapted to its
+existing packages. The old parallel workflow is removed. PR 5162 is open and
+ready for review.
 
 ### What could go wrong?
 
-An old command could survive in a guide or generated skill. A copied method
-could require an editor engine or helper Plate does not have. Inventory,
-generation checks, fresh routing trials and review check those risks.
+The fix review and audit used same-family fallbacks after Opus failed.
+Routing trials checked answers rather than product actions. The source
+inventory, workflow controls and full repository checks passed.
 
 ## Teach
 
 Pstack supplies the work steps and review gates. Project skills tell an agent
 how to apply those steps to Plate packages, UI, docs and proof.
 
-Plate-2 has a smaller current workflow. Plate carries an older workflow and
+Plate-2 has a smaller current workflow. Plate carried an older workflow and
 uses different editor packages. This sync keeps the current methods that fit,
 adapts the package instructions and removes unsupported commands.
 
@@ -60,7 +60,7 @@ implementation stay outside this workflow migration.
 - [x] Use the platform skill-authoring guidance. Proof: `/Users/zbeyens/.agents/skills/writing-for-agents/SKILL.md` and `/Users/zbeyens/.agents/skills/writing-for-agents/SKILL-MECHANICS.md` read in this run.
 - [x] Validate the skill: frontmatter has name and description, referenced files exist, cross-skill links resolve. Proof: `pnpm check:workflow`.
 - [x] Test cases if structural. Skip if subjective. Proof: `docs/plans/artifacts/sync-pstack-plate/generation-final-a1.log`, `docs/plans/artifacts/sync-pstack-plate/workflow-controls-final-a2.log` and `docs/plans/artifacts/sync-pstack-plate/paired-routing-grades.json`; the partial answer rehearsal is accepted under the Routing trial default.
-- [ ] Run Opening a PR. Proof: reviewed diff, final checks, commit and exact PR URL.
+- [x] Run Opening a PR. Proof: commit `5325766cfa` and https://github.com/udecode/plate/pull/5162, read back as ready into main.
 - [x] "fully sync pstack to ../plate". Proof: `docs/development/pstack-source.json`, `docs/development/pstack-sync.md` and `pnpm check:workflow`.
 - [x] "cut/move ALL the rest". Proof: `docs/development/pstack-source.json`, `docs/development/pstack-sync.md` and `docs/plans/artifacts/sync-pstack-plate/additional-controls-a2.log`.
 - [x] "same number of skills". Proof: `pnpm check:workflow` verifies exact 23-name equality in both runtimes.
@@ -68,7 +68,15 @@ implementation stay outside this workflow migration.
 - [x] Run writing passes and configured diff review. Proof: `09554dc34f899c4e28a24836ab91463022051640`, the decision log's two panel rounds and `docs/plans/artifacts/sync-pstack-plate/review-warnings-a1.log`. The fix review is same-family because Opus timed out.
 - [x] Run the final lint and acceptance checks. Proof: final command logs and `pnpm check`.
 - [x] Review the decision trail and reflect. Proof: `docs/plans/artifacts/sync-pstack-plate/trail_fallback-reply.txt`, `docs/plans/artifacts/sync-pstack-plate/reflect_final-reply.txt` and the decision log.
-- [ ] Keep replies in English. Proof: all user-facing replies through close.
+- [x] Keep replies in English. Proof: `docs/plans/artifacts/sync-pstack-plate/trail-transcript-final.jsonl` and the English close and PR body.
+
+- [x] "open a PR". Proof: https://github.com/udecode/plate/pull/5162.
+- [x] "adjust/cut things only related to plate-2, its ok if its a subset". Proof: `docs/development/pstack-sync.md`, `docs/development/pstack-omissions.json` and unchanged product sources and Vision.
+
+## Demo
+
+1. Open https://github.com/udecode/plate/pull/5162 to review the complete migration into main.
+2. Read `docs/development/pstack-sync.md` for the retained methods and omitted support files.
 
 ## Proof
 
