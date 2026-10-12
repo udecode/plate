@@ -27,7 +27,7 @@ export const convertNodesSerialize = (
   const mdastNodes: MdRootContent[] = [];
   let textQueue: Text[] = [];
 
-  const listBlock: ListElement[] = [];
+  const listBlock: Element[] = [];
   let restartedFrom: MdList | undefined;
 
   for (let i = 0; i <= nodes.length; i++) {
@@ -42,14 +42,17 @@ export const convertNodesSerialize = (
       textQueue = [];
       if (!node) continue;
 
-      if (isListElement(node, options)) {
+      if (isListElement(node, options) || isListContinuation(listBlock, node)) {
         listBlock.push(node);
 
         const next = nodes[i + 1];
-        const isNextIndent = isListElement(next, options);
-        const firstList = listBlock.at(0);
+        const isNextIndent =
+          isListElement(next, options) || isListContinuation(listBlock, next);
+        const firstList = listBlock.find((block) =>
+          isListElement(block, options)
+        );
         const isSameIndent =
-          isNextIndent &&
+          isListElement(next, options) &&
           firstList &&
           (next.indent ?? 1) === (firstList.indent ?? 1);
         const isOtherList =
@@ -123,6 +126,34 @@ export const buildMdastNode = (
 
   return encoded.node;
 };
+
+// Markdown list parsing gives an item's later blocks its indent + 1 and no
+// listType, so such a block stays in the open item at its indent - 1.
+const isListContinuation = (
+  run: readonly Element[],
+  node: Descendant | undefined
+): node is Element => {
+  if (
+    !node ||
+    TextApi.isText(node) ||
+    node.listType !== undefined ||
+    typeof node.indent !== 'number' ||
+    node.indent < 2
+  ) {
+    return false;
+  }
+  const ownerIndent = node.indent - 1;
+  const owner = run.findLast((block) => indentOf(block) <= ownerIndent);
+
+  return (
+    owner !== undefined &&
+    indentOf(owner) === ownerIndent &&
+    owner.listType !== undefined
+  );
+};
+
+const indentOf = (block: Element) =>
+  typeof block.indent === 'number' ? block.indent : 1;
 
 // List items are the block types Markdown list decoding rebuilds.
 const isListElement = (

@@ -185,6 +185,40 @@ const getListStart = (
   return start === 1 ? undefined : start;
 };
 
+const isListItemNode = (node: Element): node is SerializableListElement =>
+  typeof node.listType === 'string';
+
+const encodeContinuation = (
+  node: Element,
+  options: SerializeMdContext,
+  indentWritten: boolean
+) => {
+  const paragraphType = options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const written = indentWritten ? ['indent'] : [];
+
+  if (node.type === paragraphType) {
+    reportOmittedProperties(node, new Set(written), options, 'list');
+
+    return [encodeMarkdownParagraph(node, options)];
+  }
+  setMarkdownStructureKeys(options, node, LIST_KEYS);
+  const encoded = encodeMdastNode(node, options);
+
+  if (!encoded) return [];
+  reportOmittedProperties(
+    node,
+    new Set([...encoded.claimed, ...written]),
+    options,
+    encoded.owner
+  );
+
+  return isMdFlowContent(encoded.node)
+    ? [encoded.node]
+    : isMdPhrasingContent(encoded.node)
+      ? [{ children: [encoded.node], type: 'paragraph' as const }]
+      : [];
+};
+
 export const getSerializableListStyle = (
   node: Pick<SerializableListElement, 'listStyle' | 'listType'>
 ) =>
@@ -234,10 +268,12 @@ const representedListProperties = (
 };
 
 export const listToMdastTree = (
-  nodes: readonly SerializableListElement[],
+  nodes: readonly Element[],
   options: SerializeMdContext
 ): MdList => {
-  if (nodes.length === 0) {
+  const [firstNode] = nodes;
+
+  if (!firstNode || !isListItemNode(firstNode)) {
     throw new Error('Cannot create a list from empty nodes');
   }
 
@@ -247,9 +283,9 @@ export const listToMdastTree = (
   // Normal list processing
   const root: MdList = {
     children: [],
-    ordered: nodes[0].listType === 'numbered',
+    ordered: firstNode.listType === 'numbered',
     spread: options.spread ?? false,
-    start: getListStart(nodes[0], options),
+    start: getListStart(firstNode, options),
     type: 'list',
   };
 
@@ -263,17 +299,72 @@ export const listToMdastTree = (
   }> = [
     {
       depth: 0,
-      indent: nodes[0].indent ?? 1,
-      item: nodes[0],
+      indent: firstNode.indent ?? 1,
+      item: firstNode,
       list: root,
       parent: null,
     },
   ];
 
-  audit.firstItems.set(root, nodes[0]);
+  audit.firstItems.set(root, firstNode);
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
+    const nextNode = nodes[i + 1];
+
+    if (!isListItemNode(node)) {
+      const ownerIndent = Number(node.indent) - 1;
+
+      while (
+        indentStack.length > 1 &&
+        (indentStack.at(-1) ?? failInvariant('Expected value to be defined'))
+          .indent > ownerIndent
+      ) {
+        indentStack.pop();
+      }
+      const frame =
+        indentStack.at(-1) ?? failInvariant('Expected value to be defined');
+      const owner =
+        frame.list.children.at(-1) ??
+        failInvariant('Expected an open list item');
+
+      // Markdown parsing gives a block inside an item at list depth d (0 for
+      // the outer list) indent d + 2, so only that indent is written.
+      owner.children.push(
+        ...encodeContinuation(
+          node,
+          options,
+          Number(node.indent) === frame.depth + 2
+        )
+      );
+      owner.spread = true;
+      if (
+        nextNode &&
+        isListItemNode(nextNode) &&
+        (nextNode.indent ?? 1) > ownerIndent
+      ) {
+        const nestedList: MdList = {
+          children: [],
+          ordered: nextNode.listType === 'numbered',
+          spread: options.spread ?? false,
+          start: getListStart(nextNode, options),
+          type: 'list',
+        };
+
+        owner.children.push(nestedList);
+        audit.firstItems.set(nestedList, nextNode);
+        audit.countsAs.set(nestedList, frame.list);
+        indentStack.push({
+          depth: frame.depth + 1,
+          indent: nextNode.indent ?? 1,
+          item: nextNode,
+          list: nestedList,
+          parent: owner,
+        });
+      }
+      continue;
+    }
+
     const currentIndent = node.indent ?? 1;
 
     // Find the appropriate parent list for the current indentation level
@@ -392,8 +483,11 @@ export const listToMdastTree = (
     }
 
     // Check if the next node has a higher indentation level
-    const nextNode = nodes[i + 1];
-    if (nextNode && (nextNode.indent ?? 1) > currentIndent) {
+    if (
+      nextNode &&
+      isListItemNode(nextNode) &&
+      (nextNode.indent ?? 1) > currentIndent
+    ) {
       // Create a new nested list for the next indentation level
       const nestedList: MdList = {
         children: [],

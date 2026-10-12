@@ -5,6 +5,7 @@ import { exportDocx } from 'platejs/docx/export';
 import { BlockListStatic } from '@/registry/components/editor/block-list-static';
 import { ListKit } from '@/registry/components/editor/list';
 import { BaseListKit } from '@/registry/components/editor/list-static';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 const attr = (element: Element | null | undefined, name: string) =>
   element?.getElementsByTagName(name)[0]?.getAttribute('w:val') ?? undefined;
@@ -161,5 +162,103 @@ describe('DOCX export list numbering', () => {
       { level: 1, text: 'b' },
       { level: 0, text: 'c' },
     ]);
+  });
+
+  it('exports bullets as a Word bullet list at their levels', async () => {
+    const bullet = (text: string, props: object = {}) =>
+      numbered(text, { listId: 'b', listType: 'bulleted', ...props });
+    const editor = createEditor({
+      initialValue: [bullet('a'), bullet('b', { indent: 2 }), bullet('c')],
+      plugins: BaseListKit,
+    });
+
+    const result = await exportDocx(editor, { projection: 'proposed' });
+
+    if (!result.ok) throw new Error(result.diagnostics[0]?.message);
+    const markers = await readWordMarkers(result.blob);
+
+    expect(
+      markers.map(({ format, level, text }) => ({ format, level, text }))
+    ).toEqual([
+      { format: 'bullet', level: 0, text: 'a' },
+      { format: 'bullet', level: 1, text: 'b' },
+      { format: 'bullet', level: 0, text: 'c' },
+    ]);
+  });
+
+  const listedParagraph = async (block: object, text: string) => {
+    const editor = createEditor({
+      initialValue: [block] as never,
+      plugins: BaseEditorKit,
+    });
+    const result = await exportDocx(editor, {
+      presentation: BaseEditorKit,
+      projection: 'proposed',
+    });
+
+    if (!result.ok) throw new Error(result.diagnostics[0]?.message);
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const document = new DOMParser().parseFromString(
+      await zip.file('word/document.xml')!.async('string'),
+      'application/xml'
+    );
+    const paragraph = [...document.getElementsByTagName('w:p')].find(
+      (element) => element.textContent?.includes(text)
+    );
+    const properties = paragraph?.getElementsByTagName('w:pPr')[0];
+
+    return {
+      bookmark: Boolean(paragraph?.getElementsByTagName('w:bookmarkStart')[0]),
+      border: Boolean(properties?.getElementsByTagName('w:pBdr')[0]),
+      first: properties?.firstElementChild?.tagName ?? null,
+      indented: Boolean(properties?.getElementsByTagName('w:ind')[0]),
+      level: attr(properties, 'w:ilvl') ?? null,
+      numbered: Boolean(properties?.getElementsByTagName('w:numPr')[0]),
+      style: attr(properties, 'w:pStyle') ?? null,
+    };
+  };
+
+  it('keeps a numbered heading with its text, style and bookmark', async () => {
+    expect(
+      await listedParagraph(
+        {
+          children: [{ text: 'Title' }],
+          indent: 1,
+          level: 2,
+          listId: 'h',
+          listType: 'numbered',
+          type: 'heading',
+        },
+        'Title'
+      )
+    ).toEqual({
+      bookmark: true,
+      border: false,
+      first: 'w:pStyle',
+      indented: false,
+      level: '0',
+      numbered: true,
+      style: 'Heading2',
+    });
+  });
+
+  it('numbers a nested quote at its level and keeps its border', async () => {
+    expect(
+      await listedParagraph(
+        {
+          children: [{ children: [{ text: 'Quoted' }], type: 'paragraph' }],
+          indent: 2,
+          listId: 'q',
+          listType: 'numbered',
+          type: 'blockquote',
+        },
+        'Quoted'
+      )
+    ).toMatchObject({
+      border: true,
+      indented: false,
+      level: '1',
+      numbered: true,
+    });
   });
 });

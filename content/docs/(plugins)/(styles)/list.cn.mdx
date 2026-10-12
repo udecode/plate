@@ -114,9 +114,9 @@ list.update.continue();
 
 ## HTML 和 Markdown
 
-HTML ul 和 ol 映射到 listType。明确的 CSS list-style-type 映射到 listStyle。Plate HTML 用 `data-list-id` 标识每项所属的列表，用 `data-list-levels` 保存层级规则。每次粘贴或解析都会为每个来源列表分配新的 id，因此粘贴的列表不会因为 id 相同而并入无关列表；第一个顶层粘贴列表在类型、样式和标题角色都与落入的列表匹配时并入该列表。只存在于粘贴表格中的列表保留自己的 id。在其他 HTML 中，每个 ul 或 ol 是一个列表；start 接续同层级前一个 ol 的 ol 会并入它，项下的第一个嵌套列表会并入该项的列表。Word HTML 保留 Word 的列表标识。
+HTML ul 和 ol 映射到 listType。明确的 CSS list-style-type 映射到 listStyle。Plate HTML 用 `data-list-id` 标识每项所属的列表，用 `data-list-levels` 保存层级规则。每次粘贴或解析都会为每个来源列表分配新的 id，因此粘贴的列表不会因为 id 相同而并入无关列表；第一个顶层粘贴列表在类型、样式和标题角色都与落入的列表匹配时并入该列表。只存在于粘贴表格中的列表保留自己的 id。在其他 HTML 中，每个 ul 或 ol 是一个列表；start 接续同层级前一个 ol 的 ol 会并入它，项下的第一个嵌套列表会并入该项的列表。Word HTML 保留 Word 的列表标识。画在区块内部的列表，例如 static kit 输出的 `<h2><ol data-list-id="…"><li>…</li></ol></h2>`，会读回为带列表属性的该区块；列表项自身的 `data-list-style` 优先于所在列表的标记。
 
-MDAST list.ordered 映射到 listType。每个解析出的 Markdown 列表都会得到新的 listId，不为 1 的 start 解析为 listStart。项下的第一个嵌套列表并入该项的列表，同一项下之后的嵌套列表开启自己的列表。序列化时，Plate 在列表变化、项在有序和无序之间切换或 listStyle 变化处开始新的 Markdown 列表，因此同一列表中的任务项和项目符号项仍是一个 Markdown 列表。它把每个有序列表第一项的可见编号写为 list.start；当列表编号会变为负数或超过 CommonMark 可读的九位数字时写为 1。Markdown 无法保留强制的 listRestart，也无法保留读回时会改变的列表归属，例如跨过其他块继续的列表；Plate 只检查带 listId 的项的列表归属。序列化会把每一项损失报告为 `markdown-property-omitted` 诊断。任务复选框映射到 task 和 checked。在 GFM table cell 中，列表段落写为 inline `<ul>`、`<ol start>` 与 `<li>` HTML，保留任意起始值，并读取回列表；参见 [Markdown](/docs/markdown#table-cell)。
+MDAST list.ordered 映射到 listType。每个解析出的 Markdown 列表都会得到新的 listId，不为 1 的 start 解析为 listStart。项下的第一个嵌套列表并入该项的列表，同一项下之后的嵌套列表开启自己的列表。序列化时，Plate 在列表变化、项在有序和无序之间切换或 listStyle 变化处开始新的 Markdown 列表，因此同一列表中的任务项和项目符号项仍是一个 Markdown 列表。它把每个有序列表第一项的可见编号写为 list.start；当列表编号会变为负数或超过 CommonMark 可读的九位数字时写为 1。Markdown 无法保留强制的 listRestart，也无法保留读回时会改变的列表归属，例如跨过其他块继续的列表；Plate 只检查带 listId 的项的列表归属。序列化会把每一项损失报告为 `markdown-property-omitted` 诊断。Markdown 把列表项的后续段落解析为比该项深一级、没有 listType 的区块，这样的区块会序列化到前一项之内。任务复选框映射到 task 和 checked。在 GFM table cell 中，列表段落写为 inline `<ul>`、`<ol start>` 与 `<li>` HTML，保留任意起始值，并读取回列表；参见 [Markdown](/docs/markdown#table-cell)。
 
 ## API
 
@@ -127,7 +127,7 @@ MDAST list.ordered 映射到 listType。每个解析出的 Markdown 列表都会
 | update.toggle(options) | 设置或移除列表语义。 |
 | update.restart(options?) | 强制选中有序项的编号；`start` 默认为 1。 |
 | update.continue(options?) | 移除选中项的重启，或从列表第一项起把列表接到前一个列表上。 |
-| update.outdent(options) | 减少缩进。 |
+| update.outdent(options) | 减少缩进，并在最外层清除列表属性。 |
 | update.clear(options?) | 仅清除选中列表项的列表属性与缩进，保留区块类型和文本。 |
 | update.insert(input, options?) | 插入指定类型的段落列表项，并由插件负责构造与位置。 |
 | read.ordinal(at) | 计算有序项显示编号；`at` 不是编辑器根中的有序项时返回 `undefined`。 |

@@ -1,28 +1,49 @@
 import { CheckIcon } from 'lucide-react';
 import {
   BaseListPlugin,
+  type Editor,
+  type Element,
   isOrderedList,
   ListType,
   type RenderStaticNodeWrapper,
 } from 'platejs';
+import { BaseDetailsPlugin } from 'platejs/details';
+import { BaseImagePlugin } from 'platejs/media';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
 type ListWrapper = RenderStaticNodeWrapper<typeof BaseListPlugin>;
 
+// Toggles and images draw no wrapped children, so their bullets keep the
+// marker on the block itself.
+export const drawsBulletOnRoot = (editor: Editor, element: Element) =>
+  element.listType === ListType.Bulleted &&
+  !isOrderedList(element) &&
+  [BaseDetailsPlugin, BaseImagePlugin].some((descriptor) => {
+    const plugin = editor.plugin(descriptor);
+
+    return plugin.installed && element.type === plugin.schema.type;
+  });
+
 export const BlockListStatic: ListWrapper = (props) => {
   const { listStyle, listType } = props.element;
 
-  if (!listType || listType === ListType.Bulleted) return undefined;
+  if (!listType || drawsBulletOnRoot(props.editor, props.element)) {
+    return undefined;
+  }
 
   return function BlockListStaticWrapper(innerProps) {
     return (
       <List
         {...innerProps}
-        listStart={innerProps.editor
-          .plugin(BaseListPlugin)
-          .read.ordinal(innerProps.path)}
+        listStart={
+          listType === ListType.Numbered
+            ? innerProps.editor
+                .plugin(BaseListPlugin)
+                .read.ordinal(innerProps.path)
+            : undefined
+        }
         listStyle={listStyle}
         listType={listType}
       />
@@ -39,9 +60,11 @@ function List(
 ) {
   const { listStart, listStyle, listType } = props;
   const isTask = listType === ListType.Task;
+  const isBullet = listType === ListType.Bulleted;
   const InnerList = isOrderedList(props.element) ? 'ol' : 'ul';
   const markerStyle =
-    listStyle ?? (listType === ListType.Numbered ? 'decimal' : 'none');
+    listStyle ??
+    (listType === ListType.Numbered ? 'decimal' : isBullet ? 'disc' : 'none');
 
   return (
     <InnerList
@@ -68,6 +91,7 @@ function List(
         }
         data-list-restart={props.element.listRestart}
         data-list-start={props.element.listStart}
+        data-list-style={isBullet ? listStyle : undefined}
         data-list-type={listType}
         className={
           isTask

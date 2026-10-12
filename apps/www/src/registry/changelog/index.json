@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-12-fix-list-import-export",
+      "href": "/registry/changelog/2026-10-12-fix-list-import-export.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix bullets and import warnings",
+      "change": {
+        "type": "source",
+        "date": "2026-10-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["block-list-static", "list-static", "import-toolbar-button"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-12-link-draft-addresses",
       "href": "/registry/changelog/2026-10-12-link-draft-addresses.json",
       "status": "draft",

@@ -1,6 +1,37 @@
 {
   "schemaVersion": 1,
   "components": {
+    "block-list-static": [
+      "2026-10-12-fix-list-import-export",
+      "2026-10-10-fix-static-list-indent",
+      "2026-10-10-list-restart-continue",
+      "2026-10-09-export-static-presentation",
+      "2026-09-30-static-list-table-known-paths",
+      "2026-09-07-list-wrappers",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "list-static": [
+      "2026-10-12-fix-list-import-export",
+      "2026-10-11-fix-bullet-list-style",
+      "2026-10-09-export-static-presentation",
+      "2026-09-03-huge-code-block-demo",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "import-toolbar-button": [
+      "2026-10-12-fix-list-import-export",
+      "2026-10-07-editor-user",
+      "2026-09-29-word-export-loss-and-source-reuse",
+      "2026-09-27-document-conversion-contracts",
+      "2026-09-24-export-menu-projection",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
     "link": [
       "2026-10-12-link-draft-addresses",
       "2026-09-08-keyboard-dismissal",
@@ -36,13 +67,6 @@
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
-    "list-static": [
-      "2026-10-11-fix-bullet-list-style",
-      "2026-10-09-export-static-presentation",
-      "2026-09-03-huge-code-block-demo",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "editable-voids-demo": [
       "2026-10-11-fix-demo-values",
       "2026-08-12-canonical-node-props"
@@ -64,16 +88,6 @@
       "2026-08-12-canonical-node-props"
     ],
     "details": ["2026-10-10-details-selection", "2026-08-29-semantic-details"],
-    "block-list-static": [
-      "2026-10-10-fix-static-list-indent",
-      "2026-10-10-list-restart-continue",
-      "2026-10-09-export-static-presentation",
-      "2026-09-30-static-list-table-known-paths",
-      "2026-09-07-list-wrappers",
-      "2026-08-31-inline-component-props",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "list-toolbar-button": [
       "2026-10-10-list-restart-continue",
       "2026-09-18-item-focus-block-upsert",
@@ -388,17 +402,6 @@
       "2026-08-30-fix-annotation-hover-scroll",
       "2026-08-17-flat-editor-registry",
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
-    ],
-    "import-toolbar-button": [
-      "2026-10-07-editor-user",
-      "2026-09-29-word-export-loss-and-source-reuse",
-      "2026-09-27-document-conversion-contracts",
-      "2026-09-24-export-menu-projection",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
     ],
     "mode-toolbar-button": [
       "2026-10-07-editor-user",

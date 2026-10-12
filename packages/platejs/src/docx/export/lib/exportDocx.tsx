@@ -264,18 +264,34 @@ const nativeOnlyDiagnostics = (
   return diagnostics;
 };
 
-// Each Plate list exports as one Word definition, which draws one marker style
-// per level, so an item shows the style of the first item at its level.
-const opensWordList = (node: Element) =>
+const isNumberedOrTask = (node: Element) =>
   node.listType === 'numbered' || node.listType === 'task';
+
+// Markdown and AI output give bullets no list id, and a Markdown bullet list
+// never shares a list with a numbered one.
+const canShareListWithOtherKind = (node: Element) =>
+  node.listType !== 'bulleted' || typeof node.listId === 'string';
+
+const ownValue = (value: unknown, key: string): unknown =>
+  typeof value === 'object' && value !== null && Object.hasOwn(value, key)
+    ? Reflect.get(value, key)
+    : undefined;
+
+// The start a level gets from these listLevels, 1 by default.
+const levelStart = (listLevels: unknown, indent: number) => {
+  const start = ownValue(ownValue(listLevels, String(indent)), 'start');
+
+  return typeof start === 'number' ? start : 1;
+};
 
 const listDiagnostics = (
   document: EditorDocumentValue
 ): readonly DocxDiagnostic[] => {
   const diagnostics: DocxDiagnostic[] = [];
   const styles = new Map<string, unknown>();
-  const kinds = new Map<string, boolean>();
+  const kinds = new Map<string, string>();
   const rules = new Map<string, string>();
+  const firstLevels = new Map<string, unknown>();
   const warn = (
     feature: 'list-marker' | 'list-start' | 'list-structure',
     path: Path,
@@ -301,21 +317,28 @@ const listDiagnostics = (
         node.listType === 'task'
       ) {
         const listId = typeof node.listId === 'string' ? node.listId : '';
-        const level = `${listId}:${
-          typeof node.indent === 'number' ? node.indent : 1
-        }`;
+        const indent = typeof node.indent === 'number' ? node.indent : 1;
+        const level = `${listId}:${indent}`;
         const numbered = node.listType === 'numbered';
         const levelRules = JSON.stringify(node.listLevels ?? null);
 
-        if (opensWordList(node)) {
-          if (!kinds.has(level)) {
-            kinds.set(level, numbered);
-          } else if (kinds.get(level) !== numbered) {
+        if (canShareListWithOtherKind(node)) {
+          const kind = numbered ? 'numbered' : 'unordered';
+          const first = kinds.get(level);
+
+          if (first === undefined) {
+            kinds.set(level, kind);
+          } else if (first !== kind) {
             warn(
               'list-structure',
               path,
-              `The list item at ${path.join('.')} is not part of its list in Word, because the first item at its list level is ${numbered ? 'not numbered' : 'numbered'}.`
+              `The list item at ${path.join('.')} is not part of its list in Word, because the first item at its list level is ${first}.`
             );
+          }
+        }
+        if (isNumberedOrTask(node)) {
+          if (!firstLevels.has(listId)) {
+            firstLevels.set(listId, node.listLevels);
           }
           if (!rules.has(listId)) {
             rules.set(listId, levelRules);
@@ -326,7 +349,10 @@ const listDiagnostics = (
               `The list item at ${path.join('.')} takes the level rules of its list's first item in Word.`
             );
           }
-          if (typeof node.listStart === 'number') {
+          if (
+            typeof node.listStart === 'number' &&
+            node.listStart !== levelStart(firstLevels.get(listId), indent)
+          ) {
             warn(
               'list-start',
               path,

@@ -55,7 +55,28 @@ const validImport = {
   ],
   source: validSource,
 };
-let importResult: typeof invalidImport | typeof validImport = invalidImport;
+const warningImport = {
+  ...validImport,
+  comments: [],
+  diagnostics: [
+    ...Array.from({ length: 19 }, () => ({
+      code: 'unsupported-content',
+      impact: 'lossless',
+      message: 'Removed unsafe HTML element <style>.',
+      severity: 'warning',
+    })),
+    {
+      code: 'unsupported-content',
+      impact: 'lossy',
+      message: 'Dropped a footnote.',
+      severity: 'warning',
+    },
+  ],
+};
+let importResult:
+  | typeof invalidImport
+  | typeof validImport
+  | typeof warningImport = invalidImport;
 let importWord:
   | ((input: {
       plainFiles: Array<{ arrayBuffer: () => Promise<ArrayBuffer> }>;
@@ -75,6 +96,7 @@ beforeEach(() => {
   );
   spyOn(docxImport, 'importDocx').mockImplementation(async () => importResult);
   spyOn(toast, 'error').mockImplementation(() => '');
+  spyOn(toast, 'warning');
 });
 
 afterEach(() => {
@@ -124,6 +146,37 @@ describe('ImportToolbarButton', () => {
     expect(toast.error).toHaveBeenCalledWith(
       'The Word document and its comments could not be imported.'
     );
+  });
+
+  it('sums import warnings into one toast and skips lossless cleanups', async () => {
+    importResult = warningImport;
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, MarkdownPlugin, CommentsPlugin],
+    });
+
+    render(
+      <DocxSourceProvider>
+        <EditorRoot editor={editor}>
+          <TooltipProvider>
+            <Toolbar>
+              <ImportToolbarButton
+                onImport={() => {}}
+                plugins={[BaseParagraphPlugin, MarkdownPlugin, CommentsPlugin]}
+              />
+            </Toolbar>
+          </TooltipProvider>
+        </EditorRoot>
+      </DocxSourceProvider>
+    );
+
+    await act(async () => {
+      await importWord?.({
+        plainFiles: [{ arrayBuffer: async () => new ArrayBuffer(0) }],
+      });
+    });
+
+    expect(toast.warning).toHaveBeenCalledTimes(1);
+    expect(toast.warning).toHaveBeenCalledWith('Imported with 1 warning.');
   });
 
   it('returns a prepared editor without mutating the mounted editor', async () => {
