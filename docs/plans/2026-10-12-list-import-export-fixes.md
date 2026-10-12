@@ -287,7 +287,7 @@ zbeyens asked to babysit PR 5160 to merge-ready. The pass ran in a detached work
 
 The change should exist. Word export dropped table cell content with no warning, and Word files with empty footnotes would not open. The strongest cut on the table was wrapping the whole block in the saved HTML, which would delete the HTML hoist and the converter's listed-block branch. It stays a Defaults row, because the live editor's `BlockList` draws the same inner wrapper for numbered and to-do items, so the whole-block shape would split saved output from the editor.
 
-Every red check on the PR is also red on next at `6fa1169c5e` with the same failing tests, lint lines and browser cases. The one test only the PR failed, `migrateListIdentity` keeping the numbers of 500 random documents, timed out at 15 s in CI; its file passes in 1.8 s at the PR head, and the PR does not touch the list numbering it runs. No rerun, since CI cannot go green while next is red.
+On both pushed heads, `3811e90470` and `6f40b8f7ca`, every red check step is also red on next at `6fa1169c5e`, with the same failing tests, lint lines, template lint errors and browser cases. Each run also timed out one heavy test that neither commit touches. The first run timed out `migrateListIdentity` at 15 s, and its file passes locally in 1.8 s. The second timed out a list index property test at 30 s, and it passes locally in 9 s. No rerun, since CI cannot go green while next is red.
 
 Review findings from `pstack:thermo-nuclear-code-quality-review`:
 
