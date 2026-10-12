@@ -123,6 +123,38 @@ describe('htmlToDocxBlob', () => {
     });
   });
 
+  describe('line breaks', () => {
+    it('writes a <br> as the plain line break Word writes for Shift+Enter', async () => {
+      const html = '<p>first line<br>second line</p>';
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('<w:br/>');
+      expect(docXml).not.toContain('w:type="textWrapping"');
+    });
+
+    it('keeps a page break typed as a page break', async () => {
+      const html = '<p>before</p><div class="page-break"></div><p>after</p>';
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      expect(docXml).toContain('<w:br w:type="page"/>');
+    });
+
+    it('declares doNotExpandShiftReturn in settings.xml, before decimalSymbol', async () => {
+      const html = '<p>first line<br>second line</p>';
+      const result = await htmlToDocxBlob(html);
+      const zip = await loadZipFromBlob(result);
+
+      const settingsXml = await zip.file('word/settings.xml')!.async('string');
+      expect(settingsXml).toMatch(
+        /<w:compat>\s*<w:doNotExpandShiftReturn\/>\s*<\/w:compat>\s*<w:decimalSymbol/
+      );
+    });
+  });
+
   describe('headings', () => {
     it('handle h1-h6 headings', async () => {
       const html = `
