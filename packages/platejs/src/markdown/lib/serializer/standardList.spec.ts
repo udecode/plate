@@ -31,6 +31,75 @@ describe('editor.api.markdown.serialize list', () => {
     ).toBe('1. A\n   1. B\n2. C\n');
   });
 
+  it.each([
+    ['an item with a second paragraph', '* A\n\n  Second\n'],
+    ["a parent's paragraph after its sublist", '* A\n\n  * B\n\n  Parent\n'],
+    ["a child's second paragraph", '* A\n  * B\n\n    Child\n'],
+    ['two continuation paragraphs', '* A\n\n  One\n\n  Two\n'],
+    [
+      'a continuation, then a sublist, then a sibling',
+      '* A\n\n  Para\n\n  * B\n\n* C\n',
+    ],
+  ])('keeps %s inside its list item', (_, markdown) => {
+    const document = parseTestMarkdown(editor, markdown);
+    const result = serializeTestMarkdown(editor, { document });
+
+    expect({
+      codes: result.diagnostics.map(({ code }) => code),
+      document: nameDocumentListIds(parseTestMarkdown(editor, result.data)),
+    }).toEqual({ codes: [], document: nameDocumentListIds(document) });
+  });
+
+  it('reports the indent of a paragraph whose list item has closed', () => {
+    const document = parseTestMarkdown(
+      editor,
+      '* A\n\n  * B\n\n  Parent\n\n  Extra\n'
+    );
+    const [item, child, parent, extra] = document.children;
+    const result = serializeTestMarkdown(editor, {
+      document: {
+        ...document,
+        children: [item, child, parent, { ...extra, indent: 3 }],
+      },
+    });
+
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'markdown-property-omitted',
+        key: 'indent',
+        model: expect.objectContaining({ path: [3] }),
+      })
+    );
+  });
+
+  it('reports the indent of a paragraph under an item that skipped a level', () => {
+    const item = (text: string, indent: number) => ({
+      children: [{ text }],
+      indent,
+      listId: 'L',
+      listType: 'bulleted',
+      type: 'paragraph',
+    });
+    const result = serializeTestMarkdown(editor, {
+      document: {
+        children: [
+          item('A', 1),
+          item('B', 3),
+          item('C', 2),
+          { children: [{ text: 'D' }], indent: 3, type: 'paragraph' },
+        ],
+      },
+    });
+
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({
+        code: 'markdown-property-omitted',
+        key: 'indent',
+        model: expect.objectContaining({ path: [3] }),
+      })
+    );
+  });
+
   it('keeps a bare URL inside a list item', () => {
     const input = [
       {

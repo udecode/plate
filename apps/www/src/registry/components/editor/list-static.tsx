@@ -1,6 +1,9 @@
-import { BaseListPlugin, isOrderedList, ListType, PLUGINS } from 'platejs';
+import { BaseListPlugin, PLUGINS } from 'platejs';
 
-import { BlockListStatic } from '@/registry/components/editor/block-list-static';
+import {
+  BlockListStatic,
+  drawsBulletOnRoot,
+} from '@/registry/components/editor/block-list-static';
 import { BaseIndentKit } from '@/registry/components/editor/indent-static';
 
 export const BaseListKit = [
@@ -10,13 +13,8 @@ export const BaseListKit = [
       isElement: true,
       nodeProps: {
         nodeKey: 'listType',
-        query: ({ nodeProps }) => {
-          const { element } = nodeProps;
-
-          return (
-            element?.listType === ListType.Bulleted && !isOrderedList(element)
-          );
-        },
+        query: ({ editor, nodeProps }) =>
+          !!nodeProps.element && drawsBulletOnRoot(editor, nodeProps.element),
         transformProps: ({ element, props }) => ({
           ...props,
           role: 'listitem',

@@ -32,11 +32,17 @@ import {
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
 const toastWarnings = (
-  diagnostics: ReadonlyArray<Readonly<{ message: string; severity: string }>>
+  diagnostics: ReadonlyArray<Readonly<{ impact?: string; severity: string }>>
 ) => {
-  diagnostics
-    .filter(({ severity }) => severity === 'warning')
-    .forEach(({ message }) => toast.warning(message));
+  const warningCount = diagnostics.filter(
+    ({ impact, severity }) => severity === 'warning' && impact !== 'lossless'
+  ).length;
+
+  if (warningCount > 0) {
+    toast.warning(
+      `Imported with ${warningCount} warning${warningCount === 1 ? '' : 's'}.`
+    );
+  }
 };
 
 const docxCommentText = (comment: DocxComment) =>

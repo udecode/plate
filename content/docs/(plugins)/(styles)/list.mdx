@@ -130,7 +130,7 @@ the same history step. An explicit `at` keeps node-insertion placement, while
 
 ## HTML and Markdown
 
-HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listStyle. Plate HTML names each item's list with `data-list-id` and its level rules with `data-list-levels`. Each paste or parse gives every source list a fresh id, so a pasted list never joins an unrelated list that shares its id. The first top-level pasted list joins the list it lands in when both lists match in kind, style and heading role. A list that lives only inside a pasted table keeps its own id. In other HTML, each ul or ol is one list. An ol whose start continues the previous ol at its depth joins it, and the first nested list under an item joins that item's list. Word HTML keeps Word's list identity.
+HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listStyle. Plate HTML names each item's list with `data-list-id` and its level rules with `data-list-levels`. Each paste or parse gives every source list a fresh id, so a pasted list never joins an unrelated list that shares its id. The first top-level pasted list joins the list it lands in when both lists match in kind, style and heading role. A list that lives only inside a pasted table keeps its own id. In other HTML, each ul or ol is one list. An ol whose start continues the previous ol at its depth joins it, and the first nested list under an item joins that item's list. Word HTML keeps Word's list identity. A list drawn inside its block, such as `<h2><ol data-list-id="…"><li>…</li></ol></h2>` from the static kit, reads back as that block with its list fields, and an item's own `data-list-style` wins over its list's marker.
 
 MDAST `list.ordered` maps to `listType`. Each parsed Markdown list gets a new
 listId, and a start other than 1 parses as `listStart`. The first nested list
@@ -144,7 +144,7 @@ digits CommonMark reads. Markdown cannot carry a forced `listRestart`. It
 also cannot carry list membership that reads back differently, such as a list
 that continues past another block; Plate checks
 membership only for items with a listId. Serialize reports each loss as a
-`markdown-property-omitted` diagnostic. Task checkboxes map to task `listType` plus `checked`. Inside a GFM table cell, list paragraphs are written as inline
+`markdown-property-omitted` diagnostic. Markdown parses an item's later paragraphs as blocks without `listType`, one level deeper than the item, and such a block serializes inside the item before it. Task checkboxes map to task `listType` plus `checked`. Inside a GFM table cell, list paragraphs are written as inline
 `<ul>`, `<ol start>`, and `<li>` HTML, which keeps any start, and read back as lists; see
 [Markdown](/docs/markdown#table-cells).
 

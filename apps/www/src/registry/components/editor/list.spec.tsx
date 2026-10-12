@@ -10,6 +10,7 @@ import {
   createEditor,
   NodeApi,
 } from 'platejs';
+import { BaseImagePlugin } from 'platejs/media';
 import {
   createEditor as createReactEditor,
   EditorContent,
@@ -21,11 +22,11 @@ import ReactDOMServer from 'react-dom/server';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BlockList } from '@/registry/components/editor/block-list';
-import { BlockListStatic } from '@/registry/components/editor/block-list-static';
 import { TableKit } from '@/registry/components/editor/table';
 
 import { ListKit } from './list';
 import { BaseListKit } from './list-static';
+import { BaseEditorKit } from './plugins-static';
 
 const ListTargetSchemaPlugins = [
   PLUGINS.heading,
@@ -89,9 +90,6 @@ describe('ListKit unordered list rendering', () => {
 
   it('keeps the lightweight unordered path inside the app list renderer', () => {
     expect(BlockList({ element: unorderedElement } as any)).toBeUndefined();
-    expect(
-      BlockListStatic({ element: unorderedElement } as any)
-    ).toBeUndefined();
 
     const orderedWrapper = BlockList({ element: orderedElement } as any)!;
     const orderedMarkup = ReactDOMServer.renderToStaticMarkup(
@@ -122,25 +120,35 @@ describe('ListKit unordered list rendering', () => {
     );
     expect(staticEditor.plugin(BaseListPlugin).inject.isElement).toBe(true);
 
-    for (const nodeProps of [
-      getListNodeProps(interactiveEditor),
-      getListNodeProps(staticEditor),
-    ]) {
-      const { query } = nodeProps;
-      const { transformProps } = nodeProps;
+    expect(
+      getListNodeProps(staticEditor).query?.({
+        editor: staticEditor,
+        nodeProps: { element: unorderedElement },
+      } as any)
+    ).toBe(false);
+
+    const staticImageEditor = createEditor({
+      plugins: [
+        ...ListTargetSchemaKit.filter(
+          (_, index) => ListTargetSchemaPlugins[index] !== PLUGINS.image
+        ),
+        BaseImagePlugin,
+        ...BaseListKit,
+      ],
+    });
+
+    for (const [editor, element] of [
+      [interactiveEditor, unorderedElement],
+      [staticImageEditor, { ...unorderedElement, type: PLUGINS.image }],
+    ] as const) {
+      const { query, transformProps } = getListNodeProps(editor);
       if (!query || !transformProps) {
         throw new Error('Expected configured list node props');
       }
 
+      expect(query({ editor, nodeProps: { element } } as any)).toBe(true);
       expect(
-        query({
-          nodeProps: { element: unorderedElement },
-        } as any)
-      ).toBe(true);
-      expect(
-        query({
-          nodeProps: { element: orderedElement },
-        } as any)
+        query({ editor, nodeProps: { element: orderedElement } } as any)
       ).toBe(false);
       expect(
         transformProps({
@@ -219,9 +227,9 @@ describe('ListKit bullet style', () => {
     const { data } = await renderStaticHtml(editor);
     const host = document.createElement('div');
     host.innerHTML = data;
-    const listItem = host.querySelector<HTMLElement>('[role="listitem"]');
+    const list = host.querySelector<HTMLElement>('ul[data-list-id]');
 
-    expect(listItem?.style.listStyleType).toBe('circle');
+    expect(list?.style.listStyleType).toBe('circle');
   });
 });
 
@@ -414,5 +422,125 @@ describe('BaseListKit static HTML', () => {
 
     expect(a2.listId).toBe(a1.listId);
     expect(b1.listId).not.toBe(a1.listId);
+  });
+});
+
+describe('BaseEditorKit static HTML lists', () => {
+  const listed = (
+    props: Readonly<Record<string, unknown>> & { type: string },
+    text: string
+  ): Element => ({
+    children: [{ text }],
+    indent: 1,
+    ...props,
+  });
+  const original: Element[] = [
+    listed({ listId: 'b', listType: 'bulleted', type: 'paragraph' }, 'Bullet'),
+    listed(
+      {
+        listId: 'b',
+        listStyle: 'circle',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      'Circle'
+    ),
+    listed(
+      { level: 2, listId: 'c', listType: 'bulleted', type: 'heading' },
+      'BH'
+    ),
+    listed(
+      { level: 2, listId: 'd', listType: 'numbered', type: 'heading' },
+      'NH'
+    ),
+    listed(
+      {
+        checked: true,
+        level: 2,
+        listId: 'e',
+        listType: 'task',
+        type: 'heading',
+      },
+      'TH'
+    ),
+    listed({ listId: 'f', listType: 'numbered', type: 'codeBlock' }, 'code'),
+    {
+      children: [
+        listed(
+          { level: 2, listId: 'g', listType: 'numbered', type: 'heading' },
+          'QH'
+        ),
+      ],
+      type: 'blockquote',
+    },
+  ];
+
+  const describeBlocks = (value: readonly Element[]) => {
+    const aliasByListId = new Map<unknown, string>();
+    const describe = (nodes: readonly Element[]): unknown[] =>
+      nodes.map((node) => {
+        if (node.listId !== undefined && !aliasByListId.has(node.listId)) {
+          aliasByListId.set(
+            node.listId,
+            String.fromCodePoint(97 + aliasByListId.size)
+          );
+        }
+
+        return [
+          node.type,
+          NodeApi.string(node),
+          node.listType ?? null,
+          node.listStyle ?? null,
+          node.indent ?? null,
+          node.checked ?? null,
+          aliasByListId.get(node.listId) ?? null,
+          node.type === 'blockquote'
+            ? describe(node.children as Element[])
+            : null,
+        ];
+      });
+
+    return describe(value);
+  };
+
+  it('reads back each list kind on the block that holds it', async () => {
+    const editor = createEditor({
+      initialValue: original,
+      plugins: BaseEditorKit,
+    });
+    const { data } = await renderStaticHtml(editor);
+    const parsed = editor.api.html.parse(data);
+
+    if (!parsed.ok) throw new Error('Expected decoded HTML');
+
+    expect(describeBlocks(parsed.document.children as Element[])).toEqual(
+      describeBlocks(original)
+    );
+  });
+
+  const blockTypes = (html: string) => {
+    const editor = createEditor({ plugins: BaseEditorKit });
+    const parsed = editor.api.html.parse(html);
+
+    if (!parsed.ok) throw new Error('Expected decoded HTML');
+
+    return parsed.document.children.flatMap((block) => [
+      block.type,
+      ...Array.from(NodeApi.elements(block), ([node]) => node.type),
+    ]);
+  };
+  const listHtml =
+    '<ul data-list-id="L"><li data-indent="1" data-list-type="bulleted">Item</li></ul>';
+
+  it('keeps a rule beside a list drawn inside its quote', () => {
+    expect(blockTypes(`<blockquote><hr>${listHtml}</blockquote>`)).toContain(
+      'horizontalRule'
+    );
+  });
+
+  it('keeps a list drawn inside a table cell in its cell', () => {
+    expect(
+      blockTypes(`<table><tbody><tr><td>${listHtml}</td></tr></tbody></table>`)
+    ).toContain('tableCell');
   });
 });

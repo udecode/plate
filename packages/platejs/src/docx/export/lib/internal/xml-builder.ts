@@ -495,7 +495,7 @@ const itemStart = (properties: VNodeProperties, itemIndex: number) =>
 
 // Plate writes a restart on the item, and Word restarts through the instance
 // that item's paragraph uses, so the restart travels with that open.
-const withItemRestart = (
+export const withItemRestart = (
   properties: VNodeProperties,
   item: VNodeType | VTextType | undefined
 ) => {
@@ -509,6 +509,20 @@ const withItemRestart = (
         ...properties,
         attributes: { ...properties.attributes, 'data-list-restart': restart },
       };
+};
+
+// A to-do item's paragraphs take the document's checked or unchecked to-do
+// numbering instead of their list's.
+export const itemNumberingId = (
+  docxDocumentInstance: DocxDocumentInstance,
+  item: VNodeType,
+  numberingId: number
+) => {
+  const checked = item.properties?.attributes?.['data-checked'];
+
+  return checked === 'true' || checked === 'false'
+    ? docxDocumentInstance.taskNumberingId(checked === 'true')
+    : numberingId;
 };
 
 const firstItem = (list: VNodeType) =>
@@ -581,13 +595,9 @@ export const buildList = async (
       node.children?.length &&
       ['ul', 'ol', 'li'].includes(node.tagName || '')
     ) {
-      const checked =
-        node.tagName === 'li'
-          ? node.properties?.attributes?.['data-checked']
-          : undefined;
       const numberingId =
-        checked === 'true' || checked === 'false'
-          ? docxDocumentInstance.taskNumberingId(checked === 'true')
+        node.tagName === 'li'
+          ? itemNumberingId(docxDocumentInstance, node, current.numberingId)
           : current.numberingId;
       let items = 0;
       const children = node.children.reduce<VNodeObject[]>(
@@ -786,6 +796,16 @@ interface ParagraphAttributes extends RunAttributes {
   verticalAlign?: string;
   width?: number | string;
 }
+
+export type BlockScope = Readonly<ParagraphAttributes> & {
+  readonly backgroundColor?: undefined;
+};
+
+export type RenderBlocks = (
+  children: ReadonlyArray<VNodeType | VTextType>,
+  xmlFragment: XMLBuilder,
+  scope: BlockScope
+) => Promise<void>;
 
 type TableAttributes = {
   maximumWidth?: number;
@@ -1268,7 +1288,10 @@ const modifiedStyleAttributesBuilder = (
   // paragraph only
   if (options?.isParagraph) {
     if (isVNode(vNode) && (vNode as VNodeType).tagName === 'blockquote') {
-      modifiedAttributes.indentation = { left: 284 };
+      // A numbered quote takes its indent from its list level.
+      if (!modifiedAttributes.numbering) {
+        modifiedAttributes.indentation = { left: 284 };
+      }
       modifiedAttributes.blockquoteBorder = true;
     } else if (isVNode(vNode) && (vNode as VNodeType).tagName === 'code') {
       modifiedAttributes.highlightColor = 'lightGray';
@@ -2661,7 +2684,8 @@ const buildTableCell = async (
   attributes: TableCellAttributes,
   rowSpanMap: Map<number, RowSpanInfo>,
   columnIndex: ColumnIndex,
-  docxDocumentInstance: DocxDocumentInstance
+  docxDocumentInstance: DocxDocumentInstance,
+  renderBlocks: RenderBlocks
 ): Promise<XMLBuilder> => {
   const tableCellFragment = fragment({
     namespaceAlias: { w: namespaces.w },
@@ -2714,123 +2738,17 @@ const buildTableCell = async (
     buildTableCellProperties(modifiedAttributes);
   tableCellFragment.import(tableCellPropertiesFragment);
 
-  // Don't pass cell-level backgroundColor to paragraph content
-  // It should only apply to the cell itself (tcPr), not text runs
-  const paragraphAttributes = { ...modifiedAttributes };
-  paragraphAttributes.backgroundColor = undefined;
-
-  if (vNodeHasChildren(vNode)) {
-    const vn = vNode as VNodeType;
-    for (let index = 0; index < (vn.children || []).length; index++) {
-      const childVNode = (vn.children || [])[index];
-      if (isVNode(childVNode) && (childVNode as VNodeType).tagName === 'img') {
-        const imageFragment = await buildImage(
-          docxDocumentInstance,
-          childVNode,
-          modifiedAttributes.maximumWidth || null
-        );
-        if (imageFragment) {
-          tableCellFragment.import(imageFragment);
-        }
-      } else if (
-        isVNode(childVNode) &&
-        (childVNode as VNodeType).tagName === 'figure'
-      ) {
-        const figureVn = childVNode as VNodeType;
-        if (vNodeHasChildren(figureVn)) {
-          for (
-            let iteratorIndex = 0;
-            iteratorIndex < (figureVn.children || []).length;
-            iteratorIndex++
-          ) {
-            const grandChildVNode = (figureVn.children || [])[
-              iteratorIndex
-            ] as VNodeType;
-            if (grandChildVNode.tagName === 'img') {
-              const imageFragment = await buildImage(
-                docxDocumentInstance,
-                grandChildVNode,
-                modifiedAttributes.maximumWidth || null
-              );
-              if (imageFragment) {
-                tableCellFragment.import(imageFragment);
-              }
-            }
-          }
-        }
-      } else if (
-        isVNode(childVNode) &&
-        ['ul', 'ol'].includes((childVNode as VNodeType).tagName || '')
-      ) {
-        // render list in table
-        const listVn = childVNode as VNodeType;
-        if (vNodeHasChildren(listVn)) {
-          await buildList(listVn, docxDocumentInstance, tableCellFragment);
-        }
-      } else if (
-        isVNode(childVNode) &&
-        (childVNode as VNodeType).tagName === 'div'
-      ) {
-        // Handle div wrapper - process its children instead
-        const divVn = childVNode as VNodeType;
-        if (vNodeHasChildren(divVn)) {
-          for (
-            let divIndex = 0;
-            divIndex < (divVn.children || []).length;
-            divIndex++
-          ) {
-            const divChild = (divVn.children || [])[divIndex];
-            if (
-              isVNode(divChild) &&
-              (divChild as VNodeType).tagName === 'img'
-            ) {
-              const imageFragment = await buildImage(
-                docxDocumentInstance,
-                divChild,
-                modifiedAttributes.maximumWidth || null
-              );
-              if (imageFragment) {
-                tableCellFragment.import(imageFragment);
-              }
-            } else if (
-              isVNode(divChild) &&
-              ['ul', 'ol'].includes((divChild as VNodeType).tagName || '')
-            ) {
-              const listVn = divChild as VNodeType;
-              if (vNodeHasChildren(listVn)) {
-                await buildList(
-                  listVn,
-                  docxDocumentInstance,
-                  tableCellFragment,
-                  divVn
-                );
-              }
-            } else {
-              const paragraphFragment = await buildParagraph(
-                divChild,
-                paragraphAttributes,
-                docxDocumentInstance
-              );
-              tableCellFragment.import(paragraphFragment);
-            }
-          }
-        }
-      } else {
-        const paragraphFragment = await buildParagraph(
-          childVNode,
-          paragraphAttributes,
-          docxDocumentInstance
-        );
-
-        tableCellFragment.import(paragraphFragment);
-      }
-    }
-  } else {
-    // TODO: Figure out why building with buildParagraph() isn't working
-    const paragraphFragment = fragment({ namespaceAlias: { w: namespaces.w } })
-      .ele('@w', 'p')
-      .up();
-    tableCellFragment.import(paragraphFragment);
+  await renderBlocks(
+    isVNode(vNode) ? ((vNode as VNodeType).children ?? []) : [],
+    tableCellFragment,
+    { ...modifiedAttributes, backgroundColor: undefined }
+  );
+  if (tableCellFragment.node.lastChild?.nodeName !== 'p') {
+    tableCellFragment.import(
+      fragment({ namespaceAlias: { w: namespaces.w } })
+        .ele('@w', 'p')
+        .up()
+    );
   }
   tableCellFragment.up();
 
@@ -2925,7 +2843,8 @@ const buildTableRow = async (
   vNode: VNodeType,
   attributes: TableRowAttributes,
   rowSpanMap: Map<number, RowSpanInfo>,
-  docxDocumentInstance: DocxDocumentInstance
+  docxDocumentInstance: DocxDocumentInstance,
+  renderBlocks: RenderBlocks
 ): Promise<XMLBuilder> => {
   const tableRowFragment = fragment({
     namespaceAlias: { w: namespaces.w },
@@ -2969,7 +2888,8 @@ const buildTableRow = async (
       ['td', 'th'].includes((childVNode as VNodeType).tagName || '')
     );
     const maximumColumnWidth =
-      docxDocumentInstance.availableDocumentSpace / tableColumns.length;
+      (attributes.maximumWidth ?? docxDocumentInstance.availableDocumentSpace) /
+      tableColumns.length;
 
     for (const column of tableColumns) {
       const rowSpanCellFragments = buildRowSpanCell(
@@ -2987,7 +2907,8 @@ const buildTableRow = async (
         { ...modifiedAttributes, maximumWidth: maximumColumnWidth },
         rowSpanMap,
         columnIndex,
-        docxDocumentInstance
+        docxDocumentInstance,
+        renderBlocks
       );
       columnIndex.index += 1;
 
@@ -3225,7 +3146,8 @@ const cssBorderParser = (borderString: string): [number, string, string] => {
 const buildTable = async (
   vNode: VNodeType,
   attributes: TableAttributes,
-  docxDocumentInstance: DocxDocumentInstance
+  docxDocumentInstance: DocxDocumentInstance,
+  renderBlocks: RenderBlocks
 ): Promise<XMLBuilder> => {
   const tableFragment = fragment({ namespaceAlias: { w: namespaces.w } }).ele(
     '@w',
@@ -3410,7 +3332,8 @@ const buildTable = async (
               grandChildVNode,
               modifiedAttributes,
               rowSpanMap,
-              docxDocumentInstance
+              docxDocumentInstance,
+              renderBlocks
             );
             tableFragment.import(tableRowFragment);
           }
@@ -3436,7 +3359,8 @@ const buildTable = async (
               grandChildVNode,
               modifiedAttributes,
               rowSpanMap,
-              docxDocumentInstance
+              docxDocumentInstance,
+              renderBlocks
             );
             tableFragment.import(tableRowFragment);
           }
@@ -3453,7 +3377,8 @@ const buildTable = async (
           childVNode,
           modifiedAttributes,
           rowSpanMap,
-          docxDocumentInstance
+          docxDocumentInstance,
+          renderBlocks
         );
         tableFragment.import(tableRowFragment);
       }

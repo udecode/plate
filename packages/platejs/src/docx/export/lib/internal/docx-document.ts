@@ -218,31 +218,35 @@ const HTML_ENTITIES: Readonly<Record<string, string>> = {
   '&quot;': '"',
 };
 
-// html-to-vdom keeps attribute values entity-encoded, and `listLevels` keys
-// Plate levels from 1.
-const readLevelRules = (value: string | undefined) => {
+// `listLevels` keys Plate levels from 1.
+export const toWordLevelRules = (listLevels: unknown) => {
   const rules = new Map<number, LevelRules>();
 
-  if (!value) return rules;
-  try {
-    const parsed: unknown = JSON.parse(
-      value.replaceAll(
-        /&(?:#39|#x27|amp|gt|lt|quot);/g,
-        (entity) => HTML_ENTITIES[entity]
-      )
-    );
-
-    if (typeof parsed !== 'object' || parsed === null) return rules;
-    for (const [level, rule] of Object.entries(parsed)) {
-      if (/^[1-9]\d*$/.test(level) && typeof rule === 'object' && rule) {
-        rules.set(Number(level) - 1, rule as LevelRules);
-      }
+  if (typeof listLevels !== 'object' || listLevels === null) return rules;
+  for (const [level, rule] of Object.entries(listLevels)) {
+    if (/^[1-9]\d*$/.test(level) && typeof rule === 'object' && rule) {
+      rules.set(Number(level) - 1, rule as LevelRules);
     }
-  } catch {
-    return rules;
   }
 
   return rules;
+};
+
+// html-to-vdom keeps attribute values entity-encoded.
+const readLevelRules = (value: string | undefined) => {
+  if (!value) return toWordLevelRules(undefined);
+  try {
+    return toWordLevelRules(
+      JSON.parse(
+        value.replaceAll(
+          /&(?:#39|#x27|amp|gt|lt|quot);/g,
+          (entity) => HTML_ENTITIES[entity]
+        )
+      )
+    );
+  } catch {
+    return toWordLevelRules(undefined);
+  }
 };
 
 /** A Word numbering instance that a later list at the same level can continue. */

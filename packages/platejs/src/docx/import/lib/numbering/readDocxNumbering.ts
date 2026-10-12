@@ -7,12 +7,13 @@ export type DocxListLevel = Readonly<{
 
 /** The list facts one numbered Word paragraph maps to. */
 export type DocxListItem = Readonly<{
+  checked?: boolean;
   indent: number;
   listId: string;
   listLevels?: Readonly<Record<string, DocxListLevel>>;
   listRestart?: number;
   listStyle?: string;
-  listType: 'bulleted' | 'numbered';
+  listType: 'bulleted' | 'numbered' | 'task';
 }>;
 
 type WordLevel = Readonly<{
@@ -48,6 +49,13 @@ const STYLE_BY_BULLET: Readonly<Record<string, string>> = {
   '▪': 'square',
   '◦': 'circle',
 };
+
+// Plate's export draws a to-do level's bullet as ☑ or ☐.
+const CHECKED_BY_BULLET: ReadonlyMap<string, boolean> = new Map([
+  ['☐', false],
+  ['☑', true],
+  ['☒', true],
+]);
 
 const childrenNamed = (element: Element | undefined, name: string) =>
   element
@@ -310,6 +318,9 @@ export const readDocxNumbering = (
     const listStyle = bullet
       ? STYLE_BY_BULLET[rules?.label ?? '']
       : STYLE_BY_FORMAT[rules?.format ?? 'decimal'];
+    const checked = bullet
+      ? CHECKED_BY_BULLET.get(rules?.label ?? '')
+      : undefined;
     const listLevels = toListLevels(num.levels);
     // Word counts every instance of a definition in one sequence per level,
     // and an instance's start override resets it at the instance's first
@@ -319,9 +330,11 @@ export const readDocxNumbering = (
 
     seen.add(key);
     items.set(paragraph, {
+      ...(checked === undefined ? {} : { checked }),
       indent: level + 1,
       listId: `abstract:${num.abstractId}`,
-      listType: bullet ? 'bulleted' : 'numbered',
+      listType:
+        checked === undefined ? (bullet ? 'bulleted' : 'numbered') : 'task',
       ...(listLevels ? { listLevels } : {}),
       ...(listStyle === undefined || listStyle === 'disc' ? {} : { listStyle }),
       ...(restart === undefined || bullet ? {} : { listRestart: restart }),
