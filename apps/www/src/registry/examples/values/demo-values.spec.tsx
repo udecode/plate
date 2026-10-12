@@ -1,4 +1,41 @@
+import { getI18nValues } from '@/i18n/getI18nValues';
+
 import { createValue, DEMO_VALUES } from './demo-values';
+
+const findEmptyElements = (nodes: any[], path: number[] = []): string[] =>
+  nodes.flatMap((node, index) => {
+    if (!Array.isArray(node?.children)) return [];
+
+    const nodePath = [...path, index];
+
+    if (node.children.length === 0) {
+      return [`[${nodePath.join(',')}] ${node.type}`];
+    }
+
+    return findEmptyElements(node.children, nodePath);
+  });
+
+describe('DEMO_VALUES', () => {
+  it('gives every element at least one child', () => {
+    const values = {
+      ...DEMO_VALUES,
+      ...Object.fromEntries(
+        ['cn', 'en'].flatMap((locale) =>
+          Object.entries(getI18nValues(locale)).map(([key, value]) => [
+            `${locale}:${key}`,
+            value,
+          ])
+        )
+      ),
+    };
+
+    const emptyElements = Object.entries(values).flatMap(([key, value]) =>
+      findEmptyElements(value as any[]).map((entry) => `${key} ${entry}`)
+    );
+
+    expect(emptyElements).toEqual([]);
+  });
+});
 
 describe('createValue', () => {
   it('returns isolated snapshots for reusable demo values', () => {

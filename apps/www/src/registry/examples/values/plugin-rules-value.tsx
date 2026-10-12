@@ -90,7 +90,9 @@ export const pluginRulesValue: any = (
     <hp>
       <htext bold>Void elements:</htext>
     </hp>
-    <element type="hr" />
+    <element type="hr">
+      <htext />
+    </element>
     <hp>
       Press Backspace at start - void element are selected rather than deleted.
     </hp>

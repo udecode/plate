@@ -1,0 +1,54 @@
+---
+description: Research editor prior art, compare bounded source inventories, harvest portable behavior tests and maintain compiled Plate research without patching product code.
+argument-hint: '[audit [sync] | harvest [plan] | maintain | full] <topic or repo>'
+---
+
+# Research
+
+Discovery chooses evidence; `best-api` decides call shape and the Plan playbook
+owns adoption. Research does not silently patch runtime or become Benchmark.
+Issue-by-issue closure belongs to `issue-harvester`.
+
+1. Read current compiled knowledge under `docs/research`, its schema, matching
+   plans and relevant lessons under `docs/solutions`. State the question, bounded scope, current gap, exclusions,
+   stop condition and eventual proof owner before searching.
+2. Before declaring a corpus missing, check its official entrypoints and the
+   strongest matching local evidence. Distinguish searched paths from files
+   actually read. Use primary docs and local source checkouts. Record exact repository
+   revisions and licenses. Search results and READMEs are leads; inspect real
+   code before a code-level claim. Reuse a fresh prior read when its question,
+   revision and dependencies still match.
+3. Keep query, lead, read, rejected and promotion rows under a dated research
+   run. Record source path/revision, inspected spans, claim, evidence grade,
+   applicability, proof owner and next action. Keep bulk raw corpora outside
+   compiled pages; parse ledgers by exact header names.
+4. Grade local inspected source with runnable proof highest. Detailed upstream
+   reports can suggest an invariant. Secondary pages and snippets only choose
+   the next read. Prefer tests, oracles and measurement methods over speculative
+   runtime rewrites.
+5. Promote one test, benchmark, plan, docs or no-code packet with its owner and
+   verification command. Keep rejected leads with their reopening condition.
+
+`audit` inventories every file in the explicitly bounded owner before making
+an exhaustive comparison. Name each file read, its revision, the behavior it
+carries, the Plate/Slate owner and keep/adapt/reject decision. An unread member
+is a gap, not inferred coverage. `audit sync` refreshes recorded audits at new
+revisions and reopens only affected claims.
+
+`harvest` inventories upstream behavior evidence and existing local coverage.
+Express the invariant independently after the license gate. Never copy fixture
+or helper shape as a substitute for understanding. `harvest plan` maps each
+accepted row to its current Plate or upstream Slate owner, adoption step and
+exact proof. Runtime implementation needs separate active authority.
+
+`maintain` repairs stale claims, contradictions, duplication, broken links and
+orphan knowledge from evidence. Before retiring an internal document, move
+each still-true lesson into a named home a workflow reads. `full` accounts for
+every scoped corpus as evidenced or a named raw, compile, synthesis,
+freshness, evidence or contradiction gap. A spot check cannot claim full.
+
+Keep reusable summaries and decisions in `docs/research`; keep temporary
+observations in the run. Do not treat a summary as stronger than its source.
+Unresolved gaps name their owner and the evidence or condition that closes
+them. Report sources actually read, promoted/rejected leads, proof limits and
+the next shard. Preserve historical ledger schemas and manual decisions.

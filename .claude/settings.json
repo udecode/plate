@@ -1,6 +1,37 @@
 {
   "permissions": {
-    "allow": ["Bash", "Edit", "Skill", "WebFetch", "WebSearch"]
+    "allow": [
+      "Bash",
+      "Edit",
+      "Skill",
+      "WebFetch",
+      "WebSearch"
+    ]
   },
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && node .agents/pstack/reread.mjs --hook AGENTS.md \"$HOME/.claude/pstack-models.md\" .claude/settings.json",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "pstack@pstack-claude": true
+  },
+  "extraKnownMarketplaces": {
+    "pstack-claude": {
+      "source": {
+        "source": "github",
+        "repo": "michael-denyer/pstack-claude",
+        "ref": "v0.9.82"
+      }
+    }
+  }
 }

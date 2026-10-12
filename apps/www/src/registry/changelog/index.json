@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-09-fix-empty-demo-elements",
+      "href": "/registry/changelog/2026-10-09-fix-empty-demo-elements.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix demo values with empty elements",
+      "change": {
+        "type": "source",
+        "date": "2026-10-09",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["plugin-rules-demo", "code-block-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-09-28-keep-comment-selection-visible",
       "href": "/registry/changelog/2026-09-28-keep-comment-selection-visible.json",
       "status": "draft",
