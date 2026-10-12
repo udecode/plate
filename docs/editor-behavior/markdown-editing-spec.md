@@ -836,7 +836,7 @@ Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx:825` "kee
 - |Item
 ```
 
-- `EDIT-LIST-START-MD-401` `proposed` `Markdown parse and serialize`: an ordered list keeps its explicit start number, including `0` and the start of a list that follows an interrupting paragraph, through parse, value replacement and serialize; parse gives each ordered list its start as a forced restart on its first item, so separate Markdown lists never count as one
+- `EDIT-LIST-START-MD-401` `proposed` `Markdown parse and serialize`: an ordered list keeps its explicit start number, including `0` and the start of a list that follows an interrupting paragraph, through parse, value replacement and serialize. Parse gives each list its own new `listId` and a start other than 1 as `listStart`, so separate Markdown lists never count as one, even after `⌫` or a move at a list's first item, a raw insert, a paste or a move into another editor. Serialize writes a Markdown list from 1 and reports it when its numbers would go negative or pass the nine digits CommonMark reads. A list in a table cell, which serialize writes as HTML, keeps its start. Serialize also reports a forced restart or list membership that Markdown cannot carry
 
 ```text
 1. First list item
@@ -1563,15 +1563,21 @@ note: command / control click should navigate to the link target
 
 note: the notes below cover boundary typing, URL paste, autolink and the upsert and unwrap transforms
 
-note: typing a space or `↵` at the end of a URL candidate finalizes it as a link using the current autolink heuristics, and a link whose text is its URL serializes back to bare URL markdown
+note: typing a space or `↵` at the end of a whole token that the link plugin's `parseUrl` recognizes, and whose result `allowedSchemes` allows, finalizes it as a link, and a link whose text is its URL serializes back to bare URL markdown
+
+note: the default `parseUrl` recognizes a token with an explicit scheme, such as `https://example.com` or `tel:+15551234`; placeholders such as `http://...`, `https://…`, `http:foo` and `tel://` stay text
+
+note: after a token that is not recognized or not allowed, the space or `↵` goes in as typed
 
 note: pasting a URL into plain text inserts a link whose text is the URL
+
+note: inside a link or after unfinished `[label](` source, a pasted URL goes in as typed, even when the clipboard also holds HTML; other pastes there go to the next handler
 
 note: pasting a URL over selected text keeps the selected text as the link text by default
 
 note: with `keepSelectedTextOnPaste: false`, pasting a URL over selected text replaces it with the URL text
 
-note: with `getUrlHref`, a space typed at the end of visible URL text wraps that text and uses the computed href
+note: when `parseUrl` maps visible text to an href, a space typed at the end of that text wraps it and uses the returned href
 
 note: typing a space inside an existing link never wraps it again
 
@@ -3841,6 +3847,12 @@ substitution
 note: current rich-mode kits now ship the narrow closing-`)` slice
 
 note: the slice does not claim nested markdown-link grammar, link titles, or broader source-entry expansion
+
+note: a destination with no scheme, such as `example.com/a%20path`, makes a relative link
+
+note: when `allowedSchemes` refuses the destination, the typed source and the `)` stay text
+
+note: image source, `![alt](src)`, stays text
 
 ### Auto Pair
 

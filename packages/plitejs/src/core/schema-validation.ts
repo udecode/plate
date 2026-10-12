@@ -136,6 +136,14 @@ export class EditorSchemaValidationError extends Error {
   }
 }
 
+/** @internal */
+export class EditorNoncanonicalChangeError extends EditorSchemaValidationError {
+  constructor() {
+    super('Document changes must already use canonical editor representation.');
+    this.name = 'EditorNoncanonicalChangeError';
+  }
+}
+
 /**
  * Build one deterministic path-aware runtime schema error.
  *

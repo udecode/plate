@@ -331,6 +331,23 @@ describe('plite public accessor + transaction boundary', () => {
     );
   });
 
+  it('refuses to edit after a write into the published top-level children', () => {
+    const editor = createEditor({
+      initialValue: [paragraph('one'), paragraph('two')],
+    });
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 3 } });
+    });
+    (editor.read.children() as Element[]).push(paragraph('foreign'));
+
+    assert.throws(() => {
+      editor.update((tx) => {
+        tx.text.insert('?', { at: { path: [1, 0], offset: 3 } });
+      });
+    }, /A document root array changed outside Plite/);
+  });
+
   it('publishes one canonical document change that replays to the committed snapshot', () => {
     const editor = createEditor({
       initialValue: [paragraph('one'), paragraph('two')],

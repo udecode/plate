@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, type Descendant, type Editor, TextApi } from 'plitejs';
+import { createEditor, type Descendant, TextApi } from 'plitejs';
 
 import { history } from '../../src/history';
 import { observeAnchorStateWork } from '../../src/internal';
@@ -22,7 +22,9 @@ const createSeededRandom = (initialSeed: number) => {
   };
 };
 
-const assertEditorIntegrity = (editor: Editor) => {
+const assertEditorIntegrity = (
+  editor: ReturnType<typeof createHistoryEditor>
+) => {
   const value = editor.read.value();
 
   editor.read.schema.assertDocument(value);

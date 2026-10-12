@@ -82,13 +82,20 @@ describe('TabbablePlugin', () => {
       path: [0],
       slateNode,
     });
-    const event = new KeyboardEvent('keydown', { key: 'Tab' });
+    const context = {
+      editor,
+      event: new KeyboardEvent('keydown', { key: 'Tab' }),
+    };
 
     expect(plugin.initialState.globalEventListener).toBe(false);
-    expect(insertTabbableEntries(event)).toEqual([]);
-    expect(query(event)).toBe(true);
-    expect(isTabbable(createEntry(voidEntry[0]))).toBe(true);
-    expect(isTabbable(createEntry(textEntry[0]))).toBe(false);
+    expect(insertTabbableEntries(context)).toEqual([]);
+    expect(query(context)).toBe(true);
+    expect(isTabbable({ ...context, entry: createEntry(voidEntry[0]) })).toBe(
+      true
+    );
+    expect(isTabbable({ ...context, entry: createEntry(textEntry[0]) })).toBe(
+      false
+    );
   });
 });
 

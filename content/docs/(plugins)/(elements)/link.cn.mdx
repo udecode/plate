@@ -125,12 +125,14 @@ const editor = createEditor({
 });
 ```
 
-- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`：启用纯 URL 自动链接。
-- `LinkRules.markdown()`：启用在输入结束 `)` 时把 `[text](url)` 转成结构化链接。
+- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`：启用纯 URL 自动链接。粘贴或输入的词被 `parseUrl` 识别且结果通过 `allowedSchemes` 时才成为链接；否则粘贴、空格或 `Enter` 照常进行。
+- `LinkRules.markdown()`：启用在输入结束 `)` 时把 `[text](url)` 转成结构化链接。图片源码 `![alt](src)` 保持为文本。
 
 ### 添加工具栏按钮
 
 您可以在[工具栏](/docs/toolbar)中添加 [`LinkToolbarButton`](/docs/components/link-toolbar-button) 来插入和编辑链接。
+
+浮动工具栏会保存新的或修改过的地址，前提是它以 `http://` 或 `https://` 开头、带有其他协议（例如 `mailto:`），或以 `/`、`./`、`../`、`#`、`?` 开头。输入其他内容（例如 `www.example.com` 或 `https:www.example.com`），或 `allowedSchemes` 拒绝该地址时，工具栏保持打开。只修改链接文本时会保留已存储的地址，即使 `allowedSchemes` 已不再允许它。
 
 </Steps>
 
@@ -160,11 +162,14 @@ LinkPlugin.configure({
 
 选项：
 
-- `allowedSchemes?: string[]` — link 在插入、导入或渲染时可以使用的 URL 协议。
-  相对 URL 始终允许。可以为应用 deep link 添加 `vscode` 等协议。`javascript:`、
-  `vbscript:`、`data:` 等可执行脚本的 destination 永远不允许，存储的 link URL
-  也必须满足这一下限。HTML 与 Markdown 导入会保留 destination 不被允许的 link
-  的文本，并报告被移除的 destination。默认值：`['http', 'https', 'mailto', 'tel']`。
+- `allowedSchemes?: string[]` — 链接功能在插入、输入、粘贴或导入链接时接受的、
+  以及渲染时链接可以使用的 URL 协议。相对 URL 始终允许。可以为应用 deep link 添加 `vscode` 等协议。
+  `javascript:`、`vbscript:`、`data:` 等可执行脚本的 destination 永远不允许，
+  存储的 link URL 也必须满足这一下限。HTML 与 Markdown 导入会保留 destination
+  不被允许的 link 的文本，并报告被移除的 destination。协议不再被允许的已存储
+  link 保留其 URL，渲染时没有 `href`，导出时写出存储的 URL；以精确编辑器片段粘贴的
+  link 也是如此。默认值：
+  `['http', 'https', 'mailto', 'tel']`。
 
 <APIOptions type="object">
 <APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
@@ -186,15 +191,18 @@ LinkPlugin.configure({
 粘贴链接时默认保留选中文本。
 - **默认值:** **`true`**
 </APIItem>
-<APIItem name="isUrl" type="(text: string) => boolean" optional>
-验证URL的回调函数。
-- **默认值:** **`isUrl`**
-</APIItem>
-<APIItem name="getUrlHref" type="(url: string) => string | undefined" optional>
-可选获取URL href的回调函数。返回与文本内容不同的可选链接。例如，为 `google.com` 返回 `https://google.com`。
-</APIItem>
-<APIItem name="transformInput" type="(url: string) => string | undefined" optional>
-在验证前可选转换用户提交的URL输入的回调函数。
+<APIItem name="parseUrl" type="(text: string, defaultParseUrl: (text: string) => string | undefined) => string | undefined" optional>
+返回输入或粘贴文本对应的 href；文本不是链接时返回 `undefined`。自动链接规则会调用它；`upsert`、工具栏和导入不会。`defaultParseUrl` 接受带显式协议的完整词，例如 `https://example.com` 或 `tel:+15551234`，因此输入的 `#top`、`/docs` 和 `www.example.com` 保持为文本。安装 Markdown 粘贴时，粘贴的 `www.example.com` 仍可能成为链接。返回结果仍须通过 `allowedSchemes`。
+- **默认值:** **`(text, defaultParseUrl) => defaultParseUrl(text)`**
+
+```tsx
+LinkPlugin.configure({
+  initialState: {
+    parseUrl: (text, defaultParseUrl) =>
+      text === 'example' ? 'https://example.com' : defaultParseUrl(text),
+  },
+});
+```
 </APIItem>
 </APIOptions>
 </API>
@@ -211,30 +219,27 @@ editor.update.link.unwrap({ split: true });
 
 | 更新方法 | 说明 |
 | --- | --- |
-| `editor.update.link.insert(node, options?)` | 插入链接节点。 |
+| `editor.update.link.insert(node, options?)` | 插入链接节点；返回 `true`，URL 不被允许或无法插入节点时返回 `undefined`。 |
 | `editor.update.link.unwrap(options?)` | 解包匹配的链接；`split` 仅更新选中部分。 |
-| `editor.update.link.upsert(options)` | 处理 URL 输入后，在选区插入或更新链接。 |
+| `editor.update.link.upsert(options)` | 处理 URL 输入后，在选区插入或更新链接；返回 `true`，URL 不被允许或没有可链接的选区时返回 `undefined`。 |
 | `editor.update.link.upsertText(options)` | 替换选区上方链接的文本。 |
-| `editor.update.link.wrap(options)` | 将选中文本包裹为链接。 |
+| `editor.update.link.wrap(options)` | 将选中文本包裹为链接；返回 `true`，URL 不被允许或没有包裹任何内容时返回 `undefined`。 |
 
-`upsert` 会编码未转义的 URI 字符，调用 `transformInput`，并在修改文档前验证结果。已有的有效百分号转义保持不变。`skipValidation` 只跳过 `isUrl` 与 `allowedSchemes` 验证，仍会处理输入；低于导航下限的 URL（例如 `javascript:`）仍会被拒绝。当 `insertTextInLink` 在已有链接内插入文本时，输入会保留为原始文本。
+`insert`、`upsert` 和 `wrap` 会编码未转义的 URI 字符，并在修改文档前用 `allowedSchemes` 检查结果。已有的有效百分号转义保持不变，没有协议的 URL 会存为相对链接。
+
+```tsx
+if (!editor.update.link.upsert({ url })) {
+  // URL 不被允许，或没有选区。
+}
+```
 
 ## 插件 API
 
 通过已安装的插件读取链接行为：
 
-```tsx
-const { api } = editor.plugin(LinkPlugin);
-
-if (api.validateUrl(url)) {
-  editor.update.link.upsert({ url });
-}
-```
-
 | 方法 | 说明 |
 | --- | --- |
-| `api.getAttributes(link)` | 返回链接元素经过清理的锚点属性。 |
-| `api.validateUrl(url)` | 根据插件配置和运行时 `isUrl` 选项验证 URL。 |
+| `api.getAttributes(link)` | 返回链接元素经过清理的锚点属性；URL 不被允许时没有 `href`。 |
 
 ### `CreateLinkNodeOptions`
 

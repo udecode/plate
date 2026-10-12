@@ -3,13 +3,19 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import * as marks from '../src/authored/tree/marks';
+import * as recordCompletion from '../src/authored/tree/record-completion';
 import { DocumentIndex } from '../src/core/change/document-index';
 import * as tokens from '../src/core/change/tokens';
+import * as representation from '../src/core/representation';
 
 const real = { ...marks };
 const realTokens = { ...tokens };
+const realCompletion = { ...recordCompletion };
+const realRepresentation = { ...representation };
 let markReads = 0;
 let encodedTokens = 0;
+let recorderReads = 0;
+let built = 0;
 
 mock.module(join(import.meta.dir, '../src/authored/tree/marks.ts'), () => ({
   ...real,
@@ -17,6 +23,35 @@ mock.module(join(import.meta.dir, '../src/authored/tree/marks.ts'), () => ({
     markReads += 1;
 
     return real.readAuthoredMarks(node);
+  },
+}));
+mock.module(
+  join(import.meta.dir, '../src/authored/tree/record-completion.ts'),
+  () => ({
+    ...realCompletion,
+    completeProposed: (
+      input: Parameters<typeof recordCompletion.completeProposed>[0]
+    ) => {
+      const before = markReads;
+
+      try {
+        return realCompletion.completeProposed(input);
+      } finally {
+        recorderReads += markReads - before;
+      }
+    },
+  })
+);
+mock.module(join(import.meta.dir, '../src/core/representation.ts'), () => ({
+  ...realRepresentation,
+  completeChildrenAt: (
+    ...args: Parameters<typeof representation.completeChildrenAt>
+  ) => {
+    const completion = realRepresentation.completeChildrenAt(...args);
+
+    built += completion.built.length;
+
+    return completion;
   },
 }));
 mock.module(join(import.meta.dir, '../src/core/change/tokens.ts'), () => ({
@@ -33,6 +68,8 @@ mock.module(join(import.meta.dir, '../src/core/change/tokens.ts'), () => ({
 const { createEditor, defineEditorSchema, property, schema, target } =
   await import('plitejs');
 const { authoredTreeProof } = await import('../src/authored/tree/proof-plugin');
+const { proposedChildren, proposedHost } =
+  await import('../src/authored/tree/proposed');
 
 const Inline = defineEditorSchema('work-inline', {
   elements: {
@@ -53,6 +90,22 @@ const Inline = defineEditorSchema('work-inline', {
   version: 1,
 });
 
+const Blocks = defineEditorSchema('work-blocks', {
+  elements: {
+    cell: { content: schema.content.text() },
+    group: { content: schema.content.type('cell', { min: 2 }) },
+    paragraph: { content: schema.content.text() },
+    quote: { content: schema.content.type('paragraph', { min: 1 }) },
+  },
+  id: 'work-blocks',
+  root: schema.content.types(['paragraph', 'group', 'quote'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+
 type Node = Record<string, unknown> & {
   children?: readonly Node[];
   text?: string;
@@ -70,12 +123,13 @@ let count = 0;
 const editorFor = (
   value: readonly Node[],
   intent: 'edit' | 'propose',
-  author = 'alice'
+  author = 'alice',
+  content: typeof Inline | typeof Blocks = Inline
 ) =>
   createEditor({
     initialValue: value as never,
     plugins: [
-      Inline,
+      content,
       authoredTreeProof({
         authorId: author,
         createChangeId: () => `${author}:${(count += 1)}`,
@@ -98,6 +152,22 @@ const quote = (size: number) => ({
   children: blocks(size, []),
   type: 'quote',
 });
+const deletedBy = (change: string) => [
+  { at: 1, author: 'bob', change, kind: 'delete' },
+];
+const struckParagraph = (text: string, change: string) => ({
+  authored: deletedBy(change),
+  children: [{ authored: deletedBy(change), text }],
+  type: 'paragraph',
+});
+const cells = () =>
+  [0, 1, 2].map((index) => ({
+    children: [
+      { children: [{ text: `a${index}` }], type: 'cell' },
+      { children: [{ text: `b${index}` }], type: 'cell' },
+    ],
+    type: 'group',
+  }));
 const twiceSplitLink = () => {
   const editor = editorFor([linked()], 'propose', 'bob');
 
@@ -122,13 +192,15 @@ const splitLinks = [
 
 const workPerEdit = (editor: Editor, edit: (run: number) => void) => {
   const counts = [0, 1, 2].map((run) => {
-    const before = { encodedTokens, markReads };
+    const before = { built, encodedTokens, markReads, recorderReads };
 
     edit(run);
 
     return {
+      built: built - before.built,
       encodedTokens: encodedTokens - before.encodedTokens,
       markReads: markReads - before.markReads,
+      recorderReads: recorderReads - before.recorderReads,
     };
   });
 
@@ -143,17 +215,20 @@ const workPerEdit = (editor: Editor, edit: (run: number) => void) => {
 const buildFirstIndexOutsideCount = (editor: Editor) => {
   const before = encodedTokens;
 
-  DocumentIndex.fromValue(editor.read.children());
+  // Loading may already index the document, so a copy proves the counter runs.
+  DocumentIndex.fromValue(structuredClone(editor.read.children()));
   if (encodedTokens === before) {
     throw new Error('The encode counter saw no first index.');
   }
+  DocumentIndex.fromValue(editor.read.children());
 };
 
 const atBothSizes = (
   setup: (size: number) => Editor,
-  edit: (editor: Editor, size: number, run: number) => void
+  edit: (editor: Editor, size: number, run: number) => void,
+  sizes = [100, 2000]
 ) =>
-  [100, 2000].map((size) => {
+  sizes.map((size) => {
     const editor = setup(size);
 
     buildFirstIndexOutsideCount(editor);
@@ -290,5 +365,104 @@ describe('authored review tree work per edit', () => {
     );
 
     assert.deepEqual(large, small);
+  });
+  it('reads as many nodes to check Suggesting typing for completion under a root minimum at 20,000 blocks as at 100', () => {
+    const [small, large] = atBothSizes(
+      (size) => editorFor(blocks(size, []), 'propose', 'alice', Blocks),
+      typeAtEnd,
+      [100, 20_000]
+    );
+
+    assert.ok(small.every((work) => work.recorderReads > 0));
+    assert.deepEqual(
+      large.map((work) => work.recorderReads),
+      small.map((work) => work.recorderReads)
+    );
+  });
+
+  it('reads as many nodes to complete a Suggesting Backspace join at 20,000 blocks as at 100', () => {
+    const [small, large] = atBothSizes(
+      (size) => editorFor(blocks(size, []), 'propose', 'alice', Blocks),
+      (editor, size, run) =>
+        editor.update((tx) => tx.nodes.merge({ at: [size - 1 - run] })),
+      [100, 20_000]
+    );
+
+    assert.ok(small.every((work) => work.recorderReads > 0));
+    assert.deepEqual(
+      large.map((work) => work.recorderReads),
+      small.map((work) => work.recorderReads)
+    );
+  });
+
+  it('reads as many nodes to fill a Suggesting cell deletion at 20,000 blocks as at 100', () => {
+    const [small, large] = atBothSizes(
+      (size) => editorFor(blocks(size, cells()), 'propose', 'alice', Blocks),
+      (editor, size, run) =>
+        editor.update((tx) => tx.nodes.remove({ at: [size + run, 0] })),
+      [100, 20_000]
+    );
+
+    assert.ok(small.every((work) => work.built > 0));
+    assert.deepEqual(
+      large.map(({ built: fills, recorderReads: reads }) => [fills, reads]),
+      small.map(({ built: fills, recorderReads: reads }) => [fills, reads])
+    );
+  });
+
+  it('reads through a struck run before a Suggesting Backspace join as far as the run goes, at 20,000 blocks as at 100', () => {
+    const reads = (run: number, sizes: number[]) =>
+      atBothSizes(
+        (size) =>
+          editorFor(
+            [
+              ...Array.from({ length: run }, (_, index) =>
+                struckParagraph(`struck ${index}`, 'bob:struck')
+              ),
+              ...blocks(size, []),
+            ],
+            'propose',
+            'alice',
+            Blocks
+          ),
+        (editor, size, edit) =>
+          editor.update((tx) =>
+            tx.nodes.merge({ at: [run + size - 1 - edit] })
+          ),
+        sizes
+      ).map((work) => work.map((entry) => entry.recorderReads));
+    const [short, shortInLarge] = reads(100, [100, 20_000]);
+    const [long] = reads(1000, [100]);
+
+    assert.deepEqual(shortInLarge, short);
+    for (const [index, longReads] of (long ?? []).entries()) {
+      assert.ok(longReads - (short?.[index] ?? 0) >= 900);
+    }
+  });
+
+  it('reads only an element’s level and its ancestors for its proposed children under a pending unwrap, at 2,000 blocks as at 100', () => {
+    const reads = (size: number) => {
+      const value = blocks(size, [
+        {
+          authored: [{ at: 1, author: 'bob', change: 'bob:1', kind: 'unwrap' }],
+          children: [paragraph({ text: 'lifted' })],
+          type: 'quote',
+        },
+      ]);
+      const before = markReads;
+      const host = proposedHost(value as never, [size, 0]);
+
+      assert.deepEqual(host, [size, 0]);
+      assert.deepEqual(
+        proposedChildren(value as never, [size, 0]).map(
+          ({ node }) => node.text
+        ),
+        ['lifted']
+      );
+
+      return markReads - before;
+    };
+
+    assert.equal(reads(2000), reads(100));
   });
 });

@@ -1,6 +1,6 @@
 # Uploads
 
-Page: https://claude.ai/artifact/AY5HLKra28RtMJm61tefZM
+Page: https://claude.ai/artifact/N8QhXGaSxd4cKQjR2ZHhuu
 
 Who owns an upload after its draft moves, disappears, is undone or outlives its editor, and where does a dropped file land? `platejs/upload` admits a validated batch of files as `upload` drafts, starts each transfer after commit through a Files SDK client, keeps the file, progress and failure keyed to the live draft, and completes into the installed media schema. Removal, retagging, plugin cleanup and whole-document replacement revoke a request, and history never restarts one. The package specs prove those laws. The React plugin lands every dropped file at the block edge under the pointer, through the block-drag landing rules. In Chromium, the copied kit's picker and drop paths pass (`apps/www/tests/browser/files-sdk.spec.ts`), and so do drops into an editor set up as the upload guide shows (`apps/www/tests/browser/clipboard-upload.spec.ts`). Storage, gateway policy and durable URLs stay in the copied `upload-browser`, `upload-r2` and `upload-s3` recipes.
 

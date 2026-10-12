@@ -622,7 +622,11 @@ describe('plite transforms contract', () => {
   it('blocks.insertAfter preserves an empty structural container', () => {
     const container = { type: 'container', children: [] };
     const editor = createEditor({
-      plugins: [defineTestSchema('insert-after-container', { container: {} })],
+      plugins: [
+        defineTestSchema('insert-after-container', {
+          container: { content: schema.content.types(['paragraph']) },
+        }),
+      ],
       initialValue: [container],
     });
     assert.deepEqual(editor.read.children(), [container]);

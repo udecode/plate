@@ -1,4 +1,8 @@
-import { DocumentChange, valueRoot } from '../../core/change/document-change';
+import {
+  DocumentChange,
+  getInternalDocumentRootChange,
+  valueRoot,
+} from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import { registerEditorContent } from '../../core/content';
@@ -11,10 +15,7 @@ import {
   getEditorSchema,
 } from '../../core/editor-runtime';
 import { definePlugin } from '../../core/plugin';
-import {
-  canonicalizeElementChildren,
-  canonicalizeRootChildren,
-} from '../../core/representation';
+import { completeChildrenAt } from '../../core/representation';
 import { EditorSchemaValidationError } from '../../core/schema-validation';
 import type {
   AnyEditor as Editor,
@@ -34,6 +35,7 @@ import {
   readAuthoredMarks,
 } from './marks';
 import { type AuthoredRecordIntent, recordAuthoredSteps } from './record';
+import { completeProposed } from './record-completion';
 import {
   type AuthoredResolveSchema,
   projectAuthoredValue,
@@ -62,19 +64,23 @@ export const authoredResolveSchemaOf = (
   const schema = getEditorSchema(editor);
 
   return {
-    canonicalize: (children, parent, root) =>
-      (parent === null
-        ? canonicalizeRootChildren(
-            editor,
-            children as readonly Descendant[],
-            new Set(),
-            root
-          )
-        : canonicalizeElementChildren(
-            editor,
-            parent as Element,
-            children as readonly Descendant[]
-          )) as readonly JsonNode[],
+    complete: (children, site, root, vacated) => {
+      const completion = completeChildrenAt(
+        editor,
+        site as readonly Element[],
+        children as readonly Descendant[],
+        root,
+        vacated
+      );
+
+      return {
+        built: completion.built.map(({ node, slot }) => ({
+          node: node as JsonNode,
+          slot,
+        })),
+        children: completion.children,
+      };
+    },
     content: (type, root) => {
       const content =
         type === null
@@ -83,53 +89,21 @@ export const authoredResolveSchemaOf = (
 
       return content
         ? {
-            allowedElementTypes: content.allowsUnknownElements
-              ? null
-              : [...content.allowedElementTypes],
             allowsText: content.allowsText,
-            min: content.min,
+            prefix: content.prefix?.length ?? 0,
           }
         : null;
     },
   };
 };
 
+// Only a refusal of the resolved document is an invalid decision.
+const isRefusal = (error: unknown) =>
+  error instanceof EditorSchemaValidationError ||
+  error instanceof AuthoredMarkError;
+
 const isAuthoredSetValued = (_node: unknown, key: string) =>
   key === AUTHORED_MARKS_KEY;
-
-const defaultChildOf = (
-  editor: Editor,
-  type: string,
-  above: ReadonlySet<string>
-): JsonNode | null => {
-  const content = getEditorSchema(editor).getElementContent(type);
-  const plan = content?.remainder?.defaultPlan ?? content?.defaultPlan;
-  const allowed = [...(content?.allowedElementTypes ?? [])];
-
-  if (plan?.kind === 'element') return filledElement(editor, plan.type, above);
-  if (content?.allowsText ?? true) return { text: '' };
-
-  return allowed.length === 1 && allowed[0] && !above.has(allowed[0])
-    ? filledElement(editor, allowed[0], above)
-    : null;
-};
-
-/**
- * A new `type` element filled down to a text where the schema names one
- * default child, because `schema.create` fills only to the content minimum.
- */
-const filledElement = (
-  editor: Editor,
-  type: string,
-  above: ReadonlySet<string>
-): JsonNode => {
-  const element = getEditorSchema(editor).create(type);
-
-  if (element.children.length > 0 || above.has(type)) return element;
-  const child = defaultChildOf(editor, type, new Set([...above, type]));
-
-  return child ? { ...element, children: [child] } : element;
-};
 
 export type AuthoredTreeProofOptions = Readonly<{
   authorId: string;
@@ -268,11 +242,18 @@ export const authoredTreeProof = (options: AuthoredTreeProofOptions) => {
         const ids = [...actions.keys()];
 
         if (conflicting) return { ids, status: 'invalid' };
-        const resolution = resolveAuthoredValue(
-          value,
-          (change) => actions.get(change) ?? 'keep',
-          authoredResolveSchemaOf(editor)
-        );
+        let resolution: ReturnType<typeof resolveAuthoredValue>;
+
+        try {
+          resolution = resolveAuthoredValue(
+            value,
+            (change) => actions.get(change) ?? 'keep',
+            authoredResolveSchemaOf(editor)
+          );
+        } catch (error) {
+          if (isRefusal(error)) return { ids, status: 'invalid' };
+          throw error;
+        }
         const blockers = resolution.blockers.filter(
           (change) => !actions.has(change)
         );
@@ -293,13 +274,7 @@ export const authoredTreeProof = (options: AuthoredTreeProofOptions) => {
             tx.changes.apply(change);
           });
         } catch (error) {
-          // Only a refusal of the resolved document is an invalid decision.
-          if (
-            error instanceof EditorSchemaValidationError ||
-            error instanceof AuthoredMarkError
-          ) {
-            return { ids, status: 'invalid' };
-          }
+          if (isRefusal(error)) return { ids, status: 'invalid' };
           throw error;
         } finally {
           if (state) state.passThrough -= 1;
@@ -390,14 +365,25 @@ export const authoredTreeProof = (options: AuthoredTreeProofOptions) => {
           const selectionPosition = focusBefore
             ? positionOf(before, input.selectionBeforeRoot, focusBefore)
             : null;
+          const changeId = createChangeId();
+          const at = state.forced?.at ?? now();
           const recorded = recordAuthoredSteps({
             before,
-            changeId: createChangeId(),
+            changeId,
             createRoots: input.change.createRoots,
             createTagId,
-            defaultChild: (props) =>
-              defaultChildOf(editor, String(props.type), new Set()),
             deleteRoots: input.change.deleteRoots,
+            fill: (site, root) =>
+              completeChildrenAt(
+                editor,
+                site.map((props) => ({
+                  ...props,
+                  children: [],
+                  type: String(props.type),
+                })),
+                [],
+                root
+              ).children,
             forcedChangeId: state.forced?.changeId ?? null,
             intent,
             isInline: (props) =>
@@ -423,7 +409,7 @@ export const authoredTreeProof = (options: AuthoredTreeProofOptions) => {
                 ),
                 key
               ),
-            now: state.forced?.at ?? now(),
+            now: at,
             oneText: (type) => {
               const content = getEditorSchema(editor).getElementContent(type);
 
@@ -468,22 +454,22 @@ export const authoredTreeProof = (options: AuthoredTreeProofOptions) => {
             (root) => root !== 'main' && !input.change.deleteRoots.has(root)
           );
           const { roots: _beforeRoots, ...plain } = before;
-          const written = {
-            ...plain,
-            children:
-              recorded.indexedAfter.get('main')?.value ?? before.children,
-            ...(roots.length > 0
-              ? {
-                  roots: Object.fromEntries(
-                    roots.map((root) => [
-                      root,
-                      recorded.indexedAfter.get(root)?.value ??
-                        valueRoot(before, root),
-                    ])
-                  ),
-                }
-              : {}),
-          } as JsonEditorValue;
+          const valueOf = (indexes: ReadonlyMap<string, DocumentIndex>) =>
+            ({
+              ...plain,
+              children: indexes.get('main')?.value ?? before.children,
+              ...(roots.length > 0
+                ? {
+                    roots: Object.fromEntries(
+                      roots.map((root) => [
+                        root,
+                        indexes.get(root)?.value ?? valueRoot(before, root),
+                      ])
+                    ),
+                  }
+                : {}),
+            }) as JsonEditorValue;
+          const written = valueOf(recorded.indexedAfter);
           const relink = relinkCuts(
             recorded.change,
             before,
@@ -492,24 +478,71 @@ export const authoredTreeProof = (options: AuthoredTreeProofOptions) => {
               recorded.indexedAfter.get(root) ??
               DocumentIndex.fromValue(valueRoot(written, root))
           );
+          const change = relink
+            ? recorded.change.compose(relink.change)
+            : recorded.change;
+          const indexes = relink
+            ? new Map([...recorded.indexedAfter, ...relink.indexes])
+            : recorded.indexedAfter;
+          const filled =
+            intent === 'propose'
+              ? completeProposed({
+                  after: valueOf(indexes),
+                  before,
+                  change,
+                  createTagId,
+                  editor,
+                  indexes,
+                  mark: {
+                    at,
+                    author: options.authorId,
+                    change: state.forced?.changeId ?? changeId,
+                  },
+                })
+              : null;
 
-          if (relink) {
+          if (!filled) {
             return {
               anchorChange: recorded.anchorChange,
-              change: recorded.change.compose(relink.change),
-              indexedAfter: new Map([
-                ...recorded.indexedAfter,
-                ...relink.indexes,
-              ]),
+              change,
+              indexedAfter: indexes,
               selection,
             };
           }
 
+          const fill = (point: Point, assoc: -1 | 1): Point => {
+            const root = input.selectionRoot;
+            const rootChange = getInternalDocumentRootChange(
+              filled.change,
+              root
+            );
+            const position = rootChange?.mapPos(
+              positionOf(valueOf(indexes), root, point),
+              assoc
+            );
+            const mapped =
+              position === undefined || position === null
+                ? null
+                : filled.indexes.get(root)?.pointAt(position, assoc);
+
+            return mapped
+              ? { ...point, offset: mapped.offset, path: [...mapped.path] }
+              : point;
+          };
+
           return {
-            anchorChange: recorded.anchorChange,
-            change: recorded.change,
-            indexedAfter: recorded.indexedAfter,
-            selection,
+            anchorChange: (plainAfter) =>
+              recorded.anchorChange(plainAfter).compose(filled.change),
+            change: change.compose(filled.change),
+            indexedAfter: filled.indexes,
+            selection:
+              selection?.kind === 'text'
+                ? {
+                    ...selection,
+                    anchor: fill(selection.anchor, -1),
+                    focus: fill(selection.focus, -1),
+                  }
+                : selection,
           };
         })
       );

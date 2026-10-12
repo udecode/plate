@@ -13,6 +13,7 @@ import {
   parseTestMarkdown,
   serializeTestMarkdown,
 } from './__tests__/createTestEditor';
+import { nameListIds } from './__tests__/nameListIds';
 import { MarkdownPlugin } from './MarkdownPlugin';
 
 const createTableEditor = () => createTestEditor();
@@ -681,42 +682,62 @@ describe('markdown tables', () => {
 
     it("reads main's cell lists back into list paragraphs", () => {
       expect(
-        bodyCellChildren(
-          oneCell(
-            'Intro<ul><li><input type="checkbox" checked disabled /> ship</li><li><input type="checkbox" disabled /> test</li><li>note</li></ul><ol start="3"><li>step<ul><li>sub<br/><br /></li></ul></li></ol>'
-          )
-        )[0][0]
+        nameListIds(
+          bodyCellChildren(
+            oneCell(
+              'Intro<ul><li><input type="checkbox" checked disabled /> ship</li><li><input type="checkbox" disabled /> test</li><li>note</li></ul><ol start="3"><li>step<ul><li>sub<br/><br /></li></ul></li></ol>'
+            )
+          )[0][0]
+        )
       ).toMatchObject([
         { children: [{ text: 'Intro' }], type: 'paragraph' },
         {
           checked: true,
           children: [{ text: 'ship' }],
           indent: 1,
+          listId: 'a',
           listType: 'task',
         },
         {
           checked: false,
           children: [{ text: 'test' }],
           indent: 1,
+          listId: 'a',
           listType: 'task',
         },
-        { children: [{ text: 'note' }], indent: 1, listType: 'bulleted' },
+        {
+          children: [{ text: 'note' }],
+          indent: 1,
+          listId: 'a',
+          listType: 'bulleted',
+        },
         {
           children: [{ text: 'step' }],
           indent: 1,
-          listRestart: 3,
+          listId: 'b',
+          listStart: 3,
           listType: 'numbered',
         },
-        { children: [{ text: 'sub\n\n' }], indent: 2, listType: 'bulleted' },
+        {
+          children: [{ text: 'sub\n\n' }],
+          indent: 2,
+          listId: 'b',
+          listType: 'bulleted',
+        },
       ]);
     });
 
-    it('reads an ordered list right after another as a restart', () => {
+    it('reads an ordered list right after another as its own list', () => {
       expect(
-        bodyCellChildren(
-          oneCell('<ol><li>a</li></ol><ol start="5"><li>b</li></ol>')
-        )[0][0][1]
-      ).toMatchObject({ children: [{ text: 'b' }], listRestart: 5 });
+        nameListIds(
+          bodyCellChildren(
+            oneCell('<ol><li>a</li></ol><ol start="5"><li>b</li></ol>')
+          )[0][0]
+        )
+      ).toMatchObject([
+        { listId: 'a' },
+        { children: [{ text: 'b' }], listId: 'b', listStart: 5 },
+      ]);
     });
 
     it('keeps a cell list start of 0 through Markdown', () => {
@@ -724,10 +745,22 @@ describe('markdown tables', () => {
         paragraph('a', { indent: 1, listStart: 0, listType: 'numbered' }),
       ];
 
-      // Markdown carries only the number, which reads back as a forced `listRestart`.
       expect(bodyCellChildren(write(headed(content)).data)[0][0]).toMatchObject(
-        [{ indent: 1, listRestart: 0, listType: 'numbered' }]
+        [{ indent: 1, listStart: 0, listType: 'numbered' }]
       );
+    });
+
+    it('keeps a cell list start that no Markdown marker can write', () => {
+      const result = write(
+        headed([
+          paragraph('a', { indent: 1, listStart: -2, listType: 'numbered' }),
+        ])
+      );
+
+      expect(result.diagnostics).toEqual([]);
+      expect(bodyCellChildren(result.data)[0][0]).toMatchObject([
+        { listStart: -2 },
+      ]);
     });
 
     it("keeps a paragraph's trailing break before a list", () => {

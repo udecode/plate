@@ -1,5 +1,5 @@
 import React from 'react';
-import { tabbable } from 'tabbable';
+import { isTabbable as isTabbableElement, tabbable } from 'tabbable';
 
 import { PathApi, type EditorStateView } from '../../core';
 import { useEditorReadOnly, useEditor, usePluginStore } from '../../react/core';
@@ -127,20 +127,53 @@ export function TabbableEffects() {
     const tabIndexRestorationQueue = createTabIndexRestorationQueue();
 
     const handler = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab' || event.defaultPrevented) return;
+
       const { insertTabbableEntries, isTabbable, query } = editor
         .plugin(TabbablePlugin)
         .store.get();
+      const context = { editor, event };
+      const { activeElement } = document;
+      const focusInText = activeElement === editorDOMNode;
 
-      // Check if the keydown is a tab key that should be handled
-      if (event.key !== 'Tab' || event.defaultPrevented || !query?.(event)) {
-        return;
-      }
+      if (focusInText && !query?.(context)) return;
+
+      const toTabbableEntry = (domNode: TabbableDOMNode) => {
+        const slateNode = editor.api.dom.resolveNode(domNode);
+
+        if (!slateNode) return null;
+
+        const path = editor.api.dom.resolvePath(slateNode);
+
+        if (!path) return null;
+
+        const entry: TabbableEntry = { domNode, path, slateNode };
+
+        return isTabbable?.({ ...context, entry }) ? entry : null;
+      };
 
       /**
        * Get the list of additional tabbable entries specified in the plugin
        * options
        */
-      const insertedTabbableEntries = insertTabbableEntries?.(event) ?? [];
+      const insertedTabbableEntries = insertTabbableEntries?.(context) ?? [];
+
+      /**
+       * Clicking a control inside the editor keeps the old caret, so a Tab from
+       * a stop Tabbable admits skips `query`, which would judge that caret.
+       */
+      const focusOnAdmittedStop =
+        !focusInText &&
+        (activeElement instanceof HTMLElement ||
+          activeElement instanceof SVGElement) &&
+        (insertedTabbableEntries.some(
+          ({ domNode }) => domNode === activeElement
+        ) ||
+          (editorDOMNode.contains(activeElement) &&
+            isTabbableElement(activeElement) &&
+            toTabbableEntry(activeElement) !== null));
+
+      if (!focusInText && !focusOnAdmittedStop && !query?.(context)) return;
 
       /**
        * Global event listener only. Do not handle the tab event if the keydown
@@ -168,21 +201,9 @@ export function TabbableEffects() {
        * the `isTabbable` option (defaulting to only void nodes).
        */
       const defaultTabbableEntries = tabbableDOMNodes.flatMap((domNode) => {
-        const slateNode = editor.api.dom.resolveNode(domNode);
+        const entry = toTabbableEntry(domNode);
 
-        if (!slateNode) return [];
-
-        const path = editor.api.dom.resolvePath(slateNode);
-
-        if (!path) return [];
-
-        const entry: TabbableEntry = {
-          domNode,
-          path,
-          slateNode,
-        };
-
-        return isTabbable?.(entry) ? [entry] : [];
+        return entry ? [entry] : [];
       });
 
       /**
@@ -198,7 +219,6 @@ export function TabbableEffects() {
       );
 
       // Check if any tabbable entry is the active element
-      const { activeElement } = document;
       const activeTabbableEntry =
         (activeElement &&
           tabbableEntries.find((entry) => entry.domNode === activeElement)) ??

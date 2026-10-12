@@ -32,6 +32,7 @@ import {
   readPeerSelection,
   redoEditorHistory,
   syncConnectedPeers,
+  type TestEditor,
   undoEditorHistory,
 } from './collaboration';
 
@@ -176,7 +177,7 @@ export type CollaborativeHistoryRunOptions = {
   ) => void;
   readonly children: readonly Descendant[];
   readonly clientIds: readonly string[];
-  readonly createEditor?: () => Editor;
+  readonly createEditor?: () => TestEditor;
   readonly numericClientIds?: Readonly<Record<string, number>>;
   readonly observePlugin?: (editor: Editor) => unknown;
   readonly roots?: Readonly<Record<string, readonly Descendant[]>>;

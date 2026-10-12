@@ -152,11 +152,12 @@ describe('compiled schema and correction laws', () => {
             defineEditorSchema(`schema:minimum-${minimum}`, {
               elements: {
                 generated: {
-                  content: schema.content.text({
-                    default: 'text',
+                  content: schema.content.type('item', {
+                    default: { type: 'item' },
                     min: minimum,
                   }),
                 } as const,
+                item: { content: schema.content.text() } as const,
               },
               id: `minimum-${minimum}`,
               root: schema.content.type('generated'),

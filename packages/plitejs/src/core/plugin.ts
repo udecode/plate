@@ -90,7 +90,10 @@ import {
 } from './public-state';
 import { createReadRegistration } from './read-definition';
 import { registerReadInRegistry } from './read-registry';
-import { constructCanonicalDocumentChange } from './representation';
+import {
+  constructCanonicalDocumentChange,
+  constructLoadedDocumentChange,
+} from './representation';
 import {
   areEditorSchemaIdentitiesEqual,
   createEditorSchemaContract,
@@ -2117,10 +2120,12 @@ type PluginPublicationOptions = PluginReconfigureOptions &
   Readonly<{
     /** Initial construction publishes the fitted candidate document. */
     initializeDocument?: boolean;
-    /** Initial explicit documents validate without canonical rewrite. */
     initialPublication?: boolean;
     validateDocument?: boolean;
   }>;
+
+const loadsInitialValue = (options: PluginPublicationOptions) =>
+  options.initialPublication === true && !options.initializeDocument;
 
 const classifyCandidatePublicationDocument = (
   editor: Editor,
@@ -2134,6 +2139,7 @@ const classifyCandidatePublicationDocument = (
       if (
         !constructCanonicalDocumentChange(editor, candidate, accumulated, {
           before: current,
+          displacement: 'none',
           schema,
         }).empty
       ) {
@@ -2248,17 +2254,21 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
   let documentChange = DocumentChange.empty;
 
   if (options.validateDocument !== false) {
-    const currentDocument = getEditorDocumentValue(editor);
-    if (options.initialPublication && !options.initializeDocument) {
-      schema.assertDocument(currentDocument);
-
+    if (loadsInitialValue(options)) {
       return Object.freeze({
         configured: candidate,
-        documentChange,
+        documentChange: constructLoadedDocumentChange(
+          editor,
+          getEditorDocumentValue(editor),
+          schema
+        ),
         merged: mergedCandidate,
         schema,
       });
     }
+
+    const currentDocument = getEditorDocumentValue(editor);
+
     if (!declarativeSchemaChanged) {
       schema.assertDocument(currentDocument);
     } else {
@@ -2400,9 +2410,18 @@ export type PreparedEditorSchemaCompilation = Readonly<{
 
 const createNoopPublication = (
   editor: Editor,
-  schema: CompiledEditorSchema
+  schema: CompiledEditorSchema,
+  options: PluginPublicationOptions
 ): PreparedPluginPublication => {
   let phase: 'cancelled' | 'finalized' | 'prepared' | 'published' = 'prepared';
+  let documentChange = DocumentChange.empty;
+
+  if (loadsInitialValue(options) && options.validateDocument !== false) {
+    documentChange = constructLoadedDocumentChange(
+      editor,
+      getEditorDocumentValue(editor)
+    );
+  }
 
   return Object.freeze({
     afterPublish() {},
@@ -2414,7 +2433,7 @@ const createNoopPublication = (
       if (phase === 'prepared') phase = 'published';
     },
     configurationChanged: false,
-    documentChange: DocumentChange.empty,
+    documentChange,
     finalize() {
       if (phase === 'published') phase = 'finalized';
     },
@@ -2457,7 +2476,8 @@ const prepareRecordPublication = <TEditor extends Editor>(
   if (samePluginRecords(previousRecords, nextRecords)) {
     return createNoopPublication(
       editor,
-      getPluginRegistry(editor).schemaContributions.compiled
+      getPluginRegistry(editor).schemaContributions.compiled,
+      options
     );
   }
 
@@ -2982,7 +3002,8 @@ export const prepareScopedPluginPublication = <TEditor extends Editor>(
   if (equivalentReplacement) {
     return createNoopPublication(
       editor,
-      getPluginRegistry(editor).schemaContributions.compiled
+      getPluginRegistry(editor).schemaContributions.compiled,
+      options
     );
   }
   const validationState = getValidationStateWithoutReplacements(

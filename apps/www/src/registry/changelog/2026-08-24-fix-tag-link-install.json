@@ -20,7 +20,7 @@
     {
       "name": "tag",
       "files": ["apps/www/src/registry/components/editor/tag.tsx"],
-      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "definitionFiles": [],
       "diagnostics": []
     }
   ],

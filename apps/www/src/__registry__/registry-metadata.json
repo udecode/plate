@@ -1,5 +1,5 @@
 {
-  "generation": "1ed6a6b2983bdff996da6d36752b9a5be8b0f0583bf68eeeddf83f687eccc158",
+  "generation": "e14420939603a6c24bda5be285d8632e7994cc37d7d97e109a5e41c40969306f",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -464,11 +464,10 @@
         {
           "dependencies": [
             "platejs",
-            "@radix-ui/react-primitive",
-            "@radix-ui/react-slot",
             "fzf@0.5.2",
             "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "lucide-react",
+            "next"
           ],
           "description": "An editor to select tags.",
           "files": [
@@ -478,9 +477,9 @@
               "target": "@components/editor/select-editor.tsx"
             },
             {
-              "path": "components/editor/select-command.tsx",
+              "path": "components/editor/tag.tsx",
               "type": "registry:component",
-              "target": "@components/editor/select-command.tsx"
+              "target": "@components/editor/tag.tsx"
             }
           ],
           "meta": {
@@ -499,8 +498,7 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/editor",
-            "@plate/floating-popover",
-            "@plate/tag"
+            "@plate/floating-popover"
           ]
         },
         {
@@ -1988,34 +1986,6 @@
             }
           ],
           "name": "paragraph-static",
-          "type": "registry:component"
-        },
-        {
-          "dependencies": [
-            "platejs",
-            "diff-match-patch-ts@^0.6.0",
-            "next"
-          ],
-          "description": "A tag element component with selection states and styling.",
-          "files": [
-            {
-              "path": "components/editor/tag.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/tag.tsx"
-            }
-          ],
-          "meta": {
-            "docs": [
-              {
-                "route": "/docs/multi-select"
-              }
-            ],
-            "examples": [
-              "select-editor-demo"
-            ]
-          },
-          "name": "tag",
-          "title": "Tag",
           "type": "registry:component"
         },
         {
@@ -4818,6 +4788,7 @@
           "type": "registry:example",
           "registryDependencies": [
             "@plate/editor-plugins",
+            "@plate/basic-blocks",
             "@plate/editor"
           ]
         },
@@ -5044,7 +5015,8 @@
             "@plate/ai",
             "@plate/dnd",
             "@plate/editor",
-            "@plate/editor-plugins"
+            "@plate/editor-plugins",
+            "@plate/tabbable"
           ]
         },
         {
@@ -7215,11 +7187,10 @@
         {
           "dependencies": [
             "platejs",
-            "@radix-ui/react-primitive",
-            "@radix-ui/react-slot",
             "fzf@0.5.2",
             "diff-match-patch-ts@^0.6.0",
-            "lucide-react"
+            "lucide-react",
+            "next"
           ],
           "description": "An editor to select tags.",
           "files": [
@@ -7229,9 +7200,9 @@
               "target": "@components/editor/select-editor.tsx"
             },
             {
-              "path": "components/editor/select-command.tsx",
+              "path": "components/editor/tag.tsx",
               "type": "registry:component",
-              "target": "@components/editor/select-command.tsx"
+              "target": "@components/editor/tag.tsx"
             }
           ],
           "meta": {
@@ -7250,8 +7221,7 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/editor",
-            "@plate/floating-popover",
-            "@plate/tag"
+            "@plate/floating-popover"
           ]
         },
         {
@@ -8733,34 +8703,6 @@
             }
           ],
           "name": "paragraph-static",
-          "type": "registry:component"
-        },
-        {
-          "dependencies": [
-            "platejs",
-            "diff-match-patch-ts@^0.6.0",
-            "next"
-          ],
-          "description": "A tag element component with selection states and styling.",
-          "files": [
-            {
-              "path": "components/editor/tag.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/tag.tsx"
-            }
-          ],
-          "meta": {
-            "docs": [
-              {
-                "route": "/docs/multi-select"
-              }
-            ],
-            "examples": [
-              "select-editor-demo"
-            ]
-          },
-          "name": "tag",
-          "title": "Tag",
           "type": "registry:component"
         },
         {
@@ -11563,6 +11505,7 @@
           "type": "registry:example",
           "registryDependencies": [
             "@plate/editor-plugins",
+            "@plate/basic-blocks",
             "@plate/editor"
           ]
         },
@@ -11789,7 +11732,8 @@
             "@plate/ai",
             "@plate/dnd",
             "@plate/editor",
-            "@plate/editor-plugins"
+            "@plate/editor-plugins",
+            "@plate/tabbable"
           ]
         },
         {

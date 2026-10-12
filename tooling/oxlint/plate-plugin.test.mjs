@@ -139,6 +139,128 @@ describe('plate oxlint rules', () => {
     }
   );
 
+  tester.run(
+    'no-schema-placement-copy',
+    plugin.rules['no-schema-placement-copy'],
+    {
+      invalid: [
+        {
+          // 93cdf6628a, wholeTextBlocks in aiOutputLanding.internal.ts
+          ...ts(
+            'const content = parent && state.schema.element(parent.type)?.content;\nif (!parent || !content || content.prefix) {}\nconst fits = count >= content.min && (content.max === null || count <= content.max);'
+          ),
+          errors: [
+            { messageId: 'copy' },
+            { messageId: 'copy' },
+            { messageId: 'copy' },
+            { messageId: 'copy' },
+          ],
+        },
+        {
+          // HtmlPlugin.ts childrenMatchParentContent
+          ...ts(
+            'const content = state.schema.element(parentType)?.content;\nconst fits = !content || children.length < content.min || (content.max !== null && children.length > content.max);'
+          ),
+          errors: [
+            { messageId: 'copy' },
+            { messageId: 'copy' },
+            { messageId: 'copy' },
+          ],
+        },
+        {
+          ...ts('if (editor.read.schema.element(type).content.min > 1) {}'),
+          errors: [{ messageId: 'copy' }],
+        },
+        {
+          ...ts("const max = state.schema.element(type)!['content'].max;"),
+          errors: [{ messageId: 'copy' }],
+        },
+        {
+          ...ts(
+            'const { content } = state.schema.element(type) ?? {};\nif (content?.prefix) {}'
+          ),
+          errors: [{ messageId: 'copy' }],
+        },
+        {
+          ...ts(
+            'const spec = state.schema.element(type);\nif (spec?.content.prefix) {}'
+          ),
+          errors: [{ messageId: 'copy' }],
+        },
+        {
+          ...ts(
+            'const { min, max } = getEditorSchema(editor).element(type)?.content ?? {};'
+          ),
+          errors: [{ messageId: 'copy' }, { messageId: 'copy' }],
+        },
+        {
+          ...ts(
+            'const s = state.schema;\nconst min = s.element(type)?.content.min;'
+          ),
+          errors: [{ messageId: 'copy' }],
+        },
+        {
+          ...ts(
+            'const { schema: rules } = editor.read;\nconst max = rules.element(type)?.content?.max;'
+          ),
+          errors: [{ messageId: 'copy' }],
+        },
+      ],
+      valid: [
+        // markdownMappings.ts classifies a node by allowsText and places nothing
+        ts(
+          'const element = state.schema.element(type);\nconst text = element.content?.allowsText;'
+        ),
+        ts('const roots = state.schema.element(type)?.contentRoots;'),
+        ts('for (const [type, spec] of entries) {\n  use(type, spec);\n}'),
+        ts(
+          'const fits = state.schema.allowsElementType(parent.type, child.type);'
+        ),
+        ts(
+          'const content = state.schema.element(type)?.content;\nfunction limit(content) {\n  return content.max;\n}'
+        ),
+        ts(
+          'const spec = registry.element(type);\nconst min = spec.content.min;'
+        ),
+      ],
+    }
+  );
+
+  tester.run(
+    'no-structural-mark-copy',
+    plugin.rules['no-structural-mark-copy'],
+    {
+      invalid: [
+        {
+          // proposed.ts's join target
+          ...ts("if (hasMark(child, 'join') && target) {}"),
+          errors: [{ messageId: 'copy' }],
+        },
+        {
+          // record-completion.ts's lifted unwraps
+          ...ts(
+            "const lifted = readAuthoredMarks(node).filter((mark) => mark.kind === 'unwrap');"
+          ),
+          errors: [{ messageId: 'copy' }],
+        },
+        {
+          ...ts("switch (mark.kind) {\n  case 'split':\n  case 'wrap':\n}"),
+          errors: [{ messageId: 'copy' }, { messageId: 'copy' }],
+        },
+        {
+          ...ts('if (mark.kind === `join`) {}'),
+          errors: [{ messageId: 'copy' }],
+        },
+      ],
+      valid: [
+        ts("type Kind = 'join' | 'split';"),
+        ts("const ownMark = (node: Node, kind: 'delete' | 'join') => node;"),
+        ts("if (mark.kind === 'delete') {}"),
+        ts("const label = 'joined';"),
+      ],
+    }
+  );
+
   tester.run('no-source-text-test', plugin.rules['no-source-text-test'], {
     invalid: [
       {

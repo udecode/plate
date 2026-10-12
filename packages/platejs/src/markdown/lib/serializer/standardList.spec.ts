@@ -3,6 +3,7 @@ import {
   parseTestMarkdown,
   serializeTestMarkdown,
 } from '../__tests__/createTestEditor';
+import { nameDocumentListIds } from '../__tests__/nameListIds';
 
 const editor = createTestEditor();
 
@@ -11,7 +12,9 @@ describe('editor.api.markdown.serialize list', () => {
     const document = parseTestMarkdown(editor, '- a<br/>\n\nEND\n');
     const result = serializeTestMarkdown(editor, { document });
 
-    expect(parseTestMarkdown(editor, result.data)).toEqual(document);
+    expect(nameDocumentListIds(parseTestMarkdown(editor, result.data))).toEqual(
+      nameDocumentListIds(document)
+    );
   });
 
   it('numbers an indent 0 item as the level above an indent 1 item', () => {
@@ -340,5 +343,95 @@ describe('editor.api.markdown.serialize list', () => {
     expect(
       serializeTestMarkdown(editor, { document: { children: input } }).data
     ).toBe(expected);
+  });
+});
+
+describe('editor.api.markdown.serialize list membership', () => {
+  const item = (text: string, extra: Record<string, unknown> = {}) => ({
+    children: [{ text }],
+    indent: 1,
+    listType: 'numbered',
+    type: 'paragraph',
+    ...extra,
+  });
+  const serialize = (children: Array<Record<string, unknown>>) =>
+    serializeTestMarkdown(editor, {
+      document: { children: children as never },
+    });
+  const roundTrip = (source: string) => {
+    const document = parseTestMarkdown(editor, source);
+    const result = serializeTestMarkdown(editor, { document });
+
+    expect(result.diagnostics).toEqual([]);
+    expect(nameDocumentListIds(parseTestMarkdown(editor, result.data))).toEqual(
+      nameDocumentListIds(document)
+    );
+
+    return document;
+  };
+
+  it('round-trips plain and task items of one list as one list', () => {
+    const document = roundTrip('- plain\n- [ ] task\n- plain again\n');
+
+    expect(new Set(document.children.map(({ listId }) => listId)).size).toBe(1);
+  });
+
+  it("round-trips a first sublist in its parent's list", () => {
+    roundTrip('1. a\n   - b\n2. c\n');
+  });
+
+  it.each([
+    [
+      'a forced restart',
+      [item('A', { listId: 'a' }), item('B', { listId: 'a', listRestart: 5 })],
+      'listRestart',
+    ],
+    [
+      'a list continued past a paragraph',
+      [
+        item('A', { listId: 'a' }),
+        { children: [{ text: 'Note' }], type: 'paragraph' },
+        item('B', { listId: 'a' }),
+      ],
+      'listId',
+    ],
+    [
+      "a first sublist with an id other than its parent's",
+      [
+        item('A', { listId: 'a' }),
+        item('B', { indent: 2, listId: 'b' }),
+        item('C', { listId: 'a' }),
+      ],
+      'listId',
+    ],
+  ])('reports %s once', (_name, children, key) => {
+    expect(
+      serialize(children).diagnostics.map((diagnostic) =>
+        diagnostic.code === 'markdown-property-omitted' ? diagnostic.key : ''
+      )
+    ).toEqual([key]);
+  });
+
+  it('writes a typed start of 1 without a report', () => {
+    expect(
+      serialize([
+        item('A', { listId: 'a', listStart: 1 }),
+        item('B', { listId: 'a' }),
+      ]).diagnostics
+    ).toEqual([]);
+  });
+
+  it('writes a list from 1 and reports it when its last number passes nine digits [EDIT-LIST-START-MD-401]', () => {
+    const result = serialize([
+      item('A', { listId: 'a', listStart: 999_999_999 }),
+      item('B', { listId: 'a' }),
+    ]);
+
+    expect(result.data).toBe('1. A\n2. B\n');
+    expect(
+      result.diagnostics.map((diagnostic) =>
+        diagnostic.code === 'markdown-property-omitted' ? diagnostic.key : ''
+      )
+    ).toEqual(['listStart']);
   });
 });

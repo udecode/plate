@@ -23,11 +23,6 @@ const streamChunks = (chunks: string[]) => {
   return editor;
 };
 
-const withoutListIds = (nodes: readonly any[]): any[] =>
-  nodes.map(({ listId: _listId, ...node }) =>
-    node.children ? { ...node, children: withoutListIds(node.children) } : node
-  );
-
 const getStreamedMarkdown = (chunks: string[]) => {
   const editor = streamChunks(chunks);
   const parsed = editor.api.markdown.parse(chunks.join(''));
@@ -216,13 +211,13 @@ describe('AIChatPlugin response drafts', () => {
 
       const output = (
         <fragment>
-          <hp indent={1} listId="a" listRestart={1} listType="numbered">
+          <hp indent={1} listId="a" listType="numbered">
             <htext>1</htext>
           </hp>
           <hp>
             <htext>xxx</htext>
           </hp>
-          <hp indent={1} listId="b" listRestart={2} listType="numbered">
+          <hp indent={1} listId="b" listStart={2} listType="numbered">
             <htext>2</htext>
           </hp>
         </fragment>
@@ -323,7 +318,9 @@ describe('AIChatPlugin response drafts', () => {
     ])('matches editor.api.markdown.parse for %s', (_label, chunks) => {
       const { editor, expected } = getStreamedMarkdown(chunks);
 
-      expect(withoutListIds(editor.read.children())).toEqual(expected);
+      expect(nameListIds(editor.read.children())).toEqual(
+        nameListIds(expected)
+      );
     });
   });
 });

@@ -149,7 +149,6 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'packages/platejs/src/features/details/lib/BaseDetailsPlugin.authored-tree.spec.ts',
     'packages/platejs/src/features/layout/lib/BaseColumnPlugin.authored-tree.spec.ts',
     'packages/platejs/src/features/list/lib/BaseListPlugin.authored-tree.spec.ts',
-    'packages/platejs/src/features/tag/lib/BaseMultiSelectPlugin.authored-tree.spec.ts',
   ]);
 });
 
@@ -323,7 +322,6 @@ test('platejs exposes exactly the accepted root and feature owners', () => {
     'slash-command',
     'suggestion',
     'table',
-    'tag',
     'toc',
   ]);
 
@@ -450,12 +448,12 @@ test('every public entrypoint has one canonical runtime', () => {
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin').length,
-    15
+    14
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin-client')
       .length,
-    15
+    14
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-html-server')

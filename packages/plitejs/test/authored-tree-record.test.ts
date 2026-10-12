@@ -1174,7 +1174,7 @@ describe('authored review tree recording laws', () => {
     assert.deepEqual(judge.read.children(), [paragraph({ text: 'ab' })]);
   });
 
-  it('fills a block-only default child down to a text when a struck element loses its children', () => {
+  it('fills a struck element whose children are all withdrawn as completion builds them, down to an empty row', () => {
     const Grid = defineEditorSchema('record-grid', {
       elements: {
         cell: { content: schema.content.text() },
@@ -1230,7 +1230,7 @@ describe('authored review tree recording laws', () => {
         : node.text;
 
     assert.deepEqual(shapeOf(bob.read.children()[1]), {
-      group: [{ row: [{ cell: [''] }] }],
+      group: [{ row: [] }],
     });
   });
 

@@ -478,6 +478,202 @@ describe('reported schema fitting', () => {
       []
     );
   });
+
+  it('reports representation inputs at caller paths after a root insertion', () => {
+    const TitledSchema = defineEditorSchema('schema:fit-report-titled-root', {
+      elements: {
+        paragraph: { content: schema.content.text() },
+        title: { content: schema.content.text() },
+      },
+      root: schema.content.prefix(
+        [{ element: 'title' }],
+        schema.content.types(['paragraph'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        })
+      ),
+      unknown: 'reject',
+    });
+    const report = getEditorSchema(
+      createEditor({ plugins: [TitledSchema] })
+    ).fitDocumentWithReport({
+      children: [
+        { children: [{ text: 'a' }, { text: 'b' }], type: 'paragraph' },
+      ],
+    });
+
+    assert.deepEqual(
+      report.repairs.find(({ code }) => code === 'merge-text')?.inputs,
+      [
+        { path: [0, 0], root: 'main' },
+        { path: [0, 1], root: 'main' },
+      ]
+    );
+  });
+
+  it('reports property-keyed representation inputs at caller paths after an element insertion', () => {
+    const HeadedSchema = defineEditorSchema(
+      'schema:fit-report-headed-element',
+      {
+        elements: {
+          heading: { content: schema.content.text() },
+          section: {
+            content: schema.content.prefix(
+              [{ element: 'heading' }],
+              schema.content.text()
+            ),
+          },
+        },
+        properties: [schema.textProperty('bold', property.boolean())],
+        root: schema.content.types(['section'], {
+          default: { type: 'section' },
+          min: 1,
+        }),
+        unknown: 'reject',
+      }
+    );
+    const report = getEditorSchema(
+      createEditor({ plugins: [HeadedSchema] })
+    ).fitDocumentWithReport({
+      children: [{ children: [{ bold: true, text: '' }], type: 'section' }],
+    });
+
+    assert.deepEqual(
+      report.repairs.find(({ code }) => code === 'omit-empty-text-property')
+        ?.inputs,
+      [{ path: [0, 0], property: 'bold', root: 'main' }]
+    );
+  });
+
+  it('reports property inputs at caller paths after root and element insertions', () => {
+    const TaggedSchema = defineEditorSchema('schema:fit-report-tagged-text', {
+      elements: {
+        heading: { content: schema.content.text() },
+        section: {
+          content: schema.content.prefix(
+            [{ element: 'heading' }],
+            schema.content.text()
+          ),
+        },
+        title: { content: schema.content.text() },
+      },
+      properties: [
+        schema.textProperty('tags', property.set(property.string())),
+      ],
+      root: schema.content.prefix(
+        [{ element: 'title' }],
+        schema.content.types(['section'], {
+          default: { type: 'section' },
+          min: 1,
+        })
+      ),
+      unknown: 'reject',
+    });
+    const report = getEditorSchema(
+      createEditor({ plugins: [TaggedSchema] })
+    ).fitDocumentWithReport({
+      children: [
+        { children: [{ tags: ['b', 'a'], text: 'x' }], type: 'section' },
+      ],
+    });
+
+    assert.deepEqual(
+      report.repairs.find(({ code }) => code === 'canonicalize-set-property')
+        ?.inputs,
+      [{ path: [0, 0], property: 'tags', root: 'main' }]
+    );
+  });
+
+  it('reports wrapped content at caller paths', () => {
+    const ListSchema = defineEditorSchema('schema:fit-report-list-wrap', {
+      elements: {
+        item: { content: schema.content.text() },
+        list: {
+          content: schema.content.types(['item'], {
+            default: { type: 'item' },
+            min: 1,
+          }),
+        },
+        paragraph: { content: schema.content.text() },
+      },
+      root: schema.content.types(['paragraph', 'list'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+    });
+    const report = getEditorSchema(
+      createEditor({ plugins: [ListSchema] })
+    ).fitDocumentWithReport({
+      children: [
+        { children: [{ text: 'x' }], type: 'paragraph' },
+        { children: [{ text: 'a' }], type: 'item' },
+        { children: [{ text: 'b' }], type: 'item' },
+      ],
+    });
+
+    assert.deepEqual(
+      report.repairs.find(({ code }) => code === 'wrap-content')?.inputs,
+      [
+        { path: [1], root: 'main' },
+        { path: [2], root: 'main' },
+      ]
+    );
+  });
+
+  it('reports a replacement shell and the content it wraps at caller paths', () => {
+    const ShellSchema = defineEditorSchema('schema:fit-report-shell-wrap', {
+      elements: {
+        heading: {
+          content: schema.content.prefix(
+            [{ element: 'kicker' }],
+            schema.content.text()
+          ),
+        },
+        item: { content: schema.content.text() },
+        kicker: { content: schema.content.text() },
+        paragraph: {
+          content: schema.content.types(['kicker', 'item'], {
+            default: { type: 'item' },
+            min: 1,
+          }),
+        },
+        section: {
+          content: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+      },
+      root: schema.content.types(['section'], {
+        default: { type: 'section' },
+        min: 1,
+      }),
+      unknown: 'reject',
+    });
+    const report = getEditorSchema(
+      createEditor({ plugins: [ShellSchema] })
+    ).fitDocumentWithReport({
+      children: [
+        {
+          children: [{ children: [{ text: 'a' }], type: 'heading' }],
+          type: 'section',
+        },
+      ],
+    });
+
+    assert.deepEqual(
+      report.repairs.map(({ code, inputs }) => ({ code, inputs })),
+      [
+        { code: 'insert-required-content', inputs: [] },
+        { code: 'wrap-content', inputs: [{ path: [0, 0, 0], root: 'main' }] },
+        {
+          code: 'replace-element-shell',
+          inputs: [{ path: [0, 0], root: 'main' }],
+        },
+      ]
+    );
+  });
 });
 
 describe('detached slice schema admission', () => {

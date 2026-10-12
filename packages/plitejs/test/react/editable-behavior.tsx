@@ -957,6 +957,60 @@ describe('plite-react editable behavior', () => {
     ).toBeNull();
   });
 
+  test('calls onFocus when focus returns while a selection write settles', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const onFocus = vi.fn();
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable autoFocus onFocus={onFocus} />
+      </EditorRoot>
+    );
+    const editable = rendered.container.querySelector<HTMLElement>(
+      '[data-editor]'
+    )!;
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        });
+      });
+    });
+    act(() => editable.blur());
+    onFocus.mockClear();
+    act(() => editable.focus());
+
+    expect(onFocus).toHaveBeenCalledTimes(1);
+  });
+
+  test('calls onFocus when focus arrives right after an outside press', () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const onFocus = vi.fn();
+    const rendered = render(
+      <>
+        <EditorRoot editor={editor}>
+          <Editable onFocus={onFocus} />
+        </EditorRoot>
+        <button type="button">Outside</button>
+      </>
+    );
+    const editable = rendered.container.querySelector<HTMLElement>(
+      '[data-editor]'
+    )!;
+
+    act(() => {
+      fireEvent.mouseDown(rendered.getByRole('button', { name: 'Outside' }));
+    });
+    act(() => editable.focus());
+
+    expect(onFocus).toHaveBeenCalledTimes(1);
+  });
+
   test('calls onCommit and onSelectionChange when editor selection changes', async () => {
     const initialValue = [
       { type: 'block', children: [{ text: 'te' }] },

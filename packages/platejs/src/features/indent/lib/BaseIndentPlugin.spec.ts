@@ -5,14 +5,14 @@ import {
   ContentSlice,
   EditorSchemaValidationError,
   type Value,
-  property,
   schema,
-  target,
 } from '../../../core';
 import { writeDataTransferFragment } from '../../../dom';
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { createPluginContext } from '../../../lib/plugin/createPluginContext.internal';
 import { createEditor } from '../../../react/core';
+import { dispatchPlateShortcut } from '../../../react/utils/dispatchPlateShortcut.internal';
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 
 describe('BaseIndentPlugin', () => {
@@ -58,68 +58,21 @@ describe('BaseIndentPlugin', () => {
     ).toBe('48px');
   });
 
-  it('changes block indent through typed tx groups', () => {
+  it('changes the indent of every block in a range', () => {
     const editor = createHeadlessEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        BaseIndentPlugin,
-        definePlugin('testIndentProps', {
-          schema: {
-            properties: {
-              foo: schema.elementProperty(property.string(), {
-                target: target.group('block'),
-              }),
-            },
-          },
-        }),
-      ],
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin],
       initialValue: [
-        {
-          children: [{ text: 'One' }],
-          type: 'paragraph',
-        },
-        {
-          children: [{ text: 'Two' }],
-          indent: 1,
-          type: 'paragraph',
-        },
+        { children: [{ text: 'One' }], type: 'paragraph' },
+        { children: [{ text: 'Two' }], indent: 1, type: 'paragraph' },
       ],
     });
+    const indents = () => editor.read.children().map((node) => node.indent);
 
-    editor.update.indent.change({
-      nodes: { at: [] },
-      setNodeProps: ({ indent }) => ({ foo: `indent-${indent}` }),
-    });
+    editor.update.indent.increase({ nodes: { at: [] } });
+    expect(indents()).toEqual([1, 2]);
 
-    expect(editor.read.children()).toMatchObject([
-      {
-        foo: 'indent-1',
-        indent: 1,
-        type: 'paragraph',
-      },
-      {
-        foo: 'indent-2',
-        indent: 2,
-        type: 'paragraph',
-      },
-    ]);
-
-    editor.update.indent.decrease({
-      nodes: { at: [] },
-      unsetNodeProps: ['foo'],
-    });
-
-    expect(editor.read.children()).toMatchObject([
-      {
-        children: [{ text: 'One' }],
-        type: 'paragraph',
-      },
-      {
-        foo: 'indent-2',
-        indent: 1,
-        type: 'paragraph',
-      },
-    ]);
+    editor.update.indent.decrease({ nodes: { at: [] } });
+    expect(indents()).toEqual([undefined, 1]);
   });
 
   it('uses configured targets for both model validation and injection', () => {
@@ -183,8 +136,8 @@ describe('BaseIndentPlugin', () => {
     ]);
   });
 
-  it('routes tab and untab through typed tx groups', () => {
-    const editor = createHeadlessEditor({
+  it('indents and outdents a paragraph on Tab and Shift+Tab', () => {
+    const editor = createEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
       selection: {
         kind: 'text',
@@ -193,13 +146,27 @@ describe('BaseIndentPlugin', () => {
       },
       initialValue: [{ children: [{ text: 'One' }], type: 'paragraph' }],
     });
+    const press = (shiftKey: boolean) =>
+      dispatchPlateShortcut(
+        editor,
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          code: 'Tab',
+          key: 'Tab',
+          shiftKey,
+        }),
+        'keydown',
+        getPlateRuntime(editor).shortcutTable
+      );
 
-    expect(editor.update.indent.tab()).toBe(true);
+    expect(press(false)).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({ indent: 1 });
 
-    expect(editor.update.indent.untab()).toBe(true);
+    expect(press(true)).toBe(true);
     expect(editor.read.children()[0]).not.toHaveProperty('indent');
-    expect(editor.update.indent.untab()).toBe(true);
+    // Outside a quote, Shift+Tab keeps the key at no indent.
+    expect(press(true)).toBe(true);
   });
 
   it('decodes CSS indentation through configured units', () => {
@@ -248,12 +215,12 @@ describe('BaseIndentPlugin', () => {
       ],
     });
 
-    editor.update.indent.change();
+    editor.update.indent.increase();
 
     expect(editor.read.children()[0]).toMatchObject({ indent: 2 });
     expect(editor.read.children()[0]).not.toHaveProperty('legacyIndent');
 
-    expect(editor.update.indent.untab()).toBe(true);
+    editor.update.indent.decrease();
     expect(editor.read.children()[0]).toMatchObject({ indent: 1 });
   });
 

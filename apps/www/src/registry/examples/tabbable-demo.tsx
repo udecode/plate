@@ -17,6 +17,7 @@ import {
   EditorFrame,
 } from '@/registry/components/editor/editor';
 import { EditorKit } from '@/registry/components/editor/plugins';
+import { TabbableKit } from '@/registry/components/editor/tabbable';
 import { tabbableValue } from '@/registry/examples/values/tabbable-value';
 
 const TabbableElementPlugin = definePlugin('tabbableElement', {
@@ -27,6 +28,7 @@ export default function TabbableDemo() {
   const editor = useCreateEditor({
     plugins: [
       ...EditorKit,
+      ...TabbableKit,
       TabbableElementPlugin.configure({ component: TabbableElement }),
     ],
     initialValue: tabbableValue,

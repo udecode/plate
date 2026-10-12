@@ -83,7 +83,7 @@ Plate numbers each list on its own, in document order. Blocks of other lists and
 
 Any item of the list closes its deeper levels, so a nested list restarts under each parent. A level's `restartAfter` rule in listLevels changes that. With `0` the level never restarts, and with `n` it restarts only after an item at level `n` or shallower. Each numbered item reads the rule from its own listLevels, and a value at or past its own level acts as the default.
 
-Items without listId form their root's default list. Give each list its own id in values that hold more than one list. Commands, typed list markers and edits give a new item an id. It joins a compatible item at its depth before it, otherwise the item it nests under, otherwise a compatible item after it. When none is within 64 blocks, it starts a new list.
+Items without listId form their root's default list. Give each list its own id in values that hold more than one list. Commands and typed list markers give a new item an id. It joins a compatible item at its depth before it, otherwise the item it nests under, otherwise a compatible item after it. When none is within 64 blocks, it starts a new list. An item any other edit inserts without an id stays in its root's default list.
 
 listStart is latent author intent. Plate keeps it while the item continues its list and applies it when later edits make that item open its level. listRestart forces the number even inside a list.
 
@@ -130,16 +130,22 @@ the same history step. An explicit `at` keeps node-insertion placement, while
 
 ## HTML and Markdown
 
-HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listStyle. Plate HTML names each item's list with `data-list-id` and its level rules with `data-list-levels`. Each paste or parse gives every source list a fresh id, so a pasted list never joins an unrelated list that shares its id. The first pasted list joins a compatible list it lands in. In other HTML, each ul or ol is one list. An ol whose start continues the previous ol at its depth joins it, and the first nested list under an item joins that item's list. Word HTML keeps Word's list identity.
+HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listStyle. Plate HTML names each item's list with `data-list-id` and its level rules with `data-list-levels`. Each paste or parse gives every source list a fresh id, so a pasted list never joins an unrelated list that shares its id. The first top-level pasted list joins the list it lands in when both lists match in kind, style and heading role. A list that lives only inside a pasted table keeps its own id. In other HTML, each ul or ol is one list. An ol whose start continues the previous ol at its depth joins it, and the first nested list under an item joins that item's list. Word HTML keeps Word's list identity.
 
-MDAST `list.ordered` maps to `listType`. Markdown has no list identity, so
-parsed items carry no listId. Each ordered list's start parses as a
-`listRestart` on its first item, which keeps separate Markdown lists apart. A
-first nested list with a non-default start parses as `listStart`. When
-serializing, Plate starts a new Markdown list where the list changes and writes
-the visible number of each ordered list's first item as its `list.start`. Task checkboxes map to task `listType`
-plus `checked`. Inside a GFM table cell, list paragraphs are written as inline
-`<ul>`, `<ol start>`, and `<li>` HTML and read back as lists; see
+MDAST `list.ordered` maps to `listType`. Each parsed Markdown list gets a new
+listId, and a start other than 1 parses as `listStart`. The first nested list
+under an item joins that item's list, and a later nested list under the same
+item starts its own. When serializing, Plate starts a new Markdown list where
+the list changes, where items switch between ordered and unordered, or where
+listStyle changes, so task and bullet items of one list stay one Markdown list.
+It writes the visible number of each ordered list's first item as its
+`list.start`, or 1 when the list's numbers would go negative or pass the nine
+digits CommonMark reads. Markdown cannot carry a forced `listRestart`. It
+also cannot carry list membership that reads back differently, such as a list
+that continues past another block; Plate checks
+membership only for items with a listId. Serialize reports each loss as a
+`markdown-property-omitted` diagnostic. Task checkboxes map to task `listType` plus `checked`. Inside a GFM table cell, list paragraphs are written as inline
+`<ul>`, `<ol start>`, and `<li>` HTML, which keeps any start, and read back as lists; see
 [Markdown](/docs/markdown#table-cells).
 
 ## API Reference

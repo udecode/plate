@@ -12,26 +12,25 @@
     "reason": "Form-value and multi-selection consumers have different jobs from referenced inline entities."
   },
   "owners": [
-    "packages/platejs/src/features/tag/"
+    "apps/www/src/registry/components/editor/select-editor.tsx",
+    "apps/www/src/registry/components/editor/tag.tsx"
   ],
   "members": [
-    "apps/www/src/registry/components/editor/select-command.bridge.spec.tsx",
-    "apps/www/src/registry/components/editor/select-command.spec.tsx",
-    "apps/www/src/registry/components/editor/select-command.tsx",
+    "apps/www/scripts/run-select-editor-scale-probe.mts",
+    "apps/www/src/app/dev/select-editor-scale/page.tsx",
+    "apps/www/src/registry/components/editor/select-editor.spec.tsx",
     "apps/www/src/registry/components/editor/select-editor.tsx",
     "apps/www/src/registry/components/editor/tag.tsx",
     "apps/www/src/registry/examples/select-editor-demo.tsx",
-    "packages/platejs/package.json",
-    "packages/platejs/src/features/tag/",
-    "packages/platejs/src/utils/plate-keys.ts"
+    "apps/www/tests/browser/select-editor.spec.ts"
   ],
   "consumers": [
     "apps/www/src/registry/examples/select-editor-demo.tsx",
     "apps/www/src/registry/components/editor/select-editor.tsx"
   ],
   "proof": [
-    "packages/platejs/src/features/tag/lib/BaseTagPlugin.spec.tsx",
-    "packages/platejs/src/features/tag/lib/BaseMultiSelectPlugin.spec.ts"
+    "apps/www/src/registry/components/editor/select-editor.spec.tsx",
+    "apps/www/tests/browser/select-editor.spec.ts"
   ],
   "evidenceInputs": [],
   "relatedScopes": [

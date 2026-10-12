@@ -12,17 +12,17 @@ export type ClosedFitOriginTracker = Readonly<{
   record: (output: Descendant, source: Descendant) => void;
 }>;
 
+/** Caller paths of the node at `path`; empty for a node the fit created. */
+export type FitInputPaths = (path: Path) => readonly Path[];
+
 export type RootFitPathProvenance = Readonly<{
-  advance: (
-    source: readonly Descendant[],
-    fitted: readonly Descendant[],
-    origins: ClosedFitOriginTracker
-  ) => void;
   createContextChange: (
     source: DocumentIndex,
     raw: DocumentIndex,
     root: RootKey
   ) => DocumentChange;
+  /** Caller paths of a path in the latest grammar output. */
+  inputPaths: FitInputPaths;
   mapPath: (
     path: Path,
     source: DocumentIndex,
@@ -36,6 +36,14 @@ export type RootFitPathProvenance = Readonly<{
     association: -1 | 1,
     deletion?: 'drop' | 'nearest'
   ) => Point | null;
+  /** Starts one grammar stage over the latest grammar output. */
+  stage: (source: readonly Descendant[]) => Readonly<{
+    /** Moves this provenance onto the stage's output. */
+    advance: (fitted: readonly Descendant[]) => void;
+    /** Caller paths of a node the stage reads or emits. */
+    inputsOf: (node: Descendant) => readonly Path[];
+    origins: ClosedFitOriginTracker;
+  }>;
 }>;
 
 const pathKey = (path: readonly number[]) => path.join('/');
@@ -55,7 +63,7 @@ export const visitDescendantPaths = (
   });
 };
 
-export const createClosedFitOriginTracker = (): ClosedFitOriginTracker => {
+const createClosedFitOriginTracker = (): ClosedFitOriginTracker => {
   const origins = new WeakMap<object, Descendant>();
   const originOf = (node: Descendant) => origins.get(node) ?? null;
 
@@ -68,9 +76,9 @@ export const createClosedFitOriginTracker = (): ClosedFitOriginTracker => {
 };
 
 /**
- * Tracks only source paths retained by closed fitting. Wrappers/defaults have
- * no source path, while cloned fitted nodes explicitly retain their origin.
- * This is selection provenance, not another document diff.
+ * Tracks only caller paths retained by closed fitting. Wrappers/defaults have
+ * no caller path, while cloned fitted nodes explicitly retain their origin.
+ * This is selection and repair-report provenance, not another document diff.
  */
 export const createRootFitPathProvenance = (
   source: readonly Descendant[]
@@ -81,6 +89,29 @@ export const createRootFitPathProvenance = (
   visitDescendantPaths(source, (_node, path) => {
     mappedPaths.set(pathKey(path), path);
   });
+
+  const invert = (paths: ReadonlyMap<string, Path>) => {
+    const inverse = new Map<string, Path>();
+
+    visitDescendantPaths(source, (_node, sourcePath) => {
+      const mapped = paths.get(pathKey(sourcePath));
+
+      if (mapped) inverse.set(pathKey(mapped), sourcePath);
+    });
+
+    return inverse;
+  };
+  const inputPathsOf = (paths: ReadonlyMap<string, Path>): FitInputPaths => {
+    let inverse: ReadonlyMap<string, Path> | undefined;
+
+    return (path) => {
+      inverse ??= invert(paths);
+      const sourcePath = inverse.get(pathKey(path));
+
+      return sourcePath ? [sourcePath] : [];
+    };
+  };
+  let latestInputPaths = inputPathsOf(mappedPaths);
 
   const nearestMappedPath = (
     path: Path,
@@ -119,31 +150,6 @@ export const createRootFitPathProvenance = (
   };
 
   return {
-    advance(current, fitted, origins) {
-      const currentPaths = new WeakMap<object, Path>();
-      const stagePaths = new Map<string, Path>();
-
-      visitDescendantPaths(current, (node, path) => {
-        currentPaths.set(node, path);
-      });
-      visitDescendantPaths(fitted, (node, path) => {
-        const origin = origins.originOf(node);
-        const sourcePath = origin ? currentPaths.get(origin) : undefined;
-
-        if (sourcePath) stagePaths.set(pathKey(sourcePath), path);
-      });
-
-      const nextPaths = new Map<string, Path>();
-
-      for (const [original, currentPath] of mappedPaths) {
-        const nextPath = stagePaths.get(pathKey(currentPath));
-
-        if (nextPath) nextPaths.set(original, nextPath);
-      }
-
-      mappedPaths = nextPaths;
-      changed = true;
-    },
     createContextChange(sourceDocument, rawDocument, root) {
       if (!changed) return DocumentChange.empty;
       const change = RootChange.create(sourceDocument, {
@@ -156,6 +162,7 @@ export const createRootFitPathProvenance = (
         change.empty ? new Map() : new Map([[root, change]])
       );
     },
+    inputPaths: (path) => latestInputPaths(path),
     mapPath(path, sourceDocument, association, deletion) {
       const mapped = mappedPaths.get(pathKey(path));
 
@@ -224,6 +231,54 @@ export const createRootFitPathProvenance = (
             path: [...nearest.path],
           }
         : null;
+    },
+    stage(stageSource) {
+      const origins = createClosedFitOriginTracker();
+      const stageInputPaths = inputPathsOf(mappedPaths);
+      let stagePaths: WeakMap<object, Path> | undefined;
+      const stagePathOf = (node: Descendant) => {
+        if (!stagePaths) {
+          const paths = new WeakMap<object, Path>();
+
+          visitDescendantPaths(stageSource, (stageNode, path) => {
+            paths.set(stageNode, path);
+          });
+          stagePaths = paths;
+        }
+
+        return stagePaths.get(node);
+      };
+
+      return {
+        advance(fitted) {
+          const fittedPaths = new Map<string, Path>();
+
+          visitDescendantPaths(fitted, (node, path) => {
+            const origin = origins.originOf(node);
+            const sourcePath = origin ? stagePathOf(origin) : undefined;
+
+            if (sourcePath) fittedPaths.set(pathKey(sourcePath), path);
+          });
+
+          const nextPaths = new Map<string, Path>();
+
+          for (const [original, currentPath] of mappedPaths) {
+            const nextPath = fittedPaths.get(pathKey(currentPath));
+
+            if (nextPath) nextPaths.set(original, nextPath);
+          }
+
+          mappedPaths = nextPaths;
+          latestInputPaths = inputPathsOf(mappedPaths);
+          changed = true;
+        },
+        inputsOf(node) {
+          const path = stagePathOf(origins.originOf(node) ?? node);
+
+          return path ? stageInputPaths(path) : [];
+        },
+        origins,
+      };
     },
   };
 };

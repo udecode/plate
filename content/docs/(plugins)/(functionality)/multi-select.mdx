@@ -1,203 +1,101 @@
 ---
 title: Multi Select
 docs:
-  - route: /docs/components/tag
   - route: /docs/components/select-editor
 ---
 
 <ComponentPreview name="select-editor-demo" />
 
-<PackageInfo>
+`SelectEditor` is a one-line editor whose value is a list of chips. Each picked label is an inline chip, so the caret moves between chips, Backspace removes one and chips copy and paste like text. The menu filters `items` by the typed search.
 
-## Features
-
-Unlike traditional input-based multi-selects, this component is built on top of Plate editor, providing:
-
-- Full history support (undo/redo)
-- Native cursor navigation between and within tags
-- Select one to many tags
-- Copy/paste tags
-- Drag and drop to reorder tags
-- Read-only mode
-- Duplicate tags prevention
-- Create new tags with case insensitive matching
-- Search text cleanup and whitespace trimming
-- Fuzzy search powered by [cmdk](https://github.com/pacocoursey/cmdk)
-
-</PackageInfo>
-
-## Manual usage
-
-<Steps>
-
-### Installation
-
-```bash
-npm install platejs @tanstack/react-virtual
-```
-
-### Add plugins
-
-```tsx
-import { MultiSelectPlugin } from 'platejs/tag/react';
-import { createEditor } from 'platejs/react';
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    MultiSelectPlugin, // Multi-select editor with tag functionality
-  ],
-});
-```
-
-### Configure plugins
-
-```tsx
-import { MultiSelectPlugin } from 'platejs/tag/react';
-import { createEditor } from 'platejs/react';
-import { TagElement } from '@/components/editor/tag';
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    MultiSelectPlugin.configure({ component: TagElement }),
-  ],
-});
-```
-
-- `MultiSelectPlugin`: React adapter for the headless tag picker, with query text cleanup and duplicate prevention.
-- `component`: Assigns [`TagElement`](/docs/components/tag) to render tag components
-
-### Add SelectEditor
+## Installation
 
 <ComponentInstallation name="select-editor" inline />
 
-### Basic example
+Installing the item adds two files: `select-editor.tsx`, with the field and its tag rules, and `tag.tsx`, with the `tag` element and its chip.
+
+## Usage
 
 ```tsx
-import { MultiSelectPlugin } from 'platejs/tag/react';
-import { TagElement } from '@/components/editor/tag';
-import {
-  SelectEditor,
-  SelectEditorContent,
-  SelectEditorInput,
-  SelectEditorCombobox,
-  type SelectItem,
-} from '@/components/editor/select-editor';
+import * as React from 'react';
 
-// Define your items
+import { type SelectItem, SelectEditor } from '@/components/editor/select-editor';
+
 const ITEMS: SelectItem[] = [
   { value: 'React' },
   { value: 'TypeScript' },
   { value: 'JavaScript' },
 ];
 
-export default function MySelectEditor() {
+export function LabelsField() {
   const [value, setValue] = React.useState<SelectItem[]>([ITEMS[0]]);
 
   return (
     <SelectEditor
+      aria-label="Labels"
+      items={ITEMS}
+      placeholder="Select labels..."
       value={value}
       onValueChange={setValue}
-      items={ITEMS}
-    >
-      <SelectEditorContent>
-        <SelectEditorInput placeholder="Select items..." />
-        <SelectEditorCombobox />
-      </SelectEditorContent>
-    </SelectEditor>
+    />
   );
 }
 ```
 
-### Form example
+`onValueChange` must update `value` synchronously. The field writes `value` back whenever it differs from the chips, so a value set later, such as in a transition, first reverts the change. Pass `defaultValue` instead of `value` for an uncontrolled field.
+
+## Examples
+
+### Form
+
+The field takes a form library's `ref`, `onBlur` and ARIA props, and passes them to the editable.
 
 <ComponentSource name="select-editor-demo" />
 
-</Steps>
+## Behavior
 
-## Plugins
+- Type to search. `ArrowUp` and `ArrowDown` move the active option, and `Enter` picks it.
+- A search of two or more characters that matches no label offers to create it.
+- `Escape`, `mod+Enter` or a click outside closes the menu and clears the search.
+- Labels that differ only in case count as one. The first chip wins, so a form value that repeats a label shows it once.
+- Undo and redo keys are off, so a picked chip stays.
+- A read-only field renders each chip with a `url` as a link.
+- Dragging a chip before another chip moves it there. Dropping a chip after another chip does nothing.
 
-### BaseTagPlugin
+Edit `SelectTagPlugin` in the copied `select-editor.tsx` to change these rules, and the field's key handler to change the keys.
 
-Inline void tags that preserve surrounding text.
+## API Reference
 
-### BaseMultiSelectPlugin
+### SelectEditor
 
-Extends `BaseTagPlugin` with duplicate prevention, query text cleanup, and
-backward deletion for a tag picker. Import it from `platejs/tag` for headless use.
+Takes the editable's props, such as `placeholder`, `readOnly`, `onBlur` and `aria-*`, except the combobox attributes the field sets itself.
 
-### MultiSelectPlugin
-
-React adapter for `BaseMultiSelectPlugin`. Configure its component to render
-the copied tag view.
-
-## API
-
-### `editor.plugin(MultiSelectPlugin).update.insert`
-
-Inserts new multi-select element at current selection.
-
-<API name="editor.plugin(MultiSelectPlugin).update.insert">
-<APIParameters>
-  <APIItem name="props" type="TagItem">
-    Properties for multi-select element.
+<API name="SelectEditor">
+<APIProps>
+  <APIItem name="items" type="readonly SelectItem[]" optional>
+    The labels the menu offers.
   </APIItem>
-</APIParameters>
+  <APIItem name="value" type="readonly SelectItem[]" optional>
+    The chips of a controlled field.
+  </APIItem>
+  <APIItem name="defaultValue" type="readonly SelectItem[]" optional>
+    The starting chips of an uncontrolled field.
+  </APIItem>
+  <APIItem name="onValueChange" type="(items: SelectItem[]) => void" optional>
+    Called with the chips after each change made in the field.
+  </APIItem>
+</APIProps>
+</API>
 
-<APIOptions type="TagItem">
+### SelectItem
+
+<API name="SelectItem">
+<APIAttributes>
   <APIItem name="value" type="string">
-    Unique value of multi-select element.
+    The label.
   </APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(MultiSelectPlugin).read.getSelectedItems()`
-
-Gets all tag items in the editor.
-
-<API name="editor.plugin(MultiSelectPlugin).read.getSelectedItems">
-<APIReturns type="TagItem[]">
-  Array of tag items in editor.
-</APIReturns>
-</API>
-
-### `editor.plugin(MultiSelectPlugin).read.isEqual(tags)`
-
-Utility function to compare two sets of tags for equality, ignoring order.
-
-<API name="editor.plugin(MultiSelectPlugin).read.isEqual">
-<APIParameters>
-  <APIItem name="tags" type="TagItem[]" optional>
-    New tags to compare against current editor tags.
+  <APIItem name="url" type="string" optional>
+    The link a read-only chip renders.
   </APIItem>
-</APIParameters>
-
-<APIReturns type="boolean">
-  Whether both sets contain same values.
-</APIReturns>
+</APIAttributes>
 </API>
-
-## Registry UI
-
-The copied `select-editor` component owns search filtering, new-item creation,
-combobox cleanup, and value notifications. Edit that file when your product
-needs different tag-selection behavior.
-
-<ComponentSource name="select-editor" />
-
-## Types
-
-### TagElement
-
-```ts
-import type { TagElement } from 'platejs/tag';
-```
-
-`TagElement` is derived from `BaseTagPlugin` and requires a string `value`.
-
-### TagItem
-
-```ts
-import type { TagItem } from 'platejs/tag';
-```

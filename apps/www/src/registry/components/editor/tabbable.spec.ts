@@ -2,45 +2,39 @@ import { IndentPlugin, createEditor } from 'platejs/react';
 import { TabbablePlugin } from 'platejs/tabbable/react';
 
 import { IndentKit } from './indent';
+import { ListKit } from './list';
 import { TabbableKit } from './tabbable';
 
-const createTestEditor = (offset: number) =>
-  createEditor({
-    plugins: TabbableKit,
+const queryAt = (offset: number, block: Record<string, unknown> = {}) => {
+  const editor = createEditor({
+    plugins: [...ListKit, ...TabbableKit],
     selection: {
       kind: 'text',
       anchor: { offset, path: [0, 0] },
       focus: { offset, path: [0, 0] },
     },
     initialValue: [
-      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'one' }], type: 'paragraph', ...block },
       { children: [{ text: 'two' }], type: 'paragraph' },
     ],
   });
 
-describe('TabbableKit', () => {
-  it('disables tab handling at the current block edges', () => {
-    for (const offset of [0, 3]) {
-      const editor = createTestEditor(offset);
-
-      expect(
-        editor.plugin(TabbablePlugin).store.get('query')?.(
-          new KeyboardEvent('keydown')
-        )
-      ).toBe(false);
-    }
+  return editor.plugin(TabbablePlugin).store.get('query')({
+    editor,
+    event: new KeyboardEvent('keydown', { key: 'Tab' }),
   });
+};
 
-  it('allows tab handling inside a plain block', () => {
-    const editor = createTestEditor(1);
+describe('TabbableKit', () => {
+  it.each([0, 3])(
+    'allows tab navigation from a plain paragraph at offset %i',
+    (offset) => {
+      expect(queryAt(offset)).toBe(true);
+    }
+  );
 
-    expect(editor.read.selection.isAtBlockStart()).toBe(false);
-    expect(editor.read.selection.isAtBlockEnd()).toBe(false);
-    expect(
-      editor.plugin(TabbablePlugin).store.get('query')?.(
-        new KeyboardEvent('keydown')
-      )
-    ).toBe(true);
+  it('declines tab navigation in a list item, which takes Tab itself', () => {
+    expect(queryAt(1, { indent: 1, listType: 'bulleted' })).toBe(false);
   });
 
   it('keeps Indent installed while removing its competing shortcuts', () => {
@@ -53,7 +47,7 @@ describe('TabbableKit', () => {
 
       expect(indent.shortcuts.tab).toBeNull();
       expect(indent.shortcuts.untab).toBeNull();
-      expect(typeof editor.update.indent.change).toBe('function');
+      expect(typeof editor.update.indent.increase).toBe('function');
     }
   });
 });

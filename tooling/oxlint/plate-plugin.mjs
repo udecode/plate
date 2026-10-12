@@ -588,6 +588,180 @@ const noRelativePliteSource = {
   },
 };
 
+const memberName = (node) => {
+  if (node?.type !== 'MemberExpression') return null;
+  if (!node.computed) return node.property.name;
+  return typeof node.property.value === 'string' ? node.property.value : null;
+};
+
+// `a?.b`, `a!` and the `a` of `a ?? {}` all read the value `a`.
+const readValue = (node) => {
+  if (
+    node?.type === 'ChainExpression' ||
+    node?.type === 'TSNonNullExpression'
+  ) {
+    return readValue(node.expression);
+  }
+  if (node?.type === 'LogicalExpression' && node.operator !== '&&') {
+    return readValue(node.left);
+  }
+  return node;
+};
+
+// A content program's fixed slots and child counts decide where children fit;
+// `allowsText` alone classifies a node and places nothing.
+const PLACEMENT_FIELDS = new Set(['max', 'min', 'prefix']);
+
+const propertyKey = (property) =>
+  property.type === 'Property'
+    ? (property.key.name ?? property.key.value)
+    : undefined;
+
+// The value one const binds to an identifier, with the key it was
+// destructured from, if any.
+const constBinding = (context, identifier) => {
+  const variable = resolvedVariable(context, identifier);
+  if (!variable || laterWrites(variable).length > 0) return null;
+  const [definition] = variable.defs;
+  if (definition?.type !== 'Variable') return null;
+  const { id, init } = definition.node;
+  if (id.type === 'Identifier') return { init, key: undefined };
+  if (id.type !== 'ObjectPattern') return null;
+  const property = id.properties.find(
+    (candidate) =>
+      candidate.type === 'Property' &&
+      candidate.value.range[0] === definition.name.range[0]
+  );
+
+  return property ? { init, key: propertyKey(property) } : null;
+};
+
+const noSchemaPlacementCopy = {
+  create(context) {
+    const isSchema = (node, depth) => {
+      const value = readValue(node);
+      if (memberName(value) === 'schema') return true;
+      if (value?.type === 'CallExpression') {
+        return (
+          value.callee.type === 'Identifier' &&
+          value.callee.name === 'getEditorSchema'
+        );
+      }
+      if (value?.type !== 'Identifier') return false;
+      if (value.name === 'schema') return true;
+      if (depth > 4) return false;
+      const binding = constBinding(context, value);
+      if (!binding) return false;
+
+      return (
+        binding.key === 'schema' ||
+        (binding.key === undefined && isSchema(binding.init, depth + 1))
+      );
+    };
+    const isSpec = (node, depth = 0) => {
+      const value = readValue(node);
+      if (
+        value?.type === 'CallExpression' &&
+        memberName(value.callee) === 'element' &&
+        isSchema(value.callee.object, depth)
+      ) {
+        return true;
+      }
+      if (value?.type !== 'Identifier' || depth > 4) return false;
+      const binding = constBinding(context, value);
+
+      return binding?.key === undefined && isSpec(binding?.init, depth + 1);
+    };
+    const isProgram = (node, depth = 0) => {
+      let value = readValue(node);
+      // `parent && spec.content` is the content program whenever it is read.
+      while (value?.type === 'LogicalExpression' && value.operator === '&&') {
+        value = readValue(value.right);
+      }
+      if (memberName(value) === 'content') return isSpec(value.object, depth);
+      if (value?.type !== 'Identifier' || depth > 4) return false;
+      const binding = constBinding(context, value);
+      if (!binding) return false;
+
+      return binding.key === 'content'
+        ? isSpec(binding.init, depth + 1)
+        : binding.key === undefined && isProgram(binding.init, depth + 1);
+    };
+    const report = (node) => context.report({ messageId: 'copy', node });
+
+    return {
+      MemberExpression(node) {
+        if (PLACEMENT_FIELDS.has(memberName(node)) && isProgram(node.object)) {
+          report(node);
+        }
+      },
+      VariableDeclarator({ id, init }) {
+        if (id.type !== 'ObjectPattern' || !isProgram(init)) return;
+        for (const property of id.properties) {
+          if (PLACEMENT_FIELDS.has(propertyKey(property))) report(property);
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'Code outside plitejs asks Plite where children fit instead of re-deriving it from a content program.',
+    },
+    messages: {
+      copy: "This reads a content program's prefix, min or max (baselined in this file: {{baselined}}) to decide where children fit, which copies Plite's placement law. `canPlaceAt` in packages/plitejs/src/core/editor-schema.ts owns it. Land through Plite's slice fitter, which runs it, or add a public placement read there.",
+    },
+    type: 'problem',
+  },
+};
+
+const STRUCTURAL_MARK_KINDS = new Set(['join', 'split', 'unwrap', 'wrap']);
+
+const noStructuralMarkCopy = {
+  create(context) {
+    const typeLiterals = new Set();
+
+    return {
+      Literal(node) {
+        if (
+          typeof node.value === 'string' &&
+          STRUCTURAL_MARK_KINDS.has(node.value) &&
+          !typeLiterals.has(node)
+        ) {
+          context.report({
+            data: { kind: node.value },
+            messageId: 'copy',
+            node,
+          });
+        }
+      },
+      TemplateLiteral(node) {
+        const kind = node.quasis[0].value.cooked;
+        if (
+          node.expressions.length === 0 &&
+          STRUCTURAL_MARK_KINDS.has(kind) &&
+          !typeLiterals.has(node)
+        ) {
+          context.report({ data: { kind }, messageId: 'copy', node });
+        }
+      },
+      TSLiteralType(node) {
+        typeLiterals.add(node.literal);
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'Authored review tree code asks the resolver what a structural mark does instead of re-deriving it.',
+    },
+    messages: {
+      copy: "This reads a pending '{{kind}}' mark (baselined in this file: {{baselined}}), which copies the resolver's structural rules. `resolveAuthoredChildren` and `survivalUnder` in packages/plitejs/src/authored/tree/resolve.ts own them. Call or extend that owner instead of re-deriving them here.",
+    },
+    type: 'problem',
+  },
+};
+
 const exceptionFormat = {
   create(context) {
     return {
@@ -726,10 +900,18 @@ export default {
       'no-relative-plite-source',
       noRelativePliteSource
     ),
+    'no-schema-placement-copy': withBaseline(
+      'no-schema-placement-copy',
+      noSchemaPlacementCopy
+    ),
     'no-second-name': withBaseline('no-second-name', noSecondName),
     'no-source-text-test': withBaseline(
       'no-source-text-test',
       noSourceTextTest
+    ),
+    'no-structural-mark-copy': withBaseline(
+      'no-structural-mark-copy',
+      noStructuralMarkCopy
     ),
   },
 };

@@ -1,8 +1,10 @@
 import { getDefined } from '../../internal/get-defined';
+import { isImmutable, rememberImmutableArray } from '../clone';
 import {
   createTreeIndex,
   createTreeIndexChildren,
   createTreeIndexNode,
+  replaceTreeIndexChild,
   ResolvedTokenCursor,
   type TreeIndexChildren,
   type TreeIndexNode,
@@ -28,7 +30,6 @@ import {
   PREPARED_SOURCE_TOKEN,
   PREPARED_TOKEN_NEXT,
   type PreparedNodeSlice,
-  rememberFrozenArray,
   tokensEqual,
 } from './tokens';
 import { transformPathAfterRemove } from './transform';
@@ -273,6 +274,11 @@ export type IndexedValue = {
   value: readonly JsonNode[];
 };
 
+const freezeElementWithChildren = (
+  node: JsonNode,
+  children: readonly JsonNode[]
+) => Object.freeze({ ...node, children: Object.freeze(children) }) as JsonNode;
+
 export const replaceIndexedChildren = (
   indexed: IndexedValue,
   parentPath: readonly number[],
@@ -296,23 +302,17 @@ export const replaceIndexedChildren = (
     parentPath.slice(1),
     replace
   );
-  const nextNode = Object.freeze({
-    ...node,
-    children: nested.value,
-  }) as JsonNode;
   const nextValue = [...indexed.value];
-  const nextIndexes = [...indexed.index.children];
 
-  nextValue[childIndex] = nextNode;
-  nextIndexes[childIndex] = {
-    children: nested.index,
-    kind: 'element',
-    length: nested.index.length + 2,
-  };
+  nextValue[childIndex] = freezeElementWithChildren(node, nested.value);
 
   return {
-    index: createTreeIndexChildren(nextIndexes),
-    value: Object.freeze(nextValue),
+    index: replaceTreeIndexChild(indexed.index, childIndex, {
+      children: nested.index,
+      kind: 'element',
+      length: nested.index.length + 2,
+    }),
+    value: nextValue,
   };
 };
 
@@ -339,7 +339,7 @@ export const spliceIndexedChildren = (
 
     return {
       index: createTreeIndexChildren(nextIndexes),
-      value: Object.freeze(nextValue),
+      value: nextValue,
     };
   });
 
@@ -365,14 +365,12 @@ export const updateIndexedNode = (
         }) as JsonNode)
       : cloneFrozen(updatedNode);
     const nextValue = [...value];
-    const nextIndexes = [...tree.children];
 
     nextValue[index] = nextNode;
-    nextIndexes[index] = createTreeIndexNode(nextNode);
 
     return {
-      index: createTreeIndexChildren(nextIndexes),
-      value: Object.freeze(nextValue),
+      index: replaceTreeIndexChild(tree, index, createTreeIndexNode(nextNode)),
+      value: nextValue,
     };
   });
 };
@@ -416,10 +414,7 @@ const updateIndexedNodes = (
         update
       );
 
-      nextNode = Object.freeze({
-        ...nextNode,
-        children: nested.value,
-      });
+      nextNode = freezeElementWithChildren(nextNode, nested.value);
       nextIndex = {
         children: nested.index,
         kind: 'element',
@@ -450,7 +445,7 @@ const updateIndexedNodes = (
 
   return {
     index: createTreeIndexChildren(nextIndexes),
-    value: Object.freeze(nextValue),
+    value: nextValue,
   };
 };
 
@@ -484,7 +479,7 @@ export class DocumentIndex {
       return;
     }
 
-    const value = Object.isFrozen(nodes) ? nodes : cloneFrozen(nodes);
+    const value = isImmutable(nodes) ? nodes : cloneFrozen(nodes);
     const encoded = encodeNodes(value);
 
     this.length = encoded.slice.length;
@@ -536,13 +531,19 @@ export class DocumentIndex {
     );
   }
 
-  // Every construction path freezes its value array, and asking the engine
-  // again can cost O(children) for a wide frozen array.
   private static remember(document: DocumentIndex) {
     DocumentIndex.immutableCache.set(document.value, document);
-    rememberFrozenArray(document.value);
+    rememberImmutableArray(document.value);
 
     return document;
+  }
+
+  private checkedIndexedValue(): IndexedValue {
+    if (this.value.length !== this.tree.children.length) {
+      throw new Error('A document root array changed outside Plite.');
+    }
+
+    return { index: this.tree, value: this.value };
   }
 
   childPosition(parentPath: readonly number[], index: number) {
@@ -644,7 +645,7 @@ export class DocumentIndex {
 
     return DocumentIndex.fromIndexedValue(
       spliceIndexedChildren(
-        { index: this.tree, value: this.value },
+        this.checkedIndexedValue(),
         path.slice(0, -1),
         index,
         0,
@@ -661,7 +662,7 @@ export class DocumentIndex {
   ) {
     return DocumentIndex.fromIndexedValue(
       spliceIndexedChildren(
-        { index: this.tree, value: this.value },
+        this.checkedIndexedValue(),
         parentPath,
         index,
         deleteCount,
@@ -683,7 +684,7 @@ export class DocumentIndex {
   ) {
     return DocumentIndex.fromIndexedValue(
       spliceIndexedChildren(
-        { index: this.tree, value: this.value },
+        this.checkedIndexedValue(),
         parentPath,
         index,
         deleteCount,
@@ -706,7 +707,7 @@ export class DocumentIndex {
   ) {
     return DocumentIndex.fromIndexedValue(
       spliceIndexedChildren(
-        { index: this.tree, value: this.value },
+        this.checkedIndexedValue(),
         parentPath,
         index,
         deleteCount,
@@ -719,13 +720,10 @@ export class DocumentIndex {
 
   withExactNodeProperties(path: readonly number[], props: JsonRecord) {
     return DocumentIndex.fromIndexedValue(
-      updateIndexedNode(
-        { index: this.tree, value: this.value },
-        path,
-        (node) =>
-          isTextNode(node)
-            ? { ...props, text: node.text }
-            : { ...props, children: node.children }
+      updateIndexedNode(this.checkedIndexedValue(), path, (node) =>
+        isTextNode(node)
+          ? { ...props, text: node.text }
+          : { ...props, children: node.children }
       )
     );
   }
@@ -750,7 +748,7 @@ export class DocumentIndex {
     }
 
     return DocumentIndex.fromIndexedValue(
-      updateIndexedNodes({ index: this.tree, value: this.value }, root)
+      updateIndexedNodes(this.checkedIndexedValue(), root)
     );
   }
 
@@ -768,7 +766,7 @@ export class DocumentIndex {
     if (pathKey(sourceParent) === pathKey(targetParent)) {
       return DocumentIndex.fromIndexedValue(
         replaceIndexedChildren(
-          { index: this.tree, value: this.value },
+          this.checkedIndexedValue(),
           sourceParent,
           (value, tree) => {
             const nextValue = [...value];
@@ -785,7 +783,7 @@ export class DocumentIndex {
 
             return {
               index: createTreeIndexChildren(nextIndexes),
-              value: Object.freeze(nextValue),
+              value: nextValue,
             };
           }
         )
@@ -800,7 +798,7 @@ export class DocumentIndex {
     }
 
     const without = spliceIndexedChildren(
-      { index: this.tree, value: this.value },
+      this.checkedIndexedValue(),
       sourceParent,
       sourceIndex,
       1,
@@ -822,23 +820,19 @@ export class DocumentIndex {
 
   withNodeProperties(path: readonly number[], properties: JsonRecord) {
     return DocumentIndex.fromIndexedValue(
-      updateIndexedNode(
-        { index: this.tree, value: this.value },
-        path,
-        (node) => {
-          const next = { ...node } as JsonRecord;
+      updateIndexedNode(this.checkedIndexedValue(), path, (node) => {
+        const next = { ...node } as JsonRecord;
 
-          for (const [key, value] of Object.entries(properties)) {
-            if (value === null) {
-              delete next[key];
-            } else {
-              next[key] = value;
-            }
+        for (const [key, value] of Object.entries(properties)) {
+          if (value === null) {
+            delete next[key];
+          } else {
+            next[key] = value;
           }
-
-          return next as JsonNode;
         }
-      )
+
+        return next as JsonNode;
+      })
     );
   }
 
@@ -851,7 +845,7 @@ export class DocumentIndex {
 
     return DocumentIndex.fromIndexedValue(
       spliceIndexedChildren(
-        { index: this.tree, value: this.value },
+        this.checkedIndexedValue(),
         path.slice(0, -1),
         index,
         1,
@@ -862,20 +856,16 @@ export class DocumentIndex {
 
   withText(path: readonly number[], from: number, to: number, text: string) {
     return DocumentIndex.fromIndexedValue(
-      updateIndexedNode(
-        { index: this.tree, value: this.value },
-        path,
-        (node) => {
-          if (!isTextNode(node)) {
-            throw new Error(`Node at [${path}] is not text.`);
-          }
-
-          return {
-            ...node,
-            text: node.text.slice(0, from) + text + node.text.slice(to),
-          };
+      updateIndexedNode(this.checkedIndexedValue(), path, (node) => {
+        if (!isTextNode(node)) {
+          throw new Error(`Node at [${path}] is not text.`);
         }
-      )
+
+        return {
+          ...node,
+          text: node.text.slice(0, from) + text + node.text.slice(to),
+        };
+      })
     );
   }
 

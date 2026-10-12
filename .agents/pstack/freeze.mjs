@@ -9,7 +9,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { lstatSync, mkdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 
 function parse(argv) {
   const options = { message: 'frozen review tree', parent: 'HEAD', paths: [] };
@@ -33,6 +33,24 @@ const options = parse(process.argv.slice(2));
 if (!options.dir || options.paths.length === 0) {
   console.error('Usage: node .agents/pstack/freeze.mjs --dir <run-dir> [--parent <commit>] [--message <text>] <path> [...]');
   process.exit(2);
+}
+
+const onDisk = (path) => {
+  try {
+    lstatSync(path);
+    return true;
+  } catch {
+    return false;
+  }
+};
+const inHead = (path) => {
+  const asDirectory = path.endsWith('/') ? '/' : '';
+  return spawnSync('git', ['cat-file', '-e', `HEAD:./${relative(process.cwd(), resolve(path))}${asDirectory}`]).status === 0;
+};
+const missing = options.paths.filter((path) => !onDisk(path) && !inHead(path));
+if (missing.length > 0) {
+  console.error(`${missing.length} path(s) not found in the working tree or HEAD: ${missing.join(', ')}`);
+  process.exit(1);
 }
 
 try {

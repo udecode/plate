@@ -195,8 +195,35 @@ const mountListKit = (
       Number(list.getAttribute('start'))
     );
 
-  return { editor, numbers };
+  return { container, editor, numbers };
 };
+
+describe('ListKit bullet style', () => {
+  const circleBullet = item('Circle', {
+    listStyle: 'circle',
+    listType: 'bulleted',
+  });
+
+  it('draws the chosen bullet style in the editor', () => {
+    const { container } = mountListKit([circleBullet]);
+    const listItem = container.querySelector<HTMLElement>('[role="listitem"]');
+
+    expect(listItem?.style.listStyleType).toBe('circle');
+  });
+
+  it('draws the chosen bullet style in static HTML', async () => {
+    const editor = createEditor({
+      initialValue: [circleBullet],
+      plugins: BaseListKit,
+    });
+    const { data } = await renderStaticHtml(editor);
+    const host = document.createElement('div');
+    host.innerHTML = data;
+    const listItem = host.querySelector<HTMLElement>('[role="listitem"]');
+
+    expect(listItem?.style.listStyleType).toBe('circle');
+  });
+});
 
 describe('ListKit live numbering', () => {
   it('renumbers after an insert at the top', () => {
@@ -371,5 +398,21 @@ describe('BaseListKit static HTML', () => {
     expect(describeLists(parsed.document.children as Element[])).toEqual(
       describeLists(original)
     );
+  });
+
+  it('keeps interleaved lists apart in the HTML the live wrappers write', async () => {
+    const editor = createEditor({
+      initialValue: original.slice(0, 3),
+      plugins: ListKit,
+    });
+    const { data } = await renderStaticHtml(editor);
+    const parsed = editor.api.html.parse(data);
+
+    if (!parsed.ok) throw new Error('Expected decoded HTML');
+
+    const [a1, b1, a2] = parsed.document.children as Element[];
+
+    expect(a2.listId).toBe(a1.listId);
+    expect(b1.listId).not.toBe(a1.listId);
   });
 });

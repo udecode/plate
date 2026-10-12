@@ -129,12 +129,14 @@ const editor = createEditor({
 });
 ```
 
-- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`: Enables plain URL autolink.
-- `LinkRules.markdown()`: Enables `[text](url)` source-entry conversion on the closing `)`.
+- `LinkRules.autolink({ variant: 'paste' | 'space' | 'break' })`: Enables plain URL autolink. A pasted or typed token becomes a link when `parseUrl` recognizes it and `allowedSchemes` allows the result; otherwise the paste, space or `Enter` goes on as usual.
+- `LinkRules.markdown()`: Enables `[text](url)` source-entry conversion on the closing `)`. Image source, `![alt](src)`, stays text.
 
 ### Add toolbar button
 
 You can add [`LinkToolbarButton`](/docs/components/link-toolbar-button) to your [Toolbar](/docs/toolbar) to insert and edit links.
+
+The floating toolbar saves a new or changed address that starts with `http://` or `https://`, has another scheme such as `mailto:`, or starts with `/`, `./`, `../`, `#` or `?`. It stays open on any other draft, such as `www.example.com` or `https:www.example.com`, and when `allowedSchemes` refuses the address. Editing only the link text keeps the stored address, even one `allowedSchemes` no longer allows.
 
 </Steps>
 
@@ -168,13 +170,16 @@ LinkPlugin.configure({
 
 Options:
 
-- `allowedSchemes?: string[]` — URL schemes a link may use when it is
-  inserted, imported, or rendered. Relative URLs are always allowed. Add a
-  scheme such as `vscode` for app deep links. Script-capable destinations,
-  such as `javascript:`, `vbscript:`, and `data:`, are never allowed, and a
-  stored link URL must pass that floor. HTML and Markdown import keep the label
-  of a link whose destination is not allowed and report the removed
-  destination. Default: `['http', 'https', 'mailto', 'tel']`.
+- `allowedSchemes?: string[]` — URL schemes the link feature accepts when it
+  inserts, types, pastes or imports a link, and that a rendered link may use.
+  Relative URLs are always allowed. Add a scheme such as `vscode` for app deep links. Script-capable
+  destinations, such as `javascript:`, `vbscript:`, and `data:`, are never
+  allowed, and a stored link URL must pass that floor. HTML and Markdown import
+  keep the label of a link whose destination is not allowed and report the
+  removed destination. A stored link whose scheme is no longer allowed keeps
+  its URL, renders without an `href`, and exports its stored URL, and so does
+  a link pasted as an exact editor fragment. Default:
+  `['http', 'https', 'mailto', 'tel']`.
 
 <APIOptions type="object">
 <APIItem name="rangeBeforeOptions" type="RangeBeforeOptions" optional>
@@ -196,15 +201,18 @@ Default HTML attributes for link elements.
 Keeps selected text on pasting links by default.
 - **Default:** **`true`**
 </APIItem>
-<APIItem name="isUrl" type="(text: string) => boolean" optional>
-Callback function to validate a URL.
-- **Default:** **`isUrl`**
-</APIItem>
-<APIItem name="getUrlHref" type="(url: string) => string | undefined" optional>
-Callback function to optionally get the href for a URL. It returns an optional link that is different from the text content. For example, returns `https://google.com` for `google.com`.
-</APIItem>
-<APIItem name="transformInput" type="(url: string) => string | undefined" optional>
-Transforms the URI-encoded input passed to `upsert` before URL validation.
+<APIItem name="parseUrl" type="(text: string, defaultParseUrl: (text: string) => string | undefined) => string | undefined" optional>
+Returns the href for typed or pasted text, or `undefined` when the text is not a link. The autolink rules call it; `upsert`, the toolbar and imports do not. `defaultParseUrl` accepts a whole token with an explicit scheme, such as `https://example.com` or `tel:+15551234`, so typed `#top`, `/docs` and `www.example.com` stay text. With Markdown paste installed, a pasted `www.example.com` can still become a link. The result still has to pass `allowedSchemes`.
+- **Default:** **`(text, defaultParseUrl) => defaultParseUrl(text)`**
+
+```tsx
+LinkPlugin.configure({
+  initialState: {
+    parseUrl: (text, defaultParseUrl) =>
+      text === 'example' ? 'https://example.com' : defaultParseUrl(text),
+  },
+});
+```
 </APIItem>
 </APIOptions>
 </API>
@@ -221,30 +229,27 @@ editor.update.link.unwrap({ split: true });
 
 | Update | Description |
 | --- | --- |
-| `editor.update.link.insert(node, options?)` | Inserts a link node. |
+| `editor.update.link.insert(node, options?)` | Inserts a link node; returns `true`, or `undefined` when the URL is not allowed or the node cannot be inserted. |
 | `editor.update.link.unwrap(options?)` | Unwraps matching links; `split` limits the update to the selected part. |
-| `editor.update.link.upsert(options)` | Prepares URL input, then inserts or updates a link at the selection. |
+| `editor.update.link.upsert(options)` | Prepares URL input, then inserts or updates a link at the selection; returns `true`, or `undefined` when the URL is not allowed or there is no selection to link. |
 | `editor.update.link.upsertText(options)` | Replaces the text of the link above the selection. |
-| `editor.update.link.wrap(options)` | Wraps the selected text in a link. |
+| `editor.update.link.wrap(options)` | Wraps the selected text in a link; returns `true`, or `undefined` when the URL is not allowed or nothing was wrapped. |
 
-`upsert` encodes unescaped URI characters, applies `transformInput`, and validates the result before changing the document. Valid percent escapes remain intact. `skipValidation` skips `isUrl` and `allowedSchemes` while retaining input preparation; a URL below the navigation floor, such as `javascript:`, is still refused. When `insertTextInLink` inserts text inside an existing link, it preserves the input as literal text.
+`insert`, `upsert` and `wrap` encode unescaped URI characters and check the result against `allowedSchemes` before changing the document. They keep valid percent escapes and store a URL without a scheme as a relative link.
+
+```tsx
+if (!editor.update.link.upsert({ url })) {
+  // The URL is not allowed, or there is no selection.
+}
+```
 
 ## Plugin API
 
 Read link behavior through the installed plugin:
 
-```tsx
-const { api } = editor.plugin(LinkPlugin);
-
-if (api.validateUrl(url)) {
-  editor.update.link.upsert({ url });
-}
-```
-
 | Method | Description |
 | --- | --- |
-| `api.getAttributes(link)` | Returns sanitized anchor attributes for a link element. |
-| `api.validateUrl(url)` | Validates a URL against the plugin configuration and runtime `isUrl` option. |
+| `api.getAttributes(link)` | Returns sanitized anchor attributes for a link element; `href` is absent when the URL is not allowed. |
 
 ### `CreateLinkNodeOptions`
 

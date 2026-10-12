@@ -37,6 +37,7 @@ import {
   type JsonNode,
   PreparedTokenSlice,
 } from '../src/core/change/tokens';
+import { isImmutable } from '../src/core/clone';
 import {
   getEditorProjectionSnapshotIndex,
   inheritEditorProjectionIndexes,
@@ -447,7 +448,7 @@ describe('JSON document change algebra', () => {
 
     assert.equal(step.after.children, validatedChildren);
     assert.equal(builder.value.children, validatedChildren);
-    assert.equal(Object.isFrozen(validatedChildren), true);
+    assert.ok(validatedChildren && isImmutable(validatedChildren));
     assert.equal(builder.classify(), step.change);
   });
 
@@ -1064,6 +1065,39 @@ describe('JSON document change algebra', () => {
       getSnapshotIndexElementEntries(materializedFirst, ['paragraph']),
       entries
     );
+  });
+
+  it('freezes no more array elements for a text edit in a wider document', () => {
+    const frozenElementsForOneEdit = (blocks: number) => {
+      const editor = createEditor({
+        initialValue: Array.from({ length: blocks }, (_, index) =>
+          paragraph(`line ${index}`)
+        ),
+      });
+      const at = { offset: 0, path: [blocks / 2, 0] };
+      const { freeze } = Object;
+      let elements = 0;
+
+      editor.update((tx) => {
+        tx.text.insert('x', { at });
+      });
+      Object.freeze = (value: unknown) => {
+        if (Array.isArray(value)) elements += value.length;
+
+        return freeze(value);
+      };
+      try {
+        editor.update((tx) => {
+          tx.text.insert('x', { at });
+        });
+      } finally {
+        Object.freeze = freeze;
+      }
+
+      return elements;
+    };
+
+    assert.equal(frozenElementsForOneEdit(2000), frozenElementsForOneEdit(100));
   });
 
   it('keeps seeded base snapshot lookups sparse until enumeration', () => {

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-11-fix-bullet-list-style",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-11-fix-bullet-list-style.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-11",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix circle and square bullet styles drawing as discs",
+  "targets": [
+    {
+      "name": "list",
+      "files": ["apps/www/src/registry/components/editor/list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-static",
+      "files": ["apps/www/src/registry/components/editor/list-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-11-list-fix-circle-square-bullet-eb97967b",
+      "kind": "fix",
+      "summary": "Draw a bulleted item's chosen style, such as circle or square, in the editor and in static HTML instead of always drawing a disc.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["list", "list-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-11",
+          "entry": "2026-10-11-fix-bullet-list-style",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

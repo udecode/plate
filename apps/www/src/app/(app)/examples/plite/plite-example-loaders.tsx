@@ -30,6 +30,9 @@ export const pliteExampleComponents = {
   'comment-mode': createPliteExampleLoader(
     () => import('./_examples/comment-mode')
   ),
+  'content-completion': createPliteExampleLoader(
+    () => import('./_examples/content-completion')
+  ),
   'cross-editor-drag': createPliteExampleLoader(
     () => import('./_examples/cross-editor-drag')
   ),
@@ -67,6 +70,9 @@ export const pliteExampleComponents = {
   ),
   iframe: createPliteExampleLoader(() => import('./_examples/iframe')),
   images: createPliteExampleLoader(() => import('./_examples/images')),
+  'inline-void-drag': createPliteExampleLoader(
+    () => import('./_examples/inline-void-drag')
+  ),
   inlines: createPliteExampleLoader(() => import('./_examples/inlines')),
   linting: createPliteExampleLoader(() => import('./_examples/linting')),
   'markdown-preview': createPliteExampleLoader(

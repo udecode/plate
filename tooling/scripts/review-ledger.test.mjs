@@ -109,6 +109,7 @@ function plan(
     inputs,
     action = 'supersedes',
     reconciles = basis,
+    dependents,
   }
 ) {
   const keys = [
@@ -124,7 +125,7 @@ function plan(
   );
   put(
     path,
-    `---\n${keys.join('\n')}\n---\n\n# Plan\n\nThe lead paragraph.\n\nStatus: ${state}\nPlaybook: verdict\n\n## Public API\n\nCurrent and proposed call sites.\n\n## Close\n\nLanded with fixture proof${inputs ? ` in ${inputs.join(', ')}` : ''}.\n\n## Evidence\n\nModel: fixture-model\n\nRead [the evidence](../evidence.md).\n\n${reconciled.join('\n')}\n\n### Requirements\n\n- Keep one owner.\n\n### Lanes\n\n- Keep the owner.\n- Delete the owner.\n`
+    `---\n${keys.join('\n')}\n---\n\n# Plan\n\nThe lead paragraph.\n\nStatus: ${state}\nPlaybook: verdict\n\n## Public API\n\nCurrent and proposed call sites.\n\n## Close\n\nLanded with fixture proof${inputs ? ` in ${inputs.join(', ')}` : ''}.\n\n## Evidence\n\nModel: fixture-model\n\nRead [the evidence](../evidence.md).\n\n${reconciled.join('\n')}\n\n### Requirements\n\n- Keep one owner.\n\n### Lanes\n\n- Keep the owner.\n- Delete the owner.\n${dependents ? `\n### Dependents\n\n${dependents}\n` : ''}`
   );
 }
 
@@ -1116,4 +1117,79 @@ test('a ledger file of the wrong type fails check instead of reading as empty', 
   put('docs/research/review-documents.json', { path: 'docs/plans/x.md' });
 
   assert.throws(() => check(root), /review-documents\.json: not a list/);
+});
+
+function importingFixture(t) {
+  const ledger = fixture(t);
+  ledger.put(
+    'packages/core/src/link/index.ts',
+    "import { comments } from '../comments';\n\nexport const link = comments;"
+  );
+  ledger.commit();
+  return ledger;
+}
+
+const reviewOfComments = (put, git, fields) =>
+  plan(put, 'docs/plans/2026-09-01-comments-review.md', {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'pursue',
+    state: 'reviewed',
+    commit: headOf(git),
+    ...fields,
+  });
+
+test('check fails on a new review page until it names each scope that imports the reviewed one', (t) => {
+  const { root, put, git } = importingFixture(t);
+  reviewOfComments(put, git);
+
+  assert.deepEqual(
+    lookup(root, 'comments')[0].dependents.scopes.map(({ id }) => id),
+    ['link']
+  );
+  assert.throws(() => check(root), /### Dependents list for link/);
+  reviewOfComments(put, git, {
+    inputs: ['packages/core/src/comments/index.ts'],
+    dependents: '- link: read `packages/core/src/comments/index.ts`.',
+  });
+  assert.throws(() => check(root), /does not account for link/);
+  reviewOfComments(put, git, {
+    inputs: ['packages/core/src/link/index.ts'],
+    dependents:
+      '- link: read `packages/core/src/link/index.ts`, which re-exports comments.',
+  });
+  assert.equal(check(root).ok, true);
+});
+
+test('a dependent excused as unaffected needs the reason', (t) => {
+  const { root, put, git } = importingFixture(t);
+  reviewOfComments(put, git, { dependents: '- link: unaffected.' });
+
+  assert.throws(() => check(root), /does not account for link/);
+  reviewOfComments(put, git, {
+    dependents: '- link: unaffected, it only re-exports the constant.',
+  });
+  assert.equal(check(root).ok, true);
+});
+
+test('a new review page whose review_commit this checkout lacks fails instead of reading no dependents', (t) => {
+  const { root, put, git } = importingFixture(t);
+  reviewOfComments(put, git, { commit: '1'.repeat(40) });
+
+  assert.throws(
+    () => check(root),
+    /review_commit 1{40} is not in this checkout/
+  );
+});
+
+test('a review page the base commit holds needs no dependents list, and an unknown base fails', (t) => {
+  const { root, put, git, commit } = importingFixture(t);
+  reviewOfComments(put, git);
+  commit();
+
+  assert.equal(check(root).ok, true);
+  assert.throws(
+    () => check(root, { base: '0'.repeat(40) }),
+    /Cannot resolve the base commit/
+  );
 });

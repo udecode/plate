@@ -261,33 +261,29 @@ export const applyEditableFocus = ({
   readOnly: boolean;
   state: EditableSelectionReconcilerState;
 }) => {
-  if (isEditableOutsideFocusBoundarySettling(state)) {
+  if (
+    !ReactEditor.hasEditableTarget(editor, event.target) ||
+    isReactEventHandled({ event, handler: onFocus }) ||
+    isEditableOutsideFocusBoundarySettling(state)
+  ) {
     return false;
   }
 
-  if (
-    !state.isUpdatingSelection &&
-    ReactEditor.hasEditableTarget(editor, event.target) &&
-    !isReactEventHandled({ event, handler: onFocus })
-  ) {
-    const el = ReactEditor.assertDOMNode(editor, editor);
-    const root = ReactEditor.findDocumentOrShadowRoot(editor);
-    state.latestElement = root.activeElement;
+  const el = ReactEditor.assertDOMNode(editor, editor);
+  const root = ReactEditor.findDocumentOrShadowRoot(editor);
+  state.latestElement = root.activeElement;
 
-    // COMPAT: If the editor has nested editable elements, the focus
-    // can go to them. In Firefox, this must be prevented because it
-    // results in issues with keyboard navigation. (2017/03/30)
-    if (isGeckoDOMHost(event) && event.target !== el) {
-      el.focus();
-      return false;
-    }
-
-    IS_FOCUSED.set(editor, true);
-    setEditorFocused(editor, true);
-    return true;
+  // COMPAT: If the editor has nested editable elements, the focus
+  // can go to them. In Firefox, this must be prevented because it
+  // results in issues with keyboard navigation. (2017/03/30)
+  if (isGeckoDOMHost(event) && event.target !== el) {
+    el.focus();
+    return false;
   }
 
-  return false;
+  IS_FOCUSED.set(editor, true);
+  setEditorFocused(editor, true);
+  return true;
 };
 
 export const applyEditableClick = ({

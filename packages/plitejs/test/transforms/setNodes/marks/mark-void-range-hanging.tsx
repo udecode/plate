@@ -31,7 +31,7 @@ export const input = (
 export const output = (
   <editor>
     <block>
-      <text bold>
+      <text>
         <anchor />
       </text>
       <inline markable void>
@@ -43,7 +43,7 @@ export const output = (
       <inline markable void>
         <text bold />
       </inline>
-      <text bold>
+      <text>
         <focus />
       </text>
     </block>

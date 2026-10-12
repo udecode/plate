@@ -3,15 +3,21 @@
 export const input = (
   <editor>
     <block>
-      <text>one</text>
-      <block>two</block>
+      <text />
+      <inline>
+        <text>one</text>
+        <block>two</block>
+      </inline>
+      <text />
     </block>
   </editor>
 );
 export const output = (
   <editor>
     <block>
-      <text>onetwo</text>
+      <text />
+      <inline>onetwo</inline>
+      <text />
     </block>
   </editor>
 );

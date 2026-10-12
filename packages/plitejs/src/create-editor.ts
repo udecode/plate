@@ -6,6 +6,7 @@ import {
   type NativeAuthoredDocumentCapability,
 } from './core/authored-document-capability';
 import { initializeAuthoredDocument } from './core/authored-runtime';
+import type { DocumentChange } from './core/change/document-change';
 import { createCommandDispatch } from './core/command-registry';
 import { assertNoDocumentViewRead } from './core/document-view-read';
 import {
@@ -68,6 +69,7 @@ import {
   updateEditor,
   withEditorRootChildren,
 } from './core/public-state';
+import { constructLoadedDocumentChange } from './core/representation';
 import type {
   CompiledEditorSchema,
   EditorSchemaContract,
@@ -218,33 +220,10 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
     publication.documentChange.empty;
 
   try {
+    // Plugins activate on the document they publish.
+    adoptInitialDocumentChange(editor, publication.documentChange);
     publication.stage();
     publication.commit();
-    if (!publication.documentChange.empty) {
-      const fittedDocument = publication.documentChange.apply(
-        initialDocument
-      ) as ReturnType<typeof getEditorDocumentValue>;
-
-      initializeEditorSchemaDocument(editor, fittedDocument);
-      if (initialSelection) {
-        const mapped = mapSelectionThroughChange(
-          editor,
-          initialSelection,
-          publication.documentChange,
-          initialDocument,
-          fittedDocument,
-          initialSelectionRoot,
-          { association: 'backward', preferPositionMapping: true }
-        );
-
-        if (!mapped) {
-          throw new Error(
-            'Initial selection cannot be mapped through schema fitting.'
-          );
-        }
-        initializeEditorSchemaSelection(editor, mapped, initialSelectionRoot);
-      }
-    }
     const validatePublishedDocument = (
       requireExplicitDocument = explicitInitialDocument,
       validateDocument = true
@@ -333,6 +312,40 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
   if (getPluginRegistry(editor).schemaContributions.records.size > 0) {
     disarmSchemaBootstrap(editor);
   }
+};
+
+const adoptInitialDocumentChange = (
+  editor: AnyEditor,
+  change: DocumentChange
+) => {
+  if (change.empty) return;
+
+  const initialDocument = getEditorDocumentValue(editor);
+  const initialSelection = getLiveSelection(editor);
+  const initialSelectionRoot = getCurrentSelectionRoot(editor);
+  const document = change.apply(initialDocument) as ReturnType<
+    typeof getEditorDocumentValue
+  >;
+
+  initializeEditorSchemaDocument(editor, document);
+  if (!initialSelection) return;
+
+  const mapped = mapSelectionThroughChange(
+    editor,
+    initialSelection,
+    change,
+    initialDocument,
+    document,
+    initialSelectionRoot,
+    { association: 'backward', preferPositionMapping: true }
+  );
+
+  if (!mapped) {
+    throw new Error(
+      'Initial selection cannot be mapped through schema fitting.'
+    );
+  }
+  initializeEditorSchemaSelection(editor, mapped, initialSelectionRoot);
 };
 
 const assertEditorSchemaBootstrap = (editor: AnyEditor) => {
@@ -740,7 +753,10 @@ const createEditorImplementation = <
       );
     }
     assertSelectionSupported(editor, getLiveSelection(editor), initialDocument);
-    schema.assertDocument(initialDocument);
+    adoptInitialDocumentChange(
+      editor as AnyEditor,
+      constructLoadedDocumentChange(editor, initialDocument)
+    );
   }
 
   snapshotInitialDocumentState(editor);

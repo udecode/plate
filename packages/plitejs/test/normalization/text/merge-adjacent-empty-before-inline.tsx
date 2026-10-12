@@ -14,7 +14,6 @@ export const output = (
   <editor>
     <block>
       <text>not empty</text>
-      <text a />
       <inline>inline</inline>
       <text />
     </block>

@@ -182,7 +182,6 @@
     "[Find](/docs/components/find)",
     "[Slash Input Element](/docs/components/slash)",
     "[Table Element](/docs/components/table)",
-    "[Tag Element](/docs/components/tag)",
     "[TOC Element](/docs/components/toc)",
     "[Details Element](/docs/components/details)",
     "---Examples---",
@@ -822,12 +821,6 @@
               "href": "/docs/components/table",
               "title": "Table",
               "titleCn": "Table"
-            },
-            {
-              "description": "A tag element component with selection states and styling.",
-              "href": "/docs/components/tag",
-              "title": "Tag",
-              "titleCn": "Tag"
             },
             {
               "description": "A table of contents component with links to document headings.",
@@ -2814,11 +2807,6 @@
         "description": "A table component with floating toolbar and border customization.",
         "title": "Table",
         "titleCn": "Table"
-      },
-      "/docs/components/tag": {
-        "description": "A tag element component with selection states and styling.",
-        "title": "Tag",
-        "titleCn": "Tag"
       },
       "/docs/components/toc": {
         "description": "A table of contents component with links to document headings.",

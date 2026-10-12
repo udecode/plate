@@ -33,13 +33,7 @@ Import headless utilities from `platejs` and React utilities from
 | `UnknownObject` | String-keyed object whose values require narrowing. |
 | `Nullable<T>` | Adds `null` to every property of `T`. |
 
-```ts title="validate-link.ts"
-import { BaseLinkPlugin, type Editor } from 'platejs';
-
-// Link owns its URL policy, including `allowedSchemes`.
-export const isSafeLink = (editor: Editor, value: string) =>
-  editor.plugin(BaseLinkPlugin).api.validateUrl(value);
-```
+`isUrl` does not decide which links an editor accepts. Link destinations follow `LinkPlugin`'s `allowedSchemes`; see [Link](/docs/link).
 
 ## Plugin identities
 

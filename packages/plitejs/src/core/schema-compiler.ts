@@ -2251,6 +2251,7 @@ const compileContentRule = (
 const compileContent = (
   source: Source<SchemaContent>,
   elementTypes: ReadonlySet<string>,
+  inlineTypes: ReadonlySet<string>,
   groups: ReadonlyMap<string, ReadonlySet<string>>,
   textGroups: ReadonlySet<string>,
   unknownPolicy: EditorSchemaUnknownPolicy
@@ -2374,6 +2375,14 @@ const compileContent = (
         path
       );
     }
+    if (inlineTypes.has(type)) {
+      compileFailure(
+        'invalid-content-prefix',
+        `Schema content at ${path} puts inline element "${type}" in a prefix slot, which holds a block.`,
+        [source],
+        path
+      );
+    }
 
     return Object.freeze({
       type,
@@ -2392,6 +2401,38 @@ const compileContent = (
     prefix: Object.freeze(prefix),
     remainder,
   };
+};
+
+/**
+ * Whether completion can reach an element's minimum in canonical children
+ * within its maximum, or the counts that refuse it. An empty stretch that
+ * admits text holds one empty text; a text default then merges into it, an
+ * inline default arrives with a spacer text after it, and a block default
+ * replaces the empty text with itself.
+ */
+const canonicalMinimumReach = (
+  program: MutableContentProgram,
+  isInline: (type: string) => boolean
+): Readonly<{ min: number; reached: string }> | null => {
+  const anchor =
+    program.allowsText && (program.max === null || program.max > 0) ? 1 : 0;
+  const plan = program.defaultPlan;
+
+  if (program.min <= anchor || !plan) return null;
+  if (plan.kind === 'text') {
+    return { min: program.min, reached: `only ${anchor}` };
+  }
+  if (!isInline(plan.type)) return null;
+
+  const units = Math.ceil((program.min - 1) / 2);
+  const count = 2 * units + 1;
+
+  return program.max === null || count <= program.max
+    ? null
+    : {
+        min: program.min,
+        reached: `${count}, past its maximum of ${program.max},`,
+      };
 };
 
 const freezeContentProgram = (
@@ -3566,6 +3607,11 @@ const compileEditorSchemaInternal = (
   }
 
   const elementTypes = new Set(mutableElements.keys());
+  const inlineTypes = new Set(
+    [...mutableElements].flatMap(([type, element]) =>
+      element.behavior.inline ? [type] : []
+    )
+  );
   const textGroups = resolveMembership(
     new Set(['all', 'inline', 'text']),
     groupParents,
@@ -3628,6 +3674,7 @@ const compileEditorSchemaInternal = (
       const program = compileContent(
         source,
         elementTypes,
+        inlineTypes,
         initialGroups,
         textGroups,
         unknownPolicy
@@ -3781,7 +3828,6 @@ const compileEditorSchemaInternal = (
   }
 
   const mutablePrograms = new Map<string, MutableContentProgram>();
-
   for (const element of mutableElements.values()) {
     const source: Source<SchemaContent> = {
       pluginName: element.source.pluginName,
@@ -3791,10 +3837,12 @@ const compileEditorSchemaInternal = (
     const program = compileContent(
       source,
       elementTypes,
+      inlineTypes,
       mutableGroups,
       textGroups,
       unknownPolicy
     );
+
     const blockChildTypes = sortedStrings(
       [...program.allowedElementTypes].filter(
         (type) => mutableElements.get(type)?.behavior.inline === false
@@ -3861,6 +3909,19 @@ const compileEditorSchemaInternal = (
       }
     }
 
+    const reach = canonicalMinimumReach(program.remainder ?? program, (type) =>
+      Boolean(mutableElements.get(type)?.behavior.inline)
+    );
+
+    if (reach !== null) {
+      compileFailure(
+        'unconstructible-content-minimum',
+        `Schema element "${element.type}" requires ${reach.min} children after any prefix, but canonical content reaches ${reach.reached} with its default.`,
+        [source],
+        source.path
+      );
+    }
+
     mutablePrograms.set(`element:${element.type}`, program);
     for (const [slot, root] of element.contentRoots) {
       const contentSource: Source<SchemaContent> = {
@@ -3873,6 +3934,7 @@ const compileEditorSchemaInternal = (
       const innerProgram = compileContent(
         contentSource,
         elementTypes,
+        inlineTypes,
         mutableGroups,
         textGroups,
         unknownPolicy
@@ -3893,6 +3955,7 @@ const compileEditorSchemaInternal = (
   const primaryProgram = compileContent(
     primaryRoot,
     elementTypes,
+    inlineTypes,
     mutableGroups,
     textGroups,
     unknownPolicy
@@ -3913,6 +3976,7 @@ const compileEditorSchemaInternal = (
     const program = compileContent(
       source,
       elementTypes,
+      inlineTypes,
       mutableGroups,
       textGroups,
       unknownPolicy

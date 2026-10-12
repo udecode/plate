@@ -53,6 +53,28 @@ export const createTreeIndexChildren = (
   };
 };
 
+export const replaceTreeIndexChild = (
+  run: TreeIndexChildren,
+  index: number,
+  child: TreeIndexNode
+): TreeIndexChildren => {
+  const children = [...run.children];
+  const delta = child.length - getDefined(run.children[index]).length;
+
+  children[index] = child;
+  if (delta === 0) {
+    return { children, length: run.length, offsets: run.offsets };
+  }
+
+  const offsets = run.offsets.slice();
+
+  for (let next = index + 1; next < offsets.length; next += 1) {
+    offsets[next] += delta;
+  }
+
+  return { children, length: run.length + delta, offsets };
+};
+
 export const createTreeIndexNode = (node: JsonNode): TreeIndexNode => {
   if (isTextNode(node)) {
     return { kind: 'text', length: node.text.length + 2 };

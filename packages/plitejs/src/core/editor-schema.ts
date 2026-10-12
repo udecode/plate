@@ -37,7 +37,8 @@ import { DocumentIndex } from './change/document-index';
 import type { DocumentPropertyContext, RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import { normalizeSetValues } from './change/transform';
-import { cloneFrozen, isOwnedJsonValue } from './clone';
+import { cloneFrozen, isImmutable, isOwnedJsonValue } from './clone';
+import { completeContent } from './content-completion';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import {
   getEditorDocumentShapeIssueMessage,
@@ -84,11 +85,18 @@ import {
 import {
   type EditorSchemaFitReport,
   type EditorSchemaRepair,
+  type RepresentationRepairEvent,
+  type RepresentationRepairSink,
   type RootCanonicalizationPass,
   schemaModelLocation,
   schemaRepair,
 } from './slice-fit/fit-report';
-import { assertEditorJsonValue, snapshotEditorJsonValue } from './value-codec';
+import type { FitInputPaths } from './slice-fit/provenance';
+import {
+  areEditorJsonValuesEqual,
+  assertEditorJsonValue,
+  snapshotEditorJsonValue,
+} from './value-codec';
 
 /**
  * Schema implementation used only by the slice transaction owner.
@@ -105,6 +113,25 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root?: RootKey
     ) => boolean;
     canContainAtRoot: (child: Descendant, root?: RootKey) => boolean;
+    emptyTextKeeps: (
+      key: string,
+      value: unknown,
+      at: Readonly<{
+        ancestors: readonly Element[];
+        parent: Element;
+        root: RootKey;
+      }>
+    ) => boolean;
+    fitReportSink: (root: RootKey) => RepresentationRepairSink | undefined;
+    /**
+     * Build an element in its canonical empty form at a site: `ancestors` are
+     * the elements it will sit in, immediate parent first.
+     */
+    createAt: (
+      type: string,
+      properties: Readonly<Record<string, unknown>> | undefined,
+      site: Readonly<{ ancestors: readonly Element[]; root: RootKey }>
+    ) => Element;
     /**
      * Whether `fit` can land before child `at` of `children`, the children of
      * `parent` (null for a root), once the `removing` indexes leave. Checks the
@@ -576,6 +603,21 @@ const COMPILED_SCHEMA_BY_API = new WeakMap<
   () => CompiledEditorSchema | null
 >();
 const VALIDATED_DOCUMENT_ROOTS = new WeakMap<object, string>();
+const DEEP_FROZEN_NODES = new WeakSet<object>();
+const isDeepFrozenNode = (node: Descendant): boolean => {
+  if (DEEP_FROZEN_NODES.has(node)) return true;
+  if (
+    !Object.isFrozen(node) ||
+    (!NodeApi.isText(node) &&
+      (!Object.isFrozen(node.children) ||
+        !node.children.every(isDeepFrozenNode)))
+  ) {
+    return false;
+  }
+  DEEP_FROZEN_NODES.add(node);
+
+  return true;
+};
 // Deep-frozen top-level nodes a document assertion validated, per compiled
 // schema and root: their content cannot change and that schema's validators are
 // deterministic, so a later document sharing them validates only new nodes. A
@@ -1572,45 +1614,33 @@ export const createEditorSchema = <V extends Value = Value>(
       children,
       type,
     } as Element;
-    const minimum = compiled.content?.min ?? 0;
     const nextCreating = new Set(creating).add(type);
+    const site = {
+      ancestors: [element, ...(options.ancestors ?? [])],
+      root: options.root,
+    };
 
-    while (element.children.length < minimum) {
-      const slot = compiled.content?.prefix?.[element.children.length];
-      const plan = compiled.content?.defaultPlan;
-      const child = slot
-        ? createDeclarativeAndFill(
-            schema,
-            slot.type,
-            slot.properties,
-            nextCreating,
-            {
-              ancestors: [element, ...(options.ancestors ?? [])],
-              root: options.root,
-            }
-          )
-        : plan?.kind === 'text'
-          ? ({ text: '' } as Text)
-          : plan?.kind === 'element' && !nextCreating.has(plan.type)
-            ? createDeclarativeAndFill(
+    if (compiled.content) {
+      children.push(
+        ...completeContent({
+          children: [],
+          content: compiled.content,
+          element: true,
+          schema: {
+            create: (childType, childProperties) =>
+              createDeclarativeAndFill(
                 schema,
-                plan.type,
-                undefined,
+                childType,
+                childProperties,
                 nextCreating,
-                {
-                  ancestors: [element, ...(options.ancestors ?? [])],
-                  root: options.root,
-                }
-              )
-            : null;
-
-      if (!child) {
-        throw new Error(
-          `Editor element "${type}" requires defaultable content.`
-        );
-      }
-
-      children.push(child);
+                site
+              ),
+            fitsPrefix: () => false,
+            isInline: (node) =>
+              ElementApi.isElement(node) && getElementBehavior(node).inline,
+          },
+        }).children
+      );
     }
 
     assertEditorJsonValue(element, `Editor element "${type}"`);
@@ -1648,6 +1678,47 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   }) as InternalEditorSchemaApi['create'];
 
+  const emptyTextKeeps: InternalEditorSchemaApi['emptyTextKeeps'] = (
+    key,
+    value,
+    at
+  ) => {
+    const declarative = getDeclarativeSchema();
+    const property = declarative && getTextProperty(declarative, key, at);
+
+    if (!property) return false;
+
+    const { descriptor } = property;
+
+    return (
+      property.role === 'metadata' ||
+      descriptor.required ||
+      descriptor.generate !== undefined ||
+      (Object.hasOwn(descriptor, 'default') &&
+        areEditorJsonValuesEqual(descriptor.default, value))
+    );
+  };
+
+  const createAt: InternalEditorSchemaApi['createAt'] = (
+    type,
+    properties,
+    site
+  ) => {
+    const declarative = getDeclarativeSchema();
+
+    if (!declarative) {
+      throw new Error(`Unknown editor element type "${type}".`);
+    }
+
+    return createDeclarativeAndFill(
+      declarative,
+      type,
+      properties,
+      new Set(),
+      site
+    );
+  };
+
   const createDefaultRootChild = (
     root = 'main',
     index = 0
@@ -1681,20 +1752,21 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   };
 
-  let canonicalizationObserver:
-    | {
-        passes: RootCanonicalizationPass[];
-        root: RootKey;
-      }
-    | undefined;
+  type CanonicalizationObserver = {
+    events: RepresentationRepairEvent[];
+    passes: RootCanonicalizationPass[];
+    root: RootKey;
+  };
+  let canonicalizationObserver: CanonicalizationObserver | undefined;
   const observeRootCanonicalization = <T>(root: RootKey, run: () => T) => {
     if (canonicalizationObserver) {
       throw new Error('Schema fit canonicalization observers cannot nest.');
     }
 
-    const observer = { passes: [], root } as {
-      passes: RootCanonicalizationPass[];
-      root: RootKey;
+    const observer: CanonicalizationObserver = {
+      events: [],
+      passes: [],
+      root,
     };
 
     canonicalizationObserver = observer;
@@ -1702,6 +1774,7 @@ export const createEditorSchema = <V extends Value = Value>(
       const value = run();
 
       return Object.freeze({
+        events: Object.freeze([...observer.events]),
         passes: Object.freeze([...observer.passes]),
         value,
       });
@@ -1709,11 +1782,21 @@ export const createEditorSchema = <V extends Value = Value>(
       canonicalizationObserver = undefined;
     }
   };
+  const fitReportSink: InternalEditorSchemaApi['fitReportSink'] = (root) => {
+    const observer = canonicalizationObserver;
+
+    return observer?.root === root
+      ? (event) => {
+          observer.events.push(event);
+        }
+      : undefined;
+  };
 
   const collectPropertyRepairs = (
     input: readonly Descendant[],
     output: readonly Descendant[],
-    root: RootKey
+    root: RootKey,
+    inputPaths: FitInputPaths
   ): readonly EditorSchemaRepair[] => {
     if (structurallyEqual(input, output)) return Object.freeze([]);
     const declarative = getDeclarativeSchema();
@@ -1818,7 +1901,9 @@ export const createEditorSchema = <V extends Value = Value>(
             );
           }
 
-          const inputLocation = schemaModelLocation(root, path, key);
+          const inputLocations = inputPaths(path).map((sourcePath) =>
+            schemaModelLocation(root, sourcePath, key)
+          );
           const outputLocation = schemaModelLocation(root, path, key);
 
           if (!had && has) {
@@ -1862,7 +1947,7 @@ export const createEditorSchema = <V extends Value = Value>(
                   ? 'omit-default-property'
                   : 'resolve-exclusive-property',
                 impact: omittedDefault ? 'lossless' : 'lossy',
-                inputs: [inputLocation],
+                inputs: inputLocations,
                 owner: 'property',
               })
             );
@@ -1877,7 +1962,7 @@ export const createEditorSchema = <V extends Value = Value>(
             schemaRepair({
               code: 'canonicalize-set-property',
               impact: 'lossless',
-              inputs: [inputLocation],
+              inputs: inputLocations,
               outputs: [outputLocation],
               owner: 'property',
             })
@@ -3701,11 +3786,6 @@ export const createEditorSchema = <V extends Value = Value>(
     main: value.children,
     ...value.roots,
   });
-  const isDeepFrozenNode = (node: Descendant): boolean =>
-    Object.isFrozen(node) &&
-    (NodeApi.isText(node) ||
-      (Object.isFrozen(node.children) &&
-        node.children.every(isDeepFrozenNode)));
   const rememberValidatedDocumentRoots = (
     value: EditorDocumentValue,
     schema?: CompiledEditorSchema | null
@@ -3714,8 +3794,9 @@ export const createEditorSchema = <V extends Value = Value>(
 
     for (const [root, children] of Object.entries(documentRoots(value))) {
       if (
-        Object.isFrozen(children) &&
-        children.every((node) => isDeepFrozenNode(node))
+        VALIDATED_DOCUMENT_ROOTS.get(children) === authority ||
+        (isImmutable(children) &&
+          children.every((node) => isDeepFrozenNode(node)))
       ) {
         VALIDATED_DOCUMENT_ROOTS.set(children, authority);
         if (schema && hasContentRoots()) {
@@ -4325,7 +4406,10 @@ export const createEditorSchema = <V extends Value = Value>(
     create,
     copy: (node, options) =>
       copyNodeAt(node, options.at, options.root ?? 'main') as typeof node,
+    createAt,
     createDefaultRootChild,
+    emptyTextKeeps,
+    fitReportSink,
     delta: () => getRegistry().schemaContributions.delta,
     element: getPublicElement,
     fit,

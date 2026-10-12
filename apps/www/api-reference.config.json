@@ -762,7 +762,6 @@
             "UnderlineRules",
             "UnwrapLinkOptions",
             "UpsertLinkOptions",
-            "ValidateUrlOptions",
             "Value",
             "ValueOf",
             "WithAnyName",
@@ -1099,13 +1098,6 @@
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",
           "include": {}
-        },
-        "./tag": {
-          "exclude": ["BaseTagPlugin", "TagElement", "TagItem"],
-          "excludeReason": "No curated reference page owns this symbol yet.",
-          "include": {
-            "BaseMultiSelectPlugin": "/docs/multi-select"
-          }
         },
         "./toc": {
           "exclude": [

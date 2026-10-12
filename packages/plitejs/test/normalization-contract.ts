@@ -31,12 +31,14 @@ import {
 import { defineTestSchema } from './support/schema';
 
 describe('plite normalization contract', () => {
-  it('repairs an invalid initial value through the maintenance API', () => {
+  it('loads an empty element with its empty text, which repair keeps', () => {
     const editor = createEditor({
       initialValue: [{ type: 'block', children: [] }],
     });
 
-    assert.deepEqual(editor.read.children(), [{ type: 'block', children: [] }]);
+    assert.deepEqual(editor.read.children(), [
+      { type: 'block', children: [{ text: '' }] },
+    ]);
 
     editor.update.value.repair();
 

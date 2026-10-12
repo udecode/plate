@@ -321,6 +321,70 @@ describe('required document prefix', () => {
     assert.deepEqual(editor.read.children(), after);
   });
 
+  it('keeps the title when a closed paragraph replaces its selected text', () => {
+    const editor = createEditor({
+      plugins: [PrefixSchema],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('Deck'),
+        paragraph('Body'),
+      ],
+    });
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed([paragraph('New')]), {
+        at: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 5, path: [0, 0] },
+        },
+      }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'New' }], level: 1, type: 'heading' },
+      paragraph('Deck'),
+      paragraph('Body'),
+    ]);
+  });
+
+  it('keeps a closed paragraph as its own block when it replaces the blocks after a title', () => {
+    const TitledSchema = defineEditorSchema('schema:titled-required-body', {
+      elements: PrefixSchema.schema.elements,
+      root: schema.content.prefix(
+        [{ element: 'heading', properties: { level: 1 } }],
+        schema.content.group('block', {
+          default: { type: 'paragraph' },
+          min: 1,
+        })
+      ),
+      unknown: 'reject',
+    });
+    const editor = createEditor({
+      plugins: [TitledSchema],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        paragraph('a'),
+        paragraph('b'),
+        paragraph('Body'),
+      ],
+    });
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed([paragraph('New')]), {
+        at: {
+          anchor: { offset: 5, path: [0, 0] },
+          focus: { offset: 0, path: [3, 0] },
+        },
+      }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+      paragraph('New'),
+      paragraph('Body'),
+    ]);
+  });
+
   it('reconstructs required slots when deleting the full selected document', () => {
     const editor = createEditor({
       plugins: [PrefixSchema, history()],
@@ -622,6 +686,34 @@ const SliceFitSchema = defineEditorSchema('schema:slice-fit-contract', {
 
 const createSchemaEditor = (initialValue: Element[]) =>
   createEditor({ plugins: [SliceFitSchema], initialValue });
+
+const ParentMaximumSchema = defineEditorSchema(
+  'schema:slice-fit-parent-maximum',
+  {
+    elements: {
+      box: {
+        content: schema.content.group('block', {
+          default: { type: 'paragraph' },
+          max: 2,
+          min: 1,
+        }),
+      } as const,
+      line: {
+        content: schema.content.text({ default: 'text', max: 1, min: 1 }),
+      } as const,
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      } as const,
+    },
+    properties: [schema.textProperty('bold', property.boolean())],
+    root: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      max: 2,
+      min: 1,
+    }),
+    unknown: 'reject',
+  }
+);
 
 const CoveredDeletionSchema = defineEditorSchema(
   'schema:covered-deletion-contract',
@@ -1411,6 +1503,108 @@ describe('contextual schema slice fitting', () => {
     assert.equal(commits, 0);
   });
 
+  it('declines a slice that would push its parent past its maximum', () => {
+    const editor = createEditor({
+      plugins: [ParentMaximumSchema],
+      initialValue: [
+        { type: 'box', children: [paragraph('One'), paragraph('Two')] },
+      ],
+    });
+    const before = editor.read.value();
+    let replaced = true;
+
+    editor.update((tx) => {
+      replaced = tx.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('A'), paragraph('B')],
+          openEnd: 1,
+          openStart: 1,
+        }),
+        {
+          at: {
+            anchor: { offset: 0, path: [0, 0, 0] },
+            focus: { offset: 3, path: [0, 0, 0] },
+          },
+        }
+      );
+    });
+
+    assert.equal(replaced, false);
+    assert.deepEqual(editor.read.value(), before);
+  });
+
+  it('lands a slice that fills its parent to its maximum across the replaced siblings', () => {
+    const editor = createEditor({
+      plugins: [ParentMaximumSchema],
+      initialValue: [paragraph('One'), paragraph('Two')],
+    });
+
+    editor.update((tx) => {
+      tx.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('A'), paragraph('B')],
+          openEnd: 1,
+          openStart: 1,
+        }),
+        {
+          at: {
+            anchor: { offset: 1, path: [0, 0] },
+            focus: { offset: 2, path: [1, 0] },
+          },
+        }
+      );
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('OA'),
+      paragraph('Bo'),
+    ]);
+  });
+
+  it('lands text in a line whose content allows one text leaf', () => {
+    const editor = createEditor({
+      plugins: [ParentMaximumSchema],
+      initialValue: [{ type: 'line', children: [{ text: 'abcdef' }] }],
+    });
+
+    editor.update((tx) => {
+      tx.slice.replace(ContentSlice.closed([{ text: 'XY' }]), {
+        at: {
+          anchor: { offset: 3, path: [0, 0] },
+          focus: { offset: 3, path: [0, 0] },
+        },
+      });
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'line', children: [{ text: 'abcXYdef' }] },
+    ]);
+  });
+
+  it('declines marked text that would split a line allowing one text leaf', () => {
+    const editor = createEditor({
+      plugins: [ParentMaximumSchema],
+      initialValue: [{ type: 'line', children: [{ text: 'abcdef' }] }],
+    });
+    const before = editor.read.value();
+    let replaced = true;
+
+    editor.update((tx) => {
+      replaced = tx.slice.replace(
+        ContentSlice.closed([{ bold: true, text: 'XY' }]),
+        {
+          at: {
+            anchor: { offset: 3, path: [0, 0] },
+            focus: { offset: 3, path: [0, 0] },
+          },
+        }
+      );
+    });
+
+    assert.equal(replaced, false);
+    assert.deepEqual(editor.read.value(), before);
+  });
+
   it('splits an active inline around a closed inline slice', () => {
     const plugin = defineEditorSchema('schema:closed-inline-split', {
       elements: {
@@ -2022,7 +2216,8 @@ describe('contextual schema slice fitting', () => {
       editor,
       firstRevision,
       ContentSlice.closed([paragraph('prepared')]),
-      () => currentRevision
+      () => currentRevision,
+      'main'
     );
     const insert = encodeContentSlice(prepared.slice);
     const before = { children: [paragraph('')] };
@@ -2928,7 +3123,7 @@ describe('contextual schema slice fitting', () => {
     );
   });
 
-  it('preserves explicit empty text at an inline boundary', () => {
+  it('merges an empty text after an inline into the next text on load', () => {
     const inlineBoundarySchema = defineEditorSchema(
       'schema:selected-inline-boundary-schema',
       {
@@ -2974,13 +3169,12 @@ describe('contextual schema slice fitting', () => {
       paragraph('', [
         { text: 'first' },
         { children: [{ text: 'link' }], type: 'link' },
-        { text: '' },
         { text: 'last' },
       ]),
     ]);
   });
 
-  it('closes bounded inline construction across marked empty spacers', () => {
+  it('closes bounded inline construction across empty spacers', () => {
     const mention = (character: string): Descendant => ({
       character,
       children: [{ text: '' }],
@@ -2991,7 +3185,6 @@ describe('contextual schema slice fitting', () => {
       mention('A'),
       { text: '' },
       mention('B'),
-      { bold: true, text: '' },
       { text: '' },
       mention('C'),
       { text: '' },
@@ -3004,7 +3197,7 @@ describe('contextual schema slice fitting', () => {
     });
     const before = { children: editor.read.children() };
 
-    for (const removedIndex of [1, 8]) {
+    for (const removedIndex of [1, 7]) {
       const after = {
         children: [
           paragraph(

@@ -20,4 +20,4 @@ editor.update.link.upsertText(options);
 editor.update.link.wrap(options);
 ```
 
-Read URL validation and anchor attributes from `editor.api.link`. Remove `withLink`, `insertLink`, `unwrapLink`, `upsertLink`, `upsertLinkText`, `wrapLink`, `submitFloatingLink`, and `triggerFloatingLink*` imports.
+Read anchor attributes with `editor.api.link.getAttributes`. Remove `withLink`, `insertLink`, `unwrapLink`, `upsertLink`, `upsertLinkText`, `wrapLink`, `submitFloatingLink`, and `triggerFloatingLink*` imports.

@@ -1,201 +1,101 @@
 ---
 title: 多选
 docs:
-  - route: /docs/components/tag
   - route: /docs/components/select-editor
 ---
 
 <ComponentPreview name="select-editor-demo" />
 
-<PackageInfo>
+`SelectEditor` 是一个单行编辑器，它的值是一组标签。每个选中的标签都是行内标签元素，因此光标可以在标签之间移动，Backspace 会删除一个标签，标签也能像文本一样复制和粘贴。菜单会按输入的搜索文本筛选 `items`。
 
-## 特性
-
-与传统的基于输入的多选不同，该组件构建在 Plate editor 之上，提供：
-
-- 完整的历史记录支持（撤销/重做）
-- 标签之间和标签内的原生光标导航
-- 选择一个或多个标签
-- 复制/粘贴标签
-- 拖放重新排序标签
-- 只读模式
-- 防止重复标签
-- 使用不区分大小写的匹配创建新标签
-- 搜索文本清理和空白修剪
-- 由 [cmdk](https://github.com/pacocoursey/cmdk) 提供支持的模糊搜索
-
-</PackageInfo>
-
-## 手动使用
-
-<Steps>
-
-### 安装
-
-```bash
-npm install platejs @tanstack/react-virtual
-```
-
-### 添加插件
-
-```tsx
-import { MultiSelectPlugin } from 'platejs/tag/react';
-import { createEditor } from 'platejs/react';
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    MultiSelectPlugin, // 具有标签功能的多选编辑器
-  ],
-});
-```
-
-### 配置插件
-
-```tsx
-import { MultiSelectPlugin } from 'platejs/tag/react';
-import { createEditor } from 'platejs/react';
-import { TagElement } from '@/components/editor/tag';
-
-const editor = createEditor({
-  plugins: [
-    // ...otherPlugins,
-    MultiSelectPlugin.configure({ component: TagElement }),
-  ],
-});
-```
-
-- `MultiSelectPlugin`：无头标签选择器的 React 适配器，提供查询文本清理和重复标签预防。
-- `component`：分配 [`TagElement`](/docs/components/tag) 来渲染标签组件
-
-### 添加 SelectEditor
+## 安装
 
 <ComponentInstallation name="select-editor" inline />
 
-### 基本示例
+安装该组件会添加两个文件：`select-editor.tsx`（字段及其标签规则）和 `tag.tsx`（`tag` 元素及其标签样式）。
+
+## 使用
 
 ```tsx
-import { MultiSelectPlugin } from 'platejs/tag/react';
-import { TagElement } from '@/components/editor/tag';
-import {
-  SelectEditor,
-  SelectEditorContent,
-  SelectEditorInput,
-  SelectEditorCombobox,
-  type SelectItem,
-} from '@/components/editor/select-editor';
+import * as React from 'react';
 
-// 定义你的项目
+import { type SelectItem, SelectEditor } from '@/components/editor/select-editor';
+
 const ITEMS: SelectItem[] = [
   { value: 'React' },
   { value: 'TypeScript' },
   { value: 'JavaScript' },
 ];
 
-export default function MySelectEditor() {
+export function LabelsField() {
   const [value, setValue] = React.useState<SelectItem[]>([ITEMS[0]]);
 
   return (
     <SelectEditor
+      aria-label="Labels"
+      items={ITEMS}
+      placeholder="Select labels..."
       value={value}
       onValueChange={setValue}
-      items={ITEMS}
-    >
-      <SelectEditorContent>
-        <SelectEditorInput placeholder="选择项目..." />
-        <SelectEditorCombobox />
-      </SelectEditorContent>
-    </SelectEditor>
+    />
   );
 }
 ```
 
-### 表单示例
+`onValueChange` 必须同步更新 `value`。只要 `value` 与标签不同，字段就会把 `value` 写回，所以稍后设置的值（例如在 transition 中设置）会先撤销这次修改。非受控字段请传入 `defaultValue` 而不是 `value`。
+
+## 示例
+
+### 表单
+
+字段接收表单库的 `ref`、`onBlur` 和 ARIA 属性，并把它们传给可编辑区域。
 
 <ComponentSource name="select-editor-demo" />
 
-</Steps>
+## 行为
 
-## 插件
+- 输入文本进行搜索。`ArrowUp` 和 `ArrowDown` 移动当前选项，`Enter` 选中它。
+- 两个或更多字符的搜索如果没有匹配的标签，菜单会提供创建它的选项。
+- `Escape`、`mod+Enter` 或点击外部会关闭菜单并清除搜索。
+- 只有大小写不同的标签视为同一个。第一个标签保留，因此表单值中重复的标签只显示一次。
+- 撤销和重做快捷键已关闭，选中的标签不会被撤销。
+- 只读字段会把带 `url` 的标签渲染为链接。
+- 把标签拖到另一个标签之前会移动它。把标签放到另一个标签之后不会产生任何变化。
 
-### BaseTagPlugin
+要修改这些规则，请编辑复制的 `select-editor.tsx` 中的 `SelectTagPlugin`；要修改按键，请编辑字段的按键处理函数。
 
-保留周围文本的内联 void 标签插件。
+## API 参考
 
-### BaseMultiSelectPlugin
+### SelectEditor
 
-扩展 `BaseTagPlugin`，提供重复标签预防、查询文本清理和向后删除行为。
-无头编辑器可以从 `platejs/tag` 导入此插件。
+接收可编辑区域的属性，例如 `placeholder`、`readOnly`、`onBlur` 和 `aria-*`，但不包括字段自己设置的 combobox 属性。
 
-### MultiSelectPlugin
-
-`BaseMultiSelectPlugin` 的 React 适配器。通过配置组件渲染复制的标签视图。
-
-## API
-
-### `editor.plugin(MultiSelectPlugin).update.insert`
-
-在当前选择处插入新的多选元素。
-
-<API name="editor.plugin(MultiSelectPlugin).update.insert">
-<APIParameters>
-  <APIItem name="props" type="TagItem">
-    多选元素的属性。
+<API name="SelectEditor">
+<APIProps>
+  <APIItem name="items" type="readonly SelectItem[]" optional>
+    菜单提供的标签。
   </APIItem>
-</APIParameters>
+  <APIItem name="value" type="readonly SelectItem[]" optional>
+    受控字段的标签。
+  </APIItem>
+  <APIItem name="defaultValue" type="readonly SelectItem[]" optional>
+    非受控字段的初始标签。
+  </APIItem>
+  <APIItem name="onValueChange" type="(items: SelectItem[]) => void" optional>
+    字段中每次修改后，以当前标签调用。
+  </APIItem>
+</APIProps>
+</API>
 
-<APIOptions type="TagItem">
+### SelectItem
+
+<API name="SelectItem">
+<APIAttributes>
   <APIItem name="value" type="string">
-    多选元素的唯一值。
+    标签文本。
   </APIItem>
-</APIOptions>
-</API>
-
-### `editor.plugin(MultiSelectPlugin).read.getSelectedItems()`
-
-获取编辑器中的所有标签项目。
-
-<API name="editor.plugin(MultiSelectPlugin).read.getSelectedItems">
-<APIReturns type="TagItem[]">
-  编辑器中的标签项目数组。
-</APIReturns>
-</API>
-
-### `editor.plugin(MultiSelectPlugin).read.isEqual(tags)`
-
-比较两组标签是否相等的工具函数，忽略顺序。
-
-<API name="editor.plugin(MultiSelectPlugin).read.isEqual">
-<APIParameters>
-  <APIItem name="tags" type="TagItem[]" optional>
-    要与当前编辑器标签比较的新标签。
+  <APIItem name="url" type="string" optional>
+    只读标签渲染的链接。
   </APIItem>
-</APIParameters>
-
-<APIReturns type="boolean">
-  两组是否包含相同的值。
-</APIReturns>
+</APIAttributes>
 </API>
-
-## Registry UI
-
-复制的 `select-editor` 组件负责搜索过滤、新标签创建、组合框清理和值变更
-通知。产品需要不同的标签选择行为时，直接修改该文件。
-
-<ComponentSource name="select-editor" />
-
-## 类型
-
-### TagElement
-
-```ts
-import type { TagElement } from 'platejs/tag';
-```
-
-`TagElement` 从 `BaseTagPlugin` 派生，并且需要字符串 `value`。
-
-### TagItem
-
-```ts
-import type { TagItem } from 'platejs/tag';
-```

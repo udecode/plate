@@ -190,7 +190,7 @@ describe('measurePages', () => {
         {
           children: [
             { text: 'a'.repeat(42) },
-            { text: 'b'.repeat(42) },
+            { bold: true, text: 'b'.repeat(42) },
             { text: 'c'.repeat(42) },
           ],
           type: 'paragraph',

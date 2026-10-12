@@ -144,9 +144,15 @@
     },
     {
       "name": "select-command",
-      "files": ["apps/www/src/registry/components/editor/select-command.tsx"],
+      "files": [],
       "definitionFiles": [],
-      "diagnostics": []
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for select-command."
+        }
+      ]
     },
     {
       "name": "version-history-demo",

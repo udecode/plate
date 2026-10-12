@@ -5,11 +5,12 @@ import type { TabbablePluginState } from '../lib/TabbablePluginTypes';
 import { TabbableEffects } from './TabbableEffects.internal';
 
 export const TabbablePlugin = definePlugin(PLUGINS.tabbable, {
-  initialState: ({ editor }): TabbablePluginState => ({
+  initialState: (): TabbablePluginState => ({
     globalEventListener: false,
-    insertTabbableEntries: (_event) => [],
-    isTabbable: (entry) => editor.read.schema.isVoid(entry.slateNode),
-    query: (_event) => true,
+    insertTabbableEntries: () => [],
+    isTabbable: ({ editor, entry }) =>
+      editor.read.schema.isVoid(entry.slateNode),
+    query: () => true,
   }),
   slots: { afterEditable: TabbableEffects },
 });

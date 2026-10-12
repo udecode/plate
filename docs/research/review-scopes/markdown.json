@@ -38,7 +38,6 @@
     "packages/platejs/src/markdown/lib/columnSurface.spec.ts",
     "packages/platejs/src/markdown/lib/commonmarkSurface.slow.ts",
     "packages/platejs/src/markdown/lib/dateElement.spec.ts",
-    "packages/platejs/src/markdown/lib/deserializer/__snapshots__/",
     "packages/platejs/src/markdown/lib/deserializer/convertChildrenDeserialize.ts",
     "packages/platejs/src/markdown/lib/deserializer/convertNodesDeserialize.spec.ts",
     "packages/platejs/src/markdown/lib/deserializer/convertNodesDeserialize.ts",

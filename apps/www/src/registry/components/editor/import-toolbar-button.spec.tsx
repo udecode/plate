@@ -1,50 +1,18 @@
-import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test';
-
 import { act, cleanup, render } from '@testing-library/react';
 import { BaseParagraphPlugin, createEditor } from 'platejs';
 import { CommentsPlugin } from 'platejs/comments/react';
+import * as docxImport from 'platejs/docx/import';
 import { MarkdownPlugin } from 'platejs/markdown';
 import { EditorRoot } from 'platejs/react';
 import React from 'react';
+import { toast } from 'sonner';
+import * as filePicker from 'use-file-picker';
 
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { DocxSourceProvider } from '@/registry/components/editor/docx-source';
+import { Toolbar } from '@/registry/components/editor/toolbar';
 
-mock.module('@/registry/components/editor/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: React.PropsWithChildren) => <>{children}</>,
-  DropdownMenuContent: ({ children }: React.PropsWithChildren) => (
-    <>{children}</>
-  ),
-  DropdownMenuGroup: ({ children }: React.PropsWithChildren) => <>{children}</>,
-  DropdownMenuItem: ({ children }: React.PropsWithChildren) => <>{children}</>,
-  DropdownMenuTrigger: ({ children }: React.PropsWithChildren) => (
-    <>{children}</>
-  ),
-}));
-
-mock.module('@/registry/components/editor/toolbar', () => ({
-  ToolbarButton: ({ children }: React.PropsWithChildren) => (
-    <button type="button">{children}</button>
-  ),
-}));
-
-let importWord:
-  | ((input: {
-      plainFiles: Array<{ arrayBuffer: () => Promise<ArrayBuffer> }>;
-    }) => Promise<void>)
-  | undefined;
-
-mock.module('use-file-picker', () => ({
-  useFilePicker: (options: {
-    accept: string[];
-    onFilesSelected: typeof importWord;
-  }) => {
-    if (options.accept.includes('.docx')) {
-      importWord = options.onFilesSelected;
-    }
-
-    return { openFilePicker: () => {} };
-  },
-}));
+import { ImportToolbarButton } from './import-toolbar-button';
 
 const invalidSource = { dispose: mock() };
 const validSource = { dispose: mock() };
@@ -88,25 +56,36 @@ const validImport = {
   source: validSource,
 };
 let importResult: typeof invalidImport | typeof validImport = invalidImport;
-const importDocx = mock(async () => importResult);
+let importWord:
+  | ((input: {
+      plainFiles: Array<{ arrayBuffer: () => Promise<ArrayBuffer> }>;
+    }) => Promise<void>)
+  | undefined;
 
-mock.module('platejs/docx/import', () => ({ importDocx }));
+beforeEach(() => {
+  importWord = undefined;
+  spyOn(filePicker, 'useFilePicker').mockImplementation(
+    (options: { accept: string[]; onFilesSelected: typeof importWord }) => {
+      if (options.accept.includes('.docx')) {
+        importWord = options.onFilesSelected;
+      }
 
-const toastError = mock();
+      return { openFilePicker: () => {} };
+    }
+  );
+  spyOn(docxImport, 'importDocx').mockImplementation(async () => importResult);
+  spyOn(toast, 'error').mockImplementation(() => '');
+});
 
-mock.module('sonner', () => ({
-  toast: {
-    error: toastError,
-    success: mock(),
-    warning: mock(),
-  },
-}));
+afterEach(() => {
+  cleanup();
+  mock.restore();
+});
 
 describe('ImportToolbarButton', () => {
   it('keeps the document and comments when imported comment preparation fails', async () => {
     importResult = invalidImport;
     invalidSource.dispose.mockClear();
-    const { ImportToolbarButton } = await import('./import-toolbar-button');
     const before = [{ children: [{ text: 'before' }], type: 'paragraph' }];
     const editor = createEditor({
       initialValue: before,
@@ -119,10 +98,14 @@ describe('ImportToolbarButton', () => {
     render(
       <DocxSourceProvider>
         <EditorRoot editor={editor}>
-          <ImportToolbarButton
-            onImport={onImport}
-            plugins={[BaseParagraphPlugin, MarkdownPlugin, CommentsPlugin]}
-          />
+          <TooltipProvider>
+            <Toolbar>
+              <ImportToolbarButton
+                onImport={onImport}
+                plugins={[BaseParagraphPlugin, MarkdownPlugin, CommentsPlugin]}
+              />
+            </Toolbar>
+          </TooltipProvider>
         </EditorRoot>
       </DocxSourceProvider>
     );
@@ -138,7 +121,7 @@ describe('ImportToolbarButton', () => {
     expect(editor.plugin(CommentsPlugin).api.toJSON()).toEqual(commentsBefore);
     expect(onImport).not.toHaveBeenCalled();
     expect(invalidSource.dispose).toHaveBeenCalledTimes(1);
-    expect(toastError).toHaveBeenCalledWith(
+    expect(toast.error).toHaveBeenCalledWith(
       'The Word document and its comments could not be imported.'
     );
   });
@@ -146,7 +129,6 @@ describe('ImportToolbarButton', () => {
   it('returns a prepared editor without mutating the mounted editor', async () => {
     importResult = validImport;
     validSource.dispose.mockClear();
-    const { ImportToolbarButton } = await import('./import-toolbar-button');
     const before = [{ children: [{ text: 'before' }], type: 'paragraph' }];
     const editor = createEditor({
       initialValue: before,
@@ -166,10 +148,14 @@ describe('ImportToolbarButton', () => {
     render(
       <DocxSourceProvider>
         <EditorRoot editor={editor}>
-          <ImportToolbarButton
-            onImport={onImport}
-            plugins={[BaseParagraphPlugin, MarkdownPlugin, CommentsPlugin]}
-          />
+          <TooltipProvider>
+            <Toolbar>
+              <ImportToolbarButton
+                onImport={onImport}
+                plugins={[BaseParagraphPlugin, MarkdownPlugin, CommentsPlugin]}
+              />
+            </Toolbar>
+          </TooltipProvider>
         </EditorRoot>
       </DocxSourceProvider>
     );
@@ -199,6 +185,3 @@ describe('ImportToolbarButton', () => {
     unsubscribe();
   });
 });
-
-afterEach(cleanup);
-afterAll(() => mock.restore());

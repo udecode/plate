@@ -2704,7 +2704,7 @@ it('mirrors the legacy editorLevels/match.tsx oracle row', () => {
       {
         type: 'element',
         a: true,
-        children: [{ text: '', a: true }],
+        children: [{ text: 'x', a: true }],
       },
     ],
     selection: null,
@@ -2722,11 +2722,11 @@ it('mirrors the legacy editorLevels/match.tsx oracle row', () => {
         {
           type: 'element',
           a: true,
-          children: [{ text: '', a: true }],
+          children: [{ text: 'x', a: true }],
         },
         [0],
       ],
-      [{ text: '', a: true }, [0, 0]],
+      [{ text: 'x', a: true }, [0, 0]],
     ]
   );
 });

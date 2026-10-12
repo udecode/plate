@@ -15,7 +15,6 @@
     "platejs/slash-command": 445428,
     "platejs/suggestion": 1139830,
     "platejs/table": 1000228,
-    "platejs/tag": 936872,
     "platejs/toc": 935607,
     "platejs/callout/react": 937720,
     "platejs/comments/react": 1572909,
@@ -29,7 +28,6 @@
     "platejs/slash-command/react": 447710,
     "platejs/suggestion/react": 1647091,
     "platejs/table/react": 1514861,
-    "platejs/tag/react": 939117,
     "platejs/toc/react": 937877,
     "platejs/combobox/react": 943834,
     "platejs/resizable/react": 4536

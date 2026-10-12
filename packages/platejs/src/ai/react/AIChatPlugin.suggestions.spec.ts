@@ -6,6 +6,7 @@ import {
   definePlugin,
   createEditorView,
   type Element,
+  NodeApi,
   property,
   schema,
   type TextSelection,
@@ -138,24 +139,30 @@ describe('AIChatPlugin suggestions', () => {
     ]);
   });
 
-  it('suggests one replacement for a partial selection across blocks', () => {
+  it('suggests one rewrite of the whole blocks a partial selection crosses', () => {
     const chatNodes = [
       { children: [{ text: 'first block' }], type: 'paragraph' },
       { children: [{ text: 'second block' }], type: 'paragraph' },
     ];
-    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+    const editor = createEditor(structuredClone(chatNodes), [], {
       kind: 'text',
       anchor: { offset: 6, path: [0, 0] },
       focus: { offset: 6, path: [1, 0] },
     });
     const ai = editor.plugin(AIChatPlugin);
     editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
-    ai.store.set({ toolName: 'edit' });
+    ai.api.show();
+    ai.store.set({ mode: 'chat', toolName: 'edit' });
 
-    ai.api.setPreview('replacement');
+    ai.api.setPreview('first rewritten\n\nsecond rewritten');
 
+    const proposed = createEditorView(editor, {
+      authored: { intent: 'edit', projection: 'proposed' },
+    });
     expect(editor.read.value().children).toEqual(chatNodes);
-    expect(editor.read.text.string([])).toBe('first replacement block');
+    expect(
+      proposed.read.children().map((node) => NodeApi.string(node))
+    ).toEqual(['first rewritten', 'second rewritten']);
     expect(
       editor.read.authored.changes({ status: 'pending' }).items
     ).toHaveLength(1);
@@ -364,6 +371,59 @@ describe('AIChatPlugin suggestions', () => {
 
     expect(editor.read.value()).toEqual(before);
     expect(editor.read.text.string([])).toBe('tail');
+  });
+
+  it('stops later chunks after an edit through another view changes the document', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(
+      [
+        ...structuredClone(chatNodes),
+        { children: [{ text: 'tail' }], type: 'paragraph' },
+      ],
+      chatNodes
+    );
+    const ai = editor.plugin(AIChatPlugin);
+    ai.store.set({ toolName: 'edit' });
+
+    ai.api.setPreview('new');
+    createEditorView(editor, {
+      authored: { intent: 'edit', projection: 'accepted' },
+    }).update((tx) => {
+      tx.text.insert(' foreign', { at: { offset: 4, path: [1, 0] } });
+    });
+    const before = editor.read.value();
+
+    ai.api.setPreview('new text');
+
+    expect(editor.read.value()).toEqual(before);
+  });
+
+  it('keeps streaming after a commit that only moves the selection', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], type: 'paragraph' }];
+    const editor = createEditor(
+      [
+        ...structuredClone(chatNodes),
+        { children: [{ text: 'tail' }], type: 'paragraph' },
+      ],
+      chatNodes
+    );
+    const ai = editor.plugin(AIChatPlugin);
+    ai.store.set({ toolName: 'edit' });
+
+    ai.api.setPreview('new');
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { offset: 2, path: [1, 0] },
+        focus: { offset: 2, path: [1, 0] },
+      });
+    });
+    ai.api.setPreview('new text');
+
+    expect(
+      createEditorView(editor, {
+        authored: { intent: 'edit', projection: 'proposed' },
+      }).read.text.string([0])
+    ).toBe('new text');
   });
 
   it('replaces multi-block chat nodes through one native proposal', () => {

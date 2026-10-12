@@ -2,17 +2,31 @@
 
 import type { LinkProps } from 'next/link';
 import Link from 'next/link';
+import { property } from 'platejs';
 import {
   type EditorElementProps,
+  definePlugin,
   EditorElement,
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
 } from 'platejs/react';
-import type { MultiSelectPlugin } from 'platejs/tag/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+
+/** The `tag` inline void: a chip with a label and an optional link. */
+export const TagPlugin = definePlugin('tag', {
+  schema: {
+    element: {
+      properties: {
+        url: property.string(),
+        value: property.string({ required: true }),
+      },
+      void: 'inline',
+    },
+  },
+});
 
 const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
 
@@ -24,9 +38,7 @@ function toLinkHref(href: string): LinkProps<string>['href'] {
   return { pathname: href };
 }
 
-export function TagElement(
-  props: EditorElementProps<typeof MultiSelectPlugin>
-) {
+export function TagElement(props: EditorElementProps<typeof TagPlugin>) {
   const { element } = props;
   const selected = useElementSelected();
   const focused = useEditorFocused();
@@ -45,13 +57,6 @@ export function TagElement(
     </div>
   );
 
-  const content =
-    readOnly && element.url ? (
-      <Link href={toLinkHref(element.url)}>{badge}</Link>
-    ) : (
-      badge
-    );
-
   return (
     <EditorElement
       {...props}
@@ -61,7 +66,13 @@ export function TagElement(
         draggable: true,
       }}
     >
-      {content}
+      <span contentEditable={false}>
+        {readOnly && element.url ? (
+          <Link href={toLinkHref(element.url)}>{badge}</Link>
+        ) : (
+          badge
+        )}
+      </span>
       {props.children}
     </EditorElement>
   );

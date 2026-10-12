@@ -201,6 +201,11 @@ export const getPackageRuntimeTestFiles = (packageName, partitionName) =>
     )
     .sort(compareStrings);
 
+const getPackageExternalSlowTestFiles = (packageName) =>
+  walkFiles(path.join(packageRoot(packageName), 'test'))
+    .filter((filename) => slowSourcePattern.test(filename))
+    .sort(compareStrings);
+
 export const getPackageLintFiles = (packageName, partitionName) =>
   walkFiles(packageRoot(packageName))
     .filter((filename) => {
@@ -670,14 +675,16 @@ const createPackageTestsTsconfig = (packageName) => {
     packageRoot(packageName),
     'tsconfig.entrypoints'
   );
-  const absoluteTestFiles = Object.keys(entrypointDags[packageName].entrypoints)
-    .flatMap((entrypointName) =>
-      getPackageSourceFiles(packageName, {
-        entrypointName,
-        tests: true,
-      })
-    )
-    .sort(compareStrings);
+  const absoluteTestFiles = [
+    ...Object.keys(entrypointDags[packageName].entrypoints).flatMap(
+      (entrypointName) =>
+        getPackageSourceFiles(packageName, {
+          entrypointName,
+          tests: true,
+        })
+    ),
+    ...getPackageExternalSlowTestFiles(packageName),
+  ].sort(compareStrings);
   const testFiles = absoluteTestFiles
     .map((filename) => normalizePath(path.relative(configDirectory, filename)))
     .sort(compareStrings);
@@ -862,6 +869,7 @@ export const createPackageTurboConfig = (packageName) => {
   if (packageName === 'plitejs') {
     const packageTestFiles = [
       ...getPackageSourceFiles(packageName, { tests: true }),
+      ...getPackageExternalSlowTestFiles(packageName),
       ...walkFiles(path.join(packageRoot(packageName), 'test/react')).filter(
         (filename) => sourceFilePattern.test(filename)
       ),
@@ -878,7 +886,7 @@ export const createPackageTurboConfig = (packageName) => {
         'src/**/*.slow.*',
         'src/**/*-contract.*',
         'src/**/__tests__/**',
-        'test/react/**',
+        'test/**',
         ...sharedTypecheckInputs,
         'tsconfig.entrypoints/tests.json',
       ],

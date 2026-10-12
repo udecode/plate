@@ -131,7 +131,7 @@ describe('AIChatPlugin submit', () => {
         editor.read
           .children()
           .map((_, index) => editor.read.text.string([index]))
-      ).toEqual(action === 'insertBelow' ? ['one', 'two', 'NEW'] : ['oNEWo']);
+      ).toEqual(action === 'insertBelow' ? ['one', 'two', 'NEW'] : ['NEW']);
       expect(editor.read.history().undos).toHaveLength(historyDepth + 1);
       editor.api.history.undo();
       expect(editor.read.children()).toEqual(before);

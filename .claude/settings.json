@@ -3,6 +3,7 @@
     "allow": ["Bash", "Edit", "Skill", "WebFetch", "WebSearch"]
   },
   "enableAllProjectMcpServers": true,
+  "autoCompactWindow": 600000,
   "hooks": {
     "Stop": [
       {

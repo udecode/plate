@@ -8,6 +8,7 @@ import type {
 import { ElementApi } from '../interfaces';
 import { getDefined } from '../internal/get-defined';
 import { PreparedTokenSlice } from './change/tokens';
+import { isImmutable } from './clone';
 import {
   getEditorJsonArrayItems,
   getEditorJsonRecordEntries,
@@ -256,7 +257,7 @@ function closed(content: readonly Descendant[]): ContentSliceValue {
 const empty = closed<never>([]);
 
 /**
- * Trust freshly owned, deeply frozen, shape-validated nodes.
+ * Trust freshly owned, deeply immutable, shape-validated nodes.
  *
  * @internal
  */
@@ -265,7 +266,7 @@ export const createDetachedContentSlice = <V extends Value>(
   openStart: number,
   openEnd: number,
   options: Readonly<{
-    /** Authority attesting that content is owned, deeply frozen, and canonical. */
+    /** Authority attesting that content is owned, deeply immutable, and canonical. */
     canonicalFor?: object;
     /** Detached secondary roots referenced by the slice content. */
     roots?: Readonly<Record<string, ReadonlyArray<DescendantIn<V>>>>;
@@ -275,7 +276,7 @@ export const createDetachedContentSlice = <V extends Value>(
   const seen = new WeakSet<object>();
   const assertDeeplyFrozen = (value: unknown): void => {
     if (typeof value !== 'object' || value === null || seen.has(value)) return;
-    if (!Object.isFrozen(value)) {
+    if (!isImmutable(value)) {
       throw new Error('Prepared content slice nodes must be deeply frozen.');
     }
 
@@ -289,11 +290,11 @@ export const createDetachedContentSlice = <V extends Value>(
 
   if (options.canonicalFor) {
     if (
-      !Object.isFrozen(content) ||
+      !isImmutable(content) ||
       (options.roots &&
         (!Object.isFrozen(options.roots) ||
           Object.values(options.roots).some(
-            (children) => !Object.isFrozen(children)
+            (children) => !isImmutable(children)
           )))
     ) {
       throw new Error(

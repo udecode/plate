@@ -728,13 +728,18 @@ Current priorities:
   hidden with `aria-hidden="true"`, counts as lossless, as does raw HTML kept as
   text. The HTML parser reports embedded media that no installed mapping owns
   even when fallback content survives.
-- A stored URL meets one role policy at every admission, through its feature's
-  schema validator. Navigation destinations keep a script-capable floor that
-  configuration narrows or widens only above it; image, media, file and embed
-  sources admit only what that role can load. A conversion keeps a refused URL's
-  label, alt text or caption and reports the removal, and output rechecks the
-  same decision. No option bypasses the floor, the empty URL is an inert
-  placeholder, and no format adds its own URL check or sanitizer helper.
+- A stored URL has one role policy, and its feature's schema validator holds
+  that role's floor at every write. Navigation destinations keep a
+  script-capable floor that configuration narrows or widens only above it. The
+  feature's own writes and imports check destinations against that
+  configuration, and display checks them again. A stored destination that
+  configuration no longer allows stays stored, renders inactive and exports as
+  stored. Image, media, file and embed
+  sources admit only what that role can load, at every admission, and output
+  rechecks the same decision. A conversion keeps a refused URL's label, alt
+  text or caption and reports the removal. No option bypasses the floor, the
+  empty URL is an inert placeholder, and no format adds its own URL check or
+  sanitizer helper.
 - State that selects a plugin capability stores its descriptor or normalized
   name. It never stores a configurable persisted type or key. Resolve schema
   identity at the AST read/write boundary, including transient-node factories.

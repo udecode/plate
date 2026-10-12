@@ -247,10 +247,10 @@ describe('deterministic logical word-boundary proof', () => {
         type: 'paragraph',
         children: [
           { text: 'a' },
-          { text: ' ' },
+          { text: ' ', underline: true },
           { text: 'bb', bold: true },
           { text: 'b', italic: true },
-          { text: ' ' },
+          { text: ' ', underline: true },
           { text: 'c' },
         ],
       },

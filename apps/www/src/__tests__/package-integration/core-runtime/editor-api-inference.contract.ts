@@ -49,7 +49,7 @@ type _TransferApiKeepsItsMethods = Assert<
   'copy' | 'move' extends keyof Editor['api']['transfer'] ? true : false
 >;
 type _LinkApiKeepsItsMethods = Assert<
-  'validateUrl' extends keyof Editor['api']['link'] ? true : false
+  'getAttributes' extends keyof Editor['api']['link'] ? true : false
 >;
 type _HistoryApiKeepsItsMethods = Assert<
   'redo' | 'undo' extends keyof Editor['api']['history'] ? true : false

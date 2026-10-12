@@ -24,7 +24,7 @@ Read Markdown as CommonMark (with GFM, math and emoji through `remarkPlugins`) p
 - Remove the `PlateType`, `StrictPlateType` and `MarkdownNodeName` unions and the `mdastToPlate` and `plateToMdast` helpers
 - Use one `tableCell` Plate type for GFM table cells; header semantics stay on the cell's `header` property
 - Round-trip `<sub>` and `<sup>` through one `script: 'sub' | 'sup'` text property
-- Read an ordered list's start as `listStart`, or as `listRestart` when the list directly follows another ordered list, and serialize active `listStart` or `listRestart` values as Markdown starts
+- Read each Markdown list as its own list with a new `listId`, and a start other than 1 as `listStart`; write each ordered list from its first item's number, keep task and bullet items of one list in one Markdown list, and report a forced `listRestart`, a start past nine digits outside a table cell and list membership that Markdown cannot carry
 - Remove `MarkdownPlugin.parser`, `DeserializeMdOptions.memoize` and `DeserializeMdOptions.parser`
 - Remove exported conversion internals: `customMdxDeserialize`, `getCustomMark`, `getDeserializerByKey`, `getMergedOptionsDeserialize`, `getMergedOptionsSerialize`, `getSerializerByKey`, `getStyleValue`, `markdownToSlateNodesSafely` and `unreachable`
 - Remove React peer and runtime dependencies from the base Markdown package

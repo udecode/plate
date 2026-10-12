@@ -19,7 +19,6 @@ import {
   definePlugin,
   editorCommands,
   isDefined,
-  isUrl as defaultIsUrl,
   property,
   schema,
 } from '../../../core';
@@ -54,24 +53,28 @@ export type LinkAttributes = Record<string, unknown> & {
 
 export type BaseLinkPluginState = {
   /**
-   * URL schemes a link may use when it is inserted, imported or rendered.
-   * Relative URLs are always allowed; script-capable schemes such as
-   * `javascript:` and `data:` never are.
+   * URL schemes the link feature accepts when it inserts, types, pastes or
+   * imports a link, and that a rendered link may use. A link pasted as an
+   * exact editor fragment keeps its URL. Relative URLs are always allowed;
+   * script-capable schemes such as `javascript:` and `data:` never are.
    */
   allowedSchemes: readonly string[];
   defaultLinkAttributes: LinkAttributes;
   /** Keeps selected text on pasting links by default. */
   keepSelectedTextOnPaste: boolean;
+  /**
+   * Returns the href for typed or pasted text, or `undefined` when the text is
+   * not a link. `defaultParseUrl` accepts a whole token with an explicit
+   * scheme. The href still has to pass `allowedSchemes`.
+   */
+  parseUrl: (
+    text: string,
+    defaultParseUrl: (text: string) => string | undefined
+  ) => string | undefined;
   /** Configures the range used to find text before the selection. */
   rangeBeforeOptions: NonNullable<
     Parameters<Editor['read']['points']['before']>[1]
   >;
-  /** Resolves an href that differs from the displayed URL. */
-  getUrlHref: ((url: string) => string | undefined) | null;
-  /** Validates link text. */
-  isUrl: (text: string) => boolean;
-  /** Transforms URI-encoded URL input before validation in upsert. */
-  transformInput: ((url: string) => string | undefined) | null;
 };
 
 export type CreateLinkNodeOptions = {
@@ -99,25 +102,12 @@ export interface WrapLinkOptions {
 
 export type UpsertLinkOptions = {
   insertNodesOptions?: TextInsertFragmentOptions;
-  /** Insert text when the selection is already in a link. */
-  insertTextInLink?: boolean;
-  /**
-   * Skips `isUrl` and `allowedSchemes` while preserving URL input preparation.
-   * A URL below the navigation floor, such as `javascript:`, is still refused.
-   */
-  skipValidation?: boolean;
   unwrapNodesOptions?: UnwrapLinkOptions;
   wrapNodesOptions?: Omit<WrapLinkOptions, 'url'>;
 } & CreateLinkNodeOptions;
 
-export type ValidateUrlOptions = Readonly<{
-  allowedSchemes?: readonly string[];
-  isUrl?: (text: string) => boolean;
-}>;
-
 type BaseLinkApi = {
   getAttributes: (link: Element) => LinkAttributes;
-  validateUrl: (url: string) => boolean;
 };
 
 type LinkTextAutolinkMatch = {
@@ -126,8 +116,25 @@ type LinkTextAutolinkMatch = {
 };
 
 const LINK_AUTOMD_REGEX = /\[([^\]\n]+)]\((\S+)$/;
-const MARKDOWN_HEADING_PATTERN = /^#{1,6}\s+/;
-const MARKDOWN_LINK_SOURCE_PATTERN = /!?\[[^\]\n]*]\([^)\n]*$/;
+const SCHEME_TOKEN = /^([a-z][a-z\d+.-]*):(\S+)$/i;
+
+const isUnfinishedLinkSource = (before: string) => {
+  const destinationStart =
+    Math.max(before.lastIndexOf(')'), before.lastIndexOf('\n')) + 1;
+
+  for (
+    let open = before.lastIndexOf('](');
+    open >= destinationStart;
+    open = open === 0 ? -1 : before.lastIndexOf('](', open - 1)
+  ) {
+    for (let index = open - 1; index >= 0; index--) {
+      if (before[index] === '[') return true;
+      if (before[index] === ']' || before[index] === '\n') break;
+    }
+  }
+
+  return false;
+};
 
 /** The href a link may render, or `undefined` when its URL is not allowed. */
 const getLinkHref = (
@@ -140,29 +147,58 @@ const getLinkHref = (
   return decision.ok ? decision.url : undefined;
 };
 
-const validateUrlWithOptions = (
-  { allowedSchemes, isUrl }: ValidateUrlOptions,
-  url: string
-) => {
-  const customIsUrl = isUrl && isUrl !== defaultIsUrl ? isUrl : undefined;
+const admitLinkInput = (allowedSchemes: readonly string[], input: string) =>
+  getLinkHref(allowedSchemes, encodeUrlInput(input));
 
-  if (!decideUrl('navigation', url, { allowedSchemes }).ok) return false;
-  if (url.startsWith('/') || url.startsWith('#')) {
-    if (MARKDOWN_HEADING_PATTERN.test(url)) return false;
+const defaultParseUrl = (text: string) => {
+  const match = SCHEME_TOKEN.exec(text);
 
-    return customIsUrl ? customIsUrl(url) : true;
+  if (!match) return undefined;
+
+  const [, scheme, rest] = match;
+
+  if (!rest.startsWith('//')) {
+    return /^https?$/i.test(scheme) ? undefined : text;
   }
-
-  return !isUrl || isUrl(url);
+  // URL accepts a dots-only host, as in the `http://...` placeholder.
+  try {
+    return /[^.]/.test(new URL(text).hostname) ? text : undefined;
+  } catch {
+    return undefined;
+  }
 };
+
+const recognizeLinkText = (
+  { allowedSchemes, parseUrl }: BaseLinkPluginState,
+  text: string
+) => {
+  const href = parseUrl(text, defaultParseUrl);
+
+  return href === undefined ? undefined : admitLinkInput(allowedSchemes, href);
+};
+
+const getLinkAttributes = (
+  { allowedSchemes, defaultLinkAttributes }: BaseLinkPluginState,
+  link: Element
+): LinkAttributes => {
+  const { href: _, ...attributes } = defaultLinkAttributes;
+  const href = getLinkHref(allowedSchemes, link.url);
+
+  return {
+    ...attributes,
+    ...(href === undefined ? {} : { href }),
+    ...(typeof link.target === 'string' ? { target: link.target } : {}),
+  };
+};
+
+const refusedLinkMessage = (format: 'HTML' | 'Markdown', url: string) =>
+  `${format} link destination "${url}" is not a link this editor allows; its label was kept.`;
 
 const initialState: BaseLinkPluginState = {
   allowedSchemes: ['http', 'https', 'mailto', 'tel'],
   defaultLinkAttributes: {},
-  isUrl: defaultIsUrl,
   keepSelectedTextOnPaste: true,
-  getUrlHref: null,
-  transformInput: null,
+  parseUrl: (text, parse) => parse(text),
   rangeBeforeOptions: {
     afterMatch: true,
     matchBlockStart: true,
@@ -174,56 +210,7 @@ const initialState: BaseLinkPluginState = {
 /** Enables support for hyperlinks. */
 export const BaseLinkPlugin = definePlugin('link', {
   api: ({ store }): BaseLinkApi => ({
-    getAttributes: (link) => {
-      const { allowedSchemes, defaultLinkAttributes } = store.get();
-      const href = getLinkHref(allowedSchemes, link.url);
-
-      return {
-        ...defaultLinkAttributes,
-        ...(href === undefined ? {} : { href }),
-        ...(typeof link.target === 'string' ? { target: link.target } : {}),
-      };
-    },
-    validateUrl: (url) => validateUrlWithOptions(store.get(), url),
-  }),
-  read: ({ plugin, state, store }) => ({
-    findAutolink: (): LinkTextAutolinkMatch | undefined => {
-      const selection = state.selection();
-
-      if (!selection || !state.selection.isCollapsed()) {
-        return undefined;
-      }
-
-      const before = state.points.before(
-        selection,
-        store.get().rangeBeforeOptions
-      );
-      const block = before ? undefined : state.nodes.block({ at: selection });
-      const blockStart = block && state.points.start(block[1]);
-      const range = before
-        ? { anchor: before, focus: selection.anchor }
-        : blockStart
-          ? { anchor: blockStart, focus: selection.anchor }
-          : undefined;
-
-      if (
-        !range ||
-        state.nodes.some({
-          at: range,
-          type: plugin,
-        })
-      ) {
-        return undefined;
-      }
-
-      const text = state.text.string(range);
-      const { getUrlHref, isUrl } = store.get();
-      const url = getUrlHref?.(text) ?? text;
-
-      if (!isUrl(url)) return undefined;
-
-      return { range, url };
-    },
+    getAttributes: (link) => getLinkAttributes(store.get(), link),
   }),
   initialState,
   schema: {
@@ -250,17 +237,20 @@ export const BaseLinkPlugin = definePlugin('link', {
       },
       html: {
         decode: ({ element, pluginState, report }) => {
-          const url = element.getAttribute('href');
+          const href = element.getAttribute('href');
 
-          if (!url) return undefined;
+          if (!href) return undefined;
+
+          const url = getLinkHref(pluginState.allowedSchemes, href);
+
           // Unsafe destinations are already removed; this is the app's
           // narrower URL choice, so the destination is a real loss.
-          if (!validateUrlWithOptions(pluginState, url)) {
+          if (url === undefined) {
             // The label stays, so only the destination is lost.
             report({
               action: 'unwrapped',
               kind: 'attribute',
-              message: `HTML link destination "${url}" is not a link this editor allows; its label was kept.`,
+              message: refusedLinkMessage('HTML', href),
             });
 
             return undefined;
@@ -303,7 +293,7 @@ export const BaseLinkPlugin = definePlugin('link', {
             report({
               action: 'unwrapped',
               kind: 'property',
-              message: `Markdown link destination "${node.url}" uses a scheme this editor does not allow; its label was kept.`,
+              message: refusedLinkMessage('Markdown', node.url),
               nodeType: 'link',
             });
 
@@ -345,21 +335,10 @@ export const BaseLinkPlugin = definePlugin('link', {
     selection: { affinity: 'directional' },
   },
   render: {
-    attributes: ({ element, store }) => {
-      const { allowedSchemes, defaultLinkAttributes } = store.get();
-      const href = getLinkHref(allowedSchemes, element.url);
-
-      return {
-        ...defaultLinkAttributes,
-        ...(href === undefined ? {} : { href }),
-        ...(typeof element.target === 'string'
-          ? { target: element.target }
-          : {}),
-      };
-    },
+    attributes: ({ element, store }) => getLinkAttributes(store.get(), element),
   },
 })
-  .extend(({ api, plugin, schema: { type }, store }) => ({
+  .extend(({ plugin, schema: { type }, store }) => ({
     update: ({ tx }) => ({
       exitEnd: () => {
         const selection = tx.selection();
@@ -397,19 +376,25 @@ export const BaseLinkPlugin = definePlugin('link', {
         return true;
       },
       insert: (
-        { children, target, text = '', url }: CreateLinkNodeOptions,
+        { children, target, text = '', url: inputUrl }: CreateLinkNodeOptions,
         options?: TextInsertFragmentOptions
       ) => {
-        tx.fragment.replace(
-          [
-            {
-              children: children ?? [{ text }],
-              ...(target === undefined ? {} : { target }),
-              type,
-              url,
-            },
-          ],
-          options
+        const url = admitLinkInput(store.get().allowedSchemes, inputUrl);
+
+        if (url === undefined) return undefined;
+
+        return (
+          tx.fragment.replace(
+            [
+              {
+                children: children ?? [{ text }],
+                ...(target === undefined ? {} : { target }),
+                type,
+                url,
+              },
+            ],
+            options
+          ) || undefined
         );
       },
       unwrap: (options?: UnwrapLinkOptions) => {
@@ -467,8 +452,6 @@ export const BaseLinkPlugin = definePlugin('link', {
       },
       upsert: ({
         insertNodesOptions,
-        insertTextInLink,
-        skipValidation = false,
         target,
         text,
         unwrapNodesOptions,
@@ -484,26 +467,9 @@ export const BaseLinkPlugin = definePlugin('link', {
           type: plugin,
         });
 
-        if (insertTextInLink && linkAbove) {
-          tx.text.insert(inputUrl, { at: selection });
+        const url = admitLinkInput(store.get().allowedSchemes, inputUrl);
 
-          return true;
-        }
-        const encodedInput = encodeUrlInput(inputUrl);
-        const { transformInput } = store.get();
-        const url = transformInput
-          ? (transformInput(encodedInput) ?? '')
-          : encodedInput;
-
-        // A stored link URL must meet the navigation floor whatever the caller
-        // skips; the schema would refuse it anyway.
-        if (
-          skipValidation
-            ? !isStoredUrl('navigation')(url)
-            : !api.validateUrl(url)
-        ) {
-          return undefined;
-        }
+        if (url === undefined) return undefined;
 
         const nextText = isDefined(text) && text.length === 0 ? url : text;
         const updateText = () => {
@@ -619,22 +585,22 @@ export const BaseLinkPlugin = definePlugin('link', {
 
         if (!leaf) return undefined;
 
-        tx.fragment.replace(
-          [
-            {
-              ...(linkEntry ? NodeApi.extractProps(linkEntry[0]) : {}),
-              children: [
-                { ...leaf[0], text: nextText?.length ? nextText : url },
-              ],
-              ...(target === undefined ? {} : { target }),
-              type,
-              url,
-            },
-          ],
-          insertNodesOptions
+        return (
+          tx.fragment.replace(
+            [
+              {
+                ...(linkEntry ? NodeApi.extractProps(linkEntry[0]) : {}),
+                children: [
+                  { ...leaf[0], text: nextText?.length ? nextText : url },
+                ],
+                ...(target === undefined ? {} : { target }),
+                type,
+                url,
+              },
+            ],
+            insertNodesOptions
+          ) || undefined
         );
-
-        return true;
       },
       upsertText: ({ text }: UpsertLinkOptions) => {
         const link = tx.nodes.above({ type: plugin });
@@ -653,15 +619,21 @@ export const BaseLinkPlugin = definePlugin('link', {
 
         if (end) tx.selection.set(end);
       },
-      wrap: ({ target, url, ...options }: WrapLinkOptions) => {
-        tx.nodes.wrap(
-          {
-            children: [],
-            ...(target === undefined ? {} : { target }),
-            type,
-            url,
-          },
-          { split: true, ...options }
+      wrap: ({ target, url: inputUrl, ...options }: WrapLinkOptions) => {
+        const url = admitLinkInput(store.get().allowedSchemes, inputUrl);
+
+        if (url === undefined) return undefined;
+
+        return (
+          tx.nodes.wrap(
+            {
+              children: [],
+              ...(target === undefined ? {} : { target }),
+              type,
+              url,
+            },
+            { split: true, ...options }
+          ) || undefined
         );
       },
     }),
@@ -713,17 +685,43 @@ type InputRuleOptions<TContext> = {
   priority?: number;
 };
 
+const findAutolink = (
+  editor: InsertTextInputRuleReadContext['editor']
+): LinkTextAutolinkMatch | undefined => {
+  const selection = editor.read.selection();
+
+  if (!selection || !editor.read.selection.isCollapsed()) return undefined;
+
+  const state = editor.plugin(BaseLinkPlugin).store.get();
+  const before = editor.read.points.before(selection, state.rangeBeforeOptions);
+  const block = before ? undefined : editor.read.nodes.block({ at: selection });
+  const blockStart = block && editor.read.points.start(block[1]);
+  const range = before
+    ? { anchor: before, focus: selection.anchor }
+    : blockStart
+      ? { anchor: blockStart, focus: selection.anchor }
+      : undefined;
+
+  if (!range || editor.read.nodes.some({ at: range, type: BaseLinkPlugin })) {
+    return undefined;
+  }
+
+  const url = recognizeLinkText(state, editor.read.text.string(range));
+
+  return url === undefined ? undefined : { range, url };
+};
+
 const breakAutolinkRule = (
   options: InputRuleOptions<InsertBreakInputRuleReadContext> = {}
 ) =>
   defineInputRule(BaseLinkPlugin, {
     ...options,
     target: 'insertBreak',
-    resolve: ({ editor }) => editor.plugin(BaseLinkPlugin).read.findAutolink(),
-    apply: ({ next, tx }, match) => {
+    resolve: ({ editor }) => findAutolink(editor),
+    apply: ({ decline, next, tx }, match) => {
       tx.selection.set(match.range);
 
-      if (!tx.link.upsert({ url: match.url })) return undefined;
+      if (!tx.link.upsert({ url: match.url })) return decline();
 
       tx.selection.collapse({ edge: 'end' });
       tx.link.exitEnd();
@@ -739,53 +737,53 @@ const pasteAutolinkRule = (
     ...options,
     target: 'insertData',
     resolve: (context) => {
-      if (!context.text) return undefined;
+      const { editor, text } = context;
+      const selection = editor.read.selection();
 
-      const { getUrlHref } = context.editor.plugin(BaseLinkPlugin).store.get();
-      const url = getUrlHref?.(context.text) ?? context.text;
+      if (!text || !selection) return undefined;
 
-      if (!context.editor.plugin(BaseLinkPlugin).api.validateUrl(url)) {
+      const url = recognizeLinkText(
+        editor.plugin(BaseLinkPlugin).store.get(),
+        text
+      );
+
+      if (url === undefined) return undefined;
+
+      const codeBlock = editor.plugin(PLUGINS.codeBlock);
+
+      if (
+        editor.read.nodes.above({ at: selection, type: BaseLinkPlugin }) ||
+        editor.read.selection.nodes().length > 0 ||
+        (codeBlock.installed &&
+          editor.read.nodes.above({
+            at: selection,
+            type: codeBlock.schema.type,
+          })) ||
+        (editor.read.selection.isCollapsed() &&
+          isUnfinishedLinkSource(context.getBlockTextBeforeSelection()))
+      ) {
+        return { text };
+      }
+
+      return { url };
+    },
+    apply: ({ decline, editor, tx }, match) => {
+      if (match.text !== undefined) {
+        tx.text.insert(match.text);
+
         return undefined;
       }
 
-      const selection = context.editor.read.selection();
-      let shouldLink = false;
+      const { keepSelectedTextOnPaste } = editor
+        .plugin(BaseLinkPlugin)
+        .store.get();
 
-      const codeBlock = context.editor.plugin(PLUGINS.codeBlock);
-
-      if (
-        selection &&
-        context.editor.read.selection.nodes().length === 0 &&
-        (!codeBlock.installed ||
-          !context.editor.read.nodes.above({
-            at: selection,
-            type: codeBlock.schema.type,
-          }))
-      ) {
-        shouldLink =
-          !context.editor.read.selection.isCollapsed() ||
-          !MARKDOWN_LINK_SOURCE_PATTERN.test(
-            context.getBlockTextBeforeSelection()
-          );
-      }
-
-      return { shouldLink, text: context.text, url };
-    },
-    apply: ({ editor, tx }, match) => {
-      if (match.shouldLink) {
-        const { keepSelectedTextOnPaste } = editor
-          .plugin(BaseLinkPlugin)
-          .store.get();
-        const inserted = tx.link.upsert({
-          insertTextInLink: true,
-          text: keepSelectedTextOnPaste ? undefined : match.url,
-          url: match.url,
-        });
-
-        if (inserted) return;
-      }
-
-      tx.text.insert(match.text);
+      return tx.link.upsert({
+        text: keepSelectedTextOnPaste ? undefined : match.url,
+        url: match.url,
+      })
+        ? undefined
+        : decline();
     },
   });
 
@@ -809,16 +807,18 @@ const spaceAutolinkRule = (
         return undefined;
       }
 
-      return context.editor.plugin(BaseLinkPlugin).read.findAutolink();
+      return findAutolink(context.editor);
     },
-    apply: ({ text, tx }, match) => {
+    apply: ({ decline, text, tx }, match) => {
       tx.selection.set(match.range);
 
-      if (!tx.link.upsert({ url: match.url })) return;
+      if (!tx.link.upsert({ url: match.url })) return decline();
 
       tx.selection.collapse({ edge: 'end' });
       tx.link.exitEnd();
       tx.text.insert(text);
+
+      return undefined;
     },
   });
 
@@ -879,7 +879,17 @@ export const LinkRules = {
 
         if (!match) return undefined;
 
-        const [, linkText, url] = match;
+        const isImageSource = textBefore[match.index - 1] === '!';
+
+        if (isImageSource) return undefined;
+
+        const [, linkText, destination] = match;
+        const url = admitLinkInput(
+          editor.plugin(BaseLinkPlugin).store.get().allowedSchemes,
+          destination
+        );
+
+        if (url === undefined) return undefined;
 
         const startPoint = editor.read.points.before(selection, {
           distance: match[0].length,
@@ -894,20 +904,20 @@ export const LinkRules = {
           url,
         };
       },
-      apply: ({ next, options, text, tx }, match) => {
-        const inserted = tx.link.upsert({
-          insertNodesOptions: { at: match.range },
-          text: match.text,
-          url: match.url,
-        });
-
-        if (inserted) {
-          tx.link.exitEnd();
-
-          return undefined;
+      apply: ({ decline, tx }, match) => {
+        if (
+          !tx.link.upsert({
+            insertNodesOptions: { at: match.range },
+            text: match.text,
+            url: match.url,
+          })
+        ) {
+          return decline();
         }
 
-        return next(text, options);
+        tx.link.exitEnd();
+
+        return undefined;
       },
     }),
   autolink: (

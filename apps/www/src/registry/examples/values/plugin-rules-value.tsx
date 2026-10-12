@@ -48,7 +48,6 @@ export const pluginRulesValue: Value = (
     </hp>
     <hcodeblock language="javascript">
       console.info('Hello world');{'\n'}
-      <text />
     </hcodeblock>
 
     <hp>
@@ -91,7 +90,9 @@ export const pluginRulesValue: Value = (
     <hp>
       <htext bold>Void elements:</htext>
     </hp>
-    <element type="hr" />
+    <element type="horizontalRule">
+      <htext />
+    </element>
     <hp>
       Press Backspace at start - void element are selected rather than deleted.
     </hp>

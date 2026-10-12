@@ -5,7 +5,7 @@ import { TabbablePlugin } from 'platejs/tabbable/react';
 import { BaseTablePlugin } from 'platejs/table';
 
 export const TabbableKit = [
-  TabbablePlugin.configure(({ editor }) => ({
+  TabbablePlugin.configure({
     override: {
       [PLUGINS.indent]: {
         shortcuts: {
@@ -15,14 +15,7 @@ export const TabbableKit = [
       },
     },
     initialState: {
-      query: () => {
-        if (
-          editor.read.selection.isAtBlockStart() ||
-          editor.read.selection.isAtBlockEnd()
-        ) {
-          return false;
-        }
-
+      query: ({ editor }) => {
         const blockingTypes = new Set<string>(
           [BaseCodeBlockPlugin, BaseTablePlugin].flatMap((descriptor) => {
             const plugin = editor.plugin(descriptor);
@@ -40,5 +33,5 @@ export const TabbableKit = [
         });
       },
     },
-  })),
+  }),
 ];

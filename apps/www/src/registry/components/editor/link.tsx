@@ -73,10 +73,8 @@ const transientState = {
   url: '',
 };
 
-const initialState = {
-  ...transientState,
-  forceSubmit: false,
-};
+const DRAFT_ADDRESS =
+  /^((?!https?:)[a-z][a-z\d+.-]*:|https?:\/\/|[#/?]|\.{1,2}\/)/i;
 
 const linkFloatingOptions = {
   middleware: [
@@ -90,12 +88,14 @@ const linkFloatingOptions = {
   placement: 'top-start',
 } satisfies UseFloatingRectOptions;
 
-export const linkPlugin = LinkPlugin.extend({ initialState })
+export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
   .extend(({ store }) => {
     const hide = () => {
+      console.log('CMDK-DEBUG hide', new Error().stack?.split('\n').slice(2, 6).join(' | '));
       store.set({ ...transientState });
     };
     const show = (mode: FloatingLinkMode, editorId: string) => {
+      console.log('CMDK-DEBUG show', mode);
       store.set({ isEditing: false, mode, openEditorId: editorId });
     };
 
@@ -126,17 +126,32 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
   .extend({
     api: ({ api, editor, store, update }) => ({
       submit: () => {
-        if (!editor.read.selection()) return undefined;
+        const selection = editor.read.selection();
 
-        const { forceSubmit, newTab, text, url } = store.get();
-        const inserted = update.upsert({
-          skipValidation: forceSubmit,
-          target: newTab ? '_blank' : undefined,
-          text,
-          url,
+        if (!selection) return undefined;
+
+        const { newTab, text, url } = store.get();
+        const editedLink = editor.read.nodes.above({
+          at: selection,
+          type: linkPlugin,
         });
 
-        if (!inserted) return undefined;
+        if (editedLink && url === editedLink[0].url) {
+          update.upsertText({ text: text || url, url });
+        } else {
+          const draft = url.trim();
+
+          if (
+            !DRAFT_ADDRESS.test(draft) ||
+            !update.upsert({
+              target: newTab ? '_blank' : undefined,
+              text,
+              url: draft,
+            })
+          ) {
+            return undefined;
+          }
+        }
 
         api.hide();
         setTimeout(() => {
@@ -171,17 +186,44 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
         return true;
       },
       triggerInsert: ({ focused }: { focused?: boolean } = {}) => {
-        if (store.get().mode || !focused) return undefined;
-        if (editor.read.selection.isAcrossBlocks()) return undefined;
-
-        const selection = editor.read.selection();
-
-        if (!selection) return undefined;
-        if (editor.read.nodes.some({ at: selection, type: linkPlugin })) {
+        console.log('CMDK-DEBUG insert guards', {
+          acrossBlocks: editor.read.selection.isAcrossBlocks(),
+          focused,
+          hasLink: editor.read.nodes.some({
+            at: editor.read.selection() ?? undefined,
+            type: linkPlugin,
+          }),
+          mode: store.get().mode,
+        });
+        if (store.get().mode || !focused) {
+          console.log('CMDK-DEBUG return mode-or-focus');
+          return undefined;
+        }
+        if (editor.read.selection.isAcrossBlocks()) {
+          console.log('CMDK-DEBUG return across-blocks');
           return undefined;
         }
 
+        const selection = editor.read.selection();
+
+        if (!selection) {
+          console.log('CMDK-DEBUG return no-selection');
+          return undefined;
+        }
+        if (editor.read.nodes.some({ at: selection, type: linkPlugin })) {
+          console.log('CMDK-DEBUG return has-link');
+          return undefined;
+        }
+
+        console.log('CMDK-DEBUG before text read');
+        try {
+          const debugText = editor.read.text.string();
+          console.log('CMDK-DEBUG text', JSON.stringify(debugText));
+        } catch (error) {
+          console.log('CMDK-DEBUG text threw', String(error));
+        }
         store.set({ text: editor.read.text.string() });
+        console.log('CMDK-DEBUG after store.set');
         api.show('insert', editor.id);
 
         return true;
@@ -197,7 +239,7 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
       },
     }),
   })
-  .extend(({ api, store }) => ({
+  .extend(({ api, editor: pluginEditor, store }) => ({
     shortcuts: {
       dismiss: {
         keys: 'escape',
@@ -209,11 +251,28 @@ export const linkPlugin = LinkPlugin.extend({ initialState })
       },
       trigger: {
         keys: 'mod+k',
-        handler: ({ editor }) =>
-          !editor.read.view.isReadOnly() &&
-          api.trigger({
+        handler: ({ editor }) => {
+          console.log('CMDK-DEBUG handler', JSON.stringify({
+            sameEditor: pluginEditor === editor,
+            ids: [pluginEditor.id, editor.id],
+            texts: [
+              pluginEditor.read.text.string([]),
+              editor.read.text.string([]),
+            ],
+            pluginSelection: JSON.stringify(pluginEditor.read.selection()),
             focused: editor.read.view.isFocused(),
-          }) === true,
+            mode: store.get().mode,
+            readOnly: editor.read.view.isReadOnly(),
+            selection: JSON.stringify(editor.read.selection()),
+          }));
+          const result =
+            !editor.read.view.isReadOnly() &&
+            api.trigger({
+              focused: editor.read.view.isFocused(),
+            }) === true;
+          console.log('CMDK-DEBUG handler result', result);
+          return result;
+        },
       },
     },
   }));

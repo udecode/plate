@@ -1,3 +1,4 @@
+import type { JsonNode } from '../../core/change/tokens';
 import { normalizeSetValues } from '../../core/change/transform';
 import { property, schema, target } from '../../core/schema-definition';
 import type { EditorJsonValue } from '../../interfaces/json';
@@ -138,6 +139,24 @@ const parseMark = (value: unknown): AuthoredMark | null => {
   }
 
   return Object.keys(value).length === 4 ? (value as AuthoredMark) : null;
+};
+
+export const withMarksThroughout = (
+  node: JsonNode,
+  marks: readonly AuthoredMark[]
+): JsonNode => {
+  if (marks.length === 0) return node;
+
+  return {
+    ...withAuthoredMarks(node, [...readAuthoredMarks(node), ...marks]),
+    ...(node.children
+      ? {
+          children: node.children.map((child) =>
+            withMarksThroughout(child, marks)
+          ),
+        }
+      : {}),
+  } as JsonNode;
 };
 
 /** `node` with exactly `marks`, stored in their canonical set order. */

@@ -157,7 +157,7 @@ const editor = createEditor({
 缩进编辑器中的选定块。
 
 <API name="increase">
-  <APIOptions type="Omit<IndentChangeOptions, 'offset'>" optional>
+  <APIOptions type="IndentChangeOptions" optional>
     用于缩进块的选项。
   </APIOptions>
 </API>
@@ -167,30 +167,8 @@ const editor = createEditor({
 减少选定块的缩进。
 
 <API name="decrease">
-  <APIOptions type="Omit<IndentChangeOptions, 'offset'>" optional>
+  <APIOptions type="IndentChangeOptions" optional>
     用于取消缩进块的选项。
-  </APIOptions>
-</API>
-
-### `editor.plugin(IndentPlugin).update.change`
-
-为选定的块添加缩进偏移量。
-
-<API name="change">
-  <APIOptions type="IndentChangeOptions">
-    <APIItem name="offset" type="number" optional>
-      在 `(offset * element.indent) + unit` 中使用的缩进偏移量。 - **默认值：**
-      `1`
-    </APIItem>
-    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
-      节点查询和更新选项；`match` 可以进一步限制目标块。
-    </APIItem>
-    <APIItem name="setNodeProps" type="({ indent }: { indent: number }) => Record<string, unknown>" optional>
-      根据下一个缩进值返回需要设置的其他属性。
-    </APIItem>
-    <APIItem name="unsetNodeProps" type="string[]" optional>
-      缩进回到零时需要清除的其他持久化属性 key。 - **默认值：** `[]`
-    </APIItem>
   </APIOptions>
 </API>
 
@@ -202,17 +180,8 @@ const editor = createEditor({
 
 <API name="IndentChangeOptions">
   <APIOptions>
-    <APIItem name="offset" type="number">
-      缩进的变化（1 表示缩进，-1 表示取消缩进）。 - **默认值：** `1`
-    </APIItem>
-    <APIItem name="nodes" type="EditorNodesOptions<Element>">
-      节点查询和更新选项。
-    </APIItem>
-    <APIItem name="setNodeProps" type="({ indent }: { indent: number }) => Record<string, unknown>">
-      根据下一个缩进值构建需要设置的其他属性。
-    </APIItem>
-    <APIItem name="unsetNodeProps" type="string[]">
-      缩进为零时要清除的持久化属性 key。
+    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
+      节点查询和更新选项；`match` 可以进一步限制目标块。
     </APIItem>
   </APIOptions>
 </API>

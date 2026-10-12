@@ -447,7 +447,7 @@ describe('authored review tree decisions on recorded structure', () => {
     assert.deepEqual(moveOut('edit'), [
       paragraph('a'),
       paragraph('b'),
-      { type: 'paragraph', children: [] },
+      paragraph(''),
     ]);
   });
 

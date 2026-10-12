@@ -1,6 +1,68 @@
 {
   "schemaVersion": 1,
   "components": {
+    "link": [
+      "2026-10-12-link-draft-addresses",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-07-link-submission",
+      "2026-09-04-decouple-link-floating-ui",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-28-consolidate-platejs-dependencies",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-26-fix-link-popover-rows",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "select-editor": [
+      "2026-10-12-select-editor-field",
+      "2026-09-07-select-command-bridge",
+      "2026-09-06-registry-lifetime-repairs",
+      "2026-09-05-fix-command-custom-children",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-18-fix-editor-runtime-interactions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2025-11-20-biome-ultracite"
+    ],
+    "list": [
+      "2026-10-11-fix-bullet-list-style",
+      "2026-09-03-huge-code-block-demo",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "list-static": [
+      "2026-10-11-fix-bullet-list-style",
+      "2026-10-09-export-static-presentation",
+      "2026-09-03-huge-code-block-demo",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "editable-voids-demo": [
+      "2026-10-11-fix-demo-values",
+      "2026-08-12-canonical-node-props"
+    ],
+    "hundreds-editors-demo": [
+      "2026-10-11-fix-demo-values",
+      "2026-08-13-fix-registry-install-dependencies"
+    ],
+    "plugin-rules-demo": ["2026-10-11-fix-demo-values"],
+    "align-demo": ["2026-10-11-fix-demo-values"],
+    "tabbable": [
+      "2026-10-11-tabbable-kit-view-caret",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "tabbable-demo": [
+      "2026-10-11-tabbable-kit-view-caret",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-12-canonical-node-props"
+    ],
     "details": ["2026-10-10-details-selection", "2026-08-29-semantic-details"],
     "block-list-static": [
       "2026-10-10-fix-static-list-indent",
@@ -101,12 +163,6 @@
     ],
     "indent-static": [
       "2026-10-09-export-static-presentation",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "list-static": [
-      "2026-10-09-export-static-presentation",
-      "2026-09-03-huge-code-block-demo",
-      "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
     "emoji-data": ["2026-10-08-emoji-frimousse"],
@@ -753,19 +809,6 @@
       "2026-09-08-editor-ui-lifetime",
       "2026-08-13-fix-registry-install-dependencies"
     ],
-    "link": [
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-07-link-submission",
-      "2026-09-04-decouple-link-floating-ui",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-28-consolidate-platejs-dependencies",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-26-fix-link-popover-rows",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
-    ],
     "resize-handle": [
       "2026-09-08-media-resize-lifetime",
       "2026-08-17-colocate-editor-component-families",
@@ -827,19 +870,6 @@
       "2026-07-23-rich-media-caption-children",
       "2025-11-20-biome-ultracite"
     ],
-    "select-editor": [
-      "2026-09-07-select-command-bridge",
-      "2026-09-06-registry-lifetime-repairs",
-      "2026-09-05-fix-command-custom-children",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-18-fix-editor-runtime-interactions",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2025-11-20-biome-ultracite"
-    ],
     "code-block-huge-demo": ["2026-09-06-code-block-docs-preview"],
     "huge-document-demo": [
       "2026-09-06-editor-subscriptions",
@@ -870,12 +900,6 @@
       "2026-09-03-code-block-text-flow",
       "2026-09-03-huge-code-block-demo"
     ],
-    "list": [
-      "2026-09-03-huge-code-block-demo",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "editor-static": [
       "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry",
@@ -894,10 +918,6 @@
       "2026-09-01-plugin-decoration-highlights",
       "2026-08-13-fix-registry-install-dependencies",
       "2025-11-20-biome-ultracite"
-    ],
-    "tabbable": [
-      "2026-09-01-plugin-render-contract",
-      "2026-08-17-flat-editor-registry"
     ],
     "date-node": [
       "2026-08-31-fix-date-first-click-reopen",
@@ -1400,7 +1420,6 @@
       "2026-08-12-canonical-node-props",
       "2025-10-17-fix-react-decouple"
     ],
-    "hundreds-editors-demo": ["2026-08-13-fix-registry-install-dependencies"],
     "installation-next-demo": [
       "2026-08-13-fix-registry-install-dependencies",
       "2026-07-24-feature-toolbar-plugin-portals"
@@ -1436,10 +1455,6 @@
       "2025-10-21-add-rejectaisuggestions",
       "2025-10-17-fix-react-decouple"
     ],
-    "tabbable-demo": [
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-12-canonical-node-props"
-    ],
     "tag-node": [
       "2026-08-13-fix-registry-install-dependencies",
       "2026-08-04-infer-node-props-from-plugins",
@@ -1456,7 +1471,6 @@
       "2026-07-26-unify-script-mark",
       "2026-07-25-static-base-plugin-components"
     ],
-    "editable-voids-demo": ["2026-08-12-canonical-node-props"],
     "footnote-node": [
       "2026-08-12-canonical-node-props",
       "2026-08-04-infer-node-props-from-plugins",

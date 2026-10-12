@@ -1,15 +1,11 @@
-import { expect, it, mock } from 'bun:test';
+import { expect, it } from 'bun:test';
 
 import { createEditor } from '../../../core';
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 
-it('prepares a raw URL once before validating and writing it', () => {
-  const transformInput = mock((input: string) => `https://${input}`);
-  const isUrl = mock((url: string) => url.startsWith('https://example.com/'));
+it('prepares a raw URL before admitting and writing it', () => {
   const editor = createEditor({
-    plugins: [
-      BaseLinkPlugin.configure({ initialState: { transformInput, isUrl } }),
-    ],
+    plugins: [BaseLinkPlugin],
     initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
     selection: {
       kind: 'text',
@@ -18,15 +14,11 @@ it('prepares a raw URL once before validating and writing it', () => {
     },
   });
   expect(
-    editor
-      .plugin(BaseLinkPlugin)
-      .update.upsert({ url: 'example.com/a path%20?q=あ', text: 'Example' })
+    editor.plugin(BaseLinkPlugin).update.upsert({
+      url: 'https://example.com/a path%20?q=あ',
+      text: 'Example',
+    })
   ).toBe(true);
-  expect(transformInput).toHaveBeenCalledTimes(1);
-  expect(transformInput).toHaveBeenCalledWith(
-    'example.com/a%20path%20?q=%E3%81%82'
-  );
-  expect(isUrl).toHaveBeenCalledTimes(1);
   expect(
     editor.read.nodes.find({ at: [], type: BaseLinkPlugin })?.[0]
   ).toMatchObject({ url: 'https://example.com/a%20path%20?q=%E3%81%82' });
@@ -36,10 +28,9 @@ it('prepares a raw URL once before validating and writing it', () => {
   ).toBeUndefined();
 });
 
-it('validates the transformed URL and leaves rejected drafts untouched', () => {
-  const transformInput = mock(() => 'javascript:noop()');
+it('leaves the document untouched when admission refuses the URL', () => {
   const editor = createEditor({
-    plugins: [BaseLinkPlugin.configure({ initialState: { transformInput } })],
+    plugins: [BaseLinkPlugin],
     initialValue: [{ type: 'paragraph', children: [{ text: 'kept' }] }],
     selection: {
       kind: 'text',
@@ -51,41 +42,10 @@ it('validates the transformed URL and leaves rejected drafts untouched', () => {
   expect(
     editor
       .plugin(BaseLinkPlugin)
-      .update.upsert({ url: 'https://example.com', text: 'rejected' })
+      .update.upsert({ url: 'javascript:noop()', text: 'rejected' })
   ).toBeUndefined();
   expect(editor.read.text.string([])).toBe('kept');
   expect(editor.read.lastCommit()).toBe(before);
-});
-
-it('keeps pasted text literal when the selection is already inside a link', () => {
-  const transformInput = mock((url: string) => `https://${url}`);
-  const editor = createEditor({
-    plugins: [BaseLinkPlugin.configure({ initialState: { transformInput } })],
-    initialValue: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: '' },
-          {
-            type: 'link',
-            url: 'https://example.com',
-            children: [{ text: 'label' }],
-          },
-          { text: '' },
-        ],
-      },
-    ],
-    selection: {
-      kind: 'text',
-      anchor: { path: [0, 1, 0], offset: 5 },
-      focus: { path: [0, 1, 0], offset: 5 },
-    },
-  });
-  editor
-    .plugin(BaseLinkPlugin)
-    .update.upsert({ insertTextInLink: true, url: ' raw text' });
-  expect(editor.read.text.string([])).toBe('label raw text');
-  expect(transformInput).not.toHaveBeenCalled();
 });
 
 it.each([
@@ -106,7 +66,6 @@ it.each([
     'https://example.com/path?query=%E3%81%82',
   ],
   ['https://example.com/%', 'https://example.com/%'],
-  ['', ''],
   [
     'Just a random string without URI format',
     'Just%20a%20random%20string%20without%20URI%20format',
@@ -123,9 +82,7 @@ it.each([
         focus: { path: [0, 0], offset: 0 },
       },
     });
-    editor
-      .plugin(BaseLinkPlugin)
-      .update.upsert({ url, text: 'label', skipValidation: true });
+    editor.plugin(BaseLinkPlugin).update.upsert({ url, text: 'label' });
     expect(
       editor.read.nodes.find({ at: [], type: BaseLinkPlugin })?.[0]
     ).toMatchObject({ url: expected });

@@ -62,7 +62,7 @@ Structural children use the same content grammar. Set `blockContent: false` on i
 | `schema.content.not(rule, ...)` | Content outside the nested rule |
 | `schema.content.prefix(required, rest)` | Exact required positions followed by one ordinary content rule |
 
-`min`, `max`, and `default` control cardinality and construction. A required rule needs a constructable default. The compiled schema uses the same grammar to construct nodes, find wrapping, validate values, and fit imported content.
+`min`, `max`, and `default` control cardinality and construction. An element whose content admits text is never left empty. Once emptied, it keeps one empty text, which anchors the line and counts toward `min`, so Plate builds a `default` element only past it. Plate adds missing content one unit at a time, so an inline `default` arrives with the empty texts around it. A required rule needs a constructable default, and a `min` that no canonical content reaches within `max`, such as `schema.content.text({ min: 2 })`, fails to compile. The compiled schema uses the same grammar to construct nodes, find wrapping, validate values, and fit imported content.
 
 `not` is a complement and can admit undeclared types outside its excluded rule. Inspect `allowsUnknownElements`, `allowedElementTypes`, and `allowsText` on compiled element content when an integration needs to distinguish open and closed grammar.
 

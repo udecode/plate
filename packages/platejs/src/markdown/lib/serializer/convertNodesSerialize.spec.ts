@@ -250,7 +250,7 @@ describe('convertNodesSerialize', () => {
       ]);
     });
 
-    it('split list blocks when listType changes', () => {
+    it('keeps task and bullet items one list and splits where ordered changes', () => {
       const listNodes: Descendant[] = [
         {
           children: [{ text: 'unordered' }],
@@ -289,14 +289,6 @@ describe('convertNodesSerialize', () => {
               spread: false,
               type: 'listItem',
             },
-          ],
-          ordered: false,
-          spread: false,
-          start: undefined,
-          type: 'list',
-        },
-        {
-          children: [
             {
               checked: false,
               children: [

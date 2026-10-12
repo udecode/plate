@@ -2,11 +2,38 @@ import type { Locator } from '@playwright/test';
 
 type SyntheticKeyInit = {
   altKey: boolean;
+  code?: string;
   ctrlKey: boolean;
   key: string;
   metaKey: boolean;
   shiftKey: boolean;
   which?: number;
+};
+
+const NAMED_KEY_CODES: Partial<Record<string, number>> = {
+  ArrowDown: 40,
+  ArrowLeft: 37,
+  ArrowRight: 39,
+  ArrowUp: 38,
+  Backspace: 8,
+  Delete: 46,
+  End: 35,
+  Enter: 13,
+  Escape: 27,
+  Home: 36,
+  PageDown: 34,
+  PageUp: 33,
+  Tab: 9,
+};
+
+const keyIdentity = (key: string) => {
+  if (key.length === 1) {
+    return { which: key.toUpperCase().charCodeAt(0) };
+  }
+
+  const which = NAMED_KEY_CODES[key];
+
+  return which === undefined ? {} : { code: key, which };
 };
 
 export const parseSyntheticShortcut = (
@@ -48,7 +75,7 @@ export const parseSyntheticShortcut = (
     key: key.length === 1 && !modifiers.has('Shift') ? key.toLowerCase() : key,
     metaKey: modifiers.has('Meta') || (isMac && modifiers.has('ControlOrMeta')),
     shiftKey: modifiers.has('Shift'),
-    which: key.length === 1 ? key.toUpperCase().charCodeAt(0) : undefined,
+    ...keyIdentity(key),
   };
 };
 
@@ -65,8 +92,7 @@ export const parsePlainSyntheticKey = (
     key: shortcut,
     metaKey: false,
     shiftKey: false,
-    which:
-      shortcut.length === 1 ? shortcut.toUpperCase().charCodeAt(0) : undefined,
+    ...keyIdentity(shortcut),
   };
 };
 
@@ -81,6 +107,7 @@ export const dispatchSyntheticKey = async (
           altKey: innerEventInit.altKey,
           bubbles: true,
           cancelable: true,
+          code: innerEventInit.code,
           ctrlKey: innerEventInit.ctrlKey,
           key: innerEventInit.key,
           metaKey: innerEventInit.metaKey,

@@ -8,10 +8,14 @@ import {
 import type { ListElement } from '../../../features/list';
 import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
 import type { MarkdownEncoded } from '../internal/markdownMappings';
-import type { MdRootContent } from '../mdast';
+import type { MdList, MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
 import { convertTextsSerialize } from './convertTextsSerialize';
-import { getSerializableListStyle, listToMdastTree } from './listToMdastTree';
+import {
+  continueMarkdownList,
+  isSameMarkdownList,
+  listToMdastTree,
+} from './listToMdastTree';
 import { reportOmittedProperties } from './reportOmittedProperties';
 
 const NO_CLAIMS: ReadonlySet<string> = new Set();
@@ -24,6 +28,7 @@ export const convertNodesSerialize = (
   let textQueue: Text[] = [];
 
   const listBlock: ListElement[] = [];
+  let restartedFrom: MdList | undefined;
 
   for (let i = 0; i <= nodes.length; i++) {
     const node = nodes[i];
@@ -43,23 +48,23 @@ export const convertNodesSerialize = (
         const next = nodes[i + 1];
         const isNextIndent = isListElement(next, options);
         const firstList = listBlock.at(0);
-        const hasDifferentListStyle =
+        const isSameIndent =
           isNextIndent &&
           firstList &&
-          (next.listId !== firstList.listId ||
-            next.listType !== firstList.listType ||
-            getSerializableListStyle(next) !==
-              getSerializableListStyle(firstList)) &&
           (next.indent ?? 1) === (firstList.indent ?? 1);
+        const isOtherList =
+          isSameIndent && !isSameMarkdownList(next, firstList);
         const hasExplicitRestart =
-          isNextIndent &&
-          firstList &&
+          isSameIndent &&
           next.listType === 'numbered' &&
-          typeof next.listRestart === 'number' &&
-          (next.indent ?? 1) === (firstList.indent ?? 1);
+          typeof next.listRestart === 'number';
 
-        if (!isNextIndent || hasDifferentListStyle || hasExplicitRestart) {
-          mdastNodes.push(listToMdastTree(listBlock, options));
+        if (!isNextIndent || isOtherList || hasExplicitRestart) {
+          const list = listToMdastTree(listBlock, options);
+
+          if (restartedFrom) continueMarkdownList(options, list, restartedFrom);
+          restartedFrom = hasExplicitRestart && !isOtherList ? list : undefined;
+          mdastNodes.push(list);
 
           listBlock.length = 0;
         }

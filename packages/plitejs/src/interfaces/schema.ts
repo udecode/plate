@@ -22,6 +22,7 @@ export type EditorSchemaRepairCode =
   | 'insert-required-content'
   | 'merge-text'
   | 'omit-default-property'
+  | 'omit-empty-text-property'
   | 'remove-empty-text'
   | 'remove-noncanonical-child'
   | 'replace-element-shell'

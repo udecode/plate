@@ -1,6 +1,8 @@
 import { definePlugin, schema } from '../../core';
 import { BaseLinkPlugin } from '../../features/link';
 import { createTestEditor } from './__tests__/createTestEditor';
+import { nameListIds } from './__tests__/nameListIds';
+import type { MarkdownSliceParseResult } from './types';
 
 const answerUnit = (index: number) =>
   `## Step ${index}\n\nUse a \`Map<string, number>\` or Map<string, number> for {key: value} lookups when x<y. See <https://example.com/${index}>.\n\n- keep **order**\n- avoid _churn_\n\n\`\`\`ts\nconst m = new Map<string, number>();\n\`\`\`\n`;
@@ -26,6 +28,13 @@ const fixtures: Record<string, string> = {
   'ordered steps':
     '1. **Install**\n\n   Run the installer.\n\n2. **Configure**\n\n   Edit the file.\n\nDone.\n',
   'restart after a continuation': '1. first\n\n   more\n\n3) restart\n\nTail\n',
+  // Each puts its lists in different segments: one reused, one reconverted.
+  'lists across a discarded range':
+    'Intro\n\n1. a\n2. b\n\nMid\n\n<div>raw</div>\n\nNext\n\n- c\n- d\n\nAfter\n\nTail\n',
+  'lists across a definition':
+    '- a\n- b\n\nSee [d].\n\nMid\n\n1. c\n2. d\n\nAfter\n\n[d]: https://platejs.org\n\nTail\n',
+  'lists across a loss warning':
+    '1. a\n2. b\n\nPara\n\n<div>raw</div>\n\nMid\n\n- c\n- d\n\nAfter\n\nTail\n',
   'raw html and unsafe links':
     '<!-- note\n\nstill note -->\n\nA [bad](javascript:alert(1)) link.\n\n<div>raw</div>\n\n<div>raw two</div>\n\nEnd\n',
   'lossy content': 'Intro\n\n![pic](data:text/html,x)\n\nNext\n\nTail\n',
@@ -62,6 +71,15 @@ const chunkings = (source: string) => {
   return [fixed, ...random];
 };
 
+// Every parse gives each list a new id, so results compare up to renamed ids.
+const named = (result: MarkdownSliceParseResult | undefined) =>
+  result?.ok
+    ? {
+        ...result,
+        slice: { ...result.slice, content: nameListIds(result.slice.content) },
+      }
+    : result;
+
 describe('continued Markdown parsing', () => {
   const editor = createTestEditor();
   const options = { lossPolicy: 'allow', partial: true } as const;
@@ -78,15 +96,15 @@ describe('continued Markdown parsing', () => {
           const prefix = source.slice(0, end);
 
           // A strict parse can continue the latest preview, as a final does.
-          expect(editor.api.markdown.parseSlice(prefix, { previous })).toEqual(
-            editor.api.markdown.parseSlice(prefix)
-          );
+          expect(
+            named(editor.api.markdown.parseSlice(prefix, { previous }))
+          ).toEqual(named(editor.api.markdown.parseSlice(prefix)));
           previous = editor.api.markdown.parseSlice(prefix, {
             ...options,
             previous,
           });
-          expect(previous).toEqual(
-            editor.api.markdown.parseSlice(prefix, options)
+          expect(named(previous)).toEqual(
+            named(editor.api.markdown.parseSlice(prefix, options))
           );
         }
       }
@@ -126,8 +144,8 @@ describe('continued Markdown parsing', () => {
         ...options,
         previous,
       });
-      expect(previous).toEqual(
-        ruleEditor.api.markdown.parseSlice(prefix, options)
+      expect(named(previous)).toEqual(
+        named(ruleEditor.api.markdown.parseSlice(prefix, options))
       );
     }
     if (!previous?.ok) throw new Error('Expected a slice.');
@@ -152,6 +170,33 @@ describe('continued Markdown parsing', () => {
     expect(third.slice.content[0]).toBe(second.slice.content[0]);
     expect(third.slice.content[1]).toBe(second.slice.content[1]);
     expect(third.slice.content[2]).not.toBe(second.slice.content[2]);
+  });
+
+  it('keeps a completed list and its id while the tail grows', () => {
+    const head = '1. First\n2. Second\n\nBetween.\n\n';
+    const first = editor.api.markdown.parseSlice(`${head}Ta`, options);
+    const second = editor.api.markdown.parseSlice(`${head}Tail`, {
+      ...options,
+      previous: first,
+    });
+    const third = editor.api.markdown.parseSlice(`${head}Tail grows`, {
+      ...options,
+      previous: second,
+    });
+    const final = editor.api.markdown.parseSlice(`${head}Tail grows.`, {
+      previous: third,
+    });
+
+    if (!second.ok || !third.ok || !final.ok) {
+      throw new Error('Expected slices.');
+    }
+    for (const result of [third, final]) {
+      expect(result.slice.content[0]).toBe(second.slice.content[0]);
+      expect(result.slice.content[1]).toBe(second.slice.content[1]);
+    }
+    expect(final.slice.content[1]).toMatchObject({
+      listId: final.slice.content[0].listId,
+    });
   });
 
   it('keeps reusing across state changes of plugins without mappings', () => {

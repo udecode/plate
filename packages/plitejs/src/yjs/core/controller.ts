@@ -18,6 +18,7 @@ import {
   registerEditorTransactionGuard,
   scheduleAfterCommitNotification,
 } from '../../core/public-state';
+import { canonicalizeTopLevelNode } from '../../core/representation';
 import {
   areEditorSchemaIdentitiesEqual,
   getCompiledPropertyMergeStrategy,
@@ -364,7 +365,7 @@ export class YjsController<
       synchronizedChildren,
       this.isSetValued,
       this.editor.read.schema.hasContentRoots()
-        ? (node) => node
+        ? (node) => canonicalizeTopLevelNode(this.editor, node, root)
         : (node) => this.editorAdapter.canonicalizeNode(root, node)
     );
 

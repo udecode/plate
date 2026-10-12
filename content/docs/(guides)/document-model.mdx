@@ -171,10 +171,18 @@ Format mappings and format-owned adapters map this document contract to external
 ## Structural constraints
 
 Roots contain blocks. An element contains block children or inline/text children;
-its compiled schema chooses the allowed grammar. Elements retain a text
-descendant, including the empty anchor used by voids. Adjacent text leaves with
-the same properties merge, and text spacing around inline nodes supplies valid
-caret positions.
+its compiled schema chooses the allowed grammar. An element whose content admits
+text is never left empty, so an emptied line keeps one empty text as its
+anchor, and a void keeps the empty text inside it. Content that admits only
+blocks may be empty. Adjacent text leaves with the same properties merge, and
+text spacing around inline nodes supplies valid caret positions.
+
+An empty line stores no formatting. Marks for text typed at an empty caret come
+from the selection's pending marks, so typing in an emptied bold line stays bold
+while the caret is there. Once the caret leaves or the document reloads, the line
+is plain.
+`createEditor` loads its initial value in this canonical form, merging, spacing
+and anchoring texts as an edit would.
 
 Marks are schema-declared properties on text nodes. Decorations can split a text
 node into rendered leaf segments without changing those persisted properties.

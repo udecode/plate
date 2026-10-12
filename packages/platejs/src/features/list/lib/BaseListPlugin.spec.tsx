@@ -1,5 +1,6 @@
 import {
   BaseParagraphPlugin,
+  ContentSlice,
   createEditor as createProductEditor,
   definePlugin,
   ElementApi,
@@ -142,7 +143,6 @@ describe('BaseListPlugin canonical model', () => {
       {
         children: [{ text: 'Bulleted' }],
         indent: 1,
-        listId: expect.any(String),
         listStart: 4,
         listType: 'bulleted',
         type: 'paragraph',
@@ -150,7 +150,6 @@ describe('BaseListPlugin canonical model', () => {
       {
         children: [{ text: 'Numbered' }],
         indent: 1,
-        listId: expect.any(String),
         listRestart: 5,
         listStart: 4,
         listType: 'numbered',
@@ -159,7 +158,6 @@ describe('BaseListPlugin canonical model', () => {
       {
         children: [{ text: 'Task' }],
         indent: 1,
-        listId: expect.any(String),
         listStart: 2,
         listType: 'task',
         type: 'paragraph',
@@ -785,18 +783,29 @@ describe('BaseListPlugin canonical model', () => {
     });
   });
 
-  it('outdents a root list item to a plain paragraph', () => {
+  it.each([
+    {
+      listId: 'a',
+      listLevels: { '1': { start: 4 } },
+      listRestart: 2,
+      listStart: 3,
+      listStyle: 'lower-alpha',
+      listType: 'numbered',
+    },
+    { checked: true, listId: 'a', listType: 'task' },
+  ])('outdents a root $listType item to a plain paragraph', (facts) => {
     const editor = createEditor({
       initialValue: [
         {
           children: [{ text: 'Item' }],
           indent: 1,
-          listStyle: 'circle',
-          listType: 'bulleted',
           type: 'paragraph',
+          ...facts,
         },
       ],
     });
+
+    expect(editor.read.children()[0]).toMatchObject(facts);
 
     editor.update.list.outdent();
     expect(editor.read.children()[0]).toEqual({
@@ -1504,6 +1513,18 @@ describe('BaseListPlugin list identity', () => {
         node.listType ? (editor.read.list.ordinal([index]) ?? null) : null
       );
 
+  it('restores a list without ids exactly when undo brings back a deleted item', () => {
+    const editor = createEditor({
+      initialValue: [listItem('A'), note('Note'), listItem('B')],
+    });
+    const before = editor.read.children();
+
+    editor.update.nodes.remove({ at: [2] });
+    editor.api.history.undo();
+
+    expect(editor.read.children()).toEqual(before);
+  });
+
   it('keeps the default list one list through Plate HTML', () => {
     const editor = createEditor({
       initialValue: [listItem('One'), note('Note'), listItem('Two')],
@@ -1580,7 +1601,7 @@ describe('BaseListPlugin list identity', () => {
     expect(numbersOf(editor)).toEqual([1, 5]);
   });
 
-  it('gives an item an edit inserts without an id the list it lands in', () => {
+  it('keeps an id-less item a raw edit inserts in the default list', () => {
     const editor = createEditor({
       initialValue: [
         listItem('One', { listId: 'a' }),
@@ -1590,9 +1611,73 @@ describe('BaseListPlugin list identity', () => {
 
     editor.update.nodes.insert(listItem('Two'), { at: [1] });
 
-    expect(editor.read.children()[1]).toHaveProperty('listId', 'a');
-    expect(numbersOf(editor)).toEqual([1, 2, 3]);
+    expect(editor.read.children()[1]).not.toHaveProperty('listId');
+    expect(numbersOf(editor)).toEqual([1, 1, 2]);
   });
+
+  it.each([
+    [
+      'after a block',
+      (editor: ReturnType<typeof createEditor>, index: number) =>
+        editor.update.list.insert(
+          { type: ListType.Numbered },
+          { after: [index] }
+        ),
+    ],
+    [
+      'at a path',
+      (editor: ReturnType<typeof createEditor>, index: number) =>
+        editor.update.list.insert(
+          { type: ListType.Numbered },
+          { at: [index + 1] }
+        ),
+    ],
+    [
+      'at the end of a block',
+      (editor: ReturnType<typeof createEditor>, index: number) =>
+        editor.update.list.insert(
+          { type: ListType.Numbered },
+          {
+            at: {
+              offset: NodeApi.string(editor.read.children()[index]).length,
+              path: [index, 0],
+            },
+          }
+        ),
+    ],
+    [
+      'in place of an empty block',
+      (editor: ReturnType<typeof createEditor>, index: number) => {
+        editor.update.nodes.insert(note(''), { at: [index + 1] });
+        editor.update.list.insert(
+          { type: ListType.Numbered },
+          { after: [index + 1], replaceEmpty: true }
+        );
+      },
+    ],
+  ])(
+    'joins an item the insert command places %s by the join rule',
+    (_name, insert) => {
+      const editor = createEditor({
+        initialValue: [
+          listItem('Default'),
+          listItem('A', { listId: 'a' }),
+          note('Note'),
+        ],
+      });
+
+      // Last first, so earlier indexes stay put.
+      for (const index of [2, 1, 0]) insert(editor, index);
+
+      const [, defaultItem, , listItemA, , afterNote] = editor.read.children();
+
+      expect(defaultItem).not.toHaveProperty('listId');
+      expect(listItemA).toHaveProperty('listId', 'a');
+      expect(afterNote.listId).toEqual(expect.any(String));
+      expect(afterNote.listId).not.toBe('a');
+      expect(numbersOf(editor)).toEqual([1, 2, 1, 2, null, 1]);
+    }
+  );
 
   it('keeps a latent start through a kind change and shows it when it applies', () => {
     const editor = createEditor({
@@ -1789,6 +1874,132 @@ describe('BaseListPlugin list identity', () => {
     });
     expect(editor.read.children()[1].listId).not.toBe('cell');
     expect(editor.read.list.ordinal([1])).toBe(2);
+  });
+
+  describe('paste', () => {
+    const cell = (...children: unknown[]) => ({
+      children: [
+        { children: [{ children, type: 'tableCell' }], type: 'tableRow' },
+      ],
+      type: 'table',
+    });
+    const paste = (
+      initialValue: unknown[],
+      selection: CreateEditorOptions['selection'],
+      content: unknown[]
+    ) => {
+      const editor = createProductEditor({
+        initialValue,
+        plugins: [
+          BaseHeadingPlugin,
+          BaseTablePlugin,
+          BaseListPlugin.configure({
+            targetPlugins: [BaseParagraphPlugin, BaseHeadingPlugin],
+          }),
+        ],
+        selection,
+      } as never);
+
+      editor.update.slice.replace(ContentSlice.closed(content as never));
+
+      return editor;
+    };
+
+    it('starts a fresh list for a numbered list pasted into a numbered heading item', () => {
+      const heading = (text: string) => ({
+        ...listItem(text, { listId: 'h' }),
+        level: 1,
+        type: 'heading',
+      });
+      const editor = paste(
+        [heading('H1'), heading('H2')],
+        {
+          anchor: { offset: 2, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+          kind: 'text',
+        },
+        [listItem('C', { listId: 's' }), listItem('D', { listId: 's' })]
+      );
+
+      expect(numbersOf(editor)).toEqual([1, 1, 2]);
+    });
+
+    it('keeps a list that lives only inside a pasted table apart from the list it lands in', () => {
+      const editor = paste(
+        [listItem('A', { listId: 'a' }), listItem('B', { listId: 'a' })],
+        SelectionApi.nodes([[1]]),
+        [cell(listItem('X', { listId: 'cell' }))]
+      );
+
+      expect(editor.read.list.ordinal([1, 0, 0, 0])).toBe(1);
+    });
+
+    it('keeps one counter for a pasted list that continues through a table cell', () => {
+      const editor = paste([note('target')], SelectionApi.nodes([[0]]), [
+        listItem('A', { listId: 's', listStart: 5 }),
+        cell(listItem('X', { listId: 's' })),
+        listItem('B', { listId: 's' }),
+      ]);
+
+      expect(
+        [[0], [1, 0, 0, 0], [2]].map((path) => editor.read.list.ordinal(path))
+      ).toEqual([5, 6, 7]);
+    });
+
+    it('joins a pasted list that continues through a table cell to the item it lands on', () => {
+      const editor = paste(
+        [
+          listItem('L1', { listId: 'l' }),
+          listItem('L2', { listId: 'l' }),
+          listItem('L3', { listId: 'l' }),
+        ],
+        SelectionApi.nodes([[1]]),
+        [
+          listItem('A', { listId: 's' }),
+          cell(listItem('X', { listId: 's' })),
+          listItem('B', { listId: 's' }),
+        ]
+      );
+
+      expect(
+        [[0], [1], [2, 0, 0, 0], [3], [4]].map((path) =>
+          editor.read.list.ordinal(path)
+        )
+      ).toEqual([1, 2, 3, 4, 5]);
+    });
+
+    it('keeps the start of a pasted head over a list head', () => {
+      const editor = paste(
+        [
+          listItem('A', { listId: 'l', listStart: 5 }),
+          listItem('B', { listId: 'l' }),
+        ],
+        SelectionApi.nodes([[0]]),
+        [
+          listItem('X', { listId: 's', listStart: 7 }),
+          listItem('Y', { listId: 's' }),
+        ]
+      );
+
+      expect(numbersOf(editor)).toEqual([7, 8, 9]);
+    });
+
+    it('keeps the restart of a pasted head inside a list', () => {
+      const editor = paste(
+        [
+          listItem('A', { listId: 'l' }),
+          listItem('B', { listId: 'l' }),
+          listItem('C', { listId: 'l' }),
+        ],
+        SelectionApi.nodes([[1]]),
+        [
+          listItem('X', { listId: 's', listRestart: 7, listStart: 7 }),
+          listItem('Y', { listId: 's' }),
+        ]
+      );
+
+      expect(numbersOf(editor)).toEqual([1, 7, 8, 9]);
+    });
   });
 });
 

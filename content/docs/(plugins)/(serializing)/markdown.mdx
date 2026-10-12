@@ -309,6 +309,15 @@ AI chat previews follow the same rules; see [AI streaming](/docs/ai#streaming).
 
 <ComponentPreview name="markdown-streaming-demo" />
 
+## List identity
+
+Markdown has no list identity, so each parse gives every Markdown list a new
+`listId`. Two parses of one source are equal up to their list ids. A parse that
+continues a `previous` result keeps the ids of the blocks it reuses, and a list
+it converts again gets new ids. To compare parses, rename each `listId` in
+order of first appearance. See [List](/docs/list#html-and-markdown) for how
+Plate reads and writes lists.
+
 ## Authored content
 
 Markdown represents visible `accepted` or `proposed` content. It does not append

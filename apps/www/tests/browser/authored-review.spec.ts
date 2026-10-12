@@ -22,7 +22,15 @@ const MODES: Array<[Intent, string]> = [
   ['propose', 'Suggesting'],
 ];
 
-const open = async (page: Page, intent: Intent, fixture?: 'values') => {
+type Fixture = 'fill' | 'title' | 'values';
+
+const READY: Record<Fixture, RegExp> = {
+  fill: /First line/,
+  title: /Title/,
+  values: /Alpha/,
+};
+
+const open = async (page: Page, intent: Intent, fixture?: Fixture) => {
   await page.goto(
     `/dev/authored-review?intent=${intent}${fixture ? `&fixture=${fixture}` : ''}`
   );
@@ -31,7 +39,10 @@ const open = async (page: Page, intent: Intent, fixture?: 'values') => {
     .first();
   const editor = createBrowserEditorHarness(page, `authored ${intent}`, root);
 
-  await editor.ready({ editor: 'visible', text: /Alpha/ });
+  await editor.ready({
+    editor: 'visible',
+    text: fixture ? READY[fixture] : /Alpha/,
+  });
   await page.waitForFunction(() => 'authoredProof' in window);
   await editor.ime.enableKeyEvents();
   await startBrowserNativeEventTrace(root);
@@ -617,6 +628,246 @@ test.describe('authored property values and inline splits', () => {
     });
     await expect(editor.root.locator('strong')).toHaveCount(0);
     expect(await anomalies(editor)).toEqual([]);
+    errors.assertNone();
+  });
+});
+
+// T9 of docs/plans/2026-10-11-authored-fill.md: a suggestion records what
+// Editing's completion builds, so accepting it gives Editing's result.
+
+type Tree = {
+  authored?: Array<{ change: string }>;
+  children?: Tree[];
+  [key: string]: unknown;
+};
+
+const tree = async (editor: BrowserEditorHarness) =>
+  ((await editor.get.modelValue()) as { children: Tree[] }).children;
+
+const changesIn = (nodes: readonly Tree[]): string[] => [
+  ...new Set(
+    nodes.flatMap((node) => [
+      ...(node.authored ?? []).map((mark) => mark.change),
+      ...changesIn(node.children ?? []),
+    ])
+  ),
+];
+
+const decideAll = async (
+  page: Page,
+  editor: BrowserEditorHarness,
+  action: 'accept' | 'reject'
+) => {
+  const changes = changesIn(await tree(editor));
+
+  expect(
+    await page.evaluate((decision) => window.authoredProof?.decide(decision), {
+      action,
+      changes,
+    })
+  ).toMatchObject({ status: 'applied' });
+  expect(changesIn(await tree(editor))).toEqual([]);
+};
+
+const PAINT: Readonly<Record<string, readonly [string, RegExp] | null>> = {
+  delete: ['text-decoration-line', /line-through/],
+  format: ['background-color', /rgb\(254, 249, 195\)/],
+  insert: ['text-decoration-line', /underline/],
+  unwrap: null,
+};
+
+const gesture = (
+  page: Page,
+  name: 'removeCell' | 'removeTitle' | 'unwrapGroup'
+) => page.evaluate((which) => window.authoredProof?.gesture(which), name);
+
+const selectAll = async (editor: BrowserEditorHarness) => {
+  await editor.selection.collapse({ offset: 0, path: [0, 0] });
+  await editor.focus();
+  await editor.press('ControlOrMeta+A');
+};
+
+const GESTURES: ReadonlyArray<
+  [
+    name: string,
+    run: (page: Page, editor: BrowserEditorHarness) => Promise<void>,
+    painted: readonly string[],
+  ]
+> = [
+  [
+    'select all, then Backspace',
+    async (_page, editor) => {
+      await selectAll(editor);
+      await editor.press('Backspace');
+    },
+    ['delete'],
+  ],
+  [
+    'select all, then typing',
+    async (_page, editor) => {
+      await selectAll(editor);
+      await editor.type('X');
+    },
+    ['delete', 'insert'],
+  ],
+  [
+    'Backspace across blocks',
+    async (_page, editor) => {
+      await editor.selection.select({
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 4, path: [1, 0] },
+      });
+      await editor.focus();
+      await editor.press('Backspace');
+    },
+    ['delete'],
+  ],
+  [
+    'a bold toggle',
+    async (_page, editor) => {
+      await editor.selection.select({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 5, path: [0, 0] },
+      });
+      await editor.focus();
+      await editor.press('ControlOrMeta+B');
+    },
+    ['format'],
+  ],
+  [
+    'deleting a grid cell, then unwrapping the grid',
+    async (page) => {
+      await gesture(page, 'removeCell');
+      await gesture(page, 'unwrapGroup');
+    },
+    ['delete', 'unwrap'],
+  ],
+  [
+    'unwrapping the grid, then deleting a grid cell',
+    async (page) => {
+      await gesture(page, 'unwrapGroup');
+      await gesture(page, 'removeCell');
+    },
+    ['delete', 'unwrap'],
+  ],
+];
+
+test.describe('authored review fills as Editing does', () => {
+  for (const [name, run, painted] of GESTURES) {
+    test(`${name} shows the change while suggesting, and accepting it gives Editing's result`, async ({
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editing = await open(page, 'edit', 'fill');
+
+      await run(page, editing);
+      const expected = await tree(editing);
+      const suggesting = await open(page, 'propose', 'fill');
+
+      await run(page, suggesting);
+      for (const kind of painted) {
+        const shown = suggesting.root
+          .locator(`[data-authored~="${kind}"]`)
+          .first();
+        const style = PAINT[kind];
+
+        await expect(shown).toBeVisible();
+        if (style) {
+          const styled = suggesting.root.locator(`[data-authored="${kind}"]`);
+
+          await expect(styled.first()).toHaveCSS(...style);
+          for (const node of await styled.all()) {
+            await expect(node).toHaveCSS(...style);
+          }
+        }
+      }
+      await decideAll(page, suggesting, 'accept');
+
+      expect(await tree(suggesting)).toEqual(expected);
+      errors.assertNone();
+    });
+  }
+
+  test('suggesting a required title’s deletion strikes its text, and a title typed into it stays once accepted', async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
+    const retitle = async (editor: BrowserEditorHarness) => {
+      await gesture(page, 'removeTitle');
+      await editor.selection.collapse({ offset: 0, path: [0, 0] });
+      await editor.focus();
+      await editor.type('New');
+    };
+    const editing = await open(page, 'edit', 'title');
+
+    await retitle(editing);
+    const expected = await tree(editing);
+    const suggesting = await open(page, 'propose', 'title');
+
+    await gesture(page, 'removeTitle');
+    expect(await leaves(suggesting, 0)).toEqual(['Title[delete:alice]']);
+    await suggesting.selection.collapse({ offset: 0, path: [0, 0] });
+    await suggesting.focus();
+    await suggesting.type('New');
+    await decideAll(page, suggesting, 'accept');
+    const [title] = await suggesting.get.modelBlockTexts();
+
+    expect({ accepted: await tree(suggesting), title }).toEqual({
+      accepted: expected,
+      title: 'New',
+    });
+    errors.assertNone();
+  });
+
+  test('accepting the deletion of every character of a bold line leaves a line that typing keeps plain', async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
+    const editor = await open(page, 'propose', 'fill');
+
+    await editor.selection.select({
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 9, path: [1, 0] },
+    });
+    await editor.focus();
+    await editor.press('Backspace');
+    expect(await leaves(editor, 1)).toEqual(['Bold line[delete:alice]']);
+    await decideAll(page, editor, 'accept');
+    await editor.selection.collapse({ offset: 0, path: [1, 0] });
+    await editor.focus();
+    await editor.type('x');
+    const children = await tree(editor);
+
+    expect(children.slice(1, 2)).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          {
+            authored: [expect.objectContaining({ kind: 'insert' })],
+            text: 'x',
+          },
+        ],
+      },
+    ]);
+    errors.assertNone();
+  });
+
+  test('rejecting typing into an empty line restores the line', async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
+    const editor = await open(page, 'propose', 'fill');
+
+    await editor.selection.collapse({ offset: 0, path: [2, 0] });
+    await editor.focus();
+    await editor.type('Typed');
+    expect(await leaves(editor, 2)).toEqual(['Typed[insert:alice]']);
+    await decideAll(page, editor, 'reject');
+    const children = await tree(editor);
+
+    expect(children.slice(2, 3)).toEqual([
+      { type: 'paragraph', children: [{ text: '' }] },
+    ]);
     errors.assertNone();
   });
 });

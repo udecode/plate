@@ -6,7 +6,12 @@ import type {
   SerializedEditorValue,
 } from '../interfaces/editor';
 import type { EditorJsonValue } from '../interfaces/json';
-import { freezeOwnedJsonValue, isOwnedJsonValue } from './clone';
+import {
+  freezeOwnedJsonValue,
+  isImmutable,
+  isOwnedJsonValue,
+  ownJsonValue,
+} from './clone';
 import { createEditorEffect } from './transaction-values';
 
 const getFunctionSource = (value: object) =>
@@ -105,17 +110,15 @@ export const getEditorJsonRecordEntries = (
   return entries;
 };
 
-// A frozen value whose object members are owned is deeply immutable, so its
-// validity cannot change; later checks of a shared frozen tree skip it.
-const rememberFrozenJsonValue = (value: object, items: readonly unknown[]) => {
+const ownWhenMembersOwned = (value: object, items: readonly unknown[]) => {
   if (
-    Object.isFrozen(value) &&
+    isImmutable(value) &&
     items.every(
       (item) =>
         item === null || typeof item !== 'object' || isOwnedJsonValue(item)
     )
   ) {
-    freezeOwnedJsonValue(value);
+    ownJsonValue(value);
   }
 };
 
@@ -147,7 +150,7 @@ export const isEditorJsonValue = (
             items !== null &&
             items.every((item) => isEditorJsonValue(item, seen));
 
-          if (valid) rememberFrozenJsonValue(value, items);
+          if (valid) ownWhenMembersOwned(value, items);
 
           return valid;
         }
@@ -158,7 +161,7 @@ export const isEditorJsonValue = (
           entries.every(([, item]) => isEditorJsonValue(item, seen));
 
         if (valid) {
-          rememberFrozenJsonValue(
+          ownWhenMembersOwned(
             value,
             entries.map(([, item]) => item)
           );

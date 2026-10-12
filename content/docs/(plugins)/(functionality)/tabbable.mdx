@@ -19,7 +19,7 @@ title: Tabbable
 
 ### Installation
 
-The fastest way to add the tabbable plugin is with `TabbableKit`. The kit keeps Indent installed and removes only its Tab and Shift+Tab shortcuts so focus navigation owns those keys.
+The fastest way to add the tabbable plugin is with `TabbableKit`. The kit keeps Indent installed and turns off its Tab and Shift+Tab shortcuts, so Tab in a paragraph moves focus instead of indenting. Its `query` declines in list items, code blocks and tables, which handle Tab themselves.
 
 <ComponentSource name="tabbable" />
 
@@ -73,30 +73,30 @@ import { createEditor } from 'platejs/react';
 const editor = createEditor({
   plugins: [
     // ...otherPlugins,
-    TabbablePlugin.configure(({ editor }) => {
-      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-      const blockedTypes = [codeBlock].flatMap((plugin) =>
-        plugin.installed ? [plugin.schema.type] : []
-      );
+    TabbablePlugin.configure({
+      initialState: {
+        query: ({ editor }) => {
+          const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
-      return {
-        initialState: {
-          query: () =>
-            blockedTypes.length === 0 ||
-            !editor.read.nodes.some({ type: blockedTypes }),
-          globalEventListener: true,
-          isTabbable: (tabbableEntry) =>
-            editor.read.schema.isVoid(tabbableEntry.slateNode),
+          return (
+            !codeBlock.installed ||
+            !editor.read.nodes.some({ type: codeBlock.schema.type })
+          );
         },
-      };
+        globalEventListener: true,
+        isTabbable: ({ editor, entry }) =>
+          editor.read.schema.isVoid(entry.slateNode),
+      },
     }),
   ],
 });
 ```
 
-- `initialState.query`: Function to dynamically enable/disable the plugin based on editor state.
+- `initialState.query`: Decides whether Tabbable handles a Tab. A Tab pressed on a stop Tabbable admits, which is an inserted entry or an in-editor tabbable that `isTabbable` accepts, skips `query` and always follows the tab order.
 - `initialState.globalEventListener`: When `true`, adds event listener to document instead of editor.
 - `initialState.isTabbable`: Function to determine which elements should be included in tab order.
+
+Each callback receives the editor of the view Tabbable runs in. Read the caret from that `editor`, not from an editor captured in `.configure`, which may not hold the caret of that view.
 
 </Steps>
 
@@ -104,39 +104,34 @@ const editor = createEditor({
 
 ### Conflicts with other plugins
 
-The Tabbable plugin may cause issues with other plugins that handle the `Tab` key, such as:
+Tabbable handles Tab before any editor shortcut. Another feature gets the key when `query` declines or when no stop follows the caret. Lists, code blocks, tables and the Indent plugin all use Tab. Lists take Tab and Shift+Tab on list items themselves, even with Indent's shortcuts turned off.
 
-- Lists
-- Code blocks
-- Indent plugin
-
-Use the `query` option to disable the Tabbable plugin when the `Tab` key should be handled by another plugin:
+Use the `query` option to decline where another feature should handle the `Tab` key:
 
 ```tsx
-TabbablePlugin.configure(({ editor }) => {
-  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-  const blockedTypes = [codeBlock].flatMap((plugin) =>
-    plugin.installed ? [plugin.schema.type] : []
-  );
+TabbablePlugin.configure({
+  initialState: {
+    query: ({ editor }) => {
+      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
-  return {
-    initialState: {
-      query: () =>
-        blockedTypes.length === 0 ||
-        !editor.read.nodes.some({
-          type: blockedTypes,
-        }),
+      return (
+        !codeBlock.installed ||
+        !editor.read.nodes.some({ type: codeBlock.schema.type })
+      );
     },
-  };
+  },
 });
 ```
+
+Extend `query` for any other feature in your editor that uses Tab, such as a Copilot suggestion or an open combobox. `TabbableKit` declines only in list items, code blocks and tables.
 
 Alternatively, if you're using the Indent plugin, you can enable the Tabbable plugin only when a specific type of node is selected, such as voids:
 
 ```tsx
-query: (event) => !!editor.read.nodes.some({
-  match: (node) => editor.read.schema.isVoid(node),
-}),
+query: ({ editor }) =>
+  editor.read.nodes.some({
+    match: (node) => editor.read.schema.isVoid(node),
+  }),
 ```
 
 ### Non-void Plate nodes
@@ -147,10 +142,9 @@ By default, `isTabbable` only returns true for entries inside void Plate nodes. 
 
 ```tsx
 // Enable tabbable DOM elements inside CUSTOM_ELEMENT
-isTabbable: (tabbableEntry) => (
-  tabbableEntry.slateNode.type === CUSTOM_ELEMENT ||
-  editor.read.schema.isVoid(tabbableEntry.slateNode)
-),
+isTabbable: ({ editor, entry }) =>
+  entry.slateNode.type === CUSTOM_ELEMENT ||
+  editor.read.schema.isVoid(entry.slateNode),
 ```
 
 ### DOM elements outside the editor
@@ -166,7 +160,7 @@ For example, if the DOM element appears when a link is selected, the `slateNode`
 ```tsx
 // Add buttons inside .my-popover to the list of tabbables
 globalEventListener: true,
-insertTabbableEntries: () => {
+insertTabbableEntries: ({ editor }) => {
   const selectedEntry = editor.read.nodes.above();
 
   if (!selectedEntry) return [];
@@ -191,26 +185,41 @@ Plugin for managing tab order between tabbable elements.
 
 <API name="TabbablePlugin">
 <APIOptions>
-  <APIItem name="query" type="(event: KeyboardEvent) => boolean" optional>
-    Enable/disable plugin dynamically.
+  <APIItem name="query" type="(context: TabbableEventContext) => boolean" optional>
+    Decide whether Tabbable handles a Tab. A Tab pressed on a stop Tabbable admits, which is an inserted entry or an in-editor tabbable that `isTabbable` accepts, skips `query` and always follows the tab order.
     - **Default:** `() => true`
   </APIItem>
   <APIItem name="globalEventListener" type="boolean" optional>
     Add event listener to document instead of editor.
     - **Default:** `false`
   </APIItem>
-  <APIItem name="insertTabbableEntries" type="(event: KeyboardEvent) => TabbableEntry[]" optional>
+  <APIItem name="insertTabbableEntries" type="(context: TabbableEventContext) => TabbableEntry[]" optional>
     Add additional tabbable entries outside editor.
     - **Default:** `() => []`
   </APIItem>
-  <APIItem name="isTabbable" type="(tabbableEntry: TabbableEntry) => boolean" optional>
+  <APIItem name="isTabbable" type="(context: TabbableEventContext & { entry: TabbableEntry }) => boolean" optional>
     Determine if element should be tabbable.
-    - **Default:** `(tabbableEntry) => editor.read.schema.isVoid(tabbableEntry.slateNode)`
+    - **Default:** `({ editor, entry }) => editor.read.schema.isVoid(entry.slateNode)`
   </APIItem>
 </APIOptions>
 </API>
 
 ## Types
+
+### TabbableEventContext
+
+The context every callback receives.
+
+<API name="TabbableEventContext">
+<APIAttributes>
+  <APIItem name="editor" type="Editor">
+    Editor of the view Tabbable runs in. It holds that view's caret.
+  </APIItem>
+  <APIItem name="event" type="KeyboardEvent">
+    The Tab keydown event.
+  </APIItem>
+</APIAttributes>
+</API>
 
 ### TabbableEntry
 

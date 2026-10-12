@@ -99,7 +99,7 @@ const values = {
   'slash-command': slashCommandValue,
   tabbable: tabbableValue,
   table: tableValue,
-  'text-align': alignValue,
+  align: alignValue,
   toc: tocValue,
   details: detailsValue,
 };

@@ -342,10 +342,6 @@ const intentionalProductionExtendStageChains = new Map([
     [[['api', 'decorate', 'on', 'selectors', 'update']]],
   ],
   [
-    'packages/platejs/src/features/tag/lib/BaseTagPlugin.ts',
-    [[['read', 'update'], ['read']]],
-  ],
-  [
     'packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts',
     [[['activate', 'api', 'on', 'update'], ['commands']]],
   ],
@@ -457,7 +453,6 @@ const intentionalRawSchemaQueryCounts = new Map([
     1,
   ],
   ['packages/platejs/src/features/table/lib/BaseTablePlugin.schema.spec.ts', 5],
-  ['packages/platejs/src/features/tag/lib/BaseTagPlugin.spec.tsx', 1],
 ]);
 const intentionalNamedSchemaLineages = new Map([
   [

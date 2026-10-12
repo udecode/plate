@@ -347,7 +347,7 @@ describe('authored review tree on two clients', () => {
       ],
     ],
     [
-      'column deletion that hoists the surviving column',
+      'column deletion that leaves a column group below its minimum',
       columnGroup,
       [Columns],
     ],
@@ -370,7 +370,7 @@ describe('authored review tree on two clients', () => {
     }
   }
 
-  it('records a peer typing in the surviving column while a decision hoists it', () => {
+  it('records a peer typing in the surviving column while a decision builds a column beside it', () => {
     const { alice, bob } = pair(columnGroup, ['propose', 'edit'], [Columns]);
     const { status } = api(alice).decide({
       action: 'accept',
@@ -382,13 +382,19 @@ describe('authored review tree on two clients', () => {
     );
     deliver(alice, bob);
     deliver(bob, alice);
-    record('peer typing in the surviving column during the hoist', {
+    record('peer typing in the surviving column during the decision', {
       status,
       value: converged(alice, bob),
     });
     assert.equal(status, 'applied');
     assert.deepEqual(alice.editor.read.children(), [
-      paragraph({ text: 'leftZ' }),
+      {
+        type: 'column_group',
+        children: [
+          { type: 'column', children: [paragraph({ text: 'leftZ' })] },
+          { type: 'column', children: [paragraph({ text: '' })] },
+        ],
+      },
     ]);
   });
 
@@ -685,7 +691,7 @@ describe('authored review tree structure on two clients', () => {
       ]);
     });
 
-    it(`keeps a paragraph inserted in Editing inside a quote whose suggested deletion is then accepted, ${order}`, () => {
+    it(`keeps a paragraph inserted in Editing inside a quote whose suggested deletion is then accepted, beside the paragraph the deletion builds, ${order}`, () => {
       const { alice, bob } = pair(
         [{ type: 'quote', children: [paragraph(text('a'))] }],
         ['propose', 'edit'],
@@ -704,6 +710,7 @@ describe('authored review tree structure on two clients', () => {
       syncInOrder(alice, bob, aliceFirst);
       assert.deepEqual(converged(alice, bob), [
         { type: 'quote', children: [paragraph(text('new'))] },
+        paragraph(text('')),
       ]);
     });
   }

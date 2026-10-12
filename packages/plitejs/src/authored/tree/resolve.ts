@@ -12,36 +12,38 @@ import {
   AUTHORED_MARKS_KEY,
   type CutTag,
   readAuthoredMarks,
+  withMarksThroughout,
 } from './marks';
 
 export type AuthoredOutcome = (
   changeId: string
 ) => 'accept' | 'keep' | 'reject';
 
+type Completion<N> = Readonly<{
+  built: ReadonlyArray<Readonly<{ node: N; slot: number | null }>>;
+  children: readonly N[];
+}>;
+
 /**
  * The declarative content facts the resolver reads; it runs no plugin code.
  * A `null` type or parent stands for the root being resolved.
  */
 export type AuthoredResolveSchema = Readonly<{
-  canonicalize?: (
+  /**
+   * Canonical children at their site, the element and its ancestors nearest
+   * first or none at the root, as Editing's completion gives them, and each
+   * element it built; `vacated` names the prefix slots a decision emptied.
+   */
+  complete?: (
     children: readonly JsonNode[],
-    parent: JsonRecord | null,
-    root: string
-  ) => readonly JsonNode[];
+    site: readonly JsonRecord[],
+    root: string,
+    vacated: (slot: number, candidate: JsonNode) => boolean
+  ) => Completion<JsonNode>;
   content: (
     type: string | null,
     root: string
-  ) => Readonly<{
-    allowedElementTypes: readonly string[] | null;
-    allowsText: boolean;
-    min: number;
-  }> | null;
-}>;
-
-/** A container a decision pulled apart because too few live children remained. */
-export type AuthoredRepair = Readonly<{
-  pending: readonly string[];
-  type: string;
+  ) => Readonly<{ allowsText: boolean; prefix: number }> | null;
 }>;
 
 /**
@@ -63,11 +65,11 @@ export type AuthoredResolution = Readonly<{
   diagnostics: readonly AuthoredProjectionDiagnostic[];
   /**
    * The node an original node became in the resolved tree, or null when a
-   * decision removed it or merged it into the block before it, or the
-   * canonical form merged a text with its neighbour.
+   * decision removed it or merged it into the block before it, the canonical
+   * form merged a text with its neighbour, or the canonical pass after
+   * completion rewrote it.
    */
   resolvedOf: (original: unknown) => JsonNode | null;
-  repairs: readonly AuthoredRepair[];
   /**
    * Content no level of the schema accepts, such as text an unwrap leaves
    * among blocks.
@@ -78,6 +80,25 @@ export type AuthoredResolution = Readonly<{
 type Node = JsonRecord & { children?: readonly Node[]; text?: string };
 
 const isText = (node: Node) => typeof node.text === 'string';
+
+const isInserted = (node: unknown) =>
+  readAuthoredMarks(node).some((mark) => mark.kind === 'insert');
+
+/** The review children of a level that hold its prefix slots at the start. */
+const startOccupants = <N>(level: readonly N[]) =>
+  level.filter((node) => !isInserted(node));
+
+/**
+ * Whether a decision vacates prefix slot `slot` when `original`, as the
+ * review tree holds it, is the slot's candidate: neither the slot's start
+ * occupant nor an inserted node, so the decision builds a fresh element there
+ * as Editing does and never promotes a later sibling.
+ */
+const vacatesSlot = (
+  start: readonly unknown[],
+  slot: number,
+  original: unknown
+) => original !== start[slot] && !isInserted(original);
 
 /** An element holding texts; one with no children holds no blocks, so it counts. */
 export const isTextBlock = (node: unknown) => {
@@ -92,6 +113,30 @@ export const isTextBlock = (node: unknown) => {
 
 const typeOf = (node: Node) =>
   typeof node.type === 'string' ? node.type : null;
+
+/**
+ * Whether a node survives once `settled` says which nodes its decided marks
+ * remove: a removed element survives while anything inside it does.
+ */
+export const survivalUnder = (settled: (node: Node) => boolean) => {
+  const memo = new WeakMap<Node, boolean>();
+  const survives = (node: Node): boolean => {
+    let value = memo.get(node);
+
+    if (value === undefined) {
+      value = isText(node)
+        ? !settled(node)
+        : !settled(node) || (node.children ?? []).some(liveContent);
+      memo.set(node, value);
+    }
+
+    return value;
+  };
+  const liveContent = (node: Node): boolean =>
+    isText(node) ? !settled(node) && node.text !== '' : survives(node);
+
+  return { liveContent, survives };
+};
 
 const withMarks = (node: Node, marks: readonly AuthoredMark[]): Node => {
   const { [AUTHORED_MARKS_KEY]: _marks, ...rest } = node;
@@ -128,21 +173,36 @@ export const resolveAuthoredChildren = (
 ): AuthoredResolution => {
   const contentOf = (type: string | null) =>
     schema?.content(type, root) ?? null;
-  const canonical = (nodes: readonly Node[], parent: Node | null): Node[] =>
-    schema?.canonicalize
-      ? [
-          ...(schema.canonicalize(
-            nodes as readonly JsonNode[],
-            parent,
-            root
-          ) as readonly Node[]),
-        ]
-      : mergeTextsWithEqualProps(nodes);
+  // Without a schema, a text block a decision empties keeps an empty text.
+  const complete = (
+    nodes: readonly Node[],
+    site: readonly Node[],
+    startLevel: readonly Node[],
+    vacated: (slot: number, candidate: Node) => boolean
+  ) =>
+    schema?.complete
+      ? (schema.complete(
+          nodes as readonly JsonNode[],
+          site,
+          root,
+          vacated
+        ) as Completion<Node>)
+      : {
+          built: [],
+          children:
+            nodes.length === 0 && site.length > 0 && startLevel.some(isText)
+              ? [{ text: '' }]
+              : mergeTextsWithEqualProps(nodes),
+        };
   const decided = new Set<string>();
   const waits = new Set<string>();
-  const repairs: AuthoredRepair[] = [];
   const diagnostics: AuthoredProjectionDiagnostic[] = [];
   const origins = new Map<object, object>();
+  // Elements whose children or properties a decision changed, which the
+  // completion pass brings to canonical form, and for each element on the way
+  // to one, the indexes of its children that lead there.
+  const touched = new WeakSet<Node>();
+  const dirtyChildren = new WeakMap<Node, readonly number[]>();
   let unplaceable = false;
   const resultOf = (mark: AuthoredMark) => {
     const result = outcome(mark.change);
@@ -179,21 +239,7 @@ export const resolveAuthoredChildren = (
 
     return value;
   };
-  const survivesMemo = new WeakMap<Node, boolean>();
-  const survives = (node: Node): boolean => {
-    let value = survivesMemo.get(node);
-
-    if (value === undefined) {
-      value = isText(node)
-        ? !settled(node)
-        : !settled(node) || (node.children ?? []).some(liveContent);
-      survivesMemo.set(node, value);
-    }
-
-    return value;
-  };
-  const liveContent = (node: Node): boolean =>
-    isText(node) ? !settled(node) && node.text !== '' : survives(node);
+  const { liveContent, survives } = survivalUnder(settled);
   // Insert and delete marks of content the decision leaves standing, whose
   // own decisions say whether it stays.
   const contentMarksIn = (node: Node): AuthoredMark[] => [
@@ -395,8 +441,9 @@ export const resolveAuthoredChildren = (
     input: readonly Node[],
     parentType: string | null,
     path: readonly number[]
-  ): Readonly<{ changed: boolean; list: Node[] }> => {
+  ): Readonly<{ changed: boolean; dirty: number[]; list: Node[] }> => {
     const out: Node[] = [];
+    const dirty: number[] = [];
     const { joined, nodes } = joinsCuts
       ? joinRejectedCuts(input, {
           endSurvives: (cut) => {
@@ -463,7 +510,11 @@ export const resolveAuthoredChildren = (
       // A rejected type change restores the type the children are judged by.
       const type = typeOf(formatted.props);
       const merged = mergedBlocks.get(node) ?? [];
-      const { changed: childrenChanged, list: resolved } = resolveList(
+      const {
+        changed: childrenChanged,
+        dirty: childDirty,
+        list: resolved,
+      } = resolveList(
         [
           ...(node.children ?? []),
           ...merged.flatMap((block) => block.children ?? []),
@@ -494,54 +545,32 @@ export const resolveAuthoredChildren = (
             )
           )
         );
+        for (const at of childDirty) dirty.push(out.length + at);
         out.push(...resolved);
         continue;
       }
 
-      const content = contentOf(type);
+      const emptied = resolved.length === 0 && (node.children ?? []).length > 0;
 
-      if (resolved.length === 0) {
-        const emptiedByDecision = (node.children ?? []).length > 0;
-
-        // A block a decision empties stays, as it does in Editing, so its
-        // own pending marks decide with that decision.
-        if (emptiedByDecision) wait(formatted.kept);
-        out.push(
-          track(
-            {
-              ...element,
-              children: !emptiedByDecision
-                ? []
-                : (content?.allowsText ?? isTextBlock(node))
-                  ? canonical([{ text: '' }], element)
-                  : canonical([], element),
-            },
-            original
-          )
-        );
-        if (emptiedByDecision) restructured = true;
-        continue;
-      }
-      if (content && resolved.length < content.min) {
+      // A block a decision empties stays, as it does in Editing, so its own
+      // pending marks decide with that decision.
+      if (emptied) {
+        wait(formatted.kept);
         restructured = true;
-        repairs.push({
-          pending: [...new Set(pendingIn(element, outcome))],
-          type: type ?? '',
-        });
-        out.push(...hoist(resolved, parentType));
-        continue;
       }
-      out.push(
-        track(
-          childrenChanged ||
-            selfChanged ||
-            merged.length > 0 ||
-            original !== node
-            ? { ...element, children: canonical(resolved, element) }
-            : element,
-          original
-        )
-      );
+      out.push(track(element, original));
+      if (
+        childrenChanged ||
+        selfChanged ||
+        merged.length > 0 ||
+        original !== node
+      ) {
+        touched.add(element);
+      }
+      if (touched.has(element) || childDirty.length > 0) {
+        dirty.push(out.length - 1);
+        dirtyChildren.set(element, childDirty);
+      }
     }
 
     if (restructured) {
@@ -552,33 +581,172 @@ export const resolveAuthoredChildren = (
       });
     }
 
-    return { changed: changed || restructured, list: out };
+    return { changed: changed || restructured, dirty, list: out };
   };
 
-  // Live content of a repaired container moves up to the nearest level that
-  // accepts it; it is never removed.
-  const hoist = (nodes: readonly Node[], parentType: string | null): Node[] => {
-    const content = contentOf(parentType);
+  const STRUCTURE_KINDS: ReadonlySet<AuthoredMark['kind']> = new Set([
+    'join',
+    'split',
+    'unwrap',
+    'wrap',
+  ]);
+  // A decision that builds waits on every pending change whose outcome
+  // changes what it builds. A built element's properties can read any
+  // ancestor, so it waits on each ancestor's pending restructuring.
+  const waitOnBuild = (level: readonly Node[], site: readonly Node[]) => {
+    const [parent, ...ancestors] = site;
 
-    return nodes.flatMap((node) => {
-      if (isText(node)) {
-        if (content && !content.allowsText) unplaceable = true;
-        return [node];
-      }
-      if (
-        !content ||
-        content.allowedElementTypes === null ||
-        content.allowedElementTypes.includes(String(node.type))
-      ) {
-        return [node];
-      }
+    // The element's type picks the content its completion builds for.
+    wait(
+      readAuthoredMarks(parent).filter(
+        (mark) =>
+          STRUCTURE_KINDS.has(mark.kind) ||
+          mark.kind === 'delete' ||
+          (mark.kind === 'format' && mark.key === 'type')
+      )
+    );
+    for (const child of level) {
+      wait(
+        readAuthoredMarks(child).filter((mark) =>
+          STRUCTURE_KINDS.has(mark.kind)
+        )
+      );
+    }
+    for (const ancestor of ancestors) {
+      wait(
+        readAuthoredMarks(ancestor).filter((mark) =>
+          STRUCTURE_KINDS.has(mark.kind)
+        )
+      );
+    }
+  };
+  // A pending insertion between a prefix slot and the slot's start occupant
+  // decides what fills the slot, so the decision waits on it when the slots
+  // differ with it rejected.
+  const waitOnPrefix = (
+    level: readonly Node[],
+    completed: Completion<Node>,
+    start: readonly Node[],
+    completeHere: (nodes: readonly Node[]) => Completion<Node>,
+    slots: number
+  ) => {
+    const occupied = level.findIndex((node) =>
+      start.includes((origins.get(node) ?? node) as Node)
+    );
+    const front = new Set(
+      level.slice(0, (occupied === -1 ? level.length : occupied) + slots)
+    );
+    const pending = [...front].flatMap((node) =>
+      readAuthoredMarks(node).filter((mark) => mark.kind === 'insert')
+    );
 
-      return hoist(node.children ?? [], parentType);
-    });
+    if (pending.length === 0) return;
+
+    const without = completeHere(
+      level.filter(
+        (node) =>
+          !front.has(node) ||
+          !readAuthoredMarks(node).some((mark) => mark.kind === 'insert')
+      )
+    );
+    const head = ({ built, children: nodes }: Completion<Node>) =>
+      nodes
+        .slice(0, slots)
+        .map(
+          (node) =>
+            `${built.some((item) => item.node === node) ? '+' : ''}${typeOf(
+              node
+            )}`
+        )
+        .join(',');
+
+    if (head(completed) !== head(without)) {
+      wait(pending);
+    }
+  };
+  // An element built inside pending insertions is part of them, as the
+  // recorder's fills are, so rejecting any of them removes it.
+  const underInsertions = (
+    completion: Completion<Node>,
+    site: readonly Node[]
+  ): Completion<Node> => {
+    const marks = site.flatMap((node) =>
+      readAuthoredMarks(node).filter((mark) => mark.kind === 'insert')
+    );
+
+    if (marks.length === 0 || completion.built.length === 0) return completion;
+
+    const marked = new Map(
+      completion.built.map(({ node }) => [
+        node,
+        withMarksThroughout(node as JsonNode, marks) as Node,
+      ])
+    );
+
+    return {
+      built: completion.built.map((item) => ({
+        ...item,
+        node: getDefined(marked.get(item.node)),
+      })),
+      children: completion.children.map((node) => marked.get(node) ?? node),
+    };
+  };
+  // Each element at its final placement, children first.
+  const completeLevel = (
+    level: readonly Node[],
+    site: readonly Node[],
+    startLevel: readonly Node[],
+    changed: boolean,
+    dirty: readonly number[]
+  ): readonly Node[] => {
+    let copy: Node[] | null = null;
+
+    for (const index of dirty) {
+      const node = getDefined(level[index]);
+      const original = origins.get(node) as Node | undefined;
+      const completed = completeLevel(
+        node.children ?? [],
+        [node, ...site],
+        original?.children ?? [],
+        touched.has(node),
+        dirtyChildren.get(node) ?? []
+      );
+
+      if (completed === node.children) continue;
+      copy ??= [...level];
+      copy[index] = track({ ...node, children: completed }, original);
+    }
+
+    const nodes = copy ?? level;
+
+    if (!changed) return nodes;
+
+    const start = startOccupants(startLevel);
+    const completeHere = (items: readonly Node[]) =>
+      complete(items, site, startLevel, (slot, candidate) =>
+        vacatesSlot(start, slot, origins.get(candidate) ?? candidate)
+      );
+    const completion = underInsertions(completeHere(nodes), site);
+    const slots = contentOf(site[0] ? typeOf(site[0]) : null)?.prefix ?? 0;
+
+    if (completion.built.length > 0) {
+      waitOnBuild(nodes, site);
+    }
+    if (slots > 0) {
+      waitOnPrefix(nodes, completion, start, completeHere, slots);
+    }
+
+    return completion.children;
   };
 
   const top = resolveList(children, null, []);
-  const resolvedChildren = top.changed ? canonical(top.list, null) : top.list;
+  const resolvedChildren = completeLevel(
+    top.list,
+    [],
+    children,
+    top.changed,
+    top.dirty
+  );
   // Indexed from the final tree, so a node a later merge replaced is not
   // reported.
   let resolvedNodes: Map<object, Node> | null = null;
@@ -594,9 +762,7 @@ export const resolveAuthoredChildren = (
   };
 
   return {
-    blockers: [
-      ...new Set([...waits, ...repairs.flatMap((repair) => repair.pending)]),
-    ],
+    blockers: [...waits],
     children: resolvedChildren as readonly JsonNode[],
     decided: [...decided],
     diagnostics,
@@ -607,7 +773,6 @@ export const resolveAuthoredChildren = (
 
       return (resolvedNodes.get(original) as JsonNode | undefined) ?? null;
     },
-    repairs,
     unplaceable,
   };
 };
@@ -618,13 +783,6 @@ const CONTENT_AND_ENCLOSURE_KINDS: ReadonlySet<AuthoredMark['kind']> = new Set([
   'unwrap',
   'wrap',
 ]);
-
-const pendingIn = (node: Node, outcome: AuthoredOutcome): string[] => [
-  ...readAuthoredMarks(node)
-    .filter((mark) => outcome(mark.change) === 'keep')
-    .map((mark) => mark.change),
-  ...(node.children ?? []).flatMap((child) => pendingIn(child, outcome)),
-];
 
 /**
  * Each key's format tags decided by `decideKey`, or null for a node with no
@@ -711,7 +869,6 @@ export const resolveAuthoredValue = (
         (found, resolution) => found ?? resolution.resolvedOf(original),
         null
       ),
-    repairs: all.flatMap((resolution) => resolution.repairs),
     unplaceable: all.some((resolution) => resolution.unplaceable),
     value: {
       ...value,
@@ -745,8 +902,9 @@ export const projectAuthoredValue = (
 /**
  * Read nodes of the document as one projection reads them: the whole document
  * is projected first, so a node under a struck ancestor is not read as live.
- * A node a decision removed or merged into the block before it, or a text the
- * canonical form merged with its neighbour, reads as `null`.
+ * A node a decision removed or merged into the block before it, a text the
+ * canonical form merged with its neighbour, or a node the canonical pass after
+ * completion rewrote reads as `null`.
  */
 export const projectAuthoredFragment = (
   value: JsonEditorValue,

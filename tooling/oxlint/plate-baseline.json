@@ -44,9 +44,6 @@
     "apps/www/src/registry/components/editor/footnote.slow.tsx": [
       "mock.module('platejs/static', () => ({"
     ],
-    "apps/www/src/registry/components/editor/import-toolbar-button.spec.tsx": [
-      "mock.module('platejs/docx/import', () => ({ importDocx }));"
-    ],
     "apps/www/src/registry/components/editor/inline-void-suggestion.slow.tsx": [
       "mock.module('platejs/math/react', () => ({"
     ],
@@ -279,6 +276,19 @@
       "import { DecorationContext } from '../../../../../plitejs/src/react/decoration-context';"
     ]
   },
+  "plate/no-schema-placement-copy": {
+    "packages/platejs/src/ai/react/aiOutputLanding.internal.ts": [
+      "(content.max === null || count <= content.max) &&",
+      "(content.max === null || count <= content.max) &&",
+      "if (!parent || !content || content.prefix) return undefined;",
+      "return count >= content.min &&"
+    ],
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": [
+      "(content.max !== null && children.length > content.max)",
+      "(content.max !== null && children.length > content.max)",
+      "children.length < content.min ||"
+    ]
+  },
   "plate/no-second-name": {
     "packages/platejs/src/csv/lib/CsvPlugin.ts": [
       "export type CsvParseOptions = ParseConfig;"
@@ -403,6 +413,21 @@
       "const source = readFileSync(sourcePath, 'utf-8');",
       "const source = readFileSync(sourcePath, 'utf-8');",
       "const typeSource = readFileSync(typeSourcePath, 'utf-8');"
+    ]
+  },
+  "plate/no-structural-mark-copy": {
+    "packages/plitejs/src/authored/tree/proposed.ts": [
+      "const found = firstBlockIn(child, enclosed || !hasMark(node, 'unwrap'));",
+      "if (found) return !found.enclosed && hasMark(found.node, 'join');",
+      "if (hasMark(child, 'join') && target) {",
+      "if (hasMark(child, 'unwrap')) {",
+      "while (depth > 0 && hasMark(getDefined(chain[depth - 1]), 'unwrap')) {"
+    ],
+    "packages/plitejs/src/authored/tree/record-completion.ts": [
+      "if (childMarks.some((mark) => mark.kind === 'unwrap')) {",
+      "moved.some((item) => markedNow(item, 'join'));",
+      "readAuthoredMarks(node).filter((mark) => mark.kind === 'unwrap')",
+      "reshaping.push(...childMarks.filter((mark) => mark.kind === 'join'));"
     ]
   }
 }

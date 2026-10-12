@@ -282,6 +282,10 @@ AI chat preview 遵循相同规则；参阅 [AI 流式传输](/docs/ai#streaming
 
 <ComponentPreview name="markdown-streaming-demo" />
 
+## 列表标识
+
+Markdown 没有列表标识，因此每次解析都会给每个 Markdown 列表新的 `listId`。同一来源的两次解析在列表 id 之外相等。继续 `previous` 结果的解析会保留它复用的块的 id，重新转换的列表会得到新的 id。比较两次解析时，按首次出现的顺序重命名每个 `listId`。Plate 如何读取和写出列表，参见 [List](/docs/list#html-和-markdown)。
+
 ## Authored content
 
 Markdown 表示可见的 `accepted` 或 `proposed` content。它不会附加隐藏 Plate

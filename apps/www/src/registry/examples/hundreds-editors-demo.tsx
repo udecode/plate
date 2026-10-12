@@ -4,6 +4,7 @@ import type { Value } from 'platejs';
 import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
+import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { createMultiEditorsValue } from '@/registry/examples/values/multi-editors-value';
 
@@ -15,8 +16,7 @@ const editors = createMultiEditorsValue().map((value, index) => ({
 function WithPlate({ id, value }: { id: string; value: Value }) {
   const editor = useCreateEditor({
     id,
-    // components: PlateUI,
-    // plugins: [...BasicBlocksKit, ...BasicMarksKit],
+    plugins: BasicBlocksKit,
     initialValue: value,
   });
 

@@ -172,11 +172,22 @@ describe('state/tx public API contract', () => {
     ] satisfies Element[];
     const serialized = JSON.stringify(value);
     const parsed = JSON.parse(serialized) as Element[];
-    const editor = createEditor({ initialValue: parsed });
+    const linkSchema = () =>
+      defineTestSchema('json-round-trip', {
+        'bulleted-list': {},
+        heading: {},
+        link: { inline: true },
+        'list-item': {},
+      });
+    const editor = createEditor({
+      initialValue: parsed,
+      plugins: [linkSchema()],
+    });
     const exported = editor.read((state) => state.value());
     const reserialized = JSON.stringify(exported);
     const rehydrated = createEditor({
       initialValue: JSON.parse(reserialized),
+      plugins: [linkSchema()],
     });
 
     assert.deepEqual(parsed, value);

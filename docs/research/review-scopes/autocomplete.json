@@ -50,8 +50,7 @@
     "bunfig.toml",
     "packages/platejs/src/lib/plugins/input-rules/",
     "apps/www/src/registry/hooks/use-debounce.ts",
-    "apps/www/src/registry/components/editor/select-editor.tsx",
-    "apps/www/src/registry/components/editor/select-command.tsx"
+    "apps/www/src/registry/components/editor/select-editor.tsx"
   ],
   "relatedScopes": [
     "mentions",

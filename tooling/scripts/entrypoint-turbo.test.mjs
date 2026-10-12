@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -278,6 +279,27 @@ test('package aggregates preserve the existing typecheck coverage', () => {
   assert.equal(plate.typecheck.dependsOn.includes('typecheck:tests'), false);
   assert.ok(plite.typecheck.dependsOn.includes('typecheck:contracts'));
   assert.ok(plite.typecheck.dependsOn.includes('typecheck:tests'));
+});
+
+test('the plitejs tests typecheck covers every slow suite', () => {
+  const packageRoot = path.join(repoRoot, entrypointDags.plitejs.packageRoot);
+  const { files } =
+    generatedByPackage.get('plitejs').tsconfigs[
+      path.join(packageRoot, 'tsconfig.entrypoints/tests.json')
+    ];
+  const slowSuites = execFileSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '*.slow.*'],
+    { cwd: packageRoot, encoding: 'utf-8' }
+  )
+    .split('\n')
+    .filter(Boolean);
+
+  assert.notEqual(slowSuites.length, 0);
+  assert.deepEqual(
+    slowSuites.filter((suite) => !files.includes(`../${suite}`)),
+    []
+  );
 });
 
 test('distributable builds stay atomic and cache only production inputs', () => {

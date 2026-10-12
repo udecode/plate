@@ -1,0 +1,18 @@
+---
+id: 2026-10-11-tabbable-kit-view-caret
+date: 2026-10-11
+status: draft
+kind: fix
+summary: 'Let Tab nest list items with TabbableKit installed'
+change: { 'type': 'source', 'date': '2026-10-11', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-11-tabbable-let-tab-nest-list-f801e9fc","kind":"fix","migrationNotes":[]} -->
+
+- **`tabbable`**: Read the caret from the view's editor, so Tab and Shift+Tab nest and un-nest list items and stay in code blocks and tables. Tab at a paragraph's start or end moves focus, as it does mid-paragraph.
+
+<!-- entry: {"id":"2026-10-11-tabbable-demo-loads-kit","kind":"fix","migrationNotes":[]} -->
+
+- **`tabbable-demo`**: Install `TabbableKit` and use the demo plugin's element type, so the page loads and shows the kit.

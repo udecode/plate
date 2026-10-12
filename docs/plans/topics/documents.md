@@ -1,6 +1,6 @@
 # Documents: DOCX import, export and Word paste
 
-Page: https://claude.ai/artifact/2WGXfBCDmAhE5YjN6g2BWe
+Page: https://claude.ai/artifact/Xi6wxUtZHDuyR1kgyJZid8
 
 DOCX file import, DOCX file export and Word clipboard paste in `platejs`. The ledger asks which document conversion laws the three share, and where fidelity limits must be explicit (`docs/research/review-scopes/documents.json`). `importDocx` returns one document or a failure, `exportDocx` captures one editor snapshot under an explicit authored projection, every loss is a structured diagnostic, an opt-in `DocxSource` gives exact or safely overlaid re-export, output passes a safety gate, and `WordPastePlugin` owns paste. A Word file carries only what Word displays: text, comments and tracked revisions. Exact review state persists as canonical authored JSON beside the file. An edited source-aware export keeps custom properties and one-section headers and footers from the source, and reports every other source part it leaves out. The 2026-10-06 build's acceptance and benchmark receipts are in `docs/plans/2026-10-06-documents-review.md`'s Close; the decision page, `docs/research/decisions/documents-conversion-fidelity.md`, holds the older September receipts, which this page did not rerun.
 

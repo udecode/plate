@@ -1,12 +1,18 @@
 import type { FocusableElement } from 'tabbable';
 
-import type { Node, Path } from '../../core';
+import type { Editor, Node, Path } from '../../core';
 
 export type TabbableEntry = {
   domNode: FocusableElement;
   path: Path;
   slateNode: Node;
 };
+
+/** The Tab keydown and the editor of the view Tabbable runs in. */
+export type TabbableEventContext = Readonly<{
+  editor: Editor;
+  event: KeyboardEvent;
+}>;
 
 export type TabbablePluginState = {
   /**
@@ -22,17 +28,21 @@ export type TabbablePluginState = {
    *
    * @default () => []
    */
-  insertTabbableEntries: (event: KeyboardEvent) => TabbableEntry[];
+  insertTabbableEntries: (context: TabbableEventContext) => TabbableEntry[];
   /**
    * Determine whether an element should be included in the tabbable list.
    *
-   * @default (entry) => editor.read.schema.isVoid(entry.slateNode)
+   * @default ({ editor, entry }) => editor.read.schema.isVoid(entry.slateNode)
    */
-  isTabbable: (entry: TabbableEntry) => boolean;
+  isTabbable: (
+    context: TabbableEventContext & { entry: TabbableEntry }
+  ) => boolean;
   /**
-   * Dynamically enable or disable the plugin.
+   * Decide whether Tabbable handles a Tab. A Tab pressed on a stop Tabbable
+   * admits, which is an inserted entry or an in-editor tabbable that
+   * `isTabbable` accepts, skips `query` and always follows the tab order.
    *
    * @default () => true
    */
-  query: (event: KeyboardEvent) => boolean;
+  query: (context: TabbableEventContext) => boolean;
 };

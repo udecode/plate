@@ -157,7 +157,7 @@ Plugin for indenting block elements. It injects an `indent` prop into the elemen
 Indents the selected block(s) in the editor.
 
 <API name="increase">
-  <APIOptions type="Omit<IndentChangeOptions, 'offset'>" optional>
+  <APIOptions type="IndentChangeOptions" optional>
     Options for indenting blocks.
   </APIOptions>
 </API>
@@ -167,30 +167,8 @@ Indents the selected block(s) in the editor.
 Decreases the indentation of the selected blocks.
 
 <API name="decrease">
-  <APIOptions type="Omit<IndentChangeOptions, 'offset'>" optional>
+  <APIOptions type="IndentChangeOptions" optional>
     Options for outdenting blocks.
-  </APIOptions>
-</API>
-
-### `editor.plugin(IndentPlugin).update.change`
-
-Adds an offset to the indentation of the selected blocks.
-
-<API name="change">
-  <APIOptions type="IndentChangeOptions">
-    <APIItem name="offset" type="number" optional>
-      Indentation offset used in `(offset * element.indent) + unit`. -
-      **Default:** `1`
-    </APIItem>
-    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
-      Node query and update options. `match` may further restrict target blocks.
-    </APIItem>
-    <APIItem name="setNodeProps" type="({ indent }: { indent: number }) => Record<string, unknown>" optional>
-      Returns additional properties to set for the next indent value.
-    </APIItem>
-    <APIItem name="unsetNodeProps" type="string[]" optional>
-      Additional persisted property keys to unset when indentation reaches zero. - **Default:** `[]`
-    </APIItem>
   </APIOptions>
 </API>
 
@@ -202,17 +180,8 @@ Used to provide options for setting the indentation of a block of text.
 
 <API name="IndentChangeOptions">
   <APIOptions>
-    <APIItem name="offset" type="number">
-      Change in indentation (1 to indent, -1 to outdent). - **Default:** `1`
-    </APIItem>
-    <APIItem name="nodes" type="EditorNodesOptions<Element>">
-      Node query and update options.
-    </APIItem>
-    <APIItem name="setNodeProps" type="({ indent }: { indent: number }) => Record<string, unknown>">
-      Builds additional properties from the next indent value.
-    </APIItem>
-    <APIItem name="unsetNodeProps" type="string[]">
-      Persisted property keys to unset when indentation reaches zero.
+    <APIItem name="nodes" type="EditorNodesOptions<Element>" optional>
+      Node query and update options. `match` may further restrict target blocks.
     </APIItem>
   </APIOptions>
 </API>

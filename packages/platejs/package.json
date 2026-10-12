@@ -335,16 +335,6 @@
       "import": "./dist/react/features/table/index.js",
       "default": "./dist/react/features/table/index.js"
     },
-    "./tag": {
-      "types": "./dist/features/tag/index.d.ts",
-      "import": "./dist/features/tag/index.js",
-      "default": "./dist/features/tag/index.js"
-    },
-    "./tag/react": {
-      "types": "./dist/react/features/tag/index.d.ts",
-      "import": "./dist/react/features/tag/index.js",
-      "default": "./dist/react/features/tag/index.js"
-    },
     "./testing": {
       "types": "./dist/testing/index.d.ts",
       "import": "./dist/testing/index.js",
@@ -460,8 +450,6 @@
     "lint:partition:tabbable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs tabbable-react",
     "lint:partition:table": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs table",
     "lint:partition:table-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs table-react",
-    "lint:partition:tag": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs tag",
-    "lint:partition:tag-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs tag-react",
     "lint:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs testing",
     "lint:partition:toc": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs toc",
     "lint:partition:toc-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs toc-react",
@@ -530,8 +518,6 @@
     "test:partition:tabbable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tabbable-react",
     "test:partition:table": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs table",
     "test:partition:table-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs table-react",
-    "test:partition:tag": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tag",
-    "test:partition:tag-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs tag-react",
     "test:partition:toc": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs toc",
     "test:partition:upload": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs upload",
     "test:partition:upload-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs upload-react",
@@ -619,8 +605,6 @@
     "typecheck:partition:tabbable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs tabbable-react",
     "typecheck:partition:table": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs table",
     "typecheck:partition:table-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs table-react",
-    "typecheck:partition:tag": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs tag",
-    "typecheck:partition:tag-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs tag-react",
     "typecheck:partition:testing": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs testing",
     "typecheck:partition:toc": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs toc",
     "typecheck:partition:toc-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs toc-react",

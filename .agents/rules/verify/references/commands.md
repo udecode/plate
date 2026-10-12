@@ -54,8 +54,13 @@ Rules:
   guessing command variants. Locate the exact file or wrapper with `rg --files`
   / `rg -n`, then rerun once with the correct runner;
 - run Plite package checks through the entrypoint-aware `plitejs` scripts, such
-  as `pnpm --filter plitejs typecheck`, which already runs `typecheck:tests`
-  for its test files; run alone in a fresh worktree, `typecheck:tests` fails
+  as `pnpm --filter plitejs typecheck`, which runs `typecheck:tests`. That task
+  covers the `src` specs, `test/react`, and the `.slow.*` suites under `test/`
+  with the helpers they import. Elsewhere under `test/`, `check:core`,
+  `typecheck:contracts` and `plite:public-types` check only the files that
+  `test/tsconfig.generic-types.json`, `tsconfig.public-api.json` and
+  `test/tsconfig.public-package-types.json` list, and no gate typechecks the
+  rest. Run alone in a fresh worktree, `typecheck:tests` fails
   with TS6305 because its partition outputs are not built. Never use
   `tsc -p test/tsconfig.json` or `tsconfig.test.json` for plitejs; do not target
   deleted package roots;

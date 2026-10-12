@@ -2,18 +2,27 @@
 
 import { Fzf } from 'fzf';
 import { PlusIcon } from 'lucide-react';
-import { isHotkey, TextApi } from 'platejs';
+import {
+  type Descendant,
+  editorCommands,
+  ElementApi,
+  isHotkey,
+  type Node,
+  type Path,
+  PathApi,
+  type PluginTransaction,
+  type Text,
+  TextApi,
+} from 'platejs';
 import {
   EditorRoot,
-  useEditor,
-  useEditorSelector,
   useCreateEditor,
+  useEditor,
   useEditorContainerRef,
+  useEditorSelector,
 } from 'platejs/react';
-import { MultiSelectPlugin } from 'platejs/tag/react';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
 import {
   FloatingPopover,
   FloatingPopoverAnchor,
@@ -21,330 +30,404 @@ import {
 } from '@/registry/components/editor/floating-popover';
 
 import { Editor, EditorContainer } from './editor';
-import {
-  Command as CommandPrimitive,
-  useCommandActions,
-} from './select-command';
-import { TagElement } from './tag';
+import { TagElement, TagPlugin } from './tag';
 
-export type SelectItem = {
-  value: string;
-  isNew?: boolean;
-};
+export type SelectItem = { url?: string; value: string };
 
-const EMPTY_SELECT_ITEMS: SelectItem[] = [];
+type Option = SelectItem & { create?: true };
 
-const areSelectItemsEqual = (
-  previous: SelectItem[] | null | undefined,
-  next: SelectItem[] | undefined
-) => {
-  const previousItems = previous ?? EMPTY_SELECT_ITEMS;
-  const nextItems = next ?? EMPTY_SELECT_ITEMS;
+const tagKey = (value: string) => value.toLowerCase();
 
-  return (
-    previousItems.length === nextItems.length &&
-    previousItems.every((item, index) => item.value === nextItems[index]?.value)
-  );
-};
+const CREATE_MIN_LENGTH = 2;
 
-type SelectEditorContextValue = {
-  controlled: boolean;
-  hasSelectableItemsRef: React.RefObject<boolean>;
-  items: SelectItem[];
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  defaultValue?: SelectItem[];
-  value?: SelectItem[];
-  setValue: (items: SelectItem[]) => void;
-  onValueChange?: (items: SelectItem[]) => void;
-};
+const RECEIVE = 'select-editor-receive';
+const CLEANUP = 'select-editor-cleanup';
 
-const SelectEditorContext = React.createContext<
-  SelectEditorContextValue | undefined
->(undefined);
+const EMPTY_ITEMS: readonly SelectItem[] = [];
 
-const useSelectEditorContext = () => {
-  const context = React.useContext(SelectEditorContext);
+const FIRST_OPTION = { key: '', search: '' };
 
-  if (!context) {
-    throw new Error('useSelectEditor must be used within SelectEditor');
+const HANDLED_NO_REFOCUS = { kind: 'none' } as const;
+
+const isTag = (
+  node: Node,
+  type: string
+): node is Node & { url?: string; value: string } =>
+  ElementApi.isElementType(node, type) && typeof node.value === 'string';
+
+const toItem = (node: { url?: string; value: string }): SelectItem => ({
+  ...(node.url === undefined ? {} : { url: node.url }),
+  value: node.value,
+});
+
+const isSearchText = (node: Node): node is Text =>
+  TextApi.isText(node) && node.text.length > 0;
+
+const removeStraySearch = (tx: PluginTransaction) => {
+  const selection = tx.selection();
+  const selected = selection
+    ? Array.from(
+        tx.nodes.entries({ at: selection, match: TextApi.isText })
+      ).map(([, path]) => path)
+    : [];
+  const stray = (node: Node, path: Path) =>
+    isSearchText(node) &&
+    !selected.some((selectedPath) => PathApi.equals(selectedPath, path));
+
+  if (tx.nodes.some({ at: [], match: stray })) {
+    tx.nodes.remove({ at: [], match: stray });
   }
-
-  return context;
 };
 
+export const SelectTagPlugin = TagPlugin.extend(
+  ({ editor, plugin, schema: { type } }) => ({
+    commands: ({ around }) => [
+      around(editorCommands.delete, ({ input, state, next }) => {
+        if (input.direction !== 'backward') return next();
+
+        const result = next();
+
+        if (result === false) return false;
+
+        return state.transaction.extend(result, (tx) => {
+          if (tx.nodes.some({ type: plugin })) {
+            tx.selection.move();
+          }
+        });
+      }),
+    ],
+    corrections: [
+      {
+        event: 'content',
+        correct({ entry: [node, path], tx }) {
+          if (isTag(node, type)) {
+            const key = tagKey(node.value);
+            const isDuplicate = (candidate: Node, candidatePath: Path) =>
+              isTag(candidate, type) &&
+              tagKey(candidate.value) === key &&
+              !PathApi.equals(candidatePath, path);
+            const hasEarlierDuplicate = tx.nodes.some({
+              at: [],
+              match: (candidate, candidatePath) =>
+                isDuplicate(candidate, candidatePath) &&
+                PathApi.isBefore(candidatePath, path),
+            });
+
+            if (hasEarlierDuplicate) {
+              tx.nodes.remove({ at: path });
+            } else {
+              tx.nodes.remove({ at: [], match: isDuplicate });
+            }
+
+            return;
+          }
+          if (!isSearchText(node)) return;
+
+          const leadingWhitespace =
+            node.text.length - node.text.trimStart().length;
+          const selection = tx.selection();
+
+          if (leadingWhitespace > 0) {
+            const selectionAnchor = selection
+              ? tx.anchor(selection, {
+                  association: 'inward',
+                  deletion: 'nearest',
+                })
+              : null;
+
+            tx.text.delete({
+              at: {
+                anchor: { offset: 0, path },
+                focus: { offset: leadingWhitespace, path },
+              },
+            });
+
+            const nextSelection = selectionAnchor?.resolve();
+
+            if (nextSelection) tx.selection.set(nextSelection);
+          }
+          // A commit that moves the caret and types leaves the old search in
+          // a leaf this correction never visits.
+          if (selection) removeStraySearch(tx);
+        },
+      },
+    ],
+    on: {
+      // A caret move commits no content, so no correction runs.
+      commit({ commit }) {
+        const caretOnly = !commit.changed.hasAny('document');
+
+        if (!caretOnly || commit.tags.includes(CLEANUP)) return;
+
+        editor.update({ history: 'skip', tags: CLEANUP }, removeStraySearch);
+      },
+    },
+    read: ({ state }) => ({
+      /** Every chip in document order, with its link. */
+      items: (): SelectItem[] =>
+        Array.from(state.nodes.entries({ at: [], type: plugin })).map(
+          ([node]) => toItem(node)
+        ),
+    }),
+    update: ({ tx }) => ({
+      /** Removes the typed search. */
+      clearSearch: () => {
+        tx.nodes.remove({ at: [], match: isSearchText });
+      },
+      /** Inserts a chip at the caret, clears the search and moves the caret to the end. */
+      pick: (item: SelectItem) => {
+        tx.nodes.insert([
+          { children: [{ text: '' }], type, ...toItem(item) },
+          { text: '' },
+        ]);
+        tx.nodes.remove({ at: [], match: isSearchText });
+
+        const end = tx.points.end([]);
+
+        if (end) tx.selection.set(end);
+      },
+      /** Replaces every chip and the search with `items`. */
+      replaceItems: (items: readonly SelectItem[]) => {
+        const hadSelection = tx.selection() !== null;
+
+        tx.value.replace({ children: createValue(type, items) });
+
+        const end = tx.points.end([]);
+
+        if (hadSelection && end) tx.selection.set(end);
+      },
+    }),
+  })
+);
+
+const createValue = (type: string, items: readonly SelectItem[]) => [
+  {
+    children: [
+      { text: '' },
+      ...items.flatMap((item) => [
+        { children: [{ text: '' }], type, ...toItem(item) },
+        { text: '' },
+      ]),
+    ],
+    type: 'paragraph',
+  },
+];
+
+const projectItems = (
+  children: readonly Descendant[],
+  type: string
+): SelectItem[] => {
+  const items: SelectItem[] = [];
+  const visit = (nodes: readonly Descendant[]) => {
+    for (const node of nodes) {
+      if (isTag(node, type)) items.push(toItem(node));
+      else if (ElementApi.isElement(node)) visit(node.children);
+    }
+  };
+
+  visit(children);
+
+  return items;
+};
+
+const dedupeByTagKey = (items: readonly SelectItem[]) => {
+  const seen = new Set<string>();
+
+  return items.filter((item) => {
+    const key = tagKey(item.value);
+
+    if (seen.has(key)) return false;
+    seen.add(key);
+
+    return true;
+  });
+};
+
+const sameItems = (a: readonly SelectItem[], b: readonly SelectItem[]) =>
+  a.length === b.length &&
+  a.every(
+    (item, index) => item.value === b[index].value && item.url === b[index].url
+  );
+
+const getOptions = (
+  catalog: readonly SelectItem[],
+  chips: readonly SelectItem[],
+  search: string
+): Option[] => {
+  const query = search.trim().replaceAll(/\s+/g, ' ');
+  const selected = new Set(chips.map((chip) => tagKey(chip.value)));
+  const known = new Set<string>();
+  const options: Option[] = [];
+
+  for (const item of catalog) {
+    const key = tagKey(item.value);
+
+    if (known.has(key)) continue;
+    known.add(key);
+    if (!selected.has(key)) options.push(item);
+  }
+  if (
+    query.length >= CREATE_MIN_LENGTH &&
+    !known.has(tagKey(query)) &&
+    !selected.has(tagKey(query))
+  ) {
+    options.push({ create: true, value: query });
+  }
+  if (!query) return options;
+
+  return new Fzf(options, {
+    casing: 'case-insensitive',
+    selector: (option) => option.value,
+    sort: false,
+  })
+    .find(query)
+    .map((result) => result.item);
+};
+
+type SelectEditorProps = Omit<
+  React.ComponentProps<typeof Editor>,
+  | 'aria-activedescendant'
+  | 'aria-autocomplete'
+  | 'aria-controls'
+  | 'aria-expanded'
+  | 'aria-haspopup'
+  | 'aria-multiline'
+  | 'defaultValue'
+  | 'role'
+  | 'value'
+  | 'variant'
+> & {
+  /** The labels the menu offers. */
+  items?: readonly SelectItem[];
+  /**
+   * Called with the chips after each change made in the field. A controlled
+   * parent must update `value` synchronously: the field writes `value` back
+   * whenever it differs from the chips, so a value set in a transition first
+   * reverts the change.
+   */
+  onValueChange?: (items: SelectItem[]) => void;
+} & (
+    | { defaultValue?: never; value: readonly SelectItem[] }
+    | { defaultValue?: readonly SelectItem[]; value?: never }
+  );
+
+/**
+ * A one-line editor whose value is a list of chips, with a menu that filters
+ * `items` by the typed search.
+ */
 export function SelectEditor({
-  children,
   defaultValue,
-  items = EMPTY_SELECT_ITEMS,
   value,
   onValueChange,
-}: {
-  children: React.ReactNode;
-  defaultValue?: SelectItem[];
-  items?: SelectItem[];
-  value?: SelectItem[];
-  onValueChange?: (items: SelectItem[]) => void;
-}) {
-  const [open, setOpen] = React.useState(false);
-  const [internalValue, setInternalValue] = React.useState(defaultValue);
-  const hasSelectableItemsRef = React.useRef(false);
-  const contextValue = React.useMemo(
-    () => ({
-      controlled: value !== undefined,
-      hasSelectableItemsRef,
-      items,
-      open,
-      setOpen,
-      setValue: setInternalValue,
-      value: value ?? internalValue,
-      onValueChange,
-    }),
-    [internalValue, items, onValueChange, open, value]
-  );
-
-  return (
-    <SelectEditorContext value={contextValue}>
-      <Command
-        className="overflow-visible bg-transparent has-data-readonly:w-fit"
-        loop
-      >
-        {children}
-      </Command>
-    </SelectEditorContext>
-  );
-}
-
-export function SelectEditorContent({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { controlled, value } = useSelectEditorContext();
-  const { setSearch } = useCommandActions();
-
+  ...props
+}: SelectEditorProps) {
   const editor = useCreateEditor(
     {
-      plugins: [MultiSelectPlugin.configure({ component: TagElement })],
-      initialValue: createEditorValue(value),
+      plugins: [SelectTagPlugin.configure({ component: TagElement })],
+      initialValue: createValue(
+        TagPlugin.name,
+        dedupeByTagKey(value ?? defaultValue ?? EMPTY_ITEMS)
+      ),
     },
     []
   );
 
   return (
     <EditorRoot
-      onValueChange={({ editor: innerEditor }) => {
-        setSearch(innerEditor.read.text.string([]));
+      onValueChange={({ commit }) => {
+        if (commit.tags.includes(RECEIVE)) return;
+
+        const items = projectItems(commit.after.children, TagPlugin.name);
+
+        if (
+          !sameItems(
+            projectItems(commit.before.children, TagPlugin.name),
+            items
+          )
+        ) {
+          onValueChange?.(items);
+        }
       }}
       editor={editor}
     >
-      <SelectEditorValueSync controlled={controlled} value={value} />
-      <EditorContainer variant="select">{children}</EditorContainer>
+      <SelectEditorField value={value} {...props} />
     </EditorRoot>
   );
 }
 
-function SelectEditorValueSync({
-  controlled,
+function SelectEditorField({
+  className,
+  items: catalog = EMPTY_ITEMS,
+  readOnly,
   value,
-}: {
-  controlled: boolean;
-  value?: SelectItem[];
+  onBlur,
+  onFocus,
+  onKeyDown,
+  ...props
+}: Omit<SelectEditorProps, 'defaultValue' | 'onValueChange' | 'value'> & {
+  value?: readonly SelectItem[];
 }) {
   const editor = useEditor();
-  const selectedItems = useEditorSelector(
-    (innerEditor2) =>
-      innerEditor2.plugin(MultiSelectPlugin).read.getSelectedItems(),
-    {
-      equalityFn: (previous, next) =>
-        !!previous &&
-        previous.length === next.length &&
-        previous.every((item, index) => item.value === next[index]?.value),
-    }
-  );
-  const valueRef = React.useRef(value);
-
-  React.useEffect(() => {
-    valueRef.current = value;
-  }, [value]);
-
-  React.useEffect(() => {
-    if (!controlled || editor.plugin(MultiSelectPlugin).read.isEqual(value)) {
-      return undefined;
-    }
-    const timeout = globalThis.setTimeout(() => {
-      const currentValue = valueRef.current;
-
-      if (!editor.plugin(MultiSelectPlugin).read.isEqual(currentValue)) {
-        editor.update({ history: 'skip' }).value.replace({
-          children: createEditorValue(currentValue),
-        });
-      }
-    }, 0);
-
-    return () => {
-      globalThis.clearTimeout(timeout);
-    };
-  }, [controlled, editor, selectedItems, value]);
-
-  return null;
-}
-
-export const SelectEditorInput = ({
-  ref,
-  onBlur,
-  onFocusCapture,
-  onKeyDown,
-  ...editorProps
-}: React.ComponentPropsWithoutRef<typeof Editor> & {
-  ref?: React.RefObject<HTMLDivElement | null>;
-}) => {
-  const editor = useEditor();
-  const { hasSelectableItemsRef, setOpen } = useSelectEditorContext();
-  const { selectCurrentItem, selectFirstItem } = useCommandActions();
-
-  return (
-    <Editor
-      ref={ref}
-      variant="select"
-      autoFocusOnEditable
-      {...editorProps}
-      onBlur={(event) => {
-        setOpen(false);
-        onBlur?.(event);
-      }}
-      onFocusCapture={(event) => {
-        setOpen(true);
-        selectFirstItem();
-        onFocusCapture?.(event);
-      }}
-      onKeyDown={(e, context) => {
-        if (isHotkey('mod+z', e)) {
-          e.preventDefault();
-          return true;
-        }
-        if (isHotkey('enter', e)) {
-          e.preventDefault();
-          if (hasSelectableItemsRef.current) {
-            selectCurrentItem();
-            editor.update({ history: 'skip' }).nodes.remove({
-              at: [],
-              match: (node) => TextApi.isText(node) && node.text.length > 0,
-            });
-          }
-          return true;
-        }
-        if (isHotkey('escape', e) || isHotkey('mod+enter', e)) {
-          e.preventDefault();
-          e.currentTarget.blur();
-          return true;
-        }
-
-        return onKeyDown?.(e, context);
-      }}
-    />
-  );
-};
-
-export function SelectEditorCombobox() {
-  const editor = useEditor();
   const containerRef = useEditorContainerRef();
-  const {
-    controlled,
-    hasSelectableItemsRef,
-    items,
-    open,
-    onValueChange,
-    setValue,
-    value,
-  } = useSelectEditorContext();
-  const { selectFirstItem } = useCommandActions();
-  const onValueChangeRef = React.useRef(onValueChange);
-  const previousValueRef = React.useRef(value);
-  const selectedItems =
-    useEditorSelector(
-      (innerEditor3) =>
-        innerEditor3.plugin(MultiSelectPlugin).read.getSelectedItems(),
-      {
-        equalityFn: areSelectItemsEqual,
-      }
-    ) ?? EMPTY_SELECT_ITEMS;
-  const search = useEditorSelector((innerEditor4) =>
-    innerEditor4.read.text.string([])
+  const listId = React.useId();
+  const [open, setOpen] = React.useState(false);
+  const [active, setActive] = React.useState(FIRST_OPTION);
+  const chips = useEditorSelector(
+    (current) => current.plugin(SelectTagPlugin).read.items(),
+    { equalityFn: (previous, next) => !!previous && sameItems(previous, next) }
   );
-  const selectableItems = React.useMemo(() => {
-    const seenValues = new Set<string>();
-    const uniqueItems = items.filter((item) => {
-      const innerValue = item.value.toLowerCase();
-
-      if (seenValues.has(innerValue)) return false;
-
-      seenValues.add(innerValue);
-
-      return true;
-    });
-    const trimmedSearch = search.trim().replaceAll(/\s+/g, ' ');
-    const newItems: SelectItem[] =
-      trimmedSearch.length >= 2 &&
-      !uniqueItems.some(
-        (item) => item.value.toLowerCase() === trimmedSearch.toLowerCase()
-      )
-        ? [{ isNew: true, value: trimmedSearch }]
-        : [];
-    const availableItems = [...uniqueItems, ...newItems].filter(
-      (item) =>
-        !selectedItems.some(
-          (selected) =>
-            selected.value.toLowerCase() === item.value.toLowerCase()
-        )
-    );
-
-    return trimmedSearch
-      ? availableItems.filter((item) => fzfFilter(item.value, trimmedSearch))
-      : availableItems;
-  }, [items, search, selectedItems]);
+  const search = useEditorSelector((current) => current.read.text.string([]));
+  const options = React.useMemo(
+    () => getOptions(catalog, chips, search),
+    [catalog, chips, search]
+  );
+  const menuOpen = open && !readOnly && options.length > 0;
+  const activeFound =
+    active.search === search
+      ? options.findIndex((option) => tagKey(option.value) === active.key)
+      : -1;
+  const activeIndex = Math.max(0, activeFound);
+  const activeIsDefault = activeFound < 0;
+  const optionId = (index: number) => `${listId}-${index}`;
 
   React.useLayoutEffect(() => {
-    hasSelectableItemsRef.current = open && selectableItems.length > 0;
+    if (value === undefined) return;
 
-    return () => {
-      hasSelectableItemsRef.current = false;
-    };
-  }, [hasSelectableItemsRef, open, selectableItems.length]);
+    const tags = editor.plugin(SelectTagPlugin);
+    const items = dedupeByTagKey(value);
 
-  React.useEffect(() => {
-    if (!open) {
-      editor.update({ history: 'skip' }, (tx) => {
-        tx.nodes.remove({
-          at: [],
-          match: (node) => TextApi.isText(node) && node.text.length > 0,
-        });
+    if (sameItems(tags.read.items(), items)) return;
 
-        const end = tx.points.end([]);
+    tags.update({ history: 'skip', tags: RECEIVE }).replaceItems(items);
+  }, [chips, editor, value]);
 
-        if (end) tx.selection.set(end);
-      });
-    }
-  }, [editor, open]);
+  const pick = (option: Option) => {
+    editor
+      .plugin(SelectTagPlugin)
+      .update({ history: 'skip' })
+      .pick(toItem(option));
+  };
 
-  React.useEffect(() => {
-    selectFirstItem();
-  }, [search, selectFirstItem]);
+  const moveActive = (step: number) => {
+    const index = (activeIndex + step + options.length) % options.length;
 
-  React.useEffect(() => {
-    onValueChangeRef.current = onValueChange;
-  }, [onValueChange]);
+    setActive({ key: tagKey(options[index].value), search });
+    requestAnimationFrame(() => {
+      document
+        .getElementById(optionId(index))
+        ?.scrollIntoView({ block: 'nearest' });
+    });
+  };
 
   React.useEffect(() => {
-    const valueChanged = !areSelectItemsEqual(previousValueRef.current, value);
+    if (!menuOpen || !activeIsDefault) return;
 
-    previousValueRef.current = value;
-    if (valueChanged || areSelectItemsEqual(selectedItems, value)) return;
+    document
+      .getElementById(`${listId}-0`)
+      ?.scrollIntoView({ block: 'nearest' });
+  }, [activeIsDefault, listId, menuOpen, options]);
 
-    if (!controlled) setValue([...selectedItems]);
-    onValueChangeRef.current?.(selectedItems);
-  }, [controlled, selectedItems, setValue, value]);
-  const virtualAnchor = React.useMemo(
+  const anchor = React.useMemo(
     () => ({
       getBoundingClientRect: () =>
         containerRef.current?.getBoundingClientRect() ?? new DOMRect(),
@@ -352,161 +435,124 @@ export function SelectEditorCombobox() {
     [containerRef]
   );
 
-  if (!open || selectableItems.length === 0) return null;
-
   return (
-    <FloatingPopover open={open}>
-      <FloatingPopoverAnchor element={virtualAnchor} />
-      <FloatingPopoverContent
-        className="p-0 data-[state=open]:animate-none"
-        style={{
-          width: 'calc(var(--floating-popover-anchor-width) + 8px)',
+    <EditorContainer variant="select">
+      <Editor
+        className={className}
+        variant="select"
+        autoFocusOnEditable
+        readOnly={readOnly}
+        {...props}
+        {...(readOnly
+          ? {}
+          : {
+              'aria-activedescendant': menuOpen
+                ? optionId(activeIndex)
+                : undefined,
+              'aria-autocomplete': 'list' as const,
+              'aria-controls': menuOpen ? listId : undefined,
+              'aria-expanded': menuOpen,
+              'aria-haspopup': 'listbox' as const,
+              role: 'combobox',
+            })}
+        aria-multiline={undefined}
+        onBlur={(event) => {
+          setOpen(false);
+          editor
+            .plugin(SelectTagPlugin)
+            .update({ history: 'skip' })
+            .clearSearch();
+          onBlur?.(event);
         }}
-        onFinalFocus={(e) => {
-          e.preventDefault();
+        onFocus={(event) => {
+          setOpen(true);
+          setActive(FIRST_OPTION);
+          onFocus?.(event);
         }}
-        onInitialFocus={(e) => {
-          e.preventDefault();
+        onKeyDown={(event, context) => {
+          if (
+            isHotkey('mod+z', event) ||
+            isHotkey('mod+shift+z', event) ||
+            isHotkey('mod+y', event)
+          ) {
+            event.preventDefault();
+            return true;
+          }
+          if (menuOpen && (isHotkey('down', event) || isHotkey('up', event))) {
+            event.preventDefault();
+            moveActive(isHotkey('down', event) ? 1 : -1);
+            return true;
+          }
+          if (isHotkey('enter', event)) {
+            event.preventDefault();
+            if (menuOpen) pick(options[activeIndex]);
+            return true;
+          }
+          if (isHotkey('escape', event) || isHotkey('mod+enter', event)) {
+            event.preventDefault();
+            editor.api.dom.blur();
+            return HANDLED_NO_REFOCUS;
+          }
+
+          return onKeyDown?.(event, context);
         }}
-        align="start"
-        alignOffset={-4}
-        sideOffset={8}
-      >
-        <CommandList>
-          <CommandGroup>
-            {selectableItems.map((item) => (
-              <CommandItem
-                key={item.value}
-                className="cursor-pointer gap-2"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                }}
-                onSelect={() => {
-                  editor
-                    .plugin(MultiSelectPlugin)
-                    .update({ history: 'skip' })
-                    .insert(item);
-                  editor.update({ history: 'skip' }, (tx) => {
-                    tx.nodes.remove({
-                      at: [],
-                      match: (node) =>
-                        TextApi.isText(node) && node.text.length > 0,
-                    });
-
-                    const end = tx.points.end([]);
-
-                    if (end) tx.selection.set(end);
-                  });
-                }}
-              >
-                {item.isNew ? (
-                  <div className="flex items-center gap-1">
-                    <PlusIcon className="size-4 text-foreground" />
-                    Create new label:
-                    <span className="text-gray-600">"{item.value}"</span>
-                  </div>
-                ) : (
-                  item.value
-                )}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </FloatingPopoverContent>
-    </FloatingPopover>
-  );
-}
-
-const createEditorValue = (value?: SelectItem[]) => [
-  {
-    children: [
-      { text: '' },
-      ...(value?.flatMap((item) => [
-        {
-          children: [{ text: '' }],
-          type: 'tag',
-          value: item.value,
-        },
-        {
-          text: '',
-        },
-      ]) ?? []),
-    ],
-    type: 'paragraph',
-  },
-];
-
-const fzfFilter = (value: string, search: string): boolean => {
-  if (!search) return true;
-
-  const fzf = new Fzf([value], {
-    casing: 'case-insensitive',
-    selector: (v: string) => v,
-  });
-
-  return fzf.find(search).length > 0;
-};
-
-function Command({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive>) {
-  return (
-    <CommandPrimitive
-      className={cn(
-        'flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground',
-        className
+      />
+      {menuOpen && (
+        <FloatingPopover open>
+          <FloatingPopoverAnchor element={anchor} />
+          <FloatingPopoverContent
+            className="p-0 data-[state=open]:animate-none"
+            style={{
+              width: 'calc(var(--floating-popover-anchor-width) + 8px)',
+            }}
+            onFinalFocus={(event) => {
+              event.preventDefault();
+            }}
+            onInitialFocus={(event) => {
+              event.preventDefault();
+            }}
+            align="start"
+            alignOffset={-4}
+            sideOffset={8}
+          >
+            <div
+              id={listId}
+              className="max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto p-1 text-foreground"
+              role="listbox"
+            >
+              {options.map((option, index) => (
+                <button
+                  id={optionId(index)}
+                  key={option.create ? '' : tagKey(option.value)}
+                  className="relative flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
+                  aria-selected={index === activeIndex}
+                  data-selected={index === activeIndex}
+                  role="option"
+                  tabIndex={-1}
+                  type="button"
+                  onClick={() => pick(option)}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                  }}
+                  onPointerMove={() =>
+                    setActive({ key: tagKey(option.value), search })
+                  }
+                >
+                  {option.create ? (
+                    <span className="flex items-center gap-1">
+                      <PlusIcon className="text-foreground" />
+                      Create new label:
+                      <span className="text-gray-600">"{option.value}"</span>
+                    </span>
+                  ) : (
+                    option.value
+                  )}
+                </button>
+              ))}
+            </div>
+          </FloatingPopoverContent>
+        </FloatingPopover>
       )}
-      data-slot="command"
-      {...props}
-    />
-  );
-}
-
-function CommandList({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive.List>) {
-  return (
-    <CommandPrimitive.List
-      className={cn(
-        'max-h-[300px] scroll-py-1 overflow-y-auto overflow-x-hidden',
-        className
-      )}
-      data-slot="command-list"
-      {...props}
-    />
-  );
-}
-
-function CommandGroup({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive.Group>) {
-  return (
-    <CommandPrimitive.Group
-      className={cn(
-        'overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:text-xs',
-        className
-      )}
-      data-slot="command-group"
-      {...props}
-    />
-  );
-}
-
-function CommandItem({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive.Item>) {
-  return (
-    <CommandPrimitive.Item
-      className={cn(
-        "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
-        className
-      )}
-      data-slot="command-item"
-      {...props}
-    />
+    </EditorContainer>
   );
 }

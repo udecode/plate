@@ -93,7 +93,6 @@ export const publicFeatureDependencies = Object.freeze({
   'slash-command': ['combobox'],
   suggestion: ['authored'],
   table: ['dom'],
-  tag: [],
   toc: [],
 });
 
@@ -110,7 +109,6 @@ export const publicFeatureReactEntrypoints = Object.freeze([
   'slash-command',
   'suggestion',
   'table',
-  'tag',
   'toc',
 ]);
 
@@ -240,7 +238,15 @@ export const entrypointDags = {
       'ai/react': client(
         directory(
           'ai/react',
-          ['ai', 'authored', 'core', 'markdown', 'react-core', 'table'],
+          [
+            'ai',
+            'authored',
+            'core',
+            'markdown',
+            'react-core',
+            'standard/list',
+            'table',
+          ],
           [],
           { peerDependencies: ['@ai-sdk/react', 'ai', 'react'] }
         )

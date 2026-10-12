@@ -181,12 +181,13 @@ import {
   DocumentChange,
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
+import type { JsonEditorValue, PreparedTokenSlice } from './change/tokens';
 import {
-  isFrozenArray,
-  type JsonEditorValue,
-  type PreparedTokenSlice,
-} from './change/tokens';
-import { cloneFrozen, cloneValue, freezeOwnedJsonValue } from './clone';
+  cloneFrozen,
+  cloneValue,
+  freezeOwnedJsonValue,
+  isImmutable,
+} from './clone';
 import { createEditorCommit } from './commit';
 import { isEditorContent } from './content';
 import { ContentSlice } from './content-slice';
@@ -260,7 +261,10 @@ import {
   constructCanonicalDocumentChange,
   getProtectedInlineSpacerEntries,
 } from './representation';
-import { EditorSchemaValidationError } from './schema-validation';
+import {
+  EditorNoncanonicalChangeError,
+  EditorSchemaValidationError,
+} from './schema-validation';
 import {
   assertSelectionSupported,
   getSelectionRange,
@@ -1419,7 +1423,6 @@ const createEditorDocumentValue = <V extends Value>({
         return freezeOwnedJsonValue(result);
       })()
     : undefined;
-  // Canonical callers already own frozen arrays; rechecking scans every slot.
   return Object.freeze({
     children: mainChildren,
     ...(persistentMeta ? { meta: persistentMeta } : {}),
@@ -7867,7 +7870,7 @@ export const getSnapshot = (editor: Editor): EditorSnapshot => {
   }
 
   const liveChildren = getChildren(editor);
-  const children = isFrozenArray(liveChildren)
+  const children = isImmutable(liveChildren)
     ? liveChildren
     : cloneFrozen(liveChildren);
   const selection = cloneFrozenEditorJsonValue(getCurrentSelection(editor));
@@ -8035,7 +8038,7 @@ const getTransactionRootSnapshot = (
   const index = getTransactionSnapshotIndex(editor, transactionSnapshot, root);
 
   return Object.freeze({
-    children: isFrozenArray(children) ? children : cloneFrozen(children),
+    children: isImmutable(children) ? children : cloneFrozen(children),
     index,
     selection: getRootScopedSelection(
       transactionSnapshot.selection,
@@ -8057,7 +8060,7 @@ const getCurrentRootSnapshot = (
   const liveChildren = getEditorDocumentRoots(editor)[root] ?? [];
   const selectionRoot = getCurrentSelectionRoot(editor);
   const children = profileCoreDuration('snapshot-clone-children', () =>
-    isFrozenArray(liveChildren)
+    isImmutable(liveChildren)
       ? liveChildren
       : previousSnapshot
         ? shareSnapshotChildren(owner, liveChildren, previousSnapshot)
@@ -8231,13 +8234,12 @@ const createEditorDocumentChangeBuilder = (
       if (
         !constructCanonicalDocumentChange(editor, candidate, change, {
           before: value,
+          displacement: 'none',
           preserveInlineSpacersAdjacentTo: (root) =>
             getProtectedInlineSpacerNodes(editor, candidate, root),
         }).empty
       ) {
-        throw new Error(
-          'Document changes must already use canonical editor representation.'
-        );
+        throw new EditorNoncanonicalChangeError();
       }
     },
     construct: (

@@ -4,7 +4,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { createEditor, type Element, type Plugin, TextApi } from 'plitejs';
+import { createEditor, type Editor, type Element } from 'plitejs';
 
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 import {
@@ -49,7 +49,6 @@ type FixtureModule = {
   output: any;
   run: (input: any) => any;
   test: (input: any) => any;
-  withFallbackElement?: boolean;
 };
 
 const runFixtureTree = (
@@ -85,7 +84,7 @@ const runFixtureTree = (
       testFn(name, async () => {
         const module = (await import(
           pathToFileURL(fixturePath).href
-        )) as Record<string, any>;
+        )) as FixtureModule;
 
         runFixture(module, fixturePath);
       });
@@ -111,59 +110,8 @@ describe('plitejs', () => {
   });
 
   runFixtureTree(resolve(testsDir, 'normalization'), (module, fixturePath) => {
-    const { input, output, withFallbackElement } = module;
+    const { input, output } = module;
     const editor = withTest(input);
-
-    if (withFallbackElement) {
-      const fallbackPlugin = {
-        corrections: [
-          {
-            correct: ({ entry, tx }) => {
-              const [node, path] = entry;
-
-              if (TextApi.isText(node)) return;
-
-              const children = editorIsEditor(node)
-                ? editor.read((state) => state.children())
-                : node.children;
-              const firstChild = children[0];
-
-              if (
-                path.length > 0 &&
-                (editor.read.schema.isInline(node) ||
-                  TextApi.isText(firstChild) ||
-                  (firstChild && editor.read.schema.isInline(firstChild)))
-              ) {
-                return;
-              }
-
-              const index = children.findIndex(
-                (child) =>
-                  TextApi.isText(child) || editor.read.schema.isInline(child)
-              );
-
-              if (index === -1) return;
-
-              tx.nodes.wrap(
-                { type: 'paragraph', children: [] },
-                { at: [...path, index] }
-              );
-            },
-            event: 'content',
-          },
-          {
-            correct(context) {
-              fallbackPlugin.corrections[0].correct(context);
-            },
-            event: 'content',
-            query: 'root',
-          },
-        ],
-        name: `fixture-root-content-${fixturePath}`,
-      } satisfies Plugin;
-
-      editor.install(fallbackPlugin);
-    }
 
     editor.update.value.repair();
 
@@ -176,7 +124,7 @@ describe('plitejs', () => {
 
   runFixtureTree(resolve(testsDir, 'transforms'), (module, fixturePath) => {
     const { input, output, run } = module;
-    const editor = withTest(input);
+    const editor: Editor = withTest(input);
 
     editor.update((tx) => {
       run(createFixtureTransactionApi(editor, tx));

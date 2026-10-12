@@ -10,9 +10,6 @@ import { Button } from '@/components/ui/button';
 import {
   type SelectItem,
   SelectEditor,
-  SelectEditorCombobox,
-  SelectEditorContent,
-  SelectEditorInput,
 } from '@/registry/components/editor/select-editor';
 
 const LABELS = [
@@ -26,13 +23,13 @@ const LABELS = [
   { url: '/docs/components/input', value: 'Input' },
   { url: '/docs/components/label', value: 'Label' },
   { url: '/docs/components/popover', value: 'Popover' },
-  { url: '/docs/components/tag', value: 'Tag Element' },
 ] satisfies Array<SelectItem & { url: string }>;
 
 const formSchema = z.object({
   labels: z
     .array(
       z.object({
+        url: z.string().optional(),
         value: z.string(),
       })
     )
@@ -52,6 +49,7 @@ export default function EditorSelectForm() {
   });
 
   const labels = useWatch({ control: form.control, name: 'labels' });
+  const errorId = React.useId();
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-8 p-11 pt-24 pl-2">
@@ -91,22 +89,25 @@ export default function EditorSelectForm() {
                   </Button>
                 ) : (
                   <SelectEditor
-                    value={field.value}
-                    onValueChange={readOnly ? undefined : field.onChange}
+                    ref={field.ref}
+                    aria-describedby={fieldState.error ? errorId : undefined}
+                    aria-invalid={fieldState.invalid}
+                    aria-label="Labels"
                     items={LABELS}
-                  >
-                    <SelectEditorContent>
-                      <SelectEditorInput
-                        readOnly={readOnly}
-                        placeholder={readOnly ? 'Empty' : 'Select labels...'}
-                      />
-                      {!readOnly && <SelectEditorCombobox />}
-                    </SelectEditorContent>
-                  </SelectEditor>
+                    placeholder={readOnly ? 'Empty' : 'Select labels...'}
+                    readOnly={readOnly}
+                    value={field.value}
+                    onBlur={field.onBlur}
+                    onValueChange={readOnly ? undefined : field.onChange}
+                  />
                 )}
               </div>
               {fieldState.error?.message ? (
-                <p className="text-sm text-destructive" role="alert">
+                <p
+                  id={errorId}
+                  className="text-sm text-destructive"
+                  role="alert"
+                >
                   {fieldState.error.message}
                 </p>
               ) : null}

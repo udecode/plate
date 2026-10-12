@@ -4,6 +4,7 @@ import { BaseHorizontalRulePlugin } from 'platejs';
 import type { MarkdownParsePolicy } from 'platejs/markdown';
 
 import { createTestEditor } from '../../../../../../packages/platejs/src/markdown/lib/__tests__/createTestEditor';
+import { nameListIds } from '../list/nameListIds';
 
 jsxt;
 
@@ -17,7 +18,7 @@ const parseMarkdown = (
 
   if (!result.ok) throw new Error(result.diagnostics[0].message);
 
-  return result.document.children;
+  return nameListIds(result.document.children);
 };
 
 describe('editor.api.markdown.parse', () => {
@@ -196,10 +197,10 @@ describe('editor.api.markdown.parse', () => {
           <fragment>
             <hblockquote>
               <hp>some thing is reference</hp>
-              <hp indent={1} listType="bulleted">
+              <hp indent={1} listId="a" listType="bulleted">
                 aaa
               </hp>
-              <hp indent={1} listType="bulleted">
+              <hp indent={1} listId="a" listType="bulleted">
                 bbb
               </hp>
             </hblockquote>
@@ -404,11 +405,12 @@ Paragraph 2 line 1`,
       expect(result.ok).toBe(true);
       if (!result.ok) throw new Error(result.diagnostics[0].message);
 
-      expect(result.document.children).toEqual([
+      expect(nameListIds(result.document.children)).toEqual([
         {
           alt: 'alt text',
           children: [{ text: '' }],
           indent: 1,
+          listId: 'a',
           listType: 'bulleted',
           type: 'image',
           url: 'https://example.com/image.png',
@@ -422,10 +424,9 @@ Paragraph 2 line 1`,
       expect(serialized.ok).toBe(true);
       if (!serialized.ok) throw new Error(serialized.diagnostics[0].message);
 
-      expect(editor.api.markdown.parse(serialized.data)).toMatchObject({
-        document: result.document,
-        ok: true,
-      });
+      expect(parseMarkdown(serialized.data)).toEqual(
+        nameListIds(result.document.children)
+      );
     });
   });
 });

@@ -235,12 +235,7 @@ export const editorComponents: Registry['items'] = [
     type: 'registry:component',
   },
   {
-    dependencies: [
-      'platejs',
-      '@radix-ui/react-primitive',
-      '@radix-ui/react-slot',
-      'fzf@0.5.2',
-    ],
+    dependencies: ['platejs', 'fzf@0.5.2'],
     description: 'An editor to select tags.',
     files: [
       {
@@ -248,7 +243,7 @@ export const editorComponents: Registry['items'] = [
         type: 'registry:component',
       },
       {
-        path: 'components/editor/select-command.tsx',
+        path: 'components/editor/tag.tsx',
         type: 'registry:component',
       },
     ],
@@ -1143,21 +1138,6 @@ export const editorNodes: Registry['items'] = [
       },
     ],
     name: 'paragraph-static',
-    type: 'registry:component',
-  },
-  {
-    dependencies: ['platejs'],
-    description: 'A tag element component with selection states and styling.',
-    files: [{ path: 'components/editor/tag.tsx', type: 'registry:component' }],
-    meta: {
-      docs: [
-        { route: '/docs/multi-select' },
-        // route: 'https://pro.platejs.org/docs/components/tag' },
-      ],
-      examples: ['select-editor-demo'],
-    },
-    name: 'tag',
-    title: 'Tag',
     type: 'registry:component',
   },
 ];

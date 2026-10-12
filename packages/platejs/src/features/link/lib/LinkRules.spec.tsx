@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 
 import { createDataTransfer } from '#platejs-test-internal';
 
@@ -9,6 +9,8 @@ import {
   type Selection,
   type Value,
 } from '../../../core';
+import { MarkdownPlugin } from '../../../markdown';
+import { BaseMentionPlugin } from '../../mention/lib/BaseMentionPlugin';
 import type { BaseLinkDefinition } from './BaseLinkPlugin';
 import { BaseLinkPlugin, LinkRules } from './BaseLinkPlugin';
 
@@ -34,6 +36,7 @@ const createEditor = ({
   selection,
   value,
   withCodeBlock = true,
+  withMarkdown = false,
 }: {
   selection: Selection;
   value: Value;
@@ -41,6 +44,7 @@ const createEditor = ({
   options?: Partial<BaseLinkDefinition['initialState']>;
   removeEmpty?: boolean;
   withCodeBlock?: boolean;
+  withMarkdown?: boolean;
 }) => {
   const linkPlugin = BaseLinkPlugin.configure({
     inputRules: inputRules ?? createAutolinkRules(),
@@ -50,16 +54,25 @@ const createEditor = ({
   });
 
   return createProductEditor({
-    plugins: withCodeBlock ? [BaseCodeBlockPlugin, linkPlugin] : [linkPlugin],
+    plugins: [
+      ...(withCodeBlock ? [BaseCodeBlockPlugin] : []),
+      linkPlugin,
+      ...(withMarkdown ? [MarkdownPlugin] : []),
+    ],
     selection,
     initialValue: value,
   });
 };
 
-const paste = (editor: ReturnType<typeof createEditor>, text: string) => {
+const paste = (
+  editor: ReturnType<typeof createEditor>,
+  text: string,
+  html?: string
+) => {
   const data = createDataTransfer();
 
   data.setData('text/plain', text);
+  if (html !== undefined) data.setData('text/html', html);
   editor.api.dom.clipboard.insertData(data);
 };
 
@@ -193,6 +206,247 @@ describe('LinkRules', () => {
     expect(editor.read.text.string([0])).toBe('[Example](https://example.com');
   });
 
+  it('keeps a pasted URL literal in link source when the clipboard also holds HTML', () => {
+    const text = 'see [a](b) [Example](';
+    const url = 'https://example.com';
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'paragraph' }],
+    });
+
+    paste(editor, url, `<a href="${url}">${url}</a>`);
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.text.string([0])).toBe(`${text}${url}`);
+  });
+
+  it('keeps a pasted URL literal inside a link when the clipboard also holds HTML', () => {
+    const url = 'https://other.example';
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 5, path: [0, 1, 0] },
+        focus: { offset: 5, path: [0, 1, 0] },
+      },
+      value: [
+        {
+          children: [
+            { text: '' },
+            {
+              children: [{ text: 'label' }],
+              type: 'link',
+              url: 'https://example.com',
+            },
+            { text: '' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    paste(editor, url, `<a href="${url}">${url}</a>`);
+
+    expect(editor.read.nodes.find({ at: [], type: 'link' })?.[0]).toMatchObject(
+      {
+        children: [{ text: `label${url}` }],
+        url: 'https://example.com',
+      }
+    );
+    expect(editor.read.text.string([0])).toBe(`label${url}`);
+  });
+
+  it('keeps a pasted URL literal in link source whose destination holds ](', () => {
+    const text = '[label](https://example.com/](';
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'paragraph' }],
+    });
+
+    paste(editor, 'https://other.example');
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.text.string([0])).toBe(`${text}https://other.example`);
+  });
+
+  it.each([
+    [
+      'inside a link',
+      {
+        children: [
+          { text: '' },
+          {
+            children: [{ text: 'label' }],
+            type: 'link',
+            url: 'https://example.com',
+          },
+          { text: '' },
+        ],
+        type: 'paragraph',
+      },
+      [1, 1, 0],
+      5,
+    ],
+    [
+      'after unfinished link source',
+      { children: [{ text: '[x](' }], type: 'paragraph' },
+      [1, 0],
+      4,
+    ],
+  ] as const)(
+    'keeps a copied mention when it is pasted %s',
+    (_, target, path, offset) => {
+      const editor = createProductEditor({
+        plugins: [
+          BaseLinkPlugin.configure({ inputRules: createAutolinkRules() }),
+          BaseMentionPlugin,
+        ],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 4, path: [0, 0] },
+          focus: { offset: 0, path: [0, 2] },
+        },
+        initialValue: [
+          {
+            children: [
+              { text: 'see ' },
+              {
+                children: [{ text: '' }],
+                label: 'Ada',
+                ref: 'user-1',
+                type: 'mention',
+              },
+              { text: '' },
+            ],
+            type: 'paragraph',
+          },
+          target,
+        ],
+      });
+      const data = createDataTransfer();
+
+      editor.api.dom.clipboard.writeSelection(data);
+      editor.update.selection.set({
+        kind: 'text',
+        anchor: { offset, path: [...path] },
+        focus: { offset, path: [...path] },
+      });
+      editor.api.dom.clipboard.insertData(data);
+
+      expect(
+        editor.read.nodes.find({ at: [1], type: 'mention' })?.[0]
+      ).toMatchObject({ label: 'Ada', ref: 'user-1' });
+    }
+  );
+
+  it('keeps a pasted URL literal inside a link without a DOM parser', () => {
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 5, path: [0, 1, 0] },
+        focus: { offset: 5, path: [0, 1, 0] },
+      },
+      value: [
+        {
+          children: [
+            { text: '' },
+            {
+              children: [{ text: 'label' }],
+              type: 'link',
+              url: 'https://example.com',
+            },
+            { text: '' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+    const { DOMParser } = globalThis;
+
+    Reflect.deleteProperty(globalThis, 'DOMParser');
+    try {
+      paste(editor, 'https://other.example');
+    } finally {
+      globalThis.DOMParser = DOMParser;
+    }
+
+    expect(findLink(editor)).toMatchObject({
+      children: [{ text: 'labelhttps://other.example' }],
+    });
+  });
+
+  it('keeps a pasted URL literal in a code block when the clipboard also holds HTML', () => {
+    const url = 'https://example.com';
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'code' }], type: 'codeBlock' }],
+    });
+
+    paste(editor, url, `<a href="${url}">${url}</a>`);
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.text.string([0])).toBe(`code${url}`);
+  });
+
+  it('inserts the pasted text, not the prepared href, inside an existing link', () => {
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 5, path: [0, 1, 0] },
+        focus: { offset: 5, path: [0, 1, 0] },
+      },
+      value: [
+        {
+          children: [
+            { text: '' },
+            {
+              children: [{ text: 'label' }],
+              type: 'link',
+              url: 'https://example.com',
+            },
+            { text: '' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    paste(editor, 'https://example.com/ü');
+
+    expect(editor.read.text.string([0])).toBe('labelhttps://example.com/ü');
+  });
+
+  it.each([
+    ['#top', false],
+    ['/docs/intro', true],
+  ])('keeps pasted %s as text', (text, withMarkdown) => {
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'x ' }], type: 'paragraph' }],
+      withMarkdown,
+    });
+
+    paste(editor, text);
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.text.string([0])).toBe(`x ${text}`);
+  });
+
   it('autolinks a URL when space is inserted', () => {
     const text = 'visit https://example.com';
     const editor = createEditor({
@@ -213,12 +467,92 @@ describe('LinkRules', () => {
     expect(editor.read.text.string([0])).toBe('visit https://example.com ');
   });
 
-  it('uses getUrlHref for visible link text', () => {
+  it('types the space after a URL the app does not allow', () => {
+    const text = 'see ftp://example.com';
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'paragraph' }],
+    });
+
+    editor.update.text.insert(' ');
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.text.string([0])).toBe(`${text} `);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: text.length + 1, path: [0, 0] },
+      focus: { offset: text.length + 1, path: [0, 0] },
+    });
+  });
+
+  it('splits the block after a URL the app does not allow', () => {
+    const text = 'see ftp://example.com';
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'paragraph' }],
+    });
+
+    editor.update.break.insert();
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.children()).toHaveLength(2);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [1, 0] },
+    });
+  });
+
+  it('autolinks a typed tel: number when space is inserted', () => {
+    const text = 'call tel:+15551234';
+    const editor = createEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      },
+      value: [{ children: [{ text }], type: 'paragraph' }],
+    });
+
+    editor.update.text.insert(' ');
+
+    expect(findLink(editor)).toMatchObject({
+      children: [{ text: 'tel:+15551234' }],
+      url: 'tel:+15551234',
+    });
+  });
+
+  it.each(['http://...', 'https://…', 'http:foo', 'tel://'])(
+    'keeps the typed placeholder %s as text',
+    (token) => {
+      const text = `use ${token}`;
+      const editor = createEditor({
+        selection: {
+          kind: 'text',
+          anchor: { offset: text.length, path: [0, 0] },
+          focus: { offset: text.length, path: [0, 0] },
+        },
+        value: [{ children: [{ text }], type: 'paragraph' }],
+      });
+
+      editor.update.text.insert(' ');
+
+      expect(findLink(editor)).toBeUndefined();
+    }
+  );
+
+  it('maps visible link text through parseUrl', () => {
     const text = 'visit example';
     const editor = createEditor({
       options: {
-        getUrlHref: (url) =>
-          url === 'example' ? 'https://example.com' : undefined,
+        parseUrl: (url, defaultParseUrl) =>
+          url === 'example' ? 'https://example.com' : defaultParseUrl(url),
       },
       selection: {
         kind: 'text',
@@ -409,15 +743,9 @@ describe('LinkRules', () => {
   });
 });
 
-it.each([true, false])(
-  'prepares markdown once and preserves rejected literal syntax: %s',
-  (valid) => {
-    const transformInput = mock((url: string) =>
-      valid ? `https://${url}` : 'javascript:noop()'
-    );
-    const text = '[Example](example.com/a%20path';
+describe('LinkRules.markdown', () => {
+  const typeClosingParen = (text: string) => {
     const editor = createEditor({
-      options: { transformInput },
       selection: {
         kind: 'text',
         anchor: { offset: text.length, path: [0, 0] },
@@ -425,16 +753,34 @@ it.each([true, false])(
       },
       value: [{ children: [{ text }], type: 'paragraph' }],
     });
+
     editor.update.text.insert(')');
-    expect(transformInput).toHaveBeenCalledTimes(1);
-    if (valid) {
-      expect(findLink(editor)).toMatchObject({
-        url: 'https://example.com/a%20path',
-        children: [{ text: 'Example' }],
-      });
-    } else {
-      expect(findLink(editor)).toBeUndefined();
-      expect(editor.read.text.string([])).toBe(`${text})`);
-    }
-  }
-);
+
+    return editor;
+  };
+
+  it('links typed source whose destination is relative [EDIT-INTERACT-LINK-AUTOMD-001]', () => {
+    const editor = typeClosingParen('[Example](example.com/a%20path');
+
+    expect(findLink(editor)).toMatchObject({
+      children: [{ text: 'Example' }],
+      url: 'example.com/a%20path',
+    });
+  });
+
+  it('keeps typed source whose destination the app does not allow [EDIT-INTERACT-LINK-AUTOMD-001]', () => {
+    const text = '[Example](ftp://example.com';
+    const editor = typeClosingParen(text);
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.text.string([])).toBe(`${text})`);
+  });
+
+  it('keeps typed image source as text [EDIT-INTERACT-LINK-AUTOMD-001]', () => {
+    const text = '![alt](https://example.com/a.png';
+    const editor = typeClosingParen(text);
+
+    expect(findLink(editor)).toBeUndefined();
+    expect(editor.read.text.string([])).toBe(`${text})`);
+  });
+});

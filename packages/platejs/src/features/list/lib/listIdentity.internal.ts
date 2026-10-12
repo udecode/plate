@@ -5,6 +5,7 @@ import {
   PathApi,
   type Descendant,
   type EditorCoreStateView,
+  type EditorUpdateTransaction,
   type Element,
   type NodeEntry,
   type Path,
@@ -18,7 +19,7 @@ import {
   type ListLevels,
 } from './listIndex.internal';
 
-type NodeReader = {
+export type NodeReader = {
   nodes: Pick<EditorCoreStateView['nodes'], 'get'>;
 };
 
@@ -91,7 +92,8 @@ const joinListIdentity = (
     headingType: string | undefined;
     listType: ListType;
     style: string | undefined;
-  }>
+  }>,
+  walk: 'both' | 'previous' = 'both'
 ): ListIdentity | undefined => {
   const { depth, heading, headingType, listType, style } = next;
   let parent: Element | undefined;
@@ -115,30 +117,30 @@ const joinListIdentity = (
 
   if (previous) return identityOf(previous);
   if (parent) return identityOf(parent);
+  if (walk === 'previous') return undefined;
 
   const following = walkSiblings(state, path, 'next', sameDepth);
 
   return following && identityOf(following);
 };
 
+const newListIdentity = (): ListIdentity => ({
+  listId: createListId(),
+  listLevels: undefined,
+});
+
 export const resolveListIdentity = (
   state: NodeReader,
   path: Path,
   next: Parameters<typeof joinListIdentity>[2]
-): ListIdentity =>
-  joinListIdentity(state, path, next) ?? {
-    listId: createListId(),
-    listLevels: undefined,
-  };
+): ListIdentity => joinListIdentity(state, path, next) ?? newListIdentity();
 
-export const readMissingListIdentity = (
-  state: NodeReader,
+export const joinInsertedListItem = (
+  tx: Pick<EditorUpdateTransaction, 'nodes'>,
   [node, path]: NodeEntry<Element>,
   headingType: string | undefined
 ) => {
-  if (!isListItem(node) || Object.hasOwn(node, 'listId')) return undefined;
-
-  const identity = resolveListIdentity(state, path, {
+  const { listId, listLevels } = resolveListIdentity(tx, path, {
     depth: getListIndent(node),
     heading: headingType !== undefined && node.type === headingType,
     headingType,
@@ -146,14 +148,162 @@ export const readMissingListIdentity = (
     style: getElementListStyle(node),
   });
 
-  return identity.listId === undefined
-    ? undefined
-    : {
-        listId: identity.listId,
-        ...(identity.listLevels === undefined
-          ? {}
-          : { listLevels: identity.listLevels }),
-      };
+  if (listId !== undefined) {
+    tx.nodes.set(
+      { listId, ...(listLevels === undefined ? {} : { listLevels }) },
+      { at: path }
+    );
+  }
+};
+
+export type ListLanding =
+  | Readonly<{
+      /** The block where the content lands, which stays (`kept`) or which the content replaces (`replaced`). */
+      block: Element | undefined;
+      kind: 'kept' | 'replaced';
+    }>
+  | Readonly<{
+      /** An empty line the content replaces; the content's first list may join a list above it. */
+      kind: 'line';
+      line: NodeEntry<Element>;
+    }>;
+
+/**
+ * Give inserted content's lists their identities. Each source list gets one
+ * fresh id across the content, tables included, and items without an id count
+ * as one list. Only the first top-level list may join the landing's list, when
+ * its kind, style and heading role match, or, on an empty line, the shallower
+ * list item above it; every other list keeps its fresh id.
+ *
+ * `keep` leaves depths, starts and restarts as the content carries them. `land`
+ * also shifts top-level content by the landing's depth, and the joined head
+ * takes a replaced landing's start and restart, or drops its own start to
+ * continue the list of a kept block or an empty line.
+ */
+export const landListContent = <N extends Descendant>(
+  state: NodeReader,
+  content: readonly N[],
+  landing: ListLanding,
+  {
+    headingType,
+    placement,
+  }: Readonly<{
+    headingType: string | undefined;
+    placement: 'keep' | 'land';
+  }>
+): ReadonlyArray<Element | N> => {
+  const sourceOf = (node: Element) =>
+    typeof node.listId === 'string' ? node.listId : '';
+  const heads = new Map<string, Element>();
+  let first: Element | undefined;
+  const scan = (nodes: readonly Descendant[], top: boolean) => {
+    for (const node of nodes) {
+      if (!ElementApi.isElement(node)) continue;
+      if (isListItem(node)) {
+        const source = sourceOf(node);
+
+        if (!heads.has(source)) heads.set(source, node);
+        if (top) first ??= node;
+      }
+      scan(node.children, false);
+    }
+  };
+
+  scan(content, true);
+
+  const into = landing.kind === 'line' ? landing.line[0] : landing.block;
+  const land = placement === 'land';
+  const shift = land && into ? getListIndent(into) - 1 : 0;
+
+  if (heads.size === 0 && shift === 0) return content;
+
+  const joinedSource = first && sourceOf(first);
+  let joined: ListIdentity | undefined;
+
+  if (first) {
+    const listType = first.listType as ListType;
+    const style = getElementListStyle(first);
+    const heading = headingType !== undefined && first.type === headingType;
+
+    joined =
+      landing.kind === 'line'
+        ? joinListIdentity(
+            state,
+            landing.line[1],
+            {
+              depth: getListIndent(landing.line[0]),
+              heading,
+              headingType,
+              listType,
+              style,
+            },
+            'previous'
+          )
+        : into &&
+            isListItem(into) &&
+            compatible(into, listType, style, heading, headingType)
+          ? identityOf(into)
+          : undefined;
+  }
+
+  const fresh = new Map(
+    [...heads.keys()].map((source) => [source, createListId()])
+  );
+  const joinedHead =
+    joined && joinedSource !== undefined ? heads.get(joinedSource) : undefined;
+  const landElement = (node: Element, top: boolean): Element => {
+    const children = node.children.map((child) =>
+      ElementApi.isElement(child) ? landElement(child, false) : child
+    );
+    const depth =
+      top &&
+      shift !== 0 &&
+      (isListItem(node) || typeof node.indent === 'number')
+        ? { indent: getListIndent(node) + shift }
+        : {};
+
+    if (!isListItem(node)) return { ...node, ...depth, children };
+
+    const {
+      listId: _listId,
+      listLevels,
+      listRestart,
+      listStart,
+      ...rest
+    } = node;
+    const source = sourceOf(node);
+    const { listId, listLevels: levels } =
+      joined && source === joinedSource
+        ? joined
+        : { listId: fresh.get(source), listLevels };
+    const starts =
+      land && node === joinedHead
+        ? landing.kind === 'replaced'
+          ? {
+              listRestart: landing.block?.listRestart,
+              listStart: landing.block?.listStart,
+            }
+          : { listRestart, listStart: undefined }
+        : { listRestart, listStart };
+
+    return {
+      ...rest,
+      ...depth,
+      children,
+      ...(listId === undefined ? {} : { listId }),
+      ...(levels === undefined ? {} : { listLevels: levels }),
+      ...(starts.listRestart === undefined
+        ? {}
+        : { listRestart: starts.listRestart }),
+      ...(starts.listStart === undefined
+        ? {}
+        : { listStart: starts.listStart }),
+    };
+  };
+
+  return content.map((node) =>
+    ElementApi.isElement(node) ? landElement(node, true) : node
+  );
 };
 
 /**

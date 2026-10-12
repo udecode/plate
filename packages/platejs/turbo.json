@@ -94,8 +94,6 @@
         "lint:partition:tabbable-react",
         "lint:partition:table",
         "lint:partition:table-react",
-        "lint:partition:tag",
-        "lint:partition:tag-react",
         "lint:partition:testing",
         "lint:partition:toc",
         "lint:partition:toc-react",
@@ -376,7 +374,6 @@
         "!src/features/slash-command/**",
         "!src/features/suggestion/**",
         "!src/features/table/**",
-        "!src/features/tag/**",
         "!src/features/toc/**",
         "!src/react/features/callout/**",
         "!src/react/features/comments/**",
@@ -390,7 +387,6 @@
         "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
-        "!src/react/features/tag/**",
         "!src/react/features/toc/**",
         "!src/react/features/combobox/**",
         "!src/react/features/resizable/**",
@@ -459,7 +455,6 @@
         "!test/features/slash-command/**",
         "!test/features/suggestion/**",
         "!test/features/table/**",
-        "!test/features/tag/**",
         "!test/features/toc/**",
         "!test/react/features/callout/**",
         "!test/react/features/comments/**",
@@ -473,7 +468,6 @@
         "!test/react/features/slash-command/**",
         "!test/react/features/suggestion/**",
         "!test/react/features/table/**",
-        "!test/react/features/tag/**",
         "!test/react/features/toc/**",
         "!test/react/features/combobox/**",
         "!test/react/features/resizable/**",
@@ -981,7 +975,6 @@
         "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
-        "!src/react/features/tag/**",
         "!src/react/features/toc/**",
         "!src/react/features/combobox/**",
         "!src/react/features/resizable/**",
@@ -1006,7 +999,6 @@
         "!test/react/features/slash-command/**",
         "!test/react/features/suggestion/**",
         "!test/react/features/table/**",
-        "!test/react/features/tag/**",
         "!test/react/features/toc/**",
         "!test/react/features/combobox/**",
         "!test/react/features/resizable/**",
@@ -1383,36 +1375,6 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
-    "lint:partition:tag": {
-      "cache": true,
-      "dependsOn": [],
-      "inputs": [
-        "src/features/tag/**",
-        "test/features/tag/**",
-        "$TURBO_ROOT$/oxlint.config.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "lint:partition:tag-react": {
-      "cache": true,
-      "dependsOn": [],
-      "inputs": [
-        "src/react/features/tag/**",
-        "test/react/features/tag/**",
-        "$TURBO_ROOT$/oxlint.config.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
     "lint:partition:testing": {
       "cache": true,
       "dependsOn": [],
@@ -1573,8 +1535,6 @@
         "test:partition:tabbable-react",
         "test:partition:table",
         "test:partition:table-react",
-        "test:partition:tag",
-        "test:partition:tag-react",
         "test:partition:toc",
         "test:partition:upload",
         "test:partition:upload-react",
@@ -1618,6 +1578,7 @@
         "typecheck:partition:core",
         "typecheck:partition:markdown",
         "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list",
         "typecheck:partition:static",
@@ -1932,7 +1893,6 @@
         "!src/features/slash-command/**",
         "!src/features/suggestion/**",
         "!src/features/table/**",
-        "!src/features/tag/**",
         "!src/features/toc/**",
         "!src/react/features/callout/**",
         "!src/react/features/comments/**",
@@ -1946,7 +1906,6 @@
         "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
-        "!src/react/features/tag/**",
         "!src/react/features/toc/**",
         "!src/react/features/combobox/**",
         "!src/react/features/resizable/**",
@@ -2015,7 +1974,6 @@
         "!test/features/slash-command/**",
         "!test/features/suggestion/**",
         "!test/features/table/**",
-        "!test/features/tag/**",
         "!test/features/toc/**",
         "!test/react/features/callout/**",
         "!test/react/features/comments/**",
@@ -2029,7 +1987,6 @@
         "!test/react/features/slash-command/**",
         "!test/react/features/suggestion/**",
         "!test/react/features/table/**",
-        "!test/react/features/tag/**",
         "!test/react/features/toc/**",
         "!test/react/features/combobox/**",
         "!test/react/features/resizable/**",
@@ -2593,7 +2550,6 @@
         "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
-        "!src/react/features/tag/**",
         "!src/react/features/toc/**",
         "!src/react/features/combobox/**",
         "!src/react/features/resizable/**",
@@ -2618,7 +2574,6 @@
         "!test/react/features/slash-command/**",
         "!test/react/features/suggestion/**",
         "!test/react/features/table/**",
-        "!test/react/features/tag/**",
         "!test/react/features/toc/**",
         "!test/react/features/combobox/**",
         "!test/react/features/resizable/**",
@@ -2794,6 +2749,8 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:markdown",
+        "typecheck:partition:mention",
         "typecheck:partition:standard-link",
         "typecheck:partition:standard-link-react"
       ],
@@ -3015,50 +2972,6 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
-    "test:partition:tag": {
-      "cache": true,
-      "dependsOn": [
-        "plitejs#typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:tag"
-      ],
-      "inputs": [
-        "src/features/tag/**",
-        "test/features/tag/**",
-        "$TURBO_ROOT$/config/plite-source-aliases.ts",
-        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
-        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "bunfig.toml"
-      ],
-      "env": ["CI"],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "test:partition:tag-react": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:react-core",
-        "typecheck:partition:tag",
-        "typecheck:partition:tag-react"
-      ],
-      "inputs": [
-        "src/react/features/tag/**",
-        "test/react/features/tag/**",
-        "$TURBO_ROOT$/config/plite-source-aliases.ts",
-        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
-        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "bunfig.toml"
-      ],
-      "env": ["CI"],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
     "test:partition:toc": {
       "cache": true,
       "dependsOn": ["typecheck:partition:core", "typecheck:partition:toc"],
@@ -3250,8 +3163,6 @@
         "typecheck:partition:tabbable-react",
         "typecheck:partition:table",
         "typecheck:partition:table-react",
-        "typecheck:partition:tag",
-        "typecheck:partition:tag-react",
         "typecheck:partition:testing",
         "typecheck:partition:toc",
         "typecheck:partition:toc-react",
@@ -3353,6 +3264,7 @@
         "typecheck:partition:core",
         "typecheck:partition:markdown",
         "typecheck:partition:react-core",
+        "typecheck:partition:standard-list",
         "typecheck:partition:table"
       ],
       "inputs": [
@@ -3753,7 +3665,6 @@
         "!src/features/slash-command/**",
         "!src/features/suggestion/**",
         "!src/features/table/**",
-        "!src/features/tag/**",
         "!src/features/toc/**",
         "!src/react/features/callout/**",
         "!src/react/features/comments/**",
@@ -3767,7 +3678,6 @@
         "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
-        "!src/react/features/tag/**",
         "!src/react/features/toc/**",
         "!src/react/features/combobox/**",
         "!src/react/features/resizable/**",
@@ -4679,7 +4589,6 @@
         "!src/react/features/slash-command/**",
         "!src/react/features/suggestion/**",
         "!src/react/features/table/**",
-        "!src/react/features/tag/**",
         "!src/react/features/toc/**",
         "!src/react/features/combobox/**",
         "!src/react/features/resizable/**",
@@ -5385,61 +5294,6 @@
       "outputs": [
         ".turbo/entrypoint-types/table-react/**",
         ".turbo/entrypoint-types/table-react.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:tag": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
-      "inputs": [
-        "src/features/tag/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*.slow.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/tag.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/tag/**",
-        ".turbo/entrypoint-types/tag.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:tag-react": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:react-core",
-        "typecheck:partition:tag"
-      ],
-      "inputs": [
-        "src/react/features/tag/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*.slow.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/tag-react.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/tag-react/**",
-        ".turbo/entrypoint-types/tag-react.tsbuildinfo"
       ]
     },
     "typecheck:partition:testing": {

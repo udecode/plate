@@ -55,111 +55,97 @@ const selectText = (
 
 describe('plitejs/yjs exclusive property contract', () => {
   for (const root of ['main', 'sidebar'] as const) {
-    for (const empty of [false, true]) {
-      it(`preserves a causally later accepted exclusive mark on ${empty ? 'empty text' : 'overlapping text'} in ${root}`, () => {
-        const initial = empty ? '' : 'ABCD';
-        const children =
-          root === 'main' ? [paragraph(initial)] : [paragraph('Unchanged')];
-        const roots =
-          root === 'main' ? undefined : { sidebar: [paragraph(initial)] };
-        const make = (authorId: string, seedUpdate?: Uint8Array) =>
-          createYjsPeerWithEditor(
-            createEditor({
-              plugins: [
-                ScriptSchema,
-                authored({ authorId, retainHistory: true }),
-                history(),
-              ],
-              initialValue: { children, ...(roots ? { roots } : {}) },
-            }),
-            { children, roots, clientId: authorId, seedUpdate }
-          );
-        const alice = make('alice');
-        const bob = make('bob', Y.encodeStateAsUpdate(alice.doc));
-        const proposal = createEditorView(alice.editor, {
+    it(`preserves a causally later accepted exclusive mark on overlapping text in ${root}`, () => {
+      const children =
+        root === 'main' ? [paragraph('ABCD')] : [paragraph('Unchanged')];
+      const roots =
+        root === 'main' ? undefined : { sidebar: [paragraph('ABCD')] };
+      const make = (authorId: string, seedUpdate?: Uint8Array) =>
+        createYjsPeerWithEditor(
+          createEditor({
+            plugins: [
+              ScriptSchema,
+              authored({ authorId, retainHistory: true }),
+              history(),
+            ],
+            initialValue: { children, ...(roots ? { roots } : {}) },
+          }),
+          { children, roots, clientId: authorId, seedUpdate }
+        );
+      const alice = make('alice');
+      const bob = make('bob', Y.encodeStateAsUpdate(alice.doc));
+      const proposal = createEditorView(alice.editor, {
+        ...(root === 'main' ? {} : { root }),
+        authored: { intent: 'propose', projection: 'proposed' },
+      });
+      const accepted = createEditorView(bob.editor, {
+        ...(root === 'main' ? {} : { root }),
+        authored: { intent: 'edit', projection: 'accepted' },
+      });
+      selectText(proposal, 'subscript', [0, 3]);
+      const { id } = alice.editor.read.authored.changes().items[0];
+      Y.applyUpdate(bob.doc, Y.encodeStateAsUpdate(alice.doc));
+      selectText(accepted, 'superscript', [1, 4]);
+      Y.applyUpdate(alice.doc, Y.encodeStateAsUpdate(bob.doc));
+      const expected = [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'A', subscript: true },
+            { text: 'BCD', superscript: true },
+          ],
+        },
+      ];
+      assert.deepEqual(proposal.read.children(), expected);
+      const acceptedId = alice.editor.read.authored.changes({
+        authorId: 'bob',
+      }).items[0].id;
+      const decision = {
+        action: 'accept' as const,
+        selection: alice.editor.read.authored.select({ ids: [id] }),
+      };
+      const blocked = {
+        status: 'blocked',
+        ids: [id],
+        dependencies: [],
+        dependants: [],
+        conflicts: [acceptedId],
+      };
+      const before = JSON.stringify(alice.editor.read.value());
+      assert.deepEqual(alice.editor.read.authored.preview(decision), blocked);
+      assert.deepEqual(alice.editor.update.authored.decide(decision), blocked);
+      assert.equal(JSON.stringify(alice.editor.read.value()), before);
+      const restored = createEditor({
+        plugins: [ScriptSchema, authored({ authorId: 'reviewer' })],
+        initialValue: JSON.parse(before),
+      });
+      assert.deepEqual(
+        createEditorView(restored, {
           ...(root === 'main' ? {} : { root }),
           authored: { intent: 'propose', projection: 'proposed' },
-        });
-        const accepted = createEditorView(bob.editor, {
-          ...(root === 'main' ? {} : { root }),
-          authored: { intent: 'edit', projection: 'accepted' },
-        });
-        if (empty) {
-          proposal.update.nodes.set({ subscript: true }, { at: [0, 0] });
-        } else selectText(proposal, 'subscript', [0, 3]);
-        const { id } = alice.editor.read.authored.changes().items[0];
-        Y.applyUpdate(bob.doc, Y.encodeStateAsUpdate(alice.doc));
-        if (empty) {
-          accepted.update.nodes.set({ superscript: true }, { at: [0, 0] });
-        } else selectText(accepted, 'superscript', [1, 4]);
-        Y.applyUpdate(alice.doc, Y.encodeStateAsUpdate(bob.doc));
-        const expected = [
-          {
-            type: 'paragraph',
-            children: empty
-              ? [{ text: '', superscript: true }]
-              : [
-                  { text: 'A', subscript: true },
-                  { text: 'BCD', superscript: true },
-                ],
-          },
-        ];
-        assert.deepEqual(proposal.read.children(), expected);
-        const acceptedId = alice.editor.read.authored.changes({
-          authorId: 'bob',
-        }).items[0].id;
-        const decision = {
-          action: 'accept' as const,
+        }).read.children(),
+        expected
+      );
+      bob.editor.api.history.undo();
+      Y.applyUpdate(alice.doc, Y.encodeStateAsUpdate(bob.doc));
+      assert.equal(
+        alice.editor.update.authored.decide({
+          action: 'accept',
           selection: alice.editor.read.authored.select({ ids: [id] }),
-        };
-        const blocked = {
-          status: 'blocked',
-          ids: [id],
-          dependencies: [],
-          dependants: [],
-          conflicts: [acceptedId],
-        };
-        const before = JSON.stringify(alice.editor.read.value());
-        assert.deepEqual(alice.editor.read.authored.preview(decision), blocked);
-        assert.deepEqual(
-          alice.editor.update.authored.decide(decision),
-          blocked
-        );
-        assert.equal(JSON.stringify(alice.editor.read.value()), before);
-        const restored = createEditor({
-          plugins: [ScriptSchema, authored({ authorId: 'reviewer' })],
-          initialValue: JSON.parse(before),
-        });
-        assert.deepEqual(
-          createEditorView(restored, {
-            ...(root === 'main' ? {} : { root }),
-            authored: { intent: 'propose', projection: 'proposed' },
-          }).read.children(),
-          expected
-        );
-        bob.editor.api.history.undo();
-        Y.applyUpdate(alice.doc, Y.encodeStateAsUpdate(bob.doc));
-        assert.equal(
-          alice.editor.update.authored.decide({
-            action: 'accept',
-            selection: alice.editor.read.authored.select({ ids: [id] }),
-          }).status,
-          'applied'
-        );
-        assert.deepEqual(proposal.read.children(), [
-          {
-            type: 'paragraph',
-            children: empty
-              ? [{ text: '', subscript: true }]
-              : [{ text: 'ABC', subscript: true }, { text: 'D' }],
-          },
-        ]);
-        alice.cleanup();
-        bob.cleanup();
-        alice.doc.destroy();
-        bob.doc.destroy();
-      });
-    }
+        }).status,
+        'applied'
+      );
+      assert.deepEqual(proposal.read.children(), [
+        {
+          type: 'paragraph',
+          children: [{ text: 'ABC', subscript: true }, { text: 'D' }],
+        },
+      ]);
+      alice.cleanup();
+      bob.cleanup();
+      alice.doc.destroy();
+      bob.doc.destroy();
+    });
   }
   for (const root of ['main', 'sidebar'] as const) {
     for (const relation of ['overlap', 'disjoint', 'independent'] as const) {

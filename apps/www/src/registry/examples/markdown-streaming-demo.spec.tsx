@@ -7,6 +7,7 @@ import { createStaticEditor } from 'platejs/static';
 import * as React from 'react';
 
 import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';
+import { nameListIds } from '../../__tests__/package-integration/list/nameListIds';
 import { BaseEditorKit } from '../components/editor/plugins-static';
 import MarkdownStreamingDemo from './markdown-streaming-demo';
 
@@ -98,7 +99,9 @@ it('publishes the first chunk at once, the latest draft every 32 ms and one stri
 
     const strict = demo.editor.api.markdown.parse(lists);
     if (!strict.ok) throw new Error(strict.diagnostics[0].message);
-    expect(demo.editor.read.children()).toEqual(strict.document.children);
+    expect(nameListIds(demo.editor.read.children())).toEqual(
+      nameListIds(strict.document.children)
+    );
     // Previews are ephemeral: none of them entered the undo history.
     expect(demo.editor.read.history().undos).toHaveLength(0);
 

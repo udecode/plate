@@ -884,7 +884,7 @@
         "src/**/*.slow.*",
         "src/**/*-contract.*",
         "src/**/__tests__/**",
-        "test/react/**",
+        "test/**",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",

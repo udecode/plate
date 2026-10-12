@@ -18,9 +18,6 @@ export type IndentChangeOptions = {
   nodes?: Omit<EditorNodesOptions<Element>, 'match'> & {
     match?: NodeMatchPredicate<Element>;
   };
-  offset?: number;
-  setNodeProps?: ({ indent }: { indent: number }) => Record<string, unknown>;
-  unsetNodeProps?: string[];
 };
 
 export type IndentPluginState = {
@@ -77,13 +74,8 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
       },
     },
   },
-  update: ({ editor, plugin, schema: pluginSchema, tx }) => {
-    const change = ({
-      nodes,
-      offset = 1,
-      setNodeProps,
-      unsetNodeProps = [],
-    }: IndentChangeOptions = {}) => {
+  update: ({ schema: pluginSchema, tx }) => {
+    const change = (offset: number, { nodes }: IndentChangeOptions = {}) => {
       const { match, mode = 'lowest', ...nodeOptions } = nodes ?? {};
       const entries = tx.nodes.blocks({
         ...nodeOptions,
@@ -98,75 +90,19 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
           tx.schema.getProperty(node, pluginSchema.properties.indent) ?? 0
         );
         const nextIndent = currentIndent + offset;
-        const props = setNodeProps?.({ indent: nextIndent }) ?? {};
 
         if (nextIndent <= 0) {
-          tx.nodes.unset(['indent', ...unsetNodeProps], { at: path });
+          tx.nodes.unset('indent', { at: path });
           continue;
         }
 
-        tx.nodes.set({ indent: nextIndent, ...props }, { at: path });
+        tx.nodes.set({ indent: nextIndent }, { at: path });
       }
     };
 
-    const increase = (options?: Omit<IndentChangeOptions, 'offset'>) => {
-      change({ ...options, offset: 1 });
-    };
-
-    const decrease = (options?: Omit<IndentChangeOptions, 'offset'>) => {
-      change({ ...options, offset: -1 });
-    };
-
     return {
-      change,
-      decrease,
-      increase,
-      tab: () => {
-        const match = getInjectMatch(editor, plugin);
-        const entry = tx.nodes.block();
-
-        if (!entry) return false;
-
-        const [element, path] = entry;
-
-        if (!match(element, path)) return false;
-
-        increase();
-
-        return true;
-      },
-      untab: () => {
-        const match = getInjectMatch(editor, plugin);
-        const entry = tx.nodes.block();
-
-        if (!entry) return false;
-
-        const [element, path] = entry;
-
-        if (!match(element, path)) return false;
-
-        if (!element.indent) {
-          const blockquoteDescriptor = getCompiledPlatePlugin(
-            editor,
-            PLUGINS.blockquote
-          );
-
-          if (!blockquoteDescriptor) return true;
-          const blockquote = editor.plugin(blockquoteDescriptor);
-
-          return !tx.nodes.above({
-            at: path,
-            match: (node, nodePath) =>
-              nodePath.length < path.length &&
-              ElementApi.isElement(node) &&
-              node.type === blockquote.schema.type,
-          });
-        }
-
-        decrease();
-
-        return true;
-      },
+      decrease: (options?: IndentChangeOptions) => change(-1, options),
+      increase: (options?: IndentChangeOptions) => change(1, options),
     };
   },
   formats: ({ defineFormats }) =>
@@ -211,11 +147,50 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
         ],
       },
     }),
+}).extend(({ plugin }) => ({
   shortcuts: {
-    tab: { keys: 'tab' },
-    untab: { keys: 'shift+tab' },
+    tab: {
+      handler: ({ editor }) => {
+        const entry = editor.read.nodes.block();
+
+        if (!entry || !getInjectMatch(editor, plugin)(...entry)) return false;
+
+        editor.plugin(plugin).update.increase();
+
+        return true;
+      },
+      keys: 'tab',
+    },
+    untab: {
+      handler: ({ editor }) => {
+        const entry = editor.read.nodes.block();
+
+        if (!entry || !getInjectMatch(editor, plugin)(...entry)) return false;
+
+        const [element, path] = entry;
+
+        if (!element.indent) {
+          const quote = getCompiledPlatePlugin(editor, PLUGINS.blockquote);
+          const inQuote =
+            !!quote &&
+            !!editor.read.nodes.above({
+              at: path,
+              match: (node, nodePath) =>
+                nodePath.length < path.length &&
+                ElementApi.isElement(node) &&
+                node.type === editor.plugin(quote).schema.type,
+            });
+
+          return !inQuote;
+        }
+
+        editor.plugin(plugin).update.decrease();
+
+        return true;
+      },
+      keys: 'shift+tab',
+    },
   },
-}).extend({
   corrections: [
     {
       event: 'properties',
@@ -237,6 +212,6 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
       },
     },
   ],
-});
+}));
 
 export type IndentDefinition = DefinitionOf<typeof BaseIndentPlugin>;

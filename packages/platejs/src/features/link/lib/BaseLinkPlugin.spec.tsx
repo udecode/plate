@@ -96,6 +96,39 @@ describe('BaseLinkPlugin', () => {
     expect(anchor?.textContent).toBe('Link');
   });
 
+  it('exports a stored destination the app no longer allows', () => {
+    const editor = createProductEditor({
+      plugins: [BaseLinkPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0, 0] },
+        focus: { offset: 4, path: [0, 0, 0] },
+      },
+      initialValue: [
+        {
+          children: [
+            {
+              children: [{ text: 'File' }],
+              type: 'link',
+              url: 'ftp://example.com/file',
+            },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+    const data = new DataTransfer();
+
+    editor.api.dom.clipboard.writeSelection(data);
+
+    expect(
+      new DOMParser()
+        .parseFromString(data.getData('text/html'), 'text/html')
+        .body.querySelector('a')
+        ?.getAttribute('href')
+    ).toBe('ftp://example.com/file');
+  });
+
   it('registers no input rules by default', () => {
     const editor = createEditor();
 
@@ -202,6 +235,20 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
     });
   });
 
+  describe('when a default href is configured', () => {
+    it('omits it for a URL the app does not allow', () => {
+      const fallbackEditor = createApiEditor({
+        defaultLinkAttributes: { href: 'https://fallback.example.com' },
+      });
+
+      expect(
+        fallbackEditor
+          .plugin(BaseLinkPlugin)
+          .api.getAttributes({ ...baseLink, url: 'ftp://example.com' })
+      ).not.toHaveProperty('href');
+    });
+  });
+
   describe('when target is not set', () => {
     const link: LinkElement = {
       ...baseLink,
@@ -221,153 +268,40 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
   });
 });
 
-describe('BaseLinkPlugin.api.validateUrl', () => {
-  const createTestEditor = (
+describe('BaseLinkPlugin admission on import', () => {
+  const createImportEditor = (
     options: Partial<BaseLinkDefinition['initialState']> = {}
   ) =>
     createProductEditor({
-      plugins: [
-        BaseLinkPlugin.configure({
-          initialState: options,
-        }),
-      ],
+      plugins: [BaseLinkPlugin.configure({ initialState: options })],
     });
+  const importedUrls = (
+    editor: ReturnType<typeof createImportEditor>,
+    html: string
+  ) =>
+    Array.from(
+      NodeApi.elements({
+        children: parseHtmlSliceContent(editor, html) ?? [],
+        type: 'root',
+      }),
+      ([node]) => node
+    )
+      .filter((node) => node.type === editor.plugin(BaseLinkPlugin).schema.type)
+      .map((node) => node.url);
 
-  describe('internal links', () => {
-    it('validates paths starting with /', () => {
-      const editor = createTestEditor();
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('/internal/path')
-      ).toBe(true);
-    });
+  it('keeps tel and relative destinations on HTML import', () => {
+    const editor = createImportEditor();
 
-    it('lets a custom isUrl reject paths starting with /', () => {
-      const editor = createTestEditor({
-        isUrl: (url) => !url.startsWith('/'),
-      });
-
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('/internal/path')
-      ).toBe(false);
-    });
-
-    it('rejects protocol-relative URLs starting with //', () => {
-      const editor = createTestEditor();
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('//example.com')
-      ).toBe(false);
-    });
-
-    it('validates anchor links starting with #', () => {
-      const editor = createTestEditor();
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('#section-name')
-      ).toBe(true);
-      expect(editor.plugin(BaseLinkPlugin).api.validateUrl('#top')).toBe(true);
-    });
-
-    it('lets a custom isUrl reject anchor links', () => {
-      const editor = createTestEditor({
-        isUrl: (url) => !url.startsWith('#'),
-      });
-
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('#section-name')
-      ).toBe(false);
-    });
+    expect(
+      importedUrls(
+        editor,
+        '<a href="tel:+15551234">Call</a><a href="docs/page.html">Docs</a>'
+      )
+    ).toEqual(['tel:+15551234', 'docs/page.html']);
   });
 
-  describe('markdown headings', () => {
-    it.each([
-      '# heading1',
-      '## heading2',
-      '### heading3',
-      '#### heading4',
-      '##### heading5',
-      '###### heading6',
-      '# My Title',
-      '## 2.3 Section',
-      '### Hello World!',
-    ])('rejects %s', (value) => {
-      const editor = createTestEditor();
-
-      expect(editor.plugin(BaseLinkPlugin).api.validateUrl(value)).toBe(false);
-    });
-  });
-
-  describe('external links', () => {
-    it.each(['http://example.com', 'https://example.com'])(
-      'validates %s',
-      (url) => {
-        const editor = createTestEditor();
-
-        expect(editor.plugin(BaseLinkPlugin).api.validateUrl(url)).toBe(true);
-      }
-    );
-
-    it('uses a custom isUrl function', () => {
-      const editor = createTestEditor({
-        allowedSchemes: ['http', 'https', 'mailto', 'tel', 'custom'],
-        isUrl: (url) => url.startsWith('custom://'),
-      });
-
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('custom://example')
-      ).toBe(true);
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('http://example.com')
-      ).toBe(false);
-    });
-
-    it('still sanitizes URLs accepted by custom isUrl', () => {
-      const editor = createTestEditor({
-        allowedSchemes: ['http', 'https', 'mailto', 'tel', 'custom'],
-        isUrl: (url) =>
-          url.startsWith('javascript:') || url.startsWith('custom://'),
-      });
-
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('javascript:alert("XSS")')
-      ).toBe(false);
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('custom://example')
-      ).toBe(true);
-    });
-
-    it('rejects script URLs whatever the configuration allows', () => {
-      const editor = createTestEditor({
-        allowedSchemes: ['javascript'],
-        isUrl: (url) => url.startsWith('javascript:'),
-      });
-
-      expect(
-        editor.plugin(BaseLinkPlugin).api.validateUrl('javascript:alert("XSS")')
-      ).toBe(false);
-    });
-  });
-
-  describe('edge cases', () => {
-    it('validates an empty anchor', () => {
-      const editor = createTestEditor();
-
-      expect(editor.plugin(BaseLinkPlugin).api.validateUrl('#')).toBe(true);
-    });
-
-    it.each(['#heading1', '##heading2'])(
-      'validates anchor-like value %s',
-      (value) => {
-        const editor = createTestEditor();
-
-        expect(editor.plugin(BaseLinkPlugin).api.validateUrl(value)).toBe(true);
-      }
-    );
-  });
-
-  it('reports a destination the configured URL options refuse during HTML parsing', () => {
-    const editor = createTestEditor({
-      allowedSchemes: ['mailto'],
-      isUrl: () => true,
-    });
+  it('reports a destination the allowed schemes refuse during HTML parsing', () => {
+    const editor = createImportEditor({ allowedSchemes: ['mailto'] });
     const source = '<a href="https://example.com">Link</a>';
     // The label stays, so the lost destination warns under every policy.
     const parsed = editor.api.html.parseSlice(source);
@@ -387,12 +321,7 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
     expect(
       NodeApi.string({ children: parsed.slice.content, type: 'root' })
     ).toBe('Link');
-    expect(
-      Array.from(
-        NodeApi.elements({ children: parsed.slice.content, type: 'root' }),
-        ([node]) => node
-      ).some((node) => node.type === editor.plugin(BaseLinkPlugin).schema.type)
-    ).toBe(false);
+    expect(importedUrls(editor, source)).toEqual([]);
   });
 });
 
@@ -509,40 +438,6 @@ describe('editor.update.link.upsert', () => {
     });
   });
 
-  it('inserts text when requested inside an existing link', () => {
-    const editor = createEditingEditor({
-      selection: {
-        kind: 'text',
-        anchor: { offset: 3, path: [0, 1, 0] },
-        focus: { offset: 3, path: [0, 1, 0] },
-      },
-      value: [
-        {
-          children: [
-            { text: '' },
-            {
-              children: [{ text: 'old' }],
-              type: 'link',
-              url: 'https://old.dev',
-            },
-            { text: '' },
-          ],
-          type: 'paragraph',
-        },
-      ],
-    });
-
-    editor.update.link.upsert({
-      insertTextInLink: true,
-      url: ' appended',
-    });
-
-    expect(findLink(editor)).toMatchObject({
-      children: [{ text: 'old appended' }],
-      url: 'https://old.dev',
-    });
-  });
-
   it('uses the URL when replacement text is empty', () => {
     const editor = createEditingEditor({
       selection: {
@@ -598,7 +493,25 @@ describe('editor.update.link.upsert', () => {
     expect(editor.read.text.string([0])).toBe('Example world');
   });
 
-  it('rejects invalid URLs unless validation is skipped', () => {
+  it.each([
+    ['tel:+15551234', undefined],
+    ['vscode://settings/editor', ['https', 'vscode']],
+  ])('admits %s when its scheme is allowed', (url, allowedSchemes) => {
+    const editor = createEditingEditor({
+      options: allowedSchemes ? { allowedSchemes } : undefined,
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '' }], type: 'paragraph' }],
+    });
+
+    expect(editor.update.link.upsert({ url })).toBe(true);
+    expect(findLink(editor)?.url).toBe(url);
+  });
+
+  it('refuses a URL whose scheme the app does not allow', () => {
     const editor = createEditingEditor({
       selection: {
         kind: 'text',
@@ -608,36 +521,43 @@ describe('editor.update.link.upsert', () => {
       value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
     });
 
-    expect(editor.update.link.upsert({ url: 'not a url' })).toBeUndefined();
-    expect(findLink(editor)).toBeUndefined();
-
     expect(
-      editor.update.link.upsert({ skipValidation: true, url: 'not a url' })
-    ).toBe(true);
-    expect(findLink(editor)?.url).toBe('not%20a%20url');
-    // Skipping validation never passes the navigation floor.
-    expect(
-      editor.update.link.upsert({
-        skipValidation: true,
-        url: 'javascript:alert(1)',
-      })
+      editor.update.link.upsert({ url: 'ftp://example.com' })
     ).toBeUndefined();
-    expect(findLink(editor)?.url).toBe('not%20a%20url');
+    expect(findLink(editor)).toBeUndefined();
   });
 
-  it('honors a custom URL validator', () => {
+  it('reports its staged unwrap when the wrap target cannot hold a link', () => {
     const editor = createEditingEditor({
-      options: { isUrl: (url) => url.startsWith('/custom') },
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
+        focus: { offset: 2, path: [0, 1, 0] },
       },
-      value: [{ children: [{ text: '' }], type: 'paragraph' }],
+      value: [
+        {
+          children: [
+            { text: 'plain ' },
+            {
+              children: [{ text: 'old' }],
+              type: 'link',
+              url: 'https://old.example',
+            },
+            { text: ' tail' },
+          ],
+          type: 'paragraph',
+        },
+      ],
     });
+    const before = editor.read.lastCommit();
 
-    expect(editor.update.link.upsert({ url: '/internal' })).toBeUndefined();
-    expect(editor.update.link.upsert({ url: '/custom/value' })).toBe(true);
+    expect(
+      editor.update.link.upsert({
+        url: 'https://new.example',
+        wrapNodesOptions: { at: [0] },
+      })
+    ).toBe(true);
+    expect(editor.read.lastCommit()).not.toBe(before);
   });
 
   it('does nothing without a selection', () => {
@@ -820,7 +740,52 @@ describe('editor.update.link.upsertText', () => {
   });
 });
 
+describe('editor.update.link.insert', () => {
+  it('refuses a URL whose scheme the app does not allow', () => {
+    const editor = createEditingEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
+    });
+
+    expect(
+      editor.update.link.insert({ text: 'file', url: 'ftp://example.com' })
+    ).toBeUndefined();
+    expect(editor.read.text.string([0])).toBe('test');
+  });
+});
+
 describe('editor.update.link.wrap', () => {
+  it('refuses a URL whose scheme the app does not allow', () => {
+    const editor = createEditingEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
+    });
+
+    expect(
+      editor.update.link.wrap({ url: 'ftp://example.com' })
+    ).toBeUndefined();
+    expect(findLink(editor)).toBeUndefined();
+  });
+
+  it('returns undefined when there is no selection to wrap', () => {
+    const editor = createEditingEditor({
+      value: [{ children: [{ text: 'test' }], type: 'paragraph' }],
+    });
+
+    expect(
+      editor.update.link.wrap({ url: 'https://example.com' })
+    ).toBeUndefined();
+    expect(findLink(editor)).toBeUndefined();
+  });
+
   it('wraps selected text and preserves surrounding content', () => {
     const input = (
       <editor>

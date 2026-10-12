@@ -52,6 +52,9 @@ const plateJsPlugins = {
   ],
 };
 
+const htmlParserOwnerMessage =
+  'Parse HTML with parseHtmlAst from packages/platejs/src/lib/plugins/html/htmlAst.ts, which needs no browser DOM.';
+
 const forbiddenUdecodeImport = {
   regex: '^@udecode(?:/|$)',
   message:
@@ -210,7 +213,6 @@ export default defineConfig({
         'packages/platejs/src/features/details/lib/BaseDetailsPlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/layout/lib/BaseColumnPlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/list/lib/BaseListPlugin.authored-tree.spec.ts',
-        'packages/platejs/src/features/tag/lib/BaseMultiSelectPlugin.authored-tree.spec.ts',
       ],
       rules: {
         'no-restricted-imports': [
@@ -318,6 +320,26 @@ export default defineConfig({
               },
             ],
           },
+        ],
+      },
+    },
+    {
+      files: ['packages/platejs/src/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}'],
+      excludeFiles: [
+        'packages/platejs/src/docx/**',
+        'packages/platejs/src/**/*.spec.*',
+        'packages/platejs/src/**/*.test.*',
+        'packages/platejs/src/**/*.slow.*',
+        'packages/platejs/src/**/__tests__/**',
+      ],
+      rules: {
+        'no-restricted-globals': [
+          'error',
+          { name: 'DOMParser', message: htmlParserOwnerMessage },
+        ],
+        'no-restricted-properties': [
+          'error',
+          { property: 'DOMParser', message: htmlParserOwnerMessage },
         ],
       },
     },
@@ -462,6 +484,36 @@ export default defineConfig({
       ],
       rules: {
         'plate/no-inline-hydration-flag': 'error',
+      },
+    },
+    {
+      files: [
+        'packages/*/src/**/*.{cts,mts,ts,tsx}',
+        'apps/www/src/registry/**/*.{ts,tsx}',
+      ],
+      excludeFiles: [
+        'packages/plitejs/**',
+        '**/*.spec.*',
+        '**/*.test.*',
+        '**/*.slow.*',
+        '**/__tests__/**',
+      ],
+      rules: {
+        'plate/no-schema-placement-copy': 'error',
+      },
+    },
+    {
+      files: ['packages/plitejs/src/authored/tree/**/*.{ts,tsx}'],
+      // The resolver decides structural marks, the recorder writes them, the
+      // cut module moves split cuts and marks.ts declares them.
+      excludeFiles: [
+        'packages/plitejs/src/authored/tree/cuts.ts',
+        'packages/plitejs/src/authored/tree/marks.ts',
+        'packages/plitejs/src/authored/tree/record.ts',
+        'packages/plitejs/src/authored/tree/resolve.ts',
+      ],
+      rules: {
+        'plate/no-structural-mark-copy': 'error',
       },
     },
     {

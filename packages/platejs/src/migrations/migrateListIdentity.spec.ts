@@ -250,18 +250,30 @@ describe('migrateListIdentity', () => {
   );
 
   it('keeps the numbers of 500 random documents', () => {
-    for (let seed = 1; seed <= 500; seed += 1) {
-      const next = random(seed);
-      const children = Array.from({ length: 1 + next(30) }, () =>
-        randomBlock(next, 0)
-      );
-      const migrated = migrate(children);
+    const documents = Array.from({ length: 500 }, (_, index) => {
+      const next = random(index + 1);
 
-      expect({ numbers: identityNumbers(migrated), seed }).toEqual({
-        numbers: adjacencyNumbers(children),
-        seed,
+      return Array.from({ length: 1 + next(30) }, () => randomBlock(next, 0));
+    });
+    // Each migrated document's lists carry fresh ids, so one editor over all
+    // of them numbers each document as an editor of its own would, without
+    // paying an editor's setup per document.
+    const numbers = identityNumbers(
+      documents.flatMap((children) => migrate(children))
+    );
+    let offset = 0;
+
+    documents.forEach((children, index) => {
+      const expected = adjacencyNumbers(children);
+      const actual = numbers.slice(offset, offset + expected.length);
+
+      offset += expected.length;
+      expect({ numbers: actual, seed: index + 1 }).toEqual({
+        numbers: expected,
+        seed: index + 1,
       });
-    }
+    });
+    expect(offset).toBe(numbers.length);
   });
 
   it('changes nothing on a second run', () => {

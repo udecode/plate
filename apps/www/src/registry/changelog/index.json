@@ -2,6 +2,101 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-12-link-draft-addresses",
+      "href": "/registry/changelog/2026-10-12-link-draft-addresses.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Refuse link form drafts that do not read as an address",
+      "change": {
+        "type": "source",
+        "date": "2026-10-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["link"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-12-select-editor-field",
+      "href": "/registry/changelog/2026-10-12-select-editor-field.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Rebuild the select editor as one field",
+      "change": {
+        "type": "source",
+        "date": "2026-10-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["select-editor"],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-11-fix-bullet-list-style",
+      "href": "/registry/changelog/2026-10-11-fix-bullet-list-style.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix circle and square bullet styles drawing as discs",
+      "change": {
+        "type": "source",
+        "date": "2026-10-11",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["list", "list-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-11-fix-demo-values",
+      "href": "/registry/changelog/2026-10-11-fix-demo-values.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix demos whose starting document did not load",
+      "change": {
+        "type": "source",
+        "date": "2026-10-11",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "editable-voids-demo",
+        "hundreds-editors-demo",
+        "plugin-rules-demo",
+        "align-demo"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-11-tabbable-kit-view-caret",
+      "href": "/registry/changelog/2026-10-11-tabbable-kit-view-caret.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Let Tab nest list items with TabbableKit installed",
+      "change": {
+        "type": "source",
+        "date": "2026-10-11",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["tabbable", "tabbable-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-10-details-selection",
       "href": "/registry/changelog/2026-10-10-details-selection.json",
       "status": "draft",

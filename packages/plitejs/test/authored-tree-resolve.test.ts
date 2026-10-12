@@ -185,64 +185,6 @@ describe('authored review tree decisions', () => {
     );
   });
 
-  it('pulls a column group’s surviving column content out instead of deleting it', () => {
-    const editor = createEditor({
-      plugins: [Columns, authoredTreeProof({ authorId: 'bob', now: () => AT })],
-      initialValue: [
-        {
-          type: 'column_group',
-          children: [
-            { type: 'column', children: [paragraph({ text: 'left' })] },
-            whole(
-              { type: 'column', children: [paragraph({ text: 'right' })] },
-              mark('delete')
-            ),
-          ],
-        },
-      ],
-    });
-    const result = editor.api.authoredTree.decide({
-      action: 'accept',
-      changes: ['bob:1'],
-    });
-
-    assert.equal(result.status, 'applied');
-    assert.deepEqual(editor.read.children(), [paragraph({ text: 'left' })]);
-  });
-
-  it('blocks a decision whose repair would pull apart a container with other pending changes', () => {
-    const editor = createEditor({
-      plugins: [Columns, authoredTreeProof({ authorId: 'bob', now: () => AT })],
-      initialValue: [
-        {
-          type: 'column_group',
-          children: [
-            whole(
-              { type: 'column', children: [paragraph({ text: 'left' })] },
-              mark('delete', 'alice')
-            ),
-            whole(
-              { type: 'column', children: [paragraph({ text: 'right' })] },
-              mark('delete')
-            ),
-          ],
-        },
-      ],
-    });
-    const before = editor.read.children();
-    const result = editor.api.authoredTree.decide({
-      action: 'accept',
-      changes: ['bob:1'],
-    });
-
-    assert.deepEqual(result, {
-      ids: ['bob:1'],
-      status: 'blocked',
-      with: ['alice:1'],
-    });
-    assert.deepEqual(editor.read.children(), before);
-  });
-
   it('decides one change as one undoable step', () => {
     const editor = createEditor({
       plugins: [
@@ -316,7 +258,7 @@ describe('authored review tree decisions', () => {
     const proposed = editor.api.authoredTree.project('proposed').value.children;
 
     editor.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
-    assert.deepEqual(proposed, [paragraph({ text: 'left' })]);
+    assert.deepEqual(proposed, [group([column('left'), column('')])]);
     assert.deepEqual(editor.read.children(), proposed);
   });
 
@@ -341,21 +283,13 @@ describe('authored review tree decisions', () => {
 
     first.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
     first.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
-    const blocked = second.api.authoredTree.decide({
-      action: 'accept',
-      changes: ['bob:1'],
-    });
+    second.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
+    second.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
 
-    assert.deepEqual(blocked, {
-      ids: ['bob:1'],
-      status: 'blocked',
-      with: ['alice:1'],
-    });
-    second.api.authoredTree.decide({
-      action: 'accept',
-      changes: ['bob:1', 'alice:1'],
-    });
     assert.deepEqual(second.read.children(), first.read.children());
+    assert.deepEqual(first.read.children(), [
+      group([column('left'), column('')], { layout: 'wide' }),
+    ]);
   });
 
   it('keeps a column group whose two column deletions are accepted together, as Editing does', () => {

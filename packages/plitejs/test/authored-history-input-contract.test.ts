@@ -311,7 +311,7 @@ describe('native authored input history', () => {
       ],
     });
     const view = createEditorView(source, { authored: markup });
-    view.update.selection.set({ path: [0, 1], offset: 18 });
+    view.update.selection.set({ path: [0, 2], offset: 18 });
 
     view.update.text.deleteBackward();
     view.update.text.deleteBackward();

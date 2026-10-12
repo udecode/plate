@@ -64,6 +64,36 @@ export const createTypedText = (
       ) as Text)
     : { text };
 
+/**
+ * Text typed into an empty text replaces it, so it keeps that text's own
+ * properties under the marks set for it: canonical form leaves an empty text
+ * only metadata and site values, which a copy may drop.
+ */
+const continueEmptyText = (
+  editor: Editor,
+  typed: Text,
+  path: Path,
+  root = getEditorUpdateRoot(editor)
+): Text => {
+  const empty = NodeApi.has(editor, path) ? NodeApi.get(editor, path) : null;
+
+  if (!TextApi.isText(empty) || empty.text !== '') return typed;
+
+  const marks = NodeApi.extractProps(typed);
+  const properties = Object.keys(marks).reduce(
+    (current, key) =>
+      getEditorSchema(editor).canonicalizeTextPropertiesAt(
+        current,
+        path,
+        root,
+        key
+      ),
+    { ...NodeApi.extractProps(empty), ...marks }
+  );
+
+  return { ...properties, text: typed.text };
+};
+
 const createFullDocumentTextReplacement = (
   editor: Editor,
   text: string,
@@ -408,7 +438,12 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
           insertNodes(
             editor as Editor,
-            createTypedText(editor, text, marks, path, root),
+            continueEmptyText(
+              editor,
+              createTypedText(editor, text, marks, path, root),
+              path,
+              root
+            ),
             { at, select: !explicitAtPreservesNullSelection, voids }
           );
           setCurrentMarks(editor, null);

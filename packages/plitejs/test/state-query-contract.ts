@@ -4,8 +4,10 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   createEditorView,
+  defineEditorSchema,
   ElementApi,
   type Element,
+  schema,
   SelectionApi,
   TextApi,
 } from 'plitejs';
@@ -213,13 +215,30 @@ describe('state query contract', () => {
     const editor = createEditor({
       initialSelection: {
         kind: 'text' as const,
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
       },
+      plugins: [
+        defineEditorSchema('state-query-nested-block', {
+          elements: {
+            nested: { content: schema.content.type('paragraph') },
+            paragraph: {
+              content: schema.content.any([
+                schema.content.text(),
+                schema.content.type('nested'),
+              ]),
+            },
+          },
+          id: 'state-query-nested-block',
+          root: schema.content.type('paragraph'),
+          unknown: 'reject',
+          version: 1,
+        }),
+      ],
       initialValue: [
         {
           children: [
-            { text: '' },
+            { text: 'x' },
             {
               children: [{ children: [{ text: 'next' }], type: 'paragraph' }],
               type: 'nested',

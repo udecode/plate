@@ -376,7 +376,7 @@ Enter after the fence.
 
 ### Links
 
-Link rules are not just substitutions — they validate URLs and wrap text with a full link node.
+Link rules wrap text in a link node instead of substituting characters. The autolink rules link a token that `LinkPlugin`'s `parseUrl` recognizes and `allowedSchemes` allows; see [Link](/docs/link).
 
 ```tsx showLineNumbers
 import { LinkRules } from 'platejs';
@@ -396,6 +396,8 @@ export const LinkInputRulesPlugin = LinkPlugin.configure({
 - `LinkRules.autolink({ variant: 'paste' })` turns a pasted URL into a link.
 - `LinkRules.autolink({ variant: 'space' })` detects a URL when you type a trailing space.
 - `LinkRules.autolink({ variant: 'break' })` detects a URL when you press Enter.
+
+A URL the app does not allow stays text, and the paste, space or Enter goes on as usual.
 
 Register whichever variants you want — you can pick one, two, or all four.
 

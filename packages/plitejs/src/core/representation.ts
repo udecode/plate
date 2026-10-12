@@ -24,12 +24,24 @@ import { DocumentIndex } from './change/document-index';
 import { RootChange, reconcileChildrenStep } from './change/root-change';
 import type { JsonEditorValue, PreparedTokenSlice } from './change/tokens';
 import {
+  admitsEmptyText,
+  canonicalizeContentChildren,
+  canonicalizeInlineChildren,
+  type ContentCompletion,
+  type ContentCompletionSchema,
+  completeContent,
+  contentKindOf,
+  mixedContentWindow,
+  textPropertiesEqual,
+} from './content-completion';
+import {
   ContentSlice as ContentSliceValue,
   getContentSliceCanonicalAuthority,
 } from './content-slice';
 import { getEditorSchema } from './editor-runtime';
 import { profileCoreDuration } from './profiling';
-import { areEditorJsonValuesEqual } from './value-codec';
+import type { CompiledSchemaContentProgram } from './schema-compiler';
+import type { RepresentationRepairSink } from './slice-fit/fit-report';
 
 type RepresentationSchema = ReturnType<typeof getEditorSchema>;
 type RepresentationContext = Editor &
@@ -43,114 +55,52 @@ const isInline = (
   schema: RepresentationSchema = resolveRepresentationSchema(editor)
 ) => ElementApi.isElement(node) && schema.isInline(node);
 
-const collectInlineContent = (
-  editor: Editor,
-  node: Descendant,
-  schema: RepresentationSchema = resolveRepresentationSchema(editor)
-): Descendant[] => {
-  if (TextApi.isText(node) || isInline(editor, node, schema)) return [node];
-
-  return (node.children as Descendant[]).flatMap((child) =>
-    collectInlineContent(editor, child, schema)
-  );
-};
-
-const mergeText = (
-  editor: Editor,
-  left: Extract<Descendant, { text: string }>,
-  right: Extract<Descendant, { text: string }>
-) => {
-  const merged = { ...left, text: left.text + right.text };
-
-  inheritNodeKey(merged, left, editor);
-
-  return merged;
-};
-
-const textPropertiesEqual = (
-  left: Extract<Descendant, { text: string }>,
-  right: Extract<Descendant, { text: string }>
-) => {
-  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
-
-  keys.delete('text');
-
-  return [...keys].every((key) =>
-    areEditorJsonValuesEqual(left[key], right[key])
-  );
-};
-
 type CanonicalizeOptions = Readonly<{
+  /**
+   * `identity` vacates a prefix slot whose occupant the change displaced, by
+   * node identity against the change's before, as Editing's own pass does.
+   * `none` reads the document alone, for a check of an external change.
+   */
+  displacement?: 'identity' | 'none';
   document?: import('../interfaces/editor').EditorDocumentValue;
   preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
+  report?: RepresentationRepairSink;
   schema?: RepresentationSchema;
 }>;
 
-const completeRequiredContent = (
+/**
+ * `site` is the completed element and its ancestors, nearest first, or empty
+ * at a root.
+ */
+const completionSchemaAt = (
   schema: RepresentationSchema,
-  content: NonNullable<ReturnType<RepresentationSchema['getRootContent']>>,
-  source: readonly Descendant[],
-  parent: Editor | Element,
-  root: string,
-  wasDisplaced?: (child: Descendant, slotIndex: number) => boolean
-): readonly Descendant[] => {
-  let children: readonly Descendant[] = source;
-  let addedRequired = false;
+  site: readonly Element[],
+  root: string
+): ContentCompletionSchema => ({
+  create: (type, properties) =>
+    schema.createAt(type, properties, { ancestors: site, root }),
+  fitsPrefix: (child, slot) =>
+    schema.canContainAt(site[0] ?? null, child, slot, root),
+  isInline: schema.isInline,
+});
 
-  if (content.prefix) {
-    const required: Descendant[] = [];
-    let consumed = 0;
+const emptyTextDrops = (
+  schema: RepresentationSchema,
+  at: Readonly<{
+    ancestors: readonly Element[];
+    parent: Element | undefined;
+    root: string;
+  }>
+) => {
+  const { parent } = at;
 
-    for (const [index, slot] of content.prefix.entries()) {
-      const candidate = children[consumed];
-      const displaced = candidate && wasDisplaced?.(candidate, index);
+  if (!parent || schema.isVoid(parent)) return undefined;
 
-      if (
-        candidate &&
-        !displaced &&
-        schema.canContainAt(
-          ElementApi.isElement(parent) ? parent : null,
-          candidate,
-          index,
-          root
-        )
-      ) {
-        required.push(candidate);
-        consumed += 1;
-      } else {
-        if (candidate && wasDisplaced && !displaced) {
-          return source;
-        }
-        addedRequired = true;
-        required.push(schema.create(slot.type, slot.properties));
-      }
-    }
-    if (addedRequired) children = [...required, ...source.slice(consumed)];
-  }
-
-  if (!addedRequired && children.length >= content.min) return source;
-
-  const completed = [...children];
-  const plan = content.remainder?.defaultPlan ?? content.defaultPlan;
-
-  while (completed.length < content.min) {
-    if (plan?.kind === 'text') {
-      completed.push({ text: '' });
-    } else if (plan?.kind === 'element') {
-      completed.push(schema.create(plan.type));
-    } else {
-      const owner = ElementApi.isElement(parent)
-        ? `element "${parent.type}"`
-        : `root "${root}"`;
-
-      throw new Error(`Editor ${owner} requires defaultable content.`);
-    }
-  }
-
-  return completed;
+  return (key: string, value: unknown) =>
+    !schema.emptyTextKeeps(key, value, { ...at, parent });
 };
 
-const hasInlineContent = (
+const inlineContentWithoutProgram = (
   editor: Editor,
   parent: Editor | Element,
   children: readonly Descendant[],
@@ -167,150 +117,190 @@ const hasInlineContent = (
   );
 };
 
-const canonicalizeInlineChildren = (
-  editor: Editor,
+const completeAt = (
+  schema: RepresentationSchema,
+  content: CompiledSchemaContentProgram,
+  site: readonly Element[],
   children: readonly Descendant[],
-  {
-    after,
-    before,
-    preserveInlineSpacersAdjacentTo,
-    schema = resolveRepresentationSchema(editor),
-  }: Readonly<{
-    after?: Descendant;
-    before?: Descendant;
-  }> &
-    CanonicalizeOptions = {}
-) => {
-  const flattened = children.flatMap((child) =>
-    TextApi.isText(child) || isInline(editor, child, schema)
-      ? [child]
-      : collectInlineContent(editor, child, schema)
-  );
-  const content = flattened.filter((child, index) => {
-    if (!TextApi.isText(child) || child.text !== '') return true;
-    if (flattened.length === 1 && before === undefined && after === undefined) {
-      return true;
-    }
-
-    return (
-      isInline(editor, flattened[index - 1] ?? before, schema) ||
-      isInline(editor, flattened[index + 1] ?? after, schema)
-    );
+  root: string,
+  options: Readonly<{
+    dropsFromEmptyText?: (key: string, value: unknown) => boolean;
+    editing?: Readonly<{
+      vacated: (slot: number, candidate: Descendant) => boolean;
+    }>;
+    editor?: Editor;
+    flattenInto?: Element;
+    preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
+    report?: RepresentationRepairSink;
+  }>
+) =>
+  completeContent({
+    ...options,
+    children:
+      site.length > 0
+        ? canonicalizeContentChildren(children, content, {
+            ...options,
+            schema,
+          })
+        : children,
+    content,
+    element: site.length > 0,
+    schema: completionSchemaAt(schema, site, root),
   });
-  const canonical: Descendant[] = [];
 
-  for (const [index, child] of content.entries()) {
-    if (isInline(editor, child, schema)) {
-      if (!TextApi.isText(canonical.at(-1) ?? before)) {
-        canonical.push({ text: '' });
-      }
-      canonical.push(child);
-      continue;
-    }
-    if (!TextApi.isText(child)) continue;
+/**
+ * Canonical children at their element's site, as the canonical pass would
+ * give them, and each element completion built. `sources` holds, at each
+ * index of `children`, the node before the canonical pass, so a given child
+ * the pass rewrote can still be traced. `site` is the element and its
+ * ancestors, nearest first, or empty at a root; `vacated` names the prefix
+ * slots whose occupant was displaced.
+ *
+ * @internal
+ */
+export const completeChildrenAt = (
+  editor: Editor,
+  site: readonly Element[],
+  children: readonly Descendant[],
+  root: string,
+  vacated?: (slot: number, candidate: Descendant) => boolean
+): ContentCompletion & Readonly<{ sources: readonly Descendant[] }> => {
+  const completion = completeDirectChildren(
+    editor,
+    site[0] ?? editor,
+    children,
+    root,
+    {},
+    site.slice(1),
+    vacated
+  );
+  // As the canonical pass does after completion, so an empty text it builds
+  // takes the properties its site declares. The pass maps child for child.
+  const canonical = resolveRepresentationSchema(editor).canonicalizeChildren(
+    completion.children,
+    root,
+    site,
+    false
+  );
 
-    const previous = canonical.at(-1);
-    const previousInline = canonical.at(-2) ?? before;
-    const nextInline = content[index + 1] ?? after;
-    const preservePreviousInlineSpacer =
-      previousInline !== undefined &&
-      preserveInlineSpacersAdjacentTo?.has(previousInline) === true;
-    const preserveChildInlineSpacer =
-      nextInline !== undefined &&
-      preserveInlineSpacersAdjacentTo?.has(nextInline) === true;
-
-    const previousIsInlineSpacer =
-      TextApi.isText(previous) &&
-      previous.text === '' &&
-      isInline(editor, previousInline as Descendant, schema) &&
-      preservePreviousInlineSpacer;
-    const childIsInlineSpacer =
-      child.text === '' &&
-      isInline(editor, nextInline, schema) &&
-      preserveChildInlineSpacer;
-
-    if (
-      TextApi.isText(previous) &&
-      !previousIsInlineSpacer &&
-      !childIsInlineSpacer &&
-      textPropertiesEqual(previous, child)
-    ) {
-      canonical[canonical.length - 1] = mergeText(editor, previous, child);
-    } else {
-      canonical.push(child);
-    }
-  }
-
-  if (
-    isInline(editor, canonical.at(-1) as Descendant, schema) &&
-    !TextApi.isText(after)
-  ) {
-    canonical.push({ text: '' });
-  }
-  if (canonical.length === 0 && before === undefined && after === undefined) {
-    canonical.push({ text: '' });
-  }
-  const result = canonical;
-
-  return result.length === children.length &&
-    result.every((child, index) => child === children[index])
-    ? children
-    : result;
+  return {
+    built: completion.built.map((item) => ({
+      ...item,
+      node: canonical[item.index] as Element,
+    })),
+    children: canonical,
+    sources: completion.children,
+  };
 };
 
 const canonicalizeDirectChildren = (
   editor: Editor,
   parent: Editor | Element,
   source: readonly Descendant[],
-  root = 'main',
-  options: CanonicalizeOptions = {}
-) => {
+  root: string,
+  options: CanonicalizeOptions = {},
+  ancestors: readonly Element[] = []
+) =>
+  completeDirectChildren(editor, parent, source, root, options, ancestors)
+    .children;
+
+const completeDirectChildren = (
+  editor: Editor,
+  parent: Editor | Element,
+  source: readonly Descendant[],
+  root: string,
+  options: CanonicalizeOptions,
+  ancestors: readonly Element[],
+  vacated?: (slot: number, candidate: Descendant) => boolean
+): ContentCompletion => {
   const schema = options.schema ?? resolveRepresentationSchema(editor);
-  const contentSpec = ElementApi.isElement(parent)
+  const element = ElementApi.isElement(parent);
+  const contentSpec = element
     ? schema.getElementContent(parent.type)
     : schema.getRootContent(root, options.document);
-  let children =
-    ElementApi.isElement(parent) || contentSpec?.allowsText
+  const { report } = options;
+  const children =
+    element || contentSpec?.allowsText
       ? source
-      : source.filter((child): child is Element => ElementApi.isElement(child));
+      : source.filter((child): child is Element => {
+          if (ElementApi.isElement(child)) return true;
+          report?.({
+            code: 'remove-noncanonical-child',
+            impact: 'lossy',
+            inputs: [child],
+          });
+
+          return false;
+        });
+  const runOptions = {
+    dropsFromEmptyText: emptyTextDrops(schema, {
+      ancestors,
+      parent: element ? parent : undefined,
+      root,
+    }),
+    editor,
+    ...(element ? { flattenInto: parent } : {}),
+    preserveInlineSpacersAdjacentTo: options.preserveInlineSpacersAdjacentTo,
+    report,
+    schema,
+  };
 
   if (contentSpec) {
-    children = completeRequiredContent(
+    return completeAt(
       schema,
       contentSpec,
+      element ? [parent, ...ancestors] : [],
       children,
-      parent,
-      root
+      root,
+      { ...runOptions, ...(vacated ? { editing: { vacated } } : {}) }
     );
   }
 
-  if (hasInlineContent(editor, parent, children, schema)) {
-    return canonicalizeInlineChildren(editor, children, options);
+  if (inlineContentWithoutProgram(editor, parent, children, schema)) {
+    return {
+      built: [],
+      children: canonicalizeInlineChildren(children, runOptions),
+    };
   }
 
-  if (contentSpec) return children;
+  const blocks = children.filter((child) => {
+    if (ElementApi.isElement(child) && !isInline(editor, child)) return true;
+    report?.({
+      code: 'remove-noncanonical-child',
+      impact: 'lossy',
+      inputs: [child],
+    });
 
-  const blocks = children.filter(
-    (child) => ElementApi.isElement(child) && !isInline(editor, child)
-  );
+    return false;
+  });
 
-  if (ElementApi.isElement(parent) && blocks.length === 0) {
-    return [{ text: '' }];
+  if (element && blocks.length === 0) {
+    const emptyText = { text: '' };
+
+    report?.({ code: 'insert-empty-text', inputs: [], output: emptyText });
+
+    return { built: [], children: [emptyText] };
   }
 
-  return blocks.length === children.length ? children : blocks;
+  return {
+    built: [],
+    children: blocks.length === children.length ? children : blocks,
+  };
 };
 
 const canonicalizeNode = (
   editor: Editor,
   node: Descendant,
-  options: CanonicalizeOptions = {}
+  root: string,
+  options: CanonicalizeOptions = {},
+  ancestors: readonly Element[] = []
 ): Descendant => {
   if (TextApi.isText(node)) return node;
 
   const source = node.children;
+  const site = [node, ...ancestors];
   const nested = source.map((child) =>
-    canonicalizeNode(editor, child, options)
+    canonicalizeNode(editor, child, root, options, site)
   );
   const unchangedNested = nested.every(
     (child, index) => child === source[index]
@@ -322,8 +312,9 @@ const canonicalizeNode = (
     editor,
     candidate,
     unchangedNested ? source : nested,
-    'main',
-    options
+    root,
+    options,
+    ancestors
   );
 
   if (candidate === node && children === source) return node;
@@ -334,35 +325,35 @@ const canonicalizeNode = (
       : ({ ...candidate, children } as Element);
 
   inheritNodeKey(canonical, node, editor);
+  options.report?.({
+    from: candidate === node ? [node] : [node, candidate],
+    rebuilt: canonical,
+  });
 
   return canonical;
 };
 
 /**
- * Canonicalize detached children against one concrete parent.
+ * One top-level node through `fitRootChildren`'s pass, without completing its
+ * root.
  *
  * @internal
  */
-export const canonicalizeElementChildren = (
+export const canonicalizeTopLevelNode = (
   editor: Editor,
-  parent: Element,
-  current: readonly Descendant[]
-) => {
-  const nested = current.map((child) => canonicalizeNode(editor, child));
-  const candidate = {
-    ...parent,
-    children: nested,
-  } as Element;
-  const canonical = canonicalizeDirectChildren(
-    editor,
-    candidate,
-    candidate.children
+  node: Descendant,
+  root: string
+): Descendant => {
+  const schema = resolveRepresentationSchema(editor);
+  const [properties] = schema.canonicalizeChildren([node], root, [], false);
+  const [canonical] = schema.canonicalizeChildren(
+    [canonicalizeNode(editor, getDefined(properties), root, { schema })],
+    root,
+    [],
+    false
   );
 
-  return canonical.length === current.length &&
-    canonical.every((child, index) => child === current[index])
-    ? current
-    : canonical;
+  return getDefined(canonical);
 };
 
 /** Full-root canonicalization for explicit snapshot replacement/maintenance. */
@@ -370,12 +361,12 @@ export const canonicalizeRootChildren = (
   editor: Editor,
   current: readonly Descendant[],
   topLevelIndexes: ReadonlySet<number> | null,
-  root = 'main',
+  root: string,
   options: CanonicalizeOptions = {}
 ) => {
   const nested = current.map((child, index) =>
     topLevelIndexes === null || topLevelIndexes.has(index)
-      ? canonicalizeNode(editor, child, options)
+      ? canonicalizeNode(editor, child, root, options)
       : child
   );
 
@@ -698,6 +689,7 @@ export const prepareCanonicalFitSlice = (
   schema: object | null,
   slice: ContentSlice,
   currentSchema: () => object | null,
+  root: string,
   representationSchema: RepresentationSchema = resolveRepresentationSchema(
     editor
   )
@@ -729,7 +721,7 @@ export const prepareCanonicalFitSlice = (
       if (!opensStart && !opensEnd) {
         trustedPaths.push(path);
 
-        return canonicalizeNode(editor, child, {
+        return canonicalizeNode(editor, child, root, {
           schema: representationSchema,
         });
       }
@@ -922,6 +914,11 @@ const replaceCanonicalChildWindow = (
 
     if (ancestor && ElementApi.isElement(ancestor)) ancestors.push(ancestor);
   }
+  const dropsFromEmptyText = emptyTextDrops(schema, {
+    ancestors: ancestors.slice(1),
+    parent: ancestors[0],
+    root,
+  });
   const baselineAt = (from: number) =>
     beforeDocument
       ? { children: beforeDocument.value as readonly Descendant[], path, from }
@@ -943,14 +940,28 @@ const replaceCanonicalChildWindow = (
 
     return canonical;
   };
+  const kind =
+    ElementApi.isElement(parent) && contentSpec
+      ? contentKindOf(contentSpec, schema)
+      : null;
   const inlineContent =
     ElementApi.isElement(parent) &&
-    hasInlineContent(editor, parent, source, schema);
-  // The changed range plus two unchanged children contains each radius-one
-  // representation dependency. Edge context below prevents the local window
-  // from behaving like the start or end of its parent.
+    (kind === null
+      ? inlineContentWithoutProgram(editor, parent, source, schema)
+      : kind === 'inline');
+  // The changed range plus two unchanged children on each side contains each
+  // radius-one representation dependency. Inline content's edge context below
+  // prevents the local window from behaving like the start or end of its parent.
   let from = Math.max(0, Math.min(source.length, window.from) - 2);
   let to = Math.min(source.length, Math.max(window.to, window.from) + 2);
+  let program = contentSpec;
+
+  if (kind === 'mixed' && contentSpec) {
+    ({ from, program, to } = mixedContentWindow(source, contentSpec, schema, {
+      from,
+      to,
+    }));
+  }
 
   if (inlineContent) {
     while (from > 0) {
@@ -996,24 +1007,32 @@ const replaceCanonicalChildWindow = (
   );
   const representationCanonical = ElementApi.isElement(parent)
     ? inlineContent
-      ? canonicalizeInlineChildren(editor, propertyCanonical, {
-          ...(from > 0 ? { before: propertyNodeAt(from - 1) } : {}),
-          ...(to < source.length ? { after: propertyNodeAt(to) } : {}),
-          ...options,
+      ? canonicalizeInlineChildren(propertyCanonical, {
+          ...(from > 0 ? { siblingBefore: propertyNodeAt(from - 1) } : {}),
+          ...(to < source.length ? { siblingAfter: propertyNodeAt(to) } : {}),
+          dropsFromEmptyText,
+          editor,
+          fillsEmpty: !contentSpec || admitsEmptyText(contentSpec),
           preserveInlineSpacersAdjacentTo,
           schema,
         })
-      : contentSpec
-        ? propertyCanonical
-        : canonicalizeDirectChildren(
+      : kind === 'mixed' && program
+        ? canonicalizeContentChildren(propertyCanonical, program, {
+            dropsFromEmptyText,
             editor,
-            parent,
-            propertyCanonical,
-            'main',
-            {
-              schema,
-            }
-          )
+            preserveInlineSpacersAdjacentTo,
+            schema,
+          })
+        : contentSpec
+          ? propertyCanonical
+          : canonicalizeDirectChildren(
+              editor,
+              parent,
+              propertyCanonical,
+              root,
+              { schema },
+              ancestors.slice(1)
+            )
     : contentSpec
       ? propertyCanonical.filter((child): child is Element =>
           ElementApi.isElement(child)
@@ -1059,26 +1078,33 @@ const replaceCanonicalChildWindow = (
       ? null
       : getDescendant(beforeDocument.value as readonly Descendant[], path)
     : null;
-  const previousChildren = beforeDocument
-    ? path.length === 0
-      ? (beforeDocument.value as readonly Descendant[])
-      : previousParent && ElementApi.isElement(previousParent)
-        ? previousParent.children
-        : null
-    : null;
-  const completed = completeRequiredContent(
-    schema,
-    contentSpec,
-    current,
-    parent,
-    root,
-    previousChildren
-      ? (child, index) =>
-          current.length < previousChildren.length &&
-          previousChildren[index] !== child &&
-          previousChildren.includes(child, index + 1)
-      : undefined
-  );
+  const previousChildren =
+    beforeDocument && options.displacement !== 'none'
+      ? path.length === 0
+        ? (beforeDocument.value as readonly Descendant[])
+        : previousParent && ElementApi.isElement(previousParent)
+          ? previousParent.children
+          : null
+      : null;
+  const { children: completed } = completeContent({
+    children: current,
+    content: contentSpec,
+    dropsFromEmptyText,
+    editor,
+    element: ElementApi.isElement(parent),
+    preserveInlineSpacersAdjacentTo: options.preserveInlineSpacersAdjacentTo,
+    schema: completionSchemaAt(schema, ancestors, root),
+    ...(previousChildren
+      ? {
+          editing: {
+            vacated: (slot: number, child: Descendant) =>
+              current.length < previousChildren.length &&
+              previousChildren[slot] !== child &&
+              previousChildren.includes(child, slot + 1),
+          },
+        }
+      : {}),
+  });
 
   if (completed === current) return;
 
@@ -1096,6 +1122,78 @@ const replaceCanonicalChildWindow = (
   draft.document = step.after;
 };
 
+const fitRootChildren = (
+  editor: Editor,
+  current: readonly Descendant[],
+  root: string,
+  options: CanonicalizeOptions & Readonly<{ schema: RepresentationSchema }>
+) => {
+  const { schema } = options;
+  const propertyCanonical = schema.canonicalizeChildren(
+    current,
+    root,
+    [],
+    false
+  );
+  const representationCanonical = canonicalizeRootChildren(
+    editor,
+    propertyCanonical,
+    null,
+    root,
+    {
+      ...options,
+      preserveInlineSpacersAdjacentTo: carryProtectedInlineNodes(
+        current,
+        propertyCanonical,
+        options.preserveInlineSpacersAdjacentTo
+      ),
+      report: schema.fitReportSink(root),
+    }
+  );
+  const canonical =
+    representationCanonical === propertyCanonical
+      ? propertyCanonical
+      : schema.canonicalizeChildren(representationCanonical, root, [], false);
+
+  return canonical.length === current.length &&
+    canonical.every((child, index) => child === current[index])
+    ? current
+    : canonical;
+};
+
+/** An explicit initial value loads canonical under the schema it publishes with. */
+export const constructLoadedDocumentChange = (
+  editor: Editor,
+  document: JsonEditorValue,
+  schema: RepresentationSchema = resolveRepresentationSchema(editor)
+) => {
+  const changes = new Map<string, RootChange>();
+
+  schema.assertDocument(document);
+
+  for (const root of ['main', ...Object.keys(document.roots ?? {})]) {
+    const current = getRootChildren(document, root);
+    const canonical = fitRootChildren(editor, current, root, {
+      document,
+      schema,
+    });
+
+    if (canonical === current) continue;
+    changes.set(
+      root,
+      reconcileChildrenStep(
+        DocumentIndex.fromValue(current),
+        [],
+        0,
+        current.length,
+        canonical
+      ).change
+    );
+  }
+
+  return createInternalDocumentChange(changes);
+};
+
 /** Build the sparse representation change required by one raw document change. */
 export const constructCanonicalDocumentChange = (
   editor: Editor,
@@ -1110,6 +1208,7 @@ export const constructCanonicalDocumentChange = (
       root: string
     ) => ReadonlySet<Descendant> | undefined;
     schema?: RepresentationSchema;
+    displacement?: CanonicalizeOptions['displacement'];
   }> = {}
 ): DocumentChange => {
   const schema = options.schema ?? resolveRepresentationSchema(editor);
@@ -1227,39 +1326,13 @@ export const constructCanonicalDocumentChange = (
     }
 
     if (fitPreparation?.forceRoots?.has(root)) {
-      const propertyCanonical = schema.canonicalizeChildren(
-        current,
-        root,
-        [],
-        false
-      );
-      const preserveInlineSpacersAdjacentTo = carryProtectedInlineNodes(
-        current,
-        propertyCanonical,
-        protectedInlineSpacersFor(root)
-      );
-      const representationCanonical = canonicalizeRootChildren(
-        editor,
-        propertyCanonical,
-        null,
-        root,
-        {
-          document: after as EditorDocumentValue,
-          preserveInlineSpacersAdjacentTo,
-          schema,
-        }
-      );
-      const canonical = schema.canonicalizeChildren(
-        representationCanonical,
-        root,
-        [],
-        false
-      );
+      const canonical = fitRootChildren(editor, current, root, {
+        document: after as EditorDocumentValue,
+        preserveInlineSpacersAdjacentTo: protectedInlineSpacersFor(root),
+        schema,
+      });
 
-      if (
-        canonical.length !== current.length ||
-        canonical.some((child, index) => child !== current[index])
-      ) {
+      if (canonical !== current) {
         const step = reconcileChildrenStep(
           draft.document,
           [],
@@ -1360,6 +1433,7 @@ export const constructCanonicalDocumentChange = (
           window,
           beforeDocument,
           {
+            displacement: options.displacement,
             document: after as EditorDocumentValue,
             preserveInlineSpacersAdjacentTo: protectedInlineSpacersFor(root),
           }

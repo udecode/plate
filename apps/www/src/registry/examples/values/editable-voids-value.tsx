@@ -12,7 +12,7 @@ export const editableVoidsValue: Value = (
       nodes, which can also contain editable elements, inputs, or an entire
       other Plate editor.
     </hp>
-    <element type="editable-void">
+    <element type="editableVoid">
       <htext />
     </element>
     <hp>

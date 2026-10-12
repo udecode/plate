@@ -14,7 +14,7 @@ Plate adds playbooks on top of pstack's in [`.agents/playbooks/`](../../.agents/
 | Stop | You say | What runs | It stops with |
 | --- | --- | --- | --- |
 | Next item | "next" | [Verdict](../../.agents/playbooks/verdict.md): `review-ledger.mjs next` and `status` | The open ledger unit, why it is open, its prior work and the release counts |
-| Review | "review <scope>", then "again" or "panel" to iterate | `verdict` | A Stop, Pursue or Defer verdict with the current and proposed call site |
+| Review | "review <scope>", then "again" or "panel" to iterate | `verdict` | A Stop, Pursue or Defer verdict with the current and proposed call site, and how it reaches each scope that imports the reviewed one |
 | Plan | "plan" | [Plan](../../.agents/playbooks/plan.md), with its architecture reference for API or architecture work | The ready plan and its open questions |
 | Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify` and the plan's landed `Status:` | The done report, ending with the next item |
 

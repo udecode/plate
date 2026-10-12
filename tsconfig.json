@@ -101,10 +101,6 @@
       "platejs/table/react": [
         "./packages/platejs/src/react/features/table/index.ts"
       ],
-      "platejs/tag": ["./packages/platejs/src/features/tag/index.ts"],
-      "platejs/tag/react": [
-        "./packages/platejs/src/react/features/tag/index.ts"
-      ],
       "platejs/testing": ["./packages/platejs/src/testing/index.ts"],
       "platejs/toc": ["./packages/platejs/src/features/toc/index.ts"],
       "platejs/toc/react": [

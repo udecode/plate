@@ -19,7 +19,7 @@ title: 可聚焦元素 (Tabbable)
 
 ### 安装
 
-最快捷的方式是使用 `TabbableKit`。该套件会保留 Indent，仅移除其 Tab 和 Shift+Tab 快捷键，让焦点导航负责这两个按键。
+最快捷的方式是使用 `TabbableKit`。该套件会保留 Indent，但关闭其 Tab 和 Shift+Tab 快捷键，因此在段落中按 Tab 会移动焦点而不是缩进。它的 `query` 在列表项、代码块和表格中不接管 Tab，由这些功能自行处理。
 
 <ComponentSource name="tabbable" />
 
@@ -73,30 +73,30 @@ import { createEditor } from 'platejs/react';
 const editor = createEditor({
   plugins: [
     // ...其他插件,
-    TabbablePlugin.configure(({ editor }) => {
-      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-      const blockedTypes = [codeBlock].flatMap((plugin) =>
-        plugin.installed ? [plugin.schema.type] : []
-      );
+    TabbablePlugin.configure({
+      initialState: {
+        query: ({ editor }) => {
+          const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
-      return {
-        initialState: {
-          query: () =>
-            blockedTypes.length === 0 ||
-            !editor.read.nodes.some({ type: blockedTypes }),
-          globalEventListener: true,
-          isTabbable: (tabbableEntry) =>
-            editor.read.schema.isVoid(tabbableEntry.slateNode),
+          return (
+            !codeBlock.installed ||
+            !editor.read.nodes.some({ type: codeBlock.schema.type })
+          );
         },
-      };
+        globalEventListener: true,
+        isTabbable: ({ editor, entry }) =>
+          editor.read.schema.isVoid(entry.slateNode),
+      },
     }),
   ],
 });
 ```
 
-- `initialState.query`: 根据编辑器状态动态启用/禁用插件的函数
+- `initialState.query`: 决定 Tabbable 是否处理一次 Tab。在 Tabbable 接受的停靠点上按下的 Tab 会跳过 `query`，总是按标签顺序移动。停靠点是插入的 entry，或 `isTabbable` 接受的编辑器内可聚焦元素
 - `initialState.globalEventListener`: 为`true`时，将事件监听器添加到document而非编辑器
 - `initialState.isTabbable`: 判断哪些元素应包含在标签顺序中的函数
+
+每个回调都会收到 Tabbable 所在视图的编辑器。请从这个 `editor` 读取光标，而不是从 `.configure` 中捕获的编辑器读取，后者可能不持有该视图的光标。
 
 </Steps>
 
@@ -104,39 +104,34 @@ const editor = createEditor({
 
 ### 与其他插件的冲突
 
-Tabbable插件可能会与处理`Tab`键的其他插件产生冲突，例如：
+Tabbable 在任何编辑器快捷键之前处理 Tab。当 `query` 不接管，或光标之后没有可停靠的位置时，其他功能才会收到该按键。列表、代码块、表格和缩进插件都会使用 Tab。即使关闭了 Indent 的快捷键，列表也会自行处理列表项上的 Tab 和 Shift+Tab。
 
-- 列表插件
-- 代码块插件
-- 缩进插件
-
-使用`query`选项在`Tab`键应由其他插件处理时禁用Tabbable插件：
+使用`query`选项，在`Tab`键应由其他功能处理时不接管：
 
 ```tsx
-TabbablePlugin.configure(({ editor }) => {
-  const codeBlock = editor.plugin(BaseCodeBlockPlugin);
-  const blockedTypes = [codeBlock].flatMap((plugin) =>
-    plugin.installed ? [plugin.schema.type] : []
-  );
+TabbablePlugin.configure({
+  initialState: {
+    query: ({ editor }) => {
+      const codeBlock = editor.plugin(BaseCodeBlockPlugin);
 
-  return {
-    initialState: {
-      query: () =>
-        blockedTypes.length === 0 ||
-        !editor.read.nodes.some({
-          type: blockedTypes,
-        }),
+      return (
+        !codeBlock.installed ||
+        !editor.read.nodes.some({ type: codeBlock.schema.type })
+      );
     },
-  };
+  },
 });
 ```
+
+如果编辑器中还有其他使用 Tab 的功能，例如 Copilot 建议或打开的组合框，请扩展 `query`。`TabbableKit` 只在列表项、代码块和表格中不接管。
 
 如果使用缩进插件，可以仅在选中特定类型节点(如void节点)时启用Tabbable插件：
 
 ```tsx
-query: (event) => !!editor.read.nodes.some({
-  match: (node) => editor.read.schema.isVoid(node),
-}),
+query: ({ editor }) =>
+  editor.read.nodes.some({
+    match: (node) => editor.read.schema.isVoid(node),
+  }),
 ```
 
 ### 非空Plate节点
@@ -147,10 +142,9 @@ query: (event) => !!editor.read.nodes.some({
 
 ```tsx
 // 启用CUSTOM_ELEMENT内的可聚焦DOM元素
-isTabbable: (tabbableEntry) => (
-  tabbableEntry.slateNode.type === CUSTOM_ELEMENT ||
-  editor.read.schema.isVoid(tabbableEntry.slateNode)
-),
+isTabbable: ({ editor, entry }) =>
+  entry.slateNode.type === CUSTOM_ELEMENT ||
+  editor.read.schema.isVoid(entry.slateNode),
 ```
 
 ### 编辑器外部的DOM元素
@@ -166,7 +160,7 @@ isTabbable: (tabbableEntry) => (
 ```tsx
 // 将.my-popover内的按钮添加到可聚焦列表
 globalEventListener: true,
-insertTabbableEntries: () => {
+insertTabbableEntries: ({ editor }) => {
   const selectedEntry = editor.read.nodes.above();
 
   if (!selectedEntry) return [];
@@ -191,26 +185,41 @@ insertTabbableEntries: () => {
 
 <API name="TabbablePlugin">
 <APIOptions>
-  <APIItem name="query" type="(event: KeyboardEvent) => boolean" optional>
-    动态启用/禁用插件。
+  <APIItem name="query" type="(context: TabbableEventContext) => boolean" optional>
+    决定 Tabbable 是否处理一次 Tab。在 Tabbable 接受的停靠点上按下的 Tab 会跳过 `query`，总是按标签顺序移动。停靠点是插入的 entry，或 `isTabbable` 接受的编辑器内可聚焦元素。
     - **默认值:** `() => true`
   </APIItem>
   <APIItem name="globalEventListener" type="boolean" optional>
     将事件监听器添加到document而非编辑器。
     - **默认值:** `false`
   </APIItem>
-  <APIItem name="insertTabbableEntries" type="(event: KeyboardEvent) => TabbableEntry[]" optional>
+  <APIItem name="insertTabbableEntries" type="(context: TabbableEventContext) => TabbableEntry[]" optional>
     添加编辑器外的额外可聚焦entry。
     - **默认值:** `() => []`
   </APIItem>
-  <APIItem name="isTabbable" type="(tabbableEntry: TabbableEntry) => boolean" optional>
+  <APIItem name="isTabbable" type="(context: TabbableEventContext & { entry: TabbableEntry }) => boolean" optional>
     判断元素是否应可聚焦。
-    - **默认值:** `(tabbableEntry) => editor.read.schema.isVoid(tabbableEntry.slateNode)`
+    - **默认值:** `({ editor, entry }) => editor.read.schema.isVoid(entry.slateNode)`
   </APIItem>
 </APIOptions>
 </API>
 
 ## 类型
+
+### TabbableEventContext
+
+每个回调收到的上下文。
+
+<API name="TabbableEventContext">
+<APIAttributes>
+  <APIItem name="editor" type="Editor">
+    Tabbable 所在视图的编辑器，持有该视图的光标。
+  </APIItem>
+  <APIItem name="event" type="KeyboardEvent">
+    Tab 的 keydown 事件。
+  </APIItem>
+</APIAttributes>
+</API>
 
 ### TabbableEntry
 

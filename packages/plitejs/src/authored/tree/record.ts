@@ -38,6 +38,7 @@ import {
   type AuthoredMark,
   readAuthoredMarks,
   withAuthoredMarks,
+  withMarksThroughout,
 } from './marks';
 import { isTextBlock } from './resolve';
 
@@ -54,10 +55,14 @@ export type AuthoredRecordInput = Readonly<{
    */
   createTagId: () => string;
   /**
-   * The child an element keeps when a suggestion withdraws every child, or
-   * null when its schema names none and allows it empty.
+   * The children an element keeps when a suggestion withdraws every child,
+   * as completion builds them at `site`: the element and its ancestors,
+   * nearest first.
    */
-  defaultChild: (props: Readonly<JsonRecord>) => JsonNode | null;
+  fill: (
+    site: ReadonlyArray<Readonly<JsonRecord>>,
+    root: string
+  ) => readonly JsonNode[];
   deleteRoots: ReadonlySet<string>;
   /** A forced change: "own" then means this change, not the writer. */
   forcedChangeId?: string | null;
@@ -189,25 +194,6 @@ const withMarks = (props: Props, marks: readonly AuthoredMark[]): Props =>
 // moves them off a removed one.
 const withoutCuts = (props: Props) =>
   readAuthoredMarks(props).filter((mark) => !isCut(mark));
-
-const withMarksThroughout = (
-  node: JsonNode,
-  marks: readonly AuthoredMark[]
-): JsonNode => {
-  if (marks.length === 0) return node;
-  const record = node as JsonRecord & { children?: readonly JsonNode[] };
-
-  return {
-    ...withAuthoredMarks(record, [...readAuthoredMarks(record), ...marks]),
-    ...(record.children
-      ? {
-          children: record.children.map((child) =>
-            withMarksThroughout(child, marks)
-          ),
-        }
-      : {}),
-  } as JsonNode;
-};
 
 const identity: PosMap = (position) => position;
 
@@ -559,7 +545,7 @@ export const recordAuthoredSteps = (
           plainToReview,
           changeId,
           createTagId: input.createTagId,
-          defaultChild: input.defaultChild,
+          fill: (site) => input.fill(site, root),
           intent,
           isInline: input.isInline,
           isOwn,
@@ -627,7 +613,7 @@ type RecorderOptions = Readonly<{
   plainToReview: PosMap;
   changeId: string;
   createTagId: () => string;
-  defaultChild: (props: Props) => JsonNode | null;
+  fill: (site: readonly Props[]) => readonly JsonNode[];
   intent: AuthoredRecordIntent;
   isInline: (props: Props) => boolean;
   isOwn: (mark: AuthoredMark) => boolean;
@@ -1227,7 +1213,11 @@ class RootRecorder {
     // child, so every element holds a child.
     const emptiedKeptElementAt = new Map<
       number,
-      Readonly<{ at: number; marks: readonly AuthoredMark[]; props: Props }>
+      Readonly<{
+        at: number;
+        marks: readonly AuthoredMark[];
+        site: readonly Props[];
+      }>
     >();
     const survivingIndexBefore = (index: number) => {
       let back = index - 1;
@@ -1437,7 +1427,10 @@ class RootRecorder {
               ? [markOf('delete')]
               : []),
           ],
-          props: closed.props,
+          site: [
+            closed.props,
+            ...stack.map((context) => context.props).reverse(),
+          ],
         });
       }
       if (token.nodeKind === 'text') {
@@ -1447,16 +1440,18 @@ class RootRecorder {
       }
     }
     // The resolver keeps an element while anything inside it survives, so the
-    // default child carries the element's insertions and deletions, which
-    // decide it with the element.
-    for (const { at, marks, props } of emptiedKeptElementAt.values()) {
-      const child = this.options.defaultChild(props);
+    // fill carries the element's insertions and deletions, which decide it
+    // with the element.
+    for (const { at, marks, site } of emptiedKeptElementAt.values()) {
+      const children = this.options.fill(site);
 
-      if (!child) continue;
+      if (children.length === 0) continue;
       this.ops.push({
         at,
         kind: 'insert',
-        tokens: encodeNodes([withMarksThroughout(child, marks)]).slice.tokens,
+        tokens: encodeNodes(
+          children.map((child) => withMarksThroughout(child, marks))
+        ).slice.tokens,
       });
     }
 

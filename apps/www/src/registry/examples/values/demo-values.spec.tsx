@@ -6,10 +6,41 @@ import {
   TextApi,
   type Value,
 } from 'platejs';
+import { createEditor as createLiveEditor } from 'platejs/react';
+
+import { registryExamples } from '@/registry/registry-examples';
 
 import { createValue, DEMO_VALUES } from './demo-values';
 
 describe('createValue', () => {
+  it('loads every generic demo route value through EditorKit', async () => {
+    const { EditorKit } = await import('@/registry/components/editor/plugins');
+    const failures = registryExamples
+      .filter(
+        ({ files, name }) =>
+          name.endsWith('-demo') &&
+          files?.some(({ path }) => path === 'examples/demo.tsx')
+      )
+      .flatMap(({ name }) => {
+        const id = name.replace('-demo', '');
+
+        if (!(id in DEMO_VALUES)) return [`${id}: no demo value`];
+
+        try {
+          createLiveEditor({
+            initialValue: createValue(id),
+            plugins: EditorKit,
+          });
+
+          return [];
+        } catch (error) {
+          return [`${id}: ${String(error)}`];
+        }
+      });
+
+    expect(failures).toEqual([]);
+  });
+
   it('loads the code block demo through the closed code block schema', () => {
     const codeBlocks = (DEMO_VALUES['code-block'] as Value).filter(
       (node) => ElementApi.isElement(node) && node.type === 'codeBlock'

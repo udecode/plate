@@ -8,7 +8,8 @@
 // Claude Code SessionStart payload from stdin, keeps the session's snapshots
 // under <plans>/artifacts/reread/<session_id> and prints the directory to pass
 // as --dir. On a startup or clear session it stays silent about first reads,
-// which only seed the snapshots, and about missing files.
+// which only seed the snapshots, and about missing files. After a compaction
+// it also prints a reload: line naming each skill the transcript loaded.
 
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -48,6 +49,38 @@ function changes(before, after) {
   return { added, removed };
 }
 
+// Claude Code writes injected skill text as isMeta user records, and the first
+// one's nearest non-attachment ancestor is the Skill tool result or the typed
+// /command. Typed built-ins that run locally, such as /model, get no isMeta record.
+function loadedSkills(transcript) {
+  let text;
+  try {
+    text = readFileSync(transcript, 'utf8');
+  } catch {
+    return [];
+  }
+  const records = text
+    .split('\n')
+    .flatMap((line) => {
+      try {
+        return [JSON.parse(line) ?? {}];
+      } catch {
+        return [];
+      }
+    });
+  const byUuid = new Map(records.map((record) => [record.uuid, record]));
+  const names = records.flatMap((record) => {
+    if (record.type !== 'user' || !record.isMeta) return [];
+    let source = byUuid.get(record.parentUuid);
+    while (source?.type === 'attachment') source = byUuid.get(source.parentUuid);
+    if (source?.toolUseResult?.success && typeof source.toolUseResult.commandName === 'string') return [source.toolUseResult.commandName];
+    const content = source?.message?.content;
+    const typed = typeof content === 'string' && content.trimStart().startsWith('<command-') && content.match(/<command-name>\/?([^<\s]+)<\/command-name>/u);
+    return typed ? [typed[1]] : [];
+  });
+  return [...new Set(names)];
+}
+
 function plansDir() {
   const config = '.agents/pstack.json';
   return (existsSync(config) && JSON.parse(readFileSync(config, 'utf8')).plans) || 'docs/plans';
@@ -76,11 +109,15 @@ function reread(dir, files, { quiet = false } = {}) {
 
 const args = process.argv.slice(2);
 if (args[0] === '--hook') {
-  const { session_id: session, source } = JSON.parse(readFileSync(0, 'utf8') || '{}');
+  const { session_id: session, source, transcript_path: transcript } = JSON.parse(readFileSync(0, 'utf8') || '{}');
   if (!session) process.exit(0);
   const dir = join(plansDir(), 'artifacts', 'reread', session);
   const freshContext = ['startup', 'clear'].includes(source);
-  console.log([...reread(dir, args.slice(1), { quiet: freshContext }), `Instruction snapshots: node .agents/pstack/reread.mjs --dir ${dir} <files> compares against them before each gate.`].join('\n'));
+  // The hook runs before the next turn, so every skill load in the transcript
+  // predates this compaction, even when its compact_boundary record lags.
+  const skills = source === 'compact' && transcript ? loadedSkills(transcript) : [];
+  const reload = skills.length > 0 ? [`reload: ${skills.join(', ')}. These skills loaded before the compaction; as the Long runs rule says, reload through the Skill tool each one whose mode you are running before your next step.`] : [];
+  console.log([...reread(dir, args.slice(1), { quiet: freshContext }), ...reload, `Instruction snapshots: node .agents/pstack/reread.mjs --dir ${dir} <files> compares against them before each gate.`].join('\n'));
 } else if (args[0] === '--dir' && args[1] && args.length > 2) {
   console.log(reread(args[1], args.slice(2)).join('\n'));
 } else {

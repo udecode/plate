@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 
 import { createEditor } from 'platejs/react';
 
@@ -24,7 +24,7 @@ describe('LinkPlugin floating API', () => {
   it('preserves configured state when hiding the toolbar', () => {
     const configuredPlugin = linkPlugin.configure({
       initialState: {
-        forceSubmit: true,
+        allowedSchemes: ['https'],
       },
     });
     const innerEditor = createEditor({ plugins: [configuredPlugin] });
@@ -34,7 +34,7 @@ describe('LinkPlugin floating API', () => {
     link.api.hide();
 
     expect(link.store.get()).toMatchObject({
-      forceSubmit: true,
+      allowedSchemes: ['https'],
       mode: '',
       text: '',
       url: '',
@@ -244,13 +244,9 @@ describe('LinkPlugin floating API', () => {
   });
 });
 
-it('keeps a rejected draft open and unchanged', () => {
-  const editor = createEditor({
-    plugins: [
-      linkPlugin.configure({
-        initialState: { transformInput: () => 'javascript:noop()' },
-      }),
-    ],
+const createDraftEditor = () =>
+  createEditor({
+    plugins: [linkPlugin],
     initialValue: [{ type: 'paragraph', children: [{ text: 'kept' }] }],
     selection: {
       kind: 'text',
@@ -258,23 +254,49 @@ it('keeps a rejected draft open and unchanged', () => {
       focus: { path: [0, 0], offset: 4 },
     },
   });
+
+it.each([
+  'google',
+  'www.example.com',
+  'guide.html',
+  'https:www.example.com',
+  'example.com:8080',
+  'ftp://example.com',
+])('keeps a refused %s draft open and unchanged', (url) => {
+  const editor = createDraftEditor();
   const link = editor.plugin(linkPlugin);
   link.api.show('insert', editor.id);
-  link.store.set({ url: 'https://example.com/a path', text: 'rejected' });
+  link.store.set({ url, text: 'rejected' });
   const before = editor.read.lastCommit();
   expect(link.api.submit()).toBeUndefined();
   expect(link.store.get()).toMatchObject({
     mode: 'insert',
-    url: 'https://example.com/a path',
+    url,
     text: 'rejected',
   });
   expect(editor.read.lastCommit()).toBe(before);
 });
 
-it('submits a raw draft through one transformation and closes after insertion', () => {
-  const transformInput = mock((url: string) => `https://${url}`);
+it.each(['#top', '/docs', '?q=1', '../guide.html'])(
+  'saves a %s draft',
+  (url) => {
+    const editor = createDraftEditor();
+    const link = editor.plugin(linkPlugin);
+    link.api.show('insert', editor.id);
+    link.store.set({ url, text: 'Open' });
+    expect(link.api.submit()).toBe(true);
+    expect(
+      editor.read.nodes.find({ at: [], type: linkPlugin })?.[0]
+    ).toMatchObject({ url });
+  }
+);
+
+it('saves a draft in an allowed custom scheme as typed', () => {
+  const configuredPlugin = linkPlugin.configure({
+    initialState: { allowedSchemes: ['https', 'com.example.app'] },
+  });
   const editor = createEditor({
-    plugins: [linkPlugin.configure({ initialState: { transformInput } })],
+    plugins: [configuredPlugin],
     initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
     selection: {
       kind: 'text',
@@ -282,13 +304,67 @@ it('submits a raw draft through one transformation and closes after insertion', 
       focus: { path: [0, 0], offset: 0 },
     },
   });
-  const link = editor.plugin(linkPlugin);
+  const link = editor.plugin(configuredPlugin);
   link.api.show('insert', editor.id);
-  link.store.set({ url: 'example.com/a path', text: 'Example' });
+  link.store.set({ url: 'com.example.app:1234', text: 'Open' });
   expect(link.api.submit()).toBe(true);
-  expect(transformInput).toHaveBeenCalledTimes(1);
+  expect(
+    editor.read.nodes.find({ at: [], type: configuredPlugin })?.[0]
+  ).toMatchObject({ url: 'com.example.app:1234' });
+});
+
+const createLinkEditor = (url: string) =>
+  createEditor({
+    plugins: [linkPlugin],
+    selection: {
+      kind: 'text',
+      anchor: { offset: 2, path: [0, 1, 0] },
+      focus: { offset: 2, path: [0, 1, 0] },
+    },
+    initialValue: [
+      {
+        children: [
+          { text: '' },
+          { children: [{ text: 'Open' }], type: 'link', url },
+          { text: '' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+  });
+
+it.each(['com.example.app:1234', ' guide.html '])(
+  'saves a new label and keeps the stored address %p',
+  (url) => {
+    const editor = createLinkEditor(url);
+    const link = editor.plugin(linkPlugin);
+    link.api.triggerEdit();
+    link.store.set({ text: 'Open now' });
+    expect(link.api.submit()).toBe(true);
+    expect(
+      editor.read.nodes.find({ at: [], type: linkPlugin })?.[0]
+    ).toMatchObject({ children: [{ text: 'Open now' }], url });
+  }
+);
+
+it('saves an edited relative address', () => {
+  const editor = createLinkEditor('guide.html');
+  const link = editor.plugin(linkPlugin);
+  link.api.triggerEdit();
+  link.store.set({ url: './guide2.html' });
+  expect(link.api.submit()).toBe(true);
   expect(
     editor.read.nodes.find({ at: [], type: linkPlugin })?.[0]
-  ).toMatchObject({ url: 'https://example.com/a%20path' });
-  expect(link.store.get()).toMatchObject({ mode: '', url: '', text: '' });
+  ).toMatchObject({ url: './guide2.html' });
+});
+
+it('shows the stored address as the label when the label is cleared', () => {
+  const editor = createLinkEditor('guide.html');
+  const link = editor.plugin(linkPlugin);
+  link.api.triggerEdit();
+  link.store.set({ text: '' });
+  expect(link.api.submit()).toBe(true);
+  expect(
+    editor.read.nodes.find({ at: [], type: linkPlugin })?.[0]
+  ).toMatchObject({ children: [{ text: 'guide.html' }], url: 'guide.html' });
 });

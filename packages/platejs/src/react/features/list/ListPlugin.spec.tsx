@@ -6,12 +6,16 @@ import { renderToString } from 'react-dom/server';
 import {
   createEditorView,
   definePlugin,
+  PLUGINS,
   schema,
   type Element,
 } from '../../../core';
 import { EditorElement } from '../../components/plate-nodes';
 import { createEditor, EditorRoot, EditorContent } from '../../core';
-import { BlockquotePlugin } from '../basic-nodes/BasicNodesPlugins';
+import {
+  BlockquotePlugin,
+  HeadingPlugin,
+} from '../basic-nodes/BasicNodesPlugins';
 import { CodeBlockPlugin } from '../code-block/CodeBlockPlugin';
 import { TablePlugin } from '../table/TablePlugin';
 import { ListPlugin } from './ListPlugin';
@@ -476,5 +480,110 @@ describe('ListPlugin keys', () => {
     );
 
     expect(editor.read.children()).toEqual([paragraph('Item')]);
+  });
+});
+
+const IndentKeysOff = definePlugin('indentKeysOff', {}).configure({
+  override: { [PLUGINS.indent]: { shortcuts: { tab: null, untab: null } } },
+});
+
+const mountWithoutIndentKeys = (
+  initialValue: Element[],
+  selection: {
+    anchor: { offset: number; path: number[] };
+    focus: { offset: number; path: number[] };
+  }
+) => {
+  const editor = createEditor({
+    initialValue,
+    plugins: [CodeBlockPlugin, HeadingPlugin, ListPlugin, IndentKeysOff],
+    selection: { kind: 'text', ...selection },
+  });
+  const { container } = render(
+    <EditorRoot editor={editor} suppressInstanceWarning>
+      <EditorContent />
+    </EditorRoot>
+  );
+  const editable = container.querySelector('[contenteditable="true"]');
+
+  if (!editable) throw new Error('Expected editable root');
+
+  const press = (shiftKey = false) =>
+    !fireEvent.keyDown(editable, { code: 'Tab', key: 'Tab', shiftKey });
+
+  return { editor, press };
+};
+
+describe('ListPlugin keys without Indent keys', () => {
+  it('nests an item whose indent is omitted, and one undo restores it [EDIT-LIST-TAB-001]', () => {
+    const { editor, press } = mountWithoutIndentKeys(
+      [item('A'), paragraph('B', { listType: 'numbered' })],
+      caret([1, 0])
+    );
+
+    press();
+
+    const nested = editor.read.children()[1]?.indent;
+    const anchor = editor.read.selection()?.anchor;
+
+    editor.api.history.undo();
+
+    expect({ anchor, nested, undone: editor.read.children()[1] }).toEqual({
+      anchor: { offset: 0, path: [1, 0] },
+      nested: 2,
+      undone: paragraph('B', { listType: 'numbered' }),
+    });
+  });
+
+  it('moves a nested item out one level on Shift+Tab [EDIT-LIST-STAB-001]', () => {
+    const { editor, press } = mountWithoutIndentKeys(
+      [item('A'), item('B', { indent: 2 })],
+      caret([1, 0])
+    );
+
+    press(true);
+
+    expect({
+      anchor: editor.read.selection()?.anchor,
+      children: editor.read.children(),
+    }).toEqual({
+      anchor: { offset: 0, path: [1, 0] },
+      children: [item('A'), item('B')],
+    });
+  });
+
+  it('raises the paragraph and the item of a range, and leaves a heading outside its targets', () => {
+    const heading = { children: [{ text: 'H' }], level: 1, type: 'heading' };
+    const { editor, press } = mountWithoutIndentKeys(
+      [paragraph('P'), item('A'), heading],
+      {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 1, path: [2, 0] },
+      }
+    );
+
+    press();
+
+    expect(editor.read.children()).toEqual([
+      paragraph('P', { indent: 1 }),
+      item('A', { indent: 2 }),
+      heading,
+    ]);
+  });
+
+  it('leaves Tab and Shift+Tab on a range from a code block into an item unhandled', () => {
+    const initialValue: Element[] = [
+      { children: [{ text: 'code' }], type: 'codeBlock' },
+      item('A'),
+    ];
+    const { editor, press } = mountWithoutIndentKeys(initialValue, {
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [1, 0] },
+    });
+
+    expect({
+      handled: [press(), press(true)],
+      children: editor.read.children(),
+    }).toEqual({ handled: [false, false], children: initialValue });
   });
 });

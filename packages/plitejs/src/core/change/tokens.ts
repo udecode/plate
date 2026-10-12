@@ -6,6 +6,7 @@ import {
   type PreparedNodeKeyRange,
   reservePreparedNodeKeyRange,
 } from '../../utils/node-keys';
+import { isImmutable } from '../clone';
 import {
   createTreeIndex,
   ResolvedTokenCursor,
@@ -158,36 +159,13 @@ export const cloneJson = <T>(value: T): T => {
   return value;
 };
 
-// A frozen value cannot thaw, so a subtree deep-frozen once never needs another
-// walk. Applying a change then only visits the nodes it created, instead of
-// every node the next document shares with the previous one.
-const DEEP_FROZEN_VALUES = new WeakSet<object>();
-// Engines can take O(length) to freeze, or to test, an array that is already
-// frozen, and document arrays are frozen once where they are built.
-const FROZEN_ARRAYS = new WeakSet<object>();
-
-/**
- * Remember a document array frozen where it was built.
- *
- * @internal
- */
-export const rememberFrozenArray = (value: readonly unknown[]) => {
-  FROZEN_ARRAYS.add(value);
-};
-
-/**
- * Test an array for frozenness in constant time once it is remembered.
- *
- * @internal
- */
-export const isFrozenArray = (value: readonly unknown[]) =>
-  FROZEN_ARRAYS.has(value) || Object.isFrozen(value);
+const DEEP_IMMUTABLE_VALUES = new WeakSet<object>();
 
 export const deepFreeze = <T>(value: T): T => {
   if (
     typeof value !== 'object' ||
     value === null ||
-    DEEP_FROZEN_VALUES.has(value)
+    DEEP_IMMUTABLE_VALUES.has(value)
   ) {
     return value;
   }
@@ -195,8 +173,8 @@ export const deepFreeze = <T>(value: T): T => {
   for (const item of Array.isArray(value) ? value : Object.values(value)) {
     deepFreeze(item);
   }
-  if (!FROZEN_ARRAYS.has(value)) Object.freeze(value);
-  DEEP_FROZEN_VALUES.add(value);
+  if (!isImmutable(value)) Object.freeze(value);
+  DEEP_IMMUTABLE_VALUES.add(value);
 
   return value;
 };

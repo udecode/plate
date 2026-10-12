@@ -2,17 +2,15 @@ import assert from 'node:assert/strict';
 
 import * as Y from 'yjs';
 
-import {
-  history,
-  type HistoryApi,
-  type HistoryStateApi,
-} from '../../../src/history';
+import { history, type HistoryStateApi } from '../../../src/history';
 import {
   createEditor,
   defineEditorSchema,
+  type HistoryApi,
   type Descendant,
   type Element,
   type EditorDocumentValue,
+  type EditorStateSchemaApi,
   ElementApi,
   type Selection,
   schema,
@@ -46,7 +44,7 @@ import {
 
 export { FakeAwareness, FakeProvider } from './provider';
 
-type TestEditor = AnyEditor & {
+export type TestEditor = AnyEditor & {
   readonly api: AnyEditor['api'] & { readonly history: HistoryApi };
   readonly read: AnyEditor['read'] & { readonly history: HistoryStateApi };
 };
@@ -125,7 +123,9 @@ export const createYjsPeerWithEditor = <TEditor extends TestEditor>(
     ...(roots ? { roots } : {}),
     selection: null,
   });
-  editor.read.schema.assertDocument(editor.read.value());
+  const documentSchema: EditorStateSchemaApi = editor.read.schema;
+
+  documentSchema.assertDocument(editor.read.value());
 
   const doc = new Y.Doc();
 
@@ -284,7 +284,7 @@ export const getVisibleYjsNodeAt = (
   path: readonly number[]
 ): YjsNode => getYjsNode(getYjsRoot(peer), path);
 
-const requireYjsController = (editor: TestEditor) => {
+const requireYjsController = (editor: AnyEditor) => {
   const controller = getActiveYjsController(editor);
 
   assert.ok(controller, 'expected an active Yjs controller');
@@ -292,7 +292,7 @@ const requireYjsController = (editor: TestEditor) => {
   return controller;
 };
 
-export const readEditorYjsState = (editor: TestEditor) => {
+export const readEditorYjsState = (editor: AnyEditor) => {
   const controller = requireYjsController(editor);
 
   return {

@@ -184,7 +184,7 @@ it('keeps all assistant parts in one cross-block edit suggestion', async () => {
     if (chat?.error) throw chat.error;
     expect(chat?.status).toBe('ready');
 
-    expect(editor.read.text.string([])).toBe('Generated preview text. block');
+    expect(editor.read.text.string([])).toBe('Generated preview text.');
     expect(
       editor.read.authored.changes({ status: 'pending' }).items
     ).toHaveLength(1);

@@ -15,6 +15,17 @@ export const MODELS = { claude: 'opus', codex: 'gpt-6.1-sol' };
 
 export const otherRuntime = (env = process.env) => (env.CLAUDECODE ? 'codex' : 'claude');
 
+const DASHED_WORD = /^-\S+$/u;
+const VALUE_FLAGS = new Map([
+  ['--to', 'to'],
+  ['--timeout', 'timeout'],
+  ['--model', 'model'],
+  ['--effort', 'effort'],
+  ['--computer-use', 'events'],
+  ['--chrome-profile', 'chromeProfile'],
+  ['--prompt-file', 'promptFile'],
+]);
+
 // Each child runs in its own process group, which outlives this process, so
 // stopping a run stops every runtime it launched.
 const running = new Set();
@@ -111,30 +122,35 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
 }
 
 async function main(argv) {
-  let to = otherRuntime();
-  let timeout = 900;
-  let model;
-  let effort;
+  const values = {};
   let retired;
-  let events;
-  let chromeProfile;
-  let promptFile;
   let isolated = false;
+  let help = false;
+  let refusal;
   let prompt = '';
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === '--to') to = argv[++index];
-    else if (arg === '--timeout') timeout = Number(argv[++index]);
-    else if (arg === '--model') model = argv[++index];
-    else if (arg === '--effort') effort = argv[++index];
+    const key = VALUE_FLAGS.get(arg);
+    const next = argv[index + 1];
+    if (key && next !== undefined && !DASHED_WORD.test(next)) values[key] = argv[++index];
+    else if (key) refusal ??= `${arg} needs a value`;
     else if (['--write', '--events', '--resume'].includes(arg)) retired = arg;
     else if (arg === '--ignore-user-config') isolated = true;
-    else if (arg === '--computer-use') events = argv[++index];
-    else if (arg === '--chrome-profile') chromeProfile = argv[++index];
-    else if (arg === '--prompt-file') promptFile = argv[++index];
+    else if (arg === '--help' || arg === '-h') help = true;
+    else if (DASHED_WORD.test(arg)) refusal ??= `unknown flag ${arg}`;
     else prompt = arg;
   }
+  const { to = otherRuntime(), model, effort, events, chromeProfile, promptFile } = values;
+  const timeout = Number(values.timeout ?? 900);
   const usage = 'Usage: node .agents/pstack/cross.mjs [--to codex|claude] [--model <model>] [--effort <level>] [--timeout <seconds>] [--computer-use <events file> --chrome-profile <name>] (--prompt-file <path> | <prompt>)';
+  if (help) {
+    console.info(usage);
+    return 0;
+  }
+  if (refusal) {
+    console.error(`${refusal}\n${usage}`);
+    return 2;
+  }
   if (retired) {
     console.error(`${retired} is retired: cross.mjs runs Codex read-only\n${usage}`);
     return 2;

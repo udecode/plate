@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { landed, stateOf } from '../../.agents/pstack/status.mjs';
+import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 
 export const scopesDir = 'docs/research/review-scopes';
 export const recordsDir = 'docs/research/review-records';
@@ -712,30 +713,30 @@ export function associationOf(root, ledger, path) {
   };
 }
 
-/** Plans that declare review metadata, plus classified historical plans. */
-export function plansOf(root, ledger) {
-  let declared = [];
+function gitGrep(root, args) {
   try {
-    declared = execFileSync(
-      'git',
-      [
-        '-C',
-        root,
-        'grep',
-        '-l',
-        '--untracked',
-        '-E',
-        '^review_scopes:',
-        '--',
-        'docs/plans/*.md',
-      ],
-      { encoding: 'utf-8' }
-    )
-      .split('\n')
-      .filter(Boolean);
+    return execFileSync('git', ['-C', root, 'grep', ...args], {
+      encoding: 'utf-8',
+      maxBuffer: 1 << 28,
+    });
   } catch (error) {
     if (error.status !== 1) throw error;
+    return '';
   }
+}
+
+/** Plans that declare review metadata, plus classified historical plans. */
+export function plansOf(root, ledger) {
+  const declared = gitGrep(root, [
+    '-l',
+    '--untracked',
+    '-E',
+    '^review_scopes:',
+    '--',
+    'docs/plans/*.md',
+  ])
+    .split('\n')
+    .filter(Boolean);
   const paths = new Set([
     ...declared,
     ...ledger.documents
@@ -807,6 +808,98 @@ export function owningScopes(ledger, path) {
     }
   }
   return [...owners].sort(byCodeUnit);
+}
+
+const importRoots = ['packages', 'apps/www/src'];
+const importSpecifier = /(?:\bfrom|\bimport\s*\()\s*['"]([^'"]+)['"]/;
+// Apple Git's `grep -E` takes POSIX classes only.
+const importGrep = `(from|import[[:space:]]*\\()[[:space:]]*['"][^'"]+['"]`;
+const testSource =
+  /(?:\.(?:spec|test|slow)\.[cm]?[jt]sx?$|\/(?:__tests__|type-tests)\/)/;
+const edgeCache = new WeakMap();
+const covers = (entries, path) =>
+  entries.some((entry) =>
+    entry.endsWith('/') ? path.startsWith(entry) : path === entry
+  );
+
+function importEdges(ledger, commit = null) {
+  const { root } = ledger;
+  if (!edgeCache.has(ledger)) edgeCache.set(ledger, new Map());
+  const cache = edgeCache.get(ledger);
+  if (cache.has(commit)) return cache.get(commit);
+  const listed = execFileSync(
+    'git',
+    [
+      '-C',
+      root,
+      ...(commit
+        ? ['ls-tree', '-r', '--name-only', commit, '--', ...importRoots]
+        : ['ls-files', '-co', '--exclude-standard', '--', ...importRoots]),
+    ],
+    { encoding: 'utf-8', maxBuffer: 1 << 28 }
+  );
+  const files = new Set(listed.split('\n').filter(Boolean));
+  const specifiers = new Map(
+    getWorkspaceSourceEntries(root).map(({ sourceEntry, specifier }) => [
+      specifier,
+      relative(root, sourceEntry),
+    ])
+  );
+  const target = (file, specifier) =>
+    specifier.startsWith('.')
+      ? ['', '.ts', '.tsx', '/index.ts', '/index.tsx']
+          .map((extension) => `${join(dirname(file), specifier)}${extension}`)
+          .find((path) => files.has(path))
+      : specifiers.get(specifier);
+  const found = gitGrep(root, [
+    ...(commit ? [] : ['--untracked']),
+    '-I',
+    '-o',
+    '-E',
+    importGrep,
+    ...(commit ? [commit] : []),
+    '--',
+    ...importRoots,
+  ]);
+  const edges = [];
+  for (const line of found.split('\n')) {
+    const rest = commit ? line.slice(commit.length + 1) : line;
+    const split = rest.indexOf(':');
+    const file = rest.slice(0, split);
+    const specifier = rest.slice(split + 1).match(importSpecifier)?.[1];
+    if (
+      !specifier ||
+      file.startsWith('packages/plitejs/') ||
+      testSource.test(file)
+    ) {
+      continue;
+    }
+    const path = target(file, specifier);
+    if (path) edges.push([file, path]);
+  }
+  cache.set(commit, edges);
+  return edges;
+}
+
+function dependentsOf(ledger, scope, commit = null) {
+  const own = [...(scope.owners ?? []), ...(scope.members ?? [])];
+  const byScope = new Map();
+  const unowned = new Set();
+  for (const [file, path] of importEdges(ledger, commit)) {
+    if (!covers(own, path) || covers(own, file)) continue;
+    const owners = owningScopes(ledger, file);
+    if (!owners.length) unowned.add(file);
+    for (const id of owners) {
+      if (!byScope.has(id)) byScope.set(id, new Set());
+      byScope.get(id).add(file);
+    }
+  }
+  return {
+    scopes: [...byScope]
+      .map(([id, files]) => ({ id, files: [...files].sort(byCodeUnit) }))
+      .sort(byId),
+    unowned: [...unowned].sort(byCodeUnit),
+  };
 }
 
 /**
@@ -1077,6 +1170,7 @@ function unresolvedCandidates(ledger, scope) {
 
 function compact(ledger, tree, plans, scope) {
   const state = openState(ledger, scope.id, plans);
+  const dependents = dependentsOf(ledger, scope);
   const head = latest(headsOf(ledger, scope.id));
   const executions = ledger.executions.get(scope.id) ?? [];
   const scopePlans = plans.filter((plan) => plan.scopes.includes(scope.id));
@@ -1129,6 +1223,14 @@ function compact(ledger, tree, plans, scope) {
       verdict: latest(headsOf(ledger, id))?.verdict ?? null,
       open: openState(ledger, id, plans).open,
     })),
+    dependents: {
+      scopes: dependents.scopes.map(({ id, files }) => ({
+        id,
+        files: bounded(files, 3),
+        open: openState(ledger, id, plans).open,
+      })),
+      unowned: bounded(dependents.unowned, 5),
+    },
     decision: scope.decision ?? null,
     scopeFile: `${scopesDir}/${scope.id}.json`,
     detail: `node tooling/scripts/review-ledger.mjs lookup ${scope.id} --detail`,
@@ -1475,6 +1577,8 @@ export function show(root, scopeId) {
     '',
     `Consumers: ${list(scope.consumers ?? [])}.`,
     '',
+    `Dependents: ${list(dependentsOf(ledger, scope).scopes.map(({ id }) => id))}.`,
+    '',
     `Proof: ${list(scope.proof ?? [])}.${scope.gaps ? ` ${scope.gaps}` : ''}`,
     '',
     `Evidence inputs: ${list(scope.evidenceInputs ?? [])}.`,
@@ -1536,6 +1640,7 @@ function git(root, args) {
   try {
     return execFileSync('git', ['-C', root, ...args], {
       encoding: 'utf-8',
+      maxBuffer: 1 << 28,
       stdio: ['ignore', 'pipe', 'ignore'],
     });
   } catch {
@@ -1543,8 +1648,7 @@ function git(root, args) {
   }
 }
 
-/** Ledger integrity. Reads ledger files, the pages and plans under docs/plans, and git, never product source. */
-export function check(root) {
+export function check(root, { base = 'HEAD' } = {}) {
   const ledger = loadLedger(root);
   const errors = [...ledger.warnings];
   const warnings = [];
@@ -1720,6 +1824,30 @@ export function check(root) {
   }
   const plans = plansOf(root, ledger);
   const unignored = unignoredPaths(root);
+  const baseCommit = git(root, [
+    'rev-parse',
+    '--verify',
+    '--quiet',
+    `${base}^{commit}`,
+  ])?.trim();
+  if (!baseCommit) {
+    errors.push(
+      `Cannot resolve the base commit ${base}, so new review pages cannot be told from committed ones. Pass a base this checkout holds.`
+    );
+  }
+  const atBase = baseCommit
+    ? new Set(
+        git(root, [
+          'ls-tree',
+          '-r',
+          '--name-only',
+          baseCommit,
+          '--',
+          'docs/plans',
+        ])?.split('\n')
+      )
+    : null;
+  const added = (path) => atBase !== null && !atBase.has(path);
   for (const plan of plans) {
     const problems = [
       ...(plan.invalid ? [`invalid ${plan.invalid.join(', ')}`] : []),
@@ -1736,7 +1864,7 @@ export function check(root) {
           ? []
           : [`${id} is not a review of ${plan.scopes.join(', ')}`];
       }),
-      ...pageProblems(root, unignored, ledger, plans, plan),
+      ...pageProblems(root, unignored, ledger, plans, plan, added),
     ];
     if (plan.conflict) {
       warnings.push(
@@ -1886,7 +2014,70 @@ function reconciliationOf(evidence, id) {
   return null;
 }
 
-function pageProblems(root, unignored, ledger, plans, plan) {
+const unaffectedWithReason = /\bunaffected\b\W+(?:\S+\s+){2,}\S/i;
+
+function dependentProblems(ledger, plan, evidence) {
+  const commit = plan.commit ?? null;
+  if (
+    commit &&
+    !git(ledger.root, [
+      'rev-parse',
+      '--verify',
+      '--quiet',
+      `${commit}^{commit}`,
+    ])
+  ) {
+    return [
+      `review_commit ${commit} is not in this checkout, so its dependents cannot be read`,
+    ];
+  }
+  const dependents = new Map();
+  for (const id of plan.scopes) {
+    const scope = ledger.scopes.get(id);
+    if (!scope) continue;
+    for (const { files, id: dependent } of dependentsOf(ledger, scope, commit)
+      .scopes) {
+      if (!plan.scopes.includes(dependent) && !dependents.has(dependent)) {
+        dependents.set(dependent, files);
+      }
+    }
+  }
+  if (!dependents.size) return [];
+  const section = sectionOf(evidence, 'Dependents', '###');
+  if (!section) {
+    return [
+      `## Evidence needs a ### Dependents list for ${[...dependents.keys()].join(', ')}; \`node tooling/scripts/review-ledger.mjs lookup ${plan.scopes[0]}\` lists the files each imports`,
+    ];
+  }
+  const items = section.split(/\n(?=[ \t]*[-*][ \t])/);
+  const inputs = (plan.inputs ?? []).filter((input) => !input.startsWith('!'));
+  return [...dependents]
+    .filter(([id, files]) => {
+      const scope = ledger.scopes.get(id);
+      const owned = [
+        ...(scope.owners ?? []),
+        ...(scope.members ?? []),
+        ...(scope.consumers ?? []),
+      ];
+      const fromScope = (input) =>
+        files.includes(input) || covers(owned, input);
+      const named = new RegExp(
+        `(?:^|[^\\w-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`
+      );
+      return !items.some(
+        (item) =>
+          named.test(item) &&
+          (unaffectedWithReason.test(item) ||
+            inputs.some((input) => item.includes(input) && fromScope(input)))
+      );
+    })
+    .map(
+      ([id, files]) =>
+        `### Dependents does not account for ${id}, which imports ${files[0]}: name it beside a review_inputs path it owns or imports from, or beside "unaffected" and the reason`
+    );
+}
+
+function pageProblems(root, unignored, ledger, plans, plan, added) {
   const problems = [];
   const text = read(root, plan.path);
   const inputs = (plan.inputs ?? []).filter((input) => !input.startsWith('!'));
@@ -1949,6 +2140,9 @@ function pageProblems(root, unignored, ledger, plans, plan) {
     !linksOf(plan.path, evidence).some((target) => !target.startsWith('..'))
   ) {
     problems.push('## Evidence links no repository file');
+  }
+  if (added(plan.path)) {
+    problems.push(...dependentProblems(ledger, plan, evidence));
   }
   for (const id of plan.reviewBasis) {
     const reconciled = [
@@ -2119,7 +2313,9 @@ export function main(root, args) {
   }
   if (command === 'show') return show(root, argument);
   if (command === 'coverage') return coverage(root, { prefix: argument ?? '' });
-  if (command === 'check') return check(root);
+  if (command === 'check') {
+    return check(root, { base: process.env.PLATE_BASELINE_BASE || 'HEAD' });
+  }
   if (command === 'research') return searchResearch(root, argument);
   throw new Error(usage);
 }

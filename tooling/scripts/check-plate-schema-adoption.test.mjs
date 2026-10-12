@@ -1195,17 +1195,19 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
   assert.deepEqual(
     auditPlateSchemaSource(
       `
-        export const BaseTagPluginOwner = definePlugin('tag', { });
-        export const BaseTagPlugin = BaseTagPluginOwner
+        export const BaseUploadPluginOwner = definePlugin('upload', { });
+        export const BaseUploadPlugin = BaseUploadPluginOwner
           .extend({
-            read: () => ({}),
+            activate: () => ({}),
+            api: () => ({}),
+            on: () => ({}),
             update: () => ({}),
           })
           .extend(() => ({
-            read: () => ({}),
+            commands: () => ({}),
           }));
       `,
-      'packages/platejs/src/features/tag/lib/BaseTagPlugin.ts'
+      'packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts'
     ),
     []
   );

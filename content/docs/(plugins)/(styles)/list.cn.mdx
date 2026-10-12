@@ -81,7 +81,7 @@ Plate 按文档顺序为每个列表单独编号。其他列表的块和普通�
 
 列表中的任意项都会关闭更深的层级，因此嵌套列表会在每个父项下重新编号。listLevels 中层级的 `restartAfter` 规则可以改变这一点。值为 `0` 时该层级从不重启，值为 `n` 时只在第 `n` 层或更浅层级的项之后重启。每个编号项从自己的 listLevels 读取该规则，值等于或深于其自身层级时按默认规则处理。
 
-没有 listId 的项构成所在根的默认列表。值中包含多个列表时，为每个列表设置自己的 id。命令、输入的列表标记和编辑会为新项分配 id：它加入前面同层级的兼容项，否则加入它嵌套所在的项，否则加入后面的兼容项；64 个块之内都没有时，开启新列表。
+没有 listId 的项构成所在根的默认列表。值中包含多个列表时，为每个列表设置自己的 id。命令和输入的列表标记会为新项分配 id：它加入前面同层级的兼容项，否则加入它嵌套所在的项，否则加入后面的兼容项；64 个块之内都没有时，开启新列表。其他编辑插入的无 id 项留在所在根的默认列表中。
 
 listStart 保存潜在作者意图。该项延续所在列表时 Plate 保留它，并在后续编辑让该项开启其层级时应用它。listRestart 即使在列表内部也会强制编号。
 
@@ -114,9 +114,9 @@ list.update.continue();
 
 ## HTML 和 Markdown
 
-HTML ul 和 ol 映射到 listType。明确的 CSS list-style-type 映射到 listStyle。Plate HTML 用 `data-list-id` 标识每项所属的列表，用 `data-list-levels` 保存层级规则。每次粘贴或解析都会为每个来源列表分配新的 id，因此粘贴的列表不会因为 id 相同而并入无关列表；第一个粘贴的列表会并入它落入的兼容列表。在其他 HTML 中，每个 ul 或 ol 是一个列表；start 接续同层级前一个 ol 的 ol 会并入它，项下的第一个嵌套列表会并入该项的列表。Word HTML 保留 Word 的列表标识。
+HTML ul 和 ol 映射到 listType。明确的 CSS list-style-type 映射到 listStyle。Plate HTML 用 `data-list-id` 标识每项所属的列表，用 `data-list-levels` 保存层级规则。每次粘贴或解析都会为每个来源列表分配新的 id，因此粘贴的列表不会因为 id 相同而并入无关列表；第一个顶层粘贴列表在类型、样式和标题角色都与落入的列表匹配时并入该列表。只存在于粘贴表格中的列表保留自己的 id。在其他 HTML 中，每个 ul 或 ol 是一个列表；start 接续同层级前一个 ol 的 ol 会并入它，项下的第一个嵌套列表会并入该项的列表。Word HTML 保留 Word 的列表标识。
 
-MDAST list.ordered 映射到 listType。Markdown 没有列表标识，因此解析出的项不带 listId。每个有序列表的 start 会解析为其第一项上的 listRestart，使不同的 Markdown 列表保持分开。起始值非默认的第一个嵌套列表解析为 listStart。序列化时，Plate 在列表变化处开始新的 Markdown 列表，并把每个有序列表第一项的可见编号写为 list.start。任务复选框映射到 task 和 checked。在 GFM table cell 中，列表段落写为 inline `<ul>`、`<ol start>` 与 `<li>` HTML，并读取回列表；参见 [Markdown](/docs/markdown#table-cell)。
+MDAST list.ordered 映射到 listType。每个解析出的 Markdown 列表都会得到新的 listId，不为 1 的 start 解析为 listStart。项下的第一个嵌套列表并入该项的列表，同一项下之后的嵌套列表开启自己的列表。序列化时，Plate 在列表变化、项在有序和无序之间切换或 listStyle 变化处开始新的 Markdown 列表，因此同一列表中的任务项和项目符号项仍是一个 Markdown 列表。它把每个有序列表第一项的可见编号写为 list.start；当列表编号会变为负数或超过 CommonMark 可读的九位数字时写为 1。Markdown 无法保留强制的 listRestart，也无法保留读回时会改变的列表归属，例如跨过其他块继续的列表；Plate 只检查带 listId 的项的列表归属。序列化会把每一项损失报告为 `markdown-property-omitted` 诊断。任务复选框映射到 task 和 checked。在 GFM table cell 中，列表段落写为 inline `<ul>`、`<ol start>` 与 `<li>` HTML，保留任意起始值，并读取回列表；参见 [Markdown](/docs/markdown#table-cell)。
 
 ## API
 

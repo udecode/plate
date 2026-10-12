@@ -3,9 +3,11 @@ import type {
   EditorDocumentValue,
   EditorSchemaRepairCode,
   Element,
+  Path,
   RootKey,
   Value,
 } from '../../interfaces';
+import type { FitInputPaths } from './provenance';
 
 export type EditorSchemaModelLocation = Readonly<{
   path: readonly number[];
@@ -75,299 +77,199 @@ export class EditorSchemaFitRepairCollector {
   }
 }
 
-type RepresentationRepairContext = Readonly<{
-  getElementContent: (type: string) => unknown;
-  getElementType: (element: Readonly<{ type?: unknown }>) => string | null;
-  getRootContent: (root?: RootKey) => unknown;
-  isInline: (element: Element) => boolean;
-  nodePropertiesEqual: (
-    left: Readonly<Record<string, unknown>>,
-    right: Readonly<Record<string, unknown>>,
-    contentKey: 'children' | 'text',
-    rightKeys: readonly string[]
-  ) => boolean;
-  structurallyEqual: (left: unknown, right: unknown) => boolean;
-}>;
+export type RepresentationRepairEvent =
+  | Readonly<{
+      code: EditorSchemaRepairCode;
+      impact?: EditorSchemaRepair['impact'];
+      inputs: readonly Descendant[];
+      into?: Descendant;
+      output?: Descendant;
+      properties?: readonly string[];
+    }>
+  | Readonly<{ from: readonly Descendant[]; rebuilt: Descendant }>;
 
-type RepresentationEntry = Readonly<{
-  children?: readonly RepresentationEntry[];
-  node: Descendant;
-  sources: readonly EditorSchemaModelLocation[];
-}>;
+export type RepresentationRepairSink = (
+  event: RepresentationRepairEvent
+) => void;
 
-const isText = (
-  node: Descendant | undefined
-): node is Extract<Descendant, { text: string }> =>
-  node !== undefined && Object.hasOwn(node, 'text');
+const visitTree = (
+  children: readonly Descendant[],
+  path: readonly number[],
+  visit: (node: Descendant, path: readonly number[]) => void
+) => {
+  children.forEach((child, index) => {
+    const childPath = [...path, index];
 
-const isElement = (node: Descendant | undefined): node is Element =>
-  node !== undefined && Object.hasOwn(node, 'children');
+    visit(child, childPath);
+    if (Object.hasOwn(child, 'children')) {
+      visitTree((child as Element).children, childPath, visit);
+    }
+  });
+};
 
-const textPropertiesEqual = (
-  left: Extract<Descendant, { text: string }>,
-  right: Extract<Descendant, { text: string }>,
-  context: RepresentationRepairContext
-) =>
-  context.nodePropertiesEqual(
-    left,
-    right,
-    'text',
-    Object.keys(right).filter((key) => key !== 'text')
-  ) &&
-  context.nodePropertiesEqual(
-    right,
-    left,
-    'text',
-    Object.keys(left).filter((key) => key !== 'text')
+const hasUnexplained = (
+  children: readonly Descendant[],
+  kept: ReadonlySet<Descendant>,
+  explained: ReadonlySet<Descendant>,
+  whole: (node: Descendant) => boolean
+): boolean =>
+  children.some(
+    (child) =>
+      (!kept.has(child) && !explained.has(child)) ||
+      (!whole(child) &&
+        Object.hasOwn(child, 'children') &&
+        hasUnexplained((child as Element).children, kept, explained, whole))
   );
 
 /**
- * Classify the representation-only pass around a forced root fit.
- *
- * The classifier reconstructs the canonical output from the actions it
- * reports. Any remaining difference throws instead of silently losing a
- * diagnostic.
+ * Turns the events of one representation canonicalization, which rewrote
+ * `input` into `output`, into repairs. `inputPaths` maps an `input` path to
+ * caller paths; the returned `inputsOf` maps an `output` node to them.
  */
-export const collectRepresentationRepairs = (
+export const resolveRepresentationRepairs = (
   input: readonly Descendant[],
   output: readonly Descendant[],
+  events: readonly RepresentationRepairEvent[],
   root: RootKey,
-  context: RepresentationRepairContext
-): readonly EditorSchemaRepair[] => {
-  if (context.structurallyEqual(input, output)) return Object.freeze([]);
+  inputPaths: FitInputPaths
+): Readonly<{
+  inputsOf: (node: Descendant) => readonly Path[];
+  repairs: readonly EditorSchemaRepair[];
+}> => {
+  const sources = new Map<Descendant, ReadonlyArray<readonly number[]>>();
+  const places = new Map<Descendant, readonly number[]>();
+  const successors = new Map<Descendant, Descendant>();
 
-  const repairs: EditorSchemaRepair[] = [];
-  const classifyChildren = (
-    children: readonly Descendant[],
-    parent: Element | null,
-    path: readonly number[]
-  ): readonly RepresentationEntry[] => {
-    const entries = children.map((child, index): RepresentationEntry => {
-      const childPath = [...path, index];
+  visitTree(input, [], (node, path) => sources.set(node, [path]));
+  visitTree(output, [], (node, path) => places.set(node, path));
 
-      if (isText(child)) {
-        return {
-          node: child,
-          sources: [schemaModelLocation(root, childPath)],
-        };
-      }
-      const nested = classifyChildren(child.children, child, childPath);
-      const nestedNodes = nested.map(({ node }) => node);
-      const node = context.structurallyEqual(child.children, nestedNodes)
-        ? child
-        : ({ ...child, children: nestedNodes } as Element);
+  const inputNodes = new Set(sources.keys());
+  const consumed = new Set<Descendant>();
+  const produced = new Set<Descendant>();
+  const removed = new Set<Descendant>();
+  const inserted = new Set<Descendant>();
+  const mergeRepairOf = new Map<Descendant, number>();
+  const supersededMerges = new Set<number>();
+  const carry = (from: readonly Descendant[], to: Descendant) => {
+    const paths = from.flatMap((node) => sources.get(node) ?? []);
 
-      return {
-        children: nested,
-        node,
-        sources: [schemaModelLocation(root, childPath)],
-      };
-    });
-    const first = entries[0]?.node;
-    const inlineContent =
-      parent !== null &&
-      (context.isInline(parent) ||
-        isText(first) ||
-        (isElement(first) && context.isInline(first)));
+    sources.set(to, paths);
+    produced.add(to);
+    for (const node of from) {
+      successors.set(node, to);
 
-    if (inlineContent) {
-      const collectInlineEntries = (
-        entry: RepresentationEntry
-      ): readonly RepresentationEntry[] => {
-        if (
-          isText(entry.node) ||
-          (isElement(entry.node) && context.isInline(entry.node))
-        ) {
-          return [entry];
-        }
+      const merge = mergeRepairOf.get(node);
 
-        return (entry.children ?? []).flatMap(collectInlineEntries);
-      };
-      const flattened: RepresentationEntry[] = [];
-
-      for (const entry of entries) {
-        if (
-          isText(entry.node) ||
-          (isElement(entry.node) && context.isInline(entry.node))
-        ) {
-          flattened.push(entry);
-          continue;
-        }
-
-        const content = collectInlineEntries(entry);
-
-        if (content.length > 0) {
-          repairs.push(
-            schemaRepair({
-              code: 'flatten-block-content',
-              impact: 'lossy',
-              inputs: entry.sources,
-              outputs: [schemaModelLocation(root, path)],
-              owner: 'representation',
-            })
-          );
-          flattened.push(...content);
-        }
-      }
-
-      const retained = flattened.filter((entry, index) => {
-        if (!isText(entry.node) || entry.node.text !== '') return true;
-        if (flattened.length === 1) return true;
-        const previous = flattened[index - 1]?.node;
-        const next = flattened[index + 1]?.node;
-        const keep =
-          (isElement(previous) && context.isInline(previous)) ||
-          (isElement(next) && context.isInline(next));
-
-        if (!keep) {
-          repairs.push(
-            schemaRepair({
-              code: 'remove-empty-text',
-              impact: 'lossless',
-              inputs: entry.sources,
-              owner: 'representation',
-            })
-          );
-        }
-
-        return keep;
-      });
-      const canonical: RepresentationEntry[] = [];
-      let merge: {
-        outputIndex: number;
-        sources: EditorSchemaModelLocation[];
-      } | null = null;
-      const closeMerge = () => {
-        if (!merge) return;
-        repairs.push(
-          schemaRepair({
-            code: 'merge-text',
-            impact: 'lossless',
-            inputs: merge.sources,
-            outputs: [schemaModelLocation(root, [...path, merge.outputIndex])],
-            owner: 'representation',
-          })
-        );
-        merge = null;
-      };
-
-      for (const entry of retained) {
-        const previous = canonical.at(-1);
-
-        if (
-          isText(entry.node) &&
-          previous &&
-          isText(previous.node) &&
-          textPropertiesEqual(previous.node, entry.node, context)
-        ) {
-          const outputIndex = canonical.length - 1;
-
-          merge ??= { outputIndex, sources: [...previous.sources] };
-          merge.sources.push(...entry.sources);
-          canonical[outputIndex] = {
-            node: {
-              ...previous.node,
-              text: previous.node.text + entry.node.text,
-            },
-            sources: merge.sources,
-          };
-          continue;
-        }
-        closeMerge();
-        if (isElement(entry.node) && context.isInline(entry.node)) {
-          if (!isText(canonical.at(-1)?.node)) {
-            repairs.push(
-              schemaRepair({
-                code: 'insert-inline-spacer',
-                impact: 'lossless',
-                outputs: [
-                  schemaModelLocation(root, [...path, canonical.length]),
-                ],
-                owner: 'representation',
-              })
-            );
-            canonical.push({ node: { text: '' }, sources: [] });
-          }
-          canonical.push(entry);
-          continue;
-        }
-        canonical.push(entry);
-      }
-      closeMerge();
-
-      const last = canonical.at(-1)?.node;
-
-      if (isElement(last) && context.isInline(last)) {
-        repairs.push(
-          schemaRepair({
-            code: 'insert-inline-spacer',
-            impact: 'lossless',
-            outputs: [schemaModelLocation(root, [...path, canonical.length])],
-            owner: 'representation',
-          })
-        );
-        canonical.push({ node: { text: '' }, sources: [] });
-      }
-      if (canonical.length === 0) {
-        repairs.push(
-          schemaRepair({
-            code: 'insert-empty-text',
-            impact: 'lossless',
-            outputs: [schemaModelLocation(root, [...path, 0])],
-            owner: 'representation',
-          })
-        );
-        canonical.push({ node: { text: '' }, sources: [] });
-      }
-
-      return canonical;
+      if (merge !== undefined) mergeRepairOf.set(to, merge);
     }
 
-    if (
-      parent
-        ? context.getElementContent(context.getElementType(parent) ?? '')
-        : context.getRootContent(root)
-    ) {
-      return entries;
-    }
-
-    const blocks = entries.filter(
-      (entry) => isElement(entry.node) && !context.isInline(entry.node)
-    );
-    const noncanonical = entries.filter((entry) => !blocks.includes(entry));
-
-    for (const entry of noncanonical) {
-      repairs.push(
-        schemaRepair({
-          code: 'remove-noncanonical-child',
-          impact: 'lossy',
-          inputs: entry.sources,
-          owner: 'representation',
-        })
-      );
-    }
-    if (parent && blocks.length === 0) {
-      repairs.push(
-        schemaRepair({
-          code: 'insert-empty-text',
-          impact: 'lossless',
-          outputs: [schemaModelLocation(root, [...path, 0])],
-          owner: 'representation',
-        })
-      );
-
-      return [{ node: { text: '' }, sources: [] }];
-    }
-
-    return blocks;
+    return paths;
   };
-  const classified = classifyChildren(input, null, []).map(({ node }) => node);
+  const lastSuccessor = (node: Descendant) => {
+    const seen = new Set<Descendant>();
+    let current: Descendant | undefined = node;
 
-  if (repairs.length === 0 || !context.structurallyEqual(classified, output)) {
+    while (
+      current &&
+      !places.has(current) &&
+      !removed.has(current) &&
+      !seen.has(current)
+    ) {
+      seen.add(current);
+      current = successors.get(current);
+    }
+
+    return current;
+  };
+  const placeOf = (node: Descendant) => {
+    const last = lastSuccessor(node);
+
+    return last && places.get(last);
+  };
+  const isRemoved = (node: Descendant) => {
+    const last = lastSuccessor(node);
+
+    return last !== undefined && removed.has(last);
+  };
+  const placed: Array<{
+    event: Extract<RepresentationRepairEvent, { code: unknown }>;
+    inputs: ReadonlyArray<readonly number[]>;
+  }> = [];
+
+  for (const event of events) {
+    if ('rebuilt' in event) {
+      for (const node of event.from) consumed.add(node);
+      carry(event.from, event.rebuilt);
+      continue;
+    }
+
+    for (const node of event.inputs) consumed.add(node);
+    if (event.code === 'merge-text') {
+      for (const node of event.inputs) {
+        const merge = mergeRepairOf.get(node);
+
+        if (merge !== undefined) supersededMerges.add(merge);
+      }
+    }
+
+    const inputs = event.output
+      ? carry(event.inputs, event.output)
+      : event.inputs.flatMap((node) => sources.get(node) ?? []);
+
+    if (!event.output) {
+      for (const node of event.inputs) removed.add(node);
+    } else if (event.inputs.length === 0) {
+      inserted.add(event.output);
+    }
+    if (event.code === 'merge-text' && event.output) {
+      mergeRepairOf.set(event.output, placed.length);
+    }
+
+    placed.push({ event, inputs });
+  }
+
+  if (
+    placed.length === 0 ||
+    hasUnexplained(output, inputNodes, produced, (node) =>
+      inserted.has(node)
+    ) ||
+    hasUnexplained(input, new Set(places.keys()), consumed, isRemoved)
+  ) {
     throw new Error(
       `Unclassified canonical representation mutation in editor root "${root}".`
     );
   }
 
-  return Object.freeze(repairs);
+  const repairs = placed.flatMap(({ event, inputs }, index) => {
+    const target = event.into ?? event.output;
+    const place = target && placeOf(target);
+    const superseded = supersededMerges.has(index);
+    const resultDiscarded = target !== undefined && !place;
+    const removesNothing = target === undefined && inputs.length === 0;
+
+    if (superseded || resultDiscarded || removesNothing) return [];
+
+    return [
+      schemaRepair({
+        code: event.code,
+        impact: event.impact ?? 'lossless',
+        inputs: inputs
+          .flatMap(inputPaths)
+          .flatMap((path) =>
+            event.properties
+              ? event.properties.map((key) =>
+                  schemaModelLocation(root, path, key)
+                )
+              : [schemaModelLocation(root, path)]
+          ),
+        outputs: place ? [schemaModelLocation(root, place)] : [],
+        owner: 'representation',
+      }),
+    ];
+  });
+
+  return Object.freeze({
+    inputsOf: (node) => (sources.get(node) ?? []).flatMap(inputPaths),
+    repairs: Object.freeze(repairs),
+  });
 };

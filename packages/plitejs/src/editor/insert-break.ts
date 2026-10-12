@@ -1,11 +1,19 @@
 import { dispatchCommand } from '../core/command-registry';
+import { textPropertiesEqual } from '../core/content-completion';
 import { editorCommands } from '../core/editor-commands';
+import { getEditorSchema } from '../core/editor-runtime';
+import {
+  getActiveUpdateRoot,
+  runEditorTransaction,
+} from '../core/public-state';
 import type { EditorStaticApi } from '../interfaces/editor';
 import {
   getSelection as editorGetSelection,
   leaf as editorLeaf,
 } from '../interfaces/editor';
+import { NodeApi } from '../interfaces/node';
 import { RangeApi } from '../interfaces/range';
+import { SelectionApi } from '../interfaces/selection';
 import { splitNodes } from '../transforms-node/split-nodes';
 import { deleteText } from '../transforms-text/delete-text';
 import { insertDefaultBlockAfterSelectedBlockVoid } from './block-void-break';
@@ -51,7 +59,41 @@ export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
     return;
   }
 
-  splitNodes(editor, { always: true });
+  // Canonical form drops formatting from the new line's empty text, so the
+  // caret carries the formatting typing continues with.
+  runEditorTransaction(editor, (tx) => {
+    const marks = tx.marks ?? tx.getSelectionMarks();
+
+    splitNodes(editor, { always: true });
+
+    const caret = tx.getModelSelection();
+
+    if (!marks || !SelectionApi.isText(caret) || !RangeApi.isCollapsed(caret)) {
+      return;
+    }
+
+    const { path } = caret.anchor;
+    const text = NodeApi.get(editor, path);
+
+    if (!NodeApi.isText(text) || text.text !== '') return;
+
+    const schema = getEditorSchema(editor);
+    const root = getActiveUpdateRoot(editor) ?? 'main';
+    const preserved = schema.textPropertiesForSplitAt(
+      { ...marks, text: '' },
+      path,
+      root
+    );
+    const caretMarks = Object.keys(preserved).reduce(
+      (properties, key) =>
+        schema.canonicalizeTextPropertiesAt(properties, path, root, key),
+      { ...NodeApi.extractProps(text), ...preserved }
+    );
+
+    if (!textPropertiesEqual(text, { ...caretMarks, text: '' })) {
+      tx.setMarks(caretMarks);
+    }
+  });
 };
 
 export const insertBreak: EditorStaticApi['insertBreak'] = (editor) => {

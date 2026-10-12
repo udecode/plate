@@ -51,20 +51,20 @@
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
-      ".agents/pstack/cross.mjs": "97c0945915ee1aad9dfd5083e6a23276a001cbf3297b3831bce213531adba59a",
+      ".agents/pstack/cross.mjs": "18e6b962cd829768c36e304eeeaad7f632c8e14a55054dba8d220eac8b6196bb",
       ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
-      ".agents/pstack/freeze.mjs": "7adda630479f6c81b865b381411f4fcea3d9a26c3b2103148c4bab84b461c4bb",
+      ".agents/pstack/freeze.mjs": "6a4f314d07235936da116d73e116a45e7a03821084f5044f84f84d3ec122e332",
       ".agents/pstack/lead.mjs": "2beae3cdca46116818fb1f5b4f8ac4b78bc16ad0f0e94a9dbaadec1011861cf9",
       ".agents/pstack/mutate.mjs": "05c639f85020c067199699f167ac3920e2645971ccaa30a0aeebbc5f8316a317",
       ".agents/pstack/proof.mjs": "5a65de9344d25559f080c91653e22f59f23def3b5b3c312a319440221b8f2144",
       ".agents/pstack/reply.mjs": "36db86ef0f6af915d4a2ac58fea6be62417234a0b1348462e61c8d4f46fd71a3",
-      ".agents/pstack/reread.mjs": "a7826063963cbef31d263004fd41c42b50c0252c7105e1b0ec37ea427448c2cf",
+      ".agents/pstack/reread.mjs": "17d61f197ea79896c67ed3dc184f02e67d71621188030313250f0229c98349fb",
       ".agents/pstack/decisions-check.mjs": "8d771f8c0c59df3220de2a41cdac7092f6e0c2f19c3bebc5e46d5242aceb416c",
       ".agents/pstack/plan-open.mjs": "701ba00e8b651851de566c26a28142606bd0694f109ca52dce274d54966b69fb",
       ".agents/pstack/plan-page.mjs": "16f12de5bcafa5aea6bbd3a388c8ad64e113f08a443d3c6fb17cee12fe45287f",
       ".agents/pstack/status.mjs": "be0e23111171f10ef00e19cdc6204a10ea2b7e1fa83130333dc18d8c3f8b930f",
       ".agents/pstack/rules/close.md": "1956ea5189852f378fb66e49e65d2d55810b2b23cb2d60fbc91e8818d7ddb2ba",
-      ".agents/pstack/rules/long-runs.md": "e45791e5f17ed3033b0cb02041bc96a36229d2c31c6c8e9ffcdf7e049b9ab7d1",
+      ".agents/pstack/rules/long-runs.md": "b9215736b3a004bfdb2e0bf79d93bf540bff84e533abd8fca3cc4661db4a30a9",
       ".agents/pstack/rules/pages.md": "4a437e2db42fe0d01c41777ffb5e9788b23d5bb1bac5f94a4fb58f20f19b5ec9",
       ".agents/pstack/rules/panel.md": "9564bda52b270f534eaf650ac74c8c31f88378b3a2a9a12311cb8ad3aa421123",
       ".agents/pstack/rules/reflect.md": "dde25e7981850028132b8ea802925433ccc66b30bcf69c10e47dfce27de9de24",
@@ -72,7 +72,7 @@
       ".agents/pstack/rules/title.md": "3790bd24dd6a72b615d394823a5ea46e7fc949e2d3d2248a6358c29d1ed19db5",
       ".agents/pstack/rules/trails.md": "b8c612258a1ebf5cb720b6c9b72203a17d5d95741f9c36db5562a7664c9e80a1"
     },
-    "source": "c078fc61825db96c6ea7398bc1999c377fa9f4a6"
+    "source": "4e20562a043cb5d11fd1b4055fa780d7a68afb7b"
   },
   "pageTopic": {
     "field": "review_scopes",

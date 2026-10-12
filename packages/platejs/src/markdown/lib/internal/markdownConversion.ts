@@ -22,6 +22,7 @@ import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition'
 import { mdastToSlate } from '../deserializer/mdastToSlate';
 import type { MarkdownPluginState } from '../MarkdownPlugin';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
+import { finishMarkdownLists } from '../serializer/listToMdastTree';
 import type {
   DeserializeMdContext,
   MarkdownDiagnostic,
@@ -398,6 +399,7 @@ export const serializeMdWithRuntime = (
     type: 'root',
   };
 
+  finishMarkdownLists(tree, mergedOptions);
   cleanMarkdownDestinations(tree, {
     lossPolicy: mergedOptions.lossPolicy,
     phase: 'serialize',

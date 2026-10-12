@@ -11,6 +11,7 @@ import type {
   EditorApplicationSchema,
   EditorCoreStateView,
   EditorDocumentValue,
+  EditorSchemaRepairCode,
   EditorSchemaValidationDiagnostic,
   RootKey,
   Value,
@@ -60,24 +61,6 @@ type MarkdownDiagnosticContext = Readonly<{
 type PolicyDiagnostic<T extends object> =
   | Readonly<T & { severity: 'error' }>
   | Readonly<T & { severity: 'warning' }>;
-
-type EditorSchemaRepairCode =
-  | 'canonicalize-set-property'
-  | 'create-root'
-  | 'default-property'
-  | 'drop-unplaceable-text'
-  | 'flatten-block-content'
-  | 'generate-property'
-  | 'insert-empty-text'
-  | 'insert-inline-spacer'
-  | 'insert-required-content'
-  | 'merge-text'
-  | 'omit-default-property'
-  | 'remove-empty-text'
-  | 'remove-noncanonical-child'
-  | 'replace-element-shell'
-  | 'resolve-exclusive-property'
-  | 'wrap-content';
 
 export type MarkdownDiagnostic =
   | NativeAuthoredProjectionDiagnostic

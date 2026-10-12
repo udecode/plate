@@ -1535,13 +1535,14 @@ it('insertBreak after marked text moves selection into the new block', () => {
     },
     {
       type: 'paragraph',
-      children: [{ bold: true, text: '' }],
+      children: [{ text: '' }],
     },
   ]);
   assert.deepEqual(snapshot.selection, {
     kind: 'text',
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
+    marks: { bold: true },
   });
 });
 
@@ -7113,10 +7114,7 @@ it('publishes immutable snapshots detached from public editor fields', () => {
   const snapshot = editorGetSnapshot(editor);
 
   assert.throws(() => {
-    (snapshot.children as Element[]).push({
-      type: 'paragraph',
-      children: [{ text: 'oops' }],
-    });
+    Object.assign(snapshot.children[0], { type: 'heading' });
   });
 
   assert.throws(() => {

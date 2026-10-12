@@ -124,7 +124,7 @@ describe('BaseEditorKit', () => {
           'media',
           'mention',
           'table',
-          'text-align',
+          'align',
           'toc',
           'docx',
         ] as const

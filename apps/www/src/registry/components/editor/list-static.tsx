@@ -17,12 +17,13 @@ export const BaseListKit = [
             element?.listType === ListType.Bulleted && !isOrderedList(element)
           );
         },
-        transformProps: ({ props }) => ({
+        transformProps: ({ element, props }) => ({
           ...props,
           role: 'listitem',
           style: {
             ...props.style,
             display: 'list-item',
+            listStyleType: element?.listStyle,
           },
         }),
       },

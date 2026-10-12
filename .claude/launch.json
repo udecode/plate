@@ -35,6 +35,42 @@
         "3311"
       ],
       "port": 3311
+    },
+    {
+      "name": "www-link-cmdk",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "PLATE_WWW_DIST_DIR=.next-link",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3323"
+      ],
+      "port": 3323
+    },
+    {
+      "name": "www-toolbar-name",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "PLATE_WWW_DIST_DIR=.next-toolbar-name",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3331"
+      ],
+      "port": 3331
     }
   ]
 }

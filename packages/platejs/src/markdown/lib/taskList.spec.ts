@@ -3,6 +3,7 @@ import {
   parseTestMarkdown,
   serializeTestMarkdown,
 } from './__tests__/createTestEditor';
+import { nameListIds } from './__tests__/nameListIds';
 
 describe('markdown task lists', () => {
   it('round-trips checked state through the markdown package surfaces', () => {
@@ -32,6 +33,8 @@ describe('markdown task lists', () => {
     const markdown = serializeTestMarkdown(editor, { document: value }).data;
 
     expect(markdown).toBe(expected);
-    expect(parseTestMarkdown(editor, markdown)).toMatchObject(value);
+    expect(nameListIds(parseTestMarkdown(editor, markdown).children)).toEqual(
+      nameListIds(value.children)
+    );
   });
 });

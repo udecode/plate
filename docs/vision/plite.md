@@ -256,8 +256,9 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   reads, plugin reads and plugin APIs all resolve against it. Plite refuses a
   source-editor read inside that view's reads, decorations and plugin render
   callbacks. Plugins reach the document through their context editor or `state`,
-  never an editor captured in `.extend`, and component bodies read their
-  `editor` prop.
+  never an editor captured in `.extend`, `.configure` or `initialState`. A
+  callback held in a plugin store and run for one view receives that view's
+  editor, and component bodies read their `editor` prop.
 - `state` is the normal read view; `tx` is the normal write view and can read
   transaction-local state.
 - Plugin-owned factories are `read` and `update`; the compiler projects their
@@ -437,6 +438,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   preserve an old fixture shape. An invariant every operation must keep is
   repaired in the smallest transform or correction owner.
 - Every successful update publishes one canonical document. Primitive steps inside a transaction may leave private draft shapes, but finalization merges adjacent text with equal properties, removes redundant empty leaves while keeping required inline caret spacers, flattens invalid inline content, fills compiled schema defaults, and maps selection and node keys through the same change, so a committed snapshot has no noncanonical exception. An externally supplied `DocumentChange` must already be canonical and fails atomically otherwise. Proof: `packages/plitejs/test/accessor-transaction.test.ts`.
+- One pure completion, `core/content-completion.ts`, fills content for Editing, construction, loading, decisions and the review tree. An element whose content admits text is never empty, so an emptied element keeps one empty text whatever gesture emptied it. Such an element that holds a block needs no text beside it, and only block-only content may be empty. That empty text is the anchor and counts toward the minimum, so completion builds an element default only past it. Completion adds defaults one canonical unit at a time, so an inline default arrives with its spacer texts. It builds each element at its site. A content declaration whose minimum has no canonical realization within its maximum fails to compile. Prefix displacement is an explicit vacated-slot input. Editing's local pass supplies it, so Editing's deletion of a required title builds a fresh one. The review tree's recorder and decisions supply it from the review marks. Undo, remote changes and the external check read the document alone. `createEditor` canonicalizes every root of its initial value before the first snapshot, as the Yjs bridge does for each root it initializes. Proof: `packages/plitejs/test/content-completion-laws.test.ts`.
 - Public updates are synchronous and cannot nest. Helpers inside an update use
   the active `tx`.
 - One user action commits in one update: consecutive synchronous mutations that
@@ -547,7 +549,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   line operations from offsets and native syntax paint from Decorations; solve scale
   in the renderer or runtime without public chunk controls or a second
   persisted schema.
-- An empty text leaf survives an edit only as the line-break anchor of an empty block, a required inline spacer, or a mark placeholder at the caret. Corrections remove every other empty leaf before render, so a non-empty block never paints a zero-width line break.
+- An empty text leaf survives only as the line-break anchor of an empty stretch that admits text, a required inline spacer, or a void's child. Corrections remove every other empty leaf before render, so a non-empty block never paints a zero-width line break. A line anchor or spacer stores no formatting. The formatting at a collapsed caret lives in the selection's pending marks, which typing applies, so typing in an emptied bold line stays bold while the caret is there. Once the caret leaves or the document reloads, the line is plain. A void's empty child keeps its properties, because a markable void stores its formatting there.
 - A non-void block with exactly one Text may replace native child DOM with one
   external editable-text view. Plite still owns canonical text, selection,
   history, schema, and collaboration. The adapter owns its DOM, input, layout,

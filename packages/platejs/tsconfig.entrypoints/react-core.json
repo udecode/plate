@@ -32,7 +32,6 @@
     "../src/react/features/slash-command/**/*",
     "../src/react/features/suggestion/**/*",
     "../src/react/features/table/**/*",
-    "../src/react/features/tag/**/*",
     "../src/react/features/toc/**/*",
     "../src/react/features/combobox/**/*",
     "../src/react/features/resizable/**/*",

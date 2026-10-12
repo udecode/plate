@@ -3,6 +3,7 @@ import {
   parseTestMarkdown,
   serializeTestMarkdown,
 } from './__tests__/createTestEditor';
+import { nameDocumentListIds } from './__tests__/nameListIds';
 
 const commonmarkAstCorpus = [
   { input: '# Heading', title: 'ATX heading' },
@@ -132,8 +133,10 @@ describe('commonmark package surfaces', () => {
         const second = parseTestMarkdown(editor, canonical);
         const replay = serializeTestMarkdown(editor, { document: second }).data;
 
-        expect(second).toEqual(first);
-        expect(parseTestMarkdown(editor, replay)).toEqual(second);
+        expect(nameDocumentListIds(second)).toEqual(nameDocumentListIds(first));
+        expect(nameDocumentListIds(parseTestMarkdown(editor, replay))).toEqual(
+          nameDocumentListIds(second)
+        );
       } catch (error) {
         throw new Error(
           `Markdown stress failure: seed=${MARKDOWN_STRESS_SEED} case=${caseIndex} input=${JSON.stringify(input)}`,
@@ -152,8 +155,10 @@ describe('commonmark package surfaces', () => {
       const second = parseTestMarkdown(editor, canonical);
       const replay = serializeTestMarkdown(editor, { document: second }).data;
 
-      expect(second).toEqual(first);
-      expect(parseTestMarkdown(editor, replay)).toEqual(second);
+      expect(nameDocumentListIds(second)).toEqual(nameDocumentListIds(first));
+      expect(nameDocumentListIds(parseTestMarkdown(editor, replay))).toEqual(
+        nameDocumentListIds(second)
+      );
     }
   );
 

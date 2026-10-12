@@ -64,8 +64,6 @@
       "platejs/tabbable/react": ["./src/tabbable/react/index.ts"],
       "platejs/table": ["./src/features/table/index.ts"],
       "platejs/table/react": ["./src/react/features/table/index.ts"],
-      "platejs/tag": ["./src/features/tag/index.ts"],
-      "platejs/tag/react": ["./src/react/features/tag/index.ts"],
       "platejs/testing": ["./src/testing/index.ts"],
       "platejs/toc": ["./src/features/toc/index.ts"],
       "platejs/toc/react": ["./src/react/features/toc/index.ts"],
