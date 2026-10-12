@@ -1,6 +1,6 @@
 ---
-description: 'Maintain Plate''s latest and beta release lanes end-to-end with an autogoal plan: promote next to main, sync main directly back into next, repair release metadata conflicts, re-enter beta, and verify npm/GitHub release state.'
-argument-hint: '[status | sync | promote | verify | full]'
+description: Promote Plate beta releases, sync main back to next and verify published npm/GitHub state with release authority.
+argument-hint: '[status | verify | sync | promote] [dry-run | execute]'
 name: release-lanes
 metadata:
   skiller:
@@ -22,38 +22,26 @@ for deterministic release metadata conflicts. Sync directly with a merge commit,
 repair known release metadata automatically, push `next`, then let `release.yml`
 publish beta.
 
-One invocation is permission to run the lane until completion. Ask again only
-for hard stops.
-
-## Autogoal Contract
-
-This is a derived autogoal skill.
-
-Default flow mode: one-shot execution.
-
-Use:
-
-```bash
-node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template release-lanes \
-  --title "release lane maintenance"
-```
-
-Create or continue a goal before mutating remote release branches. The goal is
-complete only when the requested lane state is true and the template gates pass.
-
 ## Lanes
 
 - `main` publishes stable packages with npm tag `latest`.
 - `next` publishes prerelease packages with npm tag `beta`.
 - `.changeset/pre.json` belongs on `next` only.
 - `main` must never publish while `.changeset/pre.json` exists.
-- Major changesets target `next` for beta before stable promotion.
-- Minor changesets target `main`, not `next`.
-- Patch changes may target `main`; use `next` patch changes only for active
-  beta-lane fixes or direct-sync beta metadata.
 
 ## Modes
+
+These are skill arguments, not subcommands of `release-branch-prs.mjs`.
+
+| Invocation | Action |
+| --- | --- |
+| `release-lanes status` | Read branch, workflow and npm state. |
+| `release-lanes sync` | Dry-run, then perform and push the direct main-to-next sync. |
+| `release-lanes sync dry-run` | Inspect the direct sync without committing or pushing. |
+| `release-lanes promote` or `promote dry-run` | Dispatch the promotion workflow with `dry_run=true`. |
+| `release-lanes promote execute` | Dispatch with `dry_run=false`; verify the generated next-to-main PR. Merge only with merge authority. |
+| `release-lanes verify` | Read release workflows, npm tags and GitHub releases. |
+| `release-lanes full <scope>` | Status, the explicitly requested promotion/merge or sync steps, then verification. No unrelated release operation is implied. |
 
 ### Status
 
@@ -81,6 +69,8 @@ Record:
 
 ### Sync Main To Next
 
+This fast mode is the whole direct sync recipe. It skips planning and panel review unless a planning artifact was requested.
+
 Run after a stable release, after merging a promote PR, or whenever `main` has
 commits missing from `next`.
 
@@ -90,7 +80,9 @@ Dry run first:
 node tooling/scripts/release-branch-prs.mjs sync-main-to-next --dry-run
 ```
 
-Then run the direct sync:
+Then run the direct sync from a clean detached worktree, never from the shared checkout. The real sync checks out `origin/next` detached in whatever checkout runs it, and it refuses local changes. Create the worktree with `git worktree add --detach ../plate-sync origin/next`, run `pnpm install` there, and run the sync from it. Remove it afterward with `git worktree remove ../plate-sync`.
+
+For an explicit `dry-run` request, stop after the dry run and report it.
 
 ```bash
 node tooling/scripts/release-branch-prs.mjs sync-main-to-next --push
@@ -101,7 +93,7 @@ The script must:
 - fetch `main` and `next`
 - refuse real direct sync when the checkout has local tracked or untracked
   changes
-- create a merge commit on `next`
+- create the merge commit on a detached checkout of `origin/next`, leaving local branches and the git identity unchanged
 - keep `next` beta package versions over `main` stable versions
 - keep `.changeset/pre.json` from `next`, or create beta pre mode in the same
   sync commit when `next` is out of pre mode after promotion
@@ -117,6 +109,18 @@ The script must:
 
 If the script stops on files outside known release metadata, do not guess.
 Resolve only when source ownership is obvious; otherwise stop with exact files.
+
+Then watch only the workflows created by the pushed sync commit:
+
+```bash
+gh run list --branch next --limit 10 \
+  --json databaseId,name,workflowName,headSha,status,conclusion,displayTitle,url
+gh run watch <release-run-id> --exit-status
+gh run watch <ci-run-id> --exit-status
+```
+
+- Do not re-run broad release status commands once the pushed SHA is known.
+- Do not wait on unrelated old workflow runs.
 
 ### Re-Enter Beta
 
@@ -163,8 +167,8 @@ Then review the generated `next -> main` PR:
 - package versions are stable, not `-beta.*`
 - body tells maintainers to use **Create a merge commit**
 
-Merging the promote PR is allowed when the user asked for full automation or
-merge. Use a merge commit, not squash or rebase.
+Merge the promote PR only when the user explicitly authorized that merge as
+part of the release request. Use a merge commit, not squash or rebase.
 
 ### Verify Releases
 
@@ -200,7 +204,8 @@ gh pr list --base next --head sync/main-to-next --state open --json number,url
 gh pr close <number> --comment "Closing because release-lanes synced main directly into next."
 ```
 
-Do this only after direct sync and verification pass.
+Do this only after direct sync and verification pass and the active request
+authorizes closing the stale PRs and posting the cleanup message.
 
 ## Hard Stops
 
@@ -213,19 +218,3 @@ Stop only for:
 - npm `latest` or `beta` points at an unexpected version after publication
 - branch protection rejects the required merge or push
 - local tracked or untracked changes are present before a real direct sync
-
-Do not stop to ask whether to run the next obvious lane step. The goal plan is
-the authorization boundary.
-
-## Handoff
-
-Report:
-
-- `main` SHA and `next` SHA
-- promote PR URL or N/A
-- direct sync result and pushed commit
-- beta pre mode state
-- release run URLs
-- npm `latest` and `beta` versions
-- stale PR cleanup
-- residual risk or `none`

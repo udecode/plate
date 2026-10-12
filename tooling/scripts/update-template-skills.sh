@@ -9,6 +9,35 @@ PRESET_SOURCE="$BASE_DIR/tooling"
 sync_template_skills() {
   local template_dir="$1"
 
+  # Older generated templates do not retain Skiller's pruning manifest.
+  rm -f \
+    "$template_dir/.agents/AGENTS.md" \
+    "$template_dir/.claude/prompt.yml" \
+    "$template_dir/.claude/scripts/post-compact.sh" \
+    "$template_dir/.claude/scripts/session-start.sh" \
+    "$template_dir/.claude/scripts/user-prompt-submit.sh" \
+    "$template_dir/.agents/rules/agent-browser-issue.mdc" \
+    "$template_dir/.agents/rules/dev-browser.mdc" \
+    "$template_dir/.agents/rules/grill-me.mdc" \
+    "$template_dir/.agents/rules/hard-cut.mdc"
+
+  node - "$template_dir" <<'NODE'
+const fs = require('node:fs');
+const path = require('node:path');
+const root = process.argv[2];
+const retired = [
+  'agent-browser-issue', 'autoreview', 'browser-debug-setup', 'components',
+  'dev-browser', 'grill-me', 'hard-cut', 'react', 'react-useeffect',
+  'typescript-advanced-types', 'video-transcripts',
+];
+for (const name of retired) {
+  fs.rmSync(path.join(root, '.agents/rules', `${name}.mdc`), { force: true });
+  for (const folder of ['.agents/skills', '.claude/skills']) {
+    fs.rmSync(path.join(root, folder, name), { recursive: true, force: true });
+  }
+}
+NODE
+
   bun x skiller@latest install "$PRESET_SOURCE" \
     --preset preset \
     --project-root "$template_dir" \
@@ -18,5 +47,11 @@ sync_template_skills() {
   rm -f "$template_dir/.agents/.skiller-sync-manifest.json"
 }
 
-sync_template_skills "$BASE_DIR/templates/plate-template"
-sync_template_skills "$BASE_DIR/templates/plate-playground-template"
+if (($# > 0)); then
+  for template_dir in "$@"; do
+    sync_template_skills "$template_dir"
+  done
+else
+  sync_template_skills "$BASE_DIR/templates/plate-template"
+  sync_template_skills "$BASE_DIR/templates/plate-playground-template"
+fi

@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "kind": "two-videos",
+      "inputs": ["main.mp4", "next.mp4"],
+      "expected": "Treat the pair as the main normal baseline versus the current next/Beta bug. First infer the mapping from explicit branch evidence or the normal-versus-regression behavioral delta; ask the user only when that evidence is ambiguous. Never infer roles from input order or visual presentation."
+    },
+    {
+      "kind": "one-video",
+      "inputs": ["failure.mp4"],
+      "expected": "Extract visible steps and source expected behavior from product authority."
+    },
+    {
+      "kind": "text-only",
+      "inputs": ["Pressing Enter immediately throws on the homepage."],
+      "expected": "Skip recording when deterministic text and runtime evidence already prove the minimal repro."
+    }
+  ]
+}

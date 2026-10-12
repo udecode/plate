@@ -149,7 +149,6 @@ Current top-level structure:
 - `index.md`
 - `log.md`
 - `schema.md`
-- `commands/`
 - `sources/`
 - `decisions/`
 - `concepts/`
@@ -169,8 +168,6 @@ taxonomy.
 
 Use one research layer, many domains, one page-type system.
 
-`commands/` is the one intentional support surface that is not a knowledge-type
-bucket. It exists for repeatable operational workflows, not for domain pages.
 
 ### One concept per file
 
@@ -291,18 +288,6 @@ happened to mention." That is how holes accumulate.
 
 ## Page types
 
-### `commands/`
-
-Operational command specs for repeatable agent workflows.
-
-Use this for:
-
-- full research passes
-- maintenance passes
-- gap-detection workflows
-- ingest workflows
-
-Do not use it to store domain knowledge itself.
 
 ### `schema.md`
 
@@ -548,131 +533,12 @@ Periodically check for:
 
 Lint should also detect coverage gaps, not just stale wording.
 
-## Autonomous Maintenance
+## Research maintenance
 
-This research layer should eventually be maintained by a dedicated autonomous skill or
-workflow, not only by incidental task work.
-
-Its job is to proactively improve both layers:
-
-- the private raw evidence layer in `../raw`
-- the compiled layer in `docs/research`
-
-### Why this is needed
-
-If the user asks a question about a goal area and the relevant evidence was
-never ingested or compiled, the agent may miss the answer entirely.
-
-That means the system must support:
-
-- gap detection
-- proactive ingest
-- proactive compilation
-- targeted refresh
-
-without waiting for a human to notice every missing page manually.
-
-### Recommended skill shape
-
-The right future skill is something like:
-
-- `research-maintainer`
-- or `research-gap-filler`
-
-Its mission is not just to summarize.
-Its mission is to keep the reference system complete enough that future agents
-do not fall through obvious holes.
-
-### Inputs
-
-The skill should accept a goal, area, or question such as:
-
-- `editor behavior references`
-- `plate v2 architecture`
-- `slate v2 risks`
-- `plugin model`
-
-### Loop
-
-Given a goal, the skill should:
-
-1. infer the likely entities, systems, concepts, and decisions involved
-2. scan `docs/research` for existing compiled coverage
-3. scan `../raw` for relevant raw evidence
-4. classify gaps:
-   - raw missing
-   - raw exists but compiled summary missing
-   - compiled summary exists but decision/concept/system pages missing
-   - stale compiled pages
-   - contradictions between compiled pages
-   - weakly sourced claims
-5. fill the highest-value gaps it can safely fill
-6. record what it changed in `log.md`
-7. leave explicit `open-questions/...` pages where the gap cannot be filled yet
-
-### Gap classes
-
-Use these gap classes explicitly:
-
-- **Raw gap**: no relevant evidence exists in `../raw`
-- **Compile gap**: raw evidence exists, but `docs/research/sources/...` is missing
-- **Synthesis gap**: source summaries exist, but no concept/system/decision page
-  captures the reusable conclusion
-- **Freshness gap**: compiled page exists, but newer evidence likely changed it
-- **Contradiction gap**: two compiled pages disagree or point in different
-  directions
-- **Structure gap**: pages exist, but they are duplicated, orphaned, or split
-  at the wrong boundaries
-
-### Safe autofill rules
-
-The skill should be aggressive about structure and conservative about claims.
-
-Safe actions:
-
-- create missing source summary pages from existing raw evidence
-- add missing backlinks and `index.md` entries
-- split giant mixed pages into clearer page types
-- create entity or concept stubs when the source support is obvious
-- open explicit question pages when evidence is still thin
-
-Unsafe actions that need stronger evidence:
-
-- inventing decisions without source support
-- claiming coverage where only one weak source exists
-- silently resolving contradictions
-- creating fake completeness from repo-local vibes
-
-### Output
-
-Each run should leave:
-
-- updated research pages
-- updated `index.md`
-- appended `log.md`
-- explicit open questions for unresolved gaps
-
-And, when useful, a concise gap report saying:
-
-- what was missing
-- what was filled
-- what still needs raw evidence
-
-### Trigger points
-
-This maintenance skill should be used:
-
-- before major research or migration tasks
-- after finishing major research or migration tasks
-- periodically as a research health pass
-- whenever an agent notices it is answering from thin or incomplete coverage
-
-### Rule of thumb
-
-If the current task depends on a domain that feels bigger than the currently
-visible pages, do not trust the visible pages alone.
-
-Run a gap-detection pass first.
+The `research` skill owns full corpus passes and maintenance. Use
+`research full <topic>` to account for each scoped corpus and
+`research maintain <topic>` to repair compiled knowledge from evidence.
+Keep lifecycle policy in the skill and project playbooks.
 
 ## Retrieval order
 
@@ -686,33 +552,7 @@ The default retrieval order is:
 If an agent searches the whole repo before checking `docs/research`, this layer is
 failing its job.
 
-## Operational Surface
+## Research operations
 
-The commands in `commands/` are the executable mental model for applying this
-research layer in practice.
-
-Start with:
-
-- [commands/full-pipeline.md](docs/research/commands/full-pipeline.md)
-- [commands/maintain.md](docs/research/commands/maintain.md)
-
-That is the heavyweight command for improving the research layer from a goal or
-domain instead of answering only from the currently visible slice.
-
-Use [schema.md](docs/research/schema.md) to keep page
-metadata consistent while the layer is still small.
-
-## Initial scope
-
-Start with one narrow evidence corpus from `../raw`, prove the ingest and
-retrieval workflow, then expand to additional sources only after the first path
-is stable.
-
-## Agent rules
-
-- never edit `../raw` while compiling conclusions unless the task is explicitly
-  about curating raw evidence
-- never add a durable claim here without evidence
-- never flatten contradictions into fake certainty
-- never treat compiled summaries as stronger than primary sources
-- never let a reusable analysis die in chat if it belongs in this research layer
+Use the [research skill](../../.agents/skills/research/SKILL.md) and
+[schema.md](schema.md).

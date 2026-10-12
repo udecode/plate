@@ -62,7 +62,7 @@ Rule:
 | law                      | [markdown-editing-spec.md](docs/editor-behavior/markdown-editing-spec.md), [editor-protocol-matrix.md](docs/editor-behavior/editor-protocol-matrix.md), [markdown-standards.md](docs/editor-behavior/markdown-standards.md) |
 | gate                     | [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)                                                                                                                                                 |
 | evidence                 | [markdown-editing-reference-audit.md](docs/editor-behavior/markdown-editing-reference-audit.md) and [docs/research](docs/research)                                                                                          |
-| sequence                 | this file and [docs/editor-behavior/commands](docs/editor-behavior/commands/README.md)                                                                                                                                      |
+| sequence                 | this file and [the maintainer workflow](../development/agent-skills.md)                                                                                                                                      |
 | historical execution     | [2026-04-02-editor-behavior-major-execution.md](docs/plans/2026-04-02-editor-behavior-major-execution.md)                                                                                                                   |
 | supporting feature plans | the relevant docs under [docs/plans](docs/plans)                                                                                                                                                                            |
 
@@ -307,18 +307,13 @@ After any lane changes implementation truth:
 6. refresh any touched supporting plan docs
 7. refresh the historical execution note only when the lane materially changed what remains
 
-## Command Pack
+## Workflow
 
-- [reconsolidate-law-stack.md](docs/editor-behavior/commands/reconsolidate-law-stack.md)
-- [refresh-evidence-ledger.md](docs/editor-behavior/commands/refresh-evidence-ledger.md)
-- [reinterview-open-authority-gaps.md](docs/editor-behavior/commands/reinterview-open-authority-gaps.md)
-- [replan-next-batch.md](docs/editor-behavior/commands/replan-next-batch.md)
-- [launch-next-ralph-batch.md](docs/editor-behavior/commands/launch-next-ralph-batch.md)
+Use [the maintainer workflow](../development/agent-skills.md) for research, planning, implementation and proof.
 
-## Triage Rule For `editor-spec`
+## Behavior change triage
 
-When `editor-spec` formalizes or revises a surface and that change creates real
-remaining implementation work, it must triage the item into this roadmap.
+When a behavior-spec change creates implementation work, triage that work into this roadmap.
 
 That means:
 

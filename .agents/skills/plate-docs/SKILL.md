@@ -1,0 +1,118 @@
+---
+description: Use before any edit under content/docs, including a one-line fix to existing advice, a Chinese twin or an embedded demo, and to write or audit Plate public documentation, page design, examples, installation, MDX and navigation.
+name: plate-docs
+metadata:
+  skiller:
+    source: .agents/rules/plate-docs.mdc
+---
+
+# Plate Docs
+
+Own Plate's public documentation experience: house style, page composition,
+example coverage, setup, API teaching, MDX and navigation. Use
+`pstack:technical-writing` for prose, voice and document modes. Its general
+rules serve this project's house style. A docs edit keeps code, commands,
+identifiers, frontmatter and link targets unchanged unless the change covers
+them, and keeps numbers, versions and names tied to their source. It also keeps obligation words (must, may, never), uncertainty and meaningful scope limits as strong as the source says; never turn a possibility into a guarantee, whatever `technical-writing` says about hedging. Code snippets
+follow the repository formatter's two-space indentation, not technical-writing's
+tab rule.
+
+Handle the requested page, feature or documentation audit. An audit reports
+source-backed gaps; edits stay within the requested scope. General prose in
+plans, reports, READMEs and PR descriptions goes directly to `pstack:technical-writing`.
+For a tiny copy edit, read the text and resolve changed links without loading
+unrelated docs mechanics; an English page edit still rebuilds the docs
+registry where the verify table's registry row applies.
+
+Read the target page, its nearest useful sibling, and the source that owns each
+changed claim. Start from the current source and public exports. Docs describe
+the current API; unresolved API design belongs to Best API before teaching it.
+## House style: shadcn
+
+This house style takes precedence over the generic presentation defaults of
+`pstack:technical-writing`. Use shadcn for density and page composition; Plate source owns API
+behavior, imports, requirements and examples.
+
+- Start fast. Frontmatter supplies the title and description. Add a short lead
+  only when it clarifies the task, owner or an easily confused sibling.
+- Put the first useful preview or working path before deeper explanation.
+  Recommend the kit/CLI path first when it is the actual supported default;
+  put manual or headless alternatives after it.
+- Keep component pages together: installation, usage, visible examples and
+  compact API reference can serve one reader goal. Each section does one job.
+- Show imports and the smallest real working example. Add context when the
+  code needs it; obvious usage does not need a ceremonial lead-in sentence.
+- Prefer a real preview and one useful line to paragraphs describing a visual
+  variant. Use MDX components for real structure or choices, not decoration.
+- Keep reference compact: exact names, types, options and short caveats.
+  Preserve established headings and anchors across comparable pages.
+- Explain a non-obvious choice briefly. Runtime concepts can need more context
+  than a UI component; density must not hide ownership or lifecycle behavior.
+- Document only the latest state. Never write changelog-style language ("has
+  been removed", "new feature", "previously", "now supports"), migration notes
+  or "what changed"; write as if no prior version exists.
+For a substantial style or page-shape decision, compare the nearest Plate
+sibling with a relevant page in `../shadcn/apps/v4/content/docs/`. Component
+examples include `components/base/button.mdx`, `chart.mdx` and `sidebar.mdx`;
+installation and registry pages cover their own shapes. Read the applicable
+page, not the whole corpus. This comparison does not require an upstream sync.
+
+## Cover the feature's actual use
+
+Choose examples by reader need. Identify the page's important reader tasks,
+claims and likely misunderstandings, and give each a clear home in an example,
+a precise reference section or a linked guide. Choose each example for
+something distinct it helps the reader do or understand, keep it small enough
+to understand and complete enough to use, and name its prerequisites. Reuse or
+link an existing example when it already serves the reader. Label a mock
+service or local snapshot at the example, and state unsupported or unverified
+behavior as a limitation instead of inventing it. An audit reports missing
+coverage; implementation stays within the requested scope. For feature and
+component pages:
+
+- Lead with a focused example of the named feature. Use its kit and required
+  dependencies in setup; a full application `EditorKit` belongs in an example
+  whose purpose is that composition. Preserve explicit feature configuration
+  under Plate UI's teaching/install rules.
+- Give important tasks and materially different states a clear home in an
+  example, snippet, reference section or linked guide. Consider creation and
+  editing, boundaries and history, persistence and recovery, and rendering or
+  access modes only where they affect this feature. Do not require every
+  category, a demo per API method or a fixed number of previews.
+- Let each additional example teach a distinct task, behavior or useful visual
+  variant. Reuse registered demos and link composition to its owning page
+  instead of reproducing the same mixed-feature preview across sibling pages.
+- Keep integration requirements next to the example that needs them. Show
+  minimum prerequisites in setup; put detailed ownership and lifecycle
+  explanations after working examples or in a linked concept guide.
+- Keep example claims within their proof. An in-memory save/reload demonstrates
+  a local round trip; label simulated failures. A read-only editor setting
+  does not establish application authorization. Preserve established fixtures
+  and meaningful interactions when revising examples.
+
+For a coverage audit, account for the important in-scope tasks and states and
+their homes or gaps. Use the existing report or plan when one is needed; do
+not create a second inventory or expand a wording-only edit into an audit.
+Verify changed examples through the existing proof owners below.
+
+## Select the needed mechanics
+
+Read the nearest current page, its imports, MDX components and route owner.
+Inspect `content/docs/meta.json` only when navigation changes. Keep exact
+signatures in reference, setup in feature pages and cross-package explanations
+in a concept guide. Update the English page and its Chinese twin together.
+
+## Verify the changed claims
+
+| Change | Required evidence |
+| --- | --- |
+| Prose or link only | Read the edited text and resolve changed links; preserve code and metadata |
+| MDX structure or examples | `pnpm --filter www build:source`; verify symbols, imports and fence content against source |
+| Docs source parity or generated docs | `pnpm --filter www check:docs` |
+| New/moved route or navigation | Parse changed metadata and request the exact route; inspect pager/sidebar when they changed |
+| Preview or visible component behavior | Resolve the real demo and use [`verify`](../verify/SKILL.md) on that exact route/state |
+| Registry source | `plate-ui`; CI owns registry generation |
+
+Run applicable checks once after the final prose pass. New source changes or a
+failure can require another pass. An MDX parse does not prove a route, runtime
+API behavior or browser input. Report the exact proof limit.

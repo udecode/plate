@@ -504,10 +504,7 @@ Without that, the audit will drift into vague prose.
 
 Do not rerun the broad markdown-first reference audit by default.
 
-Use the live command pack and roadmap first:
-
-- [commands/README.md](docs/editor-behavior/commands/README.md)
-- [master-roadmap.md](docs/editor-behavior/master-roadmap.md)
+Use [the maintainer workflow](../development/agent-skills.md) and [master-roadmap.md](docs/editor-behavior/master-roadmap.md) first.
 
 Rerun research or audit only when:
 

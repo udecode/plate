@@ -13,8 +13,6 @@ This is the entrypoint for the compiled agent research layer.
 
 ## Directories
 
-- [commands/README.md](docs/research/commands/README.md)
-  Operational command specs for running the research workflows.
 - [sources/README.md](docs/research/sources/README.md)
   Compiled summaries of raw evidence.
 - [decisions/README.md](docs/research/decisions/README.md)
@@ -40,9 +38,7 @@ This is the entrypoint for the compiled agent research layer.
 ## First Targets
 
 - operational baseline:
-  [commands/full-pipeline.md](docs/research/commands/full-pipeline.md)
-- upkeep baseline:
-  [commands/maintain.md](docs/research/commands/maintain.md)
+  `research full <topic>` or `research maintain <topic>`
 - Typora compiled source pages derived from `../raw/typora`, starting in
   [sources/typora/README.md](docs/research/sources/typora/README.md)
 - first compiled Typora source pages:

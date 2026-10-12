@@ -91,10 +91,9 @@ Front door to the live `docs/slate-v2` stack.
 8. [2026-04-13-slate-v2-full-no-regression-story-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-13-slate-v2-full-no-regression-story-plan.md)
 9. [pr-description.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/pr-description.md)
 
-## Command Entry
+## Current workflow
 
-- [commands/reconsolidate-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/commands/reconsolidate-roadmap.md)
-  is the command-pack entrypoint
+Use [the maintainer workflow](../development/agent-skills.md) for current Plate work.
 
 ## Reference / Historical Specs
 

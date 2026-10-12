@@ -1,5 +1,6 @@
 ---
-description: Autogoal-backed fork-aware status, planning, review, dashboard, apply, and tracking for syncing Plate UI registry components into downstream custom apps such as Potion. Use when the user asks for `sync-plate-ui`, `sync-plate-ui status`, `sync-plate-ui plan`, `sync-plate-ui review`, `sync-plate-ui dashboard`, `sync-plate-ui apply`, to sync or migrate one Plate UI component from the component changelog, to compare Plate UI registry source with a downstream repo, or to smart-merge local forked Plate UI components.
+description: Sync Plate registry UI into downstream apps with fork-aware comparison, scoped apply and changelog tracking.
+argument-hint: '[status | plan | review | dashboard | apply] <target> [scope]'
 ---
 
 # Sync Plate UI
@@ -18,7 +19,7 @@ that copied and customized Plate UI, such as `../potion`.
 
 This skill is consumer-side only. It reads generated Plate UI changelog JSON;
 it does not create upstream Plate changelog entries. Upstream Plate devs author
-those through the `changeset` skill and
+those through `changeset` and
 `apps/www/src/registry/changelog/entries/*.mdx`.
 
 ## Core Take
@@ -37,32 +38,21 @@ The right model is a three-way sync:
 If the base is unknown, run bootstrap planning and stop. Do not pretend an LLM
 can safely reconstruct fork ownership from vibes.
 
-## Autogoal Dependency
+## File-plan contract
 
-This skill depends on
-[$autogoal](/Users/zbeyens/git/plate/.agents/skills/autogoal/SKILL.md). Load
-`autogoal` before writing target sync state, run artifacts, dashboards, or
-implementation changes.
-
-Default goal template:
-
-```bash
-node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template sync-plate-ui \
-  --title "sync plate ui <target> <scope>"
-```
-
-`autogoal` owns lifecycle, completion, blocked semantics, and final
-`check-complete.mjs`. `sync-plate-ui` owns downstream sync policy, target repo
-mapping, fork classification, hunk decisions, and apply semantics.
+Each run keeps its plan at `<target>/.plate-ui-sync/runs/<date>-<scope>/plan.md`;
+read it and the mode before mutation. The plan lists every scoped row as a
+checkbox that closes with its decision or apply evidence. This skill runs in
+downstream apps, so it depends on no Plate-repo workflow file.
 
 ## Flow Modes
 
 Planning mode is the default. It may read the target repo and write artifacts
 under the target's `.plate-ui-sync/**`, but it must not mutate target source.
 
-Apply mode starts only when a later user message accepts a named plan, dashboard
-payload, component, or row. Then apply only the accepted rows.
+Apply mode needs current user authorization for the named plan, dashboard
+payload, component or rows. Existing authorization is sufficient; do not
+require a later message or reinvocation. Apply only the accepted rows.
 
 Collaborative planning is for policy decisions, such as whether a downstream
 app should keep a local UX fork or follow Plate.
@@ -85,8 +75,8 @@ If the first token is a command, dispatch to that command. Otherwise treat the
 argument as planning scope. Examples:
 
 ```txt
-sync-plate-ui ../potion code-block-node
-sync-plate-ui plan ../potion code-block-node
+sync-plate-ui ../potion code-block
+sync-plate-ui plan ../potion code-block
 sync-plate-ui status ../potion
 sync-plate-ui apply ../potion
 ```
@@ -160,15 +150,18 @@ recommending apply. Prose alone is not enough.
 Plate registry sources to inspect first:
 
 - `apps/www/src/registry/registry-ui.ts`
+- `apps/www/src/registry/registry-components.ts`
 - `apps/www/src/registry/registry-kits.ts`
 - `apps/www/src/registry/registry-examples.ts`
 - `apps/www/src/registry/ui/**`
-- `apps/www/src/registry/components/**`
 - `apps/www/src/registry/hooks/**`
 - `apps/www/src/registry/lib/**`
 - `apps/www/src/registry/app/**`
 
 Do not run `build:registry`. Do not edit generated registry output.
+
+Preserve the target's supported list family, including classic lists. Changing
+its persisted model or renderer family needs separate migration authority.
 
 ## Target Mapping
 
@@ -185,7 +178,7 @@ For Potion-like targets, expect:
 
 - copied Plate UI under `src/registry/**`
 - app-level wrappers under `src/components/**`
-- pinned `@platejs/*` and `platejs` versions
+- pinned `platejs` and `@platejs/*` feature package versions
 - local import aliases that differ from Plate docs
 - existing sync scripts that may be stale
 
@@ -245,9 +238,8 @@ Planning mode may:
 - read Plate source
 - read target source
 - create or update target `.plate-ui-sync/**` artifacts
-- write a plan under `.plate-ui-sync/runs/**`
+- write and update the run plan under `.plate-ui-sync/runs/**`
 - write dashboard JSON/Markdown
-- update this goal plan
 
 Planning mode must not:
 
@@ -332,8 +324,8 @@ Copied apply payload:
 $sync-plate-ui apply ../potion
 
 Rows:
-- code-block-node/4989/language-label: Pull note: safe upstream-only render hunk
-- code-block-node/4989/toolbar-style: Keep Fork note: Potion toolbar owns layout
+- code-block/4989/language-label: Pull note: safe upstream-only render hunk
+- code-block/4989/toolbar-style: Keep Fork note: Potion toolbar owns layout
 
 Questions:
 - ai-menu/streaming: Should Potion keep its custom stream controls?
@@ -429,7 +421,7 @@ Potion is a good stress target because it contains copied registry files under
 packages. Its existing `sync:plate` and `sync:potion-ui` scripts must be read
 before use; do not assume they sync Plate UI into Potion.
 
-For `../potion code-block-node`, inspect at minimum:
+For `../potion code-block`, inspect at minimum:
 
 - `../potion/components.json`
 - `../potion/package.json`
@@ -438,7 +430,8 @@ For `../potion code-block-node`, inspect at minimum:
 - related Potion editor imports
 - Plate `apps/www/src/registry/ui/code-block-node.tsx`
 - Plate `apps/www/src/registry/ui/code-block-node-static.tsx`
-- component changelog entries for `code-block-node` and related components
+- component changelog entries for `code-block-node`, `code-block-node-static`
+  and their related registry items
 
 Expected result is a plan that says which hunks to pull, which Potion hunks to
 keep, and what verification Potion owns.
@@ -462,7 +455,7 @@ agent-native sync and fall back to source diffs plus explicit user acceptance.
 
 Resolve these before broad planning:
 
-- `autogoal` loaded and active goal checked or created.
+- Scope and plan read.
 - Target repo path resolved.
 - Plate source ref recorded, or current checkout recorded as uncommitted source.
 - Target `components.json` and package manager read.
@@ -483,17 +476,18 @@ Planning completion requires:
 - every row has a decision
 - real questions are isolated
 - dashboard artifacts written when requested
-- final handoff asks the user to accept rows before apply
-- `check-complete.mjs` passes for the active goal plan
+- final handoff identifies pending row decisions; existing apply authority carries through readiness
+- the run plan has no unchecked row without a recorded blocker
 
 Apply completion requires:
 
 - accepted rows revalidated before mutation
 - target source/status/fork ledgers updated only for accepted rows
-- target-owned verification command run or blocked with evidence
+- target-owned typecheck, lint and test run, or blocked with evidence
+- browser proof captured whenever an accepted row changes a visible target route
 - package manager and cwd named for every command
 - remaining open decisions recorded
-- `check-complete.mjs` passes for the active goal plan
+- the run plan has no unchecked accepted row
 
 ## Final Output
 
@@ -512,7 +506,7 @@ Dashboard: <path or N/A>
 | smart-merge | ... |
 | needs-question | ... |
 
-Next: review the plan, then invoke `sync-plate-ui apply <target>` with accepted rows.
+Next: review the plan; accepted rows apply under the existing apply authority without a second invocation.
 ```
 
 Apply output:

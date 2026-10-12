@@ -6,6 +6,12 @@ on:
       - main
       - next
     paths:
+      - '.agents/**'
+      - '.claude/**'
+      - '.codex/**'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'skills-lock.json'
       - 'packages/**'
       - 'tooling/**'
       - 'package.json'
@@ -27,6 +33,12 @@ on:
       - synchronize
       - reopened
     paths:
+      - '.agents/**'
+      - '.claude/**'
+      - '.codex/**'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'skills-lock.json'
       - 'packages/**'
       - 'tooling/**'
       - 'package.json'
@@ -92,6 +104,15 @@ jobs:
       - name: 📥 Monorepo install
         if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
         uses: ./.github/actions/pnpm-install
+
+      - name: Check generated agent workflow drift
+        if: ${{ env.GENERATED_RELEASE_PR != 'true' }}
+        run: |
+          if [[ -n "$(git status --porcelain --untracked-files=all -- AGENTS.md CLAUDE.md .agents .claude/skills .claude/settings.json .codex/config.toml skills-lock.json)" ]]; then
+            git status --short -- AGENTS.md CLAUDE.md .agents .claude/skills .claude/settings.json .codex/config.toml skills-lock.json
+            echo "Workflow generation changed tracked or untracked files. Run pnpm prepare and commit the generated output."
+            exit 1
+          fi
 
       - name: ♻️ Restore packages cache
         if: ${{ env.GENERATED_RELEASE_PR != 'true' }}

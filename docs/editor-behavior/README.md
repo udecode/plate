@@ -19,7 +19,7 @@ Use it to answer three different questions:
     GitHub, and Milkdown as routing hints, not governing winners
 - If you want to resume or operate this lane without re-reading everything,
   start with
-  [commands/README.md](docs/editor-behavior/commands/README.md).
+  [the maintainer workflow](../development/agent-skills.md).
 
 ## File Guide
 
@@ -90,10 +90,9 @@ Use it to answer three different questions:
   [master-roadmap.md](docs/editor-behavior/master-roadmap.md).
   This cleanup pass is tracked in
   [2026-04-03-editor-behavior-doc-structure.md](docs/plans/2026-04-03-editor-behavior-doc-structure.md)
-- operator commands live under
-  [commands](docs/editor-behavior/commands)
-  Use this as the resume surface for reconsolidation, evidence refresh,
-  re-interview, re-planning, and batch launch.
+- Agent routing lives in [the maintainer workflow](../development/agent-skills.md). Use `research` for evidence,
+  the Plan playbook for sequencing, the Build playbook for authorized work
+  and `verify` for proof.
 
 - [docs/research](docs/research)
   Compiled external-reference research.
@@ -120,12 +119,12 @@ Use it to answer three different questions:
 ### If you want the current release gate
 
 1. [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)
-2. [commands/README.md](docs/editor-behavior/commands/README.md)
+2. [the maintainer workflow](../development/agent-skills.md)
 3. [2026-04-02-editor-behavior-major-execution.md](docs/plans/2026-04-02-editor-behavior-major-execution.md) only when you need the historical execution trail
 
 ### If you want to resume or maintain the lane
 
-1. [commands/README.md](docs/editor-behavior/commands/README.md)
+1. [the maintainer workflow](../development/agent-skills.md)
 2. [master-roadmap.md](docs/editor-behavior/master-roadmap.md)
 3. [markdown-parity-matrix.md](docs/editor-behavior/markdown-parity-matrix.md)
 4. [2026-04-02-editor-behavior-major-execution.md](docs/plans/2026-04-02-editor-behavior-major-execution.md) when you need batch history
