@@ -4,6 +4,7 @@ import {
   markdownToAstProcessor,
   markdownToSlateNodes,
 } from './deserializeMd';
+import { serializeMd } from '../serializer/serializeMd';
 
 describe('deserializeMd', () => {
   it('falls back to the safe markdown path for incomplete mdx tails', () => {
@@ -34,6 +35,79 @@ describe('deserializeMd', () => {
       },
     ]);
     expect(onError).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the rest of the document after an email autolink with remark-mdx', () => {
+    const editor = createTestEditor();
+    const onError = mock();
+    const markdown = [
+      '## Alert',
+      '- User: <quinn.martin@mindflow.io>',
+      '',
+      '## MITRE ATT&CK',
+      '| Tactic | Technique ID |',
+      '| --- | --- |',
+      '| Initial Access | T1078.004 |',
+      '',
+      '## Analysis Update',
+      '**Judgment:** HIGH',
+    ].join('\n');
+
+    const value = deserializeMd(editor, markdown, {
+      onError: onError as any,
+    });
+
+    expect(onError).not.toHaveBeenCalled();
+    expect(value.map((node) => node.type)).toEqual([
+      'h2',
+      'p',
+      'h2',
+      'table',
+      'h2',
+      'p',
+    ]);
+    expect(value[1].children).toEqual([
+      { text: 'User: ' },
+      {
+        children: [{ text: 'quinn.martin@mindflow.io' }],
+        type: 'a',
+        url: 'mailto:quinn.martin@mindflow.io',
+      },
+    ]);
+  });
+
+  it('parses autolinks with remark-mdx the same way as without it', () => {
+    const editor = createTestEditor();
+    const markdown =
+      'Mail <quinn.martin@mindflow.io>, see <https://example.com/_a_(b)?x=1&y=2> or <mailto:a@b.co>, not `<c@d.co>`';
+
+    expect(deserializeMd(editor, markdown)).toEqual(
+      deserializeMd(editor, markdown, { withoutMdx: true })
+    );
+  });
+
+  it('round-trips links that serialize as autolinks with remark-mdx', () => {
+    const editor = createTestEditor();
+    const value = [
+      {
+        children: [
+          { text: 'Contact ' },
+          {
+            children: [{ text: 'quinn.martin@mindflow.io' }],
+            type: 'a',
+            url: 'mailto:quinn.martin@mindflow.io',
+          },
+          { text: ' today' },
+        ],
+        type: 'p',
+      },
+      { children: [{ text: 'after' }], type: 'p' },
+    ];
+
+    const markdown = serializeMd(editor, { value: value as any });
+
+    expect(markdown).toContain('<quinn.martin@mindflow.io>');
+    expect(deserializeMd(editor, markdown)).toEqual(value);
   });
 
   it('wraps top-level text results from custom rules in paragraphs', () => {

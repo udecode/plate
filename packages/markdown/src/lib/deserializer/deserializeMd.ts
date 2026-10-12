@@ -17,8 +17,10 @@ import type { AllowNodeConfig } from '../MarkdownPlugin';
 import type { MdRules, PlateType } from '../types';
 
 import { mdastToSlate } from './mdastToSlate';
+import { hasRemarkMdx } from '../utils/getRemarkPluginsWithoutMdx';
 import {
   type ParseMarkdownBlocksOptions,
+  autolinksToLinks,
   htmlToJsx,
   parseMarkdownBlocks,
 } from './utils';
@@ -60,9 +62,15 @@ export const markdownToSlateNodes = (
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ): Descendant[] => {
-  const processedData = options?.withoutMdx ? data : htmlToJsx(data);
-
   const mergedOptions = getMergedOptionsDeserialize(editor, options);
+
+  const processedData = options?.withoutMdx
+    ? data
+    : htmlToJsx(
+        hasRemarkMdx(mergedOptions.remarkPlugins)
+          ? autolinksToLinks(data)
+          : data
+      );
 
   const toSlateProcessor = unified()
     .use(remarkParse)
