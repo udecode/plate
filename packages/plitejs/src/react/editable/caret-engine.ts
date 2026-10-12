@@ -329,7 +329,7 @@ const restoreSelectionIfMovementEnteredBoundary = ({
   });
 };
 
-const getPointPastBoundarySkip = ({
+export const getPointPastBoundarySkip = ({
   coverage,
   editor,
   point,

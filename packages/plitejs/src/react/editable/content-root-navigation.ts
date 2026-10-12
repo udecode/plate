@@ -36,6 +36,7 @@ import {
   type PliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
+import { getPointPastBoundarySkip } from './caret-engine';
 import {
   getDocumentBoundaryNavigationTarget,
   getExitBoundaryPoint,
@@ -1458,6 +1459,41 @@ const moveMarkupSelection = ({
       };
     }
   }
+  if (
+    !target.fragmentId &&
+    !target.owner &&
+    getPlitePointRoot(target.point, root) === root
+  ) {
+    const coverage = getMountedEditableDOMRuntime(editor)?.domCoverage;
+    const boundary = coverage?.getBoundaryForPoint(target.point);
+
+    if (boundary?.selectionPolicy === 'skip') {
+      let point = coverage?.getPointOutsideBoundary(boundary, target.point, {
+        reverse: !forward,
+      });
+      if (
+        point &&
+        extend &&
+        action.kind === 'move' &&
+        (action.axis === 'horizontal' || action.axis === 'word')
+      ) {
+        point = getPointPastBoundarySkip({
+          coverage,
+          editor,
+          point,
+          reverse: !forward,
+          unit: action.axis === 'word' ? 'word' : 'character',
+        });
+      }
+      target = point
+        ? {
+            point: rootPlitePoint(point, root),
+            affinity: forward ? 'forward' : 'backward',
+          }
+        : initial.focus;
+    }
+  }
+
   const projected = createPliteViewSelection(graph, {
     anchor: extend ? initial.anchor : target,
     focus: target,

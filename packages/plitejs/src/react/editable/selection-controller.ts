@@ -615,6 +615,13 @@ export const setEditableModelSelectionPreference = ({
   inputController.preferModelSelectionForInputRef.current =
     preferModelSelection;
   inputController.state.selectionSource = nextSelectionSource;
+  if (
+    preferModelSelection &&
+    nextSelectionSource === 'app-owned' &&
+    inputController.state.selectionChangeOrigin === 'native-user'
+  ) {
+    inputController.state.selectionChangeOrigin = null;
+  }
   inputController.state.modelSelectionPreference = {
     preferModelSelection,
     reason: nextReason,
