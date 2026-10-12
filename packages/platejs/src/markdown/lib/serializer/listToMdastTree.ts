@@ -280,7 +280,6 @@ export const listToMdastTree = (
   const paragraphType = options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
   const audit = getListAudit(options);
 
-  // Normal list processing
   const root: MdList = {
     children: [],
     ordered: firstNode.listType === 'numbered',
@@ -289,7 +288,6 @@ export const listToMdastTree = (
     type: 'list',
   };
 
-  // Stack to track parent nodes at different indentation levels
   const indentStack: Array<{
     depth: number;
     indent: number;
@@ -307,6 +305,35 @@ export const listToMdastTree = (
   ];
 
   audit.firstItems.set(root, firstNode);
+
+  const openNestedList = (
+    parent: MdListItem,
+    frame: { depth: number; list: MdList },
+    parentIndent: number,
+    next: Element | undefined
+  ) => {
+    if (!next || !isListItemNode(next) || (next.indent ?? 1) <= parentIndent) {
+      return;
+    }
+    const nestedList: MdList = {
+      children: [],
+      ordered: next.listType === 'numbered',
+      spread: options.spread ?? false,
+      start: getListStart(next, options),
+      type: 'list',
+    };
+
+    parent.children.push(nestedList);
+    audit.firstItems.set(nestedList, next);
+    audit.countsAs.set(nestedList, frame.list);
+    indentStack.push({
+      depth: frame.depth + 1,
+      indent: next.indent ?? 1,
+      item: next,
+      list: nestedList,
+      parent,
+    });
+  };
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
@@ -338,36 +365,12 @@ export const listToMdastTree = (
         )
       );
       owner.spread = true;
-      if (
-        nextNode &&
-        isListItemNode(nextNode) &&
-        (nextNode.indent ?? 1) > ownerIndent
-      ) {
-        const nestedList: MdList = {
-          children: [],
-          ordered: nextNode.listType === 'numbered',
-          spread: options.spread ?? false,
-          start: getListStart(nextNode, options),
-          type: 'list',
-        };
-
-        owner.children.push(nestedList);
-        audit.firstItems.set(nestedList, nextNode);
-        audit.countsAs.set(nestedList, frame.list);
-        indentStack.push({
-          depth: frame.depth + 1,
-          indent: nextNode.indent ?? 1,
-          item: nextNode,
-          list: nestedList,
-          parent: owner,
-        });
-      }
+      openNestedList(owner, frame, ownerIndent, nextNode);
       continue;
     }
 
     const currentIndent = node.indent ?? 1;
 
-    // Find the appropriate parent list for the current indentation level
     while (
       indentStack.length > 1 &&
       (indentStack.at(-1) ?? failInvariant('Expected value to be defined'))
@@ -400,7 +403,6 @@ export const listToMdastTree = (
         type: 'list',
       };
 
-      // Attach sibling list under the same parent item
       (
         stackTop.parent ?? failInvariant('Expected value to be defined')
       ).children.push(siblingList);
@@ -430,7 +432,6 @@ export const listToMdastTree = (
       );
       content = [encodeMarkdownParagraph(node, options)];
     } else {
-      // Another block is the item's content; both owners' claims count.
       setMarkdownStructureKeys(options, node, LIST_KEYS);
       const encoded = encodeMdastNode(node, options);
 
@@ -459,7 +460,6 @@ export const listToMdastTree = (
       }
     }
 
-    // Create the current list item
     const listItem: MdListItem = {
       checked: null,
       children: content,
@@ -467,7 +467,6 @@ export const listToMdastTree = (
       type: 'listItem',
     };
 
-    // Add checked property for todo lists
     if (
       node.listType === 'task' &&
       node.checked !== undefined &&
@@ -476,39 +475,12 @@ export const listToMdastTree = (
       listItem.checked = node.checked;
     }
 
-    // Add the list item to the appropriate parent list
     stackTop.list.children.push(listItem);
     if (typeof node.listId === 'string') {
       audit.items.push({ id: node.listId, list: stackTop.list, node });
     }
 
-    // Check if the next node has a higher indentation level
-    if (
-      nextNode &&
-      isListItemNode(nextNode) &&
-      (nextNode.indent ?? 1) > currentIndent
-    ) {
-      // Create a new nested list for the next indentation level
-      const nestedList: MdList = {
-        children: [],
-        ordered: nextNode.listType === 'numbered',
-        spread: options.spread ?? false,
-        start: getListStart(nextNode, options),
-        type: 'list',
-      };
-
-      listItem.children.push(nestedList);
-      audit.firstItems.set(nestedList, nextNode);
-      audit.countsAs.set(nestedList, stackTop.list);
-
-      indentStack.push({
-        depth: stackTop.depth + 1,
-        indent: nextNode.indent ?? 1,
-        item: nextNode,
-        list: nestedList,
-        parent: listItem,
-      });
-    }
+    openNestedList(listItem, stackTop, currentIndent, nextNode);
   }
 
   return root;

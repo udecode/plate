@@ -6,6 +6,7 @@ import {
   PLUGINS,
 } from '../../../core';
 import type { ListElement } from '../../../features/list';
+import { getListIndent } from '../../../features/list/lib/listIndex.internal';
 import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
 import type { MarkdownEncoded } from '../internal/markdownMappings';
 import type { MdList, MdRootContent } from '../mdast';
@@ -143,17 +144,14 @@ const isListContinuation = (
     return false;
   }
   const ownerIndent = node.indent - 1;
-  const owner = run.findLast((block) => indentOf(block) <= ownerIndent);
+  const owner = run.findLast((block) => getListIndent(block) <= ownerIndent);
 
   return (
     owner !== undefined &&
-    indentOf(owner) === ownerIndent &&
+    getListIndent(owner) === ownerIndent &&
     owner.listType !== undefined
   );
 };
-
-const indentOf = (block: Element) =>
-  typeof block.indent === 'number' ? block.indent : 1;
 
 // List items are the block types Markdown list decoding rebuilds.
 const isListElement = (

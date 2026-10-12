@@ -34,6 +34,7 @@ import type { DocxComment, DocxDiagnostic } from '../../internal/types';
 import { addDocxComments, prepareDocxComments } from './comments';
 import { DOCX_STATIC_COMPONENTS } from './docxStaticComponents';
 import { exportHtmlToDocx } from './exportHtmlToDocx.internal';
+import { toWordLevelRules } from './internal/docx-document';
 import type { Margins, PageSize } from './internal/types';
 import { checkDocxOutput, prepareDocxOutput } from './outputSafety';
 import {
@@ -267,22 +268,8 @@ const nativeOnlyDiagnostics = (
 const isNumberedOrTask = (node: Element) =>
   node.listType === 'numbered' || node.listType === 'task';
 
-// Markdown and AI output give bullets no list id, and a Markdown bullet list
-// never shares a list with a numbered one.
 const canShareListWithOtherKind = (node: Element) =>
   node.listType !== 'bulleted' || typeof node.listId === 'string';
-
-const ownValue = (value: unknown, key: string): unknown =>
-  typeof value === 'object' && value !== null && Object.hasOwn(value, key)
-    ? Reflect.get(value, key)
-    : undefined;
-
-// The start a level gets from these listLevels, 1 by default.
-const levelStart = (listLevels: unknown, indent: number) => {
-  const start = ownValue(ownValue(listLevels, String(indent)), 'start');
-
-  return typeof start === 'number' ? start : 1;
-};
 
 const listDiagnostics = (
   document: EditorDocumentValue
@@ -351,7 +338,9 @@ const listDiagnostics = (
           }
           if (
             typeof node.listStart === 'number' &&
-            node.listStart !== levelStart(firstLevels.get(listId), indent)
+            node.listStart !==
+              (toWordLevelRules(firstLevels.get(listId)).get(indent - 1)
+                ?.start ?? 1)
           ) {
             warn(
               'list-start',

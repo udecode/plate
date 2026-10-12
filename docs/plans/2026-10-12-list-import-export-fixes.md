@@ -1,8 +1,8 @@
 # List and import/export fixes
 
-Status: executed: PR open against next from fix/list-import-export; waiting on review
+Status: executed: babysat; waiting on your merge, with CI red only where next is red
 Playbook: bug-fix
-Page: https://claude.ai/artifact/Y7htsf8d4tGAqrG1T24mWJ
+Page: https://claude.ai/artifact/PpUHyCPF1tbBMYsZSbyhrR
 
 The owner asked to prepare fixes, through the repository's pstack process, for the defects that a browser regression of the list refactor and the import/export work confirmed, then widened the plan to zbeyens's six list defects too. The regression ran `docs/plans/artifacts/2026-10-11-list-regression/specs/final.spec.ts` twice in Chromium at `5fc246c291`, with 24 behaviors passing and 13 defect tests failing. Panel round 1 on this plan found a new defect, D14, and moved D06 and D08 back to zbeyens's plan, so this plan fixes nine. D09 and D10, Tab and Outdent on list items, stay with zbeyens. Scope says why.
 
@@ -10,11 +10,11 @@ The owner asked to prepare fixes, through the repository's pstack process, for t
 
 ### What will change?
 
-Built, not committed, waiting for your review. Word files keep bullets, numbered headings and what's inside table cells. Word files with empty footnotes open, and false warnings stop. Tab and Outdent on list items stay with zbeyens.
+Word files keep bullets, numbered headings and what's inside table cells. Word files with empty footnotes open, and false warnings stop. The babysit pushed three small cleanups; the PR is ready to merge.
 
 ### What could go wrong?
 
-No warning when a list starts with a bullet that has other level settings. The toolbar's Outdent on a top list item still misbehaves until zbeyens decides. Big-table save speed is unmeasured.
+CI stays red until next's own failures are fixed. No warning when a list starts with a bullet that has other level settings. The toolbar's Outdent on a top list item still misbehaves. Big-table save speed is unmeasured.
 
 ## Teach
 
@@ -144,7 +144,7 @@ const readPlateListItem = (block: VNodeType) => {}; // { item, list } | undefine
 // quote's 284 twips.
 ```
 
-Diagnostics. Bullets join the kind check, which compares numbered against unordered items as the writer's `openPlateList` does, so a bullet and a number at one level of one list report `list-structure`, as `docx.mdx:225-227` already promises, and `lossPolicy: 'reject'` fails. Bullets and to-dos share an unordered level; export puts every to-do on one document-wide to-do numbering, a limit Open work already names, so a to-do beside a bullet reports nothing. A bullet joins only when it has a string `listId`. Markdown and AI output carry none, and a Markdown bullet list never shares a list with a numbered one, so an id-less bullet beside an id-less number stays unreported, as today. Numbered and task items keep today's check, id-less ones included, because a numbered item and a to-do with no id can be one Markdown list or two (D08 stays with zbeyens). The start and level-rule checks stay on numbered and task items, because a bullet shows no number. The writer takes a list's Word definition from its first item of any kind, so a bullet that leads its list gives Word its level rules and starts without a warning; the diff panel's second round showed that mirroring the writer from the document misses id-less bullets and reports images that open no Word list, so that limit is Open work.
+Diagnostics. Bullets join the kind check, which compares numbered against unordered items as the writer's `openPlateList` does, so a bullet and a number at one level of one list report `list-structure`, as `docx.mdx:225-227` already promises, and `lossPolicy: 'reject'` fails. Bullets and to-dos share an unordered level; export puts every to-do on one document-wide to-do numbering, a limit Open work already names, so a to-do beside a bullet reports nothing. A bullet joins only when it has a string `listId`, so an id-less bullet beside an id-less number stays unreported, as today. Since `6fa1169c5e` the Markdown decoder gives every list an id, and Open work asks whether bullets without one still need this exemption. Numbered and task items keep today's check, id-less ones included, because a numbered item and a to-do with no id can be one Markdown list or two (D08 stays with zbeyens). The start and level-rule checks stay on numbered and task items, because a bullet shows no number. The writer takes a list's Word definition from its first item of any kind, so a bullet that leads its list gives Word its level rules and starts without a warning; the diff panel's second round showed that mirroring the writer from the document misses id-less bullets and reports images that open no Word list, so that limit is Open work.
 
 HTML import. Before the list decoder's first pass, `prepareDocument` moves a `(ul|ol)[data-list-id]` holding one `li` out of its parent when it is that parent's only child apart from whitespace and the parent is a heading, a `blockquote`, a `pre` or a `code` inside a `pre`. When the parent is a `code` inside a `pre`, it also moves out of that `pre`, and it never moves further. Any other parent, such as a table cell, or any other child beside the list, such as a rule or an image, leaves the HTML as it is. So `<h2><ol><li>Title</li></ol></h2>` reads as `<ol><li><h2>Title</h2></li></ol>`, and the code block's `<pre><code><ol><li>` ends outside `pre`. The decoder already turns both results into a listed heading and a listed code block; one move alone leaves the code block's list behind (`proof/r2-code-hoist-a1.log`). Moving further would take a quote's one numbered heading and number the quote instead (`proof/r3-quote-hoist-a1.log`). The semantic encoder's output and foreign HTML carry no such inner wrapper, so they are untouched.
 
@@ -205,6 +205,9 @@ Each row says what a user or an app sees change, what stays as it is, and which 
 | Speed of saving big tables to Word | Measured on a busy machine: the content comes out right, but the timings are too noisy to trust (look) | Measure again on a quiet machine before release | measure table export again | small |
 | Where this plan's page lives | Its own page | On the Word documents page | documents page | detail |
 | Committing | Left uncommitted for you to review | Commit each fix | commit fixes | detail |
+| Merging while CI is red | Call it ready, since every red check fails on next too, and rerun nothing (look) | Hold the PR until next is green | wait for green next | small |
+| This plan's page link | A new page, https://claude.ai/artifact/PpUHyCPF1tbBMYsZSbyhrR, since another account owns the old one | Keep linking the old page, https://claude.ai/artifact/Y7htsf8d4tGAqrG1T24mWJ | old page link | detail |
+| Where the start number warning gets a level's start | From the same code the Word writer uses, so the two cannot disagree | Keep the warning's own reader | own start reader | detail |
 
 ## Steps
 
@@ -237,6 +240,8 @@ Execution authority: the owner's go on 2026-10-12 to move to implementation, wit
 - [x] Run the panel on the build's diff (reviews: api-build), then rerun every proof its fixes touch. Proof: its `seats` row and finding rows. Closed by `docs/plans/artifacts/2026-10-12-list-import-export-fixes/panel/diff3/opus.md` after rounds `diff1` and `diff2`, and `docs/plans/artifacts/2026-10-12-list-import-export-fixes/proof/final-after-a7.log`.
 - [x] Run the decision-trail review, because this run spans a session restart. Proof: its Attention section in the Close. Closed by `docs/plans/artifacts/2026-10-12-list-import-export-fixes/trail/sol.md`.
 - [x] Hand back uncommitted with the page; the owner commits. Closed by https://claude.ai/artifact/Y7htsf8d4tGAqrG1T24mWJ.
+- [x] For the babysit, compare every red CI check on the PR with the same check on next at `6fa1169c5e`, test by test. Proof: `docs/plans/artifacts/2026-10-12-list-import-export-fixes/ci/next-ci.sum`, `docs/plans/artifacts/2026-10-12-list-import-export-fixes/ci/pr-ci.sum`, `docs/plans/artifacts/2026-10-12-list-import-export-fixes/ci/next-plite.fails`, `docs/plans/artifacts/2026-10-12-list-import-export-fixes/ci/pr-plite.fails` and `docs/plans/artifacts/2026-10-12-list-import-export-fixes/proof/migrate-list-identity-pr-a1.log`.
+- [x] For the babysit, run `pstack:thermo-nuclear-code-quality-review` on the PR diff and repair what it finds at its owner, with behavior unchanged. Proof: `docs/plans/artifacts/2026-10-12-list-import-export-fixes/proof/focused-specs-base-a1.log` and `docs/plans/artifacts/2026-10-12-list-import-export-fixes/proof/focused-specs-repair-a3.log` (463 package and 57 www tests on both), `docs/plans/artifacts/2026-10-12-list-import-export-fixes/proof/typecheck-platejs-repair-a3.log`, `docs/plans/artifacts/2026-10-12-list-import-export-fixes/proof/entrypoint-check-repair-a3.log`, `docs/plans/artifacts/2026-10-12-list-import-export-fixes/proof/lint-task-repair-a1.log` and `docs/plans/artifacts/2026-10-12-list-import-export-fixes/comment-sicko/babysit-reply.md`.
 
 ## Completion Gates
 
@@ -272,6 +277,30 @@ Execution authority: the owner's go on 2026-10-12 to move to implementation, wit
 - A check that fails when new code copies logic an existing function owns, such as a duplicate-code gate with a baseline, for the rules table's rule-only row on calling the existing owner. This run's repeat, the listed DOCX branch copying `buildList`'s to-do numbering, is fixed by one owner, `itemNumberingId`. owner: natamox. stop: the owner takes or drops a repo-wide duplicate-code gate.
 - D10: toolbar or block menu Outdent on a top-level list item moves it left of its list. D09, Tab and Shift+Tab with several list items selected, passes on the latest next after zbeyens's own list commit. owner: zbeyens. stop: his confirmation, or his list plan's phase 2.
 - Tab and Shift+Tab with several paragraphs selected and no list item still do nothing, because Indent's handlers read one block. owner: zbeyens. stop: his list plan's phase 2, which moves those handlers.
+- The DOCX writer emits a paragraph's properties in the order its attribute keys were added (`buildParagraphProperties` in `xml-builder.ts`), so the DOCX converter's `paragraph` helper spreads a block's own keys first to keep `w:pStyle` ahead of `w:numPr`. A writer that emits `w:pPr` children in the schema's order would drop that trick for every caller, but it can change the bytes of existing exports, so it needs its own byte comparison. owner: natamox. stop: the next change to Word paragraph properties, or 2026-12-31.
+- `canShareListWithOtherKind` in `exportDocx.tsx` keeps bullets with no list id out of the kind check, for the reason that Markdown and AI bullets carry no id. Since `6fa1169c5e` the Markdown decoder gives every list an id, so the babysit deleted that comment. Whether bullets with no id still need the exemption, or the guard can go, needs a test naming what still makes them. owner: natamox. stop: the next change to Word list warnings, or 2026-12-31.
+- The Markdown serializer copies the decoder's rule that an item's later blocks sit at its indent plus one in two places, `isListContinuation` in `convertNodesSerialize.ts` and the `indentWritten` check in `listToMdastTree.ts`. One helper owned by the list decoder would let both read it. owner: natamox. stop: the next change to Markdown list encoding, or 2026-12-31.
+
+## Babysit
+
+zbeyens asked to babysit PR 5160 to merge-ready. The pass ran in a detached worktree at the PR head, `/Users/zbeyens/git/plate-2-pr5160`, and pushed its repair to `fix/list-import-export`.
+
+The change should exist. Word export dropped table cell content with no warning, and Word files with empty footnotes would not open. The strongest cut on the table was wrapping the whole block in the saved HTML, which would delete the HTML hoist and the converter's listed-block branch. It stays a Defaults row, because the live editor's `BlockList` draws the same inner wrapper for numbered and to-do items, so the whole-block shape would split saved output from the editor.
+
+Every red check on the PR is also red on next at `6fa1169c5e` with the same failing tests, lint lines and browser cases. The one test only the PR failed, `migrateListIdentity` keeping the numbers of 500 random documents, timed out at 15 s in CI; its file passes in 1.8 s at the PR head, and the PR does not touch the list numbering it runs. No rerun, since CI cannot go green while next is red.
+
+Review findings from `pstack:thermo-nuclear-code-quality-review`:
+
+| Finding | Outcome |
+| --- | --- |
+| The start warning in `listDiagnostics` read `listLevels` through its own `unknown` guard, a second copy of how the Word writer reads a level's start | Fixed. The writer's `readLevelRules` now parses through `toWordLevelRules`, and the warning calls it too, so both read a start the same way. The first try used the list feature's `isListLevels`, and the `docx-export` partition's typecheck refuses that import |
+| `listToMdastTree` opened a nested list with the same 20 lines in two places | Fixed with one `openNestedList` helper |
+| `convertNodesSerialize` added `indentOf`, a copy of the list feature's `getListIndent`, which the Markdown partition already imports | Fixed. It calls `getListIndent` |
+| The converter's `paragraph` helper spreads a block's own keys twice to keep `w:pStyle` first | Kept. The writer orders `w:pPr` by key order, an older limit, and Open work tracks a writer that follows the schema order |
+| `drawsBulletOnRoot` names toggles and images inside the list kit | Kept. The wrapper and the root marker share this one predicate, and the whole-block Defaults row and Open work cover the cause |
+| The HTML hoist and the converter's listed-block branch exist only for the inner wrapper | Kept. It is the cost of matching the live editor's markup, as the verdict above says |
+
+No file crosses 1,000 lines because of this PR, and the files already over it shrank or grew by under 80 lines.
 
 ## Close
 
