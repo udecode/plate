@@ -373,11 +373,22 @@ const buildUnderline = (type = 'single'): XMLBuilderType =>
     .att('@w', 'val', type)
     .up();
 
-const buildLineBreak = (type = 'textWrapping'): XMLBuilderType =>
-  fragment({ namespaceAlias: { w: namespaces.w } })
-    .ele('@w', 'br')
-    .att('@w', 'type', type)
-    .up();
+/**
+ * Without a `type`, `w:br` is the line break Word itself writes for Shift+Enter. Although the spec makes
+ * `textWrapping` the default, Word for Mac displays a break written with that explicit type as a labelled text
+ * wrapping break instead of a plain line break.
+ */
+const buildLineBreak = (type?: string): XMLBuilderType => {
+  const lineBreakFragment = fragment({
+    namespaceAlias: { w: namespaces.w },
+  }).ele('@w', 'br');
+
+  if (type) {
+    lineBreakFragment.att('@w', 'type', type);
+  }
+
+  return lineBreakFragment.up();
+};
 
 const buildBorder = (
   borderSide = 'top',
