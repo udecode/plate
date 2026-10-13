@@ -87,13 +87,17 @@ export const customMdxDeserialize = (
     getPluginKey(options.editor!, customJsxElementKey as any) ?? mdastNode.name;
 
   if (key) {
-    const nodeParserDeserialize = getDeserializerByKey(
-      mdastToPlate(options.editor!, key as any),
-      options
-    );
+    const ruleKey = mdastToPlate(options.editor!, key as any);
+    const nodeParserDeserialize = getDeserializerByKey(ruleKey, options);
 
-    if (nodeParserDeserialize)
+    if (nodeParserDeserialize) {
+      // disallowedNodes names rule keys, such as `a` or `underline`, which an
+      // mdx node's type does not reveal. Allowlists are not checked here, since
+      // rule keys like `br` and `span` have no plugin a user would list.
+      if (options.disallowedNodes?.includes(ruleKey)) return [];
+
       return nodeParserDeserialize(mdastNode, deco, options) as any;
+    }
   } else {
     console.warn(
       'This MDX node does not have a parser for deserialization',

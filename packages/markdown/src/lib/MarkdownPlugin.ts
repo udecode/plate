@@ -27,12 +27,16 @@ export type MarkdownConfig = PluginConfig<
   {
     /**
      * Configuration for allowed node types. Cannot be combined with
-     * disallowedNodes.
+     * disallowedNodes. With remark-mdx, `mdxJsxTextElement` admits inline HTML
+     * and MDX elements and `mdxJsxFlowElement` admits block ones. An admitted
+     * element with a deserialize rule converts without its rule key listed.
      */
     allowedNodes: PlateType[] | null;
     /**
      * Configuration for disallowed node types. Cannot be combined with
-     * allowedNodes.
+     * allowedNodes. With remark-mdx, this also removes HTML and MDX elements by
+     * the key of their deserialize rule, such as `a` for `<a href>`,
+     * `underline` for `<u>` or `br` for `<br>`.
      *
      * @default null
      */
