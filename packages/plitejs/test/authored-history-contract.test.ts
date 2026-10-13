@@ -8,7 +8,7 @@ import {
   schema,
 } from 'plitejs';
 import { authored } from 'plitejs/authored';
-import { history } from 'plitejs/history';
+import { history, History } from 'plitejs/history';
 
 const paragraph = (text: string) => ({
   type: 'paragraph',
@@ -17,6 +17,41 @@ const paragraph = (text: string) => ({
 const at = (offset: number, block = 0) => ({ path: [block, 0], offset });
 
 describe('authored local history', () => {
+  it('restores distinct node identities through grouped undo and redo without persisting keys', () => {
+    const editor = createEditor({
+      plugins: [history(), authored({ authorId: 'alice' })],
+      initialValue: [paragraph('Same'), paragraph('Same'), paragraph('Same')],
+    });
+    const keys = [0, 1, 2].map((index) => editor.key([index]));
+    editor.update.nodes.remove({ at: [1] });
+    editor.update((tx) => {
+      tx.history.merge();
+      tx.nodes.remove({ at: [0] });
+    });
+    assert.equal(editor.read.history().undos.length, 1);
+    for (const key of keys) {
+      assert.equal(
+        JSON.stringify(History.toJSON(editor)).includes(key!),
+        false
+      );
+    }
+    for (let cycle = 0; cycle < 2; cycle++) {
+      assert.equal(editor.api.history.undo().status, 'applied');
+      assert.deepEqual(editor.read.children(), [
+        paragraph('Same'),
+        paragraph('Same'),
+        paragraph('Same'),
+      ]);
+      assert.deepEqual(
+        [0, 1, 2].map((index) => editor.key([index])),
+        keys
+      );
+      assert.equal(editor.api.history.redo().status, 'applied');
+      assert.deepEqual(editor.read.children(), [paragraph('Same')]);
+      assert.equal(editor.key([0]), keys[2]);
+    }
+  });
+
   it('undoes and redoes a compound structural edit from a markup view', async () => {
     const cell = (text: string) => ({
       type: 'cell',
@@ -39,6 +74,7 @@ describe('authored local history', () => {
       authored: { intent: 'edit', projection: 'markup' },
     });
     const before = structuredClone(view.read.children());
+    const paragraphKey = view.key([0, 1, 1, 0]);
 
     view.update((tx) => {
       tx.nodes.insert(cell(''), { at: [0, 0, 2] });
@@ -56,9 +92,42 @@ describe('authored local history', () => {
     const undo = view.api.history.undo();
     assert.equal(undo.status, 'applied');
     assert.deepEqual(view.read.children(), before);
+    assert.equal(view.key([0, 1, 1, 0]), paragraphKey);
+    assert.equal(source.key([0, 1, 1, 0]), paragraphKey);
     const redo = view.api.history.redo();
     assert.equal(redo.status, 'applied');
     assert.deepEqual(view.read.children(), after);
+  });
+
+  it('recovers node identities in distinct accepted and proposed positions', () => {
+    const source = createEditor({
+      plugins: [history(), authored({ authorId: 'alice' })],
+      initialValue: [paragraph('Same'), paragraph('Same')],
+    });
+    const proposed = createEditorView(source, {
+      authored: { intent: 'propose', projection: 'proposed' },
+    });
+    proposed.update.nodes.insert(paragraph('Pending'), { at: [0] });
+    const acceptedKey = source.key([1]);
+    const proposedKey = proposed.key([2]);
+    source.update((tx) => {
+      tx.history.newBatch();
+      tx.nodes.remove({ at: [1] });
+    });
+
+    assert.equal(source.api.history.undo().status, 'applied');
+    assert.deepEqual(source.read.children(), [
+      paragraph('Same'),
+      paragraph('Same'),
+    ]);
+    assert.deepEqual(proposed.read.children(), [
+      paragraph('Pending'),
+      paragraph('Same'),
+      paragraph('Same'),
+    ]);
+    assert.equal(source.key([1]), acceptedKey);
+    assert.equal(proposed.key([2]), proposedKey);
+    source.update((tx) => assert.equal(tx.key([1]), acceptedKey));
   });
 
   it('replays a proposal, acceptance and dependent accepted typing', async () => {

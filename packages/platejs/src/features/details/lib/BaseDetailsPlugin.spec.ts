@@ -76,6 +76,48 @@ describe('BaseDetailsPlugin', () => {
     expect(details.store.get('isOpen', editor.key([1])!)).toBe(true);
   });
 
+  it.each([true, false])(
+    'restores nested authored Details disclosure through unwrap undo and redo (open: %s)',
+    (open) => {
+      const editor = createEditor({
+        plugins: [...plugins, AuthoredPlugin],
+        initialValue: [
+          {
+            type: 'details',
+            children: [
+              { type: 'summary', children: [{ text: 'Outer' }] },
+              {
+                type: 'details',
+                children: [
+                  { type: 'summary', children: [{ text: 'Inner' }] },
+                  { type: 'paragraph', children: [{ text: 'Body' }] },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+      const details = editor.plugin(BaseDetailsPlugin);
+      const before = editor.read.children();
+      details.api.setOpen(editor.key([0])!, true);
+      const innerKey = editor.key([0, 1])!;
+      details.api.setOpen(innerKey, open);
+      editor.update.selection.set({ path: [0, 1, 0, 0], offset: 0 });
+      editor.update.text.deleteBackward({ unit: 'character' });
+      const unwrapped = editor.read.children();
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(before);
+        expect(details.store.get('isOpen', editor.key([0])!)).toBe(true);
+        expect(editor.key([0, 1])).toBe(innerKey);
+        expect(details.store.get('isOpen', editor.key([0, 1])!)).toBe(open);
+        editor.api.history.redo();
+        expect(editor.read.children()).toEqual(unwrapped);
+      }
+    }
+  );
+
   it('keeps loaded authored Details open through edits and closes in the calling view', () => {
     const authoredPlugins = [BaseDetailsPlugin, AuthoredPlugin];
     const initial = createEditor({

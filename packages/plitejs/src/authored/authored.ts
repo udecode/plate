@@ -12,7 +12,10 @@ import {
   type NativeAuthoredRenderSegment,
 } from '../core/authored-runtime';
 import { ChangeDraft } from '../core/change/builder';
-import { DocumentChange } from '../core/change/document-change';
+import {
+  bindDocumentChangeNodeKeys,
+  DocumentChange,
+} from '../core/change/document-change';
 import { DocumentIndex } from '../core/change/document-index';
 import type { JsonEditorValue } from '../core/change/tokens';
 import { createEditorCommit } from '../core/commit';
@@ -103,7 +106,12 @@ import {
   updateAuthoredFragmentIndex,
   type AuthoredFragmentIndex,
 } from './fragment-index';
-import { authoredHistoryEffect } from './history';
+import {
+  authoredHistoryEffect,
+  captureAuthoredHistoryNodeKeys,
+  restoreAuthoredHistoryNodeKeys,
+  type AuthoredHistoryNodeKeys,
+} from './history';
 import {
   readAuthoredFragmentProjection,
   inheritAuthoredFragmentProjection,
@@ -1060,7 +1068,8 @@ const prepareAuthoredReview = (live: AuthoredRuntime) => {
 const undoAuthoredEdit = (
   live: AuthoredRuntime,
   tx: EditorUpdateTransaction,
-  operation: AuthoredEdit
+  operation: AuthoredEdit,
+  nodeKeys?: AuthoredHistoryNodeKeys
 ) => {
   const authorId = actor(live);
   const active = getDefined(live.active);
@@ -1205,6 +1214,12 @@ const undoAuthoredEdit = (
     acceptedChange = mapped.change;
     accepted = apply(acceptedChange, accepted);
     acceptedPositions = captured.positions;
+    acceptedChange = restoreAuthoredHistoryNodeKeys(
+      acceptedChange,
+      accepted as JsonEditorValue,
+      acceptedPositions,
+      nodeKeys?.accepted
+    );
     if (before.acceptedPositions !== before.projectedPositions) {
       const projected = mapDirectAuthoredChange({
         state,
@@ -1220,6 +1235,12 @@ const undoAuthoredEdit = (
     }
   }
   const projected = apply(projectedChange, before.projected);
+  projectedChange = restoreAuthoredHistoryNodeKeys(
+    projectedChange,
+    projected as JsonEditorValue,
+    projectedPositions,
+    nodeKeys?.proposed
+  );
   const next: AuthoredEdit = snapshotEditorJsonValue(
     {
       authorId,
@@ -2119,6 +2140,31 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
             return undefined;
           }
           const projection = projections.get(commit);
+          const nodeKeys = projection
+            ? {
+                accepted: captureAuthoredHistoryNodeKeys(
+                  commit.inverseChanges,
+                  projection.acceptedPositionsBefore
+                ),
+                proposed: captureAuthoredHistoryNodeKeys(
+                  bindDocumentChangeNodeKeys(
+                    projection.change.invert(
+                      projection.before as JsonEditorValue
+                    ),
+                    projection.before as JsonEditorValue,
+                    (root, path) =>
+                      getEditorProjectionSnapshotIndex(
+                        source,
+                        authoredRootNodes(
+                          projection.before as JsonEditorValue,
+                          root
+                        ) as Value
+                      ).keyAt([...path])
+                  ),
+                  projection.projectedPositionsBefore
+                ),
+              }
+            : undefined;
           const effects = commit.effects.flatMap((effect) => {
             const batch = readAuthoredOperationBatch(effect);
             return batch
@@ -2134,6 +2180,7 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
                   return createEditorEffect(authoredHistoryEffect, {
                     id: operation.id,
                     retained,
+                    nodeKeys,
                     ...(projection
                       ? {
                           selection: projection.historySelectionBefore,
@@ -2221,7 +2268,12 @@ export const authored = (options: AuthoredOptions): AuthoredPlugin =>
               );
             }
             if (operation.kind === 'edit') {
-              undoAuthoredEdit(live, tx, materializeAuthoredEdit(operation));
+              undoAuthoredEdit(
+                live,
+                tx,
+                materializeAuthoredEdit(operation),
+                effect.value.nodeKeys
+              );
             } else undoAuthoredReview(live, tx, operation);
             if (Object.hasOwn(effect.value, 'selection')) {
               getDefined(live.active).historySelection = effect.value.selection;
