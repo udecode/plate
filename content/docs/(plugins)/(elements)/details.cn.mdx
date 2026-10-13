@@ -41,6 +41,23 @@ const value = [
 
 `open` 和 `name` 不是文档属性。应用需要展开或折叠 Details 节点时，请使用插件状态。
 
+## 标题等级
+
+Summary 的 `level` 属性支持 `1` 到 `6`；不设置时显示为普通标题。格式转换保留 Summary 和折叠结构，不会把标题移进正文。
+
+安装 `HeadingPlugin` 后，可以通过格式菜单、标题快捷键或 Markdown 标题前缀修改等级。空标题也支持斜杠菜单的 Heading。无界面调用如下：
+
+```tsx
+import { BaseHeadingPlugin } from 'platejs';
+
+editor.plugin(BaseHeadingPlugin).update.setLevel(2);
+editor.plugin(BaseHeadingPlugin).update.setLevel(null);
+```
+
+`setLevel` 为所有选中的文本块设置等级；`null` 清除 Summary 的等级，或把普通块转成 Paragraph。`toggle({ level })` 保留快捷键的切换行为。请使用这些语义操作，不要直接修改 Summary 的 `type`。
+
+标题在 HTML 中编码为 `<summary><h2>Title</h2></summary>`，在 Markdown 中编码为 `<summary level="2">Title</summary>`，两者都保留行内格式。取消 Details 时，已安装 Heading 插件会把带等级的 Summary 恢复成相同等级的 Heading；否则回到 Paragraph。
+
 ## 使用套件
 
 <Steps>
@@ -143,7 +160,7 @@ editor.plugin(BaseDetailsPlugin).update.wrap();
 
 ### `editor.plugin(BaseDetailsPlugin).update.unwrap`
 
-解除选中的 Details 节点。Summary 会转换为编辑器的默认文本块，并位于正文块之前。
+解除选中的 Details 节点。安装 Heading 插件时，带等级的 Summary 会恢复成相同等级的 Heading；其他 Summary 会转换成 Paragraph，并位于正文块之前。
 
 ```tsx
 editor.plugin(BaseDetailsPlugin).update.unwrap();

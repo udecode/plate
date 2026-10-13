@@ -83,3 +83,5 @@
 - Serialize deterministic schema contracts, classify structural diffs, and restore validator-backed runtime schemas from committed contracts. Contract readers recompute the structural fingerprint from authoritative content, and restoration rejects any derived table that differs from the source contributions.
 
 **Migration:** Replace `@platejs/slate` with `plitejs` and migrate Slate transforms and operations to `editor.read`, `editor.update`, or active transaction APIs. Replace `defineExtension({ name, ...definition })` with `definePlugin(name, definition)`, pass a name to `defineEditorSchema`, call `createEditorView(editor, options)` with the editor itself, and replace live `editor.extend(extension)` with `editor.install(plugin)`. Register state fields through a nominal plugin's `stateFields` collection instead of passing field handles as plugins. Replace calls such as `nodes.find<Foo>({ match: { type: 'foo' } })` with `nodes.find({ type: fooHandle, match: (foo, path) => ... })`.
+
+- Apply different property patches to selected blocks with `blocks.set(node => patch)`, validating the entire selection before changing any block.

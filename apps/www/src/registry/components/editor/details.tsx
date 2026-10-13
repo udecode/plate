@@ -13,6 +13,7 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { headingVariants } from '@/registry/components/editor/heading';
 
 export function DetailsElement(
   props: EditorElementProps<typeof DetailsPlugin>
@@ -84,8 +85,17 @@ export function DetailsElement(
 export function DetailsSummaryElement(
   props: EditorElementProps<typeof DetailsSummaryPlugin>
 ) {
+  const { level } = props.element;
   return (
-    <EditorElement {...props} className="min-h-6 font-medium">
+    <EditorElement
+      {...props}
+      as={level ? `h${level}` : 'div'}
+      className={cn(
+        'min-h-6 font-medium',
+        level && headingVariants({ level }),
+        'm-0'
+      )}
+    >
       {props.children}
     </EditorElement>
   );

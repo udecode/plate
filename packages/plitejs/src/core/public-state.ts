@@ -5526,7 +5526,9 @@ const getUpdateView = <
       command(editorCommands.setNodes, { options: options as never, props })
   );
   const setTransactionBlocks = ((
-    props: Partial<Element>,
+    inputProps:
+      | Partial<Element>
+      | ((node: Readonly<Element>) => Partial<Element>),
     options?: {
       at?: NodeSelection | NodeTarget;
       match?: NodeMatch<Element>;
@@ -5536,23 +5538,32 @@ const getUpdateView = <
     }
   ) =>
     runNodeTargetMutation(options, (resolvedOptions) => {
-      const entries = state.nodes.blocks(resolvedOptions);
+      const entries = state.nodes
+        .blocks(resolvedOptions)
+        .map(([node, path]) => ({
+          node,
+          path,
+          props:
+            typeof inputProps === 'function' ? inputProps(node) : inputProps,
+        }));
       const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
 
       if (
         entries.length === 0 ||
-        !entries.every(([, path]) => canApplyBlockProps(path, root, props))
+        !entries.every(({ path, props }) =>
+          canApplyBlockProps(path, root, props)
+        )
       ) {
         return false;
       }
 
-      if (entries.every(([node]) => ElementApi.matches(node, props))) {
+      if (entries.every(({ node, props }) => ElementApi.matches(node, props))) {
         return false;
       }
 
       const before = getActiveDocumentChangeBuilder(editor).change;
 
-      for (const [, path] of entries) {
+      for (const { path, props } of entries) {
         setTransactionNodes(props as never, {
           ...resolvedOptions,
           at: path,

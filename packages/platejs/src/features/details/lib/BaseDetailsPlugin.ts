@@ -14,11 +14,21 @@ import {
   PLUGINS,
   PointApi,
   RangeApi,
+  property,
   schema,
   SelectionApi,
   transferVeto,
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
+
+const isSummaryHeadingLevel = (
+  value: unknown
+): value is 1 | 2 | 3 | 4 | 5 | 6 =>
+  typeof value === 'number' &&
+  Number.isInteger(value) &&
+  value >= 1 &&
+  value <= 6;
 
 export type BaseDetailsPluginState = {
   openKeys: Set<NodeKey>;
@@ -30,13 +40,34 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
       ...schema.element.textBlock(),
       blockContent: false,
       type: 'summary',
+      properties: {
+        level: property.json({
+          validate: isSummaryHeadingLevel,
+          validationVersion: 1,
+        }),
+      },
     },
   },
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       html: {
-        decode: () => ({}),
-        encode: ({ content }) => ({ children: content, tag: 'summary' }),
+        decode: ({ element }) => {
+          const heading = element.firstElementChild;
+          const level =
+            heading && /^H[1-6]$/.test(heading.tagName)
+              ? Number(heading.tagName.slice(1))
+              : undefined;
+          return isSummaryHeadingLevel(level) ? { level } : {};
+        },
+        encode: ({ content, node, preserve }) => {
+          preserve('level');
+          return {
+            children: node.level
+              ? [{ tag: `h${node.level}`, children: content }]
+              : content,
+            tag: 'summary',
+          };
+        },
         match: [{ tag: 'summary' }],
       },
       markdown: { tag: type },
@@ -304,7 +335,19 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
                 PathApi.compare(right, left) || right.length - left.length
             )
             .forEach(([, path]) => {
-              tx.nodes.set({ type: paragraphType }, { at: path.concat(0) });
+              const summary = tx.nodes.get(path.concat(0), {
+                type: BaseDetailsSummaryPlugin,
+              })?.[0];
+              const headingType = getCompiledPlateModelBinding(
+                editor,
+                PLUGINS.heading
+              )?.elementType;
+              tx.nodes.set(
+                summary?.level && headingType
+                  ? { type: headingType, level: summary.level }
+                  : { type: paragraphType },
+                { at: path.concat(0) }
+              );
               tx.nodes.unwrap({ at: path });
             });
         },
@@ -334,7 +377,20 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           let paths = blocks.map(([, path]) => path);
 
           if (firstIsTextBlock) {
-            tx.nodes.set({ type: summaryType }, { at: first[1] });
+            const headingType = getCompiledPlateModelBinding(
+              editor,
+              PLUGINS.heading
+            )?.elementType;
+            tx.nodes.set(
+              {
+                type: summaryType,
+                ...(first[0].type === headingType &&
+                isSummaryHeadingLevel(first[0].level)
+                  ? { level: first[0].level }
+                  : {}),
+              },
+              { at: first[1] }
+            );
 
             if (blocks.length === 1) {
               tx.nodes.insert(

@@ -1,5 +1,8 @@
 import {
   type BasePluginDefinitionInput,
+  BaseParagraphPlugin,
+  type BlockUpsertOptions,
+  type Element,
   defineInputRule,
   definePlugin,
   matchBlockStart,
@@ -8,6 +11,8 @@ import {
   schema,
   PLUGINS,
 } from '../../../core';
+import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -43,9 +48,11 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       html: {
-        decode: ({ element }) => ({
-          level: Number(element.tagName.slice(1)) as HeadingLevel,
-        }),
+        decode: ({ element, registry }) =>
+          element.parentElement?.tagName === 'SUMMARY' &&
+          registry.has(PLUGINS.detailsSummary)
+            ? undefined
+            : { level: Number(element.tagName.slice(1)) as HeadingLevel },
         encode: ({ content, node, preserve }) => {
           preserve('level');
 
@@ -76,10 +83,79 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
       },
     }),
   rules,
-  update: ({ tx, schema: { type } }) => ({
-    toggle: ({ level }: ToggleHeadingOptions) =>
-      tx.blocks.toggle({ level, type }),
+  read: ({ editor, schema: { type } }) => ({
+    level: (node: Element): HeadingLevel | undefined => {
+      const summaryType = getCompiledPlateModelBinding(
+        editor,
+        PLUGINS.detailsSummary
+      )?.elementType;
+      return (node.type === type ||
+        (summaryType !== undefined && node.type === summaryType)) &&
+        isHeadingLevel(node.level)
+        ? node.level
+        : undefined;
+    },
   }),
+  update: ({ editor, tx, schema: { type } }) => {
+    const summaryType = getCompiledPlateModelBinding(
+      editor,
+      PLUGINS.detailsSummary
+    )?.elementType;
+    const isSummary = (node: Readonly<Element>) =>
+      summaryType !== undefined && node.type === summaryType;
+    const setLevel = (level: HeadingLevel | null) =>
+      tx.blocks.set((node) => ({
+        level: level ?? undefined,
+        type: isSummary(node)
+          ? node.type
+          : level === null
+            ? editor.plugin(BaseParagraphPlugin).schema.type
+            : type,
+      }));
+
+    return {
+      setLevel,
+      toggle: ({ level }: ToggleHeadingOptions) => {
+        const blocks = tx.nodes.blocks();
+        if (!blocks.some(([node]) => isSummary(node))) {
+          return tx.blocks.toggle({ level, type });
+        }
+        const active = blocks.some(
+          ([node]) =>
+            (node.type === type || isSummary(node)) && node.level === level
+        );
+        return setLevel(active ? null : level);
+      },
+      upsert: (
+        { level }: ToggleHeadingOptions,
+        options: BlockUpsertOptions = {}
+      ) =>
+        applyBlockInsertion({
+          mode: 'upsert',
+          options,
+          tx,
+          matches: (node) =>
+            isSummary(node) || (node.type === type && node.level === level),
+          onReuse: ([node, path]) => {
+            if (isSummary(node)) tx.blocks.set({ level }, { at: path });
+          },
+          insert: (insertOptions) => {
+            const node = tx.schema.create(type, { level });
+            if (
+              insertOptions.at === undefined ||
+              insertOptions.after !== undefined
+            ) {
+              tx.blocks.insertAfter(node, {
+                ...insertOptions,
+                at: insertOptions.after,
+              });
+            } else {
+              tx.nodes.insert(node, insertOptions);
+            }
+          },
+        }),
+    };
+  },
 });
 
 export const HeadingRules = {
@@ -106,11 +182,9 @@ export const HeadingRules = {
         }),
       apply: ({ decline, editor, tx }, match) => {
         const block = tx.nodes.block();
-        const { type } = editor.plugin(BaseHeadingPlugin).schema;
-
         if (
           !block ||
-          (block[0].type === type && block[0].level === match.level)
+          editor.plugin(BaseHeadingPlugin).read.level(block[0]) === match.level
         ) {
           return decline();
         }

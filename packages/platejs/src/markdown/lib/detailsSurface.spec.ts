@@ -5,6 +5,36 @@ import {
 } from './__tests__/createTestEditor';
 
 describe('markdown Details surface', () => {
+  it('preserves a Summary heading level and inline marks through Markdown', () => {
+    const editor = createTestEditor();
+    const value = parseTestMarkdown(
+      editor,
+      '<details>\n\n<summary level="2">**Title** [link](https://example.com)</summary>\n\nBody\n\n</details>'
+    );
+    expect(value.children[0]).toMatchObject({
+      type: 'details',
+      children: [
+        {
+          type: 'summary',
+          level: 2,
+          children: [
+            { text: 'Title', bold: true },
+            { text: ' ' },
+            {
+              type: 'link',
+              url: 'https://example.com',
+              children: [{ text: 'link' }],
+            },
+            { text: '' },
+          ],
+        },
+        { type: 'paragraph', children: [{ text: 'Body' }] },
+      ],
+    });
+    const output = serializeTestMarkdown(editor, { document: value });
+    expect(parseTestMarkdown(editor, output.data)).toEqual(value);
+  });
+
   it('round-trips nested Details with direct body blocks', () => {
     const editor = createTestEditor();
     const input = `<details>

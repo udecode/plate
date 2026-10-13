@@ -104,7 +104,10 @@ describe('Details registry components', () => {
       `./details-static?native=${Math.random().toString(36).slice(2)}`
     );
     const summary = ReactDOMServer.renderToStaticMarkup(
-      <DetailsSummaryElementStatic attributes={{}}>
+      <DetailsSummaryElementStatic
+        attributes={{}}
+        element={{ type: 'summary', children: [{ text: 'Summary' }] }}
+      >
         Summary
       </DetailsSummaryElementStatic>
     );

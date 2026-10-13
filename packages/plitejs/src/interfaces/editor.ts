@@ -231,8 +231,13 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
   ) => Path | undefined;
   /** Reset blocks to the immediate parent or root schema default. */
   reset: (options?: { at?: NodeSelectionTarget }) => void;
+  /** Resolve each patch before checking and applying the entire selection. */
   set: (
-    props: NodePropertyPatch<NodeProps<ElementIn<V>>>,
+    props:
+      | NodePropertyPatch<NodeProps<ElementIn<V>>>
+      | ((
+          node: Readonly<ElementIn<V>>
+        ) => NodePropertyPatch<NodeProps<ElementIn<V>>>),
     options?: EditorBlockSetOptions<ElementIn<V>>
   ) => boolean;
   toggle: (

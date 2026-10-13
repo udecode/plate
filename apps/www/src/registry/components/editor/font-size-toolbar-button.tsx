@@ -76,11 +76,9 @@ export function FontSizeToolbarButton() {
     if (!block?.type) return DEFAULT_FONT_SIZE;
 
     const heading = innerEditor.plugin(HeadingPlugin);
-
-    return heading.installed &&
-      block.type === heading.schema.type &&
-      typeof block.level === 'number'
-      ? (FONT_SIZE_MAP[block.level] ?? DEFAULT_FONT_SIZE)
+    const level = heading.installed ? heading.read.level(block) : undefined;
+    return level
+      ? (FONT_SIZE_MAP[level] ?? DEFAULT_FONT_SIZE)
       : DEFAULT_FONT_SIZE;
   });
 

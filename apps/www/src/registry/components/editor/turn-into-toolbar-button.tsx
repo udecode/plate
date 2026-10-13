@@ -243,15 +243,16 @@ const getLeafFormat = (editor: Editor, node: Element): LeafFormat => {
 
   const heading = editor.plugin(BaseHeadingPlugin);
 
-  if (heading.installed && node.type === heading.schema.type) {
-    switch (node.level) {
+  if (heading.installed) {
+    const level = heading.read.level(node);
+    switch (level) {
       case 1:
       case 2:
       case 3:
       case 4:
       case 5:
       case 6: {
-        return `heading-${node.level}`;
+        return `heading-${level}`;
       }
     }
   }
@@ -363,7 +364,8 @@ export function TurnIntoToolbarButton() {
           if (editor.plugin(BaseListPlugin).installed) {
             tx.plugin(BaseListPlugin).clear();
           }
-          tx.blocks.reset();
+          if (heading.installed) tx.plugin(BaseHeadingPlugin).setLevel(null);
+          else tx.blocks.reset();
         });
       },
     },
@@ -399,10 +401,7 @@ export function TurnIntoToolbarButton() {
             if (editor.plugin(BaseListPlugin).installed) {
               tx.plugin(BaseListPlugin).clear();
             }
-            tx.blocks.set({
-              level,
-              type: current.schema.type,
-            });
+            tx.plugin(BaseHeadingPlugin).setLevel(level);
           });
         },
       });

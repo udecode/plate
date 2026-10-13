@@ -8,7 +8,7 @@ import {
 } from 'platejs/react';
 import * as React from 'react';
 
-const headingVariants = cva('relative mb-1', {
+export const headingVariants = cva('relative mb-1', {
   variants: {
     level: {
       1: 'mt-[1.6em] pb-1 font-bold font-heading text-4xl',

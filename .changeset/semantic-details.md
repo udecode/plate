@@ -4,6 +4,8 @@
 
 Replace flat Toggle blocks with semantic nested Details and Summary nodes.
 
+Support heading levels on Details titles without moving their text into the body. Preserve title levels through wrapping, unwrapping, HTML and Markdown.
+
 Return Backspace at the start of the following paragraph to the collapsed Summary without changing hidden body content.
 
 Keep the caret on the visible Summary after deleting a whole paragraph following collapsed Details.

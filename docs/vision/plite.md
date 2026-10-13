@@ -381,6 +381,9 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   a change. An inadmissible placement or no-op returns `false` without claiming
   a successful mutation; the canonical schema and change builder remain the
   authority for the outcome.
+- `tx.blocks.set` accepts one property patch or a pure per-block patch resolver.
+  Resolve all patches before validating the entire target set and applying any
+  writes. Feature-specific title roles belong in the resolver, not in Plite.
 - `Plugin` stays flat except for the coherent `on.*` event family. Lifecycle and
   host/DOM observation use prefixless child names; Plate extends the same family
   with names such as `keyDown`, `paste`, `nodeChange`, `textChange`, and capture

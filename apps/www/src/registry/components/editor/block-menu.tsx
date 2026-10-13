@@ -61,10 +61,11 @@ const getLeafFormat = (
 ): LeafFormat => {
   const heading = editor.plugin(BaseHeadingPlugin);
 
-  if (heading.installed && node.type === heading.schema.type) {
-    if (node.level === 1) return 'heading-1';
-    if (node.level === 2) return 'heading-2';
-    if (node.level === 3) return 'heading-3';
+  if (heading.installed) {
+    const level = heading.read.level(node);
+    if (level === 1) return 'heading-1';
+    if (level === 2) return 'heading-2';
+    if (level === 3) return 'heading-3';
   }
 
   return 'text';
@@ -116,7 +117,8 @@ export function BlockContextMenu({ children }: WrapContentProps) {
           if (editor.plugin(BaseListPlugin).installed) {
             tx.plugin(BaseListPlugin).clear();
           }
-          tx.blocks.reset();
+          if (headingInstalled) tx.plugin(BaseHeadingPlugin).setLevel(null);
+          else tx.blocks.reset();
         });
       },
     },
@@ -139,7 +141,7 @@ export function BlockContextMenu({ children }: WrapContentProps) {
               if (editor.plugin(BaseListPlugin).installed) {
                 tx.plugin(BaseListPlugin).clear();
               }
-              tx.blocks.set({ level, type: heading.schema.type });
+              tx.plugin(BaseHeadingPlugin).setLevel(level);
             });
           },
         }))

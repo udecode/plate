@@ -2,6 +2,33 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-13-details-heading-titles",
+      "href": "/registry/changelog/2026-10-13-details-heading-titles.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Preserve Details titles when applying heading formats",
+      "change": {
+        "type": "source",
+        "date": "2026-10-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "details",
+        "details-static",
+        "turn-into-toolbar-button",
+        "block-menu",
+        "slash",
+        "font-size-toolbar-button",
+        "heading",
+        "heading-static"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-12-fix-list-import-export",
       "href": "/registry/changelog/2026-10-12-fix-list-import-export.json",
       "status": "draft",

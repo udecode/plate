@@ -34,7 +34,7 @@ import { AIChatPlugin } from 'platejs/ai/react';
 import { BaseCalloutPlugin } from 'platejs/callout';
 import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
 import { BaseDatePlugin } from 'platejs/date';
-import { BaseDetailsPlugin } from 'platejs/details';
+import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 import { BaseFootnotePlugin } from 'platejs/footnote';
 import { BaseColumnPlugin } from 'platejs/layout';
@@ -99,8 +99,16 @@ const groups: Group[] = [
         keywords: ['paragraph'],
         label: 'Text',
         value: PLUGINS.paragraph,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseParagraphPlugin).upsert({}, { select: true });
+        onSelect: (editor, tx) => {
+          const summary = editor.plugin(BaseDetailsSummaryPlugin);
+          const heading = editor.plugin(BaseHeadingPlugin);
+          if (
+            summary.installed &&
+            heading.installed &&
+            tx.nodes.block()?.[0].type === summary.schema.type
+          ) {
+            tx.plugin(BaseHeadingPlugin).setLevel(null);
+          } else tx.plugin(BaseParagraphPlugin).upsert({}, { select: true });
         },
       },
       {
