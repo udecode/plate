@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Locator, test } from '@playwright/test';
 
 import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
@@ -186,3 +186,102 @@ for (const route of ['details-demo', 'playground']) {
     }
   });
 }
+
+test('details-demo centers the toggle chevron on a heading title line', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/blocks/details-demo');
+    const root = page
+      .locator('[data-editor="true"][contenteditable="true"]')
+      .first();
+    const name = 'Why use semantic Details?';
+    const details = root
+      .getByText(name, { exact: true })
+      .locator(
+        'xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," editor-details ")][1]'
+      );
+    const chevron = details
+      .getByRole('button', { name: 'Expand details', exact: true })
+      .locator('svg');
+    const offset = async (title: Locator) => {
+      const line = await title.evaluate((element) => {
+        const style = getComputedStyle(element);
+
+        return (
+          element.getBoundingClientRect().top +
+          Number.parseFloat(style.paddingTop) +
+          Number.parseFloat(style.lineHeight) / 2
+        );
+      });
+      const icon = await chevron.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+
+        return box.top + box.height / 2;
+      });
+
+      return Math.abs(icon - line);
+    };
+
+    expect(
+      await offset(details.locator('.editor-detailsSummary'))
+    ).toBeLessThanOrEqual(1);
+    await details.getByText(name, { exact: true }).click();
+    await page.keyboard.press('ControlOrMeta+Alt+1');
+    const heading = details.getByRole('heading', {
+      level: 1,
+      name,
+      exact: true,
+    });
+    await expect(heading).toBeVisible();
+    expect(await offset(heading)).toBeLessThanOrEqual(1);
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
+
+test('details-demo keeps a heading title in its Summary on the paragraph shortcut', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/blocks/details-demo');
+    const root = page
+      .locator('[data-editor="true"][contenteditable="true"]')
+      .first();
+    const name = 'Why use semantic Details?';
+    await expect
+      .poll(() =>
+        root.evaluate((element: PliteBrowserHandleElement) =>
+          Boolean(element.__pliteBrowserHandle)
+        )
+      )
+      .toBe(true);
+    const key = await root
+      .getByText(name, { exact: true })
+      .locator(
+        'xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," editor-details ")][1]'
+      )
+      .getAttribute('data-editor-node-key');
+    const details = root.locator(
+      `.editor-details[data-editor-node-key="${key}"]`
+    );
+    const before = await details.textContent();
+    await details.getByText(name, { exact: true }).click();
+    await page.keyboard.press('ControlOrMeta+Alt+1');
+    await expect(
+      details.getByRole('heading', { level: 1, name, exact: true })
+    ).toBeVisible();
+    await page.keyboard.press('ControlOrMeta+Alt+0');
+    await expect(details.getByRole('heading')).toHaveCount(0);
+    await expect(details.locator('.editor-detailsSummary').first()).toHaveText(
+      name
+    );
+    await expect(details).toHaveText(before!);
+    errors.assertNone();
+  } finally {
+    errors.stop();
+  }
+});
