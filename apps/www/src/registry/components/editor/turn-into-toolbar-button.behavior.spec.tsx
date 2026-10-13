@@ -9,7 +9,14 @@ import {
 } from 'bun:test';
 
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
-import { SelectionApi, type Selection, type Value } from 'platejs';
+import {
+  BaseParagraphPlugin,
+  definePlugin,
+  schema,
+  SelectionApi,
+  type Selection,
+  type Value,
+} from 'platejs';
 import { BaseColumnPlugin } from 'platejs/layout';
 import { CodeBlockPlugin, createEditor, EditorRoot } from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
@@ -377,6 +384,118 @@ describe('turn into menu behavior', () => {
     ]);
   });
 
+  it('drops the bullet when a bulleted heading takes its own level', async () => {
+    currentEditor = createTestEditor({
+      initialValue: [
+        {
+          children: [{ text: 'one' }],
+          indent: 1,
+          level: 2,
+          listType: 'bulleted',
+          type: 'heading',
+        },
+      ],
+      selection: SelectionApi.nodes([[0]]),
+    });
+    const view = await renderTurnInto();
+
+    fireEvent.click(view.getByRole('radio', { name: 'Heading 2' }));
+
+    expect(currentEditor.read.children()).toEqual([
+      { children: [{ text: 'one' }], level: 2, type: 'heading' },
+    ]);
+  });
+
+  it.each([false, true])(
+    'turns a leveled title into a plain title through Text (Heading installed: %p)',
+    async (headingInstalled) => {
+      const initialValue: Value = [
+        {
+          children: [
+            { children: [{ text: 'Title' }], level: 2, type: 'summary' },
+            { children: [{ text: 'Body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+      ];
+
+      currentEditor = createEditor({
+        plugins: [
+          ...(headingInstalled ? BaseBasicBlocksKit : [BaseParagraphPlugin]),
+          ...BaseListKit,
+          ...BaseDetailsKit,
+        ],
+        initialValue,
+        selection: {
+          kind: 'text',
+          anchor: { offset: 2, path: [0, 0, 0] },
+          focus: { offset: 2, path: [0, 0, 0] },
+        },
+      });
+      const view = await renderTurnInto();
+
+      fireEvent.click(view.getByRole('radio', { name: 'Text' }));
+
+      expect(currentEditor.read.children()).toEqual([
+        {
+          children: [
+            { children: [{ text: 'Title' }], type: 'summary' },
+            { children: [{ text: 'Body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+      ]);
+    }
+  );
+
+  it.each(['Text', 'Numbered list'])(
+    'changes nothing when %s cannot reset a required heading',
+    async (name) => {
+      const RequiredHeadingBoxPlugin = definePlugin('requiredHeadingBox', {
+        schema: {
+          element: {
+            content: schema.content.prefix(
+              [{ element: 'heading', properties: { level: 1 } }],
+              schema.content.group('block', { default: { type: 'paragraph' } })
+            ),
+          },
+        },
+      });
+      const initialValue: Value = [
+        {
+          children: [
+            {
+              children: [{ text: 'Title' }],
+              indent: 1,
+              level: 1,
+              listType: 'bulleted',
+              type: 'heading',
+            },
+            { children: [{ text: 'Body' }], type: 'paragraph' },
+          ],
+          type: 'requiredHeadingBox',
+        },
+      ];
+
+      currentEditor = createEditor({
+        plugins: [
+          ...BaseBasicBlocksKit,
+          ...BaseListKit,
+          RequiredHeadingBoxPlugin,
+        ],
+        initialValue,
+        selection: SelectionApi.nodes([[0, 0]]),
+      });
+      const commit = currentEditor.read.lastCommit();
+      const view = await renderTurnInto();
+
+      fireEvent.click(view.getByRole('radio', { name }));
+
+      expect(currentEditor.read.lastCommit()).toBe(commit);
+      expect(currentEditor.read.children()).toEqual(initialValue);
+    }
+  );
+
   it('offers Details for one contiguous sibling run and wraps it once', async () => {
     currentEditor = createTestEditor({
       selection: SelectionApi.nodes([[0], [1]]),
@@ -424,5 +543,35 @@ describe('turn into menu behavior', () => {
       { children: [{ text: 'body' }], type: 'paragraph' },
       { children: [{ text: 'after' }], type: 'paragraph' },
     ]);
+  });
+
+  it('unwraps both Details for a range across sibling Details', async () => {
+    const details = (title: string) => ({
+      children: [
+        { children: [{ text: title }], type: 'summary' },
+        { children: [{ text: title.toLowerCase() }], type: 'paragraph' },
+      ],
+      type: 'details',
+    });
+    currentEditor = createTestEditor({
+      initialValue: [details('A'), details('B')],
+      selection: {
+        anchor: { offset: 0, path: [0, 1, 0] },
+        focus: { offset: 1, path: [1, 1, 0] },
+        kind: 'text',
+      },
+    });
+    const view = await renderTurnInto();
+    const item = view.getByRole('menuitemcheckbox', { name: 'Details' });
+
+    expect(item).toHaveAttribute('aria-checked', 'true');
+    fireEvent.click(item);
+
+    expect(currentEditor.read.children()).toMatchObject(
+      ['A', 'a', 'B', 'b'].map((text) => ({
+        children: [{ text }],
+        type: 'paragraph',
+      }))
+    );
   });
 });

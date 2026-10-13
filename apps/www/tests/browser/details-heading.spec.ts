@@ -74,18 +74,23 @@ for (const route of ['details-demo', 'playground']) {
             nodes: ReturnType<typeof handle.getValue>['children']
           ): unknown => {
             for (const node of nodes) {
-              if ('children' in node) {
-                if (
-                  node.type === 'details' &&
-                  node.children[0] &&
-                  JSON.stringify(node.children[0]).includes(targetKey)
-                ) {
-                  return node.children[0];
-                }
-                const found = find(node.children);
-                if (found) return found;
+              const children = 'children' in node ? node.children : undefined;
+
+              if (!children) continue;
+              if (
+                node.type === 'details' &&
+                children[0] &&
+                JSON.stringify(children[0]).includes(targetKey)
+              ) {
+                return children[0];
               }
+
+              const found = find(children);
+
+              if (found) return found;
             }
+
+            return undefined;
           };
           return find(handle.getValue().children);
         }, title);

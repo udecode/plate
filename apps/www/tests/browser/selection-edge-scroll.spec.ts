@@ -1,7 +1,14 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
+import { createBrowserEditorHarness } from '../../../../packages/test/src/playwright';
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
+
+const editorRoot = (page: Page) =>
+  page.locator('[data-editor="true"][contenteditable="true"]').first();
+
+const scrollerOf = (root: Locator) =>
+  root.locator('xpath=ancestor::*[contains(@class,"overflow-y-auto")][1]');
 
 const readSelection = (root: Locator) =>
   root.evaluate((el: PliteBrowserHandleElement) => ({
@@ -13,7 +20,56 @@ const readSelection = (root: Locator) =>
     native: window.getSelection()?.toString(),
   }));
 
-test('uses the upstream distance-based block selection scroll speed', async ({
+const readScroll = (scroller: Locator) =>
+  scroller.evaluate((el) => ({
+    outer: el.parentElement!.scrollTop,
+    scroller: el.scrollTop,
+    window: window.scrollY,
+  }));
+
+const readScrollerTop = async (scroller: Locator) => {
+  const { scroller: top } = await readScroll(scroller);
+
+  return top;
+};
+
+const visibleBounds = async (page: Page, scroller: Locator) => {
+  const box = await scroller.boundingBox();
+
+  if (!box) throw new Error('Missing scroller');
+
+  return {
+    bottom: Math.min(box.y + box.height, page.viewportSize()!.height),
+    top: Math.max(box.y, 0),
+  };
+};
+
+const recordSteps = async (scroller: Locator) => {
+  await scroller.evaluate((el: HTMLElement & { stopSteps?: () => number }) => {
+    const steps = [0];
+    let previous = el.scrollTop;
+    let frame = 0;
+    const tick = () => {
+      steps.push(el.scrollTop - previous);
+      previous = el.scrollTop;
+      frame = requestAnimationFrame(tick);
+    };
+
+    frame = requestAnimationFrame(tick);
+    el.stopSteps = () => {
+      cancelAnimationFrame(frame);
+
+      return Math.max(...steps);
+    };
+  });
+
+  return () =>
+    scroller.evaluate((el: HTMLElement & { stopSteps?: () => number }) =>
+      el.stopSteps!()
+    );
+};
+
+test('block selection scrolls by the text drag step, larger nearer the edge', async ({
   page,
 }) => {
   const errors = recordBrowserRuntimeErrors(page);
@@ -25,51 +81,43 @@ test('uses the upstream distance-based block selection scroll speed', async ({
       exact: true,
     });
     await expect(heading).toBeVisible();
-    const root = page
-      .locator('[data-editor="true"][contenteditable="true"]')
-      .first();
-    const scroller = root.locator(
-      'xpath=ancestor::*[contains(@class,"overflow-y-auto")][1]'
-    );
-    const speeds = [];
-    for (const distance of [45, 20, 2]) {
-      await scroller.evaluate((el) => {
-        el.scrollTop = 0;
-      });
-      const headingBox = await heading.boundingBox();
-      const bounds = await scroller.boundingBox();
-      if (!headingBox || !bounds) throw new Error('Missing drag geometry');
-      await page.mouse.move(headingBox.x - 75, headingBox.y + 2);
-      await page.mouse.down();
-      await page.mouse.move(
-        headingBox.x + 120,
-        Math.min(720, bounds.y + bounds.height) - distance,
-        { steps: 12 }
-      );
-      const start = await scroller.evaluate((el) => ({
-        time: performance.now(),
-        top: el.scrollTop,
-      }));
-      await page.waitForTimeout(250);
-      const end = await scroller.evaluate((el) => ({
-        time: performance.now(),
-        top: el.scrollTop,
-      }));
-      speeds.push((end.top - start.top) / (end.time - start.time));
-      await page.mouse.up();
-      await page.keyboard.press('Escape');
+    const scroller = scrollerOf(editorRoot(page));
+    const { bottom } = await visibleBounds(page, scroller);
+    const steps = { blocks: [] as number[], text: [] as number[] };
+    for (const kind of ['text', 'blocks'] as const) {
+      for (const distance of [60, 30, 4]) {
+        await scroller.evaluate((el) => {
+          el.scrollTop = 0;
+        });
+        const box = await heading.boundingBox();
+        if (!box) throw new Error('Missing drag geometry');
+        const stop = await recordSteps(scroller);
+        // A text drag that starts past the heading's text runs Plite's drag
+        // loop; one that starts on the text is the browser's own.
+        await page.mouse.move(
+          kind === 'blocks' ? box.x - 75 : box.x + box.width - 20,
+          box.y + box.height / 2
+        );
+        await page.mouse.down();
+        await page.mouse.move(box.x + 120, bottom - distance, { steps: 12 });
+        await page.waitForTimeout(300);
+        steps[kind].push(await stop());
+        await page.mouse.up();
+        await page.keyboard.press('Escape');
+      }
     }
-    expect(speeds[0], 'Outside the 40px edge zone does not scroll').toBe(0);
+    console.info(JSON.stringify(steps));
+    const [outside, middle, near] = steps.blocks;
+    expect(outside, 'outside the edge zone').toBe(0);
+    expect(middle, 'block drag mid-zone').toBeGreaterThan(0);
+    expect(steps.text[1], 'text drag mid-zone').toBeGreaterThan(0);
+    expect(near, 'nearer the edge').toBeGreaterThan(middle * 1.5);
+    expect(near, 'step per frame').toBeLessThanOrEqual(28);
+    expect(steps.text[0], 'text drag outside the edge zone').toBe(0);
     expect(
-      speeds[1],
-      'Mid-edge scrolling matches the upstream speed'
-    ).toBeGreaterThan(1.3);
-    expect(speeds[1]).toBeLessThan(2.1);
-    expect(
-      speeds[2],
-      'Moving nearer the edge accelerates block selection'
-    ).toBeGreaterThan(speeds[1] * 1.5);
-    expect(speeds[2]).toBeLessThan(4.1);
+      Math.abs(middle - steps.text[1]),
+      'text and block drags step alike mid-zone'
+    ).toBeLessThanOrEqual(1);
     errors.assertNone();
   } finally {
     await page.mouse.up();
@@ -85,33 +133,26 @@ for (const kind of ['text', 'blocks'] as const) {
       const errors = recordBrowserRuntimeErrors(page);
       await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
       await page.goto('/blocks/playground');
-      const root = page
-        .locator('[data-editor="true"][contenteditable="true"]')
-        .first();
+      const root = editorRoot(page);
       const heading = page.getByRole('heading', {
         name: direction === 'up' ? 'Dates and Equations' : 'AI-Powered Editing',
         exact: true,
       });
       await expect(heading).toBeVisible();
-      const scroller = root.locator(
-        'xpath=ancestor::*[contains(@class,"overflow-y-auto")][1]'
-      );
+      const scroller = scrollerOf(root);
       if (direction === 'up') {
         await heading.evaluate((el) => el.scrollIntoView({ block: 'center' }));
       }
       const box = await heading.boundingBox();
-      const bounds = await scroller.boundingBox();
-      if (!box || !bounds) throw new Error('Missing drag geometry');
+      if (!box) throw new Error('Missing drag geometry');
+      const bounds = await visibleBounds(page, scroller);
       const start = {
         x: box.x + (kind === 'blocks' ? -75 : 60),
         y: box.y + box.height / 2,
       };
       const end = {
         x: box.x + 120,
-        y:
-          direction === 'down'
-            ? Math.min(718, bounds.y + bounds.height - 2)
-            : bounds.y + 2,
+        y: direction === 'down' ? bounds.bottom - 2 : bounds.top + 2,
       };
       try {
         await page.mouse.move(start.x, start.y);
@@ -206,9 +247,7 @@ for (const kind of ['text', 'blocks'] as const) {
         }
         await page.mouse.move(
           end.x,
-          direction === 'down'
-            ? bounds.y + 2
-            : Math.min(718, bounds.y + bounds.height - 2),
+          direction === 'down' ? bounds.top + 2 : bounds.bottom - 2,
           { steps: 8 }
         );
         await expect
@@ -251,6 +290,8 @@ test('block marquee stays inside the editor viewport', async ({
   await expect(heading).toBeVisible();
   const box = await heading.boundingBox();
   if (!box) throw new Error('Missing heading');
+  const root = editorRoot(page);
+  const bounds = await visibleBounds(page, scrollerOf(root));
   await page.mouse.move(box.x - 75, box.y + box.height / 2);
   await page.mouse.down();
   try {
@@ -260,29 +301,24 @@ test('block marquee stays inside the editor viewport', async ({
     const rect = await page
       .locator('[data-slot="node-selection-drag"]')
       .boundingBox();
-    const scroller = await page
-      .locator('[data-editor="true"][contenteditable="true"]')
-      .first()
-      .evaluate(
-        (el) => el.closest('.overflow-y-auto')!.getBoundingClientRect().top
-      );
-    expect(rect!.y).toBeGreaterThanOrEqual(scroller);
-    await page.mouse.move(1, 718, { steps: 12 });
+    expect(rect!.y).toBeGreaterThanOrEqual(bounds.top);
+    await page.mouse.move(1, bounds.bottom - 2, { steps: 12 });
     await expect
       .poll(async () => {
         const marquee = await page
           .locator('[data-slot="node-selection-drag"]')
           .boundingBox();
-        return marquee && marquee.x >= 0 && marquee.y + marquee.height <= 720;
+        return (
+          marquee &&
+          marquee.x >= 0 &&
+          marquee.y + marquee.height <= bounds.bottom
+        );
       })
       .toBe(true);
     await page.keyboard.press('Escape');
     await expect(page.locator('[data-slot="node-selection-drag"]')).toHaveCount(
       0
     );
-    const root = page
-      .locator('[data-editor="true"][contenteditable="true"]')
-      .first();
     const stopped = await readSelection(root);
     await page.waitForTimeout(200);
     expect(await readSelection(root)).toEqual(stopped);
@@ -290,3 +326,213 @@ test('block marquee stays inside the editor viewport', async ({
     await page.mouse.up();
   }
 });
+
+const SHAPES = {
+  'a scroller taller than the window': 'tall',
+  'a scroller cut off by an outer box': 'cut',
+} as const;
+
+const reshape = (scroller: Locator, shape: 'cut' | 'tall') =>
+  scroller.evaluate((el: HTMLElement, kind) => {
+    const frame = el.parentElement!;
+
+    el.style.flex = 'none';
+    if (kind === 'tall') {
+      frame.style.height = 'auto';
+      el.style.height = `${window.innerHeight * 2}px`;
+
+      return window.innerHeight;
+    }
+    frame.style.height = '400px';
+    frame.style.overflow = 'hidden';
+    el.style.height = '800px';
+
+    return frame.getBoundingClientRect().bottom;
+  }, shape);
+
+const topLevelBlocks = (root: Locator) =>
+  root.evaluate((el) =>
+    [...el.querySelectorAll('[data-editor-path]')]
+      .filter((block) =>
+        /^\d+$/.test(block.getAttribute('data-editor-path') ?? '')
+      )
+      .map((block) => {
+        const rect = block.getBoundingClientRect();
+
+        return {
+          bottom: rect.bottom,
+          index: Number(block.getAttribute('data-editor-path')),
+          text: (block.textContent ?? '').slice(0, 40),
+          top: rect.top,
+        };
+      })
+  );
+
+// Playwright's emulated native drag stops delivering dragover partway through
+// a long scroll, so these drags send their own.
+const sendDrag = (
+  handle: Locator,
+  type: 'dragover' | 'dragstart' | 'drop' | 'dragend',
+  x: number,
+  y: number
+) =>
+  handle.evaluate(
+    (element, [kind, clientX, clientY]) => {
+      const holder = window as { dragTransfer?: DataTransfer };
+      holder.dragTransfer ??= new DataTransfer();
+      const transfer = holder.dragTransfer;
+      const target =
+        kind === 'dragstart' || kind === 'dragend'
+          ? element
+          : document.elementFromPoint(clientX, clientY);
+
+      target!.dispatchEvent(
+        new DragEvent(kind, {
+          bubbles: true,
+          cancelable: true,
+          clientX,
+          clientY,
+          dataTransfer: transfer,
+        })
+      );
+    },
+    [type, x, y] as const
+  );
+
+const dragged = 'Collaborative Editing';
+
+const openReshaped = async (page: Page, shape: 'cut' | 'tall') => {
+  await page.goto('/blocks/playground');
+  const root = editorRoot(page);
+  await createBrowserEditorHarness(
+    page,
+    `selection-edge-scroll:${shape}`,
+    root
+  ).ready({ editor: 'visible', text: dragged });
+  const scroller = scrollerOf(root);
+
+  return {
+    bottom: await reshape(scroller, shape),
+    heading: page.getByRole('heading', { name: dragged, exact: true }),
+    root,
+    scroller,
+  };
+};
+
+for (const [name, shape] of Object.entries(SHAPES)) {
+  test(`block selection scrolls ${name} before anything around it`, async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page);
+    try {
+      const { bottom, heading, root, scroller } = await openReshaped(
+        page,
+        shape
+      );
+      const box = await heading.boundingBox();
+      if (!box) throw new Error('Missing drag geometry');
+      const { top } = await visibleBounds(page, scroller);
+      const blocks = await topLevelBlocks(root);
+      const hidden = blocks.find((block) => block.top > bottom)?.index;
+      if (hidden === undefined) {
+        throw new Error('Missing a block below the strip');
+      }
+      const lastSelected = async () => {
+        const { selection } = await readSelection(root);
+
+        return selection?.kind === 'node'
+          ? Math.max(...selection.paths.map(([index]) => index))
+          : -1;
+      };
+      await page.mouse.move(box.x - 75, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(box.x + 120, (top + bottom) / 2, { steps: 8 });
+      await expect.poll(lastSelected).toBeGreaterThanOrEqual(0);
+      expect(await lastSelected()).toBeLessThan(hidden);
+      expect(await readScrollerTop(scroller)).toBe(0);
+      await page.mouse.move(box.x + 120, bottom - 4, { steps: 4 });
+      await expect.poll(() => readScrollerTop(scroller)).toBeGreaterThan(300);
+      expect(await readScroll(scroller)).toMatchObject({ outer: 0, window: 0 });
+      await expect.poll(lastSelected).toBeGreaterThanOrEqual(hidden);
+      errors.assertNone();
+    } finally {
+      await page.mouse.up();
+      errors.stop();
+    }
+  });
+
+  test(`block drag by the handle scrolls ${name} and drops beside the block under the pointer`, async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page);
+    try {
+      const { bottom, heading, root, scroller } = await openReshaped(
+        page,
+        shape
+      );
+      const startBlocks = await topLevelBlocks(root);
+      const startTops = new Map(
+        startBlocks.map((block) => [block.text, block.top])
+      );
+      await heading.hover();
+      const handle = page
+        .locator('.editor-editor > div')
+        .filter({ has: heading })
+        .getByRole('button', { name: 'Drag block' });
+      const handleBox = await handle.boundingBox();
+      const box = await heading.boundingBox();
+      if (!handleBox || !box) throw new Error('Missing drag geometry');
+      const x = box.x + 120;
+      await sendDrag(handle, 'dragstart', handleBox.x + 4, handleBox.y + 4);
+      for (let i = 0; i < 40 && (await readScrollerTop(scroller)) < 300; i++) {
+        await sendDrag(handle, 'dragover', x, bottom - 4);
+        await page.waitForTimeout(30);
+      }
+      expect(await readScroll(scroller)).toMatchObject({ outer: 0, window: 0 });
+      expect(await readScrollerTop(scroller)).toBeGreaterThanOrEqual(300);
+
+      const { top } = await visibleBounds(page, scroller);
+      const blocks = await topLevelBlocks(root);
+      const index = blocks.findIndex(
+        (block) =>
+          startTops.get(block.text)! > bottom + 50 &&
+          block.top > top + 20 &&
+          (block.top + block.bottom) / 2 < bottom - 60
+      );
+      const target = blocks[index];
+      if (!target) throw new Error('Missing drop target');
+      const y = (target.top + target.bottom) / 2;
+      await sendDrag(handle, 'dragover', x, y);
+      const line = await page
+        .locator('[data-drop-indicator="y"]')
+        .boundingBox();
+      expect(line).not.toBeNull();
+      const lineY = line!.y + line!.height / 2;
+      const side =
+        lineY >= blocks[index - 1].bottom - 2 && lineY <= target.top + 2
+          ? 'above'
+          : lineY >= target.bottom - 2 && lineY <= blocks[index + 1].top + 2
+            ? 'below'
+            : null;
+      expect(side, 'drop line in a gap beside the target').not.toBeNull();
+      await sendDrag(handle, 'drop', x, y);
+      await sendDrag(handle, 'dragend', x, y);
+
+      await expect
+        .poll(async () => {
+          const ordered = await topLevelBlocks(root);
+          const texts = ordered.map((block) => block.text);
+          const moved = texts.findIndex((text) => text.startsWith(dragged));
+
+          return {
+            copies: texts.filter((text) => text.startsWith(dragged)).length,
+            neighbor: texts[side === 'above' ? moved + 1 : moved - 1],
+          };
+        })
+        .toEqual({ copies: 1, neighbor: target.text });
+      errors.assertNone();
+    } finally {
+      errors.stop();
+    }
+  });
+}

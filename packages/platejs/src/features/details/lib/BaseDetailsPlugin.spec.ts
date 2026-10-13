@@ -57,7 +57,7 @@ describe('BaseDetailsPlugin', () => {
       type: 'heading',
       level: 2,
     });
-    editor.update.heading.setLevel(null);
+    editor.update.blocks.reset({ unset: 'level' });
     expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
       type: 'summary',
       children: [{ text: 'Title' }],
@@ -68,38 +68,107 @@ describe('BaseDetailsPlugin', () => {
     });
   });
 
-  it('upserts a heading into the targeted empty Summary without replacing it', () => {
+  it('toggles a required heading and a leveled title off to their own defaults', () => {
     const editor = createEditor({
       plugins: [...plugins, BaseHeadingPlugin],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
       initialValue: [
+        { type: 'heading', level: 1, children: [{ text: 'Doc' }] },
         {
           type: 'details',
-          children: [{ type: 'summary', children: [{ text: '' }] }],
+          children: [
+            { type: 'summary', level: 1, children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
         },
-        { type: 'paragraph', children: [{ text: '' }] },
       ],
     });
-    editor.update.selection.set({ path: [0, 0, 0], offset: 0 });
-    const key = editor.key([0, 0]);
-    editor.update.heading.upsert(
-      { level: 2 },
-      { after: editor.key([1])!, select: true }
-    );
-    expect(editor.read.nodes.get([0, 0])?.[0]).not.toHaveProperty('level');
-    expect(editor.read.nodes.get([1])?.[0]).toMatchObject({
-      type: 'heading',
-      level: 2,
+    editor.update.selection.set({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0, 0], offset: 5 },
     });
-    editor.update.heading.upsert({ level: 3 }, { after: key!, select: true });
-    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
-      type: 'summary',
-      level: 3,
-      children: [{ text: '' }],
+
+    editor.update.heading.toggle({ level: 1 });
+
+    expect(editor.read.children()).toEqual([
+      { type: 'heading', level: 1, children: [{ text: 'Doc' }] },
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Body' }] },
+        ],
+      },
+    ]);
+  });
+
+  it.each([false, true])(
+    'turns a body heading and a leveled title back into text (nested: %s)',
+    (nested) => {
+      const details = {
+        type: 'details',
+        children: [
+          { type: 'summary', level: 2, children: [{ text: 'Title' }] },
+          { type: 'heading', level: 2, children: [{ text: 'Sub' }] },
+        ],
+      };
+      const editor = createEditor({
+        plugins: [...plugins, BaseHeadingPlugin],
+        initialValue: [
+          nested
+            ? {
+                type: 'details',
+                children: [
+                  { type: 'summary', children: [{ text: 'Outer' }] },
+                  details,
+                ],
+              }
+            : details,
+        ],
+      });
+      const at = nested ? [0, 1] : [0];
+      editor.update.selection.set({
+        anchor: { path: [...at, 0, 0], offset: 0 },
+        focus: { path: [...at, 1, 0], offset: 3 },
+      });
+
+      editor.update.blocks.reset({ unset: 'level' });
+
+      expect(editor.read.nodes.get(at)?.[0]).toEqual({
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Sub' }] },
+        ],
+      });
+    }
+  );
+
+  it('reads a title level from HTML only when the heading is the sole child', () => {
+    const editor = createEditor({
+      plugins: [...plugins, BaseHeadingPlugin],
     });
-    expect(editor.key([0, 0])).toBe(key);
-    expect(editor.read.selection()).toMatchObject({
-      focus: { path: [0, 0, 0], offset: 0 },
-    });
+
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<details><summary> <h2>Title</h2> </summary><p>B</p></details>'
+      )[0]
+    ).toHaveProperty(['children', 0, 'level'], 2);
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<details><summary><h2>Title</h2> more</summary><p>B</p></details>'
+      )[0]
+    ).not.toHaveProperty(['children', 0, 'level']);
   });
 
   it('preserves a heading through Details wrap and unwrap, and splits its title into plain body text', () => {
@@ -181,7 +250,7 @@ describe('BaseDetailsPlugin', () => {
     );
   });
 
-  it('formats a Summary in place through heading shortcuts and input rules', () => {
+  it('formats a Summary in place through heading shortcuts and input rules [EDIT-DETAILS-TITLE-LEVEL-001]', () => {
     const editor = createEditor({
       plugins: [
         ...plugins,

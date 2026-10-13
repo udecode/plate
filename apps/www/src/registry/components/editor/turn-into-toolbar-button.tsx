@@ -242,22 +242,9 @@ const getLeafFormat = (editor: Editor, node: Element): LeafFormat => {
   }
 
   const heading = editor.plugin(BaseHeadingPlugin);
+  const level = heading.installed ? heading.read.level(node) : undefined;
 
-  if (heading.installed) {
-    const level = heading.read.level(node);
-    switch (level) {
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-      case 6: {
-        return `heading-${level}`;
-      }
-    }
-  }
-
-  return 'text';
+  return level === undefined ? 'text' : `heading-${level}`;
 };
 
 const isLeafFormatActive = (editor: Editor, value: LeafFormat) => {
@@ -355,17 +342,19 @@ export function TurnIntoToolbarButton() {
       onSelect: () => {
         if (
           editor.read.view.isReadOnly() ||
-          isLeafFormatActive(editor, 'text')
+          (isLeafFormatActive(editor, 'text') &&
+            readBlocks(editor, 'lowest').every(
+              ([node]) => node.level === undefined
+            ))
         ) {
           return;
         }
 
         editor.update((tx) => {
+          if (!tx.blocks.reset({ unset: ['level'] })) return;
           if (editor.plugin(BaseListPlugin).installed) {
             tx.plugin(BaseListPlugin).clear();
           }
-          if (heading.installed) tx.plugin(BaseHeadingPlugin).setLevel(null);
-          else tx.blocks.reset();
         });
       },
     },
@@ -398,10 +387,10 @@ export function TurnIntoToolbarButton() {
           }
 
           editor.update((tx) => {
+            if (!tx.plugin(BaseHeadingPlugin).setLevel(level)) return;
             if (editor.plugin(BaseListPlugin).installed) {
               tx.plugin(BaseListPlugin).clear();
             }
-            tx.plugin(BaseHeadingPlugin).setLevel(level);
           });
         },
       });
@@ -435,8 +424,8 @@ export function TurnIntoToolbarButton() {
           }
 
           editor.update((tx) => {
+            if (!tx.blocks.reset({ unset: ['level'] })) return;
             tx.plugin(BaseListPlugin).clear();
-            tx.blocks.reset();
             tx.plugin(BaseListPlugin).toggle({ type });
           });
         },

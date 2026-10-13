@@ -126,8 +126,7 @@ export const OverridePlugin = definePlugin('override', {}).extend(
                 return;
               }
               if (action === 'reset') {
-                tx.blocks.reset({ at: blockPath });
-                handled = true;
+                handled = tx.blocks.reset({ at: blockPath });
                 return;
               }
               if (action === 'lineBreak') {
@@ -276,10 +275,14 @@ export const OverridePlugin = definePlugin('override', {}).extend(
               return null;
             }
 
-            return state.transaction((tx) => {
-              if (action === 'reset') tx.blocks.reset({ at: blockPath });
-              else tx.nodes.lift({ at: blockPath });
+            let applied = true;
+            const transaction = state.transaction((tx) => {
+              if (action === 'reset') {
+                applied = tx.blocks.reset({ at: blockPath });
+              } else tx.nodes.lift({ at: blockPath });
             });
+
+            return applied ? transaction : null;
           };
           const selection = state.selection();
 

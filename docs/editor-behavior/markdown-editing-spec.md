@@ -1716,6 +1716,8 @@ Ownership:
 - `EDIT-DETAILS-BS-START-001` `locked` `⌫`: at the Summary start, the Details unwraps
 - `EDIT-DETAILS-BS-BODY-001` `locked` `⌫`: at the start of the first body block, the caret moves to the end of the Summary
 - `EDIT-DETAILS-DEL-CLOSED-001` `locked` `⌦`: at the Summary end with a closed body, the caret skips the hidden body without changing content
+- `EDIT-DETAILS-BS-AFTER-CLOSED-001` `locked` `⌫`: in an empty block after a closed Details, the block goes and the caret moves to the end of the Summary; deleting a whole block after a closed Details, as a text range or a selected block, also leaves the caret at the Summary end, never in the hidden body
+- `EDIT-DETAILS-TITLE-LEVEL-001` `locked`: a heading shortcut or a Markdown heading prefix in the Summary gives it that `level` and keeps it the first child with its node key; the same shortcut again removes the level, and a heading prefix typed into a Summary that already has the level stays text
 
 ## Drawing Blocks
 

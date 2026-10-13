@@ -7,9 +7,10 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { BaseCodeBlockPlugin } from 'platejs';
+import { BaseCodeBlockPlugin, BaseHeadingPlugin, type Value } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { AuthoredPlugin } from 'platejs/authored';
+import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import {
   createEditor,
   type Editor,
@@ -110,3 +111,122 @@ test.each(['', 'After'])(
     });
   }
 );
+
+const runSlash = async ({
+  caret,
+  heading = true,
+  initialValue,
+  option,
+  query,
+}: {
+  caret: { offset: number; path: number[] };
+  heading?: boolean;
+  initialValue: Value;
+  option: string;
+  query: string;
+}) => {
+  let viewEditor: Editor | undefined;
+  const CaptureEditor = () => {
+    viewEditor = useEditor();
+
+    return null;
+  };
+  const editor = createEditor({
+    plugins: [
+      ParagraphPlugin,
+      ...(heading ? [BaseHeadingPlugin] : []),
+      BaseDetailsSummaryPlugin,
+      BaseDetailsPlugin,
+      ...SlashKit,
+    ],
+    initialValue,
+  });
+  const mounted = render(
+    <EditorRoot editor={editor}>
+      <EditorContent data-testid="editor" />
+      <CaptureEditor />
+    </EditorRoot>
+  );
+  const root = mounted.getByTestId('editor');
+
+  await act(async () => {
+    root.focus();
+    viewEditor!.update.selection.set(caret);
+  });
+
+  for (const data of `/${query}`) {
+    await act(async () => {
+      root.dispatchEvent(
+        new InputEvent('beforeinput', {
+          bubbles: true,
+          cancelable: true,
+          data,
+          inputType: 'insertText',
+        })
+      );
+    });
+  }
+
+  await screen.findByRole('option', { name: option });
+  fireEvent.keyDown(root, { code: 'Enter', key: 'Enter' });
+  await waitFor(() => {
+    expect(screen.queryByRole('option', { name: option })).toBeNull();
+  });
+  mounted.unmount();
+
+  return viewEditor!.read.children();
+};
+
+const closedDetails = (title: Record<string, unknown>): Value => [
+  {
+    children: [
+      { children: [{ text: '' }], type: 'summary', ...title },
+      { children: [{ text: 'Body' }], type: 'paragraph' },
+    ],
+    type: 'details',
+  },
+];
+
+test.each(['', 'Title '])(
+  'formats a closed title %j with Heading 2 in place',
+  async (text) => {
+    const children = closedDetails({ children: [{ text }] });
+
+    expect(
+      await runSlash({
+        caret: { offset: text.length, path: [0, 0, 0] },
+        initialValue: children,
+        option: 'Heading 2',
+        query: 'h2',
+      })
+    ).toEqual(closedDetails({ children: [{ text }], level: 2 }));
+  }
+);
+
+test('turns a leveled title into a plain title through Text without Heading', async () => {
+  expect(
+    await runSlash({
+      caret: { offset: 6, path: [0, 0, 0] },
+      heading: false,
+      initialValue: closedDetails({ children: [{ text: 'Title ' }], level: 2 }),
+      option: 'Text',
+      query: 'paragraph',
+    })
+  ).toEqual(closedDetails({ children: [{ text: 'Title ' }] }));
+});
+
+test('inserts a paragraph after an H2 with text through Text', async () => {
+  expect(
+    await runSlash({
+      caret: { offset: 5, path: [0, 0] },
+      initialValue: [
+        { children: [{ text: 'Head ' }], level: 2, type: 'heading' },
+      ],
+      option: 'Text',
+      query: 'paragraph',
+    })
+  ).toEqual([
+    { children: [{ text: 'Head ' }], level: 2, type: 'heading' },
+    { children: [{ text: '' }], type: 'paragraph' },
+  ]);
+});

@@ -54,7 +54,14 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
         decode: ({ element }) => {
           const heading = element.firstElementChild;
           const level =
-            heading && /^H[1-6]$/.test(heading.tagName)
+            heading &&
+            /^H[1-6]$/.test(heading.tagName) &&
+            [...element.childNodes].every(
+              (child) =>
+                child === heading ||
+                (child.nodeType === child.TEXT_NODE &&
+                  !child.textContent?.trim())
+            )
               ? Number(heading.tagName.slice(1))
               : undefined;
           return isSummaryHeadingLevel(level) ? { level } : {};
@@ -437,39 +444,41 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
   }))
   .extend(({ editor, plugin, store }) => ({
     commands: ({ around, handle }) => [
-      around(editorCommands.deleteFragment, ({ state, next }) => {
-        const result = next();
-        if (result === false) return false;
+      ...[editorCommands.delete, editorCommands.deleteFragment].map((command) =>
+        around(command, ({ state, next }) => {
+          const result = next();
+          if (result === false) return false;
 
-        return state.transaction.extend(result, (tx) => {
-          if (tx.selection.nodes().length > 0) return;
-          const selection = tx.selection();
-          if (!selection || !RangeApi.isCollapsed(selection)) return;
+          return state.transaction.extend(result, (tx) => {
+            if (tx.selection.nodes().length > 0) return;
+            const selection = tx.selection();
+            if (!selection || !RangeApi.isCollapsed(selection)) return;
 
-          const closedDetails = tx.nodes.above({
-            at: selection,
-            type: plugin,
-            match: (node, path) => {
-              const key = state.key(path);
-              return (
-                ElementApi.isElement(node) &&
-                key !== null &&
-                !store.get('isOpen', key)
-              );
-            },
-            mode: 'highest',
+            const closedDetails = tx.nodes.above({
+              at: selection,
+              type: plugin,
+              match: (node, path) => {
+                const key = state.key(path);
+                return (
+                  ElementApi.isElement(node) &&
+                  key !== null &&
+                  !store.get('isOpen', key)
+                );
+              },
+              mode: 'highest',
+            });
+            if (
+              !closedDetails ||
+              selection.focus.path[closedDetails[1].length] === 0
+            ) {
+              return;
+            }
+
+            const point = tx.points.end(closedDetails[1].concat(0));
+            if (point) tx.selection.set(point);
           });
-          if (
-            !closedDetails ||
-            selection.focus.path[closedDetails[1].length] === 0
-          ) {
-            return;
-          }
-
-          const point = tx.points.end(closedDetails[1].concat(0));
-          if (point) tx.selection.set(point);
-        });
-      }),
+        })
+      ),
       around(editorCommands.insertBreak, ({ state, next }) => {
         const selection = state.selection();
 
@@ -588,7 +597,9 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
               mode: 'highest',
             });
           const point =
-            closedDetails && state.points.end(closedDetails[1].concat(0));
+            closedDetails &&
+            PathApi.isAncestor(PathApi.parent(block[1]), closedDetails[1]) &&
+            state.points.end(closedDetails[1].concat(0));
 
           if (point) {
             return state.transaction((tx) => {

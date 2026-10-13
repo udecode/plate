@@ -1,7 +1,5 @@
 import {
   type BasePluginDefinitionInput,
-  BaseParagraphPlugin,
-  type BlockUpsertOptions,
   type Element,
   defineInputRule,
   definePlugin,
@@ -11,7 +9,6 @@ import {
   schema,
   PLUGINS,
 } from '../../../core';
-import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
@@ -89,6 +86,7 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
         editor,
         PLUGINS.detailsSummary
       )?.elementType;
+
       return (node.type === type ||
         (summaryType !== undefined && node.type === summaryType)) &&
         isHeadingLevel(node.level)
@@ -96,67 +94,36 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
         : undefined;
     },
   }),
+}).extend(({ read }) => ({
   update: ({ editor, tx, schema: { type } }) => {
     const summaryType = getCompiledPlateModelBinding(
       editor,
       PLUGINS.detailsSummary
     )?.elementType;
-    const isSummary = (node: Readonly<Element>) =>
-      summaryType !== undefined && node.type === summaryType;
-    const setLevel = (level: HeadingLevel | null) =>
-      tx.blocks.set((node) => ({
-        level: level ?? undefined,
-        type: isSummary(node)
-          ? node.type
-          : level === null
-            ? editor.plugin(BaseParagraphPlugin).schema.type
-            : type,
-      }));
+    const setLevel = (level: HeadingLevel) => {
+      const blocks = tx.nodes.blocks();
+
+      if (blocks.length === 0) return false;
+
+      return (
+        blocks.every(([node]) => read.level(node) === level) ||
+        tx.blocks.set((node) =>
+          summaryType !== undefined && node.type === summaryType
+            ? { level }
+            : { level, type }
+        )
+      );
+    };
 
     return {
       setLevel,
-      toggle: ({ level }: ToggleHeadingOptions) => {
-        const blocks = tx.nodes.blocks();
-        if (!blocks.some(([node]) => isSummary(node))) {
-          return tx.blocks.toggle({ level, type });
-        }
-        const active = blocks.some(
-          ([node]) =>
-            (node.type === type || isSummary(node)) && node.level === level
-        );
-        return setLevel(active ? null : level);
-      },
-      upsert: (
-        { level }: ToggleHeadingOptions,
-        options: BlockUpsertOptions = {}
-      ) =>
-        applyBlockInsertion({
-          mode: 'upsert',
-          options,
-          tx,
-          matches: (node) =>
-            isSummary(node) || (node.type === type && node.level === level),
-          onReuse: ([node, path]) => {
-            if (isSummary(node)) tx.blocks.set({ level }, { at: path });
-          },
-          insert: (insertOptions) => {
-            const node = tx.schema.create(type, { level });
-            if (
-              insertOptions.at === undefined ||
-              insertOptions.after !== undefined
-            ) {
-              tx.blocks.insertAfter(node, {
-                ...insertOptions,
-                at: insertOptions.after,
-              });
-            } else {
-              tx.nodes.insert(node, insertOptions);
-            }
-          },
-        }),
+      toggle: ({ level }: ToggleHeadingOptions) =>
+        tx.nodes.blocks().some(([node]) => read.level(node) === level)
+          ? tx.blocks.reset({ unset: 'level' })
+          : setLevel(level),
     };
   },
-});
+}));
 
 export const HeadingRules = {
   markdown: ({

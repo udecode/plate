@@ -36,7 +36,7 @@ import {
 } from '@/registry/components/editor/context-menu';
 import { cutBlocks } from '@/registry/components/editor/dnd';
 
-type LeafFormat = 'heading-1' | 'heading-2' | 'heading-3' | 'text';
+type LeafFormat = `heading-${1 | 2 | 3 | 4 | 5 | 6}` | 'text';
 type Value = 'askAI' | null;
 
 const readBlocks = (
@@ -60,15 +60,9 @@ const getLeafFormat = (
   node: Element
 ): LeafFormat => {
   const heading = editor.plugin(BaseHeadingPlugin);
+  const level = heading.installed ? heading.read.level(node) : undefined;
 
-  if (heading.installed) {
-    const level = heading.read.level(node);
-    if (level === 1) return 'heading-1';
-    if (level === 2) return 'heading-2';
-    if (level === 3) return 'heading-3';
-  }
-
-  return 'text';
+  return level === undefined ? 'text' : `heading-${level}`;
 };
 
 export function BlockContextMenu({ children }: WrapContentProps) {
@@ -114,11 +108,10 @@ export function BlockContextMenu({ children }: WrapContentProps) {
         if (editor.read.view.isReadOnly()) return;
 
         editor.update((tx) => {
+          if (!tx.blocks.reset({ unset: ['level'] })) return;
           if (editor.plugin(BaseListPlugin).installed) {
             tx.plugin(BaseListPlugin).clear();
           }
-          if (headingInstalled) tx.plugin(BaseHeadingPlugin).setLevel(null);
-          else tx.blocks.reset();
         });
       },
     },
@@ -138,10 +131,10 @@ export function BlockContextMenu({ children }: WrapContentProps) {
             if (!heading.installed || editor.read.view.isReadOnly()) return;
 
             editor.update((tx) => {
+              if (!tx.plugin(BaseHeadingPlugin).setLevel(level)) return;
               if (editor.plugin(BaseListPlugin).installed) {
                 tx.plugin(BaseListPlugin).clear();
               }
-              tx.plugin(BaseHeadingPlugin).setLevel(level);
             });
           },
         }))

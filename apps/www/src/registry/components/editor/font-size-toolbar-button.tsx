@@ -77,6 +77,7 @@ export function FontSizeToolbarButton() {
 
     const heading = innerEditor.plugin(HeadingPlugin);
     const level = heading.installed ? heading.read.level(block) : undefined;
+
     return level
       ? (FONT_SIZE_MAP[level] ?? DEFAULT_FONT_SIZE)
       : DEFAULT_FONT_SIZE;

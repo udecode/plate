@@ -56,10 +56,9 @@ for (const route of ['/blocks/details-demo', '/blocks/playground']) {
               element.parentElement?.getAttribute('data-editor-path')
             )
           );
-      // Keep the single-row hit-area check outside the edge autoscroll zone.
-      await row.evaluate((element) =>
-        element.scrollIntoView({ block: 'center' })
-      );
+      const moveOutOfEdgeZone = () =>
+        row.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+      await moveOutOfEdgeZone();
       const rowBox = await row.boundingBox();
       const outerBox = await outer.boundingBox();
       if (!rowBox || !outerBox) throw new Error('Missing Details geometry');

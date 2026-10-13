@@ -45,16 +45,16 @@ const value = [
 
 Set `level` from `1` to `6` on a Summary to render it as a heading. Omit `level` for a plain title. The Summary stays the first child; formatting never moves its text into the body.
 
-With `HeadingPlugin` installed, choose Heading or Text in the formatting menu, use the heading keyboard shortcuts, or type a Markdown heading prefix in the title. An empty title also accepts a slash-menu Heading. The headless equivalent is:
+With `HeadingPlugin` installed, choose a heading in the formatting or slash menu, use the heading keyboard shortcuts, or type a Markdown heading prefix in the title. Text in the same menus removes the level. The headless equivalent is:
 
 ```tsx
 import { BaseHeadingPlugin } from 'platejs';
 
 editor.plugin(BaseHeadingPlugin).update.setLevel(2);
-editor.plugin(BaseHeadingPlugin).update.setLevel(null);
+editor.update.blocks.reset({ unset: ['level'] });
 ```
 
-`setLevel` applies the requested level to every selected text block; `null` removes the Summary level or converts an ordinary block to Paragraph. `toggle({ level })` retains shortcut toggle behavior. Use these semantic operations instead of changing a Summary's `type` directly.
+`setLevel` gives every selected block the level: a Summary keeps its type and other blocks become headings. It returns `false` and changes nothing when the schema refuses any of them. `reset` with `unset: ['level']` turns each selected block into its parent's default, so a title stays a title without its level. `toggle({ level })` removes the level when a selected block already has it and sets it otherwise. Use these operations instead of changing a Summary's `type` directly.
 
 ## Kit usage
 
@@ -196,7 +196,7 @@ Body text.
 
 Decoding ignores `open` and `name`, and encoding never writes them.
 
-A heading title uses `<summary><h2>Title</h2></summary>` in HTML and `<summary level="2">Title</summary>` in Markdown. Both preserve inline formatting.
+A heading title uses `<summary><h2>Title</h2></summary>` in HTML and `<summary level="2">Title</summary>` in Markdown. Both preserve inline formatting. HTML reads the level only when the heading is the summary's only child.
 
 ## Toolbar
 
