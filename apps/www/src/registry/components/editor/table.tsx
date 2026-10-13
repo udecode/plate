@@ -127,6 +127,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
   const editor = useEditor();
   const { api } = useEditor().plugin(TablePlugin);
   const readOnly = useEditorReadOnly();
+  const blockSelected = useElementSelected({ mode: 'node' });
   const hasControls = !readOnly;
   const controlColumnWidth = hasControls ? TABLE_CONTROL_COLUMN_WIDTH : 0;
   const dragIndicatorRef = React.useRef<HTMLDivElement>(null);
@@ -342,10 +343,7 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
         ...props.attributes,
         'data-node-selection-highlight': 'self',
       }}
-      className={cn(
-        'overflow-x-auto py-5',
-        hasControls && '-ml-4 *:data-[slot=node-selection-highlight]:left-4'
-      )}
+      className={cn('overflow-x-auto py-5', hasControls && '-ml-4')}
       style={{ paddingLeft: marginLeft }}
     >
       <TableResizeContext value={tableResizeContext}>
@@ -368,6 +366,8 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
             ref={tableRef}
             className={cn(
               'mr-0 ml-px table h-px table-fixed border-collapse',
+              blockSelected &&
+                '[&_:is(td,th)[data-editor-node-key]]:before:z-10 [&_:is(td,th)[data-editor-node-key]]:before:bg-brand/[.13]',
               hasExpandedCellSelection && '[&_*::selection]:bg-transparent'
             )}
             style={tableStyle}
