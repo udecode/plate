@@ -36,7 +36,7 @@ import {
   type PliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
-import { getPointPastBoundarySkip } from './caret-engine';
+import { getPointOutsideSkipBoundary } from './caret-engine';
 import {
   getDocumentBoundaryNavigationTarget,
   getExitBoundaryPoint,
@@ -1468,23 +1468,21 @@ const moveMarkupSelection = ({
     const boundary = coverage?.getBoundaryForPoint(target.point);
 
     if (boundary?.selectionPolicy === 'skip') {
-      let point = coverage?.getPointOutsideBoundary(boundary, target.point, {
+      const point = getPointOutsideSkipBoundary({
+        boundary,
+        coverage,
+        editor,
+        point: target.point,
         reverse: !forward,
+        skipAdjacentBy:
+          extend &&
+          action.kind === 'move' &&
+          (action.axis === 'horizontal' || action.axis === 'word')
+            ? action.axis === 'word'
+              ? 'word'
+              : 'character'
+            : undefined,
       });
-      if (
-        point &&
-        extend &&
-        action.kind === 'move' &&
-        (action.axis === 'horizontal' || action.axis === 'word')
-      ) {
-        point = getPointPastBoundarySkip({
-          coverage,
-          editor,
-          point,
-          reverse: !forward,
-          unit: action.axis === 'word' ? 'word' : 'character',
-        });
-      }
       target = point
         ? {
             point: rootPlitePoint(point, root),

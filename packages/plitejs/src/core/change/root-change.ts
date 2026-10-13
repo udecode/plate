@@ -2844,7 +2844,7 @@ export class RootChange {
     let position = 0;
 
     for (let index = 0; index < this.sections.length; index += 2) {
-      const length = this.sections[index];
+      let length = this.sections[index];
       const inserted = this.sections[index + 1];
 
       if (inserted === -1) {
@@ -2865,6 +2865,18 @@ export class RootChange {
             nodeProps(document.node(entry.path)),
             this.data[index >> 1] as readonly PropertyModification[]
           )
+        );
+      } else if (inserted === 0) {
+        while (this.sections[index + 3] === 0) {
+          index += 2;
+          length += this.sections[index];
+        }
+        addSection(
+          sections,
+          data,
+          0,
+          length,
+          document.slice(position, position + length)
         );
       } else {
         const original =
@@ -2951,6 +2963,25 @@ export class RootChange {
     }
 
     return changed ? new RootChange(this.sections, data) : this;
+  }
+
+  *insertedSlices(): Generator<
+    readonly [fromB: number, slice: PreparedTokenSlice]
+  > {
+    for (
+      let index = 0, position = 0;
+      index < this.sections.length;
+      index += 2
+    ) {
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+      const slice = this.data[index / 2];
+
+      if (inserted > 0 && slice instanceof PreparedTokenSlice) {
+        yield [position, slice];
+      }
+      position += inserted < 0 ? length : inserted;
+    }
   }
 
   iterChangedRanges(

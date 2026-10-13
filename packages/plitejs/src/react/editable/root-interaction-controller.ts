@@ -25,6 +25,7 @@ import {
   type DOMPhaseScheduler,
   type DOMPhaseTiming,
 } from '../../dom/internal';
+import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
 import {
   type focusPliteEditable,
   focusPliteEditableAfterEventFrame,
@@ -51,7 +52,6 @@ import {
   isSameOwner,
   mouseEventTargetToElement,
 } from './content-root-owner-target';
-import { getDragAutoScrollTarget } from './drag-auto-scroll-target';
 import {
   findMountedEditableDOMRuntime,
   getMountedEditableDOMRuntime,
@@ -104,8 +104,6 @@ export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selectio
 type PliteFocusableEditor = Parameters<typeof focusPliteEditable>[0];
 const NATIVE_EDITABLE_TEXT_TARGET =
   '[data-editor-string], [data-editor-zero-width], [data-editor-leaf], [data-editor-node="text"]';
-
-export { canScrollY, getDragAutoScrollTarget } from './drag-auto-scroll-target';
 
 export type RootInteractionEditor = ReactRuntimeEditor &
   PliteFocusableEditor & {

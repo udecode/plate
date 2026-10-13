@@ -1216,7 +1216,7 @@ const undoAuthoredEdit = (
     acceptedPositions = captured.positions;
     acceptedChange = restoreAuthoredHistoryNodeKeys(
       acceptedChange,
-      accepted as JsonEditorValue,
+      accepted,
       acceptedPositions,
       nodeKeys?.accepted
     );
@@ -1237,7 +1237,7 @@ const undoAuthoredEdit = (
   const projected = apply(projectedChange, before.projected);
   projectedChange = restoreAuthoredHistoryNodeKeys(
     projectedChange,
-    projected as JsonEditorValue,
+    projected,
     projectedPositions,
     nodeKeys?.proposed
   );

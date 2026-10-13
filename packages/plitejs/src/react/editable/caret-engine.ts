@@ -12,7 +12,7 @@ import {
   type Selection,
   SelectionApi,
 } from '../..';
-import { Hotkeys } from '../../dom';
+import { type DOMCoverageBoundary, Hotkeys } from '../../dom';
 import type { DOMCoverageSession, DOMPhaseScheduler } from '../../dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
@@ -300,22 +300,14 @@ const restoreSelectionIfMovementEnteredBoundary = ({
     return;
   }
 
-  const skipPoint = coverage?.getPointOutsideBoundary(
-    enteredBoundary,
-    nextSelection.focus,
-    { reverse }
-  );
-
-  const focusPoint =
-    skipPoint && preserveAnchorOnBoundarySkip && boundarySkipUnit
-      ? getPointPastBoundarySkip({
-          coverage,
-          editor,
-          point: skipPoint,
-          reverse,
-          unit: boundarySkipUnit,
-        })
-      : skipPoint;
+  const focusPoint = getPointOutsideSkipBoundary({
+    boundary: enteredBoundary,
+    coverage,
+    editor,
+    point: nextSelection.focus,
+    reverse,
+    skipAdjacentBy: preserveAnchorOnBoundarySkip ? boundarySkipUnit : undefined,
+  });
 
   dispatchCommand(editor, editorCommands.select, {
     target: focusPoint
@@ -329,7 +321,36 @@ const restoreSelectionIfMovementEnteredBoundary = ({
   });
 };
 
-export const getPointPastBoundarySkip = ({
+export const getPointOutsideSkipBoundary = ({
+  boundary,
+  coverage,
+  editor,
+  point,
+  reverse,
+  skipAdjacentBy,
+}: {
+  boundary: DOMCoverageBoundary;
+  coverage: DOMCoverageSession | undefined;
+  editor: ReactRuntimeEditor;
+  point: Point;
+  reverse: boolean;
+  skipAdjacentBy?: MoveUnit;
+}): Point | null => {
+  const outside =
+    coverage?.getPointOutsideBoundary(boundary, point, { reverse }) ?? null;
+
+  return outside && skipAdjacentBy
+    ? getPointPastBoundarySkip({
+        coverage,
+        editor,
+        point: outside,
+        reverse,
+        unit: skipAdjacentBy,
+      })
+    : outside;
+};
+
+const getPointPastBoundarySkip = ({
   coverage,
   editor,
   point,

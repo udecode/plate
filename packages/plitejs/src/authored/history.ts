@@ -6,7 +6,6 @@ import {
 import { DocumentIndex } from '../core/change/document-index';
 import {
   getDocumentSliceNodeKeys,
-  PreparedTokenSlice,
   type JsonEditorValue,
 } from '../core/change/tokens';
 import { defineEffect } from '../core/transaction-values';
@@ -38,25 +37,14 @@ export const captureAuthoredHistoryNodeKeys = (
   for (const [root, change] of getInternalDocumentChangeEntries(inverse)) {
     const indexed = readRecord(positions, root);
     if (!indexed?.present) continue;
-    let position = 0;
-    for (
-      let section = 0, data = 0;
-      section < change.sections.length;
-      section += 2, data++
-    ) {
-      const length = change.sections[section];
-      const inserted = change.sections[section + 1];
-      const slice = change.data[data];
-      if (inserted > 0 && slice instanceof PreparedTokenSlice) {
-        for (const [offset, key] of getDocumentSliceNodeKeys(slice)) {
-          const token = authoredPositionAt(
-            indexed.positions,
-            position + offset
-          ).right;
-          if (token) recovered.push({ root, ...token, key });
-        }
+    for (const [from, slice] of change.insertedSlices()) {
+      for (const [offset, key] of getDocumentSliceNodeKeys(slice)) {
+        const token = authoredPositionAt(
+          indexed.positions,
+          from + offset
+        ).right;
+        if (token) recovered.push({ root, ...token, key });
       }
-      position += inserted < 0 ? length : inserted;
     }
   }
   return recovered;

@@ -28,6 +28,7 @@ export type {
   DOMDropTargetOptions,
 } from './plugin/dom-drag';
 export type { DropIndicator } from './utils/drop-indicator';
+export type { DOMGeometryRect } from './plugin/dom-geometry';
 export type {
   DOMApi,
   DOMDragApi,

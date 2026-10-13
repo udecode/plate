@@ -773,9 +773,9 @@ const withViewTransaction = <V extends Value>(
           transaction.blocks.insertAfter(nodes, options)
         ),
       reset: (options) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.blocks.reset(options);
-        }),
+        runImplicitSelectionMutation(options, () =>
+          transaction.blocks.reset(options)
+        ) ?? false,
       set: setViewBlocks,
       toggle: toggleViewBlocks,
     }),

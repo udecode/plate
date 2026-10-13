@@ -49,7 +49,8 @@
 - Add document replacement, block-relative insertion, live location targets, structural type selectors, function-only node predicates, and explicit selection predicates
 - Export the `documentReplacement` annotation so package-owned resources can revoke authority on equal-content whole-document replacement.
 - Read the nearest schema block with `nodes.block()` and every relevant block with `nodes.blocks()`. Mutate semantic blocks through `blocks.duplicate`, `blocks.insertAfter`, `blocks.set`, and props-first `blocks.toggle`; keep generic structural lifting under `nodes.lift`.
-- Reset targeted blocks to their immediate parent or document-root schema default with `blocks.reset()`, preserving children, selection, live node keys, and lifecycle-approved properties.
+- Reset targeted blocks to their immediate parent or document-root schema default with `blocks.reset({ at?, unset? })`, preserving children, selection, live node keys, and lifecycle-approved properties. `unset` removes named properties the default does not set. Reset checks every target first and returns `false` with nothing changed when a default is not allowed at a target's position.
+- Apply a different property patch to each selected block with `blocks.set((node) => patch)`. Every patch is checked before any is written, and `blocks.set` returns `false` when one is refused or nothing changes.
 - Infer node read and mutation targets from `type` selectors or type-guard `match` predicates. Remove caller-selected node result generics and shallow object matchers. Keep `at` independent from the selected node type, and put insertion split-target selection under `split: { type, match }`.
 - Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
 - Add explicit document repair and mutually exclusive mark toggles
@@ -83,5 +84,3 @@
 - Serialize deterministic schema contracts, classify structural diffs, and restore validator-backed runtime schemas from committed contracts. Contract readers recompute the structural fingerprint from authoritative content, and restoration rejects any derived table that differs from the source contributions.
 
 **Migration:** Replace `@platejs/slate` with `plitejs` and migrate Slate transforms and operations to `editor.read`, `editor.update`, or active transaction APIs. Replace `defineExtension({ name, ...definition })` with `definePlugin(name, definition)`, pass a name to `defineEditorSchema`, call `createEditorView(editor, options)` with the editor itself, and replace live `editor.extend(extension)` with `editor.install(plugin)`. Register state fields through a nominal plugin's `stateFields` collection instead of passing field handles as plugins. Replace calls such as `nodes.find<Foo>({ match: { type: 'foo' } })` with `nodes.find({ type: fooHandle, match: (foo, path) => ... })`.
-
-- Apply different property patches to selected blocks with `blocks.set(node => patch)`, validating the entire selection before changing any block.

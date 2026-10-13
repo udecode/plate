@@ -33,6 +33,7 @@ import {
   indicateDOMDropTarget,
   resolveDOMDropTarget,
 } from '../../dom/plugin/dom-drag';
+import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
 import {
   beginDragSession,
   clearDragSession,
@@ -50,7 +51,6 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
-import { getDragAutoScrollTarget } from './drag-auto-scroll-target';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableCommand } from './editing-kernel';
 import {

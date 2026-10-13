@@ -1879,6 +1879,83 @@ describe('plite transforms contract', () => {
     );
   });
 
+  it('blocks.reset refuses every target when one default does not fit its position', () => {
+    const initialValue = [
+      {
+        type: 'box',
+        children: [
+          { level: 1, type: 'heading', children: [{ text: 'Title' }] },
+          { level: 2, type: 'heading', children: [{ text: 'Sub' }] },
+        ],
+      },
+    ];
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-required-position', {
+          elements: {
+            box: {
+              content: schema.content.prefix(
+                [{ element: 'heading', properties: { level: 1 } }],
+                schema.content.types(['heading', 'paragraph'], {
+                  default: { type: 'paragraph' },
+                })
+              ),
+            },
+            heading: {
+              content: schema.content.text(),
+              properties: { level: property.number() },
+            },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['box'], { min: 1 }),
+        }),
+      ],
+      initialValue,
+    });
+
+    editor.update.selection.setNodes([
+      [0, 0],
+      [0, 1],
+    ]);
+
+    assert.equal(editor.update.blocks.reset(), false);
+    assert.deepEqual(editor.read.children(), initialValue);
+  });
+
+  it('blocks.reset removes unset properties the default keeps', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-unset', {
+          elements: {
+            box: {
+              content: schema.content.types(['title'], {
+                default: { type: 'title' },
+                min: 1,
+              }),
+            },
+            title: {
+              content: schema.content.text(),
+              properties: { level: property.number() },
+            },
+          },
+          root: schema.content.types(['box'], { min: 1 }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'box',
+          children: [{ level: 2, type: 'title', children: [{ text: 'T' }] }],
+        },
+      ],
+    });
+
+    editor.update.blocks.reset({ at: [0, 0], unset: 'level' });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'box', children: [{ type: 'title', children: [{ text: 'T' }] }] },
+    ]);
+  });
+
   it('blocks.toggle changes only exact disjoint node selections', () => {
     const editor = createEditor({
       plugins: [
