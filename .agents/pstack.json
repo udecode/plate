@@ -133,7 +133,7 @@
     }
   ],
   "synced": {
-    "block": "6b4832dd37016a0710b7ea8caa1d5b28ad2a4e65da2a32ac7f5b2dfbfe445b75",
+    "block": "75bb0fb9a3cae270469331952e6812b7e5b26f95d22b3b805d54f1fbfad754d2",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
@@ -146,9 +146,9 @@
       ".agents/pstack/reply.mjs": "36db86ef0f6af915d4a2ac58fea6be62417234a0b1348462e61c8d4f46fd71a3",
       ".agents/pstack/reread.mjs": "17d61f197ea79896c67ed3dc184f02e67d71621188030313250f0229c98349fb",
       ".agents/pstack/decisions-check.mjs": "8d771f8c0c59df3220de2a41cdac7092f6e0c2f19c3bebc5e46d5242aceb416c",
-      ".agents/pstack/plan-open.mjs": "701ba00e8b651851de566c26a28142606bd0694f109ca52dce274d54966b69fb",
+      ".agents/pstack/plan-open.mjs": "b379db52274bbf459b2c8909120c5c7ad4ec46a2302016a63d1e3e6e81a08423",
       ".agents/pstack/plan-page.mjs": "16f12de5bcafa5aea6bbd3a388c8ad64e113f08a443d3c6fb17cee12fe45287f",
-      ".agents/pstack/status.mjs": "be0e23111171f10ef00e19cdc6204a10ea2b7e1fa83130333dc18d8c3f8b930f",
+      ".agents/pstack/status.mjs": "622bee320707662246fe21985c64f49bc8e1238af0a534245aeee6a1e31b4e6a",
       ".agents/pstack/rules/close.md": "8d0c0c46467dcac8fa6221ef07082c89e506e16913b0148152e6ffe59d960000",
       ".agents/pstack/rules/long-runs.md": "b9215736b3a004bfdb2e0bf79d93bf540bff84e533abd8fca3cc4661db4a30a9",
       ".agents/pstack/rules/pages.md": "4a437e2db42fe0d01c41777ffb5e9788b23d5bb1bac5f94a4fb58f20f19b5ec9",
@@ -156,8 +156,8 @@
       ".agents/pstack/rules/reflect.md": "97fa96ea1959494709313f2d7877345dc3f8d0fd93e88d35e0ea0d22a18f58d2",
       ".agents/pstack/rules/tests.md": "853d8650c2a897d36f2ac97883c7e0fb265cf950a0f9567e22fc816682a1bb70",
       ".agents/pstack/rules/title.md": "3790bd24dd6a72b615d394823a5ea46e7fc949e2d3d2248a6358c29d1ed19db5",
-      ".agents/pstack/rules/trails.md": "b8c612258a1ebf5cb720b6c9b72203a17d5d95741f9c36db5562a7664c9e80a1"
+      ".agents/pstack/rules/trails.md": "df808e0228a76435614d01f349bf7fb810f9e9679ddd6c471b8a337b81931e35"
     },
-    "source": "ed74867945c5e8941a94c64a8c612bea8ba5b5c1"
+    "source": "79a85c19cb28d34b13ab9ac986499d30e4851e32"
   }
 }
