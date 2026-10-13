@@ -18,13 +18,31 @@
       "targets": [
         "details",
         "details-static",
+        "heading",
+        "heading-static",
         "turn-into-toolbar-button",
         "block-menu",
         "slash",
-        "font-size-toolbar-button",
-        "heading",
-        "heading-static"
+        "font-size-toolbar-button"
       ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-13-table-block-selection",
+      "href": "/registry/changelog/2026-10-13-table-block-selection.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep table block selections consistent in color and confined to their cells",
+      "change": {
+        "type": "source",
+        "date": "2026-10-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["table"],
       "entries": 1,
       "diagnostics": []
     },

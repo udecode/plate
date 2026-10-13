@@ -10,6 +10,19 @@
       "2026-10-13-details-heading-titles",
       "2026-08-29-semantic-details"
     ],
+    "heading": [
+      "2026-10-13-details-heading-titles",
+      "2026-09-09-navigation-view-feedback",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "heading-static": [
+      "2026-10-13-details-heading-titles",
+      "2026-09-07-docx-bookmarks",
+      "2026-08-31-inline-component-props",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
     "turn-into-toolbar-button": [
       "2026-10-13-details-heading-titles",
       "2026-09-18-ui-commands-and-installation",
@@ -55,16 +68,21 @@
       "2026-07-24-feature-toolbar-plugin-portals",
       "2025-11-20-biome-ultracite"
     ],
-    "heading": [
-      "2026-10-13-details-heading-titles",
-      "2026-09-09-navigation-view-feedback",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "heading-static": [
-      "2026-10-13-details-heading-titles",
-      "2026-09-07-docx-bookmarks",
-      "2026-08-31-inline-component-props",
+    "table": [
+      "2026-10-13-table-block-selection",
+      "2026-10-01-block-move-actions",
+      "2026-10-01-native-block-drag",
+      "2026-09-10-table-selection-rendering",
+      "2026-09-08-drag-preparation",
+      "2026-09-05-bound-editor-selection-styles",
+      "2026-08-26-hide-block-drag-handles-during-table-selection",
+      "2026-08-26-hide-table-selection-highlight",
+      "2026-08-26-schema-driven-block-selection",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-24-single-selection-authority",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-colocate-editor-component-families",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
@@ -538,23 +556,6 @@
       "2026-08-27-self-contained-editor-utilities",
       "2026-08-24-react-compiler-owned-editor-state",
       "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "table": [
-      "2026-10-01-block-move-actions",
-      "2026-10-01-native-block-drag",
-      "2026-09-10-table-selection-rendering",
-      "2026-09-08-drag-preparation",
-      "2026-09-05-bound-editor-selection-styles",
-      "2026-08-26-hide-block-drag-handles-during-table-selection",
-      "2026-08-26-hide-table-selection-highlight",
-      "2026-08-26-schema-driven-block-selection",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-24-single-selection-authority",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
     "media-image": [
