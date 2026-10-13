@@ -4,6 +4,8 @@ import {
 } from '@platejs/test/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
+import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
+
 const PAINT_CASE_ID = 'table:hide-native-highlight-during-multi-cell-drag';
 const ROW_HANDLE_PAINT_CASE_ID = 'table:paint-row-handle-selection';
 const CONTRACT_CASE_ID = 'table:contract-selection-on-drag-back';
@@ -88,7 +90,7 @@ const changedPixelCount = (left: PixelImage, right: PixelImage) => {
       Math.abs(left.data[index + 2] - right.data[index + 2])
     );
 
-    if (delta > 16) count += 1;
+    if (delta > 3) count += 1;
   }
 
   return count;
@@ -146,8 +148,8 @@ const setTableSelectionLayerControl = async (
       [data-test-table-selection-control="absent"] [data-slot="node-selection-highlight"] {
         display: none !important;
       }
-      [data-test-table-selection-control="absent"] [data-table-cell-selected="true"]::before {
-        display: none !important;
+      [data-test-table-selection-control="absent"] :is(td, th)[data-editor-node-key]::before {
+        background-color: transparent !important;
       }
     `;
     document.head.append(style);
@@ -1561,3 +1563,226 @@ test(RESIZE_HANDLE_CASE_ID, async ({ page }, testInfo) => {
     runtimeErrors.stop();
   }
 });
+
+for (const direction of ['up', 'down'] as const) {
+  test(`table:paint-mixed-block-selection-${direction}`, async ({
+    page,
+  }, testInfo) => {
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+    try {
+      await page.setViewportSize({ width: 1280, height: 1000 });
+      await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
+      await page.goto('/blocks/playground');
+      const root = page.locator(EDITOR_ROOT).first();
+      const editor = createBrowserEditorHarness(page, testInfo.title, root);
+      await editor.ready({ editor: 'visible', text: 'Feature' });
+      const table = root.locator('table').first();
+      const tableBlock = table.locator(
+        'xpath=ancestor::*[@data-editor-node="element"][1]'
+      );
+      const tableIndex = Number(
+        await tableBlock.getAttribute('data-editor-path')
+      );
+      const neighborIndex = tableIndex + (direction === 'up' ? -1 : 1);
+      const neighbor = root
+        .locator(`[data-editor-path="${neighborIndex}"]`)
+        .first();
+      const modelSelection = () =>
+        root.evaluate((element: PliteBrowserHandleElement) =>
+          element.__pliteBrowserHandle?.getModelSelection()
+        );
+      const documentChildren = () =>
+        root.evaluate(
+          (element: PliteBrowserHandleElement) =>
+            element.__pliteBrowserHandle?.getValue().children
+        );
+      const original = await documentChildren();
+      const cells = table.locator(
+        'td[data-editor-node-key], th[data-editor-node-key]'
+      );
+      const cellCount = await cells.count();
+      const selectedCells = table.locator('[data-table-cell-selected="true"]');
+      const tableHighlight = tableBlock.locator(
+        ':scope > [data-slot="node-selection-highlight"]'
+      );
+      const neighborText = await neighbor.innerText();
+      await table.evaluate((element) =>
+        element.scrollIntoView({ block: 'center' })
+      );
+      const bounds = await table.boundingBox();
+      const neighborBounds = await neighbor.boundingBox();
+      if (!bounds || !neighborBounds) {
+        throw new Error('Missing table drag geometry');
+      }
+      const lastCell = await cells.last().boundingBox();
+      const blockBounds = await tableBlock.boundingBox();
+      if (!lastCell || !blockBounds) {
+        throw new Error('Missing table paint bounds');
+      }
+      const marginClip = {
+        x: Math.ceil(lastCell.x + lastCell.width + 8),
+        y: Math.ceil(lastCell.y + 8),
+        width: 40,
+        height: 12,
+      };
+      expect(marginClip.x + marginClip.width).toBeLessThan(
+        blockBounds.x + blockBounds.width
+      );
+      await page.mouse.move(1100, 900);
+      const unselectedMargin = await capturePixels(page, marginClip);
+      const cellColors = () =>
+        cells.evaluateAll((elements) =>
+          elements.map(
+            (element) => getComputedStyle(element, '::before').backgroundColor
+          )
+        );
+      const startY = bounds.y + bounds.height / 2;
+      await page.mouse.move(bounds.x - 90, startY);
+      await page.mouse.down();
+      await page.mouse.move(bounds.x + 140, startY + 6, { steps: 10 });
+      await expect
+        .poll(modelSelection)
+        .toMatchObject({ kind: 'node', paths: [[tableIndex]] });
+      await expect(selectedCells).toHaveCount(cellCount);
+      await expect(tableHighlight).toHaveCount(0);
+      const singleTableColors = await cellColors();
+      await page.mouse.move(
+        bounds.x + 200,
+        direction === 'up'
+          ? neighborBounds.y + 2
+          : neighborBounds.y + neighborBounds.height - 2,
+        { steps: 15 }
+      );
+      await page.mouse.up();
+      await afterPaint(page);
+      const paths =
+        direction === 'up'
+          ? [[neighborIndex], [tableIndex]]
+          : [[tableIndex], [neighborIndex]];
+      runtimeErrors.assertNone();
+      await expect.poll(modelSelection).toMatchObject({ kind: 'node', paths });
+      const referenceColor = await neighbor
+        .locator(':scope > [data-slot="node-selection-highlight"]')
+        .evaluate((element) => getComputedStyle(element).backgroundColor);
+      expect
+        .soft(
+          singleTableColors,
+          'Single table selection uses the Block Selection color'
+        )
+        .toEqual(Array.from({ length: cellCount }, () => referenceColor));
+      expect
+        .soft(
+          await cellColors(),
+          'Mixed table selection uses the same Block Selection color'
+        )
+        .toEqual(Array.from({ length: cellCount }, () => referenceColor));
+      expect
+        .soft(
+          await tableHighlight.count(),
+          'Table block selection must not paint an outer container overlay'
+        )
+        .toBe(0);
+      await expect(selectedCells).toHaveCount(0);
+      expect(await page.evaluate(() => window.getSelection()?.toString())).toBe(
+        ''
+      );
+      expect(await documentChildren()).toEqual(original);
+
+      const clip = await table.boundingBox();
+      if (!clip) throw new Error('Missing selected table geometry');
+      await page.mouse.move(1100, 900);
+      const selectedMargin = await capturePixels(page, marginClip);
+      expect
+        .soft(
+          changedPixelCount(unselectedMargin.image, selectedMargin.image),
+          'Block selection leaves the empty space beside the table unchanged'
+        )
+        .toBeLessThanOrEqual(20);
+      const actual = await capturePixels(page, clip);
+      await setTableSelectionLayerControl(page, 'single');
+      const single = await capturePixels(page, clip);
+      await setTableSelectionLayerControl(page, 'absent');
+      const absentA = await capturePixels(page, clip);
+      const absentB = await capturePixels(page, clip);
+      await setTableSelectionLayerControl(page, 'duplicate');
+      const duplicate = await capturePixels(page, clip);
+      await setTableSelectionLayerControl(page, 'actual');
+      const positive = changedPixelCount(single.image, absentA.image);
+      const negative = changedPixelCount(absentA.image, absentB.image);
+      const extraLayer = changedPixelCount(duplicate.image, single.image);
+      expect
+        .soft(positive, 'A single table selection paint layer is visible')
+        .toBeGreaterThan(200);
+      expect
+        .soft(negative, 'Absent selection paint is stable')
+        .toBeLessThanOrEqual(20);
+      expect
+        .soft(extraLayer, 'An extra table paint layer is detected')
+        .toBeGreaterThan(200);
+      expect
+        .soft(
+          changedPixelCount(actual.image, single.image),
+          'Table uses exactly one selection paint layer'
+        )
+        .toBeLessThanOrEqual(
+          Math.max(20, negative * 4, Math.min(positive, extraLayer) * 0.02)
+        );
+      await testInfo.attach('paint-controls', {
+        body: JSON.stringify({
+          referenceColor,
+          singleTableColors,
+          mixedColors: await cellColors(),
+          positive,
+          negative,
+          extraLayer,
+        }),
+        contentType: 'application/json',
+      });
+      await page.screenshot({
+        path: testInfo.outputPath('mixed-table-selection.png'),
+      });
+      await afterPaint(page);
+      expect(await cellColors()).toEqual(
+        Array.from({ length: cellCount }, () => referenceColor)
+      );
+      await expect.poll(modelSelection).toMatchObject({ kind: 'node', paths });
+
+      const contract = direction === 'up' ? 'Shift+ArrowDown' : 'Shift+ArrowUp';
+      const extend = direction === 'up' ? 'Shift+ArrowUp' : 'Shift+ArrowDown';
+      await page.keyboard.press(contract);
+      await expect
+        .poll(modelSelection)
+        .toMatchObject({ kind: 'node', paths: [[tableIndex]] });
+      await expect(selectedCells).toHaveCount(cellCount);
+      await expect(tableHighlight).toHaveCount(0);
+      expect(await cellColors()).toEqual(
+        Array.from({ length: cellCount }, () => referenceColor)
+      );
+      await page.keyboard.press(extend);
+      await expect.poll(modelSelection).toMatchObject({ kind: 'node', paths });
+      await expect(selectedCells).toHaveCount(0);
+      await expect(tableHighlight).toHaveCount(0);
+      expect(await cellColors()).toEqual(
+        Array.from({ length: cellCount }, () => referenceColor)
+      );
+
+      const payload = await editor.clipboard.copyNativeEventPayload();
+      expect(payload.html).toContain('<table');
+      expect(payload.text).toContain(neighborText);
+      expect(payload.text).toContain('Feature');
+      await page.keyboard.press('Backspace');
+      await expect(root.locator('table')).toHaveCount(0);
+      expect(await editor.get.modelBlockTexts()).not.toContain(neighborText);
+      await page.keyboard.press('ControlOrMeta+z');
+      await expect.poll(documentChildren).toEqual(original);
+      await cells.first().click();
+      await expect(tableHighlight).toHaveCount(0);
+      await expect(selectedCells).toHaveCount(0);
+      runtimeErrors.assertNone();
+    } finally {
+      await setTableSelectionLayerControl(page, 'actual');
+      await page.mouse.up();
+      runtimeErrors.stop();
+    }
+  });
+}
