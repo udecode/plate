@@ -28,3 +28,10 @@ editor.update((tx) => {
 回调必须同步完成。使用 `at` 显式指定其他位置，省略时使用当前选区。
 读取事务内状态时使用 `tx`，以观察同一草稿中的写入。
 参见[事务](/docs/transactions)与[编辑行为](/docs/editing-behavior)。
+
+## 粘贴策略
+
+单次 `editor.update.slice.replace` 和 `editor.update.fragment.replace`
+会运行命令处理器与[粘贴落点读取](/docs/api/core/plate-plugin)。
+回调中的 `tx.slice.replace`、`tx.fragment.replace` 和独立的
+`editor.read.slice.fit` 直接适配内容，不运行这些命令策略。

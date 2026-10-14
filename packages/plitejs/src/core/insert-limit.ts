@@ -50,7 +50,7 @@ const getReplacementLength = <V extends Value>(
   return selection ? getText(editor, selection).length : 0;
 };
 
-const getRemainingLength = <V extends Value>(
+export const getInsertRemainingLength = <V extends Value>(
   editor: InsertLimitSource<V>,
   options: { at?: InsertLimitTarget } | undefined
 ) => {
@@ -70,7 +70,7 @@ export const limitTextInsert = <V extends Value>(
   text: string,
   options: { at?: InsertLimitTarget } | undefined
 ) => {
-  const remaining = getRemainingLength(editor, options);
+  const remaining = getInsertRemainingLength(editor, options);
 
   return remaining === undefined || text.length <= remaining
     ? text
@@ -106,13 +106,10 @@ const limitNode = <TNode extends ElementOrTextIn<Value>>(
   return { ...node, children };
 };
 
-export const limitFragmentInsert = <V extends Value>(
-  editor: InsertLimitSource<V>,
+const limitFragmentToLength = <V extends Value>(
   fragment: ReadonlyArray<DescendantIn<V>>,
-  options: { at?: InsertLimitTarget } | undefined
+  remainingLength: number | undefined
 ) => {
-  const remainingLength = getRemainingLength(editor, options);
-
   if (remainingLength === undefined) return fragment;
 
   const fragmentLength = fragment.reduce(
@@ -128,6 +125,12 @@ export const limitFragmentInsert = <V extends Value>(
     .map((node) => limitNode(node, remaining))
     .filter((node): node is DescendantIn<V> => node !== null);
 };
+
+export const limitFragmentInsert = <V extends Value>(
+  editor: InsertLimitSource<V>,
+  fragment: ReadonlyArray<DescendantIn<V>>,
+  options: { at?: InsertLimitTarget } | undefined
+) => limitFragmentToLength(fragment, getInsertRemainingLength(editor, options));
 
 const getOpenEdgeDepth = (
   content: ReadonlyArray<ElementOrTextIn<Value>>,
@@ -146,14 +149,12 @@ const getOpenEdgeDepth = (
   }
 };
 
-/** Apply the editor's insertion limit while preserving valid open slice edges. */
-export const limitSliceInsert = <V extends Value>(
-  editor: InsertLimitSource<V>,
+export const limitSliceToLength = <V extends Value>(
   slice: ContentSlice<V>,
-  options: { at?: InsertLimitTarget } | undefined
+  remainingLength: number | undefined
 ): ContentSlice<V> => {
   const content = slice.content as ReadonlyArray<DescendantIn<V>>;
-  const limited = limitFragmentInsert(editor, content, options);
+  const limited = limitFragmentToLength(content, remainingLength);
 
   if (limited === content) return slice;
 
@@ -163,6 +164,18 @@ export const limitSliceInsert = <V extends Value>(
     Math.min(slice.openEnd, getOpenEdgeDepth(limited, 'end'))
   );
 };
+
+export const sliceFitsLength = (
+  slice: ContentSlice,
+  remainingLength: number | undefined
+) => limitFragmentToLength(slice.content, remainingLength) === slice.content;
+
+export const limitSliceInsert = <V extends Value>(
+  editor: InsertLimitSource<V>,
+  slice: ContentSlice<V>,
+  options: { at?: InsertLimitTarget } | undefined
+): ContentSlice<V> =>
+  limitSliceToLength(slice, getInsertRemainingLength(editor, options));
 
 export const limitNodeInsert = <
   V extends Value,

@@ -482,6 +482,24 @@ Renders after a node's children inside its primary component.
 
 <APIItem name="readMiddleware" type="PluginReadMiddlewareFactory">
   Typed middleware over declared Plate `editorReads` descriptors.
+
+  `editorReads.slice.landing` shapes what a paste lands after command handlers
+  delegate to the default replacement, on the command's current draft. Its input
+  has the handlers' slice as `source`, what fits `maxLength` as `slice`, and
+  the `target` the editor resolved. A target is `empty` for a caret in an empty
+  block, or `context` with the block where the paste starts. The read returns the
+  `slice` to fit and may add `replaceEmpty`, whole blocks that replace an
+  `empty` target. The editor checks that proposal against the schema and
+  `maxLength`, and fits `slice` when the proposal does not fit. The first
+  replacing block keeps all of the target's properties when its type matches,
+  what the schema allows when it is a text block of another type, and none when
+  it is an object or void. It never keeps `omitTargetProperties`. The
+  [Clipboard guide](/docs/clipboard#where-a-paste-lands) has an example. A middleware
+  that rewrites `slice` must rewrite or drop `replaceEmpty`. A terminal handler
+  bypasses this read. Raw `tx.slice.replace`, `tx.fragment.replace`, and
+  `state.slice.fit` do not run it. Import the descriptor and the
+  `SliceLanding`, `SliceLandingInput` and `SliceLandingTarget` types from
+  `platejs`.
 </APIItem>
 
 <APIItem name="commands" type="PluginDefinitionInput['commands']">

@@ -242,8 +242,10 @@ import { normalizeEditorValue } from './initial-value';
 import {
   limitNodeInsert,
   limitSliceInsert,
+  limitSliceToLength,
   limitTextInsert,
 } from './insert-limit';
+import { getReplaceableEmptyBlock } from './is-empty-element';
 import { reportEditorLifecycleError } from './lifecycle-error';
 import {
   getCommitListeners,
@@ -4069,24 +4071,73 @@ const materializeContentSliceRoots = (
   }
 };
 
-const fitSliceIntoActiveDraft = <V extends Value>(
-  editor: Editor<V>,
-  slice: import('../interfaces/editor').ContentSlice,
-  options?: Parameters<EditorTransactionSliceApi<V>['replace']>[1],
-  internal?: Readonly<{
-    boundary?: boolean;
-    childrenAt?: NodeKey | Path;
-    rootsPrepared?: boolean;
-  }>
+const discardReplacedNodeKeys = (
+  editor: Editor,
+  entries: readonly NodeEntry[]
 ) => {
+  const snapshot = getTransactionSnapshot(editor);
+
+  if (!snapshot || entries.length === 0) return;
+  const currentIndex = getTransactionSnapshotIndex(
+    getEditorRuntimeOwner(editor),
+    snapshot,
+    getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
+  );
+
+  for (const [node, path] of entries) {
+    for (const [, relativePath] of NodeApi.nodes(node)) {
+      const nodeKey = currentIndex.keyAt([...path, ...relativePath]);
+
+      if (nodeKey) snapshot.discardedNodeKeys.add(nodeKey);
+    }
+  }
+};
+
+type CommandSliceFit = Readonly<{
+  remaining: number | undefined;
+  replaceEmptyBlock?: true;
+}>;
+
+const commandSliceFits = new WeakMap<object, CommandSliceFit>();
+
+export const withCommandSliceFit = <T>(
+  editor: Editor,
+  fit: CommandSliceFit,
+  run: () => T
+): T => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  commandSliceFits.set(owner, fit);
+  try {
+    return run();
+  } finally {
+    commandSliceFits.delete(owner);
+  }
+};
+
+type SliceFitOptions<V extends Value = Value> = Parameters<
+  EditorTransactionSliceApi<V>['replace']
+>[1];
+
+const withSliceFitTarget = <V extends Value, T>(
+  editor: Editor<V>,
+  options: SliceFitOptions<V>,
+  childrenAt: NodeKey | Path | undefined,
+  run: (
+    localOptions:
+      | ResolvedNodeTargetOptions<NonNullable<SliceFitOptions<V>>>
+      | undefined,
+    root: string | undefined
+  ) => T | false
+): T | false => {
   const childrenRoot =
-    internal?.childrenAt === undefined
+    childrenAt === undefined
       ? undefined
-      : typeof internal.childrenAt === 'string'
-        ? getRuntimeTargetRoot(editor, internal.childrenAt)
+      : typeof childrenAt === 'string'
+        ? getRuntimeTargetRoot(editor, childrenAt)
         : getCurrentChildrenRoot(editor);
 
-  if (internal?.childrenAt !== undefined && !childrenRoot) return false;
+  if (childrenAt !== undefined && !childrenRoot) return false;
   const runtimeRoot = childrenRoot ?? getNodeTargetRoot(editor, options?.at);
   const preResolvedOptions = runtimeRoot
     ? undefined
@@ -4101,188 +4152,254 @@ const fitSliceIntoActiveDraft = <V extends Value>(
       : preResolvedOptions;
 
     if (resolvedOptions === null) return false;
-    let localOptions =
+
+    return run(
       resolvedOptions?.at === undefined
         ? resolvedOptions
-        : {
-            ...resolvedOptions,
-            at: localizeLocation(resolvedOptions.at),
-          };
-    const state = getStateView(editor);
-    const childrenAt =
-      internal?.childrenAt === undefined
-        ? undefined
-        : typeof internal.childrenAt === 'string'
-          ? getPathByNodeKey(editor, internal.childrenAt)
-          : internal.childrenAt;
+        : { ...resolvedOptions, at: localizeLocation(resolvedOptions.at) },
+      root
+    );
+  });
+};
 
-    if (internal?.childrenAt !== undefined) {
-      if (!childrenAt || childrenAt.length === 0) return false;
-      const parent = state.nodes.get(childrenAt)?.[0];
+export const readAtSliceFitTarget = <T>(
+  editor: Editor,
+  viewRoot: string | undefined,
+  options: SliceFitOptions,
+  read: (
+    state: EditorStateView,
+    at: Location | undefined,
+    root: string | undefined
+  ) => T
+): T | false => {
+  const owner = getEditorRuntimeOwner(editor);
+  const resolve = () =>
+    withSliceFitTarget(owner, options, undefined, (localOptions, root) =>
+      read(
+        getStateView(owner),
+        localOptions?.at,
+        root === undefined ? undefined : toPublicRoot(root)
+      )
+    );
 
-      if (!parent || !NodeApi.isElement(parent)) return false;
-      const anchor = state.points.start(childrenAt);
-      const focus = state.points.end(childrenAt);
+  return viewRoot === undefined
+    ? resolve()
+    : runWithMutationRoot(owner, viewRoot, resolve);
+};
 
-      if (!anchor || !focus) return false;
-      localOptions = {
-        at: { anchor, focus },
-        hanging: true,
-      };
-    }
-    const sourceSlice = ContentSlice.fromJSON<V>(slice);
-    const inputSlice = internal?.rootsPrepared
-      ? sourceSlice
-      : remapContentSliceRoots(editor, sourceSlice);
-    const limitedSlice = limitSliceInsert(state, inputSlice, localOptions);
+const fitSliceIntoActiveDraft = <V extends Value>(
+  editor: Editor<V>,
+  slice: import('../interfaces/editor').ContentSlice,
+  options?: SliceFitOptions<V>,
+  internal?: Readonly<{
+    boundary?: boolean;
+    childrenAt?: NodeKey | Path;
+    rootsPrepared?: boolean;
+  }>
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const commandFit = commandSliceFits.get(owner);
 
-    if (limitedSlice.content.length === 0 && inputSlice.content.length > 0) {
-      return false;
-    }
+  commandSliceFits.delete(owner);
 
-    let at = getTransactionView(editor).resolveTarget({ at: localOptions?.at });
-
-    if (!at) at = getDefaultInsertLocation(editor);
-    if (SelectionApi.isNode(at)) return false;
-
-    let range: Range | undefined;
-    let insertionBoundary: Readonly<{ from: number; to: number }> | undefined;
-
-    if (LocationApi.isRange(at)) {
-      range = at;
-    } else {
-      const point = LocationApi.isPoint(at)
-        ? at
-        : internal?.boundary
+  return withSliceFitTarget(
+    editor,
+    options,
+    internal?.childrenAt,
+    (resolvedOptions, root) => {
+      let localOptions = resolvedOptions;
+      const state = getStateView(editor);
+      const childrenAt =
+        internal?.childrenAt === undefined
           ? undefined
-          : state.points.get(at, { edge: 'start' });
+          : typeof internal.childrenAt === 'string'
+            ? getPathByNodeKey(editor, internal.childrenAt)
+            : internal.childrenAt;
 
-      if (point) {
-        range = { anchor: point, focus: point };
-      } else if (LocationApi.isPath(at) && at.length > 0) {
-        const parentPath = PathApi.parent(at);
-        const index = getDefined(at.at(-1));
-        const parentChildren =
-          parentPath.length === 0
-            ? getChildren(editor)
-            : state.nodes.children(parentPath);
+      if (internal?.childrenAt !== undefined) {
+        if (!childrenAt || childrenAt.length === 0) return false;
+        const parent = state.nodes.get(childrenAt)?.[0];
 
-        if (index >= 0 && index <= parentChildren.length) {
-          const boundaryPoint =
-            (index < parentChildren.length
-              ? state.points.start([...parentPath, index])
-              : undefined) ??
-            (index > 0
-              ? state.points.end([...parentPath, index - 1])
-              : undefined);
+        if (!parent || !NodeApi.isElement(parent)) return false;
+        const anchor = state.points.start(childrenAt);
+        const focus = state.points.end(childrenAt);
 
-          if (boundaryPoint) {
-            const position = DocumentIndex.fromValue(
-              getChildren(editor)
-            ).childPosition(parentPath, index);
+        if (!anchor || !focus) return false;
+        localOptions = {
+          at: { anchor, focus },
+          hanging: true,
+        };
+      }
+      const sourceSlice = ContentSlice.fromJSON<V>(slice);
+      const inputSlice = internal?.rootsPrepared
+        ? sourceSlice
+        : remapContentSliceRoots(editor, sourceSlice);
+      const limitedSlice = commandFit
+        ? limitSliceToLength(inputSlice, commandFit.remaining)
+        : limitSliceInsert(state, inputSlice, localOptions);
 
-            range = { anchor: boundaryPoint, focus: boundaryPoint };
-            insertionBoundary = { from: position, to: position };
+      if (limitedSlice.content.length === 0 && inputSlice.content.length > 0) {
+        return false;
+      }
+
+      let at = getTransactionView(editor).resolveTarget({
+        at: localOptions?.at,
+      });
+
+      if (!at) at = getDefaultInsertLocation(editor);
+      if (SelectionApi.isNode(at)) return false;
+
+      let range: Range | undefined;
+      let insertionBoundary: Readonly<{ from: number; to: number }> | undefined;
+
+      if (LocationApi.isRange(at)) {
+        range = at;
+      } else {
+        const point = LocationApi.isPoint(at)
+          ? at
+          : internal?.boundary
+            ? undefined
+            : state.points.get(at, { edge: 'start' });
+
+        if (point) {
+          range = { anchor: point, focus: point };
+        } else if (LocationApi.isPath(at) && at.length > 0) {
+          const parentPath = PathApi.parent(at);
+          const index = getDefined(at.at(-1));
+          const parentChildren =
+            parentPath.length === 0
+              ? getChildren(editor)
+              : state.nodes.children(parentPath);
+
+          if (index >= 0 && index <= parentChildren.length) {
+            const boundaryPoint =
+              (index < parentChildren.length
+                ? state.points.start([...parentPath, index])
+                : undefined) ??
+              (index > 0
+                ? state.points.end([...parentPath, index - 1])
+                : undefined);
+
+            if (boundaryPoint) {
+              const position = DocumentIndex.fromValue(
+                getChildren(editor)
+              ).childPosition(parentPath, index);
+
+              range = { anchor: boundaryPoint, focus: boundaryPoint };
+              insertionBoundary = { from: position, to: position };
+            }
           }
         }
       }
-    }
-    if (!range) return false;
-    if (!insertionBoundary && internal?.childrenAt === undefined) {
-      range = landTextWrite(editor, range, getChildren(editor));
-    }
-
-    if (!insertionBoundary && !localOptions?.hanging) {
-      range = state.ranges.unhang(range, { voids: localOptions?.voids });
-    }
-    if (limitedSlice.content.length === 0 && RangeApi.isCollapsed(range)) {
-      return false;
-    }
-    if (
-      !insertionBoundary &&
-      !localOptions?.voids &&
-      getEditorRuntime(editor).void({ at: range })
-    ) {
-      return false;
-    }
-
-    if (childrenAt && root !== MAIN_ROOT_KEY) {
-      range = {
-        anchor: { ...range.anchor, root },
-        focus: { ...range.focus, root },
-      };
-    }
-    const parentBounds = childrenAt
-      ? DocumentIndex.fromValue(getChildren(editor)).nodeRange(childrenAt)
-      : undefined;
-    const fitBounds = parentBounds
-      ? { from: parentBounds.from + 1, to: parentBounds.to - 1 }
-      : insertionBoundary;
-
-    const fit = () =>
-      getEditorSchema(editor).fit(limitedSlice, {
-        apply: (step, selection) => {
-          applyDocumentChangeStep(
-            editor,
-            step,
-            selection
-              ? {
-                  selectionAfter: selection,
-                  selectionRoot: range.anchor.root ?? MAIN_ROOT_KEY,
-                }
-              : {}
-          );
-        },
-        builder: getActiveDocumentChangeBuilder(editor),
-        target: {
-          at: range,
-          ...(fitBounds
-            ? {
-                contentBounds: fitBounds,
-                exactBounds: fitBounds,
-              }
-            : {}),
-          kind: 'range',
-        },
-      });
-    let fitted: boolean;
-
-    if (internal?.rootsPrepared) return fit();
-
-    if (limitedSlice.roots) {
-      const rootSpec = createTransactionSpec(editor, () => {
-        materializeContentSliceRoots(editor, limitedSlice);
-      });
-      let continuationFitted = false;
-      const continuation = extendTransactionSpec(editor, rootSpec, () => {
-        continuationFitted = fit();
-      });
-
-      fitted = continuationFitted;
-      if (fitted) {
-        try {
-          const schema: InternalEditorSchemaApi = getEditorSchema(editor);
-
-          schema.assertDocument(
-            continuation.changes.apply(
-              getActiveDocumentChangeBuilder(editor)
-                .value as EditorDocumentValue
-            )
-          );
-        } catch (error) {
-          if (error instanceof EditorSchemaValidationError) return false;
-          throw error;
-        }
-        applyTransactionSpec(editor, continuation);
+      if (!range) return false;
+      if (!insertionBoundary && internal?.childrenAt === undefined) {
+        range = landTextWrite(editor, range, getChildren(editor));
       }
-    } else {
-      fitted = fit();
+
+      if (!insertionBoundary && !localOptions?.hanging) {
+        range = state.ranges.unhang(range, { voids: localOptions?.voids });
+      }
+      if (limitedSlice.content.length === 0 && RangeApi.isCollapsed(range)) {
+        return false;
+      }
+      if (
+        !insertionBoundary &&
+        !localOptions?.voids &&
+        getEditorRuntime(editor).void({ at: range })
+      ) {
+        return false;
+      }
+
+      const emptyBlock = commandFit?.replaceEmptyBlock
+        ? getReplaceableEmptyBlock(
+            range,
+            (path) => state.nodes.get(path)?.[0],
+            state.schema
+          )
+        : null;
+
+      if (commandFit?.replaceEmptyBlock && !emptyBlock) return false;
+      if (childrenAt && root !== MAIN_ROOT_KEY) {
+        range = {
+          anchor: { ...range.anchor, root },
+          focus: { ...range.focus, root },
+        };
+      }
+      const parentBounds = childrenAt
+        ? DocumentIndex.fromValue(getChildren(editor)).nodeRange(childrenAt)
+        : undefined;
+      const fitBounds = parentBounds
+        ? { from: parentBounds.from + 1, to: parentBounds.to - 1 }
+        : insertionBoundary;
+      const replacedEntries = emptyBlock ? [emptyBlock] : [];
+
+      const fit = () =>
+        getEditorSchema(editor).fit(limitedSlice, {
+          apply: (step, selection) => {
+            discardReplacedNodeKeys(editor, replacedEntries);
+            applyDocumentChangeStep(
+              editor,
+              step,
+              selection
+                ? {
+                    selectionAfter: selection,
+                    selectionRoot: range.anchor.root ?? MAIN_ROOT_KEY,
+                  }
+                : {}
+            );
+          },
+          builder: getActiveDocumentChangeBuilder(editor),
+          target: {
+            at: range,
+            ...(fitBounds
+              ? {
+                  contentBounds: fitBounds,
+                  exactBounds: fitBounds,
+                }
+              : {}),
+            kind: 'range',
+            ...(emptyBlock ? { replaceEmptyBlock: true } : {}),
+          },
+        });
+      let fitted: boolean;
+
+      if (internal?.rootsPrepared) return fit();
+
+      if (limitedSlice.roots) {
+        const rootSpec = createTransactionSpec(editor, () => {
+          materializeContentSliceRoots(editor, limitedSlice);
+        });
+        let continuationFitted = false;
+        const continuation = extendTransactionSpec(editor, rootSpec, () => {
+          continuationFitted = fit();
+        });
+
+        fitted = continuationFitted;
+        if (fitted) {
+          try {
+            const schema: InternalEditorSchemaApi = getEditorSchema(editor);
+
+            schema.assertDocument(
+              continuation.changes.apply(
+                getActiveDocumentChangeBuilder(editor)
+                  .value as EditorDocumentValue
+              )
+            );
+          } catch (error) {
+            if (error instanceof EditorSchemaValidationError) return false;
+            throw error;
+          }
+          applyTransactionSpec(editor, continuation);
+        }
+      } else {
+        fitted = fit();
+      }
+
+      if (!fitted) return false;
+
+      return true;
     }
-
-    if (!fitted) return false;
-
-    return true;
-  });
+  );
 };
 
 export type InternalSliceChildrenTarget = NodeKey | Path;
@@ -6604,18 +6721,7 @@ const getUpdateView = <
         return false;
       }
 
-      const snapshot = getTransactionSnapshot(editor);
-      if (snapshot) {
-        const currentIndex = getTransactionSnapshotIndex(
-          getEditorRuntimeOwner(editor),
-          snapshot,
-          getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
-        );
-        for (const [, relativePath] of NodeApi.nodes(replacedNode)) {
-          const nodeKey = currentIndex.keyAt([...at, ...relativePath]);
-          if (nodeKey) snapshot.discardedNodeKeys.add(nodeKey);
-        }
-      }
+      discardReplacedNodeKeys(editor, [[replacedNode, at]]);
 
       const newSelection =
         options.select && replacements.length > 0

@@ -84,6 +84,21 @@ const numbers = (editor: ReturnType<typeof createEditor>) =>
     );
 
 describe('AIChatPlugin list output', () => {
+  it('keeps decimal output separate from a Roman list', () => {
+    const editor = createEditor(
+      [
+        item('I', { listStyle: 'upper-roman' }),
+        item('II', { listStyle: 'upper-roman' }),
+      ],
+      [1]
+    );
+
+    editor.plugin(AIChatPlugin).api.setPreview('1. A\n2. B');
+    editor.plugin(AIChatPlugin).api.insertBelow();
+
+    expect(numbers(editor)).toEqual([1, 2, 1, 2]);
+  });
+
   it('continues the list it inserts a numbered list below', () => {
     const editor = createEditor(
       [

@@ -441,7 +441,7 @@ for (const scale of [1, 0.75]) {
           })
       );
       await page.mouse.move(fileBox.x + 60, fileBox.y + 8, { steps: 8 });
-      await expect(file.locator('figcaption')).toBeVisible();
+      await growLikeLoadingMedia(file);
       await expect
         .poll(async () => {
           const box = await next.boundingBox();
@@ -482,6 +482,11 @@ for (const scale of [1, 0.75]) {
     }
   });
 }
+
+const growLikeLoadingMedia = (block: Locator) =>
+  block.evaluate((element: HTMLElement) => {
+    element.style.paddingBottom = '48px';
+  });
 
 const reshape = (scroller: Locator, shape: 'cut' | 'tall') =>
   scroller.evaluate((el: HTMLElement, kind) => {

@@ -121,6 +121,7 @@ const exactPublicPackageRuntimeExportExpectations = {
     'defineDocumentMigrations',
     'extractLegacyCommentRanges',
     'migrateDocument',
+    'migrateListIdentity',
     'migrateV54',
   ],
   'platejs/yjs': ['YjsUpdatePolicy', 'yjs'],

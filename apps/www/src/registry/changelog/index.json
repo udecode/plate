@@ -184,6 +184,33 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-13-media-caption-preview",
+      "href": "/registry/changelog/2026-10-13-media-caption-preview.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep empty media captions hidden on select, restore image preview and add the media toolbar to file, audio and video",
+      "change": {
+        "type": "source",
+        "date": "2026-10-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "caption",
+        "media-image",
+        "media-audio",
+        "media-embed",
+        "media-file",
+        "media-video",
+        "media-preview-dialog",
+        "media-toolbar"
+      ],
+      "entries": 3,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-13-static-editor-previews",
       "href": "/registry/changelog/2026-10-13-static-editor-previews.json",
       "status": "draft",

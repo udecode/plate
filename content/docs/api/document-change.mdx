@@ -98,8 +98,8 @@ queries reuse that result. Other change kinds share cached aggregate membership.
 ## Fit external content
 
 Parsing, paste, and import boundaries carry open content as an
-immutable `ContentSlice`. Replace through `tx.slice` so the compiled schema
-fits the slice before one canonical change is published.
+immutable `ContentSlice`. Use `editor.update.slice.replace` to run installed
+paste policy and schema fitting before one canonical change is published.
 
 ```typescript
 import { ContentSlice } from "platejs";
@@ -126,10 +126,12 @@ editor.update.fragment.replace([
 ]);
 ```
 
-Pure commands preview the same atomic replacement with
-`state.slice.fit(slice, options?)`. Editor-level code can call
-`editor.read.slice.fit(...)`; it returns `false` or a frozen `TransactionSpec`
-without publishing.
+`state.slice.fit(slice, options?)` previews canonical fitting without running
+replacement command handlers or the paste landing read. Editor-level code can
+call `editor.read.slice.fit(...)`; it returns `false` or a frozen
+`TransactionSpec` without publishing. Callback `tx.slice.replace` and
+`tx.fragment.replace` also bypass command policy. Use the one-shot update
+methods when installed paste policy must run.
 
 Detached structures use the same compiled grammar without pretending to be in
 the live document.

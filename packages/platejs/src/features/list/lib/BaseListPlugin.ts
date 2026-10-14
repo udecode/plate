@@ -1,7 +1,6 @@
 import {
   authoredVeto,
   BaseParagraphPlugin,
-  ContentSlice,
   defineInputRule,
   definePlugin,
   editorCommands,
@@ -12,7 +11,6 @@ import {
   PathApi,
   PLUGINS,
   property,
-  RangeApi,
   schema,
   SelectionApi,
   target,
@@ -28,7 +26,6 @@ import {
   type NodeKey,
   type NodeSelection,
   type NodeTarget,
-  NodeApi,
   type Path,
   type BlockInsertOptions,
   type BlockUpsertOptions,
@@ -60,7 +57,6 @@ import {
   getListRunSiblings,
   hasNeighborInList,
   joinInsertedListItem,
-  landListContent,
   readListPosition,
   resolveListIdentity,
 } from './listIdentity.internal';
@@ -73,10 +69,12 @@ import {
   isListItem,
   isListLevels,
   isListType,
+  LIST_FIELDS,
   LIST_TYPES,
   normalizeListStyle,
   readListOrdinal,
 } from './listIndex.internal';
+import { landListPaste } from './listPaste.internal';
 
 export const ListStyle = {
   ArabicIndic: 'arabic-indic',
@@ -176,16 +174,6 @@ export const BULLETED_LIST_STYLES = [
 export function isOrderedList(element: Element) {
   return element.listType === ListType.Numbered;
 }
-
-const LIST_FIELDS = [
-  'checked',
-  'listId',
-  'listLevels',
-  'listRestart',
-  'listStart',
-  'listStyle',
-  'listType',
-] as const;
 
 const getPluginType = (editor: Editor, key: string) => {
   const descriptor = getCompiledPlatePlugin(editor, key);
@@ -1340,45 +1328,73 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       };
     },
   }))
-  .extend((context) => ({
+  .extend(() => ({
     // Review marks cannot hold list numbering yet, so a list item, or a
     // block turning into one, refuses Suggesting.
     contributions: [
       authoredVeto.of((element) => (element.listType ? 'list' : null)),
     ],
-    commands: ({ around, handle }) => [
-      around(editorCommands.replaceSlice, ({ input, next, state }) => {
-        const { options, slice } = input;
-        const requested = options?.at;
-        const at =
-          requested === undefined
-            ? (state.selection() ?? undefined)
-            : NodeApi.isNode(requested)
-              ? state.nodes.path(requested)
-              : requested;
-        const content = landListContent(
-          state,
-          slice.content,
-          {
-            block: at
-              ? state.nodes.block({
-                  at: RangeApi.isRange(at) ? RangeApi.start(at) : at,
-                })?.[0]
-              : undefined,
-            kind: 'kept',
-          },
-          { headingType: getHeadingType(context.editor), placement: 'keep' }
-        );
+    readMiddleware: ({ around }) => [
+      around(editorReads.slice.landing, ({ editor, input, next, state }) =>
+        landListPaste(state, input, next(), {
+          headingType: getHeadingType(editor),
+          paragraphType: editor.plugin(BaseParagraphPlugin).schema.type,
+        })
+      ),
+      around(editorReads.transfer.source, ({ next, state }) => {
+        const selection = next();
+        const entries = selection.paths.flatMap((path) => {
+          const entry = state.nodes.get(path, { match: ElementApi.isElement });
 
-        return content === slice.content
-          ? next()
-          : next({
-              ...input,
-              slice: ContentSlice.withContent(slice, content, {
-                open: 'preserve',
-              }),
-            });
+          return entry ? [entry] : [];
+        });
+
+        return entries.some(([node]) => isListItem(node))
+          ? SelectionApi.nodes(
+              getListFamilies(state, entries).flatMap((family) =>
+                family.map(({ path }) => path)
+              ) as [Path, ...Path[]]
+            )
+          : selection;
       }),
+      around(editorReads.transfer.landing, ({ input, next, state }) => {
+        const { edge, payload, target: landingTarget } = input;
+
+        if (payload.kind !== 'nodes') return next();
+
+        const [first] = payload.nodes;
+
+        if (!first || !ElementApi.isElement(first) || !isListItem(first)) {
+          return next();
+        }
+
+        const parent = landingTarget[1].slice(0, -1);
+        const siblings = state.nodes.children(parent);
+        const indent = getListIndent(first);
+        const moving = new Set<Descendant>(payload.nodes);
+        let index =
+          (landingTarget[1].at(-1) as number) + (edge === 'after' ? 1 : 0);
+        let last = -1;
+
+        while (index < siblings.length) {
+          if (moving.has(siblings[index])) {
+            index += 1;
+            continue;
+          }
+          const end = deeperRunEnd(siblings, indent, index);
+
+          if (end < 0) break;
+          last = end;
+          index = last + 1;
+        }
+        while (last >= 0 && moving.has(siblings[last])) last -= 1;
+
+        const key = last >= 0 && state.key([...parent, last]);
+
+        return key ? { edge: 'after' as const, key } : next();
+      }),
+    ],
+    commands: ({ around, handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         if (input.direction !== 'backward') return false;
         const selection = state.selection();
@@ -1463,62 +1479,6 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           }
         },
       },
-    ],
-  })
-  .extend({
-    readMiddleware: ({ around }) => [
-      around(editorReads.transfer.source, ({ next, state }) => {
-        const selection = next();
-        const entries = selection.paths.flatMap((path) => {
-          const entry = state.nodes.get(path, { match: ElementApi.isElement });
-
-          return entry ? [entry] : [];
-        });
-
-        return entries.some(([node]) => isListItem(node))
-          ? SelectionApi.nodes(
-              getListFamilies(state, entries).flatMap((family) =>
-                family.map(({ path }) => path)
-              ) as [Path, ...Path[]]
-            )
-          : selection;
-      }),
-      around(editorReads.transfer.landing, ({ input, next, state }) => {
-        const { edge, payload, target: landingTarget } = input;
-
-        if (payload.kind !== 'nodes') return next();
-
-        const [first] = payload.nodes;
-
-        if (!first || !ElementApi.isElement(first) || !isListItem(first)) {
-          return next();
-        }
-
-        const parent = landingTarget[1].slice(0, -1);
-        const siblings = state.nodes.children(parent);
-        const indent = getListIndent(first);
-        const moving = new Set<Descendant>(payload.nodes);
-        let index =
-          (landingTarget[1].at(-1) as number) + (edge === 'after' ? 1 : 0);
-        let last = -1;
-
-        while (index < siblings.length) {
-          if (moving.has(siblings[index])) {
-            index += 1;
-            continue;
-          }
-          const end = deeperRunEnd(siblings, indent, index);
-
-          if (end < 0) break;
-          last = end;
-          index = last + 1;
-        }
-        while (last >= 0 && moving.has(siblings[last])) last -= 1;
-
-        const key = last >= 0 && state.key([...parent, last]);
-
-        return key ? { edge: 'after' as const, key } : next();
-      }),
     ],
   });
 

@@ -846,16 +846,18 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                   insertOptions.after ??
                   (at === undefined ? getCaretAnchor(editor, tx) : undefined);
                 const anchor = tx.nodes.block({ at: after })?.[0];
+                // A submit at the selection fills an empty block, as paste does.
+                const replaceEmpty =
+                  insertOptions.replaceEmpty ??
+                  insertOptions.after === undefined;
                 const inserted = tx.blocks.insertAfter(
                   elements.map(({ element }) => element),
                   {
                     ...insertOptions,
                     at: after,
-                    ...(insertOptions.replaceEmpty &&
-                    anchor &&
-                    !isReplaceableEmptyBlock(tx, anchor)
-                      ? { replaceEmpty: false }
-                      : {}),
+                    replaceEmpty:
+                      replaceEmpty &&
+                      (!anchor || isReplaceableEmptyBlock(tx, anchor)),
                   }
                 );
                 if (!inserted) return false;

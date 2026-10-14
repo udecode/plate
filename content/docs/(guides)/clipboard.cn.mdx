@@ -14,7 +14,8 @@ Clipboard operation 横跨 browser event、Plate fragment、transaction 与 DOM�
 | 可复用 package 拥有 paste/drop policy | `domCommands.insertData` interceptor | `platejs/dom` |
 | Browser MIME representation 需要 decode/encode | `dataTransferFormats` 中的 `DataTransferFormat` | `platejs/dom` |
 | Framework 需要导入 `DataTransfer` | `editor.api.dom.clipboard.insertData(data)` | `platejs/dom` |
-| 已有 decoded structural content | `tx.slice.replace(slice)` | `platejs` |
+| 已解析的结构化内容需要运行粘贴策略 | `editor.update.slice.replace(slice)` | `platejs` |
+| 事务内直接适配内容 | `tx.slice.replace(slice)` | `platejs` |
 | Detached parent 需要 fit content | `state.slice.fitContent(slice, { parent, root? })` | `platejs` |
 
 Local event interception 使用 plugin `on` handler。所有安装该 plugin 的 React
@@ -26,7 +27,8 @@ surface 都应复用同一策略时，使用 DOM insert-data command。
 2. `EditorContent` handler 可以处理 event，或让 Plate 继续。
 3. `domCommands.insertData` interceptor 可以 claim、transform 或 delegate。
 4. Plate 依次尝试 internal fragment、注册的 DataTransfer format 与 plain text。
-5. Decoded slice 在实际 range 处 fit，并通过一次 canonical replacement 提交。
+5. 替换命令运行已安装的处理器，再通过 `editorReads.slice.landing` 决定最终切片，并可为空块提出整块替换。
+6. 切片在目标处适配，并通过一次规范替换提交。
 
 ## Plugin clipboard policy
 
@@ -54,6 +56,45 @@ const PasteTodoPlugin = definePlugin('pasteTodo', {
 Interceptor 通过 `input` 接收 `DataTransfer`，并返回纯 transaction spec。Plate
 应继续 internal slice、DataTransfer-format 与 plain-text 路径时，返回 `next()`。
 Headless command 从 `ContentSlice` 开始，不让 `DataTransfer` 离开 DOM boundary。
+
+### 粘贴落在哪里
+
+命令处理器委托之后，`editorReads.slice.landing` 决定粘贴落地的内容。输入中的
+`source` 是处理器给出的切片，`slice` 是符合 `maxLength` 的部分，`target` 是解析出的
+目标。空块中的折叠光标得到 `empty`，其他情况得到 `context`，并带有粘贴起点所在的块。
+返回要落地的 `slice`，也可以加上 `replaceEmpty`，用整块内容替换 `empty` 目标。
+
+```ts
+import { definePlugin, editorReads } from 'platejs';
+
+const calloutPaste = definePlugin('calloutPaste', {
+  readMiddleware: ({ around }) => [
+    around(editorReads.slice.landing, ({ input, next }) => {
+      const landing = next();
+      const { target } = input;
+
+      if (
+        target.kind !== 'empty' ||
+        target.block[0].type !== 'callout' ||
+        landing.slice.content.length < 2
+      ) {
+        return landing;
+      }
+
+      return {
+        ...landing,
+        replaceEmpty: { omitTargetProperties: ['icon'], slice: landing.slice },
+      };
+    }),
+  ],
+});
+```
+
+使用这个插件时，粘贴两个或更多块会替换空 callout，单行文本仍落在 callout 内。Plate 按 schema 和
+`maxLength` 检查这个提议，放不下时落地 `slice`。替换内容的第一个块在类型相同时保留
+目标的全部属性，文本块换类型时保留 schema 允许的属性，对象块或 void 块不保留任何属性。
+`omitTargetProperties` 再去掉其中一些，例如第一个粘贴块本身是 callout 时的 `icon`。
+改写 `slice` 的 middleware 必须同时改写或移除 `replaceEmpty`。
 
 ## DOM clipboard API
 
@@ -273,7 +314,7 @@ format。
 
 ## Fragment 与 slice replacement
 
-已知闭合 node 使用 `tx.fragment.replace`：
+在已有事务中直接适配已知闭合内容时，使用 `tx.fragment.replace`。它不运行粘贴命令策略。需要运行 List 等插件的粘贴策略时，使用单次 `editor.update.fragment.replace(...)`。
 
 ```ts
 editor.update((tx) => {

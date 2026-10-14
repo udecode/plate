@@ -1,5 +1,7 @@
 import {
+  ContentSlice,
   createEditor,
+  SelectionApi,
   type DocumentChange,
   type EditorCommit,
   type EditorMarksOf,
@@ -121,3 +123,8 @@ const withTransfer = createEditor({ initialValue, plugins: [transfer()] });
 // @ts-expect-error the transfer action needs the transfer() plugin
 headless.api.transfer.move({ to: { edge: 'after', key: nodeKey } });
 withTransfer.api.transfer.move({ to: { edge: 'after', key: nodeKey } });
+
+editor.update.slice.replace(ContentSlice.closed<CustomValue>([]), {
+  // @ts-expect-error a paste lands at a location; a node selection is replaced through the current selection
+  at: SelectionApi.nodes([[0]]),
+});
