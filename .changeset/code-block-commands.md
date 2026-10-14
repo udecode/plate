@@ -23,6 +23,8 @@ editor.update.codeBlock.toggle();
 editor.update.codeBlock.resetBlock();
 ```
 
+`toggle()` returns `true` when it changed the document and `false` when it could not. It returns `false` when the new code block, or the paragraph a one-line code block becomes, would not fit the parent. It also returns `false` when the selection is in a named root that the editor or view running it does not edit. A code block of several lines whose paragraphs would not fit still throws, as before.
+
 Use `insert(input?, nodeOptions?)` for both empty and populated insertion paths. Configure `lowlight` and `defaultLanguage` on `CodeHighlightPlugin`; omit that plugin for unhighlighted code blocks:
 
 ```tsx

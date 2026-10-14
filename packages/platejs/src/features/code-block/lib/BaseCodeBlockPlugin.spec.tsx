@@ -1,7 +1,6 @@
+import { createLowlight } from 'lowlight';
 /** @jsxRuntime classic */
 /** @jsx jsxt */
-
-import { createLowlight } from 'lowlight';
 
 import {
   createDataTransfer,
@@ -51,6 +50,7 @@ import {
   BoldRules,
   CodeRules,
 } from '../../basic-nodes/lib/BaseMarkPlugins';
+import { BaseDetailsPlugin } from '../../details';
 import { BaseLinkPlugin, LinkRules } from '../../link';
 import { BaseListPlugin, BulletedListRules } from '../../list';
 import {
@@ -71,6 +71,92 @@ const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
   });
 
 describe('BaseCodeBlockPlugin', () => {
+  it('converts a nested Details title to code and preserves its body and parent [EDIT-DETAILS-TITLE-CODE-001]', () => {
+    const initialValue = [
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Outer' }] },
+          {
+            type: 'details',
+            children: [
+              { type: 'summary', children: [{ text: 'Title' }] },
+              { type: 'paragraph', children: [{ text: 'Body' }] },
+            ],
+          },
+        ],
+      },
+    ];
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin, BaseCodeBlockPlugin],
+      initialValue,
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 1, 0, 0], offset: 0 },
+        focus: { path: [0, 1, 0, 0], offset: 2 },
+      },
+    });
+    const outerKey = editor.key([0]);
+    const innerKey = editor.key([0, 1]);
+    const bodyKey = editor.key([0, 1, 1]);
+    editor.plugin(BaseDetailsPlugin).api.setOpen(innerKey!, true);
+
+    editor.plugin(BaseCodeBlockPlugin).update.toggle();
+
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Outer' }] },
+          { type: 'codeBlock', children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Body' }] },
+        ],
+      },
+    ]);
+    expect(editor.key([0])).toBe(outerKey);
+    expect(editor.key([0, 2])).toBe(bodyKey);
+    expect(editor.read.selection()).toEqual({
+      anchor: { path: [0, 1, 0], offset: 0 },
+      focus: { path: [0, 1, 0], offset: 2 },
+    });
+    editor.api.history.undo();
+    expect(editor.read.children()).toEqual(initialValue);
+    expect(editor.key([0, 1])).toBe(innerKey);
+    expect(
+      editor.plugin(BaseDetailsPlugin).store.get('isOpen', innerKey!)
+    ).toBe(true);
+  });
+
+  it('reports a toggle false when paragraphs cannot replace the code block', () => {
+    const CodeOnly = definePlugin('codeOnly', {
+      dependencies: [BaseCodeBlockPlugin],
+      schema: {
+        element: {
+          blockContent: true,
+          content: schema.content.any([
+            schema.content.type('codeBlock').allowed,
+          ]),
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [BaseCodeBlockPlugin, CodeOnly],
+      initialValue: [
+        {
+          type: 'codeOnly',
+          children: [{ type: 'codeBlock', children: [{ text: 'x' }] }],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 0], offset: 0 },
+      },
+    });
+
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(false);
+  });
+
   it('indents the first empty line at offset zero', () => {
     const editor = createFixtureEditor({
       plugins: [BaseCodeBlockPlugin],

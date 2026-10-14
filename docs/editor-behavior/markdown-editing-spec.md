@@ -730,6 +730,8 @@ Ownership:
 - list is the strongest current structural owner
 - list owns `↵`, `⌫`, `⇥`, and `⇤` before blockquote or generic paragraph
 - nested list items change one list depth per keypress
+- an item's family is the item and the blocks after it that sit deeper, up to the next block at its depth or shallower, such as its nested items and continuation paragraphs
+- `⇥`, `⇤`, outdent, drag and cut move the family together, and `↵` or `⌫` that takes a root item out of its list lifts its family one level
 
 Plugin surface:
 
@@ -835,6 +837,52 @@ Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx:825` "kee
 =>
 - |Item
 ```
+
+- `EDIT-LIST-TAB-002` `proposed` `⇥`: an item moves one level deeper with its family, and a selected item inside a selected item's family moves once
+
+```text
+- A
+- |B
+  Continuation
+  - C
+=>
+- A
+  - |B
+    Continuation
+    - C
+```
+
+Proof: `packages/platejs/src/react/features/list/ListPlugin.spec.tsx` "nests an item with its continuation blocks on Tab" and "moves a selected child of a selected item once".
+
+- `EDIT-LIST-STAB-002` `proposed` `⇤`: an item moves one level out with its family
+
+```text
+- A
+  - |B
+    Continuation
+=>
+- A
+- |B
+  Continuation
+```
+
+Proof: `packages/platejs/src/react/features/list/ListPlugin.spec.tsx` "outdents an item with its continuation blocks on Shift+Tab".
+
+- `EDIT-LIST-FAMILY-LIFT-001` `proposed` `↵` and `⌫`: when `↵` in an empty root item or `⌫` at a root item's start takes the item out of its list, its family moves up one level with it
+
+```text
+- |Item
+  Body
+=>
+|Item
+Body
+```
+
+Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx` "takes a root item out of the list with its body on %s".
+
+- `EDIT-LIST-MOVE-001` `proposed` drag, copy and cut: moving, copying or cutting an item takes its family, and a moved item lands after the blocks deeper than itself that follow the drop point, so it never takes another item's nested blocks as its own
+
+Proof: `packages/platejs/src/react/features/list/ListPlugin.spec.tsx` "moves an item with its continuation blocks" moves the blocks `editor.read.transfer.nodes()` returns, which the registry's drag handle and block-menu Cut read.
 
 - `EDIT-LIST-START-MD-401` `proposed` `Markdown parse and serialize`: an ordered list keeps its explicit start number, including `0` and the start of a list that follows an interrupting paragraph, through parse, value replacement and serialize. Parse gives each list its own new `listId` and a start other than 1 as `listStart`, so separate Markdown lists never count as one, even after `⌫` or a move at a list's first item, a raw insert, a paste or a move into another editor. Serialize writes a Markdown list from 1 and reports it when its numbers would go negative or pass the nine digits CommonMark reads. A list in a table cell, which serialize writes as HTML, keeps its start. Serialize also reports a forced restart or list membership that Markdown cannot carry
 
@@ -1724,6 +1772,9 @@ Ownership:
 - `EDIT-DETAILS-DEL-CLOSED-001` `locked` `⌦`: at the Summary end with a closed body, the caret skips the hidden body without changing content
 - `EDIT-DETAILS-BS-AFTER-CLOSED-001` `locked` `⌫`: in an empty block after a closed Details, the block goes and the caret moves to the end of the Summary; deleting a whole block after a closed Details, as a text range or a selected block, also leaves the caret at the Summary end, never in the hidden body
 - `EDIT-DETAILS-TITLE-LEVEL-001` `locked`: a heading shortcut or a Markdown heading prefix in the Summary gives it that `level` and keeps it the first child with its node key; the same shortcut again removes the level, and a heading prefix typed into a Summary that already has the level stays text
+- `EDIT-DETAILS-TITLE-LIST-001` `proposed`: a list command, Turn into or a list marker typed at the Summary start turns the Summary into a list item at the Details' depth and each body block into a block one level deeper, so the body is the item's family; only that Details goes and an enclosing Details stays. When a body block cannot take an indent or the result does not fit the parent, the command changes nothing and a typed marker stays text. Other selected blocks stay unchanged too. Proof: `packages/platejs/src/features/details/lib/BaseDetailsConversion.spec.ts` "converts a title when its list marker is typed", "keeps a typed list marker when the body cannot be indented", "refuses a selection around a section that cannot convert" and the cases under "a Details title conversion that cannot finish".
+- `EDIT-DETAILS-TITLE-CODE-001` `proposed`: Code from the Summary alone turns it into a code block and leaves the body as the blocks after it, and only that Details goes; Code is refused when the selection holds the Summary and more blocks, a code block included. Code also refuses a block selection whose span holds a Summary, even when that Summary is not selected. Proof: `packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx` "converts a nested Details title to code and preserves its body and parent", and `packages/platejs/src/features/details/lib/BaseDetailsCodeConversion.spec.ts` "refuses a selection that holds the title and its body", "refuses a selection that holds the title and a code block" and "refuses two selected blocks around a Details left unselected".
+- `EDIT-DETAILS-INSERT-CLOSED-001` `proposed`: a block inserted from a closed Summary, by an insert command, the slash menu, a file pasted or submitted there or AI, lands after the whole Details; from an open Summary it lands at the start of the body. An explicit target stays where it points, and an empty Summary keeps its place and key. Proof: `packages/platejs/src/features/details/lib/BaseDetailsLanding.spec.ts`, `packages/platejs/src/ai/react/AIChatPlugin.details.spec.ts`, `packages/platejs/src/react/features/upload/UploadPlugin.spec.ts` "submits a file from a closed details title after the section" and `apps/www/src/registry/components/editor/slash.spec.tsx` "inserts ${option} after a closed Details with title %j".
 
 ## Drawing Blocks
 

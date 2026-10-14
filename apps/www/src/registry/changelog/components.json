@@ -1,6 +1,26 @@
 {
   "schemaVersion": 1,
   "components": {
+    "turn-into-toolbar-button": [
+      "2026-10-14-details-block-conversion",
+      "2026-10-14-details-unwrap-targets",
+      "2026-10-13-details-heading-titles",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-28-add-code-drawing-node"
+    ],
+    "indent": [
+      "2026-10-14-details-block-conversion",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "indent-static": [
+      "2026-10-14-details-block-conversion",
+      "2026-10-09-export-static-presentation",
+      "2026-08-17-flat-editor-registry"
+    ],
     "excalidraw-demo": [
       "2026-10-14-excalidraw-demo-width",
       "2026-08-14-author-editor-runtime",
@@ -44,15 +64,6 @@
       "2026-08-31-inline-component-props",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
-    ],
-    "turn-into-toolbar-button": [
-      "2026-10-13-details-heading-titles",
-      "2026-10-12-toolbar-button-names",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-28-add-code-drawing-node"
     ],
     "block-menu": [
       "2026-10-13-details-heading-titles",
@@ -576,10 +587,6 @@
       "2026-09-07-docx-bookmarks",
       "2026-09-02-comments-ownership",
       "2026-09-01-plugin-render-contract",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "indent-static": [
-      "2026-10-09-export-static-presentation",
       "2026-08-17-flat-editor-registry"
     ],
     "emoji": [
@@ -1195,7 +1202,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-12-fix-font-size-selection-highlight"
     ],
-    "indent": ["2026-08-17-flat-editor-registry"],
     "media-uploadthing": ["2026-08-17-flat-editor-registry"],
     "toggle": ["2026-08-17-flat-editor-registry"],
     "ai-toolbar-button": ["2026-08-17-flat-editor-registry"],

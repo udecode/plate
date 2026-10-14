@@ -184,6 +184,7 @@ export {
   toPublicRoot,
 } from '../core/public-root';
 export {
+  canPlaceBlocksAtPath,
   createDetachedEditorSchema,
   getCompiledEditorSchemaFromApi,
 } from '../core/editor-schema';

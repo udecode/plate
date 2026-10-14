@@ -1401,6 +1401,7 @@ export const createPlateRuntimePlugins = (
                 }
 
                 applyBlockInsertion({
+                  editor,
                   insert,
                   matches: (source) =>
                     matchesGeneratedBlockInsertion({

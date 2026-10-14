@@ -23,7 +23,9 @@ import {
   locateAt,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
+import { isReplaceableEmptyBlock } from '../../../internal/plugin/blockInsertion';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
+import { getCaretAnchor } from '../../../internal/plugin/insertionAnchor';
 import { createZustandStore } from '../../../lib/libs/zustand';
 import { lookup } from './mimeTypes.internal';
 
@@ -840,10 +842,10 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                 at === undefined ||
                 insertOptions.after !== undefined
               ) {
-                const anchor =
-                  insertOptions.after === undefined
-                    ? tx.nodes.block()?.[0]
-                    : tx.nodes.block({ at: insertOptions.after })?.[0];
+                const after =
+                  insertOptions.after ??
+                  (at === undefined ? getCaretAnchor(editor, tx) : undefined);
+                const anchor = tx.nodes.block({ at: after })?.[0];
                 // A submit at the selection fills an empty block, as paste does.
                 const replaceEmpty =
                   insertOptions.replaceEmpty ??
@@ -852,13 +854,10 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                   elements.map(({ element }) => element),
                   {
                     ...insertOptions,
-                    at: insertOptions.after,
-                    // An empty structural block, such as a details summary,
-                    // keeps its slot; the file lands beside it instead.
+                    at: after,
                     replaceEmpty:
                       replaceEmpty &&
-                      (!anchor ||
-                        updateEditor.read.schema.isBlockContent(anchor)),
+                      (!anchor || isReplaceableEmptyBlock(tx, anchor)),
                   }
                 );
                 if (!inserted) return false;
@@ -883,7 +882,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       }),
     };
   })
-  .extend(() => ({
+  .extend(({ editor }) => ({
     commands: ({ around }) => [
       around(domCommands.insertData, ({ input, next, state }) => {
         const files = Array.from(input.files ?? []);
@@ -896,12 +895,12 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         }
 
         const block = state.nodes.block();
+        const after =
+          getCaretAnchor(editor, state) ??
+          (block ? state.key(block[0]) : undefined);
         let handled = false;
         const transaction = state.transaction((tx) => {
-          handled = tx.upload.submit(files, {
-            after: block ? state.key(block[0]) : undefined,
-            replaceEmpty: true,
-          });
+          handled = tx.upload.submit(files, { after, replaceEmpty: true });
         });
 
         return handled ? transaction : next();

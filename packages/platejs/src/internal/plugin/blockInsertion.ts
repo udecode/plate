@@ -3,6 +3,7 @@ import isEqual from 'lodash/isEqual.js';
 import {
   getCompiledEditorSchemaFromApi,
   NodeApi,
+  type Editor,
   type EditorUpdateTransaction,
   type Element,
   type NodeEntry,
@@ -11,11 +12,16 @@ import type {
   BlockInsertOptions,
   BlockUpsertOptions,
 } from '../../lib/editor/pluginRuntimeTypes';
-import { getPlateModelPublication } from './compilePlateModel';
+import {
+  getPlateModelPublication,
+  isPlateBlockContent,
+} from './compilePlateModel';
+import { getCaretAnchor } from './insertionAnchor';
 
 type BlockInsertionMode = 'insert' | 'upsert';
 
 type ApplyBlockInsertionOptions<TResult> = Readonly<{
+  editor: Editor;
   insert: (options: BlockInsertOptions) => TResult;
   matches: (block: Element) => boolean;
   mode: BlockInsertionMode;
@@ -24,8 +30,13 @@ type ApplyBlockInsertionOptions<TResult> = Readonly<{
   tx: EditorUpdateTransaction;
 }>;
 
-const isReplaceableEmptyBlock = (tx: EditorUpdateTransaction, block: Element) =>
+/** An empty structural block, such as a Details title, keeps its slot. */
+export const isReplaceableEmptyBlock = (
+  tx: Pick<EditorUpdateTransaction, 'nodes' | 'schema'>,
+  block: Element
+) =>
   NodeApi.isText(block.children[0]) &&
+  isPlateBlockContent(tx.schema, block) &&
   !tx.schema.isReadOnly(block) &&
   tx.nodes.isEmpty(block);
 
@@ -39,6 +50,7 @@ const selectBlockStart = (
 };
 
 export const applyBlockInsertion = <TResult>({
+  editor,
   insert,
   matches,
   mode,
@@ -46,12 +58,12 @@ export const applyBlockInsertion = <TResult>({
   options = {},
   tx,
 }: ApplyBlockInsertionOptions<TResult>): TResult | undefined => {
-  const insertOptions = options as BlockInsertOptions;
+  const given = options as BlockInsertOptions;
 
-  if (insertOptions.before !== undefined) {
-    const target = tx.nodes.get(insertOptions.before);
+  if (given.before !== undefined) {
+    const target = tx.nodes.get(given.before);
     if (!target) return undefined;
-    const { after: _after, before: _before, ...beforeOptions } = insertOptions;
+    const { after: _after, before: _before, ...beforeOptions } = given;
 
     return insert({
       ...beforeOptions,
@@ -60,12 +72,27 @@ export const applyBlockInsertion = <TResult>({
     });
   }
 
+  const anchor =
+    given.at === undefined && given.after === undefined
+      ? getCaretAnchor(editor, tx)
+      : undefined;
+  const insertOptions = anchor ? { ...given, after: anchor } : given;
+
   if (
     mode === 'insert' &&
     ((insertOptions.at !== undefined && insertOptions.after === undefined) ||
       insertOptions.replaceEmpty !== undefined)
   ) {
-    return insert(insertOptions);
+    const target =
+      insertOptions.replaceEmpty && insertOptions.at === undefined
+        ? tx.nodes.block({ at: insertOptions.after })
+        : undefined;
+
+    return insert(
+      target && !isReplaceableEmptyBlock(tx, target[0])
+        ? { ...insertOptions, replaceEmpty: false }
+        : insertOptions
+    );
   }
 
   const source = tx.nodes.block({ at: insertOptions.after });

@@ -445,6 +445,7 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
       options: BlockInsertOptions | BlockUpsertOptions = {}
     ) =>
       applyBlockInsertion({
+        editor,
         insert: (insertOptions) => insertColumnGroup(input, insertOptions),
         matches: (block) => block.type === type,
         mode,

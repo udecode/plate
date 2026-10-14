@@ -106,6 +106,7 @@ export type {
   PluginsOf,
   LeafPosition,
   Location,
+  NamedRootKey,
   Node,
   NodeEntry,
   NodeIn,
@@ -199,6 +200,7 @@ export type {
   StructuralPlainTextDiagnostic,
 } from 'plitejs/internal';
 export {
+  canPlaceBlocksAtPath,
   containsCompleteEditorSchema,
   getCompiledEditorSchemaFromApi,
   getEditorCommitSnapshot,

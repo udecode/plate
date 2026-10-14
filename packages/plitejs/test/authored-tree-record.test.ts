@@ -5,6 +5,7 @@ import fc from 'fast-check';
 import {
   ContentSlice,
   createEditor,
+  createEditorView,
   defineEditorSchema,
   editorCommands,
   property,
@@ -342,7 +343,7 @@ describe('authored review tree recording', () => {
       }),
     ]);
     const [text] = (
-      editor.read.children()[0] as { children: Record<string, unknown>[] }
+      editor.read.children()[0] as { children: Array<Record<string, unknown>> }
     ).children;
 
     assert.deepEqual(editor.read.authored.reviewOf(text).accepted, {
@@ -1347,6 +1348,65 @@ describe('authored review tree recording', () => {
     editor.update((tx) => tx.nodes.unwrap({ at: [0] }));
 
     assert.deepEqual(editor.read.children(), [paragraph({ text: 'ab' })]);
+  });
+
+  it('keeps Editing ranges, anchors and node keys on surviving text after unwrap', () => {
+    const initialValue = [
+      {
+        type: 'quote',
+        children: [paragraph({ text: 'Inner' }), paragraph({ text: 'Body' })],
+      },
+      paragraph({ text: 'After' }),
+    ];
+    const source = editorFor(initialValue, 'edit', 'alice', [
+      Quotes,
+      history(),
+    ]);
+    const view = createEditorView(source, { authored: { intent: 'edit' } });
+    const before = {
+      anchor: { path: [0, 0, 0], offset: 0 },
+      focus: { path: [0, 0, 0], offset: 2 },
+    };
+    view.update.selection.set(before);
+    const anchor = view.anchor(before, { deletion: 'drop' });
+    const after = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 2 },
+    };
+    const keys = [view.key([0, 0, 0]), view.key([0, 1])];
+    const wrapperKey = view.key([0]);
+
+    try {
+      view.update.nodes.unwrap({ at: view.key([0]) });
+
+      assert.deepEqual(
+        {
+          active: view.read.selection(),
+          anchor: anchor.resolve(),
+          keys: [view.key([0, 0]), view.key([1])],
+        },
+        {
+          active: after,
+          anchor: after,
+          keys,
+        },
+        'unwrap preserves the selected characters and retained anchors'
+      );
+      view.api.history.undo();
+      assert.deepEqual(view.read.children(), initialValue);
+      assert.deepEqual(view.read.selection(), before);
+      assert.equal(view.key([0]), wrapperKey);
+      view.api.history.redo();
+      assert.deepEqual(view.read.selection(), after);
+      view.update.text.insert('Z');
+      assert.deepEqual(source.read.children(), [
+        paragraph({ text: 'Zner' }),
+        paragraph({ text: 'Body' }),
+        paragraph({ text: 'After' }),
+      ]);
+    } finally {
+      anchor.release();
+    }
   });
 
   it('keeps one copy of struck content an Editing reorder moves when its deletion is rejected', () => {

@@ -32,3 +32,9 @@ const current = migrateDocument(persisted, { migrations }).output;
 ```
 
 Remove empty paragraphs when returning to a collapsed Summary with Backspace, and unwrap only the selected Details container while preserving nested and parent containers.
+
+Unwrap the nearest Details for selected title text or body blocks, and keep explicitly targeted changes inside their document root.
+
+Convert a Details title with `editor.update.list.toggle({ type })`, the Turn into menu or a typed list marker. The title becomes a list item, its body stays one level deeper under it, and only that Details layer goes. The list toggle returns `false` and changes nothing when a body block cannot take an indent or the result would not fit its parent. Other selected blocks stay unchanged too. `editor.update.codeBlock.toggle()` turns a title selected alone into a code block and leaves its body as the blocks after it. It returns `false` and changes nothing when the selection holds the title and more blocks or the code block would not fit the parent.
+
+Land a block inserted from a closed Details title after the Details, and one inserted from an open title at the start of its body. This holds for block insert commands, files pasted or submitted from the title, the slash menu and AI Insert below and accept. An explicit `after` still lands where it points, and an empty title keeps its place, also with `replaceEmpty: true`.

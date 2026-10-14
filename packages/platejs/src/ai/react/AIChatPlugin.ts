@@ -45,6 +45,7 @@ import {
   BaseTableRowPlugin,
 } from '../../features/table';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
+import { resolveInsertionAnchor } from '../../internal/plugin/insertionAnchor';
 import {
   type MarkdownSerializeResult,
   type MarkdownSliceParseResult,
@@ -852,11 +853,33 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   };
   const insertActionBlocks = (
     tx: AIActionTransaction,
-    nodes: Element[],
-    target: NodeEntry<Element>
+    source: Element[],
+    format: 'all' | 'none' | 'single',
+    target: NodeEntry<Element>,
+    root: NamedRootKey | undefined
   ) => {
-    tx.blocks.insertAfter(nodes, { at: tx.key(target[0]) });
+    const anchor = resolveInsertionAnchor(editor, tx, target, root);
+    // An answer that lands past its source, such as after the closed Details of
+    // a title, takes none of the source's formatting: a copied title type has no
+    // place outside its Details.
+    const blocks = formatAIOutput({
+      blocks: source,
+      format: anchor === target ? format : 'none',
+      sourceBlock: target[0],
+    });
+
+    if (!blocks) return false;
+    tx.history.newBatch();
+
+    const nodes = landAIOutput(editor, tx, blocks, {
+      block: anchor[0],
+      kind: 'kept',
+    });
+
+    tx.blocks.insertAfter(nodes, { at: tx.key(anchor[0]) });
     selectActionEntries(tx, resolveActionBlocks(tx, nodes));
+
+    return true;
   };
   const replaceActionBlocks = (
     tx: AIActionTransaction,
@@ -1135,7 +1158,15 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       const [node, path] = target;
       const replace =
         node.type === paragraph.schema.type && tx.nodes.isEmpty(node);
-      const firstPath = replace ? path : PathApi.next(path);
+      const [anchor, anchorPath] = replace
+        ? target
+        : resolveInsertionAnchor(
+            editor,
+            tx,
+            target,
+            commandEditor.read.view.root()
+          );
+      const firstPath = replace ? path : PathApi.next(anchorPath);
       const firstIndex = firstPath.at(-1);
       if (firstIndex === undefined) return;
       const blocks = cloneDeep(
@@ -1146,10 +1177,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
                 kind: 'replaced',
               })
             : landAIOutput(editor, tx, output, { kind: 'line', line: target })
-          : landAIOutput(editor, tx, output, { block: node, kind: 'kept' })
+          : landAIOutput(editor, tx, output, { block: anchor, kind: 'kept' })
       );
       if (replace) tx.nodes.replace(blocks, { at: path });
-      else tx.blocks.insertAfter(blocks, { at: path });
+      else tx.blocks.insertAfter(blocks, { at: anchorPath });
       const lastPath = [
         ...firstPath.slice(0, -1),
         firstIndex + blocks.length - 1,
@@ -1186,6 +1217,18 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         });
 
         if (!block) return;
+        if (action === 'insertBelow') {
+          applied = insertActionBlocks(
+            tx,
+            cloneDeep(source),
+            format,
+            block,
+            commandEditor.read.view.root()
+          );
+
+          return;
+        }
+
         const blocks = formatAIOutput({
           blocks: cloneDeep(source),
           format,
@@ -1195,51 +1238,42 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         if (!blocks) return;
         tx.history.newBatch();
 
-        if (action === 'insertBelow') {
-          insertActionBlocks(
+        const whole = wholeTextBlocks(tx, chatSelection, blocks);
+
+        if (whole) {
+          applied = replaceActionBlocks(
             tx,
-            landAIOutput(editor, tx, blocks, { block: block[0], kind: 'kept' }),
-            block
-          );
-          applied = true;
-        } else {
-          const whole = wholeTextBlocks(tx, chatSelection, blocks);
-
-          if (whole) {
-            applied = replaceActionBlocks(
-              tx,
-              landAIOutput(editor, tx, blocks, {
-                block: whole[0][0],
-                kind: 'replaced',
-              }),
-              whole
-            );
-
-            return;
-          }
-
-          const content = landAIOutput(editor, tx, blocks, {
-            block: block[0],
-            kind: 'kept',
-          });
-          const openTextBlock = (node: Element | undefined) =>
-            node &&
-            !tx.schema.isVoid(node) &&
-            node.children.every(
-              (child) => TextApi.isText(child) || tx.schema.isInline(child)
-            )
-              ? 1
-              : 0;
-
-          applied = tx.slice.replace(
-            ContentSlice.fromJSON({
-              content,
-              openStart: openTextBlock(content[0]),
-              openEnd: openTextBlock(content.at(-1)),
+            landAIOutput(editor, tx, blocks, {
+              block: whole[0][0],
+              kind: 'replaced',
             }),
-            { at: chatSelection }
+            whole
           );
+
+          return;
         }
+
+        const content = landAIOutput(editor, tx, blocks, {
+          block: block[0],
+          kind: 'kept',
+        });
+        const openTextBlock = (node: Element | undefined) =>
+          node &&
+          !tx.schema.isVoid(node) &&
+          node.children.every(
+            (child) => TextApi.isText(child) || tx.schema.isInline(child)
+          )
+            ? 1
+            : 0;
+
+        applied = tx.slice.replace(
+          ContentSlice.fromJSON({
+            content,
+            openStart: openTextBlock(content[0]),
+            openEnd: openTextBlock(content.at(-1)),
+          }),
+          { at: chatSelection }
+        );
 
         return;
       }
@@ -1251,40 +1285,34 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         action === 'insertBelow' ? selected.at(-1) : selected[0];
 
       if (!sourceBlock) return;
+      if (action === 'insertBelow') {
+        applied = insertActionBlocks(
+          tx,
+          cloneDeep(source),
+          format,
+          sourceBlock,
+          commandEditor.read.view.root()
+        );
+
+        return;
+      }
+
       const blocks = formatAIOutput({
         blocks: cloneDeep(source),
-        format:
-          action === 'replaceSelection' &&
-          format === 'single' &&
-          selected.length > 1
-            ? 'none'
-            : format,
+        format: format === 'single' && selected.length > 1 ? 'none' : format,
         sourceBlock: sourceBlock[0],
       });
 
       if (!blocks) return;
       tx.history.newBatch();
-
-      if (action === 'insertBelow') {
-        insertActionBlocks(
-          tx,
-          landAIOutput(editor, tx, blocks, {
-            block: sourceBlock[0],
-            kind: 'kept',
-          }),
-          sourceBlock
-        );
-        applied = true;
-      } else {
-        applied = replaceActionBlocks(
-          tx,
-          landAIOutput(editor, tx, blocks, {
-            block: sourceBlock[0],
-            kind: 'replaced',
-          }),
-          selected
-        );
-      }
+      applied = replaceActionBlocks(
+        tx,
+        landAIOutput(editor, tx, blocks, {
+          block: sourceBlock[0],
+          kind: 'replaced',
+        }),
+        selected
+      );
     });
 
     if (applied) finishCompleteAction();

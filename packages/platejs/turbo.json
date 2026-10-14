@@ -1576,6 +1576,7 @@
         "typecheck:partition:ai-react",
         "typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:markdown",
         "typecheck:partition:react-core",
         "typecheck:partition:standard-basic-nodes",
@@ -2032,10 +2033,15 @@
       "dependsOn": [
         "plitejs#typecheck:partition:authored",
         "typecheck:partition:authored",
+        "typecheck:partition:callout",
         "typecheck:partition:core",
         "typecheck:partition:details",
+        "typecheck:partition:markdown",
         "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-indent",
         "typecheck:partition:standard-link",
+        "typecheck:partition:standard-list",
         "typecheck:partition:table"
       ],
       "inputs": [
@@ -2708,6 +2714,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:markdown",
         "typecheck:partition:math",
         "typecheck:partition:proxies",
@@ -2841,9 +2848,11 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:details-react",
         "typecheck:partition:react-core",
         "typecheck:partition:standard-basic-nodes-react",
         "typecheck:partition:standard-code-block-react",
+        "typecheck:partition:standard-indent-react",
         "typecheck:partition:standard-list",
         "typecheck:partition:standard-list-react",
         "typecheck:partition:table-react"

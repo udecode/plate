@@ -24,11 +24,11 @@ docs:
 
 ### Installation
 
-The fastest way to add indent functionality is with the `IndentKit`, which includes pre-configured `IndentPlugin` targeting paragraph, heading, blockquote, code block, and toggle elements.
+The fastest way to add indent functionality is with the `IndentKit`, which includes a pre-configured `IndentPlugin` for text, Details, media and other common blocks. Tables are not among them, because a table keeps its own left margin.
 
 <ComponentSource name="indent" />
 
-- Configures `Paragraph`, `Heading`, `Blockquote`, `CodeBlock`, and `Toggle` elements to support the `indent` property.
+- Configures paragraph, heading, blockquote, code block, Details, image, audio, video, file, media embed, upload, callout, code drawing, column group, equation, Excalidraw, horizontal rule and table of contents elements to support the `indent` property, so a Details body that holds them can become a list.
 - Sets a custom offset of `24px` for indentation spacing.
 - Provides Tab/Shift+Tab keyboard shortcuts for indenting and outdenting.
 

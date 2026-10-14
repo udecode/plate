@@ -979,6 +979,89 @@ describe('BaseListPlugin canonical model', () => {
     }
   );
 
+  it.each([
+    [
+      'Backspace at its start [EDIT-LIST-FAMILY-LIFT-001]',
+      'Item',
+      (editor: ReturnType<typeof createEditor>) =>
+        editor.update.text.deleteBackward(),
+    ],
+    [
+      'Enter on it while empty [EDIT-LIST-FAMILY-LIFT-001]',
+      '',
+      (editor: ReturnType<typeof createEditor>) => editor.update.break.insert(),
+    ],
+  ] as const)(
+    'takes a root item out of the list with its body on %s',
+    (_label, text, takeOut) => {
+      const editor = createEditor({
+        initialValue: [
+          {
+            children: [{ text }],
+            indent: 1,
+            listType: ListType.Bulleted,
+            type: 'paragraph',
+          },
+          { children: [{ text: 'Body' }], indent: 2, type: 'paragraph' },
+        ],
+        selection: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+          kind: 'text',
+        },
+      });
+
+      takeOut(editor);
+
+      expect(
+        editor.read
+          .children()
+          .map(({ indent, listType }) => ({ indent, listType }))
+      ).toEqual([
+        { indent: undefined, listType: undefined },
+        { indent: 1, listType: undefined },
+      ]);
+    }
+  );
+
+  it.each([
+    [
+      'Backspace at its start',
+      'Item',
+      (editor: ReturnType<typeof createEditor>) =>
+        editor.update.text.deleteBackward(),
+    ],
+    [
+      'Enter on it while empty',
+      '',
+      (editor: ReturnType<typeof createEditor>) => editor.update.break.insert(),
+    ],
+  ] as const)(
+    'takes an item with no indent out of the list on %s',
+    (_label, text, takeOut) => {
+      const editor = createEditor({
+        initialValue: [
+          {
+            children: [{ text }],
+            listType: ListType.Bulleted,
+            type: 'paragraph',
+          },
+        ],
+        selection: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+          kind: 'text',
+        },
+      });
+
+      takeOut(editor);
+
+      expect(editor.read.children()).toEqual([
+        { children: [{ text }], type: 'paragraph' },
+      ]);
+    }
+  );
+
   it('reads active state by kind and optional marker', () => {
     const editor = createEditor({
       initialValue: [

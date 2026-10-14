@@ -45,7 +45,10 @@ import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
 import { getActiveCommandEditor } from './command-registry';
 import { ContentSlice as ContentSliceValue } from './content-slice';
-import { getInternalEditorSchemaFromApi } from './editor-schema';
+import {
+  canPlaceBlocksAtPath,
+  getInternalEditorSchemaFromApi,
+} from './editor-schema';
 import {
   getInsertRemainingLength,
   limitSliceToLength,
@@ -495,25 +498,16 @@ const getNodeSelectionReplacement = (
   const parentPath = PathApi.parent(firstPath);
   const index = getDefined(firstPath.at(-1));
   const publicRoot = toPublicRoot(root);
-  const parent =
-    parentPath.length > 0 ? state.nodes.parent(getDefined(keys[0]))?.[0] : null;
-  const contentless =
-    NodeApi.isElement(parent) && !state.schema.element(parent.type)?.content;
 
   if (
-    !contentless &&
-    !getInternalEditorSchemaFromApi(state.schema).canPlaceAtPath(
-      firstPath,
-      planned.replacements,
-      {
-        removing: blocks.flatMap(([, path]) =>
-          PathApi.equals(PathApi.parent(path), parentPath)
-            ? [getDefined(path.at(-1))]
-            : []
-        ),
-        root,
-      }
-    )
+    !canPlaceBlocksAtPath(state.schema, firstPath, planned.replacements, {
+      removing: blocks.flatMap(([, path]) =>
+        PathApi.equals(PathApi.parent(path), parentPath)
+          ? [getDefined(path.at(-1))]
+          : []
+      ),
+      root,
+    })
   ) {
     return 'refused' as const;
   }

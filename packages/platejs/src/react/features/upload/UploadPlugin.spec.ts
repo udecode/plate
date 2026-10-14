@@ -235,4 +235,73 @@ describe('UploadPlugin', () => {
       ],
     });
   });
+
+  it('submits a file from a closed details title after the section', () => {
+    const editor = createEditor({
+      plugins: [BaseImagePlugin, BaseDetailsPlugin, configured()],
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'Title' }], type: 'summary' },
+            { children: [{ text: 'body' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+        { children: [{ text: 'After' }], type: 'paragraph' },
+      ],
+    });
+
+    editor.update.selection.set({ offset: 5, path: [0, 0, 0] });
+    editor
+      .plugin(UploadPlugin)
+      .update.submit([new File(['image'], 'image.png', { type: 'image/png' })]);
+
+    expect(
+      editor.read
+        .children()
+        .map((node) =>
+          node.type === 'details'
+            ? node.children.map((child) => child.type)
+            : node.type
+        )
+    ).toEqual([['summary', 'paragraph'], 'upload', 'paragraph']);
+  });
+
+  it.each([
+    ['open', true, ['summary', 'upload', 'paragraph'], ['details']],
+    ['closed', false, ['summary', 'paragraph'], ['details', 'upload']],
+  ])(
+    'keeps an empty %s details summary when a file is pasted in it',
+    (_, open, sectionChildren, topLevel) => {
+      const editor = createEditor({
+        plugins: [BaseImagePlugin, BaseDetailsPlugin, configured()],
+        initialValue: [
+          {
+            children: [
+              { children: [{ text: '' }], type: 'summary' },
+              { children: [{ text: 'body' }], type: 'paragraph' },
+            ],
+            type: 'details',
+          },
+        ],
+      });
+      const summary = editor.key([0, 0])!;
+
+      if (open) {
+        editor.plugin(BaseDetailsPlugin).api.setOpen(editor.key([0])!, true);
+      }
+      editor.update.selection.set({ offset: 0, path: [0, 0, 0] });
+      editor.api.dom.clipboard.insertData({
+        files: [new File(['image'], 'image.png', { type: 'image/png' })],
+        getData: () => '',
+        types: [],
+      } as unknown as DataTransfer);
+
+      expect(editor.read.nodes.get(summary)?.[1]).toEqual([0, 0]);
+      expect(editor.read.children().map((node) => node.type)).toEqual(topLevel);
+      expect(
+        editor.read.children()[0].children.map((node) => node.type)
+      ).toEqual(sectionChildren);
+    }
+  );
 });

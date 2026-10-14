@@ -9,7 +9,9 @@ import {
   type Element,
   type NodeEntry,
   type Path,
+  type NamedRootKey,
 } from '../../../core';
+import { inRoot } from '../../../internal/utils/inRoot';
 import type { ListType } from './BaseListPlugin';
 import {
   getElementListStyle,
@@ -57,7 +59,8 @@ const walkSiblings = (
   state: NodeReader,
   path: Path,
   direction: 'next' | 'previous',
-  visit: (sibling: Element) => 'skip' | 'stop' | Element
+  visit: (sibling: Element) => 'skip' | 'stop' | Element,
+  root?: NamedRootKey
 ): Element | undefined => {
   let siblingPath = path;
 
@@ -70,7 +73,7 @@ const walkSiblings = (
         ? PathApi.next(siblingPath)
         : PathApi.previous(siblingPath);
 
-    const sibling = state.nodes.get(siblingPath, {
+    const sibling = state.nodes.get(inRoot(siblingPath, root), {
       match: ElementApi.isElement,
     })?.[0];
 
@@ -98,7 +101,8 @@ const findJoiningListItem = (
   state: NodeReader,
   path: Path,
   next: ListJoinTarget,
-  walk: 'both' | 'previous' = 'both'
+  walk: 'both' | 'previous' = 'both',
+  root?: NamedRootKey
 ): Element | undefined => {
   const { depth, heading, headingType, listType, matchStyle, style } = next;
   let parent: Element | undefined;
@@ -118,13 +122,13 @@ const findJoiningListItem = (
       : ('stop' as const);
   };
 
-  const previous = walkSiblings(state, path, 'previous', sameDepth);
+  const previous = walkSiblings(state, path, 'previous', sameDepth, root);
 
   if (previous) return previous;
   if (parent) return parent;
   if (walk === 'previous') return undefined;
 
-  const following = walkSiblings(state, path, 'next', sameDepth);
+  const following = walkSiblings(state, path, 'next', sameDepth, root);
 
   return following;
 };
@@ -137,9 +141,10 @@ const newListIdentity = (): ListIdentity => ({
 export const resolveListIdentity = (
   state: NodeReader,
   path: Path,
-  next: ListJoinTarget
+  next: ListJoinTarget,
+  root?: NamedRootKey
 ): ListIdentity => {
-  const joined = findJoiningListItem(state, path, next);
+  const joined = findJoiningListItem(state, path, next, 'both', root);
 
   return joined ? identityOf(joined) : newListIdentity();
 };
@@ -397,7 +402,8 @@ export const landListContent = <N extends Descendant>(
 export const getListRunSiblings = (
   state: NodeReader,
   [node, path]: NodeEntry<Element>,
-  headingType: string | undefined
+  headingType: string | undefined,
+  root?: NamedRootKey
 ): Array<NodeEntry<Element>> => {
   const depth = getListIndent(node);
   const heading = headingType !== undefined && node.type === headingType;
@@ -421,7 +427,7 @@ export const getListRunSiblings = (
           ? PathApi.next(siblingPath)
           : PathApi.previous(siblingPath);
 
-      const sibling = state.nodes.get(siblingPath, {
+      const sibling = state.nodes.get(inRoot(siblingPath, root), {
         match: ElementApi.isElement,
       });
 

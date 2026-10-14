@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-14-details-block-conversion",
+      "href": "/registry/changelog/2026-10-14-details-block-conversion.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Convert Details titles without losing body content or list hierarchy",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button", "indent", "indent-static"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-14-details-unwrap-targets",
+      "href": "/registry/changelog/2026-10-14-details-unwrap-targets.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep Details removal scoped to the selected section",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-14-excalidraw-demo-width",
       "href": "/registry/changelog/2026-10-14-excalidraw-demo-width.json",
       "status": "draft",

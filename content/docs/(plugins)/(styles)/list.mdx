@@ -128,6 +128,18 @@ list item after the current block; `replaceEmpty` replaces an empty source in
 the same history step. An explicit `at` keeps node-insertion placement, while
 `after` identifies the block to insert beside.
 
+Tab, Shift+Tab and `outdent` move an item together with the blocks under it,
+such as its nested items and continuation paragraphs, up to the next block at
+its depth or shallower. Drag and Cut take the same blocks through
+`editor.read.transfer.nodes()`. Indent's own commands still move one block.
+List writes each moved block's depth itself, so an override of Indent's
+`increase` or `decrease` does not run for these moves.
+
+`toggle` on a Details title turns the title into an item and puts the body one
+level under it. It returns `false` and changes nothing when a body block cannot
+take an indent or the result would not fit its parent. Other selected blocks
+stay unchanged too.
+
 ## Pasting lists
 
 Native paste and the one-shot `editor.update.slice.replace` and
@@ -197,7 +209,7 @@ The parse reports either change, so `lossPolicy: 'reject'` refuses it.
 | update.toggle(options) | Set or remove list semantics. |
 | update.restart(options?) | Force the selected numbered item's number; `start` defaults to 1. |
 | update.continue(options?) | Remove the selected item's restart, or join the list to the previous one from its first item. |
-| update.outdent(options) | Decrease indentation and clear list fields at the outer level. |
+| update.outdent(options) | Decrease the indentation of each selected item and the blocks under it, and clear list fields at the outer level. |
 | update.clear(options?) | Remove list semantics from the exact selected list items. |
 | update.insert(input, options?) | Insert a list item with owned construction and placement. |
 | read.ordinal(at) | Derive a numbered item's display ordinal, or `undefined` when `at` is not a numbered item in the editor's root. |

@@ -7,3 +7,5 @@
 - The authored review tree records an Enter inside a link or another inline element as a cut on both halves, and rejecting the Enter joins the halves back into one element
 - A suggestion that leaves an element short of its required content records what an edit would build there, as struck content kept in place or as an insertion, and a decision builds what is still missing at the element's final place
 - Fix the Yjs bridge reading an insertion with no previous children as a text split
+
+- Preserve restored container identities when undoing an unwrap in authored views

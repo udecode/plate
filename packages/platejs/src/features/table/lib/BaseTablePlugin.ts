@@ -1615,6 +1615,7 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           options: BlockInsertOptions | BlockUpsertOptions = {}
         ) =>
           applyBlockInsertion({
+            editor,
             insert: (insertOptions) => insertTable(input, insertOptions),
             matches: (block) => block.type === type,
             mode,

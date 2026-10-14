@@ -346,7 +346,11 @@ editor.update.codeBlock.selectAll();
 - `insert()` converts an empty selected block in place. For non-empty or
   expanded selections, it inserts and selects a paragraph after the range-end
   block, then converts that paragraph. It is a no-op without a selection.
-- `toggle()` converts selected blocks to or from code blocks.
+- `toggle()` converts selected blocks to or from code blocks and returns
+  whether it changed the document. On a Details title it converts the title
+  alone and leaves the body after the code block. It returns `false` when the
+  selection holds the title and more blocks, and when the selection is in a
+  named root that the editor or view running it does not edit.
 - `tab()` and `untab()` indent or outdent selected physical lines by two spaces.
 - `resetBlock()` unwraps the selected code block into paragraphs.
 - `selectAll()` selects the containing code block.
