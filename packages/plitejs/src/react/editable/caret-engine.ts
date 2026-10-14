@@ -4,6 +4,7 @@ import {
   type EditorUpdatePolicyFor,
   type MoveUnit,
   NodeApi,
+  type Path,
   PathApi,
   type Point,
   PointApi,
@@ -426,6 +427,29 @@ const moveSelectionAndRespectBoundaries = ({
   }
 };
 
+const hasEmptyCaption = (editor: ReactRuntimeEditor, path: Path) =>
+  editor.read((state) => {
+    const node = state.nodes.get(path)?.[0];
+
+    return node ? NodeApi.string(node).length === 0 : false;
+  });
+
+// Arrow keys pass through a caption only when it has text, and moving forward
+// into another object selects that object before its caption.
+const getOwnerArrowTarget = (
+  editor: ReactRuntimeEditor,
+  point: Point | null | undefined,
+  forward: boolean
+) => {
+  if (!point) return null;
+
+  const owner = getSelectableOwnerAncestorNodeSelection(editor, point);
+
+  return owner && (forward || hasEmptyCaption(editor, owner.path))
+    ? owner.selection
+    : SelectionApi.text({ anchor: point, focus: point });
+};
+
 export const getSelectableOwnerVerticalNavigationTarget = ({
   editor,
   event,
@@ -460,18 +484,33 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
         const owner = state.nodes.get(lastPath)?.[0];
 
         return owner ? state.schema.isObject(owner) : false;
-      });
-    const point = editor.read((state) =>
-      event.key === 'ArrowUp'
-        ? (state.points.before(firstPath) ?? state.points.start(firstPath))
-        : lastPath
-          ? entersObjectCaption
-            ? state.points.start(lastPath)
-            : (state.points.after(lastPath) ?? state.points.end(lastPath))
-          : null
-    );
+      }) &&
+      !hasEmptyCaption(editor, lastPath);
 
-    return point ? SelectionApi.text({ anchor: point, focus: point }) : null;
+    if (event.key === 'ArrowUp') {
+      return getOwnerArrowTarget(
+        editor,
+        editor.read(
+          (state) =>
+            state.points.before(firstPath) ?? state.points.start(firstPath)
+        ),
+        false
+      );
+    }
+    if (!lastPath) return null;
+    if (entersObjectCaption) {
+      const start = editor.read((state) => state.points.start(lastPath));
+
+      return start ? SelectionApi.text({ anchor: start, focus: start }) : null;
+    }
+
+    return getOwnerArrowTarget(
+      editor,
+      editor.read(
+        (state) => state.points.after(lastPath) ?? state.points.end(lastPath)
+      ),
+      true
+    );
   }
 
   if (!SelectionApi.isText(selection) || !RangeApi.isCollapsed(selection)) {
@@ -683,13 +722,26 @@ export const getSelectableOwnerHorizontalNavigationTarget = ({
       return null;
     }
 
-    const point = editor.read((state) =>
-      reverse ? state.points.before(path) : state.points.start(path)
-    );
+    if (reverse) {
+      return getOwnerArrowTarget(
+        editor,
+        editor.read((state) => state.points.before(path)),
+        false
+      );
+    }
+    if (hasEmptyCaption(editor, path)) {
+      return getOwnerArrowTarget(
+        editor,
+        editor.read(
+          (state) => state.points.after(path) ?? state.points.end(path)
+        ),
+        true
+      );
+    }
 
-    if (!point) return null;
+    const start = editor.read((state) => state.points.start(path));
 
-    return SelectionApi.text({ anchor: point, focus: point });
+    return start ? SelectionApi.text({ anchor: start, focus: start }) : null;
   }
 
   if (!SelectionApi.isText(selection)) return null;
@@ -702,8 +754,20 @@ export const getSelectableOwnerHorizontalNavigationTarget = ({
       selection.focus
     );
 
-    return owner && PointApi.equals(selection.focus, owner.start)
-      ? owner.selection
+    if (owner) {
+      return PointApi.equals(selection.focus, owner.start)
+        ? owner.selection
+        : null;
+    }
+
+    const previous = editor.read((state) =>
+      state.points.before(selection.focus, { unit: 'character' })
+    );
+    const previousOwner =
+      previous && getSelectableOwnerAncestorNodeSelection(editor, previous);
+
+    return previousOwner && hasEmptyCaption(editor, previousOwner.path)
+      ? previousOwner.selection
       : null;
   }
 

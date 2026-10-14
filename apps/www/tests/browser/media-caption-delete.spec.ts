@@ -162,8 +162,9 @@ test('Delete clears a fully selected caption without deleting its image [EDIT-CA
     await root.getByRole('heading', { name: 'Images and Media' }).click();
     await expect(caption).toBeHidden();
     await caption.locator('..').locator('img').click();
+    await expect(caption).toBeHidden();
+    await page.getByRole('button', { name: 'Caption', exact: true }).click();
     await expect(caption).toBeVisible();
-    await caption.click();
     await page.keyboard.type('Typed after refocus');
     await expect
       .poll(async () => {
@@ -205,8 +206,20 @@ test('an initially empty centered caption keeps its caret beside the placeholder
 
     await expect(caption).toBeHidden();
     await figure.click({ position: { x: 2, y: 2 } });
+    await expect(caption).toBeHidden();
+
+    const value = (await editor.get.modelValue()) as {
+      children: Array<{ type?: string }>;
+    };
+    const videoIndex = value.children.findIndex(
+      (node) => node.type === 'video'
+    );
+
+    await editor.selection.select({
+      anchor: { offset: 0, path: [videoIndex, 0] },
+      focus: { offset: 0, path: [videoIndex, 0] },
+    });
     await expect(caption).toBeVisible();
-    await caption.click();
 
     const layout = await caption.evaluate((element) => {
       const bounds = element.getBoundingClientRect();

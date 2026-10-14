@@ -237,15 +237,18 @@ editor.plugin(ImagePlugin).update.insert({
 }
 ```
 
-渲染组件可以在媒体资源未获得焦点时隐藏空标题。占位符是否可见属于 UI 状态，
+渲染组件会隐藏空标题，直到光标进入标题，因此选中资源时页面不会跳动。占位符是否可见属于 UI 状态，
 不会改变持久化的元素。
 
 资源焦点和标题编辑使用不同的 selection 状态：
 
 | Selection | 行为 |
 | --- | --- |
-| 媒体路径上的 Plate `NodeSelection` | 聚焦资源，显示选中边框和空标题占位符；`ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
+| 媒体路径上的 Plate `NodeSelection` | 聚焦资源并显示选中边框，空标题保持隐藏；标题有文字时 `ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
 | 媒体 children 内的 Plate `TextSelection` | 编辑标题；光标位于标题开头时，`ArrowUp` 返回资源焦点。 |
+
+方向键会跳过空标题：选中资源后再按一次会离开媒体，从下一个区块往回移动会选中资源。
+媒体工具栏的 Caption 按钮会把光标放进空标题。
 
 复制或剪切媒体 `NodeSelection` 会连同标题传输整个资源；只选择标题文本时，
 粘贴不会重建资源。在标题中按 Enter 会把光标后的文本移到资源之后的新段落，
@@ -472,6 +475,10 @@ const inserted = await editor.plugin(BaseImagePlugin).api.insertUrl(
 `media-toolbar` 负责 URL 编辑、提交、取消和焦点恢复。
 每个复制的媒体节点直接读取其类型化元素和编辑器原语状态。
 `media-image` 渲染图片并打开 `media-preview-dialog`；预览对话框负责导航、缩放、平移和下载。
+
+在可编辑的编辑器中，单击 `media-file` 会选中文件，双击会在新标签页打开它。只读编辑器中单击即打开文件。
+图片、文件、音频或视频节点被选中时，`media-toolbar` 在 Edit link、Caption 和删除按钮旁显示 Preview 按钮。
+图片的 Preview 打开 `media-preview-dialog`，其他媒体在新标签页打开文件。
 
 <ComponentSource name="media-toolbar" />
 <ComponentSource name="media-image" />

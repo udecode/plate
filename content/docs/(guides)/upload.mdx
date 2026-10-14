@@ -135,6 +135,8 @@ editor.plugin(UploadPlugin).api.cancel(draftKey);
 `submit` accepts `File[]` or `FileList`. It validates the whole batch before
 changing the document and starts one SDK upload per file after commit. A slot
 option fills an existing draft; block placement options insert new drafts.
+Without a placement option, `submit` inserts at the selection and replaces the
+selection's block when it is empty, as a paste does.
 Cancellation leaves an idle draft. A failed live task keeps its `File` for
 explicit retry. Reloaded drafts need a new file selection.
 

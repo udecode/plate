@@ -567,6 +567,35 @@ describe('Files admission and lifetime', () => {
     ).toBeDefined();
   });
 
+  it('fills an empty block at the selection and inserts after a non-empty one', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseFilePlugin,
+        BaseImagePlugin,
+        withUpload({
+          initialState: { upload: () => new Promise(() => {}) },
+        }),
+      ],
+      initialValue: [paragraph('keep'), paragraph()],
+    });
+    const owner = editor.plugin(BaseUploadPlugin);
+    const image = () => new File(['image'], 'image.png', { type: 'image/png' });
+
+    editor.update.selection.set({ offset: 0, path: [1, 0] });
+    owner.update.submit([image()]);
+
+    expect(editor.read.children()).toEqual([paragraph('keep'), slot('image')]);
+
+    editor.update.selection.set({ offset: 4, path: [0, 0] });
+    owner.update.submit([image()]);
+
+    expect(editor.read.children()).toEqual([
+      paragraph('keep'),
+      slot('image'),
+      slot('image'),
+    ]);
+  });
+
   it('cancels on identity loss and never grants authority to a reused path', async () => {
     const request = deferred();
     let signal: AbortSignal | undefined;

@@ -2089,7 +2089,8 @@ Plugin surface:
   plugin, node type, key, or content root exists
 - renderers keep only the asset chrome non-editable and render the ordinary
   media child slot as the caption
-- renderers may hide `[{ text: '' }]` until the asset has `NodeSelection`;
+- renderers keep an empty `[{ text: '' }]` caption hidden until a
+  `TextSelection` enters it, so selecting the asset does not shift the layout;
   placeholder visibility does not change the document
 - current markdown/MDX contract keeps supported MDX attributes on round-trip
 - current media embed contract persists one canonical render `url` plus current
@@ -2170,13 +2171,14 @@ Proof: the upload owner calls `next()` when no files arrive (`packages/platejs/s
 - `EDIT-CAPTION-NAV-001` `locked`
 
 ```text
-↓ from media NodeSelection
+↓ from media NodeSelection with a populated caption
 =>
 TextSelection at caption start
 ```
 
 note: `ArrowDown` moves from asset focus into the media element's direct inline
-children
+children. With an empty caption it leaves the media instead, as
+`EDIT-CAPTION-NAV-006` shows.
 
 - `EDIT-CAPTION-NAV-002` `locked`
 
@@ -2200,14 +2202,16 @@ TextSelection at caption start
 
 note: horizontal movement treats the owner as a separate keyboard stop before
 its editable children. Reverse movement visits caption end, then the owner,
-then the preceding text. An empty caption still has one text-caret stop. In an
-RTL editable, the physical arrow keys reverse while this logical order stays
-the same.
+then the preceding text. Arrow keys skip an empty caption. Forward movement
+goes from the owner to the next block, and reverse movement from the next block
+stops on the owner. In an RTL editable, the physical arrow keys
+reverse while this logical order stays the same.
 
 - `EDIT-CAPTION-NAV-004` `locked`
 
 ```text
 ↓ from the final visual line of text immediately before media
+with a populated caption
 =>
 media NodeSelection + ↓
 =>
@@ -2241,11 +2245,12 @@ with an empty caption
 =>
 media NodeSelection + ↓
 =>
-TextSelection at caption start
+TextSelection at the start of the text after media
 ```
 
-note: an unfocused empty caption is hidden, so reverse entry stops on the
-selectable asset before exposing its editable caption.
+note: an empty caption stays hidden and arrow keys never enter it, so the
+selectable asset is the only keyboard stop. The caret enters an empty caption
+only through an explicit control, such as the media toolbar's Caption button.
 
 - `EDIT-CAPTION-DELETE-001` `locked`
 

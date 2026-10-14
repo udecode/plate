@@ -511,7 +511,9 @@ Current priorities:
   call and outcome types, not a generic transport contract. A Files SDK client
   satisfies it structurally; session-local examples and tests may implement only
   that operation. Its authored draft retains the `upload` schema type and
-  persists only the draft kind. Upload validates and inserts a whole batch
+  persists only the draft kind. A submit at the selection follows element
+  `insert`'s source policy, so it replaces an empty editable source block and
+  inserts after content or structure. Upload validates and inserts a whole batch
   atomically, starts transfer after commit, and keeps files, request authority,
   progress, failures, and object URLs local to each live node key. Completion
   rechecks that key and kind before atomically replacing the draft with the
