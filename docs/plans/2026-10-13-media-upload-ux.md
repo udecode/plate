@@ -169,7 +169,7 @@ editor.plugin(imagePlugin).api.preview.open(path, props.element.url);
 
 18 步里完成 17 步，开着 1 步（第 4 步），没有跳过或阻塞。
 
-合并 `next` 时，第 7 步的 plitejs 方向键改动让给了 `next` 上按页面是否绘制 caption 来判断的新规则，`plite-empty-object-text-arrows` 这个 changeset 也一起删了。结果是上下方向键和向右键会跳过隐藏的空 caption，向左键从后一个块退回来时仍会在空 caption 里停一次（`EDIT-CAPTION-NAV-003`）。`media-caption.spec.ts` 按这个规则改了期望。`media-caption-delete.spec.ts` 的 "Delete clears a fully selected caption" 在 `origin/next` 上同样失败（`nextctl-delete-a1.log`），和这次合并无关。
+合并 `next` 时，第 7 步的 plitejs 方向键改动让给了 `next` 上按页面是否绘制 caption 来判断的新规则，`plite-empty-object-text-arrows` 这个 changeset 也一起删了。合并后向左键从后一个块退回来时还会在空 caption 里停一次，你随后说 "空的caption就是要从键盘上跳过"，所以 `getObjectReverseEntryTarget` 去掉了这个停靠点：页面没画出来的 caption 文字，不论空不空，方向键在两个方向上都跳过。`EDIT-CAPTION-NAV-003`、媒体文档和 `plite-react-read-only-provider` changeset 跟着改了。`media-caption-delete.spec.ts` 的 "Delete clears a fully selected caption" 在 `origin/next` 上同样失败（`nextctl-delete-a1.log`），和这次合并无关。
 
 ## Open work
 

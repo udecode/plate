@@ -2220,10 +2220,9 @@ TextSelection at caption start
 note: horizontal movement treats the owner as a separate keyboard stop before
 its editable children. Forward movement from the owner enters caption text the
 page draws and otherwise moves on to the next stop. Reverse movement visits
-caption end, then the owner, then the preceding text. A mounted empty caption
-still has one reverse text-caret stop while the page hides it, because entering
-it reveals the stock caption. Populated caption text the page does not draw has
-no stop, so reverse movement stops on the owner. The physical arrow keys follow
+caption end, then the owner, then the preceding text. Caption text the page
+does not draw, empty or populated, has no stop, so reverse movement stops on the
+owner. The physical arrow keys follow
 the computed direction of the block that holds the caret, or of the selected
 media. They reverse in an RTL block inside an LTR editable, and this logical
 order stays the same.

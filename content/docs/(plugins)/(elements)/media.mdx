@@ -257,15 +257,13 @@ Asset focus and caption editing are separate selection states:
 
 In left-to-right text, `ArrowRight` from the text before a media block selects
 the asset before the next press enters its caption. Moving back visits the
-caption, then the selected asset, then the preceding text. An empty caption
-keeps one caret stop when you move back into it, and the stock caption shows
-once it holds the caret. The media toolbar's Caption button also puts the caret in an
-empty caption. Left and right follow the direction of the block that
+caption, then the selected asset, then the preceding text. The stock caption
+hides an empty caption, so arrow keys skip it, and the media toolbar's Caption
+button puts the caret in it. Left and right follow the direction of the block that
 holds the caret, or of the selected media, so they reverse in a right-to-left
 paragraph even inside a left-to-right editor.
 
-Apart from that backward stop, arrow keys stop only on caption text the page
-draws. When your UI hides a caption, `ArrowUp` from the block below or from a
+Arrow keys stop only on caption text the page draws. When your UI hides a caption, `ArrowUp` from the block below or from a
 selected media below selects the media. The forward arrow or `ArrowDown` from
 the selected asset moves past the hidden caption to the next block. When your
 UI shows an empty caption, `ArrowUp` from below enters it.

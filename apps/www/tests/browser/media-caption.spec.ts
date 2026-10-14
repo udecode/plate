@@ -538,12 +538,6 @@ test('arrow keys traverse the image owner before its caption', async ({
     });
     await page.keyboard.press('ArrowLeft');
     await expect.poll(modelSelection).toMatchObject({
-      anchor: { offset: 0, path: [imageIndex + 1, 0] },
-      focus: { offset: 0, path: [imageIndex + 1, 0] },
-      kind: 'text',
-    });
-    await page.keyboard.press('ArrowLeft');
-    await expect.poll(modelSelection).toMatchObject({
       kind: 'node',
       paths: [[imageIndex + 1]],
     });
@@ -737,9 +731,7 @@ test('ArrowUp from below a populated image visits its caption before the owner',
 });
 
 for (const mediaType of ['file', 'audio', 'video']) {
-  test(`vertical arrows skip an empty ${mediaType} caption`, async ({
-    page,
-  }) => {
+  test(`arrow keys skip an empty ${mediaType} caption`, async ({ page }) => {
     await page.goto('/blocks/media-demo', { waitUntil: 'commit' });
     const root = page.locator(EDITOR).first();
     const editor = createBrowserEditorHarness(
@@ -781,12 +773,6 @@ for (const mediaType of ['file', 'audio', 'video']) {
     await expect.poll(modelSelection).toMatchObject({
       anchor: belowStart,
       focus: belowStart,
-      kind: 'text',
-    });
-    await page.keyboard.press('ArrowLeft');
-    await expect.poll(modelSelection).toMatchObject({
-      anchor: { offset: 0, path: [mediaIndex, 0] },
-      focus: { offset: 0, path: [mediaIndex, 0] },
       kind: 'text',
     });
     await page.keyboard.press('ArrowLeft');
