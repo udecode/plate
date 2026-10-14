@@ -11,10 +11,12 @@ import {
   type Path,
   type NamedRootKey,
 } from '../../../core';
-import { getListIndent, isListItem } from '../../../internal/listFamily';
+import { inRoot } from '../../../internal/utils/inRoot';
 import type { ListType } from './BaseListPlugin';
 import {
   getElementListStyle,
+  getListIndent,
+  isListItem,
   isListLevels,
   type ListLevels,
 } from './listIndex.internal';
@@ -69,12 +71,9 @@ const walkSiblings = (
         ? PathApi.next(siblingPath)
         : PathApi.previous(siblingPath);
 
-    const sibling = state.nodes.get(
-      root === undefined ? siblingPath : { path: siblingPath, offset: 0, root },
-      {
-        match: ElementApi.isElement,
-      }
-    )?.[0];
+    const sibling = state.nodes.get(inRoot(siblingPath, root), {
+      match: ElementApi.isElement,
+    })?.[0];
 
     if (!sibling) return undefined;
 
@@ -347,14 +346,9 @@ export const getListRunSiblings = (
           ? PathApi.next(siblingPath)
           : PathApi.previous(siblingPath);
 
-      const sibling = state.nodes.get(
-        root === undefined
-          ? siblingPath
-          : { path: siblingPath, offset: 0, root },
-        {
-          match: ElementApi.isElement,
-        }
-      );
+      const sibling = state.nodes.get(inRoot(siblingPath, root), {
+        match: ElementApi.isElement,
+      });
 
       if (!sibling) break;
 

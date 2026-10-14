@@ -15,26 +15,8 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["list", "list-static", "turn-into-toolbar-button"],
-      "entries": 1,
-      "diagnostics": []
-    },
-    {
-      "id": "2026-10-14-details-slash-placement",
-      "href": "/registry/changelog/2026-10-14-details-slash-placement.json",
-      "status": "draft",
-      "kind": "fix",
-      "summary": "Keep slash-created blocks visible after closed Details",
-      "change": {
-        "type": "source",
-        "date": "2026-10-14",
-        "commits": []
-      },
-      "release": {
-        "status": "unresolved"
-      },
-      "targets": ["slash"],
-      "entries": 1,
+      "targets": ["turn-into-toolbar-button", "indent", "indent-static"],
+      "entries": 2,
       "diagnostics": []
     },
     {

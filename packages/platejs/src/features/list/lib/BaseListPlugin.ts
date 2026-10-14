@@ -35,24 +35,24 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
-import { failInvariant } from '../../../internal/failInvariant';
-import {
-  getListFamilies,
-  getListIndent,
-  isListItem,
-  isListType,
-  LIST_FIELDS,
-  LIST_TYPES,
-} from '../../../internal/listFamily';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import {
-  getCompiledPlatePlugin,
-  getCompiledPlateModelBinding,
-} from '../../../internal/plugin/compilePlateModel';
+  applyBlockReleases,
+  readBlockReleases,
+} from '../../../internal/plugin/blockRelease';
+import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
+import { inRoot, rootOf } from '../../../internal/utils/inRoot';
 import type { MarkdownMappingDiagnosticInput } from '../../../lib/plugin/PluginFormatContext';
 import { traverseHtmlElements } from '../../../lib/plugins/html/htmlDom';
 import { BaseBlockquotePlugin } from '../../basic-nodes';
 import { BaseIndentPlugin } from '../../indent';
+import { planListConversion } from './listConversion.internal';
+import {
+  deeperRunEnd,
+  getListFamilies,
+  moveListFamilies,
+  shiftListFamilyMember,
+} from './listFamily.internal';
 import { flattenHtmlListItem, isHtmlList } from './listHtml.internal';
 import {
   createListId,
@@ -69,7 +69,11 @@ import {
   getDocumentListOrdinal,
   getElementListStyle,
   getHeadingType,
+  getListIndent,
+  isListItem,
   isListLevels,
+  isListType,
+  LIST_TYPES,
   normalizeListStyle,
   readListOrdinal,
 } from './listIndex.internal';
@@ -173,6 +177,16 @@ export function isOrderedList(element: Element) {
   return element.listType === ListType.Numbered;
 }
 
+const LIST_FIELDS = [
+  'checked',
+  'listId',
+  'listLevels',
+  'listRestart',
+  'listStart',
+  'listStyle',
+  'listType',
+] as const;
+
 const getPluginType = (editor: Editor, key: string) => {
   const descriptor = getCompiledPlatePlugin(editor, key);
 
@@ -194,7 +208,9 @@ const handleListTab = (
   editor: Editor,
   match: (node: Descendant, path: Path) => boolean
 ) => {
-  if (!editor.read.selection()) return false;
+  const selection = editor.read.selection();
+
+  if (!selection) return false;
 
   const entries = editor.read.nodes.blocks({ match, mode: 'lowest' });
 
@@ -202,11 +218,11 @@ const handleListTab = (
     return false;
   }
 
-  editor.plugin(BaseIndentPlugin).update.increase({
-    nodes: {
-      match: (node, path): node is Element =>
-        ElementApi.isElement(node) && match(node, path),
-    },
+  editor.update((tx) => {
+    moveListFamilies(editor, tx, entries, {
+      offset: 1,
+      root: SelectionApi.root(selection),
+    });
   });
 
   return true;
@@ -216,7 +232,9 @@ const handleListUntab = (
   editor: Editor,
   match: (node: Descendant, path: Path) => boolean
 ) => {
-  if (!editor.read.selection()) return false;
+  const selection = editor.read.selection();
+
+  if (!selection) return false;
 
   const entries = editor.read.nodes.blocks({ match, mode: 'lowest' });
   const isRootItem = ([node]: NodeEntry<Element>) =>
@@ -242,33 +260,35 @@ const handleListUntab = (
       (isRootItem(entry) || (!isListItem(entry[0]) && !entry[0].indent)) &&
       isQuoted(entry)
   );
-  const outdented = getListFamilies(
-    editor.read,
-    entries,
-    SelectionApi.root(editor.read.selection())
-  )
-    .map((family) => family[0])
-    .filter((entry) => !isRootItem(entry) && Number(entry[0].indent ?? 0) > 0);
+  const outdented = entries.filter(
+    (entry) => !isRootItem(entry) && Number(entry[0].indent ?? 0) > 0
+  );
 
   if (lifted.length > 0 || outdented.length > 0) {
     editor.update((tx) => {
-      const [first, ...rest] = outdented;
-      if (first) {
-        const root = SelectionApi.root(tx.selection());
-        tx.plugin(BaseIndentPlugin).decrease({
-          nodes: {
-            at: SelectionApi.nodes(
-              [first[1], ...rest.map(([, path]) => path)],
-              root ? { root } : {}
-            ),
-          },
-        });
-      }
-      for (const [node, path] of lifted.toReversed()) {
-        if (isListItem(node)) {
-          tx.nodes.unset([...LIST_FIELDS, 'indent'], { at: path });
+      const root = SelectionApi.root(selection);
+      const liftedFamilies = getListFamilies(tx, lifted, root);
+      const lifting = new Set(
+        liftedFamilies.flatMap((family) => family.map(({ node }) => node))
+      );
+
+      moveListFamilies(
+        editor,
+        tx,
+        outdented.filter(([node]) => !lifting.has(node)),
+        { offset: -1, root }
+      );
+      // A lifted root item takes its family out of the quote, each member one
+      // level shallower, so the family keeps its shape.
+      for (const [head, ...members] of liftedFamilies.toReversed()) {
+        for (const member of members.toReversed()) {
+          shiftListFamilyMember(tx, member, -1);
+          tx.nodes.lift({ at: member.key });
         }
-        tx.nodes.lift({ at: path });
+        if (isListItem(head.node)) {
+          tx.nodes.unset([...LIST_FIELDS, 'indent'], { at: head.key });
+        }
+        tx.nodes.lift({ at: head.key });
       }
     });
   }
@@ -278,66 +298,6 @@ const handleListUntab = (
 
 const isListOrdinal = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value);
-
-// Per sibling array and indent, the index of the last block deeper than
-// the indent in the unbroken run starting at each asked sibling, or -1 when
-// that sibling starts no run. A lookup walks a run once and records every
-// sibling in it, so hovers and keyboard steps never walk a family twice and
-// read at most one sibling past the run they ask about.
-const RUN_ENDS = new WeakMap<
-  readonly Descendant[],
-  Map<number, Map<number, number>>
->();
-
-const runEndAt = (
-  siblings: readonly Descendant[],
-  indent: number,
-  start: number
-) => {
-  let byIndent = RUN_ENDS.get(siblings);
-
-  if (!byIndent) {
-    byIndent = new Map();
-    RUN_ENDS.set(siblings, byIndent);
-  }
-
-  let ends = byIndent.get(indent);
-
-  if (!ends) {
-    ends = new Map();
-    byIndent.set(indent, ends);
-  }
-
-  const known = ends.get(start);
-
-  if (known !== undefined) return known;
-
-  let index = start;
-
-  while (index < siblings.length && !ends.has(index)) {
-    const node = siblings[index];
-
-    if (!ElementApi.isElement(node) || getListIndent(node) <= indent) {
-      break;
-    }
-    index += 1;
-  }
-
-  if (index === start) {
-    ends.set(start, -1);
-
-    return -1;
-  }
-
-  const joined = ends.get(index);
-  const last = joined !== undefined && joined >= 0 ? joined : index - 1;
-
-  for (let visited = start; visited < index; visited += 1) {
-    ends.set(visited, last);
-  }
-
-  return last;
-};
 
 export const BaseListPlugin = definePlugin(PLUGINS.list, {
   dependencies: [BaseIndentPlugin],
@@ -1063,6 +1023,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
         options: BlockInsertOptions | BlockUpsertOptions = {}
       ) =>
         applyBlockInsertion({
+          editor,
           insert: (insertOptions) => insertList(input, insertOptions),
           matches: (block) => block.listType === input.type,
           mode,
@@ -1072,11 +1033,19 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
       return {
         outdent: txLocate(locateAt(0), ({ at }: OutdentListOptions = {}) => {
-          tx.indent.decrease({ nodes: { at } });
+          const root = rootOf(tx, at);
+          const entries = tx.nodes.blocks({ at, mode: 'lowest' });
+          const keys = entries.flatMap(
+            ([, path]) => tx.key(inRoot(path, root)) ?? []
+          );
 
-          for (const [node, path] of tx.nodes.blocks({ at, mode: 'lowest' })) {
+          moveListFamilies(editor, tx, entries, { offset: -1, root });
+
+          for (const key of keys) {
+            const node = tx.nodes.get(key)?.[0];
+
             if (ElementApi.isElement(node) && !node.indent) {
-              tx.nodes.unset([...LIST_FIELDS], { at: path });
+              tx.nodes.unset([...LIST_FIELDS], { at: key });
             }
           }
         }),
@@ -1108,146 +1077,69 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               return false;
             }
 
-            const root =
-              at === undefined
-                ? SelectionApi.root(tx.selection())
-                : PathApi.isPath(at)
-                  ? undefined
-                  : 'anchor' in at
-                    ? at.anchor.root
-                    : at.root;
-            const inRoot = (path: Path): Location =>
-              root === undefined ? path : { path, offset: 0, root };
-            const keyAt = (path: Path) =>
-              tx.key(inRoot(path)) ??
-              failInvariant('Selected list block has no node key.');
+            const root = rootOf(tx, at);
+            const keyAt = (path: Path) => tx.key(inRoot(path, root));
             const match = getInjectMatch(editor, plugin);
-            const paragraphType =
-              editor.plugin(BaseParagraphPlugin).schema.type;
-            const detailsType = getCompiledPlateModelBinding(
+            const releases = readBlockReleases(
               editor,
-              PLUGINS.details
-            )?.elementType;
-            const summaryType = getCompiledPlateModelBinding(
-              editor,
-              PLUGINS.detailsSummary
-            )?.elementType;
-            const sections =
-              detailsType && summaryType
-                ? tx.nodes
-                    .blocks({ at, type: summaryType, mode: 'lowest' })
-                    .flatMap(([title, path]) => {
-                      const parent = tx.nodes.parent(inRoot(path));
-
-                      if (
-                        !parent ||
-                        !ElementApi.isElement(parent[0]) ||
-                        parent[0].type !== detailsType ||
-                        !match({ ...title, type: paragraphType }, path)
-                      ) {
-                        return [];
-                      }
-
-                      const { children } = parent[0];
-                      const first = tx.nodes
-                        .children(keyAt(parent[1]))
-                        .find(
-                          (node) =>
-                            tx.nodes.isContent(node) && node.type === title.type
-                        );
-                      if (first !== title) return [];
-
-                      return [
-                        {
-                          key: keyAt(parent[1]),
-                          title: keyAt(path),
-                          path,
-                          indent: Math.max(1, getListIndent(parent[0])),
-                          body: children.flatMap((node, index) =>
-                            node !== title && tx.nodes.isContent(node)
-                              ? [keyAt([...parent[1], index])]
-                              : []
-                          ),
-                        },
-                      ];
-                    })
-                    .toSorted(
-                      (left, right) => left.path.length - right.path.length
-                    )
-                : [];
-            const bySection = new Map(
-              sections.map((section) => [section.key, section])
+              tx,
+              tx.nodes.blocks({ at, mode: 'lowest' }),
+              (block, [, path]) => match(block, path),
+              root
             );
-            const byTitle = new Map(
-              sections.map((section) => [section.title, section])
-            );
-            const bodyIndents = new Map<NodeKey, number>();
-
-            if (
-              sections.some((section) =>
-                section.body.some((key) => {
-                  const entry = tx.nodes.get(key, {
-                    match: ElementApi.isElement,
-                  });
-                  return (
-                    entry &&
-                    !bySection.has(key) &&
-                    !tx.schema.property({
-                      key: 'indent',
-                      placement: 'element',
-                      type: entry[0].type,
-                    })
-                  );
-                })
-              )
-            ) {
-              return false;
-            }
-
-            for (const section of sections) {
-              for (const key of section.body) {
-                const nested = bySection.get(key);
-                if (nested) {
-                  nested.indent += section.indent;
-                } else {
-                  const body = tx.nodes.get(key, {
-                    match: ElementApi.isElement,
-                  });
-                  if (body) {
-                    bodyIndents.set(
-                      key,
-                      section.indent + Math.max(1, getListIndent(body[0]))
-                    );
-                  }
-                }
-              }
-            }
-            const [firstSection, ...otherSections] = sections;
-            if (firstSection) {
-              const titles = SelectionApi.nodes(
-                [
-                  firstSection.path,
-                  ...otherSections.map((section) => section.path),
-                ],
-                root ? { root } : {}
+            const holdsRelease = ([, path]: NodeEntry<Element>) =>
+              releases.some(({ container: [, containerPath] }) =>
+                PathApi.isCommon(path, containerPath)
               );
-              if (!tx.blocks.set({ type: paragraphType }, { at: titles })) {
-                return false;
-              }
-              tx.nodes.unset('level', { at: titles });
-            }
-            const entries = tx.nodes
-              .blocks({
-                at,
-                match,
-                mode: 'lowest',
+            const matched = tx.nodes
+              .blocks({ at, match, mode: 'lowest' })
+              .filter((entry) => !holdsRelease(entry));
+
+            if (matched.length === 0 && releases.length === 0) return false;
+
+            const depths =
+              releases.length > 0
+                ? planListConversion(editor, tx, releases, {
+                    listType: type,
+                    root,
+                  })
+                : new Map<NodeKey, number>();
+
+            if (!depths) return false;
+
+            const keys = [
+              ...matched.flatMap(([, path]) => keyAt(path) ?? []),
+              ...releases.map((release) => release.key),
+            ];
+
+            applyBlockReleases(tx, releases);
+
+            const entries = keys
+              .flatMap((key) => {
+                const entry = tx.nodes.get(key, {
+                  match: ElementApi.isElement,
+                });
+
+                return entry ? [entry] : [];
               })
-              .map(([node, path]) => ({ node, path, key: keyAt(path) }));
+              .toSorted(([, left], [, right]) => PathApi.compare(left, right));
 
             if (entries.length === 0) return false;
 
-            const changed = (candidates: typeof entries) =>
-              candidates.some(({ node: before, key }) => {
+            // A key finds each block again after the writes in any root, where
+            // a path would read the main document.
+            const keyed = (list: ReadonlyArray<NodeEntry<Element>>) =>
+              list.flatMap(([node, path]) => {
+                const key = keyAt(path);
+
+                return key ? [{ key, node, path }] : [];
+              });
+            const changed = (
+              candidates: ReadonlyArray<
+                Readonly<{ key: NodeKey; node: Element }>
+              >
+            ) =>
+              candidates.some(({ key, node: before }) => {
                 const after = tx.nodes.get(key)?.[0];
 
                 return (
@@ -1258,17 +1150,17 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               });
 
             const normalizedListStyle = normalizeListStyle(type, listStyle);
-            const isSameList = ({ node }: (typeof entries)[number]) =>
+            const isSameList = ([node]: NodeEntry<Element>) =>
               node.listType === type &&
               (listStyle === undefined ||
                 getElementListStyle(node) === normalizedListStyle);
             const unsetList =
-              sections.length === 0 &&
-              listStart === undefined &&
-              entries.every(isSameList);
+              listStart === undefined && entries.every(isSameList);
 
             if (unsetList) {
-              entries.forEach(({ node, key }) => {
+              const unset = keyed(entries);
+
+              unset.forEach(({ key, node }) => {
                 const indent = Number(node.indent ?? 0);
 
                 tx.nodes.unset([...LIST_FIELDS], { at: key });
@@ -1279,35 +1171,36 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                   tx.nodes.unset('indent', { at: key });
                 }
               });
-              return changed(entries);
+              return changed(unset);
             }
 
             const targets =
-              entries.length === 1 && isListItem(entries[0].node)
+              entries.length === 1 && isListItem(entries[0][0])
                 ? [
                     entries[0],
                     ...getListRunSiblings(
                       tx,
-                      [entries[0].node, entries[0].path],
+                      entries[0],
                       getHeadingType(editor),
                       root
-                    ).map(([node, path]) => ({ node, path, key: keyAt(path) })),
+                    ),
                   ]
                 : [...entries];
-            const boundaryKey = entries[0].key;
+            const boundary = entries[0][0];
+            const written = keyed(targets);
             const headingType = getHeadingType(editor);
             // Blocks that become list items join one list: the one the first
             // of them joins, or a fresh one.
             let identity: ReturnType<typeof resolveListIdentity> | undefined;
 
-            targets.forEach(({ node, path, key }) => {
+            written.forEach(({ key, node, path }) => {
               const currentIndent = Number(node.indent ?? 0);
               const indent =
-                byTitle.get(key)?.indent ??
+                depths.get(key) ??
                 (isListItem(node)
                   ? Math.max(1, currentIndent || 1)
                   : currentIndent + 1);
-              const isBoundary = key === boundaryKey;
+              const isBoundary = node === boundary;
 
               if (!isListItem(node)) {
                 identity ??= resolveListIdentity(
@@ -1369,14 +1262,10 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                 tx.nodes.unset('listRestart', { at: key });
               }
             });
-            const didChange = changed(targets);
-            for (const [key, indent] of bodyIndents) {
-              tx.nodes.set({ indent }, { at: key });
+            for (const [key, depth] of depths) {
+              tx.nodes.set({ indent: depth }, { at: key });
             }
-            for (const section of sections) {
-              tx.nodes.unwrap({ at: section.key });
-            }
-            return didChange || sections.length > 0;
+            return changed(written) || releases.length > 0;
           }
         ),
         restart: txLocate(
@@ -1588,9 +1477,9 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
         return entries.some(([node]) => isListItem(node))
           ? SelectionApi.nodes(
-              getListFamilies(state, entries)
-                .flat()
-                .map(([, path]) => path) as [Path, ...Path[]]
+              getListFamilies(state, entries).flatMap((family) =>
+                family.map(({ path }) => path)
+              ) as [Path, ...Path[]]
             )
           : selection;
       }),
@@ -1618,7 +1507,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             index += 1;
             continue;
           }
-          const end = runEndAt(siblings, indent, index);
+          const end = deeperRunEnd(siblings, indent, index);
 
           if (end < 0) break;
           last = end;

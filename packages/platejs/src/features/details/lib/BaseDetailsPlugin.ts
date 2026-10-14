@@ -1,14 +1,20 @@
 import {
   BaseParagraphPlugin,
   definePlugin,
+  type Editor,
   editorCommands,
+  type EditorCoreStateView,
+  type EditorUpdateTransaction,
+  type Element,
   ElementApi,
   type ElementOf,
   type Location,
+  type NamedRootKey,
   type NodeKey,
   NodeApi,
   type NodeSelection,
   PathApi,
+  type Path,
   type BlockInsertOptions,
   type BlockUpsertOptions,
   PLUGINS,
@@ -21,7 +27,50 @@ import {
   locateAt,
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { blockRelease } from '../../../internal/plugin/blockRelease';
 import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
+import { insertionAnchor } from '../../../internal/plugin/insertionAnchor';
+import { inRoot, rootOf } from '../../../internal/utils/inRoot';
+
+// A Details' title is its first live Summary, even before the correction
+// moves it to the front.
+const getDetailsTitleIndex = (
+  editor: Editor,
+  state: Pick<EditorCoreStateView, 'nodes'>,
+  details: Element
+) => {
+  const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema.type;
+
+  return details.children.findIndex(
+    (child) =>
+      state.nodes.isContent(child) &&
+      ElementApi.isElementType(child, summaryType)
+  );
+};
+
+const getDetailsOfTitle = (
+  editor: Editor,
+  state: Pick<EditorCoreStateView, 'nodes'>,
+  {
+    path,
+    root,
+    type,
+  }: Readonly<{ path: Path; root?: NamedRootKey; type: string }>
+) => {
+  const containerPath = PathApi.parent(path);
+  const container =
+    containerPath.length > 0
+      ? state.nodes.get(inRoot(containerPath, root), {
+          match: ElementApi.isElement,
+        })
+      : undefined;
+
+  return container &&
+    ElementApi.isElementType(container[0], type) &&
+    getDetailsTitleIndex(editor, state, container[0]) === path.at(-1)
+    ? container
+    : undefined;
+};
 
 const isSummaryHeadingLevel = (
   value: unknown
@@ -30,6 +79,32 @@ const isSummaryHeadingLevel = (
   Number.isInteger(value) &&
   value >= 1 &&
   value <= 6;
+
+const getReleasedTitleProps = (editor: Editor, level: unknown) => {
+  const headingType = getCompiledPlateModelBinding(
+    editor,
+    PLUGINS.heading
+  )?.elementType;
+
+  return isSummaryHeadingLevel(level) && headingType
+    ? { level, type: headingType }
+    : { type: editor.plugin(BaseParagraphPlugin).schema.type };
+};
+
+const releaseDetails = (
+  editor: Editor,
+  tx: EditorUpdateTransaction,
+  details: NodeKey,
+  title: NodeKey | null
+) => {
+  const node = title && tx.nodes.get(title, { match: ElementApi.isElement });
+
+  if (title && node) {
+    tx.nodes.set(getReleasedTitleProps(editor, node[0].level), { at: title });
+  }
+
+  return tx.nodes.unwrap({ at: details });
+};
 
 export type BaseDetailsPluginState = {
   openKeys: Set<NodeKey>;
@@ -135,6 +210,34 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           edge === 'before' &&
           path.at(-1) === 0
         );
+      }),
+      blockRelease.of((tx, [node, path], root) => {
+        const container = getDetailsOfTitle(editor, tx, { path, root, type });
+
+        if (!container) return null;
+
+        const details = tx.key(inRoot(container[1], root));
+        const key = tx.key(inRoot(path, root));
+
+        if (!details || !key) return null;
+
+        const block = { ...node, ...getReleasedTitleProps(editor, node.level) };
+
+        return {
+          apply: (writer) => releaseDetails(editor, writer, details, key),
+          block,
+          container,
+          fit: container[0].children.map((child) =>
+            child === node ? block : child
+          ),
+          key,
+        };
+      }),
+      insertionAnchor.of((tx, [, path], root) => {
+        const container = getDetailsOfTitle(editor, tx, { path, root, type });
+        const key = container && tx.key(inRoot(container[1], root));
+
+        return key && !store.get('openKeys').has(key) ? container : null;
       }),
     ],
     api: ({ editor: commandEditor }) => ({
@@ -296,6 +399,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         options: BlockInsertOptions | BlockUpsertOptions = {}
       ) =>
         applyBlockInsertion({
+          editor,
           insert: (insertOptions) => insertDetails(data, insertOptions),
           matches: (block) => block.type === type,
           mode,
@@ -330,66 +434,44 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
                 ? tx.nodes.blocks({ at: target, mode: 'lowest' })
                 : [];
             }
+            const root = rootOf(tx, at);
+            const keyAt = (path: Path) => tx.key(inRoot(path, root));
             const detailsEntries = [
               ...new Map(
-                sources.flatMap(([node]) => {
+                sources.flatMap(([node, path]) => {
                   if (!ElementApi.isElement(node)) return [];
 
-                  const key = tx.key(node);
+                  const location = inRoot(path, root);
                   const entry = ElementApi.isElementType(node, type)
-                    ? tx.nodes.get(key, { type: plugin })
-                    : tx.nodes.above({ at: key, type });
+                    ? tx.nodes.get(location, { type: plugin })
+                    : tx.nodes.above({ at: location, type });
+                  const key = entry && keyAt(entry[1]);
 
-                  return entry ? [[tx.key(entry[0]), entry] as const] : [];
+                  return entry && key ? [[key, entry] as const] : [];
                 })
-              ).values(),
+              ),
             ].toSorted(
-              ([, left], [, right]) =>
+              ([, [, left]], [, [, right]]) =>
                 PathApi.compare(left, right) || left.length - right.length
             );
-            const targets: NodeKey[] = [];
-            let previous: (typeof detailsEntries)[number] | undefined;
+            let outer: Path | undefined;
+            const targets = detailsEntries.filter(([, [, path]]) => {
+              if (outer && PathApi.isAncestor(outer, path)) return false;
 
-            for (const entry of detailsEntries) {
-              if (previous && PathApi.isAncestor(previous[1], entry[1])) {
-                continue;
-              }
+              outer = path;
 
-              targets.push(tx.key(entry[0]));
-              previous = entry;
-            }
-            const paragraphType =
-              editor.plugin(BaseParagraphPlugin).schema.type;
-            const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema
-              .type;
-            const headingType = getCompiledPlateModelBinding(
-              editor,
-              PLUGINS.heading
-            )?.elementType;
+              return true;
+            });
 
-            for (const key of targets.toReversed()) {
-              const summaryNode = tx.nodes
-                .children(key)
-                .find(
-                  (child) =>
-                    tx.nodes.isContent(child) &&
-                    ElementApi.isElementType(child, summaryType)
-                );
-              const summary =
-                summaryNode &&
-                tx.nodes.get(tx.key(summaryNode), {
-                  type: BaseDetailsSummaryPlugin,
-                })?.[0];
+            for (const [key, [details, path]] of targets.toReversed()) {
+              const index = getDetailsTitleIndex(editor, tx, details);
 
-              if (summary) {
-                tx.nodes.set(
-                  summary.level && headingType
-                    ? { type: headingType, level: summary.level }
-                    : { type: paragraphType },
-                  { at: tx.key(summary) }
-                );
-              }
-              tx.nodes.unwrap({ at: key });
+              releaseDetails(
+                editor,
+                tx,
+                key,
+                index < 0 ? null : (keyAt([...path, index]) ?? null)
+              );
             }
           }
         ),

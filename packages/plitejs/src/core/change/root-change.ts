@@ -3176,7 +3176,7 @@ export class RootChange {
             data[dataIndex] = prepared;
             changed = true;
           }
-        } else {
+        } else if (value.tokens.some((token) => token.kind === 'open')) {
           const keys = new Map<number, NodeKey>();
 
           value.tokens.forEach((token, index) => {

@@ -27,6 +27,7 @@ import {
   PathApi,
   SelectionApi,
   type Element,
+  type NodeEntry,
 } from 'platejs';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseColumnPlugin } from 'platejs/layout';
@@ -96,6 +97,63 @@ const structuralStateEqual = (
   previous.details.eligible === next.details.eligible &&
   previous.quote.active === next.quote.active &&
   previous.quote.eligible === next.quote.eligible;
+
+// A block directly inside a Details body becomes a paragraph instead of
+// resetting, because the Details' only content default is its title.
+const turnIntoList = defineCommand<
+  Readonly<{
+    detailsType: string | undefined;
+    paragraphType: string;
+    summaryType: string | undefined;
+    type: 'bulleted' | 'numbered' | 'task';
+  }>,
+  Editor
+>('turn-into:list', {
+  build: ({
+    input: { detailsType, paragraphType, summaryType, type },
+    state,
+  }) => {
+    let applied = false;
+    const result = state.transaction((tx) => {
+      const selection = tx.selection();
+
+      if (!selection) return;
+
+      const root = SelectionApi.root(selection);
+      const at = ([first, ...rest]: ReadonlyArray<NodeEntry<Element>>) =>
+        first &&
+        SelectionApi.nodes(
+          [first[1], ...rest.map(([, path]) => path)],
+          root ? { root } : {}
+        );
+      const blocks = tx.nodes.blocks({ mode: 'lowest' });
+      const body = blocks.filter(([node]) => {
+        const parent = tx.nodes.parent(state.key(node));
+
+        return (
+          detailsType !== undefined &&
+          node.type !== summaryType &&
+          !!parent &&
+          ElementApi.isElementType(parent[0], detailsType)
+        );
+      });
+      const reset = at(blocks.filter((entry) => !body.includes(entry)));
+      const retyped = at(body.filter(([node]) => node.type !== paragraphType));
+      const bodyAt = at(body);
+
+      if (reset && !tx.blocks.reset({ at: reset, unset: ['level'] })) return;
+      if (retyped && !tx.blocks.set({ type: paragraphType }, { at: retyped })) {
+        return;
+      }
+      if (bodyAt) tx.nodes.unset('level', { at: bodyAt });
+      tx.plugin(BaseListPlugin).clear();
+      applied = tx.plugin(BaseListPlugin).toggle({ type });
+    });
+
+    return applied ? result : false;
+  },
+  locate: false,
+});
 
 const readBlocks = (
   editor: Editor,
@@ -176,6 +234,12 @@ const getStructuralState = (editor: Editor): StructuralState => {
     : [];
   const codeActive = hasSelection && codeMembership.every(Boolean);
   const codeMixed = codeMembership.some(Boolean) && !codeActive;
+  const summary = editor.plugin(BaseDetailsSummaryPlugin);
+  // codeBlock.toggle converts a Details title only on its own.
+  const holdsTitleAndMore =
+    summary.installed &&
+    leafEntries.length > 1 &&
+    leafEntries.some(([node]) => node.type === summary.schema.type);
   const columnActive =
     columns.installed &&
     entries.length === 1 &&
@@ -188,7 +252,11 @@ const getStructuralState = (editor: Editor): StructuralState => {
   return {
     code: {
       active: codeActive,
-      eligible: code.installed && !codeMixed && isContiguousSiblingRun(entries),
+      eligible:
+        code.installed &&
+        !codeMixed &&
+        !holdsTitleAndMore &&
+        isContiguousSiblingRun(entries),
     },
     columns: {
       active: columnActive,
@@ -403,39 +471,14 @@ export function TurnIntoToolbarButton() {
             return;
           }
 
-          editor.update.command(
-            defineCommand<void, Editor>('turn-into:list', {
-              build: ({ state }) => {
-                let applied = false;
-                const result = state.transaction((tx) => {
-                  const paragraphType =
-                    editor.plugin(BaseParagraphPlugin).schema.type;
-                  const summary = editor.plugin(BaseDetailsSummaryPlugin);
-                  const [first, ...rest] = tx.nodes
-                    .blocks({ mode: 'lowest' })
-                    .filter(
-                      ([node]) =>
-                        node.type !== paragraphType &&
-                        !(
-                          summary.installed && node.type === summary.schema.type
-                        )
-                    );
-                  if (first) {
-                    const root = tx.points.start(first[0])?.root;
-                    const at = SelectionApi.nodes(
-                      [first[1], ...rest.map(([, path]) => path)],
-                      root ? { root } : {}
-                    );
-                    if (!tx.blocks.set({ type: paragraphType }, { at })) return;
-                    tx.nodes.unset('level', { at });
-                  }
-                  tx.plugin(BaseListPlugin).clear();
-                  applied = tx.plugin(BaseListPlugin).toggle({ type });
-                });
-                return applied ? result : false;
-              },
-            })
-          );
+          const summary = editor.plugin(BaseDetailsSummaryPlugin);
+
+          editor.update.command(turnIntoList, {
+            detailsType: details.installed ? details.schema.type : undefined,
+            paragraphType: editor.plugin(BaseParagraphPlugin).schema.type,
+            summaryType: summary.installed ? summary.schema.type : undefined,
+            type,
+          });
         },
       });
     });

@@ -12,9 +12,12 @@ type from `platejs` when declaring a public command boundary.
 
 - `at`: an explicit insertion location.
 - `before`: a live block key; omit `at` and `after` when using it.
-- `after`: a live source block target; omit `at` when using it.
+- `after`: a live source block target; omit `at` when using it. Without `at`
+  and `after`, the insert lands after the caret's block, or after the container
+  that hides what follows it, such as a closed Details for its title.
 - `replaceEmpty`: replace the empty, writable source text block when inserting
-  after it. Structural and atomic blocks remain intact.
+  after it. Structural and atomic blocks, and an empty block that is not block
+  content, such as a Details title, remain intact.
 - `select`: select the inserted content.
 
 ### `createEditor`

@@ -609,7 +609,7 @@ export const getRegistryContributions = <TValue>(
 ) =>
   Object.freeze(
     (registry.contributions.get(point) ?? []).map(
-      ({ value }) => value as Readonly<TValue>
+      ({ value }) => value as TValue
     )
   );
 

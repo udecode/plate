@@ -13,6 +13,8 @@ import {
   BaseParagraphPlugin,
   BaseHeadingPlugin,
   BaseListPlugin,
+  definePlugin,
+  schema,
   SelectionApi,
   type Selection,
   type Value,
@@ -246,6 +248,103 @@ describe('turn into menu behavior', () => {
         ],
       },
     ]);
+  });
+
+  it.each([
+    ['offers', 'a title alone', { path: [0, 0, 0], offset: 5 }, false],
+    ['disables', 'a title with its body', { path: [0, 1, 0], offset: 4 }, true],
+  ])('%s Code for %s', async (_, __, focus, disabled) => {
+    currentEditor = createTestEditor({
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus,
+      },
+    });
+    const view = await renderTurnInto();
+
+    expect(
+      (
+        view.getByRole('menuitemcheckbox', {
+          name: 'Code',
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(disabled);
+  });
+
+  it('turns a code block into a paragraph list item', async () => {
+    currentEditor = createTestEditor({
+      initialValue: [{ type: 'codeBlock', children: [{ text: 'code' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      },
+    });
+    const view = await renderTurnInto();
+
+    fireEvent.click(view.getByRole('radio', { name: 'Bulleted list' }));
+
+    expect(currentEditor.read.children()).toMatchObject([
+      {
+        children: [{ text: 'code' }],
+        indent: 1,
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('keeps the heading a slot requires when it becomes a list item', async () => {
+    const HeadingSlot = definePlugin('headingSlot', {
+      dependencies: [BaseHeadingPlugin],
+      schema: {
+        element: {
+          blockContent: true,
+          content: schema.content.prefix(
+            [{ element: 'heading', properties: { level: 1 } }],
+            schema.content.group('block')
+          ),
+        },
+      },
+    });
+    const initialValue: Value = [
+      {
+        type: 'headingSlot',
+        children: [
+          { type: 'heading', level: 1, children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Body' }] },
+        ],
+      },
+    ];
+    currentEditor = createEditor({
+      plugins: [...BaseBasicBlocksKit, ...BaseListKit, HeadingSlot],
+      initialValue,
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 0], offset: 0 },
+      },
+    });
+    const view = await renderTurnInto();
+
+    fireEvent.click(view.getByRole('radio', { name: 'Bulleted list' }));
+
+    expect(currentEditor.read.children()[0].children[0]).toMatchObject({
+      children: [{ text: 'Title' }],
+      level: 1,
+      listType: 'bulleted',
+      type: 'heading',
+    });
   });
 
   beforeEach(() => {
@@ -633,7 +732,7 @@ describe('turn into menu behavior', () => {
     const item = view.getByRole('menuitemcheckbox', { name: 'Details' });
 
     expect(item).toHaveAttribute('aria-checked', 'true');
-    expect(item).not.toBeDisabled();
+    expect((item as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(item);
 
     expect(currentEditor.read.children()).toEqual([

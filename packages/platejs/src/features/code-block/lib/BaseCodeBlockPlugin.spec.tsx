@@ -71,7 +71,7 @@ const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
   });
 
 describe('BaseCodeBlockPlugin', () => {
-  it('converts a nested Details title to code and preserves its body and parent', () => {
+  it('converts a nested Details title to code and preserves its body and parent [EDIT-DETAILS-TITLE-CODE-001]', () => {
     const initialValue = [
       {
         type: 'details',
@@ -125,6 +125,36 @@ describe('BaseCodeBlockPlugin', () => {
     expect(
       editor.plugin(BaseDetailsPlugin).store.get('isOpen', innerKey!)
     ).toBe(true);
+  });
+
+  it('reports a toggle false when paragraphs cannot replace the code block', () => {
+    const CodeOnly = definePlugin('codeOnly', {
+      dependencies: [BaseCodeBlockPlugin],
+      schema: {
+        element: {
+          blockContent: true,
+          content: schema.content.any([
+            schema.content.type('codeBlock').allowed,
+          ]),
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [BaseCodeBlockPlugin, CodeOnly],
+      initialValue: [
+        {
+          type: 'codeOnly',
+          children: [{ type: 'codeBlock', children: [{ text: 'x' }] }],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 0], offset: 0 },
+      },
+    });
+
+    expect(editor.plugin(BaseCodeBlockPlugin).update.toggle()).toBe(false);
   });
 
   it('indents the first empty line at offset zero', () => {

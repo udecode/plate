@@ -255,6 +255,45 @@ describe('BaseDetailsPlugin', () => {
     ]);
   });
 
+  it('unwraps a Details its own command edited first', () => {
+    const EditThenUnwrap = definePlugin('testEditThenUnwrap', {
+      dependencies: [BaseDetailsPlugin],
+    }).extend(() => ({
+      commands: ({ around }) => [
+        around(editorCommands.insertBreak, ({ state }) =>
+          state.transaction((tx) => {
+            tx.text.insert('New ', { at: { offset: 0, path: [0, 0, 0] } });
+            tx.plugin(BaseDetailsPlugin).unwrap({ at: [0] });
+          })
+        ),
+      ],
+    }));
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin, EditThenUnwrap],
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 1, 0], offset: 0 },
+        focus: { path: [0, 1, 0], offset: 0 },
+      },
+    });
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()).toEqual([
+      { type: 'paragraph', children: [{ text: 'New Title' }] },
+      { type: 'paragraph', children: [{ text: 'Body' }] },
+    ]);
+  });
+
   describe('in a named root', () => {
     const NoteHolderPlugin = definePlugin('testNoteHolder', {
       dependencies: [BaseParagraphPlugin, BaseDetailsPlugin],
@@ -299,9 +338,19 @@ describe('BaseDetailsPlugin', () => {
       expect(editor.read.root('note')).toMatchObject([value[1]]);
     });
 
-    it.each(['container', 'body'])(
+    it.each([
+      ['container', SelectionApi.nodes([[0]], { root: 'note' })],
+      ['body', SelectionApi.nodes([[0, 1]], { root: 'note' })],
+      [
+        'body through a range only its focus roots',
+        {
+          anchor: { offset: 0, path: [0, 1, 0] },
+          focus: { offset: 0, path: [0, 1, 0], root: 'note' },
+        },
+      ],
+    ] as const)(
       'unwraps a targeted note %s without changing the main document',
-      (target) => {
+      (_target, at) => {
         const editor = createNoteEditor([
           {
             type: 'details',
@@ -313,11 +362,7 @@ describe('BaseDetailsPlugin', () => {
         ]);
         editor.update.selection.set({ path: [0, 0, 0], offset: 0 });
 
-        editor.plugin(BaseDetailsPlugin).update.unwrap({
-          at: SelectionApi.nodes([target === 'container' ? [0] : [0, 1]], {
-            root: 'note',
-          }),
-        });
+        editor.plugin(BaseDetailsPlugin).update.unwrap({ at });
 
         expect(editor.read.children()).toEqual(main);
         expect(editor.read.root('note')).toEqual([

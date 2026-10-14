@@ -6,7 +6,7 @@ import {
   PLUGINS,
 } from '../../../core';
 import type { ListElement } from '../../../features/list';
-import { getListIndent } from '../../../internal/listFamily';
+import { getListIndent } from '../../../features/list/lib/listIndex.internal';
 import {
   getMarkdownParagraphType,
   landsMarkdownParagraph,

@@ -22,13 +22,19 @@ import {
   type Range,
   RangeApi,
   schema,
+  SelectionApi,
   txLocate,
   locateAt,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { isDocumentView } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
-import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
+import {
+  applyBlockReleases,
+  canReplaceContainers,
+  readBlockReleases,
+} from '../../../internal/plugin/blockRelease';
+import { inRoot } from '../../../internal/utils/inRoot';
 import {
   createBrowserHtmlDocument,
   materializeHtmlAst,
@@ -308,8 +314,9 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         }: {
           at?: Location | NodeSelection;
         } = {}) => {
-          if (at === undefined && !tx.selection()) return;
+          if (at === undefined && !tx.selection()) return false;
 
+          let unwrapped = false;
           const codeBlockEntries = Array.from(
             tx.nodes.entries({
               at,
@@ -338,10 +345,17 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
                   }
                 : undefined;
 
-            tx.nodes.replace(createParagraphs(code), { at: codeBlockPath });
+            if (
+              !tx.nodes.replace(createParagraphs(code), { at: codeBlockPath })
+            ) {
+              continue;
+            }
 
+            unwrapped = true;
             if (mappedSelection) tx.selection.set(mappedSelection);
           }
+
+          return unwrapped;
         };
         const insertCodeBlock = (
           input: CodeBlockInsertInput = {},
@@ -377,6 +391,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           options: BlockInsertOptions | BlockUpsertOptions = {}
         ) =>
           applyBlockInsertion({
+            editor,
             insert: (insertOptions) => insertCodeBlock(input, insertOptions),
             matches: (block) =>
               block.type === type && block.listType === undefined,
@@ -479,9 +494,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           resetBlock: () => {
             if (!tx.nodes.block({ type: plugin })) return false;
 
-            unwrap();
-
-            return true;
+            return unwrap();
           },
           selectAll: () => {
             const codeBlock = tx.nodes.above({
@@ -509,120 +522,142 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             false,
             ({ reverse = false }: { reverse?: boolean } = {}) => tab(reverse)
           ),
-          toggle: () => {
-            const selection = tx.selection();
+          toggle: (): boolean => {
+            const initial = tx.selection();
 
-            if (!selection) return;
+            if (!initial) return false;
 
-            const isActive = tx.nodes.some({
-              at: selection,
-              type: plugin,
-            });
+            const root = SelectionApi.root(initial);
 
-            unwrap();
+            if (root !== tx.view.root()) return false;
 
-            if (!isActive) {
-              const [start, end] = RangeApi.edges(selection);
+            const releases = readBlockReleases(
+              editor,
+              tx,
+              tx.nodes.blocks({ at: initial, mode: 'lowest' }),
+              () => true,
+              root
+            );
+            const [release] = releases;
+
+            if (release) {
+              const [start, end] = RangeApi.edges(initial);
               const startBlock = tx.nodes.block({ at: start });
               const endBlock = tx.nodes.block({ at: end });
 
-              if (!startBlock || !endBlock) return;
-
-              const detailsType = getCompiledPlateModelBinding(
-                editor,
-                PLUGINS.details
-              )?.elementType;
-              const summaryType = getCompiledPlateModelBinding(
-                editor,
-                PLUGINS.detailsSummary
-              )?.elementType;
-              const details =
-                detailsType && startBlock[0].type === summaryType
-                  ? tx.nodes.above({ at: start, type: detailsType })
-                  : undefined;
-              const detailsKey = details && tx.key(details[0]);
-
-              const startParent = startBlock[1].slice(0, -1);
-              const endParent = endBlock[1].slice(0, -1);
-              const startIndex = startBlock[1].at(-1);
-              const endIndex = endBlock[1].at(-1);
-
+              // The released block converts alone; the rest of its container
+              // never joins the code.
               if (
-                startIndex === undefined ||
-                endIndex === undefined ||
-                !PathApi.equals(startParent, endParent)
+                releases.length > 1 ||
+                !startBlock ||
+                !endBlock ||
+                tx.key(inRoot(startBlock[1], root)) !== release.key ||
+                tx.key(inRoot(endBlock[1], root)) !== release.key
               ) {
-                if (
-                  tx.blocks.set({ type }, { at: startBlock[1] }) &&
-                  detailsKey
-                ) {
-                  tx.nodes.unwrap({ at: detailsKey });
-                }
-
-                return;
+                return false;
               }
-
-              const blocks: Array<NodeEntry<Element>> = [];
-
-              for (let index = startIndex; index <= endIndex; index++) {
-                const block = tx.nodes.get([...startParent, index], {
-                  match: ElementApi.isElement,
-                });
-
-                if (block) blocks.push(block);
-              }
-
-              if (blocks.length === 0) return;
-
-              const values = blocks.map(([block]) => NodeApi.string(block));
-              const mapSelectionPoint = (point: typeof selection.anchor) => {
-                let offset = 0;
-
-                for (let index = 0; index < blocks.length; index++) {
-                  const [, blockPath] = blocks[index];
-
-                  if (pointInBlock(blockPath, point)) {
-                    const blockStart = tx.points.start(blockPath);
-                    const range =
-                      blockStart && tx.ranges.get(blockStart, point);
-
-                    offset += range ? tx.text.string(range).length : 0;
-
-                    return {
-                      offset,
-                      path: codeBlockTextPath(blocks[0][1]),
-                      ...(point.root ? { root: point.root } : {}),
-                    };
-                  }
-
-                  offset += values[index].length + 1;
-                }
-
-                return point;
-              };
-              const mappedSelection = {
-                anchor: mapSelectionPoint(selection.anchor),
-                focus: mapSelectionPoint(selection.focus),
-              };
-
-              if (
-                !tx.nodes.replace(
-                  {
-                    children: [{ text: values.join('\n') }],
-                    type,
-                  },
-                  { at: blocks[0][1] }
-                )
-              ) {
-                return;
-              }
-
-              for (const [, blockPath] of blocks.slice(1).reverse()) {
-                tx.nodes.remove({ at: blockPath });
-              }
-              tx.selection.set(mappedSelection);
-              if (detailsKey) tx.nodes.unwrap({ at: detailsKey });
             }
+
+            if (tx.nodes.some({ at: initial, type: plugin })) return unwrap();
+
+            if (release) {
+              const code = {
+                children: [{ text: NodeApi.string(release.block) }],
+                type,
+              };
+              const fit = release.fit.map((child) =>
+                child === release.block ? code : child
+              );
+
+              if (!canReplaceContainers(tx, new Map([[release, fit]]), root)) {
+                return false;
+              }
+
+              applyBlockReleases(tx, releases);
+            }
+
+            const selection = tx.selection();
+
+            if (!selection) return false;
+
+            const [start, end] = RangeApi.edges(selection);
+            const startBlock = tx.nodes.block({ at: start });
+            const endBlock = tx.nodes.block({ at: end });
+
+            if (!startBlock || !endBlock) return false;
+
+            const startParent = startBlock[1].slice(0, -1);
+            const endParent = endBlock[1].slice(0, -1);
+            const startIndex = startBlock[1].at(-1);
+            const endIndex = endBlock[1].at(-1);
+
+            if (
+              startIndex === undefined ||
+              endIndex === undefined ||
+              !PathApi.equals(startParent, endParent)
+            ) {
+              return tx.blocks.set({ type }, { at: startBlock[1] });
+            }
+
+            const blocks: Array<NodeEntry<Element>> = [];
+
+            for (let index = startIndex; index <= endIndex; index++) {
+              const block = tx.nodes.get([...startParent, index], {
+                match: ElementApi.isElement,
+              });
+
+              if (block) blocks.push(block);
+            }
+
+            if (blocks.length === 0) return false;
+
+            const values = blocks.map(([block]) => NodeApi.string(block));
+            const mapSelectionPoint = (point: typeof selection.anchor) => {
+              let offset = 0;
+
+              for (let index = 0; index < blocks.length; index++) {
+                const [, blockPath] = blocks[index];
+
+                if (pointInBlock(blockPath, point)) {
+                  const blockStart = tx.points.start(blockPath);
+                  const range = blockStart && tx.ranges.get(blockStart, point);
+
+                  offset += range ? tx.text.string(range).length : 0;
+
+                  return {
+                    offset,
+                    path: codeBlockTextPath(blocks[0][1]),
+                    ...(point.root ? { root: point.root } : {}),
+                  };
+                }
+
+                offset += values[index].length + 1;
+              }
+
+              return point;
+            };
+            const mappedSelection = {
+              anchor: mapSelectionPoint(selection.anchor),
+              focus: mapSelectionPoint(selection.focus),
+            };
+
+            // The replacement goes first: a refused one leaves the other
+            // blocks in place.
+            if (
+              !tx.nodes.replace(
+                { children: [{ text: values.join('\n') }], type },
+                { at: blocks[0][1] }
+              )
+            ) {
+              return false;
+            }
+
+            for (const [, blockPath] of blocks.slice(1).reverse()) {
+              tx.nodes.remove({ at: blockPath });
+            }
+            tx.selection.set(mappedSelection);
+
+            return true;
           },
           untab: () => tab(true),
           upsert: txLocate(

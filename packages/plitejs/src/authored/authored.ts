@@ -3,7 +3,7 @@ import {
   getAuthoredUpdateView,
   registerAuthoredRuntime,
 } from '../core/authored-runtime';
-import { type AuthoredVeto, authoredVeto } from '../core/authored-veto';
+import { authoredVeto } from '../core/authored-veto';
 import {
   createInternalDocumentChange,
   DocumentChange,
@@ -1655,10 +1655,7 @@ export const createAuthoredPlugin = (
             const vetoes =
               options.vetoes === false || updateView.intent !== 'propose'
                 ? []
-                : (getPluginContributions(
-                    editor,
-                    authoredVeto
-                  ) as readonly AuthoredVeto[]);
+                : getPluginContributions(editor, authoredVeto);
             const refusal =
               (update && state.refused.get(update)) ??
               (constructsValues(getCompiledEditorSchema(editor))

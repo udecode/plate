@@ -6,6 +6,7 @@ import { renderToString } from 'react-dom/server';
 import {
   createEditorView,
   definePlugin,
+  NodeApi,
   PLUGINS,
   schema,
   type Element,
@@ -17,6 +18,8 @@ import {
   HeadingPlugin,
 } from '../basic-nodes/BasicNodesPlugins';
 import { CodeBlockPlugin } from '../code-block/CodeBlockPlugin';
+import { DetailsPlugin } from '../details/DetailsPlugin';
+import { IndentPlugin } from '../indent/IndentPlugin';
 import { TablePlugin } from '../table/TablePlugin';
 import { ListPlugin } from './ListPlugin';
 
@@ -585,5 +588,233 @@ describe('ListPlugin keys without Indent keys', () => {
       handled: [press(), press(true)],
       children: editor.read.children(),
     }).toEqual({ handled: [false, false], children: initialValue });
+  });
+});
+
+const mountFamily = (
+  initialValue: Element[],
+  selection: ReturnType<typeof caret>
+) => {
+  const editor = createEditor({
+    initialValue,
+    plugins: [
+      BlockquotePlugin,
+      DetailsPlugin,
+      ListPlugin.configure({
+        targetPlugins: ['paragraph', 'details', 'blockquote'],
+      }),
+    ],
+    selection: { kind: 'text', ...selection },
+  });
+  const { container } = render(
+    <EditorRoot editor={editor} suppressInstanceWarning>
+      <EditorContent />
+    </EditorRoot>
+  );
+  const editable = container.querySelector('[contenteditable="true"]');
+
+  if (!editable) throw new Error('Expected editable root');
+
+  const press = (shiftKey = false) =>
+    fireEvent.keyDown(editable, { code: 'Tab', key: 'Tab', shiftKey });
+
+  return { editor, press };
+};
+
+const indents = (nodes: readonly Element[]) => nodes.map((node) => node.indent);
+
+describe('ListPlugin family keys', () => {
+  it('nests an item with its continuation blocks on Tab [EDIT-LIST-TAB-002]', () => {
+    const { editor, press } = mountFamily(
+      [
+        item('A'),
+        item('B'),
+        paragraph('P', { indent: 2 }),
+        item('C', { indent: 2 }),
+        item('D'),
+      ],
+      caret([1, 0])
+    );
+
+    press();
+
+    expect(indents(editor.read.children())).toEqual([1, 2, 3, 3, 1]);
+  });
+
+  it('outdents an item with its continuation blocks on Shift+Tab [EDIT-LIST-STAB-002]', () => {
+    const { editor, press } = mountFamily(
+      [item('A'), item('B', { indent: 2 }), paragraph('P', { indent: 3 })],
+      caret([1, 0])
+    );
+
+    press(true);
+
+    expect(indents(editor.read.children())).toEqual([1, 1, 2]);
+  });
+
+  it('moves a selected child of a selected item once', () => {
+    const { editor, press } = mountFamily(
+      [item('A'), item('B'), paragraph('P', { indent: 2 })],
+      {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 1, path: [2, 0] },
+      }
+    );
+
+    press();
+
+    expect(indents(editor.read.children())).toEqual([1, 2, 3]);
+  });
+
+  it('nests an item whose indent is omitted together with its family', () => {
+    const { editor, press } = mountFamily(
+      [
+        item('A'),
+        paragraph('B', { listType: 'numbered' }),
+        paragraph('P', { indent: 2 }),
+      ],
+      caret([1, 0])
+    );
+
+    press();
+
+    expect(indents(editor.read.children())).toEqual([1, 2, 3]);
+  });
+
+  it('lifts a quoted root item out of the quote with its family, and undo restores it', () => {
+    const initialValue = [
+      {
+        children: [
+          item('T', { listType: 'bulleted' }),
+          paragraph('P', { indent: 2 }),
+        ],
+        type: 'blockquote',
+      },
+    ] as Element[];
+    const { editor, press } = mountFamily(initialValue, caret([0, 0, 0]));
+
+    press(true);
+
+    expect(editor.read.children()).toEqual([
+      paragraph('T'),
+      paragraph('P', { indent: 1 }),
+    ]);
+
+    editor.api.history.undo();
+
+    expect(editor.read.children()).toEqual(initialValue);
+  });
+
+  it.each([
+    ['Tab', [1, 1, 2, 2], [1, 2, 3, 3]],
+    ['Shift+Tab', [1, 2, 3, 3], [1, 1, 2, 2]],
+    ['list.outdent', [1, 1, 2, 2], [1, undefined, 1, 1]],
+  ])(
+    'moves each container of a family on %s and leaves its inner blocks alone',
+    (action, before, after) => {
+      const { editor, press } = mountFamily(
+        [
+          item('A', { indent: before[0] }),
+          item('B', { indent: before[1] }),
+          {
+            children: [
+              { children: [{ text: 'Title' }], type: 'summary' },
+              paragraph('Body'),
+            ],
+            indent: before[2],
+            type: 'details',
+          },
+          {
+            children: [paragraph('Quoted')],
+            indent: before[3],
+            type: 'blockquote',
+          },
+        ],
+        caret([1, 0])
+      );
+
+      if (action === 'list.outdent') {
+        editor.plugin(ListPlugin).update.outdent({ at: [1] });
+      } else {
+        press(action === 'Shift+Tab');
+      }
+
+      const children = editor.read.children();
+
+      expect({
+        body: children[2].children[1],
+        indents: indents(children),
+        quoted: children[3].children[0],
+      }).toEqual({
+        body: paragraph('Body'),
+        indents: after,
+        quoted: paragraph('Quoted'),
+      });
+    }
+  );
+
+  it('keeps the indent buttons on one block', () => {
+    const { editor } = mountFamily(
+      [item('A'), item('B'), paragraph('P', { indent: 2 })],
+      caret([1, 0])
+    );
+
+    act(() => {
+      editor.plugin(IndentPlugin).update.increase();
+    });
+
+    expect(indents(editor.read.children())).toEqual([1, 2, 2]);
+  });
+
+  it('moves an item with its continuation blocks [EDIT-LIST-MOVE-001]', () => {
+    const { editor } = mountFamily(
+      [item('A'), paragraph('P', { indent: 2 }), item('B')],
+      caret([0, 0])
+    );
+
+    editor.api.transfer.move({
+      nodes: editor.read.transfer.nodes({ node: editor.key([0])! }),
+      to: { edge: 'after', key: editor.key([2])! },
+    });
+
+    expect(
+      editor.read.children().map((node) => [NodeApi.string(node), node.indent])
+    ).toEqual([
+      ['B', 1],
+      ['A', 1],
+      ['P', 2],
+    ]);
+  });
+
+  it('moves a converted Details title with its body on Tab and Shift+Tab', () => {
+    const { editor, press } = mountFamily(
+      [
+        item('A'),
+        {
+          children: [
+            { children: [{ text: 'Title' }], type: 'summary' },
+            paragraph('Body'),
+          ],
+          type: 'details',
+        },
+      ],
+      caret([1, 0, 0])
+    );
+
+    editor.plugin(ListPlugin).update.toggle({ type: 'bulleted' });
+    const converted = indents(editor.read.children());
+    press();
+    const nested = indents(editor.read.children());
+    press(true);
+
+    expect({
+      converted,
+      nested,
+      outdented: indents(editor.read.children()),
+    }).toEqual({
+      converted: [1, 1, 2],
+      nested: [1, 2, 3],
+      outdented: [1, 1, 2],
+    });
   });
 });

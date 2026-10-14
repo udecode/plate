@@ -158,7 +158,8 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       }>
     ) => boolean;
     /**
-     * `canPlaceAt` at a slot path of `root`'s current document. A missing
+     * `canPlaceAt` at a slot path of `root`'s current document, except that a
+     * parent without a compiled content program takes any fit. A missing
      * parent refuses.
      */
     canPlaceAtPath: (
@@ -666,6 +667,14 @@ export const getCompiledEditorSchemaFromApi = (
 export const getInternalEditorSchemaFromApi = (
   schemaApi: EditorStateSchemaApi
 ) => getDefined(INTERNAL_BY_API.get(schemaApi));
+
+/** @internal */
+export const canPlaceBlocksAtPath = (
+  schemaApi: EditorStateSchemaApi,
+  at: Path,
+  fit: readonly Descendant[],
+  options: Readonly<{ removing?: readonly number[]; root?: RootKey }> = {}
+) => getInternalEditorSchemaFromApi(schemaApi).canPlaceAtPath(at, fit, options);
 
 export const createEditorSchema = <V extends Value = Value>(
   getEditor: () => Editor<V>,
@@ -1570,9 +1579,13 @@ export const createEditorSchema = <V extends Value = Value>(
 
     if (index === undefined || !ancestors) return false;
 
+    const [parent] = ancestors;
+
+    if (parent && !getCompiledElement(parent)?.content) return true;
+
     return canPlaceIn(
       ancestors,
-      ancestors[0]?.children ?? getDocumentRoot(getDocument(), root),
+      parent?.children ?? getDocumentRoot(getDocument(), root),
       fit,
       index,
       { removing, root }

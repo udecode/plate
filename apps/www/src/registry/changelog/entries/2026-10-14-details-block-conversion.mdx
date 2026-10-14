@@ -9,6 +9,10 @@ release: { 'status': 'unresolved' }
 diagnostics: []
 ---
 
-<!-- entry: {"id":"2026-10-14-list-convert-details-titles-without-5ea2bd57","kind":"fix","migrationNotes":[]} -->
+<!-- entry: {"id":"2026-10-14-turn-into-convert-details-titles-5ea2bd57","kind":"fix","migrationNotes":[]} -->
 
-- **`list`**, **`list-static`**, **`turn-into-toolbar-button`**: Convert Details titles without losing body content or list hierarchy
+- **`turn-into-toolbar-button`**: Turn a Details title into a list item with its body one level under it, and disable Code when the selection holds the title and more blocks
+
+<!-- entry: {"id":"2026-10-14-indent-kit-block-types-5ea2bd58","kind":"behavior","migrationNotes":[]} -->
+
+- **`indent`**, **`indent-static`**: Indent audio, callout, code drawing, column group, equation, Excalidraw, file, horizontal rule, media embed, table of contents, upload and video blocks, so a Details body that holds them can become a list

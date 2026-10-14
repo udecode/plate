@@ -129,7 +129,7 @@ MDAST list.ordered 映射到 listType。每个解析出的 Markdown 列表都会
 | update.toggle(options) | 设置或移除列表语义。 |
 | update.restart(options?) | 强制选中有序项的编号；`start` 默认为 1。 |
 | update.continue(options?) | 移除选中项的重启，或从列表第一项起把列表接到前一个列表上。 |
-| update.outdent(options) | 减少缩进，并在最外层清除列表属性。 |
+| update.outdent(options) | 减少每个选中列表项及其下方块的缩进，并在最外层清除列表属性。 |
 | update.clear(options?) | 仅清除选中列表项的列表属性与缩进，保留区块类型和文本。 |
 | update.insert(input, options?) | 插入指定类型的段落列表项，并由插件负责构造与位置。 |
 | read.ordinal(at) | 计算有序项显示编号；`at` 不是编辑器根中的有序项时返回 `undefined`。 |
@@ -137,3 +137,11 @@ MDAST list.ordered 映射到 listType。每个解析出的 Markdown 列表都会
 `clear` 可通过 `at` 指定位置或节点选区，不会扩展到未选中的相邻列表项。
 `insert({ type }, { replaceEmpty: true, select: true })` 在当前区块之后插入；
 来源区块为空时，在同一个撤销步骤中替换它。`after` 指定来源区块，`at` 指定节点插入位置。
+
+Tab、Shift+Tab 和 `outdent` 会把列表项和它下方的块一起移动，直到下一个深度相同或更浅的块为止，
+包括嵌套列表项和后续段落。拖动和剪切通过 `editor.read.transfer.nodes()` 取得同样的块。
+Indent 自身的命令仍然只移动一个块。
+List 会自己写入每个被移动块的深度，所以对 Indent 的 `increase` 或 `decrease` 的覆盖不会在这些移动中运行。
+
+在 Details 标题上调用 `toggle` 时，标题变成列表项，正文放在它下面一级。如果某个正文块不能缩进，
+或者结果放不进父级，它返回 `false`，文档不变，选区中的其他块也不会转换。

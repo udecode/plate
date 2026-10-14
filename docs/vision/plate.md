@@ -888,7 +888,12 @@ Current priorities:
   inserts after content or structure. `insert` follows the same source policy
   but creates a sibling for a matching empty block. Explicit `at` is an exact
   insertion location, while explicit `replaceEmpty` overrides semantic
-  replacement for `insert`. An authored `insert` must author `upsert` too when
+  replacement for `insert`. An empty block that is not block content, such as a
+  Details title, keeps its slot and key under every option. An insert from the
+  caret in a block that hides what follows it, such as a closed Details title,
+  lands after the container that hides it, and an explicit `after` stays
+  literal. The hiding feature contributes that anchor; inserting features name
+  no container. An authored `insert` must author `upsert` too when
   generic construction cannot preserve its structure or domain identity.
   Default-constructible, schema-compatible text blocks also get `toggle`; text
   blocks with required construction properties and structural plugins author

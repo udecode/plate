@@ -1337,6 +1337,19 @@ describe('authored review tree recording', () => {
     ]);
   });
 
+  it('unwraps a quote at once in Editing', () => {
+    const editor = editorFor(
+      [{ type: 'quote', children: [paragraph({ text: 'ab' })] }],
+      'edit',
+      'bob',
+      [Quotes]
+    );
+
+    editor.update((tx) => tx.nodes.unwrap({ at: [0] }));
+
+    assert.deepEqual(editor.read.children(), [paragraph({ text: 'ab' })]);
+  });
+
   it('keeps Editing ranges, anchors and node keys on surviving text after unwrap', () => {
     const initialValue = [
       {
