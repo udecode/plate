@@ -3,7 +3,7 @@ review_scopes: [list]
 review_basis: [2026-10-11-list-first-principles]
 verdict: pursue
 work_kind: implementation
-review_commit: a052e9da17308f1433cf710820365cd86e8f030f
+review_commit: 62e21e83977e0c124d5958e31e083e2dd5b31359
 review_inputs: [packages/platejs/src/features/list/lib/BaseListPlugin.ts, packages/platejs/src/features/list/lib/listIdentity.internal.ts, packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx, packages/platejs/src/ai/react/AIChatPlugin.ts, packages/plitejs/src/core/public-state.ts, packages/plitejs/src/core/insert-limit.ts, packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts, packages/plitejs/test/slice-fit-contract.test.ts, packages/platejs/src/utils/plugins/ExitBreakPlugin.ts, docs/plans/2026-10-11-ai-list-landing.md, VISION.md, docs/vision/common.md, docs/vision/plate.md]
 ---
 
@@ -80,7 +80,7 @@ A model probe reproduces all nine browser cells (three selections at the empty i
 
 ## History
 
-The original review used local frozen snapshot `825a6c2aad6491205a46d8a6d0745db7f0724ed6`, which is outside this PR's published history. The dependency inventory now pins published PR head `a052e9da17308f1433cf710820365cd86e8f030f` so a fresh checkout can check the declared inputs and their dependents. This metadata repair does not claim a new code review or runtime proof.
+The original review used local frozen snapshot `825a6c2aad6491205a46d8a6d0745db7f0724ed6`, which is outside this PR's published history. The dependency inventory pins published PR head `62e21e83977e0c124d5958e31e083e2dd5b31359` so a fresh checkout can check the declared inputs and their dependents. It replaces `a052e9da17308f1433cf710820365cd86e8f030f`, which became unavailable to CI after the branch history changed. This metadata repair does not claim a new code review or runtime proof.
 
 The rule "paste keeps its pasted depths and starts" came in with the AI list landing plan on 2026-10-11, committed in 6fa1169c5e. That plan settled which list AI output joins. Paste got one sentence, with no Defaults row and no comparison of paste depth with other editors. The list subject's Open work already lists "Paste keeps the slice fitter's block merging", with a paste report as its stop.
 

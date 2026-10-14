@@ -51,7 +51,7 @@ export const editorReads = Object.freeze({
      * current command draft; raw transaction replacement and fitting bypass it.
      */
     landing: defineRead<ReplaceSliceCommand, ReplaceSliceCommand>(
-      'plite:slice.landing'
+      'slice.landing'
     ),
     export: defineRead<
       Readonly<{
