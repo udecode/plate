@@ -3564,10 +3564,7 @@ describe('exact node replacement', () => {
       const selectedKey = editor.read.key([1]);
       const outsideKey = editor.read.key([2]);
       const selectedAnchor = editor.anchor([1], { deletion: 'drop' });
-      const slice = ContentSlice.closed([
-        paragraph('new'),
-        paragraph('tail'),
-      ]);
+      const slice = ContentSlice.closed([paragraph('new'), paragraph('tail')]);
       const options = { at: SelectionApi.nodes([[0], [1]]) };
 
       if (mode === 'command') {
@@ -3594,11 +3591,13 @@ describe('exact node replacement', () => {
       );
       const changedRanges: number[][] = [];
 
-      editor.read.lastCommit()?.changes.iterChangedRanges(
-        (_root, fromBefore, toBefore, fromAfter, toAfter) => {
-          changedRanges.push([fromBefore, toBefore, fromAfter, toAfter]);
-        }
-      );
+      editor.read
+        .lastCommit()
+        ?.changes.iterChangedRanges(
+          (_root, fromBefore, toBefore, fromAfter, toAfter) => {
+            changedRanges.push([fromBefore, toBefore, fromAfter, toAfter]);
+          }
+        );
       assert.deepEqual(
         changedRanges,
         [[0, 15, 0, 15]],
