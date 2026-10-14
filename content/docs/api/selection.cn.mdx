@@ -67,22 +67,6 @@ description: 活动范围、精确节点成员和语义选区写入。
 的后代。`anchorPath` 和 `focusPath` 必须是精确成员，用于保留方向。
 修改活动选区时使用 `selection.setNodes(...)`。
 
-将这个独立选区传给替换方法的 `options.at`，可以直接替换整个节点。
-
-```ts
-import { ContentSlice, SelectionApi } from 'platejs';
-
-editor.update.slice.replace(
-  ContentSlice.closed([{ type: 'paragraph', children: [{ text: 'Paste' }] }]),
-  { at: SelectionApi.nodes([[0]]) }
-);
-```
-
-`slice.replace`、`fragment.replace` 和独立的 `slice.fit` 要求目标是同一
-父节点下连续的兄弟节点。显式不连续目标返回 `false`，不替换任何成员。
-没有 root 的节点选区始终指向主文档，在具名根视图中也是如此。
-完整行为见[替换整个节点](/docs/api/editor-transforms#替换整个节点)。
-
 ## 验证选区
 
 #### `state.selection.isValid(value)`

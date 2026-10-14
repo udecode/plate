@@ -223,7 +223,6 @@ export {
   inheritPluginRegistry,
 } from '../core/plugin-registry';
 export { exportContentSlice } from '../core/editor-read-execution';
-export { limitSliceInsert } from '../core/insert-limit';
 export {
   serializeStructuralPlainText,
   type StructuralPlainTextDiagnostic,

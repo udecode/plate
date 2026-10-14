@@ -142,6 +142,10 @@ Object and void items do not inherit those target properties.
 The empty target's explicit start and restart take precedence over copied
 values. The replacement gets its own runtime node key.
 
+Under `maxLength`, a paste lands what fits. When the limit cuts the first copied
+item, the items left land at the caret's depth. A quote-wrapped list pastes
+nothing once its text no longer fits.
+
 ## HTML and Markdown
 
 HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listStyle. Plate HTML names each item's list with `data-list-id` and its level rules with `data-list-levels`. Each paste or parse gives every source list a fresh id, so a pasted list never joins an unrelated list that shares its id. The first top-level pasted list joins the target list when their kind and heading role match. Its root items take the target marker style. Copied siblings land at the target item's depth, and children keep their depth relative to a copied parent. A list-led paste of multiple blocks or a closed slice keeps the first item's type in an empty paragraph or heading, including inside a quote, table cell or column when the schema allows it. An empty line below a compatible list continues that list. The empty target's own start and restart take precedence over copied values. A list that lives only inside a pasted table keeps its own id. In other HTML, each ul or ol is one list. An ol whose start continues the previous ol at its depth joins it, and the first nested list under an item joins that item's list. Word HTML keeps Word's list identity. A list drawn inside its block, such as `<h2><ol data-list-id="…"><li>…</li></ol></h2>` from the static kit, reads back as that block with its list fields, and an item's own `data-list-style` wins over its list's marker.

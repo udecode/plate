@@ -4,4 +4,4 @@
 
 Keep copied object blocks intact when pasting into an empty block inside a container.
 
-Allow slice and fragment replacement to target exact contiguous sibling nodes with `SelectionApi.nodes(...)`. Preserve command handling in editor views and expose `editorReads.slice.landing` for destination preparation after paste handlers.
+Add `editorReads.slice.landing` with its `SliceLanding`, `SliceLandingInput` and `SliceLandingTarget` types. After paste handlers delegate, a plugin can shape the slice a paste lands and propose whole blocks for an empty target block; the editor checks that proposal against the schema and `maxLength`. Keep command handling in editor views.

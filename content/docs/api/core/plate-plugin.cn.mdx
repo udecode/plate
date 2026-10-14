@@ -454,11 +454,18 @@ component 或 slot。
 <APIItem name="readMiddleware" type="PluginReadMiddlewareFactory">
   基于已声明 Plate `editorReads` descriptor 的类型化 middleware。
 
-  `editorReads.slice.landing` 的输入和返回值都是 `ReplaceSliceCommand`，包含
-  `slice` 与可选的替换 `options`。`around` 回调可以通过 `next(input)` 传递
-  处理后的切片或目标。命令处理器委托默认替换实现后，这个读取会看到当前命令
-  草稿。终结命令的处理器会跳过它。原始 `tx.slice.replace`、
-  `tx.fragment.replace` 和 `state.slice.fit` 不运行它。descriptor 与命令类型
+  命令处理器委托默认替换实现后，`editorReads.slice.landing` 在当前命令草稿上
+  决定粘贴落地的内容。输入中的 `source` 是处理器给出的切片，`slice` 是符合
+  `maxLength` 的部分，`target` 是编辑器解析出的目标。空块中的折叠光标得到
+  `empty`，其他情况得到 `context`，并带有粘贴起点所在的块。读取返回要适配的
+  `slice`，也可以加上 `replaceEmpty`，用整块内容替换 `empty` 目标。编辑器会按
+  schema 和 `maxLength` 检查这个提议，放不下时改为适配 `slice`。替换内容的第一个块
+  在类型相同时保留目标的全部属性，文本块换类型时保留 schema 允许的属性，对象块或
+  void 块不保留任何属性，并去掉 `omitTargetProperties`。
+  [剪贴板指南](/cn/docs/clipboard#粘贴落在哪里)有示例。改写 `slice`
+  的 middleware 必须同时改写或移除 `replaceEmpty`。终结命令的处理器会跳过它。
+  原始 `tx.slice.replace`、`tx.fragment.replace` 和 `state.slice.fit` 不运行它。
+  descriptor 与 `SliceLanding`、`SliceLandingInput`、`SliceLandingTarget` 类型
   都从 `platejs` 导入。
 </APIItem>
 

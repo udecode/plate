@@ -31,7 +31,6 @@ import {
   encodeContentSliceContent,
   isDetachedContentSlice,
 } from '../src/core/content-slice';
-import { applyTransactionSpec } from '../src/core/public-state';
 import {
   bindCanonicalFitPreparation,
   canonicalizeRootChildren,
@@ -3552,200 +3551,26 @@ describe('content-conserving slice insertion', () => {
   }
 });
 
-describe('exact node replacement', () => {
-  for (const mode of ['command', 'transaction', 'fit']) {
-    it(`replaces selected identical tails through ${mode}`, () => {
-      const editor = createSchemaEditor([
-        paragraph('old'),
-        paragraph('tail'),
-        paragraph('outside'),
-      ]);
-      const selectedKey = editor.read.key([1]);
-      const outsideKey = editor.read.key([2]);
-      const selectedAnchor = editor.anchor([1], { deletion: 'drop' });
-      const slice = ContentSlice.closed([paragraph('new'), paragraph('tail')]);
-      const options = { at: SelectionApi.nodes([[0], [1]]) };
+describe('node selection replacement', () => {
+  it('refuses a raw replacement while a node selection is current', () => {
+    const before = [paragraph('aa'), paragraph('b')];
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: before,
+    });
+    let replaced = true;
 
-      if (mode === 'command') {
-        assert.equal(editor.update.slice.replace(slice, options), true);
-      } else if (mode === 'transaction') {
-        editor.update((tx) => {
-          assert.equal(tx.slice.replace(slice, options), true);
-        });
-      } else {
-        const spec = editor.read((state) => state.slice.fit(slice, options));
-        assert.ok(spec);
-        editor.update(() => applyTransactionSpec(editor, spec));
-      }
-
-      assert.deepEqual(editor.read.children(), [
-        paragraph('new'),
-        paragraph('tail'),
-        paragraph('outside'),
-      ]);
-      assert.deepEqual(
-        [editor.read.key([1]) === selectedKey, selectedAnchor.release()],
-        [false, null],
-        'selected identical tail must lose its old key and deletion anchor'
-      );
-      const changedRanges: number[][] = [];
-
-      editor.read
-        .lastCommit()
-        ?.changes.iterChangedRanges(
-          (_root, fromBefore, toBefore, fromAfter, toAfter) => {
-            changedRanges.push([fromBefore, toBefore, fromAfter, toAfter]);
-          }
-        );
-      assert.deepEqual(
-        changedRanges,
-        [[0, 15, 0, 15]],
-        'exact replacement must consume both selected paragraphs'
-      );
-      assert.equal(editor.read.key([2]), outsideKey);
+    editor.update((tx) => {
+      replaced = tx.slice.replace(ContentSlice.closed([paragraph('x')]));
     });
 
-    it(`replaces siblings whose boundary members have no text through ${mode}`, () => {
-      const EmptySchema = defineEditorSchema('schema:exact-empty-nodes', {
-        elements: {
-          paragraph: schema.element.textBlock(),
-          box: { content: schema.content.type('paragraph') },
-        },
-        root: schema.content.types(['paragraph', 'box'], {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-        unknown: 'reject',
-      });
-      const before = [
-        { type: 'box', children: [] },
-        paragraph('old'),
-        { type: 'box', children: [] },
-        paragraph('tail'),
-      ];
-      const selection = {
-        anchor: { path: [3, 0], offset: 2 },
-        focus: { path: [3, 0], offset: 2 },
-      };
-      const afterSelection = {
-        anchor: { path: [0, 0], offset: 3 },
-        focus: { path: [0, 0], offset: 3 },
-      };
-      const editor = createEditor({
-        plugins: [EmptySchema, history()],
-        initialValue: before,
-        initialSelection: SelectionApi.text(selection),
-      });
-      const tail = editor.read.key([3]);
-      const slice = ContentSlice.fromJSON({
-        content: [paragraph('new')],
-        openStart: 1,
-        openEnd: 1,
-      });
-      const options = { at: SelectionApi.nodes([[0], [1], [2]]) };
-      let replaced = false;
-
-      if (mode === 'command') {
-        replaced = editor.update.slice.replace(slice, options);
-      } else if (mode === 'transaction') {
-        editor.update((tx) => {
-          replaced = tx.slice.replace(slice, options);
-        });
-      } else {
-        const spec = editor.read((state) => state.slice.fit(slice, options));
-        assert.deepEqual(editor.read.children(), before);
-        assert.deepEqual(editor.read.selection(), selection);
-        assert.deepEqual(spec?.selection, {
-          value: SelectionApi.text(afterSelection),
-        });
-        replaced = !!spec;
-        if (spec) editor.update((tx) => tx.changes.apply(spec.changes));
-      }
-
-      assert.equal(replaced, true);
-      assert.deepEqual(editor.read.children(), [
-        paragraph('new'),
-        paragraph('tail'),
-      ]);
-      assert.equal(editor.read.key([1]), tail);
-      if (mode !== 'fit') {
-        assert.deepEqual(editor.read.selection(), afterSelection);
-      }
-      editor.api.history.undo();
-      assert.deepEqual(editor.read.children(), before);
-      assert.deepEqual(editor.read.selection(), selection);
-    });
-
-    it(`replaces a whole paragraph with an open slice through ${mode}`, () => {
-      const ParagraphSchema = defineEditorSchema(
-        'schema:exact-open-paragraph',
-        {
-          elements: { paragraph: schema.element.textBlock() },
-          root: schema.content.type('paragraph', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
-          unknown: 'reject',
-        }
-      );
-      const before = [paragraph('old'), paragraph('tail')];
-      const editor = createEditor({
-        plugins: [ParagraphSchema, history()],
-        initialValue: before,
-        initialSelection: SelectionApi.text({
-          anchor: { path: [1, 0], offset: 2 },
-          focus: { path: [1, 0], offset: 2 },
-        }),
-      });
-      const selection = editor.read.selection();
-      const afterSelection = {
-        anchor: { path: [0, 0], offset: 3 },
-        focus: { path: [0, 0], offset: 3 },
-      };
-      const tail = editor.read.key([1]);
-      const slice = ContentSlice.fromJSON({
-        content: [paragraph('new')],
-        openStart: 1,
-        openEnd: 1,
-      });
-      const options = { at: SelectionApi.nodes([[0]]) };
-      let replaced = false;
-
-      if (mode === 'command') {
-        replaced = editor.update.slice.replace(slice, options);
-      } else if (mode === 'transaction') {
-        editor.update((tx) => {
-          replaced = tx.slice.replace(slice, options);
-        });
-      } else {
-        const spec = editor.read((state) => state.slice.fit(slice, options));
-        assert.deepEqual(editor.read.children(), before);
-        assert.deepEqual(editor.read.selection(), selection);
-        assert.deepEqual(spec?.selection, {
-          value: SelectionApi.text(afterSelection),
-        });
-        replaced = !!spec;
-        if (spec) editor.update((tx) => tx.changes.apply(spec.changes));
-      }
-
-      assert.equal(replaced, true);
-      assert.deepEqual(editor.read.children(), [
-        paragraph('new'),
-        paragraph('tail'),
-      ]);
-      assert.equal(editor.read.key([1]), tail);
-      if (mode !== 'fit') {
-        assert.deepEqual(editor.read.selection(), afterSelection);
-      }
-      editor.api.history.undo();
-      assert.deepEqual(editor.read.children(), before);
-      assert.deepEqual(editor.read.selection(), selection);
-    });
-  }
+    assert.equal(replaced, false);
+    assert.deepEqual(editor.read.children(), before);
+  });
 });
 
 describe('closed object placement [EDIT-CLIPBOARD-BLOCK-TYPE-001]', () => {
-  it('replaces an explicit nested node selection with closed blocks', () => {
+  it('replaces a selected nested node with closed blocks', () => {
     const CodeSchema = defineEditorSchema('schema:nested-code-placement', {
       elements: {
         code: {
@@ -3773,12 +3598,11 @@ describe('closed object placement [EDIT-CLIPBOARD-BLOCK-TYPE-001]', () => {
     const editor = createEditor({
       plugins: [CodeSchema, history()],
       initialValue: before,
+      initialSelection: SelectionApi.nodes([[0, 0]]),
     });
 
     assert.equal(
-      editor.update.slice.replace(ContentSlice.closed(content), {
-        at: SelectionApi.nodes([[0, 0]]),
-      }),
+      editor.update.slice.replace(ContentSlice.closed(content)),
       true
     );
     assert.deepEqual(editor.read.children(), [

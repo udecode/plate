@@ -30,6 +30,16 @@ import {
   sitsBetweenAnchors,
 } from './listNumbering.internal';
 
+export const LIST_FIELDS = [
+  'checked',
+  'listId',
+  'listLevels',
+  'listRestart',
+  'listStart',
+  'listStyle',
+  'listType',
+] as const;
+
 export const LIST_TYPES = [
   'bulleted',
   'numbered',

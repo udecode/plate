@@ -2009,6 +2009,18 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:EditorBreakExitOptions": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorBreakExitOptions",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorBreakExitOptions = {\n  /** Land before the exited structure instead of after it. */\n  before?: boolean;\n  /** Which ancestors may be exited; the selected block stays the last resort. */\n  match?: (node: Element, path: Path) => boolean;\n};",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:EditorCanonicalUpdateTag": {
           "aliases": [],
           "documentation": "",
@@ -2909,7 +2921,7 @@
           "name": "editorReads",
           "route": null,
           "runtime": true,
-          "signature": "editorReads: Readonly<{\n  nodes: Readonly<{\n    isSelectable: EditorReadDescriptor<Readonly<{\n      element: Node;\n      nodeKey: NodeKey | null;\n    }>, boolean, Editor>;\n    shouldMergeNodesRemovePrevNode: EditorReadDescriptor<Readonly<{\n      current: NodeEntry;\n      previous: NodeEntry;\n    }>, boolean, Editor>;\n  }>;\n  transfer: Readonly<{\n    /** Expand a transfer's selected blocks, such as a list item's family. */\n    source: EditorReadDescriptor<Readonly<{\n      selection: NodeSelection;\n    }>, Readonly<{\n      anchorPath: Path;\n      focusPath: Path;\n      kind: 'node';\n      paths: readonly [Path, ...Path[]];\n      root?: NamedRootKey;\n    }>, Editor>;\n    /**\n     * Redirect one landing edge, such as past a list item's family; the default\n     * keeps the edge. A redirected edge must map to itself. The schema admits\n     * the final edge and vetoes refuse it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      edge: 'after' | 'before';\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      target: NodeEntry<Element>;\n    }>, Readonly<{\n      edge: 'after' | 'before';\n      key: NodeKey;\n    }>, Editor>;\n    /**\n     * What a drop at a block's side builds, such as a column group; the\n     * default, `null`, refuses. The schema must still admit the wrap, and\n     * vetoes can still refuse it.\n     */\n    side: EditorReadDescriptor<Readonly<{\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      side: 'end' | 'start';\n      target: NodeEntry<Element>;\n    }>, TransferWrap | null, Editor>;\n  }>;\n  slice: Readonly<{\n    /**\n     * Prepare the default replacement after command handlers delegate. Reads the\n     * current command draft; raw transaction replacement and fitting bypass it.\n     */\n    landing: EditorReadDescriptor<ReplaceSliceCommand, ReplaceSliceCommand, Editor>;\n    export: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n      source: 'assembled' | 'selection';\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n    get: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n  }>;\n}>",
+          "signature": "editorReads: Readonly<{\n  nodes: Readonly<{\n    isSelectable: EditorReadDescriptor<Readonly<{\n      element: Node;\n      nodeKey: NodeKey | null;\n    }>, boolean, Editor>;\n    shouldMergeNodesRemovePrevNode: EditorReadDescriptor<Readonly<{\n      current: NodeEntry;\n      previous: NodeEntry;\n    }>, boolean, Editor>;\n  }>;\n  transfer: Readonly<{\n    /** Expand a transfer's selected blocks, such as a list item's family. */\n    source: EditorReadDescriptor<Readonly<{\n      selection: NodeSelection;\n    }>, Readonly<{\n      anchorPath: Path;\n      focusPath: Path;\n      kind: 'node';\n      paths: readonly [Path, ...Path[]];\n      root?: NamedRootKey;\n    }>, Editor>;\n    /**\n     * Redirect one landing edge, such as past a list item's family; the default\n     * keeps the edge. A redirected edge must map to itself. The schema admits\n     * the final edge and vetoes refuse it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      edge: 'after' | 'before';\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      target: NodeEntry<Element>;\n    }>, Readonly<{\n      edge: 'after' | 'before';\n      key: NodeKey;\n    }>, Editor>;\n    /**\n     * What a drop at a block's side builds, such as a column group; the\n     * default, `null`, refuses. The schema must still admit the wrap, and\n     * vetoes can still refuse it.\n     */\n    side: EditorReadDescriptor<Readonly<{\n      from: AnyEditor;\n      intent: TransferIntent;\n      payload: TransferPayload;\n      relation: TransferRelation;\n      side: 'end' | 'start';\n      target: NodeEntry<Element>;\n    }>, TransferWrap | null, Editor>;\n  }>;\n  slice: Readonly<{\n    /**\n     * Shape what a paste lands after command handlers delegate, from the target\n     * the editor resolved; the default lands `slice` unchanged. Reads the\n     * current command draft; raw transaction replacement and fitting bypass it.\n     */\n    landing: EditorReadDescriptor<Readonly<{\n      source: ContentSlice$1;\n      slice: ContentSlice$1;\n      target: SliceLandingTarget;\n    }>, Readonly<{\n      slice: ContentSlice$1;\n      replaceEmpty?: Readonly<{\n        omitTargetProperties?: readonly string[];\n        slice: ContentSlice$1;\n      }>;\n    }>, Editor>;\n    export: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n      source: 'assembled' | 'selection';\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n    get: EditorReadDescriptor<Readonly<{\n      options: EditorSliceReadOptions;\n      slice: ContentSlice$1;\n    }>, Readonly<{\n      content: readonly (BaseElement | BaseText)[];\n      openEnd: number;\n      openStart: number;\n      roots?: Readonly<Record<string, readonly (BaseElement | BaseText)[]>> | undefined;\n    }>, Editor>;\n  }>;\n}>",
           "source": null,
           "typeParameters": []
         },
@@ -3053,7 +3065,7 @@
           "name": "EditorSchemaContractRoot",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaContractRoot = Readonly<{\n  content: EditorSchemaContractContentProgram;\n  name: string | null;\n}>;",
+          "signature": "type EditorSchemaContractRoot = Readonly<{\n  content: EditorSchemaContractContentProgram;\n  history?: 'retain';\n  name: string | null;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -3065,13 +3077,13 @@
           "name": "EditorSchemaContribution",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaContribution<TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = Readonly<{\n  /** Element-owned root slots projected onto matching element types. */\n  contentRoots?: TContentRoots;\n  elements?: TElements;\n  groups?: TGroups;\n  id?: never;\n  /** Closed-composition policy; ordinary feature contributions omit this. */\n  overrides?: readonly EditorSchemaOverride[];\n  properties?: TProperties;\n  /** The complete schema definition exclusively owns the primary root. */\n  root?: never;\n  /** Named secondary roots only. The reserved key `main` is invalid. */\n  roots?: TRoots;\n  unknown?: never;\n  version?: never;\n}>;",
+          "signature": "type EditorSchemaContribution<TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<Record<string, SchemaRootInput>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = Readonly<{\n  /** Element-owned root slots projected onto matching element types. */\n  contentRoots?: TContentRoots;\n  elements?: TElements;\n  groups?: TGroups;\n  id?: never;\n  /** Closed-composition policy; ordinary feature contributions omit this. */\n  overrides?: readonly EditorSchemaOverride[];\n  properties?: TProperties;\n  /** The complete schema definition exclusively owns the primary root. */\n  root?: never;\n  /**\n   * Named secondary roots only. The reserved key `main` is invalid. A key that\n   * starts with `$` names a metadata root: changes, history and collaboration\n   * carry it, but serializers, exports, copies, diffs and element IDs leave it\n   * out, and two peers that create it at once keep both peers' records. A\n   * contribution that declares one declares only metadata roots and their\n   * elements.\n   */\n  roots?: TRoots;\n  unknown?: never;\n  version?: never;\n}>;",
           "source": null,
           "typeParameters": [
             "TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>",
             "TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[]",
             "TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>",
-            "TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>",
+            "TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<Record<string, SchemaRootInput>>",
             "TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]"
           ]
         },
@@ -3095,14 +3107,14 @@
           "name": "EditorSchemaDefinition",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaDefinition<TId extends string = string, TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = EditorSchemaDerivedDefinition<TElements, TProperties, TGroups, TRoots, TContentRoots> | EditorSchemaNamedDefinition<TId, TElements, TProperties, TGroups, TRoots, TContentRoots>;",
+          "signature": "type EditorSchemaDefinition<TId extends string = string, TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<Record<string, SchemaRootInput>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = EditorSchemaDerivedDefinition<TElements, TProperties, TGroups, TRoots, TContentRoots> | EditorSchemaNamedDefinition<TId, TElements, TProperties, TGroups, TRoots, TContentRoots>;",
           "source": null,
           "typeParameters": [
             "TId extends string = string",
             "TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>",
             "TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[]",
             "TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>",
-            "TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>",
+            "TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<Record<string, SchemaRootInput>>",
             "TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]"
           ]
         },
@@ -3126,13 +3138,13 @@
           "name": "EditorSchemaDerivedDefinition",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaDerivedDefinition<TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = EditorSchemaDefinitionBase<TElements, TProperties, TGroups, TRoots, TContentRoots> & Readonly<{\n  id?: never;\n  version?: never;\n}>;",
+          "signature": "type EditorSchemaDerivedDefinition<TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<Record<string, SchemaRootInput>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = EditorSchemaDefinitionBase<TElements, TProperties, TGroups, TRoots, TContentRoots> & Readonly<{\n  id?: never;\n  version?: never;\n}>;",
           "source": null,
           "typeParameters": [
             "TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>",
             "TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[]",
             "TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>",
-            "TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>",
+            "TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<Record<string, SchemaRootInput>>",
             "TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]"
           ]
         },
@@ -3216,14 +3228,14 @@
           "name": "EditorSchemaNamedDefinition",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaNamedDefinition<TId extends string = string, TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = EditorSchemaDefinitionBase<TElements, TProperties, TGroups, TRoots, TContentRoots> & Readonly<{\n  id: TId;\n  identity?: never;\n  version: number;\n}>;",
+          "signature": "type EditorSchemaNamedDefinition<TId extends string = string, TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>, TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[], TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>, TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<Record<string, SchemaRootInput>>, TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]> = EditorSchemaDefinitionBase<TElements, TProperties, TGroups, TRoots, TContentRoots> & Readonly<{\n  id: TId;\n  identity?: never;\n  version: number;\n}>;",
           "source": null,
           "typeParameters": [
             "TId extends string = string",
             "TElements extends Readonly<Record<string, SchemaElement>> = Readonly<Record<string, SchemaElement>>",
             "TProperties extends readonly SchemaProperty[] = readonly SchemaProperty[]",
             "TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<Record<string, SchemaGroup>>",
-            "TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<Record<string, SchemaContent>>",
+            "TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<Record<string, SchemaRootInput>>",
             "TContentRoots extends readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[]"
           ]
         },
@@ -3626,7 +3638,7 @@
           "name": "EditorStateSchemaApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorStateSchemaApi<V extends Value = Value> = {\n  /** Whether one child element type is accepted directly by one parent type. */\n  allowsElementType: (parentType: string, childType: string) => boolean;\n  /** Create one valid canonical element with every required default child. */\n  create: EditorSchemaCreate;\n  /** Copy one node through its compiled property lifecycle. */\n  copy: <TNode extends Descendant>(node: TNode, options: Readonly<{\n    at: Path;\n    root?: NamedRootKey;\n  }>) => TNode;\n  /** Create the declared default child for one document root. */\n  createDefaultRootChild: <TRoot extends RootKey>(root?: NamedRootKey<TRoot>, index?: number) => Descendant | null;\n  /** Semantic resources changed by the current configuration publication. */\n  delta: () => EditorSchemaDelta | null;\n  /** Read immutable compiled facts for one declared element type. */\n  element: (type: string) => EditorSchemaElement | null;\n  /** Fit one external document through the candidate schema without publishing it. */\n  fitDocument: <TValue extends Value>(value: EditorDocumentValue<TValue>) => EditorDocumentValue<V>;\n  findWrapping: (parent: Element, child: Descendant) => readonly string[] | null;\n  getElementBehavior: (element: Element) => EditorElementBehavior;\n  /** Resolve every named document root projected by an element, keyed by slot. */\n  getElementContentRoots: (element: Element) => Readonly<Record<string, NamedRootKey>>;\n  /** Read one stored or defaulted property through its schema identity. */\n  getProperty: EditorSchemaReadProperty;\n  /** Compiled open-slice boundary behavior for one element. */\n  getElementSlicePolicy: (element: Element) => EditorElementSlicePolicy;\n  /** Return the immutable compiled schema vocabulary. */\n  getVocabulary: () => EditorSchemaVocabulary;\n  /** Whether the schema declares any element-owned document roots. */\n  hasContentRoots: () => boolean;\n  /** Stable persisted identity for the current compiled schema. */\n  identity: () => EditorSchemaIdentity;\n  isAtom: (element: Node) => boolean;\n  isBlock: (element: Node) => boolean;\n  /** Test one compiled, transitive schema group membership. */\n  isElementTypeInGroup: (type: string, group: string) => boolean;\n  isInline: (element: Node) => boolean;\n  isIsolating: (element: Node) => boolean;\n  isObject: (element: Node) => boolean;\n  isReadOnly: (element: Node) => boolean;\n  isSelectable: (element: Node) => boolean;\n  isVoid: (element: Node) => boolean;\n  isMarkableVoid: (element: Node) => boolean;\n  /**\n   * Resolve one compiled property declaration for an exact runtime context.\n   * Omitting `type` succeeds only when the key has one unambiguous declaration.\n   */\n  property: EditorSchemaGetProperty;\n  /**\n   * Validate an external document against the compiled schema.\n   *\n   * Throws `EditorSchemaValidationError` with immutable root/path/property\n   * diagnostics on failure.\n   */\n  assertDocument(value: unknown): asserts value is EditorDocumentValue<V>;\n  /**\n   * Validate an external fragment against the compiled schema.\n   *\n   * Throws `EditorSchemaValidationError` with immutable path/property\n   * diagnostics on failure.\n   */\n  assertFragment(children: unknown): asserts children is ReadonlyArray<DescendantIn<V>>;\n};",
+          "signature": "type EditorStateSchemaApi<V extends Value = Value> = {\n  /** Whether one child element type is accepted directly by one parent type. */\n  allowsElementType: (parentType: string, childType: string) => boolean;\n  /** Create one valid canonical element with every required default child. */\n  create: EditorSchemaCreate;\n  /** Copy one node through its compiled property lifecycle. */\n  copy: <TNode extends Descendant>(node: TNode, options: Readonly<{\n    at: Path;\n    root?: NamedRootKey;\n  }>) => TNode;\n  /**\n   * Create the default child that the parent of `at` declares for the slot\n   * `at` ends in. A one-step path names a slot of the root. The parent and its\n   * ancestors are read from the root's current document; the slot need not\n   * exist. A parent without declared `content`, such as an undeclared element\n   * type, yields the root's default child for the root slot holding it, built\n   * as a root child. Returns null when the parent is missing or the deciding\n   * `content` has no default child for that slot. Omit `root` for the primary\n   * root.\n   */\n  createDefaultChild: (options: Readonly<{\n    at: Path;\n    root?: NamedRootKey;\n  }>) => Descendant | null;\n  /** Semantic resources changed by the current configuration publication. */\n  delta: () => EditorSchemaDelta | null;\n  /** Read immutable compiled facts for one declared element type. */\n  element: (type: string) => EditorSchemaElement | null;\n  /** Fit one external document through the candidate schema without publishing it. */\n  fitDocument: <TValue extends Value>(value: EditorDocumentValue<TValue>) => EditorDocumentValue<V>;\n  findWrapping: (parent: Element, child: Descendant) => readonly string[] | null;\n  getElementBehavior: (element: Element) => EditorElementBehavior;\n  /** Resolve every named document root projected by an element, keyed by slot. */\n  getElementContentRoots: (element: Element) => Readonly<Record<string, NamedRootKey>>;\n  /** Read one stored or defaulted property through its schema identity. */\n  getProperty: EditorSchemaReadProperty;\n  /** Compiled open-slice boundary behavior for one element. */\n  getElementSlicePolicy: (element: Element) => EditorElementSlicePolicy;\n  /** Return the immutable compiled schema vocabulary. */\n  getVocabulary: () => EditorSchemaVocabulary;\n  /** Whether the schema declares any element-owned document roots. */\n  hasContentRoots: () => boolean;\n  /** Stable persisted identity for the current compiled schema. */\n  identity: () => EditorSchemaIdentity;\n  isAtom: (element: Node) => boolean;\n  isBlock: (element: Node) => boolean;\n  /** Test one compiled, transitive schema group membership. */\n  isElementTypeInGroup: (type: string, group: string) => boolean;\n  isInline: (element: Node) => boolean;\n  isIsolating: (element: Node) => boolean;\n  isObject: (element: Node) => boolean;\n  isReadOnly: (element: Node) => boolean;\n  isSelectable: (element: Node) => boolean;\n  isVoid: (element: Node) => boolean;\n  isMarkableVoid: (element: Node) => boolean;\n  /**\n   * Resolve one compiled property declaration for an exact runtime context.\n   * Omitting `type` succeeds only when the key has one unambiguous declaration.\n   */\n  property: EditorSchemaGetProperty;\n  /**\n   * Validate an external document against the compiled schema.\n   *\n   * Throws `EditorSchemaValidationError` with immutable root/path/property\n   * diagnostics on failure.\n   */\n  assertDocument(value: unknown): asserts value is EditorDocumentValue<V>;\n  /**\n   * Validate an external fragment against the compiled schema.\n   *\n   * Throws `EditorSchemaValidationError` with immutable path/property\n   * diagnostics on failure.\n   */\n  assertFragment(children: unknown): asserts children is ReadonlyArray<DescendantIn<V>>;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value"
@@ -3838,7 +3850,7 @@
           "name": "EditorTransactionBreakApi",
           "route": null,
           "runtime": false,
-          "signature": "type EditorTransactionBreakApi = {\n  insert: () => void;\n  insertSoft: () => void;\n};",
+          "signature": "type EditorTransactionBreakApi = {\n  /**\n   * Leave the nearest structure around the collapsed selection. The structure\n   * is the nearest ancestor of the selected block that is a root child, or\n   * whose parent can directly hold the type of the root's default block after\n   * its required leading blocks; with none, it is the selected block. Inserts\n   * and selects the default that the structure's parent declares at the\n   * landing position. Returns whether a block landed; false changes nothing.\n   */\n  exit: (options?: EditorBreakExitOptions) => boolean;\n  insert: () => void;\n  insertSoft: () => void;\n};",
           "source": null,
           "typeParameters": []
         },
@@ -4543,7 +4555,7 @@
           "name": "ExitBreakPlugin",
           "route": null,
           "runtime": true,
-          "signature": "ExitBreakPlugin: BasePlugin<Readonly<{\n  editOnly: true;\n}> & Readonly<{\n  name: \"exitBreak\";\n}> & Readonly<Record<never, never>> & Readonly<{\n  update: {\n    readonly insert: (options?: Omit<ExitBreakOptions, 'reverse'>) => boolean;\n    readonly insertBefore: (options?: Omit<ExitBreakOptions, 'reverse'>) => boolean;\n  };\n}>>",
+          "signature": "ExitBreakPlugin: BasePlugin<Readonly<{\n  editOnly: true;\n}> & Readonly<{\n  name: \"exitBreak\";\n}> & Readonly<Record<never, never>> & Readonly<{\n  update: {\n    readonly insert: (options?: ExitBreakOptions) => boolean;\n    readonly insertBefore: (options?: ExitBreakOptions) => boolean;\n  };\n}>>",
           "source": null,
           "typeParameters": []
         },
@@ -4821,7 +4833,7 @@
           "name": "HorizontalRuleRules",
           "route": null,
           "runtime": true,
-          "signature": "HorizontalRuleRules: {\n  markdown: ({ enabled, priority, variant }?: {\n    enabled?: (context: InsertTextInputRuleReadContext) => boolean;\n    priority?: number;\n    variant?: '-' | '_';\n  }) => InsertTextInputRule<BlockStartInputRuleMatch & object, InternalBaseEditorWithInstalledPlugins<any, Readonly<{\n    activate?: true;\n    api?: object;\n    dataTransferFormats?: true;\n    formats?: true;\n    commands?: true;\n    conflicts?: ReadonlyArray<Readonly<{\n      enabled?: boolean;\n      name: string;\n    }>>;\n    contributions?: true;\n    corrections?: true;\n    decorate?: true;\n    dependencies?: ReadonlyArray<Readonly<{\n      enabled?: boolean;\n      name: string;\n    }>>;\n    editOnly?: true;\n    effectTypes?: true;\n    enabled?: boolean;\n    initialState?: object;\n    inject?: true;\n    inputRules?: true;\n    name: string;\n    on?: true;\n    override?: true;\n    read?: EditorReadMethodTree;\n    readMiddleware?: true;\n    render?: true;\n    rules?: true;\n    schema?: PluginSchemaDeclaration;\n    selectors?: object;\n    shortcuts?: true;\n    stateFields?: true;\n    targetPlugins?: ReadonlyArray<PluginReference | string>;\n    update?: object;\n    validate?: true;\n  }>, Readonly<{\n    activate?: true;\n    api?: object;\n    dataTransferFormats?: true;\n    formats?: true;\n    commands?: true;\n    conflicts?: ReadonlyArray<Readonly<{\n      enabled?: boolean;\n      name: string;\n    }>>;\n    contributions?: true;\n    corrections?: true;\n    decorate?: true;\n    dependencies?: ReadonlyArray<Readonly<{\n      enabled?: boolean;\n      name: string;\n    }>>;\n    editOnly?: true;\n    effectTypes?: true;\n    enabled?: boolean;\n    initialState?: object;\n    inject?: true;\n    inputRules?: true;\n    name: string;\n    on?: true;\n    override?: true;\n    read?: EditorReadMethodTree;\n    readMiddleware?: true;\n    render?: true;\n    rules?: true;\n    schema?: PluginSchemaDeclaration;\n    selectors?: object;\n    shortcuts?: true;\n    stateFields?: true;\n    targetPlugins?: ReadonlyArray<PluginReference | string>;\n    update?: object;\n    validate?: true;\n  }>, readonly PluginReference$1[]>>;\n}",
+          "signature": "HorizontalRuleRules: {\n  markdown: ({ enabled, priority, variant }?: {\n    enabled?: (context: InsertTextInputRuleReadContext) => boolean;\n    priority?: number;\n    variant?: '-' | '_';\n  }) => InsertTextInputRule<{\n    range: Range;\n    text: string;\n    path: Path;\n  }, InternalBaseEditorWithInstalledPlugins<any, Readonly<{\n    activate?: true;\n    api?: object;\n    dataTransferFormats?: true;\n    formats?: true;\n    commands?: true;\n    conflicts?: ReadonlyArray<Readonly<{\n      enabled?: boolean;\n      name: string;\n    }>>;\n    contributions?: true;\n    corrections?: true;\n    decorate?: true;\n    dependencies?: ReadonlyArray<Readonly<{\n      enabled?: boolean;\n      name: string;\n    }>>;\n    editOnly?: true;\n    effectTypes?: true;\n    enabled?: boolean;\n    initialState?: object;\n    inject?: true;\n    inputRules?: true;\n    name: string;\n    on?: true;\n    override?: true;\n    read?: EditorReadMethodTree;\n    readMiddleware?: true;\n    render?: true;\n    rules?: true;\n    schema?: PluginSchemaDeclaration;\n    selectors?: object;\n    shortcuts?: true;\n    stateFields?: true;\n    targetPlugins?: ReadonlyArray<PluginReference | string>;\n    update?: object;\n    validate?: true;\n  }>, Readonly<{\n    activate?: true;\n    api?: object;\n    dataTransferFormats?: true;\n    formats?: true;\n    commands?: true;\n    conflicts?: ReadonlyArray<Readonly<{\n      enabled?: boolean;\n      name: string;\n    }>>;\n    contributions?: true;\n    corrections?: true;\n    decorate?: true;\n    dependencies?: ReadonlyArray<Readonly<{\n      enabled?: boolean;\n      name: string;\n    }>>;\n    editOnly?: true;\n    effectTypes?: true;\n    enabled?: boolean;\n    initialState?: object;\n    inject?: true;\n    inputRules?: true;\n    name: string;\n    on?: true;\n    override?: true;\n    read?: EditorReadMethodTree;\n    readMiddleware?: true;\n    render?: true;\n    rules?: true;\n    schema?: PluginSchemaDeclaration;\n    selectors?: object;\n    shortcuts?: true;\n    stateFields?: true;\n    targetPlugins?: ReadonlyArray<PluginReference | string>;\n    update?: object;\n    validate?: true;\n  }>, readonly PluginReference$1[]>>;\n}",
           "source": null,
           "typeParameters": []
         },
@@ -5309,6 +5321,18 @@
           "route": null,
           "runtime": false,
           "signature": "type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:inputRuleVeto": {
+          "aliases": [],
+          "documentation": "Contribute an element type inside which no input rule runs, such as a code\nblock whose text must stay as typed.",
+          "entrypoint": "platejs",
+          "kind": "const",
+          "name": "inputRuleVeto",
+          "route": "/docs/plugin-input-rules#inputruleveto",
+          "runtime": true,
+          "signature": "inputRuleVeto: Readonly<{\n  id: string;\n  of: (value: string) => PluginContribution<string, unknown>;\n}>",
           "source": null,
           "typeParameters": []
         },
@@ -9199,6 +9223,32 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:SchemaRoot": {
+          "aliases": [],
+          "documentation": "One named-root grammar plus how history treats the root.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "SchemaRoot",
+          "route": null,
+          "runtime": false,
+          "signature": "type SchemaRoot<TContent extends SchemaContent = SchemaContent> = Readonly<{\n  content: TContent;\n  /**\n   * `retain` leaves this root's changes out of undo and redo, so a record\n   * another change still points at outlives the undo of the commit that\n   * wrote it.\n   */\n  history?: 'retain';\n}>;",
+          "source": null,
+          "typeParameters": [
+            "TContent extends SchemaContent = SchemaContent"
+          ]
+        },
+        "platejs:SchemaRootInput": {
+          "aliases": [],
+          "documentation": "Named roots may use their grammar directly.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "SchemaRootInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type SchemaRootInput = SchemaContent | SchemaRoot;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:SchemaRootNames": {
           "aliases": [],
           "documentation": "",
@@ -9710,6 +9760,42 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:SliceLanding": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "SliceLanding",
+          "route": null,
+          "runtime": false,
+          "signature": "type SliceLanding = Readonly<{\n  /** What the paste fits as ordinary content. */\n  slice: ContentSlice$1;\n  /**\n   * Content that replaces an `empty` target whole. The editor checks it and\n   * falls back to `slice` when it does not fit. A middleware that rewrites\n   * `slice` rewrites or drops this too.\n   */\n  replaceEmpty?: Readonly<{\n    /** Target properties the replacement's head never keeps. */\n    omitTargetProperties?: readonly string[];\n    slice: ContentSlice$1;\n  }>;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:SliceLandingInput": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "SliceLandingInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type SliceLandingInput = Readonly<{\n  /** The command's slice as handlers left it, before the length limit. */\n  source: ContentSlice$1;\n  /**\n   * What survives the length limit at a caret or range, or the handed slice\n   * over a node selection.\n   */\n  slice: ContentSlice$1;\n  target: SliceLandingTarget;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
+        "platejs:SliceLandingTarget": {
+          "aliases": [],
+          "documentation": "Where a paste lands. `empty` is a collapsed caret in an empty block that a\nwhole-block paste may replace. `context` holds the lowest block at the\ntarget's start, or `null` without a target. `root` is the named root the\npaste lands in, absent for the main document.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "SliceLandingTarget",
+          "route": null,
+          "runtime": false,
+          "signature": "type SliceLandingTarget = Readonly<{\n  block: NodeEntry<Element>;\n  kind: 'empty';\n  root?: string;\n}> | Readonly<{\n  block: NodeEntry<Element> | null;\n  kind: 'context';\n  root?: string;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:SnapshotIndex": {
           "aliases": [],
           "documentation": "",
@@ -10088,7 +10174,7 @@
           "name": "TextInsertFragmentOptions",
           "route": null,
           "runtime": false,
-          "signature": "interface TextInsertFragmentOptions {\n  /**\n   * Location to insert at, or exact contiguous sibling nodes to replace.\n   * Defaults to the transaction target when omitted.\n   * A node selection without a root addresses the primary document.\n   * Explicit disjoint node selections return false without replacing any member.\n   */\n  at?: Location | NodeSelection;\n  /** Keep hanging range edges instead of un-hanging before insertion. */\n  hanging?: boolean;\n  /** Allow insertion into void elements. */\n  voids?: boolean;\n}",
+          "signature": "interface TextInsertFragmentOptions {\n  /** Location to insert at. Defaults to the transaction target. */\n  at?: Location;\n  /** Keep hanging range edges instead of un-hanging before insertion. */\n  hanging?: boolean;\n  /** Allow insertion into void elements. */\n  voids?: boolean;\n}",
           "source": null,
           "typeParameters": []
         },

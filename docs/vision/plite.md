@@ -505,18 +505,21 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   only consumer is that handler is deleted rather than published for the handler
   to call. Semantic commands derive ordinary values through the existing read
   owner before adding a generic dependency or cache graph.
-- Slice destination preparation composes through `editorReads.slice.landing`.
-  The default replacement command runs it once on the command's current draft
-  after handlers delegate. A terminal handler bypasses it. Raw transaction
-  replacement and detached fitting do not run command policy. One-shot view
-  slice and fragment replacement keep semantic command dispatch.
-- An explicit `NodeSelection` in slice or fragment replacement names the nodes
-  themselves, including their boundaries. Members must be contiguous siblings;
-  disjoint targets refuse without consuming gaps. A rootless node selection
-  addresses the primary document even from a named-root view. Replacement does
-  not inherit the target's properties or runtime key. Product policy prepares
-  any permitted property retention before fitting, and canonical changes map
-  selection and anchors. Ordinary caret fitting retains its text-merge rules.
+- A paste's landing composes through `editorReads.slice.landing`. The default
+  replacement command resolves the target, limits the slice to `maxLength` once
+  and runs the read once on the command's current draft after handlers
+  delegate. A terminal handler bypasses it. Raw transaction replacement and
+  detached fitting do not run command policy. One-shot view slice and fragment
+  replacement keep semantic command dispatch.
+- Plite owns whole-block replacement of an empty target. A landing read can
+  propose blocks for an `empty` target and never names another block. Plite
+  honors the proposal only on its own resolution and refuses one the budget
+  would cut. The head keeps every target property for the same type, what the
+  type change allows for another text type, and none as an object or void.
+  Plite admits the whole sequence at the parent, fits it at the block's bounds
+  and discards the block's key. Otherwise it fits the landing slice under the
+  same budget. Slice and fragment replacement take a location, and a selected
+  node is replaced through the current selection.
 - Command `handle` interceptors are conditional fallbacks: returning `false`
   continues to the next handler or descriptor default. Command `around`
   interceptors own the invocation unless they explicitly call `next()` or

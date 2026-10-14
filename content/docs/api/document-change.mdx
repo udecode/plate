@@ -127,17 +127,11 @@ editor.update.fragment.replace([
 ```
 
 `state.slice.fit(slice, options?)` previews canonical fitting without running
-replacement command handlers or destination preparation. Editor-level code can
+replacement command handlers or the paste landing read. Editor-level code can
 call `editor.read.slice.fit(...)`; it returns `false` or a frozen
 `TransactionSpec` without publishing. Callback `tx.slice.replace` and
 `tx.fragment.replace` also bypass command policy. Use the one-shot update
 methods when installed paste policy must run.
-
-For whole-node replacement, pass `SelectionApi.nodes(...)` as `options.at`.
-Its members must be contiguous siblings. A rootless node selection addresses
-the primary document, including from a named-root view. See
-[replacement options](/docs/api/editor-transforms#slice-methods) for refusal
-and property behavior.
 
 Detached structures use the same compiled grammar without pretending to be in
 the live document.

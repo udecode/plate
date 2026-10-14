@@ -2456,8 +2456,6 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
         });
       }),
       around(editorCommands.replaceSlice, ({ input, state, next }) => {
-        if (SelectionApi.isNode(input.options?.at)) return next();
-
         const { slice } = input;
         const target = input.options?.at ?? state.selection();
         const rejectTablePaste = (diagnostic: TablePasteDiagnostic): false => {

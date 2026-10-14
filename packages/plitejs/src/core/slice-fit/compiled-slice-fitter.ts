@@ -50,7 +50,7 @@ import {
   getEditorDocumentShapeIssueMessage,
   readEditorDocument,
 } from '../document-shape';
-import { isEmptyElement } from '../is-empty-element';
+import { getReplaceableEmptyBlock } from '../is-empty-element';
 import { profileCoreDuration } from '../profiling';
 import { toPublicRoot } from '../public-root';
 import {
@@ -108,6 +108,7 @@ export type InternalSliceFitTarget =
       contentBounds?: Readonly<{ from: number; to: number }>;
       exactBounds?: Readonly<{ from: number; to: number }>;
       kind: 'range';
+      replaceEmptyBlock?: true;
     }>
   | Readonly<{
       kind: 'root';
@@ -2190,8 +2191,35 @@ export const compileSliceFitter = <V extends Value>(
         ? { anchor: rootPoint, focus: rootPoint }
         : options.target.at;
     const [start, end] = RangeApi.edges(at);
+    const emptyCaretBlockPath =
+      options.target.kind === 'root'
+        ? null
+        : (getReplaceableEmptyBlock(
+            at,
+            (path) => getDescendant(rootChildren, path),
+            {
+              getElementBehavior,
+              getElementContentRoots,
+              getElementSlicePolicy,
+            }
+          )?.[1] ?? null);
+
+    if (
+      options.target.kind === 'range' &&
+      options.target.replaceEmptyBlock &&
+      !emptyCaretBlockPath
+    ) {
+      return false;
+    }
+    const exactBounds =
+      options.target.kind === 'root'
+        ? { from: 0, to: document.length }
+        : (options.target.exactBounds ??
+          (options.target.replaceEmptyBlock && emptyCaretBlockPath
+            ? document.nodeRange(emptyCaretBlockPath)
+            : undefined));
     const prefixInsertionBoundary =
-      options.target.kind === 'root' || options.target.exactBounds
+      options.target.kind === 'root' || exactBounds
         ? null
         : getPrefixInsertionBoundary(
             at,
@@ -2200,10 +2228,6 @@ export const compileSliceFitter = <V extends Value>(
             inputSlice,
             targetRootProgram
           );
-    const exactBounds =
-      options.target.kind === 'root'
-        ? { from: 0, to: document.length }
-        : options.target.exactBounds;
     const exactFrom = exactBounds?.from ?? document.positionAt(start);
     const exactTo = exactBounds?.to ?? document.positionAt(end);
     const collapsed = exactFrom === exactTo;
@@ -3564,25 +3588,14 @@ export const compileSliceFitter = <V extends Value>(
       if (!boundary) {
         const head = inputSlice.content[0];
         if (
-          !collapsed ||
+          !emptyCaretBlockPath ||
           !ElementApi.isElement(head) ||
           !(getElementBehavior(head).object || getElementBehavior(head).void)
         ) {
           return null;
         }
 
-        const path = start.path.slice(0, -1);
-        const block = getDescendant(rootChildren, path);
-        if (
-          !ElementApi.isElement(block) ||
-          getElementBehavior(block).inline ||
-          !isEmptyElement(block, getElementBehavior(block)) ||
-          Object.keys(getElementContentRoots(block)).length > 0 ||
-          getElementSlicePolicy(block).preserveContext
-        ) {
-          return null;
-        }
-        const range = document.nodeRange(path);
+        const range = document.nodeRange(emptyCaretBlockPath);
         boundary = boundaries.find(
           (item) => item.from === range.from && item.to === range.to
         );

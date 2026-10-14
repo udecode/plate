@@ -3130,6 +3130,47 @@ describe('BaseListPlugin list identity', () => {
       expect(editor.read.children()).toEqual(before);
     });
 
+    it('lands the items left after the length limit cuts the first one at the caret depth [EDIT-CLIPBOARD-LIST-LANDING-001]', () => {
+      const editor = paste(
+        [listItem('L', { listId: 'l' })],
+        caretAt([0, 0], 1),
+        [
+          listItem('A', { listId: 's' }),
+          listItem('', { indent: 2, listId: 's' }),
+          listItem('', { indent: 2, listId: 's' }),
+        ],
+        1,
+        { maxLength: 1 }
+      );
+
+      expect(editor.read.children()).toEqual([
+        listItem('L', { listId: 'l' }),
+        listItem('', { listId: 'l' }),
+      ]);
+    });
+
+    it('pastes nothing from a quote-wrapped list once the length limit is spent [EDIT-CLIPBOARD-LIST-LANDING-001]', () => {
+      const before = [note('X'), note('')];
+      const editor = paste(
+        before,
+        caretAt([1, 0]),
+        [
+          {
+            type: 'blockquote',
+            children: [
+              listItem('A', { indent: 3 }),
+              listItem('', { indent: 3 }),
+              listItem('', { indent: 3 }),
+            ],
+          },
+        ],
+        2,
+        { maxLength: 1 }
+      );
+
+      expect(editor.read.children()).toEqual(before);
+    });
+
     it('adopts the copied type at the destination chosen by a later paste handler', () => {
       const RetargetPaste = definePlugin('retargetPaste', {
         commands: ({ around }) => [

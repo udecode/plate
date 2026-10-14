@@ -106,25 +106,7 @@ Create a text selection from a range and optional affinity or insertion marks.
 Create a detached multi-node selection. Paths are non-empty, deduplicated, and
 sorted in document order. Descendants of selected ancestors are removed.
 `anchorPath` and `focusPath` preserve direction and must both be exact members.
-Use `selection.setNodes(targets, { anchor, focus })` to change the live selection.
-
-Pass a detached node selection as `options.at` to replace those nodes without
-first changing the live selection.
-
-```ts
-import { ContentSlice, SelectionApi } from "platejs";
-
-editor.update.slice.replace(
-  ContentSlice.closed([{ type: "paragraph", children: [{ text: "Paste" }] }]),
-  { at: SelectionApi.nodes([[0]]) }
-);
-```
-
-`slice.replace`, `fragment.replace`, and detached `slice.fit` accept exact
-contiguous siblings. Explicit disjoint targets return `false` without consuming
-the gaps. A node selection without a root addresses the primary document even
-from a named-root view. See
-[replacement options](/docs/api/editor-transforms#slice-methods).
+Live editor code uses `selection.setNodes(targets, { anchor, focus })` instead.
 
 Read exact selected entries with `editor.read.selection.nodes()` or
 `tx.selection.nodes()`. Use `editor.read.nodes.blocks()` to project the active

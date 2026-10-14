@@ -345,7 +345,7 @@ editor.update((tx) => {
 
 Options:
 
-- `at?: NodeTarget | NodeSelection`: Replacement range, point, path, live descendant, or exact contiguous sibling nodes.
+- `at?: NodeTarget`: Replacement range, point, path, or live descendant.
 - `hanging?: boolean`: Preserve hanging range edges instead of un-hanging first.
 - `voids?: boolean`: Allow replacement inside void elements.
 
@@ -368,28 +368,13 @@ is empty.
 
 Options:
 
-- `at?: NodeTarget | NodeSelection`: Replacement range, point, path, live descendant, or exact contiguous sibling nodes.
+- `at?: NodeTarget`: Replacement range, point, path, or live descendant.
 - `hanging?: boolean`: Preserve hanging range edges instead of un-hanging first.
 - `voids?: boolean`: Allow replacement inside void elements.
 
-An explicit `SelectionApi.nodes(...)` target replaces the selected nodes
-including their boundaries. The members must be contiguous siblings in one
-root. Missing or disjoint targets return `false` without replacing any member.
-A rootless node selection addresses the primary document even from a named-root
-view. The replacement does not inherit the removed nodes' properties.
-
-```ts
-import { ContentSlice, SelectionApi } from "platejs";
-
-editor.update.slice.replace(
-  ContentSlice.closed([{ type: "paragraph", children: [{ text: "Paste" }] }]),
-  { at: SelectionApi.nodes([[0]]) }
-);
-```
-
 The one-shot `editor.update.slice.replace` and `editor.update.fragment.replace`
-methods run command handlers and
-[destination preparation](/docs/api/core/plate-plugin).
+methods run command handlers and the
+[paste landing read](/docs/api/core/plate-plugin).
 Their callback transaction forms fit content directly and bypass that command
 policy, as does `editor.read.slice.fit`.
 

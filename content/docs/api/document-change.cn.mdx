@@ -20,11 +20,7 @@ editor.update.slice.replace(ContentSlice.closed([
 
 `editor.read.slice.fit(slice, options)` 返回未发布的 `TransactionSpec` 或
 `false`。它与回调中的 `tx.slice.replace`、`tx.fragment.replace` 一样，
-直接进行规范适配，不运行命令处理器或目标准备读取。
-
-`options.at` 可以是 `SelectionApi.nodes(...)`，用于替换连续的兄弟节点。
-没有 root 的节点选区始终指向主文档。完整约束见
-[替换整个节点](/docs/api/editor-transforms#替换整个节点)。
+直接进行规范适配，不运行命令处理器或粘贴落点读取。
 
 ## 规范变更
 

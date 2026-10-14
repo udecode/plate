@@ -29,26 +29,9 @@ editor.update((tx) => {
 读取事务内状态时使用 `tx`，以观察同一草稿中的写入。
 参见[事务](/docs/transactions)与[编辑行为](/docs/editing-behavior)。
 
-## 替换整个节点
-
-`slice.replace` 和 `fragment.replace` 的 `at` 接受位置、活动节点或
-`SelectionApi.nodes(...)` 创建的节点选区。显式节点选区会替换节点本身，
-不会继承被移除节点的属性或运行时 key。
-
-```ts
-import { ContentSlice, SelectionApi } from 'platejs';
-
-editor.update.slice.replace(
-  ContentSlice.closed([{ type: 'paragraph', children: [{ text: 'Paste' }] }]),
-  { at: SelectionApi.nodes([[0]]) }
-);
-```
-
-选中的节点必须是同一个父节点下连续的兄弟节点。目标不存在、不连续或内容
-无法通过 schema 适配时，返回 `false`，不替换其中任何成员。没有 root 的
-节点选区始终指向主文档，在具名根视图中也是如此。
+## 粘贴策略
 
 单次 `editor.update.slice.replace` 和 `editor.update.fragment.replace`
-会运行命令处理器与[目标准备读取](/docs/api/core/plate-plugin)。
+会运行命令处理器与[粘贴落点读取](/docs/api/core/plate-plugin)。
 回调中的 `tx.slice.replace`、`tx.fragment.replace` 和独立的
 `editor.read.slice.fit` 直接适配内容，不运行这些命令策略。
