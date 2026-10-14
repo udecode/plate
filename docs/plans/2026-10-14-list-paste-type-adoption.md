@@ -35,8 +35,10 @@ This removes both temporary type conversions. Copied text stays under its final 
 
 ## Demo
 
-1. Start the docs app with `PLATE_WWW_DEV_SOURCE=1 pnpm --filter www dev --port 3297`, then open http://localhost:3297/blocks/list-demo. Copy the sibling Decimal 111 and Decimal 112 items and paste below Roman 3. They remain peers and continue as IV and V. ![after](artifacts/2026-10-13-list-paste/type-replan/build-type-native-final-r5-artifacts/list-keys-list-clipboard-c-7a5c0-s-through-paste-and-history-chromium/list-clipboard.png)
-2. The native image cases paste an image-headed list into a nested empty paragraph or heading. The image remains the first item; typing and one undo still work. The repeatable command is `PLAYWRIGHT_RETRIES=0 pnpm --filter www test:www-browser:chromium tests/browser/list-keys.spec.ts`. ![after](artifacts/2026-10-13-list-paste/type-replan/build-type-native-final-r5-artifacts/list-keys-list-clipboard-i-1ead3-CLIPBOARD-LIST-LANDING-001--chromium/list-image-h2.png)
+1. Start the docs app with `PLATE_WWW_DEV_SOURCE=1 pnpm --filter www dev --port 3297`, then open http://localhost:3297/blocks/list-demo. Copy the sibling Decimal 111 and Decimal 112 items and paste below Roman 3. They remain peers and continue as IV and V.
+2. The native image cases paste an image-headed list into a nested empty paragraph or heading. The image remains the first item; typing and one undo still work. Run [the native list clipboard suite](../../apps/www/tests/browser/list-keys.spec.ts) with `PLAYWRIGHT_RETRIES=0 pnpm --filter www test:www-browser:chromium tests/browser/list-keys.spec.ts`.
+
+The original run kept its screenshots locally under `artifacts/2026-10-13-list-paste/type-replan/`. They are not included in this repository; use the committed suite to repeat the checks.
 
 ## Outcome
 

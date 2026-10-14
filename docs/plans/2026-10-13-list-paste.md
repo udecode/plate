@@ -3,7 +3,7 @@ review_scopes: [list]
 review_basis: [2026-10-11-list-first-principles]
 verdict: pursue
 work_kind: implementation
-review_commit: 825a6c2aad6491205a46d8a6d0745db7f0724ed6
+review_commit: a052e9da17308f1433cf710820365cd86e8f030f
 review_inputs: [packages/platejs/src/features/list/lib/BaseListPlugin.ts, packages/platejs/src/features/list/lib/listIdentity.internal.ts, packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx, packages/platejs/src/ai/react/AIChatPlugin.ts, packages/plitejs/src/core/public-state.ts, packages/plitejs/src/core/insert-limit.ts, packages/plitejs/src/core/slice-fit/compiled-slice-fitter.ts, packages/plitejs/test/slice-fit-contract.test.ts, packages/platejs/src/utils/plugins/ExitBreakPlugin.ts, docs/plans/2026-10-11-ai-list-landing.md, VISION.md, docs/vision/common.md, docs/vision/plate.md]
 ---
 
@@ -38,9 +38,8 @@ The fix treats the copied items as a small tree. An item whose parent was not co
 1. Open the [list paste comparison](https://claude.ai/artifact/Sx8dQEJAwVFfpnnygFWnpE). Its six fixed results now match the product tests, using the same copied blocks and expected rows.
 2. Start the docs app from `apps/www` with `PLATE_WWW_DYNAMIC_DOCS=1 PLATE_WWW_DEV_SOURCE=1 PLATE_WWW_DIST_DIR=.next-list-paste pnpm exec next dev --port 3297` and open `http://localhost:3297/blocks/list-demo`.
 3. Select all of `Decimal 111` and `Decimal 112` and copy. Press Enter at the end of `Roman 3`, then paste. Both pasted items now sit beside `Roman 3` and read IV and V. Type, undo the typing, then undo and redo the paste. The clipboard test checks the source and caret too.
-   ![before](artifacts/2026-10-13-list-paste/build-native-red-artifacts/list-keys-list-clipboard-c-7a5c0-s-through-paste-and-history-chromium/list-clipboard.png)
-   ![after](artifacts/2026-10-13-list-paste/type-replan/build-type-native-final-r5-artifacts/list-keys-list-clipboard-c-7a5c0-s-through-paste-and-history-chromium/list-clipboard.png)
-4. For an occupied item, copy `Decimal 11` through `Decimal 12` and paste at `Rom|an 3`. The depths are now 1, 2, 2, 1. The model cases cover start, middle and end text joins; the screenshot above proves the empty-item case.
+   The original run kept before and after screenshots locally under `artifacts/2026-10-13-list-paste/`. They are not included in this repository. The repeatable proof is [the native list clipboard suite](../../apps/www/tests/browser/list-keys.spec.ts).
+4. For an occupied item, copy `Decimal 11` through `Decimal 12` and paste at `Rom|an 3`. The depths are now 1, 2, 2, 1. The model cases cover start, middle and end text joins; the native clipboard suite covers the empty-item case.
 
 ## Defaults
 
@@ -80,6 +79,8 @@ Keeping the copied depths is impossible whenever the head merges. It would need 
 A model probe reproduces all nine browser cells (three selections at the empty item and the start, middle and end of `Roman 3`) in about a second.
 
 ## History
+
+The original review used local frozen snapshot `825a6c2aad6491205a46d8a6d0745db7f0724ed6`, which is outside this PR's published history. The dependency inventory now pins published PR head `a052e9da17308f1433cf710820365cd86e8f030f` so a fresh checkout can check the declared inputs and their dependents. This metadata repair does not claim a new code review or runtime proof.
 
 The rule "paste keeps its pasted depths and starts" came in with the AI list landing plan on 2026-10-11, committed in 6fa1169c5e. That plan settled which list AI output joins. Paste got one sentence, with no Defaults row and no comparison of paste depth with other editors. The list subject's Open work already lists "Paste keeps the slice fitter's block merging", with a paste report as its stop.
 
