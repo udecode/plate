@@ -388,12 +388,17 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   `match`, root, mode and void semantics as the entry query it replaces.
   Ancestor, current-block and relative traversals such as `above`, `block`,
   `parent`, `previous` and `next` keep their entry query.
-- `tx.blocks.reset({ at? })` converts each target to its immediate parent or
-  document-root schema default through the property type-change lifecycle. It
-  preserves children, selection, and live `NodeKey`; feature commands keep
-  their policy guards and delegate this structural mutation instead of
-  replacing a node with a handcrafted default. It takes no type or mode option,
-  and no feature publishes a reset alias for it.
+- `tx.blocks.reset({ at?, unset? })` converts each target to its immediate
+  parent or document-root schema default through the property type-change
+  lifecycle. It preserves children, selection, and live `NodeKey`; feature
+  commands keep their policy guards and delegate this structural mutation
+  instead of replacing a node with a handcrafted default. `unset` names
+  properties to remove when the default does not set them, as toggle-off does.
+  Reset checks every target before writing and returns `false` with nothing
+  changed when a default is not allowed at one target's position; the update
+  does not roll back, so a caller that composes reset with other edits checks
+  the result first. It takes no type or mode option, and no feature publishes a
+  reset alias for it.
 - The default block that Enter on a block void or `tx.break.exit` creates is
   its landing parent's default for the landing index, or the root's for a
   top-level position. The compiled content grammar builds and admits it in the
@@ -419,6 +424,9 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   a change. An inadmissible placement or no-op returns `false` without claiming
   a successful mutation; the canonical schema and change builder remain the
   authority for the outcome.
+- `tx.blocks.set` accepts one property patch or a pure per-block patch resolver.
+  Resolve all patches before validating the entire target set and applying any
+  writes. Feature-specific title roles belong in the resolver, not in Plite.
 - `Plugin` stays flat except for the coherent `on.*` event family. Lifecycle and
   host/DOM observation use prefixless child names; Plate extends the same family
   with names such as `keyDown`, `paste`, `nodeChange`, `textChange`, and capture
@@ -755,6 +763,15 @@ post-selection navigation` order, coalesces by semantic key, and reports
   scheduling another frame. A feature scrolls a known range through
   `editor.api.dom.scrollIntoView` and returns the cleanup it receives, with no
   scheduler or cancellation namespace of its own.
+- Plite owns edge scrolling for every drag gesture. Text drag, block drag and
+  a pointer gesture the browser does not drag, such as a block-selection
+  marquee, call `editor.api.dom.drag.autoScroll(point)` once per frame. It
+  scrolls the innermost scroller around the editor that holds the point in its
+  visible edge zone and can still move, or else the window, and returns the
+  distance scrolled. `editor.api.dom.visibleRect(element)` returns the part of
+  an element that every clipping ancestor and the viewport leave visible, so a
+  gesture's paint stops at the same edge the scroll uses. Plate sets no scroll
+  speed, edge zone or scroller walk of its own.
 - Browser/OS policy clocks such as composition guard lifetimes and native event
   settling may use timers, but DOM mutation, scroll restoration, focus writes,
   and selection repair re-enter the root scheduler. Standalone internal test

@@ -1,5 +1,5 @@
 {
-  "generation": "975fb0867120e07956d995b2071baecd76ba95d45a2cf3a12ccb89bdd7613876",
+  "generation": "c3eee610cb24c878db1417c4979e32a6338b42750d5027dbf377b63425f20349",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2320,7 +2320,10 @@
             }
           ],
           "name": "details-static",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/heading-static"
+          ]
         },
         {
           "files": [
@@ -3821,6 +3824,7 @@
           },
           "registryDependencies": [
             "@plate/details-toolbar-button",
+            "@plate/heading",
             "button"
           ]
         },
@@ -9101,7 +9105,10 @@
             }
           ],
           "name": "details-static",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/heading-static"
+          ]
         },
         {
           "files": [
@@ -10602,6 +10609,7 @@
           },
           "registryDependencies": [
             "@plate/details-toolbar-button",
+            "@plate/heading",
             "button"
           ]
         },

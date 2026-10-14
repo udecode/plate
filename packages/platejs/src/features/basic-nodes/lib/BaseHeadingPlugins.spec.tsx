@@ -3,7 +3,14 @@
 
 import { jsxt } from '#platejs-test-internal';
 
-import { createEditor, schema, SelectionApi, PLUGINS } from '../../../core';
+import {
+  BaseParagraphPlugin,
+  createEditor,
+  definePlugin,
+  schema,
+  SelectionApi,
+  PLUGINS,
+} from '../../../core';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { BaseHeadingPlugin, HeadingRules } from './BaseHeadingPlugins';
@@ -179,6 +186,61 @@ describe('base heading plugin', () => {
         },
       })
     ).toThrow();
+  });
+});
+
+describe('heading reset at a required position', () => {
+  const BoxPlugin = definePlugin('requiredHeadingBox', {
+    schema: {
+      element: {
+        content: schema.content.prefix(
+          [{ element: 'heading', properties: { level: 1 } }],
+          schema.content.group('block', { default: { type: 'paragraph' } })
+        ),
+      },
+    },
+  });
+  const initialValue = [
+    {
+      type: 'requiredHeadingBox',
+      children: [
+        { type: 'heading', level: 1, children: [{ text: 'Title' }] },
+        { type: 'paragraph', children: [{ text: 'Body' }] },
+      ],
+    },
+  ];
+  const createBoxEditor = () =>
+    createEditor({
+      plugins: [BaseParagraphPlugin, BaseHeadingPlugin, BoxPlugin],
+      initialValue,
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 0] },
+      },
+    });
+
+  it('falls back to the default Backspace when the heading cannot reset', () => {
+    const editor = createBoxEditor();
+
+    editor.update.text.deleteBackward({ unit: 'character' });
+
+    expect(editor.read.children()).toEqual(initialValue);
+  });
+
+  it('keeps the split when Enter at the start cannot reset the heading', () => {
+    const editor = createBoxEditor();
+
+    editor.update.break.insert();
+
+    expect(editor.read.children()[0]).toEqual({
+      type: 'requiredHeadingBox',
+      children: [
+        { type: 'heading', level: 1, children: [{ text: '' }] },
+        { type: 'heading', level: 1, children: [{ text: 'Title' }] },
+        { type: 'paragraph', children: [{ text: 'Body' }] },
+      ],
+    });
   });
 });
 

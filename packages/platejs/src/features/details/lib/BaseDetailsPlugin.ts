@@ -12,7 +12,9 @@ import {
   type BlockInsertOptions,
   type BlockUpsertOptions,
   PLUGINS,
+  PointApi,
   RangeApi,
+  property,
   schema,
   SelectionApi,
   transferVeto,
@@ -20,6 +22,15 @@ import {
   locateAt,
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
+
+const isSummaryHeadingLevel = (
+  value: unknown
+): value is 1 | 2 | 3 | 4 | 5 | 6 =>
+  typeof value === 'number' &&
+  Number.isInteger(value) &&
+  value >= 1 &&
+  value <= 6;
 
 export type BaseDetailsPluginState = {
   openKeys: Set<NodeKey>;
@@ -31,13 +42,41 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
       ...schema.element.textBlock(),
       blockContent: false,
       type: 'summary',
+      properties: {
+        level: property.json({
+          validate: isSummaryHeadingLevel,
+          validationVersion: 1,
+        }),
+      },
     },
   },
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       html: {
-        decode: () => ({}),
-        encode: ({ content }) => ({ children: content, tag: 'summary' }),
+        decode: ({ element }) => {
+          const heading = element.firstElementChild;
+          const level =
+            heading &&
+            /^H[1-6]$/.test(heading.tagName) &&
+            [...element.childNodes].every(
+              (child) =>
+                child === heading ||
+                (child.nodeType === child.TEXT_NODE &&
+                  !child.textContent?.trim())
+            )
+              ? Number(heading.tagName.slice(1))
+              : undefined;
+          return isSummaryHeadingLevel(level) ? { level } : {};
+        },
+        encode: ({ content, node, preserve }) => {
+          preserve('level');
+          return {
+            children: node.level
+              ? [{ tag: `h${node.level}`, children: content }]
+              : content,
+            tag: 'summary',
+          };
+        },
         match: [{ tag: 'summary' }],
       },
       markdown: { tag: type },
@@ -276,16 +315,58 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         unwrap: txLocate(
           locateAt(0),
           ({ at }: { at?: Location | NodeSelection } = {}) => {
-            const detailsEntries = [
-              ...tx.nodes.toArray({ at, mode: 'highest', type: plugin }),
-            ].reverse();
+            const selected = at === undefined ? tx.selection.nodes() : [];
+            const target = at ?? tx.selection();
+            let detailsEntries: ReturnType<typeof tx.nodes.toArray>;
+
+            if (SelectionApi.isNode(at) || selected.length > 0) {
+              detailsEntries = (
+                SelectionApi.isNode(at)
+                  ? tx.nodes.toArray({ at })
+                  : [...selected]
+              ).filter(([node]) => ElementApi.isElementType(node, type));
+            } else if (PathApi.isPath(target)) {
+              const entry = tx.nodes.get(target, { type: plugin });
+              detailsEntries = entry ? [entry] : [];
+            } else if (
+              PointApi.isPoint(target) ||
+              (RangeApi.isRange(target) && RangeApi.isCollapsed(target))
+            ) {
+              const entry = tx.nodes.above({ at: target, type });
+              detailsEntries = entry ? [entry] : [];
+            } else {
+              detailsEntries = target
+                ? tx.nodes.toArray({
+                    at: target,
+                    mode: 'highest',
+                    type: plugin,
+                  })
+                : [];
+            }
             const paragraphType =
               editor.plugin(BaseParagraphPlugin).schema.type;
 
-            detailsEntries.forEach(([, path]) => {
-              tx.nodes.set({ type: paragraphType }, { at: path.concat(0) });
-              tx.nodes.unwrap({ at: path, type: plugin });
-            });
+            detailsEntries
+              .toSorted(
+                ([, left], [, right]) =>
+                  PathApi.compare(right, left) || right.length - left.length
+              )
+              .forEach(([, path]) => {
+                const summary = tx.nodes.get(path.concat(0), {
+                  type: BaseDetailsSummaryPlugin,
+                })?.[0];
+                const headingType = getCompiledPlateModelBinding(
+                  editor,
+                  PLUGINS.heading
+                )?.elementType;
+                tx.nodes.set(
+                  summary?.level && headingType
+                    ? { type: headingType, level: summary.level }
+                    : { type: paragraphType },
+                  { at: path.concat(0) }
+                );
+                tx.nodes.unwrap({ at: path });
+              });
           }
         ),
         wrap: txLocate(
@@ -317,7 +398,20 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
             let paths = blocks.map(([, path]) => path);
 
             if (firstIsTextBlock) {
-              tx.nodes.set({ type: summaryType }, { at: first[1] });
+              const headingType = getCompiledPlateModelBinding(
+                editor,
+                PLUGINS.heading
+              )?.elementType;
+              tx.nodes.set(
+                {
+                  type: summaryType,
+                  ...(first[0].type === headingType &&
+                  isSummaryHeadingLevel(first[0].level)
+                    ? { level: first[0].level }
+                    : {}),
+                },
+                { at: first[1] }
+              );
 
               if (blocks.length === 1) {
                 tx.nodes.insert(
@@ -371,6 +465,41 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
   }))
   .extend(({ editor, plugin, store }) => ({
     commands: ({ around, handle }) => [
+      ...[editorCommands.delete, editorCommands.deleteFragment].map((command) =>
+        around(command, ({ state, next }) => {
+          const result = next();
+          if (result === false) return false;
+
+          return state.transaction.extend(result, (tx) => {
+            if (tx.selection.nodes().length > 0) return;
+            const selection = tx.selection();
+            if (!selection || !RangeApi.isCollapsed(selection)) return;
+
+            const closedDetails = tx.nodes.above({
+              at: selection,
+              type: plugin,
+              match: (node, path) => {
+                const key = state.key(path);
+                return (
+                  ElementApi.isElement(node) &&
+                  key !== null &&
+                  !store.get('isOpen', key)
+                );
+              },
+              mode: 'highest',
+            });
+            if (
+              !closedDetails ||
+              selection.focus.path[closedDetails[1].length] === 0
+            ) {
+              return;
+            }
+
+            const point = tx.points.end(closedDetails[1].concat(0));
+            if (point) tx.selection.set(point);
+          });
+        })
+      ),
       around(editorCommands.insertBreak, ({ state, next }) => {
         const selection = state.selection();
 
@@ -460,6 +589,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         return next();
       }),
       handle(editorCommands.delete, ({ input, state }) => {
+        if (state.selection.nodes().length > 0) return false;
         const selection = state.selection();
 
         if (!selection || !RangeApi.isCollapsed(selection)) return false;
@@ -468,6 +598,46 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           at: selection,
           type: BaseDetailsSummaryPlugin,
         });
+        const block = state.nodes.block({ at: selection });
+
+        if (
+          input.direction === 'backward' &&
+          !summary &&
+          block &&
+          state.points.isStart(selection.anchor, block[1])
+        ) {
+          const previous = state.points.before(selection.anchor);
+          const closedDetails =
+            previous &&
+            state.nodes.above({
+              at: previous,
+              type: plugin,
+              match: (node) =>
+                ElementApi.isElement(node) &&
+                !store.get('isOpen', state.key(node)),
+              mode: 'highest',
+            });
+          const point =
+            closedDetails &&
+            PathApi.isAncestor(PathApi.parent(block[1]), closedDetails[1]) &&
+            state.points.end(closedDetails[1].concat(0));
+
+          if (point) {
+            return state.transaction((tx) => {
+              if (
+                ElementApi.isElementType(
+                  block[0],
+                  editor.plugin(BaseParagraphPlugin).schema.type
+                ) &&
+                state.nodes.isEmpty(block[0])
+              ) {
+                tx.nodes.remove({ at: block[1] });
+              }
+              tx.selection.set(point);
+            });
+          }
+        }
+
         const details = summary
           ? state.nodes.parent(summary[1], { type: plugin })
           : state.nodes.above({ at: selection, type: plugin });
@@ -483,8 +653,6 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
             tx.plugin(plugin.name).unwrap({ at: details[1] });
           });
         }
-
-        const block = state.nodes.block({ at: selection });
 
         if (
           input.direction === 'backward' &&

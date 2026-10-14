@@ -49,7 +49,8 @@
 - Add document replacement, block-relative insertion, live location targets, structural type selectors, function-only node predicates, and explicit selection predicates
 - Export the `documentReplacement` annotation so package-owned resources can revoke authority on equal-content whole-document replacement.
 - Read the nearest schema block with `nodes.block()` and every relevant block with `nodes.blocks()`. Mutate semantic blocks through `blocks.duplicate`, `blocks.insertAfter`, `blocks.set`, and props-first `blocks.toggle`; keep generic structural lifting under `nodes.lift`.
-- Reset targeted blocks to their immediate parent or document-root schema default with `blocks.reset()`, preserving children, selection, live node keys, and lifecycle-approved properties.
+- Reset targeted blocks to their immediate parent or document-root schema default with `blocks.reset({ at?, unset? })`, preserving children, selection, live node keys, and lifecycle-approved properties. `unset` removes named properties the default does not set. Reset checks every target first and returns `false` with nothing changed when a default is not allowed at a target's position.
+- Apply a different property patch to each selected block with `blocks.set((node) => patch)`. Every patch is checked before any is written, and `blocks.set` returns `false` when one is refused or nothing changes.
 - Infer node read and mutation targets from `type` selectors or type-guard `match` predicates. Remove caller-selected node result generics and shallow object matchers. Keep `at` independent from the selected node type, and put insertion split-target selection under `split: { type, match }`.
 - Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
 - Add explicit document repair and mutually exclusive mark toggles

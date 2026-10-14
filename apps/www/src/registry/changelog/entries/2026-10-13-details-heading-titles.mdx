@@ -1,0 +1,26 @@
+---
+id: 2026-10-13-details-heading-titles
+date: 2026-10-13
+status: draft
+kind: fix
+summary: 'Preserve Details titles when applying heading formats'
+change: { 'type': 'source', 'date': '2026-10-13', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-13-details-preserve-titles-when-applying-d1de3b79","kind":"fix","migrationNotes":[]} -->
+
+- **`details`**, **`details-static`**, **`heading`**, **`heading-static`**: Render a Details title that has a heading level with that heading's style, and center its toggle on the title's first line at the heading's own font size
+
+<!-- entry: {"id":"2026-10-13-details-format-titles-in-place","kind":"fix","migrationNotes":[]} -->
+
+- **`turn-into-toolbar-button`**, **`block-menu`**, **`slash`**: Format a Details title in place when choosing Text or a heading, instead of breaking the title or inserting into its hidden body, with or without the Heading plugin
+
+<!-- entry: {"id":"2026-10-13-format-menus-keep-lists-on-refusal","kind":"fix","migrationNotes":[]} -->
+
+- **`turn-into-toolbar-button`**, **`block-menu`**: Keep list formatting when the schema refuses a block format, drop the bullet when a bulleted heading takes its own level, and show an H4 to H6 as a heading instead of Text in the block menu
+
+<!-- entry: {"id":"2026-10-13-font-size-title-level","kind":"fix","migrationNotes":[]} -->
+
+- **`font-size-toolbar-button`**: Show the heading size of a Details title that has a heading level

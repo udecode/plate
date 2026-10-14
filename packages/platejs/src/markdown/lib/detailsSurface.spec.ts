@@ -5,6 +5,56 @@ import {
 } from './__tests__/createTestEditor';
 
 describe('markdown Details surface', () => {
+  it('preserves a Summary heading level and inline marks through Markdown', () => {
+    const editor = createTestEditor();
+    const value = parseTestMarkdown(
+      editor,
+      '<details>\n\n<summary level="2">**Title** [link](https://example.com)</summary>\n\nBody\n\n</details>'
+    );
+    expect(value.children[0]).toMatchObject({
+      type: 'details',
+      children: [
+        {
+          type: 'summary',
+          level: 2,
+          children: [
+            { text: 'Title', bold: true },
+            { text: ' ' },
+            {
+              type: 'link',
+              url: 'https://example.com',
+              children: [{ text: 'link' }],
+            },
+            { text: '' },
+          ],
+        },
+        { type: 'paragraph', children: [{ text: 'Body' }] },
+      ],
+    });
+    const output = serializeTestMarkdown(editor, { document: value });
+    expect(parseTestMarkdown(editor, output.data)).toEqual(value);
+  });
+
+  it('keeps a nested title level through Markdown', () => {
+    const editor = createTestEditor();
+    const value = parseTestMarkdown(
+      editor,
+      '<details>\n\n<summary>Outer</summary>\n\n<details>\n\n<summary level="3">Inner</summary>\n\nBody\n\n</details>\n\n</details>'
+    );
+
+    expect(value.children[0]).toHaveProperty(['children', 1, 'children', 0], {
+      type: 'summary',
+      level: 3,
+      children: [{ text: 'Inner' }],
+    });
+    expect(
+      parseTestMarkdown(
+        editor,
+        serializeTestMarkdown(editor, { document: value }).data
+      )
+    ).toEqual(value);
+  });
+
   it('round-trips nested Details with direct body blocks', () => {
     const editor = createTestEditor();
     const input = `<details>

@@ -6094,19 +6094,23 @@ const getUpdateView = <
 
     return NodeApi.extractProps(defaultBlock);
   };
-  const resetBlockAtPath = (
+  const getBlockReset = (path: Path, root: string, keys: readonly string[]) => {
+    const props = getDefaultBlockProps(path, root);
+
+    return {
+      path,
+      props,
+      unset: keys.filter((key) => key !== 'type' && !Object.hasOwn(props, key)),
+    };
+  };
+  const writeBlockProps = (
     path: Path,
-    root: string,
-    options: Readonly<{
-      props?: Readonly<Record<string, unknown>>;
-      voids?: boolean;
-    }> = {}
+    props: Readonly<Record<string, unknown>>,
+    unset: readonly string[],
+    voids?: boolean
   ) => {
-    setNodes(
-      editor,
-      (options.props ?? getDefaultBlockProps(path, root)) as never,
-      { at: path, voids: options.voids }
-    );
+    if (unset.length > 0) unsetNodes(editor, unset, { at: path, voids });
+    setNodes(editor, props as never, { at: path, voids });
   };
   const canApplyBlockProps = (
     path: Path,
@@ -6133,16 +6137,34 @@ const getUpdateView = <
   };
   const exitBlock: EditorTransactionBreakApi['exit'] = (options) =>
     runSelectionMutation(() => exitBreak(editor, options));
-  const resetBlocks: EditorTransactionBlocksApi<V>['reset'] = (options) => {
+  const resetBlocks: EditorTransactionBlocksApi<V>['reset'] = (options) =>
     runNodeTargetMutation(options, (resolvedOptions) => {
       const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
-      const entries = state.nodes.blocks(resolvedOptions);
+      const keys =
+        options?.unset === undefined
+          ? []
+          : [
+              normalizeNodeUnsetInput(
+                options.unset,
+                (property) => state.schema.property(property)?.key
+              ),
+            ].flat();
+      const resets = state.nodes
+        .blocks(resolvedOptions)
+        .map(([, path]) => getBlockReset(path, root, keys));
 
-      for (const [, path] of entries) {
-        resetBlockAtPath(path, root);
+      if (
+        !resets.every(({ path, props, unset }) =>
+          canApplyBlockProps(path, root, props, unset)
+        )
+      ) {
+        return false;
       }
-    });
-  };
+      for (const { path, props, unset } of resets) {
+        writeBlockProps(path, props, unset);
+      }
+      return true;
+    }) ?? false;
   const toggleBlock = defineSemanticUpdateMethod<
     EditorTransactionBlocksApi<V>['toggle']
   >(
@@ -6187,16 +6209,10 @@ const getUpdateView = <
       if (!wrap) {
         const allowed = runWithMutationRoot(editor, root, () =>
           selectedBlockPaths.every((path) => {
-            const nextProps = isActive
-              ? getDefaultBlockProps(path, root)
-              : props;
-            const unset = isActive
-              ? Object.keys(props).filter(
-                  (key) => key !== 'type' && !Object.hasOwn(nextProps, key)
-                )
-              : [];
+            if (!isActive) return canApplyBlockProps(path, root, props);
+            const reset = getBlockReset(path, root, Object.keys(props));
 
-            return canApplyBlockProps(path, root, nextProps, unset);
+            return canApplyBlockProps(path, root, reset.props, reset.unset);
           })
         );
 
@@ -6258,17 +6274,11 @@ const getUpdateView = <
       for (const path of selectedBlockPaths) {
         runWithMutationRoot(editor, root, () => {
           if (isActive) {
-            const nextProps = getDefaultBlockProps(path, root);
-            const propsToUnset = Object.keys(props).filter(
-              (key) => key !== 'type' && !Object.hasOwn(nextProps, key)
-            );
+            const reset = getBlockReset(path, root, Object.keys(props));
 
-            if (propsToUnset.length > 0) {
-              unsetNodes(editor, propsToUnset, { at: path, voids });
-            }
-            resetBlockAtPath(path, root, { props: nextProps, voids });
+            writeBlockProps(path, reset.props, reset.unset, voids);
           } else {
-            setNodes(editor, props as never, { at: path, voids });
+            writeBlockProps(path, props, [], voids);
           }
         });
       }
@@ -6504,7 +6514,9 @@ const getUpdateView = <
       command(editorCommands.setNodes, { options: options as never, props })
   );
   const setTransactionBlocks = ((
-    props: Partial<Element>,
+    inputProps:
+      | Partial<Element>
+      | ((node: Readonly<Element>) => Partial<Element>),
     options?: {
       at?: NodeSelection | NodeTarget;
       match?: NodeMatch<Element>;
@@ -6514,23 +6526,32 @@ const getUpdateView = <
     }
   ) =>
     runNodeTargetMutation(options, (resolvedOptions) => {
-      const entries = state.nodes.blocks(resolvedOptions);
+      const entries = state.nodes
+        .blocks(resolvedOptions)
+        .map(([node, path]) => ({
+          node,
+          path,
+          props:
+            typeof inputProps === 'function' ? inputProps(node) : inputProps,
+        }));
       const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
 
       if (
         entries.length === 0 ||
-        !entries.every(([, path]) => canApplyBlockProps(path, root, props))
+        !entries.every(({ path, props }) =>
+          canApplyBlockProps(path, root, props)
+        )
       ) {
         return false;
       }
 
-      if (entries.every(([node]) => ElementApi.matches(node, props))) {
+      if (entries.every(({ node, props }) => ElementApi.matches(node, props))) {
         return false;
       }
 
       const before = getActiveDocumentChangeBuilder(editor).change;
 
-      for (const [, path] of entries) {
+      for (const { path, props } of entries) {
         setTransactionNodes(props as never, {
           ...resolvedOptions,
           at: path,

@@ -361,7 +361,10 @@ describe('feature toolbar plugin portals', () => {
     ];
     pluginMock.mockImplementation((plugin) =>
       plugin === actualCoreReact.HeadingPlugin
-        ? { installed: true, schema: { type: 'heading' } }
+        ? {
+            installed: true,
+            read: { level: (node: { level?: number }) => node.level },
+          }
         : {
             installed: true,
             read: { value: () => undefined },

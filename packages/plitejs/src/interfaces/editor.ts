@@ -229,10 +229,27 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
       replaceEmpty?: boolean;
     }
   ) => Path | undefined;
-  /** Reset blocks to the immediate parent or root schema default. */
-  reset: (options?: { at?: NodeSelectionTarget }) => void;
+  /**
+   * Reset blocks to the immediate parent or root schema default, removing the
+   * `unset` properties that default does not set. Returns `false` and changes
+   * nothing when a default is not allowed at its block's position.
+   */
+  reset: (options?: {
+    at?: NodeSelectionTarget;
+    unset?: string | readonly string[] | SchemaPropertyHandle;
+  }) => boolean;
+  /**
+   * Set props on every target block, all or nothing. A function patch is
+   * called once per block before any block changes. Returns `false` and
+   * changes nothing when no block is targeted, a patch is not allowed at its
+   * block's position, or every block already matches its patch.
+   */
   set: (
-    props: NodePropertyPatch<NodeProps<ElementIn<V>>>,
+    props:
+      | NodePropertyPatch<NodeProps<ElementIn<V>>>
+      | ((
+          node: Readonly<ElementIn<V>>
+        ) => NodePropertyPatch<NodeProps<ElementIn<V>>>),
     options?: EditorBlockSetOptions<ElementIn<V>>
   ) => boolean;
   toggle: (

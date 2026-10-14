@@ -210,13 +210,24 @@ the block's children, selection, and live node key. Element properties survive
 only when their schema lifecycle uses `typeChange: "preserve-if-allowed"` and
 the destination element accepts them.
 
+Reset checks every target before it writes. When a default is not allowed at
+one target's position, such as a heading the parent requires first, it returns
+`false` and changes nothing; otherwise it returns `true`. The update does not
+roll back on `false`, so check the result before composing other edits.
+
 Options:
 
 - `at`: A document location, live node or key, or exact node selection.
   Defaults to the active text or exact node selection.
+- `unset`: Property names or a schema property handle to remove when the
+  default does not set them, such as a level a block keeps when it is already
+  its parent's default.
 
 ```typescript
-editor.update.blocks.reset();
+editor.update((tx) => {
+  if (!tx.blocks.reset({ unset: ["level"] })) return;
+  tx.plugin(BaseListPlugin).clear();
+});
 ```
 
 The parent or root grammar must declare an element default.
@@ -226,6 +237,17 @@ The parent or root grammar must declare an element default.
 Set properties on the targeted schema blocks. When `at` is omitted, the active
 selection is the target. Use `tx.nodes.set` when the target is not specifically
 a block.
+
+`props` can also be a function that receives each targeted block and returns
+its own patch. Every patch is resolved and checked before any is written, so
+the selection changes as a whole or not at all. Returns `false` when a patch is
+not allowed or nothing changes.
+
+```typescript
+editor.update.blocks.set((node) =>
+  node.type === "summary" ? { level: 2 } : { level: 2, type: "heading" }
+);
+```
 
 #### `tx.blocks.toggle(props, options?)`
 

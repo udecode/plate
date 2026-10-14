@@ -17,6 +17,7 @@ mock.module('platejs/react', () => ({
     <div>{children}</div>
   ),
   useEditor: () => useEditorMock(),
+  useEditorSelector: () => undefined,
   usePluginStore: () => usePluginStoreMock(),
 }));
 
@@ -104,7 +105,10 @@ describe('Details registry components', () => {
       `./details-static?native=${Math.random().toString(36).slice(2)}`
     );
     const summary = ReactDOMServer.renderToStaticMarkup(
-      <DetailsSummaryElementStatic attributes={{}}>
+      <DetailsSummaryElementStatic
+        attributes={{}}
+        element={{ type: 'summary', children: [{ text: 'Summary' }] }}
+      >
         Summary
       </DetailsSummaryElementStatic>
     );

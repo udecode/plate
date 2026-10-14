@@ -2,6 +2,9 @@ import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { type EditorElementProps, EditorElement } from 'platejs/static';
 import * as React from 'react';
 
+import { cn } from '@/lib/utils';
+import { headingVariants } from '@/registry/components/editor/heading-static';
+
 export function DetailsElementStatic(
   props: EditorElementProps<typeof BaseDetailsPlugin>
 ) {
@@ -20,9 +23,17 @@ export function DetailsElementStatic(
 export function DetailsSummaryElementStatic(
   props: EditorElementProps<typeof BaseDetailsSummaryPlugin>
 ) {
+  const { level } = props.element;
+  const Heading = level ? (`h${level}` as const) : null;
   return (
     <EditorElement {...props} as="summary" className="font-medium">
-      {props.children}
+      {Heading ? (
+        <Heading className={cn(headingVariants({ level }), 'm-0 inline')}>
+          {props.children}
+        </Heading>
+      ) : (
+        props.children
+      )}
     </EditorElement>
   );
 }

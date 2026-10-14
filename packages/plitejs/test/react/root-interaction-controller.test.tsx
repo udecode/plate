@@ -6,13 +6,12 @@ import {
   screen,
 } from '@testing-library/react';
 import type { Element as EditorElement } from 'plitejs';
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { getDragAutoScrollTarget } from '../../src/dom/plugin/dom-drag-scroll';
 import { createEditor, Editable, EditorRoot } from '../../src/react';
 import {
   applyDragAutoScrollFrame,
-  canScrollY,
-  getDragAutoScrollTarget,
   type RootInteractionEditor,
   useRootInteractionController,
 } from '../../src/react/editable/root-interaction-controller';
@@ -105,41 +104,36 @@ describe('root interaction controller', () => {
       rect({ bottom: 100, left: 0, right: 100, top: 0 });
     Object.defineProperties(scroller, {
       clientHeight: { configurable: true, value: 100 },
+      clientWidth: { configurable: true, value: 100 },
       scrollHeight: { configurable: true, value: 200 },
     });
 
     return scroller;
   };
+  const viewport = Object.fromEntries(
+    ['clientHeight', 'clientWidth'].map((key) => [
+      key,
+      Object.getOwnPropertyDescriptor(document.documentElement, key),
+    ])
+  );
 
-  test('does not treat hidden vertical overflow as drag autoscrollable', () => {
-    const scroller = document.createElement('div');
-
-    scroller.style.overflowX = 'auto';
-    scroller.style.overflowY = 'hidden';
-    Object.defineProperties(scroller, {
-      clientHeight: { configurable: true, value: 100 },
-      scrollHeight: { configurable: true, value: 200 },
+  beforeEach(() => {
+    Object.defineProperties(document.documentElement, {
+      clientHeight: { configurable: true, value: 600 },
+      clientWidth: { configurable: true, value: 800 },
     });
-
-    expect(canScrollY(scroller)).toBe(false);
-
-    scroller.style.overflowY = 'auto';
-
-    expect(canScrollY(scroller)).toBe(true);
   });
 
-  test('resolves drag autoscroll ranges inside the scrollport edge', () => {
-    const scroller = createScrollableElement();
-    const target = getDragAutoScrollTarget({
-      clientX: 50,
-      clientY: 130,
-      rootElement: scroller,
-    });
-
-    expect(target?.clientX).toBe(50);
-    expect(target?.clientY).toBe(99);
-    expect(target?.scroll()).toBe(true);
-    expect(scroller.scrollTop).toBeGreaterThan(0);
+  afterEach(() => {
+    for (const [key, descriptor] of Object.entries(viewport)) {
+      if (descriptor) {
+        Object.defineProperty(document.documentElement, key, descriptor);
+      } else {
+        delete (document.documentElement as unknown as Record<string, unknown>)[
+          key
+        ];
+      }
+    }
   });
 
   test('resolves drag autoscroll through a scroller around the slot that projects the root', () => {
@@ -159,7 +153,7 @@ describe('root interaction controller', () => {
         rootElement,
       });
 
-      expect(target?.scroll()).toBe(true);
+      expect(target?.scroll()).toBeGreaterThan(0);
       expect(scroller.scrollTop).toBeGreaterThan(0);
     } finally {
       host.remove();

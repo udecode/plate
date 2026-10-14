@@ -34,7 +34,7 @@ import { AIChatPlugin } from 'platejs/ai/react';
 import { BaseCalloutPlugin } from 'platejs/callout';
 import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
 import { BaseDatePlugin } from 'platejs/date';
-import { BaseDetailsPlugin } from 'platejs/details';
+import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseExcalidrawPlugin } from 'platejs/excalidraw';
 import { BaseFootnotePlugin } from 'platejs/footnote';
 import { BaseColumnPlugin } from 'platejs/layout';
@@ -71,6 +71,27 @@ type Group = {
   items: Item[];
 };
 
+const isTitle = (editor: Editor, tx: PluginTransaction) => {
+  const summary = editor.plugin(BaseDetailsSummaryPlugin);
+
+  return (
+    summary.installed && tx.nodes.block()?.[0].type === summary.schema.type
+  );
+};
+
+const upsertHeading = (
+  editor: Editor,
+  tx: PluginTransaction,
+  level: 1 | 2 | 3
+) => {
+  if (!isTitle(editor, tx)) {
+    tx.plugin(BaseHeadingPlugin).upsert({ level }, { select: true });
+  } else if (!tx.plugin(BaseHeadingPlugin).setLevel(level)) {
+    return false;
+  }
+  return undefined;
+};
+
 const groups: Group[] = [
   {
     group: 'AI',
@@ -99,8 +120,13 @@ const groups: Group[] = [
         keywords: ['paragraph'],
         label: 'Text',
         value: PLUGINS.paragraph,
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseParagraphPlugin).upsert({}, { select: true });
+        onSelect: (editor, tx) => {
+          if (!isTitle(editor, tx)) {
+            tx.plugin(BaseParagraphPlugin).upsert({}, { select: true });
+          } else if (!tx.blocks.reset({ unset: ['level'] })) {
+            return false;
+          }
+          return undefined;
         },
       },
       {
@@ -109,9 +135,7 @@ const groups: Group[] = [
         keywords: ['title', 'h1'],
         label: 'Heading 1',
         value: 'heading-1',
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseHeadingPlugin).upsert({ level: 1 }, { select: true });
-        },
+        onSelect: (editor, tx) => upsertHeading(editor, tx, 1),
       },
       {
         icon: <Heading2Icon />,
@@ -119,9 +143,7 @@ const groups: Group[] = [
         keywords: ['subtitle', 'h2'],
         label: 'Heading 2',
         value: 'heading-2',
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseHeadingPlugin).upsert({ level: 2 }, { select: true });
-        },
+        onSelect: (editor, tx) => upsertHeading(editor, tx, 2),
       },
       {
         icon: <Heading3Icon />,
@@ -129,9 +151,7 @@ const groups: Group[] = [
         keywords: ['subtitle', 'h3'],
         label: 'Heading 3',
         value: 'heading-3',
-        onSelect: (_editor, tx) => {
-          tx.plugin(BaseHeadingPlugin).upsert({ level: 3 }, { select: true });
-        },
+        onSelect: (editor, tx) => upsertHeading(editor, tx, 3),
       },
       {
         icon: <ListIcon />,

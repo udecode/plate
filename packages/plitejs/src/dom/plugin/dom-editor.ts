@@ -99,6 +99,7 @@ import {
   resolveDOMDropTarget,
   startDOMDrag,
 } from './dom-drag';
+import { getDragAutoScrollTarget, getVisibleRect } from './dom-drag-scroll';
 import {
   eventCarriesBlockFragment,
   resolveBlockFragmentDropRange,
@@ -106,6 +107,7 @@ import {
 } from './dom-event-range-targets';
 import {
   createDOMGeometryKernel,
+  type DOMGeometryRect,
   getPliteTextHostBounds,
 } from './dom-geometry';
 import {
@@ -209,6 +211,11 @@ export interface DOMApi {
     target: ScrollIntoViewTarget,
     options?: ScrollIntoViewOptions
   ) => () => void;
+  /**
+   * The part of `element` the user can see, in client coordinates: inside the
+   * viewport and every box that clips it. Null when none of it is visible.
+   */
+  visibleRect: (element: Element) => DOMGeometryRect | null;
   resolveNode: (domNode: DOMNode) => Node | null;
   resolvePoint: (
     domPoint: DOMPoint,
@@ -248,6 +255,14 @@ export interface DOMEditorCapability<V extends Value = Value> extends DOMApi {
 
 /** Native block drag, used by drag handles and custom drivers. */
 export interface DOMDragApi {
+  /**
+   * Scroll one step for a drag whose pointer is at `point`, in client
+   * coordinates: the innermost scroller around this editor whose visible edge
+   * holds the point and that can still move that way, else the window. Returns
+   * the pixels scrolled, 0 when nothing moved. Call it once per animation
+   * frame while the drag lasts.
+   */
+  autoScroll: (point: Readonly<{ x: number; y: number }>) => number;
   /** Publish this view's drop indicator for a target, or clear it. */
   indicate: (target: DOMDropTarget | null) => void;
   /**
@@ -2780,6 +2795,17 @@ export const createDOMEditorCapability = <
       },
     }),
     drag: Object.freeze({
+      autoScroll: ({ x, y }: Readonly<{ x: number; y: number }>) => {
+        const rootElement = DOMEditor.root(editor);
+
+        return rootElement
+          ? (getDragAutoScrollTarget({
+              clientX: x,
+              clientY: y,
+              rootElement,
+            })?.scroll() ?? 0)
+          : 0;
+      },
       indicate: (target: DOMDropTarget | null) => {
         indicateDOMDropTarget(editor, target);
       },
@@ -2809,6 +2835,7 @@ export const createDOMEditorCapability = <
     scroll: () => DOMEditor.scroll(editor),
     scrollIntoView: (target, options) =>
       DOMEditor.scrollIntoView(editor, target, options),
+    visibleRect: getVisibleRect,
     resolveNode: (domNode) => DOMEditor.resolveNode(editor, domNode),
     resolvePoint: (domPoint, options) =>
       DOMEditor.resolvePoint(editor, domPoint, options),

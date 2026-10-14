@@ -192,6 +192,28 @@ const rectFromPoints = (
   width: Math.abs(end.x - start.x),
 });
 
+const clipRect = (
+  rect: SelectionRect,
+  visible: Readonly<{
+    bottom: number;
+    left: number;
+    right: number;
+    top: number;
+  }> | null
+): SelectionRect => {
+  if (!visible) return { height: 0, left: rect.left, top: rect.top, width: 0 };
+
+  const left = Math.max(rect.left, visible.left);
+  const top = Math.max(rect.top, visible.top);
+
+  return {
+    height: Math.max(0, Math.min(rect.top + rect.height, visible.bottom) - top),
+    left,
+    top,
+    width: Math.max(0, Math.min(rect.left + rect.width, visible.right) - left),
+  };
+};
+
 const intersects = (selection: SelectionRect, target: DOMRect) =>
   selection.left <= target.right &&
   selection.left + selection.width >= target.left &&
@@ -200,7 +222,98 @@ const intersects = (selection: SelectionRect, target: DOMRect) =>
 
 type SelectionEntry = Readonly<{ key: NodeKey; node: Element; path: Path }>;
 
-type SelectionCandidate = SelectionEntry & Readonly<{ rect: DOMRect }>;
+type SelectionCandidate = SelectionEntry &
+  Readonly<{ rect: DOMRect; target: HTMLElement }>;
+
+type ClientPoint = Readonly<{ x: number; y: number }>;
+
+type ContentPoint = Readonly<{ x: number; y: number }>;
+
+type MarqueeStart = ContentPoint & {
+  readonly follow?: Readonly<{
+    edge: 'above' | 'below' | 'within';
+    key: NodeKey;
+    offset: number;
+  }>;
+};
+
+const hasBox = (rect: DOMRect) => rect.width > 0 || rect.height > 0;
+
+const distance = (value: number, low: number, high: number) =>
+  Math.max(low - value, value - high, 0);
+
+const isNearer = (
+  point: ClientPoint,
+  candidate: SelectionCandidate,
+  nearest: SelectionCandidate
+) => {
+  const vertical =
+    distance(point.y, candidate.rect.top, candidate.rect.bottom) -
+    distance(point.y, nearest.rect.top, nearest.rect.bottom);
+  if (vertical !== 0) return vertical < 0;
+
+  const horizontal =
+    distance(point.x, candidate.rect.left, candidate.rect.right) -
+    distance(point.x, nearest.rect.left, nearest.rect.right);
+  if (horizontal !== 0) return horizontal < 0;
+
+  return candidate.path.length > nearest.path.length;
+};
+
+const captureStart = (
+  point: ClientPoint,
+  candidates: readonly SelectionCandidate[],
+  content: ClientPoint
+): MarqueeStart => {
+  const start = { x: point.x - content.x, y: point.y - content.y };
+  let nearest: SelectionCandidate | undefined;
+
+  for (const candidate of candidates) {
+    if (
+      hasBox(candidate.rect) &&
+      (!nearest || isNearer(point, candidate, nearest))
+    ) {
+      nearest = candidate;
+    }
+  }
+  if (!nearest) return start;
+
+  const { bottom, top } = nearest.rect;
+  const follow =
+    point.y < top
+      ? ({ edge: 'above', offset: top - point.y } as const)
+      : point.y > bottom
+        ? ({ edge: 'below', offset: point.y - bottom } as const)
+        : ({ edge: 'within', offset: point.y - top } as const);
+
+  return { ...start, follow: { ...follow, key: nearest.key } };
+};
+
+const followStart = (
+  start: MarqueeStart,
+  candidates: readonly SelectionCandidate[],
+  content: ClientPoint
+): MarqueeStart => {
+  const { follow } = start;
+  const rect = follow
+    ? candidates.find(({ key }) => key === follow.key)?.rect
+    : undefined;
+
+  if (!follow || !rect || !hasBox(rect)) return start;
+
+  const y =
+    follow.edge === 'above'
+      ? rect.top - follow.offset
+      : follow.edge === 'below'
+        ? rect.bottom + follow.offset
+        : Math.min(rect.top + follow.offset, rect.bottom);
+
+  return { ...start, y: y - content.y };
+};
+
+const INVALIDATION_RANK = { none: 0, geometry: 1, candidates: 2 } as const;
+
+type Invalidation = keyof typeof INVALIDATION_RANK;
 
 const getSelectionCandidates = (
   editor: Editor,
@@ -230,11 +343,14 @@ const getSelectionCandidates = (
 
       if (!path) return;
 
+      const target = targets.get(element) ?? element;
+
       entries.set(path.join(','), {
         key: editor.key(node),
         node,
         path,
-        rect: (targets.get(element) ?? element).getBoundingClientRect(),
+        target,
+        rect: target.getBoundingClientRect(),
       });
     });
 
@@ -327,17 +443,31 @@ export function NodeSelectionDrag({
           baseAnchor?: NodeKey;
           baseEntries: readonly SelectionEntry[];
           candidates: readonly SelectionCandidate[];
-          current: { x: number; y: number };
-          geometryDirty: boolean;
+          invalid: Invalidation;
           lastAnchorPath?: Path;
           lastFocusPath?: Path;
           lastPaths: readonly Path[] | null;
+          pointer: { x: number; y: number };
           pointerId: number;
-          start: { x: number; y: number };
+          start: MarqueeStart;
         }
       | undefined;
 
-    const updateSelection = () => {
+    const contentOrigin = (rect: DOMRect): ClientPoint => ({
+      x: rect.left - editable.scrollLeft,
+      y: rect.top - editable.scrollTop,
+    });
+    const scheduleUpdate = (invalidation: Invalidation = 'none') => {
+      if (!gesture) return;
+      if (
+        INVALIDATION_RANK[invalidation] > INVALIDATION_RANK[gesture.invalid]
+      ) {
+        gesture.invalid = invalidation;
+      }
+      if (frame !== undefined) return;
+      frame = ownerWindow.requestAnimationFrame(() => updateSelection(true));
+    };
+    const updateSelection = (autoScroll: boolean) => {
       frame = undefined;
       if (!gesture) return;
       if (editor.read.view.isReadOnly()) {
@@ -345,27 +475,48 @@ export function NodeSelectionDrag({
         return;
       }
 
-      const nextRect = rectFromPoints(gesture.start, gesture.current);
-      if (gesture.geometryDirty) {
+      // Scroll before reading any rectangle, so each frame lays out once
+      // after its own scroll write.
+      if (autoScroll && editor.api.dom.drag.autoScroll(gesture.pointer) !== 0) {
+        scheduleUpdate('geometry');
+      }
+      if (gesture.invalid === 'candidates') {
         gesture.candidates = getSelectionCandidates(editor, editable);
         gesture.baseEntries = getSelectionEntries(
           editor,
           gesture.baseEntries.map(({ key }) => key)
         );
-        gesture.geometryDirty = false;
+      } else if (gesture.invalid === 'geometry') {
+        gesture.candidates = gesture.candidates.map((candidate) => ({
+          ...candidate,
+          rect: candidate.target.getBoundingClientRect(),
+        }));
       }
+
+      gesture.invalid = 'none';
+      const editableRect = editable.getBoundingClientRect();
+      const content = contentOrigin(editableRect);
+
+      gesture.start = followStart(gesture.start, gesture.candidates, content);
+      const start = {
+        x: content.x + gesture.start.x,
+        y: content.y + gesture.start.y,
+      };
+      const hitRect = rectFromPoints(start, gesture.pointer);
       const entries = getSelectableEntries(
         gesture.candidates,
-        nextRect,
+        hitRect,
         gesture.baseEntries
       );
 
       const selectionElement = selectionElementRef.current;
 
       if (selectionElement) {
-        selectionElement.style.height = `${nextRect.height}px`;
-        selectionElement.style.transform = `translate3d(${nextRect.left}px, ${nextRect.top}px, 0)`;
-        selectionElement.style.width = `${nextRect.width}px`;
+        const paint = clipRect(hitRect, editor.api.dom.visibleRect(editable));
+
+        selectionElement.style.height = `${paint.height}px`;
+        selectionElement.style.transform = `translate3d(${paint.left}px, ${paint.top}px, 0)`;
+        selectionElement.style.width = `${paint.width}px`;
       }
       if (entries.length === 0) {
         if (gesture.lastPaths === null || gesture.lastPaths.length > 0) {
@@ -383,9 +534,8 @@ export function NodeSelectionDrag({
       if (!first || !last) return;
 
       const reverse =
-        gesture.current.y < gesture.start.y ||
-        (gesture.current.y === gesture.start.y &&
-          gesture.current.x < gesture.start.x);
+        gesture.pointer.y < start.y ||
+        (gesture.pointer.y === start.y && gesture.pointer.x < start.x);
       const edge = reverse ? first : last;
       const gestureBaseAnchor = gesture.baseAnchor;
       const baseAnchor = gestureBaseAnchor
@@ -413,10 +563,6 @@ export function NodeSelectionDrag({
           focus: edge.path,
         });
       }
-    };
-    const scheduleUpdate = () => {
-      if (frame !== undefined) return;
-      frame = ownerWindow.requestAnimationFrame(updateSelection);
     };
     const startGesture = (
       point: { x: number; y: number },
@@ -447,39 +593,37 @@ export function NodeSelectionDrag({
           ? editor.read.nodes.block({ at: selection.anchor })?.[0]
           : undefined;
       const nextRect = rectFromPoints(point, point);
+      const editableRect = editable.getBoundingClientRect();
+      const candidates = getSelectionCandidates(editor, editable);
 
       setSelectionRect(nextRect);
 
       gesture = {
         baseEntries: shiftKey ? getSelectionEntries(editor, selectedKeys) : [],
         baseAnchor: baseAnchor ? editor.key(baseAnchor) : undefined,
-        candidates: getSelectionCandidates(editor, editable),
-        current: point,
-        geometryDirty: false,
+        candidates,
+        invalid: 'none',
         lastPaths: null,
+        pointer: point,
         pointerId,
-        start: point,
+        start: captureStart(point, candidates, contentOrigin(editableRect)),
       };
+      candidateObserver.observe(editable, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['data-node-selection-target'],
+      });
+      sizeObserver.observe(editable);
       editable.focus({ preventScroll: true });
     };
     const moveGesture = (point: { x: number; y: number }) => {
       if (!gesture) return;
-      gesture.current = point;
+      gesture.pointer = point;
       scheduleUpdate();
-
-      const scroll = editor.api.dom.scroll?.();
-      const bounds = scroll?.getBoundingClientRect();
-      const top = bounds?.top ?? 0;
-      const bottom = bounds?.bottom ?? ownerWindow.innerHeight;
-      const delta = point.y < top + 32 ? -12 : point.y > bottom - 32 ? 12 : 0;
-
-      if (delta !== 0) {
-        if (scroll) scroll.scrollBy({ top: delta });
-        else ownerWindow.scrollBy({ top: delta });
-        gesture.geometryDirty = true;
-      }
     };
     const cancelGesture = () => {
+      stopObserving();
       if (frame !== undefined) ownerWindow.cancelAnimationFrame(frame);
       frame = undefined;
       if (finishFrame !== undefined) {
@@ -498,7 +642,8 @@ export function NodeSelectionDrag({
       if (!gesture) return;
 
       if (frame !== undefined) ownerWindow.cancelAnimationFrame(frame);
-      updateSelection();
+      updateSelection(false);
+      stopObserving();
       if (!gesture) return;
       const committedPaths = editor.read.selection
         .nodes()
@@ -597,7 +742,28 @@ export function NodeSelectionDrag({
       event.stopPropagation();
     };
     const onGeometryChange = () => {
-      if (gesture) gesture.geometryDirty = true;
+      scheduleUpdate('geometry');
+    };
+    const candidateObserver = new ownerWindow.MutationObserver((records) => {
+      if (!gesture) return;
+      const selector = `${EDITOR_ELEMENT_SELECTOR},[data-node-selection-target]`;
+      const hasCandidates = (node: Node) =>
+        node instanceof ownerWindow.Element &&
+        (node.matches(selector) || node.querySelector(selector) !== null);
+      if (
+        records.some(
+          (record) =>
+            record.type === 'attributes' ||
+            [...record.addedNodes, ...record.removedNodes].some(hasCandidates)
+        )
+      ) {
+        scheduleUpdate('candidates');
+      }
+    });
+    const sizeObserver = new ownerWindow.ResizeObserver(onGeometryChange);
+    const stopObserving = () => {
+      candidateObserver.disconnect();
+      sizeObserver.disconnect();
     };
 
     const onKey = (event: KeyboardEvent) => {
@@ -690,10 +856,7 @@ export function NodeSelectionDrag({
       editor.api.dom.scrollIntoView(target);
     };
     const unsubscribe = editor.subscribeCommit((commit) => {
-      if (gesture && commit.changed.hasAny('document')) {
-        gesture.geometryDirty = true;
-        scheduleUpdate();
-      }
+      if (commit.changed.hasAny('document')) scheduleUpdate('candidates');
     });
 
     ownerWindow.addEventListener('blur', cancelGesture);

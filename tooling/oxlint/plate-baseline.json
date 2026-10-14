@@ -104,7 +104,6 @@
       "() => previous(editor, innerOptions13 as never),"
     ],
     "packages/plitejs/src/core/public-state.ts": [
-      "(options.props ?? getDefaultBlockProps(path, root)) as never,",
       "command(editorCommands.removeNodes, { options: options as never });",
       "command(editorCommands.setNodes, { options: options as never, props })",
       "const update = registration.factory(state as never, editor, context);",

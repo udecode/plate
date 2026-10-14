@@ -88,6 +88,14 @@ Return the mounted editable element for a document root.
 Return the element used as the editor scroll container. It falls back to the
 editor root when no custom scroll element is registered.
 
+#### `editor.api.dom.visibleRect(element: Element): { top: number; right: number; bottom: number; left: number; width: number; height: number } | null`
+
+Return the part of an element the user can see, in client coordinates: its box
+cut to the viewport and to every ancestor that clips it. A fixed box is cut only
+by the viewport, an absolute box skips static ancestors up to its positioned
+container, and `html` and `body` count as the viewport, measured without its
+scrollbars. Returns `null` when none of the element is visible.
+
 ## DOM translation
 
 #### `editor.api.dom.findKey(node: Descendant): Key`
@@ -248,6 +256,16 @@ starts a copy-only drag. Returns `null` when nothing can be dragged.
 
 Publish this view's drop indicator for a target from `resolveDropTarget`, or
 clear it. `useDropIndicator` reads it.
+
+#### `editor.api.dom.drag.autoScroll(point: { x: number; y: number }): number`
+
+Scroll one step for a pointer drag at `point`, in client coordinates, and
+return the pixels scrolled, or 0. It scrolls the innermost scroller around the
+editor whose visible top or bottom edge zone holds the point and that can still
+move that way, else the window, at the speed text selection and block dragging
+use: faster nearer the edge. Each zone is 48px, at most half the visible height.
+Call it once per animation frame while a custom drag lasts, and call again on
+the next frame while it returns a value other than 0.
 
 #### `editor.api.dom.resolveDropTarget(input: { clientX: number; clientY: number; target?: EventTarget | null; dataTransfer?: DataTransfer | null }, options?: { copy?: boolean; files?: Element; from?: Editor; nodes?: NodeKey[]; range?: Range }): { key: NodeKey; edge: 'after' | 'before'; axis: 'x' | 'y' } | { key: NodeKey; side: 'end' | 'start' } | { point: Point } | null`
 
