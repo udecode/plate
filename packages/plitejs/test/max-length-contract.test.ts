@@ -2,13 +2,17 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  ContentSlice,
   createEditor,
   createEditorView,
   DocumentChange,
+  editorCommands,
   type Element,
   SelectionApi,
 } from 'plitejs';
 import { history } from 'plitejs/history';
+
+import { dispatchCommand } from '../src/core/command-registry';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -25,6 +29,20 @@ const createLimitedEditor = (maxLength?: number) =>
     initialValue: [paragraph('')],
     maxLength,
   });
+
+const slice123456 = () =>
+  ContentSlice.fromJSON({
+    content: [paragraph('123456')],
+    openEnd: 1,
+    openStart: 1,
+  });
+
+const rootText = (nodes: readonly Element[]) =>
+  nodes
+    .map((node) =>
+      node.children.map((child) => ('text' in child ? child.text : '')).join('')
+    )
+    .join('');
 
 describe('maxLength editor option', () => {
   it('does not limit text when maxLength is absent', () => {
@@ -117,6 +135,222 @@ describe('maxLength editor option', () => {
     assert.deepEqual(header.read.children(), initialHeader);
   });
 
+  it('limits a paste by the text of the root it lands in', () => {
+    const pastes = {
+      'explicit at': (
+        editor: ReturnType<typeof createEditor>,
+        offset: number
+      ) =>
+        editor.update.slice.replace(slice123456(), {
+          at: { offset, path: [0, 0], root: 'header' },
+        }),
+      'main-document view, explicit at': (
+        editor: ReturnType<typeof createEditor>,
+        offset: number
+      ) =>
+        createEditorView(editor).update.slice.replace(slice123456(), {
+          at: { offset, path: [0, 0], root: 'header' },
+        }),
+      'header view, explicit at': (
+        editor: ReturnType<typeof createEditor>,
+        offset: number
+      ) =>
+        createEditorView(editor, { root: 'header' }).update.slice.replace(
+          slice123456(),
+          { at: { offset, path: [0, 0] } }
+        ),
+      'header view dispatch, explicit at': (
+        editor: ReturnType<typeof createEditor>,
+        offset: number
+      ) =>
+        dispatchCommand(
+          createEditorView(editor, { root: 'header' }),
+          editorCommands.replaceSlice,
+          { options: { at: { offset, path: [0, 0] } }, slice: slice123456() }
+        ),
+      'view of a view, explicit at': (
+        editor: ReturnType<typeof createEditor>,
+        offset: number
+      ) =>
+        createEditorView(createEditorView(editor)).update.slice.replace(
+          slice123456(),
+          { at: { offset, path: [0, 0], root: 'header' } }
+        ),
+      'header view': (
+        editor: ReturnType<typeof createEditor>,
+        offset: number
+      ) => {
+        const header = createEditorView(editor, { root: 'header' });
+
+        header.update.selection.set(
+          SelectionApi.text({
+            anchor: { offset, path: [0, 0] },
+            focus: { offset, path: [0, 0] },
+          })
+        );
+
+        return header.update.slice.replace(slice123456());
+      },
+      'selection in the root': (
+        editor: ReturnType<typeof createEditor>,
+        offset: number
+      ) => {
+        editor.update.selection.set(
+          SelectionApi.text({
+            anchor: { offset, path: [0, 0], root: 'header' },
+            focus: { offset, path: [0, 0], root: 'header' },
+          })
+        );
+
+        return editor.update.slice.replace(slice123456());
+      },
+    };
+    const layouts = [
+      { header: 'abcdef', landed: 'abcdef1', main: 'b' },
+      { header: 'ab', landed: 'ab12345', main: 'bbbbbb' },
+    ];
+    const results = layouts.flatMap(({ header, main }) =>
+      Object.entries(pastes).map(([name, paste]) => {
+        const editor = createEditor({
+          initialValue: {
+            children: [paragraph(main)],
+            roots: { header: [paragraph(header)] },
+          },
+          maxLength: 7,
+        });
+
+        paste(editor, header.length);
+
+        return [
+          name,
+          rootText(editor.read.root('header')),
+          rootText(editor.read.children()),
+        ];
+      })
+    );
+
+    assert.deepEqual(
+      results,
+      layouts.flatMap(({ landed, main }) =>
+        Object.keys(pastes).map((name) => [name, landed, main])
+      )
+    );
+  });
+
+  it('limits a paste through a main-document view', () => {
+    const cases = [
+      { initial: '', maxLength: 0, pasted: 'x' },
+      { initial: 'ab', maxLength: 3, pasted: 'WXYZ' },
+    ];
+    const results = cases.map(({ initial, maxLength, pasted }) => {
+      const editor = createEditor({
+        initialValue: [paragraph(initial)],
+        maxLength,
+      });
+      const view = createEditorView(editor);
+      const point = { offset: initial.length, path: [0, 0] };
+
+      view.update.selection.set(
+        SelectionApi.text({ anchor: point, focus: point })
+      );
+
+      return [
+        view.update.slice.replace(
+          ContentSlice.fromJSON({
+            content: [paragraph(pasted)],
+            openEnd: 1,
+            openStart: 1,
+          })
+        ),
+        editor.read.text.string([]),
+      ];
+    });
+
+    assert.deepEqual(results, [
+      [false, ''],
+      [true, 'abW'],
+    ]);
+  });
+
+  it('limits a paste by the root its target names, not the view root', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('m')],
+        roots: { header: [paragraph('ab')], notes: [paragraph('n')] },
+      },
+      maxLength: 7,
+    });
+
+    createEditorView(editor, { root: 'header' }).update.slice.replace(
+      slice123456(),
+      { at: { offset: 1, path: [0, 0], root: 'notes' } }
+    );
+
+    assert.deepEqual(
+      [
+        rootText(editor.read.root('notes')),
+        rootText(editor.read.root('header')),
+      ],
+      ['n123456', 'ab']
+    );
+  });
+
+  it('limits a paste at a node key by the root that holds the node', () => {
+    const cases = [
+      { main: 'm', maxLength: 7, notes: 'nnnnnn', pasted: '123456' },
+      { main: 'mmmmmm', maxLength: 7, notes: 'n', pasted: '123456' },
+      { main: 'full', maxLength: 4, notes: '', pasted: 'X' },
+    ];
+    const results = cases.map(({ main, maxLength, notes, pasted }) => {
+      const editor = createEditor({
+        initialValue: {
+          children: [paragraph(main)],
+          roots: { notes: [paragraph(notes)] },
+        },
+        maxLength,
+      });
+      const ok = editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph(pasted)],
+          openEnd: 1,
+          openStart: 1,
+        }),
+        { at: editor.read.key(editor.read.root('notes')[0]) }
+      );
+
+      return [ok, rootText(editor.read.root('notes'))];
+    });
+
+    assert.deepEqual(results, [
+      [true, '1nnnnnn'],
+      [true, '123456n'],
+      [true, 'X'],
+    ]);
+  });
+
+  it('pastes into an empty named root while the main document is full', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('full')],
+        roots: { notes: [paragraph('')] },
+      },
+      maxLength: 4,
+    });
+
+    assert.equal(
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('X')],
+          openEnd: 1,
+          openStart: 1,
+        }),
+        { at: { offset: 0, path: [0, 0], root: 'notes' } }
+      ),
+      true
+    );
+    assert.deepEqual(editor.read.root('notes'), [paragraph('X')]);
+  });
+
   it('counts exact node-selection replacement before constructing its block', () => {
     const editor = createEditor({
       initialSelection: null,
@@ -130,6 +364,79 @@ describe('maxLength editor option', () => {
     assert.deepEqual(editor.read.children(), [
       paragraph('1234'),
       paragraph('b'),
+    ]);
+  });
+
+  it('limits a paste at an explicit caret by the caret, not the selected node', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
+      maxLength: 7,
+    });
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed([paragraph('123456')]), {
+        at: { offset: 1, path: [1, 0] },
+      }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      paragraph('aa'),
+      paragraph('b12'),
+      paragraph('cc'),
+    ]);
+  });
+
+  it('limits an open paste over a selected block after freeing its text', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[1]]),
+      initialValue: [paragraph('aa'), paragraph('b'), paragraph('cc')],
+      maxLength: 7,
+    });
+
+    assert.equal(
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('12'), paragraph('3456')],
+          openEnd: 1,
+          openStart: 1,
+        })
+      ),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      paragraph('aa'),
+      paragraph('12'),
+      paragraph('3'),
+      paragraph('cc'),
+    ]);
+  });
+
+  it('lands the empty blocks that survive a dropped head', () => {
+    const editor = createEditor({
+      initialSelection: {
+        kind: 'text' as const,
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
+      },
+      initialValue: [paragraph('full'), paragraph('')],
+      maxLength: 4,
+    });
+
+    assert.equal(
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [paragraph('abc'), paragraph(''), paragraph('')],
+          openEnd: 1,
+          openStart: 1,
+        })
+      ),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      paragraph('full'),
+      paragraph(''),
+      paragraph(''),
     ]);
   });
 

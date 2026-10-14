@@ -573,12 +573,20 @@ describe('table selection slow contracts', () => {
                 <htable>
                   <htr>
                     <htd>
-                      <hp indent={1} listType="bulleted">
+                      <hp
+                        indent={1}
+                        listId={expect.any(String)}
+                        listType="bulleted"
+                      >
                         one
                       </hp>
                     </htd>
                     <htd>
-                      <hp indent={1} listType="bulleted">
+                      <hp
+                        indent={1}
+                        listId={expect.any(String)}
+                        listType="bulleted"
+                      >
                         two
                       </hp>
                     </htd>
