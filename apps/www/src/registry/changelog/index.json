@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-14-details-unwrap-targets",
+      "href": "/registry/changelog/2026-10-14-details-unwrap-targets.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep Details removal scoped to the selected section",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-13-details-heading-titles",
       "href": "/registry/changelog/2026-10-13-details-heading-titles.json",
       "status": "draft",

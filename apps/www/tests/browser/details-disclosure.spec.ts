@@ -27,6 +27,121 @@ const textPath = async (element: Locator) =>
     .concat(0);
 
 for (const route of ['details-demo', 'playground']) {
+  for (const target of ['title range', 'body block']) {
+    test(`${route}: unwrap inner Details selected by ${target}`, async ({
+      page,
+    }, info) => {
+      const errors = recordBrowserRuntimeErrors(page);
+      await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
+      await page.goto(`/blocks/${route}`);
+      const root = page
+        .locator('[data-editor="true"][contenteditable="true"]')
+        .first();
+      const title =
+        route === 'details-demo'
+          ? 'Can Details be nested?'
+          : 'Details can be nested too';
+      try {
+        await root
+          .getByRole('button', { name: 'Expand details', exact: true })
+          .first()
+          .click();
+        const outerKey = await root
+          .locator('.editor-details')
+          .first()
+          .getAttribute('data-editor-node-key');
+        const summary = root.getByText(title, { exact: true });
+        const path = await textPath(summary);
+        const body = root.getByText(
+          route === 'details-demo'
+            ? 'Yes. Nested Details are ordinary body blocks.'
+            : 'Expand each block independently to explore its content.',
+          { exact: true }
+        );
+        if (target === 'body block') {
+          await root
+            .getByRole('button', { name: 'Expand details', exact: true })
+            .first()
+            .click();
+          await body.evaluate((element) =>
+            element.scrollIntoView({ block: 'center' })
+          );
+          const box = await body.boundingBox();
+          const outerBox = await root
+            .locator('.editor-details')
+            .first()
+            .boundingBox();
+          if (!box || !outerBox) {
+            throw new Error('Missing body selection geometry');
+          }
+          const bodyTextPath = await textPath(body);
+          const bodyPath = bodyTextPath.slice(0, -1);
+          await page.mouse.move(outerBox.x - 75, box.y + 2);
+          await page.mouse.down();
+          await page.mouse.move(box.x + 70, box.y + box.height - 2, {
+            steps: 12,
+          });
+          await page.mouse.up();
+          await expect
+            .poll(() =>
+              root.evaluate((element: PliteBrowserHandleElement) =>
+                element.__pliteBrowserHandle!.getModelSelection()
+              )
+            )
+            .toMatchObject({ kind: 'node', paths: [bodyPath] });
+        } else {
+          await summary.click();
+          await page.keyboard.press('Home');
+          await page.keyboard.press('Shift+ArrowRight');
+          await page.keyboard.press('Shift+ArrowRight');
+          await expect
+            .poll(() => read(root))
+            .toMatchObject({
+              model: {
+                anchor: { path, offset: 0 },
+                focus: { path, offset: 2 },
+              },
+              dom: { anchor: { path, offset: 0 }, focus: { path, offset: 2 } },
+            });
+        }
+        await page
+          .locator('button')
+          .filter({ has: page.locator('svg.lucide-list-collapse') })
+          .first()
+          .click();
+        await expect(root.locator('.editor-details')).toHaveCount(1);
+        await expect(
+          root.locator(`.editor-details[data-editor-node-key="${outerKey}"]`)
+        ).toBeVisible();
+        await expect(body).toBeVisible();
+        const unwrappedPath = path.filter(
+          (_, index) => index !== path.length - 2
+        );
+        await summary.click();
+        await page.keyboard.press('Home');
+        await expect
+          .poll(() => read(root))
+          .toMatchObject({
+            model: caret(unwrappedPath, 0),
+            dom: caret(unwrappedPath, 0),
+            focused: true,
+          });
+        await root.pressSequentially('Z');
+        await expect(
+          root.getByText(`Z${title}`, { exact: true })
+        ).toBeVisible();
+        await expect(body).toBeVisible();
+        await page.screenshot({
+          path: info.outputPath('unwrapped-title.png'),
+          caret: 'initial',
+        });
+        errors.assertNone();
+      } finally {
+        errors.stop();
+      }
+    });
+  }
+
   for (const action of [
     'first collapse',
     'collapse after import',

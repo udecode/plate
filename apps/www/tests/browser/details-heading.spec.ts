@@ -258,37 +258,39 @@ test('details-demo centers the toggle chevron on a heading title line', async ({
   }
 });
 
-test('details-demo keeps a heading title in its Summary on the paragraph shortcut', async ({
-  page,
-}) => {
-  const errors = recordBrowserRuntimeErrors(page);
-  try {
-    await page.goto('/blocks/details-demo');
-    const root = page
-      .locator('[data-editor="true"][contenteditable="true"]')
-      .first();
-    const name = 'Why use semantic Details?';
-    await waitForHandle(root);
-    const key = await root
-      .getByText(name, { exact: true })
-      .locator(
-        'xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," editor-details ")][1]'
-      )
-      .getAttribute('data-editor-node-key');
-    const details = root.locator(
-      `.editor-details[data-editor-node-key="${key}"]`
-    );
-    const before = await readDetails(root, name);
-    await details.getByText(name, { exact: true }).click();
-    await page.keyboard.press('ControlOrMeta+Alt+1');
-    await expect(
-      details.getByRole('heading', { level: 1, name, exact: true })
-    ).toBeVisible();
-    await page.keyboard.press('ControlOrMeta+Alt+0');
-    await expect(details.getByRole('heading')).toHaveCount(0);
-    await expect.poll(() => readDetails(root, name)).toEqual(before);
-    errors.assertNone();
-  } finally {
-    errors.stop();
-  }
-});
+for (const shortcut of ['ControlOrMeta+Alt+0', 'ControlOrMeta+Shift+0']) {
+  test(`details-demo keeps a heading title in its Summary on ${shortcut}`, async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page);
+    try {
+      await page.goto('/blocks/details-demo');
+      const root = page
+        .locator('[data-editor="true"][contenteditable="true"]')
+        .first();
+      const name = 'Why use semantic Details?';
+      await waitForHandle(root);
+      const key = await root
+        .getByText(name, { exact: true })
+        .locator(
+          'xpath=ancestor::*[contains(concat(" ",normalize-space(@class)," ")," editor-details ")][1]'
+        )
+        .getAttribute('data-editor-node-key');
+      const details = root.locator(
+        `.editor-details[data-editor-node-key="${key}"]`
+      );
+      const before = await readDetails(root, name);
+      await details.getByText(name, { exact: true }).click();
+      await page.keyboard.press('ControlOrMeta+Alt+1');
+      await expect(
+        details.getByRole('heading', { level: 1, name, exact: true })
+      ).toBeVisible();
+      await page.keyboard.press(shortcut);
+      await expect(details.getByRole('heading')).toHaveCount(0);
+      await expect.poll(() => readDetails(root, name)).toEqual(before);
+      errors.assertNone();
+    } finally {
+      errors.stop();
+    }
+  });
+}

@@ -574,4 +574,46 @@ describe('turn into menu behavior', () => {
       }))
     );
   });
+
+  it('unwraps the inner Details from its title without removing the outer Details', async () => {
+    currentEditor = createTestEditor({
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Outer' }] },
+            {
+              type: 'details',
+              children: [
+                { type: 'summary', children: [{ text: 'Inner' }] },
+                { type: 'paragraph', children: [{ text: 'Body' }] },
+              ],
+            },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 1, 0, 0], offset: 2 },
+        focus: { path: [0, 1, 0, 0], offset: 2 },
+      },
+    });
+    const view = await renderTurnInto();
+    const item = view.getByRole('menuitemcheckbox', { name: 'Details' });
+
+    expect(item).toHaveAttribute('aria-checked', 'true');
+    expect(item).not.toBeDisabled();
+    fireEvent.click(item);
+
+    expect(currentEditor.read.children()).toEqual([
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Outer' }] },
+          { type: 'paragraph', children: [{ text: 'Inner' }] },
+          { type: 'paragraph', children: [{ text: 'Body' }] },
+        ],
+      },
+    ]);
+  });
 });

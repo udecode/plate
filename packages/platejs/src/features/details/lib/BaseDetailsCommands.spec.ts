@@ -187,6 +187,74 @@ describe('BaseDetailsPlugin', () => {
     ]);
   });
 
+  it.each(['title range', 'body block'])(
+    'unwraps the nearest Details from a selected %s',
+    (target) => {
+      const editor = createEditor({
+        plugins: [BaseDetailsPlugin],
+        initialValue: [
+          {
+            type: 'details',
+            children: [
+              { type: 'summary', children: [{ text: 'Outer' }] },
+              value[0],
+            ],
+          },
+        ],
+      });
+
+      if (target === 'title range') {
+        editor.update.selection.set({
+          anchor: { path: [0, 1, 0, 0], offset: 0 },
+          focus: { path: [0, 1, 0, 0], offset: 2 },
+        });
+      } else {
+        editor.update.selection.setNodes([[0, 1, 1]]);
+      }
+
+      editor.plugin(BaseDetailsPlugin).update.unwrap();
+
+      expect(editor.read.children()).toEqual([
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Outer' }] },
+            { type: 'paragraph', children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ]);
+    }
+  );
+
+  it('keeps the inner Details when a range continues into later outer body content', () => {
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin],
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Outer' }] },
+            value[0],
+            { type: 'paragraph', children: [{ text: 'After' }] },
+          ],
+        },
+      ],
+    });
+    editor.update.selection.set({
+      anchor: { path: [0, 1, 1, 0], offset: 0 },
+      focus: { path: [0, 2, 0], offset: 1 },
+    });
+
+    editor.plugin(BaseDetailsPlugin).update.unwrap();
+
+    expect(editor.read.children()).toEqual([
+      { type: 'paragraph', children: [{ text: 'Outer' }] },
+      value[0],
+      { type: 'paragraph', children: [{ text: 'After' }] },
+    ]);
+  });
+
   describe('in a named root', () => {
     const NoteHolderPlugin = definePlugin('testNoteHolder', {
       dependencies: [BaseParagraphPlugin, BaseDetailsPlugin],
@@ -222,6 +290,7 @@ describe('BaseDetailsPlugin', () => {
 
     it('changes nothing for a note block outside any Details', () => {
       const editor = createNoteEditor([value[1]]);
+      editor.update.selection.set({ path: [0, 0, 0], offset: 0 });
 
       editor
         .plugin(BaseDetailsPlugin)
@@ -229,6 +298,38 @@ describe('BaseDetailsPlugin', () => {
       expect(editor.read.children()).toMatchObject(main);
       expect(editor.read.root('note')).toMatchObject([value[1]]);
     });
+
+    it.each(['container', 'body'])(
+      'unwraps a targeted note %s without changing the main document',
+      (target) => {
+        const editor = createNoteEditor([
+          {
+            type: 'details',
+            children: [
+              { type: 'summary', children: [{ text: 'Note title' }] },
+              { type: 'paragraph', children: [{ text: 'Note body' }] },
+            ],
+          },
+        ]);
+        editor.update.selection.set({ path: [0, 0, 0], offset: 0 });
+
+        editor.plugin(BaseDetailsPlugin).update.unwrap({
+          at: SelectionApi.nodes([target === 'container' ? [0] : [0, 1]], {
+            root: 'note',
+          }),
+        });
+
+        expect(editor.read.children()).toEqual(main);
+        expect(editor.read.root('note')).toEqual([
+          { type: 'paragraph', children: [{ text: 'Note title' }] },
+          { type: 'paragraph', children: [{ text: 'Note body' }] },
+        ]);
+        expect(editor.read.selection()).toMatchObject({
+          anchor: { path: [0, 0, 0], offset: 0 },
+          focus: { path: [0, 0, 0], offset: 0 },
+        });
+      }
+    );
   });
 
   it('preserves the cell selection when clearing a table inside closed Details', () => {

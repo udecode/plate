@@ -32,3 +32,5 @@ const current = migrateDocument(persisted, { migrations }).output;
 ```
 
 Remove empty paragraphs when returning to a collapsed Summary with Backspace, and unwrap only the selected Details container while preserving nested and parent containers.
+
+Unwrap the nearest Details for selected title text or body blocks, and keep explicitly targeted changes inside their document root.

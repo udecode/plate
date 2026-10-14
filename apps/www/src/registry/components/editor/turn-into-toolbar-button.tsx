@@ -25,7 +25,6 @@ import {
   PathApi,
   SelectionApi,
   type Element,
-  type Path,
 } from 'platejs';
 import { BaseDetailsPlugin } from 'platejs/details';
 import { BaseColumnPlugin } from 'platejs/layout';
@@ -142,7 +141,7 @@ const hasWrapper = (
   return (
     portal.installed &&
     (entry[0].type === portal.schema.type ||
-      !!editor.read.nodes.above({ at: entry[1], type: plugin }))
+      !!editor.read.nodes.above({ at: editor.key(entry[0]), type: plugin }))
   );
 };
 
@@ -205,30 +204,6 @@ const getStructuralState = (editor: Editor): StructuralState => {
       eligible: quote.installed && hasSelection,
     },
   };
-};
-
-const getDetailsPaths = (editor: Editor): Path[] => {
-  const details = editor.plugin(BaseDetailsPlugin);
-
-  if (!details.installed) return [];
-
-  const paths = editor.read.nodes
-    .blocks({ mode: 'highest' })
-    .flatMap(([node, path]) => {
-      if (node.type === details.schema.type) return [path];
-
-      const ancestor = editor.read.nodes.above({
-        at: path,
-        type: BaseDetailsPlugin,
-      });
-
-      return ancestor ? [ancestor[1]] : [];
-    });
-
-  return paths.filter(
-    (path, index) =>
-      paths.findIndex((candidate) => PathApi.equals(candidate, path)) === index
-  );
 };
 
 const getLeafFormat = (editor: Editor, node: Element): LeafFormat => {
@@ -471,18 +446,7 @@ export function TurnIntoToolbarButton() {
               if (!portal.installed) return;
 
               if (current.active) {
-                const paths = getDetailsPaths(editor);
-
-                if (paths.length === 0) return;
-
-                const selection = editor.read.selection();
-                const root = selection && SelectionApi.root(selection);
-
-                portal.update.unwrap({
-                  at: SelectionApi.nodes(paths as [Path, ...Path[]], {
-                    ...(root ? { root } : {}),
-                  }),
-                });
+                portal.update.unwrap();
               } else {
                 portal.update.wrap();
               }
