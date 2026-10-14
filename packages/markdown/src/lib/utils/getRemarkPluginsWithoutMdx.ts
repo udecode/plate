@@ -13,12 +13,8 @@ export const tagRemarkPlugin = (pluginFn: any, tag: string) => {
 };
 
 export const getRemarkPluginsWithoutMdx = (plugins: Plugin[]) =>
-  plugins.filter((plugin) => (plugin as any).__pluginTag !== REMARK_MDX_TAG);
-
-/** Whether the plugins include remark-mdx, either Plate's tagged wrapper or the plain plugin */
-export const hasRemarkMdx = (plugins: Plugin[] | undefined) =>
-  !!plugins?.some(
+  plugins.filter(
     (plugin) =>
-      (plugin as any).__pluginTag === REMARK_MDX_TAG ||
-      plugin === (baseRemarkMdx as unknown as Plugin)
+      plugin !== baseRemarkMdx &&
+      !('__pluginTag' in plugin && plugin.__pluginTag === REMARK_MDX_TAG)
   );

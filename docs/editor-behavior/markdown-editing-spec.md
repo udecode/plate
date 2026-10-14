@@ -878,6 +878,20 @@ Plugin surface:
 - images currently have markdown parse and serialize rules, but no dedicated
   markdown-first insert law in this file
 
+### Markdown import with MDX
+
+- `EDIT-LINK-IMPORT-001` `locked`: Angle-bracket email and URL autolinks
+  preserve later document blocks with Plate's default parser and MDX formatting.
+  Caller replacement parsers, Acorn implementations and custom document
+  containers retain native behavior. The parser keeps complete valid JSX tags
+  in their native interpretation. Ordinary link and image destinations retain
+  their URLs. HTML conversion keeps its published rules and skips complete
+  native autolink matches. Existing mixed-HTML conversion limitations remain.
+
+Proof: `packages/markdown/src/lib/deserializer/autolinks.spec.ts` and the full
+issue document in `deserializeMd.spec.ts`. This import rule changes no editing
+key behavior.
+
 ### Source-Entry Surface
 
 - source-entry surface is the rendered-content subfamily of the broader

@@ -1,3 +1,5 @@
+import type { Value } from 'platejs';
+
 import { createTestEditor } from '../__tests__/createTestEditor';
 import {
   deserializeMd,
@@ -39,7 +41,7 @@ describe('deserializeMd', () => {
 
   it('keeps the rest of the document after an email autolink with remark-mdx', () => {
     const editor = createTestEditor();
-    const onError = mock();
+    const errors: Error[] = [];
     const markdown = [
       '## Alert',
       '- User: <quinn.martin@mindflow.io>',
@@ -54,24 +56,65 @@ describe('deserializeMd', () => {
     ].join('\n');
 
     const value = deserializeMd(editor, markdown, {
-      onError: onError as any,
+      onError: (error) => {
+        errors.push(error);
+      },
     });
 
-    expect(onError).not.toHaveBeenCalled();
-    expect(value.map((node) => node.type)).toEqual([
-      'h2',
-      'p',
-      'h2',
-      'table',
-      'h2',
-      'p',
-    ]);
-    expect(value[1].children).toEqual([
-      { text: 'User: ' },
+    expect(errors).toEqual([]);
+    expect(value).toEqual([
+      { type: 'h2', children: [{ text: 'Alert' }] },
       {
-        children: [{ text: 'quinn.martin@mindflow.io' }],
-        type: 'a',
-        url: 'mailto:quinn.martin@mindflow.io',
+        type: 'p',
+        indent: 1,
+        listStyleType: 'disc',
+        children: [
+          { text: 'User: ' },
+          {
+            type: 'a',
+            url: 'mailto:quinn.martin@mindflow.io',
+            children: [{ text: 'quinn.martin@mindflow.io' }],
+          },
+        ],
+      },
+      { type: 'h2', children: [{ text: 'MITRE ATT&CK' }] },
+      {
+        type: 'table',
+        children: [
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'th',
+                children: [{ type: 'p', children: [{ text: 'Tactic' }] }],
+              },
+              {
+                type: 'th',
+                children: [{ type: 'p', children: [{ text: 'Technique ID' }] }],
+              },
+            ],
+          },
+          {
+            type: 'tr',
+            children: [
+              {
+                type: 'td',
+                children: [
+                  { type: 'p', children: [{ text: 'Initial Access' }] },
+                ],
+              },
+              {
+                type: 'td',
+                children: [{ type: 'p', children: [{ text: 'T1078.004' }] }],
+              },
+            ],
+          },
+        ],
+      },
+      { type: 'h2', children: [{ text: 'Analysis Update' }] },
+      {
+        type: 'p',
+        children: [{ text: 'Judgment:', bold: true }, { text: ' HIGH' }],
       },
     ]);
   });
@@ -81,14 +124,42 @@ describe('deserializeMd', () => {
     const markdown =
       'Mail <quinn.martin@mindflow.io>, see <https://example.com/_a_(b)?x=1&y=2> or <mailto:a@b.co>, not `<c@d.co>`';
 
-    expect(deserializeMd(editor, markdown)).toEqual(
+    const value = deserializeMd(editor, markdown);
+    expect(value).toEqual([
+      {
+        type: 'p',
+        children: [
+          { text: 'Mail ' },
+          {
+            type: 'a',
+            url: 'mailto:quinn.martin@mindflow.io',
+            children: [{ text: 'quinn.martin@mindflow.io' }],
+          },
+          { text: ', see ' },
+          {
+            type: 'a',
+            url: 'https://example.com/_a_(b)?x=1&y=2',
+            children: [{ text: 'https://example.com/_a_(b)?x=1&y=2' }],
+          },
+          { text: ' or ' },
+          {
+            type: 'a',
+            url: 'mailto:a@b.co',
+            children: [{ text: 'mailto:a@b.co' }],
+          },
+          { text: ', not ' },
+          { text: '<c@d.co>', code: true },
+        ],
+      },
+    ]);
+    expect(value).toEqual(
       deserializeMd(editor, markdown, { withoutMdx: true })
     );
   });
 
   it('round-trips links that serialize as autolinks with remark-mdx', () => {
     const editor = createTestEditor();
-    const value = [
+    const value: Value = [
       {
         children: [
           { text: 'Contact ' },
@@ -104,7 +175,7 @@ describe('deserializeMd', () => {
       { children: [{ text: 'after' }], type: 'p' },
     ];
 
-    const markdown = serializeMd(editor, { value: value as any });
+    const markdown = serializeMd(editor, { value });
 
     expect(markdown).toContain('<quinn.martin@mindflow.io>');
     expect(deserializeMd(editor, markdown)).toEqual(value);

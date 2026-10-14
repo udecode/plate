@@ -17,17 +17,14 @@ import type { AllowNodeConfig } from '../MarkdownPlugin';
 import type { MdRules, PlateType } from '../types';
 
 import { mdastToSlate } from './mdastToSlate';
-import { hasRemarkMdx } from '../utils/getRemarkPluginsWithoutMdx';
 import {
-  type ParseMarkdownBlocksOptions,
-  autolinksToLinks,
-  htmlToJsx,
-  parseMarkdownBlocks,
-} from './utils';
+  normalizeProcessorHtml,
+  replaceRawMdx,
+  setupMarkdownParser,
+} from '../internal/remarkMdx';
+import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptionsDeserialize';
 import { markdownToSlateNodesSafely } from './utils/markdownToSlateNodesSafely';
-
-// TODO: fixes tests
 
 export type DeserializeMdOptions = {
   allowedNodes?: PlateType[] | null;
@@ -53,7 +50,8 @@ export const markdownToAstProcessor = (
 
   return unified()
     .use(remarkParse)
-    .use(mergedOptions.remarkPlugins ?? [])
+    .use(setupMarkdownParser)
+    .use((mergedOptions.remarkPlugins ?? []).map(replaceRawMdx))
     .parse(data);
 };
 
@@ -64,18 +62,15 @@ export const markdownToSlateNodes = (
 ): Descendant[] => {
   const mergedOptions = getMergedOptionsDeserialize(editor, options);
 
-  const processedData = options?.withoutMdx
-    ? data
-    : htmlToJsx(
-        hasRemarkMdx(mergedOptions.remarkPlugins)
-          ? autolinksToLinks(data)
-          : data
-      );
-
   const toSlateProcessor = unified()
     .use(remarkParse)
-    .use(mergedOptions.remarkPlugins ?? [])
+    .use(setupMarkdownParser)
+    .use((mergedOptions.remarkPlugins ?? []).map(replaceRawMdx))
     .use(remarkToSlate, mergedOptions);
+
+  const processedData = options?.withoutMdx
+    ? data
+    : normalizeProcessorHtml(toSlateProcessor, data);
 
   if (options?.memoize) {
     return parseMarkdownBlocks(processedData, options.parser).flatMap(
@@ -119,7 +114,6 @@ export const deserializeMd = (
 
   if (!output) return [];
 
-  // when output is inline text, we need to wrap the text in a paragraph
   return output.map((item) =>
     TextApi.isText(item)
       ? ({
@@ -137,7 +131,6 @@ declare module 'unified' {
 }
 
 const remarkToSlate: Plugin<[DeserializeMdOptions?], Root, Descendant[]> =
-  // TODO: options
   function (options = {}) {
     this.compiler = (node) => mdastToSlate(node as Root, options);
   };

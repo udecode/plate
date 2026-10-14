@@ -1372,6 +1372,12 @@ importers:
       '@platejs/date':
         specifier: workspace:*
         version: link:../date
+      acorn:
+        specifier: ^8.16.0
+        version: 8.16.0
+      acorn-jsx:
+        specifier: ^5.3.2
+        version: 5.3.2(acorn@8.16.0)
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -1384,6 +1390,24 @@ importers:
       mdast-util-mdx:
         specifier: 3.0.0
         version: 3.0.0
+      micromark:
+        specifier: ^4.0.2
+        version: 4.0.2
+      micromark-core-commonmark:
+        specifier: ^2.0.3
+        version: 2.0.3
+      micromark-extension-mdxjs:
+        specifier: ^3.0.0
+        version: 3.0.0
+      micromark-util-character:
+        specifier: ^2.1.1
+        version: 2.1.1
+      micromark-util-events-to-acorn:
+        specifier: ^2.0.3
+        version: 2.0.3
+      micromark-util-types:
+        specifier: ^2.0.2
+        version: 2.0.2
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1421,6 +1445,12 @@ importers:
       '@types/unist':
         specifier: ^3.0.3
         version: 3.0.3
+      mdast-util-from-markdown:
+        specifier: ^2.0.3
+        version: 2.0.3
+      micromark-extension-mdx-jsx:
+        specifier: ^3.0.2
+        version: 3.0.2
       platejs:
         specifier: workspace:^
         version: link:../plate
@@ -5557,6 +5587,7 @@ packages:
 
   bun@1.3.9:
     resolution: {integrity: sha512-v5hkh1us7sMNjfimWE70flYbD5I1/qWQaqmJ45q2qk5H/7muQVa478LSVRSFyGTBUBog2LsPQnfIRdjyWJRY+A==}
+    cpu: [arm64, x64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -7225,6 +7256,7 @@ packages:
   html2canvas-pro@1.5.11:
     resolution: {integrity: sha512-W4pEeKLG8+9a54RDOSiEKq7gRXXDzt0ORMaLXX+l6a3urSKbmnkmyzcRDCtgTOzmHLaZTLG2wiTQMJqKLlSh3w==}
     engines: {node: '>=16.0.0'}
+    deprecated: All 1.5.x series are deprecated. Known rendering bugs exist and no further maintenance. Please upgrade to the latest 2.x release.
 
   htmlparser2@3.10.1:
     resolution: {integrity: sha512-IgieNijUMbkDovyoKObU1DUhm1iwNYE/fuifEoEHfd1oZKZDaONBSkal7Y01shxsM49R4XaMdGez3WnF9UfiCQ==}
