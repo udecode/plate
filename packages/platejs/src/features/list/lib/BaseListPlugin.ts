@@ -11,6 +11,7 @@ import {
   matchBlockStart,
   PathApi,
   PLUGINS,
+  PointApi,
   property,
   RangeApi,
   schema,
@@ -36,6 +37,11 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
+import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+  limitSliceInsert,
+} from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import type { MarkdownMappingDiagnosticInput } from '../../../lib/plugin/PluginFormatContext';
@@ -1351,45 +1357,264 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       };
     },
   }))
-  .extend((context) => ({
+  .extend({
     // Review marks cannot hold list numbering yet, so a list item, or a
     // block turning into one, refuses Suggesting.
     contributions: [
       authoredVeto.of((element) => (element.listType ? 'list' : null)),
     ],
-    commands: ({ around, handle }) => [
-      around(editorCommands.replaceSlice, ({ input, next, state }) => {
+    readMiddleware: ({ around }) => [
+      around(editorReads.slice.landing, ({ editor, input, next, state }) => {
         const { options, slice } = input;
         const requested = options?.at;
         const at =
           requested === undefined
             ? (state.selection() ?? undefined)
-            : NodeApi.isNode(requested)
-              ? state.nodes.path(requested)
-              : requested;
-        const content = landListContent(
+            : PointApi.isPoint(requested)
+              ? { anchor: requested, focus: requested }
+              : NodeApi.isNode(requested)
+                ? state.nodes.path(requested)
+                : requested;
+        const headingType = getHeadingType(editor);
+        const entry =
+          at && !SelectionApi.isNode(at)
+            ? state.nodes.block({
+                at: RangeApi.isRange(at) ? RangeApi.start(at) : at,
+              })
+            : undefined;
+        let blocks = slice.content;
+        const wrappers: Element[] = [];
+
+        for (
+          let edge = Math.min(slice.openStart, slice.openEnd);
+          edge > 1;
+          edge -= 1
+        ) {
+          const wrapper = blocks[0];
+
+          if (blocks.length !== 1 || !ElementApi.isElement(wrapper)) break;
+          wrappers.push(wrapper);
+          blocks = wrapper.children;
+        }
+
+        const head = blocks[0];
+        const caret =
+          RangeApi.isRange(at) && RangeApi.isCollapsed(at) ? at : undefined;
+        const isEmptyListPaste =
+          (requested !== undefined || state.selection.nodes().length === 0) &&
+          state.view.root() === undefined &&
+          caret !== undefined &&
+          SelectionApi.root(caret) === undefined &&
+          entry !== undefined &&
+          [
+            editor.plugin(BaseParagraphPlugin).schema.type,
+            headingType,
+          ].includes(entry[0].type) &&
+          state.nodes.isEmpty(entry[0]) &&
+          Object.keys(state.schema.getElementContentRoots(entry[0])).length ===
+            0 &&
+          !state.schema.getElementSlicePolicy(entry[0]).preserveContext &&
+          ElementApi.isElement(head) &&
+          isListItem(head) &&
+          (blocks.length > 1 || (slice.openStart === 0 && slice.openEnd === 0));
+        const unwrapped =
+          wrappers.length > 0
+            ? ContentSlice.fromJSON({
+                ...slice,
+                content: blocks,
+                openStart: slice.openStart - wrappers.length,
+                openEnd: slice.openEnd - wrappers.length,
+              })
+            : slice;
+        const limited = isEmptyListPaste
+          ? limitSliceInsert(state, unwrapped, { at: caret })
+          : unwrapped;
+        blocks = limited.content;
+
+        let content = landListContent(
           state,
-          slice.content,
-          {
-            block: at
-              ? state.nodes.block({
-                  at: RangeApi.isRange(at) ? RangeApi.start(at) : at,
-                })?.[0]
-              : undefined,
-            kind: 'kept',
-          },
-          { headingType: getHeadingType(context.editor), placement: 'keep' }
+          blocks,
+          isEmptyListPaste && entry && !isListItem(entry[0])
+            ? { kind: 'line', line: entry }
+            : { kind: 'kept', block: entry?.[0] },
+          { headingType, placement: 'paste' }
         );
+
+        if (
+          isEmptyListPaste &&
+          caret &&
+          entry &&
+          ElementApi.isElement(content[0])
+        ) {
+          const limitedHead = content[0];
+
+          const starts = isListItem(limitedHead)
+            ? {
+                ...(typeof entry[0].listStart !== 'number'
+                  ? {}
+                  : { listStart: entry[0].listStart }),
+                ...(typeof entry[0].listRestart !== 'number'
+                  ? {}
+                  : { listRestart: entry[0].listRestart }),
+              }
+            : {};
+          const retained =
+            state.schema.isObject(limitedHead) ||
+            state.schema.isVoid(limitedHead)
+              ? {}
+              : entry[0].type === limitedHead.type
+                ? NodeApi.extractProps(entry[0])
+                : getEditorRuntime(
+                    getEditorRuntimeOwner(editor)
+                  ).schema.elementPropertiesForTypeChangeAt(
+                    entry[0],
+                    limitedHead,
+                    entry[1]
+                  );
+          const inherited: Record<string, unknown> = { ...retained };
+          for (const key of LIST_FIELDS) delete inherited[key];
+          const landedHead = { ...inherited, ...limitedHead, ...starts };
+          const landedContent = [landedHead, ...content.slice(1)];
+          const parent = state.nodes.parent(entry[1])?.[0];
+          const index = entry[1].at(-1);
+          const canPlaceHead =
+            index !== undefined &&
+            getEditorRuntime(getEditorRuntimeOwner(editor)).schema.canContainAt(
+              ElementApi.isElement(parent) ? parent : null,
+              landedHead,
+              index
+            );
+
+          if (
+            canPlaceHead &&
+            !(
+              content.length === 1 &&
+              (limited.openStart > 0 || limited.openEnd > 0) &&
+              state.nodes.isEmpty(landedHead)
+            ) &&
+            getEditorRuntime(getEditorRuntimeOwner(editor)).schema.canPlaceAt(
+              ElementApi.isElement(parent) ? parent : null,
+              ElementApi.isElement(parent) ? parent.children : state.children(),
+              landedContent,
+              index,
+              { removing: [index] }
+            )
+          ) {
+            const canCloseEdge = (edge: 'start' | 'end', depth: number) => {
+              let nodes: readonly Descendant[] = landedContent;
+
+              for (let level = 0; level < depth; level += 1) {
+                const node = edge === 'start' ? nodes[0] : nodes.at(-1);
+
+                if (!ElementApi.isElement(node)) break;
+                const slots = state.schema.element(node.type)?.contentRoots;
+                const roots = state.schema.getElementContentRoots(node);
+
+                if (slots && Object.keys(slots).some((slot) => !roots[slot])) {
+                  return false;
+                }
+                nodes = node.children;
+              }
+
+              return true;
+            };
+
+            if (
+              canCloseEdge('start', limited.openStart) &&
+              canCloseEdge('end', limited.openEnd)
+            ) {
+              return next({
+                ...input,
+                options: { ...options, at: SelectionApi.nodes([entry[1]]) },
+                slice: ContentSlice.withContent(limited, landedContent, {
+                  open: 'closed',
+                }),
+              });
+            }
+          }
+
+          if (!isListItem(entry[0])) {
+            content = landListContent(
+              state,
+              blocks,
+              { kind: 'kept', block: entry[0] },
+              { headingType, placement: 'paste' }
+            );
+          }
+        }
+
+        if (content === blocks && limited === unwrapped) return next();
+        for (const wrapper of wrappers.toReversed()) {
+          content = [{ ...wrapper, children: [...content] }];
+        }
 
         return content === slice.content
           ? next()
           : next({
               ...input,
-              slice: ContentSlice.withContent(slice, content, {
-                open: 'preserve',
+              slice: ContentSlice.fromJSON({
+                ...limited,
+                content,
+                openStart: limited.openStart + wrappers.length,
+                openEnd: limited.openEnd + wrappers.length,
               }),
             });
       }),
+      around(editorReads.transfer.source, ({ next, state }) => {
+        const selection = next();
+        const entries = selection.paths.flatMap((path) => {
+          const entry = state.nodes.get(path, { match: ElementApi.isElement });
+
+          return entry ? [entry] : [];
+        });
+
+        return entries.some(([node]) => isListItem(node))
+          ? SelectionApi.nodes(
+              expandListFamilies(state, entries).map(([, path]) => path) as [
+                Path,
+                ...Path[],
+              ]
+            )
+          : selection;
+      }),
+      around(editorReads.transfer.landing, ({ input, next, state }) => {
+        const { edge, payload, target: landingTarget } = input;
+
+        if (payload.kind !== 'nodes') return next();
+
+        const [first] = payload.nodes;
+
+        if (!first || !ElementApi.isElement(first) || !isListItem(first)) {
+          return next();
+        }
+
+        const parent = landingTarget[1].slice(0, -1);
+        const siblings = state.nodes.children(parent);
+        const indent = getListIndent(first);
+        const moving = new Set<Descendant>(payload.nodes);
+        let index =
+          (landingTarget[1].at(-1) as number) + (edge === 'after' ? 1 : 0);
+        let last = -1;
+
+        while (index < siblings.length) {
+          if (moving.has(siblings[index])) {
+            index += 1;
+            continue;
+          }
+          const end = runEndAt(siblings, indent, index);
+
+          if (end < 0) break;
+          last = end;
+          index = last + 1;
+        }
+        while (last >= 0 && moving.has(siblings[last])) last -= 1;
+
+        const key = last >= 0 && state.key([...parent, last]);
+
+        return key ? { edge: 'after' as const, key } : next();
+      }),
+    ],
+    commands: ({ around, handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         if (input.direction !== 'backward') return false;
         const selection = state.selection();
@@ -1452,7 +1677,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
         return next();
       }),
     ],
-  }))
+  })
   .extend({
     corrections: [
       {
@@ -1474,63 +1699,6 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           }
         },
       },
-    ],
-  })
-  .extend({
-    readMiddleware: ({ around }) => [
-      around(editorReads.transfer.source, ({ next, state }) => {
-        const selection = next();
-        const entries = selection.paths.flatMap((path) => {
-          const entry = state.nodes.get(path, { match: ElementApi.isElement });
-
-          return entry ? [entry] : [];
-        });
-
-        return entries.some(([node]) => isListItem(node))
-          ? SelectionApi.nodes(
-              expandListFamilies(state, entries).map(([, path]) => path) as [
-                Path,
-                ...Path[],
-              ]
-            )
-          : selection;
-      }),
-      around(editorReads.transfer.landing, ({ input, next, state }) => {
-        const { edge, payload, target: landingTarget } = input;
-
-        if (payload.kind !== 'nodes') return next();
-
-        const [first] = payload.nodes;
-
-        if (!first || !ElementApi.isElement(first) || !isListItem(first)) {
-          return next();
-        }
-
-        const parent = landingTarget[1].slice(0, -1);
-        const siblings = state.nodes.children(parent);
-        const indent = getListIndent(first);
-        const moving = new Set<Descendant>(payload.nodes);
-        let index =
-          (landingTarget[1].at(-1) as number) + (edge === 'after' ? 1 : 0);
-        let last = -1;
-
-        while (index < siblings.length) {
-          if (moving.has(siblings[index])) {
-            index += 1;
-            continue;
-          }
-          const end = runEndAt(siblings, indent, index);
-
-          if (end < 0) break;
-          last = end;
-          index = last + 1;
-        }
-        while (last >= 0 && moving.has(siblings[last])) last -= 1;
-
-        const key = last >= 0 && state.key([...parent, last]);
-
-        return key ? { edge: 'after' as const, key } : next();
-      }),
     ],
   });
 

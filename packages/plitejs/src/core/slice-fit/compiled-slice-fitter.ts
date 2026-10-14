@@ -50,6 +50,7 @@ import {
   getEditorDocumentShapeIssueMessage,
   readEditorDocument,
 } from '../document-shape';
+import { isEmptyElement } from '../is-empty-element';
 import { profileCoreDuration } from '../profiling';
 import { toPublicRoot } from '../public-root';
 import {
@@ -1513,6 +1514,8 @@ export const compileSliceFitter = <V extends Value>(
 
     add({ cost: 0, from, to });
 
+    if (exactBounds) return [...candidates.values()];
+
     const collapsed = from === to;
     const boundary = getPrefixInsertionBoundary(
       at,
@@ -2188,7 +2191,7 @@ export const compileSliceFitter = <V extends Value>(
         : options.target.at;
     const [start, end] = RangeApi.edges(at);
     const prefixInsertionBoundary =
-      options.target.kind === 'root'
+      options.target.kind === 'root' || options.target.exactBounds
         ? null
         : getPrefixInsertionBoundary(
             at,
@@ -2347,7 +2350,9 @@ export const compileSliceFitter = <V extends Value>(
       cost: number,
       allowAsymmetric = false
     ): SliceFitCandidate | null => {
-      if (!targetText || !NodeApi.isText(targetText)) return null;
+      if (exactBounds || !targetText || !NodeApi.isText(targetText)) {
+        return null;
+      }
       if (
         !allowAsymmetric &&
         inputSlice.openStart === inputSlice.openEnd &&
@@ -3514,6 +3519,7 @@ export const compileSliceFitter = <V extends Value>(
     const selectedPrefixCandidate = ((): SliceFitCandidate | null => {
       if (
         options.target.kind !== 'range' ||
+        exactBounds ||
         !sameTextPath ||
         collapsed ||
         !targetText ||
@@ -3544,6 +3550,57 @@ export const compileSliceFitter = <V extends Value>(
         ...(preparedInput ? { preparation: preparedInput.preparation } : {}),
       };
     })();
+    const closedBoundaryCandidate = ((): SliceFitCandidate | null => {
+      if (
+        options.target.kind !== 'range' ||
+        inputSlice.openStart !== 0 ||
+        inputSlice.openEnd !== 0
+      ) {
+        return null;
+      }
+
+      let boundary = exactBounds ? { cost: 0, ...exactBounds } : undefined;
+
+      if (!boundary) {
+        const head = inputSlice.content[0];
+        if (
+          !collapsed ||
+          !ElementApi.isElement(head) ||
+          !(getElementBehavior(head).object || getElementBehavior(head).void)
+        ) {
+          return null;
+        }
+
+        const path = start.path.slice(0, -1);
+        const block = getDescendant(rootChildren, path);
+        if (
+          !ElementApi.isElement(block) ||
+          getElementBehavior(block).inline ||
+          !isEmptyElement(block, getElementBehavior(block)) ||
+          Object.keys(getElementContentRoots(block)).length > 0 ||
+          getElementSlicePolicy(block).preserveContext
+        ) {
+          return null;
+        }
+        const range = document.nodeRange(path);
+        boundary = boundaries.find(
+          (item) => item.from === range.from && item.to === range.to
+        );
+      }
+      if (!boundary) return null;
+      const insert = encodeContentSlice(inputSlice);
+
+      const candidate = {
+        cost: boundary.cost,
+        from: boundary.from,
+        insert,
+        selectionOffset: getContentEndOffset(insert),
+        to: boundary.to,
+        ...(preparedInput ? { preparation: preparedInput.preparation } : {}),
+      };
+
+      return isStructurallyApplicable(candidate) ? candidate : null;
+    })();
     const selectedCandidate: SliceFitCandidate | null =
       options.target.kind === 'root'
         ? (() => {
@@ -3557,7 +3614,8 @@ export const compileSliceFitter = <V extends Value>(
               to: document.length,
             });
           })()
-        : (selectedPrefixCandidate ??
+        : (closedBoundaryCandidate ??
+          selectedPrefixCandidate ??
           (positionalOpenCandidate &&
           isStructurallyApplicable(positionalOpenCandidate)
             ? positionalOpenCandidate
@@ -3643,7 +3701,7 @@ export const compileSliceFitter = <V extends Value>(
       () => materializeCandidate(selectedCandidate)
     );
     const materializedCandidate =
-      options.target.kind === 'range'
+      options.target.kind === 'range' && !exactBounds
         ? withoutUnchangedTail(document, fittedCandidate)
         : fittedCandidate;
     const candidate = materializedCandidate.preparation

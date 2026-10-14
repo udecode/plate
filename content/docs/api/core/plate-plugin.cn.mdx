@@ -453,6 +453,13 @@ component 或 slot。
 
 <APIItem name="readMiddleware" type="PluginReadMiddlewareFactory">
   基于已声明 Plate `editorReads` descriptor 的类型化 middleware。
+
+  `editorReads.slice.landing` 的输入和返回值都是 `ReplaceSliceCommand`，包含
+  `slice` 与可选的替换 `options`。`around` 回调可以通过 `next(input)` 传递
+  处理后的切片或目标。命令处理器委托默认替换实现后，这个读取会看到当前命令
+  草稿。终结命令的处理器会跳过它。原始 `tx.slice.replace`、
+  `tx.fragment.replace` 和 `state.slice.fit` 不运行它。descriptor 与命令类型
+  都从 `platejs` 导入。
 </APIItem>
 
 <APIItem name="commands" type="PluginDefinitionInput['commands']">

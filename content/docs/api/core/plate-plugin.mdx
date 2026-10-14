@@ -482,6 +482,14 @@ Renders after a node's children inside its primary component.
 
 <APIItem name="readMiddleware" type="PluginReadMiddlewareFactory">
   Typed middleware over declared Plate `editorReads` descriptors.
+
+  `editorReads.slice.landing` takes and returns `ReplaceSliceCommand`, containing
+  `slice` and optional replacement `options`. Its `around` callback can return
+  `next(input)` with a prepared slice or destination. It reads the current command
+  draft after command handlers delegate to the default replacement. A terminal
+  handler bypasses this read. Raw `tx.slice.replace`, `tx.fragment.replace`, and
+  `state.slice.fit` do not run it. Import the descriptor and command type from
+  `platejs`.
 </APIItem>
 
 <APIItem name="commands" type="PluginDefinitionInput['commands']">

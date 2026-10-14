@@ -19,7 +19,8 @@ insertion ownership.
 | A reusable package owns paste/drop import policy     | `domCommands.insertData` interceptor in plugin `commands` | `platejs/dom`                                |
 | A browser MIME representation needs decoding or encoding | Register a `DataTransferFormat` in `dataTransferFormats`     | `platejs/dom`                                |
 | Framework code needs to import a `DataTransfer`      | `editor.api.dom.clipboard.insertData(data)`                    | `platejs/dom` through `platejs/react` |
-| Parsed or structural content is already decoded      | `tx.slice.replace(slice, options?)`                        | `platejs`                                    |
+| Decoded content needs installed paste policy         | `editor.update.slice.replace(slice, options?)`           | `platejs`                                    |
+| A transaction needs raw content fitting               | `tx.slice.replace(slice, options?)`                      | `platejs`                                    |
 | Decoded content must fit a detached parent           | `state.slice.fitContent(slice, { parent, root? })`         | `platejs`                                    |
 | Copy or drag must include hidden model content       | DOM coverage `copyPolicy` plus model-backed clipboard data | `platejs/dom` and `platejs/react`     |
 | The claim depends on real browser clipboard behavior | `@platejs/test` clipboard helpers                       | `@platejs/test`                                  |
@@ -38,7 +39,8 @@ Clipboard data enters Plate through explicit layers.
 | EditorContent handler     | App handlers can handle the event or let Plate continue.                                                               | `platejs/react`                      |
 | Insert-data command  | Typed `domCommands.insertData` interceptors can claim, transform, or delegate the payload.                              | `platejs/dom`                        |
 | DOM clipboard import | Plate reads its internal fragment, then registered DataTransfer formats, then plain text.                                       | `platejs/dom`                        |
-| Transaction          | A parsed slice is fitted at the actual range and applied through one canonical replacement.                            | `platejs`                            |
+| Replacement command | Installed handlers delegate to `editorReads.slice.landing`, which prepares the final slice and destination. | `platejs` |
+| Transaction          | The prepared slice is fitted at its target and applied through one canonical replacement.                            | `platejs`                            |
 | Commit and render    | Plate publishes one change; React renders and repairs selection.                                                       | `platejs` and `platejs/react` |
 | Proof                | Browser tests assert model content, DOM/native selection where needed, focus, clipboard payload, and follow-up typing. | `@platejs/test`                          |
 
@@ -319,8 +321,10 @@ plugin's `formats`, or a format for that MIME type.
 
 ## Fragment and slice replacement
 
-Use `tx.fragment.replace(...)` for known-closed content. The compiled schema
-fits the content at the actual target.
+Use `tx.fragment.replace(...)` to fit known-closed content inside an existing
+transaction. It bypasses paste command policy. Use the one-shot
+`editor.update.fragment.replace(...)` when installed List or other paste policy
+must run.
 
 ```ts
 editor.update((tx) => {

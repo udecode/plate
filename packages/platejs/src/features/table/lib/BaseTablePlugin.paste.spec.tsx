@@ -15,9 +15,13 @@ import { AuthoredPlugin } from '../../../authored';
 import type { BasePluginInput, Element, Value } from '../../../core';
 import {
   ContentSlice,
+  createEditor,
   createEditorView,
+  definePlugin,
   ElementIdPlugin,
   NodeApi,
+  schema,
+  SelectionApi,
 } from '../../../core';
 import type { Editor } from '../../../react/core';
 import { YjsPlugin } from '../../../yjs/react';
@@ -80,6 +84,107 @@ const createTarget = (
 };
 
 describe('BaseTablePlugin prepared paste', () => {
+  it('replaces an explicitly targeted table instead of filling its cells', () => {
+    const editor = createTarget();
+    const before = editor.read.value();
+    const content = [{ type: 'paragraph', children: [{ text: 'Paste' }] }];
+
+    expect(
+      editor.update.fragment.replace(content, {
+        at: SelectionApi.nodes([[0]]),
+      })
+    ).toBe(true);
+    expect(editor.read.children()).toEqual(content);
+    editor.api.history.undo();
+    expect(editor.read.value()).toEqual(before);
+  });
+
+  it('refuses explicit disjoint cell replacement without filling cells', () => {
+    const editor = createTarget();
+    const before = editor.read.value();
+
+    expect(
+      editor.update.slice.replace(
+        ContentSlice.closed([
+          { type: 'paragraph', children: [{ text: 'Paste' }] },
+        ]),
+        {
+          at: SelectionApi.nodes([
+            [0, 0, 0],
+            [0, 1, 1],
+          ]),
+        }
+      )
+    ).toBe(false);
+    expect(editor.read.value()).toEqual(before);
+    expect(editor.read.history().undos).toHaveLength(0);
+  });
+
+  it('keeps the named table untouched when a view replaces a rootless node target', () => {
+    const RootHolderPlugin = definePlugin('tablePasteRootHolder', {
+      schema: {
+        element: {
+          type: 'rootHolder',
+          contentRoots: {
+            body: {
+              content: schema.content.type('table', {
+                default: { type: 'table' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          blockContent: true,
+          void: 'block',
+        },
+      },
+    });
+    const model = createEditor({
+      plugins: [BaseTablePlugin, RootHolderPlugin],
+      initialValue: {
+        children: [
+          { type: 'paragraph', children: [{ text: 'main' }] },
+          {
+            type: 'rootHolder',
+            childRoots: { body: 'body' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: {
+          body: [
+            {
+              type: 'table',
+              children: [
+                {
+                  type: 'tableRow',
+                  children: ['a', 'b'].map((text) => ({
+                    type: 'tableCell',
+                    children: [{ type: 'paragraph', children: [{ text }] }],
+                  })),
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    const view = createEditorView(model, { root: 'body' });
+    const before = model.read.value();
+    const paragraph = { type: 'paragraph', children: [{ text: 'Paste' }] };
+
+    expect(
+      view.update.slice.replace(ContentSlice.closed([paragraph]), {
+        at: SelectionApi.nodes([[0]]),
+      })
+    ).toBe(true);
+    expect(model.read.value()).toEqual({
+      ...before,
+      children: [paragraph, before.children[1]],
+    });
+    view.api.history.undo();
+    expect(model.read.value()).toEqual(before);
+  });
+
   it('publishes one history entry with stable undo and redo', () => {
     const editor = createTarget();
     const before = editor.read.value();

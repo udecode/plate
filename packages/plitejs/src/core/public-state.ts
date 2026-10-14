@@ -4069,6 +4069,28 @@ const materializeContentSliceRoots = (
   }
 };
 
+const discardReplacedNodeKeys = (
+  editor: Editor,
+  entries: readonly NodeEntry[]
+) => {
+  const snapshot = getTransactionSnapshot(editor);
+
+  if (!snapshot || entries.length === 0) return;
+  const currentIndex = getTransactionSnapshotIndex(
+    getEditorRuntimeOwner(editor),
+    snapshot,
+    getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
+  );
+
+  for (const [node, path] of entries) {
+    for (const [, relativePath] of NodeApi.nodes(node)) {
+      const nodeKey = currentIndex.keyAt([...path, ...relativePath]);
+
+      if (nodeKey) snapshot.discardedNodeKeys.add(nodeKey);
+    }
+  }
+};
+
 const fitSliceIntoActiveDraft = <V extends Value>(
   editor: Editor<V>,
   slice: import('../interfaces/editor').ContentSlice,
@@ -4079,6 +4101,15 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     rootsPrepared?: boolean;
   }>
 ) => {
+  const nodeSelection = SelectionApi.isNode(options?.at)
+    ? options.at
+    : undefined;
+  const locationOptions = options
+    ? {
+        ...options,
+        at: SelectionApi.isNode(options.at) ? undefined : options.at,
+      }
+    : undefined;
   const childrenRoot =
     internal?.childrenAt === undefined
       ? undefined
@@ -4087,22 +4118,27 @@ const fitSliceIntoActiveDraft = <V extends Value>(
         : getCurrentChildrenRoot(editor);
 
   if (internal?.childrenAt !== undefined && !childrenRoot) return false;
-  const runtimeRoot = childrenRoot ?? getNodeTargetRoot(editor, options?.at);
+  const runtimeRoot =
+    childrenRoot ??
+    (nodeSelection
+      ? (nodeSelection.root ?? MAIN_ROOT_KEY)
+      : getNodeTargetRoot(editor, locationOptions?.at));
   const preResolvedOptions = runtimeRoot
     ? undefined
-    : resolveNodeTargetOptions(editor, options);
+    : resolveNodeTargetOptions(editor, locationOptions);
 
   if (preResolvedOptions === null) return false;
   const root = runtimeRoot ?? getMutationRoot(editor, preResolvedOptions);
 
   return runWithMutationRoot(editor, root, () => {
     const resolvedOptions = runtimeRoot
-      ? resolveNodeTargetOptions(editor, options)
+      ? resolveNodeTargetOptions(editor, locationOptions)
       : preResolvedOptions;
 
     if (resolvedOptions === null) return false;
-    let localOptions =
-      resolvedOptions?.at === undefined
+    let localOptions = nodeSelection
+      ? { ...resolvedOptions, at: nodeSelection }
+      : resolvedOptions?.at === undefined
         ? resolvedOptions
         : {
             ...resolvedOptions,
@@ -4143,12 +4179,40 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     let at = getTransactionView(editor).resolveTarget({ at: localOptions?.at });
 
     if (!at) at = getDefaultInsertLocation(editor);
-    if (SelectionApi.isNode(at)) return false;
 
     let range: Range | undefined;
     let insertionBoundary: Readonly<{ from: number; to: number }> | undefined;
 
-    if (LocationApi.isRange(at)) {
+    if (SelectionApi.isNode(at)) {
+      const firstPath = at.paths[0];
+      const lastPath = getDefined(at.paths.at(-1));
+      if (
+        firstPath.length === 0 ||
+        at.paths.some(
+          (path, index) =>
+            !PathApi.equals(PathApi.parent(path), PathApi.parent(firstPath)) ||
+            path.at(-1) !== getDefined(firstPath.at(-1)) + index ||
+            !state.nodes.get(path)
+        )
+      ) {
+        return false;
+      }
+      if (
+        !localOptions?.voids &&
+        getEditorRuntime(editor).void({ at: firstPath })
+      ) {
+        return false;
+      }
+      range = {
+        anchor: state.points.start(firstPath) ?? { path: firstPath, offset: 0 },
+        focus: state.points.end(lastPath) ?? { path: lastPath, offset: 0 },
+      };
+      const document = DocumentIndex.fromValue(getChildren(editor));
+      insertionBoundary = {
+        from: document.nodeRange(firstPath).from,
+        to: document.nodeRange(lastPath).to,
+      };
+    } else if (LocationApi.isRange(at)) {
       range = at;
     } else {
       const point = LocationApi.isPoint(at)
@@ -4195,7 +4259,11 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     if (!insertionBoundary && !localOptions?.hanging) {
       range = state.ranges.unhang(range, { voids: localOptions?.voids });
     }
-    if (limitedSlice.content.length === 0 && RangeApi.isCollapsed(range)) {
+    if (
+      limitedSlice.content.length === 0 &&
+      !insertionBoundary &&
+      RangeApi.isCollapsed(range)
+    ) {
       return false;
     }
     if (
@@ -4206,7 +4274,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
       return false;
     }
 
-    if (childrenAt && root !== MAIN_ROOT_KEY) {
+    if ((childrenAt || SelectionApi.isNode(at)) && root !== MAIN_ROOT_KEY) {
       range = {
         anchor: { ...range.anchor, root },
         focus: { ...range.focus, root },
@@ -4218,10 +4286,14 @@ const fitSliceIntoActiveDraft = <V extends Value>(
     const fitBounds = parentBounds
       ? { from: parentBounds.from + 1, to: parentBounds.to - 1 }
       : insertionBoundary;
+    const replacedEntries = SelectionApi.isNode(at)
+      ? at.paths.map((path) => getDefined(state.nodes.get(path)))
+      : [];
 
     const fit = () =>
       getEditorSchema(editor).fit(limitedSlice, {
         apply: (step, selection) => {
+          discardReplacedNodeKeys(editor, replacedEntries);
           applyDocumentChangeStep(
             editor,
             step,
@@ -6604,18 +6676,7 @@ const getUpdateView = <
         return false;
       }
 
-      const snapshot = getTransactionSnapshot(editor);
-      if (snapshot) {
-        const currentIndex = getTransactionSnapshotIndex(
-          getEditorRuntimeOwner(editor),
-          snapshot,
-          getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY
-        );
-        for (const [, relativePath] of NodeApi.nodes(replacedNode)) {
-          const nodeKey = currentIndex.keyAt([...at, ...relativePath]);
-          if (nodeKey) snapshot.discardedNodeKeys.add(nodeKey);
-        }
-      }
+      discardReplacedNodeKeys(editor, [[replacedNode, at]]);
 
       const newSelection =
         options.select && replacements.length > 0

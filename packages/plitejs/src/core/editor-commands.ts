@@ -43,10 +43,13 @@ import type {
 import { getDefined } from '../internal/get-defined';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
+import { getActiveCommandEditor } from './command-registry';
 import { ContentSlice as ContentSliceValue } from './content-slice';
+import { editorReads } from './editor-reads';
 import { getCanPlaceAtPathFromApi } from './editor-schema';
 import { limitTextInsert } from './insert-limit';
 import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
+import { executeEditorRead } from './read-registry';
 import { areEditorJsonValuesEqual } from './value-codec';
 
 type CommandStateView = EditorStateView<Value, any>;
@@ -931,7 +934,15 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   replaceSlice: defineCommand<ReplaceSliceCommand>('slice.replace', {
     locate: locateOptionsAt,
-    build: ({ input, state }) => {
+    build: ({ input: sourceInput, state }) => {
+      const editor = getActiveCommandEditor();
+      const input = executeEditorRead(
+        editor,
+        editorReads.slice.landing,
+        sourceInput,
+        (prepared) => prepared,
+        editor
+      );
       const nodeSelection = getCurrentNodeSelection(state);
 
       if (input.options?.at === undefined && nodeSelection) {

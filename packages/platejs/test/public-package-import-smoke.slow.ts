@@ -512,6 +512,7 @@ const internalBridgeRuntimeExportExpectations = {
     'leaf',
     'levels',
     'liftNodes',
+    'limitSliceInsert',
     'mapInternalDocumentChangePosition',
     'mapInternalDocumentChangePoint',
     'mapDetachedSelectionThroughChange',

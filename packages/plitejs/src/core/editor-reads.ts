@@ -5,6 +5,7 @@ import type {
 } from '../interfaces/editor';
 import type { Node, NodeEntry } from '../interfaces/node';
 import type { NodeSelection } from '../interfaces/selection';
+import type { ReplaceSliceCommand } from './editor-commands';
 import { defineRead } from './read-definition';
 import type {
   TransferEdge,
@@ -45,6 +46,13 @@ export const editorReads = Object.freeze({
     side: defineRead<TransferSideInput, TransferWrap | null>('transfer.side'),
   }),
   slice: Object.freeze({
+    /**
+     * Prepare the default replacement after command handlers delegate. Reads the
+     * current command draft; raw transaction replacement and fitting bypass it.
+     */
+    landing: defineRead<ReplaceSliceCommand, ReplaceSliceCommand>(
+      'plite:slice.landing'
+    ),
     export: defineRead<
       Readonly<{
         options: EditorSliceReadOptions;

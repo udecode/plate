@@ -3,9 +3,11 @@ import {
   ContentSlice,
   createEditor as createProductEditor,
   definePlugin,
+  editorCommands,
   ElementApi,
   NodeApi,
   PLUGINS,
+  property,
   schema,
   SelectionApi,
   transferVeto,
@@ -14,6 +16,7 @@ import {
   type Value,
 } from '../../../core';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
+import { ElementIdPlugin } from '../../../lib/plugins/element-id/ElementIdPlugin';
 import { MarkdownPlugin } from '../../../markdown';
 import { nameListIds } from '../../../markdown/lib/__tests__/nameListIds';
 import { dispatchPlateShortcut } from '../../../react/utils/dispatchPlateShortcut.internal';
@@ -23,10 +26,14 @@ import {
 } from '../../basic-nodes/lib/BaseBlockPlugins';
 import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
 import { BaseBoldPlugin } from '../../basic-nodes/lib/BaseMarkPlugins';
+import { BaseTextAlignPlugin } from '../../basic-styles/lib/BaseStylePlugins';
+import { BaseCalloutPlugin } from '../../callout/lib/BaseCalloutPlugin';
 import { BaseCodeBlockPlugin } from '../../code-block';
 import { BaseIndentPlugin } from '../../indent';
+import { BaseColumnPlugin } from '../../layout/lib/BaseColumnPlugin';
 import { BaseAudioPlugin, BaseImagePlugin } from '../../media';
 import { BaseTablePlugin } from '../../table';
+import listPasteCases from './__tests__/list-paste.fixture.json';
 import {
   BaseListPlugin,
   BULLETED_LIST_STYLES,
@@ -2577,33 +2584,1600 @@ describe('BaseListPlugin list identity', () => {
   });
 
   describe('paste', () => {
-    const cell = (...children: unknown[]) => ({
+    it.each(listPasteCases)(
+      'comparison: $id [EDIT-CLIPBOARD-LIST-LANDING-001]',
+      ({ at, before, copied, target }) => {
+        const editor = createEditor({
+          initialValue: before.map(({ text, n: _number, ...props }) => ({
+            ...props,
+            children: [{ text }],
+            type: 'paragraph',
+          })),
+          selection: {
+            kind: 'text',
+            anchor: { offset: at[1], path: [at[0], 0] },
+            focus: { offset: at[1], path: [at[0], 0] },
+          },
+        });
+
+        editor.update.slice.replace(
+          ContentSlice.fromJSON({
+            content: copied.map(({ text, ...props }) => ({
+              ...props,
+              children: [{ text }],
+              type: 'paragraph',
+            })),
+            openStart: 1,
+            openEnd: 1,
+          })
+        );
+
+        expect(
+          editor.read.children().map((node, index) => ({
+            checked: node.checked,
+            indent: node.indent ?? 0,
+            listStyle: node.listStyle,
+            listType: node.listType,
+            n: editor.read.list.ordinal([index]) ?? null,
+            text: NodeApi.string(node),
+          }))
+        ).toEqual(
+          target.map((row) => ({
+            checked: undefined,
+            listStyle: undefined,
+            listType: undefined,
+            ...row,
+          }))
+        );
+      }
+    );
+
+    const cell = (...children: Value) => ({
       children: [
         { children: [{ children, type: 'tableCell' }], type: 'tableRow' },
       ],
       type: 'table',
     });
     const paste = (
-      initialValue: unknown[],
+      initialValue: Value,
       selection: CreateEditorOptions['selection'],
-      content: unknown[]
+      content: unknown[],
+      open = 0,
+      options: Pick<CreateEditorOptions, 'maxLength' | 'schema'> = {}
     ) => {
       const editor = createProductEditor({
         initialValue,
         plugins: [
           BaseHeadingPlugin,
+          BaseBlockquotePlugin,
+          BaseCalloutPlugin,
+          BaseColumnPlugin,
+          BaseIndentPlugin,
           BaseTablePlugin,
           BaseListPlugin.configure({
             targetPlugins: [BaseParagraphPlugin, BaseHeadingPlugin],
           }),
         ],
         selection,
-      } as never);
+        ...options,
+      });
 
-      editor.update.slice.replace(ContentSlice.closed(content as never));
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({ content, openStart: open, openEnd: open })
+      );
 
       return editor;
     };
+
+    const roman = (text: string) =>
+      listItem(text, { listId: 'roman', listStyle: 'upper-roman' });
+    const atCaret = (offset: number) => ({
+      anchor: { offset, path: [2, 0] },
+      focus: { offset, path: [2, 0] },
+      kind: 'text' as const,
+    });
+
+    for (const open of [0, 1]) {
+      for (const offset of [0, 3, 7]) {
+        it.each([
+          { name: 'siblings', depths: [3, 3], landed: [1, 1], numbers: [3, 4] },
+          {
+            name: 'parent and children',
+            depths: [2, 3, 3, 2],
+            landed: [1, 2, 2, 1],
+            numbers: [3, 1, 2, 4],
+          },
+          {
+            name: 'deep to shallow',
+            depths: [3, 3, 2, 2, 1],
+            landed: [1, 1, 1, 1, 1],
+            numbers: [3, 4, 5, 6, 7],
+          },
+        ])(
+          `lands $name at caret ${offset} with open edges ${open}`,
+          ({ depths, landed, numbers }) => {
+            const editor = paste(
+              [roman('Roman 1'), roman('Roman 2'), roman('Roman 3')],
+              atCaret(offset),
+              depths.map((indent, index) =>
+                listItem(String(index), { indent, listId: 'copy' })
+              ),
+              open
+            );
+            const nodes = editor.read.children().slice(2);
+
+            expect({
+              depths: nodes.map((node) => node.indent),
+              numbers: numbersOf(editor).slice(2),
+              texts: nodes.map(NodeApi.string),
+            }).toEqual({
+              depths: landed,
+              numbers,
+              texts: depths.map(
+                (_, index) =>
+                  `${index === 0 ? 'Roman 3'.slice(0, offset) : ''}${index}${index === depths.length - 1 ? 'Roman 3'.slice(offset) : ''}`
+              ),
+            });
+          }
+        );
+      }
+    }
+
+    it('keeps the later copied parent for a descending then ascending forest', () => {
+      const editor = paste(
+        [roman('Roman 1'), roman('Roman 2'), roman('Roman 3')],
+        atCaret(7),
+        [3, 2, 3].map((indent, index) => listItem(String(index), { indent })),
+        1
+      );
+
+      expect(
+        editor.read
+          .children()
+          .slice(2)
+          .map((node) => node.indent)
+      ).toEqual([1, 1, 2]);
+    });
+
+    it('keeps the copied gap between a parent and its child', () => {
+      const editor = paste(
+        [roman('Roman 1'), roman('Roman 2'), roman('Roman 3')],
+        atCaret(7),
+        [2, 4].map((indent, index) => listItem(String(index), { indent })),
+        1
+      );
+
+      expect(
+        editor.read
+          .children()
+          .slice(2)
+          .map((node) => node.indent)
+      ).toEqual([1, 3]);
+    });
+
+    it('keeps mixed numbered and bulleted items in one copied list', () => {
+      const editor = paste(
+        [roman('Roman 1'), roman('Roman 2'), roman('Roman 3')],
+        atCaret(7),
+        [
+          listItem('One', { indent: 3, listId: 'copy' }),
+          listItem('Bullet', {
+            indent: 3,
+            listId: 'copy',
+            listType: ListType.Bulleted,
+          }),
+          listItem('Two', { indent: 3, listId: 'copy' }),
+        ],
+        1
+      );
+
+      expect(numbersOf(editor)).toEqual([1, 2, 3, null, 4]);
+    });
+
+    it('ends copied ancestry at an indented paragraph without changing its indent', () => {
+      const editor = paste(
+        [roman('Roman 1'), roman('Roman 2'), roman('Roman 3')],
+        atCaret(7),
+        [
+          listItem('Parent', { indent: 2 }),
+          { ...note('Note'), indent: 4 },
+          listItem('A', { indent: 3 }),
+          listItem('B', { indent: 3 }),
+        ],
+        1
+      );
+
+      expect(
+        editor.read
+          .children()
+          .slice(2)
+          .map((node) => node.indent)
+      ).toEqual([1, 4, 1, 1]);
+    });
+
+    it('leaves indented paragraphs alone', () => {
+      const editor = paste(
+        [roman('Roman 1'), roman('Roman 2'), roman('Roman 3')],
+        atCaret(7),
+        [
+          { ...note('A'), indent: 4 },
+          { ...note('B'), indent: 5 },
+        ],
+        1
+      );
+
+      expect(
+        editor.read
+          .children()
+          .slice(2)
+          .map((node) => node.indent)
+      ).toEqual([1, 5]);
+    });
+
+    it('joins only the first of two copied lists', () => {
+      const editor = paste(
+        [roman('Roman 1'), roman('Roman 2'), roman('Roman 3')],
+        atCaret(7),
+        [
+          listItem('A', { listId: 'one', listStyle: 'upper-roman' }),
+          listItem('B', { listId: 'one', listStyle: 'upper-roman' }),
+          note('Note'),
+          listItem('C', { listId: 'two' }),
+          listItem('D', { listId: 'two' }),
+        ],
+        1
+      );
+
+      expect(numbersOf(editor)).toEqual([1, 2, 3, 4, null, 1, 2]);
+    });
+
+    it.each([
+      { order: 'list first', nested: false },
+      { order: 'code first', nested: false },
+      { order: 'list first', nested: true },
+      { order: 'code first', nested: true },
+    ])(
+      'keeps copied code and paragraph items with $order, nested=$nested',
+      ({ order, nested }) => {
+        const list = BaseListPlugin.configure({
+          targetPlugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+        });
+        const initial = nested
+          ? [{ type: 'blockquote', children: [note('')] }]
+          : [note('')];
+        const editor = createProductEditor({
+          plugins: [
+            BaseBlockquotePlugin,
+            BaseIndentPlugin.configure({
+              targetPlugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+            }),
+            ...(order === 'list first'
+              ? [list, BaseCodeBlockPlugin]
+              : [BaseCodeBlockPlugin, list]),
+          ],
+          initialValue: initial,
+        });
+
+        expect(
+          editor.update.fragment.replace(
+            [{ ...listItem('Head'), type: 'codeBlock' }, listItem('Tail')],
+            { at: { path: nested ? [0, 0, 0] : [0, 0], offset: 0 } }
+          )
+        ).toBe(true);
+        const blocks = editor.read.nodes.children(nested ? [0] : []);
+        expect(
+          blocks.map((node) => ({
+            type: node.type,
+            text: NodeApi.string(node),
+            listType: node.listType,
+            indent: node.indent,
+          }))
+        ).toEqual([
+          { type: 'codeBlock', text: 'Head', listType: 'numbered', indent: 1 },
+          { type: 'paragraph', text: 'Tail', listType: 'numbered', indent: 1 },
+        ]);
+        expect(blocks[1].listId).toBe(blocks[0].listId);
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(initial);
+      }
+    );
+
+    it.each([false, true])(
+      'keeps tasks copied through one open quote into an empty heading, afterList=%s',
+      (afterList) => {
+        const initial = [
+          ...(afterList ? [task('Previous')] : []),
+          emptyHeading(),
+        ];
+        const index = afterList ? 1 : 0;
+        const editor = paste(
+          initial,
+          caretAt([index, 0]),
+          [
+            {
+              type: 'blockquote',
+              children: [task('A'), task('B', false)],
+            },
+          ],
+          2
+        );
+
+        expect(editor.read.children().slice(index)).toMatchObject([
+          { ...task('A'), type: 'paragraph' },
+          { ...task('B', false), type: 'paragraph' },
+        ]);
+        if (afterList) {
+          expect(editor.read.children()[index].listId).toBe(
+            editor.read.children()[0].listId
+          );
+        }
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(initial);
+      }
+    );
+
+    it('continues numbering when a quote-wrapped list lands on the empty line below it', () => {
+      const editor = paste(
+        [roman('One'), roman('Two'), note('')],
+        atCaret(0),
+        [
+          {
+            type: 'blockquote',
+            children: [
+              listItem('A', { indent: 3 }),
+              listItem('B', { indent: 3 }),
+            ],
+          },
+        ],
+        2
+      );
+
+      expect(numbersOf(editor)).toEqual([1, 2, 3, 4]);
+      expect(editor.read.children().slice(2)).toMatchObject([
+        {
+          indent: 1,
+          listId: 'roman',
+          listStyle: 'upper-roman',
+          children: [{ text: 'A' }],
+        },
+        {
+          indent: 1,
+          listId: 'roman',
+          listStyle: 'upper-roman',
+          children: [{ text: 'B' }],
+        },
+      ]);
+    });
+
+    it('lands copied siblings through their open quote wrapper', () => {
+      const editor = paste(
+        [roman('Roman 1'), roman('Roman 2'), roman('Roman 3')],
+        atCaret(7),
+        [
+          {
+            children: [
+              listItem('A', { indent: 3 }),
+              listItem('B', { indent: 3 }),
+            ],
+            type: 'blockquote',
+          },
+        ],
+        2
+      );
+
+      expect(
+        editor.read
+          .children()
+          .map((node) => ({ text: NodeApi.string(node), indent: node.indent }))
+      ).toEqual([
+        { text: 'Roman 1', indent: 1 },
+        { text: 'Roman 2', indent: 1 },
+        { text: 'Roman 3A', indent: 1 },
+        { text: 'B', indent: 1 },
+      ]);
+    });
+
+    const caretAt = (path: number[], offset = 0) => ({
+      anchor: { offset, path },
+      focus: { offset, path },
+      kind: 'text' as const,
+    });
+    const task = (text: string, checked = true) =>
+      listItem(text, { checked, listType: ListType.Task });
+    const emptyHeading = () => ({ ...note(''), level: 1, type: 'heading' });
+
+    it('preserves copy-permitted marks when the first item replaces a heading', () => {
+      const EphemeralMark = definePlugin('ephemeral', {
+        schema: {
+          mark: {
+            property: property.boolean(),
+            copy: 'preserve',
+            typeChange: 'drop',
+          },
+        },
+      });
+      const before = [emptyHeading()];
+      const copied = ['A', 'B'].map((text) => ({
+        ...listItem(text),
+        children: [{ text, ephemeral: true }],
+      }));
+      const editor = createProductEditor({
+        plugins: [
+          BaseHeadingPlugin,
+          BaseIndentPlugin,
+          BaseListPlugin.configure({
+            targetPlugins: [BaseParagraphPlugin, BaseHeadingPlugin],
+          }),
+          EphemeralMark,
+        ],
+        initialValue: before,
+        selection: caretAt([0, 0]),
+      });
+
+      expect(
+        editor.update.slice.replace(
+          ContentSlice.fromJSON({
+            content: copied,
+            openStart: 1,
+            openEnd: 1,
+          })
+        )
+      ).toBe(true);
+      expect(
+        editor.read.children().map((node) => ({
+          type: node.type,
+          children: node.children,
+        }))
+      ).toEqual(
+        copied.map((node) => ({
+          type: node.type,
+          children: node.children,
+        }))
+      );
+      editor.api.history.undo();
+      expect(editor.read.children()).toEqual(before);
+    });
+
+    it('keeps both surviving empty tasks after the length limit discards their head', () => {
+      const before = [note('X'), emptyHeading()];
+      const editor = paste(
+        before,
+        caretAt([1, 0]),
+        [
+          task('A'),
+          { ...task(''), checked: false },
+          { ...task(''), checked: true },
+        ],
+        1,
+        { maxLength: 1 }
+      );
+
+      expect(
+        editor.read
+          .children()
+          .slice(1)
+          .map((node) => ({
+            type: node.type,
+            listType: node.listType,
+            checked: node.checked,
+          }))
+      ).toEqual([
+        { type: 'paragraph', listType: 'task', checked: false },
+        { type: 'paragraph', listType: 'task', checked: true },
+      ]);
+      editor.api.history.undo();
+      expect(editor.read.children()).toEqual(before);
+    });
+
+    it('adopts the copied type at the destination chosen by a later paste handler', () => {
+      const RetargetPaste = definePlugin('retargetPaste', {
+        commands: ({ around }) => [
+          around(editorCommands.replaceSlice, ({ input, next }) =>
+            next({
+              ...input,
+              options: { at: { path: [1, 0], offset: 0 } },
+            })
+          ),
+        ],
+      });
+      const before = [emptyHeading(), emptyHeading()];
+      const editor = createProductEditor({
+        plugins: [
+          BaseHeadingPlugin,
+          BaseIndentPlugin,
+          BaseListPlugin.configure({
+            targetPlugins: [BaseParagraphPlugin, BaseHeadingPlugin],
+          }),
+          RetargetPaste,
+        ],
+        initialValue: before,
+        selection: caretAt([0, 0]),
+      });
+
+      expect(editor.update.fragment.replace([task('A'), task('B')])).toBe(true);
+      expect(editor.read.children()).toMatchObject([
+        before[0],
+        task('A'),
+        task('B'),
+      ]);
+      editor.api.history.undo();
+      expect(editor.read.children()).toEqual(before);
+    });
+
+    it.each([
+      { name: 'paragraph', value: [note('')], path: [0, 0], parent: [] },
+      {
+        name: 'numbered item',
+        value: [listItem('One'), listItem('')],
+        path: [1, 0],
+        parent: [],
+      },
+      {
+        name: 'quote paragraph',
+        value: [{ children: [note('')], type: 'blockquote' }],
+        path: [0, 0, 0],
+        parent: [0],
+      },
+      {
+        name: 'table cell',
+        value: [cell(note(''))],
+        path: [0, 0, 0, 0, 0],
+        parent: [0, 0, 0],
+      },
+      { name: 'heading', value: [emptyHeading()], path: [0, 0], parent: [] },
+      {
+        name: 'quote heading',
+        value: [{ children: [emptyHeading()], type: 'blockquote' }],
+        path: [0, 0, 0],
+        parent: [0],
+      },
+      {
+        name: 'column',
+        value: [
+          {
+            type: 'columnGroup',
+            children: [
+              { type: 'column', width: '50%', children: [note('')] },
+              { type: 'column', width: '50%', children: [note('Side')] },
+            ],
+          },
+        ],
+        path: [0, 0, 0, 0],
+        parent: [0, 0],
+      },
+    ])(
+      'keeps tasks in an empty $name and undoes the entire paste [EDIT-CLIPBOARD-LIST-LANDING-001]',
+      ({ value, path, parent }) => {
+        const editor = paste(
+          value,
+          caretAt(path),
+          [task('T1'), task('T2', false)],
+          1
+        );
+        const items = editor.read.nodes.children(parent).slice(-2);
+
+        expect(items).toMatchObject([
+          {
+            checked: true,
+            children: [{ text: 'T1' }],
+            indent: 1,
+            listType: ListType.Task,
+            type: 'paragraph',
+          },
+          {
+            checked: false,
+            children: [{ text: 'T2' }],
+            indent: 1,
+            listType: ListType.Task,
+            type: 'paragraph',
+          },
+        ]);
+        expect(items[0]).not.toHaveProperty('level');
+        expect(editor.read.selection()?.anchor).toEqual({
+          path: [...parent, path.at(-2)! + 1, 0],
+          offset: 2,
+        });
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(value);
+      }
+    );
+
+    it.each([0, 1])(
+      'lets the empty item restart win with open edges %s',
+      (open) => {
+        const value = [listItem('One'), listItem('', { listRestart: 5 })];
+        const editor = paste(
+          value,
+          caretAt([1, 0]),
+          [listItem('A', { listRestart: 7 }), listItem('B')],
+          open
+        );
+
+        expect(numbersOf(editor)).toEqual([1, 5, 6]);
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(value);
+      }
+    );
+
+    it('preserves the empty line id when the copied head has no id', () => {
+      const editor = createProductEditor({
+        plugins: [ElementIdPlugin, BaseTextAlignPlugin, BaseListPlugin],
+        initialValue: [{ ...note(''), id: 'line', textAlign: 'center' }],
+        selection: caretAt([0, 0]),
+      });
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [task('A'), task('B')],
+          openStart: 1,
+          openEnd: 1,
+        })
+      );
+
+      expect(editor.read.children()[0]).toMatchObject({
+        id: 'line',
+        textAlign: 'center',
+        listType: ListType.Task,
+      });
+    });
+
+    it.each(['slice', 'fragment'] as const)(
+      'keeps the first task type at an explicit point through %s replacement',
+      (entry) => {
+        const value = [note('Elsewhere'), note('')];
+        const editor = createEditor({
+          initialValue: value,
+          selection: caretAt([0, 0]),
+        });
+        const content = [task('A'), task('B')];
+        const options = { at: { path: [1, 0], offset: 0 } };
+
+        if (entry === 'slice') {
+          editor.update.slice.replace(
+            ContentSlice.fromJSON({ content, openStart: 1, openEnd: 1 }),
+            options
+          );
+        } else editor.update.fragment.replace(content, options);
+        expect(editor.read.children()).toMatchObject([
+          note('Elsewhere'),
+          { ...task('A'), indent: 1 },
+          { ...task('B'), indent: 1 },
+        ]);
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(value);
+      }
+    );
+
+    it.each(['slice', 'fragment'] as const)(
+      'keeps a copied restart through %s replacement',
+      (entry) => {
+        const value = [listItem('One'), listItem('')];
+        const editor = createEditor({
+          initialValue: value,
+          selection: caretAt([1, 0]),
+        });
+        const content = [listItem('A', { listRestart: 7 }), listItem('B')];
+
+        if (entry === 'slice') {
+          editor.update.slice.replace(
+            ContentSlice.fromJSON({ content, openStart: 1, openEnd: 1 })
+          );
+        } else editor.update.fragment.replace(content);
+        expect(numbersOf(editor)).toEqual([1, 7, 8]);
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(value);
+      }
+    );
+
+    it('uses an explicit caret independently of the current node selection', () => {
+      const editor = createEditor({
+        initialValue: [note('')],
+        selection: SelectionApi.nodes([[0]]),
+      });
+
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [task('A'), task('B')],
+          openStart: 1,
+          openEnd: 1,
+        }),
+        { at: caretAt([0, 0]) }
+      );
+
+      expect(editor.read.children()).toMatchObject([
+        { ...task('A'), indent: 1 },
+        { ...task('B'), indent: 1 },
+      ]);
+    });
+
+    it.each([
+      {
+        name: 'plain line',
+        value: [listItem('One'), note('')],
+        path: [1, 0],
+        parent: [],
+        style: undefined,
+      },
+      {
+        name: 'indented plain line',
+        value: [listItem('One'), { ...note(''), indent: 2 }],
+        path: [1, 0],
+        parent: [],
+        style: undefined,
+      },
+      {
+        name: 'Roman list',
+        value: [roman('One'), note('')],
+        path: [1, 0],
+        parent: [],
+        style: 'upper-roman',
+      },
+      {
+        name: 'quote line',
+        value: [{ children: [listItem('One'), note('')], type: 'blockquote' }],
+        path: [0, 1, 0],
+        parent: [0],
+        style: undefined,
+      },
+    ])(
+      'continues the list above an empty $name',
+      ({ value, path, parent, style }) => {
+        const editor = paste(
+          value,
+          caretAt(path),
+          [listItem('A', { indent: 3 }), listItem('B', { indent: 3 })],
+          1
+        );
+        const items = editor.read.nodes.children(parent);
+
+        expect(
+          items.map((node, i) => ({
+            depth: node.indent,
+            style: node.listStyle,
+            n: editor.read.list.ordinal([...parent, i]),
+          }))
+        ).toEqual([
+          { depth: 1, style, n: 1 },
+          { depth: 1, style, n: 2 },
+          { depth: 1, style, n: 3 },
+        ]);
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(value);
+      }
+    );
+
+    it.each([undefined, 4])(
+      'lands items at level one in an occupied plain paragraph with indent %s',
+      (indent) => {
+        const value = [
+          { ...note('Hello'), ...(indent === undefined ? {} : { indent }) },
+        ];
+        const editor = paste(
+          value,
+          caretAt([0, 0], 5),
+          [listItem('A', { indent: 3 }), listItem('B', { indent: 3 })],
+          1
+        );
+
+        expect(editor.read.children()).toMatchObject([
+          { ...value[0], children: [{ text: 'HelloA' }] },
+          { indent: 1, children: [{ text: 'B' }] },
+        ]);
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(value);
+      }
+    );
+
+    it('does not join the list above when the copy starts with a plain paragraph', () => {
+      const value = [listItem('One'), note('')];
+      const editor = paste(
+        value,
+        caretAt([1, 0]),
+        [note('Intro'), listItem('A'), listItem('B')],
+        1
+      );
+
+      expect(numbersOf(editor)).toEqual([1, null, 1, 2]);
+      editor.api.history.undo();
+      expect(editor.read.children()).toEqual(value);
+    });
+
+    it.each(['fragment', 'HTML'] as const)(
+      'continues after a list through %s input',
+      (entry) => {
+        const value = [listItem('One'), note('')];
+        const editor = createEditor({
+          initialValue: value,
+          selection: caretAt([1, 0]),
+        });
+
+        if (entry === 'fragment') {
+          editor.update.fragment.replace([listItem('A')]);
+        } else {
+          const data = new DataTransfer();
+          data.setData('text/html', '<ol><li>A</li><li>B</li></ol>');
+          editor.api.dom.clipboard.insertData(data);
+        }
+        expect(numbersOf(editor)).toEqual(
+          entry === 'fragment' ? [1, 2] : [1, 2, 3]
+        );
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(value);
+      }
+    );
+
+    it.each([
+      { name: 'heading', line: emptyHeading() },
+      { name: 'list item', line: listItem('', { listRestart: 5 }) },
+      { name: 'callout', line: { ...note(''), icon: '⚠️', type: 'callout' } },
+    ])('keeps an empty $name when pasting plain lines', ({ line }) => {
+      const editor = paste([line], caretAt([0, 0]), [note('A'), note('B')], 1);
+
+      expect(editor.read.children()[0]).toEqual({
+        ...line,
+        children: [{ text: 'A' }],
+      });
+    });
+
+    it('keeps the empty line type for one open list item', () => {
+      const editor = paste([note('')], caretAt([0, 0]), [task('A')], 1);
+
+      expect(editor.read.children()).toEqual([note('A')]);
+    });
+
+    it('keeps an empty callout when pasting two list items', () => {
+      const line = { ...note(''), icon: '⚠️', type: 'callout' };
+      const editor = paste([line], caretAt([0, 0]), [task('A'), task('B')], 1);
+
+      expect(editor.read.children()[0]).toEqual({
+        ...line,
+        children: [{ text: 'A' }],
+      });
+    });
+
+    it('keeps selected empty blocks under the length limit on the ordinary paste path', () => {
+      const editor = paste(
+        [note('')],
+        SelectionApi.nodes([[0]]),
+        [task('AA'), task('B')],
+        1,
+        { maxLength: 1 }
+      );
+
+      expect(editor.read.children()).toEqual([note('A')]);
+      expect(editor.read.selection()?.anchor).toEqual({
+        path: [0, 0],
+        offset: 1,
+      });
+    });
+
+    it('keeps the task type and valid caret under the length limit', () => {
+      const editor = paste(
+        [note('')],
+        caretAt([0, 0]),
+        [task('AA'), task('B')],
+        1,
+        { maxLength: 1 }
+      );
+
+      expect(editor.read.children()).toMatchObject([
+        { ...task('A'), indent: 1 },
+      ]);
+      expect(editor.read.selection()?.anchor).toEqual({
+        path: [0, 0],
+        offset: 1,
+      });
+      editor.api.history.undo();
+      expect(editor.read.children()).toEqual([note('')]);
+    });
+
+    it('does not adopt a discarded head when the length limit leaves only empty content', () => {
+      const value = [note('X'), note('')];
+      const editor = paste(
+        value,
+        caretAt([1, 0]),
+        [task('A'), { ...task(''), checked: false }],
+        1,
+        { maxLength: 1 }
+      );
+
+      expect(editor.read.children()).toEqual(value);
+    });
+
+    it('copies a closed list item with its own content root into an empty top-level paragraph', () => {
+      const RootedItem = definePlugin('rootedListItem', {
+        schema: {
+          element: schema.element.textBlock({
+            contentRoots: {
+              body: {
+                content: schema.content.type('paragraph', {
+                  default: { type: 'paragraph' },
+                  min: 1,
+                }),
+                ownership: 'exclusive',
+              },
+            },
+          }),
+        },
+      });
+      const editor = createProductEditor({
+        plugins: [
+          RootedItem,
+          BaseIndentPlugin.configure({
+            targetPlugins: [BaseParagraphPlugin, RootedItem],
+          }),
+          BaseListPlugin.configure({
+            targetPlugins: [BaseParagraphPlugin, RootedItem],
+          }),
+        ],
+        initialValue: {
+          children: [
+            {
+              type: 'rootedListItem',
+              children: [{ text: 'Source' }],
+              indent: 1,
+              listType: 'numbered',
+              childRoots: { body: 'caption' },
+            },
+            note(''),
+          ],
+          roots: { caption: [note('Caption')] },
+        },
+        selection: caretAt([1, 0]),
+      });
+      const slice = editor.read.slice.get({ at: SelectionApi.nodes([[0]]) });
+
+      expect(editor.update.slice.replace(slice)).toBe(true);
+      expect(editor.read.root('caption:copy')).toEqual([note('Caption')]);
+      expect(editor.read.children()[0].childRoots).toEqual({ body: 'caption' });
+      expect(editor.read.children()[1]).toMatchObject({
+        type: 'rootedListItem',
+        childRoots: { body: 'caption:copy' },
+      });
+    });
+
+    it.each([
+      {
+        name: 'direct',
+        before: [note('')],
+        content: [
+          listItem('Head', {
+            type: 'ownedText',
+            childRoots: { body: 'copied' },
+            indent: 3,
+            listId: 'source',
+          }),
+          listItem('Tail', { indent: 3, listId: 'source' }),
+        ],
+        maxLength: undefined,
+        texts: ['Head', 'Tail'],
+        ordinals: [1, 2],
+      },
+      {
+        name: 'truncated',
+        before: [note('X'), note('')],
+        content: [
+          listItem('A', { indent: 3, listId: 'source' }),
+          listItem('', {
+            type: 'ownedText',
+            childRoots: { body: 'copied' },
+            indent: 3,
+            listId: 'source',
+          }),
+        ],
+        maxLength: 1,
+        texts: ['X', ''],
+        ordinals: [undefined, 1],
+      },
+      {
+        name: 'after-list',
+        before: [listItem('One', { listId: 'target' }), note('')],
+        content: [
+          listItem('Head', {
+            type: 'ownedText',
+            childRoots: { body: 'copied' },
+            indent: 3,
+            listId: 'source',
+          }),
+          listItem('Tail', { indent: 3, listId: 'source' }),
+        ],
+        maxLength: undefined,
+        texts: ['One', 'Head', 'Tail'],
+        ordinals: [1, 2, 3],
+      },
+    ])(
+      'imports a closed list slice with an exclusive content root ($name)',
+      ({ before, content, maxLength, texts, ordinals }) => {
+        const targetIndex = before.length - 1;
+        const Owned = definePlugin('ownedText', {
+          schema: {
+            element: schema.element.textBlock({
+              object: true,
+              contentRoots: {
+                body: {
+                  content: schema.content.type('paragraph', {
+                    default: { type: 'paragraph' },
+                    min: 1,
+                  }),
+                  ownership: 'exclusive',
+                },
+              },
+            }),
+          },
+        });
+        const editor = createProductEditor({
+          plugins: [
+            Owned,
+            BaseListPlugin.configure({
+              targetPlugins: [BaseParagraphPlugin, Owned],
+            }),
+          ],
+          initialValue: before,
+          maxLength,
+          selection: caretAt([targetIndex, 0]),
+        });
+
+        expect(
+          editor.update.slice.replace(
+            ContentSlice.fromJSON({
+              content,
+              roots: { copied: [note('Payload')] },
+              openStart: 0,
+              openEnd: 0,
+            })
+          )
+        ).toBe(true);
+        expect(editor.read.children().map(NodeApi.string)).toEqual(texts);
+        expect(editor.read.children()[targetIndex]).toMatchObject({
+          type: 'ownedText',
+          listType: ListType.Numbered,
+          indent: 1,
+          childRoots: { body: 'copied:copy' },
+        });
+        expect(editor.read.root('copied:copy')).toEqual([note('Payload')]);
+        expect(
+          editor.read
+            .children()
+            .map((_, index) => editor.read.list.ordinal([index]))
+        ).toEqual(ordinals);
+        editor.api.history.undo();
+        expect(editor.read.value()).toEqual({ children: before });
+      }
+    );
+
+    it.each([false, true])(
+      'keeps an open object list head and target restart (%s)',
+      (restart) => {
+        const Owned = definePlugin('ownedText', {
+          schema: { element: schema.element.textBlock({ object: true }) },
+        });
+        const before = [restart ? listItem('', { listRestart: 5 }) : note('')];
+        const editor = createProductEditor({
+          plugins: [
+            Owned,
+            BaseListPlugin.configure({
+              targetPlugins: [BaseParagraphPlugin, Owned],
+            }),
+          ],
+          initialValue: before,
+          selection: caretAt([0, 0]),
+        });
+
+        expect(
+          editor.update.slice.replace(
+            ContentSlice.fromJSON({
+              content: [
+                listItem('Head', {
+                  type: 'ownedText',
+                  indent: 3,
+                  listId: 'source',
+                  ...(restart ? { listRestart: 7 } : {}),
+                }),
+                listItem('Tail', { indent: 3, listId: 'source' }),
+              ],
+              openStart: 1,
+              openEnd: 1,
+            })
+          )
+        ).toBe(true);
+        expect(editor.read.children()[0]).toMatchObject({
+          type: 'ownedText',
+          listType: ListType.Numbered,
+          indent: 1,
+        });
+        expect(editor.read.children().map(NodeApi.string)).toEqual([
+          'Head',
+          'Tail',
+        ]);
+        expect(numbersOf(editor)).toEqual(restart ? [5, 6] : [1, 2]);
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(before);
+      }
+    );
+
+    it.each([false, true])(
+      'pastes a copied rooted head only with the roots actually selected (%s) [EDIT-CLIPBOARD-LIST-LANDING-001]',
+      (wholeOwner) => {
+        const Owned = definePlugin('owned', {
+          schema: {
+            element: schema.element.textBlock({
+              object: true,
+              contentRoots: {
+                body: {
+                  content: schema.content.type('paragraph', {
+                    default: { type: 'paragraph' },
+                    min: 1,
+                  }),
+                  ownership: 'exclusive',
+                },
+              },
+            }),
+          },
+        });
+        const list = BaseListPlugin.configure({
+          targetPlugins: [BaseParagraphPlugin, Owned],
+        });
+        const source = createProductEditor({
+          plugins: [Owned, list],
+          initialValue: {
+            children: [
+              listItem('Caption', {
+                type: 'owned',
+                childRoots: { body: 'body' },
+                listId: 'source',
+              }),
+              listItem('Tail', { listId: 'source' }),
+              note('After'),
+            ],
+            roots: { body: [note('Body')] },
+          },
+        });
+        const before = source.read.value();
+        const slice = source.read.slice.get({
+          at: wholeOwner
+            ? SelectionApi.nodes([[0], [1]])
+            : {
+                anchor: { path: [0, 0], offset: 1 },
+                focus: { path: [1, 0], offset: 4 },
+              },
+        });
+        const target = createProductEditor({
+          plugins: [Owned, list],
+          initialValue: [note('')],
+          selection: caretAt([0, 0]),
+        });
+
+        expect(target.update.slice.replace(slice)).toBe(true);
+        expect(target.read.children().map(NodeApi.string)).toEqual([
+          wholeOwner ? 'Caption' : 'aption',
+          'Tail',
+        ]);
+        expect(target.read.children()[0].type).toBe(
+          wholeOwner ? 'owned' : 'paragraph'
+        );
+        expect(Object.values(target.read.value().roots ?? {})).toEqual(
+          wholeOwner ? [[note('Body')]] : []
+        );
+        expect(source.read.value()).toEqual(before);
+      }
+    );
+
+    it('starts a fresh list when the whole object paste cannot fit beside the preceding item [EDIT-CLIPBOARD-LIST-LANDING-001]', () => {
+      const Image = definePlugin('image', {
+        schema: { element: schema.element.textBlock({ object: true }) },
+      });
+      const Limited = definePlugin('limited', {
+        schema: {
+          element: {
+            content: schema.content.types(['paragraph', 'image'], {
+              default: { type: 'paragraph' },
+              min: 1,
+              max: 2,
+            }),
+          },
+        },
+      });
+      const initial = [
+        {
+          type: 'limited',
+          children: [listItem('One', { listId: 'target' }), note('')],
+        },
+      ];
+      const editor = createProductEditor({
+        plugins: [
+          Image,
+          Limited,
+          BaseListPlugin.configure({
+            targetPlugins: [BaseParagraphPlugin, Image],
+          }),
+        ],
+        initialValue: initial,
+        selection: caretAt([0, 1, 0]),
+      });
+
+      expect(
+        editor.update.slice.replace(
+          ContentSlice.closed([
+            listItem('Head', { type: 'image', listId: 'source' }),
+            listItem('Tail', { listId: 'source' }),
+          ])
+        )
+      ).toBe(true);
+      const nodes = editor.read.children();
+      expect(nodes[0]).toEqual(initial[0]);
+      expect(nodes.slice(1).map(NodeApi.string)).toEqual(['Head', 'Tail']);
+      expect(nodes[1].listId).not.toBe('target');
+      expect(nodes[2].listId).toBe(nodes[1].listId);
+    });
+
+    it('keeps an object list head inside an empty quote', () => {
+      const Owned = definePlugin('ownedText', {
+        schema: { element: schema.element.textBlock({ object: true }) },
+      });
+      const before = [{ type: 'blockquote', children: [note('')] }];
+      const editor = createProductEditor({
+        plugins: [
+          Owned,
+          BaseBlockquotePlugin,
+          BaseListPlugin.configure({
+            targetPlugins: [BaseParagraphPlugin, Owned],
+          }),
+        ],
+        initialValue: before,
+        selection: caretAt([0, 0, 0]),
+      });
+
+      expect(
+        editor.update.slice.replace(
+          ContentSlice.fromJSON({
+            content: [
+              listItem('Head', {
+                type: 'ownedText',
+                indent: 3,
+                listId: 'source',
+              }),
+              listItem('Tail', { indent: 3, listId: 'source' }),
+            ],
+            openStart: 1,
+            openEnd: 1,
+          })
+        )
+      ).toBe(true);
+      expect(editor.read.children()[0].children).toEqual([
+        expect.objectContaining({
+          type: 'ownedText',
+          listType: 'numbered',
+          indent: 1,
+          children: [{ text: 'Head' }],
+        }),
+        expect.objectContaining({
+          type: 'paragraph',
+          listType: 'numbered',
+          indent: 1,
+          children: [{ text: 'Tail' }],
+        }),
+      ]);
+      expect(editor.read.selection()?.focus).toEqual({
+        path: [0, 1, 0],
+        offset: 4,
+      });
+      editor.api.history.undo();
+      expect(editor.read.children()).toEqual(before);
+    });
+
+    it.each(['paragraph', 'ownedText'] as const)(
+      'keeps the target restart on the surviving head after truncation (%s)',
+      (type) => {
+        const Owned = definePlugin('ownedText', {
+          schema: { element: schema.element.textBlock({ object: true }) },
+        });
+        const before = [
+          note('X'),
+          listItem('', { listId: 'target', listRestart: 5 }),
+        ];
+        const editor = createProductEditor({
+          plugins: [
+            Owned,
+            BaseListPlugin.configure({
+              targetPlugins: [BaseParagraphPlugin, Owned],
+            }),
+          ],
+          initialValue: before,
+          maxLength: 1,
+          selection: caretAt([1, 0]),
+        });
+
+        editor.update.slice.replace(
+          ContentSlice.fromJSON({
+            content: [
+              listItem('A', { indent: 3, listId: 'source' }),
+              listItem('', {
+                type,
+                indent: 3,
+                listId: 'source',
+                listRestart: 7,
+              }),
+            ],
+            openStart: type === 'paragraph' ? 0 : 1,
+            openEnd: type === 'paragraph' ? 0 : 1,
+          })
+        );
+        expect(editor.read.children()[1]).toMatchObject({
+          type,
+          listRestart: 5,
+        });
+        expect(editor.read.list.ordinal([1])).toBe(5);
+        expect(editor.read.selection()?.focus).toEqual({
+          path: [1, 0],
+          offset: 0,
+        });
+        if (type === 'ownedText') {
+          editor.api.history.undo();
+          expect(editor.read.children()).toEqual(before);
+        }
+      }
+    );
+
+    it('joins a surviving numbered object after the length limit discards a task head', () => {
+      const Owned = definePlugin('ownedText', {
+        schema: { element: schema.element.textBlock({ object: true }) },
+      });
+      const initial = [roman('1'), roman('2'), roman('')];
+      const editor = createProductEditor({
+        plugins: [
+          Owned,
+          BaseListPlugin.configure({
+            targetPlugins: [BaseParagraphPlugin, Owned],
+          }),
+        ],
+        initialValue: initial,
+        maxLength: 2,
+        selection: atCaret(0),
+      });
+
+      expect(
+        editor.update.slice.replace(
+          ContentSlice.closed([
+            { ...task('A'), indent: 3, listId: 'task-source' },
+            listItem('', {
+              type: 'ownedText',
+              indent: 3,
+              listId: 'object-source',
+            }),
+          ])
+        )
+      ).toBe(true);
+      expect(numbersOf(editor)).toEqual([1, 2, 3]);
+      expect(editor.read.children()[2]).toMatchObject({
+        type: 'ownedText',
+        indent: 1,
+        listId: 'roman',
+        listStyle: 'upper-roman',
+      });
+      editor.api.history.undo();
+      expect(editor.read.children()).toEqual(initial);
+    });
+
+    it('imports the surviving object root after truncation inside a quote', () => {
+      const Owned = definePlugin('ownedText', {
+        schema: {
+          element: schema.element.textBlock({
+            object: true,
+            contentRoots: {
+              body: {
+                content: schema.content.type('paragraph', {
+                  default: { type: 'paragraph' },
+                  min: 1,
+                }),
+                ownership: 'exclusive',
+              },
+            },
+          }),
+        },
+      });
+      const before = [note('X'), { type: 'blockquote', children: [note('')] }];
+      const editor = createProductEditor({
+        plugins: [
+          Owned,
+          BaseBlockquotePlugin,
+          BaseListPlugin.configure({
+            targetPlugins: [BaseParagraphPlugin, Owned],
+          }),
+        ],
+        initialValue: before,
+        maxLength: 1,
+        selection: caretAt([1, 0, 0]),
+      });
+
+      expect(
+        editor.update.slice.replace(
+          ContentSlice.fromJSON({
+            content: [
+              task('A'),
+              {
+                type: 'ownedText',
+                children: [{ text: '' }],
+                childRoots: { body: 'copied' },
+              },
+            ],
+            roots: { copied: [note('Payload')] },
+            openStart: 0,
+            openEnd: 0,
+          })
+        )
+      ).toBe(true);
+      expect(editor.read.children()[1].children[0]).toMatchObject({
+        type: 'ownedText',
+        childRoots: { body: 'copied:copy' },
+      });
+      expect(editor.read.root('copied:copy')).toEqual([note('Payload')]);
+      editor.api.history.undo();
+      expect(editor.read.value()).toEqual({ children: before });
+    });
+
+    it.each([
+      { name: 'an object-only', target: note(''), truncated: false },
+      { name: 'a truncated list', target: note(''), truncated: true },
+      {
+        name: 'a truncated list over explicit target starts',
+        target: listItem('', { listStart: 3, listRestart: 5 }),
+        truncated: true,
+      },
+    ])(
+      'inserts a horizontal rule after $name paste',
+      ({ target, truncated }) => {
+        const before = [note('X'), target];
+        const editor = createProductEditor({
+          plugins: [BaseHorizontalRulePlugin, BaseListPlugin],
+          initialValue: before,
+          maxLength: 1,
+          selection: caretAt([1, 0]),
+        });
+
+        expect(
+          editor.update.slice.replace(
+            ContentSlice.fromJSON({
+              content: [
+                ...(truncated ? [task('A')] : []),
+                {
+                  type: editor.plugin(BaseHorizontalRulePlugin).schema.type,
+                  children: [{ text: '' }],
+                },
+              ],
+              openStart: 0,
+              openEnd: 0,
+            })
+          )
+        ).toBe(true);
+        expect(editor.read.children()[1]).toEqual({
+          type: editor.plugin(BaseHorizontalRulePlugin).schema.type,
+          children: [{ text: '' }],
+        });
+        expect(editor.read.children().map(NodeApi.string)).toEqual(['X', '']);
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(before);
+      }
+    );
+
+    it('keeps a content root on the ordinary paste path', () => {
+      const RootHolder = definePlugin('pasteRootHolder', {
+        schema: {
+          element: {
+            blockContent: true,
+            void: 'block',
+            contentRoots: {
+              body: {
+                content: schema.content.type('paragraph', {
+                  default: { type: 'paragraph' },
+                  min: 1,
+                }),
+                ownership: 'exclusive',
+              },
+            },
+          },
+        },
+      });
+      const editor = createProductEditor({
+        plugins: [RootHolder, BaseListPlugin],
+        initialValue: {
+          children: [
+            {
+              type: 'pasteRootHolder',
+              childRoots: { body: 'note' },
+              children: [{ text: '' }],
+            },
+          ],
+          roots: { note: [note('')] },
+        },
+        selection: {
+          kind: 'text',
+          anchor: { root: 'note', path: [0, 0], offset: 0 },
+          focus: { root: 'note', path: [0, 0], offset: 0 },
+        },
+      });
+      editor.update.slice.replace(
+        ContentSlice.fromJSON({
+          content: [task('A'), task('B')],
+          openStart: 1,
+          openEnd: 1,
+        })
+      );
+
+      expect(editor.read.root('note')[0]).toEqual(note('A'));
+      expect(editor.read.children()[0].type).toBe('pasteRootHolder');
+    });
+
+    it('keeps paragraph-only root content when a pasted list starts with a heading', () => {
+      const editor = paste(
+        [note('')],
+        caretAt([0, 0]),
+        [{ ...listItem('A'), level: 2, type: 'heading' }, listItem('B')],
+        1,
+        { schema: { root: schema.content.type('paragraph', { min: 1 }) } }
+      );
+
+      expect(
+        editor.read.children().map((node) => ({
+          type: node.type,
+          text: NodeApi.string(node),
+        }))
+      ).toEqual([
+        { type: 'paragraph', text: 'A' },
+        { type: 'paragraph', text: 'B' },
+      ]);
+      expect(numbersOf(editor)).toEqual([null, 1]);
+      expect(editor.read.children()[0].listType).toBeUndefined();
+      expect(editor.read.children()[1]).toMatchObject({
+        listType: ListType.Numbered,
+        indent: 1,
+      });
+    });
+
+    it('keeps the actual landing identity when schema rejects the list prefix', () => {
+      const editor = paste(
+        [roman('One'), emptyHeading(), note('Body')],
+        caretAt([1, 0]),
+        [listItem('A', { listId: 'copy' }), listItem('B', { listId: 'copy' })],
+        1,
+        {
+          schema: {
+            root: schema.content.prefix(
+              [
+                { element: BaseParagraphPlugin },
+                { element: BaseHeadingPlugin, properties: { level: 1 } },
+              ],
+              schema.content.group('block', {
+                default: { type: 'paragraph' },
+                min: 1,
+              })
+            ),
+          },
+        }
+      );
+
+      expect(numbersOf(editor)).toEqual([1, null, 1, null]);
+      expect(editor.read.children()[2].listId).not.toBe('roman');
+    });
+
+    it('respects a schema-required heading when a task paste cannot change its type', () => {
+      const value = [emptyHeading(), note('Body')];
+      const editor = paste(value, caretAt([0, 0]), [task('A'), task('B')], 1, {
+        schema: {
+          root: schema.content.prefix(
+            [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+            schema.content.group('block', {
+              default: { type: 'paragraph' },
+              min: 1,
+            })
+          ),
+        },
+      });
+
+      expect(editor.read.children()).toMatchObject([
+        { children: [{ text: 'A' }], level: 1, type: 'heading' },
+        { children: [{ text: 'B' }], listType: ListType.Task },
+        note('Body'),
+      ]);
+    });
 
     it('starts a fresh list for a numbered list pasted into a numbered heading item', () => {
       const heading = (text: string) => ({

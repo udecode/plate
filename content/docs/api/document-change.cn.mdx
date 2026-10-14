@@ -6,6 +6,26 @@ description: Plate 规范文档变更、序列化和重放。
 应用代码通过 `editor.update` 修改文档。序列化 `commit.changes`，并通过
 `tx.changes.apply` 导入规范 `DocumentChange`。
 
+## 适配外部内容
+
+解析后的内容用 `ContentSlice` 表示。单次更新会运行已安装的粘贴命令策略。
+
+```ts
+import { ContentSlice } from 'platejs';
+
+editor.update.slice.replace(ContentSlice.closed([
+  { type: 'paragraph', children: [{ text: 'Paste' }] },
+]));
+```
+
+`editor.read.slice.fit(slice, options)` 返回未发布的 `TransactionSpec` 或
+`false`。它与回调中的 `tx.slice.replace`、`tx.fragment.replace` 一样，
+直接进行规范适配，不运行命令处理器或目标准备读取。
+
+`options.at` 可以是 `SelectionApi.nodes(...)`，用于替换连续的兄弟节点。
+没有 root 的节点选区始终指向主文档。完整约束见
+[替换整个节点](/docs/api/editor-transforms#替换整个节点)。
+
 ## 规范变更
 
 ```ts

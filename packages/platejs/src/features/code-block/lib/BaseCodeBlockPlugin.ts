@@ -22,6 +22,7 @@ import {
   type Range,
   RangeApi,
   schema,
+  SelectionApi,
   txLocate,
   locateAt,
 } from '../../../core';
@@ -761,6 +762,8 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         const fragment = [...slice.content];
         const target = options?.at;
         const currentSelection = state.selection();
+
+        if (SelectionApi.isNode(target)) return next();
 
         if (target === undefined && !currentSelection) {
           return next();

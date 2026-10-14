@@ -13,7 +13,11 @@ import {
   type CompiledReadRegistry,
   getPluginRegistry,
 } from './plugin-registry';
-import { enterEditorRead, getEditorStateView } from './public-state';
+import {
+  enterEditorRead,
+  getEditorStateView,
+  withTransactionSpecDraftRead,
+} from './public-state';
 import { getReadRegistrationRuntime } from './read-definition';
 
 type RegisteredRead = Readonly<{
@@ -134,7 +138,11 @@ export const executeEditorRead = <
     const exitRead = enterEditorRead(owner);
 
     try {
-      return fnWithState(fn, getEditorStateView(stateSource ?? owner));
+      return stateSource
+        ? withTransactionSpecDraftRead(owner, () =>
+            stateSource.read((state) => fnWithState(fn, state))
+          )
+        : fnWithState(fn, getEditorStateView(owner));
     } finally {
       exitRead();
     }

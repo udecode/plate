@@ -14,7 +14,8 @@ Clipboard operation 横跨 browser event、Plate fragment、transaction 与 DOM�
 | 可复用 package 拥有 paste/drop policy | `domCommands.insertData` interceptor | `platejs/dom` |
 | Browser MIME representation 需要 decode/encode | `dataTransferFormats` 中的 `DataTransferFormat` | `platejs/dom` |
 | Framework 需要导入 `DataTransfer` | `editor.api.dom.clipboard.insertData(data)` | `platejs/dom` |
-| 已有 decoded structural content | `tx.slice.replace(slice)` | `platejs` |
+| 已解析的结构化内容需要运行粘贴策略 | `editor.update.slice.replace(slice)` | `platejs` |
+| 事务内直接适配内容 | `tx.slice.replace(slice)` | `platejs` |
 | Detached parent 需要 fit content | `state.slice.fitContent(slice, { parent, root? })` | `platejs` |
 
 Local event interception 使用 plugin `on` handler。所有安装该 plugin 的 React
@@ -26,7 +27,8 @@ surface 都应复用同一策略时，使用 DOM insert-data command。
 2. `EditorContent` handler 可以处理 event，或让 Plate 继续。
 3. `domCommands.insertData` interceptor 可以 claim、transform 或 delegate。
 4. Plate 依次尝试 internal fragment、注册的 DataTransfer format 与 plain text。
-5. Decoded slice 在实际 range 处 fit，并通过一次 canonical replacement 提交。
+5. 替换命令运行已安装的处理器，再通过 `editorReads.slice.landing` 准备最终切片和目标。
+6. 切片在目标处适配，并通过一次规范替换提交。
 
 ## Plugin clipboard policy
 
@@ -273,7 +275,7 @@ format。
 
 ## Fragment 与 slice replacement
 
-已知闭合 node 使用 `tx.fragment.replace`：
+在已有事务中直接适配已知闭合内容时，使用 `tx.fragment.replace`。它不运行粘贴命令策略。需要运行 List 等插件的粘贴策略时，使用单次 `editor.update.fragment.replace(...)`。
 
 ```ts
 editor.update((tx) => {

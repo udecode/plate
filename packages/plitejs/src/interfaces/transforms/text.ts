@@ -1,5 +1,6 @@
 import type { Editor, Location, Path, Value } from '../../index';
 import type { TextUnit } from '../../types/types';
+import type { NodeSelection } from '../selection';
 
 export interface TextDeleteOptions {
   /** Location to delete from. Defaults to the transaction target. */
@@ -17,8 +18,13 @@ export interface TextDeleteOptions {
 }
 
 export interface TextInsertFragmentOptions {
-  /** Location to insert at. Defaults to the transaction target. */
-  at?: Location;
+  /**
+   * Location to insert at, or exact contiguous sibling nodes to replace.
+   * Defaults to the transaction target when omitted.
+   * A node selection without a root addresses the primary document.
+   * Explicit disjoint node selections return false without replacing any member.
+   */
+  at?: Location | NodeSelection;
   /** Keep hanging range edges instead of un-hanging before insertion. */
   hanging?: boolean;
   /** Allow insertion into void elements. */

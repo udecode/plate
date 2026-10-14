@@ -378,10 +378,10 @@ type NodeSelectionTarget<TNode extends Descendant = Descendant> =
   | NodeTarget<TNode>;
 
 type WithNodeTarget<
-  TOptions extends { at?: Location },
+  TOptions extends { at?: Location | NodeSelection },
   TNode extends Descendant = Descendant,
 > = Omit<TOptions, 'at'> & {
-  at?: NodeTarget<TNode>;
+  at?: Extract<TOptions['at'], NodeSelection> | NodeTarget<TNode>;
 };
 
 type WithNodeTargetOrSpan<

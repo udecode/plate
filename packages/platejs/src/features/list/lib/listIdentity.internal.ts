@@ -45,10 +45,11 @@ const compatible = (
   listType: ListType,
   style: string | undefined,
   heading: boolean,
-  headingType: string | undefined
+  headingType: string | undefined,
+  matchStyle = true
 ) =>
   candidate.listType === listType &&
-  getElementListStyle(candidate) === style &&
+  (!matchStyle || getElementListStyle(candidate) === style) &&
   (headingType !== undefined && candidate.type === headingType) === heading;
 
 const walkSiblings = (
@@ -83,19 +84,22 @@ const walkSiblings = (
   return undefined;
 };
 
-const joinListIdentity = (
+type ListJoinTarget = Readonly<{
+  depth: number;
+  heading: boolean;
+  headingType: string | undefined;
+  listType: ListType;
+  matchStyle?: boolean;
+  style: string | undefined;
+}>;
+
+const findJoiningListItem = (
   state: NodeReader,
   path: Path,
-  next: Readonly<{
-    depth: number;
-    heading: boolean;
-    headingType: string | undefined;
-    listType: ListType;
-    style: string | undefined;
-  }>,
+  next: ListJoinTarget,
   walk: 'both' | 'previous' = 'both'
-): ListIdentity | undefined => {
-  const { depth, heading, headingType, listType, style } = next;
+): Element | undefined => {
+  const { depth, heading, headingType, listType, matchStyle, style } = next;
   let parent: Element | undefined;
   const sameDepth = (sibling: Element) => {
     const siblingDepth = getListIndent(sibling);
@@ -108,20 +112,20 @@ const joinListIdentity = (
     }
 
     return isListItem(sibling) &&
-      compatible(sibling, listType, style, heading, headingType)
+      compatible(sibling, listType, style, heading, headingType, matchStyle)
       ? sibling
       : ('stop' as const);
   };
 
   const previous = walkSiblings(state, path, 'previous', sameDepth);
 
-  if (previous) return identityOf(previous);
-  if (parent) return identityOf(parent);
+  if (previous) return previous;
+  if (parent) return parent;
   if (walk === 'previous') return undefined;
 
   const following = walkSiblings(state, path, 'next', sameDepth);
 
-  return following && identityOf(following);
+  return following;
 };
 
 const newListIdentity = (): ListIdentity => ({
@@ -132,8 +136,12 @@ const newListIdentity = (): ListIdentity => ({
 export const resolveListIdentity = (
   state: NodeReader,
   path: Path,
-  next: Parameters<typeof joinListIdentity>[2]
-): ListIdentity => joinListIdentity(state, path, next) ?? newListIdentity();
+  next: ListJoinTarget
+): ListIdentity => {
+  const joined = findJoiningListItem(state, path, next);
+
+  return joined ? identityOf(joined) : newListIdentity();
+};
 
 export const joinInsertedListItem = (
   tx: Pick<EditorUpdateTransaction, 'nodes'>,
@@ -171,11 +179,15 @@ export type ListLanding =
 /**
  * Give inserted content's lists their identities. Each source list gets one
  * fresh id across the content, tables included, and items without an id count
- * as one list. Only the first top-level list may join the landing's list, when
- * its kind, style and heading role match, or, on an empty line, the shallower
- * list item above it; every other list keeps its fresh id.
+ * as one list. Only the first top-level list may join the landing's list.
+ * Joining requires matching kind and heading role; `land` also requires
+ * matching style. On an empty line, a shallower list item above it can supply
+ * the identity without those matches. Every other list keeps its fresh id.
  *
- * `keep` leaves depths, starts and restarts as the content carries them. `land`
+ * `paste` lands the copied list forest at the target depth and joins without
+ * matching styles. Joined roots take the joined list's style only when their
+ * kinds match. The paste middleware gives the inserted head an empty target's
+ * own start and restart when present. `land`
  * also shifts top-level content by the landing's depth, and the joined head
  * takes a replaced landing's start and restart, or drops its own start to
  * continue the list of a kept block or an empty line.
@@ -189,7 +201,7 @@ export const landListContent = <N extends Descendant>(
     placement,
   }: Readonly<{
     headingType: string | undefined;
-    placement: 'keep' | 'land';
+    placement: 'land' | 'paste';
   }>
 ): ReadonlyArray<Element | N> => {
   const sourceOf = (node: Element) =>
@@ -213,25 +225,27 @@ export const landListContent = <N extends Descendant>(
 
   const into = landing.kind === 'line' ? landing.line[0] : landing.block;
   const land = placement === 'land';
+  const paste = placement === 'paste';
   const shift = land && into ? getListIndent(into) - 1 : 0;
 
   if (heads.size === 0 && shift === 0) return content;
 
   const joinedSource = first && sourceOf(first);
-  let joined: ListIdentity | undefined;
+  let anchor: Element | undefined;
 
   if (first) {
     const listType = first.listType as ListType;
     const style = getElementListStyle(first);
     const heading = headingType !== undefined && first.type === headingType;
 
-    joined =
+    anchor =
       landing.kind === 'line'
-        ? joinListIdentity(
+        ? findJoiningListItem(
             state,
             landing.line[1],
             {
-              depth: getListIndent(landing.line[0]),
+              depth: paste ? 1 : getListIndent(landing.line[0]),
+              matchStyle: !paste,
               heading,
               headingType,
               listType,
@@ -241,9 +255,39 @@ export const landListContent = <N extends Descendant>(
           )
         : into &&
             isListItem(into) &&
-            compatible(into, listType, style, heading, headingType)
-          ? identityOf(into)
+            compatible(into, listType, style, heading, headingType, !paste)
+          ? into
           : undefined;
+  }
+
+  const joined = anchor && identityOf(anchor);
+  const landingDepth = into && isListItem(into) ? getListIndent(into) : 1;
+  const depths = new Map<Element, number>();
+  const ancestors: Array<{ source: number; landed: number }> = [];
+
+  if (paste) {
+    for (const node of content) {
+      if (!ElementApi.isElement(node) || !isListItem(node)) {
+        ancestors.length = 0;
+        continue;
+      }
+
+      const source = getListIndent(node);
+
+      let parent = ancestors.at(-1);
+
+      while (parent && parent.source >= source) {
+        ancestors.pop();
+        parent = ancestors.at(-1);
+      }
+
+      const landed = parent
+        ? parent.landed + source - parent.source
+        : landingDepth;
+
+      depths.set(node, landed);
+      ancestors.push({ source, landed });
+    }
   }
 
   const fresh = new Map(
@@ -255,17 +299,21 @@ export const landListContent = <N extends Descendant>(
     const children = node.children.map((child) =>
       ElementApi.isElement(child) ? landElement(child, false) : child
     );
+    const pastedDepth = depths.get(node);
     const depth =
-      top &&
-      shift !== 0 &&
-      (isListItem(node) || typeof node.indent === 'number')
-        ? { indent: getListIndent(node) + shift }
-        : {};
+      pastedDepth !== undefined
+        ? { indent: pastedDepth }
+        : top &&
+            shift !== 0 &&
+            (isListItem(node) || typeof node.indent === 'number')
+          ? { indent: getListIndent(node) + shift }
+          : {};
 
     if (!isListItem(node)) return { ...node, ...depth, children };
 
     const {
       listId: _listId,
+      listStyle,
       listLevels,
       listRestart,
       listStart,
@@ -276,6 +324,14 @@ export const landListContent = <N extends Descendant>(
       joined && source === joinedSource
         ? joined
         : { listId: fresh.get(source), listLevels };
+    const style =
+      paste &&
+      joined &&
+      source === joinedSource &&
+      pastedDepth === landingDepth &&
+      node.listType === anchor?.listType
+        ? anchor?.listStyle
+        : listStyle;
     const starts =
       land && node === joinedHead
         ? landing.kind === 'replaced'
@@ -291,6 +347,7 @@ export const landListContent = <N extends Descendant>(
       ...depth,
       children,
       ...(listId === undefined ? {} : { listId }),
+      ...(style === undefined ? {} : { listStyle: style }),
       ...(levels === undefined ? {} : { listLevels: levels }),
       ...(starts.listRestart === undefined
         ? {}

@@ -1,5 +1,7 @@
 import {
+  ContentSlice,
   createEditor,
+  SelectionApi,
   type DocumentChange,
   type EditorCommit,
   type EditorMarksOf,
@@ -121,3 +123,19 @@ const withTransfer = createEditor({ initialValue, plugins: [transfer()] });
 // @ts-expect-error the transfer action needs the transfer() plugin
 headless.api.transfer.move({ to: { edge: 'after', key: nodeKey } });
 withTransfer.api.transfer.move({ to: { edge: 'after', key: nodeKey } });
+
+const replacementSlice = ContentSlice.closed<CustomValue>([
+  { type: 'paragraph', children: [{ text: 'Paste' }] },
+]);
+const replacementTarget = SelectionApi.nodes([[0]]);
+editor.update.slice.replace(replacementSlice, { at: replacementTarget });
+editor.update.fragment.replace(replacementSlice.content, {
+  at: replacementTarget,
+});
+editor.read.slice.fit(replacementSlice, { at: replacementTarget });
+editor.update((tx) => {
+  tx.slice.replace(replacementSlice, { at: replacementTarget });
+  tx.fragment.replace(replacementSlice.content, { at: replacementTarget });
+  // @ts-expect-error Whole-node replacement does not widen text insertion.
+  tx.text.insert('text', { at: replacementTarget });
+});
