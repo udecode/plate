@@ -1844,6 +1844,7 @@
         "typecheck:partition:root",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-styles",
+        "typecheck:partition:standard-code-block",
         "typecheck:partition:standard-link",
         "typecheck:partition:standard-list",
         "typecheck:partition:static",
@@ -2071,7 +2072,10 @@
         "plitejs#typecheck:partition:authored",
         "typecheck:partition:authored",
         "typecheck:partition:core",
-        "typecheck:partition:details"
+        "typecheck:partition:details",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-link",
+        "typecheck:partition:table"
       ],
       "inputs": [
         "src/features/details/**",
@@ -2501,6 +2505,7 @@
         "typecheck:partition:core",
         "typecheck:partition:media",
         "typecheck:partition:proxies",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-styles",
         "typecheck:partition:upload"
       ],
@@ -2577,9 +2582,12 @@
       "dependsOn": [
         "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:markdown",
+        "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-nodes-react",
         "typecheck:partition:standard-link",
         "typecheck:partition:static",
@@ -2842,8 +2850,8 @@
         "plitejs#typecheck:partition:authored",
         "typecheck:partition:callout",
         "typecheck:partition:core",
-        "typecheck:partition:markdown",
         "typecheck:partition:layout",
+        "typecheck:partition:markdown",
         "typecheck:partition:media",
         "typecheck:partition:react-core",
         "typecheck:partition:standard-basic-nodes",
@@ -4021,7 +4029,11 @@
     },
     "typecheck:partition:docx-internal": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:authored", "typecheck:partition:core"],
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "typecheck:partition:authored",
+        "typecheck:partition:core"
+      ],
       "inputs": [
         "src/docx/internal/**",
         "!src/**/*.spec.*",
