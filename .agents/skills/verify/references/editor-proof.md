@@ -143,11 +143,13 @@ When using the in-app Browser:
   behavior claims need Browser Playwright state checks or route Playwright
   integration tests;
 - if Browser typing fails with a missing virtual clipboard, stop retrying
-  Browser typing in that packet; keep Browser for visual/console proof and use
-  route Playwright integration tests for interaction behavior;
+  Browser typing in that packet and drive that input in the owner's Chrome
+  through Claude in Chrome; a route Playwright test stays the replayable proof,
+  never the [hand drive](./hand-drive.md);
 - if a tab is stuck on an error page or Browser prints a huge encoded failure
-  document, retry once from a fresh in-app Browser tab, catch per-route errors,
-  and truncate recorded error text before falling back to Playwright screenshots;
+  document, retry once from a fresh in-app Browser tab, catch per-route errors
+  and truncate recorded error text, then switch to the owner's Chrome; Playwright
+  screenshots never stand in for the hand drive;
 ## Scenario Generator
 
 For a broad sweep or a defect that crosses several states, derive a small

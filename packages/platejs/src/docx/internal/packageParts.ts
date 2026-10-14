@@ -1,3 +1,5 @@
+import { parseDocxXml } from './domParser';
+
 export type DocxRelationship = Readonly<{
   external: boolean;
   id: string;
@@ -11,16 +13,6 @@ export type DocxContentTypeIndex = Readonly<{
   document: Document;
   overrides: ReadonlyMap<string, string>;
 }>;
-
-export const parseXml = (source: string) => {
-  const document = new DOMParser().parseFromString(source, 'application/xml');
-
-  if (document.querySelector('parsererror')) {
-    throw new Error('DOCX package contains malformed XML.');
-  }
-
-  return document;
-};
 
 export const decodeXml = (source: Uint8Array) =>
   new TextDecoder().decode(source);
@@ -76,7 +68,7 @@ export const readRelationships = (
   const source = entries.get(relationshipPartFor(owner));
 
   if (!source) return Object.freeze([]);
-  const document = parseXml(decodeXml(source));
+  const document = parseDocxXml(decodeXml(source));
 
   return Object.freeze(
     elements(document)
@@ -98,7 +90,7 @@ export const readRelationships = (
 };
 
 export const readContentTypes = (source: Uint8Array): DocxContentTypeIndex => {
-  const document = parseXml(decodeXml(source));
+  const document = parseDocxXml(decodeXml(source));
   const defaults = new Map<string, string>();
   const overrides = new Map<string, string>();
 

@@ -1644,7 +1644,7 @@ describe('compilePlateHtmlFormat', () => {
     ).not.toContain('text/html');
     expect(reports).toHaveLength(1);
     expect(reports[0]).toMatchObject({
-      key: 'plate:htmlParagraphCase11:html:encode',
+      key: 'htmlParagraphCase11:html:encode',
       phase: 'encode',
     });
     expect((reports[0] as any).cause.message).toContain(

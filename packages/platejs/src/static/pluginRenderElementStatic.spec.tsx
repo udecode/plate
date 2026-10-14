@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
+import { createEditor } from '../core';
 import { BaseHeadingPlugin } from '../features/basic-nodes/lib';
 import {
   BaseParagraphPlugin,
   type RenderElementProps,
   definePlugin,
 } from '../lib';
-import { createStaticEditor } from './editor/withStatic';
 import { pluginRenderElementStatic } from './pluginRenderElementStatic.internal';
 
 describe('pluginRenderElementStatic', () => {
@@ -19,7 +19,7 @@ describe('pluginRenderElementStatic', () => {
         return <Tag {...attributes}>{children}</Tag>;
       },
     });
-    const editor = createStaticEditor({ plugins: [HeadingPlugin] });
+    const editor = createEditor({ plugins: [HeadingPlugin] });
     const markup = ReactDOMServer.renderToStaticMarkup(
       pluginRenderElementStatic(
         editor,
@@ -70,7 +70,7 @@ describe('pluginRenderElementStatic', () => {
         ),
       },
     });
-    const editor = createStaticEditor({
+    const editor = createEditor({
       plugins: [ParagraphPlugin, AbovePlugin, BelowPlugin, RootPlugin],
     });
     const markup = ReactDOMServer.renderToStaticMarkup(

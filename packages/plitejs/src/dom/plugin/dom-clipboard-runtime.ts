@@ -55,6 +55,7 @@ const EDITOR_TO_CLIPBOARD_FORMAT_KEY = new WeakMap<object, string>();
 /** Semantic commands that own DOM clipboard ingress. */
 export const domCommands = Object.freeze({
   insertData: defineCommand<DataTransfer>('dom.insertData', {
+    locate: false,
     build: ({ input, state }) => {
       const editor = getActiveCommandEditor();
 

@@ -42,7 +42,7 @@ export interface LocationInterface {
   /**
    * Differentiate between a normal `Location` and a `Span`.
    */
-  isSpan: (at: Location | Span) => at is Span;
+  isSpan: (at: unknown) => at is Span;
 }
 
 export const LocationApi: Readonly<LocationInterface> = Object.freeze({
@@ -66,7 +66,7 @@ export const LocationApi: Readonly<LocationInterface> = Object.freeze({
     return 'anchor' in at;
   },
 
-  isSpan(at: Location | Span): at is Span {
+  isSpan(at: unknown): at is Span {
     return Array.isArray(at) && Array.isArray(at[0]);
   },
 });

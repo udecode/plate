@@ -14,7 +14,7 @@ import {
 describe('plitejs/yjs document id contract', () => {
   it('reads raw empty roots unless a schema supplies their required content', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
+    const root = doc.get('document', Y.XmlElement);
 
     assert.deepEqual(readPliteValueFromYjs(root), []);
     assert.deepEqual(readPliteValueFromYjs(root, []), []);
@@ -28,7 +28,7 @@ describe('plitejs/yjs document id contract', () => {
 
   it('resolves empty paths to the Yjs root', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
+    const root = doc.get('document', Y.XmlElement);
     const node = createYjsNode({
       children: [{ text: 'plain' }],
     } as unknown as Descendant);
@@ -46,14 +46,14 @@ describe('plitejs/yjs document id contract', () => {
 
   it('uses the fallback element type consistently for typeless elements', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
+    const root = doc.get('document', Y.XmlElement);
     const node = createYjsNode({
       children: [{ text: 'plain' }],
     } as unknown as Descendant);
 
     root.insert(0, [node]);
 
-    assert.equal(node.getAttribute('plite:type'), 'element');
+    assert.equal(node.getAttribute('type'), 'element');
 
     assert.deepEqual(readPliteValueFromYjs(root), [
       { children: [{ text: 'plain' }], type: 'element' },
@@ -69,7 +69,7 @@ describe('plitejs/yjs document id contract', () => {
 
     const firstDoc = new Y.Doc();
     firstDoc.clientID = 101;
-    const firstRoot = firstDoc.get('plitejs', Y.XmlElement);
+    const firstRoot = firstDoc.get('document', Y.XmlElement);
     const firstText = new Y.XmlText();
 
     firstRoot.insert(0, [firstText]);
@@ -77,7 +77,7 @@ describe('plitejs/yjs document id contract', () => {
 
     const secondDoc = new Y.Doc();
     secondDoc.clientID = 202;
-    const secondRoot = secondDoc.get('plitejs', Y.XmlElement);
+    const secondRoot = secondDoc.get('document', Y.XmlElement);
     const secondParagraph = new Y.XmlElement('paragraph');
     const secondWrapper = new Y.XmlElement('block-quote');
 
@@ -85,8 +85,8 @@ describe('plitejs/yjs document id contract', () => {
     second.setVirtualYjsMove(secondParagraph, secondWrapper);
 
     assert.notEqual(
-      firstText.getAttribute('plite:yjs-id'),
-      secondParagraph.getAttribute('plite:yjs-id')
+      firstText.getAttribute('yjs:id'),
+      secondParagraph.getAttribute('yjs:id')
     );
   });
 });

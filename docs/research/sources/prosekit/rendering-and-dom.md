@@ -6,7 +6,7 @@
 
 ## Several editors and teardown
 
-- **Teardown.** `prosekit/prosekit@3fbfe7906c3448328e80c1c1333647d08e50907e:registry/test/unmount.test.ts` (L24, L79) pins that removing one of several mounted editors leaves the others intact, and that an editor whose inline menu was shown unmounts cleanly. Plite covers the lifecycle in `packages/plitejs/test/react/editable-dom-runtime-contract.test.tsx` ('destroy releases listeners, anchors, disposables, and scheduler work') and in `dom-integrity-observer-contract.test.ts` beside it ('disconnects old roots, remounts cleanly, and stops after destroy'), and Plate in `packages/platejs/src/react/editor/usePlateViewEditor.spec.tsx` (`docs/editor-test-harvester/prosekit/report.md:145`).
+- **Teardown.** `prosekit/prosekit@3fbfe7906c3448328e80c1c1333647d08e50907e:registry/test/unmount.test.ts` (L24, L79) pins that removing one of several mounted editors leaves the others intact, and that an editor whose inline menu was shown unmounts cleanly. Plite covers the lifecycle in `packages/plitejs/test/react/editable-dom-runtime-contract.test.tsx` ('destroy releases listeners, anchors, disposables, and scheduler work') and in `dom-integrity-observer-contract.test.ts` beside it ('disconnects old roots, remounts cleanly, and stops after destroy'). Plate covers it only in part. `packages/platejs/src/react/components/EditorRefEffect.spec.tsx` ('keeps a shared Plate store mounted until its last content unmounts') removes one of several mounted views of one editor and keeps the others mounted. No Plate test checks a surviving editor after another editor unmounts (`docs/editor-test-harvester/prosekit/report.md:145`).
 
 ## Framework node views
 

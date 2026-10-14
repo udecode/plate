@@ -31,7 +31,7 @@ import {
   useLayoutEffect,
 } from 'react';
 
-import { getPluginContributions } from '../../src/core/plugin';
+import { getPluginContributions } from '../../src/core/plugin-registry';
 import {
   EDITOR_TO_PENDING_ACTION,
   EDITOR_TO_PENDING_DIFFS,
@@ -53,12 +53,10 @@ import {
   useEditor,
   useRuntimeState,
 } from '../../src/react';
-import { usePliteRenderContext } from '../../src/react/components/plite';
-import { DecorationSourcesContext } from '../../src/react/decoration-context';
 import { getMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { didSyncTextPathToDOM } from '../../src/react/hooks/use-plite-node-ref';
 import {
-  PliteRuntimeProvider,
+  EditorRuntimeProvider,
   useMountedEditorRuntimeOwner,
 } from '../../src/react/hooks/use-plite-runtime';
 
@@ -82,27 +80,20 @@ const useTestEditor = <
   return Object.assign(editor, { editor });
 };
 
-const TestProvider = <
-  V extends Value,
-  const TPlugins extends readonly unknown[],
->({
+const TestProvider = ({
   children,
   runtime,
 }: {
   children: ReactNode;
-  runtime: ReturnType<typeof useTestEditor<V, TPlugins>>;
+  runtime: { editor: ReturnType<typeof useEditor<any, any>> };
 }) => {
   useMountedEditorRuntimeOwner('EditorRoot', runtime.editor);
 
   return (
-    <TestEditorContext
-      value={
-        runtime.editor as unknown as ReturnType<typeof useEditor<any, any>>
-      }
-    >
-      <PliteRuntimeProvider editor={runtime.editor}>
+    <TestEditorContext value={runtime.editor}>
+      <EditorRuntimeProvider editor={runtime.editor}>
         {children}
-      </PliteRuntimeProvider>
+      </EditorRuntimeProvider>
     </TestEditorContext>
   );
 };
@@ -597,7 +588,7 @@ describe('EditorRoot provider contract', () => {
       body = useEditorContext() as unknown as typeof editor;
       return null;
     };
-    const proposal = { intent: 'propose', projection: 'proposed' } as const;
+    const proposal = { intent: 'propose' } as const;
 
     render(
       <TestRoot authored={proposal} editor={editor}>
@@ -626,47 +617,12 @@ describe('EditorRoot provider contract', () => {
     expect(body.read.authored.view()).toEqual(proposal);
 
     act(() => {
-      owner.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+      owner.api.authored.setView({ preview: 'accepted' });
     });
 
     await waitFor(() =>
-      expect(body.read.authored.view()).toEqual({
-        intent: 'edit',
-        projection: 'accepted',
-      })
+      expect(body.read.authored.view()).toEqual({ preview: 'accepted' })
     );
-  });
-
-  test('retained render context restores its owner decoration sources', () => {
-    const editor = createEditor({ initialValue: [paragraph('body')] });
-    const source: DecorationSource<typeof editor> = {
-      id: 'owner-source',
-      read: () => [],
-    };
-    let restored: ReadonlyArray<DecorationSource<unknown>> | null = null;
-    const Restored = () => {
-      restored = useContext(DecorationSourcesContext);
-      return null;
-    };
-    // A retained fragment provides its own view without sources; content it
-    // hands back to the parent reads the parent's.
-    const Retained = () => {
-      const renderParent = usePliteRenderContext();
-
-      return (
-        <DecorationSourcesContext value={null}>
-          {renderParent(<Restored />)}
-        </DecorationSourcesContext>
-      );
-    };
-
-    render(
-      <TestRoot decorations={[source]} editor={editor}>
-        <Retained />
-      </TestRoot>
-    );
-
-    expect(restored).toEqual([source]);
   });
 
   test('Plite editor hosts multiple root-bound Editable surfaces', async () => {

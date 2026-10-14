@@ -48,6 +48,10 @@ const document = parseAuthoredDocument(json);
 ```
 
 HTML, Markdown, and DOCX do not hide an authored document in their output.
+A document from an editor with authored changes installed carries authored
+metadata even before any proposal. Every HTML, Markdown, plain-text and static
+HTML export of it throws a `TypeError` unless `projection` is `'accepted'` or
+`'proposed'`. A document without authored metadata needs no projection.
 
 ## Serialize plain text
 

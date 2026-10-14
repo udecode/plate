@@ -4,6 +4,7 @@ import {
   type EditorUpdatePolicyFor,
   type MoveUnit,
   NodeApi,
+  type Path,
   PathApi,
   type Point,
   PointApi,
@@ -13,7 +14,12 @@ import {
   SelectionApi,
 } from '../..';
 import { Hotkeys } from '../../dom';
-import type { DOMCoverageSession, DOMPhaseScheduler } from '../../dom/internal';
+import {
+  type DOMCoverageSession,
+  type DOMPhaseScheduler,
+  isMoveLineEnd,
+  isMoveLineStart,
+} from '../../dom/internal';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import {
@@ -42,6 +48,7 @@ import {
   getDocumentBoundaryKeyboardMove,
   isPlainVerticalDocumentBoundary,
 } from './input-controller';
+import { getLineBoundaryPoint } from './line-boundary';
 import type { EditableRepairRequest } from './mutation-controller';
 import {
   before as editorBefore,
@@ -426,6 +433,85 @@ const moveSelectionAndRespectBoundaries = ({
   }
 };
 
+// Apps own their copied caption UI and may hide child text in any state, so
+// whether it is drawn comes from the mounted DOM, not from its model text.
+const isObjectTextDrawn = (
+  editor: ReactRuntimeEditor,
+  ownerPath: Path,
+  textPath: Path
+) => {
+  const owner = getPathElement(editor, ownerPath);
+  const text = getPathElement(editor, textPath);
+  const view = text?.ownerDocument.defaultView;
+
+  if (!owner || !text || !view) return false;
+
+  const { visibility } = view.getComputedStyle(text);
+
+  if (visibility === 'hidden' || visibility === 'collapse') return false;
+
+  for (
+    let current: HTMLElement | null = text;
+    current;
+    current = current.parentElement
+  ) {
+    const { contentVisibility, display } = view.getComputedStyle(current);
+
+    if (display === 'none' || contentVisibility === 'hidden') return false;
+    if (current === owner) return true;
+  }
+
+  return false;
+};
+
+const getObjectReverseEntryTarget = (
+  editor: ReactRuntimeEditor,
+  point: Point,
+  axis: 'horizontal' | 'vertical'
+) => {
+  const owner = getSelectableOwnerAncestorNodeSelection(editor, point);
+
+  if (!owner || !getPathElement(editor, owner.path)) return null;
+
+  const caret = SelectionApi.text({ anchor: point, focus: point });
+
+  if (isObjectTextDrawn(editor, owner.path, point.path)) return caret;
+
+  // Empty child text keeps one backward stop (EDIT-CAPTION-NAV-003), because
+  // the stock caption shows once it holds the caret.
+  const keepsEmptyStop =
+    axis === 'horizontal' &&
+    getPathElement(editor, point.path) &&
+    editor.read((state) => {
+      const node = state.nodes.get(owner.path)?.[0];
+
+      return node ? NodeApi.string(node) === '' : false;
+    });
+
+  return keepsEmptyStop ? caret : owner.selection;
+};
+
+const getStepPastTarget = (editor: ReactRuntimeEditor, path: Path) => {
+  const after = editor.read((state) => state.points.after(path));
+
+  return after
+    ? (getSelectableOwnerAncestorNodeSelection(editor, after)?.selection ??
+        SelectionApi.text({ anchor: after, focus: after }))
+    : null;
+};
+
+const getObjectOwnerForwardTarget = (
+  editor: ReactRuntimeEditor,
+  path: Path
+) => {
+  const start = editor.read((state) => state.points.start(path));
+
+  return start && isObjectTextDrawn(editor, path, start.path)
+    ? SelectionApi.text({ anchor: start, focus: start })
+    : (getStepPastTarget(editor, path) ??
+        getSelectableOwnerNodeSelection(editor, path));
+};
+
 export const getSelectableOwnerVerticalNavigationTarget = ({
   editor,
   event,
@@ -461,17 +547,31 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
 
         return owner ? state.schema.isObject(owner) : false;
       });
-    const point = editor.read((state) =>
-      event.key === 'ArrowUp'
-        ? (state.points.before(firstPath) ?? state.points.start(firstPath))
-        : lastPath
-          ? entersObjectCaption
-            ? state.points.start(lastPath)
-            : (state.points.after(lastPath) ?? state.points.end(lastPath))
-          : null
-    );
 
-    return point ? SelectionApi.text({ anchor: point, focus: point }) : null;
+    if (entersObjectCaption && lastPath) {
+      return getObjectOwnerForwardTarget(editor, lastPath);
+    }
+
+    if (event.key === 'ArrowUp') {
+      const point = editor.read(
+        (state) =>
+          state.points.before(firstPath) ?? state.points.start(firstPath)
+      );
+
+      return point
+        ? (getObjectReverseEntryTarget(editor, point, 'vertical') ??
+            SelectionApi.text({ anchor: point, focus: point }))
+        : null;
+    }
+
+    if (!lastPath) return null;
+
+    const end = editor.read((state) => state.points.end(lastPath));
+
+    return (
+      getStepPastTarget(editor, lastPath) ??
+      (end ? SelectionApi.text({ anchor: end, focus: end }) : null)
+    );
   }
 
   if (!SelectionApi.isText(selection) || !RangeApi.isCollapsed(selection)) {
@@ -529,15 +629,12 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     }
 
     if (reverse) {
-      const captionEnd = editor.read((state) => {
-        const node = state.nodes.get(owner.path)?.[0];
+      const captionEnd = editor.read((state) => state.points.end(owner.path));
 
-        return node && NodeApi.string(node).length > 0
-          ? state.points.end(owner.path)
-          : null;
-      });
-
-      if (captionEnd) {
+      if (
+        captionEnd &&
+        isObjectTextDrawn(editor, owner.path, captionEnd.path)
+      ) {
         const captionHost = getPathElement(editor, captionEnd.path);
         const sourceRect = resolveUsableRangeRect(editor, {
           anchor: selection.focus,
@@ -611,20 +708,27 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
 
 const getHorizontalModelReverse = (
   editor: ReactRuntimeEditor,
-  event: Pick<KeyboardEvent<HTMLDivElement>, 'currentTarget' | 'key'>
+  event: Pick<KeyboardEvent<HTMLDivElement>, 'currentTarget' | 'key'>,
+  selection: Range | Selection
 ) => {
-  const directionHost = event.currentTarget?.closest<HTMLElement>('[dir]');
+  const directionNode = editor.read((state) =>
+    SelectionApi.isNode(selection)
+      ? state.nodes.get(selection.focusPath)?.[0]
+      : selection
+        ? state.nodes.block({ at: selection.focus, mode: 'lowest' })?.[0]
+        : undefined
+  );
   const directionTarget =
-    directionHost ?? event.currentTarget ?? editor.api.dom?.root();
-  const rootIsRTL =
-    directionHost?.dir === 'rtl' ||
-    (directionTarget
-      ? directionTarget.ownerDocument.defaultView?.getComputedStyle(
-          directionTarget
-        ).direction === 'rtl'
-      : false);
+    (directionNode && editor.api.dom?.resolveDOMNode(directionNode)) ??
+    event.currentTarget ??
+    editor.api.dom?.root();
+  const isRTL = directionTarget
+    ? directionTarget.ownerDocument.defaultView?.getComputedStyle(
+        directionTarget
+      ).direction === 'rtl'
+    : false;
 
-  return rootIsRTL ? event.key === 'ArrowRight' : event.key === 'ArrowLeft';
+  return isRTL ? event.key === 'ArrowRight' : event.key === 'ArrowLeft';
 };
 
 export const getSelectableOwnerHorizontalNavigationTarget = ({
@@ -665,7 +769,7 @@ export const getSelectableOwnerHorizontalNavigationTarget = ({
     if (insideText) return null;
   }
 
-  const reverse = getHorizontalModelReverse(editor, event);
+  const reverse = getHorizontalModelReverse(editor, event, selection);
 
   if (SelectionApi.isNode(selection)) {
     const path = selection.paths[0];
@@ -683,13 +787,16 @@ export const getSelectableOwnerHorizontalNavigationTarget = ({
       return null;
     }
 
-    const point = editor.read((state) =>
-      reverse ? state.points.before(path) : state.points.start(path)
-    );
+    if (!reverse) return getObjectOwnerForwardTarget(editor, path);
+
+    const point = editor.read((state) => state.points.before(path));
 
     if (!point) return null;
 
-    return SelectionApi.text({ anchor: point, focus: point });
+    return (
+      getObjectReverseEntryTarget(editor, point, 'horizontal') ??
+      SelectionApi.text({ anchor: point, focus: point })
+    );
   }
 
   if (!SelectionApi.isText(selection)) return null;
@@ -702,8 +809,18 @@ export const getSelectableOwnerHorizontalNavigationTarget = ({
       selection.focus
     );
 
-    return owner && PointApi.equals(selection.focus, owner.start)
-      ? owner.selection
+    if (owner) {
+      return PointApi.equals(selection.focus, owner.start)
+        ? owner.selection
+        : null;
+    }
+
+    const previous = editor.read((state) =>
+      state.points.before(selection.focus, { unit: 'character' })
+    );
+
+    return previous
+      ? getObjectReverseEntryTarget(editor, previous, 'horizontal')
       : null;
   }
 
@@ -913,6 +1030,40 @@ export const applyEditableCaretMovement = ({
     return caretMovementHandled();
   }
 
+  const lineBoundaryReverse = isMoveLineStart(nativeEvent)
+    ? true
+    : isMoveLineEnd(nativeEvent)
+      ? false
+      : null;
+
+  if (lineBoundaryReverse !== null) {
+    event.preventDefault();
+    moveSelectionAndRespectBoundaries({
+      coverage,
+      domPhaseScheduler,
+      editor,
+      move: () => {
+        dispatchCommand(editor, editorCommands.select, {
+          target: {
+            anchor: getLineBoundaryPoint(
+              editor,
+              selection.anchor,
+              lineBoundaryReverse
+            ),
+            focus: getLineBoundaryPoint(
+              editor,
+              selection.focus,
+              lineBoundaryReverse
+            ),
+          },
+        });
+      },
+      reverse: lineBoundaryReverse,
+      selection,
+    });
+    return caretMovementHandled();
+  }
+
   // COMPAT: Certain browsers don't handle the selection updates properly.
   // In Chrome, the selection isn't properly extended. In Firefox, the
   // selection isn't properly collapsed. (2017/10/17)
@@ -1049,8 +1200,8 @@ export const applyEditableCaretMovement = ({
   if (horizontal) {
     event.preventDefault();
     const reverse = horizontal.direction === 'left';
-    const modelReverse = getHorizontalModelReverse(editor, event);
-    const rootIsRTL = modelReverse !== reverse;
+    const modelReverse = getHorizontalModelReverse(editor, event, selection);
+    const isRTL = modelReverse !== reverse;
 
     moveSelectionAndRespectBoundaries({
       coverage,
@@ -1063,15 +1214,8 @@ export const applyEditableCaretMovement = ({
           horizontal.unit === 'character' &&
           RangeApi.isExpanded(selection)
         ) {
-          const root = editor.api.dom?.root();
-          const isRTL =
-            root?.ownerDocument.defaultView?.getComputedStyle(root)
-              .direction === 'rtl';
-          const useStart =
-            horizontal.direction === 'left' ? !isRTL : Boolean(isRTL);
-
           dispatchCommand(editor, editorCommands.select, {
-            target: useStart
+            target: modelReverse
               ? RangeApi.start(selection)
               : RangeApi.end(selection),
           });
@@ -1084,9 +1228,7 @@ export const applyEditableCaretMovement = ({
             mode: 'lowest',
           })?.[0];
 
-          return (
-            rootIsRTL || (block && hasVisualBidiText(NodeApi.string(block)))
-          );
+          return isRTL || (block && hasVisualBidiText(NodeApi.string(block)));
         });
 
         if (!usesVisualBidiOrder) {

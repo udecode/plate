@@ -448,17 +448,15 @@ const importProjectedDOMSelection = ({
 
   writeRuntimeSelection(
     editor,
-    projectedSelection.anchor.fragmentId
-      ? null
-      : SelectionApi.text(
-          {
-            anchor: projectedSelection.anchor.point,
-            focus: projectedSelection.anchor.point,
-          },
-          isPliteViewSelectionCollapsed(projectedSelection)
-            ? { affinity: projectedSelection.anchor.affinity }
-            : undefined
-        )
+    SelectionApi.text(
+      {
+        anchor: projectedSelection.anchor.point,
+        focus: projectedSelection.anchor.point,
+      },
+      isPliteViewSelectionCollapsed(projectedSelection)
+        ? { affinity: projectedSelection.anchor.affinity }
+        : undefined
+    )
   );
   writePliteViewSelection(editor, projectedSelection);
   setEditableModelSelectionPreference({

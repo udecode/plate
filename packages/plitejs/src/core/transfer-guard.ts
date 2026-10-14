@@ -6,7 +6,10 @@ import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 import { DocumentChange } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
-import { registerEditorDraftGuard } from './document-recorder';
+import {
+  type DraftGuardFrame,
+  registerEditorDraftGuard,
+} from './document-recorder';
 import { type JsonValue, TransferRefusalError } from './landing';
 import type { TransferDiagnostic } from './transfer-types';
 
@@ -126,10 +129,50 @@ export type DraftLanding = Readonly<{
   landed: Readonly<{ paths: readonly Path[] }> | Readonly<{ range: Range }>;
 }>;
 
+type DraftMap = Readonly<{
+  path: (path: Path) => Path | null;
+  point: (point: Point, association?: 'backward' | 'forward') => Point | null;
+}>;
+
 export const mapDraft = (
   draft: readonly Descendant[],
-  after: readonly Descendant[]
-) => {
+  after: readonly Descendant[],
+  frame?: Readonly<{
+    change: DocumentChange;
+    root: RootKey;
+    stored: readonly Descendant[];
+  }>
+): DraftMap => {
+  // A command frame wrote another document than the draft's, so the landing
+  // maps to the stored document and then through the frame's own change.
+  if (frame) {
+    const toStored = mapDraft(draft, frame.stored);
+    const stored = DocumentIndex.fromValue(frame.stored);
+    const next = DocumentIndex.fromValue(after);
+    const through = (position: number, association: 'backward' | 'forward') =>
+      frame.change.mapPosition(position, {
+        association,
+        ...(frame.root === 'main' ? {} : { root: frame.root }),
+      });
+
+    return {
+      path: (path) => {
+        const at = toStored.path(path);
+        const mapped = at && through(stored.nodeRange(at).from, 'forward');
+        const entry = mapped == null ? null : next.nodeStartingAt(mapped);
+
+        return entry ? [...entry.path] : null;
+      },
+      point: (point, association = 'backward') => {
+        const at = toStored.point(point, association);
+        const mapped = at && through(stored.positionAt(at), association);
+
+        return mapped == null
+          ? null
+          : next.pointAt(mapped, association === 'backward' ? -1 : 1);
+      },
+    };
+  }
   if (draft === after) {
     return {
       path: (path: Path): Path | null => path,
@@ -171,19 +214,23 @@ export const guardLanding = (
   editor: AnyEditor,
   copy: boolean,
   draft: { current: DraftLanding | null },
-  check: (landed: DraftLanding, after: JsonValue) => boolean,
+  check: (
+    landed: DraftLanding,
+    after: JsonValue,
+    frame?: DraftGuardFrame
+  ) => boolean,
   diagnostics: TransferDiagnostic[]
 ) =>
-  // The landing is checked as commands wrote it, before a recorder adds
-  // review marks, which are not a loss.
+  // Every plain draft checks the landing as commands and corrections wrote it,
+  // before a recorder adds review marks, which are not a loss. Corrections in
+  // a command frame run after the first recording, so a pass decides nothing.
   registerEditorDraftGuard(
     editor,
-    (written) => {
+    (written, frame) => {
       const landing = draft.current;
 
-      if (!landing) return;
+      if (!landing || check(landing, written, frame)) return;
       draft.current = null;
-      if (check(landing, written)) return;
       if (!copy) throw new TransferRefusalError('lossy');
       diagnostics.push({
         impact: 'lossy',

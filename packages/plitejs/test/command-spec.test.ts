@@ -21,6 +21,7 @@ import {
   type Range,
   SelectionApi,
   schema,
+  target as propertyTarget,
   type TransactionSpec,
   type Value,
 } from 'plitejs';
@@ -1024,6 +1025,30 @@ describe('pure command transaction specs', () => {
       anchor: { offset: 11, path: [0, 0] },
       focus: { offset: 11, path: [0, 0] },
     });
+  });
+
+  it('removes an empty container on Backspace at the start of the block after it', () => {
+    const editor = createEditor({
+      plugins: [
+        defineTestSchema('test.empty-container-boundary', {
+          box: { content: schema.content.type('paragraph', { min: 0 }) },
+        }),
+      ],
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      }),
+      initialValue: [
+        { type: 'box', children: [] },
+        { type: 'paragraph', children: [{ text: 'abc' }] },
+      ],
+    });
+
+    editor.update.text.deleteBackward();
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'paragraph', children: [{ text: 'abc' }] },
+    ]);
   });
 
   it('removes an empty block after a block void before deleting the void', () => {
@@ -2177,6 +2202,526 @@ describe('pure command transaction specs', () => {
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     });
+  });
+
+  it('types over whole blocks of a named root in that root', () => {
+    const blocks = schema.content.types(['heading', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    });
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:test.header-replace', {
+          elements: {
+            heading: { content: schema.content.text() },
+            paragraph: { content: schema.content.text() },
+          },
+          id: 'test.header-replace',
+          root: blocks,
+          roots: { header: blocks },
+          unknown: 'reject',
+          version: 1,
+        }),
+      ],
+      initialValue: {
+        children: [
+          { type: 'paragraph', children: [{ text: 'ab' }] },
+          { type: 'paragraph', children: [{ text: 'ef' }] },
+          { type: 'paragraph', children: [{ text: 'tail' }] },
+        ],
+        roots: {
+          header: [
+            { type: 'heading', children: [{ text: 'abcd' }] },
+            { type: 'heading', children: [{ text: 'efgh' }] },
+            { type: 'paragraph', children: [{ text: 'tail' }] },
+          ],
+        },
+      },
+    });
+
+    editor.update((tx) =>
+      tx.command(editorCommands.insertText, {
+        options: {
+          at: {
+            anchor: { offset: 0, path: [0, 0], root: 'header' },
+            focus: { offset: 'efgh'.length, path: [1, 0], root: 'header' },
+          },
+        },
+        text: 'Z',
+      })
+    );
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      {
+        children: [
+          { type: 'paragraph', children: [{ text: 'ab' }] },
+          { type: 'paragraph', children: [{ text: 'ef' }] },
+          { type: 'paragraph', children: [{ text: 'tail' }] },
+        ],
+        roots: {
+          header: [
+            { type: 'paragraph', children: [{ text: 'Z' }] },
+            { type: 'paragraph', children: [{ text: 'tail' }] },
+          ],
+        },
+      }
+    );
+  });
+
+  it('deletes whole blocks of a named root in that root and lands there', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          { type: 'paragraph', children: [{ text: 'first' }] },
+          { type: 'paragraph', children: [{ text: 'ab' }] },
+          { type: 'paragraph', children: [{ text: 'ef' }] },
+          { type: 'paragraph', children: [{ text: 'tail' }] },
+        ],
+        roots: {
+          header: [
+            { type: 'paragraph', children: [{ text: 'keep' }] },
+            { type: 'paragraph', children: [{ text: 'abcd' }] },
+            { type: 'paragraph', children: [{ text: 'efgh' }] },
+            { type: 'paragraph', children: [{ text: 'tail' }] },
+          ],
+        },
+      },
+    });
+
+    editor.update((tx) =>
+      tx.command(editorCommands.deleteFragment, {
+        at: {
+          anchor: { offset: 0, path: [1, 0], root: 'header' },
+          focus: { offset: 'efgh'.length, path: [2, 0], root: 'header' },
+        },
+        direction: 'forward',
+      })
+    );
+
+    assert.deepEqual(
+      {
+        selection: editor.read.selection(),
+        value: editor.read((state) => state.value()),
+      },
+      {
+        selection: {
+          anchor: { offset: 'keep'.length, path: [0, 0], root: 'header' },
+          focus: { offset: 'keep'.length, path: [0, 0], root: 'header' },
+        },
+        value: {
+          children: [
+            { type: 'paragraph', children: [{ text: 'first' }] },
+            { type: 'paragraph', children: [{ text: 'ab' }] },
+            { type: 'paragraph', children: [{ text: 'ef' }] },
+            { type: 'paragraph', children: [{ text: 'tail' }] },
+          ],
+          roots: {
+            header: [
+              { type: 'paragraph', children: [{ text: 'keep' }] },
+              { type: 'paragraph', children: [{ text: 'tail' }] },
+            ],
+          },
+        },
+      }
+    );
+  });
+
+  it('types over a node selection of a named root in that root', () => {
+    const blocks = schema.content.types(['paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    });
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:test.header-node-replace', {
+          elements: { paragraph: { content: schema.content.text() } },
+          id: 'test.header-node-replace',
+          root: blocks,
+          roots: { header: blocks },
+          unknown: 'reject',
+          version: 1,
+        }),
+      ],
+      initialSelection: SelectionApi.nodes([[0], [1]], { root: 'header' }),
+      initialValue: {
+        children: [
+          { type: 'paragraph', children: [{ text: 'ab' }] },
+          { type: 'paragraph', children: [{ text: 'ef' }] },
+          { type: 'paragraph', children: [{ text: 'tail' }] },
+        ],
+        roots: {
+          header: [
+            { type: 'paragraph', children: [{ text: 'abcd' }] },
+            { type: 'paragraph', children: [{ text: 'efgh' }] },
+            { type: 'paragraph', children: [{ text: 'tail' }] },
+          ],
+        },
+      },
+    });
+
+    editor.update((tx) => tx.command(editorCommands.insertText, { text: 'Z' }));
+
+    assert.deepEqual(
+      {
+        selection: editor.read.selection(),
+        value: editor.read((state) => state.value()),
+      },
+      {
+        selection: {
+          anchor: { offset: 1, path: [0, 0], root: 'header' },
+          focus: { offset: 1, path: [0, 0], root: 'header' },
+        },
+        value: {
+          children: [
+            { type: 'paragraph', children: [{ text: 'ab' }] },
+            { type: 'paragraph', children: [{ text: 'ef' }] },
+            { type: 'paragraph', children: [{ text: 'tail' }] },
+          ],
+          roots: {
+            header: [
+              { type: 'paragraph', children: [{ text: 'Z' }] },
+              { type: 'paragraph', children: [{ text: 'tail' }] },
+            ],
+          },
+        },
+      }
+    );
+  });
+
+  it('replaces a nested node selection with the default its parent declares there', () => {
+    const Boxed = defineEditorSchema('schema:test.nested-node-replace', {
+      elements: {
+        box: {
+          content: schema.content.prefix(
+            [{ element: 'label' }],
+            schema.content.types(['paragraph', 'title'], {
+              default: { type: 'paragraph' },
+            })
+          ),
+        },
+        label: { content: schema.content.text() },
+        paragraph: { content: schema.content.text() },
+        title: { content: schema.content.text() },
+      },
+      id: 'test.nested-node-replace',
+      root: schema.content.types(['title', 'paragraph', 'box'], {
+        default: { type: 'title' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const replaceSelected = (command: (editor: Editor) => unknown): Value => {
+      const editor = createEditor({
+        plugins: [Boxed],
+        initialSelection: SelectionApi.nodes([[0, 1]]),
+        initialValue: [
+          {
+            type: 'box',
+            children: [
+              { type: 'label', children: [{ text: 'L' }] },
+              { type: 'paragraph', children: [{ text: 'q' }] },
+            ],
+          },
+        ],
+      });
+
+      command(editor);
+
+      return editor.read.children();
+    };
+    const boxWith = (text: string) => [
+      {
+        type: 'box',
+        children: [
+          { type: 'label', children: [{ text: 'L' }] },
+          { type: 'paragraph', children: [{ text }] },
+        ],
+      },
+    ];
+
+    assert.deepEqual(
+      {
+        slice: replaceSelected((editor) =>
+          dispatchCommand(editor, editorCommands.replaceSlice, {
+            slice: ContentSlice.fromJSON({
+              content: [{ type: 'title', children: [{ text: 'sr' }] }],
+              openEnd: 1,
+              openStart: 1,
+            }),
+          })
+        ),
+        typed: replaceSelected((editor) =>
+          editor.update((tx) =>
+            tx.command(editorCommands.insertText, { text: 'Z' })
+          )
+        ),
+      },
+      { slice: boxWith('sr'), typed: boxWith('Z') }
+    );
+  });
+
+  it('types over a picked block in an undeclared container as the default of the slot that holds it', () => {
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0, 0]]),
+      initialValue: [
+        {
+          type: 'quote',
+          children: [
+            { type: 'paragraph', children: [{ text: 'q' }] },
+            { type: 'paragraph', children: [{ text: 'r' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update((tx) => tx.command(editorCommands.insertText, { text: 'Z' }));
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'quote',
+        children: [
+          { type: 'paragraph', children: [{ text: 'Z' }] },
+          { type: 'paragraph', children: [{ text: 'r' }] },
+        ],
+      },
+    ]);
+  });
+
+  it('types over a picked container in an undeclared container as the default of the slot that holds it', () => {
+    const editor = createEditor({
+      plugins: [
+        definePlugin('test.undeclared-container-box', {
+          schema: {
+            elements: {
+              box: { content: schema.content.types(['title']) },
+              title: {
+                content: schema.content.text(),
+                properties: { level: property.string({ required: true }) },
+              },
+            },
+          },
+        }),
+      ],
+      initialSelection: SelectionApi.nodes([[0, 0]]),
+      initialValue: [
+        {
+          type: 'quote',
+          children: [
+            {
+              type: 'box',
+              children: [
+                { type: 'title', level: 'h1', children: [{ text: 'q' }] },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    editor.update((tx) => tx.command(editorCommands.insertText, { text: 'Z' }));
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'quote',
+        children: [{ type: 'paragraph', children: [{ text: 'Z' }] }],
+      },
+    ]);
+  });
+
+  const typeInQuotedSection = (plugin: PluginDefinitionInput) => {
+    const editor = createEditor({
+      plugins: [plugin],
+      initialSelection: SelectionApi.nodes([[0, 0, 0]]),
+      initialValue: [
+        {
+          type: 'section',
+          children: [
+            {
+              type: 'quote',
+              children: [{ type: 'paragraph', children: [{ text: 'q' }] }],
+            },
+          ],
+        },
+      ],
+    });
+
+    editor.update((tx) => tx.command(editorCommands.insertText, { text: 'Z' }));
+
+    return editor.read.children();
+  };
+  const quotedSectionWith = (text: string) => [
+    {
+      type: 'section',
+      children: [
+        {
+          type: 'quote',
+          children: [{ type: 'paragraph', children: [{ text }] }],
+        },
+      ],
+    },
+  ];
+
+  it('types over a picked block in an undeclared container inside a container whose default needs properties as the root default', () => {
+    assert.deepEqual(
+      typeInQuotedSection(
+        definePlugin('test.undeclared-in-boxed-section', {
+          schema: {
+            elements: {
+              box: {
+                content: schema.content.prefix(
+                  [{ element: 'title', properties: { level: 'h1' } }],
+                  schema.content.types(['title'], { max: 0 })
+                ),
+              },
+              section: {
+                content: schema.content.types(['box'], {
+                  default: { type: 'box' },
+                }),
+              },
+              title: {
+                content: schema.content.text(),
+                properties: { level: property.string({ required: true }) },
+              },
+            },
+          },
+        })
+      ),
+      quotedSectionWith('Z')
+    );
+  });
+
+  it('types over a picked block in an undeclared container as a root default without properties scoped to the declared container', () => {
+    assert.deepEqual(
+      typeInQuotedSection(
+        definePlugin('test.undeclared-in-scoped-section', {
+          schema: {
+            elements: {
+              section: {
+                content: schema.content.types(['paragraph'], {
+                  default: { type: 'paragraph' },
+                }),
+              },
+            },
+            properties: [
+              schema.elementProperty(
+                'scoped',
+                property.boolean({ default: true }),
+                {
+                  target: propertyTarget.and(
+                    propertyTarget.type('paragraph'),
+                    propertyTarget.parent(propertyTarget.type('section'))
+                  ),
+                }
+              ),
+            ],
+          },
+        })
+      ),
+      quotedSectionWith('Z')
+    );
+  });
+
+  it('types over a picked block in an undeclared container as the default of the root slot that holds it', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:test.undeclared-after-heading', {
+          elements: {
+            heading: {
+              content: schema.content.text(),
+              properties: { level: property.number({ required: true }) },
+            },
+            paragraph: { content: schema.content.text() },
+          },
+          id: 'test.undeclared-after-heading',
+          root: schema.content.prefix(
+            [{ element: 'heading', properties: { level: 1 } }],
+            schema.content.not(schema.content.text(), {
+              default: { type: 'paragraph' },
+            })
+          ),
+          unknown: 'preserve',
+          version: 1,
+        }),
+      ],
+      initialSelection: SelectionApi.nodes([[1, 0]]),
+      initialValue: [
+        { type: 'heading', level: 1, children: [{ text: 'H' }] },
+        {
+          type: 'quote',
+          children: [{ type: 'paragraph', children: [{ text: 'q' }] }],
+        },
+      ],
+    });
+
+    editor.update((tx) => tx.command(editorCommands.insertText, { text: 'Z' }));
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'heading', level: 1, children: [{ text: 'H' }] },
+      {
+        type: 'quote',
+        children: [{ type: 'paragraph', children: [{ text: 'Z' }] }],
+      },
+    ]);
+  });
+
+  it('resets a block in an undeclared container to the root default', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'quote',
+          children: [
+            { type: 'heading', children: [{ text: 'h' }] },
+            { type: 'paragraph', children: [{ text: 'r' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update((tx) => tx.blocks.reset({ at: [0, 0] }));
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'quote',
+        children: [
+          { type: 'paragraph', children: [{ text: 'h' }] },
+          { type: 'paragraph', children: [{ text: 'r' }] },
+        ],
+      },
+    ]);
+  });
+
+  it('types over a picked void in an undeclared container as the default of the slot that holds it', () => {
+    const editor = createEditor({
+      plugins: [
+        definePlugin('test.undeclared-void-image', {
+          schema: { elements: { image: { void: 'block' } } },
+        }),
+      ],
+      initialSelection: SelectionApi.nodes([[0, 0]]),
+      initialValue: [
+        {
+          type: 'quote',
+          children: [
+            { type: 'image', children: [{ text: '' }] },
+            { type: 'paragraph', children: [{ text: 'r' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update((tx) => tx.command(editorCommands.insertText, { text: 'Z' }));
+
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'quote',
+        children: [
+          { type: 'paragraph', children: [{ text: 'Z' }] },
+          { type: 'paragraph', children: [{ text: 'r' }] },
+        ],
+      },
+    ]);
   });
 
   it('roots explicit paths in command specs to the dispatching view', () => {

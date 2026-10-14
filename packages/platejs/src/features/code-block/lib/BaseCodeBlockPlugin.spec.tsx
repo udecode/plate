@@ -30,7 +30,29 @@ import {
 } from '../../../core';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { getPlateDecorationSources } from '../../../internal/plugin/getPlateDecorationSources';
-import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
+import { createTextSubstitutionInputRule } from '../../../lib/plugins/input-rules';
+import { MarkdownPlugin } from '../../../markdown';
+import { BaseEquationPlugin, MathRules } from '../../../math';
+import { insertBreak, insertText } from '../../../testing';
+import {
+  BaseBlockquotePlugin,
+  BaseHorizontalRulePlugin,
+  BlockquoteRules,
+  HorizontalRuleRules,
+} from '../../basic-nodes/lib/BaseBlockPlugins';
+import {
+  BaseHeadingPlugin,
+  HeadingRules,
+} from '../../basic-nodes/lib/BaseHeadingPlugins';
+import {
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseItalicPlugin,
+  BoldRules,
+  CodeRules,
+} from '../../basic-nodes/lib/BaseMarkPlugins';
+import { BaseLinkPlugin, LinkRules } from '../../link';
+import { BaseListPlugin, BulletedListRules } from '../../list';
 import {
   BaseCodeBlockPlugin,
   BaseCodeHighlightPlugin,
@@ -872,6 +894,77 @@ describe('isCodeBlockEmpty', () => {
 jsxt;
 
 describe('BaseCodeBlockPlugin input rules', () => {
+  it('runs no input rule inside a code block', () => {
+    const type = (keys: readonly string[], block = 'codeBlock') => {
+      const editor = createEditor({
+        plugins: [
+          BaseCodeBlockPlugin,
+          BaseHeadingPlugin.configure({
+            inputRules: [HeadingRules.markdown()],
+          }),
+          BaseBlockquotePlugin.configure({
+            inputRules: [BlockquoteRules.markdown()],
+          }),
+          BaseHorizontalRulePlugin.configure({
+            inputRules: [HorizontalRuleRules.markdown()],
+          }),
+          BaseListPlugin.configure({
+            inputRules: [BulletedListRules.markdown()],
+          }),
+          BaseBoldPlugin.configure({ inputRules: [BoldRules.markdown()] }),
+          BaseCodePlugin.configure({ inputRules: [CodeRules.markdown()] }),
+          BaseEquationPlugin.configure({
+            inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],
+          }),
+          BaseLinkPlugin.configure({
+            inputRules: [LinkRules.autolink({ variant: 'space' })],
+          }),
+          definePlugin('arrows', {
+            inputRules: [
+              createTextSubstitutionInputRule({
+                patterns: [{ format: '→', match: '->' }],
+              }),
+            ],
+          }),
+        ],
+        initialValue: [{ children: [{ text: '' }], type: block }],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+        },
+      });
+
+      for (const key of keys) {
+        if (key === '\n') insertBreak(editor);
+        else insertText(editor, key);
+      }
+
+      return editor.read.children();
+    };
+    const literal = (text: string) => [
+      { children: [{ text }], type: 'codeBlock' },
+    ];
+
+    for (const text of [
+      '# ',
+      '> ',
+      '- ',
+      '---',
+      '**x**',
+      '`x`',
+      '->',
+      'https://x.dev ',
+    ]) {
+      expect(type([...text])).toEqual(literal(text));
+    }
+    expect(type(['$', '$', '\n'])).toEqual(literal('$$\n'));
+    expect(type([...'# '], 'paragraph')).toMatchObject([{ type: 'heading' }]);
+    expect(type([...'**x**'], 'paragraph')).toMatchObject([
+      { children: [{ bold: true, text: 'x' }], type: 'paragraph' },
+    ]);
+  });
+
   it('keeps a code fence in a required title', () => {
     const editor = createEditor({
       plugins: [
@@ -1175,6 +1268,74 @@ describe('BaseCodeBlockPlugin input rules', () => {
       editor.api.dom.clipboard.insertData(data);
 
       expect(editor.read.children()).toEqual(expected.children);
+    });
+
+    it('lands pasted plain text as typed before Markdown or a paste rule reads it', () => {
+      const plugins = [
+        BaseParagraphPlugin,
+        BaseCodeBlockPlugin,
+        BaseBoldPlugin,
+        BaseItalicPlugin,
+        MarkdownPlugin,
+        BaseLinkPlugin.configure({
+          inputRules: [LinkRules.autolink({ variant: 'paste' })],
+        }),
+      ] as const;
+      const caret = (path: number[], offset: number) => ({
+        kind: 'text' as const,
+        anchor: { offset, path },
+        focus: { offset, path },
+      });
+      const paste = (data: Map<string, string>) => {
+        const editor = createFixtureEditor({
+          plugins,
+          initialValue: [{ children: [{ text: '' }], type: 'codeBlock' }],
+          selection: caret([0, 0], 0),
+        });
+
+        editor.api.dom.clipboard.insertData(createDataTransfer(data));
+
+        return editor.read.children();
+      };
+      const pasteCopiedBold = (text: string) => {
+        const editor = createFixtureEditor({
+          plugins,
+          initialValue: [
+            { children: [{ bold: true, text }], type: 'paragraph' },
+            { children: [{ text: 'x' }], type: 'codeBlock' },
+          ],
+          selection: {
+            kind: 'text',
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: text.length, path: [0, 0] },
+          },
+        });
+        const data = new DataTransfer();
+
+        editor.api.dom.clipboard.writeSelection(data);
+        editor.update.selection.set(caret([1, 0], 1));
+        editor.api.dom.clipboard.insertData(data);
+
+        return editor.read.children()[1];
+      };
+      const code = (text: string) => [
+        { children: [{ text }], type: 'codeBlock' },
+      ];
+
+      expect(paste(new Map([['text/plain', 'a **b** c']]))).toEqual(
+        code('a **b** c')
+      );
+      expect(paste(new Map([['text/plain', '*foo*']]))).toEqual(code('*foo*'));
+      expect(paste(new Map([['text/plain', 'tel:*123*']]))).toEqual(
+        code('tel:*123*')
+      );
+      expect(paste(new Map([['text/html', '<strong>hello</strong>']]))).toEqual(
+        code('hello')
+      );
+      expect(pasteCopiedBold('word')).toEqual(code('xword')[0]);
+      expect(pasteCopiedBold('https://x.dev')).toEqual(
+        code('xhttps://x.dev')[0]
+      );
     });
 
     it('delegates mixed expanded selections instead of treating any code match as the active block', () => {

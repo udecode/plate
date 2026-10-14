@@ -65,23 +65,26 @@ const createDataTransfer = ({
 };
 
 describe('MarkdownPlugin', () => {
-  it('exports authored documents only through explicit semantic projections', () => {
+  it('exports each explicit projection of an authored document', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, MarkdownPlugin, AuthoredPlugin],
-      initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      initialValue: [{ children: [{ text: 'Base old' }], type: 'paragraph' }],
       userId: 'alice',
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
 
-    view.update.text.insert(' draft', {
-      at: { offset: 4, path: [0, 0] },
+    view.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { offset: 4, path: [0, 0] },
+          focus: { offset: 8, path: [0, 0] },
+        },
+      });
+      tx.text.insert(' draft', { at: { offset: 4, path: [0, 0] } });
     });
 
-    expect(() => serializeTestMarkdown(editor)).toThrow(
-      'Markdown serialization requires a projection'
-    );
     const accepted = serializeTestMarkdown(editor, {
       projection: 'accepted',
     });
@@ -89,7 +92,7 @@ describe('MarkdownPlugin', () => {
       projection: 'proposed',
     });
 
-    expect(accepted.data).toBe('Base\n');
+    expect(accepted.data).toBe('Base old\n');
     expect(proposed.data).toBe('Base draft\n');
     expect(accepted.diagnostics[0]?.code).toBe('authored-lossy-projection');
     expect(proposed.data).not.toContain('plate-authored');

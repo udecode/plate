@@ -24,6 +24,7 @@ import type {
 } from '../interfaces/schema';
 import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
+import { isMetadataRootKey } from '../internal/root-location';
 import { cloneFrozen } from './clone';
 import { profileCoreDuration } from './profiling';
 
@@ -85,7 +86,7 @@ const DEFAULT_DERIVED_EDITOR_SCHEMA_RECORD: Readonly<{
   pluginName: string;
 }> = Object.freeze({
   contribution: DEFAULT_DERIVED_EDITOR_SCHEMA,
-  pluginName: 'plite:derived-base-schema',
+  pluginName: 'core:derived-base-schema',
 });
 
 const isCompleteSchemaDeclaration = (
@@ -345,7 +346,9 @@ export type CompiledSchemaElement = Readonly<{
 
 export type CompiledSchemaRoot = Readonly<{
   content: CompiledSchemaContentProgram;
+  history: 'retain' | 'undo';
   name: string | null;
+  role: 'content' | 'metadata';
 }>;
 
 export type CompiledSchemaPropertyMergeStrategy = 'replace' | 'set';
@@ -949,6 +952,19 @@ const collectSchemaKeyDiagnostics = (
       });
     }
   };
+  const visitRoot = (value: unknown, owner: string, path: string) => {
+    if (
+      typeof value === 'object' &&
+      value !== null &&
+      Object.hasOwn(value, 'allowed')
+    ) {
+      visitContent(value, owner, path);
+      return;
+    }
+    const root = check(value, ['content', 'history'], owner, path);
+
+    if (root) visitContent(root.content, owner, `${path}.content`);
+  };
   const visitContentRoot = (
     value: unknown,
     owner: string,
@@ -1115,7 +1131,7 @@ const collectSchemaKeyDiagnostics = (
         : object(declaration.roots, pluginName, 'roots');
 
     for (const [name, value] of Object.entries(roots ?? {})) {
-      visitContent(value, pluginName, `roots.${name}`);
+      visitRoot(value, pluginName, `roots.${name}`);
     }
     if (declaration.contentRoots !== undefined) {
       array(declaration.contentRoots, pluginName, 'contentRoots')?.forEach(
@@ -1916,7 +1932,12 @@ const prepareEditorSchemaRecords = (
                 Object.fromEntries(
                   Object.entries(declaration.roots).map(([name, root]) => [
                     name,
-                    remapSchemaContent(root, renames),
+                    'allowed' in root
+                      ? remapSchemaContent(root, renames)
+                      : Object.freeze({
+                          ...root,
+                          content: remapSchemaContent(root.content, renames),
+                        }),
                   ])
                 )
               ),
@@ -1974,11 +1995,15 @@ export const getEditorSchemaDeclarationKey = (
 const sortedStrings = (values: Iterable<string>) =>
   [...new Set(values)].sort((left, right) => left.localeCompare(right));
 
+const schemaVoidKinds: Readonly<
+  Record<NonNullable<SchemaElement['void']>, true>
+> = { block: true, inline: true, 'markable-inline': true };
+
+const isSchemaVoidKind = (value: unknown) =>
+  typeof value === 'string' && Object.hasOwn(schemaVoidKinds, value);
+
 const isInlineVoid = (kind: SchemaElement['void']) =>
   kind === 'inline' || kind === 'markable-inline';
-
-const isVoid = (kind: SchemaElement['void']) =>
-  kind === 'block' || kind === 'inline' || kind === 'markable-inline';
 
 const compileElementBehavior = (
   source: Source<SchemaElement>
@@ -1986,10 +2011,7 @@ const compileElementBehavior = (
   const input = source.value;
   const voidKind = input.void ?? null;
 
-  if (
-    voidKind !== null &&
-    !['block', 'inline', 'markable-inline'].includes(voidKind)
-  ) {
+  if (voidKind !== null && !isSchemaVoidKind(voidKind)) {
     compileFailure(
       'invalid-element-behavior',
       `Schema element at ${source.path} has invalid void kind "${voidKind}".`,
@@ -2011,7 +2033,7 @@ const compileElementBehavior = (
 
   const inline = input.inline ?? inlineFromVoid;
   const selectable = input.selectable ?? true;
-  const atom = input.atom ?? isVoid(voidKind ?? undefined);
+  const atom = input.atom ?? isSchemaVoidKind(voidKind);
   const object = input.object ?? false;
 
   if (
@@ -2039,7 +2061,7 @@ const compileElementBehavior = (
     object,
     readOnly: input.readOnly ?? false,
     selectable,
-    void: isVoid(voidKind ?? undefined),
+    void: isSchemaVoidKind(voidKind),
     voidKind,
   });
 };
@@ -2635,7 +2657,39 @@ const canonicalTarget = (target: SchemaTarget | null): string => {
   return failInvariant('Unexpected schema target');
 };
 
+const TARGET_TYPES = new WeakMap<SchemaTarget, ReadonlySet<string>>();
+
+const namedTargetTypes = (target: SchemaTarget) => {
+  let types = TARGET_TYPES.get(target);
+
+  if (!types) {
+    const named = new Set<string>();
+
+    collectTargetAtoms(target, named, new Set());
+    types = named;
+    TARGET_TYPES.set(target, types);
+  }
+
+  return types;
+};
+
+const metadataRootNamesType = (
+  target: SchemaTarget | null,
+  context: CompiledSchemaTargetContext
+) =>
+  context.root === null ||
+  !isMetadataRootKey(context.root) ||
+  (target !== null && namedTargetTypes(target).has(context.type));
+
 export const matchesCompiledSchemaTarget = (
+  schema: Pick<CompiledEditorSchema, 'elements'>,
+  target: SchemaTarget | null,
+  context: CompiledSchemaTargetContext
+): boolean =>
+  metadataRootNamesType(target, context) &&
+  matchesTarget(schema, target, context);
+
+const matchesTarget = (
   schema: Pick<CompiledEditorSchema, 'elements'>,
   target: SchemaTarget | null,
   context: CompiledSchemaTargetContext
@@ -2661,7 +2715,7 @@ export const matchesCompiledSchemaTarget = (
       const [parent, ...ancestors] = context.ancestors ?? [];
 
       return parent
-        ? matchesCompiledSchemaTarget(schema, target.target, {
+        ? matchesTarget(schema, target.target, {
             ancestors,
             root: context.root,
             type: parent,
@@ -2669,16 +2723,16 @@ export const matchesCompiledSchemaTarget = (
         : false;
     }
     case 'not': {
-      return !matchesCompiledSchemaTarget(schema, target.target, context);
+      return !matchesTarget(schema, target.target, context);
     }
     case 'and': {
       return target.targets.every((child) =>
-        matchesCompiledSchemaTarget(schema, child, context)
+        matchesTarget(schema, child, context)
       );
     }
     case 'or': {
       return target.targets.some((child) =>
-        matchesCompiledSchemaTarget(schema, child, context)
+        matchesTarget(schema, child, context)
       );
     }
   }
@@ -3506,6 +3560,13 @@ const compileEditorSchemaInternal = (
     resolveGroupClosure(group, groupParents, groupClosure);
   }
 
+  // A metadata contribution declares records: only its own roots hold them,
+  // so no content program, group or text-block membership reaches them.
+  const recordTypes = new Set(
+    records
+      .filter(declaresMetadataRoot)
+      .flatMap(({ contribution }) => Object.keys(contribution.elements ?? {}))
+  );
   const mutableElements = new Map<string, MutableElement>();
 
   for (const record of records) {
@@ -3552,11 +3613,11 @@ const compileEditorSchemaInternal = (
       const elementContent = derivesVoidContent
         ? CANONICAL_VOID_CONTENT
         : getDefined(input.content);
-      const directGroups = new Set<string>([
-        'all',
-        'element',
-        behavior.inline ? 'inline' : 'block',
-      ]);
+      const directGroups = new Set<string>(
+        recordTypes.has(type)
+          ? []
+          : ['all', 'element', behavior.inline ? 'inline' : 'block']
+      );
 
       for (const group of input.groups ?? []) {
         if (!groupParents.has(group)) {
@@ -3607,6 +3668,9 @@ const compileEditorSchemaInternal = (
   }
 
   const elementTypes = new Set(mutableElements.keys());
+  const contentTypes = new Set(
+    [...elementTypes].filter((type) => !recordTypes.has(type))
+  );
   const inlineTypes = new Set(
     [...mutableElements].flatMap(([type, element]) =>
       element.behavior.inline ? [type] : []
@@ -3673,14 +3737,18 @@ const compileEditorSchemaInternal = (
       };
       const program = compileContent(
         source,
-        elementTypes,
+        contentTypes,
         inlineTypes,
         initialGroups,
         textGroups,
         unknownPolicy
       );
 
-      if (program.allowsText && !element.behavior.void) {
+      if (
+        program.allowsText &&
+        !element.behavior.void &&
+        !recordTypes.has(element.type)
+      ) {
         element.directGroups.add('textBlock');
       }
     }
@@ -3689,6 +3757,10 @@ const compileEditorSchemaInternal = (
   const memberships = getMemberships();
   const mutableGroups = toGroupMembers(memberships);
   const rootsByName = new Map<string, Source<SchemaContent>>();
+  const rootOptions = new Map<
+    string,
+    Pick<CompiledSchemaRoot, 'history' | 'role'>
+  >();
   const primaryRoot: Source<SchemaContent> = {
     pluginName: completeRecord.pluginName,
     path: 'root',
@@ -3699,13 +3771,22 @@ const compileEditorSchemaInternal = (
     for (const [name, root] of Object.entries(
       record.contribution.roots ?? {}
     ).sort(([left], [right]) => left.localeCompare(right))) {
+      const declared = 'allowed' in root ? { content: root } : root;
       const source: Source<SchemaContent> = {
         pluginName: record.pluginName,
-        path: `roots.${name}`,
-        value: root,
+        path: 'allowed' in root ? `roots.${name}` : `roots.${name}.content`,
+        value: declared.content,
       };
 
       assertName(name, 'Schema root name', source);
+      if (declared.history !== undefined && declared.history !== 'retain') {
+        compileFailure(
+          'invalid-root-history',
+          `Schema root "${name}" history must be "retain" when set.`,
+          [source],
+          `roots.${name}.history`
+        );
+      }
       if (name === RESERVED_PRIMARY_ROOT) {
         compileFailure(
           'reserved-primary-root',
@@ -3725,6 +3806,10 @@ const compileEditorSchemaInternal = (
         );
       }
       rootsByName.set(name, source);
+      rootOptions.set(name, {
+        history: declared.history ?? 'undo',
+        role: isMetadataRootKey(name) ? 'metadata' : 'content',
+      });
     }
   }
 
@@ -3836,7 +3921,7 @@ const compileEditorSchemaInternal = (
     };
     const program = compileContent(
       source,
-      elementTypes,
+      contentTypes,
       inlineTypes,
       mutableGroups,
       textGroups,
@@ -3933,7 +4018,7 @@ const compileEditorSchemaInternal = (
       assertName(slot, 'Schema content root slot', contentSource);
       const innerProgram = compileContent(
         contentSource,
-        elementTypes,
+        contentTypes,
         inlineTypes,
         mutableGroups,
         textGroups,
@@ -3954,7 +4039,7 @@ const compileEditorSchemaInternal = (
 
   const primaryProgram = compileContent(
     primaryRoot,
-    elementTypes,
+    contentTypes,
     inlineTypes,
     mutableGroups,
     textGroups,
@@ -3975,7 +4060,7 @@ const compileEditorSchemaInternal = (
   )) {
     const program = compileContent(
       source,
-      elementTypes,
+      isMetadataRootKey(name) ? elementTypes : contentTypes,
       inlineTypes,
       mutableGroups,
       textGroups,
@@ -4688,6 +4773,7 @@ const compileEditorSchemaInternal = (
       Object.freeze({
         content: getDefined(frozenPrograms.get(`root:${name}`)),
         name,
+        ...getDefined(rootOptions.get(name)),
       })
     );
   }
@@ -4747,6 +4833,7 @@ const compileEditorSchemaInternal = (
     root: canonicalContentProgram(primaryProgram),
     roots: [...roots].map(([name, root]) => ({
       ...canonicalContentProgram(root.content),
+      ...(root.history === 'undo' ? {} : { history: root.history }),
       name,
     })),
     unknown: unknownPolicy,
@@ -4785,7 +4872,9 @@ const compileEditorSchemaInternal = (
         }),
     primaryRoot: Object.freeze({
       content: getDefined(frozenPrograms.get('root')),
+      history: 'undo',
       name: null,
+      role: 'content',
     }),
     properties: Object.freeze({
       byId: freezeMap(byId),
@@ -4804,16 +4893,124 @@ const compileEditorSchemaInternal = (
   });
 };
 
+const declaresMetadataRoot = ({
+  contribution,
+}: EditorSchemaContributionRecord) =>
+  Object.keys(contribution.roots ?? {}).some(isMetadataRootKey);
+
+const assertMetadataOwnersDroppable = (
+  records: readonly EditorSchemaContributionRecord[]
+) => {
+  for (const { contribution, pluginName } of records.filter(
+    declaresMetadataRoot
+  )) {
+    const fields = Object.keys(contribution).filter(
+      (field) => field !== 'elements' && field !== 'roots'
+    );
+    const roots = Object.keys(contribution.roots ?? {}).filter(
+      (root) => !isMetadataRootKey(root)
+    );
+
+    if (fields.length > 0 || roots.length > 0) {
+      compileFailure(
+        'mixed-metadata-root-contribution',
+        `A schema contribution that declares a metadata root declares only metadata roots and their elements; found ${[
+          ...fields,
+          ...roots.map((root) => `roots.${root}`),
+        ].join(', ')}.`,
+        [pluginName],
+        'roots'
+      );
+    }
+  }
+};
+
+const RECORDS_WITHOUT_METADATA_ROOTS = new WeakMap<
+  CompiledEditorSchema,
+  readonly EditorSchemaContributionRecord[]
+>();
+const IDENTITIES_WITHOUT_METADATA_ROOTS = new WeakMap<
+  CompiledEditorSchema,
+  EditorSchemaIdentity
+>();
+
 export const compileEditorSchemaContributions = (
   records: readonly EditorSchemaContributionRecord[],
   options: Readonly<{ revision?: number }> = {}
 ): CompiledEditorSchema =>
-  profileCoreDuration('schema-compile', () =>
-    compileEditorSchemaInternal(
-      prepareEditorSchemaRecords(records),
-      options.revision ?? 0
-    )
-  );
+  profileCoreDuration('schema-compile', () => {
+    assertMetadataOwnersDroppable(records);
+
+    return rememberRecordsWithoutMetadataRoots(
+      compileEditorSchemaInternal(
+        prepareEditorSchemaRecords(records),
+        options.revision ?? 0
+      ),
+      records
+    );
+  });
+
+const rememberRecordsWithoutMetadataRoots = (
+  schema: CompiledEditorSchema,
+  records: readonly EditorSchemaContributionRecord[]
+) => {
+  if (records.some(declaresMetadataRoot)) {
+    RECORDS_WITHOUT_METADATA_ROOTS.set(
+      schema,
+      records.filter((record) => !declaresMetadataRoot(record))
+    );
+  }
+
+  return schema;
+};
+
+const nameOf = (root: CompiledSchemaRoot) => getDefined(root.name);
+
+const ROOT_SETS = new WeakMap<
+  Pick<CompiledEditorSchema, 'roots'>,
+  Readonly<{ metadata: ReadonlySet<string>; retained: ReadonlySet<string> }>
+>();
+
+/** @internal */
+export const getCompiledSchemaRootSets = (
+  schema: Pick<CompiledEditorSchema, 'roots'>
+) => {
+  let sets = ROOT_SETS.get(schema);
+
+  if (!sets) {
+    const roots = [...schema.roots.values()];
+
+    sets = Object.freeze({
+      metadata: freezeSet(
+        new Set(roots.filter((root) => root.role === 'metadata').map(nameOf))
+      ),
+      retained: freezeSet(
+        new Set(roots.filter((root) => root.history === 'retain').map(nameOf))
+      ),
+    });
+    ROOT_SETS.set(schema, sets);
+  }
+
+  return sets;
+};
+
+/** @internal */
+export const getEditorSchemaIdentityWithoutMetadataRoots = (
+  schema: CompiledEditorSchema
+): EditorSchemaIdentity | null => {
+  const records = RECORDS_WITHOUT_METADATA_ROOTS.get(schema);
+
+  if (!records) return null;
+
+  let identity = IDENTITIES_WITHOUT_METADATA_ROOTS.get(schema);
+
+  if (!identity) {
+    ({ identity } = compileEditorSchemaContributions(records));
+    IDENTITIES_WITHOUT_METADATA_ROOTS.set(schema, identity);
+  }
+
+  return identity;
+};
 
 type RuntimePropertyDescriptor = Readonly<{
   descriptor: PropertyValueDescriptor;
@@ -5071,7 +5268,7 @@ export const rebindCompiledEditorSchemaRuntimeValidations = (
       );
     })
   ) {
-    return schema;
+    return rememberRecordsWithoutMetadataRoots(schema, records);
   }
 
   const descriptors = new Map<string, PropertyValueDescriptor>();
@@ -5088,7 +5285,10 @@ export const rebindCompiledEditorSchemaRuntimeValidations = (
     );
   }
 
-  return replaceCompiledPropertyDescriptors(schema, descriptors, revision);
+  return rememberRecordsWithoutMetadataRoots(
+    replaceCompiledPropertyDescriptors(schema, descriptors, revision),
+    records
+  );
 };
 
 const EDITOR_SCHEMA_CONTRACT_FORMAT = 1 as const;
@@ -5145,6 +5345,7 @@ export type EditorSchemaContractElement = Readonly<{
 
 export type EditorSchemaContractRoot = Readonly<{
   content: EditorSchemaContractContentProgram;
+  history?: 'retain';
   name: string | null;
 }>;
 
@@ -5304,6 +5505,7 @@ const contractElement = (
 const contractRoot = (root: CompiledSchemaRoot): EditorSchemaContractRoot =>
   Object.freeze({
     content: contractContentProgram(root.content),
+    ...(root.history === 'retain' ? { history: root.history } : {}),
     name: root.name,
   });
 
@@ -5461,9 +5663,7 @@ const isContractElementBehavior = (value: unknown) =>
     'selectable',
     'void',
   ].every((key) => typeof value[key] === 'boolean') &&
-  (value.voidKind === null ||
-    value.voidKind === 'block' ||
-    value.voidKind === 'inline');
+  (value.voidKind === null || isSchemaVoidKind(value.voidKind));
 
 const isContractStructureProperty = (value: unknown) =>
   isRecord(value) &&
@@ -5522,6 +5722,7 @@ const isContractElement = (value: unknown) =>
 const isContractRoot = (value: unknown) =>
   isRecord(value) &&
   (value.name === null || typeof value.name === 'string') &&
+  (value.history === undefined || value.history === 'retain') &&
   isContractContentProgram(value.content);
 
 const isContractJsonValue = (
@@ -5781,6 +5982,7 @@ const editorSchemaContractFingerprint = (contract: EditorSchemaContract) => {
       .sort((left, right) => (left.name ?? '').localeCompare(right.name ?? ''))
       .map((root) => ({
         ...rootContent(root.content),
+        ...(root.history ? { history: root.history } : {}),
         name: root.name,
       })),
     unknown: contract.unknown,
@@ -6146,7 +6348,7 @@ export const diffEditorSchemaContracts = (
       after &&
       stableStringify(before) !== stableStringify(after)
     ) {
-      if (before.name !== after.name) {
+      if (before.name !== after.name || before.history !== after.history) {
         changes.push(
           contractChange('root-changed', path, 'migration-required')
         );
@@ -6233,7 +6435,12 @@ const restoreContentRoot = (
 const restoreRoot = (root: EditorSchemaContractRoot): CompiledSchemaRoot =>
   Object.freeze({
     content: restoreContentProgram(root.content),
+    history: root.history ?? 'undo',
     name: root.name,
+    role:
+      root.name !== null && isMetadataRootKey(root.name)
+        ? 'metadata'
+        : 'content',
   });
 
 const restoreEntries = <TValue, TResult>(
@@ -6466,7 +6673,9 @@ const getPropertyAffectedElementTypes = (
 };
 
 const canonicalCompiledRoot = (root: CompiledSchemaRoot | null) =>
-  root ? canonicalCompiledContent(root.content) : null;
+  root
+    ? { content: canonicalCompiledContent(root.content), history: root.history }
+    : null;
 
 const changedKeys = <TKey extends string | null>(
   keys: Iterable<TKey>,

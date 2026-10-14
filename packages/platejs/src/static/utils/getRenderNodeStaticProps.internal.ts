@@ -11,9 +11,21 @@ import {
   type GetInjectNodePropsOptions,
   getPluginNodeClass,
 } from '../../lib';
+import type {
+  AnyBasePluginContext,
+  BasePluginContext,
+} from '../../lib/plugin/BasePlugin';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+import type { BasePluginDefinition } from '../../lib/plugin/PluginDefinition';
 import type { AnyObject } from '../../lib/types/AnyObject';
-import type { RenderNodeProps } from '../types';
+
+type RenderNodeProps<C extends BasePluginDefinition = BasePluginDefinition> =
+  (0 extends 1 & C ? AnyBasePluginContext : BasePluginContext<C>) & {
+    attributes?: AnyObject;
+    className?: string;
+    nodeProps?: AnyObject;
+    style?: React.CSSProperties;
+  };
 
 type StaticNodePropsInput = Partial<RenderNodeProps> &
   GetInjectNodePropsOptions &

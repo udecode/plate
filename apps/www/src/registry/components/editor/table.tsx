@@ -505,7 +505,6 @@ function TableFloatingToolbarContent({
           </ColorDropdownMenu>
           {canMerge && (
             <ToolbarButton
-              aria-label="Merge cells"
               onClick={() => {
                 editor.plugin(TablePlugin).update.merge();
               }}
@@ -516,7 +515,6 @@ function TableFloatingToolbarContent({
           )}
           {canSplit && (
             <ToolbarButton
-              aria-label="Split cell"
               onClick={() => {
                 editor.plugin(TablePlugin).update.split();
               }}
@@ -528,7 +526,7 @@ function TableFloatingToolbarContent({
 
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger>
-              <ToolbarButton aria-label="Cell borders" tooltip="Cell borders">
+              <ToolbarButton tooltip="Cell borders">
                 <Grid2X2Icon />
               </ToolbarButton>
             </DropdownMenuTrigger>
@@ -541,7 +539,6 @@ function TableFloatingToolbarContent({
           {collapsedInside && (
             <ToolbarGroup>
               <ToolbarButton
-                aria-label="Delete table"
                 onClick={() => {
                   editor.update.nodes.remove({ at: element });
                   editor.api.dom.focus();
@@ -557,7 +554,6 @@ function TableFloatingToolbarContent({
         {collapsedInside && (
           <ToolbarGroup>
             <ToolbarButton
-              aria-label="Insert row before"
               onClick={() => {
                 editor.plugin(TablePlugin).update.insertRow({ before: true });
               }}
@@ -566,7 +562,6 @@ function TableFloatingToolbarContent({
               <ArrowUp />
             </ToolbarButton>
             <ToolbarButton
-              aria-label="Insert row after"
               onClick={() => {
                 editor.plugin(TablePlugin).update.insertRow();
               }}
@@ -575,7 +570,6 @@ function TableFloatingToolbarContent({
               <ArrowDown />
             </ToolbarButton>
             <ToolbarButton
-              aria-label="Delete row"
               onClick={() => {
                 editor.plugin(TablePlugin).update.removeRow();
               }}
@@ -589,7 +583,6 @@ function TableFloatingToolbarContent({
         {collapsedInside && (
           <ToolbarGroup>
             <ToolbarButton
-              aria-label="Insert column before"
               onClick={() => {
                 editor
                   .plugin(TablePlugin)
@@ -600,7 +593,6 @@ function TableFloatingToolbarContent({
               <ArrowLeft />
             </ToolbarButton>
             <ToolbarButton
-              aria-label="Insert column after"
               onClick={() => {
                 editor.plugin(TablePlugin).update.insertColumn();
               }}
@@ -609,7 +601,6 @@ function TableFloatingToolbarContent({
               <ArrowRight />
             </ToolbarButton>
             <ToolbarButton
-              aria-label="Delete column"
               onClick={() => {
                 editor.plugin(TablePlugin).update.removeColumn();
               }}
@@ -742,9 +733,7 @@ function ColorDropdownMenu({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
-        <ToolbarButton aria-label={tooltip} tooltip={tooltip}>
-          {children}
-        </ToolbarButton>
+        <ToolbarButton tooltip={tooltip}>{children}</ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start">

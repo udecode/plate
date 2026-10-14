@@ -18,6 +18,7 @@ import {
   type Selection,
   SelectionApi,
   type TextSelection,
+  txLocate,
   txOnly,
   type TxOnlyMethod,
   type Value,
@@ -29,15 +30,11 @@ import {
   mergeAnchorHistoryRecovery,
   stageAnchorHistoryRecovery,
 } from '../core/anchor-state';
-import {
-  isAuthoredHistoryEffect,
-  canMergeAuthoredHistory,
-  captureAuthoredHistory,
-  getAuthoredHistoryConflicts,
-} from '../core/authored-runtime';
+import { filterDocumentChangeRoots } from '../core/change/document-change';
 import { getEditorCommitStartedAt } from '../core/commit';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
+import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   documentReplacement,
@@ -49,6 +46,7 @@ import {
   registerEditorHistoryRuntime,
   registerEditorTransactionGuard,
 } from '../core/public-state';
+import { getCompiledSchemaRootSets } from '../core/schema-compiler';
 import { createEditorEffect } from '../core/transaction-values';
 import { type Batch, History, type HistoryJSON } from './history';
 import { decodeHistoryValue, encodeHistoryValue } from './history-codec';
@@ -87,6 +85,7 @@ import {
   restoreHistoryState,
   settlePendingHistoryReplay,
   withHistoryStateDraft,
+  withoutRetainedRoots,
   withPublishedHistoryState,
   writeHistory,
 } from './history-state';
@@ -306,14 +305,11 @@ const consumeHistoryBatch = <V extends Value>(
   direction: 'redo' | 'undo',
   root: string
 ) => {
-  if (!batch.effects.some(isAuthoredHistoryEffect)) {
-    tx.changes.apply(batch.change);
-  }
+  tx.changes.apply(batch.change);
   for (const effect of batch.effects) {
     tx.effects.emit(effect.type, effect.value);
   }
   if (
-    !batch.effects.some(isAuthoredHistoryEffect) &&
     shouldRestoreHistoricSelection(
       root,
       batch,
@@ -469,22 +465,16 @@ const prepareHistoryBatch = <V extends Value>(
   action: DocumentChange,
   commit: EditorCommit<V>,
   effects: readonly EditorEffect[],
-  grouping?: NonNullable<ReturnType<typeof captureAuthoredHistory>>['grouping']
+  retained: ReadonlySet<string>
 ): Readonly<{
   batch: Batch<V>;
   group: HistoryBatchGroup | null;
 }> | null => {
-  const baseGroup = createHistoryBatchGroup(grouping?.commit ?? commit);
+  const baseGroup = createHistoryBatchGroup(commit, retained);
   const native = readNativeHistoryGrouping(commit);
-  const group: HistoryBatchGroup | null = grouping
-    ? Object.freeze({
-        ...(baseGroup ?? { kind: 'effects', root: undefined }),
-        ...(native ? { native } : {}),
-        scope: grouping.scope,
-      })
-    : baseGroup
-      ? Object.freeze({ ...baseGroup, ...(native ? { native } : {}) })
-      : null;
+  const group: HistoryBatchGroup | null = baseGroup
+    ? Object.freeze({ ...baseGroup, ...(native ? { native } : {}) })
+    : null;
   const resolveSelectionRoot = (
     selection: Selection,
     fallback?: string
@@ -506,7 +496,7 @@ const prepareHistoryBatch = <V extends Value>(
   );
   const textBurstSelectionBefore = getTextBurstSelectionBefore({
     group,
-    isNativeTextInput: !grouping && commit.tags.includes('native-text-input'),
+    isNativeTextInput: commit.tags.includes('native-text-input'),
     selectionBefore: commit.selectionBefore,
   });
 
@@ -554,7 +544,7 @@ const createHistoryPlugin = <
   options: HistoryOptions<TEnabled> = {}
 ): HistoryPlugin<TEnabled> => {
   const reduceHistory = ({
-    after,
+    after: committed,
     commit,
     editor,
     schema,
@@ -574,12 +564,20 @@ const createHistoryPlugin = <
       return undefined;
     }
 
-    const { changes } = commit;
+    const { retained } = getCompiledSchemaRootSets(
+      getCompiledEditorSchema(editor)
+    );
+    const kept = (change: DocumentChange) =>
+      retained.size === 0
+        ? change
+        : filterDocumentChangeRoots(change, (root) => !retained.has(root));
+    const after = withoutRetainedRoots(committed, retained);
+    const changes = kept(commit.changes);
+    const inverse = kept(commit.inverseChanges);
 
-    const authoredCapture = captureAuthoredHistory(editor, commit);
-    const effects =
-      authoredCapture?.effects ??
-      commit.effects.filter((effect) => effect.type.history !== 'skip');
+    const effects = commit.effects.filter(
+      (effect) => effect.type.history !== 'skip'
+    );
     const action = commit.annotations[historyAction.key] as
       | HistoryAction
       | undefined;
@@ -613,7 +611,7 @@ const createHistoryPlugin = <
       const claimVersion = readPendingHistoryReplay(editor)?.claimVersion;
       const identity = settlePendingHistoryReplay(editor, {
         ...(replaySettlement.status === 'applied'
-          ? { change: commit.inverseChanges, effects }
+          ? { change: inverse, effects }
           : {}),
         request: replaySettlement.request,
         status: replaySettlement.status,
@@ -678,7 +676,7 @@ const createHistoryPlugin = <
         destination,
         {
           ...batch,
-          change: commit.inverseChanges,
+          change: inverse,
           effects: effects.toReversed().map(invertEffect),
         },
         after
@@ -718,12 +716,7 @@ const createHistoryPlugin = <
       );
     }
 
-    const prepared = prepareHistoryBatch(
-      commit.inverseChanges,
-      commit,
-      effects,
-      authoredCapture?.grouping
-    );
+    const prepared = prepareHistoryBatch(inverse, commit, effects, retained);
 
     if (!prepared) return undefined;
 
@@ -743,14 +736,7 @@ const createHistoryPlugin = <
       commit.tags.includes('native-text-input') ||
       commit.tags.includes('dom-text-input');
     const composition = commit.tags.includes('composition');
-    const authoredInput = authoredCapture !== undefined && textInput;
-    const effectsCompatible =
-      lastEntry != null &&
-      canMergeAuthoredHistory(
-        editor,
-        preparedBatch.effects,
-        lastEntry.batch.effects
-      );
+    const effectsCompatible = false;
     const withinAutomaticWindow =
       previousAutomaticGroupTime !== undefined &&
       Math.max(0, currentStartedAt - previousAutomaticGroupTime) <=
@@ -773,9 +759,7 @@ const createHistoryPlugin = <
       sessionEffects.length === 0 &&
       !explicitPush &&
       (explicitMerge
-        ? (!authoredCapture || effectsCompatible) &&
-          (!authoredInput || composition || withinAutomaticWindow) &&
-          shouldMergeExplicitBatch(
+        ? shouldMergeExplicitBatch(
             preparedBatch,
             prepared.group,
             lastEntry.batch,
@@ -784,7 +768,7 @@ const createHistoryPlugin = <
             effectsCompatible
           )
         : nativeMerge &&
-          (preparedBatch.effects.length === 0 || authoredInput) &&
+          preparedBatch.effects.length === 0 &&
           (compositionMerge
             ? shouldMergeCompositionBatch(
                 preparedBatch,
@@ -856,7 +840,7 @@ const createHistoryPlugin = <
         recovery: anchorCapture?.recovery ?? null,
       });
     }
-    if (explicitPush || (preparedBatch.effects.length > 0 && !authoredInput)) {
+    if (explicitPush || preparedBatch.effects.length > 0) {
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
     } else {
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.set(editor, currentTime);
@@ -883,14 +867,6 @@ const createHistoryPlugin = <
           });
         } catch (error) {
           PREPARED_HISTORY_REPLAYS.delete(request);
-          const conflicts = getAuthoredHistoryConflicts(editor, error);
-
-          if (conflicts) {
-            return Object.freeze({
-              conflicts: Object.freeze([...conflicts]),
-              status: 'blocked',
-            });
-          }
           throw error;
         }
 
@@ -1093,7 +1069,7 @@ const createHistoryPlugin = <
       return {
         merge: createHistoryControl(tx, 'merge'),
         newBatch: createHistoryControl(tx, 'push'),
-        restore(value) {
+        restore: txLocate(false, (value) => {
           if (!History.isHistory(value)) {
             throw new Error('tx.history.restore requires decoded history.');
           }
@@ -1101,7 +1077,7 @@ const createHistoryPlugin = <
           tx.tags.add('history-skip');
           tx.tags.add('history-restore');
           tx.annotations.set(historyRestore, encodeHistoryValue(editor, value));
-        },
+        }),
         skip: createHistoryControl(tx, 'skip'),
       } satisfies HistoryTxApi;
     },

@@ -37,7 +37,8 @@ const keyIdentity = (key: string) => {
 };
 
 export const parseSyntheticShortcut = (
-  shortcut: string
+  shortcut: string,
+  platform: NodeJS.Platform
 ): SyntheticKeyInit | null => {
   const parts = shortcut.split('+');
   const key = parts.at(-1);
@@ -46,7 +47,7 @@ export const parseSyntheticShortcut = (
     return null;
   }
 
-  const isMac = process.platform === 'darwin';
+  const isMac = platform === 'darwin';
   const modifiers = new Set(parts.slice(0, -1));
 
   if (

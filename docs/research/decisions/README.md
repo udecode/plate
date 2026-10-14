@@ -9,6 +9,10 @@ does not certify implementation.
 
 This directory contains normalized choices and policy calls.
 
+[Select external editors by the decision](editor-comparison-set.md) records the
+current comparison set, its source boundaries and its rejection of a universal
+editor ranking.
+
 Each decision page should answer:
 
 - what question was decided

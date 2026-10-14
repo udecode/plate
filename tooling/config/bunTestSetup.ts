@@ -1,4 +1,6 @@
-import { afterEach, expect, mock, spyOn } from 'bun:test';
+import { afterEach, expect, jest, mock, spyOn, vi } from 'bun:test';
+import { createRequire } from 'node:module';
+import { dirname, relative, resolve } from 'node:path';
 import {
   ReadableStream,
   TextDecoderStream,
@@ -6,13 +8,97 @@ import {
   TransformStream,
   WritableStream,
 } from 'node:stream/web';
-import { TextEncoder } from 'node:util';
+import { TextEncoder, types } from 'node:util';
 
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 // fumadocs' createMDX, which next.config.ts calls on import, regenerates
 // apps/www/.source unless this is set, and other test files read that output.
 process.env._FUMADOCS_MDX = '1';
+
+const moduleCache = createRequire(import.meta.url).cache;
+
+const moduleExportNames = new Map<
+  string,
+  { fix: string; names: Set<string>; setBy: string }
+>();
+
+const shortPath = (path: string) => {
+  const local = relative(process.cwd(), path);
+  return local.startsWith('..') ? path : local;
+};
+
+const resolveMockTarget = (specifier: string, file: string) => {
+  try {
+    return Bun.resolveSync(specifier, dirname(file));
+  } catch {
+    return specifier.startsWith('.')
+      ? resolve(dirname(file), specifier)
+      : specifier;
+  }
+};
+
+// A CommonJS module's namespace adds `default` to its exports object.
+const loadedExportNames = (exports: object) =>
+  types.isModuleNamespaceObject(exports)
+    ? Object.keys(exports)
+    : [...Object.keys(exports), 'default'];
+
+const guardModuleMock =
+  (register: typeof mock.module): typeof mock.module =>
+  (specifier, factory) => {
+    if (typeof factory !== 'function') return register(specifier, factory);
+    const file = Bun.main;
+    const path = resolveMockTarget(specifier, file);
+    const loaded = moduleCache[path]?.exports;
+    if (loaded && !moduleExportNames.has(path)) {
+      moduleExportNames.set(path, {
+        fix: 'Mock the module before anything in this process imports it, or drop those names.',
+        names: new Set(loadedExportNames(loaded)),
+        setBy: 'a real import',
+      });
+    }
+    const check = (exports: unknown) => {
+      if (
+        exports === null ||
+        (typeof exports !== 'object' && typeof exports !== 'function')
+      ) {
+        return exports;
+      }
+      const names = Object.keys(exports);
+      const known = moduleExportNames.get(path);
+      if (!known) {
+        moduleExportNames.set(path, {
+          fix: 'Run each module-mocking file in its own process, as `pnpm test` and the package `test` scripts do when given no paths, or give every mock of this module the same exports.',
+          names: new Set(names),
+          setBy: `the mock in ${shortPath(file)}`,
+        });
+        return exports;
+      }
+      const added = names.filter((name) => !known.names.has(name));
+      if (added.length > 0) {
+        throw new Error(
+          `The mock of '${specifier}' in ${shortPath(file)} adds ${added.join(', ')}, but ${known.setBy} already set the exports of ${shortPath(path)} in this Bun process, and Bun cannot add exports to a loaded module, so they read as undefined. ${known.fix}`
+        );
+      }
+      return exports;
+    };
+    return register(specifier, () => {
+      const exports = factory();
+      if (!types.isPromise(exports)) return check(exports);
+      // Bun hangs the run when a loaded module's mock returns a promise that
+      // settles after the factory's own, so check on a side chain instead.
+      exports.then(check, () => {});
+      return exports;
+    });
+  };
+
+const guardedModuleMock = guardModuleMock(mock.module.bind(mock));
+
+mock.module = guardedModuleMock;
+vi.mock = guardedModuleMock;
+// bun-types omits jest.mock, which Bun also ships as a module mock.
+Object.assign(jest, { mock: guardedModuleMock });
 
 // Make mock and spyOn globally available to avoid needing to import from bun:test
 (globalThis as any).mock = mock;

@@ -79,7 +79,6 @@ import {
   IS_READ_ONLY,
   NODE_TO_ELEMENT,
   NODE_TO_KEY,
-  NODE_TO_RUNTIME_ID,
 } from '../utils/weak-maps';
 import {
   type ClipboardSliceRead,
@@ -105,7 +104,6 @@ import {
   resolveBlockFragmentDropRange,
   resolveVoidEventRange,
 } from './dom-event-range-targets';
-import { isDOMFragmentNode, readDOMFragmentParent } from './dom-fragment-view';
 import {
   createDOMGeometryKernel,
   getPliteTextHostBounds,
@@ -318,22 +316,11 @@ export type DOMVisualPointOptions = Readonly<{
 
 /** Error thrown when the editor cannot resolve a DOM node, point, or range. */
 export class DOMResolutionError extends Error {
-  readonly code: string;
   readonly details: unknown;
 
-  constructor(
-    message: string,
-    {
-      code,
-      details,
-    }: {
-      code: string;
-      details?: unknown;
-    }
-  ) {
+  constructor(message: string, { details }: { details?: unknown } = {}) {
     super(message);
     this.name = 'DOMResolutionError';
-    this.code = code;
     this.details = details;
   }
 }
@@ -740,9 +727,6 @@ const cachePliteDOMNode = (
   keyToElement.set(key, domNode);
   ELEMENT_TO_NODE.set(domNode, node);
   NODE_TO_ELEMENT.set(node, domNode);
-  if (nodeKey) {
-    NODE_TO_RUNTIME_ID.set(node, nodeKey);
-  }
 
   return domNode;
 };
@@ -756,8 +740,7 @@ const isMountedEditorDOMNode = (
   return (
     editorElement?.isConnected === true &&
     domNode.isConnected &&
-    containsShadowAware(editorElement, domNode) &&
-    isDOMFragmentNode(editor, domNode) !== false
+    containsShadowAware(editorElement, domNode)
   );
 };
 
@@ -800,15 +783,15 @@ const resolvePliteTextPoint = ({
   exactMatch,
   offset,
   path,
-  pliteNode,
+  editorNode,
 }: {
   editor: DOMEditor<any>;
   exactMatch: boolean;
   offset: number;
   path: Path;
-  pliteNode: Node;
+  editorNode: Node;
 }): Point | null => {
-  if (!TextApi.isText(pliteNode)) {
+  if (!TextApi.isText(editorNode)) {
     if (!editorHasPath(editor, path)) {
       return null;
     }
@@ -818,7 +801,7 @@ const resolvePliteTextPoint = ({
     });
   }
 
-  const textLength = pliteNode.text.length;
+  const textLength = editorNode.text.length;
 
   if (Number.isFinite(offset) && offset >= 0 && offset <= textLength) {
     return { path, offset };
@@ -1045,9 +1028,7 @@ export const resolveDOMPointInRoot = (
   // to its direct text and zero-width spans. (We have to filter out any
   // other siblings that may have been rendered alongside them.)
   const selector = '[data-editor-string], [data-editor-zero-width]';
-  const texts = Array.from(el.querySelectorAll(selector)).filter(
-    (element) => isDOMFragmentNode(editor, element) !== false
-  );
+  const texts = Array.from(el.querySelectorAll(selector));
   let { start } = getPliteTextHostBounds(el);
 
   for (let i = 0; i < texts.length; i++) {
@@ -1137,7 +1118,7 @@ const readTextToCaret = (editor: DOMEditor<any>, from: Point) => {
   const contents = range.cloneContents();
 
   for (const hidden of contents.querySelectorAll(
-    '[contenteditable="false"], [data-editor-retained], [data-editor="true"]'
+    '[contenteditable="false"], [data-editor="true"]'
   )) {
     hidden.remove();
   }
@@ -1259,8 +1240,6 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   editable: (editor, root) => {
-    const fragmentParent = readDOMFragmentParent(editor);
-    if (fragmentParent) return DOMEditor.editable(fragmentParent, root);
     const rootKey = getEditorDOMViewRoot(editor, root);
     if (rootKey === getEditorDOMViewRoot(editor)) {
       const mountedRoot = resolveMountedEditorDOMRoot(editor);
@@ -1298,8 +1277,8 @@ export const DOMEditor: DOMEditorInterface = {
 
     if (!range) {
       throw new DOMResolutionError(
-        `Cannot resolve a Plite range from a DOM event: ${event}`,
-        { code: 'plitejs/dom/event-range', details: { event } }
+        `Cannot resolve an editor range from a DOM event: ${event}`,
+        { details: { event } }
       );
     }
 
@@ -1391,8 +1370,8 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     throw new DOMResolutionError(
-      `Unable to find the path for Plite node: ${formatDebugValue(node)}`,
-      { code: 'plitejs/dom/path', details: { node } }
+      `Unable to find the path for an editor node: ${formatDebugValue(node)}`,
+      { details: { node } }
     );
   },
 
@@ -1656,10 +1635,7 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   getWindow: (editor) => {
-    const fragmentParent = readDOMFragmentParent(editor);
-    const window =
-      EDITOR_TO_WINDOW.get(editor) ??
-      (fragmentParent ? DOMEditor.getWindow(fragmentParent) : undefined);
+    const window = EDITOR_TO_WINDOW.get(editor);
     if (!window) {
       throw new Error('Unable to find a host window element for this editor');
     }
@@ -1670,10 +1646,6 @@ export const DOMEditor: DOMEditorInterface = {
     const { editable = false } = options;
     const editorEl = DOMEditor.editable(editor);
     if (!editorEl) return false;
-    const fragment = isDOMFragmentNode(editor, target);
-    if (fragment !== null) {
-      return fragment && !editable && containsShadowAware(editorEl, target);
-    }
     let targetEl: HTMLElement | null | undefined;
 
     // COMPAT: In Firefox, reading `target.nodeType` will throw an error if
@@ -1758,12 +1730,12 @@ export const DOMEditor: DOMEditorInterface = {
     if (IS_READ_ONLY.get(editor)) return false;
     if (!DOMEditor.hasTarget(editor, target)) return false;
 
-    const pliteNode = DOMEditor.resolveNode(editor, target);
+    const editorNode = DOMEditor.resolveNode(editor, target);
 
     return (
-      !!pliteNode &&
-      NodeApi.isElement(pliteNode) &&
-      editorIsVoid(editor, pliteNode)
+      !!editorNode &&
+      NodeApi.isElement(editorNode) &&
+      editorIsVoid(editor, editorNode)
     );
   },
 
@@ -1824,8 +1796,8 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     throw new DOMResolutionError(
-      `Cannot resolve a DOM node from Plite node: ${formatDebugValue(node)}`,
-      { code: 'plitejs/dom/dom-node', details: { node } }
+      `Cannot resolve a DOM node from an editor node: ${formatDebugValue(node)}`,
+      { details: { node } }
     );
   },
 
@@ -1851,25 +1823,19 @@ export const DOMEditor: DOMEditorInterface = {
 
       if (!domNode) {
         throw new DOMResolutionError(
-          `Cannot resolve a DOM node from Plite node: ${formatDebugValue(
+          `Cannot resolve a DOM node from an editor node: ${formatDebugValue(
             node
           )}`,
-          {
-            code: 'plitejs/dom/dom-node',
-            details: { node, point: resolvedPoint },
-          }
+          { details: { node, point: resolvedPoint } }
         );
       }
     }
 
     throw new DOMResolutionError(
-      `Cannot resolve a DOM point from Plite point: ${formatDebugValue(
+      `Cannot resolve a DOM point from an editor point: ${formatDebugValue(
         resolvedPoint
       )}`,
-      {
-        code: 'plitejs/dom/dom-point',
-        details: { point: resolvedPoint },
-      }
+      { details: { point: resolvedPoint } }
     );
   },
 
@@ -1883,8 +1849,8 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     throw new DOMResolutionError(
-      `Cannot resolve a DOM range from Plite range: ${formatDebugValue(range)}`,
-      { code: 'plitejs/dom/dom-range', details: { range } }
+      `Cannot resolve a DOM range from an editor range: ${formatDebugValue(range)}`,
+      { details: { range } }
     );
   },
 
@@ -2038,7 +2004,6 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   resolveNode: (editor, domNode) => {
-    if (isDOMFragmentNode(editor, domNode) === false) return null;
     const textFlowEntry = resolveDOMTextFlowEntry(domNode, 0);
 
     if (textFlowEntry) {
@@ -2105,8 +2070,8 @@ export const DOMEditor: DOMEditorInterface = {
     const domNodeLabel = domEl?.nodeName ?? domNode.nodeName;
 
     throw new DOMResolutionError(
-      `Cannot resolve a Plite node from DOM node: ${domNodeLabel}`,
-      { code: 'plitejs/dom/plite-node', details: { domNode } }
+      `Cannot resolve an editor node from DOM node: ${domNodeLabel}`,
+      { details: { domNode } }
     );
   },
 
@@ -2119,7 +2084,6 @@ export const DOMEditor: DOMEditorInterface = {
     }
   ): Point | null => {
     const { exactMatch } = options;
-    if (isDOMFragmentNode(editor, domPoint[0]) === false) return null;
     const boundaryPlitePoint = resolvePlitePointFromDOMCoverageBoundary(
       editor,
       domPoint
@@ -2203,9 +2167,7 @@ export const DOMEditor: DOMEditorInterface = {
                 contents.querySelectorAll('[data-editor-zero-width]')
               ),
               ...Array.prototype.slice.call(
-                contents.querySelectorAll(
-                  '[contenteditable=false], [data-editor-retained]'
-                )
+                contents.querySelectorAll('[contenteditable=false]')
               ),
             ];
 
@@ -2369,9 +2331,9 @@ export const DOMEditor: DOMEditorInterface = {
         : parentNode.closest('[data-editor-node]');
 
       if (node && DOMEditor.hasDOMNode(editor, node, { editable: true })) {
-        const pliteNode = DOMEditor.resolveNode(editor, node);
-        const nodePath = pliteNode
-          ? DOMEditor.resolvePath(editor, pliteNode)
+        const editorNode = DOMEditor.resolveNode(editor, node);
+        const nodePath = editorNode
+          ? DOMEditor.resolvePath(editor, editorNode)
           : null;
 
         if (!nodePath) {
@@ -2399,14 +2361,14 @@ export const DOMEditor: DOMEditorInterface = {
     // the select event fires twice, once for the old editor's `element`
     // first, and then afterwards for the correct `element`. (2017/03/03)
     const mountedPath = resolveMountedDOMPath(editor, textNode as HTMLElement);
-    const pliteNode = DOMEditor.resolveNode(editor, textNode);
-    const resolvedPath = pliteNode
-      ? DOMEditor.resolvePath(editor, pliteNode)
+    const editorNode = DOMEditor.resolveNode(editor, textNode);
+    const resolvedPath = editorNode
+      ? DOMEditor.resolvePath(editor, editorNode)
       : null;
     const path = mountedPath ?? resolvedPath;
     const pointNode = path
       ? editor.read((state) => state.nodes.get(path)?.[0])
-      : pliteNode;
+      : editorNode;
 
     if (!pointNode || !path) {
       const fallbackPath = parsePliteDOMPath(
@@ -2425,7 +2387,7 @@ export const DOMEditor: DOMEditorInterface = {
           exactMatch,
           offset,
           path: fallbackPath,
-          pliteNode: fallbackNode,
+          editorNode: fallbackNode,
         });
 
         return point;
@@ -2439,7 +2401,7 @@ export const DOMEditor: DOMEditorInterface = {
       exactMatch,
       offset,
       path,
-      pliteNode: pointNode,
+      editorNode: pointNode,
     });
 
     return point;
@@ -2455,8 +2417,8 @@ export const DOMEditor: DOMEditorInterface = {
     const [domNode, offset] = domPoint;
 
     throw new DOMResolutionError(
-      `Cannot resolve a Plite point from DOM point: ${domNode.nodeName},${offset}`,
-      { code: 'plitejs/dom/plite-point', details: { domPoint } }
+      `Cannot resolve an editor point from DOM point: ${domNode.nodeName},${offset}`,
+      { details: { domPoint } }
     );
   },
 
@@ -2624,8 +2586,8 @@ export const DOMEditor: DOMEditorInterface = {
     }
 
     throw new DOMResolutionError(
-      'Cannot resolve a Plite range from DOM range',
-      { code: 'plitejs/dom/plite-range', details: { domRange } }
+      'Cannot resolve an editor range from DOM range',
+      { details: { domRange } }
     );
   },
 };

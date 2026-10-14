@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -7,7 +8,7 @@ import type { Value } from 'platejs';
 
 type DrawingValue = { children: Value };
 type BrowserHandleElement = HTMLElement & {
-  __pliteBrowserHandle: {
+  [BROWSER_HANDLE_KEY]: {
     applyValueChange: (
       value: DrawingValue,
       policy?: { history: 'new-batch' }
@@ -55,8 +56,8 @@ test('excalidraw: filters viewport state and projects document undo into the can
     await page.mouse.up();
     expect(await editor.get.modelValue()).toEqual(beforePan);
 
-    await root.evaluate((element) => {
-      const handle = (element as BrowserHandleElement).__pliteBrowserHandle;
+    await root.evaluate((element, key: typeof BROWSER_HANDLE_KEY) => {
+      const handle = (element as BrowserHandleElement)[key];
       const value = handle.getValue();
       const drawing = value.children.find(
         (node) => 'type' in node && node.type === 'excalidraw'
@@ -84,18 +85,24 @@ test('excalidraw: filters viewport state and projects document undo into the can
         },
         { history: 'new-batch' }
       );
-    });
+    }, BROWSER_HANDLE_KEY);
     await expect.poll(color).toEqual([255, 0, 0, 255]);
-    await root.evaluate((element) =>
-      (element as BrowserHandleElement).__pliteBrowserHandle.undo()
+    await root.evaluate(
+      (element, key: typeof BROWSER_HANDLE_KEY) =>
+        (element as BrowserHandleElement)[key].undo(),
+      BROWSER_HANDLE_KEY
     );
     await expect.poll(color).toEqual([175, 238, 238, 255]);
-    await root.evaluate((element) =>
-      (element as BrowserHandleElement).__pliteBrowserHandle.redo()
+    await root.evaluate(
+      (element, key: typeof BROWSER_HANDLE_KEY) =>
+        (element as BrowserHandleElement)[key].redo(),
+      BROWSER_HANDLE_KEY
     );
     await expect.poll(color).toEqual([255, 0, 0, 255]);
     await expect(
-      page.getByRole('button', { name: 'Undo', exact: true })
+      page
+        .locator('.excalidraw')
+        .getByRole('button', { name: 'Undo', exact: true })
     ).toBeDisabled();
 
     const beforeDraw = (await editor.get.modelValue()) as DrawingValue;
@@ -119,7 +126,10 @@ test('excalidraw: filters viewport state and projects document undo into the can
     );
     await page.mouse.up();
     await expect.poll(() => editor.get.modelValue()).not.toEqual(beforeDraw);
-    await page.getByRole('button', { name: 'Undo', exact: true }).click();
+    await page
+      .locator('.excalidraw')
+      .getByRole('button', { name: 'Undo', exact: true })
+      .click();
     await expect
       .poll(async () => {
         const value = (await editor.get.modelValue()) as DrawingValue;

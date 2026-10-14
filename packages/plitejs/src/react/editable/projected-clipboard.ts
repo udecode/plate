@@ -6,8 +6,6 @@ import {
   RangeApi,
   SelectionApi,
 } from '../..';
-import { createAuthoredFragmentView } from '../../core/authored-fragment-view';
-import { readAuthoredViewFragments } from '../../core/authored-runtime';
 import { rewriteContentRootReferences } from '../../core/content-slice-roots';
 import { exportContentSlice } from '../../core/editor-read-execution';
 import {
@@ -32,34 +30,6 @@ export const decodeProjectedClipboardFragment = (
   editor: RuntimeEditor,
   data: Pick<DataTransfer, 'getData'>
 ): ContentSliceValue | null => readDOMFragmentData(editor, data);
-
-const joinSliceContent = (
-  left: readonly Descendant[],
-  right: readonly Descendant[],
-  depth: number
-): readonly Descendant[] => {
-  if (!depth) return [...left, ...right];
-  const before = left.at(-1);
-  const after = right[0];
-  if (
-    !before ||
-    !after ||
-    !NodeApi.isElement(before) ||
-    !NodeApi.isElement(after)
-  ) {
-    throw new Error(
-      'Projected clipboard content lost its shared element context.'
-    );
-  }
-  return [
-    ...left.slice(0, -1),
-    {
-      ...before,
-      children: joinSliceContent(before.children, after.children, depth - 1),
-    },
-    ...right.slice(1),
-  ];
-};
 
 const allocateProjectedRoot = (root: string, reserved: Set<string>) => {
   if (!reserved.has(root)) {
@@ -139,26 +109,10 @@ export const getProjectedViewSelectionSlice = (
   let openStart = 0;
   let openEnd = 0;
   const roots: Record<string, readonly Descendant[]> = {};
-  const rootNamesBySource = new Map<string, Map<string, string>>();
+  const rootNames = new Map<string, string>();
   const reservedRoots = new Set<string>();
-  let previous: {
-    join: number | null;
-    ownerKey: string | null;
-    root: string;
-  } | null = null;
   for (const segment of viewSelection.segments.parts) {
-    const fragment = segment.fragment
-      ? readAuthoredViewFragments(editor, segment.fragment.changeId).find(
-          (entry) => entry.id === segment.fragment?.id
-        )
-      : null;
-    if (segment.fragment && (!fragment || fragment.kind === 'properties')) {
-      return null;
-    }
-    const current = fragment
-      ? createAuthoredFragmentView(editor, fragment)
-      : editor;
-    const slice = current.read((state) => {
+    const slice = editor.read((state) => {
       const rootChildren = {
         [segment.root]: readRootChildren(state, segment.root),
       };
@@ -196,17 +150,8 @@ export const getProjectedViewSelectionSlice = (
     if (!slice) return null;
     if (!slice.content.length) continue;
     const { openEnd: sliceOpenEnd, openStart: sliceOpenStart } = slice;
-    const sourceKey = fragment
-      ? `fragment:${fragment.changeId}:${fragment.id}`
-      : 'current';
-    let rootNames = rootNamesBySource.get(sourceKey);
-
-    if (!rootNames) {
-      rootNames = new Map();
-      rootNamesBySource.set(sourceKey, rootNames);
-    }
     const mapped = remapProjectedSourceSlice(
-      current,
+      editor,
       slice,
       rootNames,
       reservedRoots
@@ -215,39 +160,13 @@ export const getProjectedViewSelectionSlice = (
     if (!mapped) return null;
     const { content: mappedContent } = mapped;
     Object.assign(roots, mapped.roots);
-    const joinStart =
-      fragment && fragment.kind !== 'properties'
-        ? fragment.placement?.kind === 'text'
-          ? fragment.slice.openStart
-          : 0
-        : null;
-    const joinEnd =
-      fragment && fragment.kind !== 'properties'
-        ? fragment.placement?.kind === 'text'
-          ? fragment.slice.openEnd
-          : 0
-        : null;
     if (content) {
-      const depths = [previous?.join, joinStart].filter(
-        (depth): depth is number => depth != null
-      );
-      const depth =
-        previous?.root === segment.root &&
-        previous.ownerKey === segment.ownerKey &&
-        depths.length
-          ? Math.min(...depths)
-          : 0;
-      content = joinSliceContent(content, mappedContent, depth);
+      content = [...content, ...mappedContent];
     } else {
       content = mappedContent;
       openStart = sliceOpenStart;
     }
     openEnd = sliceOpenEnd;
-    previous = {
-      join: joinEnd,
-      ownerKey: segment.ownerKey,
-      root: segment.root,
-    };
   }
   return content
     ? ContentSlice.fromJSON({

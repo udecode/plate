@@ -617,6 +617,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:textAlign@187ef459f9d44620",
             "element:url@b09f563d04864a0d",
             "element:width@d289fcde94c1475e"
@@ -625,11 +626,12 @@
         "groups": [
           "all",
           "block",
+          "core:block-content",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:textAlign@187ef459f9d44620",
           "element:url@b09f563d04864a0d",
           "element:width@d289fcde94c1475e"
@@ -686,8 +688,11 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
+            "element:listId@726fcc47c9df78c2",
+            "element:listLevels@16e96e9ea7ed708c",
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
@@ -697,12 +702,15 @@
         "groups": [
           "all",
           "block",
-          "element",
-          "plate:block-content"
+          "core:block-content",
+          "element"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -748,6 +756,7 @@
             "element:icon@b610536939eb3f13"
           ],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:backgroundColor@abc86032ce5e8381",
             "element:icon@b610536939eb3f13",
             "element:variant@7ed3805aa01a6807"
@@ -756,11 +765,12 @@
         "groups": [
           "all",
           "block",
+          "core:block-content",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:backgroundColor@abc86032ce5e8381",
           "element:icon@b610536939eb3f13",
           "element:variant@7ed3805aa01a6807"
@@ -797,9 +807,12 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
             "element:language@f075c3fe4239c09c",
+            "element:listId@726fcc47c9df78c2",
+            "element:listLevels@16e96e9ea7ed708c",
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
@@ -809,14 +822,17 @@
         "groups": [
           "all",
           "block",
+          "core:block-content",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:language@f075c3fe4239c09c",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -876,6 +892,7 @@
             "element:width@7231be0c06083662"
           ],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:width@7231be0c06083662"
           ]
         },
@@ -885,6 +902,7 @@
           "element"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:width@7231be0c06083662"
         ],
         "slice": {
@@ -921,15 +939,19 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [],
-          "propertyIds": []
+          "propertyIds": [
+            "element:authored@0b98e5d9806e5194"
+          ]
         },
         "groups": [
           "all",
           "block",
-          "element",
-          "plate:block-content"
+          "core:block-content",
+          "element"
         ],
-        "propertyIds": [],
+        "propertyIds": [
+          "element:authored@0b98e5d9806e5194"
+        ],
         "slice": {
           "preserveContext": false,
           "replaceWhenCovered": true
@@ -962,6 +984,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:value@498b315ffbe887a5"
           ]
         },
@@ -971,6 +994,7 @@
           "inline"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:value@498b315ffbe887a5"
         ],
         "slice": {
@@ -1026,8 +1050,11 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
+            "element:listId@726fcc47c9df78c2",
+            "element:listLevels@16e96e9ea7ed708c",
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
@@ -1037,12 +1064,15 @@
         "groups": [
           "all",
           "block",
-          "element",
-          "plate:block-content"
+          "core:block-content",
+          "element"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -1082,16 +1112,18 @@
             "element:latex@6c61d1f3c8305dce"
           ],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:latex@6c61d1f3c8305dce"
           ]
         },
         "groups": [
           "all",
           "block",
-          "element",
-          "plate:block-content"
+          "core:block-content",
+          "element"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:latex@6c61d1f3c8305dce"
         ],
         "slice": {
@@ -1132,6 +1164,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:name@1069a658ff703b9d",
             "element:url@88fa4e556f36a1b7",
             "element:width@b3737226e8fe3a6e"
@@ -1140,11 +1173,12 @@
         "groups": [
           "all",
           "block",
+          "core:block-content",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:name@1069a658ff703b9d",
           "element:url@88fa4e556f36a1b7",
           "element:width@b3737226e8fe3a6e"
@@ -1201,16 +1235,18 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:ref@3b0dc884d77d0966"
           ]
         },
         "groups": [
           "all",
           "block",
-          "element",
-          "plate:block-content"
+          "core:block-content",
+          "element"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:ref@3b0dc884d77d0966"
         ],
         "slice": {
@@ -1245,6 +1281,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:ref@9f1cb3043add19e8"
           ]
         },
@@ -1254,6 +1291,7 @@
           "inline"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:ref@9f1cb3043add19e8"
         ],
         "slice": {
@@ -1294,10 +1332,13 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
             "element:level@94a59f5f3986e008",
             "element:lineHeight@6366f6699ad903fe",
+            "element:listId@726fcc47c9df78c2",
+            "element:listLevels@16e96e9ea7ed708c",
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
@@ -1308,15 +1349,18 @@
         "groups": [
           "all",
           "block",
+          "core:block-content",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:level@94a59f5f3986e008",
           "element:lineHeight@6366f6699ad903fe",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -1354,15 +1398,19 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [],
-          "propertyIds": []
+          "propertyIds": [
+            "element:authored@0b98e5d9806e5194"
+          ]
         },
         "groups": [
           "all",
           "block",
-          "element",
-          "plate:block-content"
+          "core:block-content",
+          "element"
         ],
-        "propertyIds": [],
+        "propertyIds": [
+          "element:authored@0b98e5d9806e5194"
+        ],
         "slice": {
           "preserveContext": false,
           "replaceWhenCovered": true
@@ -1402,8 +1450,11 @@
           "materializedPropertyIds": [],
           "propertyIds": [
             "element:alt@92916bfcb7519666",
+            "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
+            "element:listId@726fcc47c9df78c2",
+            "element:listLevels@16e96e9ea7ed708c",
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
@@ -1419,14 +1470,17 @@
         "groups": [
           "all",
           "block",
+          "core:block-content",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [
           "element:alt@92916bfcb7519666",
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -1472,6 +1526,7 @@
             "element:latex@551cf2c0f2fc3a2d"
           ],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:latex@551cf2c0f2fc3a2d"
           ]
         },
@@ -1481,6 +1536,7 @@
           "inline"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:latex@551cf2c0f2fc3a2d"
         ],
         "slice": {
@@ -1515,6 +1571,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:target@5a44aa3afed09fc5",
             "element:url@c71768acf4ac21cd"
           ]
@@ -1525,6 +1582,7 @@
           "inline"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:target@5a44aa3afed09fc5",
           "element:url@c71768acf4ac21cd"
         ],
@@ -1566,6 +1624,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:provider@84a11c95e1d74472",
             "element:sourceUrl@2bfb15bcfacea42d",
             "element:textAlign@187ef459f9d44620",
@@ -1576,11 +1635,12 @@
         "groups": [
           "all",
           "block",
+          "core:block-content",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:provider@84a11c95e1d74472",
           "element:sourceUrl@2bfb15bcfacea42d",
           "element:textAlign@187ef459f9d44620",
@@ -1619,6 +1679,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:label@1a006ba1885943ec",
             "element:ref@8cc45c192237f919"
           ]
@@ -1629,6 +1690,7 @@
           "inline"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:label@1a006ba1885943ec",
           "element:ref@8cc45c192237f919"
         ],
@@ -1670,9 +1732,12 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:checked@27c77ba8343da0d2",
             "element:indent@08439eef12bbfdcb",
             "element:lineHeight@6366f6699ad903fe",
+            "element:listId@726fcc47c9df78c2",
+            "element:listLevels@16e96e9ea7ed708c",
             "element:listRestart@35fa065cd84f9a60",
             "element:listStart@81a20212d575ce89",
             "element:listStyle@b90bb1ea0c1c1372",
@@ -1683,14 +1748,17 @@
         "groups": [
           "all",
           "block",
+          "core:block-content",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:lineHeight@6366f6699ad903fe",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -1734,7 +1802,9 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [],
-          "propertyIds": []
+          "propertyIds": [
+            "element:authored@0b98e5d9806e5194"
+          ]
         },
         "groups": [
           "all",
@@ -1742,7 +1812,9 @@
           "element",
           "textBlock"
         ],
-        "propertyIds": [],
+        "propertyIds": [
+          "element:authored@0b98e5d9806e5194"
+        ],
         "slice": {
           "preserveContext": false,
           "replaceWhenCovered": true
@@ -1778,6 +1850,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:columnWidths@ee103944498d7d99",
             "element:marginLeft@da82a82a76b6f0f1"
           ]
@@ -1785,10 +1858,11 @@
         "groups": [
           "all",
           "block",
-          "element",
-          "plate:block-content"
+          "core:block-content",
+          "element"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:columnWidths@ee103944498d7d99",
           "element:marginLeft@da82a82a76b6f0f1"
         ],
@@ -1846,6 +1920,7 @@
             "element:header@e1fcb0f762cb1e47"
           ],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:backgroundColor@e4bf085a06d2acd9",
             "element:borders@1161f7efe55c616d",
             "element:colSpan@263bf74d05ba194a",
@@ -1859,6 +1934,7 @@
           "element"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:backgroundColor@e4bf085a06d2acd9",
           "element:borders@1161f7efe55c616d",
           "element:colSpan@263bf74d05ba194a",
@@ -1900,6 +1976,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:height@4222b97bc19b7723"
           ]
         },
@@ -1909,6 +1986,7 @@
           "element"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:height@4222b97bc19b7723"
         ],
         "slice": {
@@ -1942,15 +2020,19 @@
         "contentRoots": [],
         "construction": {
           "materializedPropertyIds": [],
-          "propertyIds": []
+          "propertyIds": [
+            "element:authored@0b98e5d9806e5194"
+          ]
         },
         "groups": [
           "all",
           "block",
-          "element",
-          "plate:block-content"
+          "core:block-content",
+          "element"
         ],
-        "propertyIds": [],
+        "propertyIds": [
+          "element:authored@0b98e5d9806e5194"
+        ],
         "slice": {
           "preserveContext": false,
           "replaceWhenCovered": true
@@ -1983,16 +2065,18 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:kind@e3c848dee20896b9"
           ]
         },
         "groups": [
           "all",
           "block",
-          "element",
-          "plate:block-content"
+          "core:block-content",
+          "element"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:kind@e3c848dee20896b9"
         ],
         "slice": {
@@ -2033,6 +2117,7 @@
         "construction": {
           "materializedPropertyIds": [],
           "propertyIds": [
+            "element:authored@0b98e5d9806e5194",
             "element:provider@82a92be778594f8a",
             "element:sourceUrl@edd27c91da0ff1df",
             "element:textAlign@187ef459f9d44620",
@@ -2043,11 +2128,12 @@
         "groups": [
           "all",
           "block",
+          "core:block-content",
           "element",
-          "plate:block-content",
           "textBlock"
         ],
         "propertyIds": [
+          "element:authored@0b98e5d9806e5194",
           "element:provider@82a92be778594f8a",
           "element:sourceUrl@edd27c91da0ff1df",
           "element:textAlign@187ef459f9d44620",
@@ -2851,6 +2937,29 @@
         ]
       ],
       [
+        "core:block-content",
+        [
+          "audio",
+          "blockquote",
+          "callout",
+          "codeBlock",
+          "columnGroup",
+          "details",
+          "equation",
+          "file",
+          "footnoteDefinition",
+          "heading",
+          "horizontalRule",
+          "image",
+          "mediaEmbed",
+          "paragraph",
+          "table",
+          "toc",
+          "upload",
+          "video"
+        ]
+      ],
+      [
         "element",
         [
           "audio",
@@ -2890,29 +2999,6 @@
           "inlineEquation",
           "link",
           "mention"
-        ]
-      ],
-      [
-        "plate:block-content",
-        [
-          "audio",
-          "blockquote",
-          "callout",
-          "codeBlock",
-          "columnGroup",
-          "details",
-          "equation",
-          "file",
-          "footnoteDefinition",
-          "heading",
-          "horizontalRule",
-          "image",
-          "mediaEmbed",
-          "paragraph",
-          "table",
-          "toc",
-          "upload",
-          "video"
         ]
       ],
       [
@@ -3647,10 +3733,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:5c6b05e09589cb4f",
+  "fingerprint": "fnv1a64:564940fb2bfc1706",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:5c6b05e09589cb4f",
+    "fingerprint": "fnv1a64:564940fb2bfc1706",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -3710,6 +3796,47 @@
         "target": {
           "kind": "type",
           "type": "image"
+        }
+      },
+      {
+        "descriptor": {
+          "item": {
+            "kind": "json",
+            "omitDefault": false,
+            "required": false
+          },
+          "kind": "set",
+          "omitDefault": false,
+          "required": false
+        },
+        "exclusiveGroupIds": [],
+        "id": "element:authored@0b98e5d9806e5194",
+        "key": "authored",
+        "lifecycle": {
+          "copy": "drop",
+          "inclusive": null,
+          "split": "drop",
+          "typeChange": "drop"
+        },
+        "merge": "set",
+        "owner": "authored",
+        "placement": "element",
+        "role": "metadata",
+        "target": {
+          "kind": "or",
+          "targets": [
+            {
+              "kind": "not",
+              "target": {
+                "kind": "root",
+                "root": null
+              }
+            },
+            {
+              "kind": "root",
+              "root": null
+            }
+          ]
         }
       },
       {
@@ -4150,6 +4277,69 @@
           "kind": "types",
           "types": [
             "heading",
+            "paragraph"
+          ]
+        }
+      },
+      {
+        "descriptor": {
+          "kind": "string",
+          "omitDefault": false,
+          "required": false
+        },
+        "exclusiveGroupIds": [],
+        "id": "element:listId@726fcc47c9df78c2",
+        "key": "listId",
+        "lifecycle": {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "preserve-if-allowed"
+        },
+        "merge": "replace",
+        "owner": "list",
+        "placement": "element",
+        "role": "content",
+        "target": {
+          "kind": "types",
+          "types": [
+            "blockquote",
+            "codeBlock",
+            "details",
+            "heading",
+            "image",
+            "paragraph"
+          ]
+        }
+      },
+      {
+        "descriptor": {
+          "kind": "json",
+          "omitDefault": false,
+          "required": false,
+          "validationVersion": 1
+        },
+        "exclusiveGroupIds": [],
+        "id": "element:listLevels@16e96e9ea7ed708c",
+        "key": "listLevels",
+        "lifecycle": {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "preserve-if-allowed"
+        },
+        "merge": "replace",
+        "owner": "list",
+        "placement": "element",
+        "role": "content",
+        "target": {
+          "kind": "types",
+          "types": [
+            "blockquote",
+            "codeBlock",
+            "details",
+            "heading",
+            "image",
             "paragraph"
           ]
         }
@@ -5044,6 +5234,32 @@
       },
       {
         "descriptor": {
+          "item": {
+            "kind": "json",
+            "omitDefault": false,
+            "required": false
+          },
+          "kind": "set",
+          "omitDefault": false,
+          "required": false
+        },
+        "exclusiveGroupIds": [],
+        "id": "text:authored@2b7320c75af17567",
+        "key": "authored",
+        "lifecycle": {
+          "copy": "drop",
+          "inclusive": false,
+          "split": "preserve",
+          "typeChange": "drop"
+        },
+        "merge": "set",
+        "owner": "authored",
+        "placement": "text",
+        "role": "metadata",
+        "target": null
+      },
+      {
+        "descriptor": {
           "kind": "string",
           "omitDefault": false,
           "required": false
@@ -5312,6 +5528,10 @@
         []
       ],
       [
+        "element:authored@0b98e5d9806e5194",
+        []
+      ],
+      [
         "element:backgroundColor@abc86032ce5e8381",
         []
       ],
@@ -5377,6 +5597,14 @@
       ],
       [
         "element:lineHeight@6366f6699ad903fe",
+        []
+      ],
+      [
+        "element:listId@726fcc47c9df78c2",
+        []
+      ],
+      [
+        "element:listLevels@16e96e9ea7ed708c",
         []
       ],
       [
@@ -5516,6 +5744,10 @@
         []
       ],
       [
+        "text:authored@2b7320c75af17567",
+        []
+      ],
+      [
         "text:backgroundColor@cb359bb332a9fb72",
         []
       ],
@@ -5568,6 +5800,7 @@
       [
         "audio",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:textAlign@187ef459f9d44620",
           "element:url@b09f563d04864a0d",
           "element:width@d289fcde94c1475e"
@@ -5576,8 +5809,11 @@
       [
         "blockquote",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -5587,6 +5823,7 @@
       [
         "callout",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:backgroundColor@abc86032ce5e8381",
           "element:icon@b610536939eb3f13",
           "element:variant@7ed3805aa01a6807"
@@ -5595,9 +5832,12 @@
       [
         "codeBlock",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:language@f075c3fe4239c09c",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -5607,24 +5847,31 @@
       [
         "column",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:width@7231be0c06083662"
         ]
       ],
       [
         "columnGroup",
-        []
+        [
+          "element:authored@0b98e5d9806e5194"
+        ]
       ],
       [
         "date",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:value@498b315ffbe887a5"
         ]
       ],
       [
         "details",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -5634,12 +5881,14 @@
       [
         "equation",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:latex@6c61d1f3c8305dce"
         ]
       ],
       [
         "file",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:name@1069a658ff703b9d",
           "element:url@88fa4e556f36a1b7",
           "element:width@b3737226e8fe3a6e"
@@ -5648,22 +5897,27 @@
       [
         "footnoteDefinition",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:ref@3b0dc884d77d0966"
         ]
       ],
       [
         "footnoteReference",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:ref@9f1cb3043add19e8"
         ]
       ],
       [
         "heading",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:level@94a59f5f3986e008",
           "element:lineHeight@6366f6699ad903fe",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -5673,14 +5927,19 @@
       ],
       [
         "horizontalRule",
-        []
+        [
+          "element:authored@0b98e5d9806e5194"
+        ]
       ],
       [
         "image",
         [
           "element:alt@92916bfcb7519666",
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -5696,12 +5955,14 @@
       [
         "inlineEquation",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:latex@551cf2c0f2fc3a2d"
         ]
       ],
       [
         "link",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:target@5a44aa3afed09fc5",
           "element:url@c71768acf4ac21cd"
         ]
@@ -5709,6 +5970,7 @@
       [
         "mediaEmbed",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:provider@84a11c95e1d74472",
           "element:sourceUrl@2bfb15bcfacea42d",
           "element:textAlign@187ef459f9d44620",
@@ -5719,6 +5981,7 @@
       [
         "mention",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:label@1a006ba1885943ec",
           "element:ref@8cc45c192237f919"
         ]
@@ -5726,9 +5989,12 @@
       [
         "paragraph",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:checked@27c77ba8343da0d2",
           "element:indent@08439eef12bbfdcb",
           "element:lineHeight@6366f6699ad903fe",
+          "element:listId@726fcc47c9df78c2",
+          "element:listLevels@16e96e9ea7ed708c",
           "element:listRestart@35fa065cd84f9a60",
           "element:listStart@81a20212d575ce89",
           "element:listStyle@b90bb1ea0c1c1372",
@@ -5738,11 +6004,14 @@
       ],
       [
         "summary",
-        []
+        [
+          "element:authored@0b98e5d9806e5194"
+        ]
       ],
       [
         "table",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:columnWidths@ee103944498d7d99",
           "element:marginLeft@da82a82a76b6f0f1"
         ]
@@ -5750,6 +6019,7 @@
       [
         "tableCell",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:backgroundColor@e4bf085a06d2acd9",
           "element:borders@1161f7efe55c616d",
           "element:colSpan@263bf74d05ba194a",
@@ -5760,22 +6030,27 @@
       [
         "tableRow",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:height@4222b97bc19b7723"
         ]
       ],
       [
         "toc",
-        []
+        [
+          "element:authored@0b98e5d9806e5194"
+        ]
       ],
       [
         "upload",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:kind@e3c848dee20896b9"
         ]
       ],
       [
         "video",
         [
+          "element:authored@0b98e5d9806e5194",
           "element:provider@82a92be778594f8a",
           "element:sourceUrl@edd27c91da0ff1df",
           "element:textAlign@187ef459f9d44620",
@@ -5791,6 +6066,15 @@
           "copy": "preserve",
           "inclusive": null,
           "split": "preserve",
+          "typeChange": "drop"
+        }
+      ],
+      [
+        "element:authored@0b98e5d9806e5194",
+        {
+          "copy": "drop",
+          "inclusive": null,
+          "split": "drop",
           "typeChange": "drop"
         }
       ],
@@ -5940,6 +6224,24 @@
       ],
       [
         "element:lineHeight@6366f6699ad903fe",
+        {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "preserve-if-allowed"
+        }
+      ],
+      [
+        "element:listId@726fcc47c9df78c2",
+        {
+          "copy": "preserve",
+          "inclusive": null,
+          "split": "preserve",
+          "typeChange": "preserve-if-allowed"
+        }
+      ],
+      [
+        "element:listLevels@16e96e9ea7ed708c",
         {
           "copy": "preserve",
           "inclusive": null,
@@ -6251,6 +6553,15 @@
           "inclusive": true,
           "split": "preserve",
           "typeChange": "preserve-if-allowed"
+        }
+      ],
+      [
+        "text:authored@2b7320c75af17567",
+        {
+          "copy": "drop",
+          "inclusive": false,
+          "split": "preserve",
+          "typeChange": "drop"
         }
       ],
       [
@@ -6372,6 +6683,12 @@
             ]
           ],
           [
+            "authored",
+            [
+              "element:authored@0b98e5d9806e5194"
+            ]
+          ],
+          [
             "backgroundColor",
             [
               "element:backgroundColor@abc86032ce5e8381",
@@ -6461,6 +6778,18 @@
             "lineHeight",
             [
               "element:lineHeight@6366f6699ad903fe"
+            ]
+          ],
+          [
+            "listId",
+            [
+              "element:listId@726fcc47c9df78c2"
+            ]
+          ],
+          [
+            "listLevels",
+            [
+              "element:listLevels@16e96e9ea7ed708c"
             ]
           ],
           [
@@ -6603,6 +6932,12 @@
             ]
           ],
           [
+            "authored",
+            [
+              "text:authored@2b7320c75af17567"
+            ]
+          ],
+          [
             "backgroundColor",
             [
               "text:backgroundColor@cb359bb332a9fb72"
@@ -6684,6 +7019,10 @@
         "replace"
       ],
       [
+        "element:authored@0b98e5d9806e5194",
+        "set"
+      ],
+      [
         "element:backgroundColor@abc86032ce5e8381",
         "replace"
       ],
@@ -6749,6 +7088,14 @@
       ],
       [
         "element:lineHeight@6366f6699ad903fe",
+        "replace"
+      ],
+      [
+        "element:listId@726fcc47c9df78c2",
+        "replace"
+      ],
+      [
+        "element:listLevels@16e96e9ea7ed708c",
         "replace"
       ],
       [
@@ -6888,6 +7235,10 @@
         "replace"
       ],
       [
+        "text:authored@2b7320c75af17567",
+        "set"
+      ],
+      [
         "text:backgroundColor@cb359bb332a9fb72",
         "replace"
       ],
@@ -6942,6 +7293,7 @@
         "audio",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -6960,6 +7312,7 @@
         "blockquote",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -6978,6 +7331,7 @@
         "callout",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -6996,6 +7350,7 @@
         "codeBlock",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7014,6 +7369,7 @@
         "column",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7032,6 +7388,7 @@
         "columnGroup",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7050,6 +7407,7 @@
         "date",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7068,6 +7426,7 @@
         "details",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7086,6 +7445,7 @@
         "equation",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7104,6 +7464,7 @@
         "file",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7122,6 +7483,7 @@
         "footnoteDefinition",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7140,6 +7502,7 @@
         "footnoteReference",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7158,6 +7521,7 @@
         "heading",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7176,6 +7540,7 @@
         "horizontalRule",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7194,6 +7559,7 @@
         "image",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7212,6 +7578,7 @@
         "inlineEquation",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7230,6 +7597,7 @@
         "link",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7248,6 +7616,7 @@
         "mediaEmbed",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7266,6 +7635,7 @@
         "mention",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7284,6 +7654,7 @@
         "paragraph",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7302,6 +7673,7 @@
         "summary",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7320,6 +7692,7 @@
         "table",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7338,6 +7711,7 @@
         "tableCell",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7356,6 +7730,7 @@
         "tableRow",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7374,6 +7749,7 @@
         "toc",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7392,6 +7768,7 @@
         "upload",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7410,6 +7787,7 @@
         "video",
         [
           "text:ai@2f2791ccdc09f005",
+          "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
           "text:code@6939885f562d0514",
@@ -7462,14 +7840,15 @@
     "groupNames": [
       "all",
       "block",
+      "core:block-content",
       "element",
       "inline",
-      "plate:block-content",
       "text",
       "textBlock"
     ],
     "propertyIds": [
       "element:alt@92916bfcb7519666",
+      "element:authored@0b98e5d9806e5194",
       "element:backgroundColor@abc86032ce5e8381",
       "element:backgroundColor@e4bf085a06d2acd9",
       "element:borders@1161f7efe55c616d",
@@ -7487,6 +7866,8 @@
       "element:latex@6c61d1f3c8305dce",
       "element:level@94a59f5f3986e008",
       "element:lineHeight@6366f6699ad903fe",
+      "element:listId@726fcc47c9df78c2",
+      "element:listLevels@16e96e9ea7ed708c",
       "element:listRestart@35fa065cd84f9a60",
       "element:listStart@81a20212d575ce89",
       "element:listStyle@b90bb1ea0c1c1372",
@@ -7521,6 +7902,7 @@
       "element:width@cf5e67ed73c5a82d",
       "element:width@d289fcde94c1475e",
       "text:ai@2f2791ccdc09f005",
+      "text:authored@2b7320c75af17567",
       "text:backgroundColor@cb359bb332a9fb72",
       "text:bold@66c11ef06c87ed62",
       "text:code@6939885f562d0514",

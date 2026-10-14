@@ -6,7 +6,14 @@ import {
   PLUGINS,
 } from '../../../core';
 import type { ListElement } from '../../../features/list';
-import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
+import {
+  getMarkdownParagraphType,
+  landsMarkdownParagraph,
+} from '../../../internal/plugin/markdownParagraph';
+import {
+  encodeMarkdownParagraph,
+  getMarkdownParagraphLanding,
+} from '../internal/markdownIntrinsics';
 import type { MarkdownEncoded } from '../internal/markdownMappings';
 import type { MdList, MdRootContent } from '../mdast';
 import type { SerializeMdContext } from '../types';
@@ -81,6 +88,22 @@ export const convertNodesSerialize = (
   return mdastNodes;
 };
 
+const isLandedParagraph = (node: Element, options: SerializeMdContext) => {
+  if (!landsMarkdownParagraph(options.registry)) return false;
+
+  const location = options.modelLocation(node);
+
+  return (
+    location?.root === undefined &&
+    location?.path?.length === 1 &&
+    node.children.every(
+      (child) => TextApi.isText(child) || options.isInline(child)
+    ) &&
+    getMarkdownParagraphLanding(options.state.schema, location.path[0])
+      ?.type === node.type
+  );
+};
+
 /** Encode one element without reporting its unclaimed properties. */
 export const encodeMdastNode = (
   node: Element,
@@ -89,7 +112,10 @@ export const encodeMdastNode = (
   const encode = options.mappings.encodeByType.get(node.type);
 
   if (encode) return encode(node, options);
-  if (node.type === (options.registry.type(PLUGINS.paragraph) ?? 'paragraph')) {
+  if (
+    node.type === getMarkdownParagraphType(options.registry) ||
+    isLandedParagraph(node, options)
+  ) {
     return {
       claimed: NO_CLAIMS,
       node: encodeMarkdownParagraph(node, options),
@@ -132,5 +158,5 @@ const isListElement = (
   !!node &&
   !TextApi.isText(node) &&
   typeof node.listType === 'string' &&
-  (node.type === (options.registry.type(PLUGINS.paragraph) ?? 'paragraph') ||
+  (node.type === getMarkdownParagraphType(options.registry) ||
     node.type === options.registry.type(PLUGINS.image));

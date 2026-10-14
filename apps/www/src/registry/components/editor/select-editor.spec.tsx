@@ -416,6 +416,18 @@ describe('SelectEditor', () => {
           { url: 'mailto:team@example.com', value: 'Mail' },
           { url: 'tel:+15550100', value: 'Phone' },
           { url: '/docs/rust', value: 'Rust' },
+          { url: '/docs?q=rust#top', value: 'Search' },
+          { url: ' https://example.com/padded ', value: 'Padded' },
+          { url: '?q=rust', value: 'Query' },
+          { url: '#top', value: 'Top' },
+          { url: 'docs/rust', value: 'Relative' },
+          { url: ' mailto:help@example.com ', value: 'Padded mail' },
+          { url: ' /docs/padded ', value: 'Padded path' },
+          { url: '/docs/[id]?q=x#top', value: 'Bracket path' },
+          {
+            url: 'https://github.com/udecode/plate/tree/main/app/[slug]',
+            value: 'Bracket web',
+          },
         ]}
         readOnly
       />
@@ -431,8 +443,38 @@ describe('SelectEditor', () => {
       ['Mail', 'mailto:team@example.com'],
       ['Phone', 'tel:+15550100'],
       ['Rust', '/docs/rust'],
+      ['Search', '/docs?q=rust#top'],
+      ['Padded', 'https://example.com/padded'],
+      ['Query', '?q=rust'],
+      ['Top', '#top'],
+      ['Relative', 'docs/rust'],
+      ['Padded mail', 'mailto:help@example.com'],
+      ['Padded path', '/docs/padded'],
+      ['Bracket path', '/docs/%5Bid%5D?q=x#top'],
+      [
+        'Bracket web',
+        'https://github.com/udecode/plate/tree/main/app/%5Bslug%5D',
+      ],
     ]);
   });
+
+  it.each(['https://', ' data:text/html,x', '\tjavascript:alert(1)'])(
+    'shows a read-only chip without a link when Plate refuses its url %p',
+    (url) => {
+      const view = render(
+        <SelectEditor
+          aria-label="Labels"
+          defaultValue={[{ url, value: 'Refused' }]}
+          readOnly
+        />
+      );
+
+      expect({
+        chips: chipsOf(view),
+        links: view.container.querySelectorAll('a').length,
+      }).toEqual({ chips: ['Refused'], links: 0 });
+    }
+  );
 
   it('hands the form ref and blur to the editable', async () => {
     const ref = React.createRef<HTMLDivElement>();

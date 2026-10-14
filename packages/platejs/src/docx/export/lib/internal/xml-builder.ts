@@ -12,7 +12,7 @@ import VNode from 'virtual-dom/vnode/vnode.js';
 import { fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
-import { failInvariant } from '../../internal/failInvariant';
+import { failInvariant } from '../../../../internal/failInvariant';
 import {
   colorlessColors,
   defaultFont,
@@ -50,6 +50,9 @@ export const rgbRegex = /rgb\((\d+),\s*([\d.]+),\s*([\d.]+)\)/i;
 export const hslRegex = /hsl\((\d+),\s*([\d.]+)%,\s*([\d.]+)%\)/i;
 export const hexRegex = /#([0-9A-F]{6})/i;
 export const hex3Regex = /#([0-9A-F])([0-9A-F])([0-9A-F])/i;
+
+/** Marks a run whose review revisions DOCX export writes after generation. */
+export const REVIEW_RUN_NAMESPACE = 'urn:platejs:docx:review-run';
 
 const nestedRunTagSet = new Set([
   'strong',
@@ -743,13 +746,13 @@ type RunAttributes = {
   display?: string;
   font?: string;
   fontSize?: number;
-  formatRevision?: RevisionAttributes;
   highlightColor?: string;
   hyperlink?: boolean;
   i?: boolean;
   kbd?: boolean;
   lineHeight?: number;
   mark?: boolean;
+  reviewRunId?: string;
   strike?: boolean;
   strong?: boolean | string;
   sub?: boolean;
@@ -1155,13 +1158,17 @@ const modifiedStyleAttributesBuilder = (
     const kind = properties?.['data-editor-change-kind'];
     const id = Number(properties?.['data-editor-revision-id']);
 
+    if (properties?.['data-docx-review-run'] !== undefined) {
+      modifiedAttributes.reviewRunId = properties['data-docx-review-run'];
+    }
     if (
-      kind &&
+      kind === 'structure' &&
+      options?.isParagraph &&
       Number.isSafeInteger(id) &&
       id >= 0 &&
       properties?.['data-editor-author-id']
     ) {
-      const revision = {
+      modifiedAttributes.structureRevision = {
         author: properties['data-editor-author-id'],
         ...(properties['data-editor-created-at']
           ? { date: properties['data-editor-created-at'] }
@@ -1169,11 +1176,6 @@ const modifiedStyleAttributesBuilder = (
         id,
         kind,
       };
-
-      if (kind === 'format') modifiedAttributes.formatRevision = revision;
-      if (kind === 'structure' && options?.isParagraph) {
-        modifiedAttributes.structureRevision = revision;
-      }
     }
   }
 
@@ -1361,7 +1363,7 @@ const buildRunProperties = (
       // Skip undefined values to prevent default 'black' being applied
       if (value === undefined) return;
 
-      if (key === 'formatRevision') return;
+      if (key === 'reviewRunId') return;
 
       const options: FormattingOptions = {};
       if (
@@ -1383,17 +1385,12 @@ const buildRunProperties = (
         runPropertiesFragment.import(formattingFragment);
       }
     });
-    if (attributes.formatRevision) {
-      const { author, date, id } = attributes.formatRevision;
-      const change = fragment({ namespaceAlias: { w: namespaces.w } })
-        .ele('@w', 'rPrChange')
-        .att('@w', 'id', String(id))
-        .att('@w', 'author', author);
-
-      if (date) change.att('@w', 'date', date);
-      change.ele('@w', 'rPr').up().up();
-
-      runPropertiesFragment.import(change);
+    if (attributes.reviewRunId !== undefined) {
+      runPropertiesFragment.import(
+        fragment()
+          .ele(REVIEW_RUN_NAMESPACE, 'review:run')
+          .att('id', attributes.reviewRunId)
+      );
     }
   }
   runPropertiesFragment.up();

@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer';
 
 import { expect, type Locator, test } from '@playwright/test';
-import {
+import { BROWSER_HANDLE_KEY,
   attachBrowserJsonArtifact,
   installReactRenderProfiler,
   openExample,
@@ -55,12 +55,12 @@ const parsePliteFragmentFromHtml = (html: string | null) => {
 const selectMentionInsertionPoint = async (
   page: import('@playwright/test').Page
 ) => {
-  await getEditor(page).evaluate((element: HTMLElement) => {
+  await getEditor(page).evaluate((element: HTMLElement, key) => {
     const point = {
       path: [1, 0],
       offset: 'Try mentioning characters, like '.length,
     };
-    const handle = (element as Record<string, any>).__pliteBrowserHandle;
+    const handle = (element as Record<string, any>)[key];
 
     if (!handle?.selectRange) {
       throw new Error('Missing Plite browser handle');
@@ -98,7 +98,7 @@ const selectMentionInsertionPoint = async (
     element.ownerDocument.dispatchEvent(
       new Event('selectionchange', { bubbles: true })
     );
-  });
+  }, BROWSER_HANDLE_KEY);
 };
 
 const commitDOMComposition = async (

@@ -6,9 +6,7 @@ import type {
 import {
   before as editorBefore,
   first as editorFirst,
-  getChildren as editorGetChildren,
   getSnapshot as editorGetSnapshot,
-  parent as editorParent,
 } from '../interfaces/editor';
 import { LocationApi, type Span } from '../interfaces/location';
 import { type Node, NodeApi } from '../interfaces/node';
@@ -88,15 +86,9 @@ export const previous = ((
   const span: Span = [start, to];
 
   if (match == null) {
-    if (LocationApi.isPath(at)) {
-      const [parent] = editorParent(editor, at);
-      const children = NodeApi.isEditor(parent)
-        ? editorGetChildren(editor)
-        : parent.children;
-      match = (n) => !NodeApi.isEditor(n) && children.includes(n);
-    } else {
-      match = () => true;
-    }
+    match = LocationApi.isPath(at)
+      ? (_node, path) => PathApi.isSibling(path, at)
+      : () => true;
   }
 
   const [innerPrevious] = nodes(editor, {

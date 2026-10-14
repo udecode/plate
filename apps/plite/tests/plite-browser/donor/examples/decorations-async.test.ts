@@ -1,6 +1,6 @@
 import { expect, type Locator, test } from '@playwright/test';
 
-import { openExample } from '@platejs/test/playwright';
+import { BROWSER_HANDLE_KEY, openExample } from '@platejs/test/playwright';
 
 const INITIAL_TEXT = 'This is some text here about. there';
 const INSERTED_TEXT = ' there';
@@ -46,11 +46,11 @@ const getDOMCaretOffsetInFirstText = async (root: Locator) =>
   });
 
 const getInputState = async (root: Locator) =>
-  root.evaluate((element: HTMLElement) => {
-    const handle = (element as Record<string, any>).__pliteBrowserHandle;
+  root.evaluate((element: HTMLElement, key) => {
+    const handle = (element as Record<string, any>)[key];
 
     return handle?.getInputState?.() ?? null;
-  });
+  }, BROWSER_HANDLE_KEY);
 
 test.describe('async decorations', () => {
   test('keeps the caret at the typed end when delayed decorations restructure text', async ({
@@ -171,8 +171,8 @@ test.describe('async decorations', () => {
     });
 
     await editor.root.evaluate(
-      (element, initialText) => {
-        const handle = (element as Record<string, any>).__pliteBrowserHandle;
+      (element, [initialText, key]) => {
+        const handle = (element as Record<string, any>)[key];
 
         if (!handle?.applyValueChange) {
           throw new Error('Cannot apply composition locality fixture');
@@ -190,7 +190,7 @@ test.describe('async decorations', () => {
           ],
         });
       },
-      INITIAL_TEXT
+      [INITIAL_TEXT, BROWSER_HANDLE_KEY] as const
     );
     await editor.assert.blockTexts([INITIAL_TEXT, 'Sibling']);
 
@@ -222,14 +222,14 @@ test.describe('async decorations', () => {
 
     await expect(firstFlow).toHaveCount(0);
     await expect(secondFlow).toHaveCount(1);
-    await editor.root.evaluate((element) => {
-      const handle = (element as Record<string, any>).__pliteBrowserHandle;
+    await editor.root.evaluate((element, key) => {
+      const handle = (element as Record<string, any>)[key];
 
       if (!handle?.insertTextAt) {
         throw new Error('Cannot apply composition locality edit');
       }
       handle.insertTextAt('!', { offset: 7, path: [1, 0] });
-    });
+    }, BROWSER_HANDLE_KEY);
     await expect
       .poll(async () => (await editor.get.blockTexts())[1])
       .toBe('Sibling!');

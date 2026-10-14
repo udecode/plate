@@ -188,9 +188,7 @@ export const getEditableChildAndIndex = (
   while (
     isDOMComment(child) ||
     (isDOMElement(child) && child.childNodes.length === 0) ||
-    (isDOMElement(child) &&
-      (child.getAttribute('contenteditable') === 'false' ||
-        child.hasAttribute('data-editor-retained')))
+    (isDOMElement(child) && child.getAttribute('contenteditable') === 'false')
   ) {
     if (triedForward && triedBackward) {
       break;

@@ -5,9 +5,7 @@ import type { Descendant } from '../../index';
 import {
   formatYjsTextAttributes,
   getYjsAttributes,
-  removePliteYjsAttribute,
   setYjsAttribute,
-  setPliteYjsAttribute,
   type YjsAttributeRecord,
   type YjsNode,
 } from './attributes';
@@ -129,7 +127,7 @@ export const setYjsNodeAttributes = (
       const currentAttributes = getYjsAttributes(node);
       const encoded = encodeYjsSetValueAttributes(key, value);
 
-      removePliteYjsAttribute(node, key);
+      node.removeAttribute(key);
       if (textPatch !== null) {
         textPatch[key] = null;
         hasTextPatch = true;
@@ -169,7 +167,7 @@ export const setYjsNodeAttributes = (
         continue;
       }
 
-      removePliteYjsAttribute(node, key);
+      node.removeAttribute(key);
       if (textPatch !== null) {
         textPatch[key] = null;
         hasTextPatch = true;
@@ -181,7 +179,7 @@ export const setYjsNodeAttributes = (
       continue;
     }
 
-    setPliteYjsAttribute(node, key, value);
+    setYjsAttribute(node, key, value);
 
     if (textPatch !== null) {
       textPatch[key] = value;
@@ -202,7 +200,7 @@ export const setYjsNodeAttributes = (
     if (isSetValued(key)) {
       const currentAttributes = getYjsAttributes(node);
 
-      removePliteYjsAttribute(node, key);
+      node.removeAttribute(key);
       if (textPatch !== null) {
         textPatch[key] = null;
         hasTextPatch = true;
@@ -221,7 +219,7 @@ export const setYjsNodeAttributes = (
       continue;
     }
 
-    removePliteYjsAttribute(node, key);
+    node.removeAttribute(key);
 
     if (textPatch !== null) {
       textPatch[key] = null;

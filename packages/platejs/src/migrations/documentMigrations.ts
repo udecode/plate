@@ -436,33 +436,13 @@ const completeDocument = (
         document: authority.schema.fitDocument(document),
         selection,
       };
-  if (
-    !authority.authored &&
-    Object.hasOwn(fitted.document.meta ?? {}, 'authored')
-  ) {
-    throw new Error(
-      'Persisted authored metadata requires the authored plugin in the migration target.'
-    );
-  }
   const assertTarget = (value: EditorDocumentValue) => {
     authority.schema.assertDocument(value);
     if (authority.ownsElementIds) assertElementIds(value);
   };
-  const { authored } = authority;
   const completed = completePersistedDocumentFields(
     fitted.document,
-    authority.fields,
-    authored
-      ? (values, value) => {
-          if (!Object.hasOwn(values, 'authored')) return values;
-          const normalized = authored.normalize(value, values.authored, {
-            assertTarget,
-            schema: authority.schema,
-          });
-
-          return Object.freeze({ ...values, authored: normalized.state });
-        }
-      : undefined
+    authority.fields
   );
   const resolved = resolveSelection(fitted.selection, completed);
 

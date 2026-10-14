@@ -1,13 +1,34 @@
-import { BaseItalicPlugin } from 'platejs';
+import { BaseItalicPlugin, createEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
-import { createStaticEditor, renderStaticMarkup } from './create-static-editor';
+import { renderStaticMarkup } from './render-static-markup';
 
 describe('core static renderStaticHtml attributes', () => {
   it('applies element, text, and leaf props to the output', async () => {
-    const editor = createStaticEditor(
-      [
+    const editor = createEditor({
+      plugins: [
+        ...BaseEditorKit.filter(
+          (plugin) => plugin.name !== BaseItalicPlugin.name
+        ),
+        BaseItalicPlugin.configure({
+          render: {
+            attributes: {
+              'data-editor-test': true,
+            },
+            mark: {
+              leafAttributes: {
+                'data-editor-test': 'leaf',
+              },
+              placement: 'text',
+              textAttributes: {
+                'data-editor-test': 'text',
+              },
+            },
+          },
+        }),
+      ],
+      initialValue: [
         {
           children: [
             { bold: true, italic: true, text: 'Right Aligned Heading' },
@@ -16,30 +37,7 @@ describe('core static renderStaticHtml attributes', () => {
           type: 'paragraph',
         },
       ],
-      {
-        plugins: [
-          ...BaseEditorKit.filter(
-            (plugin) => plugin.name !== BaseItalicPlugin.name
-          ),
-          BaseItalicPlugin.configure({
-            render: {
-              attributes: {
-                'data-editor-test': true,
-              },
-              mark: {
-                leafAttributes: {
-                  'data-editor-test': 'leaf',
-                },
-                placement: 'text',
-                textAttributes: {
-                  'data-editor-test': 'text',
-                },
-              },
-            },
-          }),
-        ],
-      }
-    );
+    });
 
     const html = await renderStaticMarkup(editor);
 

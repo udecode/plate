@@ -152,7 +152,7 @@ const importDocxComments = (editor: Editor, source: readonly DocxComment[]) => {
 
   return Object.freeze({
     comments: Object.freeze({
-      kind: 'plate-comments' as const,
+      kind: 'comments' as const,
       ranges: Object.freeze(ranges),
       threads: Object.freeze(threads),
       version: 1 as const,
@@ -314,12 +314,7 @@ export function ImportToolbarButton({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
-        <ToolbarButton
-          aria-label="Import"
-          pressed={open}
-          tooltip="Import"
-          isDropdown
-        >
+        <ToolbarButton pressed={open} tooltip="Import" isDropdown>
           <ArrowUpToLineIcon className="size-4" />
         </ToolbarButton>
       </DropdownMenuTrigger>

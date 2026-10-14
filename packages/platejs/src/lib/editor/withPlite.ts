@@ -5,14 +5,16 @@ import {
   createDetachedEditorSchema,
   EDITOR_DOCUMENT_FIELDS,
   type EditorRecordIssue,
+  getCompiledEditorSchema,
   isEnvelopeInput,
   readDocumentRecord,
   readPersistedEnvelope,
   getEditorAuthoredDocumentCapability,
   initializePluginEntries,
   type InternalPluginPublicationEntry,
+  type AuthoredDocumentProjection,
+  type AuthoredProjectionDiagnostic,
   type NativeAuthoredDocumentCapability,
-  type NativeAuthoredDocumentProjection,
   withCompiledEditorSchemaCapabilityEntries,
   withEditorDocumentProjection,
   withPluginPortalCandidates,
@@ -468,7 +470,7 @@ const createPlateSchemaPlugins = (
     : undefined;
   let publication: ReturnType<typeof createPlateModelPublication> | undefined;
 
-  const modelPlugin = defineRuntimePlugin('plate:model', {
+  const modelPlugin = defineRuntimePlugin('core:model', {
     validate: ({ schema: schemaApi }) => {
       const compiledSchema = getCompiledEditorSchemaFromApi(schemaApi);
 
@@ -1206,38 +1208,64 @@ export const compilePlateEditorTarget = (
 
 const projectFormatDocument = (
   document: EditorDocumentValue,
-  projection: 'accepted' | 'proposed' | 'review',
-  authored: NativeAuthoredDocumentCapability | undefined
-): NativeAuthoredDocumentProjection => {
-  if (document.meta?.authored === undefined) {
-    return Object.freeze({
-      diagnostics: Object.freeze([]),
-      document,
-      review: document,
-    });
+  projection: 'accepted' | 'proposed' | undefined,
+  authored: NativeAuthoredDocumentCapability | undefined,
+  schema: CompiledEditorSchema
+): AuthoredDocumentProjection => {
+  const unchanged = Object.freeze({
+    diagnostics: Object.freeze([]),
+    document,
+    ok: true as const,
+    pending: 0,
+  });
+
+  const required =
+    'Exporting a document with suggestions requires projection "accepted" or "proposed".';
+
+  // A projection can arrive from a request body, so a value outside the type
+  // refuses instead of reading as no projection.
+  if (
+    projection !== undefined &&
+    projection !== 'accepted' &&
+    projection !== 'proposed'
+  ) {
+    throw new TypeError(required);
   }
-  if (!authored) {
-    throw new TypeError(
-      'Authored document projection requires the authored plugin in the editor configuration.'
-    );
+  if (!authored) return unchanged;
+  if (!projection) {
+    if (authored.project(document, 'accepted', schema).pending > 0) {
+      throw new TypeError(required);
+    }
+
+    return unchanged;
   }
 
-  return authored.project(document, projection);
+  const projected = authored.project(document, projection, schema);
+
+  if (!projected.ok) throw new TypeError(projected.diagnostics[0].message);
+
+  return projected;
 };
 
-/** Project one format document through the editor's installed authored capability. @internal */
+/**
+ * Project one export's document before it is read or turned into a view, so an
+ * authored document never exports without an explicit projection.
+ *
+ * @internal
+ */
 export const projectPlateFormatDocument = (
   editor: Editor,
   document: EditorDocumentValue,
-  projection: 'accepted' | 'proposed' | 'review'
-): NativeAuthoredDocumentProjection => {
+  projection: 'accepted' | 'proposed' | undefined
+): AuthoredDocumentProjection => {
   const schema: EditorStateSchemaApi = editor.read.schema;
 
   schema.assertDocument(document);
   const projected = projectFormatDocument(
     document,
     projection,
-    getEditorAuthoredDocumentCapability(editor)
+    getEditorAuthoredDocumentCapability(editor),
+    getCompiledEditorSchema(editor)
   );
 
   schema.assertDocument(projected.document);
@@ -1254,14 +1282,15 @@ export const withPlateFormatCompilation = <T>(
   run: (
     context: Readonly<{
       editor: Editor;
-      projectDocument: (
-        document: EditorDocumentValue,
-        projection: 'accepted' | 'proposed' | 'review'
-      ) => NativeAuthoredDocumentProjection;
       readState: <R>(read: (state: EditorCoreStateView) => R) => R;
       readDocument: <R>(
         document: EditorDocumentValue,
-        read: (state: EditorCoreStateView, document: EditorDocumentValue) => R
+        projection: 'accepted' | 'proposed' | undefined,
+        read: (
+          state: EditorCoreStateView,
+          document: EditorDocumentValue,
+          diagnostics: readonly AuthoredProjectionDiagnostic[]
+        ) => R
       ) => R;
     }>
   ) => T
@@ -1276,18 +1305,6 @@ export const withPlateFormatCompilation = <T>(
     return run(
       Object.freeze({
         editor,
-        projectDocument: (document, projection) => {
-          detachedSchema.assertDocument(document);
-          const projected = projectFormatDocument(
-            document,
-            projection,
-            authored
-          );
-
-          detachedSchema.assertDocument(projected.document);
-
-          return projected;
-        },
         readState: (read) =>
           editor.read((state) =>
             read(
@@ -1297,8 +1314,15 @@ export const withPlateFormatCompilation = <T>(
               }) satisfies EditorCoreStateView
             )
           ),
-        readDocument: (document, read) => {
-          const owned = cloneEditorJsonValue(document);
+        readDocument: (document, projection, read) => {
+          detachedSchema.assertDocument(document);
+          const projected = projectFormatDocument(
+            document,
+            projection,
+            authored,
+            schema
+          );
+          const owned = cloneEditorJsonValue(projected.document);
           const operationSchema: ReturnType<typeof createDetachedEditorSchema> =
             createDetachedEditorSchema(schema, owned);
 
@@ -1312,7 +1336,7 @@ export const withPlateFormatCompilation = <T>(
                 value: () => owned,
               }) satisfies EditorCoreStateView;
 
-              return read(detachedState, owned);
+              return read(detachedState, owned, projected.diagnostics);
             })
           );
         },

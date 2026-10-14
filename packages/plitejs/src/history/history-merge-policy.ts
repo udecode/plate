@@ -64,12 +64,17 @@ export type HistoryBatchGroup = Readonly<{
 
 const pathKey = (path: readonly number[]) => path.join('.');
 
-const getChangedRoot = (commit: EditorCommit): RootKey | null => {
-  const roots = new Set<RootKey>([
-    ...getInternalDocumentChangeRootKeys(commit.changes),
-    ...commit.changes.createRoots,
-    ...commit.changes.deleteRoots,
-  ]);
+const getChangedRoot = (
+  commit: EditorCommit,
+  retained: ReadonlySet<string>
+): RootKey | null => {
+  const roots = new Set<RootKey>(
+    [
+      ...getInternalDocumentChangeRootKeys(commit.changes),
+      ...commit.changes.createRoots,
+      ...commit.changes.deleteRoots,
+    ].filter((root) => !retained.has(root))
+  );
 
   return roots.size === 1 ? [...roots][0] : null;
 };
@@ -176,9 +181,10 @@ const getChangedSpan = (
 };
 
 export const createHistoryBatchGroup = (
-  commit: EditorCommit
+  commit: EditorCommit,
+  retained: ReadonlySet<string>
 ): HistoryBatchGroup | null => {
-  const root = getChangedRoot(commit);
+  const root = getChangedRoot(commit, retained);
 
   if (!root) return null;
 
@@ -252,17 +258,28 @@ export const createHistoryBatchGroup = (
     });
   }
 
+  // Typing a suggested letter opens a text leaf of its own and splits the
+  // text it lands in; adding only new text leaves still reads as typing.
+  const opened = structureChanged
+    ? commit.changed.nodeKeys('presence', publicRoot)
+    : [];
+  const opensLeaf =
+    !replacedSelection &&
+    opened.length > 0 &&
+    opened.every((key) =>
+      commit.changed.nodeKeys('text', publicRoot).includes(key)
+    );
+
   if (
     range &&
     textTarget &&
-    textChanged &&
-    !structureChanged &&
+    (opensLeaf || (textChanged && !structureChanged)) &&
     !propertiesChanged
   ) {
     const beforeLength = range[1] - range[0];
     const afterLength = range[3] - range[2];
     const mode =
-      beforeLength === 0 && afterLength > 0
+      opensLeaf || (beforeLength === 0 && afterLength > 0)
         ? 'insert'
         : beforeLength > 0 && afterLength === 0
           ? 'delete'
@@ -322,7 +339,14 @@ const shouldMergeText = (
   }
 
   if (current.mode === 'insert' && previous.mode === 'insert') {
-    return current.fromBefore === previous.toAfter;
+    // A letter typed into the leaf the previous insert opened lands inside
+    // that insert, before the leaf's closing edge.
+    return (
+      current.fromBefore === previous.toAfter ||
+      (samePoint(previous.afterPoint, current.beforePoint) &&
+        current.fromBefore > previous.fromAfter &&
+        current.fromBefore < previous.toAfter)
+    );
   }
 
   if (current.mode === 'delete' && previous.mode === 'delete') {

@@ -49,8 +49,8 @@ import type {
   NormalizePluginState,
   PluginReadState,
   PluginReadCapability,
+  PluginDirectUpdate,
   PluginTransaction,
-  PluginUpdate,
   PluginBaseContext,
   PluginPortalContext,
   PluginDefinitionWitness,
@@ -224,7 +224,7 @@ export type PluginPortal<
     /** State-bound reads scoped directly to this plugin. */
     read: PluginReadCapability<C>;
     /** One-shot updates scoped directly to this plugin. */
-    update: PluginUpdate<C, S>;
+    update: PluginDirectUpdate<C, S>;
   };
 
 /** Type-erased React authoring context used while compiling callbacks. */

@@ -6,6 +6,7 @@ import {
   type EditableViewportRuntime,
 } from '../../src/react/components/editable';
 import type { PliteBrowserHandleElement } from '../../src/react/editable/browser-handle';
+import { BROWSER_HANDLE_KEY } from '../../src/testing';
 
 test.each(['replace', 'add', 'remove'] as const)(
   'uses the committed scroll target after a viewport runtime %s',
@@ -44,7 +45,7 @@ test.each(['replace', 'add', 'remove'] as const)(
       nextScroll.mockClear();
 
       expect(
-        textbox.__pliteBrowserHandle?.scrollPathIntoView([0], 'start')
+        textbox[BROWSER_HANDLE_KEY]?.scrollPathIntoView([0], 'start')
       ).toBe(transition !== 'remove');
       expect(previousScroll).not.toHaveBeenCalled();
       if (transition !== 'remove') {

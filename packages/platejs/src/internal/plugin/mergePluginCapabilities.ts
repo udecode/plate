@@ -4,7 +4,6 @@ type PluginCapabilityKind = 'api' | 'read' | 'update';
 
 type MergePluginCapabilitiesOptions = Readonly<{
   kind: PluginCapabilityKind;
-  mapMethod?: (method: (...args: never[]) => unknown) => unknown;
   owner: string;
 }>;
 
@@ -147,11 +146,7 @@ const mergeCapabilityValue = (
         `Plate plugin "${options.owner}" read capability cannot merge callable and record roots.`
       );
     }
-    const method = options.mapMethod
-      ? options.mapMethod(source as (...args: never[]) => unknown)
-      : source;
-
-    if (options.kind === 'api') return method;
+    if (options.kind === 'api') return source;
 
     for (const [key, value] of getEnumerableCapabilityEntries(
       source,
@@ -164,14 +159,14 @@ const mergeCapabilityValue = (
       ]);
 
       if (member !== value) {
-        Object.defineProperty(method, key, {
+        Object.defineProperty(source, key, {
           enumerable: true,
           value: member,
         });
       }
     }
 
-    return Object.freeze(method);
+    return Object.freeze(source);
   }
   if (isPlainRecord(source)) {
     if (

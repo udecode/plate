@@ -106,12 +106,12 @@ const getEditableDropCursorRect = ({
   const voidElement = targetElement.closest<HTMLElement>(
     '[data-editor-node][data-editor-void="true"]'
   );
-  const pliteNode = editor.api.dom.resolveNode(voidElement ?? targetElement);
+  const editorNode = editor.api.dom.resolveNode(voidElement ?? targetElement);
   const isVoidTarget =
     !!voidElement ||
-    (!!pliteNode &&
-      NodeApi.isElement(pliteNode) &&
-      editorIsVoid(editor, pliteNode));
+    (!!editorNode &&
+      NodeApi.isElement(editorNode) &&
+      editorIsVoid(editor, editorNode));
 
   if (!isVoidTarget) {
     const geometry = createDOMGeometryKernel({
@@ -149,8 +149,8 @@ const getEditableDropCursorRect = ({
 
   const targetRect =
     voidElement?.getBoundingClientRect() ??
-    (pliteNode
-      ? editor.api.dom.resolveDOMNode(pliteNode)?.getBoundingClientRect()
+    (editorNode
+      ? editor.api.dom.resolveDOMNode(editorNode)?.getBoundingClientRect()
       : null) ??
     targetElement.getBoundingClientRect();
   const rootRect = rootElement.getBoundingClientRect();
@@ -170,9 +170,9 @@ const getEditableDropCursorRect = ({
 
   const isInlineVoid =
     voidElement?.getAttribute('data-editor-inline') === 'true' ||
-    (!!pliteNode &&
-      NodeApi.isElement(pliteNode) &&
-      editorIsInline(editor, pliteNode));
+    (!!editorNode &&
+      NodeApi.isElement(editorNode) &&
+      editorIsInline(editor, editorNode));
 
   if (!isInlineVoid) {
     const isBefore =

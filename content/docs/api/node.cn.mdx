@@ -21,6 +21,7 @@ description: Plate 节点类型、遍历函数和匹配。
 | `NodeApi.texts(root)` | 遍历文本节点。 |
 | `NodeApi.string(root)` | 拼接后代文本，不添加块分隔符。 |
 | `NodeApi.has(root, path)` | 判断路径是否存在。 |
+| `NodeApi.findTextRanges(root, query, options?)` | 查找文本匹配的范围；`at` 只搜索一个已存在路径上的节点，编辑器、`state` 或 `tx` 根会跨行内元素连接文本，`content: true` 跳过非内容文本。 |
 
 当前编辑器查询使用[编辑器 API](/docs/api/editor-api)，以保留根、Schema
 和快照上下文。

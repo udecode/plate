@@ -1,4 +1,5 @@
 import {
+  authoredVeto,
   BaseParagraphPlugin,
   ContentSlice,
   DebugPlugin,
@@ -29,6 +30,8 @@ import {
   transferVeto,
   type BlockInsertOptions,
   type BlockUpsertOptions,
+  txLocate,
+  locateAt,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { fitSlicePlacements } from '../../../facade';
@@ -1182,6 +1185,10 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
   }),
 }))
   .extend(({ editor, schema: { type }, store }) => ({
+    // Review marks cannot hold a table's grid yet.
+    contributions: [
+      authoredVeto.of((element) => (element.type === type ? 'table' : null)),
+    ],
     read: ({ state }) => {
       const cellType = () => editor.plugin(BaseTableCellPlugin).schema.type;
       const selectionView = (options: TableTargetOptions = {}) =>
@@ -1622,506 +1629,542 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
           }) ?? false;
 
         return {
-          insert: (
-            input: TableCreateOptions = {},
-            placement: TableInsertPlacement = {}
-          ): boolean => applyTableInsertion('insert', input, placement),
-          insertColumn: (options: TableAxisInsertOptions = {}): boolean => {
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView(options);
+          insert: txLocate(
+            locateAt(1, 'at', 'after', 'before'),
+            (
+              input: TableCreateOptions = {},
+              placement: TableInsertPlacement = {}
+            ): boolean => applyTableInsertion('insert', input, placement)
+          ),
+          insertColumn: txLocate(
+            locateAt(0),
+            (options: TableAxisInsertOptions = {}): boolean => {
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView(options);
 
-            if (!view || view.anchors.length === 0) return false;
-            const anchor = [...view.anchors].sort(
-              (left, right) => left.col - right.col || left.row - right.row
-            )[options.before ? 0 : view.anchors.length - 1];
+              if (!view || view.anchors.length === 0) return false;
+              const anchor = [...view.anchors].sort(
+                (left, right) => left.col - right.col || left.row - right.row
+              )[options.before ? 0 : view.anchors.length - 1];
 
-            if (!anchor) return false;
-            const { defaultTableWidth, minColumnWidth } = store.get();
+              if (!anchor) return false;
+              const { defaultTableWidth, minColumnWidth } = store.get();
 
-            return applyMutation(view.context, {
-              anchorPath: view.tablePath.concat(anchor.path),
-              before: options.before,
-              createCell: ({ children, header: cellHeader, sourceRow }) =>
-                createTableCell(editor, {
-                  children: children ? [...children] : undefined,
-                  header: cellHeader,
-                  row: sourceRow,
-                }),
-              header: options.header,
-              initialTableWidth: defaultTableWidth ?? undefined,
-              kind: 'insert-column',
-              minColumnWidth,
-              select: options.select,
-            });
-          },
-          insertRow: (options: TableAxisInsertOptions = {}): boolean => {
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView(options);
+              return applyMutation(view.context, {
+                anchorPath: view.tablePath.concat(anchor.path),
+                before: options.before,
+                createCell: ({ children, header: cellHeader, sourceRow }) =>
+                  createTableCell(editor, {
+                    children: children ? [...children] : undefined,
+                    header: cellHeader,
+                    row: sourceRow,
+                  }),
+                header: options.header,
+                initialTableWidth: defaultTableWidth ?? undefined,
+                kind: 'insert-column',
+                minColumnWidth,
+                select: options.select,
+              });
+            }
+          ),
+          insertRow: txLocate(
+            locateAt(0),
+            (options: TableAxisInsertOptions = {}): boolean => {
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView(options);
 
-            if (!view || view.anchors.length === 0) return false;
-            const anchor = [...view.anchors].sort(
-              (left, right) => left.row - right.row || left.col - right.col
-            )[options.before ? 0 : view.anchors.length - 1];
+              if (!view || view.anchors.length === 0) return false;
+              const anchor = [...view.anchors].sort(
+                (left, right) => left.row - right.row || left.col - right.col
+              )[options.before ? 0 : view.anchors.length - 1];
 
-            if (!anchor) return false;
+              if (!anchor) return false;
 
-            return applyMutation(view.context, {
-              anchorPath: view.tablePath.concat(anchor.path),
-              before: options.before,
-              createCell: ({ children, header: cellHeader, sourceRow }) =>
-                createTableCell(editor, {
-                  children: children ? [...children] : undefined,
-                  header: cellHeader,
-                  row: sourceRow,
-                }),
-              header: options.header,
-              kind: 'insert-row',
-              rowType: editor.plugin(BaseTableRowPlugin).schema.type,
-              select: options.select,
-            });
-          },
-          upsert: (
-            input: TableCreateOptions = {},
-            options: BlockUpsertOptions = {}
-          ): boolean => applyTableInsertion('upsert', input, options),
-          removeColumn: (options: TableTargetOptions = {}): boolean => {
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView(options);
+              return applyMutation(view.context, {
+                anchorPath: view.tablePath.concat(anchor.path),
+                before: options.before,
+                createCell: ({ children, header: cellHeader, sourceRow }) =>
+                  createTableCell(editor, {
+                    children: children ? [...children] : undefined,
+                    header: cellHeader,
+                    row: sourceRow,
+                  }),
+                header: options.header,
+                kind: 'insert-row',
+                rowType: editor.plugin(BaseTableRowPlugin).schema.type,
+                select: options.select,
+              });
+            }
+          ),
+          upsert: txLocate(
+            locateAt(1, 'after', 'before'),
+            (
+              input: TableCreateOptions = {},
+              options: BlockUpsertOptions = {}
+            ): boolean => applyTableInsertion('upsert', input, options)
+          ),
+          removeColumn: txLocate(
+            locateAt(0),
+            (options: TableTargetOptions = {}): boolean => {
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView(options);
 
-            if (!view) return false;
-            const count = view.bounds.maxCol - view.bounds.minCol + 1;
+              if (!view) return false;
+              const count = view.bounds.maxCol - view.bounds.minCol + 1;
 
-            if (view.anchors.length > 1) {
-              if (
-                view.bounds.minRow !== 0 ||
-                view.bounds.maxRow !== view.context.grid.height - 1
-              ) {
-                return false;
+              if (view.anchors.length > 1) {
+                if (
+                  view.bounds.minRow !== 0 ||
+                  view.bounds.maxRow !== view.context.grid.height - 1
+                ) {
+                  return false;
+                }
+                if (count >= view.context.grid.width) {
+                  return applyMutation(view.context, { kind: 'remove-table' });
+                }
+
+                return applyMutation(view.context, {
+                  columnCount: count,
+                  kind: 'remove-column',
+                  selectionRows: [view.bounds.minRow, view.bounds.maxRow],
+                  startCol: view.bounds.minCol,
+                });
               }
-              if (count >= view.context.grid.width) {
+
+              if (view.context.grid.width <= view.anchor.colSpan) {
                 return applyMutation(view.context, { kind: 'remove-table' });
               }
 
               return applyMutation(view.context, {
-                columnCount: count,
+                anchorPath: view.tablePath.concat(view.anchor.path),
                 kind: 'remove-column',
-                selectionRows: [view.bounds.minRow, view.bounds.maxRow],
-                startCol: view.bounds.minCol,
               });
             }
+          ),
+          removeRow: txLocate(
+            locateAt(0),
+            (options: TableTargetOptions = {}): boolean => {
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView(options);
 
-            if (view.context.grid.width <= view.anchor.colSpan) {
-              return applyMutation(view.context, { kind: 'remove-table' });
-            }
+              if (!view) return false;
+              const count = view.bounds.maxRow - view.bounds.minRow + 1;
 
-            return applyMutation(view.context, {
-              anchorPath: view.tablePath.concat(view.anchor.path),
-              kind: 'remove-column',
-            });
-          },
-          removeRow: (options: TableTargetOptions = {}): boolean => {
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView(options);
+              if (view.anchors.length > 1) {
+                if (
+                  view.bounds.minCol !== 0 ||
+                  view.bounds.maxCol !== view.context.grid.width - 1
+                ) {
+                  return false;
+                }
+                if (count >= view.context.grid.height) {
+                  return applyMutation(view.context, { kind: 'remove-table' });
+                }
 
-            if (!view) return false;
-            const count = view.bounds.maxRow - view.bounds.minRow + 1;
-
-            if (view.anchors.length > 1) {
-              if (
-                view.bounds.minCol !== 0 ||
-                view.bounds.maxCol !== view.context.grid.width - 1
-              ) {
-                return false;
+                return applyMutation(view.context, {
+                  kind: 'remove-row',
+                  rowCount: count,
+                  selectionCol: view.bounds.minCol,
+                  startRow: view.bounds.minRow,
+                });
               }
-              if (count >= view.context.grid.height) {
+
+              if (view.context.grid.height <= view.anchor.rowSpan) {
                 return applyMutation(view.context, { kind: 'remove-table' });
               }
 
               return applyMutation(view.context, {
+                anchorPath: view.tablePath.concat(view.anchor.path),
                 kind: 'remove-row',
-                rowCount: count,
-                selectionCol: view.bounds.minCol,
-                startRow: view.bounds.minRow,
               });
             }
+          ),
+          remove: txLocate(
+            locateAt(0),
+            (options: TableTargetOptions = {}): boolean => {
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView(options);
 
-            if (view.context.grid.height <= view.anchor.rowSpan) {
-              return applyMutation(view.context, { kind: 'remove-table' });
+              return view
+                ? applyMutation(view.context, { kind: 'remove-table' })
+                : false;
             }
-
-            return applyMutation(view.context, {
-              anchorPath: view.tablePath.concat(view.anchor.path),
-              kind: 'remove-row',
-            });
-          },
-          remove: (options: TableTargetOptions = {}): boolean => {
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView(options);
-
-            return view
-              ? applyMutation(view.context, { kind: 'remove-table' })
-              : false;
-          },
-          merge: (options: TableTargetOptions = {}): boolean => {
-            if (
-              tx.view.isReadOnly() ||
-              !context.store.get().allowCellSpanEditing
-            ) {
-              return false;
-            }
-            const view = selectionView(options);
-
-            if (
-              !view ||
-              view.anchors.length < 2 ||
-              !toPublicTableSelection(view).rectangular
-            ) {
-              return false;
-            }
-
-            const [destination, ...sources] = view.anchors;
-
-            if (!destination) return false;
-            const destinationKey =
-              view.cellKeys[view.anchors.indexOf(destination)];
-
-            if (!destinationKey) return false;
-            const atPath = (path: Path): Location =>
-              view.root === undefined
-                ? path
-                : { offset: 0, path, root: view.root };
-            const sourceChildren = sources.flatMap((anchor) =>
-              anchor.cell.children.map((_, index) =>
-                tx.key(atPath(view.tablePath.concat(anchor.path, index)))
-              )
-            );
-
-            if (
-              sourceChildren.length > 0 &&
-              hasDefaultCellContent(editor, destination.cell)
-            ) {
-              const placeholderKey = tx.key(
-                view.tablePath.concat(destination.path, 0)
-              );
-
-              if (placeholderKey) tx.nodes.remove({ at: placeholderKey });
-            }
-            for (const childKey of sourceChildren) {
-              if (!childKey) continue;
-              const destinationEntry = tx.nodes.get(destinationKey, {
-                match: (node) => isTableCell(editor, node),
-              });
-
-              if (!destinationEntry) return false;
-              tx.nodes.move({
-                at: childKey,
-                to: destinationEntry[1].concat(
-                  destinationEntry[0].children.length
-                ),
-              });
-            }
-            for (const source of sources.toReversed()) {
-              const sourceKey = view.cellKeys[view.anchors.indexOf(source)];
-
-              if (sourceKey) tx.nodes.remove({ at: sourceKey });
-            }
-            tx.nodes.set(
-              {
-                colSpan: view.bounds.maxCol - view.bounds.minCol + 1,
-                rowSpan: view.bounds.maxRow - view.bounds.minRow + 1,
-              },
-              { at: destinationKey }
-            );
-            tx.selection.setNodes([destinationKey], {
-              anchor: destinationKey,
-              focus: destinationKey,
-            });
-
-            return true;
-          },
-          split: (options: TableTargetOptions = {}): boolean => {
-            if (
-              tx.view.isReadOnly() ||
-              !context.store.get().allowCellSpanEditing
-            ) {
-              return false;
-            }
-            const view = selectionView(options);
-
-            if (
-              !view ||
-              view.anchors.length !== 1 ||
-              (view.anchor.colSpan === 1 && view.anchor.rowSpan === 1)
-            ) {
-              return false;
-            }
-
-            const selected = view.anchor;
-            const selectedKey = view.cellKeys[view.anchors.indexOf(selected)];
-
-            if (!selectedKey) return false;
-            tx.nodes.unset(['colSpan', 'rowSpan'], { at: selectedKey });
-            for (
-              let { row } = selected;
-              row < selected.row + selected.rowSpan;
-              row++
-            ) {
-              const rowNode = view.table.children[row] as
-                | TableRowElement
-                | undefined;
-
-              if (!rowNode) return false;
-              const anchors = view.context.grid.anchorsByRow[row] ?? [];
-              const insertionIndex =
-                row === selected.row
-                  ? selected.cellIndex + 1
-                  : (anchors.find((anchor) => anchor.col >= selected.col)
-                      ?.cellIndex ?? rowNode.children.length);
-              const count =
-                row === selected.row ? selected.colSpan - 1 : selected.colSpan;
-
-              if (count > 0) {
-                tx.nodes.insert(
-                  Array.from({ length: count }, () =>
-                    createTableCell(editor, {
-                      header: selected.cell.header === true,
-                      row: rowNode,
-                    })
-                  ),
-                  { at: view.tablePath.concat(row, insertionIndex) }
-                );
-              }
-            }
-            tx.selection.setNodes([selectedKey], {
-              anchor: selectedKey,
-              focus: selectedKey,
-            });
-
-            return true;
-          },
-          setCellBackground: ({
-            at,
-            color,
-          }: TableTargetOptions & { color: string | null }): boolean => {
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView({ at });
-
-            if (!view) return false;
-            let changed = false;
-
-            for (const [cell, path] of view.cellEntries) {
-              if ((cell.backgroundColor ?? null) === color) continue;
-              changed = true;
-              if (color === null) {
-                tx.nodes.unset('backgroundColor', { at: path });
-              } else {
-                tx.nodes.set({ backgroundColor: color }, { at: path });
-              }
-            }
-
-            return changed;
-          },
-          setBorders: ({
-            at,
-            border,
-            value,
-          }: TableTargetOptions & {
-            border: TableBorderTarget;
-            value: TableCellBorder | null;
-          }): boolean => {
-            if (
-              value?.width !== undefined &&
-              (!Number.isFinite(value.width) || value.width < 0)
-            ) {
-              throw new TypeError(
-                'Table border width must be a non-negative finite number.'
-              );
-            }
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView({ at });
-
-            return view ? applyBorders(view, border, value) : false;
-          },
-          toggleBorders: ({
-            at,
-            border,
-          }: ToggleTableBordersOptions): boolean => {
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView({ at });
-
-            if (!view) return false;
-            const target = border === 'none' ? 'all' : border;
-            const visible = view.anchors.flatMap((anchor) =>
-              directionsForBorder(view, anchor, target).map((direction) =>
-                edgeVisible(view, anchor, direction)
-              )
-            );
-            const width =
-              border === 'none'
-                ? visible.every((value) => !value)
-                  ? 1
-                  : 0
-                : visible.every(Boolean)
-                  ? 0
-                  : 1;
-
-            return applyBorders(view, target, { width });
-          },
-          resize: ({ at, resize }: TableResizeOptions): boolean => {
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView({ at });
-
-            if (!view) return false;
-            const node = view.table;
-            const path = view.tablePath;
-
-            if (resize.edge === 'bottom') {
+          ),
+          merge: txLocate(
+            locateAt(0),
+            (options: TableTargetOptions = {}): boolean => {
               if (
-                !Number.isSafeInteger(resize.rowIndex) ||
-                resize.rowIndex < 0 ||
-                resize.rowIndex >= node.children.length ||
-                !isPositiveFiniteNumber(resize.height)
+                tx.view.isReadOnly() ||
+                !context.store.get().allowCellSpanEditing
               ) {
-                throw new TypeError(
-                  'Table resize requires a valid row and positive height.'
-                );
-              }
-              const row = node.children[resize.rowIndex];
-
-              if (ElementApi.isElement(row) && row.height === resize.height) {
                 return false;
+              }
+              const view = selectionView(options);
+
+              if (
+                !view ||
+                view.anchors.length < 2 ||
+                !toPublicTableSelection(view).rectangular
+              ) {
+                return false;
+              }
+
+              const [destination, ...sources] = view.anchors;
+
+              if (!destination) return false;
+              const destinationKey =
+                view.cellKeys[view.anchors.indexOf(destination)];
+
+              if (!destinationKey) return false;
+              const atPath = (path: Path): Location =>
+                view.root === undefined
+                  ? path
+                  : { offset: 0, path, root: view.root };
+              const sourceChildren = sources.flatMap((anchor) =>
+                anchor.cell.children.map((_, index) =>
+                  tx.key(atPath(view.tablePath.concat(anchor.path, index)))
+                )
+              );
+
+              if (
+                sourceChildren.length > 0 &&
+                hasDefaultCellContent(editor, destination.cell)
+              ) {
+                const placeholderKey = tx.key(
+                  view.tablePath.concat(destination.path, 0)
+                );
+
+                if (placeholderKey) tx.nodes.remove({ at: placeholderKey });
+              }
+              for (const childKey of sourceChildren) {
+                if (!childKey) continue;
+                const destinationEntry = tx.nodes.get(destinationKey, {
+                  match: (node) => isTableCell(editor, node),
+                });
+
+                if (!destinationEntry) return false;
+                tx.nodes.move({
+                  at: childKey,
+                  to: destinationEntry[1].concat(
+                    destinationEntry[0].children.length
+                  ),
+                });
+              }
+              for (const source of sources.toReversed()) {
+                const sourceKey = view.cellKeys[view.anchors.indexOf(source)];
+
+                if (sourceKey) tx.nodes.remove({ at: sourceKey });
               }
               tx.nodes.set(
-                { height: resize.height },
-                { at: [...path, resize.rowIndex] }
+                {
+                  colSpan: view.bounds.maxCol - view.bounds.minCol + 1,
+                  rowSpan: view.bounds.maxRow - view.bounds.minRow + 1,
+                },
+                { at: destinationKey }
+              );
+              tx.selection.setNodes([destinationKey], {
+                anchor: destinationKey,
+                focus: destinationKey,
+              });
+
+              return true;
+            }
+          ),
+          split: txLocate(
+            locateAt(0),
+            (options: TableTargetOptions = {}): boolean => {
+              if (
+                tx.view.isReadOnly() ||
+                !context.store.get().allowCellSpanEditing
+              ) {
+                return false;
+              }
+              const view = selectionView(options);
+
+              if (
+                !view ||
+                view.anchors.length !== 1 ||
+                (view.anchor.colSpan === 1 && view.anchor.rowSpan === 1)
+              ) {
+                return false;
+              }
+
+              const selected = view.anchor;
+              const selectedKey = view.cellKeys[view.anchors.indexOf(selected)];
+
+              if (!selectedKey) return false;
+              tx.nodes.unset(['colSpan', 'rowSpan'], { at: selectedKey });
+              for (
+                let { row } = selected;
+                row < selected.row + selected.rowSpan;
+                row++
+              ) {
+                const rowNode = view.table.children[row] as
+                  | TableRowElement
+                  | undefined;
+
+                if (!rowNode) return false;
+                const anchors = view.context.grid.anchorsByRow[row] ?? [];
+                const insertionIndex =
+                  row === selected.row
+                    ? selected.cellIndex + 1
+                    : (anchors.find((anchor) => anchor.col >= selected.col)
+                        ?.cellIndex ?? rowNode.children.length);
+                const count =
+                  row === selected.row
+                    ? selected.colSpan - 1
+                    : selected.colSpan;
+
+                if (count > 0) {
+                  tx.nodes.insert(
+                    Array.from({ length: count }, () =>
+                      createTableCell(editor, {
+                        header: selected.cell.header === true,
+                        row: rowNode,
+                      })
+                    ),
+                    { at: view.tablePath.concat(row, insertionIndex) }
+                  );
+                }
+              }
+              tx.selection.setNodes([selectedKey], {
+                anchor: selectedKey,
+                focus: selectedKey,
+              });
+
+              return true;
+            }
+          ),
+          setCellBackground: txLocate(
+            locateAt(0),
+            ({
+              at,
+              color,
+            }: TableTargetOptions & { color: string | null }): boolean => {
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView({ at });
+
+              if (!view) return false;
+              let changed = false;
+
+              for (const [cell, path] of view.cellEntries) {
+                if ((cell.backgroundColor ?? null) === color) continue;
+                changed = true;
+                if (color === null) {
+                  tx.nodes.unset('backgroundColor', { at: path });
+                } else {
+                  tx.nodes.set({ backgroundColor: color }, { at: path });
+                }
+              }
+
+              return changed;
+            }
+          ),
+          setBorders: txLocate(
+            locateAt(0),
+            ({
+              at,
+              border,
+              value,
+            }: TableTargetOptions & {
+              border: TableBorderTarget;
+              value: TableCellBorder | null;
+            }): boolean => {
+              if (
+                value?.width !== undefined &&
+                (!Number.isFinite(value.width) || value.width < 0)
+              ) {
+                throw new TypeError(
+                  'Table border width must be a non-negative finite number.'
+                );
+              }
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView({ at });
+
+              return view ? applyBorders(view, border, value) : false;
+            }
+          ),
+          toggleBorders: txLocate(
+            locateAt(0),
+            ({ at, border }: ToggleTableBordersOptions): boolean => {
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView({ at });
+
+              if (!view) return false;
+              const target = border === 'none' ? 'all' : border;
+              const visible = view.anchors.flatMap((anchor) =>
+                directionsForBorder(view, anchor, target).map((direction) =>
+                  edgeVisible(view, anchor, direction)
+                )
+              );
+              const width =
+                border === 'none'
+                  ? visible.every((value) => !value)
+                    ? 1
+                    : 0
+                  : visible.every(Boolean)
+                    ? 0
+                    : 1;
+
+              return applyBorders(view, target, { width });
+            }
+          ),
+          resize: txLocate(
+            locateAt(0),
+            ({ at, resize }: TableResizeOptions): boolean => {
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView({ at });
+
+              if (!view) return false;
+              const node = view.table;
+              const path = view.tablePath;
+
+              if (resize.edge === 'bottom') {
+                if (
+                  !Number.isSafeInteger(resize.rowIndex) ||
+                  resize.rowIndex < 0 ||
+                  resize.rowIndex >= node.children.length ||
+                  !isPositiveFiniteNumber(resize.height)
+                ) {
+                  throw new TypeError(
+                    'Table resize requires a valid row and positive height.'
+                  );
+                }
+                const row = node.children[resize.rowIndex];
+
+                if (ElementApi.isElement(row) && row.height === resize.height) {
+                  return false;
+                }
+                tx.nodes.set(
+                  { height: resize.height },
+                  { at: [...path, resize.rowIndex] }
+                );
+
+                return true;
+              }
+              if (resize.columns.length === 0) {
+                throw new TypeError(
+                  'Horizontal table resize requires at least one column.'
+                );
+              }
+
+              const columnCount = compileTableGrid(node).width;
+              const current = getTableColumnSizes(node);
+              const columnWidths = Array.from(
+                { length: columnCount },
+                (_, index): number | null => current?.[index] ?? null
+              );
+
+              for (const { colIndex, width } of resize.columns) {
+                if (
+                  !Number.isSafeInteger(colIndex) ||
+                  colIndex < 0 ||
+                  colIndex >= columnCount ||
+                  !isPositiveFiniteNumber(width)
+                ) {
+                  throw new TypeError(
+                    'Table resize requires existing columns and positive widths.'
+                  );
+                }
+                columnWidths[colIndex] = width;
+              }
+              if (
+                resize.edge === 'left' &&
+                (!Number.isFinite(resize.marginLeft) || resize.marginLeft < 0)
+              ) {
+                throw new TypeError(
+                  'Table resize margin must be non-negative and finite.'
+                );
+              }
+              const marginChanged =
+                resize.edge === 'left' &&
+                (node.marginLeft ?? 0) !== resize.marginLeft;
+              const widthsChanged =
+                JSON.stringify(current ?? []) !== JSON.stringify(columnWidths);
+
+              if (!marginChanged && !widthsChanged) return false;
+              tx.nodes.set(
+                {
+                  columnWidths,
+                  ...(resize.edge === 'left'
+                    ? { marginLeft: resize.marginLeft }
+                    : {}),
+                },
+                { at: path }
               );
 
               return true;
             }
-            if (resize.columns.length === 0) {
-              throw new TypeError(
-                'Horizontal table resize requires at least one column.'
-              );
-            }
-
-            const columnCount = compileTableGrid(node).width;
-            const current = getTableColumnSizes(node);
-            const columnWidths = Array.from(
-              { length: columnCount },
-              (_, index): number | null => current?.[index] ?? null
-            );
-
-            for (const { colIndex, width } of resize.columns) {
-              if (
-                !Number.isSafeInteger(colIndex) ||
-                colIndex < 0 ||
-                colIndex >= columnCount ||
-                !isPositiveFiniteNumber(width)
-              ) {
+          ),
+          setColumnWidth: txLocate(
+            locateAt(0),
+            ({ at, colIndex, width }: TableColumnWidthOptions): boolean => {
+              if (!Number.isSafeInteger(colIndex) || colIndex < 0) {
                 throw new TypeError(
-                  'Table resize requires existing columns and positive widths.'
+                  'Table column index must be a non-negative safe integer.'
                 );
               }
-              columnWidths[colIndex] = width;
-            }
-            if (
-              resize.edge === 'left' &&
-              (!Number.isFinite(resize.marginLeft) || resize.marginLeft < 0)
-            ) {
-              throw new TypeError(
-                'Table resize margin must be non-negative and finite.'
-              );
-            }
-            const marginChanged =
-              resize.edge === 'left' &&
-              (node.marginLeft ?? 0) !== resize.marginLeft;
-            const widthsChanged =
-              JSON.stringify(current ?? []) !== JSON.stringify(columnWidths);
+              if (!isPositiveFiniteNumber(width)) {
+                throw new TypeError(
+                  'Table column width must be a positive finite number.'
+                );
+              }
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView({ at });
 
-            if (!marginChanged && !widthsChanged) return false;
-            tx.nodes.set(
-              {
-                columnWidths,
-                ...(resize.edge === 'left'
-                  ? { marginLeft: resize.marginLeft }
-                  : {}),
-              },
-              { at: path }
-            );
+              if (!view) return false;
+              const columnCount = view.context.grid.width;
 
-            return true;
-          },
-          setColumnWidth: ({
-            at,
-            colIndex,
-            width,
-          }: TableColumnWidthOptions): boolean => {
-            if (!Number.isSafeInteger(colIndex) || colIndex < 0) {
-              throw new TypeError(
-                'Table column index must be a non-negative safe integer.'
-              );
-            }
-            if (!isPositiveFiniteNumber(width)) {
-              throw new TypeError(
-                'Table column width must be a positive finite number.'
-              );
-            }
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView({ at });
-
-            if (!view) return false;
-            const columnCount = view.context.grid.width;
-
-            if (colIndex >= columnCount) {
-              throw new RangeError(
-                'Table column index exceeds the last table column.'
-              );
-            }
-            const current = getTableColumnSizes(view.table);
-            const columnWidths: Array<number | null> = Array.from(
-              { length: columnCount },
-              (_, index): number | null => current?.[index] ?? null
-            );
-
-            if (columnWidths[colIndex] === width) return false;
-            columnWidths[colIndex] = width;
-            tx.nodes.set({ columnWidths }, { at: view.tablePath });
-
-            return true;
-          },
-          setRowHeight: ({
-            at,
-            height,
-            rowIndex,
-          }: TableRowHeightOptions): boolean => {
-            if (!Number.isSafeInteger(rowIndex) || rowIndex < 0) {
-              throw new TypeError(
-                'Table row index must be a non-negative safe integer.'
-              );
-            }
-            if (!isPositiveFiniteNumber(height)) {
-              throw new TypeError(
-                'Table row height must be a positive finite number.'
-              );
-            }
-            if (tx.view.isReadOnly()) return false;
-            const view = selectionView({ at });
-            const row = view?.table.children[rowIndex];
-
-            if (!view || !ElementApi.isElement(row)) {
-              if (view && rowIndex >= view.table.children.length) {
+              if (colIndex >= columnCount) {
                 throw new RangeError(
-                  'Table row index exceeds the last table row.'
+                  'Table column index exceeds the last table column.'
                 );
               }
+              const current = getTableColumnSizes(view.table);
+              const columnWidths: Array<number | null> = Array.from(
+                { length: columnCount },
+                (_, index): number | null => current?.[index] ?? null
+              );
 
-              return false;
+              if (columnWidths[colIndex] === width) return false;
+              columnWidths[colIndex] = width;
+              tx.nodes.set({ columnWidths }, { at: view.tablePath });
+
+              return true;
             }
-            if (row.height === height) return false;
-            tx.nodes.set({ height }, { at: [...view.tablePath, rowIndex] });
+          ),
+          setRowHeight: txLocate(
+            locateAt(0),
+            ({ at, height, rowIndex }: TableRowHeightOptions): boolean => {
+              if (!Number.isSafeInteger(rowIndex) || rowIndex < 0) {
+                throw new TypeError(
+                  'Table row index must be a non-negative safe integer.'
+                );
+              }
+              if (!isPositiveFiniteNumber(height)) {
+                throw new TypeError(
+                  'Table row height must be a positive finite number.'
+                );
+              }
+              if (tx.view.isReadOnly()) return false;
+              const view = selectionView({ at });
+              const row = view?.table.children[rowIndex];
 
-            return true;
-          },
+              if (!view || !ElementApi.isElement(row)) {
+                if (view && rowIndex >= view.table.children.length) {
+                  throw new RangeError(
+                    'Table row index exceeds the last table row.'
+                  );
+                }
+
+                return false;
+              }
+              if (row.height === height) return false;
+              tx.nodes.set({ height }, { at: [...view.tablePath, rowIndex] });
+
+              return true;
+            }
+          ),
         };
       },
     };

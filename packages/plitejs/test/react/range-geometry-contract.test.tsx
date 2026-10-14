@@ -320,14 +320,8 @@ describe('range geometry', () => {
       plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Base')],
     });
-    const proposal = {
-      intent: 'propose',
-      projection: 'proposed',
-    } as const;
-    const accepted = {
-      intent: 'edit',
-      projection: 'accepted',
-    } as const;
+    const proposal = { intent: 'propose' } as const;
+    const editing = { intent: 'edit' } as const;
     const first = createReactRuntimeViewEditor(
       createEditorView(source, { authored: proposal })
     );
@@ -371,7 +365,7 @@ describe('range geometry', () => {
       expect(geometry.getSnapshot()?.boundingRect.left).toBe(70);
 
       ranges.set(first, { anchor: point(4), focus: point(4) });
-      first.api.authored.setView(accepted);
+      first.api.authored.setView(editing);
       await flushViewState(firstRuntime);
       expect(geometry.getSnapshot()?.boundingRect.left).toBe(40);
 
@@ -388,7 +382,7 @@ describe('range geometry', () => {
       const activeReads = reads.get(second) ?? 0;
 
       ranges.set(second, { anchor: point(6), focus: point(6) });
-      second.api.authored.setView(accepted);
+      second.api.authored.setView(editing);
       await flushViewState(secondRuntime);
       expect(reads.get(second)).toBe(activeReads + 1);
       expect(geometry.getSnapshot()?.boundingRect.left).toBe(60);

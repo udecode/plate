@@ -458,7 +458,7 @@ describe('platejs/html', () => {
           message:
             'Plate HTML encode has no encoder for element "unsupportedHtml".',
           model: { path: [0], root: 'main' },
-          owner: 'plate:html',
+          owner: 'core:html',
           phase: 'serialize',
           severity: 'warning',
         },

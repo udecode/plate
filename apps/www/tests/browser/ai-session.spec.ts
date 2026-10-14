@@ -106,7 +106,9 @@ test('line-forward deletion resets an emptied heading to text', async ({
       })
       .toMatchObject({ children: [{ text: '' }], type: 'paragraph' });
     await expect(root.getByRole('heading', { name: 'AI Menu' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Text' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Turn into: Text', exact: true })
+    ).toBeVisible();
     const firstBlock = root.locator('[data-editor-path="0"]').first();
     await expect(firstBlock).toHaveClass(/editor-paragraph/);
     const firstBlockBounds = await firstBlock.boundingBox();
@@ -199,18 +201,10 @@ test('undo survives resetting a heading before deleting its words', async ({
       })
       .toMatchObject({ children: [{ text: '' }], type: 'paragraph' });
 
+    // Two quick word deletions at one point undo together, as in a plain
+    // editor.
     await page.keyboard.press('Meta+z');
     errors.assertNone();
-    await expect
-      .poll(async () => {
-        const value = (await editor.get.modelValue()) as {
-          children: Array<{ children: Array<{ text: string }>; type: string }>;
-        };
-
-        return value.children[0];
-      })
-      .toMatchObject({ children: [{ text: 'AI ' }], type: 'paragraph' });
-    await page.keyboard.press('Meta+z');
     await expect
       .poll(async () => {
         const value = (await editor.get.modelValue()) as {
@@ -281,7 +275,6 @@ for (const toolName of ['generate', 'edit'] as const) {
         text: 'Generate and refine content with AI.',
       });
       const before = await editor.get.modelValue();
-      const beforeChildren = (before as { children: unknown }).children;
       await editor.selection.select({
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 36 },
@@ -293,7 +286,22 @@ for (const toolName of ['generate', 'edit'] as const) {
       const preview = page.getByRole('dialog').locator('.editor-editor');
       if (toolName === 'edit') {
         await expect(preview).toHaveCount(0);
-        await expect(root).toContainText('d preview text.');
+        // The proposal reads as the editor shows it without struck text.
+        await expect
+          .poll(() =>
+            root.evaluate((element) => {
+              const proposed = element.cloneNode(true) as HTMLElement;
+
+              for (const struck of proposed.querySelectorAll(
+                '[data-editor-authored-kind="delete"]'
+              )) {
+                struck.remove();
+              }
+
+              return proposed.textContent ?? '';
+            })
+          )
+          .toContain('Generated preview text.');
         await expect(
           root.locator('[data-editor-authored-change]')
         ).not.toHaveCount(0);
@@ -308,15 +316,16 @@ for (const toolName of ['generate', 'edit'] as const) {
       } else {
         await expect(preview).toContainText('Generated preview text.');
       }
-      if (toolName === 'edit') {
-        expect(
-          ((await editor.get.modelValue()) as { children: unknown }).children
-        ).toEqual(beforeChildren);
-      } else {
+      if (toolName === 'generate') {
         expect(await editor.get.modelValue()).toEqual(before);
       }
+      // What undo returns to: the original for a preview, the pending
+      // proposal for an edit, whose review tree holds it.
+      const reviewChildren = (
+        (await editor.get.modelValue()) as { children: unknown }
+      ).children;
       await expect(
-        page.getByRole('button', { name: 'Editing', exact: true })
+        page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
       ).toBeVisible();
       if (toolName === 'generate') {
         await expect(root.locator('[data-editor-authored-change]')).toHaveCount(
@@ -358,7 +367,7 @@ for (const toolName of ['generate', 'edit'] as const) {
 
           return value.children;
         })
-        .toEqual(beforeChildren);
+        .toEqual(reviewChildren);
       await page.keyboard.insertText('!');
       await expect(root).toContainText('!');
       await page.keyboard.press('ControlOrMeta+z');
@@ -370,7 +379,7 @@ for (const toolName of ['generate', 'edit'] as const) {
 
           return value.children;
         })
-        .toEqual(beforeChildren);
+        .toEqual(reviewChildren);
       await expect(root).toBeFocused();
       errors.assertNone();
     } finally {
@@ -408,22 +417,28 @@ test('AI edit renders beside the homepage seeded suggestions', async ({
     const editor = createBrowserEditorHarness(page, 'ai:homepage-edit', root);
     const heading = 'Welcome to the Plate Playground!';
     await editor.ready({ editor: 'visible', text: heading });
+    // The seeded suggestions sit in the review tree, so "comments" is the
+    // paragraph's seventh child.
     await editor.selection.select({
-      anchor: { path: [3, 3, 0], offset: 0 },
-      focus: { path: [3, 4], offset: 23 },
+      anchor: { path: [3, 6, 0], offset: 0 },
+      focus: { path: [3, 7], offset: 23 },
     });
+    expect(
+      ((await editor.get.modelValue()) as { children: Array<{ children: unknown[] }> })
+        .children[3].children[6]
+    ).toMatchObject({ type: 'link', url: '/docs/comment' });
     await root.press('ControlOrMeta+j');
     await page
       .getByRole('option', { name: 'Improve writing', exact: true })
       .click();
 
     await expect(root).toContainText('Improved heading');
-    const improved = root.locator('[data-editor-authored-change]').filter({
-      hasText: 'Improved heading',
-    });
+    const improved = root
+      .locator('[data-editor-node="text"][data-editor-authored-kind="insert"]')
+      .filter({ hasText: 'Improved heading' });
     await expect(improved).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Editing', exact: true })
+      page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
     ).toBeVisible();
     await improved.scrollIntoViewIfNeeded();
     await info.attach('ai-homepage-existing-suggestions', {
@@ -509,19 +524,20 @@ test('AI edit preserves unchanged blocks and suggests only added emoji', async (
     await expect(emoji).toBeVisible();
     const changeId = await emoji.getAttribute('data-editor-authored-change');
     expect(changeId).toBeTruthy();
+    // A change paints its leaf and the text inside it; the text element names
+    // each run once.
     expect(
       await root
-        .locator(`[data-editor-authored-change="${changeId}"]`)
+        .locator(
+          `[data-editor-node="text"][data-editor-authored-change="${changeId}"]`
+        )
         .allTextContents()
     ).toEqual([' 🤖✍️', ' 📝', ' ✍️']);
     await expect(
       root.locator(
-        `[data-editor-authored-change="${changeId}"][data-editor-retained="delete"]`
+        `[data-editor-authored-change="${changeId}"][data-editor-authored-kind="delete"]`
       )
     ).toHaveCount(0);
-    expect(((await editor.get.modelValue()) as typeof before).children).toEqual(
-      before.children
-    );
     await root
       .getByRole('heading', { name: 'AI-Powered Editing 🤖✍️' })
       .evaluate((element) => element.scrollIntoView({ block: 'start' }));
@@ -730,7 +746,7 @@ test('Explain preserves its generate intent for a document with comments and tab
     const heading = 'Welcome to the Plate Playground!';
     await editor.ready({ editor: 'visible', text: heading });
     await expect(
-      page.getByRole('button', { name: 'Editing', exact: true })
+      page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
     ).toBeVisible();
     await editor.dom.clickTextOffset({ path: [0, 0], offset: heading.length });
     const before = await editor.get.modelBlockTexts();
@@ -774,7 +790,7 @@ test('Explain preserves its generate intent for a document with comments and tab
       ...before.slice(1),
     ]);
     await expect(
-      page.getByRole('button', { name: 'Editing', exact: true })
+      page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
     ).toBeVisible();
     errors.assertNone();
   } finally {
@@ -854,10 +870,10 @@ for (const start of ['heading', 'empty paragraph'] as const) {
       await expect(root.locator('[data-editor-ai-preview]')).toHaveText(
         'AI can help turn an initial idea into a clear and useful first draft.'
       );
-      await expect(root.locator('[data-editor-retained]')).toHaveCount(0);
+      await expect(root.locator('[data-editor-authored-kind="delete"]')).toHaveCount(0);
       await expect.poll(() => editor.get.modelBlockTexts()).toEqual(before);
       await expect(
-        page.getByRole('button', { name: 'Editing', exact: true })
+        page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
       ).toBeVisible();
       await expect(root.locator('[data-editor-authored-change]')).toHaveCount(
         0
@@ -872,7 +888,7 @@ for (const start of ['heading', 'empty paragraph'] as const) {
       await expect(root.locator('[data-editor-ai-preview]')).toHaveText(
         'AI can help turn an initial idea into a clear and useful first draft.'
       );
-      await expect(root.locator('[data-editor-retained]')).toHaveCount(0);
+      await expect(root.locator('[data-editor-authored-kind="delete"]')).toHaveCount(0);
       await page.getByRole('option', { name: 'Discard', exact: true }).click();
       await expect.poll(() => editor.get.modelBlockTexts()).toEqual(before);
 
@@ -897,7 +913,7 @@ for (const start of ['heading', 'empty paragraph'] as const) {
       await expect(root.locator('[data-editor-ai-preview]')).toHaveText(
         'AI can help turn an initial idea into a clear and useful first draft.'
       );
-      await expect(root.locator('[data-editor-retained]')).toHaveCount(0);
+      await expect(root.locator('[data-editor-authored-kind="delete"]')).toHaveCount(0);
       await page.screenshot({
         path: testInfo.outputPath('complete-continuation.png'),
       });
@@ -1119,7 +1135,7 @@ test('Generate Markdown sample keeps its review visible and accepts a usable tab
           };
         })
       )
-      .toEqual({ cellWidths: [8, 300, 300], tableWidth: 608 });
+      .toEqual({ cellWidths: [16, 300, 300], tableWidth: 616 });
     errors.assertNone();
   } finally {
     errors.stop();

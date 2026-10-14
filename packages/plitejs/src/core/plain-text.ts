@@ -8,6 +8,7 @@ import { ElementApi } from '../interfaces/element';
 import type { Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import { TextApi } from '../interfaces/text';
+import { isMetadataRootKey } from '../internal/root-location';
 
 export type StructuralPlainTextDiagnostic = Readonly<{
   code:
@@ -161,7 +162,9 @@ export const serializeStructuralPlainText = <V extends Value>(
   ).text;
 
   for (const root of Object.keys(roots)) {
-    if (root === 'main' || reachedRoots.has(root)) continue;
+    if (root === 'main' || reachedRoots.has(root) || isMetadataRootKey(root)) {
+      continue;
+    }
     diagnostics.push(
       Object.freeze({
         code: 'plain-text-unsupported-root' as const,

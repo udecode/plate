@@ -30,7 +30,7 @@ it('maps opaque HTML ids and fragment links to unique Word bookmarks', async () 
   const result = await readBookmarks(html);
   expect(result.anchors).toEqual(result.names);
   expect(new Set(result.names).size).toBe(ids.length);
-  for (const name of result.names) expect(name).toMatch(/^plate_\d+$/);
+  for (const name of result.names) expect(name).toMatch(/^bookmark_\d+$/);
 });
 
 it('keeps bookmark ids and names local to concurrent document conversions', async () => {

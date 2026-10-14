@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-12-link-shortcut-view",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-12-link-shortcut-view.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Open the link form with Cmd+K",
+  "targets": [
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-12-link-open-form-cmd-k-957f4cda",
+      "kind": "fix",
+      "summary": "Fix Cmd+K, which did not open the link form. `api.trigger()` reads the editor's focus when `focused` is omitted, and returns `false` when the form stays closed.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-12",
+          "entry": "2026-10-12-link-shortcut-view",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -10,10 +10,7 @@ import {
   property,
   schema,
 } from '../../src/index';
-import {
-  setPliteYjsAttribute,
-  setYjsAttribute,
-} from '../../src/yjs/core/attributes';
+import { setYjsAttribute } from '../../src/yjs/core/attributes';
 import { createYjsPeerWithEditor } from './support/collaboration';
 
 const element = (type: string, children: Descendant[]) => ({
@@ -64,7 +61,7 @@ const peerWith = (contentRoots: boolean, children: Descendant[]) => {
 
   return {
     older,
-    olderRoot: older.get('plitejs', Y.XmlElement),
+    olderRoot: older.get('document', Y.XmlElement),
     peer,
     sync: () =>
       Y.applyUpdate(
@@ -75,9 +72,9 @@ const peerWith = (contentRoots: boolean, children: Descendant[]) => {
 };
 
 const yElement = (type: string) => {
-  const node = new Y.XmlElement(type);
+  const node = new Y.XmlElement('element');
 
-  setPliteYjsAttribute(node, 'type', type);
+  setYjsAttribute(node, 'type', type);
 
   return node;
 };

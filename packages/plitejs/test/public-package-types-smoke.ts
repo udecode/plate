@@ -406,9 +406,13 @@ editor.read((state) =>
   // @ts-expect-error the primary fit context is selected by omitting root
   state.slice.fitContent(slice, { parent: publicParent, root: 'main' })
 );
-editor.read((state) => state.schema.createDefaultRootChild('header'));
-// @ts-expect-error the primary schema root is selected by omitting root
-editor.read((state) => state.schema.createDefaultRootChild('main'));
+editor.read((state) =>
+  state.schema.createDefaultChild({ at: [0], root: 'header' })
+);
+editor.read((state) =>
+  // @ts-expect-error the primary schema root is selected by omitting root
+  state.schema.createDefaultChild({ at: [0], root: 'main' })
+);
 
 transaction.roots.create('header', []);
 transaction.roots.replace('header', []);

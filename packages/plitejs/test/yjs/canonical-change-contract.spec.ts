@@ -324,7 +324,7 @@ describe('plitejs/yjs canonical change collaboration contract', () => {
     assert.deepEqual(peer.editor.read.root('header'), [paragraph('updated')]);
     assert.deepEqual(readPeerPliteValue(peer), initialValue());
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha', 'beta', 'gamma']);
-    assert.equal(peer.doc.getMap('plitejs:roots').has('header'), true);
+    assert.equal(peer.doc.getMap('document:roots').has('header'), true);
     assert.equal(
       getYjsTrace(peer).every((entry) => entry.root === 'header'),
       true

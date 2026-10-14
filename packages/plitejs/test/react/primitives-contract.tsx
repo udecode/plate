@@ -10,7 +10,7 @@ import {
   EditorText,
 } from '../../src/react';
 import { EditableText } from '../../src/react/components/editable-text';
-import { PliteSpacer } from '../../src/react/components/plite-spacer';
+import { EditorSpacer } from '../../src/react/components/plite-spacer';
 import { TextString } from '../../src/react/components/text-string';
 import { ZeroWidthString } from '../../src/react/components/zero-width-string';
 
@@ -148,17 +148,17 @@ describe('plite-react primitives contract', () => {
     expect(placeholder?.style.textDecoration).toBe('');
   });
 
-  test('PliteElement and PliteSpacer own the element and spacer shape', () => {
+  test('PliteElement and EditorSpacer own the element and spacer shape', () => {
     const rendered = render(
       <EditorElement isVoid style={{ position: 'relative' }}>
         <span contentEditable={false}>void</span>
-        <PliteSpacer>
+        <EditorSpacer>
           <EditorText>
             <EditorLeaf>
               <ZeroWidthString length={4} />
             </EditorLeaf>
           </EditorText>
-        </PliteSpacer>
+        </EditorSpacer>
       </EditorElement>
     );
 

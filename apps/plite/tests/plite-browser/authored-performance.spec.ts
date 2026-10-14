@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import {
+  BROWSER_HANDLE_KEY,
   measureTrustedTyping,
   openExample,
   recordBrowserRuntimeErrors,
@@ -41,40 +42,26 @@ const percentile = (samples: number[], quantile: number) =>
     Math.ceil(samples.length * quantile) - 1
   ];
 
-type SavedAuthoredOperation = {
-  changeId: string;
-  kind: string;
-  proposal?: boolean;
+type ReviewNode = {
+  authored?: readonly { change: string; kind: string }[];
+  children?: ReviewNode[];
+  text?: string;
 };
 
-const readSavedAuthoredOperations = (
-  value: unknown
-): SavedAuthoredOperation[] => {
-  if (!Array.isArray(value)) return [];
-
-  return value.flatMap((entry) => {
-    if (!Array.isArray(entry)) return [];
-    if (entry[0] === 0) {
-      return typeof entry[2] === 'string' && typeof entry[8] === 'boolean'
-        ? [{ changeId: entry[2], kind: 'edit', proposal: entry[8] }]
-        : [];
-    }
-    if (entry[0] === 1 && entry[1] && typeof entry[1] === 'object') {
-      const operation = entry[1] as SavedAuthoredOperation;
-      return typeof operation.changeId === 'string' ? [operation] : [];
-    }
-    return [];
-  });
-};
-
-const operationsFrom = (value: unknown) =>
-  readSavedAuthoredOperations(
-    (
-      value as {
-        meta?: { authored?: { value?: { operations?: unknown } } };
-      }
-    ).meta?.authored?.value?.operations
+/** Pending deletion ids and each block's leaves, read from the review marks. */
+const readStruck = (value: unknown) => {
+  const ids = new Set<string>();
+  const blocks = ((value as ReviewNode).children ?? []).map((block) =>
+    (block.children ?? []).map((leaf) => {
+      const kinds = (leaf.authored ?? []).map((mark) => {
+        if (mark.kind === 'delete') ids.add(mark.change);
+        return mark.kind;
+      });
+      return kinds.length ? `${leaf.text}[${kinds.join(',')}]` : leaf.text;
+    })
   );
+  return { blocks, ids };
+};
 
 test.describe('native authored typing performance', () => {
   test.describe.configure({ mode: 'serial', retries: 0 });
@@ -96,7 +83,9 @@ test.describe('native authored typing performance', () => {
       const independent = proposed.rootAt(
         '[aria-label="Independent document"]'
       );
-      await accepted.scenario.run('seed authored typing cohort', [
+      const controls = page.getByLabel('Proposed document controls');
+      await controls.getByRole('button', { name: 'Edit', exact: true }).click();
+      await proposed.scenario.run('seed authored typing cohort', [
         {
           kind: 'applyValueChange',
           value: {
@@ -107,93 +96,79 @@ test.describe('native authored typing performance', () => {
           },
         },
       ]);
-      await proposed.root.evaluate((element, count) => {
-        const handle = (
-          element as HTMLElement & { __pliteBrowserHandle: PliteBrowserHandle }
-        ).__pliteBrowserHandle;
-        for (let index = 0; index < count; index++) {
-          handle.deleteTextAt({
-            anchor: { path: [index, 0], offset: 1 },
-            focus: { path: [index, 0], offset: 2 },
-          });
-        }
-      }, cohort.pendingDeletions);
-      await page
-        .getByLabel('Proposed document controls')
-        .getByRole('button', { name: 'Show changes', exact: true })
-        .click({ timeout: 10_000 });
-      const mountedMarkup = () =>
-        proposed.root.evaluate((root) => {
-          const blocks = [
-            ...root.querySelectorAll(
-              '[data-editor-node="element"][data-editor-path]'
-            ),
-          ].filter(
-            (element) =>
-              /^\d+$/.test(element.getAttribute('data-editor-path') ?? '') &&
-              !element.closest('[data-editor-retained]')
-          );
-          return {
-            paths: blocks.map((element) =>
-              element.getAttribute('data-editor-path')
-            ),
-            retained: root.querySelectorAll('[data-editor-retained]').length,
-            placeholders: root.querySelectorAll(
-              '[data-editor-viewport-boundary]'
-            ).length,
-            invalid: blocks.filter((element) => {
-              const fragments = [
-                ...element.querySelectorAll('[data-editor-retained]'),
-              ];
-              return fragments.length !== 1 || fragments[0].textContent !== 'e';
-            }).length,
-          };
-        });
+      await controls.getByRole('button', { name: 'Suggest', exact: true }).click();
+      await proposed.root.evaluate(
+        (element, [count, key]) => {
+          const handle = (
+            element as HTMLElement & Record<string, PliteBrowserHandle>
+          )[key];
+          for (let index = 0; index < count; index++) {
+            handle.deleteTextAt({
+              anchor: { path: [index, 0], offset: 1 },
+              focus: { path: [index, 0], offset: 2 },
+            });
+          }
+        },
+        [cohort.pendingDeletions, BROWSER_HANDLE_KEY] as const
+      );
+      const mountedMarkup = async () => {
+        const struck = readStruck(await proposed.get.modelValue());
+        return proposed.root.evaluate(
+          (root, blocks) => {
+            const paths = [
+              ...root.querySelectorAll(
+                '[data-editor-node="element"][data-editor-path]'
+              ),
+            ]
+              .map((element) => element.getAttribute('data-editor-path'))
+              .filter((path) => /^\d+$/.test(path ?? ''));
+            return {
+              paths,
+              struck: blocks.filter((leaves) => leaves.includes('e[delete]'))
+                .length,
+              placeholders: root.querySelectorAll(
+                '[data-editor-viewport-boundary]'
+              ).length,
+              invalid: blocks.filter(
+                (leaves) =>
+                  leaves.filter((leaf) => leaf?.endsWith('[delete]'))
+                    .length !== 1 || !leaves.includes('e[delete]')
+              ).length,
+            };
+          },
+          struck.blocks
+        );
+      };
       await expect
         .poll(async () => {
           const mounted = await mountedMarkup();
           return (
             mounted.paths.length > 0 &&
             mounted.invalid === 0 &&
-            mounted.retained === mounted.paths.length
+            mounted.struck === mounted.paths.length
           );
         })
         .toBe(true);
       const initialMarkup = await mountedMarkup();
       expect(initialMarkup.paths).toHaveLength(cohort.blocks);
       expect(initialMarkup.placeholders).toBe(0);
-      const initialValue = await accepted.get.modelValue();
-      expect((initialValue as { children: unknown[] }).children).toHaveLength(
-        cohort.blocks
-      );
-      const operations = operationsFrom(initialValue);
-      expect(operations).toHaveLength(cohort.pendingDeletions + 1);
-      const originalProposalIds = new Set(
-        operations
-          .filter(
-            (operation) =>
-              operation.kind === 'edit' && operation.proposal === true
-          )
-          .map((operation) => operation.changeId)
-      );
+      const originalProposalIds = readStruck(
+        await proposed.get.modelValue()
+      ).ids;
       expect(originalProposalIds.size).toBe(cohort.pendingDeletions);
-      expect(
-        operations.filter(
-          (operation) =>
-            operation.kind === 'edit' && operation.proposal === false
-        )
-      ).toHaveLength(1);
       const acceptedText = await accepted.get.modelText();
       const proposedText = await proposed.get.modelText();
       expect(acceptedText).toBe('Seed.'.repeat(cohort.blocks));
-      expect(proposedText).toBe('Sed.'.repeat(cohort.blocks));
+      expect(proposedText).toBe('Seed.'.repeat(cohort.blocks));
       await proposed.selection.collapse({ path: [0, 0], offset: 0 });
       const warmup = 'w'.repeat(contract.sampling.warmupsPerPass);
       await proposed.type(warmup);
-      await proposed.assert.domCaret({
-        text: `${warmup}S`,
-        offset: warmup.length,
-      });
+      await expect
+        .poll(() => proposed.get.selection())
+        .toEqual({
+          anchor: { path: [0, 0], offset: warmup.length },
+          focus: { path: [0, 0], offset: warmup.length },
+        });
       const measured = 'q'.repeat(contract.sampling.samplesPerPass);
       const result = await measureTrustedTyping({
         page,
@@ -284,20 +259,10 @@ test.describe('native authored typing performance', () => {
       expect(finalMarkup.invalid).toBe(0);
       expect(finalMarkup.paths).toHaveLength(cohort.blocks);
       expect(finalMarkup.placeholders).toBe(0);
-      expect(finalMarkup.retained).toBe(finalMarkup.paths.length);
-      const finalValue = await accepted.get.modelValue();
-      expect((finalValue as { children: unknown[] }).children).toHaveLength(
-        cohort.blocks
-      );
-      const finalOperations = operationsFrom(finalValue);
-      const finalProposalIds = new Set(
-        finalOperations
-          .filter(
-            (operation) =>
-              operation.kind === 'edit' && operation.proposal === true
-          )
-          .map((operation) => operation.changeId)
-      );
+      expect(finalMarkup.struck).toBe(finalMarkup.paths.length);
+      const finalProposalIds = readStruck(
+        await proposed.get.modelValue()
+      ).ids;
       expect(
         [...originalProposalIds].every((id) => finalProposalIds.has(id))
       ).toBe(true);

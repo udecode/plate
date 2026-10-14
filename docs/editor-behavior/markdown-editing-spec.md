@@ -1587,6 +1587,12 @@ note: normalization removes a link wrapper that deletion left empty
 
 note: link upsert updates the href or text and keeps marks, and unwrap removes the link, each according to the transform's intent
 
+note: linking selected text that crosses or touches a link's edge, or covers whole links, relinks only the selection, and the unselected part of each link keeps its old link; a selection inside one link updates that whole link
+
+note: unlinking selected text in split mode removes the link only from the selection, and at a caret removes the whole link
+
+note: a link never lands in a block that cannot hold one, such as a code block, or around an inline it cannot hold, such as a mention; Cmd+K keeps the link form closed in such a block, and a URL pasted over a selection where no block can take the link goes in as text
+
 - `EDIT-LINK-EDGE-DELETE-001` `proposed` `⌫ or ⌦ at a link edge, then typing`: deleting a selected first or last character of a link with `⌫` or `⌦`, then typing, puts the typed text outside the surviving link; typing over a selected link character keeps the new text inside the link; and a collapsed `⌫` from just after the link deletes its last character and keeps later typing inside it, since the caret is then on the linked side under `EDIT-AFF-LINK-001`
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
@@ -1997,7 +2003,7 @@ note: `↑` from the start of the block after a TOC selects the TOC instead of e
 
 note: `⇥` on a selected TOC moves focus onward or falls through; it never tabs into TOC text
 
-- `EDIT-TOC-ENTER-201` `proposed` `↵`: with the selection on a TOC block, whether a caret in its empty child or the whole TOC selected, `↵` keeps the TOC atomic: it creates no text inside the TOC, inserts an empty paragraph after it and puts the caret at that paragraph's start
+- `EDIT-TOC-ENTER-201` `proposed` `↵`: with the selection on a TOC block, whether a caret in its empty child or the whole TOC selected, `↵` keeps the TOC atomic: it creates no text inside the TOC, inserts an empty block of the parent's declared default type after it and puts the caret at that block's end; when the parent cannot hold another block, `↵` changes nothing
 
 ```text
 [toc] (selected)
@@ -2009,9 +2015,9 @@ next
 ```
 
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
-Authority: syntax: local MDX TOC contract; primary UX ref: Notion for the block shell; secondary ref: `EDIT-HR-ENTER-001`, where keypresses beside an atomic block create surrounding paragraphs
+Authority: syntax: local MDX TOC contract; primary UX ref: Notion for the block shell; secondary ref: `EDIT-HR-ENTER-001`, where `↵` on an atomic block creates the parent's declared default block after it
 Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:340
-Proof: `packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts:145` "inserts a paragraph after the toc on Enter" puts the caret in the TOC's empty child, runs `break.insert` and asserts exactly the TOC, an empty paragraph and `after`, with the caret at offset 0 of `[1, 0]`, which proves the rule at model level, with no keydown; tag candidate. Code: `packages/plitejs/src/editor/insert-break.ts:39-55` hands a caret in a block void to `packages/plitejs/src/editor/block-void-break.ts:16-58`, which inserts a default block after it and selects it. Drift: a node selection on the TOC makes `↵` do nothing (`packages/plitejs/src/editor/insert-break.ts:43-44`), so only the caret-in-child form of a selected TOC meets the rule. Checked 2026-10-08.
+Proof: `packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts:137` "inserts a paragraph after the toc on Enter" puts the caret in the TOC's empty child, runs `break.insert` and asserts the TOC, an empty paragraph and `after`, with the caret at offset 0 of `[1, 0]`, which proves the rule at model level, with no keydown; tag candidate. Code: `packages/plitejs/src/editor/insert-break.ts:69` hands a caret in a block void to `packages/plitejs/src/editor/block-void-break.ts`, which inserts the parent's default block after it and selects it. Drift: a node selection on the TOC makes `↵` do nothing (`packages/plitejs/src/editor/insert-break.ts:54`), so only the caret-in-child form of a selected TOC meets the rule. Checked 2026-10-08.
 
 ## Columns
 
@@ -2171,12 +2177,21 @@ Proof: the upload owner calls `next()` when no files arrive (`packages/platejs/s
 
 ```text
 ↓ from media NodeSelection
+with caption text the page draws
 =>
 TextSelection at caption start
+
+↓ from media NodeSelection
+with caption text the page does not draw
+=>
+the next block's first keyboard stop, or the same media NodeSelection when
+nothing follows
 ```
 
 note: `ArrowDown` moves from asset focus into the media element's direct inline
-children
+children while the page draws them. The stock caption shows while its media is
+selected, so `ArrowDown` from stock media always enters the caption. Whether the
+page draws the caption comes from the mounted DOM, not from its text.
 
 - `EDIT-CAPTION-NAV-002` `locked`
 
@@ -2199,10 +2214,15 @@ TextSelection at caption start
 ```
 
 note: horizontal movement treats the owner as a separate keyboard stop before
-its editable children. Reverse movement visits caption end, then the owner,
-then the preceding text. An empty caption still has one text-caret stop. In an
-RTL editable, the physical arrow keys reverse while this logical order stays
-the same.
+its editable children. Forward movement from the owner enters caption text the
+page draws and otherwise moves on to the next stop. Reverse movement visits
+caption end, then the owner, then the preceding text. A mounted empty caption
+still has one reverse text-caret stop while the page hides it, because entering
+it reveals the stock caption. Populated caption text the page does not draw has
+no stop, so reverse movement stops on the owner. The physical arrow keys follow
+the computed direction of the block that holds the caret, or of the selected
+media. They reverse in an RTL block inside an LTR editable, and this logical
+order stays the same.
 
 - `EDIT-CAPTION-NAV-004` `locked`
 
@@ -2211,7 +2231,7 @@ the same.
 =>
 media NodeSelection + ↓
 =>
-TextSelection at caption start
+the caption entry of EDIT-CAPTION-NAV-001
 ```
 
 note: vertical movement through earlier lines stays in the text block. The
@@ -2221,31 +2241,35 @@ selectable asset is a keyboard stop before its direct caption children.
 
 ```text
 ↑ from the first visual line of text immediately after media
-with a populated caption
+with caption text the page draws
 =>
 TextSelection in the caption + ↑ from its first visual line
 =>
 media NodeSelection
 ```
 
-note: vertical movement through later lines stays in the following text block.
-Caret geometry chooses a caption offset from the horizontal position, and
-vertical movement through a wrapped caption remains in its text until its
-first visual line.
+note: the caption text may be populated or empty. Vertical movement through
+later lines stays in the following text block. Caret geometry chooses a caption
+offset from the horizontal position, and vertical movement through a wrapped
+caption remains in its text until its first visual line.
 
 - `EDIT-CAPTION-NAV-006` `locked`
 
 ```text
-↑ from the first visual line of text immediately after media
-with an empty caption
+↑ from the first visual line of text immediately after media,
+or from a media NodeSelection immediately after it,
+with caption text the page does not draw
 =>
 media NodeSelection + ↓
 =>
-TextSelection at caption start
+the caption entry of EDIT-CAPTION-NAV-001
 ```
 
-note: an unfocused empty caption is hidden, so reverse entry stops on the
-selectable asset before exposing its editable caption.
+note: the stock caption hides an empty caption while its media is neither
+selected nor holding the caret, so reverse vertical entry stops on the
+selectable asset, and selecting the asset reveals the caption. Captions an app
+hides with CSS follow the same rule. Whether the page draws the caption comes
+from the mounted DOM, not from its text.
 
 - `EDIT-CAPTION-DELETE-001` `locked`
 
@@ -2626,7 +2650,7 @@ bca|
 Classification: invariant, by the tests in docs/vision/plate.md:129-137; it applies on Apple platforms, whose text system sends this input
 Authority: syntax: none; primary UX ref: the macOS text system's `Ctrl+T` transpose; secondary ref: Lexical's `Keyboard.spec.mjs`
 Source: c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:726
-Proof: only Plite proves it: `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts:2350` "applies insertTranspose beforeinput as adjacent character transpose" (Plite's plaintext example, Chromium and WebKit, two synthetic `insertTranspose` events from `a|bc`) asserts `bca` with the caret at 3, and `packages/plitejs/test/react/model-input-strategy-contract.test.ts:634` "transposes adjacent characters from insertTranspose beforeinput" (vitest) asserts `bac` with the caret at 2, then `bca` at 3. Both use synthetic events; no test presses `Ctrl+T`, whose Apple-only keydown maps to the same command only in browsers without `beforeinput` (`packages/plitejs/src/react/editable/keyboard-input-strategy.ts:1134`, `:1158`). Plate renders Plite's Editable, so Plate editors get the `beforeinput` path; Plate's own `transposeCharacter` hotkey (`packages/platejs/src/lib/utils/hotkeys.ts:53`) has no caller, and no Plate test covers it. Code: `applyModelOwnedTransposeCharacterIntent` (`packages/plitejs/src/react/editable/mutation-controller.ts:602`) swaps the characters around the caret, swaps the two characters before it only at the end of the document, and does nothing at the end of any other block or leaf. Checked 2026-10-08.
+Proof: only Plite proves it: `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts:2350` "applies insertTranspose beforeinput as adjacent character transpose" (Plite's plaintext example, Chromium and WebKit, two synthetic `insertTranspose` events from `a|bc`) asserts `bca` with the caret at 3, and `packages/plitejs/test/react/model-input-strategy-contract.test.ts:634` "transposes adjacent characters from insertTranspose beforeinput" (vitest) asserts `bac` with the caret at 2, then `bca` at 3. Both use synthetic events; no test presses `Ctrl+T`, whose Apple-only keydown maps to the same command only in browsers without `beforeinput` (`packages/plitejs/src/react/editable/keyboard-input-strategy.ts:1134`, `:1158`). Plate renders Plite's Editable, so Plate editors get the `beforeinput` path; Plate's own `transposeCharacter` hotkey (`packages/platejs/src/lib/utils/hotkeys.ts:53`) has no caller, and no Plate test covers it. Code: the editable's `transpose-character` command (`applyEditableCommand` in `packages/plitejs/src/react/editable/mutation-controller.ts`) dispatches `editorCommands.transposeCharacter` (`packages/plitejs/src/core/editor-commands.ts`), which swaps the characters around the caret, swaps the two characters before it only at the end of the document, and does nothing at the end of any other block or leaf. Checked 2026-10-13.
 
 - `EDIT-SHORTCUT-OPEN-LINE-001` `proposed` `Ctrl+O`: on Apple platforms, `Ctrl+O` with a collapsed caret at the start of a block opens an empty paragraph before that block and keeps the caret on the new empty line, so the following text does not move under the caret; the mid-block case stays open
 
@@ -2977,8 +3001,8 @@ Authority:
 Ownership:
 
 - thematic break is atomic for editing purposes
-- adjacent keypresses should create surrounding paragraphs, not content inside
-  the break
+- `↵` and `⇧↵` on the break create a block of the parent's declared default
+  type after it, not content inside the break
 
 Plugin surface:
 
@@ -2993,9 +3017,10 @@ Plugin surface:
 |
 ```
 
-note: create an adjacent paragraph, not content inside the HR
+note: create the parent's declared default block after the HR, not content
+inside it; when the parent cannot hold another block, `↵` changes nothing
 
-- `EDIT-ATOMIC-ENTER-SELECTED-001` `proposed` `↵ or ⇧↵`: with a block atom selected, whether by a click or by arrow keys, `↵` or `⇧↵` inserts an empty paragraph after the atom and puts the caret at its start; it creates no text inside the atom
+- `EDIT-ATOMIC-ENTER-SELECTED-001` `proposed` `↵ or ⇧↵`: with a block atom selected, whether by a click or by arrow keys, `↵` or `⇧↵` inserts an empty block of the parent's declared default type after the atom and puts the caret at its end; when the parent cannot hold another block, the key changes nothing; it creates no text inside the atom
 
 ```text
 ::atom[name] (selected)
@@ -3009,7 +3034,7 @@ next
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: none; primary UX ref: none checked; the rule generalizes `EDIT-HR-ENTER-001` and `EDIT-TOC-ENTER-201`, which state only the thematic-break and TOC cases, to every block atom
 Source: 52625e85025313eebd4eeb9be2254249ded58676:docs/solutions/logic-errors/2026-04-26-plite-selectable-voids-should-be-atomic-navigation-points.md:91-96
-Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/images.test.ts:911` "inserts a paragraph after a clicked selected image on Enter" and `:941` (Shift+Enter) click the first image, which leaves the caret in its child `[1, 0]`, press the key, type and assert the typed text in its own block with the DOM caret after it; mobile skips both. Plite model tests: `packages/plitejs/test/snapshot-contract.ts:1428` (tagged `EDIT-HR-ENTER-001`) and `:1468` for `insertSoftBreak`. Code: `packages/plitejs/src/editor/insert-break.ts:39-55` hands a caret in a block void to `packages/plitejs/src/editor/block-void-break.ts:16-58`. A model probe on 2026-10-08 (Bun, package source, no DOM) with a `void: 'block'` plugin and the caret in the void's child got an empty paragraph after the void with the caret at `[2, 0]`. Drift: a node selection on the atom makes `↵` do nothing (`packages/plitejs/src/editor/insert-break.ts:43-44`), the drift `EDIT-TOC-ENTER-201` records, so only the caret-in-child form meets the rule. Plate's only test of the rule is the TOC's (`packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts:145`). Checked 2026-10-08.
+Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/images.test.ts:911` "inserts a paragraph after a clicked selected image on Enter" and `:941` (Shift+Enter) click the first image, which leaves the caret in its child `[1, 0]`, press the key, type and assert the typed text in its own block with the DOM caret after it; mobile skips both. Plite model tests: `packages/plitejs/test/snapshot-contract.ts:1428` (tagged `EDIT-HR-ENTER-001`) and `:1468` for `insertSoftBreak`, and `:1508` "a break on a selected block void lands its parent default", which covers a container's default, a declared prefix slot and a full parent for both keys. Code: `packages/plitejs/src/editor/insert-break.ts:69` hands a caret in a block void to `packages/plitejs/src/editor/block-void-break.ts`, which asks the schema for the parent's default child at that index and changes nothing when `canPlaceAt` refuses it. A model probe on 2026-10-08 (Bun, package source, no DOM) with a `void: 'block'` plugin and the caret in the void's child got an empty paragraph after the void with the caret at `[2, 0]`. Drift: a node selection on the atom makes `↵` do nothing (`packages/plitejs/src/editor/insert-break.ts:54`), the drift `EDIT-TOC-ENTER-201` records, so only the caret-in-child form meets the rule. Plate's only test of the rule is the TOC's (`packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts:137`). Checked 2026-10-08.
 
 - `EDIT-ATOMIC-BS-START-001` `locked` `⌫`
 
@@ -3538,7 +3563,8 @@ Ownership:
 
 - autoformat is plugin- or kit-owned input assist, not parse law
 - current autoformat only runs on collapsed selection
-- current app kits disable autoformat inside code blocks
+- the code block keeps every input rule out, autoformat included, through
+  `inputRuleVeto`; no kit or rule gates itself against code blocks
 - resulting nodes still follow their existing block / mark contracts after the
   trigger fires
 - first matching rule wins; current rule order matters when triggers overlap

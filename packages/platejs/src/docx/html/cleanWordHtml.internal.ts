@@ -1,6 +1,7 @@
 import validator from 'validator';
 
 import { postCleanHtml } from '../../lib/plugins/html/htmlDom';
+import { parseDocxHtml } from '../internal/domParser';
 
 type RtfImage = {
   hex: string;
@@ -457,8 +458,7 @@ const cleanWordHtmlListElements = (rootNode: Node): void => {
 export const cleanWordHtml = (
   html: string,
   rtf: string,
-  parseHtml: (source: string) => Document = (source) =>
-    new DOMParser().parseFromString(source, 'text/html')
+  parseHtml: (source: string) => Document = parseDocxHtml
 ): string => {
   const endIndex = html.lastIndexOf('</html>');
   const withoutTrailing =

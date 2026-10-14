@@ -282,51 +282,77 @@ describe('object element selection', () => {
     });
   });
 
-  test('RTL horizontal arrows traverse the same owner and child stops', async () => {
+  test('ArrowDown from a block node selection stops on the object owner below it', async () => {
+    const { editable, editor } = renderSelectableOwnerEditor();
+
+    await act(async () => {
+      editor.update.selection.set(SelectionApi.nodes([[0], [1]]));
+    });
+    await act(async () => {
+      fireEvent.keyDown(editable, { key: 'ArrowDown' });
+    });
+
+    expect(getEditorLiveSelection(editor)).toEqual({
+      anchorPath: [2],
+      focusPath: [2],
+      kind: 'node',
+      paths: [[2]],
+    });
+  });
+
+  test('RTL blocks in an LTR editable traverse the same owner and child stops', async () => {
     const { editable, editor } = renderSelectableOwnerEditor();
     const beforeEnd = { offset: 6, path: [1, 0] };
     const captionStart = { offset: 0, path: [2, 0] };
+    const style = document.createElement('style');
 
-    editable.dir = 'rtl';
-    await act(async () => {
-      editor.update.selection.set(beforeEnd);
-    });
+    style.textContent =
+      '[data-editor] p, [data-editor] figure { direction: rtl; }';
+    document.head.append(style);
 
-    await act(async () => {
-      fireEvent.keyDown(editable, { key: 'ArrowLeft' });
-    });
-    expect(getEditorLiveSelection(editor)).toEqual({
-      anchorPath: [2],
-      focusPath: [2],
-      kind: 'node',
-      paths: [[2]],
-    });
+    try {
+      await act(async () => {
+        editor.update.selection.set(beforeEnd);
+      });
 
-    await act(async () => {
-      fireEvent.keyDown(editable, { key: 'ArrowLeft' });
-    });
-    expect(editor.read.selection()).toEqual({
-      anchor: captionStart,
-      focus: captionStart,
-    });
+      await act(async () => {
+        fireEvent.keyDown(editable, { key: 'ArrowLeft' });
+      });
+      expect(getEditorLiveSelection(editor)).toEqual({
+        anchorPath: [2],
+        focusPath: [2],
+        kind: 'node',
+        paths: [[2]],
+      });
 
-    await act(async () => {
-      fireEvent.keyDown(editable, { key: 'ArrowRight' });
-    });
-    expect(getEditorLiveSelection(editor)).toEqual({
-      anchorPath: [2],
-      focusPath: [2],
-      kind: 'node',
-      paths: [[2]],
-    });
+      await act(async () => {
+        fireEvent.keyDown(editable, { key: 'ArrowLeft' });
+      });
+      expect(editor.read.selection()).toEqual({
+        anchor: captionStart,
+        focus: captionStart,
+      });
 
-    await act(async () => {
-      fireEvent.keyDown(editable, { key: 'ArrowRight' });
-    });
-    expect(editor.read.selection()).toEqual({
-      anchor: beforeEnd,
-      focus: beforeEnd,
-    });
+      await act(async () => {
+        fireEvent.keyDown(editable, { key: 'ArrowRight' });
+      });
+      expect(getEditorLiveSelection(editor)).toEqual({
+        anchorPath: [2],
+        focusPath: [2],
+        kind: 'node',
+        paths: [[2]],
+      });
+
+      await act(async () => {
+        fireEvent.keyDown(editable, { key: 'ArrowRight' });
+      });
+      expect(editor.read.selection()).toEqual({
+        anchor: beforeEnd,
+        focus: beforeEnd,
+      });
+    } finally {
+      style.remove();
+    }
   });
 
   test('Delete removes the exact node selection and moves to the next text', async () => {

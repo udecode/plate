@@ -11,7 +11,6 @@ import {
   type Editor,
   toReactPlugin,
 } from 'platejs/react';
-import { createStaticEditor } from 'platejs/static';
 
 import { schema } from '../src/core';
 import type { RuntimePluginInstalledCapabilitiesOf } from '../src/facade';
@@ -174,8 +173,6 @@ const invalidDescriptor: BasePluginInput = unbrandedDefinition;
 createHeadlessEditor({ plugins: [unbrandedDefinition] });
 // @ts-expect-error React installation requires the same nominal descriptor identity.
 createEditor({ plugins: [unbrandedDefinition] });
-// @ts-expect-error Static installation requires the same nominal descriptor identity.
-createStaticEditor({ plugins: [unbrandedDefinition] });
 void invalidDescriptor;
 
 export const ConvertedDomPlugin = toReactPlugin(DOMPlugin);

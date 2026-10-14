@@ -218,7 +218,7 @@ export const useRuntimeFocusMouseEvents = ({
         !nativePointerFocusRef.current
       ) {
         const syncProgrammaticFocusSelection = () => {
-          syncDOMSelectionToEditor();
+          if (ReactEditor.isFocused(editor)) syncDOMSelectionToEditor();
         };
 
         nativeInternalFocusRef.current = false;

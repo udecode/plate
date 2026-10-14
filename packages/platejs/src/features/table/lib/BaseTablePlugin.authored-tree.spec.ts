@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 
-import { authoredTreeProof } from 'plitejs/authored';
+import { createAuthoredPlugin } from 'plitejs/authored';
+
+import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
 import { writeDOMFragmentData } from 'plitejs/dom';
 import * as Y from 'yjs';
 
@@ -33,7 +35,7 @@ const peer = (
   seed: boolean
 ) => {
   let count = 0;
-  const proof = authoredTreeProof({
+  const proof = createAuthoredPlugin({
     authorId,
     createChangeId: () => {
       count += 1;
@@ -42,6 +44,9 @@ const peer = (
     },
     intent,
     now: () => 1,
+    // Pending table changes arrive as loaded content while Suggesting
+    // refuses tables.
+    vetoes: false,
   });
   const editor = createEditor({
     initialValue: [paragraph('before')],
@@ -56,7 +61,7 @@ const peer = (
     ],
   });
 
-  return { decide: editor.plugin(proof).api.decide, editor };
+  return { decide: authoredTestApi(editor).decide, editor };
 };
 
 const deliver = (from: Y.Doc, to: Y.Doc) => {
@@ -175,7 +180,7 @@ describe('table rule on the review tree', () => {
       ],
       plugins: [
         ...getTestTablePlugins(),
-        authoredTreeProof({ authorId: 'bob', intent: 'edit', now: () => 1 }),
+        createAuthoredPlugin({ authorId: 'bob', intent: 'edit', now: () => 1 }),
       ],
       selection: {
         anchor: { offset: 1, path: [0, 0, 0, 0, 0] },
@@ -233,11 +238,12 @@ describe('table repair beside a pending row deletion', () => {
     type: 'tableRow',
   });
   const make = () => {
-    const proof = authoredTreeProof({
+    const proof = createAuthoredPlugin({
       authorId: 'alice',
       createChangeId: () => 'alice:1',
       intent: 'edit',
       now: () => 1,
+      vetoes: false,
     });
     const editor = createTestTableEditor({
       initialValue: [
@@ -258,7 +264,7 @@ describe('table repair beside a pending row deletion', () => {
       },
     });
 
-    return { api: editor.plugin(proof).api, editor };
+    return { api: authoredTestApi(editor), editor };
   };
   const typeAfter31 = (editor: ReturnType<typeof make>['editor']) =>
     editor.update((tx) => {
@@ -279,7 +285,7 @@ describe('table repair beside a pending row deletion', () => {
     const decided = (action: 'accept' | 'reject') => {
       const run = make();
 
-      run.api.propose('bob:1', () => run.editor.update.table.removeRow());
+      run.api.propose('bob:1', (tx) => tx.table.removeRow());
       typeAfter31(run.editor);
       run.api.decide({ action, changes: ['bob:1'] });
 

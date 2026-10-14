@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-12-neutral-stored-names",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-12-neutral-stored-names.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-12",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "rename",
+  "summary": "Use neutral names for stored keys, exported files and comments data",
+  "targets": [
+    {
+      "name": "emoji-picker",
+      "files": ["apps/www/src/registry/components/editor/emoji-picker.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-data",
+      "files": ["apps/www/src/registry/lib/emoji-data.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-lib.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-12-emoji-storage-keys",
+      "kind": "rename",
+      "summary": "Store frequent emojis under `emoji-frequent:v1` and cached shortcodes under `emoji-shortcodes:v1:<url>`.",
+      "details": [],
+      "migrationNotes": [
+        "The picker no longer reads frequent emojis saved under the old key, so the list starts empty."
+      ],
+      "targets": ["emoji-picker", "emoji-data"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-12",
+          "entry": "2026-10-12-neutral-stored-names",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-12-export-file-names",
+      "kind": "rename",
+      "summary": "Name exported files `document.html`, `document.md` and `document.docx`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-12",
+          "entry": "2026-10-12-neutral-stored-names",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-12-comments-data-kind",
+      "kind": "rename",
+      "summary": "Write comments data with `kind: 'comments'`, the value `platejs/comments` reads.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["import-toolbar-button", "comment-demo"],
+      "source": {
+        "line": 18,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-12",
+          "entry": "2026-10-12-neutral-stored-names",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-12-collaboration-demo-room",
+      "kind": "rename",
+      "summary": "Use `collaboration-demo` as the demo's Yjs root and room id.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["collaboration-demo"],
+      "source": {
+        "line": 20,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-12",
+          "entry": "2026-10-12-neutral-stored-names",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

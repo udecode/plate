@@ -116,6 +116,7 @@ export function ToolbarButton({
         isDropdown && 'justify-between gap-1 pr-1',
         className
       )}
+      aria-label={typeof tooltip === 'string' ? tooltip : undefined}
       aria-pressed={pressed}
       data-state={pressed === undefined ? undefined : pressed ? 'on' : 'off'}
       {...props}

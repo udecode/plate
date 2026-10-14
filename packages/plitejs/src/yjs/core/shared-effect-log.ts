@@ -1,12 +1,6 @@
 import * as Y from 'yjs';
 
 import {
-  bindAuthoredRange,
-  getAuthoredCommitProjection,
-  getAuthoredCommitView,
-  readAuthoredView,
-} from '../../core/authored-runtime';
-import {
   assertEditorJsonValue,
   supportsEditorValuePersistenceVersion,
 } from '../../core/value-codec';
@@ -558,7 +552,7 @@ export class YjsSharedEffectLog {
 
       const value = transport.encode(
         effect.value,
-        this.collabEncodeContext(commit)
+        this.collabEncodeContext()
       );
 
       assertEditorJsonValue(
@@ -851,7 +845,7 @@ export class YjsSharedEffectLog {
             encodeEditorEffect(Object.freeze({ type, value }))
           );
     };
-    return this.editor && readAuthoredView(this.editor) ? decode : decode();
+    return decode();
   }
 
   private assertAuthorityAvailable(): void {
@@ -949,38 +943,6 @@ export class YjsSharedEffectLog {
   }
 
   private collabDecodeContext() {
-    const { editor } = this;
-    if (editor && readAuthoredView(editor)) {
-      const range = (value: unknown) => {
-        if (
-          !isRecord(value) ||
-          !isRecord(value.authored) ||
-          typeof value.authored.root !== 'string' ||
-          (value.projection !== 'accepted' && value.projection !== 'proposed')
-        ) {
-          return null;
-        }
-        try {
-          return (
-            bindAuthoredRange(editor, {
-              saved: value.authored,
-              projection: value.projection,
-              options: {
-                root: value.authored.root,
-                association: 'forward',
-                deletion: 'drop',
-              },
-            })?.resolve() ?? null
-          );
-        } catch {
-          return null;
-        }
-      };
-      return Object.freeze({
-        range,
-        point: (value: unknown) => range(value)?.anchor ?? null,
-      });
-    }
     return Object.freeze({
       point: (value: unknown) => {
         if (!isRecord(value)) return null;
@@ -1015,31 +977,7 @@ export class YjsSharedEffectLog {
     });
   }
 
-  private collabEncodeContext(commit?: EditorCommit) {
-    const { editor } = this;
-    if (editor && readAuthoredView(editor)) {
-      const view = commit ? getAuthoredCommitView(editor, commit) : editor;
-      const projection =
-        (commit && getAuthoredCommitProjection(editor, commit)) || 'accepted';
-      const range = (value: Parameters<typeof rangeToYjsRelativeRange>[1]) => {
-        const binding = bindAuthoredRange(view, {
-          range: value,
-          projection,
-          options: {
-            root: value.anchor.root ?? view.read.view.root() ?? 'main',
-            association: 'forward',
-            deletion: 'drop',
-          },
-        });
-        if (!binding) throw new Error('Missing authored position owner.');
-        return Object.freeze({ authored: binding.serialize(), projection });
-      };
-      return Object.freeze({
-        range,
-        point: (point: Parameters<typeof pointToYjsRelativePosition>[1]) =>
-          range({ anchor: point, focus: point }),
-      });
-    }
+  private collabEncodeContext() {
     return Object.freeze({
       point: (point: Parameters<typeof pointToYjsRelativePosition>[1]) =>
         serializeRelativePosition(pointToYjsRelativePosition(this.root, point)),

@@ -36,14 +36,14 @@ export const getPureTextInsertion = (
 
 const getPureInsertDelta = ({
   inputText,
-  pliteText,
+  editorText,
   textHostText,
 }: {
   inputText: string;
-  pliteText: string;
+  editorText: string;
   textHostText: string;
 }): NativeTextInsertDelta | null => {
-  const insertion = getPureTextInsertion(pliteText, textHostText);
+  const insertion = getPureTextInsertion(editorText, textHostText);
 
   if (insertion && insertion.text === inputText) {
     return insertion;
@@ -55,27 +55,27 @@ const getPureInsertDelta = ({
 export const getNativeTextInsertDelta = ({
   inputText,
   selectionOffset,
-  pliteText,
+  editorText,
   textHostText,
 }: {
   inputText: string;
   selectionOffset: number;
-  pliteText: string;
+  editorText: string;
   textHostText: string;
 }): NativeTextInsertDelta => {
-  const insertedLength = textHostText.length - pliteText.length;
+  const insertedLength = textHostText.length - editorText.length;
 
   if (insertedLength > 0 && selectionOffset >= insertedLength) {
     const offset = Math.max(
       0,
-      Math.min(pliteText.length, selectionOffset - insertedLength)
+      Math.min(editorText.length, selectionOffset - insertedLength)
     );
     const insertedText = textHostText.slice(offset, offset + insertedLength);
 
     if (
       insertedText.length > 0 &&
-      textHostText.slice(0, offset) === pliteText.slice(0, offset) &&
-      textHostText.slice(offset + insertedLength) === pliteText.slice(offset)
+      textHostText.slice(0, offset) === editorText.slice(0, offset) &&
+      textHostText.slice(offset + insertedLength) === editorText.slice(offset)
     ) {
       return {
         offset,
@@ -86,7 +86,7 @@ export const getNativeTextInsertDelta = ({
 
   const pureInsert = getPureInsertDelta({
     inputText,
-    pliteText,
+    editorText,
     textHostText,
   });
 
@@ -97,7 +97,7 @@ export const getNativeTextInsertDelta = ({
   return {
     offset: Math.max(
       0,
-      Math.min(pliteText.length, selectionOffset - inputText.length)
+      Math.min(editorText.length, selectionOffset - inputText.length)
     ),
     text: inputText,
   };

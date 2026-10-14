@@ -6,9 +6,12 @@ import React from 'react';
 
 import { GA } from '@/components/analytics/ga';
 import { Providers } from '@/components/context/providers';
+import { DriveBeacon } from '@/components/drive-beacon';
+import { DriveStamp } from '@/components/drive-stamp';
 import { TailwindIndicator } from '@/components/tailwind-indicator';
 import { Toaster } from '@/components/ui/sonner';
 import { META_THEME_COLORS, siteConfig } from '@/config/site';
+import { driveDirectory } from '@/lib/drive-directory';
 import { fontMono, fontSans } from '@/lib/fonts';
 import { cn } from '@/lib/utils';
 
@@ -129,6 +132,14 @@ export default function RootLayout({
 
         {!isPliteMode && <GA />}
         {!isPliteMode && <Toaster />}
+        {driveDirectory() && (
+          <>
+            <DriveBeacon />
+            <React.Suspense fallback={null}>
+              <DriveStamp />
+            </React.Suspense>
+          </>
+        )}
       </body>
     </html>
   );

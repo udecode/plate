@@ -143,7 +143,7 @@ const reportViewSourceError = (
       return;
     } catch (sinkError) {
       console.error(
-        `Plite view source "${sourceId}" error sink failed during ${phase}.`,
+        `View source "${sourceId}" error sink failed during ${phase}.`,
         cause,
         sinkError
       );
@@ -151,10 +151,7 @@ const reportViewSourceError = (
     }
   }
 
-  console.error(
-    `Plite view source "${sourceId}" failed during ${phase}.`,
-    cause
-  );
+  console.error(`View source "${sourceId}" failed during ${phase}.`, cause);
 };
 
 export const createViewSourceFaultBoundary = (

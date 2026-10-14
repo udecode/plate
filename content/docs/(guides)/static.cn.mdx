@@ -74,7 +74,7 @@ export default function MyStaticPage() {
 
 使用 `createEditor` 初始化 Plate 编辑器实例，并传入已绑定组件的插件。这类似于为交互式 `<EditorRoot>` 组件使用 `useCreateEditor`。
 
-```tsx title="lib/plate-static-editor.ts"
+```tsx title="lib/editor.ts"
 import { createEditor } from 'platejs';
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 // Import any other desired base plugins, such as MarkdownPlugin.
@@ -88,7 +88,7 @@ const editor = createEditor({
   initialValue: [ // Example initial value
     {
       type: 'paragraph',
-      children: [{ text: 'Hello from a static Plate editor!' }],
+      children: [{ text: 'Hello from Plate!' }],
     },
   ],
 });
@@ -207,15 +207,15 @@ React 在这些代码返回后才运行组件函数体，因此组件应通过�
 ### 示例：包含两种静态视图的服务器组件
 
 ```tsx title="app/document/page.tsx"
-import { createStaticEditor, EditorStatic } from 'platejs/static';
+import { createEditor } from 'platejs';
+import { EditorStatic } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 import { InteractiveViewer } from './interactive-viewer';
 
 export default async function DocumentPage() {
   const content = await fetchDocument(); // Your document data
 
-  // Server-side static editor
-  const editor = createStaticEditor({
+  const editor = createEditor({
     plugins: BaseEditorKit,
     initialValue: content,
   });
@@ -243,11 +243,11 @@ export default async function DocumentPage() {
 ```tsx title="app/document/interactive-viewer.tsx"
 'use client';
 
-import { EditorPreview, useStaticEditor } from 'platejs/react';
+import { EditorPreview, useCreateEditor } from 'platejs/react';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 export function InteractiveViewer({ value }) {
-  const editor = useStaticEditor({
+  const editor = useCreateEditor({
     plugins: BaseEditorKit,
     initialValue: value,
   });
@@ -261,12 +261,12 @@ export function InteractiveViewer({ value }) {
 - **仅客户端**：需要 `'use client'` 指令
 - **添加交互性**：启用用户与内容的交互（例如文本选择、复制，以及未来的工具提示、高亮等交互功能）
 - **最小开销**：内部仍使用 `EditorStatic` 进行渲染
-- **与 `useStaticEditor` 配合使用**：创建为仅查看 React 组件优化的静态编辑器
+- **与 `useCreateEditor` 配合使用**：在客户端组件中创建编辑器
 - **精确复制内容**：`EditorPreview` 根据自身静态 host 解析 selection，并写入与已挂载
   editor 相同的 model slice、HTML 和纯文本内容
 
 <Callout type="warning" title="服务器组件兼容性">
-  `EditorPreview` 不能在服务器组件中使用。如果您从服务器组件向客户端组件传递编辑器，会遇到序列化错误。请在服务端使用 `EditorStatic`，或使用 `useStaticEditor` 在客户端创建编辑器。
+  `EditorPreview` 不能在服务器组件中使用。如果您从服务器组件向客户端组件传递编辑器，会遇到序列化错误。请在服务端使用 `EditorStatic`，或使用 `useCreateEditor` 在客户端创建编辑器。
 </Callout>
 
 ## `EditorStatic` vs. `EditorPreview` vs. `EditorRoot` + `readOnly`
@@ -360,6 +360,10 @@ const result = await renderStaticHtml(editor, {
   presentation: BaseEditorKit,
 });
 ```
+
+live editor 安装了 authored changes 时，还要传入 `projection: 'accepted'` 或
+`'proposed'`。它的 document 即使还没有 proposal 也带有 authored metadata，没有
+projection 时 `renderStaticHtml` 会抛出 `TypeError`。
 
 对已安装插件声明的每个 element 组件、mark 组件和 wrapper slot 函数，
 `presentation` 中同名的插件提供对应的绘制方式，没有任何已安装插件渲染的元素也一样。

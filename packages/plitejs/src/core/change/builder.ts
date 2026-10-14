@@ -107,6 +107,8 @@ export type DraftStepMove = Readonly<{
 
 /** @internal */
 export type DraftStep = Readonly<{
+  indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+  indexedBefore?: ReadonlyMap<string, DocumentIndex>;
   change: DocumentChange;
   move: DraftStepMove | null;
   origin: DraftStepOrigin;
@@ -610,6 +612,7 @@ export class ChangeDraft {
         : this.accumulated.compose(classifiedChange, this.source);
       if (!classifiedChange.empty) {
         this.appliedSteps.push({
+          indexedBefore,
           change: classifiedChange,
           move: this.stepMove,
           origin: this.originOf(options.origin),
@@ -874,6 +877,7 @@ export class ChangeDraft {
       : this.accumulated.compose(canonicalChange, this.source);
     if (!canonicalChange.empty) {
       this.appliedSteps.push({
+        indexedBefore,
         change: canonicalChange,
         move: this.stepMove,
         origin: this.originOf(options.origin),
@@ -1296,7 +1300,7 @@ export class ChangeDraft {
     return this.apply(change, { indexedAfter, origin });
   }
 
-  private getIndex(root: string) {
+  getIndex(root: string) {
     let document = this.indexes.get(root);
 
     if (!document) {

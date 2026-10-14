@@ -9,9 +9,10 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { BROWSER_HANDLE_KEY } from '../../packages/plitejs/src/internal/browser-protocol.ts';
+
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const tempDir = join(repo, 'node_modules/.cache/plate-proof/browser-handle');
-const HANDLE_KEY = '__pliteBrowserHandle';
 
 const run = (command, args) => {
   const result = spawnSync(command, args, { cwd: repo, stdio: 'inherit' });
@@ -63,7 +64,7 @@ const bundle = (surface, install) => {
 
   return {
     bytes: Buffer.byteLength(code),
-    handleKeyCount: code.split(HANDLE_KEY).length - 1,
+    handleKeyCount: code.split(BROWSER_HANDLE_KEY).length - 1,
   };
 };
 
@@ -89,10 +90,12 @@ for (const surface of Object.keys(surfaces)) {
   };
 
   if (production.handleKeyCount > 0) {
-    failures.push(`${surface} production bundle still contains ${HANDLE_KEY}`);
+    failures.push(
+      `${surface} production bundle still contains ${BROWSER_HANDLE_KEY}`
+    );
   }
   if (installed.handleKeyCount === 0) {
-    failures.push(`${surface} installed bundle lacks ${HANDLE_KEY}`);
+    failures.push(`${surface} installed bundle lacks ${BROWSER_HANDLE_KEY}`);
   }
 }
 

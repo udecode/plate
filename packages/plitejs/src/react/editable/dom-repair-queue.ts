@@ -242,7 +242,7 @@ export const createDOMRepairQueue = ({
       return false;
     }
 
-    const pliteNode = profileDOMRepairDuration('captured-read-text', () =>
+    const editorNode = profileDOMRepairDuration('captured-read-text', () =>
       readRuntimeText(editor, target.path)
     );
     const textHost = profileDOMRepairDuration('captured-find-text-host', () =>
@@ -250,10 +250,10 @@ export const createDOMRepairQueue = ({
     );
 
     if (
-      !pliteNode ||
+      !editorNode ||
       !textHost ||
       !rootElement.contains(textHost) ||
-      applyTextInsert(pliteNode.text, insert) !== target.text
+      applyTextInsert(editorNode.text, insert) !== target.text
     ) {
       return false;
     }
@@ -391,7 +391,7 @@ export const createDOMRepairQueue = ({
           ? anchorNode.closest('[data-editor-node="text"]')
           : null;
       let path = textHost ? getPliteNodePathFromDOMElement(textHost) : null;
-      let pliteNode = path ? readRuntimeText(editor, path) : null;
+      let editorNode = path ? readRuntimeText(editor, path) : null;
       let selectionOffset =
         textHost && anchorOffset != null
           ? getTextHostSelectionOffset({ anchorNode, anchorOffset, textHost })
@@ -409,7 +409,7 @@ export const createDOMRepairQueue = ({
             ? true
             : liveDOMTextHost?.getAttribute('data-editor-path') ===
               path.join(',');
-        pliteNode = readRuntimeText(editor, path);
+        editorNode = readRuntimeText(editor, path);
         textHost =
           getPliteNodeElementByPath(editor, path) ??
           (liveDOMTextHostMatchesTarget ? liveDOMTextHost : null) ??
@@ -421,7 +421,7 @@ export const createDOMRepairQueue = ({
       }
 
       if (
-        !pliteNode ||
+        !editorNode ||
         !path ||
         selectionOffset == null ||
         textHostText == null
@@ -438,7 +438,7 @@ export const createDOMRepairQueue = ({
 
           if (fallbackTextHost && fallbackPliteNode) {
             path = fallbackPath;
-            pliteNode = fallbackPliteNode;
+            editorNode = fallbackPliteNode;
             textHost = fallbackTextHost;
             selectionOffset = selection.anchor.offset + inputText.length;
             textHostText =
@@ -448,12 +448,12 @@ export const createDOMRepairQueue = ({
       }
 
       if (
-        pliteNode &&
+        editorNode &&
         path &&
         selectionOffset != null &&
         textHostText != null
       ) {
-        if (textHostText === pliteNode.text) {
+        if (textHostText === editorNode.text) {
           const currentSelection = readRuntimeSelectionRange(editor);
           const liveDOMSelectionBelongsToRepairPath = nativeInput.target
             ? textHost === liveDOMTextHost ||
@@ -505,7 +505,7 @@ export const createDOMRepairQueue = ({
           RangeApi.isCollapsed(currentSelection) &&
           PathApi.equals(currentSelection.anchor.path, path) &&
           targetInsert.offset < currentSelection.anchor.offset &&
-          applyTextInsert(pliteNode.text, {
+          applyTextInsert(editorNode.text, {
             offset: currentSelection.anchor.offset,
             text: inputText,
           }) === textHostText;
@@ -513,7 +513,7 @@ export const createDOMRepairQueue = ({
           inputText,
           preferCapturedInsert: nativeInput.target?.preferCapturedInsert,
           selectionOffset,
-          pliteText: pliteNode.text,
+          editorText: editorNode.text,
           targetInsert: shouldPreferCurrentModelInsert
             ? { offset: currentSelection.anchor.offset, text: inputText }
             : targetInsert,
@@ -542,9 +542,9 @@ export const createDOMRepairQueue = ({
           !!expandedReplacementEnd &&
           insert.offset === expandedReplacementStart.offset &&
           textHostText ===
-            pliteNode.text.slice(0, expandedReplacementStart.offset) +
+            editorNode.text.slice(0, expandedReplacementStart.offset) +
               insert.text +
-              pliteNode.text.slice(expandedReplacementEnd.offset);
+              editorNode.text.slice(expandedReplacementEnd.offset);
         const targetStillOwnsDOMSelection =
           !!nativeInput.target &&
           !!liveDOMPath &&
@@ -824,7 +824,7 @@ export const createDOMRepairQueue = ({
           }
 
           if (kind === 'repair-caret-after-text-insert') {
-            const pliteText = readRuntimeText(editor, path)?.text;
+            const editorText = readRuntimeText(editor, path)?.text;
             const strings = getPliteTextHostStrings(textHost);
             const textHostText = (
               strings.length
@@ -834,8 +834,8 @@ export const createDOMRepairQueue = ({
             const bounds = getPliteTextHostBounds(textHost);
 
             if (
-              pliteText != null &&
-              textHostText !== pliteText.slice(bounds.start, bounds.end)
+              editorText != null &&
+              textHostText !== editorText.slice(bounds.start, bounds.end)
             ) {
               return false;
             }

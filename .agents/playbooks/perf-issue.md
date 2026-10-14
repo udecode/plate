@@ -58,15 +58,23 @@ A profiler hotspot, flame chart, slow mean, one noisy p95, code suspicion, corre
 
 Resolve it while later lanes stay paused, before any product code changes:
 
-1. Classify the fix as `internal-implementation`, `correctness`, `public-api` or `runtime-architecture`.
+1. Classify the fix as `internal-implementation`, `correctness`, `public-api` or `runtime-architecture`. A fix that reaches its target only by changing stored or serialized data, or by moving the work to another owner, is `runtime-architecture` or `public-api`. A cost that grows with the document but that a change inside its current owner removes is `internal-implementation`.
 2. Record the best long-term target independently of compatibility, migration convenience, compiler difficulty, current machinery or implementation cost. A cheaper patch does not win by being cheaper.
 3. `internal-implementation` stays in this run with `decision-owner: benchmark`. `correctness` goes to the Bug fix playbook with `decision-owner: bug-fix`, and the run reruns once it returns. Both record `layer-plan` and `compatibility-verdict` as `N/A: <reason>`.
-4. `public-api` and `runtime-architecture` run `best-api` from the ideal target with `decision-owner: best-api`, then the Plan playbook for adoption, and record `layer-plan` as the layer the plan adopts in: `plite`, `plate` or both. A bounded package owner may implement directly; broad cross-owner execution may run as pstack's Autonomous run, which never selects the target.
+4. `public-api` and `runtime-architecture` pivot the run, as Pivot says. They run `best-api` from the ideal target with `decision-owner: best-api`, then the Plan playbook for adoption, and record `layer-plan` as the layer the plan adopts in: `plite`, `plate` or both. A bounded package owner may implement directly; broad cross-owner execution may run as pstack's Autonomous run, which never selects the target.
 5. Before stability, default to `hard-cut: <material lasting value>` when the best target breaks current API or architecture. Preserve compatibility only as `preserve: <hard law> - <reason>`, where the hard law is correctness, security, serialized-data, native-behavior or runtime. Old callers, migration effort, deadlines and compiler limits are not hard laws.
 6. Record one concrete implementation owner as `fix-owner`. Best API and the layer plan choose the target and adoption; they never replace that owner, and whoever implements never downgrades the accepted target to a compatible local patch.
 7. Code-shape cleanup with no measured owner goes to the Refactoring playbook and returns to the same lane.
 
 The checkpoint and the cause's terminal Cause History row carry the fix class, long-term target, decision owner, layer plan, compatibility verdict and implementation owner unchanged.
+
+## Pivot
+
+A cause classed `public-api` or `runtime-architecture`, or a conclusive miss of a budget an earlier design was kept under, pivots the run as soon as it is found, before any other lane or plan step. An inconclusive line under the frozen noise rule stays unresolved and does not pivot, and Close waits until every inherited line is conclusive. The lead pauses the lanes and runs `architect` on the cause, with that budget frozen as its acceptance line. When a public API changes, `best-api` runs first. When the winner keeps both the current owner and the stored shape, the run fixes it and closes the cause `kept`. A winner that needs a new owner or changes the stored shape gets the plan that adopts it, with a step that names the cause and reruns its exact benchmark command, in backticks, against that budget. Until it lands, work that only finishes, documents or proves the design it replaces waits; independent work goes on.
+
+The cause's Cause History row then takes the decision `pivoted`, with `pivot-plan: <file>.md` in its Evidence, where `<file>.md` is the file name of the pivot plan beside this one. Fix, rerun, resume then completes its lane, because the pivot plan's step reruns the benchmark. That step still counts once it is checked off. A `deferred` or `quarantined` cause needs an owner-kept exception whatever its result says. A `reverted` or `invalidated` cause stays open until a later cause on the same benchmark command is kept with a pass, pivoted or owner-kept, or until its lane's Evidence passes that command after a harness repair. The owner keeps a cost only in their own words, which the lead quotes in the decision log; the lead never writes the approval itself. The validator refuses a parked row without that keep and a pivoted row without its step. It does not check that a later row settles a reverted or invalidated cause, so the lead checks that at Close.
+
+`inherited-budget` in Benchmark Source names the plan and step whose frozen budget this run judges, as `<file>.md <step>` with the plan beside this one. It says `N/A: <reason>` when no earlier plan kept a design under this run. When it names one, the first checkpoint copies that budget and the consequence of a miss into checkable rows. The run judges against that budget as well as against the baseline, and `inherited-budget-result` records `pass:` or `fail:`. A failing result ends with `; causes <id>, <id>`, naming the causes that hold the miss, and each must be pivoted or owner-kept before Close.
 
 ## Fix, rerun, resume
 
@@ -75,12 +83,13 @@ The checkpoint and the cause's terminal Cause History row carry the fix class, l
 3. Record both outcomes as `pass: <evidence>` or `fail: <evidence>`. Commands without successful results cannot resume breadth.
 4. If either is red, keep diagnosing the same lane. When the evidence disproves the cause, move every `paused` lane back to `pending`, set the checkpoint to `invalidated` with `resume-lane` on that lane, keep the lane `pending` or `in_progress`, and append an `invalidated` Cause History row with the failed benchmark result. An invalidated cause never completes its lane.
 5. If both pass, append a `kept` Cause History row with the fix decision, causal evidence, pre-fix correctness and both post-fix results, mark the lane `complete`, move every `paused` lane back to `pending`, set the checkpoint to `green` with `resume-lane` on the first unfinished applicable lane across the full inventory, and validate.
-6. Resume that lane from the baseline step, then reset the checkpoint to `none` without touching Cause History. Do not rerun every lane after each fix. Go on to Close only when no applicable lane is left.
-7. After an architecture hand-off, compare the effective loaded inputs before reopening a completed lane. An unrelated React edit cannot invalidate unchanged headless Yjs implementation proof.
+6. When the cause pivots instead, as Pivot says, append its `pivoted` Cause History row with the failed benchmark result, mark the lane `complete`, move every `paused` lane back to `pending`, set the checkpoint to `pivoted` with `resume-lane` on the first unfinished applicable lane, and validate.
+7. Resume that lane from the baseline step, then reset the checkpoint to `none` without touching Cause History. Do not rerun every lane after each fix. Go on to Close only when no applicable lane is left.
+8. After an architecture hand-off, compare the effective loaded inputs before reopening a completed lane. An unrelated React edit cannot invalidate unchanged headless Yjs implementation proof.
 
 ## Close
 
-The run completes only when every applicable lane is `complete` or N/A with a concrete reason, Cause History records every kept, invalidated, reverted, quarantined or deferred cause with its durable fix decision or holds one `none` row, every kept fix has successful exact benchmark and correctness reruns, the checkpoint is back to `none`, the final candidate and baseline identities still match the measured artifacts, the validator passes with `--complete`, `node .agents/pstack/plan-open.mjs <plan>` passes on the plan's Start and Completion Gates, and the review `AGENTS.md`'s Review rule requires passes. Runtime verification is the exact lane command, the correctness guard, the comparable baseline artifact, the post-fix rerun and any browser or native proof the claim needs. Review follows `AGENTS.md`'s Review rule; benchmark packets add none.
+The run completes only when every applicable lane is `complete` or N/A with a concrete reason, Cause History records every kept, pivoted, invalidated, reverted, quarantined or deferred cause with its durable fix decision or holds one `none` row, every kept fix has successful exact benchmark and correctness reruns, the checkpoint is back to `none`, the final candidate and baseline identities still match the measured artifacts, the validator passes with `--complete`, `node .agents/pstack/plan-open.mjs <plan>` passes on the plan's Start and Completion Gates, and the review `AGENTS.md`'s Review rule requires passes. Runtime verification is the exact lane command, the correctness guard, the comparable baseline artifact, the post-fix rerun and any browser or native proof the claim needs. Review follows `AGENTS.md`'s Review rule; benchmark packets add none.
 
 The plan's `## Close` reports:
 
@@ -89,7 +98,7 @@ The plan's `## Close` reports:
 3. Baseline, latest and best p50/p95/p99, sample count, absolute and relative delta, and the limiter, error count and work count `benchmark-checklist` asks for.
 4. Each fix's class, long-term target, decision, layer and implementation owners, breaking verdict, changed files, and exact benchmark and correctness reruns.
 5. The resumed lanes and final breadth.
-6. Kept, reverted, invalidated, quarantined and deferred packets.
+6. Kept, pivoted, reverted, invalidated, quarantined and deferred packets.
 7. Harness and methodology repairs, and the remaining claim limits.
 
 Never call a cause proven from correlation, a fix green from a different lane, or a run complete while an applicable row is pending, and never hide latency with debounce, delayed work, changed fixtures, degraded DOM or a narrower action. The performance mantras that do work later or when nobody is looking count only when the complete user-facing operation gets faster.

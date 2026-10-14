@@ -11,7 +11,7 @@ Replace the link options `isUrl`, `getUrlHref` and `transformInput` with one `pa
 - Type the space or split the block as usual after a URL the app does not allow
 - Keep typed Markdown image source, `![alt](src)`, as text
 - Insert a pasted URL as text inside a link or after unfinished `[label](` source; other pastes there go through the usual paste, so a pasted `#top` or `/docs` whose clipboard HTML holds a link becomes a link
-- Remove the `upsert` options `skipValidation` and `insertTextInLink`, and `validateUrl`
+- Remove `validateUrl` and the `upsert` options `skipValidation`, `insertTextInLink`, `unwrapNodesOptions` and `wrapNodesOptions`. Over selected text, `upsert` links the selection
 
 **Migration:** Map display text to an href with `parseUrl`:
 
@@ -31,3 +31,5 @@ if (!editor.update.link.upsert({ url })) {
   // The URL is not allowed, or there is no selection.
 }
 ```
+
+To link another range, select it before calling `upsert`, instead of passing `wrapNodesOptions` or `unwrapNodesOptions`. A selection inside one link updates that whole link.

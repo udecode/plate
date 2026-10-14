@@ -73,7 +73,6 @@ const renderPlaceholderEditor = <V extends Value, D>(
     return (
       <EditorContent
         autoFocus={options?.autoFocus ?? false}
-        data-testid="plite-content-editable"
         data-variant="wordProcessor"
       />
     );
@@ -388,8 +387,8 @@ describe('block placeholder behavior', () => {
 
   it('hides the placeholder during composition', async () => {
     const editor = createEditor();
-    const { getByTestId, mountedEditor } = renderPlaceholderEditor(editor);
-    const editable = getByTestId('plite-content-editable');
+    const { getByRole, mountedEditor } = renderPlaceholderEditor(editor);
+    const editable = getByRole('textbox');
 
     await focusEditor(mountedEditor);
     await waitFor(() => {

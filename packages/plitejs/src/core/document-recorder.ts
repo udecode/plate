@@ -24,12 +24,19 @@ export type EditorDocumentRecorder = (
     after: EditorDocumentValue;
     before: EditorDocumentValue;
     change: DocumentChange;
+    /**
+     * The steps start with a command frame's seed, which hides content the
+     * frame's commands never saw.
+     */
+    framed?: boolean;
     selection: Selection;
     selectionBefore: Selection;
     selectionBeforeRoot: string;
     selectionRoot: string;
     steps: readonly DraftStep[];
     tags: readonly EditorUpdateTag[];
+    /** One identity per update, shared by every recording in it. */
+    update: object;
   }>
 ) => Readonly<{
   /**
@@ -39,13 +46,27 @@ export type EditorDocumentRecorder = (
   anchorChange?: (written: (root: string) => DocumentIndex) => DocumentChange;
   change: DocumentChange;
   indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+  /**
+   * Maps a position in the draft commands wrote to the committed draft, as a
+   * node's edge maps, so a node the commands inserted keeps its key.
+   */
+  mapPosition?: (root: string, position: number, assoc: -1 | 1) => number;
   selection: Selection;
 }> | null;
 
 /** @internal */
 export type EditorDraftGuardPhase = 'plain' | 'recorded';
 
-type DraftGuard = (written: EditorDocumentValue) => void;
+/** A command frame's draft: `change` maps `stored` to what the frame wrote. */
+export type DraftGuardFrame = Readonly<{
+  change: DocumentChange;
+  stored: EditorDocumentValue;
+}>;
+
+type DraftGuard = (
+  written: EditorDocumentValue,
+  frame?: DraftGuardFrame
+) => void;
 
 const DOCUMENT_RECORDERS = new WeakMap<object, EditorDocumentRecorder>();
 const DRAFT_GUARDS = new WeakMap<
@@ -114,11 +135,12 @@ export const registerEditorDraftGuard = (
 export const runEditorDraftGuards = (
   editor: Editor,
   phase: EditorDraftGuardPhase,
-  written: EditorDocumentValue
+  written: EditorDocumentValue,
+  frame?: DraftGuardFrame
 ) => {
   for (const guard of [
     ...(DRAFT_GUARDS.get(getEditorRuntimeOwner(editor))?.[phase] ?? []),
   ]) {
-    guard(written);
+    guard(written, frame);
   }
 };

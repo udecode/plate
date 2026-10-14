@@ -59,7 +59,7 @@ The field takes a form library's `ref`, `onBlur` and ARIA props, and passes them
 - `Escape`, `mod+Enter` or a click outside closes the menu and clears the search.
 - Labels that differ only in case count as one. The first chip wins, so a form value that repeats a label shows it once.
 - Undo and redo keys are off, so a picked chip stays.
-- A read-only field renders each chip with a `url` as a link.
+- A read-only field renders a chip as a link when [`getLinkHref`](/docs/link#getlinkhref) accepts its `url`. A chip whose `url` it refuses, such as a `javascript:` address or a bare `https://`, shows without a link.
 - Dragging a chip before another chip moves it there. Dropping a chip after another chip does nothing.
 
 Edit `SelectTagPlugin` in the copied `select-editor.tsx` to change these rules, and the field's key handler to change the keys.
@@ -95,7 +95,7 @@ Takes the editable's props, such as `placeholder`, `readOnly`, `onBlur` and `ari
     The label.
   </APIItem>
   <APIItem name="url" type="string" optional>
-    The link a read-only chip renders.
+    The link a read-only chip renders when [`getLinkHref`](/docs/link#getlinkhref) accepts it.
   </APIItem>
 </APIAttributes>
 </API>

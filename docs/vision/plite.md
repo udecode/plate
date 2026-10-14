@@ -262,10 +262,12 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - `state` is the normal read view; `tx` is the normal write view and can read
   transaction-local state.
 - Plugin-owned factories are `read` and `update`; the compiler projects their
-  methods under `definition.name` onto the read view, active `tx`, and direct
-  update surface. Use `txOnly(...)` for controls that require an active
-  transaction. Do not restore descriptor `state`/`tx` authoring. Do not overload
-  `read` as middleware.
+  methods under `definition.name`. `read` methods reach the read view and
+  active `tx`. `update` methods reach active `tx` and the direct calls,
+  `editor.update.<name>` and the plugin portals. A direct call refuses a plugin
+  read and a `txOnly(...)` control, which needs an active transaction. Do not
+  restore descriptor `state`/`tx` authoring. Do not overload `read` as
+  middleware.
 - A `read` factory constructs one callable method tree per published plugin
   configuration. Document commits reuse that topology; live values are method
   results, stable host values use `api`, and direct read facades resolve and
@@ -302,28 +304,43 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - Internal projected view selection is input-engine state. Its keyboard,
   clipboard, history, mutation, reconciliation, and navigation semantics make
   it ineligible as a public carrier for presentation-only inactive selection.
-- Authored changes are one optional native document capability. Accepted roots
-  remain the canonical document, while a versioned authored graph retains the
-  operations, identities, dependencies, decisions, positions, and content
-  needed for pending review and selected history. Accepted, proposed, and
-  markup projections belong to exact editor views; their input intent and
-  rendered children never become another saved document or global mode. An
-  editing view may use any projection. Independent accepted-content edits
-  publish directly. A visible replacement that fully contains its pending
-  contributions resolves them and publishes the replacement in one atomic
-  transaction; partial retained or dependency-spanning targets remain
-  protected. Other edits that depend on pending content remain reviewable with
-  their actual author. Review decisions are atomic document writes. Local undo
-  remains local interaction history, and retained author history produces new
-  compensating changes.
-  Persistence checkpoints current authored facts and exact projections
-  directly; opening a document never rebuilds them by reducing retained
-  operations or replaying pending edits. Checksum-bound retained operation
-  bodies stay cold until a decision or history read needs their content. A
-  whole-document projection capture returns one accepted or proposed document,
-  the exact review document from the same revision, and separate pending and
-  conflicted counts. Full review markup and property materialization remain an
-  explicit heavier read.
+- Authored changes are one optional native document capability. The stored
+  document is the review tree. Pending insertions and deletions stay in place,
+  and each node carries its own claims. Text written inside another pending
+  change carries one `in` member that names an immutable context record
+  listing the changes it depends on. Context records live in the
+  `$authored-contexts` metadata root, and one verdict per decided incarnation
+  lives in `$authored-verdicts`. Every collaborator shares both roots, and
+  `read.value()` holds them beside the content. Code outside the authored
+  owner reads a node's pending claims through `reviewOf` instead of parsing
+  `authored`.
+  A view either writes, with intent `edit` or `propose`, or previews the
+  document with every pending change accepted (`proposed`) or rejected
+  (`accepted`) and takes no writes. View state never becomes another saved
+  document or a global mode. Suggesting records each write under its author,
+  and a write inside another pending change depends on that change's context, so
+  rejecting the outer change removes it too. Editing records the same way and
+  accepts the writer's own claims in the same commit. It leaves every other
+  author's claims pending, so text it writes inside another author's pending
+  insertion joins that insertion. A decision removes the decided claims and
+  appends a verdict for each incarnation it decides in one transaction.
+  Admission settles any claim that a peer's late edit brings in after the
+  verdict.
+  Undo is local inverse history. It restores document facts, decisions
+  included, and proposes nothing.
+  On the review tree, commands and plugin update methods decide on the
+  proposed projection, the document with every pending change accepted, and
+  the recorder lifts their result back into authored changes. A command or method whose input holds a stored location declares
+  where each location lands in that document, that it holds none, or that it
+  only moves the selection. An undeclared one throws on the review tree. Point
+  stepping has no option that skips hidden content, because commands on the
+  review tree never see it.
+  Persistence saves the whole `read.value()`, metadata roots included. Every
+  document passes one admission owner before anyone reads it. Admission
+  validates claims and context references, compacts stacked legacy insertions
+  into contexts and settles claims against verdicts. Loading never replays
+  edits. `projectAuthoredDocument` returns one accepted or proposed document
+  with its pending count and diagnostics.
 - Changing authored input intent creates no document or history change, and a
   composition finishes under the intent it started with.
 - Structural comparison reads fixed, schema-valid revisions without installing
@@ -377,6 +394,27 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   their policy guards and delegate this structural mutation instead of
   replacing a node with a handcrafted default. It takes no type or mode option,
   and no feature publishes a reset alias for it.
+- The default block that Enter on a block void or `tx.break.exit` creates is
+  its landing parent's default for the landing index, or the root's for a
+  top-level position. The compiled content grammar builds and admits it in the
+  active root, and a refused placement changes nothing. Typing or plain-text
+  paste over picked blocks builds each new block the same way, line `n` at the
+  picked slot plus `n`, and admits the replacement first; a refused
+  replacement changes nothing. A block pick whose slots build no block changes
+  nothing, and a pick that is not all blocks, such as an inline, pastes as it
+  would over the picked text.
+  `state.schema.createDefaultChild({ at, root? })` is the one read that builds
+  a default block: it reads the parent and ancestors at `at`'s parent path, as
+  `schema.copy` reads its site. A parent without declared content, such as an
+  element the schema does not declare, takes the root's default for the root
+  slot that holds it, built as a root child.
+  `tx.break.exit` leaves
+  the nearest ancestor that sits in a root or whose parent can directly hold
+  the type of the root's default block, the one the root adds after any
+  required leading slots, whatever the ancestor's position. Under a paragraph
+  default, a cell in a row therefore stays part of its table's structure. The
+  walk reads that type from the compiled root program and builds only the
+  landing block.
 - Structural commands used for shorthand conversion report whether they staged
   a change. An inadmissible placement or no-op returns `false` without claiming
   a successful mutation; the canonical schema and change builder remain the

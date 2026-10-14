@@ -110,6 +110,7 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
     <>
       <ToolbarSplitButton pressed={open}>
         <ToolbarSplitButtonPrimary
+          aria-label={currentConfig.tooltip}
           disabled={!uploadInstalled}
           onClick={() => {
             openFilePicker();
@@ -126,7 +127,9 @@ export function MediaToolbarButton({ plugin }: { plugin: MediaPlugin }) {
 
         <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
           <DropdownMenuTrigger>
-            <ToolbarSplitButtonSecondary />
+            <ToolbarSplitButtonSecondary
+              aria-label={`${currentConfig.tooltip} options`}
+            />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent

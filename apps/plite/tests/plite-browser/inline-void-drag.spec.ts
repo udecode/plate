@@ -22,32 +22,27 @@ const open = async (page: Page) => {
     );
   };
 
-  return { chip: (label: string) => root.locator(`[data-chip="${label}"]`), chips, root };
+  return {
+    chip: (label: string) => root.locator(`[data-chip="${label}"]`),
+    chips,
+  };
 };
 
-// A stepped native drag; Playwright's `dragTo` never starts an inline void drag.
 const drag = async (
-  page: Page,
   source: Locator,
   target: Locator,
   edge: 'left' | 'right'
 ) => {
-  const from = await source.boundingBox();
-  const to = await target.boundingBox();
+  const box = await target.boundingBox();
 
-  if (!from || !to) throw new Error('Missing chip boxes for the drag');
+  if (!box) throw new Error('Missing the target chip box for the drag');
 
-  const y = from.y + from.height / 2;
-
-  await page.mouse.move(from.x + from.width / 2, y);
-  await page.mouse.down();
-  await page.mouse.move(from.x + from.width / 2 + 5, y, { steps: 3 });
-  await page.mouse.move(
-    edge === 'left' ? to.x + 2 : to.x + to.width - 2,
-    to.y + to.height / 2,
-    { steps: 15 }
-  );
-  await page.mouse.up();
+  await source.dragTo(target, {
+    targetPosition: {
+      x: edge === 'left' ? 2 : box.width - 2,
+      y: box.height / 2,
+    },
+  });
 };
 
 const undo = async (page: Page) =>
@@ -66,7 +61,7 @@ test.describe('inline void drag', () => {
     const errors = recordBrowserRuntimeErrors(page, { strict: true });
     const { chip, chips } = await open(page);
 
-    await drag(page, chip('Alpha'), chip('Beta'), 'right');
+    await drag(chip('Alpha'), chip('Beta'), 'right');
 
     await expect.poll(chips).toEqual(['Beta', 'Alpha', 'Gamma']);
     await undo(page);
@@ -82,7 +77,7 @@ test.describe('inline void drag', () => {
     const errors = recordBrowserRuntimeErrors(page, { strict: true });
     const { chip, chips } = await open(page);
 
-    await drag(page, chip('Gamma'), chip('Alpha'), 'left');
+    await drag(chip('Gamma'), chip('Alpha'), 'left');
 
     await expect.poll(chips).toEqual(['Gamma', 'Alpha', 'Beta']);
     await undo(page);

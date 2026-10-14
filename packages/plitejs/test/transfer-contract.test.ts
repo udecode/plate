@@ -18,7 +18,7 @@ import {
   transfer,
   transferVeto,
 } from 'plitejs';
-import { authored } from 'plitejs/authored';
+import { authored, projectAuthoredDocument } from 'plitejs/authored';
 import { history } from 'plitejs/history';
 
 import { checkTransfer } from '../src/core/transfer';
@@ -103,6 +103,38 @@ const block = (type: string, ...children: Descendant[]): Element => ({
   children,
 });
 
+const chipSchema = defineEditorSchema('schema:transfer-contract-chip', {
+  elements: {
+    chip: { properties: { label: property.string() }, void: 'inline' },
+    paragraph: {
+      content: schema.content.any(
+        [schema.content.text(), schema.content.type('chip')],
+        { default: 'text', min: 1 }
+      ),
+    },
+  },
+  id: 'transfer-contract-chip',
+  root: schema.content.type('paragraph', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+
+const chips = (...labels: string[]): Descendant[] => [
+  {
+    type: 'paragraph',
+    children: [
+      ...labels.flatMap((label) => [
+        { text: '' },
+        { type: 'chip', label, children: [{ text: '' }] },
+      ]),
+      { text: '' },
+    ],
+  },
+];
+
 describe('transfer', () => {
   it('revalidates a retargeted edge against every veto', () => {
     const retarget = definePlugin('retarget', {
@@ -180,12 +212,7 @@ describe('transfer', () => {
           nestSchema,
         ],
       });
-      const view = createEditorView(editor, {
-        authored:
-          intent === 'propose'
-            ? { intent, projection: 'proposed' }
-            : { intent, projection: 'accepted' },
-      });
+      const view = createEditorView(editor, { authored: { intent } });
       let commits = 0;
       const unsubscribe = editor.subscribeCommit(() => {
         commits += 1;
@@ -375,6 +402,30 @@ describe('transfer', () => {
     assert.deepEqual(texts(body), ['abghij']);
   });
 
+  it('moves an inline void into the empty text between two inline voids', () => {
+    const editor = createEditor({
+      initialValue: chips('a', 'b', 'c'),
+      plugins: [transfer(), chipSchema],
+    });
+
+    const outcome = editor.api.transfer.move({
+      range: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 2] },
+      },
+      to: { point: { offset: 0, path: [0, 4] } },
+    });
+
+    assert.deepEqual(outcome, {
+      at: {
+        anchor: { offset: 0, path: [0, 2] },
+        focus: { offset: 0, path: [0, 4] },
+      },
+      status: 'moved',
+    });
+    assert.deepEqual(editor.read.children(), chips('b', 'a', 'c'));
+  });
+
   it('refuses a block payload aimed at a text point', () => {
     const editor = createEditor({
       initialValue: [paragraph('aaa'), paragraph('bbb'), paragraph('ccc')],
@@ -446,21 +497,21 @@ describe('transfer', () => {
       plugins: [transfer(), authored({ authorId: 'alice' })],
     });
     const proposed = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
     const input = {
       from: proposed,
       nodes: [proposed.key([0])!],
-      to: { edge: 'before' as const, key: editor.key([1])! },
+      to: { edge: 'after' as const, key: editor.key([1])! },
     };
 
     assert.equal(checkTransfer(editor, input, 'move').admitted, true);
 
-    proposed.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+    proposed.api.authored.setView({ preview: 'accepted' });
 
     assert.deepEqual(checkTransfer(editor, input, 'move'), {
       admitted: false,
-      reason: 'no-op',
+      reason: 'source-missing',
     });
   });
 
@@ -470,17 +521,21 @@ describe('transfer', () => {
       plugins: [transfer(), history(), authored({ authorId: 'alice' })],
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
 
     const outcome = view.api.transfer.move({
       nodes: [view.key([0])!],
       to: { edge: 'after', key: view.key([2])! },
     });
+    const projected = (projection: 'accepted' | 'proposed') =>
+      projectAuthoredDocument(editor.read.value(), {
+        projection,
+      }).document.children.map((node) => NodeApi.string(node));
 
     assert.equal(outcome.status, 'moved');
-    assert.deepEqual(texts(view), ['b', 'c', 'a']);
-    assert.deepEqual(texts(editor), ['a', 'b', 'c']);
+    assert.deepEqual(projected('proposed'), ['b', 'c', 'a']);
+    assert.deepEqual(projected('accepted'), ['a', 'b', 'c']);
   });
 
   it('moves the block around the caret past the next sibling as one undo entry, keeping the caret', () => {

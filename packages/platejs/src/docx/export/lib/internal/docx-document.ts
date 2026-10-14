@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import { create, fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
-import { failInvariant } from '../../internal/failInvariant';
+import { failInvariant } from '../../../../internal/failInvariant';
 import {
   applicationName,
   defaultDocumentOptions,
@@ -1011,7 +1011,7 @@ class DocxDocument {
   getBookmark(htmlId: string) {
     const id = this.bookmarks.get(htmlId);
 
-    return id === undefined ? undefined : { id, name: `plate_${id}` };
+    return id === undefined ? undefined : { id, name: `bookmark_${id}` };
   }
 
   registerBookmark(htmlId: string) {

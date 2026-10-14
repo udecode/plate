@@ -10,9 +10,11 @@ import {
   property,
   schema,
   target,
+  type EditorUpdateTransaction,
 } from 'plitejs';
 
-import { authoredTreeProof } from '../src/authored/tree/proof-plugin';
+import { createAuthoredPlugin } from '../src/authored/authored';
+import { authoredTestApi } from './support/authored';
 
 // S4 of docs/plans/2026-10-10-authored-values.md: an Enter inside an inline
 // element records a cut on both halves, and rejecting it joins exactly them.
@@ -94,7 +96,7 @@ const editorFor = (
     plugins: [
       Links,
       RemoveLinksOfM,
-      authoredTreeProof({
+      createAuthoredPlugin({
         authorId: author,
         createChangeId: () => `${author}:${(count += 1)}`,
         intent,
@@ -105,15 +107,20 @@ const editorFor = (
 };
 type Editor = ReturnType<typeof editorFor>;
 
+const enterIn = (
+  tx: EditorUpdateTransaction,
+  path: number[],
+  offset: number
+) => {
+  tx.selection.set({ anchor: { offset, path }, focus: { offset, path } });
+  tx.break.insert();
+};
 const enter = (editor: Editor, path: number[], offset: number) =>
-  editor.update((tx) => {
-    tx.selection.set({ anchor: { offset, path }, focus: { offset, path } });
-    tx.break.insert();
-  });
+  editor.update((tx) => enterIn(tx, path, offset));
 
 const decide = (value: unknown, decisions: Decision | Decision[]) => {
   const editor = editorFor(value, 'zed', 'edit');
-  const result = editor.api.authoredTree.decide(decisions);
+  const result = authoredTestApi(editor).decide(decisions);
 
   return { result, value: editor.read.value().children as readonly Node[] };
 };
@@ -254,10 +261,8 @@ describe('cuts', () => {
       'bob'
     );
 
-    editor.api.authoredTree.propose('bob:1', () => {
-      enter(editor, [0, 3, 0], 1);
-      enter(editor, [0, 1, 0], 1);
-    });
+    authoredTestApi(editor).propose('bob:1', (tx) => enterIn(tx, [0, 3, 0], 1));
+    authoredTestApi(editor).propose('bob:1', (tx) => enterIn(tx, [0, 1, 0], 1));
 
     assert.deepEqual(
       shape(
@@ -330,8 +335,8 @@ describe('cuts', () => {
     carol.update((tx) => tx.nodes.set({ url: 'u3' } as never, { at: [1, 1] }));
     const remover = editorFor(carol.read.value().children, 'bob');
 
-    remover.api.authoredTree.propose('bob:2', () =>
-      remover.update((tx) => tx.nodes.remove({ at: [0, 3] }))
+    authoredTestApi(remover).propose('bob:2', (tx) =>
+      tx.nodes.remove({ at: [0, 3] })
     );
     const value = remover.read.value().children;
     const batch = [
@@ -581,7 +586,7 @@ describe('cuts', () => {
         initialValue: value as never,
         plugins: [
           Nested,
-          authoredTreeProof({
+          createAuthoredPlugin({
             authorId: author,
             createChangeId: () => `${author}:1`,
             intent,
@@ -610,7 +615,7 @@ describe('cuts', () => {
     );
     const judge = editorOf(bob.read.value().children, 'zed', 'edit');
 
-    judge.api.authoredTree.decide({ action: 'reject', changes: ['bob:1'] });
+    authoredTestApi(judge).decide({ action: 'reject', changes: ['bob:1'] });
 
     assert.deepEqual(
       shape(
@@ -699,7 +704,7 @@ describe('cuts', () => {
   const rejectBoth = (value: unknown) => {
     const judge = editorFor(value, 'zed', 'edit');
 
-    judge.api.authoredTree.decide({
+    authoredTestApi(judge).decide({
       action: 'reject',
       changes: ['bob:1', 'bob:2'],
     });

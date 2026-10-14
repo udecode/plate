@@ -70,6 +70,7 @@ type CommitInput<V extends Value> = Omit<
   | 'selectionBeforeRoot'
   | 'version'
 > & {
+  admissionRepair?: DocumentChange;
   afterValue: EditorDocumentValue<V>;
   beforeIndexAt?: (root: RootKey) => SnapshotIndex | undefined;
   beforeValue: EditorDocumentValue<V>;
@@ -90,6 +91,10 @@ const EDITOR_COMMIT_SNAPSHOT_SOURCES = new WeakMap<
   EditorCommitSnapshotSource
 >();
 const EDITOR_COMMIT_STARTED_AT = new WeakMap<EditorCommit, number>();
+const EDITOR_COMMIT_ADMISSION_REPAIRS = new WeakMap<
+  EditorCommit,
+  DocumentChange
+>();
 const EDITOR_COMMIT_ROOT_SNAPSHOTS = new WeakMap<
   EditorCommit,
   { after: Map<RootKey, EditorSnapshot>; before: Map<RootKey, EditorSnapshot> }
@@ -154,6 +159,30 @@ export const getEditorCommitSnapshot = <V extends Value>(
 
   return frozen;
 };
+
+/**
+ * Return a commit's whole document value, its named and metadata roots
+ * included.
+ *
+ * @internal
+ */
+export const getEditorCommitValue = (
+  commit: EditorCommit,
+  phase: 'after' | 'before' = 'after'
+): JsonEditorValue => {
+  const source = EDITOR_COMMIT_SNAPSHOT_SOURCES.get(commit);
+
+  if (!source) {
+    throw new Error('Editor commit snapshot source is unavailable.');
+  }
+
+  return phase === 'before' ? source.beforeValue : source.value;
+};
+
+/** @internal */
+export const getEditorCommitAdmissionRepair = (
+  commit: EditorCommit
+): DocumentChange | null => EDITOR_COMMIT_ADMISSION_REPAIRS.get(commit) ?? null;
 
 /** @internal */
 export const getEditorCommitStartedAt = (commit: EditorCommit): number =>
@@ -1050,6 +1079,7 @@ export const createEditorCommit = <V extends Value>(
   }
 ): EditorCommit<V> => {
   const {
+    admissionRepair,
     afterValue,
     beforeIndexAt,
     beforeValue,
@@ -1113,6 +1143,9 @@ export const createEditorCommit = <V extends Value>(
     commit,
     versions.startedAt ?? globalThis.performance?.now?.() ?? Date.now()
   );
+  if (admissionRepair) {
+    EDITOR_COMMIT_ADMISSION_REPAIRS.set(commit, admissionRepair);
+  }
 
   return Object.freeze(commit);
 };

@@ -171,12 +171,7 @@ const canInsert = prepareHtmlParserQuery(editor, MyPlugin);
 const allowed = editor.read((state) => canInsert(state, options));
 ```
 
-Rename these exports:
-
-- `Slate` to `Plite`
-- `SlateRenderElementProps` to `PliteRenderElementProps`
-- `SlateRenderLeafProps` to `PliteRenderLeafProps`
-- `SlateRenderTextProps` to `PliteRenderTextProps`
+Rename the `Slate` export to `Plite`.
 
 Replace dependency names such as `dependencies: ['feature']` with the plugin object, for example `dependencies: [BaseFeaturePlugin]`.
 

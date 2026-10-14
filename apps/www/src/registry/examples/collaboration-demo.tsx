@@ -26,9 +26,9 @@ import { BasicNodesKit } from '@/registry/components/editor/basic-nodes';
 import { Editor, EditorContainer } from '@/registry/components/editor/editor';
 import { CollaborationPlugin } from '@/registry/components/editor/remote-cursor-overlay';
 
-const ROOT_NAME = 'plate-collaboration-demo';
+const ROOT_NAME = 'collaboration-demo';
 const SCHEMA = {
-  id: 'plate-collaboration-demo',
+  id: 'collaboration-demo',
   version: 1,
 } as const;
 const INITIAL_VALUE = [

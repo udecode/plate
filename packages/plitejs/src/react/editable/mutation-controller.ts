@@ -1,9 +1,5 @@
 import {
-  type EditorCommandDescriptor,
-  type EditorCommandInput,
   type EditorUpdateTransaction,
-  type EditorUpdateTag,
-  PathApi,
   type Point,
   type Range,
   RangeApi,
@@ -12,16 +8,11 @@ import {
   type TransactionSpec,
 } from '../..';
 import {
-  readAuthoredViewFragmentVersion,
-  updateAuthoredFragment,
-} from '../../core/authored-runtime';
-import {
   getActiveEditorTransaction,
   withUpdateTagContext,
 } from '../../core/public-state';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { domCommands } from '../../dom/internal';
-import { getMountedDOMFragmentEditors } from '../../dom/plugin/dom-fragment-view';
 import { getDefined } from '../../internal/get-defined';
 import {
   ReactEditor,
@@ -32,19 +23,12 @@ import { profilePliteReactDuration } from '../render-profiler';
 import { rootPlitePoint } from '../view-boundary-graph';
 import {
   createMainRootPliteViewSelection,
-  createPliteViewSelection,
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
   savePliteViewSelectionHistoryEntry,
-  type PliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
 import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
-import {
-  createContentRootViewBoundaryGraph,
-  findContentRootOwners,
-  getContentRootViewBoundaryPoint,
-} from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import {
   type EditableCommand,
@@ -57,6 +41,7 @@ import {
   type EditableSelectionSourceTransition,
   getEditableNativeGroupingInput,
 } from './input-state';
+import { getLineBoundaryPoint } from './line-boundary';
 import {
   applyParagraphBreakAfterSelectedBlockVoid,
   createDefaultParagraph,
@@ -65,7 +50,6 @@ import { canUseCachedCollapsedTextInsert } from './mutation-full-block-editing';
 import { applyModelOwnedHistoryIntent } from './mutation-history';
 import { withProjectedMutationRoot } from './mutation-root-scope';
 import {
-  type ProjectedSelectionTarget,
   resolveProjectedSelectionTarget,
 } from './projected-selection-target';
 import {
@@ -73,12 +57,9 @@ import {
   dispatchCommand,
   evaluateCommandWithState,
   type Editor,
-  after as editorAfter,
-  before as editorBefore,
   editorCommands,
   insertText as editorInsertText,
   move as editorMove,
-  string as editorString,
   failInvariant,
   getEditorRuntimeOwner,
   getEditorStateView,
@@ -197,12 +178,6 @@ const clonePoint = (point: Point): Point => ({
   path: [...point.path],
 });
 
-const advancePointByText = (point: Point, text: string): Point => ({
-  ...(point.root ? { root: point.root } : {}),
-  offset: point.offset + text.length,
-  path: [...point.path],
-});
-
 const deleteProjectedRanges = (
   editor: RuntimeEditor,
   tx: Pick<EditorUpdateTransaction, 'command'>,
@@ -224,39 +199,6 @@ const deleteProjectedRanges = (
   }
 };
 
-type AuthoredEditingTransaction = EditorUpdateTransaction & {
-  authored: {
-    decide: (input: { action: 'accept'; selection: unknown }) => {
-      status: string;
-    };
-    select: (input: { ids: readonly string[] }) => unknown;
-  };
-};
-
-const prepareProjectedSelectionMutation = (
-  editor: RuntimeEditor,
-  tx: EditorUpdateTransaction,
-  target: ProjectedSelectionTarget,
-  viewSelection: PliteViewSelection
-): ProjectedSelectionTarget | null => {
-  if (!target.retained) return target;
-  if (target.retained.kind === 'blocked') return null;
-
-  const authoredTx = tx as AuthoredEditingTransaction;
-  const decision = authoredTx.authored.decide({
-    action: 'accept',
-    selection: authoredTx.authored.select({
-      ids: target.retained.acceptedChangeIds,
-    }),
-  });
-
-  if (decision.status !== 'applied') return null;
-
-  const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
-
-  return resolution.kind === 'target' ? resolution.target : null;
-};
-
 const applyProjectedViewSelectionTextCommand = ({
   editor,
   nativeInput,
@@ -276,7 +218,7 @@ const applyProjectedViewSelectionTextCommand = ({
 
   const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
 
-  if (resolution.kind === 'ambiguous' || resolution.kind === 'retained') {
+  if (resolution.kind === 'ambiguous') {
     return true;
   }
   if (resolution.kind === 'stale') {
@@ -290,32 +232,13 @@ const applyProjectedViewSelectionTextCommand = ({
   editor.update(() => {
     // The view wrapper would pin implicit commands to its mounted root.
     const tx = getDefined(getActiveEditorTransaction(editor));
-    const mutationTarget = prepareProjectedSelectionMutation(
-      editor,
-      tx,
-      target,
-      viewSelection
-    );
-
-    if (!mutationTarget) return;
     if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
-    deleteProjectedRanges(runtimeEditor, tx, mutationTarget.ranges);
+    // The caret maps through the deletion, which can merge the text leaves
+    // around a deleted one and leave the start's path behind.
+    tx.selection.set({ anchor: target.start, focus: target.start });
+    deleteProjectedRanges(runtimeEditor, tx, target.ranges);
 
-    if (text) {
-      tx.command(editorCommands.insertText, {
-        options: { at: mutationTarget.start },
-        text,
-      });
-    }
-
-    const selectionPoint = text
-      ? advancePointByText(mutationTarget.start, text)
-      : mutationTarget.start;
-
-    tx.selection.set({
-      anchor: selectionPoint,
-      focus: selectionPoint,
-    });
+    if (text) tx.command(editorCommands.insertText, { text });
     applied = true;
   });
   if (!applied) return true;
@@ -344,7 +267,7 @@ const applyProjectedViewSelectionDataCommand = ({
   const runtimeEditor = getEditorRuntimeOwner(editor);
   const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
 
-  if (resolution.kind === 'ambiguous' || resolution.kind === 'retained') {
+  if (resolution.kind === 'ambiguous') {
     return true;
   }
   if (resolution.kind === 'stale') {
@@ -353,8 +276,6 @@ const applyProjectedViewSelectionDataCommand = ({
   }
 
   const { target } = resolution;
-
-  if (target.retained) return true;
 
   const { combined, insertion, prefix } = editor.read((state) => {
     let deletion = state.transaction((tx) => {
@@ -439,7 +360,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
   const runtimeEditor = getEditorRuntimeOwner(editor);
   const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
 
-  if (resolution.kind === 'ambiguous' || resolution.kind === 'retained') {
+  if (resolution.kind === 'ambiguous') {
     return true;
   }
   if (resolution.kind === 'stale') {
@@ -452,23 +373,15 @@ const applyProjectedViewSelectionLineBreakCommand = ({
 
   editor.update(() => {
     const tx = getDefined(getActiveEditorTransaction(editor));
-    const mutationTarget = prepareProjectedSelectionMutation(
-      editor,
-      tx,
-      target,
-      viewSelection
-    );
-
-    if (!mutationTarget) return;
-    deleteProjectedRanges(runtimeEditor, tx, mutationTarget.ranges);
+    deleteProjectedRanges(runtimeEditor, tx, target.ranges);
 
     tx.selection.set({
-      anchor: mutationTarget.start,
-      focus: mutationTarget.start,
+      anchor: target.start,
+      focus: target.start,
     });
     applied = true;
 
-    withProjectedMutationRoot(runtimeEditor, mutationTarget.start.root, () => {
+    withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
       if (kind !== 'open-line') {
         if (kind === 'paragraph') {
           tx.command(editorCommands.insertBreak);
@@ -480,7 +393,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
       }
 
       const blockEntry = tx.nodes.block({
-        at: mutationTarget.start,
+        at: target.start,
       });
 
       if (!blockEntry) {
@@ -575,6 +488,22 @@ const applyRootLocalSelectionMoveCommand = ({
     return true;
   }
 
+  if (
+    command.axis === 'line-boundary' &&
+    (command.extend || RangeApi.isCollapsed(selection))
+  ) {
+    const focus = getLineBoundaryPoint(
+      editor,
+      selection.focus,
+      Boolean(command.reverse)
+    );
+
+    dispatchCommand(editor, editorCommands.select, {
+      target: createRange(command.extend ? selection.anchor : focus, focus),
+    });
+    return true;
+  }
+
   if (command.extend) {
     editorMove(editor, {
       edge: 'focus',
@@ -599,216 +528,6 @@ const applyRootLocalSelectionMoveCommand = ({
   return true;
 };
 
-export const applyModelOwnedTransposeCharacterIntent = ({
-  editor,
-  selection,
-}: {
-  editor: RuntimeEditor;
-  selection: Range | null;
-}) => {
-  if (!selection || !RangeApi.isCollapsed(selection)) {
-    return false;
-  }
-
-  const cursor = selection.anchor;
-  const before = editorBefore(editor, cursor, { unit: 'character' });
-
-  if (!before) {
-    return false;
-  }
-
-  let start = before;
-  let middle = cursor;
-  let end = editorAfter(editor, cursor, { unit: 'character' });
-
-  if (!end) {
-    const secondBefore = editorBefore(editor, before, { unit: 'character' });
-
-    if (!secondBefore) {
-      return false;
-    }
-
-    start = secondBefore;
-    middle = before;
-    end = cursor;
-  }
-
-  if (
-    !PathApi.equals(start.path, middle.path) ||
-    !PathApi.equals(middle.path, end.path)
-  ) {
-    return false;
-  }
-
-  const left = editorString(editor, createRange(start, middle));
-  const right = editorString(editor, createRange(middle, end));
-
-  if (!left || !right) {
-    return false;
-  }
-
-  const swapped = `${right}${left}`;
-  const nextSelection = {
-    anchor: {
-      offset: start.offset + swapped.length,
-      path: [...start.path],
-    },
-    focus: {
-      offset: start.offset + swapped.length,
-      path: [...start.path],
-    },
-  };
-
-  editor.update((tx) => {
-    tx.command(editorCommands.insertText, {
-      options: { at: createRange(start, end) },
-      text: swapped,
-    });
-    tx.selection.set(nextSelection);
-  });
-
-  return true;
-};
-
-const applyRetainedViewSelectionCommand = (
-  editor: RuntimeEditor,
-  command: EditableCommand,
-  tags?: readonly EditorUpdateTag[],
-  nativeInput?: NativeGroupingInput
-) => {
-  const previous = readPliteViewSelection(editor);
-  if (!previous?.segments.parts.some((part) => part.fragment)) return false;
-  if (resolveProjectedSelectionTarget(editor, previous).kind === 'target') {
-    return false;
-  }
-  const { fragmentId } = previous.anchor;
-  if (
-    !fragmentId ||
-    previous.focus.fragmentId !== fragmentId ||
-    editor.read.view.isReadOnly()
-  ) {
-    return true;
-  }
-  const fragmentEditor = [
-    ...getMountedDOMFragmentEditors(toReactRuntimeEditor(editor), fragmentId),
-  ][0];
-  if (!fragmentEditor) return true;
-  const result = updateAuthoredFragment(
-    fragmentEditor,
-    (tx) => {
-      if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
-      tx.selection.set({
-        anchor: previous.anchor.point,
-        focus: previous.focus.point,
-      });
-      const owner = getEditorRuntimeOwner(fragmentEditor);
-      const run = <TCommand extends EditorCommandDescriptor>(
-        descriptor: TCommand,
-        ...input: [EditorCommandInput<TCommand>] extends [void]
-          ? [] | [input: EditorCommandInput<TCommand>]
-          : [input: EditorCommandInput<TCommand>]
-      ) => {
-        const spec = evaluateCommandWithState(
-          fragmentEditor,
-          descriptor,
-          getEditorStateView(owner),
-          ...input
-        ).result;
-        if (spec) applyTransactionSpec(owner, spec);
-      };
-      switch (command.kind) {
-        case 'insert-text': {
-          run(editorCommands.insertText, { text: command.text });
-          break;
-        }
-        case 'delete': {
-          run(editorCommands.delete, {
-            direction: command.direction,
-            unit: command.unit ?? 'character',
-          });
-          break;
-        }
-        case 'delete-both': {
-          run(editorCommands.delete, {
-            direction: 'backward',
-            unit: command.unit ?? 'character',
-          });
-          run(editorCommands.delete, {
-            direction: 'forward',
-            unit: command.unit ?? 'character',
-          });
-          break;
-        }
-        case 'delete-fragment': {
-          run(editorCommands.deleteFragment, {
-            direction: command.direction ?? 'forward',
-          });
-          break;
-        }
-        case 'insert-break': {
-          if (command.variant === 'open-line') {
-            const selection = tx.selection();
-            const block =
-              selection &&
-              RangeApi.isRange(selection) &&
-              RangeApi.isCollapsed(selection)
-                ? tx.nodes.block({ at: selection.anchor })
-                : undefined;
-            if (block) {
-              run(editorCommands.insertNodes, {
-                nodes: createDefaultParagraph(),
-                options: { at: block[1] },
-              });
-              const start = { path: block[1].concat(0), offset: 0 };
-              tx.selection.set({ anchor: start, focus: start });
-              break;
-            }
-          }
-          run(
-            command.variant === 'soft'
-              ? editorCommands.insertSoftBreak
-              : editorCommands.insertBreak
-          );
-          break;
-        }
-        case 'insert-data': {
-          run(domCommands.insertData, command.data);
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-    },
-    { tags }
-  );
-  if (result && RangeApi.isRange(result.selection)) {
-    const next = createPliteViewSelection(
-      createContentRootViewBoundaryGraph(editor, findContentRootOwners(editor)),
-      {
-        anchor: {
-          ...previous.anchor,
-          fragmentId: result.fragmentId,
-          point: result.selection.anchor,
-        },
-        focus: {
-          ...previous.focus,
-          fragmentId: result.fragmentId,
-          point: result.selection.focus,
-        },
-      }
-    );
-    if (result.changed) {
-      savePliteViewSelectionHistoryEntry(editor, {
-        undo: previous,
-        redo: next,
-      });
-    }
-    writePliteViewSelection(editor, next);
-  }
-  return true;
-};
-
 export const applyEditableCommand = ({
   command,
   editor,
@@ -816,15 +535,6 @@ export const applyEditableCommand = ({
   command: EditableCommand;
   editor: RuntimeEditor;
 }) => {
-  if (
-    command.kind !== 'history' &&
-    command.kind !== 'move-selection' &&
-    command.kind !== 'select' &&
-    command.kind !== 'select-all' &&
-    applyRetainedViewSelectionCommand(editor, command)
-  ) {
-    return true;
-  }
   switch (command.kind) {
     case 'delete': {
       if (applyProjectedViewSelectionTextCommand({ editor })) {
@@ -960,10 +670,7 @@ export const applyEditableCommand = ({
     }
 
     case 'transpose-character': {
-      return applyModelOwnedTransposeCharacterIntent({
-        editor,
-        selection: readRuntimeSelectionRange(editor),
-      });
+      return dispatchCommand(editor, editorCommands.transposeCharacter);
     }
 
     case 'select':
@@ -985,36 +692,6 @@ export const applyEditableCommand = ({
                 focus: rootPlitePoint(selectAllPoints[1], root),
               }
             : null;
-
-      if (
-        command.kind === 'select-all' &&
-        readAuthoredViewFragmentVersion(editor)
-      ) {
-        const graph = createContentRootViewBoundaryGraph(
-          editor,
-          findContentRootOwners(editor)
-        );
-        const first = graph.nodes[0];
-        const last = graph.nodes.at(-1);
-        const anchor =
-          first && getContentRootViewBoundaryPoint(editor, first, 'start');
-        const focus =
-          last && getContentRootViewBoundaryPoint(editor, last, 'end');
-        if (anchor && focus) {
-          if (nextSelection) {
-            dispatchCommand(editor, editorCommands.select, {
-              target: nextSelection,
-            });
-          } else {
-            writeRuntimeSelection(editor, null);
-          }
-          writePliteViewSelection(
-            editor,
-            createPliteViewSelection(graph, { anchor, focus })
-          );
-          return true;
-        }
-      }
 
       if (!nextSelection) return true;
 
@@ -1147,16 +824,6 @@ export const applyModelOwnedTextInput = ({
           ? getEditableNativeGroupingInput(inputController, mergeHistory)
           : undefined;
 
-        if (
-          applyRetainedViewSelectionCommand(
-            editor,
-            { kind: 'insert-text', text: data },
-            mergeHistory ? ['composition'] : undefined,
-            nativeInput
-          )
-        ) {
-          return { kind: 'sync-selection', syncDOMSelection: true };
-        }
         if (SelectionApi.isNode(selection)) {
           editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
             if (nativeInput) {
@@ -1445,7 +1112,15 @@ export const applyEditableRepairRequest = ({
           syncDOMSelectionToEditor();
         };
 
+        const focusedAtCommand = ReactEditor.isFocused(editor);
         syncProgrammaticDOMSelection();
+        const resyncUnlessBlurred = () => {
+          // Chromium focuses an editable that gets a DOM selection, so a rerun
+          // after the editor blurred would pull focus back into it.
+          if (focusedAtCommand && !ReactEditor.isFocused(editor)) return;
+
+          syncProgrammaticDOMSelection();
+        };
         const clearProgrammaticSelectionUpdate = () => {
           if (
             inputController.state.selectionChangeOrigin ===
@@ -1458,19 +1133,19 @@ export const applyEditableRepairRequest = ({
         domPhaseScheduler.schedule(
           'selection-repair',
           'sync-programmatic-selection-microtask',
-          syncProgrammaticDOMSelection,
+          resyncUnlessBlurred,
           { timing: 'microtask' }
         );
         domPhaseScheduler.schedule(
           'selection-repair',
           'sync-programmatic-selection-timeout',
-          syncProgrammaticDOMSelection,
+          resyncUnlessBlurred,
           { timing: 'timeout' }
         );
         domPhaseScheduler.schedule(
           'selection-repair',
           'sync-programmatic-selection-settle',
-          syncProgrammaticDOMSelection,
+          resyncUnlessBlurred,
           { delay: 80, timing: 'timeout' }
         );
         domPhaseScheduler.schedule(

@@ -14,7 +14,7 @@ import * as React from 'react';
  * point this URL at them.
  */
 const EMOJIBASE_URL = 'https://cdn.jsdelivr.net/npm/emojibase-data@17.0.0';
-const SHORTCODES_KEY = `plate:emoji-shortcodes:v1:${EMOJIBASE_URL}`;
+const SHORTCODES_KEY = `emoji-shortcodes:v1:${EMOJIBASE_URL}`;
 const TRAILING_COLON = /:$/;
 // Shortcode files key emoji by hexcode, frimousse keeps only the glyph, and
 // the two disagree on variation selectors, so both sides drop them.

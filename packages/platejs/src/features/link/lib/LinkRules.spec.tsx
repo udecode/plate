@@ -4,23 +4,14 @@ import { createDataTransfer } from '#platejs-test-internal';
 
 import {
   createEditor as createProductEditor,
-  definePlugin,
-  schema,
   type Selection,
   type Value,
 } from '../../../core';
 import { MarkdownPlugin } from '../../../markdown';
+import { BaseCodeBlockPlugin } from '../../code-block';
 import { BaseMentionPlugin } from '../../mention/lib/BaseMentionPlugin';
 import type { BaseLinkDefinition } from './BaseLinkPlugin';
 import { BaseLinkPlugin, LinkRules } from './BaseLinkPlugin';
-
-const BaseCodeBlockPlugin = definePlugin('codeBlock', {
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1, max: 1 }),
-    },
-  },
-});
 
 const createAutolinkRules = () => [
   LinkRules.autolink({ variant: 'break' }),
@@ -425,6 +416,42 @@ describe('LinkRules', () => {
     paste(editor, 'https://example.com/ü');
 
     expect(editor.read.text.string([0])).toBe('labelhttps://example.com/ü');
+  });
+
+  it('pastes a URL as text over a link and a mention', () => {
+    const editor = createProductEditor({
+      plugins: [
+        BaseLinkPlugin.configure({ inputRules: createAutolinkRules() }),
+        BaseMentionPlugin,
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 1, 0] },
+        focus: { offset: 1, path: [0, 4] },
+      },
+      initialValue: [
+        {
+          children: [
+            { text: 'a ' },
+            {
+              children: [{ text: 'old' }],
+              type: 'link',
+              url: 'https://old.example',
+            },
+            { text: ' ' },
+            { children: [{ text: '' }], label: 'x', ref: 'x', type: 'mention' },
+            { text: ' b' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    paste(editor, 'https://new.example');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'a https://new.exampleb' }], type: 'paragraph' },
+    ]);
   });
 
   it.each([

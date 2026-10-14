@@ -127,7 +127,7 @@ editor.update.textAlign.set("start", { at: [] });
 | `BaseTextAlignPlugin`         | `platejs`       | Headless plugin that stores alignment, injects block props, and parses HTML text-align styles. |
 | `TextAlignPlugin`             | `platejs/react` | React wrapper around `BaseTextAlignPlugin`.                                                    |
 | `editor.update.textAlign.set` | `platejs`       | Bound update method exposed by the plugin.                                                     |
-| `AlignKit`                    | Registry kit                  | Server-safe setup shared by live and static editors.                                           |
+| `AlignKit`                    | Registry kit                  | Server-safe setup shared by live and static kits.                                              |
 | `AlignToolbarButton`          | Registry UI                   | Dropdown that writes alignment through `textAlign.set`.                                        |
 
 The package owns alignment storage and parsing. The registry owns the dropdown UI.

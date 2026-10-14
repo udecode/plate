@@ -769,6 +769,27 @@ describe('plitejs/react surface contract', () => {
     expect(readTargetPath()).toEqual([2]);
   });
 
+  test('resolves node paths per editor when two mounted editors share one document', () => {
+    const first = createEditor({
+      initialValue: [{ children: [{ text: 'shared' }], type: 'paragraph' }],
+    });
+    const second = createEditor({ initialValue: first.read.value() });
+    const [node] = first.read.children();
+
+    render(
+      <>
+        <EditorRoot editor={first}>
+          <Editable />
+        </EditorRoot>
+        <EditorRoot editor={second}>
+          <Editable />
+        </EditorRoot>
+      </>
+    );
+
+    expect(first.api.dom.resolvePath(node)).toEqual([0]);
+  });
+
   test('renderVoid receives content-only props and runtime owns block void shell', () => {
     const editor = createEditor({
       initialValue: [

@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 
-import {
+import { BROWSER_HANDLE_KEY,
   openExample,
   type SelectionSnapshot,
 } from '@platejs/test/playwright';
@@ -32,7 +32,7 @@ const collapseDOMSelectionToTextEnd = async (
   text: Locator,
   selection: SelectionSnapshot
 ) => {
-  await text.evaluate((element: HTMLElement, nextSelection) => {
+  await text.evaluate((element: HTMLElement, [nextSelection, key]) => {
     const root = element.closest(
       '[data-editor="true"]'
     ) as HTMLElement | null;
@@ -52,7 +52,7 @@ const collapseDOMSelectionToTextEnd = async (
       throw new Error('Cannot collapse selection to text end');
     }
 
-    const handle = (root as Record<string, any>).__pliteBrowserHandle;
+    const handle = (root as Record<string, any>)[key];
 
     handle?.selectRange?.(nextSelection);
     root.focus();
@@ -68,7 +68,7 @@ const collapseDOMSelectionToTextEnd = async (
     element.ownerDocument.dispatchEvent(
       new Event('selectionchange', { bubbles: true })
     );
-  }, selection);
+  }, [selection, BROWSER_HANDLE_KEY] as const);
 };
 
 test.describe('dom coverage boundaries example', () => {

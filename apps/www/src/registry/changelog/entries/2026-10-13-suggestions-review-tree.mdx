@@ -1,0 +1,34 @@
+---
+id: 2026-10-13-suggestions-review-tree
+date: 2026-10-13
+status: draft
+kind: behavior
+summary: 'Suggestions paint each change in its own color and mark whole-block changes'
+change: { 'type': 'source', 'date': '2026-10-13', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-13-suggestion-change-colors","kind":"behavior","migrationNotes":[]} -->
+
+- **`suggestion`**: Paint every part of one change in one color, and each change in its own color, even when one person made them all.
+
+<!-- entry: {"id":"2026-10-13-suggestion-block-marks","kind":"new","migrationNotes":[]} -->
+
+- **`suggestion`**: Mark a suggested line break, a removed line break, or a whole-block change such as a paragraph turned into a heading, in the left margin in its change's color.
+
+<!-- entry: {"id":"2026-10-13-suggestion-refusals","kind":"behavior","migrationNotes":[]} -->
+
+- **`suggestion`**, **`mode-toolbar-button`**: Show a toast when Suggesting refuses a change that touches a code block, a table or a list item, and leave the document as it was. The mode menu switches to Suggesting only when the switch takes.
+
+<!-- entry: {"id":"2026-10-13-discussion-card-decide","kind":"behavior","migrationNotes":[]} -->
+
+- **`discussion`**: Accept and Reject on a suggestion card decide the change that card shows.
+
+<!-- entry: {"id":"2026-10-13-suggestion-demos-intent","kind":"behavior","migrationNotes":["Pass only the intent to a suggesting view: replace `authored={{ intent: 'propose', projection: 'markup' }}` with `authored={{ intent: 'propose' }}`."]} -->
+
+- **`suggestion-demo`**, **`suggestion-format-demo`**, **`suggestion-view-demo`**, **`suggestion-persistence-demo`**: Pass only `authored={{ intent: 'propose' }}` to a suggesting view.
+
+<!-- entry: {"id":"2026-10-13-version-history-restore","kind":"behavior","migrationNotes":[]} -->
+
+- **`version-history-demo`**: Restore a saved revision with its Restore button, as one edit you can undo. The per-author revert is removed.

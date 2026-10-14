@@ -132,7 +132,6 @@ const getOwnerlessViewSelectionRange = (
 
   if (
     !viewSelection ||
-    viewSelection.segments.parts.some((segment) => segment.fragment) ||
     viewSelection.anchor.owner ||
     viewSelection.focus.owner
   ) {

@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import type { Frame, Page } from '@playwright/test';
 
+import { BROWSER_HANDLE_KEY } from '../../src/playwright/constants';
 import {
   composeText,
   enableCompositionKeyEvents,
@@ -132,14 +133,14 @@ describe('playwright IME helpers', () => {
       '<div data-editor="true" contenteditable="true">hello</div>';
 
     const active = document.querySelector('div')! as HTMLDivElement & {
-      __pliteBrowserHandle?: { getText: () => string };
+      [BROWSER_HANDLE_KEY]?: { getText: () => string };
     };
     const text = active.firstChild as Text;
     const range = document.createRange();
     const selection = window.getSelection()!;
     const events: string[] = [];
 
-    active.__pliteBrowserHandle = {
+    active[BROWSER_HANDLE_KEY] = {
       getText: () => 'hello',
     };
     active.addEventListener('beforeinput', (event) => {
@@ -177,7 +178,7 @@ describe('playwright IME helpers', () => {
       '<div data-editor="true" contenteditable="true">hello</div>';
 
     const active = document.querySelector('div')! as HTMLDivElement & {
-      __pliteBrowserHandle?: {
+      [BROWSER_HANDLE_KEY]?: {
         getText: () => string;
         insertText: (text: string) => void;
       };
@@ -188,7 +189,7 @@ describe('playwright IME helpers', () => {
     const events: string[] = [];
     let insertedText: string | null = null;
 
-    active.__pliteBrowserHandle = {
+    active[BROWSER_HANDLE_KEY] = {
       getText: () => 'hello',
       insertText: (nextText: string) => {
         insertedText = nextText;
@@ -231,7 +232,7 @@ describe('playwright IME helpers', () => {
       '<div data-editor="true" contenteditable="true">This is editable rich</div>';
 
     const active = document.querySelector('div')! as HTMLDivElement & {
-      __pliteBrowserHandle?: {
+      [BROWSER_HANDLE_KEY]?: {
         getSelection: () => unknown;
         getText: () => string;
         setNativeDOMSelection: (selection: unknown) => boolean;
@@ -242,7 +243,7 @@ describe('playwright IME helpers', () => {
     const selection = window.getSelection()!;
     let projected = false;
 
-    active.__pliteBrowserHandle = {
+    active[BROWSER_HANDLE_KEY] = {
       getSelection: () => ({
         anchor: { offset: 'This is '.length, path: [0, 0] },
         focus: { offset: 'This is '.length, path: [0, 0] },
@@ -290,7 +291,7 @@ describe('playwright IME helpers', () => {
 
     try {
       const active = document.querySelector('div')! as HTMLDivElement & {
-        __pliteBrowserHandle?: {
+        [BROWSER_HANDLE_KEY]?: {
           getSelection: () => unknown;
           getText: () => string;
           insertText: (text: string) => void;
@@ -302,7 +303,7 @@ describe('playwright IME helpers', () => {
       const selection = window.getSelection()!;
       let insertedText: string | null = null;
 
-      active.__pliteBrowserHandle = {
+      active[BROWSER_HANDLE_KEY] = {
         getSelection: () => ({
           anchor: { offset: 'This is '.length, path: [0, 0] },
           focus: { offset: 'This is '.length, path: [0, 0] },
@@ -350,7 +351,7 @@ describe('playwright IME helpers', () => {
 
     try {
       const active = document.querySelector('div')! as HTMLDivElement & {
-        __pliteBrowserHandle?: {
+        [BROWSER_HANDLE_KEY]?: {
           getText: () => string;
           insertText: (text: string) => void;
         };
@@ -361,7 +362,7 @@ describe('playwright IME helpers', () => {
       const events: string[] = [];
       let insertedText: string | null = null;
 
-      active.__pliteBrowserHandle = {
+      active[BROWSER_HANDLE_KEY] = {
         getText: () => 'hello',
         insertText: (nextText: string) => {
           insertedText = nextText;
@@ -411,7 +412,7 @@ describe('playwright IME helpers', () => {
 
     try {
       const active = document.querySelector('div')! as HTMLDivElement & {
-        __pliteBrowserHandle?: {
+        [BROWSER_HANDLE_KEY]?: {
           getSelection: () => unknown;
           getText: () => string;
           insertText: (text: string) => void;
@@ -423,7 +424,7 @@ describe('playwright IME helpers', () => {
       const selection = window.getSelection()!;
       let insertedText: string | null = null;
 
-      active.__pliteBrowserHandle = {
+      active[BROWSER_HANDLE_KEY] = {
         getSelection: () => ({
           anchor: { offset: 'This is '.length, path: [0, 0] },
           focus: { offset: 'This is '.length, path: [0, 0] },
@@ -468,7 +469,7 @@ describe('playwright IME helpers', () => {
 
     try {
       const active = document.querySelector('div')! as HTMLDivElement & {
-        __pliteBrowserHandle?: {
+        [BROWSER_HANDLE_KEY]?: {
           getSelection: () => unknown;
           getText: () => string;
           insertText: (text: string) => void;
@@ -478,7 +479,7 @@ describe('playwright IME helpers', () => {
       const selection = window.getSelection()!;
       let insertedText: string | null = null;
 
-      active.__pliteBrowserHandle = {
+      active[BROWSER_HANDLE_KEY] = {
         getSelection: () => ({
           anchor: { offset: 'This is '.length, path: [0, 0] },
           focus: { offset: 'This is '.length, path: [0, 0] },

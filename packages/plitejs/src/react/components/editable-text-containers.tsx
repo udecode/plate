@@ -1,7 +1,6 @@
 import React, { type ReactNode } from 'react';
 
 import type { Text as TextNode } from '../..';
-import type { NativeAuthoredFragment } from '../../core/authored-runtime';
 import {
   getDecorationSliceIdentity,
   isContainerDecorationSlice,
@@ -17,23 +16,24 @@ export type EditableTextPart = {
   text: string;
 };
 
-export type EditableTextRenderPart =
-  | { kind: 'text'; segment: EditableTextPart }
-  | { kind: 'retained'; fragment: NativeAuthoredFragment };
+export type EditableTextRenderPart = {
+  kind: 'text';
+  segment: EditableTextPart;
+};
 
 /**
  * Takes container slices out of each part's decorations and picks the
- * container each part renders in. A retained fragment or an empty gap joins
- * the open container, or the first one after it at the start of the text, so
- * only text in another container closes it. When no text survives, every part
- * joins the text's own container.
+ * container each part renders in. An empty gap joins the open container, or
+ * the first one after it at the start of the text, so only text in another
+ * container closes it. When no text survives, every part joins the text's own
+ * container.
  */
 export const partitionTextContainers = (
   parts: readonly EditableTextRenderPart[],
   decorations: readonly DecorationSlice[]
 ) => {
   const own = parts.map((part) =>
-    part.kind === 'retained' || part.segment.text.length === 0
+    part.segment.text.length === 0
       ? undefined
       : (part.segment.decorations.find(isContainerDecorationSlice) ?? null)
   );
@@ -48,7 +48,6 @@ export const partitionTextContainers = (
       return open;
     }),
     parts: parts.map((part) =>
-      part.kind === 'text' &&
       part.segment.decorations.some(isContainerDecorationSlice)
         ? {
             ...part,

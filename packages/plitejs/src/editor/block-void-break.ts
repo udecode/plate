@@ -1,21 +1,16 @@
-import { getEditorRuntimeRoot, getEditorSchema } from '../core/editor-runtime';
-import { toPublicRoot } from '../core/public-root';
 import type { EditorStaticApi } from '../interfaces/editor';
 import {
   getSelection as editorGetSelection,
   isInline as editorIsInline,
   void as editorVoid,
 } from '../interfaces/editor';
-import { ElementApi } from '../interfaces/element';
 import { PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
-import { insertNodes } from '../transforms-node/insert-nodes';
+import { insertDefaultChild } from './insert-default-child';
 
 type BreakEditor = Parameters<EditorStaticApi['insertBreak']>[0];
 
-export const insertDefaultBlockAfterSelectedBlockVoid = (
-  editor: BreakEditor
-) => {
+export const breakAtSelectedBlockVoid = (editor: BreakEditor) => {
   const selection = editorGetSelection(editor);
 
   if (
@@ -41,18 +36,7 @@ export const insertDefaultBlockAfterSelectedBlockVoid = (
     return false;
   }
 
-  const defaultChild = getEditorSchema(editor).createDefaultRootChild(
-    toPublicRoot(getEditorRuntimeRoot(editor)),
-    voidPath[0] + 1
-  );
-
-  if (!ElementApi.isElement(defaultChild)) return false;
-
-  insertNodes(editor, defaultChild, {
-    at: PathApi.next(voidPath),
-    select: true,
-    voids: true,
-  });
+  insertDefaultChild(editor, PathApi.next(voidPath), { voids: true });
 
   return true;
 };

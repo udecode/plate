@@ -12,8 +12,8 @@ import type {
   EditorUpdateTransaction,
   Value,
 } from '../interfaces';
+import { callPluginUpdateMethod, resolvePluginMethod } from './plugin-dispatch';
 import { getSemanticUpdateLowering } from './semantic-update-method';
-import { isTxOnlyMethod, isTxReadMethod } from './tx-only';
 import {
   compileEditorUpdatePolicy,
   type CompiledEditorUpdatePolicy,
@@ -56,39 +56,6 @@ const assertUpdatePolicy = (
   }
 };
 
-const resolvePath = (value: unknown, path: readonly string[]) => {
-  let current = value;
-  let owner: unknown;
-
-  for (const key of path) {
-    const receiver = owner;
-    owner = current;
-    if (
-      (typeof current !== 'object' || current === null) &&
-      typeof current !== 'function'
-    ) {
-      return { owner: undefined, value: undefined };
-    }
-    const descriptor = Object.getOwnPropertyDescriptor(current, key);
-
-    if (!descriptor || !('value' in descriptor)) {
-      if (
-        typeof current === 'function' &&
-        (key === 'call' || key === 'apply')
-      ) {
-        const method = current;
-        owner = (...args: unknown[]) => Reflect.apply(method, receiver, args);
-        current = Function.prototype[key];
-        continue;
-      }
-      return { owner: undefined, value: undefined };
-    }
-    current = descriptor.value;
-  }
-
-  return { owner, value: current };
-};
-
 const createReadPluginPath = <
   V extends Value,
   TPlugins extends readonly unknown[],
@@ -107,7 +74,7 @@ const createReadPluginPath = <
     apply(_target, _thisArg, args) {
       return read((state) => {
         const group = (state as Record<string, unknown>)[groupName];
-        const { owner, value: method } = resolvePath(group, path);
+        const { owner, value: method } = resolvePluginMethod(group, path);
 
         if (typeof method !== 'function') {
           throw new Error(
@@ -153,38 +120,17 @@ const createUpdatePluginPath = <
     return existing;
   }
 
+  const label = `Editor update group "${groupName}" method "${path.join('.')}"`;
   const pluginPath = new Proxy(() => {}, {
     apply(_target, _thisArg, args) {
       let result: unknown;
 
       runUpdate((tx) => {
-        const group = (tx as Record<string, unknown>)[groupName];
-        const { owner, value: method } = resolvePath(group, path);
-
-        if (typeof method !== 'function') {
-          throw new Error(
-            `Editor update group "${groupName}" method "${path.join(
-              '.'
-            )}" is not installed.`
-          );
-        }
-
-        if (isTxOnlyMethod(method)) {
-          throw new Error(
-            `Editor update group "${groupName}" method "${path.join(
-              '.'
-            )}" is transaction-only.`
-          );
-        }
-        if (isTxReadMethod(method)) {
-          throw new Error(
-            `Editor update group "${groupName}" method "${path.join(
-              '.'
-            )}" is read-only.`
-          );
-        }
-
-        result = Reflect.apply(method, owner, args);
+        result = callPluginUpdateMethod(
+          label,
+          resolvePluginMethod((tx as Record<string, unknown>)[groupName], path),
+          args
+        );
       });
 
       return result;

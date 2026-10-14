@@ -5,11 +5,11 @@ import {
   DocxPackageError,
   readBoundedDocxPackage,
 } from '../../internal/docxPackage';
+import { parseDocxXml } from '../../internal/domParser';
 import {
   contentTypeFor,
   decodeXml,
   elements,
-  parseXml,
   readContentTypes,
   readRelationships,
   relationshipPartFor,
@@ -244,7 +244,8 @@ const sourceOwnedPart = (part: string) =>
   part === 'word/fontTable.xml' ||
   part === 'word/webSettings.xml' ||
   part.startsWith('word/theme/') ||
-  part.startsWith('word/comments');
+  part.startsWith('word/comments') ||
+  part.startsWith('customXml/');
 
 const wordElements = (document: Document | Element, name: string) =>
   elements(document).filter(
@@ -296,10 +297,10 @@ const copyEvenOddFlag = (
   const generated = generatedEntries.get('word/settings.xml');
 
   if (!(source && generated)) return;
-  const sourceDocument = parseXml(decodeXml(source));
+  const sourceDocument = parseDocxXml(decodeXml(source));
 
   if (wordElements(sourceDocument, 'evenAndOddHeaders').length === 0) return;
-  const generatedDocument = parseXml(decodeXml(generated));
+  const generatedDocument = parseDocxXml(decodeXml(generated));
 
   if (wordElements(generatedDocument, 'evenAndOddHeaders').length > 0) return;
   generatedDocument.documentElement.append(
@@ -386,7 +387,7 @@ export const preserveDocxSource = async (
     }
   };
 
-  const generatedRootRelationships = parseXml(
+  const generatedRootRelationships = parseDocxXml(
     decodeXml(generatedRootRelationshipsSource)
   );
   const regeneratedRootParts = new Set<string>();
@@ -444,7 +445,7 @@ export const preserveDocxSource = async (
     'word/_rels/document.xml.rels'
   );
   const generatedDocumentRelationships = generatedDocumentRelationshipsSource
-    ? parseXml(decodeXml(generatedDocumentRelationshipsSource))
+    ? parseDocxXml(decodeXml(generatedDocumentRelationshipsSource))
     : null;
 
   if (
@@ -453,8 +454,8 @@ export const preserveDocxSource = async (
     sourceDocumentRelationshipsSource &&
     generatedDocumentRelationships
   ) {
-    const sourceDocument = parseXml(decodeXml(sourceDocumentSource));
-    const generatedDocument = parseXml(decodeXml(generatedDocumentSource));
+    const sourceDocument = parseDocxXml(decodeXml(sourceDocumentSource));
+    const generatedDocument = parseDocxXml(decodeXml(generatedDocumentSource));
     const sourceSections = wordElements(sourceDocument, 'sectPr');
     const generatedSections = wordElements(generatedDocument, 'sectPr');
     const headerFooterRelationships = readRelationships(

@@ -178,7 +178,7 @@ export function InlineEquationElement(
             className={cn(
               'after:-top-0.5 after:-left-1 after:absolute after:inset-0 after:z-1 after:h-[calc(100%)+4px] after:w-[calc(100%+8px)] after:rounded-sm after:content-[""]',
               'h-6',
-              inlineSuggestionVariants(),
+              inlineSuggestionVariants({ on: 'parent' }),
               ((element.latex.length > 0 && open) || selected) &&
                 'after:bg-brand/15',
               element.latex.length === 0 &&

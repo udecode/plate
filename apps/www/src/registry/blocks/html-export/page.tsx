@@ -3,8 +3,8 @@ import path from 'node:path';
 
 import { cva } from 'class-variance-authority';
 import type { Metadata } from 'next';
-import type { EditorDocumentValue } from 'platejs';
-import { createStaticEditor, renderStaticHtml } from 'platejs/static';
+import { createEditor, type EditorDocumentValue } from 'platejs';
+import { renderStaticHtml } from 'platejs/static';
 import * as React from 'react';
 
 import { EditorStatic } from '@/registry/components/editor/editor-static';
@@ -100,7 +100,7 @@ const createValue = (): EditorDocumentValue => ({
 });
 
 export default async function HtmlExportBlock() {
-  const editor = createStaticEditor({
+  const editor = createEditor({
     plugins: HtmlExportKit,
     initialValue: createValue(),
   });

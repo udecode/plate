@@ -70,10 +70,10 @@ describe('pagination public surface', () => {
     ).toEqual(settings);
     expect(() =>
       pageSettingsCodec.decode({ margins: Number.NaN, preset: 'a4' })
-    ).toThrow(/Invalid Plite page margins/);
+    ).toThrow(/Invalid page margins/);
     expect(() =>
       pageSettingsCodec.decode({ margins: 72, preset: 'legal' })
-    ).toThrow(/Invalid Plite page settings/);
+    ).toThrow(/Invalid page settings/);
   });
 });
 

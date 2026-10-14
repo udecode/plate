@@ -1364,6 +1364,8 @@ const CommandButton = ({
     onClick={(event) => {
       handleCommandClick(event, onRun);
     }}
+    // iOS WebKit still sends mousedown after a prevented pointerdown, which blurs the editor.
+    onMouseDown={(event) => event.preventDefault()}
     onPointerDown={(event) => {
       handleCommandPointerDown(event, onRun);
     }}

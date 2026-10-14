@@ -46,6 +46,10 @@ const document = parseAuthoredDocument(json);
 ```
 
 HTML、Markdown 与 DOCX 不会把 authored document 隐藏在输出中。
+安装了 authored changes 的 editor 中的 document 即使还没有 proposal 也带有
+authored metadata。它的每个 HTML、Markdown、plain text 与 static HTML export
+都要求 `projection` 为 `'accepted'` 或 `'proposed'`，否则抛出 `TypeError`。
+没有 authored metadata 的 document 不需要 projection。
 
 ## 序列化 plain text
 

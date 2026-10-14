@@ -1,6 +1,6 @@
 import { expect, type Locator } from '@playwright/test';
 
-import { READY_TIMEOUT_MS, BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY, READY_TIMEOUT_MS } from './constants';
 import {
   scrollTextPathIntoViewAndCheckMaterialized,
   waitForTextPathMaterialized,
@@ -268,7 +268,7 @@ export const clickTextOffset = async (
             ariaLabel: node.getAttribute('aria-label'),
             path: node.getAttribute('data-editor-path'),
             role: node.getAttribute('role'),
-            pliteNode: node.getAttribute('data-editor-node'),
+            editorNode: node.getAttribute('data-editor-node'),
             tagName: node.tagName,
             text: node.textContent?.slice(0, 80) ?? '',
           };

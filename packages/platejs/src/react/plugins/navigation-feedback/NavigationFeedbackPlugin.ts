@@ -157,7 +157,7 @@ export const NavigationFeedbackPlugin = definePlugin('navigation', {
                     'data-nav-cycle': String(target.pulse % 2),
                     style: {
                       ...target.attributes.style,
-                      '--plate-nav-feedback-duration': `${target.duration}ms`,
+                      '--editor-nav-feedback-duration': `${target.duration}ms`,
                     },
                   },
                 },

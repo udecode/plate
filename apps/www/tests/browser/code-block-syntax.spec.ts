@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -6,7 +7,7 @@ import { expect, test } from '@playwright/test';
 import type { Value } from 'platejs';
 
 type BrowserHandleElement = HTMLElement & {
-  __pliteBrowserHandle: {
+  [BROWSER_HANDLE_KEY]: {
     getValue: () => { children: Value };
     applyValueChange: (
       value: { children: Value },
@@ -39,16 +40,19 @@ for (const lines of [20, 2000, 10_000, 100_000]) {
         { length: lines },
         (_, index) => `const result${index} = transform(source[${index}]);`
       ).join('\n');
-      await root.evaluate((element, code) => {
-        const handle = (element as BrowserHandleElement).__pliteBrowserHandle;
-        const value = handle.getValue();
-        handle.applyValueChange({
-          ...value,
-          children: value.children.map((block, index) =>
-            index === 2 ? { ...block, children: [{ text: code }] } : block
-          ),
-        });
-      }, text);
+      await root.evaluate(
+        (element, [code, key]) => {
+          const handle = (element as BrowserHandleElement)[key];
+          const value = handle.getValue();
+          handle.applyValueChange({
+            ...value,
+            children: value.children.map((block, index) =>
+              index === 2 ? { ...block, children: [{ text: code }] } : block
+            ),
+          });
+        },
+        [text, BROWSER_HANDLE_KEY] as const
+      );
       await editor.selection.collapse({ path: [2, 0], offset: text.length });
       await editor.focus();
       const host = page.locator('[data-code-block-codemirror]');

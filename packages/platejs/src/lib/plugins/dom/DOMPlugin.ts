@@ -13,6 +13,7 @@ import {
   type Point,
   getSelectionDOMRange,
   readEditorSelection,
+  txLocate,
 } from '../../../facade';
 import { definePlugin } from '../../plugin';
 import { plateDOMPlugin } from './plateDOMPlugin.internal';
@@ -166,7 +167,7 @@ export const DOMPlugin = definePlugin('dom', {
     },
   },
   update: ({ editor, store, tx }): AutoScrollPluginUpdate => ({
-    autoScroll: (fn, options) => {
+    autoScroll: txLocate(false, (fn, options) => {
       const previousState = store.get();
       const prevAutoScroll = AUTO_SCROLL.get(editor) ?? false;
       const prevFirstTarget = AUTO_SCROLL_FIRST_TARGET.get(editor);
@@ -211,6 +212,6 @@ export const DOMPlugin = definePlugin('dom', {
         }
         store.set(previousState);
       }
-    },
+    }),
   }),
 }).extend(plateDOMPlugin);

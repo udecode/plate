@@ -49,8 +49,8 @@ describe('editor foundation contract', () => {
     const generatedB = createEditor();
 
     assert.equal(provided.id, 'custom-editor');
-    assert.match(generatedA.id, /^plite-editor-\d+$/);
-    assert.match(generatedB.id, /^plite-editor-\d+$/);
+    assert.match(generatedA.id, /^editor-\d+$/);
+    assert.match(generatedB.id, /^editor-\d+$/);
     assert.notEqual(generatedA.id, generatedB.id);
   });
 

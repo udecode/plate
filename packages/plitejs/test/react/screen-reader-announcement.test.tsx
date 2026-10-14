@@ -118,7 +118,7 @@ describe('screen-reader announcement live region', () => {
     });
     const accepted = render(
       <EditorRoot
-        authored={{ intent: 'edit', projection: 'accepted' }}
+        authored={{ preview: 'accepted' }}
         editor={editor}
       >
         <div />
@@ -126,7 +126,7 @@ describe('screen-reader announcement live region', () => {
     );
     const proposed = render(
       <EditorRoot
-        authored={{ intent: 'propose', projection: 'proposed' }}
+        authored={{ intent: 'propose' }}
         editor={editor}
       >
         <div />

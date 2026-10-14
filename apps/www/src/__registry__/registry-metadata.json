@@ -1,5 +1,5 @@
 {
-  "generation": "e14420939603a6c24bda5be285d8632e7994cc37d7d97e109a5e41c40969306f",
+  "generation": "b9804b62b27898e90cd02907339832df4f1dfdae89d115ed784623bc74017c1f",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -702,7 +702,6 @@
         },
         {
           "dependencies": [
-            "@excalidraw/excalidraw@0.18.0",
             "diff-match-patch-ts@^0.6.0",
             "flowchart.js@^1.15.0",
             "katex@0.16.22",
@@ -2933,6 +2932,37 @@
           ],
           "files": [
             {
+              "path": "components/editor/lint.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/lint.tsx"
+            }
+          ],
+          "name": "lint",
+          "type": "registry:component",
+          "description": "Lint rules with severity underlines, a caret popover with fixes, and F8 to move between findings.",
+          "title": "Lint",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lint"
+              }
+            ],
+            "examples": [
+              "lint-demo"
+            ]
+          },
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "button"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
               "path": "components/editor/date.tsx",
               "type": "registry:component",
               "target": "@components/editor/date.tsx"
@@ -3006,6 +3036,8 @@
         {
           "dependencies": [
             "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "jszip@^3.10.1",
             "juice@^11.0.1",
             "validator@^13.15.15"
           ],
@@ -3053,6 +3085,7 @@
             "platejs",
             "@types/papaparse@^5.3.16",
             "diff-match-patch-ts@^0.6.0",
+            "jszip@^3.10.1",
             "juice@^11.0.1",
             "papaparse@^5.5.3",
             "validator@^13.15.15"
@@ -3596,7 +3629,6 @@
           "dependencies": [
             "platejs",
             "@ai-sdk/react@^3.0.0",
-            "@excalidraw/excalidraw@0.18.0",
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
@@ -3643,7 +3675,8 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "sonner"
           ],
           "files": [
             {
@@ -5192,6 +5225,37 @@
           "meta": {
             "registry": false
           }
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "@platejs/test"
+          ],
+          "description": "Lint rules with a findings panel, caret fixes, F8 navigation and a delayed server rule.",
+          "files": [
+            {
+              "path": "examples/lint-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/lint-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "iframeHeight": 900,
+            "registry": false
+          },
+          "name": "lint-demo",
+          "registryDependencies": [
+            "button",
+            "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/lint",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "type": "registry:example"
         },
         {
           "dependencies": [
@@ -7425,7 +7489,6 @@
         },
         {
           "dependencies": [
-            "@excalidraw/excalidraw@0.18.0",
             "diff-match-patch-ts@^0.6.0",
             "flowchart.js@^1.15.0",
             "katex@0.16.22",
@@ -9650,6 +9713,37 @@
           ],
           "files": [
             {
+              "path": "components/editor/lint.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/lint.tsx"
+            }
+          ],
+          "name": "lint",
+          "type": "registry:component",
+          "description": "Lint rules with severity underlines, a caret popover with fixes, and F8 to move between findings.",
+          "title": "Lint",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lint"
+              }
+            ],
+            "examples": [
+              "lint-demo"
+            ]
+          },
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "button"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
               "path": "components/editor/date.tsx",
               "type": "registry:component",
               "target": "@components/editor/date.tsx"
@@ -9723,6 +9817,8 @@
         {
           "dependencies": [
             "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "jszip@^3.10.1",
             "juice@^11.0.1",
             "validator@^13.15.15"
           ],
@@ -9770,6 +9866,7 @@
             "platejs",
             "@types/papaparse@^5.3.16",
             "diff-match-patch-ts@^0.6.0",
+            "jszip@^3.10.1",
             "juice@^11.0.1",
             "papaparse@^5.5.3",
             "validator@^13.15.15"
@@ -10313,7 +10410,6 @@
           "dependencies": [
             "platejs",
             "@ai-sdk/react@^3.0.0",
-            "@excalidraw/excalidraw@0.18.0",
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
@@ -10360,7 +10456,8 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "sonner"
           ],
           "files": [
             {
@@ -11909,6 +12006,37 @@
           "meta": {
             "registry": false
           }
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "@platejs/test"
+          ],
+          "description": "Lint rules with a findings panel, caret fixes, F8 navigation and a delayed server rule.",
+          "files": [
+            {
+              "path": "examples/lint-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/lint-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "iframeHeight": 900,
+            "registry": false
+          },
+          "name": "lint-demo",
+          "registryDependencies": [
+            "button",
+            "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/lint",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "type": "registry:example"
         },
         {
           "dependencies": [

@@ -4,5 +4,4 @@
 
 export * from './Editor';
 export * from './useCreateEditor';
-export * from './useStaticEditor';
 export * from './withPlate';

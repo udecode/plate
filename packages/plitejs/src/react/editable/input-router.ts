@@ -37,7 +37,6 @@ import {
 } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
-import { readPliteViewSelection } from '../view-selection';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { isInteractiveInternalTarget } from './input-controller';
 import {
@@ -263,8 +262,9 @@ const getExpectedDeferredTextInputRepairTarget = ({
     rootElement.querySelector<HTMLElement>(
       `[data-editor-node="text"][data-editor-path="${pathAttribute}"]`
     );
-  const pliteText = readRuntimeText(editor, path);
-  const text = textHost?.textContent?.replace(/\uFEFF/g, '') ?? pliteText?.text;
+  const editorText = readRuntimeText(editor, path);
+  const text =
+    textHost?.textContent?.replace(/\uFEFF/g, '') ?? editorText?.text;
 
   if (!textHost || text == null || !rootElement.contains(textHost)) {
     return null;
@@ -526,16 +526,16 @@ const getDOMInputRepairInsert = ({
     return undefined;
   }
 
-  const pliteNode = readRuntimeText(editor, path);
+  const editorNode = readRuntimeText(editor, path);
 
-  if (!pliteNode || text === pliteNode.text) {
+  if (!editorNode || text === editorNode.text) {
     return undefined;
   }
 
   const insert = getNativeTextInsertDelta({
     inputText: nativeInput.data,
     selectionOffset,
-    pliteText: pliteNode.text,
+    editorText: editorNode.text,
     textHostText: text,
   });
 
@@ -564,9 +564,9 @@ const getRuntimeDOMInputRepairTarget = ({
     rootElement.querySelector<HTMLElement>(
       `[data-editor-node="text"][data-editor-path="${pathAttribute}"]`
     );
-  const pliteText = readRuntimeText(editor, path);
+  const editorText = readRuntimeText(editor, path);
 
-  if (!textHost || !pliteText || !rootElement.contains(textHost)) {
+  if (!textHost || !editorText || !rootElement.contains(textHost)) {
     return null;
   }
 
@@ -588,7 +588,7 @@ const getRuntimeDOMInputRepairTarget = ({
     ...(insert ? { insert, preferCapturedInsert: true } : {}),
     path: [...path] as Path,
     selectionOffset,
-    text: insert ? applyTextInsert(pliteText.text, insert) : pliteText.text,
+    text: insert ? applyTextInsert(editorText.text, insert) : editorText.text,
   };
 };
 
@@ -747,9 +747,9 @@ export const getDOMInputRepairTarget = (
     runtimeSelection.anchor.path.every((part, index) => part === path[index]) &&
     rootElement.contains(textHost)
   ) {
-    const pliteText = readRuntimeText(editor, path);
+    const editorText = readRuntimeText(editor, path);
 
-    if (pliteText) {
+    if (editorText) {
       const insert = {
         offset: flowInsertTarget.insertOffset,
         text: nativeText,
@@ -760,7 +760,7 @@ export const getDOMInputRepairTarget = (
         path: [...path] as Path,
         preferCapturedInsert: true,
         selectionOffset: flowInsertTarget.selectionOffset,
-        text: applyTextInsert(pliteText.text, insert),
+        text: applyTextInsert(editorText.text, insert),
       };
     }
   }
@@ -856,9 +856,9 @@ const restoreReadOnlyDOMText = ({
     .querySelectorAll<HTMLElement>('[data-editor-node="text"]')
     .forEach((textElement) => {
       const path = getPliteNodePathFromDOMElement(textElement);
-      const pliteText = path ? readRuntimeText(editor, path)?.text : null;
+      const editorText = path ? readRuntimeText(editor, path)?.text : null;
 
-      if (pliteText == null) {
+      if (editorText == null) {
         return;
       }
 
@@ -874,19 +874,19 @@ const restoreReadOnlyDOMText = ({
         nativeInput,
         rootElement,
         strings,
-        text: pliteText,
+        text: editorText,
       });
       let offset = 0;
 
       strings.forEach((stringElement, index) => {
         const length =
           index === strings.length - 1
-            ? pliteText.length - offset
+            ? editorText.length - offset
             : Math.max(
                 0,
-                Math.min(lengths[index] ?? 0, pliteText.length - offset)
+                Math.min(lengths[index] ?? 0, editorText.length - offset)
               );
-        const nextText = pliteText.slice(offset, offset + length);
+        const nextText = editorText.slice(offset, offset + length);
 
         if (stringElement.textContent !== nextText) {
           stringElement.textContent = nextText;
@@ -1075,14 +1075,14 @@ export const useEditableDOMInputHandler = ({
         ? anchorNode
         : null;
     const textHost = anchorElement?.closest('[data-editor-node="text"]');
-    const pliteText = readRuntimeText(editor, domRange.anchor.path)?.text;
+    const editorText = readRuntimeText(editor, domRange.anchor.path)?.text;
     const domText = textHost?.textContent?.replace(/\uFEFF/g, '') ?? null;
 
     if (
       !textHost ||
       textHost.getAttribute('data-editor-path') !== pathKey ||
-      pliteText == null ||
-      domText !== pliteText
+      editorText == null ||
+      domText !== editorText
     ) {
       return;
     }
@@ -1352,18 +1352,6 @@ export const useEditableDOMInputHandler = ({
         }
 
         if (!rootRef.current || typeof nativeInput.inputType !== 'string') {
-          return;
-        }
-
-        if (
-          readPliteViewSelection(editor)?.segments.parts.some(
-            (part) => part.fragment
-          )
-        ) {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          if (inputController) armModelOwnedTextInputGuard({ inputController });
-          onReadOnlyDOMInput?.();
           return;
         }
 

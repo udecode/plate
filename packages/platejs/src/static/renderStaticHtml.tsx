@@ -52,7 +52,16 @@ export type RenderStaticHtmlOptions<
    * each new array is compiled again.
    */
   presentation?: readonly BasePluginInput[];
-  /** Required when the captured document contains authored changes. */
+  /**
+   * Version of an authored document to export. `accepted` drops pending changes
+   * and `proposed` applies them as plain content. Either choice adds an
+   * `authored-lossy-projection` warning while changes are pending. Required
+   * when the document has authored metadata, which every document from an
+   * editor with the authored plugin carries, even with no pending change.
+   * Omitting it or passing any other value then throws, and so does a valid
+   * value when the editor lacks the authored plugin. A document without
+   * authored metadata ignores it.
+   */
   projection?: 'accepted' | 'proposed';
   /**
    * Appearance props passed to the static editor component, such as `style`.

@@ -17,7 +17,7 @@ import {
   RangeApi,
   SelectionApi,
 } from '../../../../core';
-import { failInvariant } from '../../internal/failInvariant';
+import { failInvariant } from '../../../../internal/failInvariant';
 import type { TableCellElement } from '../BaseTablePlugin';
 import { createTableContext, type TableContext } from './context';
 import type { TableGrid, TableGridAnchor } from './grid';

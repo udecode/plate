@@ -153,13 +153,19 @@ describe('plite-react annotation store contract', () => {
       plugins: [authored({ authorId: 'alice' })],
       initialValue: createChildren(),
     });
-    const first = createEditorView(model);
+    const first = createEditorView(model, {
+      authored: { preview: 'accepted' },
+    });
     const second = createEditorView(model, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     });
     const range = {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
+    };
+    const stored = {
+      anchor: { path: [0, 1], offset: 1 },
+      focus: { path: [0, 1], offset: 4 },
     };
     const projected = {
       anchor: { path: [0, 0], offset: 3 },
@@ -182,15 +188,15 @@ describe('plite-react annotation store contract', () => {
     const before = model.read.value();
 
     expect(firstStore.getAnnotation('comment')?.range).toEqual(range);
-    expect(secondStore.getAnnotation('comment')?.range).toEqual(projected);
+    expect(secondStore.getAnnotation('comment')?.range).toEqual(stored);
 
-    first.api.authored.setView({ intent: 'edit', projection: 'markup' });
+    first.api.authored.setView({ preview: 'proposed' });
     await Promise.resolve();
     expect(firstStore.getAnnotation('comment')?.range).toEqual(projected);
     expect(firstChanges).toHaveBeenCalledTimes(1);
     expect(secondChanges).not.toHaveBeenCalled();
 
-    second.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+    second.api.authored.setView({ preview: 'accepted' });
     await Promise.resolve();
     expect(firstStore.getAnnotation('comment')?.range).toEqual(projected);
     expect(secondStore.getAnnotation('comment')?.range).toEqual(range);
@@ -213,7 +219,7 @@ describe('plite-react annotation store contract', () => {
 
     stopFirst();
     stopSecond();
-    first.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+    first.api.authored.setView({ preview: 'accepted' });
     expect(getAnnotationStoreMetrics(firstStore)).toBe(firstMetrics);
     expect(firstStore.getAnnotation('comment')?.range).toEqual(range);
     const passiveMetrics = getAnnotationStoreMetrics(firstStore);
@@ -238,9 +244,14 @@ describe('plite-react annotation store contract', () => {
       plugins: [authored({ authorId: 'alice' })],
       initialValue: createChildren(),
     });
-    const accepted = createEditorView(model);
+    const accepted = createEditorView(model, {
+      authored: { preview: 'accepted' },
+    });
     const proposed = createEditorView(model, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { preview: 'proposed' },
+    });
+    const writer = createEditorView(model, {
+      authored: { intent: 'propose' },
     });
     const anchor = createRangeAnchor(model, {
       anchor: { path: [0, 0], offset: 1 },
@@ -255,8 +266,8 @@ describe('plite-react annotation store contract', () => {
     acceptedStore.subscribeChanges(acceptedChanged);
     proposedStore.subscribeChanges(proposedChanged);
 
-    proposed.update.text.insert('++', { at: { path: [0, 0], offset: 0 } });
-    expect(model.read.text.string([0])).toBe('alpha');
+    writer.update.text.insert('++', { at: { path: [0, 0], offset: 0 } });
+    expect(accepted.read.text.string([0])).toBe('alpha');
     expect(acceptedStore.getSnapshot()).toBe(before);
     expect(acceptedChanged).not.toHaveBeenCalled();
     expect(proposedStore.getAnnotation('comment')?.range).toEqual({
@@ -268,7 +279,7 @@ describe('plite-react annotation store contract', () => {
       proposedStore.getAnnotation('comment'),
     ]);
 
-    accepted.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
+    model.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
     expect(acceptedStore.getAnnotation('comment')?.range).toEqual({
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 5 },
@@ -329,7 +340,7 @@ describe('plite-react annotation store contract', () => {
     const metrics = active ? getAnnotationStoreMetrics(active) : undefined;
 
     model.update.text.insert('!', { at: { path: [0, 0], offset: 0 } });
-    view.api.authored.setView({ intent: 'propose', projection: 'markup' });
+    view.api.authored.setView({ intent: 'propose' });
     await Promise.resolve();
 
     expect(active ? getAnnotationStoreMetrics(active) : undefined).toBe(
@@ -351,7 +362,9 @@ describe('plite-react annotation store contract', () => {
       plugins: [authored({ authorId: 'alice' })],
       initialValue: createChildren(),
     });
-    const view = createEditorView(model);
+    const view = createEditorView(model, {
+      authored: { preview: 'accepted' },
+    });
     model.update((tx) => {
       tx.authored.propose();
       tx.nodes.replace(
@@ -376,7 +389,7 @@ describe('plite-react annotation store contract', () => {
     store.subscribeChanges(changed);
     store.subscribeAnnotation('position', entityChanged);
 
-    view.api.authored.setView({ intent: 'propose', projection: 'markup' });
+    view.api.authored.setView({ preview: 'proposed' });
     await Promise.resolve();
     const newKey = view.key([0, 0])!;
     expect(newKey).not.toBe(oldKey);

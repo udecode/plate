@@ -7,6 +7,7 @@ import {
   property,
   schema,
   PLUGINS,
+  txLocate,
 } from '../../../core';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
@@ -77,8 +78,9 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
     }),
   rules,
   update: ({ tx, schema: { type } }) => ({
-    toggle: ({ level }: ToggleHeadingOptions) =>
-      tx.blocks.toggle({ level, type }),
+    toggle: txLocate(false, ({ level }: ToggleHeadingOptions) =>
+      tx.blocks.toggle({ level, type })
+    ),
   }),
 });
 

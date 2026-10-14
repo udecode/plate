@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -22,28 +23,31 @@ test('paints the first typed character after restoring suggestions', async ({
   await editor.selection.collapse({ path: [0, 2], offset: 2 });
   await editor.focus();
   const capturePaint = () =>
-    root.evaluate(async (element) => {
+    root.evaluate(async (element, key) => {
       await new Promise<void>((resolve) => {
         requestAnimationFrame(() => resolve());
       });
-      const editorRoot = element as HTMLElement & {
-        __pliteBrowserHandle?: {
-          getBlockText: (index: number) => string | null;
-        };
-      };
+      const editorRoot = element as HTMLElement &
+        Record<
+          string,
+          | {
+              getBlockText: (index: number) => string | null;
+            }
+          | undefined
+        >;
       const block = editorRoot.querySelector<HTMLElement>(
         '[data-editor-node="element"]'
       );
 
       return {
-        model: editorRoot.__pliteBrowserHandle?.getBlockText(0) ?? null,
+        model: editorRoot[key]?.getBlockText(0) ?? null,
         spans: [
           ...(block?.querySelectorAll('[data-editor-authored-kind="insert"]') ??
             []),
         ].map((node) => node.textContent ?? ''),
         text: block?.textContent ?? '',
       };
-    });
+    }, BROWSER_HANDLE_KEY);
 
   await page.keyboard.type('w');
   const firstPaint = await capturePaint();

@@ -266,6 +266,7 @@
         "typecheck:partition:diff",
         "typecheck:partition:dom",
         "typecheck:partition:history",
+        "typecheck:partition:react",
         "typecheck:partition:yjs"
       ],
       "inputs": [
@@ -289,6 +290,7 @@
       "dependsOn": [
         "typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:dom",
         "typecheck:partition:history",
         "typecheck:partition:testing"
       ],

@@ -287,6 +287,14 @@ export const getProjectedSelectionActionFromMoveCommand = ({
     };
   }
 
+  if (command.axis === 'line-boundary') {
+    return {
+      axis: 'line',
+      direction: command.reverse ? 'backward' : 'forward',
+      kind: 'move',
+    };
+  }
+
   const direction = command.reverse
     ? isRTL
       ? 'forward'

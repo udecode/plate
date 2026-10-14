@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   attachPageScreenshot,
   openExample,
   recordBrowserRuntimeErrors,
@@ -52,7 +53,8 @@ test.describe('Plite app example routes', () => {
         await expect
           .poll(() =>
             editor.root.evaluate(
-              (element) => typeof (element as any).__pliteBrowserHandle
+              (element, key) => typeof (element as any)[key],
+              BROWSER_HANDLE_KEY
             )
           )
           .toBe('object');

@@ -230,8 +230,8 @@ editor.update.link.unwrap({ split: true });
 | Update | Description |
 | --- | --- |
 | `editor.update.link.insert(node, options?)` | Inserts a link node; returns `true`, or `undefined` when the URL is not allowed or the node cannot be inserted. |
-| `editor.update.link.unwrap(options?)` | Unwraps matching links; `split` limits the update to the selected part. |
-| `editor.update.link.upsert(options)` | Prepares URL input, then inserts or updates a link at the selection; returns `true`, or `undefined` when the URL is not allowed or there is no selection to link. |
+| `editor.update.link.unwrap(options?)` | Unwraps matching links; with `split`, unlinks only the selected text, or the whole link at a caret; returns `true`, or `undefined` when no link was removed. |
+| `editor.update.link.upsert(options)` | Prepares URL input, then inserts or updates a link at the selection. Over selected text that crosses or touches a link's edge or covers whole links, it unlinks only the selected part of each link and links the selection; a selection inside one link updates that link. Returns `true` when the link lands, or `undefined` when the URL is not allowed, there is no selection, an expanded selection outside a link holds no text, or a link cannot go there, such as in a code block or over a mention. A call that returns `undefined` over selected text may still have unlinked the selected part of an old link. |
 | `editor.update.link.upsertText(options)` | Replaces the text of the link above the selection. |
 | `editor.update.link.wrap(options)` | Wraps the selected text in a link; returns `true`, or `undefined` when the URL is not allowed or nothing was wrapped. |
 
@@ -239,7 +239,7 @@ editor.update.link.unwrap({ split: true });
 
 ```tsx
 if (!editor.update.link.upsert({ url })) {
-  // The URL is not allowed, or there is no selection.
+  // The URL is not allowed, there is no selection, or a link cannot go there.
 }
 ```
 
@@ -274,6 +274,36 @@ Options for creating a new link node.
     An array of text nodes that represent the link content.
   </APIItem>
 </APIOptions>
+</API>
+
+## API Reference
+
+### `getLinkHref`
+
+Returns the href a link may navigate to. The link feature runs the same check before it renders an `href`. Copied UI that renders a stored address as a link, such as a tag chip, calls it to link only what a link would.
+
+```tsx
+import { getLinkHref } from 'platejs';
+import { LinkPlugin, usePluginStore } from 'platejs/react';
+
+const allowedSchemes = usePluginStore(LinkPlugin, 'allowedSchemes');
+const href = getLinkHref(url, { allowedSchemes });
+```
+
+`usePluginStore` throws when the editor does not install `LinkPlugin`. Code that may run without it checks `editor.plugin(LinkPlugin).installed` first. When link is installed, it reads the store in a child component, because a hook cannot run conditionally. Otherwise it calls `getLinkHref(url)` for the default schemes.
+
+<API name="getLinkHref">
+<APIParameters>
+  <APIItem name="url" type="string">
+    The stored or typed address. Surrounding spaces are trimmed. An address that starts with `//` or holds a backslash or a control character, such as a tab, is refused.
+  </APIItem>
+  <APIItem name="options.allowedSchemes" type="readonly string[]" optional>
+    Schemes allowed besides relative URLs. Defaults to `['http', 'https', 'mailto', 'tel']`. Pass `LinkPlugin`'s `allowedSchemes` when the editor installs it. Script-capable schemes such as `javascript:` and `data:` are always refused.
+  </APIItem>
+</APIParameters>
+<APIReturns type="string | undefined">
+  The trimmed href, or `undefined` when the address is refused or malformed, such as `https://` with no host.
+</APIReturns>
 </API>
 
 ## Registry link UI

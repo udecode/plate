@@ -3,13 +3,16 @@ import {
   configureAuthoredView,
   getAuthoredViewCommit,
   readAuthoredView,
-  subscribeAuthoredFragment,
   withAuthoredUpdateView,
   withAuthoredViewRead,
 } from './core/authored-runtime';
 import { isOwnedJsonValue } from './core/clone';
 import { createCommandDispatch } from './core/command-registry';
 import { getEditorCommitSnapshot } from './core/commit';
+import {
+  type AdmittedDocument,
+  admitEditorDocument,
+} from './core/document-admission';
 import {
   EDITOR_ROOT_SNAPSHOT_FIELDS,
   type EditorDocumentShapeIssue,
@@ -106,7 +109,7 @@ import { withImplicitRangeRoot } from './internal/root-location';
 type ViewState = {
   editor: Editor | null;
   composing: boolean;
-  document: EditorDocumentValue | undefined;
+  document: AdmittedDocument | undefined;
   focused: boolean;
   readOnly: boolean;
   root: RootKey;
@@ -876,9 +879,9 @@ const withViewTransaction = <V extends Value>(
           )(props, options);
         })) as typeof transaction.nodes.unset,
       unwrap: (options?: { at?: NodeSelection | NodeTarget }) =>
-        runImplicitSelectionMutation(options, () => {
-          transaction.nodes.unwrap(options);
-        }),
+        runImplicitSelectionMutation(options, () =>
+          transaction.nodes.unwrap(options)
+        ) ?? false,
       wrap: (
         element: ElementIn<V>,
         options?: { at?: NodeSelection | NodeTarget }
@@ -1176,9 +1179,8 @@ const createViewRuntime = <V extends Value>(
           change
         );
       };
-      return (
-        subscribeAuthoredFragment(getViewEditor() ?? editor, notify) ??
-        baseRuntime.subscribe((_snapshot, sourceChange) => notify(sourceChange))
+      return baseRuntime.subscribe((_snapshot, sourceChange) =>
+        notify(sourceChange)
       );
     },
     subscribeCommit: (listener) => {
@@ -1200,10 +1202,7 @@ const createViewRuntime = <V extends Value>(
           )
         );
       };
-      return (
-        subscribeAuthoredFragment(getViewEditor() ?? editor, notify) ??
-        baseRuntime.subscribeCommit(notify)
-      );
+      return baseRuntime.subscribeCommit(notify);
     },
     subscribeSource: (source, listener) => {
       if (viewState.document) return () => {};
@@ -1225,9 +1224,8 @@ const createViewRuntime = <V extends Value>(
           change
         );
       };
-      return (
-        subscribeAuthoredFragment(getViewEditor() ?? editor, notify) ??
-        baseRuntime.subscribe((_snapshot, sourceChange) => notify(sourceChange))
+      return baseRuntime.subscribe((_snapshot, sourceChange) =>
+        notify(sourceChange)
       );
     },
     string: (...args) =>
@@ -1288,7 +1286,10 @@ export const createEditorViewRuntime = <
     TPlugins
   >;
   const sourceView = VIEW_STATES.get(getEditorRuntime(sourceEditor));
-  const document = options.document ?? sourceView?.document;
+  const document = options.document
+    ? admitEditorDocument(getEditorRuntimeOwner(sourceEditor), options.document)
+        .document
+    : sourceView?.document;
 
   if (document) {
     if (options.authored) {

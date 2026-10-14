@@ -1,13 +1,12 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { schema } from '../core';
+import { createEditor, schema } from '../core';
 import {
   BaseParagraphPlugin,
   type RenderElementProps,
   definePlugin,
 } from '../lib';
-import { createStaticEditor } from './editor/withStatic';
 import { pipeRenderElementStatic } from './pipeRenderElementStatic.internal';
 
 describe('pipeRenderElementStatic', () => {
@@ -20,7 +19,7 @@ describe('pipeRenderElementStatic', () => {
       component: 'article',
     });
     const renderElement = mock(() => <mark data-kind="fallback" />);
-    const editor = createStaticEditor({
+    const editor = createEditor({
       plugins: [ParagraphPlugin],
     });
     const markup = ReactDOMServer.renderToStaticMarkup(
@@ -55,7 +54,7 @@ describe('pipeRenderElementStatic', () => {
       },
       component: 'article',
     });
-    const editor = createStaticEditor({ plugins: [ElementPlugin] });
+    const editor = createEditor({ plugins: [ElementPlugin] });
     const markup = ReactDOMServer.renderToStaticMarkup(
       pipeRenderElementStatic(editor)({
         attributes: { 'data-editor-node': 'element' },
@@ -79,7 +78,7 @@ describe('pipeRenderElementStatic', () => {
 
   it('uses the fallback renderElement prop when there is no matching element plugin', () => {
     let fallbackCalled = false;
-    const editor = createStaticEditor();
+    const editor = createEditor();
     const result = pipeRenderElementStatic(editor, {
       renderElement: ({ children }) => {
         fallbackCalled = true;
@@ -115,7 +114,7 @@ describe('pipeRenderElementStatic', () => {
         afterNodeChildren: () => <aside data-role="root" />,
       },
     });
-    const editor = createStaticEditor({
+    const editor = createEditor({
       plugins: [RootPlugin],
     });
     const markup = ReactDOMServer.renderToStaticMarkup(
@@ -145,7 +144,7 @@ describe('pipeRenderElementStatic', () => {
         afterNodeChildren: React.memo(() => <aside data-role="memo" />),
       },
     });
-    const editor = createStaticEditor({
+    const editor = createEditor({
       plugins: [RootPlugin],
     });
     const markup = ReactDOMServer.renderToStaticMarkup(

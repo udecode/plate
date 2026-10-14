@@ -153,6 +153,11 @@ const BaseCodeDrawingPlugin = definePlugin('codeDrawing', {
     },
   },
 });
+const BaseExcalidrawPlugin = definePlugin('excalidraw', {
+  schema: {
+    element: { properties: { data: property.json() }, void: 'block' },
+  },
+});
 const BaseTableCellPlugin = definePlugin('tableCell', {
   dependencies: [BaseParagraphPlugin],
   schema: ({ plugins }) => ({
@@ -193,7 +198,11 @@ const BaseIndentPlugin = definePlugin('indent', {
   schema: {
     properties: {
       indent: schema.elementProperty(property.number(), {
-        target: target.elements([BaseParagraphPlugin, BaseDetailsPlugin]),
+        target: target.elements([
+          BaseParagraphPlugin,
+          BaseDetailsPlugin,
+          BaseExcalidrawPlugin,
+        ]),
       }),
     },
   },
@@ -244,6 +253,23 @@ const BaseElementIdPlugin = definePlugin('elementId', {
     },
   },
 });
+const SidebarPlugin = definePlugin('sidebar', {
+  dependencies: [BaseParagraphPlugin],
+  schema: ({ plugins }) => ({
+    element: {
+      contentRoots: {
+        body: {
+          content: plugins.blockContent({
+            default: BaseParagraphPlugin,
+            min: 1,
+          }),
+          ownership: 'exclusive',
+        },
+      },
+      void: 'block',
+    },
+  }),
+});
 const plugins = [
   BaseParagraphPlugin,
   BaseDetailsPlugin,
@@ -258,6 +284,7 @@ const plugins = [
   BaseImagePlugin,
   BaseMediaEmbedPlugin,
   BaseCodeDrawingPlugin,
+  BaseExcalidrawPlugin,
   BaseTablePlugin,
   BaseIndentPlugin,
   BaseListPlugin,
@@ -997,6 +1024,122 @@ describe('migratePlateV54 AST contracts', () => {
     expect(result.children[1]).not.toHaveProperty('columnWidths');
   });
 
+  it('drops a legacy drawing width the target does not declare', () => {
+    const { editor, migrations } = createMigrationEditor();
+    const result = migrateDocument(
+      {
+        children: [
+          { children: [{ text: '' }], type: 'excalidraw', width: '50%' },
+        ],
+      },
+      { editor, migrations }
+    ).document;
+
+    expect(result.children).toEqual([
+      { children: [{ text: '' }], type: 'excalidraw' },
+    ]);
+  });
+
+  it('keeps a drawing width the target declares only outside the primary root', () => {
+    const SidebarDrawingWidthPlugin = definePlugin('sidebarDrawingWidth', {
+      schema: {
+        properties: {
+          width: schema.elementProperty(property.string(), {
+            target: target.and(
+              target.element(BaseExcalidrawPlugin),
+              target.not(target.root())
+            ),
+          }),
+        },
+      },
+    });
+    const migrations = defineDocumentMigrations({
+      plugins: [...plugins, SidebarPlugin, SidebarDrawingWidthPlugin],
+      schema: MigrationSchema,
+      steps: { 54: migrateV54 },
+    });
+    const sidebar = {
+      childRoots: { body: 'sidebar' },
+      children: [{ text: '' }],
+      type: 'sidebar',
+    };
+    const drawing = {
+      children: [{ text: '' }],
+      type: 'excalidraw',
+      width: '50%',
+    };
+    const result = migrateDocument(
+      { children: [sidebar, drawing], roots: { sidebar: [drawing] } },
+      { migrations }
+    ).document;
+
+    expect(result).toEqual({
+      children: [sidebar, { children: [{ text: '' }], type: 'excalidraw' }],
+      roots: { sidebar: [drawing] },
+    });
+  });
+
+  it('keeps a media name the target declares only under one parent', () => {
+    const ColumnImageNamePlugin = definePlugin('columnImageName', {
+      schema: {
+        properties: {
+          name: schema.elementProperty(property.string(), {
+            target: target.and(
+              target.element(BaseImagePlugin),
+              target.parent(target.element(BaseColumnItemPlugin))
+            ),
+          }),
+        },
+      },
+    });
+    const migrations = defineDocumentMigrations({
+      plugins: [...plugins, ColumnImageNamePlugin],
+      schema: MigrationSchema,
+      steps: { 54: migrateV54 },
+    });
+    const image = {
+      children: [{ text: '' }],
+      name: 'photo.png',
+      type: 'image',
+      url: 'https://example.com/photo.png',
+    };
+    const secondColumn = {
+      children: [{ children: [{ text: '' }], type: 'paragraph' }],
+      type: 'column',
+      width: '50%',
+    };
+    const result = migrateDocument(
+      {
+        children: [
+          {
+            children: [
+              { children: [image], type: 'column', width: '50%' },
+              secondColumn,
+            ],
+            type: 'columnGroup',
+          },
+          image,
+        ],
+      },
+      { migrations }
+    ).document;
+
+    expect(result.children).toEqual([
+      {
+        children: [
+          { children: [image], type: 'column', width: '50%' },
+          secondColumn,
+        ],
+        type: 'columnGroup',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'image',
+        url: 'https://example.com/photo.png',
+      },
+    ]);
+  });
+
   it('converts nested flat Toggles into semantic Details without crossing a shallower sibling', () => {
     const { editor, migrations } = createMigrationEditor();
     const result = migrateDocument(
@@ -1147,6 +1290,120 @@ describe('migratePlateV54 AST contracts', () => {
     expect(result.children[0].children[1]?.children[1]).not.toHaveProperty(
       'indent'
     );
+  });
+
+  it('keeps a drawing width the target declares under Details in a converted Toggle body', () => {
+    const DetailsDrawingWidthPlugin = definePlugin('detailsDrawingWidth', {
+      schema: {
+        properties: {
+          width: schema.elementProperty(property.string(), {
+            target: target.and(
+              target.element(BaseExcalidrawPlugin),
+              target.parent(target.element(BaseDetailsPlugin))
+            ),
+          }),
+        },
+      },
+    });
+    const migrations = defineDocumentMigrations({
+      plugins: [...plugins, DetailsDrawingWidthPlugin],
+      schema: MigrationSchema,
+      steps: { 54: migrateV54 },
+    });
+    const result = migrateDocument(
+      {
+        children: [
+          { children: [{ text: 'Title' }], type: 'toggle' },
+          {
+            children: [{ text: '' }],
+            indent: 1,
+            type: 'excalidraw',
+            width: '50%',
+          },
+          { children: [{ text: '' }], type: 'excalidraw', width: '50%' },
+        ],
+      },
+      { migrations }
+    ).document;
+
+    expect(result.children).toEqual([
+      {
+        children: [
+          { children: [{ text: 'Title' }], type: 'summary' },
+          {
+            children: [{ text: '' }],
+            indent: 0,
+            type: 'excalidraw',
+            width: '50%',
+          },
+        ],
+        type: 'details',
+      },
+      { children: [{ text: '' }], type: 'excalidraw' },
+    ]);
+  });
+
+  it('converts a Toggle outside the primary root whose Details property is root-scoped and summary property is Details-scoped', () => {
+    const ScopedTogglePropertiesPlugin = definePlugin(
+      'scopedToggleProperties',
+      {
+        schema: {
+          properties: {
+            accent: schema.elementProperty(property.string(), {
+              target: target.and(
+                target.element(BaseDetailsPlugin),
+                target.not(target.root())
+              ),
+            }),
+            heading: schema.elementProperty(property.string(), {
+              target: target.and(
+                target.element(BaseDetailsSummaryPlugin),
+                target.parent(target.element(BaseDetailsPlugin))
+              ),
+            }),
+          },
+        },
+      }
+    );
+    const migrations = defineDocumentMigrations({
+      plugins: [...plugins, SidebarPlugin, ScopedTogglePropertiesPlugin],
+      schema: MigrationSchema,
+      steps: { 54: migrateV54 },
+    });
+    const result = migrateDocument(
+      {
+        children: [
+          {
+            childRoots: { body: 'sidebar' },
+            children: [{ text: '' }],
+            type: 'sidebar',
+          },
+        ],
+        roots: {
+          sidebar: [
+            {
+              accent: 'blue',
+              children: [{ text: 'Title' }],
+              heading: 'h3',
+              type: 'toggle',
+            },
+          ],
+        },
+      },
+      { migrations }
+    ).document;
+
+    expect(result.roots).toEqual({
+      sidebar: [
+        {
+          accent: 'blue',
+          children: [
+            { children: [{ text: 'Title' }], heading: 'h3', type: 'summary' },
+          ],
+          type: 'details',
+        },
+      ],
+    });
   });
 
   it('rejects undeclared roots and fails closed on unsafe Toggle input', () => {

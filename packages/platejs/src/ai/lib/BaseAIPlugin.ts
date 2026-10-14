@@ -13,6 +13,8 @@ import {
   property,
   type Range,
   target,
+  txLocate,
+  locateAt,
 } from '../../core';
 
 export const BaseAIPlugin = definePlugin(PLUGINS.ai, {
@@ -165,49 +167,55 @@ export const BaseAIPlugin = definePlugin(PLUGINS.ai, {
     },
   },
   update: ({ schema: { key }, tx }) => ({
-    insertNodes: (
-      nodes: Descendant[],
-      {
-        target: innerTarget,
-      }: {
-        target?: Path;
-      } = {}
-    ) => {
-      const selection = tx.selection();
-      const selectedNodePath = tx.selection.nodes().at(-1)?.[1];
-      const at = innerTarget ?? selectedNodePath ?? selection?.focus.path;
-
-      if (!at) return;
-
-      const point = tx.points.end(at);
-
-      if (!point) return;
-
-      tx.nodes.insert(
-        nodes.map((node) => ({
-          ...node,
-          [key]: true,
-        })),
+    insertNodes: txLocate(
+      locateAt(1, 'target'),
+      (
+        nodes: Descendant[],
         {
-          at: point,
-          select: true,
-        }
-      );
-      tx.selection.collapse({ edge: 'end' });
-    },
-    removeMarks: ({ at = [] }: { at?: Location } = {}) => {
-      tx.nodes.unset(key, {
-        at,
-        match: (node) => Boolean(Reflect.get(node, key)),
-      });
-    },
-    removeNodes: ({ at = [] }: { at?: Path } = {}) => {
+          target: innerTarget,
+        }: {
+          target?: Path;
+        } = {}
+      ) => {
+        const selection = tx.selection();
+        const selectedNodePath = tx.selection.nodes().at(-1)?.[1];
+        const at = innerTarget ?? selectedNodePath ?? selection?.focus.path;
+
+        if (!at) return;
+
+        const point = tx.points.end(at);
+
+        if (!point) return;
+
+        tx.nodes.insert(
+          nodes.map((node) => ({
+            ...node,
+            [key]: true,
+          })),
+          {
+            at: point,
+            select: true,
+          }
+        );
+        tx.selection.collapse({ edge: 'end' });
+      }
+    ),
+    removeMarks: txLocate(
+      locateAt(0),
+      ({ at = [] }: { at?: Location } = {}) => {
+        tx.nodes.unset(key, {
+          at,
+          match: (node) => Boolean(Reflect.get(node, key)),
+        });
+      }
+    ),
+    removeNodes: txLocate(locateAt(0), ({ at = [] }: { at?: Path } = {}) => {
       tx.nodes.remove({
         at,
         match: (node) =>
           !ElementApi.isElement(node) && Boolean(Reflect.get(node, key)),
       });
-    },
+    }),
   }),
 });
 

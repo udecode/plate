@@ -9,7 +9,7 @@ title: 退出块结构
 ## 功能特性
 
 - 通过快捷键从嵌套块结构（如代码块、表格、列）中退出
-- 根据块层级自动确定合适的退出位置
+- 插入外层容器声明的默认块，例如在列中插入段落
 
 </PackageInfo>
 
@@ -96,7 +96,7 @@ const editor = createEditor({
 
 ### `ExitBreakPlugin`
 
-提供自动退出嵌套块结构的转换功能。该插件通过查找允许标准块兄弟节点的首个祖先节点来确定合适的退出位置。
+提供通过 [`tx.break.exit`](/docs/api/editor-transforms#txbreakexitoptions) 退出当前块结构的快捷键。
 
 <API name="ExitBreakPlugin">
 <APIOptions>
@@ -118,16 +118,18 @@ const editor = createEditor({
 
 ## 工作原理
 
-退出块功能使用已编译的元素内容语法来确定退出嵌套结构时段落可以插入的位置。
+退出块功能读取每个容器的内容语法。它从光标所在的块向上遍历，停在第一个其父节点能容纳文档默认块的祖先。插入的块是该父节点自己的默认块。
 
 ### 退出点判定
 
 触发退出块时：
 
-1. 从当前文本块开始（例如表格单元格内的段落）
-2. 向上遍历文档树检查每个祖先节点
-3. 找到父节点允许段落子节点的第一个祖先节点
-4. 在该祖先节点同级位置插入新段落
+1. 从光标所在的块开始（例如表格单元格内的段落）
+2. 向上遍历祖先节点
+3. 停在第一个直接位于文档中、或其父节点能容纳文档默认块（例如段落）的祖先
+4. 在该祖先旁插入其父节点的默认块
+
+如果该父节点没有声明默认块，或已无法容纳更多块，则不做任何修改。
 
 ### 示例
 
@@ -156,7 +158,7 @@ const editor = createEditor({
 </columnGroup>
 
 // 第二次退出
-<columnGroup>                            // ← 退出点（根允许块）
+<columnGroup>                            // ← 退出点（顶层块）
   <column>                               // 分组只允许列
     <table>                              
       <tableRow>
@@ -173,7 +175,7 @@ const editor = createEditor({
 
 ### 自定义插件配置
 
-声明每个自定义元素允许的子内容：
+声明每个自定义元素允许的子内容及其默认值。退出会越过其父节点无法容纳段落的祖先（例如行中的单元格），并插入落点父节点声明的默认块：
 
 ```tsx
 import { schema } from 'platejs';
@@ -190,7 +192,10 @@ const CustomTablePlugin = definePlugin('table', {
 const CustomTableRowPlugin = definePlugin('tr', {
   schema: {
     element: {
-      content: schema.content.types(['td', 'th'], { min: 1 }),
+      content: schema.content.types(['td', 'th'], {
+        default: { type: 'td' },
+        min: 1,
+      }),
     },
   },
 });
@@ -198,7 +203,10 @@ const CustomTableRowPlugin = definePlugin('tr', {
 const CustomTableCellPlugin = definePlugin('td', {
   schema: {
     element: {
-      content: schema.content.group('block', { min: 1 }),
+      content: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
     },
   },
 });

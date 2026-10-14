@@ -26,6 +26,7 @@ export type PluginFormatSchemaView = Pick<
   | 'getElementBehavior'
   | 'getProperty'
   | 'getVocabulary'
+  | 'property'
 >;
 
 export type PluginFormatContext<

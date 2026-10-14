@@ -77,6 +77,9 @@ const nextConfig = (_phase: string) => {
     distDir:
       process.env.PLATE_WWW_DIST_DIR ?? (isPliteMode ? '.next-plite' : '.next'),
     allowedDevOrigins: ['udecodes-mac-studio.tail49dee1.ts.net'],
+    env: {
+      PLATE_WWW_DRIVE: isDev && process.env.PLATE_WWW_DRIVE_DIR ? '1' : '',
+    },
     typescript: {
       ignoreBuildErrors: true,
     },

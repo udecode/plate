@@ -113,16 +113,14 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
   root: fixedRoot,
 }: UseEditorHistoryOptions<TRoot> = {}): EditorHistoryController {
   if (fixedRoot === MAIN_ROOT_KEY) {
-    throw new Error(
-      '[Plite] Omit root to bind history to the primary document.'
-    );
+    throw new Error('Omit root to bind history to the primary document.');
   }
 
   const context = useOptionalPliteRuntimeContext();
   const source =
     providedEditor ??
     context?.runtime ??
-    failInvariant('usePliteHistory requires an editor or Plite provider.');
+    failInvariant('useEditorHistory requires an editor or an EditorRoot.');
   const historyRootSelector = useMemo(
     () => createHistoryRootSelector(toInternalRoot(source.read.view.root())),
     [source]
@@ -139,7 +137,7 @@ export function useEditorHistory<const TRoot extends RootKey = RootKey>({
     () =>
       providedEditor ??
       createPliteRootEditor(
-        context ?? failInvariant('Expected a Plite runtime.'),
+        context ?? failInvariant('Expected an editor runtime.'),
         publicRoot
       ),
     [context, providedEditor, publicRoot]

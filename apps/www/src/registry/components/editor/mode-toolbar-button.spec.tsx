@@ -45,14 +45,19 @@ it('shows Viewing while readonly even when the suggestion preference is retained
       </EditorRoot>
     </TooltipProvider>
   );
-  fireEvent.keyDown(view.getByRole('button', { name: 'Editing' }), {
-    key: 'Enter',
-  });
+  fireEvent.keyDown(
+    view.getByRole('button', { name: 'Editing mode: Editing' }),
+    {
+      key: 'Enter',
+    }
+  );
   fireEvent.click(
     await view.findByRole('menuitemradio', { name: 'Suggestion' })
   );
   await waitFor(() =>
-    expect(view.getByRole('button', { name: 'Suggestion' })).toBeTruthy()
+    expect(
+      view.getByRole('button', { name: 'Editing mode: Suggestion' })
+    ).toBeTruthy()
   );
   expect(mountedEditor).toBeDefined();
   expect(mountedEditor!.plugin(SuggestionPlugin).read.mode()).toBe(
@@ -60,14 +65,19 @@ it('shows Viewing while readonly even when the suggestion preference is retained
   );
   act(() => setEditorReadOnly(mountedEditor!, true));
   await waitFor(() =>
-    expect(view.getByRole('button', { name: 'Viewing' })).toBeTruthy()
+    expect(
+      view.getByRole('button', { name: 'Editing mode: Viewing' })
+    ).toBeTruthy()
   );
-  expect(mountedEditor!.plugin(AuthoredPlugin).read.view().intent).toBe(
-    'propose'
-  );
-  fireEvent.keyDown(view.getByRole('button', { name: 'Viewing' }), {
-    key: 'Enter',
+  expect(mountedEditor!.plugin(AuthoredPlugin).read.view()).toEqual({
+    intent: 'propose',
   });
+  fireEvent.keyDown(
+    view.getByRole('button', { name: 'Editing mode: Viewing' }),
+    {
+      key: 'Enter',
+    }
+  );
   await waitFor(() =>
     expect(
       view
@@ -77,7 +87,9 @@ it('shows Viewing while readonly even when the suggestion preference is retained
   );
   act(() => setEditorReadOnly(mountedEditor!, false));
   await waitFor(() =>
-    expect(view.getByRole('button', { name: 'Suggestion' })).toBeTruthy()
+    expect(
+      view.getByRole('button', { name: 'Editing mode: Suggestion' })
+    ).toBeTruthy()
   );
   view.unmount();
 });
@@ -95,7 +107,6 @@ it('tracks authored view policy changes without a document commit', async () => 
   const pending = editor.read.authored.changes().items.map((change) => ({
     authorId: change.authorId,
     id: change.id,
-    status: change.status,
   }));
   const documentCommits: boolean[] = [];
   const stop = editor.subscribeCommit((commit) =>
@@ -115,20 +126,26 @@ it('tracks authored view policy changes without a document commit', async () => 
 
   expect(mountedEditor).toBeDefined();
   await waitFor(() =>
-    expect(view.getByRole('button', { name: 'Suggestion' })).toBeTruthy()
+    expect(
+      view.getByRole('button', { name: 'Editing mode: Suggestion' })
+    ).toBeTruthy()
   );
   expect(view.getByRole('textbox')).toHaveTextContent('Keep draft');
   documentCommits.length = 0;
-  fireEvent.keyDown(view.getByRole('button', { name: 'Suggestion' }), {
-    key: 'Enter',
-  });
+  fireEvent.keyDown(
+    view.getByRole('button', { name: 'Editing mode: Suggestion' }),
+    {
+      key: 'Enter',
+    }
+  );
   fireEvent.click(await view.findByRole('menuitemradio', { name: 'Editing' }));
   await waitFor(() =>
-    expect(view.getByRole('button', { name: 'Editing' })).toBeTruthy()
+    expect(
+      view.getByRole('button', { name: 'Editing mode: Editing' })
+    ).toBeTruthy()
   );
   expect(mountedEditor!.plugin(AuthoredPlugin).read.view()).toEqual({
     intent: 'edit',
-    projection: 'markup',
   });
   expect(view.getByRole('textbox')).toHaveTextContent('Keep draft');
   expect(JSON.stringify(editor.read.value())).toBe(before);
@@ -136,7 +153,6 @@ it('tracks authored view policy changes without a document commit', async () => 
     editor.read.authored.changes().items.map((change) => ({
       authorId: change.authorId,
       id: change.id,
-      status: change.status,
     }))
   ).toEqual(pending);
   expect(documentCommits).not.toContain(true);
@@ -160,9 +176,12 @@ it('offers Suggestion mode in an editor with no user', async () => {
     </TooltipProvider>
   );
 
-  fireEvent.keyDown(view.getByRole('button', { name: 'Editing' }), {
-    key: 'Enter',
-  });
+  fireEvent.keyDown(
+    view.getByRole('button', { name: 'Editing mode: Editing' }),
+    {
+      key: 'Enter',
+    }
+  );
   expect(
     view.queryByRole('menuitemradio', { name: 'Suggestion' })
   ).not.toBeNull();

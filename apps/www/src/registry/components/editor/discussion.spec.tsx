@@ -62,7 +62,7 @@ afterAll(() => {
 });
 
 describe('DiscussionSlots', () => {
-  it('maps a decided conversation through a pending prepend without rescanning it for an unrelated edit', async () => {
+  it('maps a suggestion’s conversation through a pending prepend without rescanning it for an unrelated edit', async () => {
     const { DiscussionSlots } = await import(
       `./discussion?test=${Math.random().toString(36).slice(2)}`
     );
@@ -90,16 +90,11 @@ describe('DiscussionSlots', () => {
       changeId = tx.authored.propose();
       tx.text.insert(' noted', { at: { path: [1, 0], offset: 6 } });
     });
-    const authored = model.plugin(AuthoredPlugin);
-    authored.update.decide({
-      action: 'accept',
-      selection: authored.read.select({ ids: [changeId] }),
-    });
     const comments = model.plugin(CommentsPlugin).api;
     const id = applied(
       await comments.createThread({
         target: { type: 'change', id: changeId },
-        body: createCommentValue('Retained review'),
+        body: createCommentValue('Review note'),
       })
     );
     let mountedEditor!: ReturnType<typeof useEditor>;
@@ -110,7 +105,7 @@ describe('DiscussionSlots', () => {
     const view = render(
       <EditorRoot
         editor={model}
-        authored={{ intent: 'edit', projection: 'markup' }}
+        authored={{ intent: 'edit' }}
       >
         <CaptureEditor />
         <EditorContainer>
@@ -121,7 +116,7 @@ describe('DiscussionSlots', () => {
     const trigger = () =>
       view
         .getAllByRole('button', {
-          name: 'Open 1 discussion item for this block',
+          name: 'Open 2 discussion items for this block',
         })
         .find(
           (button) =>
@@ -153,10 +148,11 @@ describe('DiscussionSlots', () => {
     expect(trigger().parentElement?.parentElement?.textContent).toBe(
       'Target noted'
     );
-    expect(reads).toBeGreaterThan(0);
     fireEvent.click(trigger());
-    expect(view.getByText('Retained review')).toBeTruthy();
-    expect(view.getByRole('textbox', { name: 'Reply to thread' })).toBeTruthy();
+    expect(view.getByText('Review note')).toBeTruthy();
+    expect(
+      view.getByRole('textbox', { name: 'Comment on suggestion' })
+    ).toBeTruthy();
     expect(comments.getThread(id)?.target).toEqual({
       type: 'change',
       id: changeId,
@@ -196,7 +192,7 @@ describe('DiscussionSlots', () => {
         name: 'Open 1 discussion item for this block',
       });
       expect(trigger.parentElement?.parentElement?.textContent).toBe(
-        'Review this'
+        'Review this carefully'
       );
       fireEvent.click(trigger);
       expect(
@@ -329,13 +325,18 @@ describe('DiscussionSlots', () => {
     act(() => editor.update.text.insert('pq', { at: point(1) }));
     await waitFor(() => expect(changes).toHaveLength(1));
     const { id, revision } = changes[0];
+    const inserted = (offset: number) => ({ path: [0, 1], offset });
     act(() =>
-      editor.update.text.delete({ at: { anchor: point(2), focus: point(3) } })
+      editor.update.text.delete({
+        at: { anchor: inserted(1), focus: inserted(2) },
+      })
     );
-    await waitFor(() => expect(changes[0].revision).toBeGreaterThan(revision));
+    await waitFor(() => expect(changes[0].revision).not.toBe(revision));
     expect(changes[0].id).toBe(id);
     act(() =>
-      editor.update.text.delete({ at: { anchor: point(1), focus: point(2) } })
+      editor.update.text.delete({
+        at: { anchor: inserted(0), focus: inserted(1) },
+      })
     );
     await waitFor(() => expect(changes).toHaveLength(0));
     mounted.unmount();
@@ -376,7 +377,7 @@ describe('DiscussionSlots', () => {
             onClick={() =>
               editor
                 .plugin(AuthoredPlugin)
-                .api.setView({ intent: 'edit', projection: 'accepted' })
+                .api.setView({ preview: 'accepted' })
             }
             type="button"
           >
@@ -386,7 +387,7 @@ describe('DiscussionSlots', () => {
             onClick={() =>
               editor
                 .plugin(AuthoredPlugin)
-                .api.setView({ intent: 'edit', projection: 'markup' })
+                .api.setView({ intent: 'edit' })
             }
             type="button"
           >
@@ -430,14 +431,12 @@ describe('DiscussionSlots', () => {
     expect(
       view.getByRole('button', { name: 'Accept suggestion' })
     ).toBeTruthy();
-    expect(restored.plugin(AuthoredPlugin).read.change(changeId)?.status).toBe(
-      'pending'
-    );
+    expect(restored.plugin(AuthoredPlugin).read.change(changeId)).not.toBeNull();
     view.unmount();
   });
 
   it.each(['accept', 'reject'] as const)(
-    'preserves the same rich replies across a native %s decision and history',
+    'hides a suggestion’s replies once a native %s decides it, and brings them back on undo',
     async (action) => {
       const { DiscussionSlots } = await import(
         `./discussion?test=${Math.random().toString(36).slice(2)}`
@@ -543,29 +542,14 @@ describe('DiscussionSlots', () => {
       );
       await waitFor(() =>
         expect(
-          view.container.querySelector(`[data-comment-thread="${id}"] strong`)
-            ?.textContent
-        ).toBe('Original rich reply')
+          view.container.querySelector(`[data-comment-thread="${id}"]`)
+        ).toBeNull()
       );
+      expect(
+        view.queryAllByRole('button', { name: /discussion item/ })
+      ).toEqual([]);
       expect(comments.getSnapshot()).toBe(snapshot);
-      fireEvent.click(
-        await view.findByRole('button', {
-          name: 'Open 1 discussion item for this block',
-        })
-      );
-      expect(
-        view.container.querySelector(`[data-comment-thread="${id}"] strong`)
-          ?.textContent
-      ).toBe('Original rich reply');
-      expect(
-        view.queryByRole('button', { name: 'Accept suggestion' })
-      ).toBeNull();
       expect(comments.getThread(id)).toBe(record);
-      fireEvent.click(
-        view.getByRole('button', {
-          name: 'Close 1 discussion item for this block',
-        })
-      );
       await act(async () => {
         editor.api.history.undo();
       });
@@ -580,27 +564,23 @@ describe('DiscussionSlots', () => {
             ?.textContent
         ).toBe('Original rich reply')
       );
-      expect(comments.getThread(id)).toBe(record);
+      expect(
+        view.getByRole('button', {
+          name: action === 'accept' ? 'Accept suggestion' : 'Reject suggestion',
+        })
+      ).toBeTruthy();
       expect(
         view.container.querySelector(`[data-comment-thread="${resolvedId}"]`)
       ).toBeNull();
-      expect(
-        comments.getThreads().every(({ target }) => target.type === 'change')
-      ).toBe(true);
       await act(async () => {
         editor.api.history.redo();
       });
       await waitFor(() =>
         expect(
-          view.container.querySelector(`[data-comment-thread="${id}"] strong`)
-            ?.textContent
-        ).toBe('Original rich reply')
+          view.container.querySelector(`[data-comment-thread="${id}"]`)
+        ).toBeNull()
       );
       expect(comments.getSnapshot()).toBe(snapshot);
-      expect(
-        view.container.querySelector(`[data-comment-thread="${id}"] strong`)
-          ?.textContent
-      ).toBe('Original rich reply');
       expect(comments.getThread(resolvedId)?.resolution).not.toBeNull();
       expect(comments.getThread(id)).toBe(record);
       view.unmount();
@@ -776,7 +756,7 @@ it('discovers a suggestion after the first 200 without materializing a global ca
   });
   expect(triggers).toHaveLength(201);
   expect(triggers[200].parentElement?.parentElement?.textContent).toBe(
-    'Block 200'
+    'Block 200!'
   );
   view.unmount();
 });
@@ -789,20 +769,30 @@ it('bounds the number of mounted review cards in a busy block', async () => {
     decorate: { attributes: commentDecorationAttributes },
     slots: DiscussionSlots,
   });
+  // 25 insertions apart from each other, so each is its own card.
   const editor = createEditor({
     plugins: [...SuggestionKit, plugin],
     userId: 'alice',
-    initialValue: [{ type: 'paragraph', children: [{ text: 'Base' }] }],
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: Array.from({ length: 25 }, (_, index) => [
+          { text: ' ' },
+          {
+            authored: [
+              {
+                at: index + 1,
+                author: 'alice',
+                change: `busy:${index}`,
+                kind: 'insert',
+              },
+            ],
+            text: String(index % 10),
+          },
+        ]).flat(),
+      },
+    ],
   });
-
-  for (let index = 0; index < 25; index++) {
-    editor.update((tx) => {
-      tx.authored.propose();
-      tx.text.insert(String(index % 10), {
-        at: { path: [0, 0], offset: 4 + index },
-      });
-    });
-  }
 
   editor.plugin(SuggestionPlugin).api.setMode('suggesting');
   const view = render(
@@ -865,7 +855,7 @@ it('keeps a blocked decision open and applies related changes only after an expl
   });
   editor.update((tx) => {
     tx.authored.propose();
-    tx.text.insert('!', { at: { path: [0, 0], offset: 7 } });
+    tx.text.insert('!', { at: { path: [0, 1], offset: 3 } });
   });
 
   editor.plugin(SuggestionPlugin).api.setMode('suggesting');
@@ -895,7 +885,7 @@ it('keeps a blocked decision open and applies related changes only after an expl
   fireEvent.click(view.getByRole('button', { name: 'Reject related' }));
   await waitFor(() =>
     expect(
-      editor.plugin(AuthoredPlugin).read.changes({ status: 'pending' }).items
+      editor.plugin(AuthoredPlugin).read.changes().items
     ).toEqual([])
   );
   view.unmount();
@@ -1331,7 +1321,7 @@ it('hands the document and comments to the next user through a keyed editor', as
 
     return (
       <EditorRoot
-        authored={{ intent: 'edit', projection: 'markup' }}
+        authored={{ intent: 'edit' }}
         editor={editor}
         key={editor.id}
       >
@@ -1398,7 +1388,7 @@ it('hands the document and comments to the next user through a keyed editor', as
   expect({
     authors: mounted
       .plugin(AuthoredPlugin)
-      .read.changes({ status: 'pending' })
+      .read.changes()
       .items.map(({ authorId }) => authorId)
       .sort(),
     text: mounted.read.text.string([]),
@@ -1409,7 +1399,7 @@ it('hands the document and comments to the next user through a keyed editor', as
     userId: mounted.userId,
   }).toEqual({
     authors: ['alice', 'bob'],
-    text: '!Review this sentence.',
+    text: '?!Review this carefully sentence.',
     threads: [{ target: { id: changeId, type: 'change' }, userId: 'alice' }],
     userId: 'bob',
   });

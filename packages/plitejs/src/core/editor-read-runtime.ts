@@ -72,7 +72,7 @@ const getQueryRoot = (
   const root = getCommonLocationRoot(...locations);
 
   if (root === null) {
-    throw new Error('Cannot read a Plite location across multiple roots.');
+    throw new Error('Cannot read an editor location across multiple roots.');
   }
 
   return (

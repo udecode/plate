@@ -41,13 +41,13 @@ type ResolvedPluginApiContribution =
     }>
   | Readonly<{
       factory: (context: object) => object;
-      kind: 'plate';
+      kind: 'definition';
       value: Readonly<Record<PropertyKey, unknown>>;
     }>;
 
 export type ResolvedPluginCapabilityContribution = Readonly<{
   factory: (context: object) => unknown;
-  kind: 'native' | 'plate';
+  kind: 'native' | 'definition';
 }>;
 
 type ResolvedPluginCapabilities = Readonly<{
@@ -198,7 +198,7 @@ const assertNativeTopology = (
     )
   ) {
     throw new Error(
-      `Plate plugin "${plugin.name}" adopted a Plite plugin with invalid ${field}.`
+      `Plate plugin "${plugin.name}" adopted a native plugin with invalid ${field}.`
     );
   }
 
@@ -212,7 +212,7 @@ const assertNativeTopology = (
     )
   ) {
     throw new Error(
-      `Plate plugin "${plugin.name}" must declare the same ${field} as its adopted Plite plugin.`
+      `Plate plugin "${plugin.name}" must declare the same ${field} as its adopted native plugin.`
     );
   }
 };
@@ -327,7 +327,7 @@ const applyStage = (
     contribution.name !== plugin.name
   ) {
     throw new Error(
-      `Plate plugin "${plugin.name}" cannot adopt Plite plugin "${contribution.name}". Their names must match.`
+      `Plate plugin "${plugin.name}" cannot adopt native plugin "${contribution.name}". Their names must match.`
     );
   }
 
@@ -437,7 +437,7 @@ const applyStage = (
         ...apiContributions,
         Object.freeze({
           factory: api,
-          kind: 'plate' as const,
+          kind: 'definition' as const,
           value: snapshot,
         }),
       ]);
@@ -460,7 +460,9 @@ const applyStage = (
       ...readContributions,
       Object.freeze({
         factory: read,
-        kind: isRawPliteDescriptor ? ('native' as const) : ('plate' as const),
+        kind: isRawPliteDescriptor
+          ? ('native' as const)
+          : ('definition' as const),
       }),
     ]);
     if (!isRawPliteDescriptor) {
@@ -476,7 +478,9 @@ const applyStage = (
       ...updateContributions,
       Object.freeze({
         factory: update,
-        kind: isRawPliteDescriptor ? ('native' as const) : ('plate' as const),
+        kind: isRawPliteDescriptor
+          ? ('native' as const)
+          : ('definition' as const),
       }),
     ]);
     if (!isRawPliteDescriptor) {

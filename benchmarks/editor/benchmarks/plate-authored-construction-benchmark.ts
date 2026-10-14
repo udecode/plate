@@ -1,7 +1,7 @@
 import { cpus, loadavg } from 'node:os';
 
 import { createEditor, definePlugin, type Value } from 'platejs';
-import { AuthoredPlugin, isAuthoredEditor } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import { authored } from 'plitejs/authored';
 
 import { writeBenchmarkResult } from './benchmark-artifact';
@@ -35,19 +35,14 @@ const busyWait = (milliseconds: number) => {
   while (now < end) now = performance.now();
 };
 
-const NativeAuthored = authored({ authorId: 'alice', retainHistory: false });
+const NativeAuthored = authored({ authorId: 'alice' });
 
 const slowAuthored = (milliseconds: number) =>
-  definePlugin('authored', { initialState: { retainHistory: false } }).extend(
-    ({ store }) => {
-      busyWait(milliseconds);
+  definePlugin('authored', {}).extend(() => {
+    busyWait(milliseconds);
 
-      return authored({
-        authorId: 'alice',
-        retainHistory: store.get('retainHistory'),
-      });
-    }
-  );
+    return authored({ authorId: 'alice' });
+  });
 
 const SlowAuthored = {
   large: slowAuthored(cohorts.large.knownBadMs),
@@ -97,9 +92,8 @@ const build = (cohort: CohortName, arm: ArmName, initialValue: Value) => {
   const elapsed = performance.now() - start;
   const blocks = editor.read.value().children.length;
 
-  if (!isAuthoredEditor(editor)) {
-    throw new Error(`${arm}: the authored capability is not installed`);
-  }
+  // Throws when the authored plugin is not installed.
+  editor.read.authored.view();
   if (blocks !== cohorts[cohort].blocks) {
     throw new Error(`${arm}: built ${blocks} blocks for the ${cohort} cohort`);
   }

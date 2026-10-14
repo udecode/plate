@@ -54,6 +54,11 @@ const legacyCodeDrawingView = (value: unknown) => {
   return CODE_DRAWING_VIEWS.has(normalized) ? normalized : undefined;
 };
 
+type NodeContext = Readonly<{
+  ancestors: readonly string[];
+  root: string | null;
+}>;
+
 const safeInteger = (value: unknown) => {
   if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
 
@@ -75,10 +80,12 @@ export const migratePlateV54Ast = ({
 
     return descriptor?.type;
   };
-  const ownsProperty = (type: string, key: string) =>
+  const ownsProperty = (type: string, key: string, context: NodeContext) =>
     conversionTarget.schema.property({
+      ancestors: context.ancestors,
       key,
       placement: 'element',
+      root: context.root,
       type,
     }) !== null;
   const dateType = resolveElementType('date');
@@ -94,6 +101,7 @@ export const migratePlateV54Ast = ({
       .filter((type): type is string => type !== undefined)
   );
   const codeDrawingType = resolveElementType('codeDrawing');
+  const excalidrawType = resolveElementType('excalidraw');
   const equationTypes = new Set(
     ['equation', 'inlineEquation']
       .map(resolveElementType)
@@ -150,7 +158,8 @@ export const migratePlateV54Ast = ({
   const convertLegacyToggle = (
     input: Element,
     body: readonly Descendant[],
-    location: string
+    location: string,
+    context: NodeContext
   ): Element => {
     if (!detailsType || !detailsSummaryType) {
       throw new Error(
@@ -168,12 +177,16 @@ export const migratePlateV54Ast = ({
       'listStyle',
       'listType',
     ]);
+    const summaryContext = {
+      ancestors: [detailsType, ...context.ancestors],
+      root: context.root,
+    };
 
     for (const [key, value] of Object.entries(input)) {
       if (key === 'children' || key === 'type') continue;
 
       if (detailsStyleProperties.has(key)) {
-        if (!ownsProperty(detailsType, key)) {
+        if (!ownsProperty(detailsType, key, context)) {
           throw new Error(
             `Plate v54 migration cannot convert legacy Toggle at ${location}: Details does not own property "${key}".`
           );
@@ -181,11 +194,11 @@ export const migratePlateV54Ast = ({
         detailsProperties[key] = value;
         continue;
       }
-      if (ownsProperty(detailsSummaryType, key)) {
+      if (ownsProperty(detailsSummaryType, key, summaryContext)) {
         summaryProperties[key] = value;
         continue;
       }
-      if (ownsProperty(detailsType, key)) {
+      if (ownsProperty(detailsType, key, context)) {
         detailsProperties[key] = value;
         continue;
       }
@@ -244,16 +257,22 @@ export const migratePlateV54Ast = ({
     return candidate;
   };
 
-  let migrateChildren: (children: Value, location: string) => Value;
+  let migrateChildren: (
+    children: Value,
+    location: string,
+    context: NodeContext
+  ) => Value;
   const migrateDescendant = (
     input: Descendant,
-    location: string
+    location: string,
+    context: NodeContext
   ): Descendant => {
     if (TextApi.isText(input)) return input;
 
     const children = migrateChildren(
       input.children as Value,
-      `${location}.children`
+      `${location}.children`,
+      { ancestors: [input.type, ...context.ancestors], root: context.root }
     );
     let element: Element =
       children === input.children ? input : { ...input, children };
@@ -456,10 +475,18 @@ export const migratePlateV54Ast = ({
     if (
       mediaTypes.has(element.type) &&
       element.type !== fileType &&
-      !ownsProperty(element.type, 'name') &&
-      Object.hasOwn(element, 'name')
+      Object.hasOwn(element, 'name') &&
+      !ownsProperty(element.type, 'name', context)
     ) {
       without('name');
+    }
+
+    if (
+      element.type === excalidrawType &&
+      Object.hasOwn(element, 'width') &&
+      !ownsProperty(element.type, 'width', context)
+    ) {
+      without('width');
     }
 
     if (codeDrawingType && element.type === codeDrawingType) {
@@ -532,7 +559,7 @@ export const migratePlateV54Ast = ({
       without('texExpression');
     }
 
-    if (ownsProperty(element.type, 'listStart')) {
+    if (ownsProperty(element.type, 'listStart', context)) {
       for (const key of ['listRestart', 'listStart'] as const) {
         if (!Object.hasOwn(element, key)) continue;
 
@@ -547,7 +574,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      ownsProperty(element.type, 'indent') &&
+      ownsProperty(element.type, 'indent', context) &&
       Object.hasOwn(element, 'indent')
     ) {
       const indent = safeInteger(properties().indent);
@@ -560,7 +587,7 @@ export const migratePlateV54Ast = ({
     }
 
     if (
-      ownsProperty(element.type, 'textAlign') &&
+      ownsProperty(element.type, 'textAlign', context) &&
       Object.hasOwn(element, 'textAlign') &&
       !TEXT_ALIGNMENTS.has(String(properties().textAlign))
     ) {
@@ -701,7 +728,11 @@ export const migratePlateV54Ast = ({
     return element;
   };
 
-  migrateChildren = (children: Value, location: string): Value => {
+  migrateChildren = (
+    children: Value,
+    location: string,
+    context: NodeContext
+  ): Value => {
     let changed = false;
     const next: Descendant[] = [];
 
@@ -738,16 +769,23 @@ export const migratePlateV54Ast = ({
         const converted = convertLegacyToggle(
           child,
           body,
-          `${location}.${index}`
+          `${location}.${index}`,
+          context
         );
 
-        next.push(migrateDescendant(converted, `${location}.${index}`));
+        next.push(
+          migrateDescendant(converted, `${location}.${index}`, context)
+        );
         changed = true;
         index = end - 1;
         continue;
       }
 
-      const migrated = migrateDescendant(child, `${location}.${index}`);
+      const migrated = migrateDescendant(
+        child,
+        `${location}.${index}`,
+        context
+      );
 
       if (migrated !== child) changed = true;
       next.push(migrated);
@@ -755,14 +793,20 @@ export const migratePlateV54Ast = ({
 
     return changed ? (next as Value) : children;
   };
-  const children = migrateChildren(document.children, 'main');
+  const children = migrateChildren(document.children, 'main', {
+    ancestors: [],
+    root: null,
+  });
   let { roots } = document;
 
   if (roots) {
     let changed = false;
     const next = Object.fromEntries(
       Object.entries(roots).map(([root, rootChildren]) => {
-        const migrated = migrateChildren(rootChildren, `roots.${root}`);
+        const migrated = migrateChildren(rootChildren, `roots.${root}`, {
+          ancestors: [],
+          root,
+        });
 
         if (migrated !== rootChildren) changed = true;
 

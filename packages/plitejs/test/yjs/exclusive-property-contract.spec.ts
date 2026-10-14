@@ -39,23 +39,76 @@ const ScriptSchema = defineEditorSchema('schema:yjs-script-schema', {
   version: 1,
 });
 
+type Root = 'main' | 'sidebar';
+
+const inRoot = (root: Root) => (root === 'main' ? {} : { root });
+
+const proposing = (editor: AnyEditor, root: Root = 'main') =>
+  createEditorView(editor, {
+    ...inRoot(root),
+    authored: { intent: 'propose' },
+  });
+
+const editing = (editor: AnyEditor, root: Root = 'main') =>
+  createEditorView(editor, { ...inRoot(root), authored: { intent: 'edit' } });
+
+const proposed = (editor: AnyEditor, root: Root = 'main') =>
+  createEditorView(editor, {
+    ...inRoot(root),
+    authored: { preview: 'proposed' },
+  }).read.children();
+
+// Earlier writes can split the first block into several leaves. A range
+// starts in the leaf after a boundary and ends in the leaf before it.
+const pointAt = (
+  editor: AnyEditor,
+  offset: number,
+  edge: 'end' | 'start'
+) => {
+  let rest = offset;
+
+  for (const [index, leaf] of editor.read.children()[0].children.entries()) {
+    if (rest < leaf.text.length || (edge === 'end' && rest === leaf.text.length)) {
+      return { offset: rest, path: [0, index] };
+    }
+    rest -= leaf.text.length;
+  }
+
+  throw new Error(`No offset ${offset} in the first block.`);
+};
+
+const selectRange = (editor: AnyEditor, offsets: readonly [number, number]) =>
+  editor.update.selection.set(
+    SelectionApi.text({
+      anchor: pointAt(editor, offsets[0], 'start'),
+      focus: pointAt(editor, offsets[1], 'end'),
+    })
+  );
+
 const selectText = (
   editor: AnyEditor,
   key: 'bold' | 'subscript' | 'superscript',
   offsets: readonly [number, number]
 ) => {
-  editor.update.selection.set(
-    SelectionApi.text({
-      anchor: { offset: offsets[0], path: [0, 0] },
-      focus: { offset: offsets[1], path: [0, 0] },
-    })
-  );
+  selectRange(editor, offsets);
   editor.update.marks.toggle(key);
 };
 
+const decide = (
+  editor: AnyEditor,
+  action: 'accept' | 'reject',
+  keep: (authorId: string) => boolean = () => true
+) =>
+  editor.update.authored.decide({
+    action,
+    changes: editor.read.authored
+      .changes()
+      .items.filter((change) => keep(change.authorId)),
+  }).status;
+
 describe('plitejs/yjs exclusive property contract', () => {
   for (const root of ['main', 'sidebar'] as const) {
-    it(`preserves a causally later accepted exclusive mark on overlapping text in ${root}`, () => {
+    it(`keeps one script position when a later plain write overlaps a proposal in ${root}`, () => {
       const children =
         root === 'main' ? [paragraph('ABCD')] : [paragraph('Unchanged')];
       const roots =
@@ -63,29 +116,16 @@ describe('plitejs/yjs exclusive property contract', () => {
       const make = (authorId: string, seedUpdate?: Uint8Array) =>
         createYjsPeerWithEditor(
           createEditor({
-            plugins: [
-              ScriptSchema,
-              authored({ authorId, retainHistory: true }),
-              history(),
-            ],
+            plugins: [ScriptSchema, authored({ authorId }), history()],
             initialValue: { children, ...(roots ? { roots } : {}) },
           }),
           { children, roots, clientId: authorId, seedUpdate }
         );
       const alice = make('alice');
       const bob = make('bob', Y.encodeStateAsUpdate(alice.doc));
-      const proposal = createEditorView(alice.editor, {
-        ...(root === 'main' ? {} : { root }),
-        authored: { intent: 'propose', projection: 'proposed' },
-      });
-      const accepted = createEditorView(bob.editor, {
-        ...(root === 'main' ? {} : { root }),
-        authored: { intent: 'edit', projection: 'accepted' },
-      });
-      selectText(proposal, 'subscript', [0, 3]);
-      const { id } = alice.editor.read.authored.changes().items[0];
+      selectText(proposing(alice.editor, root), 'subscript', [0, 3]);
       Y.applyUpdate(bob.doc, Y.encodeStateAsUpdate(alice.doc));
-      selectText(accepted, 'superscript', [1, 4]);
+      selectText(editing(bob.editor, root), 'superscript', [1, 4]);
       Y.applyUpdate(alice.doc, Y.encodeStateAsUpdate(bob.doc));
       const expected = [
         {
@@ -96,46 +136,18 @@ describe('plitejs/yjs exclusive property contract', () => {
           ],
         },
       ];
-      assert.deepEqual(proposal.read.children(), expected);
-      const acceptedId = alice.editor.read.authored.changes({
-        authorId: 'bob',
-      }).items[0].id;
-      const decision = {
-        action: 'accept' as const,
-        selection: alice.editor.read.authored.select({ ids: [id] }),
-      };
-      const blocked = {
-        status: 'blocked',
-        ids: [id],
-        dependencies: [],
-        dependants: [],
-        conflicts: [acceptedId],
-      };
-      const before = JSON.stringify(alice.editor.read.value());
-      assert.deepEqual(alice.editor.read.authored.preview(decision), blocked);
-      assert.deepEqual(alice.editor.update.authored.decide(decision), blocked);
-      assert.equal(JSON.stringify(alice.editor.read.value()), before);
+      assert.deepEqual(proposed(alice.editor, root), expected);
+      assert.deepEqual(proposed(bob.editor, root), expected);
       const restored = createEditor({
         plugins: [ScriptSchema, authored({ authorId: 'reviewer' })],
-        initialValue: JSON.parse(before),
+        initialValue: JSON.parse(JSON.stringify(alice.editor.read.value())),
       });
-      assert.deepEqual(
-        createEditorView(restored, {
-          ...(root === 'main' ? {} : { root }),
-          authored: { intent: 'propose', projection: 'proposed' },
-        }).read.children(),
-        expected
-      );
+      assert.deepEqual(proposed(restored, root), expected);
       bob.editor.api.history.undo();
       Y.applyUpdate(alice.doc, Y.encodeStateAsUpdate(bob.doc));
-      assert.equal(
-        alice.editor.update.authored.decide({
-          action: 'accept',
-          selection: alice.editor.read.authored.select({ ids: [id] }),
-        }).status,
-        'applied'
-      );
-      assert.deepEqual(proposal.read.children(), [
+      assert.equal(decide(alice.editor, 'accept'), 'applied');
+      assert.deepEqual(alice.editor.read.authored.changes().items, []);
+      assert.deepEqual(proposed(alice.editor, root), [
         {
           type: 'paragraph',
           children: [{ text: 'ABC', subscript: true }, { text: 'D' }],
@@ -149,7 +161,7 @@ describe('plitejs/yjs exclusive property contract', () => {
   }
   for (const root of ['main', 'sidebar'] as const) {
     for (const relation of ['overlap', 'disjoint', 'independent'] as const) {
-      it(`checks later accepted text scopes before accepting a ${relation} proposal in ${root}`, () => {
+      it(`accepts a proposal after a later ${relation} plain write in ${root}`, () => {
         const children =
           root === 'main' ? [paragraph('ABCD')] : [paragraph('Unchanged')];
         const roots =
@@ -157,65 +169,24 @@ describe('plitejs/yjs exclusive property contract', () => {
         const make = (authorId: string, seedUpdate?: Uint8Array) =>
           createYjsPeerWithEditor(
             createEditor({
-              plugins: [authored({ authorId, retainHistory: true }), history()],
+              plugins: [authored({ authorId }), history()],
               initialValue: { children, ...(roots ? { roots } : {}) },
             }),
             { children, roots, clientId: authorId, seedUpdate }
           );
         const alice = make('alice');
         const bob = make('bob', Y.encodeStateAsUpdate(alice.doc));
-        const proposal = createEditorView(alice.editor, {
-          ...(root === 'main' ? {} : { root }),
-          authored: { intent: 'propose', projection: 'proposed' },
-        });
-        const accepted = createEditorView(bob.editor, {
-          ...(root === 'main' ? {} : { root }),
-          authored: { intent: 'edit', projection: 'accepted' },
-        });
-        proposal.update.selection.set(
-          SelectionApi.text({
-            anchor: { path: [0, 0], offset: 0 },
-            focus: { path: [0, 0], offset: 2 },
-          })
-        );
+        const proposal = proposing(alice.editor, root);
+        selectRange(proposal, [0, 2]);
         proposal.update.marks.add('tone', 'proposal');
-        const { id } = alice.editor.read.authored.changes().items[0];
         Y.applyUpdate(bob.doc, Y.encodeStateAsUpdate(alice.doc));
-        accepted.update.selection.set(
-          SelectionApi.text({
-            anchor: { path: [0, 0], offset: relation === 'disjoint' ? 2 : 1 },
-            focus: { path: [0, 0], offset: 4 },
-          })
-        );
-        accepted.update.marks.add(
+        const plain = editing(bob.editor, root);
+        selectRange(plain, [relation === 'disjoint' ? 2 : 1, 4]);
+        plain.update.marks.add(
           relation === 'independent' ? 'italic' : 'tone',
           relation === 'independent' ? true : 'accepted'
         );
         Y.applyUpdate(alice.doc, Y.encodeStateAsUpdate(bob.doc));
-        const acceptedId = alice.editor.read.authored.changes({
-          authorId: 'bob',
-        }).items[0].id;
-        const before = JSON.stringify(alice.editor.read.value());
-        const decision = {
-          action: 'accept' as const,
-          selection: alice.editor.read.authored.select({ ids: [id] }),
-        };
-        const result =
-          relation === 'overlap'
-            ? {
-                status: 'blocked',
-                ids: [id],
-                dependencies: [],
-                dependants: [],
-                conflicts: [acceptedId],
-              }
-            : { status: 'applied', ids: [id] };
-        assert.deepEqual(alice.editor.read.authored.preview(decision), result);
-        assert.deepEqual(alice.editor.update.authored.decide(decision), result);
-        if (relation === 'overlap') {
-          assert.equal(JSON.stringify(alice.editor.read.value()), before);
-        }
-        Y.applyUpdate(bob.doc, Y.encodeStateAsUpdate(alice.doc));
         const expected =
           relation === 'overlap'
             ? [
@@ -232,20 +203,22 @@ describe('plitejs/yjs exclusive property contract', () => {
                   { text: 'B', tone: 'proposal', italic: true },
                   { text: 'CD', italic: true },
                 ];
-        assert.deepEqual(proposal.read.children(), [
+        const saved = JSON.parse(JSON.stringify(alice.editor.read.value()));
+        assert.deepEqual(proposed(alice.editor, root), [
+          { type: 'paragraph', children: expected },
+        ]);
+        assert.equal(decide(alice.editor, 'accept'), 'applied');
+        Y.applyUpdate(bob.doc, Y.encodeStateAsUpdate(alice.doc));
+        assert.deepEqual(proposed(bob.editor, root), [
           { type: 'paragraph', children: expected },
         ]);
         const restored = createEditor({
           plugins: [authored({ authorId: 'reviewer' })],
-          initialValue: JSON.parse(JSON.stringify(alice.editor.read.value())),
+          initialValue: saved,
         });
-        assert.deepEqual(
-          createEditorView(restored, {
-            ...(root === 'main' ? {} : { root }),
-            authored: { intent: 'propose', projection: 'proposed' },
-          }).read.children(),
-          proposal.read.children()
-        );
+        assert.deepEqual(proposed(restored, root), [
+          { type: 'paragraph', children: expected },
+        ]);
         alice.cleanup();
         bob.cleanup();
         alice.doc.destroy();
@@ -253,7 +226,7 @@ describe('plitejs/yjs exclusive property contract', () => {
       });
     }
   }
-  for (const mode of ['accepted', 'proposed'] as const) {
+  for (const mode of ['edit', 'propose'] as const) {
     for (const root of ['main', 'sidebar'] as const) {
       it(`preserves three authors through every ${mode} delivery order and a move in ${root}`, () => {
         const children =
@@ -267,11 +240,7 @@ describe('plitejs/yjs exclusive property contract', () => {
         const make = (authorId: string, seedUpdate?: Uint8Array) => {
           const peer = createYjsPeerWithEditor(
             createEditor({
-              plugins: [
-                ScriptSchema,
-                authored({ authorId, retainHistory: true }),
-                history(),
-              ],
+              plugins: [ScriptSchema, authored({ authorId }), history()],
               initialValue: { children, ...(roots ? { roots } : {}) },
             }),
             { children, roots, clientId: authorId, seedUpdate }
@@ -279,11 +248,8 @@ describe('plitejs/yjs exclusive property contract', () => {
           return {
             ...peer,
             view: createEditorView(peer.editor, {
-              ...(root === 'main' ? {} : { root }),
-              authored:
-                mode === 'proposed'
-                  ? { intent: 'propose', projection: 'proposed' }
-                  : { intent: 'edit', projection: 'accepted' },
+              ...inRoot(root),
+              authored: { intent: mode },
             }),
           };
         };
@@ -296,7 +262,7 @@ describe('plitejs/yjs exclusive property contract', () => {
         selectText(alice.view, 'subscript', [0, 3]);
         selectText(bob.view, 'superscript', [1, 4]);
         selectText(carol.view, 'bold', [2, 4]);
-        const alone = authors.map((peer) => peer.view.read.children());
+        const alone = authors.map((peer) => proposed(peer.editor, root));
         const updates = authors.map((peer) =>
           Y.encodeStateAsUpdate(peer.doc, vector)
         );
@@ -322,45 +288,30 @@ describe('plitejs/yjs exclusive property contract', () => {
         for (const [index, order] of orders.entries()) {
           const peer = make(`reader-${index}`, seed);
           for (const author of order) Y.applyUpdate(peer.doc, updates[author]);
-          assert.deepEqual(peer.view.read.children(), expected);
-          assert.equal(peer.editor.read.authored.changes().items.length, 3);
+          assert.deepEqual(proposed(peer.editor, root), expected);
+          assert.equal(
+            peer.editor.read.authored.changes().items.length,
+            mode === 'propose' ? 3 : 0
+          );
           const saved = JSON.parse(JSON.stringify(peer.editor.read.value()));
-          const restore = () => {
-            const editor = createEditor({
-              plugins: [
-                ScriptSchema,
-                authored({ authorId: 'reviewer', retainHistory: true }),
-              ],
+          const restore = () =>
+            createEditor({
+              plugins: [ScriptSchema, authored({ authorId: 'reviewer' })],
               initialValue: saved,
             });
-            return {
-              editor,
-              view: createEditorView(editor, {
-                ...(root === 'main' ? {} : { root }),
-                authored: { intent: 'propose', projection: 'proposed' },
-              }),
-            };
-          };
-          assert.deepEqual(restore().view.read.children(), expected);
-          if (mode === 'proposed') {
+          assert.deepEqual(proposed(restore(), root), expected);
+          if (mode === 'propose') {
             for (const [kept, authorId] of [
               'alice',
               'bob',
               'carol',
             ].entries()) {
               const reviewer = restore();
-              const ids = reviewer.editor.read.authored
-                .changes()
-                .items.filter((change) => change.authorId !== authorId)
-                .map((change) => change.id);
               assert.equal(
-                reviewer.editor.update.authored.decide({
-                  action: 'reject',
-                  selection: reviewer.editor.read.authored.select({ ids }),
-                }).status,
+                decide(reviewer, 'reject', (author) => author !== authorId),
                 'applied'
               );
-              assert.deepEqual(reviewer.view.read.children(), alone[kept]);
+              assert.deepEqual(proposed(reviewer, root), alone[kept]);
             }
           }
           const follower = make(`follower-${index}`, seed);
@@ -369,25 +320,24 @@ describe('plitejs/yjs exclusive property contract', () => {
           }
           peer.view.update.nodes.move({ at: [0], to: [2] });
           Y.applyUpdate(follower.doc, Y.encodeStateAsUpdate(peer.doc));
-          assert.deepEqual(peer.view.read.children(), [
+          assert.deepEqual(proposed(peer.editor, root), [
             expected[1],
             expected[0],
           ]);
           assert.deepEqual(
-            follower.view.read.children(),
-            peer.view.read.children()
+            proposed(follower.editor, root),
+            proposed(peer.editor, root)
           );
           peer.view.update.text.insert('!', {
             at: { path: [1, 0], offset: 0 },
           });
           Y.applyUpdate(follower.doc, Y.encodeStateAsUpdate(peer.doc));
           assert.deepEqual(
-            follower.view.read.children(),
-            peer.view.read.children()
+            proposed(follower.editor, root),
+            proposed(peer.editor, root)
           );
           assert.equal(
-            peer.view.read
-              .children()[1]
+            proposed(peer.editor, root)[1]
               .children.map((node) => node.text)
               .join(''),
             '!ABCD'
@@ -404,144 +354,95 @@ describe('plitejs/yjs exclusive property contract', () => {
       });
     }
   }
-  for (const mode of ['ordinary', 'accepted', 'proposed'] as const) {
+  for (const mode of ['ordinary', 'edit', 'propose'] as const) {
     for (const range of mode === 'ordinary'
       ? (['full'] as const)
       : (['full', 'overlap'] as const)) {
       it(`converges concurrent ${mode} exclusive mark writes on ${range} ranges`, () => {
-        const a = createYjsPeerWithEditor(
-          createEditor({
-            plugins: [
-              ScriptSchema,
-              history(),
-              ...(mode === 'ordinary' ? [] : [authored({ authorId: 'alice' })]),
-            ],
-            initialValue: [paragraph('text')],
-          }),
-          {
-            children: [paragraph('text')],
-            clientId: 'a',
-          }
-        );
-        const b = createYjsPeerWithEditor(
-          createEditor({
-            plugins: [
-              ScriptSchema,
-              history(),
-              ...(mode === 'ordinary' ? [] : [authored({ authorId: 'bob' })]),
-            ],
-            initialValue: [paragraph('text')],
-          }),
-          {
-            children: [paragraph('text')],
-            clientId: 'b',
-            seedUpdate: Y.encodeStateAsUpdate(a.doc),
-          }
-        );
+        const make = (authorId: string, seedUpdate?: Uint8Array) =>
+          createYjsPeerWithEditor(
+            createEditor({
+              plugins: [
+                ScriptSchema,
+                history(),
+                ...(mode === 'ordinary' ? [] : [authored({ authorId })]),
+              ],
+              initialValue: [paragraph('text')],
+            }),
+            { children: [paragraph('text')], clientId: authorId, seedUpdate }
+          );
+        const a = make('alice');
+        const b = make('bob', Y.encodeStateAsUpdate(a.doc));
+        const read = (editor: AnyEditor) =>
+          mode === 'ordinary' ? editor.read.children() : proposed(editor);
+        const writer = (editor: AnyEditor) =>
+          mode === 'propose' ? proposing(editor) : editor;
 
-        const aView =
-          mode === 'proposed'
-            ? createEditorView(a.editor, {
-                authored: { intent: 'propose', projection: 'proposed' },
-              })
-            : a.editor;
-        const bView =
-          mode === 'proposed'
-            ? createEditorView(b.editor, {
-                authored: { intent: 'propose', projection: 'proposed' },
-              })
-            : b.editor;
-        selectText(aView, 'subscript', range === 'full' ? [0, 4] : [0, 3]);
-        selectText(bView, 'superscript', range === 'full' ? [0, 4] : [1, 4]);
-        const aOnly = aView.read.children();
-        const bOnly = bView.read.children();
+        selectText(
+          writer(a.editor),
+          'subscript',
+          range === 'full' ? [0, 4] : [0, 3]
+        );
+        selectText(
+          writer(b.editor),
+          'superscript',
+          range === 'full' ? [0, 4] : [1, 4]
+        );
+        const aOnly = read(a.editor);
+        const bOnly = read(b.editor);
         Y.applyUpdate(a.doc, Y.encodeStateAsUpdate(b.doc));
         Y.applyUpdate(b.doc, Y.encodeStateAsUpdate(a.doc));
 
-        const aText = aView.read.children()[0].children[0];
-        const bText = bView.read.children()[0].children[0];
-        const active = (text: typeof aText) =>
+        const expected = read(a.editor);
+        const active = (text: (typeof expected)[number]['children'][number]) =>
           ['subscript', 'superscript'].filter((key) =>
             Object.hasOwn(text, key)
           );
 
-        assert.deepEqual(aText, bText);
-        assert.deepEqual(aView.read.children(), bView.read.children());
-        assert.equal(aView.read.children().length, 1);
+        assert.deepEqual(read(b.editor), expected);
+        assert.equal(expected.length, 1);
         assert.equal(
-          aView.read
-            .children()[0]
-            .children.map((node) => node.text)
-            .join(''),
+          expected[0].children.map((node) => node.text).join(''),
           'text'
         );
-        for (const node of aView.read.children()[0].children) {
-          if (node.text) {
-            assert.equal(
-              active(node).length,
-              1,
-              JSON.stringify(aView.read.children())
-            );
-          }
+        for (const node of expected[0].children) {
+          assert.equal(active(node).length, 1, JSON.stringify(expected));
         }
-        assert.equal(active(aText).length, 1);
         const aSchema: EditorStateSchemaApi = a.editor.read.schema;
         const bSchema: EditorStateSchemaApi = b.editor.read.schema;
         aSchema.assertDocument(a.editor.read.value());
         bSchema.assertDocument(b.editor.read.value());
         if (mode !== 'ordinary') {
-          const expected = aView.read.children();
           for (const peer of [a, b]) {
             const saved = JSON.parse(JSON.stringify(peer.editor.read.value()));
-            const restored = createEditor({
-              plugins: [ScriptSchema, authored({ authorId: 'reviewer' })],
-              initialValue: saved,
-            });
-            const restoredView = createEditorView(restored, {
-              authored: { intent: 'propose', projection: 'proposed' },
-            });
-            assert.deepEqual(restoredView.read.children(), expected);
+            const restore = () =>
+              createEditor({
+                plugins: [ScriptSchema, authored({ authorId: 'reviewer' })],
+                initialValue: saved,
+              });
+            const restored = restore();
+            assert.deepEqual(proposed(restored), expected);
             const restoredSchema: EditorStateSchemaApi = restored.read.schema;
-            restoredSchema.assertDocument({
-              children: restoredView.read.children(),
-            });
-            if (mode === 'proposed') {
+            restoredSchema.assertDocument({ children: proposed(restored) });
+            if (mode === 'propose') {
               for (const authorId of ['alice', 'bob']) {
-                const reviewer = createEditor({
-                  plugins: [ScriptSchema, authored({ authorId: 'reviewer' })],
-                  initialValue: saved,
-                });
+                const reviewer = restore();
                 assert.equal(
-                  reviewer.update.authored.decide({
-                    action: 'reject',
-                    selection: reviewer.read.authored.select({ authorId }),
-                  }).status,
+                  decide(reviewer, 'reject', (author) => author === authorId),
                   'applied'
                 );
                 assert.deepEqual(
-                  createEditorView(reviewer, {
-                    authored: { intent: 'propose', projection: 'proposed' },
-                  }).read.children(),
+                  proposed(reviewer),
                   authorId === 'alice' ? bOnly : aOnly
                 );
               }
-              assert.equal(
-                restored.update.authored.decide({
-                  action: 'reject',
-                  selection: restored.read.authored.select({
-                    status: 'pending',
-                  }),
-                }).status,
-                'applied'
-              );
-              assert.deepEqual(restoredView.read.children(), [
-                paragraph('text'),
-              ]);
+              assert.equal(decide(restored, 'reject'), 'applied');
+              assert.deepEqual(proposed(restored), [paragraph('text')]);
             }
           }
           a.editor.api.history.undo();
-          assert.deepEqual(aView.read.children(), bOnly);
-          if (mode === 'accepted') {
+          assert.deepEqual(read(a.editor), bOnly);
+          if (mode === 'edit') {
             const selection = a.editor.read.selection();
             assert.ok(RangeApi.isRange(selection));
             assert.deepEqual(selection.anchor, { path: [0, 0], offset: 0 });
@@ -553,11 +454,11 @@ describe('plitejs/yjs exclusive property contract', () => {
             );
           }
           Y.applyUpdate(b.doc, Y.encodeStateAsUpdate(a.doc));
-          assert.deepEqual(bView.read.children(), bOnly);
+          assert.deepEqual(read(b.editor), bOnly);
           a.editor.api.history.redo();
-          assert.deepEqual(aView.read.children(), expected);
+          assert.deepEqual(read(a.editor), expected);
           Y.applyUpdate(b.doc, Y.encodeStateAsUpdate(a.doc));
-          assert.deepEqual(bView.read.children(), expected);
+          assert.deepEqual(read(b.editor), expected);
         }
         a.cleanup();
         b.cleanup();

@@ -158,7 +158,8 @@ test.describe('link URL policy', () => {
         focus: { offset: 4, path: [0, 0] },
       });
       await page
-        .locator('[data-slot="fixed-toolbar"] button:has(svg.lucide-link)')
+        .locator('[data-slot="fixed-toolbar"]')
+        .getByRole('button', { name: 'Link' })
         .click();
 
       const input = page.getByPlaceholder('Paste link').last();
@@ -194,13 +195,14 @@ test.describe('link URL policy', () => {
     const runtimeErrors = recordBrowserRuntimeErrors(page);
 
     try {
-      page.on('console', (message) => {
-        if (message.text().includes('CMDK-DEBUG')) console.log(message.text());
-      });
       const { editor, root } = await openEmptyLinkDemo(page, 'link-shortcut');
 
       await page.keyboard.type('docs');
-      await page.waitForTimeout(500); // CMDK-DEBUG
+      await root.getByText('docs', { exact: true }).dblclick();
+      await editor.assert.selection({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      });
       await page.keyboard.press('ControlOrMeta+k');
 
       await expect(page.getByPlaceholder('Paste link').last()).toBeFocused();

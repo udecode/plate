@@ -22,6 +22,9 @@
   "include": ["../src/migrations/**/*"],
   "references": [
     {
+      "path": "./authored.json"
+    },
+    {
       "path": "./core.json"
     }
   ]

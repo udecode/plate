@@ -15,8 +15,12 @@ import {
   type Path,
   type NodeInsertOptions,
   type Point,
+  txLocate,
+  txSelection,
+  locateAt,
 } from '../../../core';
 import { selectAfterInline } from '../../../internal/plugin/inlineInsertion';
+import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import type { ComboboxState } from '../../combobox';
 
 const NUMERIC_REF_REGEX = /^\d+$/;
@@ -52,8 +56,7 @@ export const BaseFootnoteDefinitionPlugin = definePlugin(
 
             if (!isNonBlankRef(ref)) return undefined;
 
-            const paragraphType =
-              registry.type(PLUGINS.paragraph) ?? 'paragraph';
+            const paragraphType = getMarkdownParagraphType(registry);
             const blocks: Descendant[] = [];
             let inline: Descendant[] = [];
             const flush = () => {
@@ -529,11 +532,14 @@ export const BaseFootnotePlugin = definePlugin('footnote', {
     };
 
     return {
-      createDefinition,
-      insert,
-      normalizeDuplicateDefinition,
-      selectDefinition,
-      selectReference,
+      createDefinition: txLocate(false, createDefinition),
+      insert: txLocate(locateAt(1), insert),
+      normalizeDuplicateDefinition: txLocate(
+        locateAt(0, 'path'),
+        normalizeDuplicateDefinition
+      ),
+      selectDefinition: txSelection(selectDefinition),
+      selectReference: txSelection(selectReference),
     };
   },
 }));

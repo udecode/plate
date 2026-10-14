@@ -1,9 +1,8 @@
 import { createElement } from 'react';
 
-import { schema, property } from '../core';
+import { createEditor, schema, property } from '../core';
 import { definePlugin } from '../lib/plugin';
 import { BaseParagraphPlugin } from '../lib/plugins';
-import { createStaticEditor } from './editor/withStatic';
 import { renderStaticHtml } from './renderStaticHtml';
 
 const getStringProp = (record: Record<string, unknown>, key: string) => {
@@ -63,7 +62,7 @@ const plugins = [
 
 describe('static HTML plugin node props', () => {
   it('omits interactive editor slots from static output', async () => {
-    const staticEditor = createStaticEditor({
+    const staticEditor = createEditor({
       initialValue: [
         { children: [{ text: 'Static content' }], type: 'paragraph' },
       ],
@@ -85,7 +84,7 @@ describe('static HTML plugin node props', () => {
   });
 
   it('renders a component declared by a Base plugin', async () => {
-    const staticEditor = createStaticEditor({
+    const staticEditor = createEditor({
       plugins: [
         definePlugin('staticCallout', {
           component: ({ attributes, children }) =>
@@ -118,7 +117,7 @@ describe('static HTML plugin node props', () => {
   });
 
   it('renders link props returned by plugin callbacks', async () => {
-    const staticEditor = createStaticEditor({
+    const staticEditor = createEditor({
       plugins,
       initialValue: [
         {
@@ -149,7 +148,7 @@ describe('static HTML plugin node props', () => {
   });
 
   it('renders image props returned by plugin callbacks', async () => {
-    const staticEditor = createStaticEditor({
+    const staticEditor = createEditor({
       plugins,
       initialValue: [
         {

@@ -108,7 +108,7 @@ export function EditorContentView<TExtra extends object>({
 
   if (!editor) {
     throw new Error(
-      'Editor not found. Please ensure that PlateContent is rendered below Plate.'
+      'Editor not found. Render EditorContent inside EditorRoot.'
     );
   }
 

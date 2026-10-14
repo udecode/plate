@@ -123,6 +123,50 @@ describe('generated editor schema contract', () => {
     assert.equal(JSON.stringify(createEditorSchemaContract(restored)), json);
   });
 
+  it('reads back the JSON copy of a contract with every void kind', () => {
+    const Editor = defineEditorSchema('schema:void-contract', {
+      elements: {
+        date: {
+          properties: { value: property.string({ required: true }) },
+          void: 'inline',
+        },
+        hr: { void: 'block' },
+        mention: {
+          properties: {
+            label: property.string(),
+            ref: property.string({ required: true }),
+          },
+          void: 'markable-inline',
+        },
+        paragraph: {
+          content: schema.content.any(
+            [
+              schema.content.text(),
+              schema.content.type('date'),
+              schema.content.type('mention'),
+            ],
+            { default: 'text', min: 1 }
+          ),
+        },
+      },
+      id: 'void-contract',
+      properties: [schema.textProperty('bold', property.boolean())],
+      root: schema.content.types(['hr', 'paragraph']),
+      unknown: 'reject',
+      version: 1,
+    });
+    const contract = createEditorSchemaContract(
+      compileEditorSchemaContributions([
+        { contribution: Editor.schema, pluginName: Editor.name },
+      ])
+    );
+
+    assert.deepEqual(
+      readEditorSchemaContract(JSON.parse(JSON.stringify(contract))),
+      contract
+    );
+  });
+
   it('rejects malformed, stale, and unknown contract formats', () => {
     const contract = createEditorSchemaContract(
       compileEditorSchemaContributions(records)

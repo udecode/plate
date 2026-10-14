@@ -19,6 +19,8 @@ import {
   type NodeKey,
   property,
   transferVeto,
+  txLocate,
+  locateAt,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
@@ -178,7 +180,7 @@ const initialState: UploadPluginState = {
 const uploadAdmissionEffect = defineEffect({
   collab: 'local',
   history: 'skip',
-  key: 'plate.upload.admission',
+  key: 'upload.admission',
 });
 
 const isUploadFileType = (value: string): value is UploadFileType =>
@@ -681,197 +683,200 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         },
       },
       update: ({ context: { afterCommit }, editor: updateEditor, tx }) => ({
-        submit: (
-          input: File[] | FileList,
-          options: UploadSubmitOptions = {}
-        ) => {
-          const files = Array.from(input);
-          if (files.length === 0 || updateEditor.read.view.isReadOnly()) {
-            return false;
-          }
-
-          const state = store.get();
-          const slot = 'slot' in options ? options.slot : undefined;
-          const slotEntry = slot
-            ? currentSlot(slot, undefined, updateEditor)
-            : undefined;
-
-          if (
-            slot &&
-            (!slotEntry ||
-              updateEditor.read.nodes.elementReadOnly({ at: slot }))
-          ) {
-            return false;
-          }
-
-          const reject = (failure: UploadFailure) => {
-            tx.effects.emit(uploadAdmissionEffect, null);
-            afterCommit(() => notifyFailure(failure));
-            return true;
-          };
-          const validation = validateFiles(files, state);
-          if (validation.error) {
-            return reject({ ...validation.error, phase: 'admission' });
-          }
-          const { client, getUrl } = state;
-          if (!client || !getUrl) {
-            return reject({
-              code: client ? 'missing-url-resolver' : 'missing-client',
-              files,
-              phase: 'configuration',
-            });
-          }
-
-          const uploads = files.map((file) => {
-            const fileType = validation.fileTypes.get(file);
-            const rule = fileType ? state.rules[fileType] : undefined;
-            if (!fileType || !rule) {
-              throw new Error(
-                'Validated upload file requires a configured rule.'
-              );
+        submit: txLocate(
+          locateAt(1, 'slot', 'at', 'after', 'before'),
+          (input: File[] | FileList, options: UploadSubmitOptions = {}) => {
+            const files = Array.from(input);
+            if (files.length === 0 || updateEditor.read.view.isReadOnly()) {
+              return false;
             }
 
-            return { file, kind: rule.kind };
-          });
+            const state = store.get();
+            const slot = 'slot' in options ? options.slot : undefined;
+            const slotEntry = slot
+              ? currentSlot(slot, undefined, updateEditor)
+              : undefined;
 
-          for (const { kind } of uploads) {
-            if (!destination(kind)) {
+            if (
+              slot &&
+              (!slotEntry ||
+                updateEditor.read.nodes.elementReadOnly({ at: slot }))
+            ) {
+              return false;
+            }
+
+            const reject = (failure: UploadFailure) => {
+              tx.effects.emit(uploadAdmissionEffect, null);
+              afterCommit(() => notifyFailure(failure));
+              return true;
+            };
+            const validation = validateFiles(files, state);
+            if (validation.error) {
+              return reject({ ...validation.error, phase: 'admission' });
+            }
+            const { client, getUrl } = state;
+            if (!client || !getUrl) {
               return reject({
-                code: 'missing-destination',
+                code: client ? 'missing-url-resolver' : 'missing-client',
                 files,
-                kind,
                 phase: 'configuration',
               });
             }
-          }
 
-          if (slot && slotEntry && uploads[0].kind !== slotEntry[0].kind) {
-            const allowedTypes = Object.entries(state.rules)
-              .filter(([, rule]) => rule?.kind === slotEntry[0].kind)
-              .map(([fileType]) => fileType)
-              .filter(isUploadFileType);
-
-            return reject({
-              allowedTypes,
-              code: 'unsupported-file-type',
-              files: [uploads[0].file],
-              phase: 'admission',
-            });
-          }
-
-          const prepared: PreparedUpload[] = [];
-          const prepareInserted = (
-            firstPath: readonly number[],
-            insertedUploads: ReadonlyArray<
-              Readonly<{
-                file: File;
-                kind: UploadKind;
-              }>
-            >
-          ) =>
-            insertedUploads.map(({ file, kind }, index) => {
-              const path = [...firstPath];
-              path[path.length - 1] += index;
-              const key = tx.key(path);
-              if (!key) {
+            const uploads = files.map((file) => {
+              const fileType = validation.fileTypes.get(file);
+              const rule = fileType ? state.rules[fileType] : undefined;
+              if (!fileType || !rule) {
                 throw new Error(
-                  'Upload insertion did not retain its node identity.'
+                  'Validated upload file requires a configured rule.'
                 );
               }
 
-              return { file, key, kind };
+              return { file, kind: rule.kind };
             });
-          const prepareByIdentity = (
-            insertedUploads: ReadonlyArray<
-              Readonly<{
-                element: Element;
-                file: File;
-                kind: UploadKind;
-              }>
-            >
-          ) =>
-            insertedUploads.map(({ element, file, kind }) => {
-              const key = tx.key(element);
-              if (!key) {
-                throw new Error(
-                  'Upload insertion did not retain its node identity.'
-                );
+
+            for (const { kind } of uploads) {
+              if (!destination(kind)) {
+                return reject({
+                  code: 'missing-destination',
+                  files,
+                  kind,
+                  phase: 'configuration',
+                });
               }
-
-              return { file, key, kind };
-            });
-
-          if (slot) {
-            prepared.push({ ...uploads[0], key: slot });
-            const additional = uploads.slice(1).map((upload) => ({
-              ...upload,
-              element: tx.schema.create(type, { kind: upload.kind }),
-            }));
-
-            if (additional.length > 0) {
-              tx.tags.add('history-push');
-              const inserted = tx.blocks.insertAfter(
-                additional.map(({ element }) => element),
-                { at: slot, replaceEmpty: false }
-              );
-              if (!inserted) return false;
-              prepared.push(...prepareInserted(inserted, additional));
             }
-            tx.effects.emit(uploadAdmissionEffect, null);
-          } else {
-            const elements = uploads.map((upload) => ({
-              ...upload,
-              element: tx.schema.create(type, { kind: upload.kind }),
-            }));
-            const { at, before, slot: _slot, ...insertOptions } = options;
 
-            tx.tags.add('history-push');
-            if (before !== undefined) {
-              const target = tx.nodes.get(before);
-              if (!target) return false;
+            if (slot && slotEntry && uploads[0].kind !== slotEntry[0].kind) {
+              const allowedTypes = Object.entries(state.rules)
+                .filter(([, rule]) => rule?.kind === slotEntry[0].kind)
+                .map(([fileType]) => fileType)
+                .filter(isUploadFileType);
 
-              tx.nodes.insert(
-                elements.map(({ element }) => element),
-                { ...insertOptions, at: target[1] }
-              );
-              prepared.push(...prepareByIdentity(elements));
-            } else if (at === undefined || insertOptions.after !== undefined) {
-              const anchor =
-                insertOptions.after === undefined
-                  ? undefined
-                  : tx.nodes.block({ at: insertOptions.after })?.[0];
-              const inserted = tx.blocks.insertAfter(
-                elements.map(({ element }) => element),
-                {
-                  ...insertOptions,
-                  at: insertOptions.after,
-                  // An empty structural block, such as a details summary,
-                  // keeps its slot; the file lands beside it instead.
-                  ...(insertOptions.replaceEmpty &&
-                  anchor &&
-                  !updateEditor.read.schema.isBlockContent(anchor)
-                    ? { replaceEmpty: false }
-                    : {}),
+              return reject({
+                allowedTypes,
+                code: 'unsupported-file-type',
+                files: [uploads[0].file],
+                phase: 'admission',
+              });
+            }
+
+            const prepared: PreparedUpload[] = [];
+            const prepareInserted = (
+              firstPath: readonly number[],
+              insertedUploads: ReadonlyArray<
+                Readonly<{
+                  file: File;
+                  kind: UploadKind;
+                }>
+              >
+            ) =>
+              insertedUploads.map(({ file, kind }, index) => {
+                const path = [...firstPath];
+                path[path.length - 1] += index;
+                const key = tx.key(path);
+                if (!key) {
+                  throw new Error(
+                    'Upload insertion did not retain its node identity.'
+                  );
                 }
-              );
-              if (!inserted) return false;
-              prepared.push(...prepareInserted(inserted, elements));
-            } else {
-              tx.nodes.insert(
-                elements.map(({ element }) => element),
-                { ...insertOptions, at }
-              );
-              prepared.push(...prepareByIdentity(elements));
-            }
-          }
 
-          afterCommit(() => {
-            for (const upload of prepared) {
-              startTask(upload, client, getUrl, updateEditor);
+                return { file, key, kind };
+              });
+            const prepareByIdentity = (
+              insertedUploads: ReadonlyArray<
+                Readonly<{
+                  element: Element;
+                  file: File;
+                  kind: UploadKind;
+                }>
+              >
+            ) =>
+              insertedUploads.map(({ element, file, kind }) => {
+                const key = tx.key(element);
+                if (!key) {
+                  throw new Error(
+                    'Upload insertion did not retain its node identity.'
+                  );
+                }
+
+                return { file, key, kind };
+              });
+
+            if (slot) {
+              prepared.push({ ...uploads[0], key: slot });
+              const additional = uploads.slice(1).map((upload) => ({
+                ...upload,
+                element: tx.schema.create(type, { kind: upload.kind }),
+              }));
+
+              if (additional.length > 0) {
+                tx.tags.add('history-push');
+                const inserted = tx.blocks.insertAfter(
+                  additional.map(({ element }) => element),
+                  { at: slot, replaceEmpty: false }
+                );
+                if (!inserted) return false;
+                prepared.push(...prepareInserted(inserted, additional));
+              }
+              tx.effects.emit(uploadAdmissionEffect, null);
+            } else {
+              const elements = uploads.map((upload) => ({
+                ...upload,
+                element: tx.schema.create(type, { kind: upload.kind }),
+              }));
+              const { at, before, slot: _slot, ...insertOptions } = options;
+
+              tx.tags.add('history-push');
+              if (before !== undefined) {
+                const target = tx.nodes.get(before);
+                if (!target) return false;
+
+                tx.nodes.insert(
+                  elements.map(({ element }) => element),
+                  { ...insertOptions, at: target[1] }
+                );
+                prepared.push(...prepareByIdentity(elements));
+              } else if (
+                at === undefined ||
+                insertOptions.after !== undefined
+              ) {
+                const anchor =
+                  insertOptions.after === undefined
+                    ? undefined
+                    : tx.nodes.block({ at: insertOptions.after })?.[0];
+                const inserted = tx.blocks.insertAfter(
+                  elements.map(({ element }) => element),
+                  {
+                    ...insertOptions,
+                    at: insertOptions.after,
+                    // An empty structural block, such as a details summary,
+                    // keeps its slot; the file lands beside it instead.
+                    ...(insertOptions.replaceEmpty &&
+                    anchor &&
+                    !updateEditor.read.schema.isBlockContent(anchor)
+                      ? { replaceEmpty: false }
+                      : {}),
+                  }
+                );
+                if (!inserted) return false;
+                prepared.push(...prepareInserted(inserted, elements));
+              } else {
+                tx.nodes.insert(
+                  elements.map(({ element }) => element),
+                  { ...insertOptions, at }
+                );
+                prepared.push(...prepareByIdentity(elements));
+              }
             }
-          });
-          return true;
-        },
+
+            afterCommit(() => {
+              for (const upload of prepared) {
+                startTask(upload, client, getUrl, updateEditor);
+              }
+            });
+            return true;
+          }
+        ),
       }),
     };
   })

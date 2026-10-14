@@ -1295,7 +1295,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
         ref={rootRef}
         style={canvas?.root}
       >
-        <style href="plite-pagination-native-flow-break" precedence="plite">
+        <style href="editor-pagination-native-flow-break" precedence="editor">
           {NATIVE_FLOW_BREAK_RULE}
         </style>
         {geometry &&
@@ -1379,7 +1379,7 @@ export const PagedEditable = <TElement extends Element = Element>({
   ...props
 }: PagedEditableProps<TElement>) => {
   if (root === 'main') {
-    throw new Error('[Plite] Omit root to render the primary document.');
+    throw new Error('Omit root to render the primary document.');
   }
   const editor = useEditorContext();
   const inheritedReadOnly = useEditorReadOnly();

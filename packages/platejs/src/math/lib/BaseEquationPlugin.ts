@@ -6,7 +6,6 @@ import {
   defineInputRule,
   definePlugin,
   type ElementOf,
-  type InputRuleEditor,
   matchDelimitedInline,
   type NodeInsertOptions,
   type PluginReference,
@@ -14,20 +13,12 @@ import {
   type SelectionInputRuleContext,
   PLUGINS,
   property,
+  txLocate,
+  locateAt,
 } from '../../core';
 
 const INLINE_EQUATION_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_EQUATION_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
-
-const getMathExcludedSelectors = (editor: InputRuleEditor) => {
-  const codeBlock = editor.plugin(PLUGINS.codeBlock);
-
-  return [
-    ...(codeBlock.installed ? [codeBlock.schema.type] : []),
-    BaseEquationPlugin,
-    BaseInlineEquationPlugin,
-  ];
-};
 
 export const BaseEquationPlugin = definePlugin(PLUGINS.equation, {
   formats: ({ defineFormats, schema: { type } }) =>
@@ -89,19 +80,19 @@ export const BaseInlineEquationPlugin = definePlugin(PLUGINS.inlineEquation, {
   },
 }).extend(({ schema: { type } }) => ({
   update: ({ tx }) => ({
-    insert: (
-      { latex }: { latex?: string } = {},
-      options: NodeInsertOptions = {}
-    ) => {
-      tx.nodes.insert(
-        {
-          children: [{ text: '' }],
-          latex: latex ?? tx.text.string(),
-          type,
-        },
-        options
-      );
-    },
+    insert: txLocate(
+      locateAt(1),
+      ({ latex }: { latex?: string } = {}, options: NodeInsertOptions = {}) => {
+        tx.nodes.insert(
+          {
+            children: [{ text: '' }],
+            latex: latex ?? tx.text.string(),
+            type,
+          },
+          options
+        );
+      }
+    ),
   }),
 }));
 
@@ -128,7 +119,7 @@ export const MathRules = (() => {
   ) =>
     (!enabled || enabled(context)) &&
     !context.editor.read.nodes.some({
-      type: getMathExcludedSelectors(context.editor),
+      type: [BaseEquationPlugin, BaseInlineEquationPlugin],
     });
 
   const blockRule = ({

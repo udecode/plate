@@ -40,6 +40,7 @@
       "platejs/hyperscript": ["./src/hyperscript/index.ts"],
       "platejs/layout": ["./src/features/layout/index.ts"],
       "platejs/layout/react": ["./src/react/features/layout/index.ts"],
+      "platejs/lint": ["./src/features/lint/index.ts"],
       "platejs/markdown": ["./src/markdown/index.ts"],
       "platejs/math": ["./src/math/index.ts"],
       "platejs/math/react": ["./src/math/react/index.ts"],

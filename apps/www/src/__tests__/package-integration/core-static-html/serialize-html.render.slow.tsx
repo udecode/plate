@@ -3,7 +3,7 @@ import React from 'react';
 
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
-import { createStaticEditor, renderStaticMarkup } from './create-static-editor';
+import { renderStaticMarkup } from './render-static-markup';
 
 describe('core static renderStaticHtml custom render hooks', () => {
   it('wraps node children through slots', async () => {
@@ -38,20 +38,23 @@ describe('core static renderStaticHtml custom render hooks', () => {
   });
 
   it('preserves literal percent signs', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          {
-            text: 'None encoded string 100%',
-          },
-        ],
-        type: 'paragraph',
-      },
-      {
-        children: [{ text: 'Encoded string 100%25' }],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            {
+              text: 'None encoded string 100%',
+            },
+          ],
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Encoded string 100%25' }],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 

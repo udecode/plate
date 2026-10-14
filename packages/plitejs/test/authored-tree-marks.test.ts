@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import { createEditor } from 'plitejs';
 
-import { authoredTreeProof } from '../src/authored/tree/proof-plugin';
+import { createAuthoredPlugin } from '../src/authored/authored';
 
 const mark = (kind: 'delete' | 'insert', author: string, at: number) => ({
   at,
@@ -17,7 +17,7 @@ describe('authored review tree marks', () => {
     assert.throws(
       () =>
         createEditor({
-          plugins: [authoredTreeProof({ authorId: 'alice' })],
+          plugins: [createAuthoredPlugin({ authorId: 'alice' })],
           initialValue: [
             {
               type: 'paragraph',
@@ -28,7 +28,54 @@ describe('authored review tree marks', () => {
             },
           ],
         }),
-      /Change c1 has marks with different authors or times/
+      /Change c1 has marks with different authors\./
+    );
+  });
+
+  it('refuses a document holding an Editing insertion', () => {
+    assert.throws(
+      () =>
+        createEditor({
+          plugins: [createAuthoredPlugin({ authorId: 'alice' })],
+          initialValue: [
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  text: 'typed',
+                  authored: [
+                    { ...mark('insert', 'bob', 1), change: '~edit:bob' },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      /An Editing mark of kind "insert" never stays stored/
+    );
+  });
+
+  it('refuses an Editing deletion that no pending join holds', () => {
+    assert.throws(
+      () =>
+        createEditor({
+          plugins: [createAuthoredPlugin({ authorId: 'alice' })],
+          initialValue: [
+            {
+              type: 'paragraph',
+              children: [
+                {
+                  text: 'gone',
+                  authored: [
+                    { ...mark('delete', 'bob', 1), change: '~edit:bob' },
+                  ],
+                },
+              ],
+            },
+            { type: 'paragraph', children: [{ text: 'next' }] },
+          ],
+        }),
+      /An Editing deletion stays stored only on a line a pending join merges into/
     );
   });
 
@@ -44,7 +91,7 @@ describe('authored review tree marks', () => {
       },
     ];
     const editor = createEditor({
-      plugins: [authoredTreeProof({ authorId: 'alice' })],
+      plugins: [createAuthoredPlugin({ authorId: 'alice' })],
       initialValue: children,
     });
 

@@ -911,6 +911,12 @@ test('Editable forwards scrollSelectionIntoView to app-owned code', async () => 
   );
 
   await act(async () => {
+    rendered.container.querySelector<HTMLElement>('[data-editor]')!.focus();
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
+  });
+  await act(async () => {
     editor.update((tx) => {
       tx.selection.set({
         kind: 'text',

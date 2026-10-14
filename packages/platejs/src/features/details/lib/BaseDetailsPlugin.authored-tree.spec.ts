@@ -1,4 +1,6 @@
-import { authoredTreeProof } from 'plitejs/authored';
+import { createAuthoredPlugin } from 'plitejs/authored';
+
+import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
 
 import { createEditor } from '../../../core';
 import { BaseDetailsPlugin } from './BaseDetailsPlugin';
@@ -19,7 +21,7 @@ const value = (body = 'Body') => [
 ];
 
 const make = () => {
-  const proof = authoredTreeProof({
+  const proof = createAuthoredPlugin({
     authorId: 'alice',
     createChangeId: () => 'alice:1',
     intent: 'edit',
@@ -30,7 +32,7 @@ const make = () => {
     plugins: [BaseDetailsPlugin, proof],
   });
 
-  return { api: editor.plugin(proof).api, editor };
+  return { api: authoredTestApi(editor), editor };
 };
 
 type Editor = ReturnType<typeof make>['editor'];
@@ -57,7 +59,7 @@ describe('details beside a pending summary deletion', () => {
     const decided = (action: 'accept' | 'reject') => {
       const run = make();
 
-      run.api.propose('bob:1', () => removeSummary(run.editor));
+      run.api.propose('bob:1', (tx) => tx.nodes.remove({ at: [0, 0] }));
       typeInBody(run.editor);
       run.api.decide({ action, changes: ['bob:1'] });
 
@@ -81,7 +83,7 @@ describe('details beside a pending summary deletion', () => {
     const summary = { children: [{ text: 'Second' }], type: 'summary' };
     const body = { children: [{ text: 'Body' }], type: 'paragraph' };
     const editorOf = (initialValue: unknown[]) => {
-      const proof = authoredTreeProof({
+      const proof = createAuthoredPlugin({
         authorId: 'alice',
         createChangeId: () => 'alice:1',
         intent: 'edit',
@@ -92,7 +94,7 @@ describe('details beside a pending summary deletion', () => {
         plugins: [BaseDetailsPlugin, proof],
       });
 
-      return { api: editor.plugin(proof).api, editor };
+      return { api: authoredTestApi(editor), editor };
     };
     const editing = editorOf(details([body, summary]));
     const run = editorOf(
@@ -122,7 +124,7 @@ describe('details beside a pending summary deletion', () => {
       { children: [{ text: 'After' }], type: 'paragraph' },
     ];
     const editorOf = () => {
-      const proof = authoredTreeProof({
+      const proof = createAuthoredPlugin({
         authorId: 'alice',
         createChangeId: () => 'alice:1',
         intent: 'edit',
@@ -133,15 +135,13 @@ describe('details beside a pending summary deletion', () => {
         plugins: [BaseDetailsPlugin, proof],
       });
 
-      return { api: editor.plugin(proof).api, editor };
+      return { api: authoredTestApi(editor), editor };
     };
     const editing = editorOf();
     const run = editorOf();
 
     editing.editor.update((tx) => tx.nodes.remove({ at: [0] }));
-    run.api.propose('bob:1', () =>
-      run.editor.update((tx) => tx.nodes.remove({ at: [0] }))
-    );
+    run.api.propose('bob:1', (tx) => tx.nodes.remove({ at: [0] }));
     run.editor.update.value.repair();
     run.api.decide({ action: 'accept', changes: ['bob:1'] });
 

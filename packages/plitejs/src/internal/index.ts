@@ -11,6 +11,7 @@ export type {
   PluginTypeProviderOf,
   PluginWitnessFor,
   PluginTypeLambda,
+  EditorDirectUpdate,
   EditorGenericMethod,
   EditorNodeTypeProvider,
   EditorStateViewProvider,
@@ -126,10 +127,7 @@ export {
   assertDetachedSelectionSupported,
   mapDetachedSelectionThroughChange,
 } from '../core/selection-protocol';
-export {
-  completePersistedDocumentFields,
-  type PersistedDocumentFieldValues,
-} from '../core/persisted-document';
+export { completePersistedDocumentFields } from '../core/persisted-document';
 export {
   getDocumentChangeRelocations,
   getExactDocumentChangeRelocation,
@@ -145,15 +143,12 @@ export {
   initializePlugins,
 } from '../create-editor';
 export { isAuthorId } from '../core/authored-document-capability';
-export type {
-  NativeAuthoredDocumentProjection,
-  NativeAuthoredProjectionDiagnostic,
-} from '../core/authored-document-capability';
 export {
   compileEditorSchemaContributions,
   EditorSchemaCompileError,
   getCompiledSchemaPropertyId,
   getCompiledPropertyMergeStrategy,
+  hashSchemaIdentityString,
   matchesCompiledSchemaTarget,
   preserveCompiledSchemaPropertyIdentity,
   resolveCompiledSchemaProperty,
@@ -175,7 +170,6 @@ export {
   compilePluginInput,
   getCompiledEditorConfiguration,
   getCandidatePluginApi,
-  getPluginContributions,
   getInstalledPlugin,
   getInstalledPluginApi,
   isPlugin,
@@ -194,7 +188,11 @@ export {
   getCompiledEditorSchemaFromApi,
 } from '../core/editor-schema';
 export type { InternalEditorSchemaApi } from '../core/editor-schema';
-export type { NativeAuthoredDocumentCapability } from '../core/authored-document-capability';
+export type {
+  AuthoredDocumentProjection,
+  AuthoredProjectionDiagnostic,
+  NativeAuthoredDocumentCapability,
+} from '../core/authored-document-capability';
 export type {
   EditorSchemaSourceProvider,
   EditorSchemaPluginProvider,
@@ -210,12 +208,17 @@ export {
   setEditorRuntime,
 } from '../core/editor-runtime';
 export { createEditorReadApi } from '../core/editor-lifecycle-api';
+export {
+  callPluginUpdateMethod,
+  resolvePluginMethod,
+} from '../core/plugin-dispatch';
 export type {
   InternalCompiledPluginPublicationEntry,
   InternalPluginPublicationEntry,
 } from '../core/editor-runtime';
 export {
   getCompiledEditorSchema,
+  getPluginContributions,
   getPluginRegistry as getInternalPluginRegistry,
   inheritPluginRegistry,
 } from '../core/plugin-registry';
@@ -296,10 +299,16 @@ export {
   encodeVersionedValue,
 } from '../core/value-codec';
 export { readAuthoredView } from '../core/authored-runtime';
+export { normalizeSetValues } from '../core/change/transform';
 export {
   isDocumentView,
   withDocumentViewRead,
 } from '../core/document-view-read';
 export { formatDebugValue } from '../utils/format-debug-value';
 export { isObject } from '../utils/is-object';
-export { getRangeRoot, getReaderRange, MAIN_ROOT_KEY } from './root-location';
+export {
+  getRangeRoot,
+  getReaderRange,
+  isMetadataRootKey,
+  MAIN_ROOT_KEY,
+} from './root-location';

@@ -17,18 +17,12 @@ import {
   IS_COMPOSING,
   markDOMSyncMutationTarget,
   NODE_TO_ELEMENT,
-  NODE_TO_RUNTIME_ID,
 } from '../../dom/internal';
-import {
-  bindDOMFragmentElement,
-  bindLazyDOMFragmentElement,
-} from '../../dom/plugin/dom-fragment-view';
 import {
   EDITOR_TO_RUNTIME_ID_TO_KEY,
   EDITOR_TO_RUNTIME_ID_TO_ELEMENTS,
   ELEMENT_TO_EDITOR,
 } from '../../dom/utils/weak-maps';
-import { AuthoredFragmentRootsContext } from '../authored-fragment-context';
 import { EditorContext } from '../context';
 import { findMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
@@ -578,13 +572,13 @@ const bindPliteNodeElement = ({
   editor,
   node,
   providedPathKey,
-  providedPliteNode,
+  providedEditorNode,
   nodeKey,
 }: {
   editor: Editor;
   node: Node;
   providedPathKey: string | null;
-  providedPliteNode: Descendant | null;
+  providedEditorNode: Descendant | null;
   nodeKey: NodeKey;
 }) => {
   const path =
@@ -602,13 +596,13 @@ const bindPliteNodeElement = ({
 
     return candidate && NodeApi.isDescendant(candidate) ? candidate : undefined;
   });
-  const pliteNode =
-    providedPliteNode === livePliteNode ? providedPliteNode : livePliteNode;
+  const editorNode =
+    providedEditorNode === livePliteNode ? providedEditorNode : livePliteNode;
 
-  if (!pliteNode) {
+  if (!editorNode) {
     return null;
   }
-  const key = getOrCreateDOMNodeKey(editor, nodeKey, pliteNode);
+  const key = getOrCreateDOMNodeKey(editor, nodeKey, editorNode);
   const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap();
 
   if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
@@ -616,9 +610,8 @@ const bindPliteNodeElement = ({
   }
 
   keyToElement.set(key, element);
-  NODE_TO_ELEMENT.set(pliteNode, element);
-  NODE_TO_RUNTIME_ID.set(pliteNode, nodeKey);
-  ELEMENT_TO_NODE.set(element, pliteNode);
+  NODE_TO_ELEMENT.set(editorNode, element);
+  ELEMENT_TO_NODE.set(element, editorNode);
   ELEMENT_TO_EDITOR.set(element, editor);
   syncPliteElementPath({ editor, element, path, nodeKey });
   const cleanupNodeKeyElement = bindNodeKeyElement(editor, nodeKey, element);
@@ -630,15 +623,11 @@ const bindPliteNodeElement = ({
       keyToElement.delete(key);
     }
 
-    if (NODE_TO_ELEMENT.get(pliteNode) === element) {
-      NODE_TO_ELEMENT.delete(pliteNode);
-
-      if (NODE_TO_RUNTIME_ID.get(pliteNode) === nodeKey) {
-        NODE_TO_RUNTIME_ID.delete(pliteNode);
-      }
+    if (NODE_TO_ELEMENT.get(editorNode) === element) {
+      NODE_TO_ELEMENT.delete(editorNode);
     }
 
-    if (ELEMENT_TO_NODE.get(element) === pliteNode) {
+    if (ELEMENT_TO_NODE.get(element) === editorNode) {
       ELEMENT_TO_NODE.delete(element);
     }
     if (ELEMENT_TO_EDITOR.get(element) === editor) {
@@ -681,14 +670,13 @@ export const createPliteNodeFlowRootBinding = ({
     EDITOR_TO_FLOW_RUNTIME_ID_TO_ELEMENTS.set(owner, flowElements);
   }
 
-  const bind = (nodeKey: NodeKey, pliteNode: Descendant) => {
-    const key = getOrCreateDOMNodeKey(editor, nodeKey, pliteNode);
+  const bind = (nodeKey: NodeKey, editorNode: Descendant) => {
+    const key = getOrCreateDOMNodeKey(editor, nodeKey, editorNode);
     keyToElement.set(key, node);
     const elements = flowElements.get(nodeKey) ?? new Set<HTMLElement>();
     elements.add(node);
     flowElements.set(nodeKey, elements);
-    NODE_TO_ELEMENT.set(pliteNode, node);
-    NODE_TO_RUNTIME_ID.set(pliteNode, nodeKey);
+    NODE_TO_ELEMENT.set(editorNode, node);
   };
 
   return {
@@ -701,12 +689,12 @@ export const createPliteNodeFlowRootBinding = ({
         }>
       >
     ) {
-      for (const { node: pliteNode, nodeKey } of entries) {
-        bind(nodeKey, pliteNode);
+      for (const { node: editorNode, nodeKey } of entries) {
+        bind(nodeKey, editorNode);
       }
     },
     node,
-    release(nodeKey: NodeKey, pliteNode: Descendant) {
+    release(nodeKey: NodeKey, editorNode: Descendant) {
       const key = EDITOR_TO_RUNTIME_ID_TO_KEY.get(editor)?.get(nodeKey);
       if (key && keyToElement.get(key) === node) {
         keyToElement.delete(key);
@@ -714,11 +702,8 @@ export const createPliteNodeFlowRootBinding = ({
       const elements = flowElements.get(nodeKey);
       elements?.delete(node);
       if (elements?.size === 0) flowElements.delete(nodeKey);
-      if (NODE_TO_ELEMENT.get(pliteNode) === node) {
-        NODE_TO_ELEMENT.delete(pliteNode);
-        if (NODE_TO_RUNTIME_ID.get(pliteNode) === nodeKey) {
-          NODE_TO_RUNTIME_ID.delete(pliteNode);
-        }
+      if (NODE_TO_ELEMENT.get(editorNode) === node) {
+        NODE_TO_ELEMENT.delete(editorNode);
       }
     },
   };
@@ -748,18 +733,15 @@ const usePliteNodeRefBinding = (
   editor: Editor | null,
   nodeKey: NodeKey | null,
   options: {
-    fragmentParent?: Editor;
-    fragmentRoot?: boolean;
     path?: Path | null;
-    pliteNode?: Descendant | null;
-    readOnlyFragmentRoot?: boolean;
+    editorNode?: Descendant | null;
   } = {}
 ) => {
   const editableRuntime = useContext(EditableDOMRuntimeContext);
   const nodeRef = useRef<Node | null>(null);
   const cleanupRef = useRef<(() => void) | null>(null);
   const providedPathKey = options.path == null ? null : pathKey(options.path);
-  const providedPliteNode = options.pliteNode ?? null;
+  const providedEditorNode = options.editorNode ?? null;
 
   const cleanupBinding = useCallback(() => {
     cleanupRef.current?.();
@@ -778,23 +760,15 @@ const usePliteNodeRefBinding = (
         return;
       }
 
-      const detachFragment =
-        options.fragmentRoot && nextNode instanceof HTMLElement
-          ? bindDOMFragmentElement(editor, nextNode, {
-              parent: options.fragmentParent,
-              readOnly: options.readOnlyFragmentRoot,
-            })
-          : undefined;
       const detachNode = bindPliteNodeElement({
         editor,
         node: nextNode,
         providedPathKey,
-        providedPliteNode,
+        providedEditorNode,
         nodeKey,
       });
       cleanupRef.current = () => {
         detachNode?.();
-        detachFragment?.();
       };
       if (detachNode) {
         editableRuntime?.requestSelectionExportAfterDOMCommit();
@@ -804,11 +778,8 @@ const usePliteNodeRefBinding = (
       cleanupBinding,
       editableRuntime,
       editor,
-      options.fragmentParent,
-      options.fragmentRoot,
-      options.readOnlyFragmentRoot,
       providedPathKey,
-      providedPliteNode,
+      providedEditorNode,
       nodeKey,
     ]
   );
@@ -849,131 +820,18 @@ const usePliteNodeRefBinding = (
   );
 };
 
-export const usePliteFragmentNodeRef = (
-  editor: Editor,
-  parent: Editor,
-  nodeKey: NodeKey | null,
-  options: {
-    path?: Path | null;
-    pliteNode?: Descendant | null;
-    readOnly?: boolean;
-  } = {}
-) =>
-  usePliteNodeRefBinding(editor, nodeKey, {
-    fragmentParent: parent,
-    fragmentRoot: true,
-    path: options.path,
-    pliteNode: options.pliteNode,
-    readOnlyFragmentRoot: options.readOnly ?? true,
-  });
-
-export const usePliteLazyFragmentNodeRef = (
-  parent: Editor,
-  fragment: { authorId: string; changeId: string; id: string; kind: string },
-  materialize: () => {
-    editor: Editor;
-    nodeKey: NodeKey;
-    path: Path;
-    pliteNode: Descendant;
-    release: () => void;
-  },
-  { readOnly = true }: { readOnly?: boolean } = {}
-) => {
-  const editableRuntime = useContext(EditableDOMRuntimeContext);
-  const nodeRef = useRef<Node | null>(null);
-  const cleanupRef = useRef<(() => void) | null>(null);
-  const cleanupBinding = useCallback(() => {
-    cleanupRef.current?.();
-    cleanupRef.current = null;
-  }, []);
-  const bindNode = useCallback(
-    (nextNode: Node | null) => {
-      cleanupBinding();
-      if (!(nextNode instanceof HTMLElement)) return;
-
-      cleanupRef.current = bindLazyDOMFragmentElement(nextNode, {
-        authorId: fragment.authorId,
-        changeId: fragment.changeId,
-        fragmentId: fragment.id,
-        fragmentKind: fragment.kind,
-        parent,
-        readOnly,
-        materialize: () => {
-          const mounted = materialize();
-          const detachFragment = bindDOMFragmentElement(
-            mounted.editor,
-            nextNode,
-            { parent, readOnly }
-          );
-          const detachNode = bindPliteNodeElement({
-            editor: mounted.editor,
-            node: nextNode,
-            nodeKey: mounted.nodeKey,
-            providedPathKey: pathKey(mounted.path),
-            providedPliteNode: mounted.pliteNode,
-          });
-
-          if (detachNode) {
-            editableRuntime?.requestSelectionExportAfterDOMCommit();
-          }
-
-          return {
-            editor: mounted.editor,
-            dispose: () => {
-              detachNode?.();
-              detachFragment();
-              mounted.release();
-            },
-          };
-        },
-      });
-    },
-    [
-      cleanupBinding,
-      editableRuntime,
-      fragment.authorId,
-      fragment.id,
-      fragment.kind,
-      fragment.changeId,
-      materialize,
-      parent,
-      readOnly,
-    ]
-  );
-
-  useIsomorphicLayoutEffect(() => {
-    bindNode(nodeRef.current);
-
-    return cleanupBinding;
-  }, [bindNode, cleanupBinding]);
-
-  return useCallback(
-    (nextNode: Node | null) => {
-      if (nodeRef.current === nextNode) return;
-      nodeRef.current = nextNode;
-      bindNode(nextNode);
-    },
-    [bindNode]
-  );
-};
-
 export const usePliteNodeRef = (
   nodeKey: NodeKey | null,
   options: {
     path?: Path | null;
-    pliteNode?: Descendant | null;
+    editorNode?: Descendant | null;
   } = {}
 ) => {
   const editor = useContext(EditorContext);
-  const fragment = useContext(AuthoredFragmentRootsContext);
 
   return usePliteNodeRefBinding(editor, nodeKey, {
-    fragmentParent: fragment?.parent,
-    fragmentRoot: nodeKey !== null && (fragment?.roots.has(nodeKey) ?? false),
     path: options.path,
-    pliteNode: options.pliteNode,
-    readOnlyFragmentRoot:
-      nodeKey !== null && (fragment?.roots.get(nodeKey) ?? false),
+    editorNode: options.editorNode,
   });
 };
 

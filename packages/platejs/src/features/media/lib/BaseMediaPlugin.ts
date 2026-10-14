@@ -8,17 +8,19 @@ import {
   editorCommands,
   type EditorUpdateContext,
   type Element,
-  ElementApi,
   type ElementOf,
   type ElementWith,
   type BlockInsertOptions,
   type BlockUpsertOptions,
+  PathApi,
   type PluginTransaction,
   PLUGINS,
   property,
   schema,
   type SchemaElement,
   type SchemaElementProperties,
+  txLocate,
+  locateAt,
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { decideUrl, isStoredUrl } from '../../../internal/utils/urlPolicy';
@@ -284,31 +286,18 @@ export function defineMediaPlugin(
             const suffix = tx.slice.get({
               at: { anchor: caret.anchor, focus: end },
             });
-            const defaultBlock = tx.schema.createDefaultRootChild(
-              caret.anchor.root
-            );
-
-            if (!defaultBlock || !ElementApi.isElement(defaultBlock)) {
-              valid = false;
-              return;
-            }
 
             if (suffix.content.length > 0) {
               tx.fragment.delete({
                 at: { anchor: caret.anchor, focus: end },
               });
             }
-
-            const inserted = tx.blocks.insertAfter(defaultBlock, {
-              at: media[1],
-              replaceEmpty: false,
-            });
-
-            if (!inserted) {
+            if (!tx.break.exit({ match: () => false })) {
               valid = false;
               return;
             }
 
+            const inserted = PathApi.next(media[1]);
             const point = tx.points.start(inserted);
 
             if (!point) {
@@ -401,10 +390,11 @@ export function defineMediaPlugin(
         };
 
         return {
-          insert(input, options) {
-            return applyMediaInsertion('insert', input, options);
-          },
-          setUrl({ element, url }) {
+          insert: txLocate(
+            locateAt(1, 'at', 'after', 'before'),
+            (input, options) => applyMediaInsertion('insert', input, options)
+          ),
+          setUrl: txLocate(locateAt(0, 'element'), ({ element, url }) => {
             const properties = normalizeUrl(url);
             const at = tx.nodes.path(element);
 
@@ -420,10 +410,10 @@ export function defineMediaPlugin(
             );
 
             return true;
-          },
-          upsert(input, options) {
-            return applyMediaInsertion('upsert', input, options);
-          },
+          }),
+          upsert: txLocate(locateAt(1, 'after', 'before'), (input, options) =>
+            applyMediaInsertion('upsert', input, options)
+          ),
         };
       },
     };

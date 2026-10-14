@@ -24,13 +24,7 @@ export function EmojiToolbarButton(
         });
       }}
     >
-      <ToolbarButton
-        aria-label="Emoji"
-        disabled={readOnly}
-        tooltip="Emoji"
-        isDropdown
-        {...props}
-      >
+      <ToolbarButton disabled={readOnly} tooltip="Emoji" isDropdown {...props}>
         <SmileIcon />
       </ToolbarButton>
     </EmojiPicker>

@@ -49,7 +49,6 @@ export function TableToolbarButton() {
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
         <ToolbarButton
-          aria-label="Table"
           className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
           tooltip="Table"
           isDropdown

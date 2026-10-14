@@ -372,7 +372,7 @@ it('keeps five shared conversations attached and painted in independently config
       () => {
         const attachment = api.attachment('first');
         return attachment?.type === 'range' && attachment.status === 'attached'
-          ? `${attachment.range.anchor.offset}:${attachment.range.focus.offset}`
+          ? `${attachment.range.anchor.path.join('.')}/${attachment.range.anchor.offset}:${attachment.range.focus.offset}`
           : 'unavailable';
       }
     );
@@ -387,14 +387,14 @@ it('keeps five shared conversations attached and painted in independently config
     <>
       <EditorRoot
         editor={editor}
-        authored={{ intent: 'edit', projection: 'accepted' }}
+        authored={{ preview: 'accepted' }}
         suppressInstanceWarning
       >
         <Capture index={0} />
       </EditorRoot>
       <EditorRoot
         editor={editor}
-        authored={{ intent: 'propose', projection: 'markup' }}
+        authored={{ intent: 'propose' }}
         suppressInstanceWarning
       >
         <Capture index={1} />
@@ -406,41 +406,45 @@ it('keeps five shared conversations attached and painted in independently config
   const source = getPlateDecorationSources(editor).find(
     ({ id }) => id === 'comments'
   )!;
-  const readPaint = (view: Editor) =>
+  const projected = {
+    anchor: { path: [0, 1], offset: 1 },
+    focus: { path: [0, 1], offset: 4 },
+  };
+  const readPaint = (view: Editor, { path } = projected.anchor) =>
     source
       .read({
         editor: view,
-        entry: [view.read.nodes.get([0, 0])![0], [0, 0]],
+        entry: [view.read.nodes.get(path)![0], path],
       })
       .map(({ range }) => range);
-  const projected = {
-    anchor: { path: [0, 0], offset: 3 },
-    focus: { path: [0, 0], offset: 6 },
-  };
-  expect(mounted.getByTestId('position-0').textContent).toBe('1:4');
-  expect(mounted.getByTestId('position-1').textContent).toBe('3:6');
+  expect(mounted.getByTestId('position-0').textContent).toBe('0.0/1:4');
+  expect(mounted.getByTestId('position-1').textContent).toBe('0.1/1:4');
   expect(first.idsAt(firstRange.anchor)).toEqual(ids);
   expect(second.idsAt(firstRange.anchor)).toEqual([]);
   expect(second.idsAt(projected.anchor)).toEqual(ids);
-  expect(readPaint(views[0])).toEqual(ids.map(() => firstRange));
+  expect(readPaint(views[0], firstRange.anchor)).toEqual(
+    ids.map(() => firstRange)
+  );
   expect(readPaint(views[1])).toEqual(ids.map(() => projected));
 
   await act(async () => {
     views[0]
       .plugin(AuthoredPlugin)
-      .api.setView({ intent: 'edit', projection: 'markup' });
+      .api.setView({ intent: 'edit' });
   });
-  expect(mounted.getByTestId('position-0').textContent).toBe('3:6');
-  expect(mounted.getByTestId('position-1').textContent).toBe('3:6');
+  expect(mounted.getByTestId('position-0').textContent).toBe('0.1/1:4');
+  expect(mounted.getByTestId('position-1').textContent).toBe('0.1/1:4');
   expect(readPaint(views[0])).toEqual(ids.map(() => projected));
   expect(first.idsAt(projected.anchor)).toEqual(ids);
   await act(async () => {
     views[1]
       .plugin(AuthoredPlugin)
-      .api.setView({ intent: 'edit', projection: 'accepted' });
+      .api.setView({ preview: 'accepted' });
   });
-  expect(mounted.getByTestId('position-1').textContent).toBe('1:4');
-  expect(readPaint(views[1])).toEqual(ids.map(() => firstRange));
+  expect(mounted.getByTestId('position-1').textContent).toBe('0.0/1:4');
+  expect(readPaint(views[1], firstRange.anchor)).toEqual(
+    ids.map(() => firstRange)
+  );
   expect(first.getSnapshot().visibleThreadIds).toHaveLength(5);
   expect(second.getSnapshot().visibleThreadIds).toHaveLength(5);
   for (const current of records) {
@@ -458,7 +462,7 @@ it('keeps five shared conversations attached and painted in independently config
   stopPaint();
   views[0]
     .plugin(AuthoredPlugin)
-    .api.setView({ intent: 'edit', projection: 'accepted' });
+    .api.setView({ preview: 'accepted' });
   await Promise.resolve();
   expect(changed).not.toHaveBeenCalled();
   expect(refresh).not.toHaveBeenCalled();

@@ -1,3 +1,13 @@
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from 'bun:test';
+
 import { act, cleanup, render } from '@testing-library/react';
 import { BaseParagraphPlugin, createEditor } from 'platejs';
 import { CommentsPlugin } from 'platejs/comments/react';
@@ -64,16 +74,19 @@ let importWord:
 
 beforeEach(() => {
   importWord = undefined;
-  spyOn(filePicker, 'useFilePicker').mockImplementation(
-    (options: { accept: string[]; onFilesSelected: typeof importWord }) => {
-      if (options.accept.includes('.docx')) {
-        importWord = options.onFilesSelected;
-      }
-
-      return { openFilePicker: () => {} };
+  spyOn(filePicker, 'useFilePicker').mockImplementation(((options: {
+    accept: string[];
+    onFilesSelected: typeof importWord;
+  }) => {
+    if (options.accept.includes('.docx')) {
+      importWord = options.onFilesSelected;
     }
+
+    return { openFilePicker: () => {} };
+  }) as never);
+  spyOn(docxImport, 'importDocx').mockImplementation(
+    (async () => importResult) as never
   );
-  spyOn(docxImport, 'importDocx').mockImplementation(async () => importResult);
   spyOn(toast, 'error').mockImplementation(() => '');
 });
 

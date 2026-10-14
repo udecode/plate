@@ -12,18 +12,18 @@
     }
   },
   "counts": {
-    "targets": 56,
-    "artifacts": 57,
-    "recordedArtifacts": 54,
+    "targets": 54,
+    "artifacts": 55,
+    "recordedArtifacts": 52,
     "missingOptionalArtifacts": 0,
     "missingRequiredArtifacts": 3,
-    "requiredArtifacts": 57,
+    "requiredArtifacts": 55,
     "statusCounts": {
-      "recorded": 53,
+      "recorded": 51,
       "missing-required-artifact": 3
     },
     "latestRunCounts": {
-      "none": 53,
+      "none": 51,
       "passed": 3
     }
   },
@@ -617,7 +617,7 @@
       "metric": "plite_annotation_view_index_baseline_retained",
       "direction": "higher",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/anchor-contract.ts ./packages/plitejs/test/anchor-mapping-contract.ts ./packages/plitejs/test/range-anchor-contract.ts ./packages/plitejs/test/history/anchor-history-contract.ts ./packages/plitejs/test/authored-anchor-contract.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/annotation-store-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx test/react/view-source-fault-boundary.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/anchor-contract.ts ./packages/plitejs/test/anchor-mapping-contract.ts ./packages/plitejs/test/range-anchor-contract.ts ./packages/plitejs/test/history/anchor-history-contract.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/annotation-store-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx test/react/view-source-fault-boundary.test.ts",
       "artifacts": [
         {
           "path": "tmp/plite-annotation-view-index-benchmark.json",
@@ -626,30 +626,6 @@
         },
         {
           "path": "docs/plans/artifacts/annotations-architecture-adoption/annotation-view-index-benchmark.json",
-          "required": true,
-          "recorded": true
-        }
-      ],
-      "status": "recorded",
-      "migration": null,
-      "latestRun": null,
-      "recipe": null
-    },
-    {
-      "id": "plite-authored-checkpoint",
-      "family": "core-authored",
-      "kind": "current",
-      "owner": "plite",
-      "question": "Does a native proposal amendment publish a coherent immutable checkpoint with logarithmic changed pages and no unrelated payload cloning at 100, 1000 and 10000 retained changes?",
-      "command": "PLITE_AUTHORED_CHECKPOINT_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-checkpoint-benchmark.ts --output=tmp/plite-authored-checkpoint-benchmark.json",
-      "cwd": ".",
-      "metric": "plite_authored_checkpoint_passed",
-      "direction": "higher",
-      "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-changes-contract.test.ts packages/plitejs/test/value-codec.test.ts",
-      "artifacts": [
-        {
-          "path": "tmp/plite-authored-checkpoint-benchmark.json",
           "required": true,
           "recorded": true
         }
@@ -670,7 +646,7 @@
       "metric": "plite_authored_collaboration_passed",
       "direction": "higher",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/yjs/authored-contract.spec.ts packages/plitejs/test/authored-history-contract.test.ts packages/plitejs/test/authored-retention-contract.test.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-tree-collab.test.ts packages/plitejs/test/yjs/authored-legacy-room-contract.spec.ts",
       "artifacts": [
         {
           "path": "tmp/plite-authored-collaboration-benchmark.json",
@@ -694,34 +670,10 @@
       "metric": "plite_authored_mounted_passed",
       "direction": "higher",
       "printsMetric": true,
-      "correctnessCommand": "pnpm --filter plitejs test:react test/react/authored-fragment-provider.test.tsx test/react/authored-view.test.tsx test/react/plite-runtime-provider-contract.test.tsx && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
+      "correctnessCommand": "pnpm --filter plitejs test:react test/react/plite-runtime-provider-contract.test.tsx && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
       "artifacts": [
         {
           "path": "tmp/plite-authored-mounted-benchmark.json",
-          "required": true,
-          "recorded": true
-        }
-      ],
-      "status": "recorded",
-      "migration": null,
-      "latestRun": null,
-      "recipe": null
-    },
-    {
-      "id": "plite-authored-retention",
-      "family": "core-authored",
-      "kind": "current",
-      "owner": "plitejs/authored",
-      "question": "Does installed native authored state retain bounded cold heap for one, 1000 and 10000 closed contribution pairs under default and archival policy?",
-      "command": "PLITE_AUTHORED_RETENTION_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-retention-benchmark.ts --output=tmp/plite-authored-retention-benchmark.json",
-      "cwd": ".",
-      "metric": "plite_authored_retention_passed",
-      "direction": "higher",
-      "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-retention-contract.test.ts packages/plitejs/test/authored-history-contract.test.ts packages/plitejs/test/yjs/authored-contract.spec.ts",
-      "artifacts": [
-        {
-          "path": "tmp/plite-authored-retention-benchmark.json",
           "required": true,
           "recorded": true
         }
@@ -742,7 +694,7 @@
       "metric": "plite_authored_scale_passed",
       "direction": "higher",
       "printsMetric": true,
-      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-changes-contract.test.ts packages/plitejs/test/authored-structure-contract.test.ts packages/plitejs/test/authored-view-contract.test.ts packages/platejs/src/authored/authored.api.spec.ts",
+      "correctnessCommand": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-plugin.test.ts packages/plitejs/test/authored-tree-record.test.ts packages/platejs/src/authored/authored.api.spec.ts",
       "artifacts": [
         {
           "path": "tmp/plite-authored-scale-benchmark.json",
@@ -766,7 +718,7 @@
       "metric": "plite_authored_typing_passed",
       "direction": "higher",
       "printsMetric": true,
-      "correctnessCommand": "pnpm --filter plitejs test:react test/react/authored-fragment-provider.test.tsx test/react/dom-repair-policy-contract.test.ts && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
+      "correctnessCommand": "pnpm --filter plitejs test:react test/react/dom-repair-policy-contract.test.ts && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
       "artifacts": [
         {
           "path": "tmp/plite-authored-typing-benchmark.json",

@@ -438,6 +438,7 @@ function BlockViewerView({
           <ResizablePanel
             ref={resizablePanelRef}
             className="relative z-10 aspect-[4/2.5] overflow-hidden rounded-lg border bg-background md:aspect-auto md:rounded-xl"
+            data-preview-panel={item.name}
             defaultSize={100}
             minSize={30}
           >

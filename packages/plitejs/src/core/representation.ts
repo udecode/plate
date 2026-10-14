@@ -84,7 +84,7 @@ const completionSchemaAt = (
   isInline: schema.isInline,
 });
 
-const emptyTextDrops = (
+export const emptyTextDrops = (
   schema: RepresentationSchema,
   at: Readonly<{
     ancestors: readonly Element[];

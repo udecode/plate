@@ -8,19 +8,8 @@ import {
   type RootKey,
   type Value,
 } from '../..';
-import { readAuthoredFragmentRoots } from '../../core/authored-fragment-view';
-import {
-  readAuthoredViewFragments,
-  readAuthoredViewFragmentSlots,
-  readAuthoredView,
-  readAuthoredViewFragmentVersion,
-  readAuthoredViewRenderSegments,
-  type NativeAuthoredFragmentSlot,
-  type NativeAuthoredRenderSegment,
-} from '../../core/authored-runtime';
-import { getEditorProjectionSnapshotIndex } from '../../core/public-state';
 import { EDITOR_TO_ROOT_VIEW_EDITORS } from '../../dom/internal';
-import type { AnyEditor, NodeKey } from '../../interfaces/editor';
+import type { AnyEditor } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
@@ -31,7 +20,6 @@ import {
   rootPlitePoint,
   type PliteViewBoundaryPoint,
   type PliteViewBoundaryGraphNodeInput,
-  type PliteViewBoundaryGraphModel,
 } from '../view-boundary-graph';
 import type { PliteViewBoundaryGraphNode } from '../view-boundary-graph-core';
 import {
@@ -57,17 +45,9 @@ export const readContentRootViewNode = (
   editor: Editor,
   node: PliteViewBoundaryGraphNode
 ): Descendant | null => {
-  const fragment =
-    node.fragment &&
-    readAuthoredViewFragments(editor, node.fragment.changeId).find(
-      (current) => current.id === node.fragment?.id
-    );
-  const children = node.fragment
-    ? fragment && fragment.kind !== 'properties'
-      ? fragment.slice.content
-      : null
-    : editor.read((state) => readRootChildren(state, node.root));
-  return children ? getPliteDescendantAtPath(children, node.path) : null;
+  const children = editor.read((state) => readRootChildren(state, node.root));
+
+  return getPliteDescendantAtPath(children, node.path);
 };
 
 export const getContentRootViewBoundaryPoint = (
@@ -82,7 +62,6 @@ export const getContentRootViewBoundaryPoint = (
   return point
     ? {
         ...(node.owner ? { owner: node.owner } : {}),
-        ...(node.fragment ? { fragmentId: node.fragment.id } : {}),
         affinity: node.text
           ? edge === 'start'
             ? 'forward'
@@ -328,333 +307,65 @@ const hasNestedOwner = (
       PathApi.isAncestor(path, owner.ownerPath)
   );
 
-const VIEW_BOUNDARY_GRAPHS = new WeakMap<
-  object,
-  {
-    graphs: Map<
-      string,
-      {
-        children: readonly Descendant[];
-        graph: PliteViewBoundaryGraphModel;
-        roots: unknown;
-      }
-    >;
-    version: object | null;
-  }
->();
-
 export const createContentRootViewBoundaryGraph = <V extends Value>(
   editor: Pick<AnyEditor<V>, 'read'>,
   owners: readonly ContentRootOwner[]
 ) =>
   editor.read((state) => {
     const nodes: PliteViewBoundaryGraphNodeInput[] = [];
-    const runtimeEditor = getRuntimeEditor(editor);
-    const markup =
-      runtimeEditor && readAuthoredView(runtimeEditor)?.projection === 'markup';
-    const version = markup
-      ? readAuthoredViewFragmentVersion(runtimeEditor)
-      : null;
     const currentRoot = state.view.root() ?? MAIN_ROOT_KEY;
     const graphRoot = owners.some((owner) => owner.childRoot === currentRoot)
       ? MAIN_ROOT_KEY
       : currentRoot;
-    const graphChildren = readRootChildren(state, graphRoot);
-    const currentRoots = state.value().roots;
-    const source = markup ? getEditorRuntimeOwner(runtimeEditor) : null;
-    const cacheKey = JSON.stringify([
-      graphRoot,
-      owners.map(getContentRootOwnerKey),
-    ]);
-    let cache = source ? VIEW_BOUNDARY_GRAPHS.get(source) : null;
-    if (source && cache?.version !== version) {
-      cache = { version, graphs: new Map() };
-      VIEW_BOUNDARY_GRAPHS.set(source, cache);
-    }
-    const previous = cache?.graphs.get(cacheKey);
-    if (
-      previous &&
-      previous.children === graphChildren &&
-      previous.roots === currentRoots
-    ) {
-      return previous.graph;
-    }
 
     const appendRoot = (
       root: RootKey,
       owner: ContentRootOwner | null,
       ownerStack: ReadonlySet<string>
     ) => {
-      const children = readRootChildren(state, root);
-      const nodeIndex =
-        runtimeEditor && markup
-          ? getEditorProjectionSnapshotIndex(runtimeEditor, children)
-          : null;
-      const slotsAt = (path?: Path) =>
-        runtimeEditor && nodeIndex
-          ? readAuthoredViewFragmentSlots(
-              runtimeEditor,
-              path ? (nodeIndex.keyAt(path) ?? undefined) : undefined,
-              root
-            )
-          : [];
-      const appendFragment = (
-        slot: NativeAuthoredFragmentSlot,
-        blockKey?: string
-      ) => {
-        if (!runtimeEditor) return;
-        const fragment = readAuthoredViewFragments(
-          runtimeEditor,
-          slot.changeId
-        ).find((entry) => entry.id === slot.id);
-        if (!fragment) return;
-        const append = (
-          node: Descendant,
-          path: Path,
-          currentBlockKey = blockKey
-        ) => {
-          if (NodeApi.isElement(node)) {
-            if (state.schema.isVoid(node)) {
-              nodes.push({
-                blockKey: currentBlockKey,
-                fragment,
-                owner,
-                path,
-                root,
-              });
-              return;
-            }
-            const childBlockKey = state.schema.isInline(node)
-              ? currentBlockKey
-              : JSON.stringify([root, owner, fragment.id, path]);
-            node.children.forEach((child, index) =>
-              append(child, path.concat(index), childBlockKey)
-            );
-          } else {
-            nodes.push({
-              blockKey: currentBlockKey,
-              fragment,
-              owner,
-              path,
-              root,
-              text: { start: 0, end: node.text.length, value: node.text },
-            });
-          }
-        };
-        for (const [node, path] of readAuthoredFragmentRoots(fragment)) {
-          append(node, path);
-        }
-      };
+      const appendNode = (node: Descendant, path: Path, blockKey?: string) => {
+        const childOwner = getTopLevelOwner(owners, root, path);
 
-      const appendRenderSegment = (
-        segment: NativeAuthoredRenderSegment,
-        blockKey?: string
-      ) => {
-        if (segment.kind === 'element') {
-          if (state.schema.isVoid(segment.node)) {
-            nodes.push({
-              blockKey,
-              ...(segment.fragment ? { fragment: segment.fragment } : {}),
-              key: JSON.stringify([root, owner, segment.key]),
-              owner,
-              path: segment.path,
-              root,
-            });
+        if (childOwner) {
+          const ownerKey = getContentRootOwnerKey(childOwner);
+
+          if (!ownerStack.has(ownerKey)) {
+            appendRoot(
+              childOwner.childRoot,
+              childOwner,
+              new Set([...ownerStack, ownerKey])
+            );
             return;
           }
-          const childOwner =
-            !segment.fragment && getTopLevelOwner(owners, root, segment.path);
-          if (childOwner) {
-            const ownerKey = getContentRootOwnerKey(childOwner);
-            if (!ownerStack.has(ownerKey)) {
-              appendRoot(
-                childOwner.childRoot,
-                childOwner,
-                new Set([...ownerStack, ownerKey])
-              );
-              return;
-            }
-          }
-          const childBlockKey = state.schema.isInline(segment.node)
-            ? blockKey
-            : JSON.stringify([root, owner, segment.key]);
-          segment.children.forEach((child) =>
-            appendRenderSegment(child, childBlockKey)
-          );
-        } else if (NodeApi.isText(segment.node)) {
-          nodes.push({
-            blockKey,
-            ...(segment.fragment ? { fragment: segment.fragment } : {}),
-            key: JSON.stringify([root, owner, segment.key]),
-            owner,
-            path: segment.path,
-            root,
-            text: {
-              start: segment.start,
-              end: segment.end,
-              value: segment.node.text,
-            },
-          });
         }
-      };
 
-      const appendNode = (node: Descendant, path: Path, blockKey?: string) => {
-        const slots = slotsAt(path);
-        if (runtimeEditor && slots.some((slot) => slot.side === 'structure')) {
-          const segments = readAuthoredViewRenderSegments(
-            runtimeEditor,
-            children,
-            root,
-            path
-          );
-          segments.forEach((segment) => appendRenderSegment(segment, blockKey));
+        if (NodeApi.isElement(node) && hasNestedOwner(owners, root, path)) {
+          if (state.schema.isVoid(node)) {
+            nodes.push({ blockKey, owner, path, root });
+            return;
+          }
+          const childBlockKey = state.schema.isInline(node)
+            ? blockKey
+            : JSON.stringify([root, owner, null, path]);
+          node.children.forEach((child, index) => {
+            appendNode(child, path.concat(index), childBlockKey);
+          });
           return;
         }
-        slots
-          .filter((slot) => slot.side === 'before')
-          .forEach((slot) => appendFragment(slot, blockKey));
-        const appendContent = () => {
-          const childOwner = getTopLevelOwner(owners, root, path);
 
-          if (childOwner) {
-            const ownerKey = getContentRootOwnerKey(childOwner);
-
-            if (!ownerStack.has(ownerKey)) {
-              appendRoot(
-                childOwner.childRoot,
-                childOwner,
-                new Set([...ownerStack, ownerKey])
-              );
-              return;
-            }
-          }
-
-          if (
-            NodeApi.isElement(node) &&
-            (markup || hasNestedOwner(owners, root, path))
-          ) {
-            if (state.schema.isVoid(node)) {
-              nodes.push({ blockKey, owner, path, root });
-              return;
-            }
-            const childBlockKey = state.schema.isInline(node)
-              ? blockKey
-              : JSON.stringify([root, owner, null, path]);
-            node.children.forEach((child, index) => {
-              appendNode(child, path.concat(index), childBlockKey);
-            });
-            return;
-          }
-
-          if (NodeApi.isText(node) && markup && runtimeEditor) {
-            let start = 0;
-            let hasFragment = false;
-            for (const slot of slots.filter((entry) => entry.side === 'text')) {
-              const fragment = readAuthoredViewFragments(
-                runtimeEditor,
-                slot.changeId
-              ).find((entry) => entry.id === slot.id);
-              if (!fragment || fragment.placement?.kind !== 'text') continue;
-              const roots = readAuthoredFragmentRoots(fragment);
-              if (
-                !roots.length ||
-                roots.some(
-                  ([entry]) =>
-                    NodeApi.isElement(entry) && !state.schema.isInline(entry)
-                )
-              ) {
-                continue;
-              }
-              const end = fragment.placement.point.offset;
-              if (end > start || !hasFragment) {
-                nodes.push({
-                  blockKey,
-                  owner,
-                  path,
-                  root,
-                  text: { start, end, value: node.text },
-                });
-              }
-              appendFragment(slot, blockKey);
-              hasFragment = true;
-              start = end;
-            }
-            nodes.push({
-              blockKey,
-              owner,
-              path,
-              root,
-              text: { start, end: node.text.length, value: node.text },
-            });
-            return;
-          }
-
-          nodes.push({
-            ...(owner ? { owner } : {}),
-            path,
-            root,
-          });
-        };
-        appendContent();
-        slots
-          .filter((slot) => slot.side === 'after')
-          .forEach((slot) => appendFragment(slot, blockKey));
+        nodes.push({
+          ...(owner ? { owner } : {}),
+          path,
+          root,
+        });
       };
 
-      if (
-        runtimeEditor &&
-        slotsAt().some((slot) => slot.side === 'structure')
-      ) {
-        const segments = readAuthoredViewRenderSegments(
-          runtimeEditor,
-          children,
-          root,
-          []
-        );
-        segments.forEach((segment) => appendRenderSegment(segment));
-        return;
-      }
-      slotsAt()
-        .filter((slot) => slot.side === 'children')
-        .forEach((slot) => appendFragment(slot));
-      children.forEach((child, index) => {
+      readRootChildren(state, root).forEach((child, index) => {
         appendNode(child, [index]);
       });
     };
 
     appendRoot(graphRoot, null, new Set());
-    const graph = createPliteViewBoundaryGraph(nodes);
-    cache?.graphs.set(cacheKey, {
-      children: graphChildren,
-      graph,
-      roots: currentRoots,
-    });
-    return graph;
-  });
 
-export const readContentRootRenderSegments = <V extends Value>(
-  editor: Pick<AnyEditor<V>, 'read'>,
-  nodeKey?: NodeKey
-) => {
-  const runtimeEditor = getRuntimeEditor(editor);
-  if (!runtimeEditor) return null;
-  return editor.read((state) => {
-    const root = state.view.root() ?? MAIN_ROOT_KEY;
-    if (
-      !readAuthoredViewFragmentSlots(runtimeEditor, nodeKey, root).some(
-        (slot) => slot.side === 'structure'
-      )
-    ) {
-      return null;
-    }
-    const path = nodeKey ? state.nodes.path(nodeKey) : [];
-    return path
-      ? readAuthoredViewRenderSegments(
-          runtimeEditor,
-          state.children(),
-          root,
-          path
-        )
-      : null;
+    return createPliteViewBoundaryGraph(nodes);
   });
-};

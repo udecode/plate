@@ -1,11 +1,153 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 const CASE_ID = 'media-caption:file-selection-to-toc-navigation';
 const EDITOR = '[data-editor="true"][contenteditable="true"]';
+const ARABIC = 'مرحبا بالعالم';
+const RTL_PARAGRAPH_SETUP = {
+  editorDirection: 'ltr',
+  paragraphDirection: 'rtl',
+  paragraphType: 'paragraph',
+};
+const HIDDEN_CAPTIONS = {
+  'content-visibility': {
+    css: 'figure figcaption { content-visibility: hidden !important; }',
+    style: { contentVisibility: 'hidden' },
+  },
+  display: {
+    css: 'figure figcaption { display: none !important; }',
+    style: { display: 'none' },
+  },
+  visibility: {
+    css: 'figure figcaption { visibility: hidden !important; }',
+    style: { visibility: 'hidden' },
+  },
+} as const;
+
+type MediaValue = {
+  children: Array<{
+    children?: Array<{ text?: string }>;
+    type?: string;
+  }>;
+};
+
+const openMediaEditor = async (
+  page: Page,
+  route: '/blocks/editor-ai' | '/blocks/media-demo',
+  name: string
+) => {
+  await page.goto(route, { waitUntil: 'commit' });
+  const root = page.locator(EDITOR).first();
+  const editor = createBrowserEditorHarness(
+    page,
+    `media-caption:${name}`,
+    root
+  );
+
+  await editor.ready({
+    editor: 'visible',
+    text:
+      route === '/blocks/media-demo'
+        ? 'Image caption'
+        : 'Images with captions provide context.',
+  });
+
+  const value = (await editor.get.modelValue()) as MediaValue;
+  const blockText = async (index: number) =>
+    ((await editor.get.modelValue()) as MediaValue).children[index]?.children
+      ?.map((child) => child.text ?? '')
+      .join('');
+  const blockStyle = (index: number, selector = '') =>
+    root.evaluate(
+      (element, [path, inner]) => {
+        const block = element.querySelector(`[data-editor-path="${path}"]`);
+        const target = inner ? block?.querySelector(inner) : block;
+
+        if (!target) return null;
+
+        const { contentVisibility, direction, display, visibility } =
+          getComputedStyle(target);
+
+        return { contentVisibility, direction, display, visibility };
+      },
+      [index, selector] as const
+    );
+  const caretInCaption = (index: number) =>
+    root.evaluate((element, path) => {
+      const selection = element.ownerDocument.getSelection();
+      const caption = element.querySelector(
+        `[data-editor-path="${path}"] figcaption`
+      );
+
+      return !!(
+        selection?.rangeCount &&
+        selection.anchorNode &&
+        caption?.contains(selection.anchorNode)
+      );
+    }, index);
+  const modelSelection = () =>
+    root.evaluate(
+      (element, key) =>
+        (
+          element as HTMLElement &
+            Record<string, { getModelSelection: () => unknown } | undefined>
+        )[key]?.getModelSelection(),
+      BROWSER_HANDLE_KEY
+    );
+  const nativeRangeCount = () =>
+    root.evaluate(
+      (element) => element.ownerDocument.getSelection()?.rangeCount ?? 0
+    );
+
+  return {
+    blockStyle,
+    blockText,
+    caretInCaption,
+    editor,
+    modelSelection,
+    nativeRangeCount,
+    root,
+    value,
+  };
+};
+
+const openArabicParagraphBeforeImage = async (page: Page, name: string) => {
+  const media = await openMediaEditor(page, '/blocks/media-demo', name);
+  const { blockStyle, blockText, editor, root, value } = media;
+  const imageIndex = value.children.findIndex((node) => node.type === 'image');
+  const paragraphIndex = imageIndex - 1;
+  const paragraph = value.children[paragraphIndex].children!;
+
+  await editor.selection.selectDOM({
+    anchor: { offset: 0, path: [paragraphIndex, 0] },
+    focus: {
+      offset: paragraph.at(-1)!.text!.length,
+      path: [paragraphIndex, paragraph.length - 1],
+    },
+  });
+  await page.keyboard.insertText(ARABIC);
+  await expect.poll(() => blockText(paragraphIndex)).toBe(ARABIC);
+  await root.evaluate((element, path) => {
+    element
+      .querySelector(`[data-editor-path="${path}"]`)
+      ?.setAttribute('dir', 'auto');
+  }, paragraphIndex);
+
+  const paragraphStyle = await blockStyle(paragraphIndex);
+  const setup = {
+    editorDirection: await root.evaluate(
+      (element) => getComputedStyle(element).direction
+    ),
+    paragraphDirection: paragraphStyle?.direction,
+    paragraphType: value.children[paragraphIndex].type,
+  };
+
+  return { ...media, imageIndex, paragraphIndex, setup };
+};
 const nativeCaretTop = (root: Locator) =>
   root.evaluate((element) => {
     const selection = element.ownerDocument.getSelection();
@@ -163,12 +305,13 @@ test('image chrome selects the owner; caption edits and owner deletion remain di
       .filter({ has: page.locator('img') })
       .first();
     const modelSelection = () =>
-      root.evaluate((element) =>
-        (
-          element as HTMLElement & {
-            __pliteBrowserHandle?: { getModelSelection: () => unknown };
-          }
-        ).__pliteBrowserHandle?.getModelSelection()
+      root.evaluate(
+        (element, key) =>
+          (
+            element as HTMLElement &
+              Record<string, { getModelSelection: () => unknown } | undefined>
+          )[key]?.getModelSelection(),
+        BROWSER_HANDLE_KEY
       );
 
     await figure.locator('img').click();
@@ -266,12 +409,13 @@ test('arrow keys traverse the image owner before its caption', async ({
     };
     const captionStart = { offset: 0, path: [imageIndex, 0] };
     const modelSelection = () =>
-      root.evaluate((element) =>
-        (
-          element as HTMLElement & {
-            __pliteBrowserHandle?: { getModelSelection: () => unknown };
-          }
-        ).__pliteBrowserHandle?.getModelSelection()
+      root.evaluate(
+        (element, key) =>
+          (
+            element as HTMLElement &
+              Record<string, { getModelSelection: () => unknown } | undefined>
+          )[key]?.getModelSelection(),
+        BROWSER_HANDLE_KEY
       );
 
     const beforeFirstLine = {
@@ -284,10 +428,16 @@ test('arrow keys traverse the image owner before its caption', async ({
       focus: beforeFirstLine,
     });
     await page.keyboard.press('ArrowDown');
-    await expect.poll(modelSelection).toMatchObject({
-      anchor: { path: [imageIndex - 1, expect.any(Number)] },
-      kind: 'text',
-    });
+    await expect
+      .poll(async () => {
+        const selection = (await modelSelection()) as {
+          anchor: { path: number[] };
+          kind: string;
+        };
+
+        return { block: selection.anchor.path[0], kind: selection.kind };
+      })
+      .toEqual({ block: imageIndex - 1, kind: 'text' });
 
     const beforeLastLine = {
       ...beforeEnd,
@@ -437,12 +587,13 @@ test('ArrowDown from the media demo paragraph stops on the image before its capt
     path: [imageIndex - 1, lastTextIndex],
   };
   const modelSelection = () =>
-    root.evaluate((element) =>
-      (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: { getModelSelection: () => unknown };
-        }
-      ).__pliteBrowserHandle?.getModelSelection()
+    root.evaluate(
+      (element, key) =>
+        (
+          element as HTMLElement &
+            Record<string, { getModelSelection: () => unknown } | undefined>
+        )[key]?.getModelSelection(),
+      BROWSER_HANDLE_KEY
     );
 
   await editor.selection.selectDOM({ anchor: beforeEnd, focus: beforeEnd });
@@ -495,12 +646,13 @@ test('ArrowUp from below a populated image visits its caption before the owner',
     path: [imageIndex + 1, lastTextIndex],
   };
   const modelSelection = () =>
-    root.evaluate((element) =>
-      (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: { getModelSelection: () => unknown };
-        }
-      ).__pliteBrowserHandle?.getModelSelection()
+    root.evaluate(
+      (element, key) =>
+        (
+          element as HTMLElement &
+            Record<string, { getModelSelection: () => unknown } | undefined>
+        )[key]?.getModelSelection(),
+      BROWSER_HANDLE_KEY
     );
 
   await editor.selection.selectDOM({ anchor: belowPoint, focus: belowPoint });
@@ -608,12 +760,13 @@ for (const mediaType of ['file', 'audio', 'video']) {
     );
     const belowStart = { offset: 0, path: [mediaIndex + 1, 0] };
     const modelSelection = () =>
-      root.evaluate((element) =>
-        (
-          element as HTMLElement & {
-            __pliteBrowserHandle?: { getModelSelection: () => unknown };
-          }
-        ).__pliteBrowserHandle?.getModelSelection()
+      root.evaluate(
+        (element, key) =>
+          (
+            element as HTMLElement &
+              Record<string, { getModelSelection: () => unknown } | undefined>
+          )[key]?.getModelSelection(),
+        BROWSER_HANDLE_KEY
       );
 
     expect(mediaIndex).toBeGreaterThan(0);
@@ -653,6 +806,240 @@ for (const mediaType of ['file', 'audio', 'video']) {
   });
 }
 
+for (const [hide, { css, style }] of Object.entries(HIDDEN_CAPTIONS)) {
+  test(`ArrowUp from below selects an image whose caption app CSS hides with ${hide} [EDIT-CAPTION-NAV-006]`, async ({
+    page,
+  }) => {
+    const { blockStyle, editor, modelSelection, nativeRangeCount, value } =
+      await openMediaEditor(
+        page,
+        '/blocks/media-demo',
+        `hidden-caption-${hide}-reverse-entry`
+      );
+    const imageIndex = value.children.findIndex(
+      (node) => node.type === 'image'
+    );
+    const belowStart = { offset: 0, path: [imageIndex + 1, 0] };
+
+    await page.addStyleTag({ content: css });
+    await expect
+      .poll(() => blockStyle(imageIndex, 'figcaption'))
+      .toMatchObject(style);
+    await editor.selection.selectDOM({ anchor: belowStart, focus: belowStart });
+    await page.keyboard.press('ArrowUp');
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: [[imageIndex]],
+    });
+    await expect.poll(nativeRangeCount).toBe(0);
+  });
+}
+
+for (const [key, row] of [
+  ['ArrowDown', 'EDIT-CAPTION-NAV-001'],
+  ['ArrowRight', 'EDIT-CAPTION-NAV-003'],
+] as const) {
+  test(`${key} from a selected image skips a caption app CSS hides [${row}]`, async ({
+    page,
+  }) => {
+    const { blockStyle, blockText, modelSelection, root, value } =
+      await openMediaEditor(
+        page,
+        '/blocks/media-demo',
+        `hidden-caption-owner-${key}`
+      );
+    const imageIndex = value.children.findIndex(
+      (node) => node.type === 'image'
+    );
+    const afterStart = { offset: 0, path: [imageIndex + 1, 0] };
+    const afterText = value.children[imageIndex + 1].children![0].text!;
+
+    await page.addStyleTag({ content: HIDDEN_CAPTIONS.display.css });
+    await expect
+      .poll(() => blockStyle(imageIndex, 'figcaption'))
+      .toMatchObject({ display: 'none' });
+    await root.locator('figure img').first().click();
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: [[imageIndex]],
+    });
+    await page.keyboard.press(key);
+    await expect.poll(modelSelection).toMatchObject({
+      anchor: afterStart,
+      focus: afterStart,
+      kind: 'text',
+    });
+    await page.keyboard.type('Q');
+    await expect
+      .poll(() =>
+        Promise.all([blockText(imageIndex), blockText(imageIndex + 1)])
+      )
+      .toEqual(['Image caption', `Q${afterText}`]);
+  });
+}
+
+test('ArrowLeft from the block after an image selects it when app CSS hides its caption [EDIT-CAPTION-NAV-003]', async ({
+  page,
+}) => {
+  const { blockStyle, editor, modelSelection, nativeRangeCount, value } =
+    await openMediaEditor(
+      page,
+      '/blocks/media-demo',
+      'hidden-caption-backward-entry'
+    );
+  const imageIndex = value.children.findIndex((node) => node.type === 'image');
+  const afterStart = { offset: 0, path: [imageIndex + 1, 0] };
+
+  await page.addStyleTag({ content: HIDDEN_CAPTIONS.display.css });
+  await expect
+    .poll(() => blockStyle(imageIndex, 'figcaption'))
+    .toMatchObject({ display: 'none' });
+  await editor.selection.selectDOM({ anchor: afterStart, focus: afterStart });
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(modelSelection).toMatchObject({
+    kind: 'node',
+    paths: [[imageIndex]],
+  });
+  await expect.poll(nativeRangeCount).toBe(0);
+});
+
+test('ArrowUp from below enters an empty caption the app keeps visible [EDIT-CAPTION-NAV-005]', async ({
+  page,
+}) => {
+  const {
+    blockStyle,
+    blockText,
+    caretInCaption,
+    editor,
+    modelSelection,
+    root,
+    value,
+  } = await openMediaEditor(
+    page,
+    '/blocks/media-demo',
+    'visible-empty-caption'
+  );
+  const fileIndex = value.children.findIndex((node) => node.type === 'file');
+  const belowStart = { offset: 0, path: [fileIndex + 1, 0] };
+  const captionStart = { offset: 0, path: [fileIndex, 0] };
+
+  expect(value.children[fileIndex].children).toEqual([{ text: '' }]);
+  await editor.selection.selectDOM({ anchor: belowStart, focus: belowStart });
+  await root.evaluate((element, path) => {
+    element
+      .querySelector(`[data-editor-path="${path}"] figcaption`)
+      ?.removeAttribute('hidden');
+  }, fileIndex);
+  await expect
+    .poll(() => blockStyle(fileIndex, 'figcaption'))
+    .not.toMatchObject({ display: 'none' });
+  await page.keyboard.press('ArrowUp');
+  await expect.poll(modelSelection).toMatchObject({
+    anchor: captionStart,
+    focus: captionStart,
+    kind: 'text',
+  });
+  await expect.poll(() => caretInCaption(fileIndex)).toBe(true);
+  await page.keyboard.type('R');
+  await expect.poll(() => blockText(fileIndex)).toBe('R');
+});
+
+test('ArrowUp from selected audio selects the file above while its empty caption is hidden [EDIT-CAPTION-NAV-006]', async ({
+  page,
+}) => {
+  const { blockStyle, editor, modelSelection, nativeRangeCount, value } =
+    await openMediaEditor(page, '/blocks/editor-ai', 'media-reverse-entry');
+  const imageIndex = value.children.findIndex(
+    (node) =>
+      node.type === 'image' &&
+      node.children?.[0]?.text === 'Images with captions provide context.'
+  );
+  const fileIndex = imageIndex + 1;
+  const audioIndex = imageIndex + 2;
+  const fileCaptionStart = { offset: 0, path: [fileIndex, 0] };
+
+  expect(value.children[fileIndex]).toMatchObject({
+    children: [{ text: '' }],
+    type: 'file',
+  });
+  expect(value.children[audioIndex]).toMatchObject({ type: 'audio' });
+  await editor.selection.select({
+    anchor: fileCaptionStart,
+    focus: fileCaptionStart,
+  });
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(modelSelection).toMatchObject({
+    kind: 'node',
+    paths: [[audioIndex]],
+  });
+  await expect
+    .poll(() => blockStyle(fileIndex, 'figcaption'))
+    .toMatchObject({ display: 'none' });
+  await page.keyboard.press('ArrowUp');
+  await expect.poll(modelSelection).toMatchObject({
+    kind: 'node',
+    paths: [[fileIndex]],
+  });
+  await expect.poll(nativeRangeCount).toBe(0);
+});
+
+test('ArrowLeft at the end of an RTL paragraph in an LTR editor stops on the image after it [EDIT-CAPTION-NAV-003]', async ({
+  page,
+}) => {
+  const { editor, imageIndex, modelSelection, paragraphIndex, setup } =
+    await openArabicParagraphBeforeImage(page, 'rtl-paragraph-owner-stop');
+  const end = { offset: ARABIC.length, path: [paragraphIndex, 0] };
+
+  expect(setup).toEqual(RTL_PARAGRAPH_SETUP);
+  await editor.selection.selectDOM({ anchor: end, focus: end });
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(modelSelection).toMatchObject({
+    kind: 'node',
+    paths: [[imageIndex]],
+  });
+});
+
+test('ArrowRight at the end of an RTL paragraph in an LTR editor moves back one character', async ({
+  page,
+}) => {
+  const { editor, modelSelection, paragraphIndex, setup } =
+    await openArabicParagraphBeforeImage(page, 'rtl-paragraph-plain-move');
+  const end = { offset: ARABIC.length, path: [paragraphIndex, 0] };
+  const previous = { offset: ARABIC.length - 1, path: [paragraphIndex, 0] };
+
+  expect(setup).toEqual(RTL_PARAGRAPH_SETUP);
+  await editor.selection.selectDOM({ anchor: end, focus: end });
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(modelSelection).toMatchObject({
+    anchor: previous,
+    focus: previous,
+    kind: 'text',
+  });
+});
+
+test('ArrowLeft collapses a selection in an RTL paragraph to its logical end', async ({
+  page,
+}) => {
+  const { editor, modelSelection, paragraphIndex, setup } =
+    await openArabicParagraphBeforeImage(page, 'rtl-paragraph-collapse');
+  const start = { offset: 2, path: [paragraphIndex, 0] };
+  const end = { offset: 6, path: [paragraphIndex, 0] };
+
+  expect(setup).toEqual(RTL_PARAGRAPH_SETUP);
+  await editor.selection.selectDOM({ anchor: start, focus: end });
+  await expect.poll(modelSelection).toMatchObject({
+    anchor: start,
+    focus: end,
+    kind: 'text',
+  });
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(modelSelection).toMatchObject({
+    anchor: end,
+    focus: end,
+    kind: 'text',
+  });
+});
+
 test('ArrowUp stays in a wrapped paragraph below media until its first line', async ({
   page,
 }) => {
@@ -681,12 +1068,13 @@ test('ArrowUp stays in a wrapped paragraph below media until its first line', as
     path: [paragraphIndex, lastTextIndex],
   };
   const modelSelection = () =>
-    root.evaluate((element) =>
-      (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: { getModelSelection: () => unknown };
-        }
-      ).__pliteBrowserHandle?.getModelSelection()
+    root.evaluate(
+      (element, key) =>
+        (
+          element as HTMLElement &
+            Record<string, { getModelSelection: () => unknown } | undefined>
+        )[key]?.getModelSelection(),
+      BROWSER_HANDLE_KEY
     );
   const lineCount = await root.evaluate((element, index) => {
     const text = element.querySelector(`[data-editor-path="${index},0"]`);
@@ -749,12 +1137,13 @@ test('ArrowUp moves through a wrapped caption before selecting its media owner',
     path: [imageIndex, 0],
   };
   const modelSelection = () =>
-    root.evaluate((element) =>
-      (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: { getModelSelection: () => unknown };
-        }
-      ).__pliteBrowserHandle?.getModelSelection()
+    root.evaluate(
+      (element, key) =>
+        (
+          element as HTMLElement &
+            Record<string, { getModelSelection: () => unknown } | undefined>
+        )[key]?.getModelSelection(),
+      BROWSER_HANDLE_KEY
     );
 
   await editor.selection.selectDOM({ anchor: captionEnd, focus: captionEnd });

@@ -1,6 +1,6 @@
 import { expect, type Locator } from '@playwright/test';
 
-import { READY_TIMEOUT_MS, BROWSER_HANDLE_KEY } from './constants';
+import { BROWSER_HANDLE_KEY, READY_TIMEOUT_MS } from './constants';
 import type { BrowserDOMPathOptions } from './types';
 
 export const scrollTextPathIntoViewAndCheckMaterialized = async (

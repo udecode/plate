@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -236,12 +237,13 @@ test(CLIPBOARD_RECTANGLE_CASE_ID, async ({ page }, testInfo) => {
       'table td[data-editor-node-key], table th[data-editor-node-key]'
     );
     const modelSelection = () =>
-      root.evaluate((element) =>
-        (
-          element as HTMLElement & {
-            __pliteBrowserHandle?: { getModelSelection: () => unknown };
-          }
-        ).__pliteBrowserHandle?.getModelSelection()
+      root.evaluate(
+        (element, key) =>
+          (
+            element as HTMLElement &
+              Record<string, { getModelSelection: () => unknown } | undefined>
+          )[key]?.getModelSelection(),
+        BROWSER_HANDLE_KEY
       );
     await editor.ready({ editor: 'visible', text: 'Plugin' });
     await expect(cells).toHaveCount(16);
@@ -343,12 +345,13 @@ test(CLIPBOARD_CARET_CASE_ID, async ({ context, page }, testInfo) => {
       'td[data-editor-node-key], th[data-editor-node-key]'
     );
     const modelSelection = () =>
-      root.evaluate((element) =>
-        (
-          element as HTMLElement & {
-            __pliteBrowserHandle?: { getModelSelection: () => unknown };
-          }
-        ).__pliteBrowserHandle?.getModelSelection()
+      root.evaluate(
+        (element, key) =>
+          (
+            element as HTMLElement &
+              Record<string, { getModelSelection: () => unknown } | undefined>
+          )[key]?.getModelSelection(),
+        BROWSER_HANDLE_KEY
       );
 
     await expect(cells).toHaveCount(24);
@@ -528,12 +531,13 @@ test(MARK_SHORTCUT_CASE_ID, async ({ page }, testInfo) => {
       'td[data-editor-node-key], th[data-editor-node-key]'
     );
     const modelSelection = () =>
-      root.evaluate((element) =>
-        (
-          element as HTMLElement & {
-            __pliteBrowserHandle?: { getModelSelection: () => unknown };
-          }
-        ).__pliteBrowserHandle?.getModelSelection()
+      root.evaluate(
+        (element, key) =>
+          (
+            element as HTMLElement &
+              Record<string, { getModelSelection: () => unknown } | undefined>
+          )[key]?.getModelSelection(),
+        BROWSER_HANDLE_KEY
       );
     const selectedRowLeaves = async () => {
       const value = (await editor.get.modelValue()) as {
@@ -630,12 +634,13 @@ test(BLOCK_FORMAT_CASE_ID, async ({ page }, testInfo) => {
       'td[data-editor-node-key], th[data-editor-node-key]'
     );
     const modelSelection = () =>
-      root.evaluate((element) =>
-        (
-          element as HTMLElement & {
-            __pliteBrowserHandle?: { getModelSelection: () => unknown };
-          }
-        ).__pliteBrowserHandle?.getModelSelection()
+      root.evaluate(
+        (element, key) =>
+          (
+            element as HTMLElement &
+              Record<string, { getModelSelection: () => unknown } | undefined>
+          )[key]?.getModelSelection(),
+        BROWSER_HANDLE_KEY
       );
     const selectedRowBlocks = async () => {
       const value = (await editor.get.modelValue()) as {

@@ -6,7 +6,6 @@ import * as Y from 'yjs';
 import type { Descendant } from '../../src/index';
 import {
   getYjsAttributes,
-  setPliteYjsAttribute,
   setYjsAttribute,
 } from '../../src/yjs/core/attributes';
 import {
@@ -16,18 +15,18 @@ import {
 import { setYjsNodeAttributes } from '../../src/yjs/core/replacement';
 
 const internalYjsAttributeKeys = [
-  'plite:yjs-hidden',
-  'plite:yjs-id',
-  'plite:type',
-  'plite:yjs-virtual-child-id',
-  'plite:yjs-virtual-placeholder',
-  'plite:yjs-set:spoof',
+  'yjs:hidden',
+  'yjs:id',
+  'yjs:virtual-child-id',
+  'yjs:virtual-placeholder',
+  'yjs:set:spoof',
+  'yjs:x',
 ] as const;
 
 describe('plitejs/yjs attribute contract', () => {
   it('writes non-string Yjs attributes through the interop boundary', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
+    const root = doc.get('document', Y.XmlElement);
     const text = new Y.XmlText();
 
     root.insert(0, [text]);
@@ -42,11 +41,11 @@ describe('plitejs/yjs attribute contract', () => {
 
   it('preserves uniform object text attributes across separate Yjs delta parts', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
-    const paragraph = new Y.XmlElement('paragraph');
+    const root = doc.get('document', Y.XmlElement);
+    const paragraph = new Y.XmlElement('element');
     const text = new Y.XmlText();
 
-    setPliteYjsAttribute(paragraph, 'type', 'paragraph');
+    setYjsAttribute(paragraph, 'type', 'paragraph');
     root.insert(0, [paragraph]);
     paragraph.insert(0, [text]);
     text.applyDelta(
@@ -67,11 +66,11 @@ describe('plitejs/yjs attribute contract', () => {
 
   it('preserves attributes on empty Yjs text nodes', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
-    const paragraph = new Y.XmlElement('paragraph');
+    const root = doc.get('document', Y.XmlElement);
+    const paragraph = new Y.XmlElement('element');
     const text = new Y.XmlText();
 
-    setPliteYjsAttribute(paragraph, 'type', 'paragraph');
+    setYjsAttribute(paragraph, 'type', 'paragraph');
     setYjsAttribute(text, 'bold', true);
     root.insert(0, [paragraph]);
     paragraph.insert(0, [text]);
@@ -86,11 +85,11 @@ describe('plitejs/yjs attribute contract', () => {
 
   it('preserves null-valued text attributes through readback', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
-    const paragraph = new Y.XmlElement('paragraph');
+    const root = doc.get('document', Y.XmlElement);
+    const paragraph = new Y.XmlElement('element');
     const [text] = createYjsNodes([{ color: null, text: 'alpha' }]);
 
-    setPliteYjsAttribute(paragraph, 'type', 'paragraph');
+    setYjsAttribute(paragraph, 'type', 'paragraph');
     root.insert(0, [paragraph]);
     paragraph.insert(0, [text]);
 
@@ -101,7 +100,7 @@ describe('plitejs/yjs attribute contract', () => {
 
   it('does not rewrite semantically unchanged object attributes', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
+    const root = doc.get('document', Y.XmlElement);
     const [text] = createYjsNodes([{ style: { color: 'red' }, text: 'alpha' }]);
     let updates = 0;
 
@@ -122,7 +121,7 @@ describe('plitejs/yjs attribute contract', () => {
 
   it('encodes schema set properties as canonical per-value Yjs attributes', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
+    const root = doc.get('document', Y.XmlElement);
     const [text] = createYjsNodes(
       [
         {
@@ -140,7 +139,7 @@ describe('plitejs/yjs attribute contract', () => {
 
     assert.equal(Object.hasOwn(attributes, 'commentIds'), false);
     assert.equal(
-      Object.keys(attributes).filter((key) => key.startsWith('plite:yjs-set:'))
+      Object.keys(attributes).filter((key) => key.startsWith('yjs:set:'))
         .length,
       5
     );
@@ -152,7 +151,23 @@ describe('plitejs/yjs attribute contract', () => {
     ]);
   });
 
-  it('rejects Plite-authored attributes reserved for internal Yjs state', () => {
+  it('stores app fields outside the reserved yjs: family', () => {
+    const doc = new Y.Doc();
+    const root = doc.get('document', Y.XmlElement);
+    const value = [
+      {
+        children: [{ 'my:yjs:note': 'b', text: 'alpha' }],
+        'plite:yjs-set:tag': 'a',
+        type: 'paragraph',
+      },
+    ] as unknown as Descendant[];
+
+    root.insert(0, createYjsNodes(value));
+
+    assert.deepEqual(readPliteValueFromYjs(root), value);
+  });
+
+  it('rejects editor-authored attributes reserved for internal Yjs state', () => {
     for (const key of internalYjsAttributeKeys) {
       const element = {
         children: [{ text: 'alpha' }],

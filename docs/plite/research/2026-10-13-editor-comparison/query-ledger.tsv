@@ -1,0 +1,30 @@
+query_key	surface	query	filters	result_count	sampled_count	new_repo_keys	new_lead_keys	next_query
+rich-text-active	GitHub REST search	rich-text-editor stars:>100 archived:false	updated	214	50	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+rich-text-new	GitHub REST search	"""rich text"" created:>2024-01-01 stars:>50 archived:false"	stars	50	50	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+wysiwyg-new	GitHub REST search	wysiwyg created:>2024-01-01 stars:>50 archived:false	stars	62	50	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+block-editor	GitHub REST search	"""block editor"" stars:>100 archived:false"	updated	21	21	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+markdown-editor	GitHub REST search	markdown-editor stars:>200 archived:false	updated	267	50	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+document-editor	GitHub REST search	"""document editor"" stars:>100 archived:false"	updated	12	12	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+collaborative-editor	GitHub REST search	"""collaborative editor"" stars:>100 archived:false"	updated	9	9	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+canvas-editor	GitHub REST search	"""canvas editor"" stars:>50 archived:false"	updated	17	17	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+lexical-extensions	GitHub REST search	repo:facebook/lexical is:pr extension is:merged	updated	258	4	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+blocksuite-selection	GitHub REST search	repo:toeverything/blocksuite is:issue selection	updated	248	4	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+blocknote-collaboration	GitHub REST search	repo:TypeCellOS/BlockNote is:issue collaboration	updated	63	4	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+prosekit-input	GitHub REST search	repo:prosekit/prosekit is:issue composition	updated	0	0	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+superdoc-virtualization	GitHub REST search	repo:superdoc/docx-editor is:pr virtual	updated	54	4	private raw query result	see lead-ledger.tsv	none, bounded corpus closed
+engines-1	GitHub REST repository search	rich text editor language:TypeScript stars:>1000 pushed:>2026-01-01	Query string qualifiers	16	16	engines shard registry	see lead-ledger.tsv	none, bounded corpus closed
+engines-2	GitHub REST repository search	prosemirror framework language:TypeScript stars:>100	Query string qualifiers	3	3	engines shard registry	see lead-ledger.tsv	none, bounded corpus closed
+engines-3	GitHub REST repository search	editor engine rich text stars:>500	Query string qualifiers	0	0	engines shard registry	see lead-ledger.tsv	none, bounded corpus closed
+engines-4	GitHub REST repository search	wangEditor Umo editor	Query string qualifiers	0	0	engines shard registry	see lead-ledger.tsv	none, bounded corpus closed
+documents-1	web	GitHub 2026 rich text document editor SuperDoc OpenDoc BlockNote BlockSuite Loro	assigned corpus	unknown	visible search results; leads only	documents shard registry	see lead-ledger.tsv	none, bounded corpus closed
+documents-2	web	GitHub Editor.js alternatives successor block editor Yoopta AppFlowy SiYuan	assigned corpus	unknown	visible search results; leads only	documents shard registry	see lead-ledger.tsv	none, bounded corpus closed
+documents-3	web	Editor.js successor editor github blok 2026	assigned corpus	unknown	visible search results; leads only	documents shard registry	see lead-ledger.tsv	none, bounded corpus closed
+documents-4	web	site.github.com rich document editor new 2026 DocX canvas independent editor	assigned corpus	unknown	visible search results; leads only	documents shard registry	see lead-ledger.tsv	none, bounded corpus closed
+documents-5	web	"site:github.com ""Editor.js"" ""fork"" ""2026"""	assigned corpus	unknown	visible search results; leads only	documents shard registry	see lead-ledger.tsv	none, bounded corpus closed
+markdown-1	web	github markdown editor hybrid Meowdown Milkdown MDXEditor 2026	assigned corpus	unknown	unknown	markdown shard registry	see lead-ledger.tsv	none, bounded corpus closed
+markdown-2	web	github new text editor engine EditContext markdown editor 2026 Pretext	assigned corpus	unknown	unknown	markdown shard registry	see lead-ledger.tsv	none, bounded corpus closed
+markdown-3	web	site.prosekit.dev Meowdown markdown editor browser tests	assigned corpus	unknown	unknown	markdown shard registry	see lead-ledger.tsv	none, bounded corpus closed
+markdown-4	web	site:milkdown.dev/docs crepe feature markdown editor	assigned corpus	unknown	unknown	markdown shard registry	see lead-ledger.tsv	none, bounded corpus closed
+markdown-5	web	site:mdxeditor.dev editor docs lexical architecture	assigned corpus	unknown	unknown	markdown shard registry	see lead-ledger.tsv	none, bounded corpus closed
+markdown-6	GitHub API	repos/{repo} and repos/{repo}/releases/latest for all19 repository keys	assigned corpus	unknown	unknown	markdown shard registry	see lead-ledger.tsv	none, bounded corpus closed
+markdown-7	local git source	git ls-tree at exact acquired revisions; selected file discovery over composition, input, tests, selection, layout, measurement, license	assigned corpus	unknown	unknown	markdown shard registry	see lead-ledger.tsv	none, bounded corpus closed

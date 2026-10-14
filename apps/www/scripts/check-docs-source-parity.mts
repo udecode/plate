@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import matter from 'gray-matter';
 
+import { registryExampleSlug, sourcePathToDocsRoute } from '@/lib/docs-routes';
 import { PLATE_DEFAULT_REGISTRY_STYLE } from '@/lib/plate-registry-styles';
 import { getRegistryMetadata } from '@/lib/registry-metadata';
 import { hrefWithLocale } from '@/lib/withLocale';
@@ -25,9 +26,6 @@ const UNSCOPED_DOCS_MARKDOWN_LINK_REGEX =
 const UNSCOPED_DOCS_HREF_ATTRIBUTE_REGEX =
   /\bhref=(["'])\/docs(?!\/plate(?:\/|#|\?|\1))(?=\/|#|\?|\1)/;
 const TRAILING_SLASH_REGEX = /\/$/;
-const DEMO_SUFFIX_REGEX = /-demo$/;
-const MDX_EXTENSION_REGEX = /\.mdx$/;
-const CN_EXTENSION_REGEX = /\.cn$/;
 const CONTENT_DIR = path.join(process.cwd(), '../../content/docs');
 const META_FILE = path.join(CONTENT_DIR, 'meta.json');
 const PLATE_PUBLIC_REGISTRY_BASE_URL = `https://platejs.org/r/${PLATE_DEFAULT_REGISTRY_STYLE}`;
@@ -37,7 +35,6 @@ const SOURCE_FILES = [
 ];
 const SOURCE_INFO_PATH_REGEX = /info: {"path":"([^"]+)"/g;
 const SOURCE_SERVER_DOC_PATH_REGEX = /"([^"]+\.mdx)":\s*__fd_glob_\d+/g;
-const ROUTE_GROUP_REGEX = /^\(.+\)$/;
 const PACKAGE_INSTALL_COMMAND_REGEX =
   /^\s*(?:npm\s+(?:i|install)|pnpm\s+(?:add|install)|yarn\s+(?:add|install)|bun\s+(?:add|install))\s+(.+)$/u;
 const PACKAGE_IMPORT_REGEX =
@@ -313,33 +310,17 @@ function checkDocsMetaOverlay(meta: DocsMeta) {
   );
 }
 
-function sourcePathToDocsRoute(sourcePath: string, locale: 'cn' | 'en') {
-  const pathWithoutExtension = sourcePath
-    .replace(MDX_EXTENSION_REGEX, '')
-    .replace(CN_EXTENSION_REGEX, '');
-  const routeParts = pathWithoutExtension
-    .split('/')
-    .filter((part) => !ROUTE_GROUP_REGEX.test(part));
-
-  if (routeParts.at(-1) === 'index') {
-    routeParts.pop();
-  }
-
-  const prefix = locale === 'cn' ? '/cn/docs' : '/docs';
-  return routeParts.length > 0 ? `${prefix}/${routeParts.join('/')}` : prefix;
-}
-
 function getSourceRoutes(sourcePaths: string[]) {
   return {
     cn: new Set(
       sourcePaths
         .filter((sourcePath) => sourcePath.endsWith('.cn.mdx'))
-        .map((sourcePath) => sourcePathToDocsRoute(sourcePath, 'cn'))
+        .map((sourcePath) => sourcePathToDocsRoute(sourcePath))
     ),
     en: new Set(
       sourcePaths
         .filter((sourcePath) => !sourcePath.endsWith('.cn.mdx'))
-        .map((sourcePath) => sourcePathToDocsRoute(sourcePath, 'en'))
+        .map((sourcePath) => sourcePathToDocsRoute(sourcePath))
     ),
   };
 }
@@ -356,7 +337,7 @@ function checkNavRoutes(meta: DocsMeta, sourceUrls: Set<string>) {
       .filter((item) => item.type === 'registry:component')
       .map((item) => `/docs/components/${item.name}`),
     ...registryExamples.map(
-      (item) => `/docs/examples/${item.name.replace(DEMO_SUFFIX_REGEX, '')}`
+      (item) => `/docs/examples/${registryExampleSlug(item.name)}`
     ),
   ]);
 

@@ -5,19 +5,15 @@ import isEqual from 'lodash/isEqual.js';
 import {
   type AuthoredResult,
   AuthoredPlugin,
-  isAuthoredEditor,
   projectAuthoredDocument,
 } from '../../authored';
 import {
   BaseParagraphPlugin,
   ContentSlice,
-  DocumentChange,
   type Anchor,
   type DefinitionOf,
   type Descendant,
-  type EditorCommit,
   type EditorNodesOptions,
-  type EditorDocumentValue,
   type EditorUpdateTransaction,
   type Element,
   ElementApi,
@@ -41,6 +37,7 @@ import {
   editorCommands,
   HistoryPlugin,
 } from '../../core';
+import { isMetadataRootKey } from '../../facade';
 import { isListItem } from '../../features/list/lib/listIndex.internal';
 import {
   BaseTableCellPlugin,
@@ -151,7 +148,10 @@ export type AIChatPluginState = {
 
 type MarkdownType = 'block' | 'editor' | 'nodeSelection' | 'tableCellWithRef';
 
-const aiChatShowEffect = defineEffect<Range>({ key: 'ai.chat.show' });
+// Names the empty block AI Space opens in by its key: the typing that opens it
+// may decide on a document whose positions differ from the stored one, and the
+// key names the same block in both.
+const aiChatShowEffect = defineEffect<NodeKey>({ key: 'ai.chat.show' });
 const aiChatCommandEditors = new WeakMap<object, Editor>();
 export const getAIChatCommandEditor = (editor: Editor) =>
   aiChatCommandEditors.get(editor) ?? editor;
@@ -213,13 +213,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   initialState,
 }).extend((context) => {
   const { editor } = context;
-  const requireAuthoredEditor = () => {
-    if (!isAuthoredEditor(editor)) {
-      throw new Error('AI Chat requires authored changes.');
-    }
-
-    return editor;
-  };
   let previewAnchor: Anchor<Range> | null = null;
   let previewOwner: Readonly<{
     final: boolean;
@@ -230,11 +223,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   let previewParse:
     | Readonly<{ result: MarkdownSliceParseResult; stored: Value }>
     | undefined;
-  let suggestion: Readonly<{
-    base: EditorDocumentValue;
-    change: DocumentChange;
-    commit: EditorCommit | null;
-  }> | null = null;
+  // The stored blocks a draft chunk left, so the next chunk can tell whether
+  // anyone wrote since.
+  let suggestion: Readonly<{ children: readonly unknown[] }> | null = null;
   let suggestionTarget: AISuggestionTarget | null = null;
   const tableDraft = new Map<
     NodeKey,
@@ -392,17 +383,39 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   const decideCurrentChange = (action: 'accept' | 'reject') => {
     const changeId = context.store.get('_changeId');
     if (!changeId) return null;
-    const authoredEditor = requireAuthoredEditor();
-    const result = authoredEditor.update.authored.decide({
-      action,
-      selection: authoredEditor.read.authored.select({ ids: [changeId] }),
-    });
+    const authored = editor.plugin(AuthoredPlugin);
+    const change = authored.read.change(changeId);
+    const result: AuthoredResult = change
+      ? authored.update.decide({ action, changes: [change] })
+      : { ids: [changeId], status: 'unchanged' };
 
     if (reviewSucceeded(result)) {
       context.store.set({ _changeId: null, _replaceNodeKeys: [] });
     }
 
     return result;
+  };
+  const withReviewRecords = (blocks: readonly Element[]) => {
+    const records = Object.entries(editor.read.value().roots ?? {}).filter(
+      ([root]) => isMetadataRootKey(root)
+    );
+
+    return records.length > 0
+      ? { children: [...blocks], roots: Object.fromEntries(records) }
+      : { children: [...blocks] };
+  };
+  // Blocks as the proposed document shows them, without review marks.
+  const proposedBlocks = (blocks: readonly Element[]) => {
+    const projected = projectAuthoredDocument(withReviewRecords(blocks), {
+      editor,
+      projection: 'proposed',
+    });
+
+    // A schema that generates values builds no projection of pending
+    // changes, so the blocks read as stored.
+    return (projected.ok ? projected.document.children : blocks).filter(
+      (node) => ElementApi.isElement(node)
+    );
   };
   const resetOptions = () => {
     cancel();
@@ -468,6 +481,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             children: document.children,
             ...(document.roots ? { roots: document.roots } : {}),
           },
+          projection: 'proposed',
         })
       );
     }
@@ -475,7 +489,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       const blocks = state.nodes.blocks().map(([node]) => node);
 
       return requireMarkdownData(
-        editor.api.markdown.serialize({ document: { children: blocks } })
+        editor.api.markdown.serialize({
+          document: withReviewRecords(blocks),
+          projection: 'proposed',
+        })
       );
     }
     if (type === 'nodeSelection') {
@@ -497,7 +514,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       }
 
       return requireMarkdownData(
-        editor.api.markdown.serialize({ document: { children: value } })
+        editor.api.markdown.serialize({
+          document: withReviewRecords(value),
+          projection: 'proposed',
+        })
       );
     }
     if (type !== 'tableCellWithRef') return '';
@@ -872,113 +892,70 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     return source;
   };
-  const createSuggestionDraft = (
-    commandEditor: Editor,
+  const writeSuggestion = (
+    tx: AIActionTransaction,
     target: AISuggestionTarget,
     nextNodes: Descendant[]
   ) => {
-    const root = commandEditor.read.view.root();
-    const authoredEditor = requireAuthoredEditor();
-    const published = suggestion;
-    const projectProposed = () =>
-      projectAuthoredDocument(authoredEditor.read.value(), {
-        projection: 'proposed',
-      }).document;
-    const base = published?.base ?? projectProposed();
-    // Projecting and diffing walk the whole document. Every document write
-    // commits, so while the last commit is still the previous chunk's, the
-    // document is what that chunk left and needs no check.
-    if (
-      published &&
-      editor.read.lastCommit() !== published.commit &&
-      !DocumentChange.between(published.change.apply(base), projectProposed())
-        .empty
-    ) {
-      return undefined;
-    }
-    const draftEditor = createEditorView(authoredEditor, {
-      authored: { intent: 'edit', projection: 'proposed' },
-      ...(root ? { root } : {}),
+    const paths = target.kind === 'blocks' ? target.paths : [];
+    const sourceNodes = paths.flatMap((path) => {
+      const entry = tx.nodes.get(path, { match: ElementApi.isElement });
+
+      return entry ? [entry[0]] : [];
     });
-    let replaced = false;
-    // The spec's change composes each text edit as it runs, so the proposal
-    // keeps the edits separate.
-    const spec = draftEditor.read((state) =>
-      state.transaction((tx) => {
-        if (published) {
-          tx.changes.apply(published.change.invert(base));
-        }
-        const paths = target.kind === 'blocks' ? target.paths : [];
-        const sourceNodes = paths.flatMap((path) => {
-          const entry = tx.nodes.get(path, { match: ElementApi.isElement });
 
-          return entry ? [entry[0]] : [];
-        });
+    if (
+      target.kind === 'blocks' &&
+      sourceNodes.length === paths.length &&
+      isEqual(sourceNodes.map(withoutText), nextNodes.map(withoutText))
+    ) {
+      const edits = sourceNodes.flatMap((sourceNode, blockIndex) => {
+        const nextNode = nextNodes[blockIndex];
+        const blockPath = paths[blockIndex];
 
-        if (
-          target.kind === 'blocks' &&
-          sourceNodes.length === paths.length &&
-          isEqual(sourceNodes.map(withoutText), nextNodes.map(withoutText))
-        ) {
-          const edits = sourceNodes.flatMap((sourceNode, blockIndex) => {
-            const nextNode = nextNodes[blockIndex];
-            const blockPath = paths[blockIndex];
+        if (!nextNode || !blockPath) return [];
+        const afterTexts = [...NodeApi.texts(nextNode)];
 
-            if (!nextNode || !blockPath) return [];
-            const afterTexts = [...NodeApi.texts(nextNode)];
+        return [...NodeApi.texts(sourceNode)].flatMap(
+          ([before, path], textIndex) => {
+            const after = afterTexts[textIndex]?.[0];
 
-            return [...NodeApi.texts(sourceNode)].flatMap(
-              ([before, path], textIndex) => {
-                const after = afterTexts[textIndex]?.[0];
-
-                return after && before.text !== after.text
-                  ? textEdits(before.text, after.text).map((edit) => ({
-                      ...edit,
-                      path: [...blockPath, ...path],
-                    }))
-                  : [];
-              }
-            );
-          });
-
-          for (const { from, path, text, to } of edits.toSorted(
-            (left, right) =>
-              PathApi.compare(right.path, left.path) || right.from - left.from
-          )) {
-            if (to > from) {
-              tx.text.delete({
-                at: {
-                  anchor: { offset: from, path },
-                  focus: { offset: to, path },
-                },
-              });
-            }
-            if (text) tx.text.insert(text, { at: { offset: from, path } });
+            return after && before.text !== after.text
+              ? textEdits(before.text, after.text).map((edit) => ({
+                  ...edit,
+                  path: [...blockPath, ...path],
+                }))
+              : [];
           }
-          replaced = true;
-
-          return;
-        }
-
-        replaced = tx.slice.replace(
-          ContentSlice.fromJSON({
-            content: nextNodes,
-            openEnd: 0,
-            openStart: 0,
-          }),
-          { at: target.range }
         );
-      })
+      });
+
+      for (const { from, path, text, to } of edits.toSorted(
+        (left, right) =>
+          PathApi.compare(right.path, left.path) || right.from - left.from
+      )) {
+        if (to > from) {
+          tx.text.delete({
+            at: {
+              anchor: { offset: from, path },
+              focus: { offset: to, path },
+            },
+          });
+        }
+        if (text) tx.text.insert(text, { at: { offset: from, path } });
+      }
+
+      return edits.length > 0;
+    }
+
+    return tx.slice.replace(
+      ContentSlice.fromJSON({
+        content: nextNodes,
+        openEnd: 0,
+        openStart: 0,
+      }),
+      { at: target.range }
     );
-
-    if (!replaced) return undefined;
-    const delta = spec.changes;
-
-    return {
-      base,
-      change: published ? published.change.compose(delta, base) : delta,
-      delta,
-    };
   };
   const applySuggestion = (
     commandEditor: Editor,
@@ -1017,26 +994,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     ) {
       return false;
     }
-    if (!capturedSelection) {
-      const authoredEditor = requireAuthoredEditor();
-      const acceptedView = createEditorView(authoredEditor, {
-        authored: { intent: 'edit', projection: 'accepted' },
-        ...(root ? { root } : {}),
-      });
-      if (targetKeys.some((key) => !acceptedView.read.nodes.get(key))) {
-        return false;
-      }
-    }
     let target = suggestionTarget;
 
     if (!target) {
-      const authoredEditor = requireAuthoredEditor();
-      const proposedView = createEditorView(authoredEditor, {
-        authored: { intent: 'edit', projection: 'proposed' },
-        ...(root ? { root } : {}),
-      });
       const entries = targetKeys.flatMap((key) => {
-        const entry = proposedView.read.nodes.get(key, {
+        const entry = commandEditor.read.nodes.get(key, {
           match: ElementApi.isElement,
         });
 
@@ -1047,8 +1009,8 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       const first = ordered[0];
       const last = ordered.at(-1);
       if (!first || !last) return false;
-      const anchor = proposedView.read.points.start(first[1]);
-      const focus = proposedView.read.points.end(last[1]);
+      const anchor = commandEditor.read.points.start(first[1]);
+      const focus = commandEditor.read.points.end(last[1]);
       const capturedEdges = capturedSelection
         ? RangeApi.edges(capturedSelection)
         : null;
@@ -1063,11 +1025,11 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         capturedSelection ??
         (anchor && focus
           ? { anchor, focus }
-          : proposedView.read.ranges.fromEntries(ordered));
+          : commandEditor.read.ranges.fromEntries(ordered));
 
       if (!range) return false;
       if (coversWholeBlocks) {
-        const source = ordered.map(([node]) => node);
+        const source = proposedBlocks(ordered.map(([node]) => node));
         const serialized = editor.api.markdown.serialize({
           document: { children: source },
         });
@@ -1091,38 +1053,41 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       suggestionTarget = target;
     }
     const nextNodes = parseSuggestion(parsed.slice.content, target);
-    const draft = createSuggestionDraft(commandEditor, target, nextNodes);
-    if (!draft || draft.delta.empty) return false;
+    if (suggestion && editor.read.value().children !== suggestion.children) {
+      return false;
+    }
+    const previous = currentChangeId
+      ? editor.plugin(AuthoredPlugin).read.change(currentChangeId)
+      : null;
 
-    let applied = false;
-    let publishedChangeId: string | null = null;
-    commandEditor.update((tx) => {
-      const authored = tx.plugin(AuthoredPlugin);
-      const history = tx.plugin(HistoryPlugin);
-      const changeId = authored.propose(
-        currentChangeId ? { changeId: currentChangeId } : undefined
-      );
-      if (currentChangeId) history.merge();
-      else history.newBatch();
-      tx.changes.apply(draft.delta);
-      publishedChangeId = changeId;
-      applied = true;
-    });
-
-    if (applied && publishedChangeId && draft) {
-      suggestion = {
-        base: draft.base,
-        change: draft.change,
-        commit: editor.read.lastCommit(),
-      };
-      context.store.set({
-        _changeId: publishedChangeId,
-        _replaceNodeKeys: targetKeys,
-        previewValue: [],
+    if (previous) {
+      getActionEditor(commandEditor).update((tx) => {
+        tx.history.merge();
+        tx.plugin(AuthoredPlugin).decide({
+          action: 'reject',
+          changes: [previous],
+        });
       });
     }
 
-    return applied;
+    let publishedChangeId: string | null = null;
+    getActionEditor(commandEditor).update((tx) => {
+      const changeId = tx
+        .plugin(AuthoredPlugin)
+        .propose(currentChangeId ? { changeId: currentChangeId } : undefined);
+      if (currentChangeId) tx.history.merge();
+      else tx.history.newBatch();
+      if (writeSuggestion(tx, target, nextNodes)) publishedChangeId = changeId;
+    });
+
+    suggestion = { children: editor.read.value().children };
+    context.store.set({
+      _changeId: publishedChangeId,
+      _replaceNodeKeys: publishedChangeId ? targetKeys : [],
+      previewValue: [],
+    });
+
+    return publishedChangeId !== null;
   };
   const acceptAIResponse = (commandEditor: Editor) => {
     if (context.store.get('_changeId')) {
@@ -1384,8 +1349,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           return false;
         }
 
+        const key = state.key(block[1]);
+
+        if (!key) return false;
+
         return state.transaction((tx) => {
-          tx.effects.emit(aiChatShowEffect, selection);
+          tx.effects.emit(aiChatShowEffect, key);
         });
       }),
     ],
@@ -1396,7 +1365,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           (effect) => effect.type === aiChatShowEffect
         );
         if (showEffect) {
-          show(editor, showEffect.value);
+          const start = editor.read.points.start(showEffect.value);
+
+          show(editor, start && { anchor: start, focus: start });
         }
       },
     },

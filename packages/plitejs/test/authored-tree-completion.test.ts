@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import * as representation from '../src/core/representation';
+import { authoredTestApi } from './support/authored';
 
 const real = { ...representation };
 let completions = 0;
@@ -28,7 +29,10 @@ mock.module(join(import.meta.dir, '../src/core/representation.ts'), () => ({
 
 const { createEditor, defineEditorSchema, property, schema } =
   await import('plitejs');
-const { authoredTreeProof } = await import('../src/authored/tree/proof-plugin');
+const { createAuthoredPlugin } = await import('../src/authored/authored');
+const { authoredTestApi, expandedChildren } = await import(
+  './support/authored'
+);
 const { proposedChildren, proposedHost } =
   await import('../src/authored/tree/proposed');
 
@@ -211,7 +215,7 @@ const editorWith = (
     initialValue: structuredClone(value) as never,
     plugins: [
       plugin,
-      authoredTreeProof({
+      createAuthoredPlugin({
         authorId: 'ann',
         createChangeId: () => {
           changes += 1;
@@ -225,7 +229,7 @@ const editorWith = (
   });
 };
 const children = (editor: ReturnType<typeof editorWith>) =>
-  editor.read.children() as readonly Node[];
+  expandedChildren(editor) as readonly Node[];
 /** Suggest `run`, asserting the canonical pass after recording built nothing. */
 const suggest = (
   editor: ReturnType<typeof editorWith>,
@@ -250,8 +254,13 @@ const editing = (
 
   return plain(children(editor));
 };
+// A later suggestion can withdraw an earlier one of the same author, so only
+// the changes the document still holds are decided.
 const acceptAll = (editor: ReturnType<typeof editorWith>, ids: string[]) => {
-  editor.api.authoredTree.decide({ action: 'accept', changes: ids });
+  authoredTestApi(editor).decide({
+    action: 'accept',
+    changes: ids.filter((id) => editor.read.authored.change(id)),
+  });
 
   return plain(children(editor));
 };
@@ -376,7 +385,7 @@ describe('authored review tree completion while recording', () => {
         { 'cell|insert:c1,insert:c2': ['|insert:c1,insert:c2'] },
       ],
     });
-    editor.api.authoredTree.decide([
+    authoredTestApi(editor).decide([
       { action: 'accept', changes: ['c2'] },
       { action: 'reject', changes: ['c1'] },
     ]);
@@ -393,10 +402,12 @@ describe('authored review tree completion while recording', () => {
     ];
     const editor = editorWith(Wrapped, start, 'propose');
 
-    editor.api.authoredTree.propose('c1', () => {
-      suggest(editor, (tx) => tx.nodes.unwrap({ at: [1, 0] }));
-      suggest(editor, (tx) => tx.nodes.remove({ at: [1, 0, 0] }));
-    });
+    authoredTestApi(editor).propose('c1', (tx) =>
+      tx.nodes.unwrap({ at: [1, 0] })
+    );
+    authoredTestApi(editor).propose('c1', (tx) =>
+      tx.nodes.remove({ at: [1, 0, 0] })
+    );
 
     assert.deepEqual(shape(children(editor)).at(1), {
       group: [
@@ -453,7 +464,7 @@ describe('authored review tree completion while recording', () => {
       ],
     });
 
-    editor.api.authoredTree.decide({ action: 'reject', changes: ['c1'] });
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['c1'] });
 
     assert.deepEqual(plain(children(editor)), [el('paragraph', t('a'))]);
   });
@@ -470,7 +481,8 @@ describe('authored review tree completion while recording', () => {
       { paragraph: ['p'] },
     ]);
 
-    editor.api.authoredTree.decide({ action: 'reject', changes: ['c1', 'c2'] });
+    // Removing the heading withdrew c1, one's own pending insertion.
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['c2'] });
 
     assert.deepEqual(plain(children(editor)), titled());
   });
@@ -620,7 +632,7 @@ describe('authored review tree completion while recording', () => {
     suggest(editor, insert);
     suggest(editor, (tx) => tx.nodes.remove({ at: [2] }));
     suggest(editor, remove);
-    editor.api.authoredTree.decide({ action: 'reject', changes: ['c2'] });
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['c2'] });
     edit.update(insert);
     edit.update(remove);
 
@@ -640,7 +652,7 @@ describe('authored review tree completion while recording', () => {
     suggest(editor, (tx) => tx.nodes.remove({ at: [2] }));
     suggest(editor, (tx) => tx.nodes.remove({ at: [0] }));
     suggest(editor, typed);
-    editor.api.authoredTree.decide({ action: 'reject', changes: ['c3'] });
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['c3'] });
     edit.update((tx) => tx.nodes.remove({ at: [0] }));
     edit.update(typed);
 
@@ -728,7 +740,7 @@ describe('authored review tree decisions the canonical check refuses', () => {
     skipCompletion = true;
     try {
       assert.deepEqual(
-        editor.api.authoredTree.decide({
+        authoredTestApi(editor).decide({
           action: 'accept',
           changes: ['bob:1'],
         }),

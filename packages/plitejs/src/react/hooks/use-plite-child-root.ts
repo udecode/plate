@@ -47,7 +47,7 @@ export function useChildRoot(
   return useMemo(() => {
     if (!targetElement) {
       throw new Error(
-        '`usePliteChildRoot` must receive an element or be used inside an element renderer.'
+        '`useChildRoot` must receive an element or be used inside an element renderer.'
       );
     }
 
@@ -56,7 +56,7 @@ export function useChildRoot(
     if (explicitRoot) {
       if (explicitRoot === 'main') {
         throw new Error(
-          '[Plite] A child content root cannot target the primary document.'
+          'A child content root cannot target the primary document.'
         );
       }
 
@@ -65,10 +65,10 @@ export function useChildRoot(
 
     if (!nodeKey) {
       throw new Error(
-        '`usePliteChildRoot` needs an element node key when no explicit child root key exists.'
+        '`useChildRoot` needs an element node key when no explicit child root key exists.'
       );
     }
 
-    return `plite-child:${nodeKey}:${slot}`;
+    return `core:child:${nodeKey}:${slot}`;
   }, [nodeKey, slot, targetElement]);
 }

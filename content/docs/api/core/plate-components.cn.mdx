@@ -61,10 +61,10 @@ export function Editor() {
 
 ## 只读视图
 
-需要渲染内容和 Plate 复制行为，但不需要可编辑区域时，请为静态编辑器使用 `EditorPreview`。
+需要渲染内容和 Plate 复制行为，但不需要可编辑区域时，请使用 `EditorPreview`。
 
 ```tsx title="components/read-only-editor.tsx"
-import { EditorPreview, useStaticEditor } from "platejs/react";
+import { EditorPreview, useCreateEditor } from "platejs/react";
 
 const value = [
   {
@@ -74,9 +74,7 @@ const value = [
 ];
 
 export function ReadOnlyEditor() {
-  const editor = useStaticEditor({ initialValue: value });
-
-  if (!editor) return null;
+  const editor = useCreateEditor({ initialValue: value });
 
   return <EditorPreview editor={editor} />;
 }
@@ -395,7 +393,7 @@ export function FigureElement({
 <API name="EditorPreview">
   <APIProps>
     <APIItem name="editor" type="Editor">
-      静态编辑器实例。
+      要渲染的编辑器。
     </APIItem>
     <APIItem
       name="onCopy"

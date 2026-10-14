@@ -43,16 +43,7 @@ export const renderStaticHtmlWithOverrides = async (
       );
     }
   }
-  if (document.meta?.authored !== undefined && projection === undefined) {
-    throw new TypeError(
-      'Static HTML serialization requires projection when the document contains authored changes.'
-    );
-  }
-  const projected = projectPlateFormatDocument(
-    editor,
-    document,
-    projection ?? 'proposed'
-  );
+  const projected = projectPlateFormatDocument(editor, document, projection);
   const renderEditor = createEditorView(editor, {
     document: projected.document,
   }) as unknown as Editor;

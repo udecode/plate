@@ -506,7 +506,7 @@ export const createEditorHarness = (
         await harness.focus();
       }
 
-      const syntheticShortcut = parseSyntheticShortcut(key);
+      const syntheticShortcut = parseSyntheticShortcut(key, process.platform);
       const shouldUseSemanticKeyTransport =
         !syntheticShortcut &&
         !(await hasDOMSelectionInRoot(root)) &&

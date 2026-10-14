@@ -967,9 +967,8 @@ describe('plite-react editable behavior', () => {
         <Editable autoFocus onFocus={onFocus} />
       </EditorRoot>
     );
-    const editable = rendered.container.querySelector<HTMLElement>(
-      '[data-editor]'
-    )!;
+    const editable =
+      rendered.container.querySelector<HTMLElement>('[data-editor]')!;
 
     await act(async () => {
       editor.update((tx) => {
@@ -986,6 +985,71 @@ describe('plite-react editable behavior', () => {
     expect(onFocus).toHaveBeenCalledTimes(1);
   });
 
+  test('does not write the selection into the editor after it blurs', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable />
+      </EditorRoot>
+    );
+    const editable =
+      rendered.container.querySelector<HTMLElement>('[data-editor]')!;
+
+    await act(async () => {
+      editable.focus();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
+    });
+    act(() => editable.blur());
+    act(() => document.getSelection()?.removeAllRanges());
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 2, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        });
+      });
+    });
+
+    expect(document.getSelection()?.rangeCount).toBe(0);
+  });
+
+  test('does not write the selection back into the editor when it blurs right after focus', async () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
+    });
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable />
+      </EditorRoot>
+    );
+    const editable =
+      rendered.container.querySelector<HTMLElement>('[data-editor]')!;
+
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 2, path: [0, 0] },
+          focus: { offset: 2, path: [0, 0] },
+        });
+      });
+    });
+    act(() => editable.focus());
+    act(() => editable.blur());
+    act(() => document.getSelection()?.removeAllRanges());
+    await act(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(resolve, 20);
+        })
+    );
+
+    expect(document.getSelection()?.rangeCount).toBe(0);
+  });
+
   test('calls onFocus when focus arrives right after an outside press', () => {
     const editor = createEditor({
       initialValue: [{ type: 'block', children: [{ text: 'test' }] }],
@@ -999,9 +1063,8 @@ describe('plite-react editable behavior', () => {
         <button type="button">Outside</button>
       </>
     );
-    const editable = rendered.container.querySelector<HTMLElement>(
-      '[data-editor]'
-    )!;
+    const editable =
+      rendered.container.querySelector<HTMLElement>('[data-editor]')!;
 
     act(() => {
       fireEvent.mouseDown(rendered.getByRole('button', { name: 'Outside' }));

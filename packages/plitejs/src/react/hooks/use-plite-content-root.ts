@@ -45,7 +45,7 @@ export function useContentRoot(
 
   if (!slot || !declaredSlots.includes(slot)) {
     throw new Error(
-      '`usePliteContentRoot` needs a declared contentRoots slot; pass options.slot when the element declares more than one.'
+      '`useContentRoot` needs a declared contentRoots slot; pass options.slot when the element declares more than one.'
     );
   }
   const root = useChildRoot(targetElement, slot);

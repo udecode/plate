@@ -1,3 +1,3 @@
 export function failInvariant(message: string): never {
-  throw new Error(`Plite invariant failed: ${message}`);
+  throw new Error(`Invariant failed: ${message}`);
 }

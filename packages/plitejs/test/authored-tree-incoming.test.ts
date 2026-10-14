@@ -1,3 +1,4 @@
+import { authoredTestApi, reviewedValue } from './support/authored';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
@@ -16,7 +17,7 @@ import {
 } from 'plitejs';
 import { dataTransferFormats, dom, writeDOMFragmentData } from 'plitejs/dom';
 
-import { authoredTreeProof } from '../src/authored/tree/proof-plugin';
+import { createAuthoredPlugin } from '../src/authored/authored';
 
 type Node = Record<string, unknown>;
 
@@ -92,7 +93,7 @@ const editorFor = (
       dom(),
       transfer(),
       ...(plugins as []),
-      authoredTreeProof({
+      createAuthoredPlugin({
         authorId: 'bob',
         createChangeId: () => 'bob:1',
         intent,
@@ -302,9 +303,9 @@ describe('authored review tree incoming content', () => {
           const decided = (action: 'accept' | 'reject') => {
             const copy = editorFor(editor.read.value(), 'edit');
 
-            copy.api.authoredTree.decide({ action, changes: ['bob:1'] });
+            authoredTestApi(copy).decide({ action, changes: ['bob:1'] });
 
-            return copy.read.value();
+            return reviewedValue(copy);
           };
           const edited = editorFor(before, 'edit');
 

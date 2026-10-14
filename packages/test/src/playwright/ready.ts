@@ -25,7 +25,7 @@ export const waitForReady = async (
     await expect
       .poll(() => hasSelectionHandle(editor.root), {
         message:
-          'browser handle not installed: call installBrowserHandle() from plitejs/react or platejs/react before the first editor mounts',
+          'browser handle not installed: call installBrowserHandle() from platejs/react before the first editor mounts',
         timeout: timeoutMs,
       })
       .toBe(true);

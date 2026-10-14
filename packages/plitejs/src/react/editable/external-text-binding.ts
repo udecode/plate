@@ -28,7 +28,7 @@ const BINDINGS = new WeakMap<
 
 export const failTextProjectionConflict: () => never = () => {
   throw new Error(
-    'Plite permits only one text projection per element: children or externalText.'
+    'An element permits only one text projection: children or externalText.'
   );
 };
 
@@ -53,7 +53,7 @@ export const assertExternalTextElement = (
     !TextApi.isText(element.children[0])
   ) {
     throw new Error(
-      'Plite externalText requires a nonvoid block whose schema permits exactly one Text. Render rich or partially marked children natively.'
+      'externalText requires a nonvoid block whose schema permits exactly one Text. Render rich or partially marked children natively.'
     );
   }
 };

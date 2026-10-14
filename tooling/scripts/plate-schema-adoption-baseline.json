@@ -24,7 +24,7 @@
       "export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {"
     ]
   },
-  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api] -> [read] -> [update] -> [corrections] -> [readMiddleware] -> [commands]": {
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [api] -> [contributions, read] -> [update] -> [corrections] -> [readMiddleware] -> [commands]": {
     "packages/platejs/src/features/table/lib/BaseTablePlugin.ts": [
       "export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({"
     ]

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, mock } from 'bun:test';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
 
+import { SiteRegistryProvider } from '@/components/site-registry/provider';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -126,7 +127,7 @@ describe('editor toolbar button focus ownership', () => {
     }
 
     const view = render(<DropdownToolbarButton />);
-    const trigger = view.getByRole('button', { name: 'Text' });
+    const trigger = view.getByRole('button', { name: 'Choose a block' });
 
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
 
@@ -152,7 +153,9 @@ describe('editor toolbar button focus ownership', () => {
           <Toolbar onOverlayOpenChange={onOverlayOpenChange}>
             <DropdownMenu open={open} onOpenChange={setOpen}>
               <DropdownMenuTrigger asChild>
-                <ToolbarButton tooltip="More actions">More</ToolbarButton>
+                <ToolbarButton tooltip="More actions">
+                  <svg />
+                </ToolbarButton>
               </DropdownMenuTrigger>
             </DropdownMenu>
           </Toolbar>
@@ -161,7 +164,7 @@ describe('editor toolbar button focus ownership', () => {
     }
 
     const view = render(<IconDropdown />);
-    const trigger = view.getByRole('button', { name: 'More' });
+    const trigger = view.getByRole('button', { name: 'More actions' });
 
     act(() => {
       fireEvent.pointerDown(trigger, {
@@ -217,4 +220,25 @@ describe('editor toolbar button focus ownership', () => {
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
     expect(onOverlayOpenChange).toHaveBeenLastCalledWith(true);
   });
+});
+
+describe('editor toolbar button name', () => {
+  it.each(['base', 'radix'] as const)(
+    'names an icon-only %s button from its tooltip',
+    (base) => {
+      const view = render(
+        <SiteRegistryProvider base={base}>
+          <TooltipProvider>
+            <Toolbar>
+              <ToolbarButton tooltip="Link">
+                <svg />
+              </ToolbarButton>
+            </Toolbar>
+          </TooltipProvider>
+        </SiteRegistryProvider>
+      );
+
+      expect(view.getByRole('button', { name: 'Link' })).toBeTruthy();
+    }
+  );
 });

@@ -8,7 +8,7 @@ import {
   type Text,
 } from '../../index';
 import {
-  getPliteYjsElementType,
+  getYjsElementType,
   type YjsAttributeRecord,
   type YjsNode,
 } from './attributes';
@@ -219,7 +219,7 @@ const createSplitYjsElement = (
   const elementType =
     typeof properties.type === 'string'
       ? properties.type
-      : getPliteYjsElementType(original);
+      : getYjsElementType(original);
   const element = createYjsNode(
     { ...properties, children: [], type: elementType },
     isSetValued,
@@ -252,7 +252,7 @@ const createYjsPropertyLocationFromPath = (
         `Cannot resolve Yjs property parent context at ${parent.join('.')}.`
       );
     }
-    ancestors.unshift(getPliteYjsElementType(node));
+    ancestors.unshift(getYjsElementType(node));
   }
 
   return { ancestors, path: parent, root: schemaRoot };
@@ -371,7 +371,7 @@ export const applyCanonicalSplitToYjs = (
     type:
       typeof split.elementProperties.type === 'string'
         ? split.elementProperties.type
-        : getPliteYjsElementType(target),
+        : getYjsElementType(target),
   } as Descendant;
   const right = createSplitYjsElement(
     target,

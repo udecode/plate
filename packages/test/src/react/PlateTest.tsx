@@ -11,7 +11,9 @@ export type EditorTestProps<E extends Editor = Editor> = Omit<
   EditorRootProps<E>,
   'children' | 'editor'
 > & {
-  editableProps?: EditorContentProps;
+  editableProps?: EditorContentProps & {
+    [name: `data-${string}`]: boolean | number | string | undefined;
+  };
   editor: E;
   variant?: 'comment' | 'wordProcessor';
 };
@@ -24,12 +26,7 @@ export function EditorTest<E extends Editor = Editor>({
 }: EditorTestProps<E>) {
   return (
     <EditorRoot {...props} editor={editor}>
-      <EditorContent
-        data-testid="plite-content-editable"
-        data-variant={variant}
-        autoFocus
-        {...editableProps}
-      />
+      <EditorContent data-variant={variant} autoFocus {...editableProps} />
     </EditorRoot>
   );
 }

@@ -58,7 +58,7 @@ it('gives synthetic named keys the key, code and keyCode of a native press', asy
   for (const key of NAMED_KEYS) {
     await dispatchSyntheticKey(
       locator,
-      parseSyntheticShortcut(`ControlOrMeta+${key}`)!
+      parseSyntheticShortcut(`ControlOrMeta+${key}`, 'darwin')!
     );
   }
   const shortcut = seen.splice(0);

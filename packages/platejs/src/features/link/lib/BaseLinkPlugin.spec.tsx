@@ -15,9 +15,12 @@ import {
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import type { LinkDefinition } from '../../../react/features/link/LinkPlugin';
+import { BaseCodeBlockPlugin } from '../../code-block/lib/BaseCodeBlockPlugin';
+import { BaseMentionPlugin } from '../../mention/lib/BaseMentionPlugin';
 import {
   BaseLinkPlugin,
   type BaseLinkDefinition,
+  getLinkHref,
   type LinkElement,
 } from './BaseLinkPlugin';
 
@@ -268,6 +271,38 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
   });
 });
 
+describe('getLinkHref', () => {
+  it('allows the link plugin default schemes unless the caller widens them', () => {
+    expect([
+      getLinkHref('https://example.com'),
+      getLinkHref('http://example.com'),
+      getLinkHref('mailto:team@example.com'),
+      getLinkHref('tel:+15550100'),
+      getLinkHref('/docs'),
+      getLinkHref('https://example.com', { allowedSchemes: [] }),
+      getLinkHref('/docs', { allowedSchemes: [] }),
+      getLinkHref('ws://example.com'),
+      getLinkHref('ws://example.com', {}),
+      getLinkHref('ws://example.com', { allowedSchemes: undefined }),
+      getLinkHref('ftp://example.com'),
+      getLinkHref(' ftp://example.com ', { allowedSchemes: ['ftp'] }),
+    ]).toEqual([
+      'https://example.com',
+      'http://example.com',
+      'mailto:team@example.com',
+      'tel:+15550100',
+      '/docs',
+      undefined,
+      '/docs',
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      'ftp://example.com',
+    ]);
+  });
+});
+
 describe('BaseLinkPlugin admission on import', () => {
   const createImportEditor = (
     options: Partial<BaseLinkDefinition['initialState']> = {}
@@ -493,6 +528,308 @@ describe('editor.update.link.upsert', () => {
     expect(editor.read.text.string([0])).toBe('Example world');
   });
 
+  it('replaces only the selected part of each link the selection touches', () => {
+    const editor = createEditingEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 1, 0] },
+        focus: { offset: 2, path: [0, 5, 0] },
+      },
+      value: [
+        {
+          children: [
+            { text: 'a ' },
+            {
+              children: [{ text: 'one' }],
+              type: 'link',
+              url: 'https://one.example',
+            },
+            { text: ' b ' },
+            {
+              children: [{ text: 'two' }],
+              type: 'link',
+              url: 'https://two.example',
+            },
+            { text: ' c ' },
+            {
+              children: [{ text: 'old' }],
+              type: 'link',
+              url: 'https://old.example',
+            },
+            { text: ' tail' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    expect(editor.update.link.upsert({ url: 'https://new.example' })).toBe(
+      true
+    );
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { text: 'a ' },
+          {
+            children: [{ text: 'o' }],
+            type: 'link',
+            url: 'https://one.example',
+          },
+          { text: '' },
+          {
+            children: [{ text: 'ne b two c ol' }],
+            type: 'link',
+            url: 'https://new.example',
+          },
+          { text: '' },
+          {
+            children: [{ text: 'd' }],
+            type: 'link',
+            url: 'https://old.example',
+          },
+          { text: ' tail' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('links text whose selection only touches the links around it', () => {
+    const editor = createEditingEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 3, path: [0, 1, 0] },
+        focus: { offset: 0, path: [0, 3, 0] },
+      },
+      value: [
+        {
+          children: [
+            { text: 'a ' },
+            {
+              children: [{ text: 'one' }],
+              type: 'link',
+              url: 'https://one.example',
+            },
+            { text: ' mid ' },
+            {
+              children: [{ text: 'two' }],
+              type: 'link',
+              url: 'https://two.example',
+            },
+            { text: ' tail' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+
+    expect(editor.update.link.upsert({ url: 'https://new.example' })).toBe(
+      true
+    );
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { text: 'a ' },
+          {
+            children: [{ text: 'one' }],
+            type: 'link',
+            url: 'https://one.example',
+          },
+          { text: '' },
+          {
+            children: [{ text: ' mid ' }],
+            type: 'link',
+            url: 'https://new.example',
+          },
+          { text: '' },
+          {
+            children: [{ text: 'two' }],
+            type: 'link',
+            url: 'https://two.example',
+          },
+          { text: ' tail' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('links nothing over a selection that holds only a line break', () => {
+    const editor = createEditingEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 0, path: [1, 0] },
+      },
+      value: [
+        { children: [{ text: 'a' }], type: 'paragraph' },
+        { children: [{ text: 'b' }], type: 'paragraph' },
+      ],
+    });
+    const before = editor.read.lastCommit();
+
+    expect(
+      editor.update.link.upsert({ url: 'https://new.example' })
+    ).toBeUndefined();
+    expect(editor.read.lastCommit()).toBe(before);
+  });
+
+  it('links nothing when the only block that can hold a link is empty', () => {
+    const editor = createProductEditor({
+      plugins: [BaseCodeBlockPlugin, BaseLinkPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 1, path: [2, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'a' }], type: 'codeBlock' },
+        { children: [{ text: '' }], type: 'paragraph' },
+        { children: [{ text: 'b' }], type: 'codeBlock' },
+      ],
+    });
+    const before = editor.read.lastCommit();
+
+    expect(
+      editor.update.link.upsert({ url: 'https://new.example' })
+    ).toBeUndefined();
+    expect(editor.read.lastCommit()).toBe(before);
+  });
+
+  it('refuses a selection that starts right before a mention', () => {
+    const editor = createProductEditor({
+      plugins: [BaseMentionPlugin, BaseLinkPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 2] },
+      },
+      initialValue: [
+        {
+          children: [
+            { text: 'a ' },
+            { children: [{ text: '' }], label: 'x', ref: 'x', type: 'mention' },
+            { text: ' b' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+    const before = editor.read.lastCommit();
+
+    expect(
+      editor.update.link.upsert({ url: 'https://example.com' })
+    ).toBeUndefined();
+    expect(editor.read.lastCommit()).toBe(before);
+  });
+
+  it('refuses a selection that ends right after a mention', () => {
+    const editor = createProductEditor({
+      plugins: [BaseMentionPlugin, BaseLinkPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 2] },
+      },
+      initialValue: [
+        {
+          children: [
+            { text: 'a ' },
+            { children: [{ text: '' }], label: 'x', ref: 'x', type: 'mention' },
+            { text: ' b' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+    const before = editor.read.lastCommit();
+
+    expect(
+      editor.update.link.upsert({ url: 'https://example.com' })
+    ).toBeUndefined();
+    expect(editor.read.lastCommit()).toBe(before);
+  });
+
+  it('refuses an expanded selection in a block that cannot hold a link', () => {
+    const editor = createProductEditor({
+      plugins: [BaseCodeBlockPlugin, BaseLinkPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'code here' }], type: 'codeBlock' }],
+    });
+    const before = editor.read.lastCommit();
+
+    expect(
+      editor.update.link.upsert({ url: 'https://example.com' })
+    ).toBeUndefined();
+    expect(editor.read.lastCommit()).toBe(before);
+  });
+
+  it('refuses to wrap text around an inline a link cannot hold', () => {
+    const editor = createProductEditor({
+      plugins: [BaseMentionPlugin, BaseLinkPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 2, path: [0, 2] },
+      },
+      initialValue: [
+        {
+          children: [
+            { text: 'a ' },
+            { children: [{ text: '' }], label: 'x', ref: 'x', type: 'mention' },
+            { text: ' b' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+    const before = editor.read.lastCommit();
+
+    expect(
+      editor.update.link.upsert({ url: 'https://example.com' })
+    ).toBeUndefined();
+    expect(editor.read.lastCommit()).toBe(before);
+  });
+
+  it('links only the blocks of a selection that can hold a link', () => {
+    const editor = createProductEditor({
+      plugins: [BaseCodeBlockPlugin, BaseLinkPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 2, path: [1, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'one' }], type: 'paragraph' },
+        { children: [{ text: 'code' }], type: 'codeBlock' },
+      ],
+    });
+    const codeBlock = editor.read.children()[1];
+
+    expect(editor.update.link.upsert({ url: 'https://example.com' })).toBe(
+      true
+    );
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { text: 'o' },
+          {
+            children: [{ text: 'ne' }],
+            type: 'link',
+            url: 'https://example.com',
+          },
+          { text: '' },
+        ],
+        type: 'paragraph',
+      },
+      codeBlock,
+    ]);
+  });
+
   it.each([
     ['tel:+15551234', undefined],
     ['vscode://settings/editor', ['https', 'vscode']],
@@ -525,39 +862,6 @@ describe('editor.update.link.upsert', () => {
       editor.update.link.upsert({ url: 'ftp://example.com' })
     ).toBeUndefined();
     expect(findLink(editor)).toBeUndefined();
-  });
-
-  it('reports its staged unwrap when the wrap target cannot hold a link', () => {
-    const editor = createEditingEditor({
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 2, path: [0, 1, 0] },
-      },
-      value: [
-        {
-          children: [
-            { text: 'plain ' },
-            {
-              children: [{ text: 'old' }],
-              type: 'link',
-              url: 'https://old.example',
-            },
-            { text: ' tail' },
-          ],
-          type: 'paragraph',
-        },
-      ],
-    });
-    const before = editor.read.lastCommit();
-
-    expect(
-      editor.update.link.upsert({
-        url: 'https://new.example',
-        wrapNodesOptions: { at: [0] },
-      })
-    ).toBe(true);
-    expect(editor.read.lastCommit()).not.toBe(before);
   });
 
   it('does nothing without a selection', () => {
@@ -595,27 +899,34 @@ describe('editor.update.link.unwrap', () => {
     });
   const splitCases: Array<{
     anchor: Point;
+    children: unknown[];
     focus: Point;
-    linked: string;
-    plain: string;
   }> = [
     {
       anchor: { offset: 1, path: [0, 0] },
-      focus: { offset: 4, path: [0, 1, 0] },
-      linked: 'abcd',
-      plain: 'efy',
-    },
-    {
-      anchor: { offset: 1, path: [0, 0] },
+      children: [
+        { text: 'xab' },
+        {
+          children: [{ text: 'cdef' }],
+          type: 'link',
+          url: 'https://example.com',
+        },
+        { text: 'y' },
+      ],
       focus: { offset: 2, path: [0, 1, 0] },
-      linked: 'ab',
-      plain: 'cdefy',
     },
     {
       anchor: { offset: 4, path: [0, 1, 0] },
+      children: [
+        { text: 'x' },
+        {
+          children: [{ text: 'abcd' }],
+          type: 'link',
+          url: 'https://example.com',
+        },
+        { text: 'efy' },
+      ],
       focus: { offset: 1, path: [0, 2] },
-      linked: 'abcd',
-      plain: 'efy',
     },
   ];
 
@@ -633,28 +944,33 @@ describe('editor.update.link.unwrap', () => {
   });
 
   it.each(splitCases)(
-    'preserves the linked fragment in split mode',
+    'keeps the unselected part linked in split mode',
     (fixture) => {
       const editor = createUnwrapEditor(fixture.anchor, fixture.focus);
 
       editor.update.link.unwrap({ split: true });
 
       expect(editor.read.children()).toEqual([
-        {
-          children: [
-            { text: 'x' },
-            {
-              children: [{ text: fixture.linked }],
-              type: 'link',
-              url: 'https://example.com',
-            },
-            { text: fixture.plain },
-          ],
-          type: 'paragraph',
-        },
+        { children: fixture.children, type: 'paragraph' },
       ]);
     }
   );
+
+  it.each([
+    ['a caret', { offset: 2, path: [0, 1, 0] }, undefined],
+    [
+      'an explicit point',
+      { offset: 0, path: [0, 0] },
+      { offset: 2, path: [0, 1, 0] },
+    ],
+  ])('unwraps the whole link at %s in split mode', (_, caret, at) => {
+    const editor = createUnwrapEditor(caret, caret);
+
+    expect(editor.update.link.unwrap({ at, split: true })).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'xabcdefy' }], type: 'paragraph' },
+    ]);
+  });
 
   it('unwraps only the selected middle fragment in split mode', () => {
     const editor = createUnwrapEditor(
@@ -773,6 +1089,36 @@ describe('editor.update.link.wrap', () => {
       editor.update.link.wrap({ url: 'ftp://example.com' })
     ).toBeUndefined();
     expect(findLink(editor)).toBeUndefined();
+  });
+
+  it('refuses a wrap without split that would take a link the selection only touches', () => {
+    const editor = createEditingEditor({
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 1, 0] },
+      },
+      value: [
+        {
+          children: [
+            { text: 'plain ' },
+            {
+              children: [{ text: 'old' }],
+              type: 'link',
+              url: 'https://old.example',
+            },
+            { text: ' tail' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+    const before = editor.read.lastCommit();
+
+    expect(
+      editor.update.link.wrap({ split: false, url: 'https://new.example' })
+    ).toBeUndefined();
+    expect(editor.read.lastCommit()).toBe(before);
   });
 
   it('returns undefined when there is no selection to wrap', () => {

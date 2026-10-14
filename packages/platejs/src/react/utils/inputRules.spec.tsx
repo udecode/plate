@@ -12,6 +12,7 @@ import {
   createBlockStartInputRule,
   createMarkInputRule,
   defineInputRule,
+  inputRuleVeto,
 } from '../../lib/plugins/input-rules';
 import {
   insertBreak,
@@ -1129,5 +1130,94 @@ describe('input rules', () => {
         ],
       })
     ).toThrow('inputRules must be an array of explicit rule instances.');
+  });
+});
+
+describe('input rule admission', () => {
+  const LiteralPlugin = definePlugin('literal', {
+    schema: { element: schema.element.textBlock() },
+  }).extend((context) => ({
+    contributions: [inputRuleVeto.of(context.schema.type)],
+  }));
+  const run = (block: string) => {
+    const calls: string[] = [];
+    const editor = createEditor({
+      plugins: [
+        LiteralPlugin,
+        definePlugin('counting', {}).configure({
+          inputRules: [
+            createBlockStartInputRule({
+              match: '#',
+              mode: 'set',
+              node: 'heading',
+              trigger: ' ',
+            }),
+            defineInputRule({
+              apply: () => {
+                calls.push('insertBreak');
+              },
+              target: 'insertBreak',
+            }),
+            defineInputRule({
+              apply: () => {
+                calls.push('insertData');
+              },
+              mimeTypes: ['text/plain'],
+              target: 'insertData',
+            }),
+          ],
+        }),
+        definePlugin('heading', {
+          schema: { element: schema.element.textBlock() },
+        }),
+      ],
+      initialValue: [{ children: [{ text: '#' }], type: block }],
+    } as any);
+
+    setEndSelection(editor);
+    insertText(editor, ' ');
+    insertBreak(editor);
+    editor.api.dom.clipboard.insertData(createTextDataTransfer('x'));
+
+    return { calls, type: editor.read.children()[0].type };
+  };
+
+  it('runs no rule inside an element that contributes inputRuleVeto', () => {
+    expect(run('paragraph')).toEqual({
+      calls: ['insertBreak', 'insertData'],
+      type: 'heading',
+    });
+    expect(run('literal')).toEqual({ calls: [], type: 'literal' });
+  });
+
+  it('runs no rule for text sent to a location other than the selection', () => {
+    const editor = createEditor({
+      plugins: [
+        definePlugin('heading', {
+          schema: { element: schema.element.textBlock() },
+        }).configure({
+          inputRules: [
+            createBlockStartInputRule({
+              match: '#',
+              mode: 'set',
+              node: 'heading',
+              trigger: ' ',
+            }),
+          ],
+        }),
+      ],
+      initialValue: [
+        { children: [{ text: '#' }], type: 'paragraph' },
+        { children: [{ text: 'b' }], type: 'paragraph' },
+      ],
+    } as any);
+
+    setEndSelection(editor);
+    editor.update.text.insert(' ', { at: { offset: 1, path: [1, 0] } });
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: '#' }], type: 'paragraph' },
+      { children: [{ text: 'b ' }], type: 'paragraph' },
+    ]);
   });
 });

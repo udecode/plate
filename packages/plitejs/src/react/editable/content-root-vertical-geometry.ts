@@ -97,7 +97,6 @@ export const resolveViewBoundaryVisualMovement = ({
         edge = true;
       } else {
         const next = resolveViewBoundaryDOMPoint(editor, {
-          ...(adjacent.fragment ? { fragmentId: adjacent.fragment.id } : {}),
           owner: adjacent.owner,
           point: rootPlitePoint(
             {

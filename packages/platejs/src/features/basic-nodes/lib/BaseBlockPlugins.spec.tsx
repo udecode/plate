@@ -7,6 +7,8 @@ import {
   BaseParagraphPlugin,
   createBlockStartInputRule,
   createEditor,
+  definePlugin,
+  property,
   schema,
   SelectionApi,
 } from '../../../core';
@@ -563,6 +565,227 @@ describe('basic block input rules', () => {
       children: [{ text: '---' }],
       level: 1,
       type: 'heading',
+    });
+  });
+
+  describe('the divider shortcut', () => {
+    const TitlePlugin = definePlugin('title', {
+      schema: { element: schema.element.textBlock() },
+    });
+    const hr = { children: [{ text: '' }], type: 'horizontalRule' };
+    const block = (type: string, text = '') => ({
+      children: [{ text }],
+      type,
+    });
+    const type = (
+      options: Readonly<{
+        initialValue: unknown[];
+        keys: string;
+        path: number[];
+        offset?: number;
+        plugins?: unknown[];
+        schema?: unknown;
+        variant?: '-' | '_';
+      }>
+    ) => {
+      const offset = options.offset ?? 0;
+      const editor = createEditor({
+        initialValue: options.initialValue,
+        plugins: [
+          ...(options.plugins ?? [BaseParagraphPlugin]),
+          BaseHorizontalRulePlugin.configure({
+            inputRules: [
+              HorizontalRuleRules.markdown({ variant: options.variant }),
+            ],
+          }),
+        ],
+        schema: options.schema,
+        selection: {
+          kind: 'text',
+          anchor: { offset, path: options.path },
+          focus: { offset, path: options.path },
+        },
+      } as never);
+
+      for (const key of options.keys) editor.update.text.insert(key);
+
+      return editor;
+    };
+    const titleRoot = {
+      plugins: [BaseParagraphPlugin.configure({ enabled: false }), TitlePlugin],
+      schema: {
+        root: schema.content.group('block', {
+          default: { type: 'title' },
+          min: 1,
+        }),
+      },
+    };
+
+    it('leaves an empty divider and a paragraph with the caret', () => {
+      for (const [keys, variant] of [
+        ['---', '-'],
+        ['___ ', '_'],
+      ] as const) {
+        const editor = type({
+          initialValue: [block('paragraph')],
+          keys,
+          path: [0, 0],
+          variant,
+        });
+
+        expect(editor.read.children()).toEqual([hr, block('paragraph')]);
+        expect(editor.read.selection()?.focus).toEqual({
+          offset: 0,
+          path: [1, 0],
+        });
+      }
+    });
+
+    it('lands the block the parent declares after the divider', () => {
+      expect(
+        type({
+          ...titleRoot,
+          initialValue: [block('title')],
+          keys: '---',
+          path: [0, 0],
+        }).read.children()
+      ).toEqual([hr, block('title')]);
+      expect(
+        type({
+          initialValue: [
+            { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+            block('paragraph'),
+          ],
+          keys: '---',
+          path: [1, 0],
+          plugins: [BaseParagraphPlugin, BaseHeadingPlugin],
+          schema: {
+            root: schema.content.prefix(
+              [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+              schema.content.group('block', {
+                default: { type: 'paragraph' },
+                min: 1,
+              })
+            ),
+          },
+        }).read.children()
+      ).toEqual([
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+        hr,
+        block('paragraph'),
+      ]);
+      expect(
+        type({
+          initialValue: [
+            { children: [block('paragraph')], type: 'blockquote' },
+            block('title', 'after'),
+          ],
+          keys: '---',
+          path: [0, 0, 0],
+          plugins: [BaseParagraphPlugin, TitlePlugin, BaseBlockquotePlugin],
+          schema: {
+            root: schema.content.types(['blockquote', 'title'], {
+              default: { type: 'title' },
+              min: 1,
+            }),
+          },
+        }).read.children()
+      ).toEqual([
+        { children: [hr, block('paragraph')], type: 'blockquote' },
+        block('title', 'after'),
+      ]);
+    });
+
+    it('lands a container default with the caret in its first text block', () => {
+      const editor = type({
+        initialValue: [block('paragraph')],
+        keys: '---',
+        path: [0, 0],
+        plugins: [BaseParagraphPlugin, BaseBlockquotePlugin],
+        schema: {
+          root: schema.content.types(
+            ['paragraph', 'blockquote', 'horizontalRule'],
+            { default: { type: 'blockquote' }, min: 1 }
+          ),
+        },
+      });
+
+      expect(editor.read.children()).toEqual([
+        hr,
+        { children: [block('paragraph')], type: 'blockquote' },
+      ]);
+      expect(editor.read.selection()?.focus).toEqual({
+        offset: 0,
+        path: [1, 0, 0],
+      });
+    });
+
+    it('keeps the marker as text when an inline atom follows the caret', () => {
+      const MentionPlugin = definePlugin('mention', {
+        schema: {
+          element: {
+            properties: {
+              label: property.string(),
+              ref: property.string({ required: true }),
+            },
+            void: 'markable-inline',
+          },
+        },
+      });
+      const mention = {
+        children: [{ text: '' }],
+        label: 'Alice',
+        ref: 'alice',
+        type: 'mention',
+      };
+      const editor = type({
+        initialValue: [
+          {
+            children: [{ text: '--' }, mention, { text: '' }],
+            type: 'paragraph',
+          },
+        ],
+        keys: '-',
+        offset: 2,
+        path: [0, 0],
+        plugins: [BaseParagraphPlugin, MentionPlugin],
+      });
+
+      expect(editor.read.children()).toEqual([
+        {
+          children: [{ text: '---' }, mention, { text: '' }],
+          type: 'paragraph',
+        },
+      ]);
+    });
+
+    it('keeps the marker as text when text follows the caret', () => {
+      expect(
+        type({
+          initialValue: [block('paragraph', 'abc')],
+          keys: '---',
+          path: [0, 0],
+        }).read.children()
+      ).toEqual([block('paragraph', '---abc')]);
+    });
+
+    it('undoes in one step to the paragraph before the last key', () => {
+      const editor = type({
+        initialValue: [block('paragraph', '--')],
+        keys: '-',
+        offset: 2,
+        path: [0, 0],
+      });
+
+      expect(editor.read.children()).toEqual([hr, block('paragraph')]);
+      expect(editor.read.selection()?.focus).toEqual({
+        offset: 0,
+        path: [1, 0],
+      });
+
+      editor.api.history.undo();
+
+      expect(editor.read.children()).toEqual([block('paragraph', '--')]);
     });
   });
 });

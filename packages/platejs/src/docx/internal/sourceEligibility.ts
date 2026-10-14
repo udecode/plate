@@ -8,6 +8,7 @@ import {
   readRelationships,
   relationshipPartFor,
 } from './packageParts';
+import { isCustomXmlItem, REVIEW_PART_NAMESPACE } from './reviewPart';
 
 /** One reason a package cannot back exact source reuse. */
 export type DocxSourceViolation = Readonly<{
@@ -55,6 +56,9 @@ const OFFICE = 'urn:schemas-microsoft-com:office:office';
 const VML = 'urn:schemas-microsoft-com:vml';
 const VML_WORD = 'urn:schemas-microsoft-com:office:word';
 const XMLNS = 'http://www.w3.org/2000/xmlns/';
+const CUSTOM_XML =
+  'http://schemas.openxmlformats.org/officeDocument/2006/customXml';
+const CUSTOM_XML_ITEM = 'application/xml';
 
 // Element namespaces of the writer, its comment parts as Word writes them, the
 // source-preservation fixtures and the licensed Word corpus. Markup in any other
@@ -74,6 +78,7 @@ const PASSIVE_NAMESPACES: ReadonlySet<string> = new Set([
   'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing',
   'http://schemas.openxmlformats.org/markup-compatibility/2006',
   'http://schemas.openxmlformats.org/officeDocument/2006/custom-properties',
+  CUSTOM_XML,
   'http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes',
   'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties',
   'http://schemas.openxmlformats.org/officeDocument/2006/math',
@@ -84,6 +89,9 @@ const PASSIVE_NAMESPACES: ReadonlySet<string> = new Set([
   VML,
   VML_WORD,
   WORD,
+]);
+const REVIEW_PART_NAMESPACES: ReadonlySet<string> = new Set([
+  REVIEW_PART_NAMESPACE,
 ]);
 
 // Elements that embed, fetch or run content even when their relationship is
@@ -252,6 +260,7 @@ const CONTENT_VOCABULARY: RelationshipVocabulary = new Map([
 const MAIN_DOCUMENT_VOCABULARY: RelationshipVocabulary = new Map([
   ...CONTENT_VOCABULARY,
   [`${OFFICE_RELATIONSHIPS}/comments`, [`${WORDML}.comments+xml`]],
+  [`${OFFICE_RELATIONSHIPS}/customXml`, [CUSTOM_XML_ITEM]],
   [`${OFFICE_RELATIONSHIPS}/endnotes`, [`${WORDML}.endnotes+xml`]],
   [`${OFFICE_RELATIONSHIPS}/fontTable`, [`${WORDML}.fontTable+xml`]],
   [`${OFFICE_RELATIONSHIPS}/footer`, [`${WORDML}.footer+xml`]],
@@ -298,6 +307,15 @@ const MAIN_DOCUMENT_VOCABULARY: RelationshipVocabulary = new Map([
 const RELATIONSHIPS_BY_OWNER: ReadonlyMap<string, RelationshipVocabulary> =
   new Map([
     [MAIN_DOCUMENT, MAIN_DOCUMENT_VOCABULARY],
+    [
+      CUSTOM_XML_ITEM,
+      new Map([
+        [
+          `${OFFICE_RELATIONSHIPS}/customXmlProps`,
+          ['application/vnd.openxmlformats-officedocument.customXmlProperties+xml'],
+        ],
+      ]),
+    ],
     [`${WORDML}.comments+xml`, CONTENT_VOCABULARY],
     [`${WORDML}.endnotes+xml`, CONTENT_VOCABULARY],
     [`${WORDML}.footer+xml`, CONTENT_VOCABULARY],
@@ -334,6 +352,9 @@ const wordAttribute = (tag: SaxesTagNS, local: string) =>
 
 /** Collects the first non-passive markup of one XML part during its SAX pass. */
 export const createDocxMarkupInspector = (part: string) => {
+  const namespaces = isCustomXmlItem(part)
+    ? REVIEW_PART_NAMESPACES
+    : PASSIVE_NAMESPACES;
   let first: DocxSourceViolation | null = null;
   // Complex fields nest; each frame collects its own instruction text.
   const fields: Array<{ instruction: string; open: boolean }> = [];
@@ -385,7 +406,7 @@ export const createDocxMarkupInspector = (part: string) => {
     },
     open(tag: SaxesTagNS) {
       if (first) return;
-      if (!PASSIVE_NAMESPACES.has(tag.uri)) {
+      if (!namespaces.has(tag.uri)) {
         fail({ detail: tag.uri || tag.name, feature: 'markup' });
 
         return;

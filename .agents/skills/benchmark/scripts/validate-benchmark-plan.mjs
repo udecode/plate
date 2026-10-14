@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import {
+  CLOSED_BOX,
+  markdownLines,
+  OPEN_BOX,
+} from '../../../pstack/status.mjs';
 
 export const DEFAULT_BENCHMARK_LANES = [
   'source-and-host-readiness',
@@ -40,9 +46,14 @@ const CAUSE_STATES = new Set([
   'fixing',
   'rerun',
   'green',
+  'pivoted',
   'invalidated',
 ]);
 const ACTIVE_CAUSE_STATES = new Set(['proven', 'fixing', 'rerun']);
+const SETTLED_CAUSE_HISTORY = new Map([
+  ['green', 'kept'],
+  ['pivoted', 'pivoted'],
+]);
 const FIX_CLASSES = new Set([
   'correctness',
   'internal-implementation',
@@ -58,9 +69,19 @@ const CAUSE_HISTORY_DECISIONS = new Set([
   'deferred',
   'invalidated',
   'kept',
+  'pivoted',
   'quarantined',
   'reverted',
 ]);
+const PARKED_DECISIONS = new Set(['deferred', 'quarantined']);
+const OWNER_KEPT =
+  /owner-kept:\s*([^;|]*);\s*expires\s+(\d{4}-\d{2}-\d{2});\s*approved\s+([^;|]*)/i;
+const PIVOT_PLAN = /pivot-plan:\s*(.*)$/i;
+const BOX_PREFIX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[[ xX]\]\s*/u;
+const PLAN_REFERENCE =
+  /^(?:\[[^\]]*\]\((?<link>[^)\s]*)\)|`(?<code>[^`]*)`|(?<bare>[^\s;,)]*))/;
+const INHERITED_CAUSES = /;\s*causes?\s+([\w.-]+(?:\s*,\s*[\w.-]+)*)\s*$/i;
+const MAX_OWNER_KEPT_DAYS = 90;
 const LANE_STATUSES = new Set([
   'complete',
   'in_progress',
@@ -172,13 +193,156 @@ const validateFixDecision = (decision, label, errors) => {
   }
 };
 
+const addDays = (day, days) =>
+  new Date(Date.parse(`${day}T00:00:00Z`) + days * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+const isCalendarDay = (day) =>
+  !Number.isNaN(Date.parse(`${day}T00:00:00Z`)) &&
+  new Date(`${day}T00:00:00Z`).toISOString().slice(0, 10) === day;
+const localToday = () => {
+  const now = new Date();
+
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
+const ownerKeptStatus = (evidence, today) => {
+  const kept = evidence.match(OWNER_KEPT);
+
+  if (!kept) return 'absent';
+
+  const [, reason, expires, approver] = kept;
+
+  return isResolved(reason) &&
+    isResolved(approver) &&
+    isCalendarDay(expires) &&
+    expires >= today &&
+    expires <= addDays(today, MAX_OWNER_KEPT_DAYS)
+    ? 'valid'
+    : 'invalid';
+};
+
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const unquote = (text) => {
+  const value = text.trim();
+  const span = value.match(/^(`+)(?!`)(.*[^`])\1$/su);
+
+  return (span ? span[2] : value).trim();
+};
+
+const taskItems = (markdown) => {
+  const items = [];
+  let item = null;
+
+  for (const { fence, hidden, line, raw } of markdownLines(markdown)) {
+    if (hidden) continue;
+    if (OPEN_BOX.test(line) || CLOSED_BOX.test(line)) {
+      item = {
+        indent: raw.search(/\S/),
+        raw: raw.replace(BOX_PREFIX, ''),
+        text: line.replace(BOX_PREFIX, ''),
+      };
+      items.push(item);
+    } else if (!fence && item && line.trim() && raw.search(/\S/) > item.indent) {
+      item.raw += ` ${raw.trim()}`;
+      item.text += ` ${line.trim()}`;
+    } else {
+      item = null;
+    }
+  }
+
+  return items;
+};
+
+// Read the way CommonMark reads them: a backtick run opens a span that the
+// next run of the same length closes, and an HTML comment that starts first
+// hides what it holds, while comment markers inside a span stay literal.
+const codeSpans = (text) => {
+  const spans = [];
+  let at = 0;
+
+  while (at < text.length) {
+    if (text.startsWith('<!--', at)) {
+      const end = text.indexOf('-->', at + 4);
+
+      if (end === -1) break;
+      at = end + 3;
+    } else if (text[at] === '`') {
+      const run = text.slice(at).match(/^`+/u)[0];
+      const close = new RegExp(`(?<!\`)${run}(?!\`)`, 'gu');
+
+      close.lastIndex = at + run.length;
+      const end = close.exec(text);
+
+      if (end) spans.push(text.slice(at + run.length, end.index).trim());
+      at = end ? end.index + run.length : at + run.length;
+    } else {
+      at += 1;
+    }
+  }
+
+  return spans;
+};
+
+const planReference = (text, planPath) => {
+  const value = text.trim();
+  const match = value.match(PLAN_REFERENCE);
+  const { bare, code, link } = match.groups;
+  const name = (link ?? code ?? bare).replace(/\.$/, '');
+
+  if (!/^[\w.-]+\.md$/.test(name) || !planPath || !existsSync(planPath)) {
+    return null;
+  }
+
+  const target = join(dirname(resolve(planPath)), name);
+
+  return existsSync(target) && realpathSync(target) !== realpathSync(planPath)
+    ? { name, rest: value.slice(match[0].length).trim(), target }
+    : null;
+};
+
+const pivotPlanError = (row, label, planPath) => {
+  const pivot = planReference(
+    row.evidence.match(PIVOT_PLAN)?.[1] ?? '',
+    planPath
+  );
+
+  if (!pivot) {
+    return `${label} needs "pivot-plan: <file>.md" in Evidence, naming another plan beside this one by its file name`;
+  }
+
+  const cause = new RegExp(`(^|[^\\w-])${escapeRegExp(row.causeId)}($|[^\\w-])`);
+  const command = unquote(row.benchmarkCommand);
+  const step = taskItems(readFileSync(pivot.target, 'utf8')).some(
+    ({ raw, text }) => cause.test(text) && codeSpans(raw).includes(command)
+  );
+
+  return step
+    ? ''
+    : `${label} pivot-plan ${pivot.name} needs a step (- [ ] or - [x]) that names ${row.causeId} and reruns \`${command}\` in backticks`;
+};
+
+const benchmarkClosure = (row, today, pivotError) => {
+  const decision = row.decision.toLowerCase();
+
+  if (decision === 'kept') {
+    return isSuccessfulResult(row.benchmarkResult) ? 'met' : 'open';
+  }
+  if (decision === 'pivoted') {
+    return pivotError ? 'open' : 'pivoted';
+  }
+
+  return ownerKeptStatus(row.evidence, today) === 'valid' ? 'owner-kept' : 'open';
+};
+
 const parseCells = (line) =>
   line
     .trim()
     .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .map((cell) => cell.trim());
+    .replace(/(?<!\\)\|$/, '')
+    .split(/(?<!\\)\|/)
+    .map((cell) => cell.trim().replaceAll('\\|', '|'));
 
 const parseLaneTable = (markdown) => {
   const lines = markdown.split('\n');
@@ -355,7 +519,11 @@ const parseCauseHistory = (markdown) => {
     if (!lines[index].trim().startsWith('|')) break;
 
     const cells = parseCells(lines[index]);
-    if (cells.length !== expectedHeader.length) continue;
+    if (cells.length !== expectedHeader.length) {
+      return {
+        error: `Cause History row ${index - tableStart - 1} has ${cells.length} cells, not ${expectedHeader.length}`,
+      };
+    }
 
     rows.push({
       benchmarkCommand: cells[11],
@@ -405,7 +573,14 @@ const isNotApplicable = (value) => {
 const getNotApplicableReason = (value) =>
   value?.match(/^n\/a:\s*(.*)$/i)?.[1]?.trim() ?? '';
 
-export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
+export const validateBenchmarkPlan = (
+  markdown,
+  {
+    complete = false,
+    planPath,
+    today = localToday(),
+  } = {}
+) => {
   const errors = [];
   if (complete) {
     const coverage = parseBulletSection(markdown, '## Interaction Coverage');
@@ -425,6 +600,10 @@ export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
 
   if (!benchmarkSource) {
     errors.push('missing Benchmark Source');
+  } else if (!('inherited-budget' in benchmarkSource)) {
+    errors.push(
+      'Benchmark Source requires inherited-budget: <file>.md <step whose frozen budget this run judges> or N/A: <reason>'
+    );
   }
   if (comparisonSignature.error) {
     errors.push(comparisonSignature.error);
@@ -614,7 +793,13 @@ export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
   }
 
   const causeLaneIndex = rows.findIndex((row) => row.lane === cause.lane);
-  const requiresProvenCause = ['proven', 'fixing', 'rerun', 'green'].includes(
+  const requiresProvenCause = [
+    'proven',
+    'fixing',
+    'rerun',
+    'green',
+    'pivoted',
+  ].includes(
     state
   );
 
@@ -723,6 +908,7 @@ export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
   const historyRows = history.rows;
   const resolvedHistoryRows = [];
   const historyCauseIds = new Set();
+  const pivotErrors = new Map();
 
   for (const row of historyRows) {
     if (!isResolved(row.causeId)) {
@@ -823,6 +1009,33 @@ export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
 
     validateFixDecision(row, `Cause History ${row.causeId}`, errors);
 
+    const label = `${row.decision} cause ${row.causeId}`;
+
+    if (decision === 'pivoted') {
+      if (!ARCHITECTURAL_FIX_CLASSES.has(row.fixClass.toLowerCase())) {
+        errors.push(
+          `${label} needs fix-class ${[...ARCHITECTURAL_FIX_CLASSES].join(' or ')}`
+        );
+      }
+      const pivotError = pivotPlanError(row, label, planPath);
+      pivotErrors.set(row, pivotError);
+      if (pivotError) errors.push(pivotError);
+    }
+
+    if (PARKED_DECISIONS.has(decision)) {
+      const ownerKept = ownerKeptStatus(row.evidence, today);
+
+      if (ownerKept === 'invalid') {
+        errors.push(
+          `${label} owner-kept needs a reason, a real expiry date from today to ${MAX_OWNER_KEPT_DAYS} days out and an approver`
+        );
+      } else if (ownerKept === 'absent') {
+        errors.push(
+          `${label} parks its cost. Fix it in this run, decide it pivoted to the plan that adopts its target, or put "owner-kept: <reason>; expires <YYYY-MM-DD>; approved <name>" in Evidence`
+        );
+      }
+    }
+
     if (decision === 'kept') {
       if (!isSuccessfulResult(row.benchmarkResult)) {
         errors.push(
@@ -867,11 +1080,59 @@ export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
     }
   }
 
-  const noCauseRows = resolvedHistoryRows.filter(
-    (row) => row.causeId === 'none'
-  );
   const actualCauseRows = resolvedHistoryRows.filter(
     (row) => row.causeId !== 'none'
+  );
+  const benchmarkClosures = actualCauseRows.map((row) =>
+    benchmarkClosure(row, today, pivotErrors.get(row))
+  );
+  const inherited = benchmarkSource?.['inherited-budget'];
+
+  if (isResolved(inherited) && !planReference(inherited, planPath)?.rest) {
+    errors.push(
+      'inherited-budget must name another plan beside this one by its file name, then its step, as "<file>.md <step>", or N/A: <reason>'
+    );
+  }
+
+  if (complete) {
+    const inheritedResult = benchmarkSource?.['inherited-budget-result'];
+
+    if (
+      inherited !== undefined &&
+      !isResolved(inherited) &&
+      !isNotApplicable(inherited)
+    ) {
+      errors.push(
+        'complete benchmark plan requires inherited-budget: <file>.md <step whose frozen budget this run judges> or N/A: <reason>'
+      );
+    } else if (isResolved(inherited) && isFailedResult(inheritedResult)) {
+      const named = inheritedResult
+        .match(INHERITED_CAUSES)?.[1]
+        .split(/\s*,\s*/);
+
+      if (!named) {
+        errors.push(
+          'inherited-budget-result fails, so it must end with "; causes <id>, <id>" naming the causes that hold the miss'
+        );
+      }
+      for (const id of named ?? []) {
+        const index = actualCauseRows.findIndex((row) => row.causeId === id);
+
+        if (!['pivoted', 'owner-kept'].includes(benchmarkClosures[index])) {
+          errors.push(
+            `inherited-budget-result names ${id}, which must be a cause decided pivoted or owner-kept`
+          );
+        }
+      }
+    } else if (isResolved(inherited) && !isSuccessfulResult(inheritedResult)) {
+      errors.push(
+        'complete benchmark plan with an inherited-budget requires inherited-budget-result: pass: <evidence> or fail: <evidence>; an inconclusive line keeps the run open until it is conclusive'
+      );
+    }
+  }
+
+  const noCauseRows = resolvedHistoryRows.filter(
+    (row) => row.causeId === 'none'
   );
 
   if (noCauseRows.length > 0 && actualCauseRows.length > 0) {
@@ -884,17 +1145,21 @@ export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
     );
   }
 
-  if (state === 'green' && causeLaneIndex >= 0) {
+  const historyDecision = SETTLED_CAUSE_HISTORY.get(state);
+
+  if (historyDecision && causeLaneIndex >= 0) {
     if (rows[causeLaneIndex].status.toLowerCase() !== 'complete') {
-      errors.push(`green cause lane ${cause.lane} must be complete`);
+      errors.push(`${state} cause lane ${cause.lane} must be complete`);
     }
 
-    for (const field of [
-      'benchmark-rerun-result',
-      'correctness-rerun-result',
-    ]) {
-      if (!isSuccessfulResult(cause[field])) {
-        errors.push(`green cause requires ${field} with pass: <evidence>`);
+    if (state === 'green') {
+      for (const field of [
+        'benchmark-rerun-result',
+        'correctness-rerun-result',
+      ]) {
+        if (!isSuccessfulResult(cause[field])) {
+          errors.push(`green cause requires ${field} with pass: <evidence>`);
+        }
       }
     }
 
@@ -907,20 +1172,20 @@ export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
 
     if (cause['resume-lane'] !== expectedResume) {
       errors.push(
-        `green cause must resume ${expectedResume}, got ${cause['resume-lane']}`
+        `${state} cause must resume ${expectedResume}, got ${cause['resume-lane']}`
       );
     }
 
-    const keptHistory = actualCauseRows.find(
+    const history = actualCauseRows.find(
       (row) =>
         row.causeId === cause['cause-id'] &&
         row.lane === cause.lane &&
-        row.decision.toLowerCase() === 'kept'
+        row.decision.toLowerCase() === historyDecision
     );
 
-    if (!keptHistory) {
+    if (!history) {
       errors.push(
-        `green cause ${cause['cause-id']} requires a matching kept Cause History row`
+        `${state} cause ${cause['cause-id']} requires a matching ${historyDecision} Cause History row`
       );
     } else {
       for (const [historyField, causeField, label] of [
@@ -935,37 +1200,37 @@ export const validateBenchmarkPlan = (markdown, { complete = false } = {}) => {
         ],
         ['fixOwner', 'fix-owner', 'fix owner'],
       ]) {
-        if (keptHistory[historyField] !== cause[causeField]) {
+        if (history[historyField] !== cause[causeField]) {
           errors.push(
-            `green cause ${cause['cause-id']} must preserve its ${label} in Cause History`
+            `${state} cause ${cause['cause-id']} must preserve its ${label} in Cause History`
           );
         }
       }
-      if (keptHistory.benchmarkCommand !== cause['benchmark-command']) {
+      if (history.benchmarkCommand !== cause['benchmark-command']) {
         errors.push(
-          `green cause ${cause['cause-id']} must preserve its benchmark command in Cause History`
+          `${state} cause ${cause['cause-id']} must preserve its benchmark command in Cause History`
         );
       }
       if (
-        keptHistory.correctnessGuardResult !== cause['correctness-guard-result']
+        history.correctnessGuardResult !== cause['correctness-guard-result']
       ) {
         errors.push(
-          `green cause ${cause['cause-id']} must preserve its pre-fix correctness result in Cause History`
+          `${state} cause ${cause['cause-id']} must preserve its pre-fix correctness result in Cause History`
         );
       }
-      if (keptHistory.benchmarkResult !== cause['benchmark-rerun-result']) {
+      if (history.benchmarkResult !== cause['benchmark-rerun-result']) {
         errors.push(
-          `green cause ${cause['cause-id']} must preserve its benchmark rerun result in Cause History`
+          `${state} cause ${cause['cause-id']} must preserve its benchmark rerun result in Cause History`
         );
       }
-      if (keptHistory.correctnessResult !== cause['correctness-rerun-result']) {
+      if (history.correctnessResult !== cause['correctness-rerun-result']) {
         errors.push(
-          `green cause ${cause['cause-id']} must preserve its correctness rerun result in Cause History`
+          `${state} cause ${cause['cause-id']} must preserve its correctness rerun result in Cause History`
         );
       }
-      if (keptHistory.correctnessCommand !== cause['correctness-command']) {
+      if (history.correctnessCommand !== cause['correctness-command']) {
         errors.push(
-          `green cause ${cause['cause-id']} must preserve its correctness command in Cause History`
+          `${state} cause ${cause['cause-id']} must preserve its correctness command in Cause History`
         );
       }
     }
@@ -1213,6 +1478,7 @@ if (
   } else {
     const errors = validateBenchmarkPlan(readFileSync(planPath, 'utf8'), {
       complete,
+      planPath,
     });
 
     if (errors.length > 0) {

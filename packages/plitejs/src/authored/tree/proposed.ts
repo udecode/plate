@@ -1,7 +1,8 @@
 import type { JsonNode } from '../../core/change/tokens';
+import { survivalUnder } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
 import { type AuthoredMark, readAuthoredMarks } from './marks';
-import { isTextBlock, survivalUnder } from './resolve';
+import { isTextBlock } from './resolve';
 
 type Node = JsonNode;
 
@@ -17,8 +18,10 @@ const isText = (node: Node) => typeof node.text === 'string';
 const hasMark = (node: unknown, kind: AuthoredMark['kind']) =>
   readAuthoredMarks(node).some((mark) => mark.kind === kind);
 
-// Accepting every change removes exactly what a delete mark strikes.
-const proposedSurvival = () => survivalUnder((node) => hasMark(node, 'delete'));
+/** @internal */
+export const proposedSurvival = survivalUnder<Node>((node) =>
+  hasMark(node, 'delete')
+);
 
 /**
  * The element whose children a review element's children become once every
@@ -29,7 +32,7 @@ export const proposedHost = (
   children: readonly Node[],
   path: readonly number[]
 ): readonly number[] | null => {
-  const { survives } = proposedSurvival();
+  const { survives } = proposedSurvival;
   const chain: Node[] = [];
   let level = children;
 
@@ -74,7 +77,7 @@ export const proposedChildren = (
   hostPath: readonly number[],
   limit = Number.POSITIVE_INFINITY
 ): ProposedChild[] => {
-  const { liveContent, survives } = proposedSurvival();
+  const { liveContent, survives } = proposedSurvival;
   const out: ProposedChild[] = [];
   // The text block a join in this host merges into, and whether it or a block
   // already joined to it keeps content.

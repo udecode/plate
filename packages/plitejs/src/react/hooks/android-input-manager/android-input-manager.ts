@@ -279,14 +279,14 @@ export function createAndroidInputManager({
       }
 
       const recentEcho = inputController.state.recentTextInputRepairEcho;
-      const pliteText = NodeApi.leaf(editor, diff.path).text;
+      const editorText = NodeApi.leaf(editor, diff.path).text;
       const isDuplicateRecentEchoText =
         !!recentEcho &&
         diff.diff.start === diff.diff.end &&
         diff.diff.text.length > 0 &&
         diff.diff.start + diff.diff.text.length ===
           recentEcho.selectionOffset &&
-        pliteText.slice(
+        editorText.slice(
           diff.diff.start,
           diff.diff.start + diff.diff.text.length
         ) === diff.diff.text;
@@ -295,7 +295,7 @@ export function createAndroidInputManager({
         recentEcho &&
         performance.now() <= recentEcho.expiresAt &&
         diff.path.join(',') === recentEcho.pathKey &&
-        pliteText === recentEcho.text &&
+        editorText === recentEcho.text &&
         !hasFreshNativeUserSelection() &&
         isDuplicateRecentEchoText
       ) {

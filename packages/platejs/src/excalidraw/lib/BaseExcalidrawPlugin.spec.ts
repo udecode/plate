@@ -21,41 +21,21 @@ describe('BaseExcalidrawPlugin', () => {
     ).toBe('json');
   });
 
-  it('rejects malformed drawing data', () => {
+  it.each([
+    ['settings as a list', { elements: [], state: [] }],
+    ['images as text', { elements: [], files: 'image', state: {} }],
+    ['images as a list', { elements: [], files: [], state: {} }],
+    ['images as null', { elements: [], files: null, state: {} }],
+  ])('rejects drawing data with %s', (_, data) => {
     const editor = createEditor({
       plugins: [BaseExcalidrawPlugin],
     });
 
     expect(() =>
       editor.read.schema.assertDocument({
-        children: [
-          {
-            children: [{ text: '' }],
-            data: { elements: [], state: [] },
-            type: 'excalidraw',
-          },
-        ],
+        children: [{ children: [{ text: '' }], data, type: 'excalidraw' }],
       })
     ).toThrow(/element property "data" fails custom property validation/);
-  });
-
-  it('accepts the persisted drawing width', () => {
-    const editor = createEditor({
-      plugins: [BaseExcalidrawPlugin],
-    });
-
-    expect(() =>
-      editor.read.schema.assertDocument({
-        children: [
-          {
-            children: [{ text: '' }],
-            data: { elements: [], state: {} },
-            type: 'excalidraw',
-            width: '50%',
-          },
-        ],
-      })
-    ).not.toThrow();
   });
 
   it('does nothing without a selection or explicit target', () => {

@@ -34,7 +34,7 @@ export type TrustedTypingResult = {
   rows: TrustedTypingRow[];
 };
 
-const TRACE_KEY_PREFIX = '__plateTrustedTypingTrace';
+const TRACE_KEY_PREFIX = '__EDITOR_TRUSTED_TYPING_TRACE__';
 let traceSequence = 0;
 
 /** Measure trusted keydown, exact DOM readiness, paint, and long tasks. */
@@ -55,6 +55,8 @@ export const measureTrustedTyping = async ({
     (element, { handleKey, traceKey: innerTraceKey }) => {
       const rows: Array<
         TrustedTypingRow & {
+          block?: number[];
+          blockOffset?: number;
           expectedText?: string;
           observedDOMText?: string | null;
           paintScheduled?: boolean;
@@ -99,8 +101,7 @@ export const measureTrustedTyping = async ({
           )
         ).filter(
           (candidate) =>
-            candidate.getAttribute('data-editor-path') === path.join(',') &&
-            !candidate.hasAttribute('data-editor-retained')
+            candidate.getAttribute('data-editor-path') === path.join(',')
         );
 
         if (textHosts.length === 0) return null;
@@ -161,7 +162,6 @@ export const measureTrustedTyping = async ({
         if (
           !textHost ||
           !element.contains(textHost) ||
-          textHost.hasAttribute('data-editor-retained') ||
           !path?.every(Number.isFinite)
         ) {
           return null;
@@ -178,15 +178,56 @@ export const measureTrustedTyping = async ({
           path,
         };
       };
+      const leafCount = (block: readonly number[]) => {
+        let count = 0;
+
+        while (handle?.getNodeKey([...block, count])) count += 1;
+
+        return count;
+      };
+      const readModelBlock = (block: readonly number[]) =>
+        Array.from(
+          { length: leafCount(block) },
+          (_, index) => readModelText([...block, index]) ?? ''
+        ).join('');
+      const readDOMBlock = (block: readonly number[]) => {
+        const texts = Array.from({ length: leafCount(block) }, (_, index) =>
+          readDOMText([...block, index])
+        );
+
+        return texts.includes(null) ? null : texts.join('');
+      };
+      // Typing can open a leaf of its own, as a suggested letter does, so rows
+      // compare a block's text and offsets, not one leaf's.
+      const toBlockPoint = (point: {
+        offset: number;
+        path: readonly number[];
+      }) => {
+        const block = point.path.slice(0, -1);
+        let { offset } = point;
+
+        for (let index = 0; index < point.path[point.path.length - 1]; index++) {
+          offset += readModelText([...block, index])?.length ?? 0;
+        }
+
+        return { block, offset };
+      };
       const insertionIsExact = (row: (typeof rows)[number]) => {
-        if (!row.expectedText || row.offset == null || !row.path) {
+        if (
+          !row.expectedText ||
+          row.offset == null ||
+          !row.path ||
+          !row.block ||
+          row.blockOffset == null
+        ) {
           return false;
         }
 
         const rowPath = row.path;
+        const rowBlock = row.block;
 
-        row.observedDOMText = readDOMText(rowPath);
-        const modelText = readModelText(rowPath);
+        row.observedDOMText = readDOMBlock(rowBlock);
+        const modelText = readModelBlock(rowBlock);
         const selection = handle?.getSelection();
         const kernelTrace = handle?.getKernelTrace() ?? [];
         const runtimeEvent = kernelTrace.findLast(
@@ -204,7 +245,16 @@ export const measureTrustedTyping = async ({
             entry.selectionBefore.anchor.offset === row.offset &&
             entry.selectionBefore.focus.offset === row.offset
         );
-        const nextOffset = row.offset + row.key.length;
+        const nextOffset = row.blockOffset + row.key.length;
+        const atInsertion = (
+          point: { offset: number; path: readonly number[] } | null
+        ) => {
+          const at = point && toBlockPoint(point);
+
+          return Boolean(
+            at && pathsEqual(at.block, rowBlock) && at.offset === nextOffset
+          );
+        };
         const selectionRoot = element.getRootNode() as Document | ShadowRoot;
         const native =
           'getSelection' in selectionRoot
@@ -218,12 +268,8 @@ export const measureTrustedTyping = async ({
           : null;
         row.domSelectionInsertionMatched = Boolean(
           native?.isCollapsed &&
-          anchor &&
-          focus &&
-          pathsEqual(anchor.path, rowPath) &&
-          pathsEqual(focus.path, rowPath) &&
-          anchor.offset === nextOffset &&
-          focus.offset === nextOffset &&
+          atInsertion(anchor) &&
+          atInsertion(focus) &&
           selectionRoot.activeElement === element
         );
 
@@ -235,10 +281,8 @@ export const measureTrustedTyping = async ({
           selection != null &&
           selection.anchor.root === row.root &&
           selection.focus.root === row.root &&
-          pathsEqual(selection.anchor.path, rowPath) &&
-          pathsEqual(selection.focus.path, rowPath) &&
-          selection.anchor.offset === nextOffset &&
-          selection.focus.offset === nextOffset;
+          atInsertion(selection.anchor) &&
+          atInsertion(selection.focus);
 
         return Boolean(
           runtimeEvent &&
@@ -278,13 +322,17 @@ export const measureTrustedTyping = async ({
         const offset = isCollapsedSelection
           ? selection.anchor.offset
           : undefined;
-        const beforeText = path ? readModelText(path) : null;
+        const start =
+          path && offset != null ? toBlockPoint({ offset, path }) : undefined;
+        const beforeText = start ? readModelBlock(start.block) : null;
         const row: (typeof rows)[number] = {
+          block: start?.block,
+          blockOffset: start?.offset,
           expectedText:
-            beforeText != null && offset != null
-              ? beforeText.slice(0, offset) +
+            beforeText != null && start
+              ? beforeText.slice(0, start.offset) +
                 keyboardEvent.key +
-                beforeText.slice(offset)
+                beforeText.slice(start.offset)
               : undefined,
           key: keyboardEvent.key,
           keydown,

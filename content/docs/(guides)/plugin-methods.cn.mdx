@@ -13,7 +13,7 @@ description: 编写和配置 Plate 插件。
 | `.extend()` | 适配 import/prebuilt descriptor、使用 constructor 无法访问的 shared factory，或消费前一阶段类型。 | 扩展插件类型。 |
 | `.configure()` | 为一个用户覆盖现有字段。 | 终结调用，不扩展类型。 |
 
-`definePlugin()` 和 `definePlugin()` 拥有所有互相独立的作者贡献：
+`definePlugin()` 拥有所有互相独立的作者贡献：
 
 | 字段 | 所有权 |
 | --- | --- |
@@ -158,6 +158,90 @@ spec。像 `editor.update.text.insert(...)` 这样由命令支撑的一次性更
 `next.after(prefix)` 才会委托；返回 `false` 会拒绝命令并停止 fallback。
 `next.after(prefix)` 会基于 prefix 产生的 state 运行下游行为。插件顺序决定
 handler 顺序；descriptor 会保留 input inference。
+
+### 在建议模式下放置位置
+
+Plite 的审阅树把待定的 [建议](/docs/suggestion) 保存在正在编辑的文档里。它在
+proposed 文档，也就是接受所有待定建议后的文档上运行命令和插件 update 方法，再
+把结果记录回建议。在这里，带 input 的命令和带参数调用的 update 方法，必须声明
+其中的存储位置在 proposed 文档里落在哪里，或声明它们不含位置。什么都不声明的
+命令或方法会抛错。编辑器会自行放置选区，所以只读取选区的命令不需要为它声明。
+Plate 内置的命令和插件都已声明。
+
+<Callout type="info">
+  `SuggestionPlugin` 套件不会在审阅树上运行命令。在那里，命令使用视图的坐标，
+  如 [Authored changes](/docs/authored-changes#configure-a-view) 所述，这些声明
+  不起作用。
+</Callout>
+
+命令声明 `locate`。它用 `place.location(target)` 映射每个存储目标；某个目标
+没有位置时返回 `null`，命令什么也不做：
+
+```ts title="clear-highlight.ts" showLineNumbers
+import { defineCommand, type Location } from 'platejs';
+
+export const clearHighlight = defineCommand<{ at?: Location }>(
+  'highlight.clear',
+  {
+    locate: (input, place) => {
+      if (input.at === undefined) return input;
+
+      const at = place.location(input.at);
+
+      return at === null ? null : { ...input, at };
+    },
+    build: ({ input, state }) =>
+      state.transaction((tx) => {
+        tx.nodes.unset('highlight', {
+          at: input.at ?? [],
+          match: (node) => Boolean(Reflect.get(node, 'highlight')),
+        });
+      }),
+  }
+);
+```
+
+point 落在在此处输入时文字会落下的位置；range 会把两端的存储内容排除在外。
+path 落在其节点的 path 上；node 或 node key 保持原样。input 不含位置时声明
+`locate: false`；只移动选区的命令声明 `selection: true`。`selection` 命令在
+存储文档上运行，修改内容时会抛错。
+
+update 方法用 `txLocate`、`locateAt` 和 `txSelection` 做同样的声明：
+
+```ts title="highlight-plugin.ts" showLineNumbers
+import {
+  definePlugin,
+  locateAt,
+  txLocate,
+  txSelection,
+  type Location,
+} from 'platejs';
+
+export const HighlightPlugin = definePlugin('highlight', {
+  update: ({ tx }) => ({
+    clear: txLocate(locateAt(0), ({ at = [] }: { at?: Location } = {}) => {
+      tx.nodes.unset('highlight', {
+        at,
+        match: (node) => Boolean(Reflect.get(node, 'highlight')),
+      });
+    }),
+    setColor: txLocate(false, (color: string) => {
+      tx.marks.add('highlight', color);
+    }),
+    toStart: txSelection(() => {
+      tx.selection.collapse({ edge: 'start' });
+    }),
+  }),
+});
+```
+
+| Helper | 用途 |
+| --- | --- |
+| `txLocate(locate, method)` | 参数中带位置的方法。`locate(args, place)` 返回每个位置都已放置的参数，或返回 `null` 表示什么也不做。 |
+| `locateAt(index, ...keys)` | 为 `index` 处的 options 参数生成 `locate`，目标位于 `keys` 下，默认是 `at`。 |
+| `txLocate(false, method)` | 参数中不含位置的方法。 |
+| `txSelection(method)` | 只移动选区的方法。它在存储文档上运行，修改内容时会抛错。 |
+| `txOnly(method)` | 只改变当前事务的控制方法，例如 `tx.history.merge()`。在 `tx` 上调用它。通过 `editor.update.<plugin>` 或插件门户的一次性调用会抛错。 |
 
 ## 声明 feature format mapping
 

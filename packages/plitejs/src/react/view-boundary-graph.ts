@@ -6,6 +6,7 @@ import {
   type Range,
   type RootKey,
 } from '..';
+import { isMetadataRootKey } from '../internal/root-location';
 import { getPointRoot, MAIN_ROOT_KEY } from './root-key';
 import {
   createPliteViewBoundaryGraph,
@@ -46,7 +47,11 @@ export const createPliteViewBoundaryRootMap = (value: {
   roots?: Readonly<Record<string, readonly Descendant[]>>;
 }): Readonly<Record<string, readonly Descendant[]>> => ({
   [MAIN_ROOT_KEY]: value.children,
-  ...value.roots,
+  ...Object.fromEntries(
+    Object.entries(value.roots ?? {}).filter(
+      ([root]) => !isMetadataRootKey(root)
+    )
+  ),
 });
 
 export const clonePliteViewBoundaryPath = (path: Path): Path =>
@@ -75,7 +80,6 @@ export const clonePliteViewBoundaryPointWithOwner = (
 ): PliteViewBoundaryPoint =>
   Object.freeze({
     ...(point.affinity ? { affinity: point.affinity } : {}),
-    ...(point.fragmentId ? { fragmentId: point.fragmentId } : {}),
     ...(point.owner ? { owner: clonePliteViewBoundaryOwner(point.owner) } : {}),
     point: clonePliteViewBoundaryPoint(point.point),
   });
@@ -231,10 +235,7 @@ export const createPliteViewBoundarySelectionTarget = (
   roots: Readonly<Record<string, readonly Descendant[]>>,
   selection: PliteViewBoundarySelectionTargetInput
 ): { ranges: Range[]; start: Point } | null => {
-  if (
-    selection.segments.parts.some((segment) => segment.fragment) ||
-    hasAmbiguousPliteViewBoundarySegments(selection.segments)
-  ) {
+  if (hasAmbiguousPliteViewBoundarySegments(selection.segments)) {
     return null;
   }
 

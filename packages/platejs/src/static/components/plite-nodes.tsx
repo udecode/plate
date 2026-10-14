@@ -80,18 +80,13 @@ export type EditorElementProps<TPlugin extends NodePropsDescriptor> =
     ? ElementRenderProps<ElementPropsNode<TPlugin>, ElementPropsConfig<TPlugin>>
     : never;
 
-export type EditorNodeProps<
-  C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = Omit<BasePluginContext<C>, 'slots'> & {
-  /**
-   * Optional ref to be merged with `attributes.ref`.
-   *
-   * @default undefined
-   */
-  ref?: React.Ref<HTMLElement>;
-};
+type EditorNodeProps<C extends AnyBasePluginDefinition = BasePluginDefinition> =
+  Omit<BasePluginContext<C>, 'slots'> & {
+    /** Merged with `attributes.ref`. */
+    ref?: React.Ref<HTMLElement>;
+  };
 
-export type EditorHTMLProps<
+type EditorHTMLProps<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = EditorNodeProps<C> & {

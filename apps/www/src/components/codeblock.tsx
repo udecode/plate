@@ -31,7 +31,7 @@ const lineNumberStyle: React.CSSProperties = {
 const codeCustomStyle = {
   background: 'transparent',
   margin: 0,
-  padding: '1rem',
+  padding: '1rem 2.75rem 1rem 1rem',
   width: '100%',
 };
 
@@ -47,7 +47,8 @@ const CodeBlock: FC<{
   const code = npm ? `npm install ${value}` : value;
   const codeCopyValue = copyValue ?? value;
   const effectiveLanguage = npm ? 'text' : language;
-  const showLineNumbers = !npm && code.includes('\n');
+  const multiline = code.includes('\n');
+  const showLineNumbers = !npm && multiline;
 
   return (
     <div
@@ -82,6 +83,7 @@ const CodeBlock: FC<{
         lineNumberStyle={lineNumberStyle}
         PreTag="div"
         showLineNumbers={showLineNumbers}
+        wrapLongLines={!multiline}
       >
         {code}
       </ThemedSyntaxHighlighter>

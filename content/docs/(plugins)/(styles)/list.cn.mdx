@@ -118,6 +118,8 @@ HTML ul 和 ol 映射到 listType。明确的 CSS list-style-type 映射到 list
 
 MDAST list.ordered 映射到 listType。每个解析出的 Markdown 列表都会得到新的 listId，不为 1 的 start 解析为 listStart。项下的第一个嵌套列表并入该项的列表，同一项下之后的嵌套列表开启自己的列表。序列化时，Plate 在列表变化、项在有序和无序之间切换或 listStyle 变化处开始新的 Markdown 列表，因此同一列表中的任务项和项目符号项仍是一个 Markdown 列表。它把每个有序列表第一项的可见编号写为 list.start；当列表编号会变为负数或超过 CommonMark 可读的九位数字时写为 1。Markdown 无法保留强制的 listRestart，也无法保留读回时会改变的列表归属，例如跨过其他块继续的列表；Plate 只检查带 listId 的项的列表归属。序列化会把每一项损失报告为 `markdown-property-omitted` 诊断。任务复选框映射到 task 和 checked。在 GFM table cell 中，列表段落写为 inline `<ul>`、`<ol start>` 与 `<li>` HTML，保留任意起始值，并读取回列表；参见 [Markdown](/docs/markdown#table-cell)。
 
+列表项之后的块，例如第二段、代码块或图片，在两种格式中都解析为比该项深一级、没有 listType 的块：缩进为 1 的项之后是 `{ type: 'codeBlock', indent: 2 }`。Plate HTML 把它们写在列表之后。HTML 把它们嵌套在 `li` 中时，项的 `margin-left` 计为它的层级。`li` 或包装元素设置的样式，例如粗体，不会带到从该元素移出的内容上，解析会发出一次 `html-unsupported-content` 警告，指出第一个这样的样式。`white-space` 也是如此，因此 `pre-wrap` 保留的换行会变成空格。项的段落中的图片则保留在 HTML 运行时放置的位置，即项的文本之后、列表之外，图片之后的文本成为另一个列表项。当编辑器无法把某个列表属性放到块上时，例如 IndentPlugin 不以代码块为目标时代码块上的 `indent`，该块保留自己的类型并丢弃这个属性。HTML 将其报告为 `html-unsupported-content`，Markdown 报告为 `markdown-unsupported-node`，在任何 `lossPolicy` 下都是警告。第一个块无法放入列表的 Markdown 项，例如 ListPlugin 只以段落为目标时的标题，会读作列表段落。不是一行文本的第一个块，例如分隔线或引用，则保留自己的类型并离开列表。解析会报告这两种变化，因此 `lossPolicy: 'reject'` 会拒绝它。
+
 ## API
 
 | API | 用途 |

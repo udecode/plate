@@ -3,11 +3,7 @@
 import { dequal } from 'dequal';
 import mammoth from 'mammoth';
 
-import {
-  createAuthoredImportedRevisionChange,
-  createAuthoredReviewDocument,
-  type AuthoredImportedRevision,
-} from '../../../authored';
+import { type AuthoredMark, projectAuthoredDocument } from '../../../authored';
 import {
   ElementApi,
   TextApi,
@@ -21,9 +17,10 @@ import {
   type Range,
   type Value,
 } from '../../../core';
-import type {
-  InternalEditorSchemaApi,
-  RuntimePluginReference,
+import {
+  type InternalEditorSchemaApi,
+  normalizeSetValues,
+  type RuntimePluginReference,
 } from '../../../facade';
 import { withPlateFormatCompilation } from '../../../lib/editor/withPlite';
 import {
@@ -34,7 +31,17 @@ import {
 } from '../../../lib/plugins/html/HtmlPlugin';
 import { cleanWordHtml } from '../../html/cleanWordHtml.internal';
 import { throwIfDocxAborted } from '../../internal/abort';
+import { captureDocxDomParsers } from '../../internal/domParser';
 import { retainDocxSource, type DocxSource } from '../../internal/source';
+import {
+  isCustomXmlItem,
+  parseReviewPart,
+  REVIEW_PART_NAMESPACE,
+  reviewBindingFingerprints,
+  wordAttribute,
+  type ReviewPart,
+  type ReviewPartBinding,
+} from '../../internal/reviewPart';
 import {
   describeDocxSourceViolation,
   type DocxSourceViolation,
@@ -174,6 +181,8 @@ type CommentMetadata = Omit<DocxComment, 'body' | 'target'>;
 type Marker = Readonly<{
   id: string;
   kind:
+    | 'binding-end'
+    | 'binding-start'
     | 'comment-end'
     | 'comment-start'
     | 'list-item'
@@ -188,21 +197,15 @@ type ActiveRevision = Readonly<{
   mode: 'delete' | 'insert';
 }>;
 
-type RevisionUnit = Readonly<{
-  active: readonly ActiveRevision[];
-  node: Descendant;
-  revisionIds: ReadonlySet<string>;
-}>;
-
 const captureDocxDomRealm = (): DocxDomRealm => {
-  const Parser = globalThis.DOMParser;
+  const parsers = captureDocxDomParsers();
   const Serializer = globalThis.XMLSerializer;
   const AbortException = globalThis.DOMException;
   const HtmlElement = globalThis.HTMLElement;
   const textNodeType = globalThis.Node?.TEXT_NODE;
 
   if (
-    !Parser ||
+    !parsers ||
     !Serializer ||
     !AbortException ||
     !HtmlElement ||
@@ -211,22 +214,17 @@ const captureDocxDomRealm = (): DocxDomRealm => {
     throw new TypeError('DOCX import requires a complete browser DOM realm.');
   }
   const decoder = new TextDecoder();
-  const parseHtml = (source: string) =>
-    new Parser().parseFromString(source, 'text/html');
-  const parseXml = (source: string, part: string) => {
-    const document = new Parser().parseFromString(source, 'application/xml');
-
-    if (document.querySelector('parsererror')) {
-      throw new DocxPackageError({
-        code: 'invalid-package',
-        message: 'DOCX contains malformed XML.',
-        part,
-        severity: 'error',
-      });
-    }
-
-    return document;
-  };
+  const parseXml = (source: string, part: string) =>
+    parsers.parseXml(
+      source,
+      () =>
+        new DocxPackageError({
+          code: 'invalid-package',
+          message: 'DOCX contains malformed XML.',
+          part,
+          severity: 'error',
+        })
+    );
   const serializeXml = (document: Document) =>
     new Serializer().serializeToString(document);
 
@@ -235,7 +233,7 @@ const captureDocxDomRealm = (): DocxDomRealm => {
     decodeUtf8: (source) => decoder.decode(source),
     isHtmlElement: (value: unknown): value is HTMLElement =>
       value instanceof HtmlElement,
-    parseHtml,
+    parseHtml: parsers.parseHtml,
     parseXml,
     serializeXml,
     textNodeType,
@@ -337,11 +335,6 @@ const mappingLossDiagnostic = (
     severity: 'warning' as const,
   });
 
-const wordAttribute = (element: Element, name: string) =>
-  element.getAttributeNS(WORD_NAMESPACE, name) ??
-  element.getAttribute(`w:${name}`) ??
-  element.getAttribute(name);
-
 const localAttribute = (element: Element, name: string) =>
   Array.from(element.attributes).find(
     (attribute) =>
@@ -435,7 +428,7 @@ const createMarkerCodec = (documentXml: string, markerNonce: string) => {
     )}${suffix}`,
   });
   const pattern = new RegExp(
-    `${prefix}(comment-end|comment-start|revision-end|revision-start)_(delete|insert|none)_([^${suffix}]+)${suffix}`,
+    `${prefix}(binding-end|binding-start|comment-end|comment-start|revision-end|revision-start)_(delete|insert|none)_([^${suffix}]+)${suffix}`,
     'g'
   );
   const listPattern = new RegExp(
@@ -480,8 +473,17 @@ const markerRun = (document: Document, token: string) => {
   return run;
 };
 
+const RUN_CONTAINERS = new Set([
+  ...CONTENT_REVISION_ELEMENTS,
+  'hyperlink',
+  'p',
+]);
+
 const markerFor = (element: Element, token: string) => {
-  if (element.localName === 'r' || element.parentElement?.localName === 'p') {
+  if (
+    element.localName === 'r' ||
+    RUN_CONTAINERS.has(element.parentElement?.localName ?? '')
+  ) {
     return markerRun(element.ownerDocument, token);
   }
   const paragraph = wordElement(element.ownerDocument, 'p');
@@ -872,225 +874,96 @@ const projectNodes = (
   return projected;
 };
 
-const scanRevisionUnits = (
+/**
+ * The document with every revision's runs kept, each run marked by the
+ * revisions around it: a deletion keeps its text under a delete mark.
+ */
+const reviewNodes = (
   nodes: readonly Descendant[],
+  revisions: readonly DocxRevision[],
   codec: ReturnType<typeof createMarkerCodec>
 ) => {
+  const byId = new Map(revisions.map((revision) => [revision.id, revision]));
   const active: ActiveRevision[] = [];
-  const dependencies = new Map<string, Set<string>>();
-  const modesById = new Map<string, Set<ActiveRevision['mode']>>();
-  const nestings: Array<Readonly<{ child: string; parent: ActiveRevision }>> =
-    [];
-  const units: RevisionUnit[] = [];
-  const addDependency = (before: string, after: string) => {
-    if (before === after) return;
-    const predecessors = dependencies.get(after) ?? new Set<string>();
+  const activeMarks = () =>
+    active.flatMap(({ id, mode }): AuthoredMark[] => {
+      const revision = byId.get(id);
 
-    predecessors.add(before);
-    dependencies.set(after, predecessors);
-  };
-  const scan = (node: Descendant, revisionIds: Set<string>) => {
+      return revision
+        ? [
+            {
+              author: revision.authorId,
+              at: revision.createdAt,
+              change: `docx-${id}`,
+              kind: mode,
+            },
+          ]
+        : [];
+    });
+  // Nested revisions stack their marks, which the document stores in set order.
+  const withMarks = (node: Descendant, marks: readonly AuthoredMark[]) =>
+    marks.length
+      ? ({ ...node, authored: normalizeSetValues(marks) } as Descendant)
+      : node;
+  let sawMarker = false;
+  const visit = (node: Descendant): Descendant[] => {
     if (!TextApi.isText(node)) {
-      node.children.forEach((child) => scan(child, revisionIds));
+      // A paragraph property revision wraps whole copies of the paragraph
+      // between marker paragraphs: each copy is inserted or deleted whole.
+      const enclosing = activeMarks();
+      const outer = sawMarker;
 
-      return;
+      sawMarker = false;
+      const children = node.children.flatMap(visit);
+      const markerOnly = sawMarker && children.length === 0;
+
+      sawMarker ||= outer;
+      if (markerOnly) return [];
+
+      return [
+        withMarks(
+          { ...node, children: children.length ? children : [{ text: '' }] },
+          enclosing
+        ),
+      ];
     }
+    const pieces: Descendant[] = [];
+    let cursor = 0;
+    let text = '';
+    const flush = () => {
+      const marks = activeMarks();
+
+      if (text) pieces.push(withMarks({ ...node, text }, marks));
+      text = '';
+    };
 
     for (const marker of codec.parse(node.text)) {
-      if (marker.kind !== 'revision-start' && marker.kind !== 'revision-end') {
-        continue;
-      }
-      revisionIds.add(marker.id);
+      text += node.text.slice(cursor, marker.start);
+      cursor = marker.end;
 
       if (marker.kind === 'revision-start' && marker.mode) {
-        const modes = modesById.get(marker.id) ?? new Set();
-
-        modes.add(marker.mode);
-        modesById.set(marker.id, modes);
-        for (const parent of active) {
-          nestings.push({ child: marker.id, parent });
-        }
+        flush();
+        sawMarker = true;
         active.push({ id: marker.id, mode: marker.mode });
-        continue;
-      }
-      const index = active.findLastIndex(
-        ({ id, mode }) => id === marker.id && mode === marker.mode
-      );
-
-      if (index === -1) {
-        throw new Error(
-          'DOCX revision markers are unbalanced after conversion.'
+      } else if (marker.kind === 'revision-end') {
+        flush();
+        sawMarker = true;
+        const index = active.findLastIndex(
+          ({ id, mode }) => id === marker.id && mode === marker.mode
         );
+
+        if (index !== -1) active.splice(index, 1);
+      } else {
+        text += marker.token;
       }
-      active.splice(index, 1);
     }
+    text += node.text.slice(cursor);
+    flush();
+
+    return pieces;
   };
 
-  for (const node of nodes) {
-    const initial = Object.freeze([...active]);
-    const revisionIds = new Set(active.map(({ id }) => id));
-
-    scan(node, revisionIds);
-    active.forEach(({ id }) => revisionIds.add(id));
-    units.push(
-      Object.freeze({
-        active: initial,
-        node,
-        revisionIds,
-      })
-    );
-  }
-  if (active.length > 0) {
-    throw new Error('DOCX revision markers are unbalanced after conversion.');
-  }
-  for (const { child, parent } of nestings) {
-    if (modesById.get(parent.id)?.size !== 1) continue;
-
-    if (parent.mode === 'delete') {
-      addDependency(child, parent.id);
-    } else {
-      addDependency(parent.id, child);
-    }
-  }
-
-  return Object.freeze({ dependencies, units: Object.freeze(units) });
-};
-
-const orderDocxRevisions = (
-  revisions: readonly DocxRevision[],
-  dependencies: ReadonlyMap<string, ReadonlySet<string>>,
-  diagnostics: DocxDiagnostic[]
-) => {
-  const sourceIndex = new Map(
-    revisions.map((revision, index) => [revision.id, index] as const)
-  );
-  const remaining = new Map(
-    revisions.map((revision) => [revision.id, revision])
-  );
-  const ordered: DocxRevision[] = [];
-  const emitted = new Set<string>();
-
-  while (remaining.size > 0) {
-    const next = [...remaining.values()]
-      .filter((revision) =>
-        [...(dependencies.get(revision.id) ?? [])].every(
-          (id) => emitted.has(id) || !remaining.has(id)
-        )
-      )
-      .sort(
-        (left, right) =>
-          (sourceIndex.get(left.id) ?? 0) - (sourceIndex.get(right.id) ?? 0)
-      )[0];
-
-    if (!next) {
-      diagnostics.push({
-        action: 'replaced',
-        code: 'unsupported-content',
-        feature: 'revision-order',
-        message:
-          'Cyclic tracked-revision nesting was flattened in source order.',
-        part: 'word/document.xml',
-        severity: 'warning',
-      });
-
-      return revisions;
-    }
-    ordered.push(next);
-    emitted.add(next.id);
-    remaining.delete(next.id);
-  }
-
-  return ordered;
-};
-
-const createSparseImportedRevisions = (
-  target: Pick<DocxImportTarget<Value>, 'fitDocument'>,
-  nodes: readonly Descendant[],
-  revisions: readonly DocxRevision[],
-  codec: ReturnType<typeof createMarkerCodec>,
-  accepted: EditorDocumentValue,
-  proposed: EditorDocumentValue,
-  diagnostics: DocxDiagnostic[]
-): readonly AuthoredImportedRevision[] | null => {
-  if (revisions.length === 0) return Object.freeze([]);
-  const analysis = scanRevisionUnits(nodes, codec);
-  const ordered = orderDocxRevisions(
-    revisions,
-    analysis.dependencies,
-    diagnostics
-  );
-  const selected = new Set<string>();
-  const fitUnit = (unit: readonly Descendant[]) =>
-    unit.length === 0
-      ? []
-      : target.fitDocument({
-          children: rootValue(unit),
-        }).children;
-  const currentUnits = analysis.units.map((unit) =>
-    fitUnit(
-      projectNodes([unit.node], selected, codec, {
-        active: unit.active,
-        allowOpenRevisions: true,
-      })
-    )
-  );
-  let current = currentUnits.flat();
-
-  if (!dequal(current, accepted.children)) return null;
-  const imported: AuthoredImportedRevision[] = [];
-
-  for (const revision of ordered) {
-    const beforeCurrent = current;
-
-    selected.add(revision.id);
-    const sections: Array<{
-      after: readonly Descendant[];
-      before: readonly Descendant[];
-      from: number;
-    }> = [];
-    let childIndex = 0;
-
-    analysis.units.forEach((unit, unitIndex) => {
-      const before = currentUnits[unitIndex];
-
-      if (unit.revisionIds.has(revision.id)) {
-        const after = fitUnit(
-          projectNodes([unit.node], selected, codec, {
-            active: unit.active,
-            allowOpenRevisions: true,
-          })
-        );
-
-        if (!dequal(before, after)) {
-          sections.push({ after, before, from: childIndex });
-        }
-        currentUnits[unitIndex] = after;
-      }
-      childIndex += before.length;
-    });
-    current = currentUnits.flat();
-
-    if (sections.length === 0) {
-      diagnostics.push({
-        action: 'dropped',
-        code: 'unsupported-content',
-        feature: 'tracked-revision',
-        message: `Revision ${revision.id} did not map to an installed schema change.`,
-        part: 'word/document.xml',
-        severity: 'warning',
-        sourceId: revision.id,
-      });
-    } else {
-      const change = createAuthoredImportedRevisionChange(
-        { children: beforeCurrent },
-        sections
-      );
-
-      imported.push({ ...revision, change });
-    }
-  }
-
-  return dequal(current, proposed.children) ? imported : null;
+  return nodes.flatMap(visit);
 };
 
 const pointKey = (point: Point) => `${point.path.join('.')}:${point.offset}`;
@@ -1134,6 +1007,281 @@ const stripCommentMarkers = (
     endpoints,
     nodes: nodes.map((node, index) => visit(node, [index])),
   };
+};
+
+type ReviewBindings = Readonly<{
+  bindings: ReadonlyMap<string, ReviewPartBinding>;
+  roots: ReviewPart['roots'];
+}>;
+
+const reviewLoss = (message: string): DocxDiagnostic => ({
+  code: 'lossy-content',
+  feature: 'authored-review',
+  message,
+  part: 'word/document.xml',
+  severity: 'warning',
+});
+
+const readReviewPart = (
+  dom: DocxDomRealm,
+  entries: BoundedDocxPackage['entries']
+) => {
+  for (const [name, source] of entries) {
+    if (!isCustomXmlItem(name)) continue;
+    let root: Element;
+
+    try {
+      root = dom.parseXml(dom.decodeUtf8(source), name).documentElement;
+    } catch {
+      continue;
+    }
+    if (
+      root.namespaceURI === REVIEW_PART_NAMESPACE &&
+      root.localName === 'review'
+    ) {
+      return parseReviewPart(root.textContent ?? '');
+    }
+  }
+
+  return undefined;
+};
+
+const instrumentReviewBindings = (
+  dom: DocxDomRealm,
+  entries: BoundedDocxPackage['entries'],
+  document: Document,
+  codec: ReturnType<typeof createMarkerCodec>,
+  diagnostics: DocxDiagnostic[]
+): ReviewBindings | null => {
+  const part = readReviewPart(dom, entries);
+
+  if (part === undefined) return null;
+  if (part === null) {
+    diagnostics.push(
+      reviewLoss('The DOCX review part cannot be read, so its review facts are lost.')
+    );
+
+    return null;
+  }
+  const names = new Set(part.bindings.map(({ name }) => name));
+  const fingerprints = reviewBindingFingerprints(document, names);
+  const starts = new Map<string, Element>();
+  const ends = new Map<string, Element>();
+  const nameById = new Map<string, string>();
+
+  for (const element of documentElements(document)) {
+    const id = wordAttribute(element, 'id') ?? '';
+
+    if (element.localName === 'bookmarkStart') {
+      const name = wordAttribute(element, 'name') ?? '';
+
+      if (!names.has(name)) continue;
+      starts.set(name, element);
+      nameById.set(id, name);
+    } else if (element.localName === 'bookmarkEnd' && nameById.has(id)) {
+      ends.set(nameById.get(id) ?? '', element);
+    }
+  }
+  const bindings = new Map<string, ReviewPartBinding>();
+
+  part.bindings.forEach((binding, index) => {
+    const start = starts.get(binding.name);
+    const end = ends.get(binding.name);
+
+    if (
+      start &&
+      end &&
+      fingerprints.get(binding.name) === binding.fingerprint
+    ) {
+      start.replaceWith(
+        markerFor(start, codec.marker('binding-start', String(index)).token)
+      );
+      end.replaceWith(
+        markerFor(end, codec.marker('binding-end', String(index)).token)
+      );
+      bindings.set(String(index), binding);
+
+      return;
+    }
+    start?.remove();
+    end?.remove();
+    diagnostics.push(
+      reviewLoss(
+        `The DOCX changed the block that review binding ${binding.name} keeps, so its review facts are lost.`
+      )
+    );
+  });
+
+  return { bindings, roots: part.roots };
+};
+
+const textsOf = (nodes: readonly Descendant[]): string[] =>
+  nodes.flatMap((node) =>
+    TextApi.isText(node) ? [node.text] : textsOf(node.children)
+  );
+
+const isBindingMarker = ({ kind }: Marker) =>
+  kind === 'binding-end' || kind === 'binding-start';
+
+const withoutBindingMarkers = (
+  nodes: readonly Descendant[],
+  codec: ReturnType<typeof createMarkerCodec>
+): Descendant[] =>
+  nodes.map((node) => {
+    if (!TextApi.isText(node)) {
+      return {
+        ...node,
+        children: withoutBindingMarkers(node.children, codec),
+      };
+    }
+    const markers = codec.parse(node.text).filter(isBindingMarker);
+
+    return markers.length === 0
+      ? node
+      : {
+          ...node,
+          text: markers.reduce(
+            (text, { token }) => text.replace(token, ''),
+            node.text
+          ),
+        };
+  });
+
+const startsIn = (from: number, length: number, offset: number) =>
+  from <= offset && offset < from + length;
+
+const endsIn = (from: number, length: number, offset: number) =>
+  from < offset && offset <= from + length;
+
+const moveCommentMarkers = (
+  converted: readonly Descendant[],
+  stored: readonly Descendant[],
+  codec: ReturnType<typeof createMarkerCodec>
+) => {
+  const anchors: { end: boolean; offset: number; token: string }[] = [];
+  let convertedText = '';
+
+  for (const text of textsOf(converted)) {
+    let cursor = 0;
+
+    for (const marker of codec.parse(text)) {
+      convertedText += text.slice(cursor, marker.start);
+      cursor = marker.end;
+      if (marker.kind === 'comment-end' || marker.kind === 'comment-start') {
+        anchors.push({
+          end: marker.kind === 'comment-end',
+          offset: convertedText.length,
+          token: marker.token,
+        });
+      }
+    }
+    convertedText += text.slice(cursor);
+  }
+  const texts = textsOf(stored);
+
+  if (anchors.length === 0 || convertedText !== texts.join('')) return stored;
+  const starts = texts.map((_, index) =>
+    texts.slice(0, index).reduce((length, text) => length + text.length, 0)
+  );
+  const inserts = new Map<number, { at: number; token: string }[]>();
+
+  for (const { end, offset, token } of anchors) {
+    const found = starts.findIndex((from, index) =>
+      (end ? endsIn : startsIn)(from, texts[index].length, offset)
+    );
+    const index = found === -1 ? (end ? 0 : texts.length - 1) : found;
+
+    inserts.set(index, [
+      ...(inserts.get(index) ?? []),
+      { at: offset - starts[index], token },
+    ]);
+  }
+  let leaf = -1;
+  const visit = (node: Descendant): Descendant => {
+    if (!TextApi.isText(node)) {
+      return { ...node, children: node.children.map(visit) };
+    }
+    leaf += 1;
+    let text = '';
+    let cursor = 0;
+
+    for (const { at, token } of inserts.get(leaf) ?? []) {
+      text += node.text.slice(cursor, at) + token;
+      cursor = at;
+    }
+
+    return cursor === 0 && text === ''
+      ? node
+      : { ...node, text: text + node.text.slice(cursor) };
+  };
+
+  return stored.map(visit);
+};
+
+const substituteBindings = (
+  nodes: readonly Descendant[],
+  review: ReviewBindings,
+  codec: ReturnType<typeof createMarkerCodec>,
+  diagnostics: DocxDiagnostic[]
+) => {
+  const starts = new Map<string, number>();
+  const ends = new Map<string, number>();
+
+  nodes.forEach((node, index) => {
+    for (const text of textsOf([node])) {
+      for (const marker of codec.parse(text)) {
+        if (marker.kind === 'binding-start' && !starts.has(marker.id)) {
+          starts.set(marker.id, index);
+        } else if (marker.kind === 'binding-end') {
+          ends.set(marker.id, index);
+        }
+      }
+    }
+  });
+  const ranges = [...review.bindings].flatMap(([id, binding]) => {
+    const from = starts.get(id);
+    const to = ends.get(id);
+
+    if (from !== undefined && to !== undefined && from <= to) {
+      return [{ from, nodes: binding.nodes, to }];
+    }
+    diagnostics.push(
+      reviewLoss(
+        `The DOCX conversion lost the place of review binding ${binding.name}, so its review facts are lost.`
+      )
+    );
+
+    return [];
+  });
+  const groups: { from: number; nodes: Descendant[]; to: number }[] = [];
+
+  for (const range of ranges.toSorted((left, right) => left.from - right.from)) {
+    const last = groups.at(-1);
+
+    if (last && range.from <= last.to) {
+      last.nodes.push(...range.nodes);
+      last.to = Math.max(last.to, range.to);
+    } else {
+      groups.push({ ...range, nodes: [...range.nodes] });
+    }
+  }
+  const result: Descendant[] = [];
+  let cursor = 0;
+
+  for (const group of groups) {
+    result.push(
+      ...nodes.slice(cursor, group.from),
+      ...moveCommentMarkers(
+        nodes.slice(group.from, group.to + 1),
+        group.nodes,
+        codec
+      )
+    );
+    cursor = group.to + 1;
+  }
+  result.push(...nodes.slice(cursor));
+
+  return withoutBindingMarkers(result, codec);
 };
 
 const commentMetadata = (
@@ -1515,6 +1663,13 @@ const importBoundedDocx = async <V extends Value>(
   const document = target.dom.parseXml(documentXml, 'word/document.xml');
   const rewritten = new Map<string, string>();
   const commentsSource = pkg.entries.get('word/comments.xml');
+  const review = instrumentReviewBindings(
+    target.dom,
+    pkg.entries,
+    document,
+    codec,
+    diagnostics
+  );
 
   instrumentWordMath(
     document,
@@ -1572,49 +1727,63 @@ const importBoundedDocx = async <V extends Value>(
     revisionIds,
     codec
   );
-  const stripped = stripCommentMarkers(proposedWithMarkers, codec);
+  let stripped = stripCommentMarkers(
+    withoutBindingMarkers(proposedWithMarkers, codec),
+    codec
+  );
   let proposed: EditorDocumentValue<V>;
-  let accepted: EditorDocumentValue<V>;
-  let proposedRepairs: readonly DocxSchemaRepairDiagnostic[];
-  let acceptedRepairs: readonly DocxSchemaRepairDiagnostic[];
-  let imported: readonly AuthoredImportedRevision[] | null;
+  let repairs: readonly DocxSchemaRepairDiagnostic[];
 
   try {
-    ({ document: proposed, repairs: proposedRepairs } =
-      target.fitReportedDocument({ children: rootValue(stripped.nodes) }));
-    ({ document: accepted, repairs: acceptedRepairs } =
-      target.fitReportedDocument({
-        children: rootValue(projectNodes(projection.nodes, new Set(), codec)),
-      }));
-    imported = createSparseImportedRevisions(
-      target,
-      projection.nodes,
-      revisions,
-      codec,
-      accepted,
-      proposed,
-      diagnostics
-    );
+    ({ document: proposed, repairs } = target.fitReportedDocument({
+      children: rootValue(stripped.nodes),
+    }));
   } catch {
     return failed(decodeFailure(), diagnostics);
   }
   let resultDocument = proposed;
 
-  if (imported === null) {
-    diagnostics.push({
-      code: 'lossy-content',
-      feature: 'tracked-revision',
-      message:
-        'Tracked revisions could not be aligned with the installed schema and were flattened into the proposed document.',
-      part: 'word/document.xml',
-      severity: 'warning',
-    });
-  } else if (imported.length > 0) {
+  if (revisions.length > 0 || review) {
+    const reviewedWithMarkers = reviewNodes(projection.nodes, revisions, codec);
+    const reviewed = stripCommentMarkers(
+      withoutBindingMarkers(reviewedWithMarkers, codec),
+      codec
+    );
+
     try {
-      resultDocument = createAuthoredReviewDocument({
-        accepted,
-        revisions: imported,
-      }) as EditorDocumentValue<V>;
+      const native = target.fitReportedDocument({
+        children: rootValue(reviewed.nodes),
+      });
+      const decided = projectAuthoredDocument(native.document, {
+        projection: 'proposed',
+      }).document;
+
+      // A schema without review marks would keep deleted runs as live text.
+      if (
+        !dequal(
+          coalesceAdjacentText(decided.children),
+          coalesceAdjacentText(proposed.children)
+        )
+      ) {
+        throw new Error('Tracked revisions do not decide to the document.');
+      }
+      resultDocument = native.document;
+      repairs = native.repairs;
+      stripped = reviewed;
+      if (review && review.bindings.size > 0) {
+        const restored = stripCommentMarkers(
+          substituteBindings(reviewedWithMarkers, review, codec, diagnostics),
+          codec
+        );
+        const fitted = target.fitReportedDocument({
+          children: rootValue(restored.nodes),
+          roots: review.roots,
+        });
+
+        resultDocument = fitted.document;
+        repairs = fitted.repairs;
+        stripped = restored;
+      }
     } catch {
       diagnostics.push({
         code: 'lossy-content',
@@ -1627,9 +1796,7 @@ const importBoundedDocx = async <V extends Value>(
   }
   const reportedRepairs = new Set<string>();
 
-  for (const repair of resultDocument === proposed
-    ? proposedRepairs
-    : [...acceptedRepairs, ...proposedRepairs]) {
+  for (const repair of repairs) {
     const key = JSON.stringify([
       repair.repair,
       repair.owner,
