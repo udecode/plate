@@ -1,5 +1,13 @@
 # @platejs/docx-io
 
+## 53.3.17
+
+### Patch Changes
+
+- [#5161](https://github.com/udecode/plate/pull/5161) by [@vincent69001](https://github.com/vincent69001) – Fix `<br>` export: Word for Mac no longer labels it as a text wrapping break, and Word no longer stretches the justified line that ends with it, a setting that applies to the whole document.
+
+- [#5150](https://github.com/udecode/plate/pull/5150) by [@vincent69001](https://github.com/vincent69001) – Fix DOCX export losing marks on text that carries several marks (for example bold and italic) and leaking a mark onto the text that follows it
+
 ## 53.3.16
 
 ### Patch Changes
