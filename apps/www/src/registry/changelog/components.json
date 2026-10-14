@@ -1,11 +1,25 @@
 {
   "schemaVersion": 1,
   "components": {
-    "slash-kit": [
-      "2026-10-14-details-slash-placement",
-      "2026-07-26-plugin-store-state"
+    "list": [
+      "2026-10-14-details-block-conversion",
+      "2026-10-11-fix-bullet-list-style",
+      "2026-09-03-huge-code-block-demo",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "list-static": [
+      "2026-10-14-details-block-conversion",
+      "2026-10-12-fix-list-import-export",
+      "2026-10-11-fix-bullet-list-style",
+      "2026-10-09-export-static-presentation",
+      "2026-09-03-huge-code-block-demo",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
     ],
     "turn-into-toolbar-button": [
+      "2026-10-14-details-block-conversion",
       "2026-10-14-details-unwrap-targets",
       "2026-10-13-details-heading-titles",
       "2026-09-18-ui-commands-and-installation",
@@ -13,6 +27,10 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-13-fix-registry-install-dependencies",
       "2026-01-28-add-code-drawing-node"
+    ],
+    "slash-kit": [
+      "2026-10-14-details-slash-placement",
+      "2026-07-26-plugin-store-state"
     ],
     "details": [
       "2026-10-13-details-heading-titles",
@@ -102,14 +120,6 @@
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
     ],
-    "list-static": [
-      "2026-10-12-fix-list-import-export",
-      "2026-10-11-fix-bullet-list-style",
-      "2026-10-09-export-static-presentation",
-      "2026-09-03-huge-code-block-demo",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "import-toolbar-button": [
       "2026-10-12-fix-list-import-export",
       "2026-10-07-editor-user",
@@ -149,13 +159,6 @@
       "2026-08-16-direct-react-component-families",
       "2026-08-13-fix-registry-install-dependencies",
       "2025-11-20-biome-ultracite"
-    ],
-    "list": [
-      "2026-10-11-fix-bullet-list-style",
-      "2026-09-03-huge-code-block-demo",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "editable-voids-demo": [
       "2026-10-11-fix-demo-values",

@@ -41,12 +41,12 @@ import {
   editorCommands,
   HistoryPlugin,
 } from '../../core';
-import { isListItem } from '../../features/list/lib/listIndex.internal';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from '../../features/table';
+import { isListItem } from '../../internal/listFamily';
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import {
   type MarkdownSerializeResult,

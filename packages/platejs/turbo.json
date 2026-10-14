@@ -2048,7 +2048,10 @@
         "plitejs#typecheck:partition:authored",
         "typecheck:partition:authored",
         "typecheck:partition:core",
-        "typecheck:partition:details"
+        "typecheck:partition:details",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-link",
+        "typecheck:partition:table"
       ],
       "inputs": [
         "src/features/details/**",
@@ -2520,9 +2523,12 @@
       "dependsOn": [
         "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:markdown",
+        "typecheck:partition:proxies",
         "typecheck:partition:react",
         "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-basic-nodes-react",
         "typecheck:partition:standard-link",
         "typecheck:partition:static",
@@ -2680,6 +2686,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block"
@@ -2773,7 +2780,9 @@
       "cache": true,
       "dependsOn": [
         "plitejs#typecheck:partition:authored",
+        "typecheck:partition:callout",
         "typecheck:partition:core",
+        "typecheck:partition:details",
         "typecheck:partition:media",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-indent",

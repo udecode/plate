@@ -19,10 +19,8 @@ import {
   type NodeReader,
   landListContent,
 } from '../../features/list/lib/listIdentity.internal';
-import {
-  getHeadingType,
-  isListItem,
-} from '../../features/list/lib/listIndex.internal';
+import { getHeadingType } from '../../features/list/lib/listIndex.internal';
+import { isListItem } from '../../internal/listFamily';
 
 const hasListItems = (nodes: readonly Descendant[]): boolean =>
   nodes.some(

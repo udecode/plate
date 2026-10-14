@@ -24,6 +24,7 @@ import {
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { isDocumentView } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
+import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
 import {
   createBrowserHtmlDocument,
   materializeHtmlAst,
@@ -542,6 +543,20 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
               if (!startBlock || !endBlock) return;
 
+              const detailsType = getCompiledPlateModelBinding(
+                editor,
+                PLUGINS.details
+              )?.elementType;
+              const summaryType = getCompiledPlateModelBinding(
+                editor,
+                PLUGINS.detailsSummary
+              )?.elementType;
+              const details =
+                detailsType && startBlock[0].type === summaryType
+                  ? tx.nodes.above({ at: start, type: detailsType })
+                  : undefined;
+              const detailsKey = details && tx.key(details[0]);
+
               const startParent = startBlock[1].slice(0, -1);
               const endParent = endBlock[1].slice(0, -1);
               const startIndex = startBlock[1].at(-1);
@@ -552,7 +567,12 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
                 endIndex === undefined ||
                 !PathApi.equals(startParent, endParent)
               ) {
-                tx.nodes.set({ type }, { at: startBlock[1] });
+                if (
+                  tx.blocks.set({ type }, { at: startBlock[1] }) &&
+                  detailsKey
+                ) {
+                  tx.nodes.unwrap({ at: detailsKey });
+                }
 
                 return;
               }
@@ -600,18 +620,23 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
                 focus: mapSelectionPoint(selection.focus),
               };
 
+              if (
+                !tx.nodes.replace(
+                  {
+                    children: [{ text: values.join('\n') }],
+                    type,
+                  },
+                  { at: blocks[0][1] }
+                )
+              ) {
+                return;
+              }
+
               for (const [, blockPath] of blocks.slice(1).reverse()) {
                 tx.nodes.remove({ at: blockPath });
               }
-
-              tx.nodes.replace(
-                {
-                  children: [{ text: values.join('\n') }],
-                  type,
-                },
-                { at: blocks[0][1] }
-              );
               tx.selection.set(mappedSelection);
+              if (detailsKey) tx.nodes.unwrap({ at: detailsKey });
             }
           },
           untab: () => tab(true),

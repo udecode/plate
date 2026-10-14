@@ -11,12 +11,15 @@ import {
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import {
   BaseParagraphPlugin,
+  BaseHeadingPlugin,
+  BaseListPlugin,
   definePlugin,
   schema,
   SelectionApi,
   type Selection,
   type Value,
 } from 'platejs';
+import { BaseCalloutPlugin } from 'platejs/callout';
 import { BaseColumnPlugin } from 'platejs/layout';
 import { CodeBlockPlugin, createEditor, EditorRoot } from 'platejs/react';
 import { BaseTablePlugin } from 'platejs/table';
@@ -169,6 +172,84 @@ afterAll(() => {
 });
 
 describe('turn into menu behavior', () => {
+  it('publishes no preparatory formatting when Details conversion refuses', async () => {
+    const initialValue: Value = [
+      { type: 'heading', level: 2, children: [{ text: 'Heading' }] },
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Title' }] },
+          { type: 'callout', children: [{ text: 'Body' }] },
+        ],
+      },
+    ];
+    currentEditor = createEditor({
+      plugins: [
+        BaseHeadingPlugin,
+        ...BaseDetailsKit,
+        BaseCalloutPlugin,
+        BaseListPlugin.configure({
+          targetPlugins: [BaseParagraphPlugin, BaseHeadingPlugin],
+        }),
+      ],
+      initialValue,
+      selection: SelectionApi.nodes([[0], [1, 0]]),
+    });
+    const before = currentEditor.read.children();
+    const view = await renderTurnInto();
+    const commit = currentEditor.read.lastCommit();
+    fireEvent.click(view.getByRole('radio', { name: 'Bulleted list' }));
+    expect(currentEditor.read.children()).toEqual(before);
+    expect(currentEditor.read.lastCommit()).toBe(commit);
+  });
+
+  it('converts a title and body range to a list without resetting the body to Summary', async () => {
+    currentEditor = createTestEditor({
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Outer' }] },
+            {
+              type: 'details',
+              children: [
+                { type: 'summary', children: [{ text: 'Title' }] },
+                { type: 'paragraph', children: [{ text: 'Body' }] },
+              ],
+            },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 1, 0, 0], offset: 0 },
+        focus: { path: [0, 1, 1, 0], offset: 4 },
+      },
+    });
+    const view = await renderTurnInto();
+    fireEvent.click(view.getByRole('radio', { name: 'Bulleted list' }));
+    expect(currentEditor.read.children()).toMatchObject([
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Outer' }] },
+          {
+            type: 'paragraph',
+            listType: 'bulleted',
+            indent: 1,
+            children: [{ text: 'Title' }],
+          },
+          {
+            type: 'paragraph',
+            listType: 'bulleted',
+            indent: 2,
+            children: [{ text: 'Body' }],
+          },
+        ],
+      },
+    ]);
+  });
+
   beforeEach(() => {
     currentEditor = createTestEditor();
   });

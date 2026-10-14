@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-14-details-block-conversion",
+      "href": "/registry/changelog/2026-10-14-details-block-conversion.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Convert Details titles without losing body content or list hierarchy",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["list", "list-static", "turn-into-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-14-details-slash-placement",
       "href": "/registry/changelog/2026-10-14-details-slash-placement.json",
       "status": "draft",

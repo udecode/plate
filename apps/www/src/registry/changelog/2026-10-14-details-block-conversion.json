@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-14-details-block-conversion",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-14-details-block-conversion.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-14",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Convert Details titles without losing body content or list hierarchy",
+  "targets": [
+    {
+      "name": "list",
+      "files": ["apps/www/src/registry/components/editor/list.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "list-static",
+      "files": ["apps/www/src/registry/components/editor/list-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "turn-into-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-14-list-convert-details-titles-without-5ea2bd57",
+      "kind": "fix",
+      "summary": "Convert Details titles without losing body content or list hierarchy",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["list", "list-static", "turn-into-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-14",
+          "entry": "2026-10-14-details-block-conversion",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

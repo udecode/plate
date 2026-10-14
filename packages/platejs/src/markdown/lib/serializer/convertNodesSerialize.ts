@@ -6,7 +6,7 @@ import {
   PLUGINS,
 } from '../../../core';
 import type { ListElement } from '../../../features/list';
-import { getListIndent } from '../../../features/list/lib/listIndex.internal';
+import { getListIndent } from '../../../internal/listFamily';
 import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
 import type { MarkdownEncoded } from '../internal/markdownMappings';
 import type { MdList, MdRootContent } from '../mdast';

@@ -16,6 +16,11 @@ import {
 } from '../../../core';
 import { getEditorCommitSnapshot } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
+import {
+  getListIndent,
+  isListItem,
+  isListType,
+} from '../../../internal/listFamily';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import type { ListStyle, ListType } from './BaseListPlugin';
 import {
@@ -30,12 +35,6 @@ import {
   numberingMetrics,
   sitsBetweenAnchors,
 } from './listNumbering.internal';
-
-export const LIST_TYPES = [
-  'bulleted',
-  'numbered',
-  'task',
-] as const satisfies readonly ListType[];
 
 /** One level's numbering rules, as Word stores them per list. */
 export type ListLevel = Readonly<{
@@ -82,14 +81,6 @@ export const isListLevels = (value: unknown): value is ListLevels =>
   Object.entries(value).every(
     ([level, rule]) => /^[1-9]\d*$/.test(level) && isListLevel(rule)
   );
-
-export const isListType = (value: unknown): value is ListType =>
-  LIST_TYPES.some((type) => type === value);
-
-export const isListItem = (node: Element) => isListType(node.listType);
-
-export const getListIndent = (node: Element) =>
-  typeof node.indent === 'number' ? node.indent : 1;
 
 export const normalizeListStyle = (
   type: ListType,

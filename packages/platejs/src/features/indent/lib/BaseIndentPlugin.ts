@@ -6,12 +6,22 @@ import {
   PLUGINS,
   property,
   schema,
+  SelectionApi,
+  PathApi,
+  SpanApi,
+  type Path,
   target,
   type DefinitionOf,
   type EditorNodesOptions,
   type Element,
   type NodeMatchPredicate,
 } from '../../../core';
+import {
+  getListFamilies,
+  getListIndent,
+  isListItem,
+  LIST_FIELDS,
+} from '../../../internal/listFamily';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 
 export type IndentChangeOptions = {
@@ -74,7 +84,7 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
       },
     },
   },
-  update: ({ schema: pluginSchema, tx }) => {
+  update: ({ schema: pluginSchema, store, tx }) => {
     const change = (offset: number, { nodes }: IndentChangeOptions = {}) => {
       const { match, mode = 'lowest', ...nodeOptions } = nodes ?? {};
       const entries = tx.nodes.blocks({
@@ -83,20 +93,47 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
         match: (node, path) => !match || match(node, path),
       });
 
-      for (const [node, path] of entries) {
-        if (!ElementApi.isElement(node)) continue;
-
-        const currentIndent = Number(
-          tx.schema.getProperty(node, pluginSchema.properties.indent) ?? 0
-        );
-        const nextIndent = currentIndent + offset;
-
-        if (nextIndent <= 0) {
-          tx.nodes.unset('indent', { at: path });
-          continue;
+      const at = nodes?.at;
+      const root =
+        at === undefined
+          ? SelectionApi.root(tx.selection())
+          : PathApi.isPath(at) || SpanApi.isSpan(at)
+            ? undefined
+            : SelectionApi.isNode(at)
+              ? at.root
+              : 'anchor' in at
+                ? at.anchor.root
+                : at.root;
+      const inRoot = (path: Path) =>
+        root === undefined ? path : { path, offset: 0, root };
+      const { indentMax } = store.get();
+      for (const family of getListFamilies(tx, entries, root)) {
+        const depthOf = (node: Element) =>
+          isListItem(node)
+            ? getListIndent(node)
+            : Number(
+                tx.schema.getProperty(node, pluginSchema.properties.indent) ?? 0
+              );
+        const delta =
+          offset > 0 && typeof indentMax === 'number'
+            ? Math.max(
+                0,
+                family.reduce(
+                  (available, [node]) =>
+                    Math.min(available, indentMax - depthOf(node)),
+                  offset
+                )
+              )
+            : offset;
+        for (const [node, path] of family) {
+          const nextIndent = depthOf(node) + delta;
+          if (nextIndent <= 0) {
+            tx.nodes.unset(
+              isListItem(node) ? [...LIST_FIELDS, 'indent'] : 'indent',
+              { at: inRoot(path) }
+            );
+          } else tx.nodes.set({ indent: nextIndent }, { at: inRoot(path) });
         }
-
-        tx.nodes.set({ indent: nextIndent }, { at: path });
       }
     };
 

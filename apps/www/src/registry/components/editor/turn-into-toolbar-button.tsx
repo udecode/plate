@@ -21,12 +21,14 @@ import {
   BaseCodeBlockPlugin,
   BaseHeadingPlugin,
   BaseListPlugin,
+  BaseParagraphPlugin,
+  defineCommand,
   ElementApi,
   PathApi,
   SelectionApi,
   type Element,
 } from 'platejs';
-import { BaseDetailsPlugin } from 'platejs/details';
+import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseColumnPlugin } from 'platejs/layout';
 import {
   type Editor,
@@ -141,7 +143,10 @@ const hasWrapper = (
   return (
     portal.installed &&
     (entry[0].type === portal.schema.type ||
-      !!editor.read.nodes.above({ at: editor.key(entry[0]), type: plugin }))
+      !!editor.read.nodes.above({
+        at: editor.key(entry[0]),
+        type: portal.schema.type,
+      }))
   );
 };
 
@@ -398,11 +403,39 @@ export function TurnIntoToolbarButton() {
             return;
           }
 
-          editor.update((tx) => {
-            if (!tx.blocks.reset({ unset: ['level'] })) return;
-            tx.plugin(BaseListPlugin).clear();
-            tx.plugin(BaseListPlugin).toggle({ type });
-          });
+          editor.update.command(
+            defineCommand<void, Editor>('turn-into:list', {
+              build: ({ state }) => {
+                let applied = false;
+                const result = state.transaction((tx) => {
+                  const paragraphType =
+                    editor.plugin(BaseParagraphPlugin).schema.type;
+                  const summary = editor.plugin(BaseDetailsSummaryPlugin);
+                  const [first, ...rest] = tx.nodes
+                    .blocks({ mode: 'lowest' })
+                    .filter(
+                      ([node]) =>
+                        node.type !== paragraphType &&
+                        !(
+                          summary.installed && node.type === summary.schema.type
+                        )
+                    );
+                  if (first) {
+                    const root = tx.points.start(first[0])?.root;
+                    const at = SelectionApi.nodes(
+                      [first[1], ...rest.map(([, path]) => path)],
+                      root ? { root } : {}
+                    );
+                    if (!tx.blocks.set({ type: paragraphType }, { at })) return;
+                    tx.nodes.unset('level', { at });
+                  }
+                  tx.plugin(BaseListPlugin).clear();
+                  applied = tx.plugin(BaseListPlugin).toggle({ type });
+                });
+                return applied ? result : false;
+              },
+            })
+          );
         },
       });
     });
