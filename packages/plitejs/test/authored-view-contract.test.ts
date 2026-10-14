@@ -745,6 +745,75 @@ describe('native authored views', () => {
     assert.equal(accepted.read.text.string([]), 'B!ase');
   });
 
+  it('keeps projected ranges and anchors on the surviving text after unwrap', () => {
+    const initialValue = [
+      {
+        type: 'blockquote',
+        children: [paragraph('Inner'), paragraph('Body')],
+      },
+      paragraph('After'),
+    ];
+    const source = createEditor({
+      plugins: [history(), authored({ authorId: 'alice' })],
+      initialValue,
+    });
+    const view = createEditorView(source, { authored: editingMarkup });
+    const other = createEditorView(source, { authored: editingMarkup });
+    const before = {
+      anchor: { path: [0, 0, 0], offset: 0 },
+      focus: { path: [0, 0, 0], offset: 2 },
+    };
+    view.update.selection.set(before);
+    other.update.selection.set({
+      anchor: { path: [0, 1, 0], offset: 4 },
+      focus: { path: [0, 1, 0], offset: 1 },
+    });
+    const anchor = view.anchor(before, { deletion: 'drop' });
+    const after = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 2 },
+    };
+    const keys = [view.key([0, 0, 0]), view.key([0, 1])];
+    const wrapperKey = view.key([0]);
+
+    try {
+      view.update.nodes.unwrap({ at: view.key([0]) });
+
+      assert.deepEqual(
+        {
+          active: view.read.selection(),
+          other: other.read.selection(),
+          anchor: anchor.resolve(),
+          keys: [view.key([0, 0]), view.key([1])],
+        },
+        {
+          active: after,
+          other: {
+            anchor: { path: [1, 0], offset: 4 },
+            focus: { path: [1, 0], offset: 1 },
+          },
+          anchor: after,
+          keys,
+        },
+        'unwrap preserves independent projected ranges and retained anchors'
+      );
+      view.api.history.undo();
+      assert.deepEqual(view.read.children(), initialValue);
+      assert.deepEqual(view.read.selection(), before);
+      assert.equal(view.key([0]), wrapperKey);
+      view.api.history.redo();
+      assert.deepEqual(view.read.selection(), after);
+      view.update.text.insert('Z');
+      assert.deepEqual(source.read.children(), [
+        paragraph('Zner'),
+        paragraph('Body'),
+        paragraph('After'),
+      ]);
+    } finally {
+      anchor.release();
+    }
+  });
+
   it('publishes selection-only view changes without document or authorship changes', () => {
     const { source, proposed, accepted } = setup();
     const commits: EditorCommit[] = [];

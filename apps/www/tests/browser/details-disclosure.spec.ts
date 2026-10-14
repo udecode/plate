@@ -117,18 +117,39 @@ for (const route of ['details-demo', 'playground']) {
         const unwrappedPath = path.filter(
           (_, index) => index !== path.length - 2
         );
-        await summary.click();
-        await page.keyboard.press('Home');
+        if (target === 'body block') {
+          await summary.click();
+          await page.keyboard.press('Home');
+        }
+        const selection = {
+          anchor: { path: unwrappedPath, offset: 0 },
+          focus: {
+            path: unwrappedPath,
+            offset: target === 'title range' ? 2 : 0,
+          },
+        };
         await expect
+          .configure({ soft: true })
           .poll(() => read(root))
           .toMatchObject({
-            model: caret(unwrappedPath, 0),
-            dom: caret(unwrappedPath, 0),
+            model: selection,
+            dom: selection,
             focused: true,
           });
-        await root.pressSequentially('Z');
+        await page.screenshot({
+          path: info.outputPath('unwrapped-selection.png'),
+          caret: 'initial',
+        });
+        await page.keyboard.type('Z');
+        await page.screenshot({
+          path: info.outputPath('unwrapped-input.png'),
+          caret: 'initial',
+        });
         await expect(
-          root.getByText(`Z${title}`, { exact: true })
+          root.getByText(
+            `Z${target === 'title range' ? title.slice(2) : title}`,
+            { exact: true }
+          )
         ).toBeVisible();
         await expect(body).toBeVisible();
         await page.screenshot({

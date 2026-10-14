@@ -2894,7 +2894,7 @@ export class RootChange {
   }
 
   /**
-   * Bind existing runtime identities to whole nodes inserted by this change.
+   * Bind existing runtime identities to node openings inserted by this change.
    *
    * @internal
    */
@@ -2956,6 +2956,20 @@ export class RootChange {
             data[dataIndex] = prepared;
             changed = true;
           }
+        } else {
+          const keys = new Map<number, NodeKey>();
+
+          value.tokens.forEach((token, index) => {
+            if (token.kind !== 'open') return;
+
+            const offset = value.offsets[index];
+            const node = after.nodeStartingAt(outputPosition + offset);
+            const key = node && nodeKeyAt(node.path);
+
+            if (key) keys.set(offset, key);
+          });
+          data[dataIndex] = value.withNodeKeys(keys);
+          changed = true;
         }
       }
 
@@ -3152,6 +3166,18 @@ export const removeNodeChange = (
   const range = document.nodeRange(path);
 
   return RootChange.create(document, range);
+};
+
+export const unwrapNodeChange = (
+  document: DocumentIndex,
+  path: readonly number[]
+) => {
+  const { from, to } = document.nodeRange(path);
+
+  return RootChange.create(document, [
+    { from, to: from + 1 },
+    { from: to - 1, to },
+  ]);
 };
 
 export const setNodesChange = (

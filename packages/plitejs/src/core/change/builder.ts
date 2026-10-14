@@ -30,6 +30,7 @@ import {
   setNodeChange,
   setNodesChange,
   splitNodeChange,
+  unwrapNodeChange,
 } from './root-change';
 import {
   type PreparedTokenSlice,
@@ -1135,6 +1136,23 @@ export class ChangeDraft {
       'remove-node',
       removeNodeChange(document, path),
       document.withRemovedNode(path)
+    );
+  }
+
+  unwrapNode(root: string, path: readonly number[]) {
+    const document = this.getIndex(root);
+    const node = document.node(path);
+    const index = getDefined(path.at(-1));
+
+    if (isTextNode(node)) {
+      throw new Error('Cannot unwrap a text node.');
+    }
+
+    return this.applyRoot(
+      root,
+      'unwrap',
+      unwrapNodeChange(document, path),
+      document.withSplicedNodes(path.slice(0, -1), index, 1, node.children)
     );
   }
 

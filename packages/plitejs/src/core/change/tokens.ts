@@ -664,6 +664,16 @@ export class PreparedTokenSlice {
     return new PreparedTokenSlice(tokens);
   }
 
+  withNodeKeys(nodeKeys: ReadonlyMap<number, NodeKey>) {
+    return new PreparedTokenSlice(
+      DOCUMENT_SLICE_TOKENS.get(this) ?? [],
+      true,
+      DOCUMENT_SLICE_PREPARED_NODES.get(this),
+      DOCUMENT_SLICE_DEFERRED_VIEWS.get(this),
+      nodeKeys
+    );
+  }
+
   static text(text: string) {
     return text.length === 0
       ? PreparedTokenSlice.empty

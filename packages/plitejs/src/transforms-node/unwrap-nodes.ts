@@ -95,31 +95,12 @@ export const unwrapNodes = ((
   const unwrapNodeAtPath = (path: Path) => {
     const [node] = getNode(editor, path);
 
-    if (NodeApi.isText(node)) {
+    if (NodeApi.isText(node) || path.length === 0) {
       return;
     }
 
-    const parentPath = path.slice(0, -1);
-    const index = path.at(-1);
-
-    if (index == null) {
-      return;
-    }
-
-    const children = getChildren(editor, node);
-
-    applyBuiltDocumentChange(
-      editor,
-      (builder, root) =>
-        builder.withOrigin('unwrap', () =>
-          builder.replaceChildren(root, parentPath, index, 1, children)
-        ),
-      {
-        nodeKeyTransfers: children.map((child, offset) => ({
-          path: [...parentPath, index + offset],
-          source: child,
-        })),
-      }
+    applyBuiltDocumentChange(editor, (builder, root) =>
+      builder.unwrapNode(root, path)
     );
   };
 
