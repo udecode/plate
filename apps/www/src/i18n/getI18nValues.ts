@@ -15,7 +15,6 @@ import { blockMenuValue as blockMenuValueCn } from '@/registry/examples/values/c
 import { columnValue as columnValueCn } from '@/registry/examples/values/cn/column-value';
 import { copilotValue as copilotValueCn } from '@/registry/examples/values/cn/copilot-value';
 import { dateValue as dateValueCn } from '@/registry/examples/values/cn/date-value';
-import { deserializeCsvValue as deserializeCsvValueCn } from '@/registry/examples/values/cn/deserialize-csv-value';
 import { deserializeDocxValue as deserializeDocxValueCn } from '@/registry/examples/values/cn/deserialize-docx-value';
 import { deserializeHtmlValue as deserializeHtmlValueCn } from '@/registry/examples/values/cn/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueCn } from '@/registry/examples/values/cn/deserialize-md-value';
@@ -35,6 +34,7 @@ import { iframeValue as iframeValueCn } from '@/registry/examples/values/cn/ifra
 import { indentValue as indentValueCn } from '@/registry/examples/values/cn/indent-value';
 import { lineHeightValue as lineHeightValueCn } from '@/registry/examples/values/cn/line-height-value';
 import { linkValue as linkValueCn } from '@/registry/examples/values/cn/link-value';
+import { lintValue as lintValueCn } from '@/registry/examples/values/cn/lint-value';
 import { listValue as listValueCn } from '@/registry/examples/values/cn/list-value';
 import { mediaValue as mediaValueCn } from '@/registry/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/mention-value';
@@ -49,7 +49,6 @@ import { tocValue as tocValueCn } from '@/registry/examples/values/cn/toc-value'
 import { columnValue as columnValueEn } from '@/registry/examples/values/column-value';
 import { copilotValue as copilotValueEn } from '@/registry/examples/values/copilot-value';
 import { dateValue as dateValueEn } from '@/registry/examples/values/date-value';
-import { deserializeCsvValue as deserializeCsvValueEn } from '@/registry/examples/values/deserialize-csv-value';
 import { deserializeDocxValue as deserializeDocxValueEn } from '@/registry/examples/values/deserialize-docx-value';
 import { deserializeHtmlValue as deserializeHtmlValueEn } from '@/registry/examples/values/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueEn } from '@/registry/examples/values/deserialize-md-value';
@@ -69,6 +68,7 @@ import { iframeValue as iframeValueEn } from '@/registry/examples/values/iframe-
 import { indentValue as indentValueEn } from '@/registry/examples/values/indent-value';
 import { lineHeightValue as lineHeightValueEn } from '@/registry/examples/values/line-height-value';
 import { linkValue as linkValueEn } from '@/registry/examples/values/link-value';
+import { lintValue as lintValueEn } from '@/registry/examples/values/lint-value';
 import { listValue as listValueEn } from '@/registry/examples/values/list-value';
 import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
@@ -94,7 +94,6 @@ const i18n = {
     column: columnValueCn,
     copilot: copilotValueCn,
     date: dateValueCn,
-    deserializeCsv: deserializeCsvValueCn,
     deserializeDocx: deserializeDocxValueCn,
     deserializeHtml: deserializeHtmlValueCn,
     deserializeMd: deserializeMdValueCn,
@@ -103,6 +102,7 @@ const i18n = {
     emoji: emojiValueCn,
     equation: equationValueCn,
     excalidraw: excalidrawValueCn,
+    lint: lintValueCn,
     exitBreak: exitBreakValueCn,
     floatingToolbar: floatingToolbarValueCn,
     font: fontValueCn,
@@ -135,7 +135,6 @@ const i18n = {
     column: columnValueEn,
     copilot: copilotValueEn,
     date: dateValueEn,
-    deserializeCsv: deserializeCsvValueEn,
     deserializeDocx: deserializeDocxValueEn,
     deserializeHtml: deserializeHtmlValueEn,
     deserializeMd: deserializeMdValueEn,
@@ -144,6 +143,7 @@ const i18n = {
     emoji: emojiValueEn,
     equation: equationValueEn,
     excalidraw: excalidrawValueEn,
+    lint: lintValueEn,
     exitBreak: exitBreakValueEn,
     floatingToolbar: floatingToolbarValueEn,
     font: fontValueEn,

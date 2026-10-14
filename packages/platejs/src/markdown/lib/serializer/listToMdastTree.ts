@@ -1,9 +1,10 @@
 import type { Root } from 'mdast';
 import { visit } from 'unist-util-visit';
 
-import { type Element, PLUGINS } from '../../../core';
+import type { Element } from '../../../core';
 import { getDocumentListOrdinal } from '../../../features/list/lib/listIndex.internal';
-import { failInvariant } from '../../internal/failInvariant';
+import { failInvariant } from '../../../internal/failInvariant';
+import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import { encodeMarkdownParagraph } from '../internal/markdownIntrinsics';
 import { setMarkdownStructureKeys } from '../internal/markdownMappings';
 import type { MdList, MdListItem } from '../mdast';
@@ -193,7 +194,7 @@ const encodeContinuation = (
   options: SerializeMdContext,
   indentWritten: boolean
 ) => {
-  const paragraphType = options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const paragraphType = getMarkdownParagraphType(options.registry);
   const written = indentWritten ? ['indent'] : [];
 
   if (node.type === paragraphType) {
@@ -277,7 +278,7 @@ export const listToMdastTree = (
     throw new Error('Cannot create a list from empty nodes');
   }
 
-  const paragraphType = options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const paragraphType = getMarkdownParagraphType(options.registry);
   const audit = getListAudit(options);
 
   const root: MdList = {

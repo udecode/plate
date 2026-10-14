@@ -94,7 +94,7 @@ export type PendingCompositionEnd =
   | Readonly<{
       cancel: () => void;
       flush: (options?: Readonly<{ publish?: boolean }>) => boolean;
-      ownership: 'plite';
+      ownership: 'editor';
       phase: 'end-pending' | 'input-claimed';
       replaceWithInput: (input: PendingCompositionInput) => boolean;
     }>

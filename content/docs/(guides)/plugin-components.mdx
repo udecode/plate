@@ -155,6 +155,51 @@ export const QuotePlugin = definePlugin('quote', {
 Reach for a custom component once you need classes, nested controls, popovers,
 toolbars, resize handles, or plugin state inside the render tree.
 
+## Embedded widgets
+
+A void element can host a widget that handles its own pointer, keyboard,
+clipboard, and focus, such as a drawing canvas. Wrap the widget in an element
+with `contentEditable={false}` and `data-editor-root-chrome-ignore="true"`.
+
+```tsx showLineNumbers
+'use client';
+
+import type { ExcalidrawPlugin } from 'platejs/excalidraw/react';
+import { type EditorElementProps, EditorElement } from 'platejs/react';
+
+export function ExcalidrawElement({
+  children,
+  ...props
+}: EditorElementProps<typeof ExcalidrawPlugin>) {
+  return (
+    <EditorElement {...props}>
+      <div contentEditable={false} data-editor-root-chrome-ignore="true">
+        {/* Render the canvas here. */}
+      </div>
+      {children}
+    </EditorElement>
+  );
+}
+```
+
+Inside the marked wrapper, the editor leaves pointer, keyboard, clipboard, and
+focus events and DOM changes to the widget. It treats native controls such as
+`input`, `textarea`, and `button` the same way. A click outside the wrapper
+still selects the node. The [Excalidraw](/docs/excalidraw) element is
+a complete example.
+
+<Callout type="info" title="Keys the editor still takes">
+  Outside an IME composition, the editor takes Undo and Redo shortcuts before
+  the widget's own key handlers run, in a marked widget, a native control, or a
+  nested editor alike. An editable editor runs its own history for them, even
+  when it has nothing to undo. A read-only editor only stops them, so a native
+  text field still applies the browser's own undo. The editor also takes
+  Shift+Arrow keys from a nested editor, and from any widget while its own
+  selection is in another root. While it holds a selection it draws itself,
+  such as one that spans roots, it also takes Backspace, Delete, and Enter from
+  any widget, unless Alt, Ctrl, or Meta is held.
+</Callout>
+
 ## Styling
 
 Prefer component-local styles. Plate also adds a `editor-<node-type>` class while
@@ -183,6 +228,7 @@ replace from the registry.
 | `EditorLeaf` | Marked and decorated text. | Defaults to `span`; use with plugins that declare `schema.mark`. |
 | `plugin.configure({ component: Component })` | Ordinary node component binding. | Include the component and every consumer override in the same terminal call. |
 | `plugin.configure({ component: 'tag' })` | Default wrapper with an intrinsic tag. | Accepts an HTML tag such as `'blockquote'`, `'strong'`, or `'code'`. |
+| `data-editor-root-chrome-ignore="true"` | A wrapper around a widget that owns its input. | Pair with `contentEditable={false}`; Undo and Redo shortcuts still reach the editor. |
 
 For plugin method details, see [Plugin Methods](/docs/plugin-methods). For static
 rendering components, see [Static Rendering](/docs/static).

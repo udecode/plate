@@ -50,7 +50,7 @@
     {
       "id": "2026-10-12-select-editor-keys-links-7c2e41a9",
       "kind": "fix",
-      "summary": "Move the active option with ArrowUp and ArrowDown wherever the caret is, close the menu and clear the search on Escape and mod+Enter, and link read-only chips to their `url`.",
+      "summary": "Move the active option with ArrowUp and ArrowDown wherever the caret is, close the menu and clear the search on Escape and mod+Enter, and link a read-only chip to its `url` only when `getLinkHref` accepts it, so a chip with a script or malformed `url` shows without a link instead of breaking the field.",
       "details": [],
       "migrationNotes": [],
       "targets": ["select-editor"],

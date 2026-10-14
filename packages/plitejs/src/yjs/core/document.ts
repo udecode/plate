@@ -7,15 +7,22 @@ import {
   type Path,
 } from '../../index';
 import {
-  getPliteYjsElementType,
   getYjsAttributes,
-  PLITE_TYPE_ATTRIBUTE,
+  getYjsElementType,
   setYjsAttribute,
   setYjsAttributes,
   type YjsAttributeRecord,
   type YjsNode,
 } from './attributes';
 import { areJsonLikeValuesEqual } from './json-equality';
+import {
+  isReservedYjsKey,
+  YJS_ELEMENT_NODE_NAME,
+  YJS_HIDDEN_KEY,
+  YJS_NODE_ID_KEY,
+  YJS_VIRTUAL_CHILD_ID_KEY,
+  YJS_VIRTUAL_PLACEHOLDER_KEY,
+} from './keys';
 import { copyPath, lastPathIndex, parentPath } from './path';
 import {
   encodeYjsSetValueAttributes,
@@ -36,19 +43,7 @@ const isNonEmptyYjsTextDeltaPart = (
 ): part is YjsTextDeltaPart & { readonly insert: string } =>
   typeof part.insert === 'string' && part.insert.length > 0;
 
-const HIDDEN_ATTRIBUTE = 'plite:yjs-hidden';
-const NODE_ID_ATTRIBUTE = 'plite:yjs-id';
-const VIRTUAL_CHILD_ID_ATTRIBUTE = 'plite:yjs-virtual-child-id';
-const VIRTUAL_PLACEHOLDER_ATTRIBUTE = 'plite:yjs-virtual-placeholder';
 const VIRTUAL_YJS_CHILD_RAW_INDEX = -1;
-const INTERNAL_YJS_ATTRIBUTES = [
-  HIDDEN_ATTRIBUTE,
-  NODE_ID_ATTRIBUTE,
-  PLITE_TYPE_ATTRIBUTE,
-  VIRTUAL_CHILD_ID_ATTRIBUTE,
-  VIRTUAL_PLACEHOLDER_ATTRIBUTE,
-] as const;
-const INTERNAL_YJS_ATTRIBUTE_SET = new Set<string>(INTERNAL_YJS_ATTRIBUTES);
 
 export type YjsPropertyContext = Readonly<{
   /** Immediate element parent first. */
@@ -186,18 +181,18 @@ let nextNodeId = 0;
 const nodeIdScope = Math.random().toString(36).slice(2);
 
 const createYjsNodeId = (scope: string): string =>
-  `plite-yjs-${scope}-${(nextNodeId += 1)}`;
+  `${scope}-${(nextNodeId += 1)}`;
 
 const assignFreshYjsNodeId = (node: YjsNode): string => {
   const id = createYjsNodeId(nodeIdScope);
 
-  setYjsAttribute(node, NODE_ID_ATTRIBUTE, id);
+  setYjsAttribute(node, YJS_NODE_ID_KEY, id);
 
   return id;
 };
 
 const ensureYjsNodeId = (node: YjsNode): string => {
-  const currentId = node.getAttribute(NODE_ID_ATTRIBUTE);
+  const currentId = node.getAttribute(YJS_NODE_ID_KEY);
 
   if (typeof currentId === 'string') {
     return currentId;
@@ -206,7 +201,7 @@ const ensureYjsNodeId = (node: YjsNode): string => {
   const scope = node.doc ? String(node.doc.clientID) : nodeIdScope;
   const nextId = createYjsNodeId(scope);
 
-  setYjsAttribute(node, NODE_ID_ATTRIBUTE, nextId);
+  setYjsAttribute(node, YJS_NODE_ID_KEY, nextId);
 
   return nextId;
 };
@@ -390,12 +385,12 @@ const hasRawYjsChildren = (node: Y.XmlElement): boolean => {
 };
 
 const isHiddenYjsNode = (node: YjsNode): boolean =>
-  getYjsAttributes(node)[HIDDEN_ATTRIBUTE] === true;
+  getYjsAttributes(node)[YJS_HIDDEN_KEY] === true;
 
 const isEmptyAttributeFreeYjsText = (node: YjsNode): boolean =>
   node instanceof Y.XmlText &&
   getYjsLength(node) === 0 &&
-  Object.keys(getYjsAttributes(node)).every((key) => key === NODE_ID_ATTRIBUTE);
+  Object.keys(getYjsAttributes(node)).every((key) => key === YJS_NODE_ID_KEY);
 
 const copyRecordAttributes = (
   target: YjsAttributeRecord,
@@ -426,7 +421,7 @@ type YjsNodeIdResolver = (id: string) => YjsNode | null;
 
 const isVirtualYjsPlaceholder = (node: YjsNode): boolean =>
   node instanceof Y.XmlElement &&
-  getYjsAttributes(node)[VIRTUAL_PLACEHOLDER_ATTRIBUTE] === true;
+  getYjsAttributes(node)[YJS_VIRTUAL_PLACEHOLDER_KEY] === true;
 
 const hasRawYjsChildSlot = (slot: YjsVisibleChildSlot): boolean =>
   slot.rawIndex !== VIRTUAL_YJS_CHILD_RAW_INDEX;
@@ -437,7 +432,7 @@ const getVirtualYjsChild = (
   visited?: Set<Y.XmlElement>,
   resolveNodeById?: YjsNodeIdResolver
 ): YjsNode | null => {
-  const virtualChildId = node.getAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE);
+  const virtualChildId = node.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY);
 
   if (typeof virtualChildId === 'string') {
     const nextVisited = visited ?? new Set<Y.XmlElement>();
@@ -929,11 +924,10 @@ export const createYjsNode = (
     'children',
     'type'
   );
-  const elementType = String(node.type ?? 'element');
-  const element = new Y.XmlElement(elementType);
+  const element = new Y.XmlElement(YJS_ELEMENT_NODE_NAME);
 
   assignFreshYjsNodeId(element);
-  setYjsAttribute(element, PLITE_TYPE_ATTRIBUTE, elementType);
+  setYjsAttribute(element, 'type', String(node.type ?? 'element'));
   setYjsAttributes(element, attributes);
 
   if (node.children.length > 0) {
@@ -964,7 +958,7 @@ export const createYjsNodes = (
 
     if (node === undefined) {
       throw new Error(
-        'Cannot create Yjs nodes from a sparse Plite node array.'
+        'Cannot create Yjs nodes from a sparse editor node array.'
       );
     }
 
@@ -991,7 +985,7 @@ export const replaceYjsChildren = (
 ): void => {
   const length = getYjsLength(parent);
 
-  parent.removeAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE);
+  parent.removeAttribute(YJS_VIRTUAL_CHILD_ID_KEY);
 
   if (length > 0) {
     parent.delete(0, length);
@@ -1022,7 +1016,9 @@ export const readPliteValueFromYjs = (
     const node = visibleChildren[index];
 
     if (node === undefined) {
-      throw new Error('Cannot read Plite value from a sparse Yjs node array.');
+      throw new Error(
+        'Cannot read an editor value from a sparse Yjs node array.'
+      );
     }
 
     children[index] = readPliteNodeFromYjsWithResolver(
@@ -1241,11 +1237,7 @@ const getPublicAttributes = (
   }
 
   for (const key in attributes) {
-    if (
-      !Object.hasOwn(attributes, key) ||
-      INTERNAL_YJS_ATTRIBUTE_SET.has(key) ||
-      isYjsSetValueAttribute(key)
-    ) {
+    if (!Object.hasOwn(attributes, key) || isReservedYjsKey(key)) {
       continue;
     }
 
@@ -1304,7 +1296,7 @@ const getCloneableYjsAttributes = (node: YjsNode): YjsAttributeRecord => {
   const attributes: YjsAttributeRecord = {};
 
   for (const [key, value] of Object.entries(getYjsAttributes(node))) {
-    if (INTERNAL_YJS_ATTRIBUTE_SET.has(key) && !isYjsSetValueAttribute(key)) {
+    if (isReservedYjsKey(key) && !isYjsSetValueAttribute(key)) {
       continue;
     }
 
@@ -1319,7 +1311,7 @@ const getPublicYjsElementAttributes = (
 ): YjsAttributeRecord => {
   const attributes = getPublicYjsAttributes(node);
 
-  delete attributes[PLITE_TYPE_ATTRIBUTE];
+  delete attributes.type;
 
   return attributes;
 };
@@ -1332,17 +1324,17 @@ const readPliteNodeFromYjsWithResolver = (
   if (node instanceof Y.XmlText) {
     const attributes = getPublicYjsAttributes(node);
     const readback = readYjsTextForPlite(node);
-    const pliteText: YjsAttributeRecord = {};
+    const editorText: YjsAttributeRecord = {};
 
-    copyRecordAttributes(pliteText, attributes);
-    copyRecordAttributes(pliteText, readback.attributes);
-    pliteText.text = readback.text;
+    copyRecordAttributes(editorText, attributes);
+    copyRecordAttributes(editorText, readback.attributes);
+    editorText.text = readback.text;
 
-    return pliteText as Descendant;
+    return editorText as Descendant;
   }
 
   const attributes = getPublicYjsElementAttributes(node);
-  const type = getPliteYjsElementType(node);
+  const type = getYjsElementType(node);
   const visibleChildren = getYjsVisibleChildrenWithResolver(
     root,
     node,
@@ -1356,9 +1348,7 @@ const readPliteNodeFromYjsWithResolver = (
     const child = visibleChildren[index];
 
     if (child === undefined) {
-      throw new Error(
-        'Cannot read Plite element children from a sparse array.'
-      );
+      throw new Error('Cannot read element children from a sparse array.');
     }
 
     children[index] = readPliteNodeFromYjsWithResolver(
@@ -1454,7 +1444,7 @@ export const removeSupersededVirtualYjsSplitSuffixes = (
     if (
       !(previous instanceof Y.XmlElement) ||
       !(right instanceof Y.XmlElement) ||
-      getPliteYjsElementType(previous) !== getPliteYjsElementType(right) ||
+      getYjsElementType(previous) !== getYjsElementType(right) ||
       !yjsAttributeRecordsEqual(
         getPublicYjsElementAttributes(previous),
         getPublicYjsElementAttributes(right)
@@ -1570,7 +1560,7 @@ const cloneYjsNodeWithRoot = (
     return clone;
   }
 
-  const clone = new Y.XmlElement(node.nodeName);
+  const clone = new Y.XmlElement(YJS_ELEMENT_NODE_NAME);
   const rawChildren = getRawYjsChildren(node);
   const visibleSlots = getYjsVisibleChildSlots(
     root,
@@ -1689,7 +1679,7 @@ export const splitVisibleYjsChildren = (
     }
 
     if (!hasRawYjsChildSlot(slot)) {
-      parent.removeAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE);
+      parent.removeAttribute(YJS_VIRTUAL_CHILD_ID_KEY);
       rightChildren[writeIndex] = createVirtualYjsMovePlaceholder(slot.node);
       writeIndex += 1;
       index += 1;
@@ -1816,24 +1806,24 @@ export const setVirtualYjsMove = (
   const nodeId = ensureYjsNodeId(target);
 
   hideYjsNode(target);
-  setYjsAttribute(wrapper, VIRTUAL_CHILD_ID_ATTRIBUTE, nodeId);
+  setYjsAttribute(wrapper, YJS_VIRTUAL_CHILD_ID_KEY, nodeId);
 };
 
 export const createVirtualYjsMovePlaceholder = (
   target: YjsNode
 ): Y.XmlElement => {
   const nodeId = ensureYjsNodeId(target);
-  const placeholder = new Y.XmlElement('plite-yjs-virtual-placeholder');
+  const placeholder = new Y.XmlElement(YJS_ELEMENT_NODE_NAME);
 
   hideYjsNode(target);
-  setYjsAttribute(placeholder, VIRTUAL_CHILD_ID_ATTRIBUTE, nodeId);
-  setYjsAttribute(placeholder, VIRTUAL_PLACEHOLDER_ATTRIBUTE, true);
+  setYjsAttribute(placeholder, YJS_VIRTUAL_CHILD_ID_KEY, nodeId);
+  setYjsAttribute(placeholder, YJS_VIRTUAL_PLACEHOLDER_KEY, true);
 
   return placeholder;
 };
 
 export const hideYjsNode = (node: YjsNode): void => {
-  setYjsAttribute(node, HIDDEN_ATTRIBUTE, true);
+  setYjsAttribute(node, YJS_HIDDEN_KEY, true);
 };
 
 export const insertYjsChild = (
@@ -1844,7 +1834,7 @@ export const insertYjsChild = (
 ): void => {
   if (
     getYjsLength(parent) === 0 &&
-    typeof parent.getAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE) !== 'string'
+    typeof parent.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) !== 'string'
   ) {
     parent.insert(0, [child]);
 
@@ -1864,7 +1854,7 @@ export const insertYjsChild = (
   if (visibleSlot?.rawIndex === VIRTUAL_YJS_CHILD_RAW_INDEX) {
     // Parent-level virtual children have no raw slot; inserting before one
     // requires materializing it as a placeholder after the inserted child.
-    parent.removeAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE);
+    parent.removeAttribute(YJS_VIRTUAL_CHILD_ID_KEY);
     parent.insert(0, [
       child,
       createVirtualYjsMovePlaceholder(visibleSlot.node),
@@ -1888,17 +1878,17 @@ export const setVirtualYjsUnwrapMove = (
   wrapperParent: Y.XmlElement,
   wrapperIndex: number
 ): void => {
-  const nodeId = target.getAttribute(NODE_ID_ATTRIBUTE);
+  const nodeId = target.getAttribute(YJS_NODE_ID_KEY);
 
   if (
     typeof nodeId !== 'string' ||
-    wrapper.getAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE) !== nodeId
+    wrapper.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) !== nodeId
   ) {
     throw new Error('move_node unwrap target is not a virtual wrapper child.');
   }
 
-  target.removeAttribute(HIDDEN_ATTRIBUTE);
-  wrapper.removeAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE);
+  target.removeAttribute(YJS_HIDDEN_KEY);
+  wrapper.removeAttribute(YJS_VIRTUAL_CHILD_ID_KEY);
 
   if (hasRawYjsChildren(wrapper)) {
     insertYjsChild(
@@ -1916,11 +1906,11 @@ export const isVirtualYjsChild = (
   target: YjsNode,
   wrapper: Y.XmlElement
 ): boolean => {
-  const nodeId = target.getAttribute(NODE_ID_ATTRIBUTE);
+  const nodeId = target.getAttribute(YJS_NODE_ID_KEY);
 
   return (
     typeof nodeId === 'string' &&
-    wrapper.getAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE) === nodeId
+    wrapper.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) === nodeId
   );
 };
 
@@ -1966,7 +1956,7 @@ export const removeYjsChild = (
   root: Y.XmlElement,
   parent: Y.XmlElement,
   index: number,
-  pliteNode?: Descendant
+  editorNode?: Descendant
 ): YjsChildRemovalMode => {
   const resolveNodeById = createLazyYjsNodeIdResolver(root);
   const rawChildren = getRawYjsChildren(parent);
@@ -1982,7 +1972,7 @@ export const removeYjsChild = (
     hiddenIndex ??= findHiddenYjsChildIndex(
       root,
       rawChildren,
-      pliteNode,
+      editorNode,
       resolveNodeById
     );
 
@@ -1992,20 +1982,20 @@ export const removeYjsChild = (
   if (visibleSlot !== undefined) {
     if (!hasRawYjsChildSlot(visibleSlot)) {
       if (
-        pliteNode !== undefined &&
-        !matchesPliteNode(visibleSlot.node, pliteNode)
+        editorNode !== undefined &&
+        !matchesPliteNode(visibleSlot.node, editorNode)
       ) {
         throw new Error('Cannot remove a virtual Yjs child from its parent.');
       }
 
-      parent.removeAttribute(VIRTUAL_CHILD_ID_ATTRIBUTE);
+      parent.removeAttribute(YJS_VIRTUAL_CHILD_ID_KEY);
 
       return 'hidden';
     }
 
     if (
-      pliteNode !== undefined &&
-      !matchesPliteNode(visibleSlot.node, pliteNode) &&
+      editorNode !== undefined &&
+      !matchesPliteNode(visibleSlot.node, editorNode) &&
       getHiddenIndex() !== -1
     ) {
       parent.delete(getHiddenIndex(), 1);
@@ -2063,7 +2053,7 @@ export const assertPublicYjsAttributeCanBeSet = (key: string): void => {
     throw new Error(`Cannot set the "${key}" property on a Yjs node.`);
   }
 
-  if (INTERNAL_YJS_ATTRIBUTE_SET.has(key) || isYjsSetValueAttribute(key)) {
+  if (isReservedYjsKey(key)) {
     throw new Error(`Cannot set internal Yjs attribute "${key}".`);
   }
 };
@@ -2082,13 +2072,13 @@ const assertPublicYjsAttributesCanBeSet = (
 
 const matchesPliteNode = (
   yjsNode: YjsNode,
-  pliteNode?: Descendant
+  editorNode?: Descendant
 ): boolean => {
-  if (pliteNode === undefined) {
+  if (editorNode === undefined) {
     return false;
   }
 
-  if (NodeApi.isText(pliteNode)) {
+  if (NodeApi.isText(editorNode)) {
     return yjsNode instanceof Y.XmlText;
   }
 
@@ -2096,23 +2086,21 @@ const matchesPliteNode = (
     return false;
   }
 
-  return (
-    getPliteYjsElementType(yjsNode) === String(pliteNode.type ?? 'element')
-  );
+  return getYjsElementType(yjsNode) === String(editorNode.type ?? 'element');
 };
 
 const matchesPliteNodeContent = (
   root: Y.XmlElement,
   yjsNode: YjsNode,
-  pliteNode: Descendant,
+  editorNode: Descendant,
   resolveNodeById: YjsNodeIdResolver
 ): boolean => {
-  if (!matchesPliteNode(yjsNode, pliteNode)) {
+  if (!matchesPliteNode(yjsNode, editorNode)) {
     return false;
   }
 
-  if (NodeApi.isText(pliteNode)) {
-    const text = String(pliteNode.text);
+  if (NodeApi.isText(editorNode)) {
+    const text = String(editorNode.text);
 
     return (
       yjsNode instanceof Y.XmlText &&
@@ -2131,14 +2119,14 @@ const matchesPliteNodeContent = (
     resolveNodeById
   );
 
-  if (children.length !== pliteNode.children.length) {
+  if (children.length !== editorNode.children.length) {
     return false;
   }
 
   let index = 0;
 
-  while (index < pliteNode.children.length) {
-    const child = pliteNode.children[index];
+  while (index < editorNode.children.length) {
+    const child = editorNode.children[index];
     const yjsChild = children[index];
 
     if (
@@ -2157,10 +2145,10 @@ const matchesPliteNodeContent = (
 const findHiddenYjsChildIndex = (
   root: Y.XmlElement,
   rawChildren: readonly YjsNode[],
-  pliteNode: Descendant | undefined,
+  editorNode: Descendant | undefined,
   resolveNodeById: YjsNodeIdResolver
 ): number => {
-  if (pliteNode === undefined) {
+  if (editorNode === undefined) {
     return -1;
   }
 
@@ -2177,12 +2165,12 @@ const findHiddenYjsChildIndex = (
       continue;
     }
 
-    if (!isHiddenYjsNode(child) || !matchesPliteNode(child, pliteNode)) {
+    if (!isHiddenYjsNode(child) || !matchesPliteNode(child, editorNode)) {
       index += 1;
       continue;
     }
 
-    if (matchesPliteNodeContent(root, child, pliteNode, resolveNodeById)) {
+    if (matchesPliteNodeContent(root, child, editorNode, resolveNodeById)) {
       return index;
     }
 
@@ -2216,7 +2204,7 @@ const findYjsNodeById = (root: Y.XmlElement, id: string): YjsNode | null => {
   const stack: YjsNode[] = [root];
 
   for (let node = stack.pop(); node; node = stack.pop()) {
-    if (node.getAttribute(NODE_ID_ATTRIBUTE) === id) {
+    if (node.getAttribute(YJS_NODE_ID_KEY) === id) {
       return node;
     }
 
@@ -2233,7 +2221,7 @@ const createYjsNodeIdResolver = (root: Y.XmlElement): YjsNodeIdResolver => {
   const stack: YjsNode[] = [root];
 
   for (let node = stack.pop(); node; node = stack.pop()) {
-    const nodeId = node.getAttribute(NODE_ID_ATTRIBUTE);
+    const nodeId = node.getAttribute(YJS_NODE_ID_KEY);
 
     if (typeof nodeId === 'string') {
       nodesById.set(nodeId, node);

@@ -1,4 +1,4 @@
-import { jsonEqual } from '../../core/change/tokens';
+import { jsonEqual } from '../../core/change/json';
 import type { EditorJsonValue } from '../../interfaces/json';
 import { getDefined } from '../../internal/get-defined';
 
@@ -17,6 +17,7 @@ export type FormatTag = Readonly<{
   before?: EditorJsonValue;
   change: string;
   id: string;
+  inc?: string;
   key: string;
   kind: 'format';
   /** The key's tips when this was written; absent over the accepted value. */
@@ -275,12 +276,32 @@ export const decideKey = (
   };
 };
 
+/** Each tagged key's value with every tag on it rejected. */
+export const acceptedValues = (
+  tags: readonly FormatTag[]
+): Readonly<Record<string, LayerValue>> => {
+  const byKey = Map.groupBy(tags, (tag) => tag.key);
+
+  return Object.fromEntries(
+    [...byKey].map(([key, written]) => {
+      const decided = decideKey(undefined, written, () => 'reject');
+
+      return [
+        key,
+        decided.value.kind === 'set' ? decided.value.value : undefined,
+      ];
+    })
+  );
+};
+
 /**
  * Record one property write. Editing commands take the key over, Editing
  * corrections keep every tag, and Suggesting adds a tag over the key's tips,
  * except on the writer's own pending insertion when no other change holds the
- * key, or when the value returns to what the writer's own run of tags at the
- * top replaced, which withdraws that run.
+ * key, or over the writer's own run of tags at the top: a value that returns
+ * to what the run replaced withdraws the run, and any other value replaces it
+ * with one tag from that value, so a reviewer sees each writer's change to a
+ * key once.
  */
 export const writeLayer = (
   input: Readonly<{
@@ -314,6 +335,15 @@ export const writeLayer = (
     return tags.filter((tag) => !run.includes(tag));
   }
   if (input.ownInsertion && tags.every(input.isOwn)) return tags;
+  if (first) {
+    return [
+      ...tags.filter((tag) => !run.includes(tag)),
+      input.tag({
+        ...(first.over ? { over: first.over } : {}),
+        ...(absent(first.before) ? {} : { before: first.before }),
+      }),
+    ];
+  }
 
   const tips = keyTips(tags);
 

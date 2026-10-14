@@ -47,7 +47,7 @@ export default function CommentOverlapDemo() {
         </Toolbar>
         <Editor
           aria-label="Overlapping comments document"
-          className="h-auto min-h-[280px] px-8 pb-16 sm:px-12"
+          className="h-auto min-h-[280px] px-[clamp(24px,8%,48px)] pb-16"
           variant="demo"
         />
       </EditorContainer>
@@ -110,7 +110,7 @@ const threads: CommentThread[] = [
 
 const fixture = createEditor({ initialValue: value });
 const initialComments: CommentsJSON = {
-  kind: 'plate-comments',
+  kind: 'comments',
   version: 1,
   threads,
   ranges: [

@@ -91,10 +91,10 @@ describe('createReactEditor', () => {
       const editor = createHeadlessEditor();
 
       expect(editor.read.schema.identity()).toMatchObject({
-        fingerprint: 'fnv1a64:458d1d9436ccbaa6',
+        fingerprint: 'fnv1a64:1cafed389fb7f194',
         kind: 'derived',
       });
-      expect(editor.read.schema.createDefaultRootChild()).toEqual({
+      expect(editor.read.schema.createDefaultChild({ at: [0] })).toEqual({
         children: [{ text: '' }],
         type: 'paragraph',
       });

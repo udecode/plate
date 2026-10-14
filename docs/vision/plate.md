@@ -35,6 +35,21 @@ Current priorities:
   copied `Editor` owns presentation, and `EditorProvider` supplies an existing
   editor without mounting a view. The entrypoint identifies the implementation;
   exported names do not repeat Plate or Plite branding.
+- Values users can observe are neutral too: stored keys and formats, default
+  ids, protocol and global symbol keys, registry ids, DOM, CSS and file names,
+  React component names and message text. A built-in name in a name-keyed
+  registry apps also write, such as plugin names, data-transfer format keys,
+  decoration sources, schema groups and derived roots, takes `core:`. Read,
+  plugin point and effect ids take the unprefixed form built-in commands such
+  as `mark.add` use. A plugin-owned name takes its owner's key, and a message
+  names only APIs the package exports. Package names, import paths, the
+  `platejs.org` link, the `__PLATE_INSTANCES__` counter that 53.x copies also
+  write, and Plate naming itself, in Plate's own messages or in an example
+  that compares it with another editor or migrates a Plate document, keep the
+  brand. `plate/no-branded-value` enforces this over `plitejs`, `platejs` and
+  `@platejs/test` source and the copied registry components, hooks and lib.
+  Registry examples and blocks stay unchecked, because most brand names there
+  are those comparisons.
 - Each `EditorContent` variant is a complete, dedicated component:
   `EditorContent`, `VirtualizedEditorContent` from `platejs/react/virtualized`
   and `PagedEditorContent` from `platejs/pagination/react` render the same
@@ -184,7 +199,9 @@ Current priorities:
 - `platejs` and `platejs/react` call the live editor type `Editor`; package and
   entrypoint establish the layer. React creation uses `useCreateEditor(options,
   deps?)`. Every Plate constructor and creation hook allocates a new editor and
-  refuses an `editor` option. An app renders an existing editor with
+  refuses an `editor` option. Static and server output use the same
+  constructors. `platejs/static` adds renderers such as `EditorStatic` and
+  `renderStaticHtml`, never a second constructor or creation hook. An app renders an existing editor with
   `EditorRoot` and binds controls to it with `EditorProvider`. `useEditor()`
   and `useOptionalEditor()` retrieve the provider-selected command editor
   without caller generics. Mounted content
@@ -409,19 +426,17 @@ Current priorities:
   Plate attributes every authored write to the editor's `userId`, or to the
   local user `'local'` when the application passes none, so a solo editor and
   its AI suggestions need no identity setup. Collaborators pass a stable user,
-  and an editor with a Yjs plugin warns in development at its first write as
-  the local user. Plite still requires a non-empty author at every write and
-  invents none.
+  and an editor with a Yjs plugin warns in development the first time it
+  attributes something to the local user. Plite still requires a non-empty
+  author at every write and invents none.
   Comments keeps its independent thread lifecycle. Load existing suggestions
-  through the complete `initialValue`, preserving authors and change IDs;
-  initialization never replays edits under switched identities. `EditorRoot
-  authored` configures the exact mounted view through the native owner. Changed
-  intent or projection inputs reconfigure that view; equivalent values preserve
-  subsequent view-local mode commands. Editing may keep proposed or markup
-  content visible. Suggestion mode controls preserve that projection when they
-  change intent; proposing from an accepted-only view selects markup so the
-  proposal remains visible. Proposing intent with the accepted projection is an
-  invalid view input.
+  through the complete `initialValue`, metadata roots included, preserving
+  authors and change IDs; initialization never replays edits under switched
+  identities. `EditorRoot authored` configures the exact mounted view through
+  the native owner. Changed intent or preview inputs reconfigure that view;
+  equal values keep later view-local mode commands. Editing and Suggesting
+  both show the review tree with its marks, and suggestion mode controls
+  switch only the intent. A preview view takes no writes, so it has no intent.
 - Sibling render slots expose only the lifecycle input owned by their placement:
   the exact Editable ref or the exact container ref. They never inherit the
   host Editable or container DOM props. Register a complete component directly;
@@ -661,6 +676,11 @@ Current priorities:
   public executor plugin, injected builder DSL, or separate rule-factory
   language is part of the contract. Input-rule admission never shadow-copies the
   document in feature rules and adds no general transaction savepoint.
+  Admission belongs to the element whose text must stay as typed, never to each
+  rule: such an element contributes its type to `inputRuleVeto`, the code block
+  included, and while the selection is inside one no rule runs for any target
+  and no rule can opt back in. An `insertText` with an explicit `at` other than
+  the selection range runs no rule, because rules read the text before the caret.
 - Structural break, delete, merge, and normalize policy resolves at the exact
   leaf. A leaf may be a direct value or an owner-context resolver; `undefined`
   delegates that leaf and boolean `false` is terminal. Do not restore a global
@@ -712,12 +732,22 @@ Current priorities:
   UNIST and MDAST are adapter targets, not the live Plate AST.
 - Structural Plate nodes synthesized by a format runtime, including wrappers
   and unknown-node fallbacks, resolve the installed application schema type.
-  Literal types remain only on the external format tree or when the Plate
-  plugin is genuinely absent.
+  Literal types remain only on the external format tree. When the plugin a
+  format would build is absent, the schema decides where content lands: without
+  a paragraph, Markdown builds its paragraph with a reserved internal type no
+  schema may declare, a document parse lands each top-level one on the root's
+  declared default block for its position, and a parse refuses one it cannot
+  place, such as text for a void default, a paragraph inside a container, or
+  any in a slice. Serializing without a paragraph writes that positional
+  default block back as a Markdown paragraph.
 - Installed mappings are the only conversion owners; a conversion call takes no
   per-operation mapping override or node filter, and a missing mapping is the
   fix for unsupported content. Input a mapping cannot represent is a diagnosed
   refusal under the loss policy; programmer and configuration faults throw.
+  A Markdown decoder that builds nodes checks each property it may not place
+  with its context's `schema.property` and reports one it drops as
+  `kind: 'property'`; the runtime never filters decoder output, so a property
+  the schema refuses fails the parse as the decoder's fault.
   Configurable custom tag identity stays on its schema-owning plugin, not a
   foreign mapping contributor. A paste or import support claim names the installed mappings it covers, never a whole format such as HTML.
 - Every parse or import diagnostic judged under `lossPolicy` declares `impact`:
@@ -736,7 +766,10 @@ Current priorities:
   feature's own writes and imports check destinations against that
   configuration, and display checks them again. A stored destination that
   configuration no longer allows stays stored, renders inactive and exports as
-  stored. Image, media, file and embed
+  stored. UI outside the link feature that renders a stored destination as a
+  link, such as a copied tag chip, asks link's public `getLinkHref`. It passes
+  the installed link configuration, or none for link's defaults, and renders a
+  refused destination inactive. Image, media, file and embed
   sources admit only what that role can load, at every admission, and output
   rechecks the same decision. A conversion keeps a refused URL's label, alt
   text or caption and reports the removal. No option bypasses the floor, the
@@ -1185,7 +1218,16 @@ Current priorities:
   inventing review markup.
   Every serializer accepts one complete document and returns format data with
   structured diagnostics. Authored projection is an option on the ordinary
-  format operation. Editor methods reuse compiled editor configuration;
+  format operation. An HTML, Markdown, plain-text or static HTML export of a
+  document with pending changes refuses unless that option is `accepted` or
+  `proposed`. One shared projection step owns that refusal for those formats,
+  so none keeps its own check or default. DOCX export keeps its own required
+  projection, which also offers `review`, because that choice decides whether
+  a retained source returns unchanged. A `review` export writes Word revisions
+  for Word and a Plate part that keeps every block holding a claim, bound by
+  bookmark name and fingerprint; import restores those blocks while their
+  fingerprints match and otherwise refuses under the default loss policy. Editor methods reuse compiled editor
+  configuration;
   detached operations compile supplied declarations without activating plugins
   or constructing an editing runtime. Like `createEditor({ plugins })`, a
   detached operation types its document as broad `Value`; exact document types
@@ -1464,9 +1506,9 @@ history untouched. Apply uses one ordinary transaction under the current
 intent; discard releases the draft and its mapped targets without undoing other
 work. Copied UI owns purple draft presentation and the stream indicator.
 
-AI selection edits stream into one request-owned native suggestion. They remain
-visible in an Editing view with markup projection without changing how later
-typing is authored. Accept or Discard decides that suggestion through the
+AI selection edits stream into one request-owned native suggestion. They stay
+visible in an Editing view, which shows the review tree with its marks,
+without changing how later typing is authored. Accept or Discard decides that suggestion through the
 native authored owner; Stop retains the received proposal for review and retry
 rejects it before replacing the request. The installed Markdown mapping parses
 the accumulated response; generated document nodes are never serialized back

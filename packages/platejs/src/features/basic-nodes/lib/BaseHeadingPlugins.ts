@@ -1,5 +1,6 @@
 import {
   type BasePluginDefinitionInput,
+  type Element,
   defineInputRule,
   definePlugin,
   matchBlockStart,
@@ -7,7 +8,9 @@ import {
   property,
   schema,
   PLUGINS,
+  txLocate,
 } from '../../../core';
+import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
 
 export type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -43,9 +46,11 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
   formats: ({ defineFormats, schema: { type } }) =>
     defineFormats({
       html: {
-        decode: ({ element }) => ({
-          level: Number(element.tagName.slice(1)) as HeadingLevel,
-        }),
+        decode: ({ element, registry }) =>
+          element.parentElement?.tagName === 'SUMMARY' &&
+          registry.has(PLUGINS.detailsSummary)
+            ? undefined
+            : { level: Number(element.tagName.slice(1)) as HeadingLevel },
         encode: ({ content, node, preserve }) => {
           preserve('level');
 
@@ -76,11 +81,51 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
       },
     }),
   rules,
-  update: ({ tx, schema: { type } }) => ({
-    toggle: ({ level }: ToggleHeadingOptions) =>
-      tx.blocks.toggle({ level, type }),
+  read: ({ editor, schema: { type } }) => ({
+    level: (node: Element): HeadingLevel | undefined => {
+      const summaryType = getCompiledPlateModelBinding(
+        editor,
+        PLUGINS.detailsSummary
+      )?.elementType;
+
+      return (node.type === type ||
+        (summaryType !== undefined && node.type === summaryType)) &&
+        isHeadingLevel(node.level)
+        ? node.level
+        : undefined;
+    },
   }),
-});
+}).extend(({ read }) => ({
+  update: ({ editor, tx, schema: { type } }) => {
+    const summaryType = getCompiledPlateModelBinding(
+      editor,
+      PLUGINS.detailsSummary
+    )?.elementType;
+    const setLevel = txLocate(false, (level: HeadingLevel) => {
+      const blocks = tx.nodes.blocks();
+
+      if (blocks.length === 0) return false;
+
+      return (
+        blocks.every(([node]) => read.level(node) === level) ||
+        tx.blocks.set((node) =>
+          summaryType !== undefined && node.type === summaryType
+            ? { level }
+            : { level, type }
+        )
+      );
+    });
+
+    return {
+      setLevel,
+      toggle: txLocate(false, ({ level }: ToggleHeadingOptions) =>
+        tx.nodes.blocks().some(([node]) => read.level(node) === level)
+          ? tx.blocks.reset({ unset: 'level' })
+          : setLevel(level)
+      ),
+    };
+  },
+}));
 
 export const HeadingRules = {
   markdown: ({
@@ -106,11 +151,9 @@ export const HeadingRules = {
         }),
       apply: ({ decline, editor, tx }, match) => {
         const block = tx.nodes.block();
-        const { type } = editor.plugin(BaseHeadingPlugin).schema;
-
         if (
           !block ||
-          (block[0].type === type && block[0].level === match.level)
+          editor.plugin(BaseHeadingPlugin).read.level(block[0]) === match.level
         ) {
           return decline();
         }

@@ -17,7 +17,7 @@ import type {
   Value,
 } from '../../core';
 import type {
-  NativeAuthoredProjectionDiagnostic,
+  AuthoredProjectionDiagnostic,
   RuntimePluginReference,
 } from '../../facade';
 import type { CompiledMarkdownMappings } from './internal/markdownMappings';
@@ -63,7 +63,7 @@ type PolicyDiagnostic<T extends object> =
   | Readonly<T & { severity: 'warning' }>;
 
 export type MarkdownDiagnostic =
-  | NativeAuthoredProjectionDiagnostic
+  | AuthoredProjectionDiagnostic
   | Readonly<{
       actual: number;
       code: 'markdown-inline-blocks';
@@ -233,6 +233,16 @@ export type MarkdownSerializePolicy = Readonly<{
   /** Mark keys written as plain text without Markdown formatting. */
   plainMarks?: readonly string[] | null;
   preserveEmptyParagraphs?: boolean;
+  /**
+   * Version of an authored document to export. `accepted` drops pending changes
+   * and `proposed` applies them as plain content. Either choice adds an
+   * `authored-lossy-projection` warning while changes are pending. Required
+   * when the document has authored metadata, which every document from an
+   * editor with the authored plugin carries, even with no pending change.
+   * Omitting it or passing any other value then throws, and so does a valid
+   * value when the editor or `plugins` lacks the authored plugin. A document
+   * without authored metadata ignores it.
+   */
   projection?: 'accepted' | 'proposed';
   remarkStringifyOptions?: Readonly<RemarkStringifyOptions> | null;
   spread?: boolean;

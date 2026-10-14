@@ -205,7 +205,7 @@ export const SelectionApi = Object.freeze({
     options: NodeSelectionOptions = {}
   ): NodeSelection {
     if (options.root === 'main') {
-      throw new Error('[Plite] Omit root to target the primary document.');
+      throw new Error('Omit root to target the primary document.');
     }
 
     const canonicalPaths = canonicalizePaths(paths);
@@ -240,7 +240,7 @@ export const SelectionApi = Object.freeze({
     const focusRoot = selection.focus.root;
 
     if (anchorRoot === 'main' || focusRoot === 'main') {
-      throw new Error('[Plite] Omit root to target the primary document.');
+      throw new Error('Omit root to target the primary document.');
     }
     if (anchorRoot && focusRoot && anchorRoot !== focusRoot) {
       throw new Error('Cannot target multiple editor roots in one range.');

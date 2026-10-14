@@ -24,9 +24,9 @@ component to add the menu to an editor toolbar.
 
 | Format   | Implementation | Output |
 | -------- | -------------- | ------ |
-| HTML     | `renderStaticHtml(model, { component: EditorStatic, presentation: BaseEditorKit, projection })` from `platejs/static` | `plate.html` |
-| Markdown | `model.api.markdown.serialize({ projection })` | `plate.md` |
-| Word     | `exportDocx(model, { component: EditorStatic, presentation: BaseEditorKit, projection, stylesheet: DOCX_EXPORT_STYLES })` from `platejs/docx/export` | `plate.docx` |
+| HTML     | `renderStaticHtml(model, { component: EditorStatic, presentation: BaseEditorKit, projection })` from `platejs/static` | `document.html` |
+| Markdown | `model.api.markdown.serialize({ projection })` | `document.md` |
+| Word     | `exportDocx(model, { component: EditorStatic, presentation: BaseEditorKit, projection, stylesheet: DOCX_EXPORT_STYLES })` from `platejs/docx/export` | `document.docx` |
 
 Every format captures the same complete document and explicit authored
 projection from `useModelEditor()`. Export reads model content rather than the
@@ -79,5 +79,5 @@ Plate Plus includes a server-side export flow for PDF output with page settings.
 
 - [DOCX](/docs/docx) covers DOCX paste, file import, and export APIs.
 - [Markdown](/docs/markdown) covers Markdown serialization.
-- [Static Rendering](/docs/static) covers static editor rendering and HTML serialization.
+- [Static Rendering](/docs/static) covers static rendering and HTML serialization.
 - [Authored Changes](/docs/authored-changes) covers visible HTML/Markdown projections, authored JSON, and DOCX review.

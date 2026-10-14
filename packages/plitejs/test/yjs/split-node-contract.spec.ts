@@ -416,4 +416,25 @@ describe('plitejs/yjs split_node collaboration contract', () => {
     redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alph!', 'abeta']);
   });
+
+  it('keeps a retyped child type in the stored document after its parent splits', () => {
+    const peer = createPeer('a', undefined, [
+      { children: [paragraph('one'), paragraph('two')], type: 'quote' },
+    ]);
+
+    peer.editor.update.nodes.set({ type: 'heading-one' }, { at: [0, 1] });
+    peer.editor.update.nodes.split({ at: [0], position: 1 });
+
+    const fresh = createPeer('c', Y.encodeStateAsUpdate(peer.doc), [
+      paragraph('seed'),
+    ]);
+
+    assert.deepEqual(readPeerChildren(fresh), [
+      { children: [paragraph('one')], type: 'quote' },
+      {
+        children: [{ children: [{ text: 'two' }], type: 'heading-one' }],
+        type: 'quote',
+      },
+    ]);
+  });
 });

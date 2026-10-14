@@ -1,5 +1,6 @@
 import {
   authored,
+  authoredRecords,
   type AuthoredPlugin as NativeAuthoredPlugin,
 } from 'plitejs/authored';
 
@@ -9,13 +10,12 @@ import type { InternalBasePluginRuntimeExtension } from '../lib/plugin/BasePlugi
 import type { InternalPluginDefinitionOf } from '../lib/plugin/pluginDefinitionLookup.internal';
 
 const BaseAuthoredPlugin = definePlugin('authored', {
-  initialState: { retainHistory: false },
+  dependencies: [authoredRecords],
 });
 
 /**
- * Native authored changes attributed to the editor's user, or to the local
- * user when the editor has no `userId`. Configure `retainHistory` to keep
- * accepted history for revert; the editor reads it once, when it is created.
+ * Suggestions attributed to the editor's user, or to the local user when the
+ * editor has no `userId`.
  */
 // The package declaration build cannot print the inferred `.extend()` type,
 // which inlines Plite's private plugin brand (TS4094), so this annotation names
@@ -24,9 +24,6 @@ export const AuthoredPlugin: InternalBasePluginRuntimeExtension<
   typeof BaseAuthoredPlugin,
   InternalPluginDefinitionOf<typeof BaseAuthoredPlugin>,
   NativeAuthoredPlugin
-> = BaseAuthoredPlugin.extend(({ editor, store }) =>
-  authored({
-    authorId: () => readEditorAuthor(editor),
-    retainHistory: store.get('retainHistory'),
-  })
+> = BaseAuthoredPlugin.extend(({ editor }) =>
+  authored({ authorId: () => readEditorAuthor(editor) })
 );

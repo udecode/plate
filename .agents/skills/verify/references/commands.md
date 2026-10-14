@@ -316,13 +316,23 @@ The helper has four modes for these cases:
   directories a `--name` adds. A script that starts a server for the command
   starts it with `set -m` and kills its process group on exit.
 - `--expect-fail <text>`, repeatable beside a command, refuses a run in which
-  the command passes or its output lacks a text. Pass each case's failure line,
-  such as bun's `(fail) <describe> > <title>`. Each text matches anywhere in
-  the last 16 MiB of the command's output, never in the log's command line, so
-  it does not show which case printed it, and a failure line also matches a
-  longer title that starts the same way. Never pass a matcher line such as
-  bun's `error: expect(received).toEqual(expected)`, which every failing case
-  with that matcher prints. Read the log to tie the failure to its defect. A
+  the command passes or its output lacks a text. Each text counts only on a
+  failing line in the last 16 MiB of the command's output, with terminal colors
+  and links stripped, never in the log's command line. A failing line starts,
+  after any indentation, with bun's `(fail)`, node:test's `✖` or `not ok`,
+  Playwright's `✘` or `N) `, vitest's `×`, a `tsc --pretty false` line
+  `<file>(<line>,<col>): error TS<code>:`, or an oxlint error. In a proof run,
+  oxlint prints an error as `<file>:<line>:<col>: error <rule>:` when it
+  detects an agent variable such as `CLAUDECODE`, `AI_AGENT` or
+  `CODEX_THREAD_ID`. Otherwise it prints `× <rule>:` under `CI` and
+  `x <rule>:` without it, with the file on a later line. A `<rule>` reads like
+  `entrypoint-dag(no-forbidden-imports)`, and an oxlint warning never counts.
+  Pass each case's failure line, such as bun's `(fail) <describe> > <title>`.
+  For a lint failure, pass the rule and the start of its message. A matcher
+  line such as bun's `error: expect(received).toEqual(expected)` is not a
+  failing line. A failure line also matches a longer title that starts the
+  same way, and a match does not show which case printed it, so read the log
+  to tie the failure to its defect. A
   case designed to pass at the base, such as a must-pass control or a case
   whose defect only a mutation shows, goes to `mutate.mjs` instead. The
   helper exits 0 when the command fails with every text, and 1 when the command

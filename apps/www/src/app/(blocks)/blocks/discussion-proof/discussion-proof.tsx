@@ -2,12 +2,10 @@
 
 import {
   createEditor,
-  DocumentChange,
+  type Descendant,
   type EditorDocumentValue,
-  NodeApi,
   type Range,
 } from 'platejs';
-import { createAuthoredReviewDocument } from 'platejs/authored';
 import {
   BaseCommentsPlugin,
   type CommentMutationDecision,
@@ -64,7 +62,7 @@ const commentRanges: readonly Range[] = [
   },
 ];
 
-const createInitialValue = (review: string): EditorDocumentValue => ({
+const createInitialValue = (review: Descendant[]): EditorDocumentValue => ({
   children: [
     {
       children: [
@@ -74,42 +72,48 @@ const createInitialValue = (review: string): EditorDocumentValue => ({
       ],
       type: 'paragraph',
     },
-    { type: 'paragraph', children: [{ text: review }] },
+    { type: 'paragraph', children: review },
   ],
 });
 
+// Alice's insertion and Bob's deletion, as the review marks the authored
+// plugin stores on the suggested text.
+const reviewText = suggestionValue[0].children.map((child, index) =>
+  index === 1
+    ? {
+        ...child,
+        authored: [
+          {
+            at: Date.parse('2026-09-09T12:00:00.000Z'),
+            author: 'alice',
+            change: 'tighten',
+            kind: 'insert',
+          },
+        ],
+      }
+    : index === 3
+      ? {
+          ...child,
+          authored: [
+            {
+              at: Date.parse('2026-09-09T12:01:00.000Z'),
+              author: 'bob',
+              change: 'remove',
+              kind: 'delete',
+            },
+          ],
+        }
+      : child
+);
+
 const createInitialRevision = () => {
-  const review = NodeApi.string(suggestionValue[0]);
-  const accepted = createInitialValue(
-    review.replace('tighten the wording', '')
-  );
-  const inserted = createInitialValue(review);
-  const proposed = createInitialValue(
-    review.replace('keep this redundant phrase', '')
-  );
   const fixture = createEditor({
     plugins: [...BaseEditorKit, BaseSuggestionPlugin],
     userId: 'alice',
-    initialValue: createAuthoredReviewDocument({
-      accepted,
-      revisions: [
-        {
-          id: 'tighten',
-          authorId: 'alice',
-          createdAt: Date.parse('2026-09-09T12:00:00.000Z'),
-          change: DocumentChange.between(accepted, inserted),
-        },
-        {
-          id: 'remove',
-          authorId: 'bob',
-          createdAt: Date.parse('2026-09-09T12:01:00.000Z'),
-          change: DocumentChange.between(inserted, proposed),
-        },
-      ],
-    }),
+    initialValue: createInitialValue(reviewText),
   });
   const comments: CommentsJSON = {
-    kind: 'plate-comments',
+    kind: 'comments',
     version: 1,
     ranges: commentRanges.map((range, index) => {
       const anchor = fixture.anchor(range, {

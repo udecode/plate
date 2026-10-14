@@ -18,7 +18,7 @@ export const pointToYjsRelativePosition = (
   const target = getYjsNode(root, point.path);
 
   if (!(target instanceof Y.XmlText)) {
-    throw new Error('Plite point does not target a Y.XmlText.');
+    throw new Error('Editor point does not target a Y.XmlText.');
   }
 
   const length = getYjsLength(target);

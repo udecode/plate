@@ -8,20 +8,22 @@ import {
   DocumentIndex,
 } from './document-index';
 import {
-  claimPreparedNodeSlice,
-  closeToken,
   cloneFrozen,
   cloneJson,
+  isRecord,
+  jsonEqual,
+  type JsonRecord,
+} from './json';
+import {
+  claimPreparedNodeSlice,
+  closeToken,
   commonPrefixLength,
   commonSuffixLength,
   DOCUMENT_SLICE_PREPARED_NODES,
   PreparedTokenSlice,
   isElementNode,
-  isRecord,
   isTextNode,
-  jsonEqual,
   type JsonNode,
-  type JsonRecord,
   type JsonToken,
   type JsonTokenData,
   nodeProps,
@@ -1440,6 +1442,157 @@ const mergeNestedChangeThroughStructuralRelocation = (
   return null;
 };
 
+type SectionEnds = Readonly<{
+  /** Where each section starts and ends in the input and in the output. */
+  endA: Float64Array;
+  endB: Float64Array;
+  startA: Float64Array;
+  startB: Float64Array;
+}>;
+
+const SECTION_ENDS = new WeakMap<RootChange, SectionEnds>();
+
+const sectionEndsOf = (change: RootChange): SectionEnds => {
+  let ends = SECTION_ENDS.get(change);
+
+  if (!ends) {
+    const count = change.sections.length / 2;
+    const startA = new Float64Array(count);
+    const startB = new Float64Array(count);
+    const endA = new Float64Array(count);
+    const endB = new Float64Array(count);
+    let a = 0;
+    let b = 0;
+
+    for (let section = 0; section < count; section++) {
+      const length = change.sections[section * 2];
+      const inserted = change.sections[section * 2 + 1];
+
+      startA[section] = a;
+      startB[section] = b;
+      a += length;
+      b += inserted < 0 ? length : inserted;
+      endA[section] = a;
+      endB[section] = b;
+    }
+    ends = { endA, endB, startA, startB };
+    SECTION_ENDS.set(change, ends);
+  }
+
+  return ends;
+};
+
+/** The first section whose end, in `ends`, is past `position` (or at it). */
+const firstSectionEnding = (
+  ends: Float64Array,
+  position: number,
+  inclusive: boolean
+) => {
+  let low = 0;
+  let high = ends.length;
+
+  while (low < high) {
+    const middle = (low + high) >> 1;
+
+    if (inclusive ? ends[middle] < position : ends[middle] <= position) {
+      low = middle + 1;
+    } else {
+      high = middle;
+    }
+  }
+
+  return low;
+};
+
+/**
+ * Whether a section that replaces content covers `position`, read in the
+ * change's input (`before`) or output (`after`) coordinates.
+ *
+ * @internal
+ */
+export const isRootChangePositionReplaced = (
+  change: RootChange,
+  position: number,
+  side: 'after' | 'before'
+) => {
+  const ends = sectionEndsOf(change);
+  // Ranges are disjoint, so the first section ending past the position is the
+  // only one that can hold it; an empty section holds nothing.
+  const section = firstSectionEnding(
+    side === 'before' ? ends.endA : ends.endB,
+    position,
+    false
+  );
+
+  if (section >= ends.endA.length) return false;
+
+  const start = side === 'before' ? ends.startA[section] : ends.startB[section];
+
+  return change.sections[section * 2 + 1] >= 0 && start <= position;
+};
+
+/**
+ * Map an output position back to the input, as `change.invert(before).mapPos`
+ * would, without copying the content the change replaced.
+ *
+ * @internal
+ */
+export const mapRootChangePositionBackward = (
+  change: RootChange,
+  position: number,
+  assoc: -1 | 1 = -1,
+  track?: TrackMode
+): number | null => {
+  const ends = sectionEndsOf(change);
+  const first = firstSectionEnding(ends.endB, position, true);
+  let positionB =
+    first < ends.startB.length ? ends.startB[first] : change.newLength;
+  let positionA =
+    first < ends.startA.length ? ends.startA[first] : change.length;
+
+  for (let index = first * 2; index < change.sections.length;) {
+    const length = change.sections[index];
+    const inserted = change.sections[index + 1];
+
+    index += 2;
+    if (inserted < 0) {
+      const endB = positionB + length;
+
+      if (endB > position) return positionA + position - positionB;
+      positionA += length;
+      positionB = endB;
+      continue;
+    }
+
+    const endB = positionB + inserted;
+
+    if (
+      track &&
+      endB >= position &&
+      ((track === 'around' && positionB < position && endB > position) ||
+        (track === 'before' && positionB < position) ||
+        (track === 'after' && endB > position))
+    ) {
+      return null;
+    }
+    if (endB > position || (endB === position && assoc < 0 && inserted === 0)) {
+      return position === positionB || assoc < 0
+        ? positionA
+        : positionA + length;
+    }
+    positionA += length;
+    positionB = endB;
+  }
+
+  if (position > positionB) {
+    throw new RangeError(
+      `Position ${position} exceeds RootChange output length ${positionB}.`
+    );
+  }
+
+  return positionA;
+};
+
 export class RootChange {
   readonly data: readonly SectionData[];
   readonly length: number;
@@ -2099,6 +2252,73 @@ export class RootChange {
       this.sections.length === 0 ||
       (this.sections.length === 2 && this.sections[1] === -1)
     );
+  }
+
+  /** @internal */
+  alignOpens(
+    document: DocumentIndex,
+    aligns: (
+      before: Readonly<JsonRecord>,
+      after: Readonly<JsonRecord>
+    ) => boolean
+  ): RootChange {
+    const sections: number[] = [];
+    const data: SectionData[] = [];
+    let position = 0;
+    let aligned = false;
+
+    for (let index = 0; index < this.sections.length; index += 2) {
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+      const value = this.data[index / 2];
+      let kept = 0;
+
+      if (inserted > 0 && length > 0 && value instanceof PreparedTokenSlice) {
+        const removed = document.slice(position, position + length).tokens;
+        const insert = value.tokens;
+
+        while (kept < removed.length && kept < insert.length) {
+          const before = removed[kept];
+          const after = insert[kept];
+
+          if (
+            before.kind !== 'open' ||
+            after.kind !== 'open' ||
+            before.nodeKind !== after.nodeKind ||
+            !aligns(before.props, after.props)
+          ) {
+            break;
+          }
+
+          const modifications = semanticPropertyModifications(
+            before.props,
+            after.props,
+            () => false
+          );
+
+          addSection(
+            sections,
+            data,
+            1,
+            modifications.length > 0 ? -2 : -1,
+            modifications.length > 0 ? modifications : null
+          );
+          kept += 1;
+        }
+      }
+
+      if (kept === 0) {
+        addSection(sections, data, length, inserted, value);
+      } else {
+        aligned = true;
+        const rest = (value as PreparedTokenSlice).slice(kept);
+
+        addSection(sections, data, length - kept, rest.length, rest);
+      }
+      position += length;
+    }
+
+    return aligned ? new RootChange(sections, data) : this;
   }
 
   private applyIndexed(
@@ -2844,7 +3064,7 @@ export class RootChange {
     let position = 0;
 
     for (let index = 0; index < this.sections.length; index += 2) {
-      const length = this.sections[index];
+      let length = this.sections[index];
       const inserted = this.sections[index + 1];
 
       if (inserted === -1) {
@@ -2865,6 +3085,18 @@ export class RootChange {
             nodeProps(document.node(entry.path)),
             this.data[index >> 1] as readonly PropertyModification[]
           )
+        );
+      } else if (inserted === 0) {
+        while (this.sections[index + 3] === 0) {
+          index += 2;
+          length += this.sections[index];
+        }
+        addSection(
+          sections,
+          data,
+          0,
+          length,
+          document.slice(position, position + length)
         );
       } else {
         const original =
@@ -2953,6 +3185,25 @@ export class RootChange {
     return changed ? new RootChange(this.sections, data) : this;
   }
 
+  *insertedSlices(): Generator<
+    readonly [fromB: number, slice: PreparedTokenSlice]
+  > {
+    for (
+      let index = 0, position = 0;
+      index < this.sections.length;
+      index += 2
+    ) {
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+      const slice = this.data[index / 2];
+
+      if (inserted > 0 && slice instanceof PreparedTokenSlice) {
+        yield [position, slice];
+      }
+      position += inserted < 0 ? length : inserted;
+    }
+  }
+
   iterChangedRanges(
     visit: (fromA: number, toA: number, fromB: number, toB: number) => void
   ) {
@@ -2993,10 +3244,16 @@ export class RootChange {
     assoc: -1 | 1 = -1,
     track?: TrackMode
   ): number | null {
-    let positionA = 0;
-    let positionB = 0;
+    // No section ending before the position can answer it, so the walk
+    // starts at the first one that ends at or past it.
+    const ends = sectionEndsOf(this);
+    const first = firstSectionEnding(ends.endA, position, true);
+    let positionA =
+      first < ends.startA.length ? ends.startA[first] : this.length;
+    let positionB =
+      first < ends.startB.length ? ends.startB[first] : this.newLength;
 
-    for (let index = 0; index < this.sections.length;) {
+    for (let index = first * 2; index < this.sections.length;) {
       const length = this.sections[index];
       const inserted = this.sections[index + 1];
 

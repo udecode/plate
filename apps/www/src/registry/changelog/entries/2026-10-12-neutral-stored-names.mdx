@@ -1,0 +1,20 @@
+---
+id: 2026-10-12-neutral-stored-names
+date: 2026-10-12
+status: draft
+kind: rename
+summary: 'Use neutral names for stored keys, exported files and comments data'
+change: { 'type': 'source', 'date': '2026-10-12', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-12-emoji-storage-keys","kind":"rename","migrationNotes":["The picker no longer reads frequent emojis saved under the old key, so the list starts empty."]} -->
+
+- **`emoji-picker`**, **`emoji-data`**: Store frequent emojis under `emoji-frequent:v1` and cached shortcodes under `emoji-shortcodes:v1:<url>`.
+<!-- entry: {"id":"2026-10-12-export-file-names","kind":"rename","migrationNotes":[]} -->
+- **`export-toolbar-button`**: Name exported files `document.html`, `document.md` and `document.docx`.
+<!-- entry: {"id":"2026-10-12-comments-data-kind","kind":"rename","migrationNotes":[]} -->
+- **`import-toolbar-button`**, **`comment-demo`**: Write comments data with `kind: 'comments'`, the value `platejs/comments` reads.
+<!-- entry: {"id":"2026-10-12-collaboration-demo-room","kind":"rename","migrationNotes":[]} -->
+- **`collaboration-demo`**: Use `collaboration-demo` as the demo's Yjs root and room id.

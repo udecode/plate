@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   AuthoredPlugin,
-  projectAuthoredReview,
+  projectAuthoredDocument,
 } from '../../platejs/src/authored/index';
 import { createEditor, definePlugin, schema } from '../../platejs/src/index';
 import {
@@ -294,31 +294,39 @@ describe('plate migrate run', () => {
       plugins: [RuntimeParagraphPlugin, AuthoredPlugin],
       schema: RuntimeSchema,
     });
-    const cli = projectAuthoredReview(cliEditor.read.value());
-    const runtime = projectAuthoredReview(runtimeEditor.read.value());
+    const project = (
+      editor: typeof cliEditor,
+      projection: 'accepted' | 'proposed'
+    ) => {
+      const projected = projectAuthoredDocument(editor.read.value(), {
+        editor,
+        projection,
+      });
+      if (!projected.ok) throw new Error(`${projection} projection refused`);
+
+      return projected.document;
+    };
+    const review = (editor: typeof cliEditor) => ({
+      accepted: project(editor, 'accepted'),
+      changes: editor
+        .plugin(AuthoredPlugin)
+        .read.changes()
+        .items.map(({ authorId, createdAt, id }) => ({
+          authorId,
+          createdAt,
+          id,
+        })),
+      proposed: project(editor, 'proposed'),
+    });
+    const cli = review(cliEditor);
+    const runtime = review(runtimeEditor);
 
     expect(cli.accepted).toEqual(runtime.accepted);
     expect(cli.proposed).toEqual(runtime.proposed);
-    expect(
-      cli.changes.map(({ authorId, createdAt, id }) => ({
-        authorId,
-        createdAt,
-        id,
-      }))
-    ).toEqual([{ authorId: 'alice', createdAt: 123, id: 'change' }]);
-    expect(
-      runtime.changes.map(({ authorId, createdAt, id }) => ({
-        authorId,
-        createdAt,
-        id,
-      }))
-    ).toEqual(
-      cli.changes.map(({ authorId, createdAt, id }) => ({
-        authorId,
-        createdAt,
-        id,
-      }))
-    );
+    expect(cli.changes).toEqual([
+      { authorId: 'alice', createdAt: 123, id: 'change' },
+    ]);
+    expect(runtime.changes).toEqual(cli.changes);
   });
 
   it('uses an explicit application root in migration validation and identity', async () => {

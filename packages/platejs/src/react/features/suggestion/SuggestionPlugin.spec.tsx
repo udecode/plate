@@ -1,7 +1,7 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import * as React from 'react';
 
-import { DecorationContext } from '../../../../../plitejs/src/react/decoration-context';
+import { projectAuthoredDocument } from '../../../authored';
 import {
   createEditor,
   definePlugin,
@@ -14,7 +14,6 @@ import {
   type EditorTextProps,
   property,
   useEditor,
-  useEditorReadOnly,
 } from '../../core';
 import { SuggestionPlugin } from './SuggestionPlugin';
 import { useActiveSuggestion } from './useSuggestion';
@@ -22,24 +21,6 @@ import { useActiveSuggestion } from './useSuggestion';
 const ActiveProbe = () => {
   const { activeId } = useActiveSuggestion();
   return <output data-testid="active-suggestion">{activeId ?? 'none'}</output>;
-};
-
-type DecorationManager = NonNullable<
-  React.ContextType<typeof DecorationContext>
->;
-
-const MetricsProbe = ({
-  onManager,
-}: {
-  onManager: (manager: DecorationManager) => void;
-}) => {
-  const manager = React.useContext(DecorationContext);
-
-  React.useLayoutEffect(() => {
-    if (manager) onManager(manager);
-  }, [manager, onManager]);
-
-  return null;
 };
 
 it('initializes independent authored views and preserves their mode across parent renders', async () => {
@@ -58,19 +39,15 @@ it('initializes independent authored views and preserves their mode across paren
     views.set(name, useEditor());
     return null;
   };
-  const tree = (projection: 'markup' | 'proposed') => (
+  const tree = (intent: 'edit' | 'propose') => (
     <React.StrictMode>
-      <EditorRoot
-        editor={editor}
-        authored={{ intent: 'propose', projection }}
-        suppressInstanceWarning
-      >
+      <EditorRoot editor={editor} authored={{ intent }} suppressInstanceWarning>
         <EditorContent data-testid="proposal" />
         <Capture name="proposal" />
       </EditorRoot>
       <EditorRoot
         editor={editor}
-        authored={{ intent: 'edit', projection: 'accepted' }}
+        authored={{ preview: 'accepted' }}
         suppressInstanceWarning
       >
         <EditorContent data-testid="accepted" />
@@ -78,7 +55,7 @@ it('initializes independent authored views and preserves their mode across paren
       </EditorRoot>
     </React.StrictMode>
   );
-  const mounted = render(tree('markup'));
+  const mounted = render(tree('propose'));
   const first = views.get('proposal')!;
   const second = views.get('accepted')!;
 
@@ -88,12 +65,13 @@ it('initializes independent authored views and preserves their mode across paren
   expect(first.plugin(SuggestionPlugin).read.mode()).toBe('suggesting');
   expect(second.plugin(SuggestionPlugin).read.mode()).toBe('editing');
   await act(async () => first.plugin(SuggestionPlugin).api.setMode('editing'));
-  await act(async () => mounted.rerender(tree('markup')));
+  await act(async () => mounted.rerender(tree('propose')));
   expect(views.get('proposal')).toBe(first);
   expect(first.plugin(SuggestionPlugin).read.mode()).toBe('editing');
   expect(mounted.getByTestId('proposal').textContent).toBe('Base proposal');
 
-  await act(async () => mounted.rerender(tree('proposed')));
+  await act(async () => mounted.rerender(tree('edit')));
+  await act(async () => mounted.rerender(tree('propose')));
   expect(views.get('proposal')).toBe(first);
   expect(first.plugin(SuggestionPlugin).read.mode()).toBe('suggesting');
   expect(mounted.getByTestId('proposal')).toHaveTextContent('Base proposal');
@@ -118,7 +96,7 @@ it('decorates pending changes on a client-mounted editing markup view', async ()
   const mounted = render(
     <EditorRoot
       editor={editor}
-      authored={{ intent: 'edit', projection: 'markup' }}
+      authored={{ intent: 'edit' }}
       suppressInstanceWarning
     >
       <EditorContent data-testid="editing-markup" />
@@ -149,15 +127,10 @@ it('keeps active suggestion interaction local to each mounted view', async () =>
     at: { offset: 8, path: [0, 0] },
   });
   const changeId = editor.read.authored.changes().items[0].id;
-  const managers: DecorationManager[] = [];
-  const recordManager = (manager: DecorationManager) => {
-    if (!managers.includes(manager)) managers.push(manager);
-  };
   const view = render(
     <>
       <section data-testid="first-root">
         <EditorRoot editor={editor} suppressInstanceWarning>
-          <MetricsProbe onManager={recordManager} />
           <EditorContainer>
             <EditorContent data-testid="first" />
           </EditorContainer>
@@ -165,7 +138,6 @@ it('keeps active suggestion interaction local to each mounted view', async () =>
       </section>
       <section data-testid="second-root">
         <EditorRoot editor={editor} suppressInstanceWarning>
-          <MetricsProbe onManager={recordManager} />
           <EditorContainer>
             <EditorContent data-testid="second" />
           </EditorContainer>
@@ -200,19 +172,9 @@ it('keeps active suggestion interaction local to each mounted view', async () =>
     expect(
       secondRoot.querySelector('[data-testid="active-suggestion"]')
     ).toHaveTextContent('none');
-    expect(
-      first.querySelector(
-        `[data-editor-authored-change="${changeId}"][data-editor-suggestion-active]`
-      )
-    ).not.toBeNull();
-    expect(second.querySelector('[data-editor-suggestion-active]')).toBeNull();
   });
 
   view.unmount();
-  expect(managers).toHaveLength(2);
-  expect(
-    managers.every((manager) => manager.getMetrics().sourceObserverCount === 0)
-  ).toBe(true);
 });
 
 const RetainedBlockPlugin = definePlugin('retainedBlock', {
@@ -221,7 +183,6 @@ const RetainedBlockPlugin = definePlugin('retainedBlock', {
 
 function RetainedBlock(props: EditorElementProps<typeof RetainedBlockPlugin>) {
   const editor = useEditor();
-  const readOnly = useEditorReadOnly();
   const key = editor.key(props.element);
 
   return (
@@ -232,7 +193,6 @@ function RetainedBlock(props: EditorElementProps<typeof RetainedBlockPlugin>) {
         'data-testid': 'retained-block',
         'data-render-key': key,
         'data-owner-match': String(props.editor === editor),
-        'data-read-only': String(readOnly),
       }}
     >
       <span contentEditable={false}>Image</span>
@@ -242,7 +202,7 @@ function RetainedBlock(props: EditorElementProps<typeof RetainedBlockPlugin>) {
 }
 
 it.each(['accept', 'reject'] as const)(
-  'keeps deleted block renderers bound to their retained view through history and %s',
+  'keeps a deleted block on its renderer through history and %s',
   async (action) => {
     const value = [
       { type: 'paragraph', children: [{ text: 'Before' }] },
@@ -263,80 +223,54 @@ it.each(['accept', 'reject'] as const)(
         <EditorContent />
       </EditorRoot>
     );
-    const initialKey = mounted
-      .getByTestId('retained-block')
-      .getAttribute('data-render-key');
+    const block = () => mounted.getByTestId('retained-block');
+    const initialKey = block().getAttribute('data-render-key');
     expect(initialKey).toBeTruthy();
-    expect(mounted.getByTestId('retained-block')).toHaveAttribute(
-      'data-owner-match',
-      'true'
-    );
-    expect(mounted.getByTestId('retained-block')).toHaveAttribute(
-      'data-read-only',
-      'false'
-    );
+    expect(block()).toHaveAttribute('data-owner-match', 'true');
 
     await act(async () => {
       editor.update({ history: 'new-batch' }, (tx) => {
         tx.nodes.remove({ at: [1] });
       });
     });
-    const retained = mounted.getByTestId('retained-block');
-    expect(retained).toHaveAttribute('data-editor-retained');
-    expect(retained).toHaveAttribute('data-editor-authored-author', 'alice');
-    expect(retained).toHaveAttribute('data-owner-match', 'true');
-    expect(retained).toHaveAttribute('data-read-only', 'true');
-    expect(retained.getAttribute('data-render-key')).toBeTruthy();
-    expect(editor.read.children()).toEqual([value[0], value[2]]);
-    expect(editor.read.value().children).toEqual(value);
+    const [deletion] = editor.read.authored.changes().items;
+    expect(deletion).toMatchObject({ authorId: 'alice', kind: 'delete' });
+    expect(block()).toHaveAttribute('data-editor-authored-change', deletion.id);
+    expect(block()).toHaveAttribute('data-editor-authored-kind', 'delete');
+    expect(block()).toHaveAttribute('data-owner-match', 'true');
+    expect(block()).toHaveAttribute('data-render-key', initialKey!);
+    expect(
+      projectAuthoredDocument(editor.read.value(), { projection: 'proposed' })
+        .document.children
+    ).toEqual([value[0], value[2]]);
+    expect(
+      projectAuthoredDocument(editor.read.value(), { projection: 'accepted' })
+        .document.children
+    ).toEqual(value);
 
     await act(() => {
       editor.api.history.undo();
     });
-    expect(mounted.getByTestId('retained-block')).not.toHaveAttribute(
-      'data-editor-retained'
-    );
-    expect(mounted.getByTestId('retained-block')).toHaveAttribute(
-      'data-read-only',
-      'false'
-    );
+    expect(block()).not.toHaveAttribute('data-editor-authored-change');
+    expect(editor.read.children()).toEqual(value);
     await act(() => {
       editor.api.history.redo();
     });
-    expect(mounted.getByTestId('retained-block')).toHaveAttribute(
-      'data-editor-retained'
-    );
-    expect(mounted.getByTestId('retained-block')).toHaveAttribute(
-      'data-owner-match',
-      'true'
-    );
-    expect(mounted.getByTestId('retained-block')).toHaveAttribute(
-      'data-read-only',
-      'true'
-    );
+    expect(block()).toHaveAttribute('data-editor-authored-kind', 'delete');
+    expect(block()).toHaveAttribute('data-owner-match', 'true');
 
+    const [pending] = editor.read.authored.changes().items;
     await act(async () => {
-      editor.update.authored.decide({
-        action,
-        selection: editor.read.authored.select({ status: 'pending' }),
-      });
+      editor.update.authored.decide({ action, changes: [pending] });
     });
+    expect(editor.read.authored.change(pending.id)).toBeNull();
     if (action === 'accept') {
       expect(mounted.queryByTestId('retained-block')).toBeNull();
-      expect(editor.read.value().children).toEqual([value[0], value[2]]);
+      expect(editor.read.children()).toEqual([value[0], value[2]]);
     } else {
-      expect(mounted.getByTestId('retained-block')).not.toHaveAttribute(
-        'data-editor-retained'
-      );
-      expect(mounted.getByTestId('retained-block')).toHaveAttribute(
-        'data-owner-match',
-        'true'
-      );
-      expect(mounted.getByTestId('retained-block')).toHaveAttribute(
-        'data-read-only',
-        'false'
-      );
-      expect(editor.read.value().children).toEqual(value);
+      expect(block()).not.toHaveAttribute('data-editor-authored-change');
+      expect(block()).toHaveAttribute('data-render-key', initialKey!);
+      expect(editor.read.children()).toEqual(value);
     }
     mounted.unmount();
   }
@@ -352,14 +286,11 @@ function RetainedMark(
     | EditorTextProps<typeof RetainedMarkPlugin>
 ) {
   const editor = useEditor();
-  const readOnly = useEditorReadOnly();
 
   return (
     <strong
       {...props.attributes}
       data-owner-match={String(props.editor === editor)}
-      data-read-only={String(readOnly)}
-      data-render-text={editor.read.text.string([])}
     >
       {props.children}
     </strong>
@@ -367,16 +298,15 @@ function RetainedMark(
 }
 
 it.each(['leaf', 'text'] as const)(
-  'binds custom marks at %s placement in retained text to their fragment editor',
+  'paints struck text under a custom mark at %s placement',
   async (placement) => {
-    const value = [
-      {
-        type: 'paragraph',
-        children: [{ text: 'Before deleted after', retainedMark: true }],
-      },
-    ];
     const editor = createEditor({
-      initialValue: value,
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'Before deleted after', retainedMark: true }],
+        },
+      ],
       plugins: [
         SuggestionPlugin,
         RetainedMarkPlugin.configure({
@@ -401,15 +331,17 @@ it.each(['leaf', 'text'] as const)(
         },
       });
     });
-    const retained = mounted.container.querySelector(
-      '[data-editor-retained] strong, strong[data-editor-retained]'
+    const struck = mounted.container.querySelector(
+      'strong[data-editor-authored-kind="delete"]'
     );
-    expect(retained).toHaveTextContent('deleted');
-    expect(retained?.getAttribute('data-owner-match')).toBe('true');
-    expect(retained?.getAttribute('data-read-only')).toBe('true');
-    expect(retained?.getAttribute('data-render-text')).toBe('deleted');
+    expect(struck).toHaveTextContent('deleted');
+    expect(struck).toHaveAttribute('data-editor-authored-author', 'alice');
+    expect(struck?.getAttribute('data-owner-match')).toBe('true');
     expect(mounted.container.textContent).toBe('Before deleted after');
-    expect(editor.read.children()).toEqual([
+    expect(
+      projectAuthoredDocument(editor.read.value(), { projection: 'proposed' })
+        .document.children
+    ).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'Before  after', retainedMark: true }],
@@ -418,3 +350,41 @@ it.each(['leaf', 'text'] as const)(
     mounted.unmount();
   }
 );
+
+it('paints nothing on text a rejected replacement gives back', async () => {
+  const editor = createEditor({
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'Before old after' }] },
+    ],
+    plugins: [SuggestionPlugin],
+    userId: 'alice',
+  });
+  editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+  const mounted = render(
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
+  );
+
+  await act(async () => {
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 7 },
+        focus: { path: [0, 0], offset: 10 },
+      });
+      tx.text.insert('new');
+    });
+  });
+  const [replacement] = editor.read.authored.changes().items;
+
+  await act(async () => {
+    editor.update.authored.decide({ action: 'reject', changes: [replacement] });
+  });
+
+  expect(mounted.container.textContent).toBe('Before old after');
+  expect(
+    mounted.container.querySelector('[data-editor-authored-kind]')
+  ).toBeNull();
+  expect(JSON.stringify(editor.read.children())).toContain('"kind":"held"');
+  mounted.unmount();
+});

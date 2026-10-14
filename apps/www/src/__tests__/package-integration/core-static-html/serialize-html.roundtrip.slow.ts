@@ -1,7 +1,7 @@
-import type { Value } from 'platejs';
+import { createEditor, type Value } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 
-import { createStaticEditor } from './create-static-editor';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 const representableValue: Value = [
   {
@@ -40,7 +40,10 @@ const representableValue: Value = [
 
 describe('core static HTML representable projection', () => {
   it('decodes visible block, property, mark, and link fields', async () => {
-    const editor = createStaticEditor(representableValue);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: representableValue,
+    });
 
     const { data: html } = await renderStaticHtml(editor);
 

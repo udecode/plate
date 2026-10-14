@@ -18,8 +18,9 @@ import {
 
 import { ChangeDraft } from '../src/core/change/builder';
 import { DocumentIndex } from '../src/core/change/document-index';
+import { deepFreeze } from '../src/core/change/json';
 import { RootChange } from '../src/core/change/root-change';
-import { deepFreeze, type JsonEditorValue } from '../src/core/change/tokens';
+import type { JsonEditorValue } from '../src/core/change/tokens';
 import { getEditorSchema } from '../src/core/editor-runtime';
 import {
   getCompiledEditorSchemaFromApi,
@@ -704,6 +705,19 @@ describe('incremental schema validation', () => {
     } finally {
       profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
     }
+  });
+
+  it('keeps live updates valid after an editor with another schema adopts the document', () => {
+    const editor = createValidationEditor();
+    createEditor({ initialValue: editor.read.value() });
+
+    editor.update((tx) =>
+      tx.text.insert('!', { at: { offset: 5, path: [0, 0, 0] } })
+    );
+
+    assert.deepEqual(editor.read.children(), [
+      section([paragraph('alpha!'), paragraph('beta')]),
+    ]);
   });
 
   it('stamps an explicit document when initial plugin publication is empty', () => {

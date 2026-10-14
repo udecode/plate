@@ -41,6 +41,21 @@ const value = [
 
 `open` and `name` are not document properties. Use the plugin state when the application needs to expand or collapse a Details node.
 
+## Heading titles
+
+Set `level` from `1` to `6` on a Summary to render it as a heading. Omit `level` for a plain title. The Summary stays the first child; formatting never moves its text into the body.
+
+With `HeadingPlugin` installed, choose a heading in the formatting or slash menu, use the heading keyboard shortcuts, or type a Markdown heading prefix in the title. Text in the same menus removes the level. The headless equivalent is:
+
+```tsx
+import { BaseHeadingPlugin } from 'platejs';
+
+editor.plugin(BaseHeadingPlugin).update.setLevel(2);
+editor.update.blocks.reset({ unset: ['level'] });
+```
+
+`setLevel` gives every selected block the level: a Summary keeps its type and other blocks become headings. It returns `false` and changes nothing when the schema refuses any of them. `reset` with `unset: ['level']` turns each selected block into its parent's default, so a title stays a title without its level. `toggle({ level })` removes the level when a selected block already has it and sets it otherwise. Use these operations instead of changing a Summary's `type` directly.
+
 ## Kit usage
 
 <Steps>
@@ -143,7 +158,7 @@ editor.plugin(BaseDetailsPlugin).update.wrap();
 
 ### `editor.plugin(BaseDetailsPlugin).update.unwrap`
 
-Unwrap the selected Details nodes. The Summary becomes the editor's default text block before the body blocks.
+Unwrap the selected Details nodes. A heading Summary becomes a Heading of the same level when the Heading plugin is installed. Other summaries become Paragraphs before the body blocks.
 
 ```tsx
 editor.plugin(BaseDetailsPlugin).update.unwrap();
@@ -180,6 +195,8 @@ Body text.
 ```
 
 Decoding ignores `open` and `name`, and encoding never writes them.
+
+A heading title uses `<summary><h2>Title</h2></summary>` in HTML and `<summary level="2">Title</summary>` in Markdown. Both preserve inline formatting. HTML reads the level only when the heading is the summary's only child.
 
 ## Toolbar
 

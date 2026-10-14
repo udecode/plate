@@ -2,8 +2,11 @@ import {
   BaseParagraphPlugin,
   createEditor,
   definePlugin,
+  editorCommands,
   schema,
+  SelectionApi,
 } from '../../../core';
+import { BaseTablePlugin } from '../../table/lib/BaseTablePlugin';
 import { BaseDetailsPlugin } from './BaseDetailsPlugin';
 
 const ContainerPlugin = definePlugin('testContainer', {
@@ -27,6 +30,367 @@ const value = [
 ] as const;
 
 describe('BaseDetailsPlugin', () => {
+  it('removes the empty paragraph created after a closed nested summary', () => {
+    const initialValue = [
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Outer' }] },
+          value[0],
+        ],
+      },
+    ];
+    const editor = createEditor({ plugins: [BaseDetailsPlugin], initialValue });
+    editor.plugin(BaseDetailsPlugin).api.setOpen(editor.key([0])!, true);
+    editor.update.selection.set({ path: [0, 1, 0, 0], offset: 5 });
+    editor.update.break.insert();
+    expect(editor.read.children()[0].children).toHaveLength(3);
+    editor.update.text.deleteBackward({ unit: 'character' });
+    expect(editor.read.children()).toMatchObject(initialValue);
+    expect(editor.read.children()[0].children).toHaveLength(2);
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { path: [0, 1, 0, 0], offset: 5 },
+      focus: { path: [0, 1, 0, 0], offset: 5 },
+    });
+  });
+
+  it.each(['backspace', 'node-selection'])(
+    'unwraps only the middle Details with %s',
+    (action) => {
+      const inner = value[0];
+      const editor = createEditor({
+        plugins: [BaseDetailsPlugin],
+        initialValue: [
+          {
+            type: 'details',
+            children: [
+              { type: 'summary', children: [{ text: 'Outer' }] },
+              {
+                type: 'details',
+                children: [
+                  { type: 'summary', children: [{ text: 'Middle' }] },
+                  inner,
+                ],
+              },
+            ],
+          },
+        ],
+      });
+      if (action === 'backspace') {
+        editor.update.selection.set({ path: [0, 1, 0, 0], offset: 0 });
+        editor.update.text.deleteBackward({ unit: 'character' });
+      } else if (action === 'node-selection') {
+        editor.update.selection.setNodes([[0, 1]]);
+        editor.plugin(BaseDetailsPlugin).update.unwrap();
+      }
+      expect(editor.read.children()).toMatchObject([
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Outer' }] },
+            { type: 'paragraph', children: [{ text: 'Middle' }] },
+            inner,
+          ],
+        },
+      ]);
+    }
+  );
+
+  it.each([
+    'two inner Details selected as blocks',
+    'one given as a node selection',
+  ])('unwraps only the inner Details with %s', (target) => {
+    const inner = (title: string) => ({
+      type: 'details',
+      children: [
+        { type: 'summary', children: [{ text: title }] },
+        { type: 'paragraph', children: [{ text: title.toLowerCase() }] },
+      ],
+    });
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin],
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Outer' }] },
+            inner('A'),
+            inner('B'),
+          ],
+        },
+      ],
+    });
+
+    if (target === 'two inner Details selected as blocks') {
+      editor.update.selection.setNodes([
+        [0, 1],
+        [0, 2],
+      ]);
+      editor.plugin(BaseDetailsPlugin).update.unwrap();
+    } else {
+      editor
+        .plugin(BaseDetailsPlugin)
+        .update.unwrap({ at: SelectionApi.nodes([[0, 1]]) });
+    }
+    expect(editor.read.children()).toMatchObject([
+      {
+        type: 'details',
+        children:
+          target === 'two inner Details selected as blocks'
+            ? [
+                { type: 'summary', children: [{ text: 'Outer' }] },
+                { type: 'paragraph', children: [{ text: 'A' }] },
+                { type: 'paragraph', children: [{ text: 'a' }] },
+                { type: 'paragraph', children: [{ text: 'B' }] },
+                { type: 'paragraph', children: [{ text: 'b' }] },
+              ]
+            : [
+                { type: 'summary', children: [{ text: 'Outer' }] },
+                { type: 'paragraph', children: [{ text: 'A' }] },
+                { type: 'paragraph', children: [{ text: 'a' }] },
+                inner('B'),
+              ],
+      },
+    ]);
+  });
+
+  it('unwraps only the outer Details for a range from its body into a nested Details', () => {
+    const inner = {
+      type: 'details',
+      children: [
+        { type: 'summary', children: [{ text: 'Inner' }] },
+        { type: 'paragraph', children: [{ text: 'B' }] },
+      ],
+    };
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin],
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Outer' }] },
+            { type: 'paragraph', children: [{ text: 'A' }] },
+            inner,
+          ],
+        },
+      ],
+    });
+    editor.update.selection.set({
+      anchor: { path: [0, 1, 0], offset: 0 },
+      focus: { path: [0, 2, 1, 0], offset: 1 },
+    });
+    editor.plugin(BaseDetailsPlugin).update.unwrap();
+    expect(editor.read.children()).toMatchObject([
+      { type: 'paragraph', children: [{ text: 'Outer' }] },
+      { type: 'paragraph', children: [{ text: 'A' }] },
+      inner,
+    ]);
+  });
+
+  describe('in a named root', () => {
+    const NoteHolderPlugin = definePlugin('testNoteHolder', {
+      dependencies: [BaseParagraphPlugin, BaseDetailsPlugin],
+      schema: ({ plugins }) => ({
+        element: {
+          blockContent: true,
+          contentRoots: {
+            body: {
+              content: schema.content.any([plugins.blockContent().allowed], {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      }),
+    });
+    const main = [
+      value[0],
+      {
+        childRoots: { body: 'note' },
+        children: [{ text: '' }],
+        type: 'testNoteHolder',
+      },
+    ];
+    const createNoteEditor = (note: readonly unknown[]) =>
+      createEditor({
+        plugins: [BaseDetailsPlugin, NoteHolderPlugin],
+        initialValue: { children: main, roots: { note } } as never,
+      });
+
+    it('changes nothing for a note block outside any Details', () => {
+      const editor = createNoteEditor([value[1]]);
+
+      editor
+        .plugin(BaseDetailsPlugin)
+        .update.unwrap({ at: SelectionApi.nodes([[0]], { root: 'note' }) });
+      expect(editor.read.children()).toMatchObject(main);
+      expect(editor.read.root('note')).toMatchObject([value[1]]);
+    });
+  });
+
+  it('preserves the cell selection when clearing a table inside closed Details', () => {
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin, BaseTablePlugin],
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Title' }] },
+            {
+              type: 'table',
+              children: [
+                {
+                  type: 'tableRow',
+                  children: [
+                    {
+                      type: 'tableCell',
+                      children: [
+                        { type: 'paragraph', children: [{ text: 'Cell' }] },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    const target = SelectionApi.nodes([[0, 1, 0, 0]]);
+    editor.update.selection.set(target);
+    editor.update((tx) =>
+      tx.command(editorCommands.deleteFragment, {
+        at: target,
+        direction: 'backward',
+      })
+    );
+    expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
+      [0, 1, 0, 0],
+    ]);
+  });
+
+  it('keeps the caret visible after deleting a whole paragraph following closed Details [EDIT-DETAILS-BS-AFTER-CLOSED-001]', () => {
+    const initialValue = [
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Outer' }] },
+          value[0],
+        ],
+      },
+      value[1],
+    ];
+    const editor = createEditor({ plugins: [BaseDetailsPlugin], initialValue });
+    editor.update.selection.set({
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 5 },
+    });
+    editor.update((tx) =>
+      tx.command(editorCommands.deleteFragment, {
+        at: {
+          anchor: { path: [1, 0], offset: 0 },
+          focus: { path: [1, 0], offset: 5 },
+        },
+        direction: 'backward',
+      })
+    );
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { path: [0, 0, 0], offset: 5 },
+      focus: { path: [0, 0, 0], offset: 5 },
+    });
+    expect(editor.read.children()[0]).toMatchObject(initialValue[0]);
+  });
+
+  it('keeps the caret on the visible Summary after deleting the selected block following closed Details [EDIT-DETAILS-BS-AFTER-CLOSED-001]', () => {
+    const initialValue = [
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Outer' }] },
+          value[0],
+        ],
+      },
+      value[1],
+    ];
+    const editor = createEditor({ plugins: [BaseDetailsPlugin], initialValue });
+    editor.update.selection.set(SelectionApi.nodes([[1]]));
+    editor.update.text.deleteBackward({ unit: 'character' });
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { path: [0, 0, 0], offset: 5 },
+      focus: { path: [0, 0, 0], offset: 5 },
+    });
+  });
+
+  it.each([false, true])(
+    'returns Backspace after closed Details to its visible summary (nested: %s) [EDIT-DETAILS-BS-AFTER-CLOSED-001]',
+    (nested) => {
+      const initialValue = nested
+        ? [
+            {
+              type: 'details',
+              children: [
+                { type: 'summary', children: [{ text: 'Outer' }] },
+                value[0],
+              ],
+            },
+            value[1],
+          ]
+        : value;
+      const editor = createEditor({
+        plugins: [BaseDetailsPlugin],
+        initialValue,
+      });
+      const title = nested ? 'Outer' : 'Title';
+      editor.update.selection.set({ path: [0, 0, 0], offset: title.length });
+      editor.update.break.insert();
+      editor.update.text.deleteBackward({ unit: 'character' });
+      expect(editor.read.selection()).toMatchObject({
+        anchor: { path: [0, 0, 0], offset: title.length },
+        focus: { path: [0, 0, 0], offset: title.length },
+      });
+      expect(editor.read.children()).toMatchObject(initialValue);
+      editor.update.text.insert('XYZ');
+      expect(editor.read.children()[0].children[0]).toMatchObject({
+        children: [{ text: `${title}XYZ` }],
+      });
+    }
+  );
+
+  it('leaves Backspace at the start of a table cell after closed Details to the table', () => {
+    const table = {
+      type: 'table',
+      children: [
+        {
+          type: 'tableRow',
+          children: [
+            {
+              type: 'tableCell',
+              children: [{ type: 'paragraph', children: [{ text: '' }] }],
+            },
+            {
+              type: 'tableCell',
+              children: [{ type: 'paragraph', children: [{ text: 'B' }] }],
+            },
+          ],
+        },
+      ],
+    };
+    const editor = createEditor({
+      plugins: [BaseDetailsPlugin, BaseTablePlugin],
+      initialValue: [value[0], table],
+    });
+    editor.update.selection.set({ path: [1, 0, 0, 0, 0], offset: 0 });
+    editor.update.text.deleteBackward({ unit: 'character' });
+
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { path: [1, 0, 0, 0, 0], offset: 0 },
+    });
+    expect(editor.read.children()).toMatchObject([value[0], table]);
+  });
+
   it('moves Enter at the end of an open Summary into the first body block', () => {
     const editor = createEditor({
       plugins: [BaseDetailsPlugin],

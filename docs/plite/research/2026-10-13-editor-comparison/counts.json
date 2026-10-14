@@ -1,0 +1,21 @@
+{
+  "repository_identities_discovered": 274,
+  "repository_identities_metadata_screened": 82,
+  "source_inspected_repository_identities": 41,
+  "identities_with_implementation_or_test_reads": 35,
+  "distinct_recorded_source_files": 161,
+  "recorded_source_spans": 173,
+  "github_repository_search_hits": 220,
+  "fetched_but_unread_files": 6,
+  "issue_bodies_read": 4,
+  "pr_bodies_read": 3,
+  "comments_read": 0,
+  "leads_kept": 27,
+  "leads_merged": 0,
+  "rejected_inferences": 10,
+  "docs_packets_promoted": 27,
+  "runtime_packets_promoted": 0,
+  "external_tests_run": 0,
+  "benchmarks_run": 0,
+  "checked_at": "2026-10-13"
+}

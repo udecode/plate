@@ -2,9 +2,30 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "www-drive",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "PLATE_WWW_DIST_DIR=.next-drive",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3519"
+      ],
+      "port": 3519
+    },
+    {
       "name": "www-dev-frozen",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DYNAMIC_DOCS=1",
         "PLATE_WWW_DEV_SOURCE=1",
         "PLATE_WWW_DIST_DIR=.next-proof",
@@ -23,6 +44,7 @@
       "name": "www-authored-proof",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DEV_SOURCE=1",
         "PLATE_WWW_DIST_DIR=.next-authored",
         "pnpm",
@@ -37,12 +59,13 @@
       "port": 3311
     },
     {
-      "name": "www-link-cmdk",
+      "name": "www-onfocus",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DYNAMIC_DOCS=1",
         "PLATE_WWW_DEV_SOURCE=1",
-        "PLATE_WWW_DIST_DIR=.next-link",
+        "PLATE_WWW_DIST_DIR=.next-onfocus",
         "pnpm",
         "--dir",
         "apps/www",
@@ -50,17 +73,18 @@
         "next",
         "dev",
         "--port",
-        "3323"
+        "3412"
       ],
-      "port": 3323
+      "port": 3412
     },
     {
-      "name": "www-toolbar-name",
+      "name": "www-link-href",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DYNAMIC_DOCS=1",
         "PLATE_WWW_DEV_SOURCE=1",
-        "PLATE_WWW_DIST_DIR=.next-toolbar-name",
+        "PLATE_WWW_DIST_DIR=.next-link-href",
         "pnpm",
         "--dir",
         "apps/www",
@@ -68,9 +92,47 @@
         "next",
         "dev",
         "--port",
-        "3331"
+        "3341"
       ],
-      "port": 3331
+      "port": 3341
+    },
+    {
+      "name": "www-media",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "PLATE_WWW_DIST_DIR=.next-media",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3423"
+      ],
+      "port": 3423
+    },
+    {
+      "name": "www-basic-review",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
+        "PLATE_WWW_DYNAMIC_DOCS=1",
+        "PLATE_WWW_DEV_SOURCE=1",
+        "PLATE_WWW_DIST_DIR=.next-basic-review",
+        "pnpm",
+        "--dir",
+        "apps/www",
+        "exec",
+        "next",
+        "dev",
+        "--port",
+        "3463"
+      ],
+      "port": 3463
     }
   ]
 }

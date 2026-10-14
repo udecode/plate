@@ -1,9 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 import { PathApi, RangeApi, type Range, type Value } from '..';
-import { readAuthoredFragmentView } from '../core/authored-runtime';
 import { subscribeEditorDOMScope } from '../dom/plugin/dom-editor';
-import { readDOMFragmentParent } from '../dom/plugin/dom-fragment-view';
 import type { Decoration, DecorationSource } from './decoration-source';
 import {
   getSnapshot as editorGetSnapshot,
@@ -25,7 +23,7 @@ import {
   subscribePliteViewSelection,
 } from './view-selection';
 
-export const PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID = 'plite-view-selection';
+export const VIEW_SELECTION_DECORATION_SOURCE_ID = 'core:view-selection';
 
 const VIEW_SELECTION_ATTRIBUTES = Object.freeze({
   'data-editor-view-selection': 'true',
@@ -69,17 +67,12 @@ const readDecorations = <V extends Value>(
   }
 
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
-  const fragmentId = readAuthoredFragmentView(editor)?.fragment.id ?? null;
   const roots = editor.read((state) => ({
     ...createPliteViewBoundaryRootMap(state.value()),
     [viewRoot]: state.children(),
   }));
   const decorations = selection.segments.parts.flatMap((segment, index) => {
-    if (
-      segment.root !== viewRoot ||
-      segment.ownerKey !== ownerKey ||
-      (segment.fragment?.id ?? null) !== fragmentId
-    ) {
+    if (segment.root !== viewRoot || segment.ownerKey !== ownerKey) {
       return [];
     }
 
@@ -95,7 +88,7 @@ const readDecorations = <V extends Value>(
     return [
       Object.freeze({
         attributes: VIEW_SELECTION_ATTRIBUTES,
-        key: `${PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID}:${segment.root}:${
+        key: `${VIEW_SELECTION_DECORATION_SOURCE_ID}:${segment.root}:${
           segment.ownerKey ?? 'main'
         }:${index}`,
         range,
@@ -141,7 +134,7 @@ export const createPliteViewSelectionDecorationSource = <V extends Value>(
   };
 
   return Object.freeze({
-    id: PLITE_VIEW_SELECTION_DECORATION_SOURCE_ID,
+    id: VIEW_SELECTION_DECORATION_SOURCE_ID,
     observe: ({ refresh }) => {
       let previousInputKeys = getInputKeys(editor, cachedDecorations);
       const update = (forceInvalidate = false) => {
@@ -161,10 +154,7 @@ export const createPliteViewSelectionDecorationSource = <V extends Value>(
         editor,
         (notification) => update(notification?.forceInvalidate)
       );
-      const stopDOM = subscribeEditorDOMScope(
-        readDOMFragmentParent(editor) ?? editor,
-        () => update()
-      );
+      const stopDOM = subscribeEditorDOMScope(editor, () => update());
       return () => {
         stopSelection();
         stopDOM();
@@ -182,41 +172,4 @@ export const usePliteViewSelectionPresence = (editor: object) =>
     (listener) => subscribePliteViewSelection(editor, listener),
     () => readPliteViewSelection(editor) !== null,
     () => false
-  );
-
-const EMPTY_FRAGMENT_KEYS = Object.freeze([]) as readonly string[];
-const FRAGMENT_KEYS = new WeakMap<
-  object,
-  Readonly<{ identity: string; keys: readonly string[] }>
->();
-
-const readViewSelectionFragmentKeys = (editor: ReactRuntimeEditor<any>) => {
-  const selection = readPliteViewSelection(editor);
-  if (!selection || canUseNativeViewSelection(editor, selection)) {
-    return EMPTY_FRAGMENT_KEYS;
-  }
-  const keys = [
-    ...new Set(
-      selection.segments.parts.flatMap(({ fragment }) =>
-        fragment ? [JSON.stringify([fragment.changeId, fragment.id])] : []
-      )
-    ),
-  ].sort();
-  if (keys.length === 0) return EMPTY_FRAGMENT_KEYS;
-  const identity = JSON.stringify(keys);
-  const cached = FRAGMENT_KEYS.get(editor);
-  if (cached?.identity === identity) return cached.keys;
-  const snapshot = Object.freeze(keys);
-
-  FRAGMENT_KEYS.set(editor, { identity, keys: snapshot });
-  return snapshot;
-};
-
-export const usePliteViewSelectionFragmentKeys = (
-  editor: ReactRuntimeEditor<any>
-) =>
-  useSyncExternalStore(
-    (listener) => subscribePliteViewSelection(editor, listener),
-    () => readViewSelectionFragmentKeys(editor),
-    () => EMPTY_FRAGMENT_KEYS
   );

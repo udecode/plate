@@ -1,4 +1,8 @@
-import type { AuthoredChange } from 'platejs/authored';
+import {
+  type AuthoredChange,
+  AuthoredPlugin,
+  type AuthoredResult,
+} from 'platejs/authored';
 import { createEditor, type EditorRootProps } from 'platejs/react';
 import { BaseSuggestionPlugin } from 'platejs/suggestion';
 import {
@@ -44,20 +48,40 @@ void SuggestionHooksContract;
 const root: EditorRootProps<typeof react> = {
   editor: react,
   children: null,
-  authored: { intent: 'propose', projection: 'markup' },
+  authored: { intent: 'propose' },
 };
-root.authored = { intent: 'edit', projection: 'accepted' };
-root.authored = { intent: 'edit', projection: 'markup' };
-root.authored = { intent: 'edit', projection: 'proposed' };
-root.authored = { intent: 'propose', projection: 'proposed' };
-// @ts-expect-error Proposing requires a proposal projection.
-root.authored = { intent: 'propose', projection: 'accepted' };
+root.authored = { preview: 'accepted' };
+root.authored = { intent: 'edit' };
+root.authored = { preview: 'proposed' };
+root.authored = { intent: 'propose' };
+// @ts-expect-error An editable view shows the review tree; it takes no projection.
+root.authored = { intent: 'propose', projection: 'markup' };
+
+const authored = createEditor({ plugins: [AuthoredPlugin] }).plugin(
+  AuthoredPlugin
+);
+const change = authored.read.change('change-id');
+
+if (change) {
+  authored.update.decide({
+    action: 'accept',
+    changes: [change],
+  }) satisfies AuthoredResult;
+  authored.update.decide([
+    { action: 'accept', changes: [change] },
+    { action: 'reject', changes: [change] },
+  ]);
+  // @ts-expect-error A decision names the changes it read, not their ids.
+  authored.update.decide({ action: 'accept', changes: ['change-id'] });
+  // @ts-expect-error A decision takes changes, not a selection.
+  authored.update.decide({ action: 'reject', selection: change });
+}
 
 const plain = createEditor();
 const plainRoot: EditorRootProps<typeof plain> = {
   editor: plain,
   children: null,
   // @ts-expect-error Authored view inputs require the authored capability.
-  authored: { intent: 'propose', projection: 'markup' },
+  authored: { intent: 'propose' },
 };
 void plainRoot;

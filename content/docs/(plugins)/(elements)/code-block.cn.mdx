@@ -16,6 +16,7 @@ docs:
 - 可自定义语言选择
 - 正确处理缩进
 - 通过 `CodeBlockRules.markdown({ on })` 支持 Markdown 代码围栏快捷输入
+- 代码块内输入的快捷语法保持原样，Markdown 也不会转换粘贴的纯文本
 
 </PackageInfo>
 
@@ -174,6 +175,8 @@ const editor = createEditor({
 - `shortcuts.toggle`: 定义切换代码块的键盘[快捷键](/docs/plugin-shortcuts)
 
 每个 `codeBlock` 只包含一个文本子节点。换行符定义物理行；编辑和高亮行为由文本偏移量推导。
+
+代码块内不会运行任何[输入规则](/docs/plugin-input-rules#where-rules-run)，因此 `# `、`**x**`、`->` 和 URL 都按输入原样保留。Markdown 和输入规则都不会转换粘贴的纯文本。
 
 需要纯文本代码块时，省略 `CodeHighlightPlugin`：
 

@@ -21,7 +21,6 @@ import { EditorTest } from './PlateTest';
 export type EditorTestHarnessOptions = {
   componentProps?: Partial<React.ComponentProps<typeof EditorTest>>;
   debug?: boolean;
-  testID?: string;
 };
 
 type ClipboardDataType = 'image/png' | 'text/html' | 'text/plain';
@@ -135,18 +134,24 @@ export const createTestEditor = async <
     EditorTestRenderResult,
   ]
 > => {
-  const {
-    componentProps = {},
-    debug = false,
-    testID = 'plite-content-editable',
-  } = harnessOptions;
+  const { componentProps = {}, debug = false } = harnessOptions;
   const editor = createEditor(options as any) as unknown as ReactTestEditor<
     V,
     TPlugins,
     TSchema
   >;
+  const editable = React.createRef<HTMLDivElement>();
+  const callerRef = componentProps.editableProps?.ref;
   const plateProps = {
     ...componentProps,
+    editableProps: {
+      ...componentProps.editableProps,
+      ref: (node: HTMLDivElement | null) => {
+        editable.current = node;
+        if (typeof callerRef === 'function') return callerRef(node);
+        if (callerRef) callerRef.current = node;
+      },
+    },
     editor,
     suppressInstanceWarning: true,
   };
@@ -154,7 +159,11 @@ export const createTestEditor = async <
 
   await act(async () => rendered);
 
-  const element = rendered.getByTestId(testID);
+  const element = editable.current;
+
+  if (!element) {
+    throw new Error('createTestEditor: EditorTest did not mount its editable');
+  }
 
   Object.defineProperty(element, 'isContentEditable', {
     configurable: true,

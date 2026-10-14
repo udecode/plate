@@ -1,5 +1,6 @@
 'use client';
 
+import { BROWSER_HANDLE_KEY } from 'platejs/testing';
 import {
   useCallback,
   useEffect,
@@ -143,8 +144,9 @@ const readDeviceMetadata = () => {
 };
 
 const readHandle = (root: HTMLElement): BrowserHandle | null =>
-  (root as HTMLElement & { __pliteBrowserHandle?: BrowserHandle })
-    .__pliteBrowserHandle ?? null;
+  (root as HTMLElement & { [BROWSER_HANDLE_KEY]?: BrowserHandle })[
+    BROWSER_HANDLE_KEY
+  ] ?? null;
 
 const readTargetPath = (target: EventTarget | null) =>
   target instanceof Element

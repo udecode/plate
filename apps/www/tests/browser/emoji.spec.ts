@@ -267,7 +267,7 @@ test('emoji:picker shows a new favorite after many stored picks', async ({
   await routeEmojibase(page);
   await page.addInitScript(() => {
     localStorage.setItem(
-      'plate:emoji-frequent:v1',
+      'emoji-frequent:v1',
       JSON.stringify(
         Array.from({ length: 36 }, (_, index) => ({
           count: 1,

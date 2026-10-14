@@ -88,14 +88,11 @@ for (const close of ['Escape', 'ControlOrMeta+Enter', 'outside click']) {
       await editor.focus();
       await editor.type('bu');
       await expect(page.getByRole('listbox')).toBeVisible();
-      // Plite drops a blur that lands while it still writes the DOM selection
-      // for the last keystroke, so a person's pause comes first.
-      await page.waitForTimeout(300);
 
       if (close === 'outside click') {
         await page.mouse.click(5, 5);
       } else {
-        await editor.press(close);
+        await page.keyboard.press(close);
       }
 
       await expect(page.getByRole('listbox')).toHaveCount(0);

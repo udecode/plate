@@ -28,9 +28,9 @@ const openCaptionedImage = async (page: Page, caseId: string) => {
     root.evaluate((element) =>
       (
         element as HTMLElement & {
-          __pliteBrowserHandle?: { getModelSelection: () => unknown };
+          __EDITOR_BROWSER_HANDLE__?: { getModelSelection: () => unknown };
         }
-      ).__pliteBrowserHandle?.getModelSelection()
+      ).__EDITOR_BROWSER_HANDLE__?.getModelSelection()
     );
 
   expect(imageIndex).toBeGreaterThanOrEqual(0);

@@ -6,24 +6,51 @@ import type {
   EditorCommandDescriptor,
   EditorCommandHandler,
   EditorCommandInput,
+  EditorCommandPlace,
   EditorCommandRegistration,
   EditorCommandResult,
   Editor,
 } from '../interfaces/editor';
 
+type CommandLocate<Input> = (
+  input: Input,
+  place: EditorCommandPlace
+) => Input | null;
+
 type CommandDefinitionSpec<
   Input,
   TEditor extends BaseEditor<any, any>,
-> = Readonly<{
-  build?: (
-    context: EditorCommandContext<Input, TEditor>
-  ) => EditorCommandResult;
-  prepare?: (input: Input) => Input;
-}>;
+> = Readonly<
+  {
+    build?: (
+      context: EditorCommandContext<Input, TEditor>
+    ) => EditorCommandResult;
+    prepare?: (input: Input) => Input;
+  } & (
+    | {
+        /**
+         * Map the input's stored locations to where they land in the
+         * document the command decides on, or return null when they have no
+         * place there, so the command does nothing. `false` says the input
+         * holds no location. A command with input that declares neither this
+         * nor `selection` throws while a command document is registered.
+         */
+        locate?: CommandLocate<Input> | false;
+        selection?: never;
+      }
+    | {
+        locate?: never;
+        /** The command changes only the selection, so it runs as stored. */
+        selection: true;
+      }
+  )
+>;
 
 type CommandRuntime<Input, TEditor extends BaseEditor<any, any>> = Readonly<{
   build: (context: EditorCommandContext<Input, TEditor>) => EditorCommandResult;
+  locate: CommandLocate<Input> | false | undefined;
   prepare: (input: Input) => Input;
+  selection: boolean;
 }>;
 
 type CommandRegistrationRuntime<
@@ -83,7 +110,9 @@ export const defineCommand = <
 
   const runtime = Object.freeze({
     build: spec.build ?? (() => false),
+    locate: spec.locate,
     prepare: spec.prepare ?? ((input: Input) => input),
+    selection: spec.selection === true,
   });
   const command = {
     id,

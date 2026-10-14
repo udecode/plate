@@ -520,10 +520,10 @@ const validateDecorationSources = <E>(
 
   for (const source of sources) {
     if (source.id.length === 0) {
-      throw new Error('Plite decoration source ids must be non-empty.');
+      throw new Error('Decoration source ids must be non-empty.');
     }
     if (ids.has(source.id)) {
-      throw new Error(`Duplicate Plite decoration source id "${source.id}".`);
+      throw new Error(`Duplicate decoration source id "${source.id}".`);
     }
 
     ids.add(source.id);

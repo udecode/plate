@@ -16,7 +16,6 @@ import {
   getCompiledPlatePluginByType,
   getPlateRuntime,
 } from './compilePlateModel';
-import { insertExitBlock } from './insertExitBlock';
 import type { StructuralRuleKey } from './plateRuntime';
 
 type StructuralRuleValue = {
@@ -118,36 +117,39 @@ export const OverridePlugin = definePlugin('override', {}).extend(
             ) {
               return null;
             }
+            if (
+              (action === 'exit' || action === 'deleteExit') &&
+              !state.selection.isCollapsed()
+            ) {
+              return null;
+            }
 
-            let handled = false;
+            let exitRefused = false;
+            let resetRefused = false;
             const transaction = state.transaction((tx) => {
-              if (action === 'none') {
-                handled = true;
-                return;
-              }
+              if (action === 'none') return;
               if (action === 'reset') {
-                tx.blocks.reset({ at: blockPath });
-                handled = true;
+                resetRefused = !tx.blocks.reset({ at: blockPath });
                 return;
               }
               if (action === 'lineBreak') {
                 tx.break.insertSoft();
-                handled = true;
                 return;
               }
               if (action === 'lift') {
                 tx.nodes.lift({ at: blockPath });
-                handled = true;
                 return;
               }
               if (action === 'deleteExit') {
                 tx.text.deleteBackward({ unit: 'character' });
               }
 
-              handled = insertExitBlock(tx);
+              exitRefused = !tx.break.exit();
             });
 
-            return handled ? transaction : null;
+            if (resetRefused) return null;
+
+            return exitRefused ? false : transaction;
           };
 
           if (state.selection.isCollapsed() && state.nodes.isEmpty(blockNode)) {
@@ -155,7 +157,7 @@ export const OverridePlugin = definePlugin('override', {}).extend(
               resolveStructuralRule('break.empty', blockNode, blockPath)
             );
 
-            if (action) return action;
+            if (action !== null) return action;
           }
 
           if (
@@ -177,14 +179,14 @@ export const OverridePlugin = definePlugin('override', {}).extend(
               resolveStructuralRule('break.emptyLineEnd', blockNode, blockPath)
             );
 
-            if (action) return action;
+            if (action !== null) return action;
           }
 
           const defaultAction = runAction(
             resolveStructuralRule('break.default', blockNode, blockPath)
           );
 
-          if (defaultAction) return defaultAction;
+          if (defaultAction !== null) return defaultAction;
 
           if (
             resolveStructuralRule('break.splitReset', blockNode, blockPath) ===
@@ -276,10 +278,14 @@ export const OverridePlugin = definePlugin('override', {}).extend(
               return null;
             }
 
-            return state.transaction((tx) => {
-              if (action === 'reset') tx.blocks.reset({ at: blockPath });
-              else tx.nodes.lift({ at: blockPath });
+            let applied = true;
+            const transaction = state.transaction((tx) => {
+              if (action === 'reset') {
+                applied = tx.blocks.reset({ at: blockPath });
+              } else tx.nodes.lift({ at: blockPath });
             });
+
+            return applied ? transaction : null;
           };
           const selection = state.selection();
 

@@ -62,10 +62,7 @@ describe('ai chat action utils', () => {
     );
 
     expect(view.read.text.string([1])).toBe('');
-    expect(view.read.authored.view()).toEqual({
-      intent: 'edit',
-      projection: 'accepted',
-    });
+    expect(view.read.authored.view()).toEqual({ intent: 'edit' });
     expect(ai.store.get('previewValue')[0].children).toEqual([
       {
         text: 'AI can help turn an initial idea into a clear and useful first draft.',

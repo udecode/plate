@@ -46,7 +46,9 @@ test('refreshes proposal decorations when the authored projection changes withou
     tx.authored.propose();
     tx.text.insert('carefully ', { at: { path: [0, 0], offset: 7 } });
   });
-  const view = createEditorView(source);
+  const view = createEditorView(source, {
+    authored: { preview: 'accepted' },
+  });
   const manager = createPliteDecorationManager(view, [
     {
       id: 'proposals',
@@ -65,26 +67,23 @@ test('refreshes proposal decorations when the authored projection changes withou
     },
   ]);
   const unmount = manager.mount();
-  const key = view.key([0, 0])!;
-  expect(manager.getNodeSnapshot(key)).toHaveLength(0);
+  const at = (path: number[]) => manager.getNodeSnapshot(view.key(path)!);
+  const inserted = [expect.objectContaining({ start: 0, end: 10 })];
+  expect(at([0, 0])).toHaveLength(0);
 
-  view.api.authored.setView({ intent: 'propose', projection: 'markup' });
+  view.api.authored.setView({ intent: 'propose' });
   await Promise.resolve();
-  expect(manager.getNodeSnapshot(key)).toEqual([
-    expect.objectContaining({ start: 7, end: 17 }),
-  ]);
+  expect(at([0, 1])).toEqual(inserted);
 
-  view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+  view.api.authored.setView({ preview: 'accepted' });
   await Promise.resolve();
-  expect(manager.getNodeSnapshot(key)).toHaveLength(0);
+  expect(at([0, 0])).toHaveLength(0);
   unmount();
-  view.api.authored.setView({ intent: 'propose', projection: 'markup' });
+  view.api.authored.setView({ intent: 'propose' });
   await Promise.resolve();
-  expect(manager.getNodeSnapshot(key)).toHaveLength(0);
+  expect(at([0, 1])).toHaveLength(0);
   manager.mount();
-  expect(manager.getNodeSnapshot(key)).toEqual([
-    expect.objectContaining({ start: 7, end: 17 }),
-  ]);
+  expect(at([0, 1])).toEqual(inserted);
   manager.destroy();
 });
 
@@ -95,7 +94,7 @@ test('does not remap an observer refresh through the same native insertion', asy
     initialValue: [{ type: 'paragraph', children: [{ text: 'alpha' }] }],
   });
   const view = createEditorView(source, {
-    authored: { intent: 'propose', projection: 'markup' },
+    authored: { intent: 'propose' },
   });
   const manager = createPliteDecorationManager(view, [
     {
@@ -125,18 +124,21 @@ test('does not remap an observer refresh through the same native insertion', asy
     },
   ]);
   const unmount = manager.mount();
-  const key = view.key([0, 0])!;
 
   view.update.selection.set({ path: [0, 0], offset: 2 });
   view.update({ tags: 'native-text-input' }, (tx) => tx.text.insert('X'));
   await Promise.resolve();
+  const key = view.key([0, 1])!;
+  view.update({ tags: 'native-text-input' }, (tx) => tx.text.insert('Y'));
+  await Promise.resolve();
 
+  expect(view.read.text.string([0, 1])).toBe('XY');
   expect(manager.getNodeSnapshot(key)).toEqual([
-    expect.objectContaining({ start: 2, end: 3 }),
+    expect.objectContaining({ start: 0, end: 2 }),
   ]);
   vi.advanceTimersByTime(300);
   expect(manager.getNodeSnapshot(key)).toEqual([
-    expect.objectContaining({ start: 2, end: 3 }),
+    expect.objectContaining({ start: 0, end: 2 }),
   ]);
   unmount();
   manager.destroy();
@@ -973,7 +975,7 @@ test('rejects duplicate source ids before observation', () => {
   };
 
   expect(() => createPliteDecorationManager(editor, [source, source])).toThrow(
-    'Duplicate Plite decoration source id "duplicate".'
+    'Duplicate decoration source id "duplicate".'
   );
 });
 

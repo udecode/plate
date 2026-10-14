@@ -714,7 +714,7 @@ describe('Comments persistence', () => {
     });
     const stored = JSON.parse(JSON.stringify(api.toJSON()));
     expect(stored).toEqual({
-      kind: 'plate-comments',
+      kind: 'comments',
       version: 1,
       threads: [api.getThread('thread')],
       ranges: [{ threadId: 'thread', range: expect.any(Object) }],
@@ -743,7 +743,10 @@ describe('Comments persistence', () => {
   });
 
   it.each([
-    ['wrong kind', (saved: CommentsJSON) => ({ ...saved, kind: 'comments' })],
+    [
+      'the old plate-comments kind',
+      (saved: CommentsJSON) => ({ ...saved, kind: 'plate-comments' }),
+    ],
     ['unknown version', (saved: CommentsJSON) => ({ ...saved, version: 2 })],
     [
       'duplicate threads',
@@ -1127,16 +1130,18 @@ describe('Comments mapping and conversation history', () => {
         userId: 'alice',
         plugins: [AuthoredPlugin, BaseCommentsPlugin],
       });
-      const accepted = createEditorView(editor);
+      const accepted = createEditorView(editor, {
+        authored: { preview: 'accepted' },
+      });
       const proposed = createEditorView(editor, {
-        authored: { intent: 'propose', projection: 'markup' },
+        authored: { intent: 'propose' },
       });
       proposed.update.text.insert('0123456789', {
         at: { path: [0, 0], offset: 0 },
       });
       const selected = {
-        anchor: { path: [0, 0], offset: 11 },
-        focus: { path: [0, 0], offset: 14 },
+        anchor: { path: [0, 1], offset: 1 },
+        focus: { path: [0, 1], offset: 4 },
       };
       const { api } = proposed.plugin(BaseCommentsPlugin);
       const acceptedApi = accepted.plugin(BaseCommentsPlugin).api;

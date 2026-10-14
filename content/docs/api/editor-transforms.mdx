@@ -99,13 +99,13 @@ Options: `at`, `type`, `match`, `mode`, `always`, `height`, `position`, `voids`.
 
 #### `tx.nodes.wrap(element: Element, options?)`
 
-Wrap matching nodes in `element`.
+Wrap matching nodes in `element`. Returns whether the document changed. With no `match` or `type`, an inline `element` over a range wraps only where the element that would hold the wrapper accepts it and the wrapper accepts the nodes it would move. It returns `false` when it can wrap nowhere in the range. With `split`, it runs from the first character or inline void the range holds to the last. It leaves out an inline element the range only touches at its edge and every block whose part of the range holds none. It also stops short of a read-only inline at either end, though an inline element around one can still move into the wrapper whole. That wrap ignores `voids`, so it never wraps anything inside a void or read-only element. In that wrap, an inline element the range crosses into or out of moves into the wrapper whole, and a range inside one inline element wraps inside it. With `split`, a wrap with `match` or `type` splits at the range's edges. When one match holds another, as `mode: 'all'` allows, the wrapper goes around the outer one, even when it holds text outside the range.
 
 Options: `at`, `type`, `match`, `mode`, `split`, `voids`.
 
 #### `tx.nodes.unwrap(options?)`
 
-Unwrap matching nodes.
+Unwrap matching nodes. Returns whether the document changed. With `split`, it cuts an inline element that holds text, such as a link, at the range's edges and unwraps only the selected part; at a caret or a point it unwraps the whole element.
 
 Options: `at`, `type`, `match`, `mode`, `split`, `voids`.
 
@@ -210,13 +210,24 @@ the block's children, selection, and live node key. Element properties survive
 only when their schema lifecycle uses `typeChange: "preserve-if-allowed"` and
 the destination element accepts them.
 
+Reset checks every target before it writes. When a default is not allowed at
+one target's position, such as a heading the parent requires first, it returns
+`false` and changes nothing; otherwise it returns `true`. The update does not
+roll back on `false`, so check the result before composing other edits.
+
 Options:
 
 - `at`: A document location, live node or key, or exact node selection.
   Defaults to the active text or exact node selection.
+- `unset`: Property names or a schema property handle to remove when the
+  default does not set them, such as a level a block keeps when it is already
+  its parent's default.
 
 ```typescript
-editor.update.blocks.reset();
+editor.update((tx) => {
+  if (!tx.blocks.reset({ unset: ["level"] })) return;
+  tx.plugin(BaseListPlugin).clear();
+});
 ```
 
 The parent or root grammar must declare an element default.
@@ -226,6 +237,17 @@ The parent or root grammar must declare an element default.
 Set properties on the targeted schema blocks. When `at` is omitted, the active
 selection is the target. Use `tx.nodes.set` when the target is not specifically
 a block.
+
+`props` can also be a function that receives each targeted block and returns
+its own patch. Every patch is resolved and checked before any is written, so
+the selection changes as a whole or not at all. Returns `false` when a patch is
+not allowed or nothing changes.
+
+```typescript
+editor.update.blocks.set((node) =>
+  node.type === "summary" ? { level: 2 } : { level: 2, type: "heading" }
+);
+```
 
 #### `tx.blocks.toggle(props, options?)`
 
@@ -241,6 +263,44 @@ Pass `{ wrap: true }` to wrap or unwrap the targeted blocks instead.
 ## Break methods
 
 Use break methods from `tx.break`.
+
+#### `tx.break.exit(options?)`
+
+Leave the nearest structure around the selected block and insert the default
+block that the structure's parent declares at that position.
+
+The selected block is the structure when it owns its exit: a void, an object,
+or a text block whose schema declares `ownsExit`, such as a code block. It
+stays the structure only when its parent can build a default beside it that
+does not put the caret inside another block that owns its exit.
+
+Otherwise the walk starts at the selected block's parent. It stops at the first
+ancestor that sits directly in a root, sits in a parent that declares no
+content, or sits in a parent whose content after any required leading blocks
+admits a text block, such as a paragraph. A table row holds only cells, so the
+walk passes a cell and its row and stops at the table. The walk also passes an
+ancestor that does not sit directly in a root when its default would put the
+caret back inside an element of the ancestor's own type. With no such ancestor, the selected block
+is the structure.
+
+The method inserts the new block after the structure, or before it with
+`before: true`, and selects it.
+
+```typescript
+editor.update.break.exit();
+```
+
+Returns `false` without changing the document when the selection is not a
+collapsed caret, or when the structure's parent declares no default block, has
+no room for it, cannot fill a required property of that default, or would give
+the caret no text to land in. Any other failure to build the default throws.
+
+Options:
+
+- `before?: boolean`: Insert before the structure instead of after it.
+- `match?: (node, path) => boolean`: Limit which levels can be the structure:
+  the selected block when it owns its exit, then its ancestors. The selected
+  block is the fallback.
 
 #### `tx.break.insert()`
 

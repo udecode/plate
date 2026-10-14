@@ -646,7 +646,7 @@ test.each([
 
       expect(runtime.inputController.state.pendingCompositionEnd).toMatchObject(
         {
-          ownership: 'plite',
+          ownership: 'editor',
           phase,
         }
       );
@@ -741,7 +741,7 @@ test.each(['destroy', 'setRoot'] as const)(
       const { pendingCompositionEnd } = runtime.inputController.state;
 
       if (
-        pendingCompositionEnd?.ownership !== 'plite' ||
+        pendingCompositionEnd?.ownership !== 'editor' ||
         !compositionSelection
       ) {
         throw new Error('expected claimed Plite composition work');
@@ -957,7 +957,7 @@ test.each(['destroy', 'setRoot'] as const)(
       expect(
         firstRuntime.inputController.state.pendingCompositionEnd
       ).toMatchObject({
-        ownership: 'plite',
+        ownership: 'editor',
         phase: 'end-pending',
       });
 

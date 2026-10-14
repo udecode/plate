@@ -26,7 +26,7 @@ type CustomValue = ParagraphElement[];
 
 declare const dataTransfer: DataTransfer;
 declare const domOptions: import('plitejs/dom').DOMEditorOptions;
-declare const pliteNode: PliteNode;
+declare const editorNode: PliteNode;
 
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: '' }] },
@@ -98,7 +98,7 @@ declare const imageEditor: ImageEditor;
 void imageEditor;
 
 editor.api.dom.focus();
-editor.api.dom.resolvePath(pliteNode);
+editor.api.dom.resolvePath(editorNode);
 editor.api.dom.clipboard.insertData(dataTransfer);
 editor.api.dom.clipboard.writeSelection(dataTransfer);
 
@@ -133,7 +133,7 @@ const maybeClipboardEditor = createEditor({
 maybeClipboardEditor.api.dom.clipboard.writeSelection(dataTransfer);
 
 // @ts-expect-error DOM methods are not exposed on the clipboard capability
-editor.api.dom.clipboard.resolvePath(pliteNode);
+editor.api.dom.clipboard.resolvePath(editorNode);
 
 editor.read((state) => {
   // @ts-expect-error DOM is not replayable read state

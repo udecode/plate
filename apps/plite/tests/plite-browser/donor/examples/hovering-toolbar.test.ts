@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import {
+import { BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   installReactRenderProfiler,
   openExample,
@@ -15,8 +15,8 @@ test.describe('hovering toolbar example', () => {
   });
 
   const hasExpandedModelSelection = async (page: Page) =>
-    page.locator('[data-editor]').evaluate((element) => {
-      const selection = (element as any).__pliteBrowserHandle?.getSelection?.();
+    page.locator('[data-editor]').evaluate((element, key) => {
+      const selection = (element as any)[key]?.getSelection?.();
 
       if (!selection) {
         return false;
@@ -26,7 +26,7 @@ test.describe('hovering toolbar example', () => {
         selection.anchor.offset !== selection.focus.offset ||
         selection.anchor.path.join(',') !== selection.focus.path.join(',')
       );
-    });
+    }, BROWSER_HANDLE_KEY);
 
   const selectFirstTextRange = async (page: Page) => {
     const editor = createBrowserEditorHarness(

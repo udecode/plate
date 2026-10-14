@@ -61,8 +61,8 @@ test('rejects every deleted Plate schema authoring shape', () => {
     `freezePlateSchemaOptions({})`,
     `resolvePlatePluginType('paragraph')`,
     `const name = 'plate:plugin-schema:paragraph'`,
-    `const group = 'plate:block-content'`,
-    'const group = `plate:block-content`',
+    `const group = 'core:block-content'`,
+    'const group = `core:block-content`',
     `definePlugin('p', {schema: ({ editor }) => ({ editor }) })`,
     `definePlugin('link', { config: { schemes: ['https'] }, })`,
     `const configKey = 'config'; definePlugin('link', { [configKey]: {}, })`,
@@ -106,7 +106,7 @@ test('rejects every deleted Plate schema authoring shape', () => {
 test('allows the private block-content group only in its compiler owner', () => {
   assert.deepEqual(
     auditPlateSchemaSource(
-      `const PLATE_BLOCK_CONTENT_SCHEMA_GROUP = 'plate:block-content'`,
+      `const PLATE_BLOCK_CONTENT_SCHEMA_GROUP = 'core:block-content'`,
       'packages/platejs/src/internal/plugin/compilePlateModel.ts'
     ),
     []
@@ -722,15 +722,50 @@ test('keeps Base component docs native and terminal conversion-free', () => {
     auditNamedSchemaLineageDocument(
       [
         '```tsx',
-        "import { createStaticEditor } from 'platejs/static';",
+        "import { createEditor } from 'platejs';",
         "import { toReactPlugin } from 'platejs/react';",
-        'createStaticEditor({',
+        "import { EditorStatic } from 'platejs/static';",
+        'createEditor({',
         '  plugins: [toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })],',
         '});',
         '```',
       ].join('\n')
     )[0]?.reason ?? '',
     /terminal consumers configure the Base descriptor directly/
+  );
+});
+
+test('flags a React adapter in a static example that imports a static component', () => {
+  assert.match(
+    auditNamedSchemaLineageDocument(
+      [
+        '```tsx',
+        "import { BaseHorizontalRulePlugin, createEditor } from 'platejs';",
+        "import { toReactPlugin } from 'platejs/react';",
+        "import { HrElementStatic } from '@/components/editor/horizontal-rule-static';",
+        'createEditor({',
+        '  plugins: [toReactPlugin(BaseHorizontalRulePlugin, { component: HrElementStatic })],',
+        '});',
+        '```',
+      ].join('\n')
+    )[0]?.reason ?? '',
+    /static editors use terminal BasePlugin\.configure/
+  );
+});
+
+test('accepts a React adapter in a live example', () => {
+  assert.deepEqual(
+    auditNamedSchemaLineageDocument(
+      [
+        '```tsx',
+        "import { BaseHorizontalRulePlugin } from 'platejs';",
+        "import { toReactPlugin } from 'platejs/react';",
+        "import { HrElement } from '@/components/editor/horizontal-rule-node';",
+        'const plugins = [toReactPlugin(BaseHorizontalRulePlugin, { component: HrElement })];',
+        '```',
+      ].join('\n')
+    ),
+    []
   );
 });
 
@@ -1745,12 +1780,6 @@ test('allows only exact audited production extend stages at their owner path', (
 
   for (const [file, source] of [
     [
-      'packages/platejs/src/csv/lib/CsvPlugin.ts',
-      `definePlugin('csv', { })
-        .extend(() => ({ api: () => ({}) }))
-        .extend(() => ({ dataTransferFormats: [rule] }))`,
-    ],
-    [
       'packages/platejs/src/features/link/lib/BaseLinkPlugin.ts',
       `definePlugin('link', { })
         .extend(() => ({ update: () => ({}) }))
@@ -1771,17 +1800,11 @@ test('allows only exact audited production extend stages at their owner path', (
       'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',
       `definePlugin('table', { })
         .extend(() => ({ api: () => ({}) }))
-        .extend(() => ({ api: () => ({}) }))
-        .extend(() => ({ api: () => ({}), read: () => ({}) }))
-        .extend(() => ({ api: () => ({}) }))
-        .extend(() => ({ read: () => ({}) }))
-        .extend(() => ({ api: () => ({}), read: () => ({}) }))
+        .extend(() => ({ contributions: [], read: () => ({}) }))
         .extend(() => ({ update: () => ({}) }))
-        .extend(() => ({ update: () => ({}) }))
-        .extend(() => ({ contributions: [] }))
         .extend(() => ({ corrections: [] }))
         .extend(() => ({ readMiddleware: () => [] }))
-        .extend(() => ({ commands: () => [] }))`,
+        .extend(() => ({ commands: () => [], dataTransferFormats: [] }))`,
     ],
     [
       'packages/platejs/src/features/toc/lib/BaseTocPlugin.ts',
@@ -2507,9 +2530,8 @@ test('rejects local named lineage on ordinary package editor construction', () =
   for (const source of [
     `createEditor({ schema: { id: 'ordinary', version: 1 } })`,
     `createEditor({ schema: { id: 'ordinary', version: 1 } })`,
-    `createStaticEditor({ schema: { id: 'ordinary', version: 1 } })`,
+    `useCreateEditor({ schema: { id: 'ordinary', version: 1 } })`,
     `useEditor({ schema: { id: 'ordinary', version: 1 } })`,
-    `useStaticEditor({ schema: { id: 'ordinary', version: 1 } })`,
     `const makeEditor = createEditor; makeEditor({ schema: { id: 'ordinary', version: 1 } })`,
     `let makeEditor; makeEditor = createEditor; makeEditor({ schema: { id: 'ordinary', version: 1 } })`,
     `Plate.createEditor({ schema: { id: 'ordinary', version: 1 } })`,
@@ -2565,7 +2587,7 @@ test('rejects local named lineage on ordinary package editor construction', () =
     `let options = { schema: { id: 'ordinary', version: 1 } }; function helper() { const options = { plugins: [] }; return options } createEditor(options)`,
     `let key = 'notSchema'; key = 'schema'; createEditor({ [key]: { id: 'ordinary', version: 1 } })`,
     `let key = 'schema'; createEditor({ [key]: { id: 'ordinary', version: 1 } }); key = 'notSchema'`,
-    `const identity = { id: 'ordinary', version: 1 } as const; useStaticEditor({ schema: identity })`,
+    `const identity = { id: 'ordinary', version: 1 } as const; useCreateEditor({ schema: identity })`,
   ]) {
     assert.match(
       auditPlateSchemaSource(source, 'packages/example/src/editor.spec.ts')[0]

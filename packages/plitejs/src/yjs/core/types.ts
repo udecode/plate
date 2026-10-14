@@ -9,7 +9,7 @@ export type YjsInitialReadiness = Readonly<{
 }>;
 
 export type YjsAdmissionStatus =
-  | Readonly<{ state: 'waiting'; reason: 'load' | 'seed' }>
+  | Readonly<{ state: 'waiting'; reason: 'load' | 'reference' | 'seed' }>
   | Readonly<{ state: 'ready' }>
   | Readonly<{ state: 'error'; cause: unknown }>;
 

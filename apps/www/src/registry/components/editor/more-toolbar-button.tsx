@@ -25,11 +25,7 @@ export function MoreToolbarButton() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
-        <ToolbarButton
-          aria-label="More formatting"
-          pressed={open}
-          tooltip="More formatting"
-        >
+        <ToolbarButton pressed={open} tooltip="More formatting">
           <MoreHorizontalIcon />
         </ToolbarButton>
       </DropdownMenuTrigger>

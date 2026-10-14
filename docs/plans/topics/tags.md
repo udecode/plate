@@ -105,7 +105,7 @@ const toItem = (node: { url?: string; value: string }): SelectItem => ({
 | Owner | Job |
 | --- | --- |
 | `apps/www/src/registry/components/editor/select-editor.tsx` | The form field and its tag rules: the document is the only value, the form's value is written in whenever it differs from the chips, chip changes are reported from each commit, one duplicate rule, search cleanup inside the transaction and after a caret move, its own option list, menu keys and ARIA, editor props passed through, and the blocked undo |
-| `apps/www/src/registry/components/editor/tag.tsx` | The `tag` element plugin and the chip, which links to `url` in read-only mode inside a non-editable wrapper |
+| `apps/www/src/registry/components/editor/tag.tsx` | The `tag` element plugin and the chip, which in read-only mode links its `url` only when link's `getLinkHref` accepts it, inside a non-editable wrapper. Web and relative addresses go through Next's link with `[` and `]` escaped in the path; other schemes render a plain anchor |
 
 ## What other editors do
 
@@ -128,15 +128,20 @@ Every owner moves into the copied `select-editor` registry item, which ships `se
 | Duplicate, whitespace, search cleanup and backward-delete rules | Plate copied UI | registry item `select-editor` | Product policy lives in copied source (`VISION.md:90`) |
 | The value, search, active option, menu keys and ARIA | Plate copied UI | registry item `select-editor` | Copied controls own the active option (`docs/vision/plate.md:495`) |
 | The chip's read-only DOM | Plate copied UI | registry item `select-editor`, file `tag.tsx` | Plite reverts editable DOM changes outside a `contenteditable="false"` element |
+| The chip's link | Plate copied UI | registry item `select-editor`, file `tag.tsx` | It asks link's public `getLinkHref` with an installed link plugin's schemes (`docs/vision/plate.md` stored-URL law); Next's link keeps the base path and in-app navigation |
 | `./tag` and `./tag/react` | Plate | `platejs`, removed | No consumer outside copied UI |
 
 `docs/vision/plate.md:1220-1225` keeps domain invariants with their feature owner even with one consumer, when the package holds a contract independent of the renderer. The tag schema has none in this repository: no serializer, transform or headless reader uses it, and its duplicate and cleanup rules are the field's product policy. A document that holds `tag` elements gets its owner from the copied `TagPlugin`.
 
 ## Open work
 
-- Plite drops a blur that lands within about 50 ms of a keystroke, so the field's close cases in `apps/www/tests/browser/select-editor.spec.ts` pause 300 ms first; the suggested session "Stop Plite dropping blurs during selection writes" has the brief. owner: zbeyens. stop: the close cases pass without the pause, or 2026-11-30.
-- Plite skips the `onFocus` prop while it syncs the selection on focus, so the field opens its menu from `onFocusCapture`; the suggested session "Deliver Plite onFocus during selection sync" has the brief. owner: zbeyens. stop: the field opens its menu from `onFocus`, or 2026-11-30.
+- Two richtext browser cases fail on next whether or not the onFocus fix is in: keeps selected bold as the active mark after deleting its text, and keeps empty paragraph styling after the selection leaves and returns; `docs/plans/2026-10-12-plite-onfocus.decisions.tsv` has the runs. owner: zbeyens. stop: both pass on next.
+- Two paths can still miss a real focus: the outside-press settle window skips the editor's own focus note, and a focus on the editor root while a nested editable holds the selection skips `onFocus` and the note. I did not reproduce either as a user bug. owner: zbeyens. stop: each is reproduced and fixed or judged intended, or 2026-11-30.
+- The tags plan's reflect backlog item 4 would teach `onFocusCapture` for copied voids, which the onFocus fix makes unnecessary. owner: zbeyens. stop: the owner takes item 4 without that part, or drops it.
 - Plite drops a dragged inline void as a copy, so dropping a chip after another chip does nothing; the suggested session "Make Plite move dragged inline voids" has the brief. owner: zbeyens. stop: dropping a chip after another moves it, or 2026-11-30.
 - The test harness sends named-key shortcuts such as Escape and Ctrl or Cmd+Enter without a keyCode, so the field's browser spec presses them through Playwright's keyboard; the suggested session "Give harness named-key shortcuts a keyCode" has the brief. owner: zbeyens. stop: `editor.press('Escape')` closes the menu in that spec, or 2026-11-30.
-- A read-only chip links its stored `url` as given, because Plate's navigation URL check is internal, and a malformed absolute url such as `https://` throws while the chip renders, as it did before this work; the suggested session "Apply Plate's URL policy to copied chip links" has the brief. owner: zbeyens. stop: the chip links only urls Plate's navigation check accepts and never throws, or 2026-11-30.
+- The chip's stored `url` has no floor validator, which `docs/vision/plate.md:731` asks for. It needs admission at the field's initial value, write-back and pick, a report or inert keep for each refused form url, and a migration note for documents loaded with `TagPlugin` elsewhere. owner: zbeyens. stop: a plan for the chip floor lands, or 2026-11-30.
+- No committed test renders chips through Next's App Router link, whose development check throws on a bracketed path segment, including an IPv6 host such as `[::1]` in a string `href`. The probe `docs/plans/artifacts/2026-10-12-link-href/probes/app-router-brackets.spec.tsx` covers it, but its module mocks are process-wide in Bun. owner: zbeyens. stop: a Bun-safe App Router render setup in `apps/www`, or 2026-11-30.
+- The `select-editor` registry item depends on `next` through `tag.tsx`. owner: zbeyens. stop: the owner says plain link, or 2026-11-30.
+- A web chip url with a user and password loses them in Next's formatter. owner: zbeyens. stop: a report of a credentialed chip link, or 2026-11-30.
 - `pnpm --filter www api-reference:check` fails at `5fc246c291` itself, because the committed API reference manifest predates the list entrypoint changes. owner: zbeyens. stop: the check passes at the head of `next`.

@@ -141,93 +141,12 @@ const externalRenderer =
   );
 
 describe('external text views', () => {
-  test('remounts an external projection after rejecting its changes in native markup', async () => {
-    const authoring = authored({ authorId: 'alice' });
-    const source = createEditor({
-      plugins: [textSchema, history(), authoring],
-      initialValue: [{ type: 'code', children: [{ text: 'AB' }] }],
-    });
-    const proposal = { intent: 'propose', projection: 'proposed' } as const;
-    const view = createReactRuntimeViewEditor(
-      createEditorView(source, { authored: proposal })
-    );
-    const { adapter, records } = createAdapter();
-    const RenderNode = ({
-      props: { attributes, slots },
-    }: {
-      props: RenderElementProps;
-    }) => {
-      const mode = useEditorSelector((current) =>
-        current.plugin(authoring).read.view()
-      );
-      return (
-        <div {...attributes}>
-          {mode.projection === 'markup'
-            ? slots.children()
-            : slots.externalText({ adapter, ariaLabel: 'Code' })}
-        </div>
-      );
-    };
-    const Renderer = (props: RenderElementProps) => (
-      <RenderNode props={props} />
-    );
-    const rendered = render(
-      <EditorRoot editor={view}>
-        <Editable renderElement={Renderer} />
-      </EditorRoot>
-    );
-    const external = records[0];
-    const mountedView = getMountedEditorFor(external);
-    await act(async () =>
-      external.actions.dispatch({
-        baseVersion: external.state.version,
-        changes: [{ from: 1, to: 2, insert: '' }],
-        intent: 'cut',
-        selection: { anchor: 1, focus: 1 },
-      })
-    );
-    await act(async () =>
-      external.actions.dispatch({
-        baseVersion: external.state.version,
-        changes: [{ from: 1, to: 1, insert: 'X' }],
-        intent: 'paste',
-        selection: { anchor: 2, focus: 2 },
-      })
-    );
-    await act(async () =>
-      mountedView.api.authored.setView({
-        intent: 'propose',
-        projection: 'markup',
-      })
-    );
-    expect(rendered.container.textContent?.replaceAll('\uFEFF', '')).toBe(
-      'AXB'
-    );
-    expect(external.destroyed).toBe(1);
-    await act(async () =>
-      source.update.authored.decide({
-        action: 'reject',
-        selection: source.read.authored.select({ status: 'pending' }),
-      })
-    );
-    expect(rendered.container.textContent).toBe('AB');
-    await act(async () => mountedView.api.authored.setView(proposal));
-    expect(records).toHaveLength(2);
-    expect(records[1].host.isConnected).toBe(true);
-    expect(rendered.getByRole('textbox', { name: 'Code' })).toHaveValue('AB');
-    rendered.unmount();
-    expect(records.every((record) => record.destroyed === 1)).toBe(true);
-  });
-
-  test('rejects input observed under an earlier authored mode even when its text is unchanged', async () => {
+  test('rejects external input observed before an authored view switch', async () => {
     const source = createEditor({
       plugins: [textSchema, authored({ authorId: 'alice' })],
       initialValue: [{ type: 'code', children: [{ text: 'AB' }] }],
     });
-    const proposal = { intent: 'propose', projection: 'proposed' } as const;
-    const view = createReactRuntimeViewEditor(
-      createEditorView(source, { authored: proposal })
-    );
+    const view = createReactRuntimeViewEditor(createEditorView(source));
     const { adapter, records } = createAdapter();
     const rendered = render(
       <EditorRoot editor={view}>
@@ -238,10 +157,7 @@ describe('external text views', () => {
     const mountedView = getMountedEditorFor(external);
     const observed = external.state.version;
     await act(async () =>
-      mountedView.api.authored.setView({
-        intent: 'edit',
-        projection: 'accepted',
-      })
+      mountedView.api.authored.setView({ preview: 'accepted' })
     );
     await act(async () => {
       expect(
@@ -254,155 +170,19 @@ describe('external text views', () => {
       ).toBe('stale');
     });
     expect(source.read.text.string([])).toBe('AB');
-    expect(external.state.text).toBe('AB');
-    const acceptedVersion = external.state.version;
-    await act(async () => mountedView.api.authored.setView(proposal));
+    await act(async () => mountedView.api.authored.setView({ intent: 'edit' }));
+    const current = records.at(-1)!;
     await act(async () => {
       expect(
-        external.actions.select({
-          baseVersion: acceptedVersion,
-          selection: { anchor: 1, focus: 1 },
-        }).status
-      ).toBe('stale');
-      expect(
-        external.actions.dispatch({
-          baseVersion: external.state.version,
+        current.actions.dispatch({
+          baseVersion: current.state.version,
           changes: [{ from: 1, to: 1, insert: 'Y' }],
           intent: 'input',
           selection: { anchor: 2, focus: 2 },
         }).status
       ).toBe('applied');
     });
-    expect(external.state.text).toBe('AYB');
-    expect(source.read.text.string([])).toBe('AB');
-    expect(records).toHaveLength(1);
-    rendered.unmount();
-    expect(external.destroyed).toBe(1);
-  });
-
-  test('captures composition as proposals and defers its mode change without changing accepted content', async () => {
-    const source = createEditor({
-      plugins: [textSchema, history(), authored({ authorId: 'alice' })],
-      initialValue: [{ type: 'code', children: [{ text: 'AB' }] }],
-    });
-    const proposal = { intent: 'propose', projection: 'proposed' } as const;
-    const view = createReactRuntimeViewEditor(
-      createEditorView(source, { authored: proposal })
-    );
-    const sibling = createReactRuntimeViewEditor(
-      createEditorView(source, { authored: proposal })
-    );
-    const { adapter, records } = createAdapter();
-    const rendered = render(
-      <>
-        <EditorRoot editor={source}>
-          <Editable aria-label="Accepted code" />
-        </EditorRoot>
-        <EditorRoot editor={sibling}>
-          <Editable aria-label="Proposed code" />
-        </EditorRoot>
-        <EditorRoot editor={view}>
-          <Editable renderElement={externalRenderer(adapter)} />
-        </EditorRoot>
-      </>
-    );
-    const external = records[0];
-    const mountedView = getMountedEditorFor(external);
-    const input = external.host.querySelector('textarea')!;
-    act(() => {
-      input.focus();
-      external.actions.select({
-        baseVersion: external.state.version,
-        selection: { anchor: 1, focus: 1 },
-      });
-      external.actions.composition('start');
-    });
-    await act(async () => {
-      expect(
-        external.actions.dispatch({
-          baseVersion: external.state.version,
-          changes: [{ from: 1, to: 1, insert: 'a' }],
-          intent: 'composition',
-          selection: { anchor: 2, focus: 2 },
-        }).status
-      ).toBe('applied');
-    });
-    expect(
-      rendered.getByRole('textbox', { name: 'Accepted code' }).textContent
-    ).toBe('AB');
-    expect(
-      rendered.getByRole('textbox', { name: 'Proposed code' }).textContent
-    ).toBe('AaB');
-    await act(async () => {
-      await mountedView.api.authored.setView({
-        intent: 'edit',
-        projection: 'accepted',
-      });
-    });
-    expect(mountedView.read.authored.view()).toEqual(proposal);
-    expect(mountedView.read.view.isComposing()).toBe(true);
-    await act(async () => {
-      expect(
-        external.actions.dispatch({
-          baseVersion: external.state.version,
-          changes: [{ from: 1, to: 2, insert: 'あ' }],
-          intent: 'composition',
-          selection: { anchor: 2, focus: 2 },
-        }).status
-      ).toBe('applied');
-    });
-    await act(async () => external.actions.composition('end'));
-    expect(mountedView.read.authored.view()).toEqual({
-      intent: 'edit',
-      projection: 'accepted',
-    });
-    expect(mountedView.read.view.isComposing()).toBe(false);
-    expect(external.state.text).toBe('AB');
-    expect(document.activeElement).toBe(input);
-    expect(
-      rendered.getByRole('textbox', { name: 'Proposed code' }).textContent
-    ).toBe('AあB');
-    expect(source.read.children()).toEqual([
-      { type: 'code', children: [{ text: 'AB' }] },
-    ]);
-    expect(source.read.history().undos).toHaveLength(1);
-    await act(async () => mountedView.api.authored.setView(proposal));
-    expect(external.state.text).toBe('AあB');
-    expect(document.activeElement).toBe(input);
-    await act(async () => {
-      external.actions.dispatch({
-        baseVersion: external.state.version,
-        changes: [{ from: 2, to: 2, insert: '!' }],
-        intent: 'input',
-        selection: { anchor: 3, focus: 3 },
-      });
-    });
-    expect(source.read.history().undos).toHaveLength(2);
-    for (const text of ['AあB', 'AB']) {
-      await act(async () =>
-        expect(external.actions.history('undo')).toBe(true)
-      );
-      expect(external.state.text).toBe(text);
-      expect(
-        rendered.getByRole('textbox', { name: 'Proposed code' }).textContent
-      ).toBe(text);
-    }
-    for (const text of ['AあB', 'Aあ!B']) {
-      await act(async () =>
-        expect(external.actions.history('redo')).toBe(true)
-      );
-      expect(external.state.text).toBe(text);
-    }
-    await act(async () =>
-      source.update.authored.decide({
-        action: 'reject',
-        selection: source.read.authored.select({ status: 'pending' }),
-      })
-    );
-    expect(external.state.text).toBe('AB');
-    expect(
-      rendered.getByRole('textbox', { name: 'Proposed code' }).textContent
-    ).toBe('AB');
+    expect(source.read.text.string([])).toBe('AYB');
     rendered.unmount();
     expect(records.every((record) => record.destroyed === 1)).toBe(true);
   });
@@ -433,88 +213,6 @@ describe('external text views', () => {
       ).toBe('applied');
     });
     expect(editor.read.text.string([])).toBe('xAB');
-    rendered.unmount();
-  });
-
-  test('captures external text deletion and insertion while a sibling displays retained content', async () => {
-    let authorId = 'alice';
-    const source = createEditor({
-      plugins: [textSchema, history(), authored({ authorId: () => authorId })],
-      initialValue: [{ type: 'code', children: [{ text: 'ABCD' }] }],
-    });
-    const view = createReactRuntimeViewEditor(
-      createEditorView(source, {
-        authored: { intent: 'propose', projection: 'proposed' },
-      })
-    );
-    const sibling = createReactRuntimeViewEditor(
-      createEditorView(source, {
-        authored: { intent: 'propose', projection: 'markup' },
-      })
-    );
-    const { adapter, records } = createAdapter();
-    const rendered = render(
-      <>
-        <EditorRoot editor={sibling}>
-          <Editable aria-label="Code markup" />
-        </EditorRoot>
-        <EditorRoot editor={view}>
-          <Editable renderElement={externalRenderer(adapter)} />
-        </EditorRoot>
-      </>
-    );
-    const external = records[0];
-    await act(async () => {
-      expect(
-        external.actions.dispatch({
-          baseVersion: external.state.version,
-          changes: [{ from: 1, to: 3, insert: '' }],
-          intent: 'cut',
-          selection: { anchor: 1, focus: 1 },
-        }).status
-      ).toBe('applied');
-    });
-    const deletion = source.read.authored.select({ status: 'pending' });
-    expect(external.state.text).toBe('AD');
-    expect(
-      rendered.getByRole('textbox', { name: 'Code markup' }).textContent
-    ).toBe('ABCD');
-    authorId = 'bob';
-    await act(async () => {
-      external.actions.dispatch({
-        baseVersion: external.state.version,
-        changes: [{ from: 1, to: 1, insert: 'X' }],
-        intent: 'paste',
-        selection: { anchor: 2, focus: 2 },
-      });
-    });
-    expect(external.state.text).toBe('AXD');
-    expect(
-      rendered.getByRole('textbox', { name: 'Code markup' }).textContent
-    ).toBe('AXBCD');
-    expect(source.read.text.string([])).toBe('ABCD');
-    await act(async () =>
-      expect(
-        source.update.authored.decide({
-          action: 'accept',
-          selection: deletion,
-        }).status
-      ).toBe('applied')
-    );
-    expect(source.read.text.string([])).toBe('AD');
-    expect(external.state.text).toBe('AXD');
-    expect(
-      rendered.getByRole('textbox', { name: 'Code markup' }).textContent
-    ).toBe('AXD');
-    await act(async () =>
-      expect(
-        source.update.authored.decide({
-          action: 'reject',
-          selection: source.read.authored.select({ status: 'pending' }),
-        }).status
-      ).toBe('applied')
-    );
-    expect(external.state.text).toBe('AD');
     rendered.unmount();
   });
 

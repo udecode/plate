@@ -1,5 +1,5 @@
 {
-  "generation": "242a261451457a30f23cee02e058797c8da43cfffc7bf77daebbc954db39d749",
+  "generation": "08fe8486c6401eb7659634d822abca285219f34c2c1ef9c01484172fb5a69962",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -702,7 +702,6 @@
         },
         {
           "dependencies": [
-            "@excalidraw/excalidraw@0.18.0",
             "diff-match-patch-ts@^0.6.0",
             "flowchart.js@^1.15.0",
             "katex@0.16.22",
@@ -2327,7 +2326,10 @@
             }
           ],
           "name": "details-static",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/heading-static"
+          ]
         },
         {
           "files": [
@@ -2939,6 +2941,37 @@
           ],
           "files": [
             {
+              "path": "components/editor/lint.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/lint.tsx"
+            }
+          ],
+          "name": "lint",
+          "type": "registry:component",
+          "description": "Lint rules with severity underlines, a caret popover with fixes, and F8 to move between findings.",
+          "title": "Lint",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lint"
+              }
+            ],
+            "examples": [
+              "lint-demo"
+            ]
+          },
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "button"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
               "path": "components/editor/date.tsx",
               "type": "registry:component",
               "target": "@components/editor/date.tsx"
@@ -3012,6 +3045,8 @@
         {
           "dependencies": [
             "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "jszip@^3.10.1",
             "juice@^11.0.1",
             "validator@^13.15.15"
           ],
@@ -3057,10 +3092,9 @@
         {
           "dependencies": [
             "platejs",
-            "@types/papaparse@^5.3.16",
             "diff-match-patch-ts@^0.6.0",
+            "jszip@^3.10.1",
             "juice@^11.0.1",
-            "papaparse@^5.5.3",
             "validator@^13.15.15"
           ],
           "files": [
@@ -3602,7 +3636,6 @@
           "dependencies": [
             "platejs",
             "@ai-sdk/react@^3.0.0",
-            "@excalidraw/excalidraw@0.18.0",
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
@@ -3649,7 +3682,8 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "sonner"
           ],
           "files": [
             {
@@ -3794,6 +3828,7 @@
           },
           "registryDependencies": [
             "@plate/details-toolbar-button",
+            "@plate/heading",
             "button"
           ]
         },
@@ -5201,6 +5236,37 @@
         },
         {
           "dependencies": [
+            "platejs",
+            "@platejs/test"
+          ],
+          "description": "Lint rules with a findings panel, caret fixes, F8 navigation and a delayed server rule.",
+          "files": [
+            {
+              "path": "examples/lint-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/lint-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "iframeHeight": 900,
+            "registry": false
+          },
+          "name": "lint-demo",
+          "registryDependencies": [
+            "button",
+            "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/lint",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "type": "registry:example"
+        },
+        {
+          "dependencies": [
             "platejs"
           ],
           "description": "Shows the live editor selection while an owned control has focus.",
@@ -6258,33 +6324,6 @@
             "@plate/ai",
             "@plate/dnd"
           ],
-          "type": "registry:example",
-          "meta": {
-            "registry": false
-          }
-        },
-        {
-          "dependencies": [
-            "@platejs/test"
-          ],
-          "description": "Copy paste from CSV to Plate.",
-          "files": [
-            {
-              "path": "examples/demo.tsx",
-              "type": "registry:example"
-            },
-            {
-              "path": "examples/values/deserialize-csv-value.tsx",
-              "type": "registry:example"
-            }
-          ],
-          "name": "csv-demo",
-          "registryDependencies": [
-            "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
-          ],
-          "title": "Serializing CSV",
           "type": "registry:example",
           "meta": {
             "registry": false
@@ -7431,7 +7470,6 @@
         },
         {
           "dependencies": [
-            "@excalidraw/excalidraw@0.18.0",
             "diff-match-patch-ts@^0.6.0",
             "flowchart.js@^1.15.0",
             "katex@0.16.22",
@@ -9050,7 +9088,10 @@
             }
           ],
           "name": "details-static",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/heading-static"
+          ]
         },
         {
           "files": [
@@ -9662,6 +9703,37 @@
           ],
           "files": [
             {
+              "path": "components/editor/lint.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/lint.tsx"
+            }
+          ],
+          "name": "lint",
+          "type": "registry:component",
+          "description": "Lint rules with severity underlines, a caret popover with fixes, and F8 to move between findings.",
+          "title": "Lint",
+          "meta": {
+            "docs": [
+              {
+                "route": "/docs/lint"
+              }
+            ],
+            "examples": [
+              "lint-demo"
+            ]
+          },
+          "registryDependencies": [
+            "@plate/floating-popover",
+            "button"
+          ]
+        },
+        {
+          "dependencies": [
+            "platejs",
+            "diff-match-patch-ts@^0.6.0"
+          ],
+          "files": [
+            {
               "path": "components/editor/date.tsx",
               "type": "registry:component",
               "target": "@components/editor/date.tsx"
@@ -9735,6 +9807,8 @@
         {
           "dependencies": [
             "platejs",
+            "diff-match-patch-ts@^0.6.0",
+            "jszip@^3.10.1",
             "juice@^11.0.1",
             "validator@^13.15.15"
           ],
@@ -9780,10 +9854,9 @@
         {
           "dependencies": [
             "platejs",
-            "@types/papaparse@^5.3.16",
             "diff-match-patch-ts@^0.6.0",
+            "jszip@^3.10.1",
             "juice@^11.0.1",
-            "papaparse@^5.5.3",
             "validator@^13.15.15"
           ],
           "files": [
@@ -10325,7 +10398,6 @@
           "dependencies": [
             "platejs",
             "@ai-sdk/react@^3.0.0",
-            "@excalidraw/excalidraw@0.18.0",
             "ai@^6.0.0",
             "diff-match-patch-ts@^0.6.0",
             "fastest-levenshtein@1.0.16",
@@ -10372,7 +10444,8 @@
         {
           "dependencies": [
             "platejs",
-            "diff-match-patch-ts@^0.6.0"
+            "diff-match-patch-ts@^0.6.0",
+            "sonner"
           ],
           "files": [
             {
@@ -10517,6 +10590,7 @@
           },
           "registryDependencies": [
             "@plate/details-toolbar-button",
+            "@plate/heading",
             "button"
           ]
         },
@@ -11924,6 +11998,37 @@
         },
         {
           "dependencies": [
+            "platejs",
+            "@platejs/test"
+          ],
+          "description": "Lint rules with a findings panel, caret fixes, F8 navigation and a delayed server rule.",
+          "files": [
+            {
+              "path": "examples/lint-demo.tsx",
+              "type": "registry:example"
+            },
+            {
+              "path": "examples/values/lint-value.tsx",
+              "type": "registry:example"
+            }
+          ],
+          "meta": {
+            "iframeHeight": 900,
+            "registry": false
+          },
+          "name": "lint-demo",
+          "registryDependencies": [
+            "button",
+            "@plate/editor",
+            "@plate/editor-plugins",
+            "@plate/lint",
+            "@plate/ai",
+            "@plate/dnd"
+          ],
+          "type": "registry:example"
+        },
+        {
+          "dependencies": [
             "platejs"
           ],
           "description": "Shows the live editor selection while an owned control has focus.",
@@ -12981,33 +13086,6 @@
             "@plate/ai",
             "@plate/dnd"
           ],
-          "type": "registry:example",
-          "meta": {
-            "registry": false
-          }
-        },
-        {
-          "dependencies": [
-            "@platejs/test"
-          ],
-          "description": "Copy paste from CSV to Plate.",
-          "files": [
-            {
-              "path": "examples/demo.tsx",
-              "type": "registry:example"
-            },
-            {
-              "path": "examples/values/deserialize-csv-value.tsx",
-              "type": "registry:example"
-            }
-          ],
-          "name": "csv-demo",
-          "registryDependencies": [
-            "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
-          ],
-          "title": "Serializing CSV",
           "type": "registry:example",
           "meta": {
             "registry": false

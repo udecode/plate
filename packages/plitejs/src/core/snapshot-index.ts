@@ -15,7 +15,11 @@ import {
 import type { DocumentChangeRuntimeCandidate } from './change/classification';
 import type { DocumentIndex } from './change/document-index';
 import { getRootChangeRelocations } from './change/mapping';
-import type { RootChange } from './change/root-change';
+import {
+  isRootChangePositionReplaced,
+  mapRootChangePositionBackward,
+  type RootChange,
+} from './change/root-change';
 import {
   PreparedTokenSlice,
   getDocumentSliceNodeKeys,
@@ -403,10 +407,6 @@ const SEGMENT_MAY_RELOCATE = new WeakMap<
   SnapshotIndexMappingSegment,
   boolean
 >();
-const INVERSE_MAPPING_SEGMENTS = new WeakMap<
-  SnapshotIndexMappingSegment,
-  SnapshotIndexMappingSegment
->();
 let nextDraftNodeKeyOrdinal = 0;
 
 const allocateDraftNodeKey = (): NodeKey => {
@@ -577,30 +577,7 @@ const positionWasReplaced = (
   change: RootChange,
   position: number,
   side: 'after' | 'before'
-) => {
-  let before = 0;
-  let after = 0;
-
-  for (let index = 0; index < change.sections.length; index += 2) {
-    const length = change.sections[index];
-    const inserted = change.sections[index + 1];
-    const outputLength = inserted < 0 ? length : inserted;
-
-    if (
-      inserted >= 0 &&
-      (side === 'before'
-        ? before <= position && position < before + length
-        : after <= position && position < after + outputLength)
-    ) {
-      return true;
-    }
-
-    before += length;
-    after += outputLength;
-  }
-
-  return false;
-};
+) => isRootChangePositionReplaced(change, position, side);
 
 const mapPathForward = (
   segment: SnapshotIndexMappingSegment,
@@ -647,6 +624,8 @@ const mapPathForward = (
     : mapRelocatedPath(segment, path, 'forward');
 };
 
+// The inverse's move and relocations are this segment's, read the other way,
+// so a path maps back through the sections without inverting the change.
 const mapPathBackward = (
   segment: SnapshotIndexMappingSegment,
   path: Path
@@ -660,19 +639,41 @@ const mapPathBackward = (
       return null;
     }
   }
-  let inverse = INVERSE_MAPPING_SEGMENTS.get(segment);
+  const moved = getSegmentMove(segment);
 
-  if (!inverse) {
-    inverse = createMappingSegment(
-      segment.after,
-      segment.before,
-      segment.change.invert(segment.before),
-      segment.span
-    );
-    INVERSE_MAPPING_SEGMENTS.set(segment, inverse);
+  if (
+    moved &&
+    path.length >= moved.targetPath.length &&
+    moved.targetPath.every((part, depth) => path[depth] === part)
+  ) {
+    return [...moved.path, ...path.slice(moved.targetPath.length)] as Path;
   }
 
-  return mapPathForward(inverse, path);
+  let position: number;
+
+  try {
+    position = segment.after.nodeRange(path).from;
+  } catch {
+    return null;
+  }
+
+  if (positionWasReplaced(segment.change, position, 'after')) {
+    return mapRelocatedPath(segment, path, 'backward');
+  }
+
+  const mapped = mapRootChangePositionBackward(
+    segment.change,
+    position,
+    1,
+    'after'
+  );
+
+  if (mapped === null) return mapRelocatedPath(segment, path, 'backward');
+  const entry = segment.before.nodeStartingAt(mapped);
+
+  return entry?.from === mapped
+    ? ([...entry.path] as Path)
+    : mapRelocatedPath(segment, path, 'backward');
 };
 
 /**
@@ -946,9 +947,10 @@ const mapChangedNodeKeys = (
   editor: Editor,
   discarded: ReadonlySet<NodeKey>,
   preparedRuntimePlacements: readonly PreparedRuntimePlacement[],
-  publishNodeKeys: boolean,
+  binding: NodeKeyBinding,
   runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[]
 ) => {
+  const publishNodeKeys = binding === 'publish';
   const sourceHasPreparedRuntimePlacements =
     (MAPPED_SNAPSHOT_INDEXES.get(index)?.preparedRuntimePlacements.length ??
       0) > 0;
@@ -958,12 +960,15 @@ const mapChangedNodeKeys = (
     document: DocumentIndex,
     paths: Map<string, Path>,
     from: number,
-    to: number
+    to: number,
+    boundaries = false
   ) => {
-    for (const { path } of document.nodeRangesTouching(from, to)) {
-      const candidate = [...path] as Path;
+    if (!boundaries) {
+      for (const { path } of document.nodeRangesTouching(from, to)) {
+        const candidate = [...path] as Path;
 
-      paths.set(pathKey(candidate), candidate);
+        paths.set(pathKey(candidate), candidate);
+      }
     }
     for (const position of [from, to]) {
       for (const { path } of document.nodeRangesTouching(position)) {
@@ -974,9 +979,30 @@ const mapChangedNodeKeys = (
     }
   };
 
+  // A node wholly inside a section that deletes and inserts nothing is gone,
+  // and only a relocation, added below, carries its key on, so such a section
+  // reads only the nodes at its ends.
+  for (
+    let section = 0, position = 0;
+    section < segment.change.sections.length;
+    section += 2
+  ) {
+    const length = segment.change.sections[section];
+    const inserted = segment.change.sections[section + 1];
+
+    if (inserted !== -1) {
+      addTouching(
+        segment.before,
+        sourcePaths,
+        position,
+        position + length,
+        inserted === 0
+      );
+    }
+    position += length;
+  }
   segment.change.iterChangedRanges(
-    (fromBefore, toBefore, fromAfter, toAfter) => {
-      addTouching(segment.before, sourcePaths, fromBefore, toBefore);
+    (_fromBefore, _toBefore, fromAfter, toAfter) => {
       if (
         sourceHasPreparedRuntimePlacements ||
         ((!runtimeCandidates || runtimeCandidates.length === 0) &&
@@ -1036,7 +1062,10 @@ const mapChangedNodeKeys = (
 
     const targetNode = segment.after.node(targetPath);
 
-    if (publishNodeKeys && getNodeKeyForNode(targetNode, editor) !== nodeKey) {
+    if (
+      binding !== 'none' &&
+      getNodeKeyForNode(targetNode, editor) !== nodeKey
+    ) {
       setNodeKey(targetNode, editor, nodeKey);
     }
     usedNodeKeys.add(nodeKey);
@@ -1277,6 +1306,41 @@ const queryMappedElementEntries = (
   );
 };
 
+/**
+ * How a mapping binds node keys to the target document's node objects.
+ * `publish` binds and allocates them, which only publication may do.
+ * `inherited` binds the keys target nodes inherit by position and allocates
+ * none, for a command frame's own document. `none` binds nothing.
+ */
+export type NodeKeyBinding = 'inherited' | 'none' | 'publish';
+
+const describeMapping = (
+  previous: MappedSnapshotIndexDescriptor | undefined,
+  index: SnapshotIndex,
+  segment: SnapshotIndexMappingSegment,
+  deletedNodeKeys: ReadonlySet<NodeKey>,
+  discardedNodeKeys: ReadonlySet<NodeKey>,
+  newPreparedRuntimePlacements: MappedSnapshotIndexDescriptor['preparedRuntimePlacements'],
+  runtimeAssignments: MappedSnapshotIndexDescriptor['runtimeAssignments']
+): MappedSnapshotIndexDescriptor =>
+  Object.freeze({
+    base: previous?.base ?? index,
+    deletedNodeKeys,
+    discardedNodeKeys: new Set([
+      ...(previous?.discardedNodeKeys ?? []),
+      ...discardedNodeKeys,
+    ]),
+    preparedRuntimePlacements: Object.freeze([
+      ...advancePreparedRuntimePlacements(
+        previous?.preparedRuntimePlacements ?? [],
+        segment
+      ),
+      ...newPreparedRuntimePlacements,
+    ]),
+    runtimeAssignments,
+    segments: compactMappingSegments(previous?.segments ?? [], segment),
+  });
+
 /** Map stable node identities through one canonical root change. */
 export const mapSnapshotIndexThroughChange = (
   before: DocumentIndex,
@@ -1286,8 +1350,10 @@ export const mapSnapshotIndexThroughChange = (
   editor: Editor,
   discardedNodeKeys: ReadonlySet<NodeKey> = new Set(),
   runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[],
-  publishNodeKeys = true
+  binding: NodeKeyBinding = 'publish'
 ): SnapshotIndex => {
+  const publishNodeKeys = binding === 'publish';
+
   assertMappingLengths(before, after, change);
   // Materializing binds node keys, which only publication may do.
   if (publishNodeKeys) rebaseLargeSnapshotIndexOverlay(index);
@@ -1308,20 +1374,23 @@ export const mapSnapshotIndexThroughChange = (
   // Detached transaction specs still need a sparse identity overlay for draft
   // selection mapping. Publication remains the only authority allowed to
   // allocate or attach node keys to nodes.
+  // The profiled work runs as bound calls, not arrows: an arrow would share
+  // this scope with the mapped index's lookups, so each index would keep the
+  // one it maps from, and every earlier one, alive.
   const runtimeAssignments = profileCoreDuration(
     publishNodeKeys
       ? 'runtime-index-publish-changed'
       : 'runtime-index-map-changed',
-    () =>
-      mapChangedNodeKeys(
-        segment,
-        index,
-        editor,
-        discardedNodeKeys,
-        newPreparedRuntimePlacements,
-        publishNodeKeys,
-        runtimeCandidates
-      )
+    mapChangedNodeKeys.bind(
+      undefined,
+      segment,
+      index,
+      editor,
+      discardedNodeKeys,
+      newPreparedRuntimePlacements,
+      binding,
+      runtimeCandidates
+    )
   );
   const deleted = [...(previous?.deletedNodeKeys ?? [])];
   const retainedRuntimeAssignments = (
@@ -1355,34 +1424,20 @@ export const mapSnapshotIndexThroughChange = (
     ),
     ...runtimeAssignments,
   ]);
-  const { descriptor, segments } = profileCoreDuration(
+  const descriptor = profileCoreDuration(
     'runtime-index-map-descriptor',
-    () => {
-      const innerSegments = compactMappingSegments(
-        previous?.segments ?? [],
-        segment
-      );
-      const innerDescriptor: MappedSnapshotIndexDescriptor = Object.freeze({
-        base: previous?.base ?? index,
-        deletedNodeKeys,
-        discardedNodeKeys: new Set([
-          ...(previous?.discardedNodeKeys ?? []),
-          ...discardedNodeKeys,
-        ]),
-        preparedRuntimePlacements: Object.freeze([
-          ...advancePreparedRuntimePlacements(
-            previous?.preparedRuntimePlacements ?? [],
-            segment
-          ),
-          ...newPreparedRuntimePlacements,
-        ]),
-        runtimeAssignments: allRuntimeAssignments,
-        segments: innerSegments,
-      });
-
-      return { descriptor: innerDescriptor, segments: innerSegments };
-    }
+    describeMapping.bind(
+      undefined,
+      previous,
+      index,
+      segment,
+      deletedNodeKeys,
+      discardedNodeKeys,
+      newPreparedRuntimePlacements,
+      allRuntimeAssignments
+    )
   );
+  const { segments } = descriptor;
   const previousElementDescriptor = MAPPED_ELEMENT_INDEXES.get(index);
   const elementSegments = compactMappingSegments(
     previousElementDescriptor?.segments ?? [],
@@ -1601,7 +1656,7 @@ export const mapSnapshotIndexThroughChange = (
       pathToIdCache.set(key, null);
       return null;
     }
-    if (publishNodeKeys && !existing && !preparedNodeKey) {
+    if (binding !== 'none' && !existing && !preparedNodeKey) {
       setNodeKey(node, editor, nodeKey);
     }
     cache(nodeKey, path);
@@ -1735,6 +1790,10 @@ export const mapSnapshotIndexThroughChange = (
     elementQueryCache.set(key, entries);
     return entries;
   });
+  // A detached mapping cannot rebase, so a large overlay left on a published
+  // index would be mapped again by every later frame; rebase it here, while
+  // publication may still bind node keys.
+  if (publishNodeKeys) rebaseLargeSnapshotIndexOverlay(mappedIndex);
 
   return mappedIndex;
 };

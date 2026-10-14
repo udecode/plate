@@ -10,6 +10,7 @@ import {
   DocumentChange,
   type Element,
   ElementApi,
+  NodeApi,
   property,
   schema,
   SelectionApi,
@@ -154,6 +155,63 @@ describe('required document prefix', () => {
       initialValue[1],
       { children: [initialValue[2]], type: 'blockquote' },
     ]);
+  });
+
+  it('checks every resolved block patch before changing any selected block', () => {
+    const initialValue = [
+      paragraph('Before'),
+      {
+        type: 'box',
+        children: [
+          { type: 'heading', level: 1, children: [{ text: 'Required title' }] },
+          paragraph('Required paragraph'),
+          paragraph('Body'),
+        ],
+      },
+    ];
+    const editor = createEditor({
+      plugins: [NestedPrefixSchema],
+      initialValue,
+    });
+    editor.update((tx) => {
+      assert.equal(
+        tx.blocks.set(
+          (node) => ({
+            type: 'heading',
+            level: node.type === 'heading' ? 3 : 2,
+          }),
+          {
+            at: SelectionApi.nodes([[0], [1, 0]]),
+          }
+        ),
+        false
+      );
+    });
+    assert.deepEqual(editor.read.children(), initialValue);
+    editor.update((tx) => {
+      assert.equal(
+        tx.blocks.set(
+          (node) => ({
+            type: 'heading',
+            level: NodeApi.string(node) === 'Before' ? 2 : 3,
+          }),
+          {
+            at: SelectionApi.nodes([[0], [1, 2]]),
+          }
+        ),
+        true
+      );
+    });
+    assert.deepEqual(editor.read.nodes.get([0])?.[0], {
+      type: 'heading',
+      level: 2,
+      children: [{ text: 'Before' }],
+    });
+    assert.deepEqual(editor.read.nodes.get([1, 2])?.[0], {
+      type: 'heading',
+      level: 3,
+      children: [{ text: 'Body' }],
+    });
   });
 
   it('rejects a property-only title change in the same transaction', () => {

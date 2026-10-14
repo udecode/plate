@@ -19,7 +19,6 @@ import {
   NODE_TO_ELEMENT,
   NODE_TO_INDEX,
   NODE_TO_PARENT,
-  NODE_TO_RUNTIME_ID,
 } from '../../src/dom/internal';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
@@ -260,7 +259,6 @@ describe('plite-dom bridge', () => {
     const nodeKey = editorGetNodeKey(editor, [1]);
 
     expect(nodeKey).toBeTruthy();
-    NODE_TO_RUNTIME_ID.set(targetNode, nodeKey!);
 
     editor.update((tx) => {
       tx.nodes.insert(
@@ -374,7 +372,7 @@ describe('plite-dom bridge', () => {
       foreign.setAttribute('data-editor-path', '0');
 
       expect(() => editor.api.dom.assertNode(foreign)).toThrow(
-        'Cannot resolve a Plite node from DOM node'
+        'Cannot resolve an editor node from DOM node'
       );
     });
   });
@@ -395,7 +393,7 @@ describe('plite-dom bridge', () => {
         editor.api.dom.assertRange(domSelection, {
           exactMatch: false,
         })
-      ).toThrow('Cannot resolve a Plite range from DOM range');
+      ).toThrow('Cannot resolve an editor range from DOM range');
       expect(
         editor.api.dom.resolveRange(domSelection, {
           exactMatch: false,
@@ -449,7 +447,7 @@ describe('plite-dom bridge', () => {
     };
 
     expect(() => editor.api.dom.assertDOMNode(textNode)).toThrow(
-      'Cannot resolve a DOM node from Plite node'
+      'Cannot resolve a DOM node from an editor node'
     );
     expect(editor.api.dom.resolveDOMNode(textNode)).toBeNull();
     expect(() => editor.api.dom.assertDOMRange(range)).toThrow();

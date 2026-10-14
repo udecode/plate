@@ -1,12 +1,11 @@
 import * as Y from 'yjs';
 
 import {
-  getAuthoredCommitView,
-  getAuthoredProjectedChange,
-  getAuthoredViewCommit,
-  readAuthoredView,
-} from '../../core/authored-runtime';
-import { getInternalDocumentChangeRootKeys as getDocumentChangeRootKeys } from '../../core/change/document-change';
+  filterDocumentChangeRoots,
+  getInternalDocumentChangeRootKeys as getDocumentChangeRootKeys,
+} from '../../core/change/document-change';
+import { getEditorCommitAdmissionRepair } from '../../core/commit';
+import { isMissingReference } from '../../core/missing-reference';
 import {
   getCompiledEditorSchema,
   getPluginRegistry,
@@ -22,6 +21,8 @@ import { canonicalizeTopLevelNode } from '../../core/representation';
 import {
   areEditorSchemaIdentitiesEqual,
   getCompiledPropertyMergeStrategy,
+  getCompiledSchemaRootSets,
+  getEditorSchemaIdentityWithoutMetadataRoots,
 } from '../../core/schema-compiler';
 import { createEditorEffect } from '../../core/transaction-values';
 import type {
@@ -33,6 +34,7 @@ import type {
   JsonEditorValue,
 } from '../../index';
 import { DocumentChange } from '../../index';
+import { isMetadataRootKey } from '../../internal/root-location';
 import {
   createYjsAwarenessAdapter,
   type YjsAwarenessAdapter,
@@ -62,8 +64,10 @@ import {
   type YjsEventImportFallback,
   type YjsEventNormalization,
 } from './event-change-bridge';
+import { DEFAULT_YJS_ROOT_NAME } from './keys';
 import { isRecord } from './record';
 import {
+  assertYjsDocumentSchemaFormats,
   assertYjsSchemaIdentity,
   getYjsSchemaMetadataName,
   readYjsSchemaEnvelope,
@@ -98,6 +102,12 @@ const WAITING_FOR_LOAD = Object.freeze({
 }) satisfies YjsAdmissionStatus;
 const WAITING_FOR_SEED = Object.freeze({
   reason: 'seed',
+  state: 'waiting',
+}) satisfies YjsAdmissionStatus;
+// A remote change names a record that has not arrived, such as a review context
+// another peer wrote; the next remote transaction retries it.
+const WAITING_FOR_REFERENCE = Object.freeze({
+  reason: 'reference',
   state: 'waiting',
 }) satisfies YjsAdmissionStatus;
 const READY = Object.freeze({ state: 'ready' }) satisfies YjsAdmissionStatus;
@@ -148,6 +158,7 @@ export class YjsController<
   private readonly emptyValueFor: (root: string) => readonly Descendant[];
   private readonly canonicalizeOrigin = {};
   private readonly bindings = new Map<string, YjsRootBinding>();
+  private readonly metadataUnobservers = new Map<string, () => void>();
   private readonly isSetValued: YjsSetPropertyResolver;
   private readonly localOrigin = {};
   private readonly seedOrigin = {};
@@ -189,6 +200,7 @@ export class YjsController<
   private pendingRemoteEvents: CapturedYjsEventBatch | null = null;
   private pendingRemoteEffects = false;
   private readonly pendingRemoteNamedRoots = new Set<string>();
+  private readonly remoteRepairRoots = new Set<string>();
   private pendingRemoteRootChange = false;
   private pendingRemoteSchemaChange = false;
   private published = false;
@@ -225,7 +237,7 @@ export class YjsController<
     };
     this.doc = options.doc;
     this.initialReady = options.initialReady;
-    this.rootName = options.rootName ?? 'plitejs';
+    this.rootName = options.rootName ?? DEFAULT_YJS_ROOT_NAME;
     this.seedGranted = options.seed === true;
     this.awareness = options.awareness;
 
@@ -279,6 +291,7 @@ export class YjsController<
         this.createRootBinding(root, yRoot, Object.freeze([]))
       );
     }
+    for (const root of this.metadataRoots()) this.bindMetadataRoot(root);
     this.awarenessAdapter = this.awareness
       ? createYjsAwarenessAdapter<TCursorData>({
           awareness: this.awareness,
@@ -380,9 +393,66 @@ export class YjsController<
   private rootFor(root: string): Y.XmlElement | null {
     if (root === MAIN_ROOT_KEY) return this.root;
 
-    const yRoot = this.roots.get(root);
+    const yRoot = this.namedRootFor(root);
 
     return yRoot instanceof Y.XmlElement ? yRoot : null;
+  }
+
+  // A metadata root lives in its own top-level type, which every peer writes
+  // into, so two peers creating it at once keep both peers' records; an entry
+  // assigned into the roots map would keep only one.
+  private metadataRootFor(root: string): Y.XmlElement {
+    return this.doc.get(`${this.rootName}:root:${root}`, Y.XmlElement);
+  }
+
+  private namedRootFor(root: string): Y.XmlElement | undefined {
+    return isMetadataRootKey(root)
+      ? this.metadataRootFor(root)
+      : this.roots.get(root);
+  }
+
+  private metadataRoots(): ReadonlySet<string> {
+    return getCompiledSchemaRootSets(getCompiledEditorSchema(this.editor))
+      .metadata;
+  }
+
+  private bindMetadataRoot(root: string): YjsRootBinding {
+    const existing = this.bindings.get(root);
+
+    if (existing) return existing;
+
+    const yRoot = this.metadataRootFor(root);
+    const binding = this.createRootBinding(root, yRoot, Object.freeze([]));
+
+    this.bindings.set(root, binding);
+    if (this.initialized) this.observeMetadataRoot(root, yRoot);
+
+    return binding;
+  }
+
+  private observeMetadataRoot(root: string, yRoot: Y.XmlElement): void {
+    if (this.metadataUnobservers.has(root)) return;
+
+    const observer = (
+      events: Array<Y.YEvent<Y.AbstractType<unknown>>>,
+      transaction: Y.Transaction
+    ) => {
+      if (this.shouldIgnoreRemoteTransaction(transaction)) return;
+
+      this.pendingRemoteEvents = mergeYjsEventBatches(
+        this.pendingRemoteEvents,
+        captureYjsEventBatch(events, transaction)
+      );
+      this.pendingRemoteNamedRoots.add(root);
+    };
+
+    yRoot.observeDeep(observer);
+    this.metadataUnobservers.set(root, () => yRoot.unobserveDeep(observer));
+  }
+
+  private unobserveMetadataRoots(): void {
+    for (const unobserve of this.metadataUnobservers.values()) unobserve();
+    this.metadataUnobservers.clear();
   }
 
   initializeCanonicalState(): void {
@@ -396,6 +466,9 @@ export class YjsController<
     this.schemaMetadata.observe(this.schemaObserver);
     this.root.observeDeep(this.observer);
     this.roots.observeDeep(this.rootsObserver);
+    for (const [root, binding] of this.bindings) {
+      if (isMetadataRootKey(root)) this.observeMetadataRoot(root, binding.root);
+    }
     this.sharedEffectLog.observe(this.sharedEffectsObserver);
     this.doc.on('afterTransaction', this.afterTransactionObserver);
 
@@ -416,6 +489,7 @@ export class YjsController<
       this.schemaMetadata.unobserve(this.schemaObserver);
       this.root.unobserveDeep(this.observer);
       this.roots.unobserveDeep(this.rootsObserver);
+      this.unobserveMetadataRoots();
       this.sharedEffectLog.unobserve(this.sharedEffectsObserver);
       this.doc.off('afterTransaction', this.afterTransactionObserver);
       throw error;
@@ -435,6 +509,7 @@ export class YjsController<
       this.schemaMetadata.unobserve(this.schemaObserver);
       this.root.unobserveDeep(this.observer);
       this.roots.unobserveDeep(this.rootsObserver);
+      this.unobserveMetadataRoots();
       this.sharedEffectLog.unobserve(this.sharedEffectsObserver);
       this.doc.off('afterTransaction', this.afterTransactionObserver);
     }
@@ -486,6 +561,15 @@ export class YjsController<
   }
 
   handleCommit(commit: EditorCommit, _snapshot: EditorSnapshot): void {
+    const repair = commit.tags.includes('collaboration')
+      ? getEditorCommitAdmissionRepair(commit)
+      : null;
+
+    if (repair) {
+      for (const root of getDocumentChangeRootKeys(repair)) {
+        this.remoteRepairRoots.add(root);
+      }
+    }
     if (
       this.admissionStatusValue.state === 'error' &&
       commit.dirtyStateKeys.includes('$configuration')
@@ -496,25 +580,10 @@ export class YjsController<
       });
     }
 
-    const view = getAuthoredCommitView(this.editor, commit);
-    const cursorCache = this.awarenessAdapter?.forView(view);
-    if (readAuthoredView(this.editor)) {
-      const projected = getAuthoredProjectedChange(this.editor, commit);
-      this.awarenessAdapter?.publishMappedRoots(
-        new Set([
-          ...getDocumentChangeRootKeys(commit.changes),
-          ...getDocumentChangeRootKeys(projected),
-          ...commit.changes.createRoots,
-          ...commit.changes.deleteRoots,
-          ...projected.createRoots,
-          ...projected.deleteRoots,
-        ])
-      );
-    }
+    const cursorCache = this.awarenessAdapter?.forView(this.editor);
     const sharedEffects = getCollabEffects(this.editor, commit);
     const shouldSyncSelection =
-      cursorCache !== undefined &&
-      getAuthoredViewCommit(view, commit).selectionChanged;
+      cursorCache !== undefined && commit.selectionChanged;
 
     if (this.admissionStatusValue.state !== 'ready') {
       if (shouldSyncSelection) cursorCache.claimSelection();
@@ -529,16 +598,6 @@ export class YjsController<
         shouldSyncSelection
       )
     ) {
-      return;
-    }
-
-    if (readAuthoredView(this.editor)) {
-      const prepared = this.sharedEffectLog.prepare(sharedEffects, commit);
-      this.doc.transact(() => {
-        this.appendSharedEffects(prepared);
-      }, this.localOrigin);
-      this.sharedEffectLog.settle();
-      if (shouldSyncSelection) cursorCache.syncSelection();
       return;
     }
 
@@ -606,6 +665,17 @@ export class YjsController<
 
     this.doc.transact(() => {
       for (const root of changedRoots) {
+        if (commit.changes.deleteRoots.has(root) && isMetadataRootKey(root)) {
+          const binding = this.bindMetadataRoot(root);
+
+          binding.root.delete(0, binding.root.length);
+          this.traceEntries.push({
+            changedChildren: (before.roots?.[root] ?? []).length,
+            mode: 'canonical-change',
+            root,
+          });
+          continue;
+        }
         if (commit.changes.deleteRoots.has(root)) {
           this.roots.delete(root);
           removedBindings.push(root);
@@ -623,7 +693,9 @@ export class YjsController<
           root === MAIN_ROOT_KEY
             ? before.children
             : (before.roots?.[root] ?? []);
-        let binding = this.bindings.get(root);
+        let binding = isMetadataRootKey(root)
+          ? this.bindMetadataRoot(root)
+          : this.bindings.get(root);
 
         if (!binding) {
           const yRoot = new Y.XmlElement();
@@ -651,12 +723,18 @@ export class YjsController<
           root === MAIN_ROOT_KEY
             ? commit.changed.has('structure')
             : commit.changed.has('structure', publicRoot);
-        const incremental =
-          changedRoots.size === 1 && !this.editor.read.schema.hasContentRoots()
-            ? binding.bridge.lower(commit.changes, expectedChildren, {
-                structureChanged,
-              })
-            : null;
+        const rootChange =
+          changedRoots.size === 1
+            ? commit.changes
+            : filterDocumentChangeRoots(
+                commit.changes,
+                (changed) => changed === root
+              );
+        const incremental = !this.editor.read.schema.hasContentRoots()
+          ? binding.bridge.lower(rootChange, expectedChildren, {
+              structureChanged,
+            })
+          : null;
         const result =
           incremental?.kind === 'lowered'
             ? incremental
@@ -672,7 +750,7 @@ export class YjsController<
                   base: canonicalBefore,
                   canonicalize: (children) =>
                     this.canonicalizeRootInDocument(root, children, before),
-                  change: commit.changes,
+                  change: rootChange,
                   emptyValue: binding.emptyValue,
                   expected: expectedChildren,
                   isSetValued: this.isSetValued,
@@ -749,6 +827,7 @@ export class YjsController<
 
       return;
     }
+    if (this.isIdentityWithoutMetadataRoots(envelope.identity)) return;
 
     assertYjsSchemaIdentity(next, envelope.identity);
   }
@@ -837,22 +916,67 @@ export class YjsController<
         this.flushRemoteTransaction();
       }
 
+      this.lowerRemoteCommitRepairs();
       this.sharedEffectLog.settle();
       this.publishReady();
     } catch (error) {
-      this.setAdmissionError(error);
+      if (isMissingReference(error)) {
+        this.setAdmissionStatus(WAITING_FOR_REFERENCE);
+      } else {
+        this.setAdmissionError(error);
+      }
     } finally {
       this.admissionAttempting = false;
     }
   }
 
+  private lowerRemoteCommitRepairs(): void {
+    if (this.remoteRepairRoots.size === 0) return;
+
+    const roots = new Set(this.remoteRepairRoots);
+    const repaired = [...roots].map((root) => {
+      const binding = isMetadataRootKey(root)
+        ? this.bindMetadataRoot(root)
+        : this.bindings.get(root);
+
+      if (!binding) {
+        throw new Error(`Yjs root binding "${root}" is unavailable.`);
+      }
+
+      return { binding, children: this.editorAdapter.readChildren(root), root };
+    });
+
+    this.remoteRepairRoots.clear();
+    this.doc.transact(() => {
+      for (const { binding, children, root } of repaired) {
+        reconcileYjsRoot(
+          binding.root,
+          this.readYjsRootValue(binding),
+          children,
+          this.isSetValued,
+          root === MAIN_ROOT_KEY ? null : root
+        );
+      }
+    }, this.canonicalizeOrigin);
+    for (const { binding, children } of repaired) {
+      binding.synchronizedChildren = children;
+      binding.bridge.reset(children);
+    }
+    this.awarenessAdapter?.publishMappedRoots(roots, { fallbackRoots: roots });
+  }
+
   private assertRoomSchemaForImport(): boolean {
+    assertYjsDocumentSchemaFormats(this.doc);
+
     const envelope = readYjsSchemaEnvelope(this.schemaMetadata);
 
     if (envelope === null) {
       if (
         this.root.length === 0 &&
         this.roots.size === 0 &&
+        [...this.metadataRoots()].every(
+          (root) => this.metadataRootFor(root).length === 0
+        ) &&
         this.sharedEffectLog.empty()
       ) {
         return false;
@@ -863,9 +987,32 @@ export class YjsController<
       );
     }
 
-    assertYjsSchemaIdentity(this.localSchemaIdentity(), envelope.identity);
+    const local = this.localSchemaIdentity();
+
+    if (this.isIdentityWithoutMetadataRoots(envelope.identity)) {
+      this.doc.transact(() => {
+        writeYjsSchemaEnvelope(this.schemaMetadata, local);
+      }, this.seedOrigin);
+
+      return true;
+    }
+
+    assertYjsSchemaIdentity(local, envelope.identity);
 
     return true;
+  }
+
+  private isIdentityWithoutMetadataRoots(
+    identity: EditorSchemaIdentity
+  ): boolean {
+    const withoutMetadataRoots = getEditorSchemaIdentityWithoutMetadataRoots(
+      getCompiledEditorSchema(this.editor)
+    );
+
+    return (
+      withoutMetadataRoots !== null &&
+      areEditorSchemaIdentitiesEqual(withoutMetadataRoots, identity)
+    );
   }
 
   private appendSharedEffects(effects: PreparedYjsSharedEffects): void {
@@ -921,9 +1068,7 @@ export class YjsController<
     const events = this.pendingRemoteEvents;
     const pending = this.sharedEffectLog.pending();
 
-    if (readAuthoredView(this.editor)) {
-      this.importDocumentFromYjs('remote-reconcile', pending.effects);
-    } else if (!rootChanged && namedRoots.size === 1 && events !== null) {
+    if (!rootChanged && namedRoots.size === 1 && events !== null) {
       this.importYjsEvents(events, pending.effects, [...namedRoots][0]);
     } else if (namedRoots.size > 0) {
       this.importDocumentFromYjs('remote-reconcile', pending.effects, {
@@ -1132,32 +1277,32 @@ export class YjsController<
         assertYjsSchemaIdentity(identity, envelope.identity);
       }
 
-      if (!readAuthoredView(this.editor)) {
-        replaceYjsChildren(
-          this.root,
-          asDescendants(value.children),
-          this.isSetValued,
-          {
-            ancestors: [],
-            path: [],
-            root: null,
-          }
-        );
-        this.roots.clear();
-        for (const [root, children] of Object.entries(value.roots ?? {})) {
-          const yRoot = new Y.XmlElement();
-
-          this.roots.set(root, yRoot);
-          replaceYjsChildren(yRoot, asDescendants(children), this.isSetValued, {
-            ancestors: [],
-            path: [],
-            root,
-          });
+      replaceYjsChildren(
+        this.root,
+        asDescendants(value.children),
+        this.isSetValued,
+        {
+          ancestors: [],
+          path: [],
+          root: null,
         }
+      );
+      this.roots.clear();
+      for (const [root, children] of Object.entries(value.roots ?? {})) {
+        const yRoot = isMetadataRootKey(root)
+          ? this.bindMetadataRoot(root).root
+          : new Y.XmlElement();
+
+        if (!isMetadataRootKey(root)) this.roots.set(root, yRoot);
+        replaceYjsChildren(yRoot, asDescendants(children), this.isSetValued, {
+          ancestors: [],
+          path: [],
+          root,
+        });
       }
       this.appendSharedEffects(snapshots);
     }, this.seedOrigin);
-    if (!readAuthoredView(this.editor)) this.resetBindingsFromYjs();
+    this.resetBindingsFromYjs();
     this.traceEntries.push({ mode: 'seed' });
   }
 
@@ -1219,19 +1364,12 @@ export class YjsController<
       named: ReadonlySet<string>;
     }>
   ): void {
-    if (readAuthoredView(this.editor)) {
-      if (this.root.length || this.roots.size) {
-        throw new Error('Authored Yjs documents require a native checkpoint.');
-      }
-      if (effects.length) this.editorAdapter.applyRemote({ effects });
-      this.traceEntries.push({ mode });
-      return;
-    }
     const namedRoots =
       changed?.named ??
       new Set([
         ...Object.keys(this.editorAdapter.readValue().roots ?? {}),
         ...this.roots.keys(),
+        ...this.metadataRoots(),
       ]);
 
     this.doc.transact(() => {
@@ -1239,7 +1377,7 @@ export class YjsController<
         removeRedundantEmptyYjsTextNodes(this.root);
       }
       for (const root of namedRoots) {
-        const yRoot = this.roots.get(root);
+        const yRoot = this.namedRootFor(root);
 
         if (yRoot === undefined) continue;
         if (!(yRoot instanceof Y.XmlElement)) {
@@ -1318,16 +1456,23 @@ export class YjsController<
     };
 
     for (const root of changed.named) {
-      const yRoot = this.roots.get(root);
+      const yRoot = this.namedRootFor(root);
 
-      if (yRoot === undefined) {
+      // Yjs cannot remove a top-level type, so a deleted metadata root stays
+      // behind as an empty one.
+      if (
+        yRoot === undefined ||
+        (isMetadataRootKey(root) && yRoot.length === 0)
+      ) {
         delete roots[root];
         continue;
       }
       if (!(yRoot instanceof Y.XmlElement)) {
         throw new Error(`Yjs named root "${root}" must be a Y.XmlElement.`);
       }
-      let binding = this.bindings.get(root);
+      let binding = isMetadataRootKey(root)
+        ? this.bindMetadataRoot(root)
+        : this.bindings.get(root);
 
       if (!binding || binding.root !== yRoot) {
         binding = this.createRootBinding(root, yRoot, Object.freeze([]));
@@ -1386,10 +1531,12 @@ export class YjsController<
       primary.bridge.reset(primary.synchronizedChildren);
     }
 
-    const namedRoots = changed?.named ?? new Set(this.roots.keys());
+    const namedRoots =
+      changed?.named ??
+      new Set([...this.roots.keys(), ...this.metadataRoots()]);
 
     for (const root of namedRoots) {
-      const yRoot = this.roots.get(root);
+      const yRoot = this.namedRootFor(root);
 
       if (yRoot === undefined) {
         this.bindings.delete(root);
@@ -1398,7 +1545,9 @@ export class YjsController<
       if (!(yRoot instanceof Y.XmlElement)) {
         throw new Error(`Yjs named root "${root}" must be a Y.XmlElement.`);
       }
-      let binding = this.bindings.get(root);
+      let binding = isMetadataRootKey(root)
+        ? this.bindMetadataRoot(root)
+        : this.bindings.get(root);
 
       if (!binding || binding.root !== yRoot) {
         binding = this.createRootBinding(root, yRoot, Object.freeze([]));
@@ -1410,7 +1559,11 @@ export class YjsController<
 
     if (!changed) {
       for (const root of this.bindings.keys()) {
-        if (root !== MAIN_ROOT_KEY && !this.roots.has(root)) {
+        if (
+          root !== MAIN_ROOT_KEY &&
+          !isMetadataRootKey(root) &&
+          !this.roots.has(root)
+        ) {
           this.bindings.delete(root);
         }
       }

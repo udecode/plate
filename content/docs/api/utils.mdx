@@ -33,7 +33,7 @@ Import headless utilities from `platejs` and React utilities from
 | `UnknownObject` | String-keyed object whose values require narrowing. |
 | `Nullable<T>` | Adds `null` to every property of `T`. |
 
-`isUrl` does not decide which links an editor accepts. Link destinations follow `LinkPlugin`'s `allowedSchemes`; see [Link](/docs/link).
+`isUrl` does not decide which links an editor accepts. [`getLinkHref`](/docs/link#getlinkhref) does. When the editor installs `LinkPlugin`, pass it that plugin's `allowedSchemes`.
 
 ## Plugin identities
 
@@ -102,7 +102,7 @@ type MyValue = ValueOf<Editor>;
 
 | Export                 | Name                   | Behavior                                                                         |
 | ---------------------- | ---------------------- | -------------------------------------------------------------------------------- |
-| `ExitBreakPlugin`      | `PLUGINS.exitBreak`       | Adds transaction commands around `insertExitBreak`.                              |
+| `ExitBreakPlugin`      | `PLUGINS.exitBreak`       | Adds shortcut commands around `tx.break.exit`.                                   |
 | `SingleBlockPlugin`    | `PLUGINS.singleBlock`     | Forces the editor value into one block and turns hard breaks into soft breaks.   |
 | `SingleLinePlugin`     | `PLUGINS.singleLine`      | Forces one block and strips line-break characters from text nodes.               |
 | `TrailingBlockPlugin`  | `PLUGINS.trailingBlock`   | Ensures a trailing block exists at the configured level and type.                |

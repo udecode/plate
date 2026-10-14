@@ -1,4 +1,4 @@
-import type { DefinitionOf } from 'platejs';
+import { type DefinitionOf, txOnly } from 'platejs';
 import {
   createEditor,
   definePlugin,
@@ -615,3 +615,17 @@ explicitPluginPortalApi.explicitPlugin.isEnabled();
 
 // @ts-expect-error literal option type must stay stable
 createdPlateEditor.plugin(MentionPlugin).store.get().trigger = '#';
+
+const ReactDirectUpdatePlugin = definePlugin('reactDirectUpdate', {
+  update: () => ({
+    control: txOnly(() => {}),
+    direct: () => {},
+  }),
+});
+const reactDirectUpdatePortal = createEditor({
+  plugins: [ReactDirectUpdatePlugin],
+}).plugin(ReactDirectUpdatePlugin).update;
+
+reactDirectUpdatePortal.direct();
+// @ts-expect-error A portal call opens its own update, so it has no transaction-only methods.
+reactDirectUpdatePortal.control();

@@ -48,7 +48,7 @@ export function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
 
   if (!file?.content && isLoading) {
     return (
-      <div className="mr-[14px] flex overflow-hidden rounded-xl border bg-code text-code-foreground group-data-[view=preview]/block-view-wrapper:hidden md:h-(--height)">
+      <div className="mr-[14px] flex flex-col overflow-hidden rounded-xl border bg-code text-code-foreground group-data-[view=preview]/block-view-wrapper:hidden sm:flex-row md:h-(--height)">
         <BlockViewerFileTree size={size} />
         <div className="flex min-w-0 flex-1 flex-col items-center justify-center">
           <Spinner />
@@ -63,7 +63,7 @@ export function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
   const language = file.path.split('.').pop() ?? 'tsx';
 
   return (
-    <div className="mr-[14px] flex overflow-hidden rounded-xl border bg-code text-code-foreground group-data-[view=preview]/block-view-wrapper:hidden md:h-(--height)">
+    <div className="mr-[14px] flex flex-col overflow-hidden rounded-xl border bg-code text-code-foreground group-data-[view=preview]/block-view-wrapper:hidden sm:flex-row md:h-(--height)">
       <BlockViewerFileTree size={size} />
       <figure
         className="mx-0! mt-0 flex min-w-0 flex-1 flex-col rounded-xl border-none"
@@ -74,8 +74,8 @@ export function BlockViewerCode({ size }: { size?: 'default' | 'sm' }) {
           data-language={language}
         >
           {getIconForLanguageExtension(language)}
-          {file.target}
-          <div className="ml-auto flex items-center gap-2">
+          <span className="min-w-0 flex-1 truncate">{file.target}</span>
+          <div className="flex items-center gap-2">
             {dependencies.length > 0 && (
               <CopyNpmCommandButton
                 className="size-7 rounded-lg bg-transparent p-0 text-code-foreground shadow-none hover:bg-muted-foreground/15 hover:text-code-foreground focus:bg-muted-foreground/15 focus:text-code-foreground focus-visible:bg-muted-foreground/15 focus-visible:text-code-foreground active:bg-muted-foreground/15 active:text-code-foreground [&>svg]:size-3"
@@ -111,8 +111,8 @@ function BlockViewerFileTree({ size }: { size?: 'default' | 'sm' }) {
   }
 
   return (
-    <div className={cn('w-72 shrink-0', size === 'sm' && 'w-60')}>
-      <SidebarProvider className="flex min-h-full! flex-col border-r">
+    <div className={cn('shrink-0 sm:w-72', size === 'sm' && 'sm:w-60')}>
+      <SidebarProvider className="flex min-h-full! flex-col border-b sm:border-r sm:border-b-0">
         <Sidebar
           className="min-h-0 w-full flex-1 overflow-x-hidden overflow-y-auto"
           collapsible="none"

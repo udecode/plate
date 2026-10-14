@@ -1,4 +1,4 @@
-import { NodeApi, RangeApi, type Range, TextApi } from '../..';
+import { NodeApi, PathApi, RangeApi, type Range, TextApi } from '../..';
 import { getEditorCommitSnapshot } from '../../core/commit';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getSnapshotVersion } from '../../core/public-state';
@@ -79,9 +79,12 @@ export const withTypedTextIntent = <T>(
 
 // Every input that opens a scope leaves the caret just past the text it wrote,
 // wherever Plite put that text, so the text before the caret identifies it.
+// The block's text, not its tokens, decides: Suggesting marks the letters it
+// records, so typing also opens or re-marks a text leaf.
 const readInsertion = <V extends Value>(
   commit: EditorCommit<V>,
   children: Value,
+  before: Value,
   text: string
 ): Range | null => {
   const caret = commit.selectionAfter;
@@ -95,11 +98,9 @@ const readInsertion = <V extends Value>(
   }
 
   let changes = 0;
-  let inserts = 0;
 
-  commit.changes.iterChangedRanges((_root, fromA, toA, fromB, toB) => {
+  commit.changes.iterChangedRanges(() => {
     changes += 1;
-    if (fromA === toA && toB > fromB) inserts += 1;
   });
 
   const end = caret.focus;
@@ -108,10 +109,26 @@ const readInsertion = <V extends Value>(
   const block = children[index];
   const leaf = block && NodeApi.getIf(block, rest);
 
-  return changes === 1 &&
-    inserts === 1 &&
-    TextApi.isText(leaf) &&
-    leaf.text.slice(start, end.offset) === text
+  if (
+    changes !== 1 ||
+    !TextApi.isText(leaf) ||
+    leaf.text.slice(start, end.offset) !== text ||
+    !before[index]
+  ) {
+    return null;
+  }
+
+  let offset = start;
+
+  for (const [node, path] of NodeApi.texts(block)) {
+    if (PathApi.equals(path, rest)) break;
+    offset += node.text.length;
+  }
+
+  const typed = NodeApi.string(block);
+
+  return typed.slice(0, offset) + typed.slice(offset + text.length) ===
+    NodeApi.string(before[index])
     ? { anchor: { ...end, offset: start }, focus: end }
     : null;
 };
@@ -142,7 +159,18 @@ const readTypedText = <V extends Value, TPlugins extends readonly unknown[]>(
   const editable = getMountedEditableDOMRuntimes(view).find(
     (runtime) => runtime.inputController === scope.controller
   )?.rootRef.current;
-  const range = editable ? readInsertion(commit, children, scope.text) : null;
+  const range = editable
+    ? readInsertion(
+        commit,
+        children,
+        getEditorCommitSnapshot(
+          commit,
+          commit.selectionAfterRoot ?? 'main',
+          'before'
+        ).children,
+        scope.text
+      )
+    : null;
 
   return editable && range ? { editable, range, text: scope.text } : null;
 };

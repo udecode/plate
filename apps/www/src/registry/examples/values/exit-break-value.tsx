@@ -29,10 +29,11 @@ export const exitBreakValue: Value = (
       ⌘⇧⏎ – Exit and insert a new block before the current structure
     </hp>
     <hp indent={1} listType="bulleted">
-      Automatic – Finds the nearest ancestor that allows paragraph siblings
+      Nearest structure – A code block, callout, image or divider stays in its
+      container; any other block leaves the container
     </hp>
 
-    <hp>Exit breaks work intelligently in nested structures like tables:</hp>
+    <hp>Exit breaks work in nested structures like tables and columns:</hp>
     <hcolumngroup>
       <hcolumn width="50%">{createTable()}</hcolumn>
       <hcolumn width="50%">

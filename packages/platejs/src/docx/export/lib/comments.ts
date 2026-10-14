@@ -2,7 +2,13 @@ import JSZip from 'jszip';
 
 import { RangeApi, type Point } from '../../../core';
 import { throwIfDocxAborted } from '../../internal/abort';
+import { parseDocxHtml, parseDocxXml } from '../../internal/domParser';
 import type { DocxComment, DocxDiagnostic } from '../../internal/types';
+import {
+  addMetadataDeclaration,
+  createTextTokenReplacer,
+  nextRelationshipId,
+} from './generatedParts';
 
 const WORD_NAMESPACE =
   'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
@@ -12,6 +18,7 @@ const WORD14_NAMESPACE = 'http://schemas.microsoft.com/office/word/2010/wordml';
 const WORD15_NAMESPACE = 'http://schemas.microsoft.com/office/word/2012/wordml';
 const WORD16_COMMENT_ID_NAMESPACE =
   'http://schemas.microsoft.com/office/word/2016/wordml/cid';
+const COMMENT_TOKEN = '\uE000PDXC_';
 
 type PreparedComment = Readonly<{
   bodyEnd: string;
@@ -97,7 +104,7 @@ export const prepareDocxComments = (
       html,
     });
   }
-  const document = new DOMParser().parseFromString(html, 'text/html');
+  const document = parseDocxHtml(html);
   const nonce =
     globalThis.crypto?.randomUUID?.().replaceAll('-', '') ??
     `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
@@ -130,7 +137,7 @@ export const prepareDocxComments = (
       });
       return;
     }
-    const prefix = `\uE000PDXC_${nonce}_${index}_`;
+    const prefix = `${COMMENT_TOKEN}${nonce}_${index}_`;
     const record: PreparedComment = {
       bodyEnd: `${prefix}body_end\uE001`,
       bodyStart: `${prefix}body_start\uE001`,
@@ -171,10 +178,7 @@ export const prepareDocxComments = (
 
     bodyStart.textContent = record.bodyStart;
     document.body.append(bodyStart);
-    const bodyDocument = new DOMParser().parseFromString(
-      bodyHtmlById.get(comment.id) ?? '',
-      'text/html'
-    );
+    const bodyDocument = parseDocxHtml(bodyHtmlById.get(comment.id) ?? '');
     const bodyRoot =
       bodyDocument.querySelector('[data-editor-node="editor"]') ??
       bodyDocument.body;
@@ -201,15 +205,7 @@ export const prepareDocxComments = (
   });
 };
 
-const parseXml = (source: string) => {
-  const document = new DOMParser().parseFromString(source, 'application/xml');
-
-  if (document.querySelector('parsererror')) {
-    throw new Error('Generated DOCX XML is invalid.');
-  }
-
-  return document;
-};
+const invalidGeneratedXml = () => new Error('Generated DOCX XML is invalid.');
 
 const wordElement = (document: Document, name: string) =>
   document.createElementNS(WORD_NAMESPACE, `w:${name}`);
@@ -220,97 +216,35 @@ const wordText = (element: Element) =>
     .map((child) => child.textContent ?? '')
     .join('');
 
-const cloneRunText = (run: Element, source: Element, value: string) => {
-  const clone = run.cloneNode(true) as Element;
-  const texts = Array.from(clone.getElementsByTagName('*')).filter(
-    (element) => element.localName === source.localName
-  );
-
-  texts[0].textContent = value;
-  texts.slice(1).forEach((element) => element.remove());
-
-  return clone;
-};
-
-const parentRun = (element: Element) => {
-  let current = element.parentElement;
-
-  while (current && current.localName !== 'r') current = current.parentElement;
-
-  return current;
-};
-
-const replaceRangeToken = (
+const rangeMarkers = (
   document: Document,
-  token: string,
   id: number,
   kind: 'end' | 'start'
-) => {
-  const text = Array.from(document.getElementsByTagName('*')).find(
-    (element) =>
-      (element.localName === 't' || element.localName === 'delText') &&
-      element.textContent?.includes(token)
-  );
-  const run = text ? parentRun(text) : null;
-
-  if (!text || !run || !run.parentElement) {
-    throw new Error('Generated DOCX lost a comment range marker.');
-  }
-  const [before, after] = (text.textContent ?? '').split(token);
-  const replacement: Node[] = [];
-
-  if (before) replacement.push(cloneRunText(run, text, before));
+): Node[] => {
   const marker = wordElement(
     document,
     `commentRange${kind === 'start' ? 'Start' : 'End'}`
   );
 
   marker.setAttributeNS(WORD_NAMESPACE, 'w:id', String(id));
-  replacement.push(marker);
-  if (kind === 'end') {
-    const referenceRun = wordElement(document, 'r');
-    const properties = wordElement(document, 'rPr');
-    const style = wordElement(document, 'rStyle');
-    const reference = wordElement(document, 'commentReference');
+  if (kind === 'start') return [marker];
+  const referenceRun = wordElement(document, 'r');
+  const properties = wordElement(document, 'rPr');
+  const style = wordElement(document, 'rStyle');
+  const reference = wordElement(document, 'commentReference');
 
-    style.setAttributeNS(WORD_NAMESPACE, 'w:val', 'CommentReference');
-    properties.append(style);
-    reference.setAttributeNS(WORD_NAMESPACE, 'w:id', String(id));
-    referenceRun.append(properties, reference);
-    replacement.push(referenceRun);
-  }
-  if (after) replacement.push(cloneRunText(run, text, after));
-  run.replaceWith(...replacement);
+  style.setAttributeNS(WORD_NAMESPACE, 'w:val', 'CommentReference');
+  properties.append(style);
+  reference.setAttributeNS(WORD_NAMESPACE, 'w:id', String(id));
+  referenceRun.append(properties, reference);
+
+  return [marker, referenceRun];
 };
 
 const markerParagraph = (document: Document, marker: string) =>
   Array.from(document.getElementsByTagName('*')).find(
     (element) => element.localName === 'p' && wordText(element) === marker
   );
-
-const addMetadataDeclaration = (
-  source: string,
-  closingTag: string,
-  declaration: string
-) => {
-  if (!source.includes(closingTag)) {
-    throw new Error('Generated DOCX package metadata is invalid.');
-  }
-
-  return source.replace(closingTag, `${declaration}${closingTag}`);
-};
-
-const nextRelationshipId = (source: string, base: string) => {
-  let suffix = 0;
-  let id = base;
-
-  while (source.includes(`Id="${id}"`)) {
-    suffix += 1;
-    id = `${base}${suffix}`;
-  }
-
-  return id;
-};
 
 /** Move prepared main-document markers into Word comment parts. */
 export const addDocxComments = async (
@@ -335,16 +269,26 @@ export const addDocxComments = async (
       'Generated DOCX package is missing comment metadata owners.'
     );
   }
-  const document = parseXml(await documentFile.async('string'));
+  const document = parseDocxXml(
+    await documentFile.async('string'),
+    invalidGeneratedXml
+  );
   throwIfDocxAborted(signal);
-  const comments = parseXml(
-    `<w:comments xmlns:w="${WORD_NAMESPACE}" xmlns:w14="${WORD14_NAMESPACE}"/>`
+  const comments = parseDocxXml(
+    `<w:comments xmlns:w="${WORD_NAMESPACE}" xmlns:w14="${WORD14_NAMESPACE}"/>`,
+    invalidGeneratedXml
   );
   const commentsRoot = comments.documentElement;
 
+  const replace = createTextTokenReplacer(document, COMMENT_TOKEN);
+
   for (const item of prepared.comments) {
-    replaceRangeToken(document, item.start, item.id, 'start');
-    replaceRangeToken(document, item.end, item.id, 'end');
+    if (
+      !replace(item.start, rangeMarkers(document, item.id, 'start')) ||
+      !replace(item.end, rangeMarkers(document, item.id, 'end'))
+    ) {
+      throw new Error('Generated DOCX lost a comment range marker.');
+    }
     const bodyStart = markerParagraph(document, item.bodyStart);
     const bodyEnd = markerParagraph(document, item.bodyEnd);
 
@@ -415,7 +359,7 @@ export const addDocxComments = async (
   relationships = addMetadataDeclaration(
     relationships,
     '</Relationships>',
-    `<Relationship Id="${nextRelationshipId(relationships, 'rIdPlateComments')}" Type="${WORD_RELATIONSHIPS}/comments" Target="comments.xml"/>`
+    `<Relationship Id="${nextRelationshipId(relationships, 'rIdComments')}" Type="${WORD_RELATIONSHIPS}/comments" Target="comments.xml"/>`
   );
   contentTypes = addMetadataDeclaration(
     contentTypes,
@@ -450,7 +394,7 @@ export const addDocxComments = async (
     relationships = addMetadataDeclaration(
       relationships,
       '</Relationships>',
-      `<Relationship Id="${nextRelationshipId(relationships, 'rIdPlateCommentsExtended')}" Type="http://schemas.microsoft.com/office/2011/relationships/commentsExtended" Target="commentsExtended.xml"/>`
+      `<Relationship Id="${nextRelationshipId(relationships, 'rIdCommentsExtended')}" Type="http://schemas.microsoft.com/office/2011/relationships/commentsExtended" Target="commentsExtended.xml"/>`
     );
     contentTypes = addMetadataDeclaration(
       contentTypes,
@@ -474,7 +418,7 @@ export const addDocxComments = async (
     relationships = addMetadataDeclaration(
       relationships,
       '</Relationships>',
-      `<Relationship Id="${nextRelationshipId(relationships, 'rIdPlateCommentsIds')}" Type="http://schemas.microsoft.com/office/2016/relationships/commentsIds" Target="commentsIds.xml"/>`
+      `<Relationship Id="${nextRelationshipId(relationships, 'rIdCommentsIds')}" Type="http://schemas.microsoft.com/office/2016/relationships/commentsIds" Target="commentsIds.xml"/>`
     );
     contentTypes = addMetadataDeclaration(
       contentTypes,

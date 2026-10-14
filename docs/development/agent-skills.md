@@ -16,7 +16,7 @@ Plate adds playbooks on top of pstack's in [`.agents/playbooks/`](../../.agents/
 | Next item | "next" | [Verdict](../../.agents/playbooks/verdict.md): `review-ledger.mjs next` and `status` | The open ledger unit, why it is open, its prior work and the release counts |
 | Review | "review <scope>", then "again" or "panel" to iterate | `verdict` | A Stop, Pursue or Defer verdict with the current and proposed call site, and how it reaches each scope that imports the reviewed one |
 | Plan | "plan" | [Plan](../../.agents/playbooks/plan.md), with its architecture reference for API or architecture work | The ready plan and its open questions |
-| Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify` and the plan's landed `Status:` | The done report, ending with the next item |
+| Execute | "go" | [Build](../../.agents/playbooks/build.md): every slice without pausing, then `verify` and the plan's landed `Status:` | The page link, then the next ledger item offered as a one-click task |
 
 Bugs go through [Bug fix](../../.agents/playbooks/bug-fix.md) and finishing a PR or the current tree through [Babysit](../../.agents/playbooks/babysit.md). "review PR <number>" on someone else's PR runs a review-only panel through Babysit and returns findings without editing anything. A structural cleanup runs [Refactoring](../../.agents/playbooks/refactoring.md), and a slowness report runs [Perf issue](../../.agents/playbooks/perf-issue.md) with `benchmark`.
 
@@ -58,6 +58,8 @@ These are optional shortcuts for a specific job, not a sequence to run.
 | Draft a Plate Beta issue from video or text | `$maintainer issue-draft <video or text>` |
 
 A planning-only request stops at a reviewable plan. Any other request runs to its close. Agents stop only for a production deploy or release, a push to `main`, a force-push to a shared branch, a message to a customer or anyone outside the team, a comment, label or close on a public issue or PR, and deleting data the run did not create. Every other call they make shows under Picked for you with the word that reverses it, and a call with no clear pick takes its most reversible option. Add "stop at plan", "stop at design" or "stop before ship" to a request to stop sooner.
+
+When an agent finds that the accepted design cannot meet a requirement, such as a frozen budget it misses or a cost only a new owner or stored shape removes, it pivots at once. It runs `architect`, writes a plan that adopts the winner and builds it, and holds every step that only finishes the old design. It never parks such a finding in Open work, a deferred benchmark cause or a suggested task, unless you said to keep it until a date. Suggested tasks hold only side work. Each title starts with `Now:` when you can start it while the run goes on, or `After:` when it waits for something, and ends with the effort to run it at, `(high)` or `(xhigh)`. The agent logs each one in the project's ledger, `docs/plans/suggested-tasks.decisions.tsv`, where a check keeps two cards you could run together off one file, and drops it once it is done, duplicated or outdated, as `.agents/pstack/rules/chips.md` says.
 
 For long unattended work, state a checkable exit condition. pstack's Autonomous
 run keeps going with `/loop` in Claude Code or `/goal` in Codex, and the domain

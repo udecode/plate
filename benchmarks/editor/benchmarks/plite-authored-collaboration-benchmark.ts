@@ -158,7 +158,7 @@ const createFixture = (size: number) => {
     initialValue: base,
   });
   const view = createEditorView(editor, {
-    authored: { intent: 'propose', projection: 'proposed' },
+    authored: { intent: 'propose' },
   });
   for (let block = 0; block < size; block += 1) {
     view.update.text.insert('q', { at: point(4, block) });

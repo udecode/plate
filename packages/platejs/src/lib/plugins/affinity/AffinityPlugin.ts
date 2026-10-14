@@ -15,6 +15,7 @@ import {
   NodeApi,
   PathApi,
   TextApi,
+  txSelection,
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
@@ -42,7 +43,7 @@ export type AffinityPluginUpdate = {
 
 export const AffinityPlugin = definePlugin('affinity', {
   update: ({ tx }): AffinityPluginUpdate => ({
-    setSelection: (edgeNodes, affinity) => {
+    setSelection: txSelection((edgeNodes, affinity) => {
       const select = (point: Point) => {
         tx.selection.set({ anchor: point, focus: point });
       };
@@ -84,7 +85,7 @@ export const AffinityPlugin = definePlugin('affinity', {
       if (ElementApi.isElement(after[0])) return;
 
       tx.marks.set(NodeApi.extractProps(after[0]));
-    },
+    }),
   }),
 }).extend(({ editor, plugin }) => {
   const hasElement = (edgeNodes: AffinityEdgeNodes) => {

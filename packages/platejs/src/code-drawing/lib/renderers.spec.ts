@@ -14,16 +14,16 @@ const flowchartParse = mock(() => ({
 const graphvizRenderString = mock(
   async (_content: string, _options: unknown) => '<svg>graphviz</svg>'
 );
+const graphvizEngine = { Module: {}, render: () => '<svg>graphviz</svg>' };
+const vizConstruct = mock((_engine: unknown) => {});
 const originalConsoleError = console.error;
 const consoleErrorMock = mock(() => {});
 
 console.error = consoleErrorMock as typeof console.error;
 
 class VizMock {
-  options: unknown;
-
-  constructor(options: unknown) {
-    this.options = options;
+  constructor(engine: unknown) {
+    vizConstruct(engine);
   }
 
   renderString = graphvizRenderString;
@@ -52,9 +52,8 @@ void mock.module('viz.js', () => ({
   default: VizMock,
 }));
 
-void mock.module('viz.js/full.render', () => ({
-  Module: 'module-stub',
-  render: 'render-stub',
+void mock.module('viz.js/full.render.js', () => ({
+  default: graphvizEngine,
 }));
 
 const originalFetch = globalThis.fetch;
@@ -168,9 +167,10 @@ describe('renderCodeDrawing', () => {
     ).rejects.toThrow('Unsupported drawing language: Nope');
   });
 
-  it('renders graphviz through the extensionless full.render fallback', async () => {
+  it('uses the CommonJS engine from a browser module import', async () => {
     const result = await renderCodeDrawing('graphviz', 'digraph { a -> b }');
 
+    expect(vizConstruct).toHaveBeenCalledWith(graphvizEngine);
     expect(graphvizRenderString).toHaveBeenCalledWith('digraph { a -> b }', {
       engine: 'dot',
       format: 'svg',

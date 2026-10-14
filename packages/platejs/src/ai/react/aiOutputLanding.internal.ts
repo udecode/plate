@@ -352,12 +352,17 @@ const diffSequences = (before: readonly string[], after: readonly string[]) => {
   return chunks;
 };
 
+// Words, whitespace runs and single other characters, so a rewrite proposes
+// whole-word replacements instead of letters interleaved from two words.
+const textTokens = (text: string) =>
+  text.match(/\s+|[\p{L}\p{N}_]+|[^\s\p{L}\p{N}_]/gu) ?? [];
+
 /**
  * The edits that turn one text into another, each a replacement of
  * `before.slice(from, to)` by `text`, with offsets in `before`.
  */
 export const textEdits = (before: string, after: string) => {
-  const chunks = diffSequences(Array.from(before), Array.from(after));
+  const chunks = diffSequences(textTokens(before), textTokens(after));
   const edits: Array<{ from: number; text: string; to: number }> = [];
   let offset = 0;
   let index = 0;
@@ -382,7 +387,16 @@ export const textEdits = (before: string, after: string) => {
       if (chunks[index].kind === 'delete') offset += changed.length;
       else text += changed;
     }
-    edits.push({ from, text, to: offset });
+    const previous = edits.at(-1);
+    const gap = previous ? before.slice(previous.to, from) : '';
+
+    // Two edits only whitespace apart read as one rewrite.
+    if (previous && /^\s+$/.test(gap)) {
+      previous.text += gap + text;
+      previous.to = offset;
+    } else {
+      edits.push({ from, text, to: offset });
+    }
   }
 
   return edits;
@@ -471,9 +485,9 @@ export const suggestionBlocks = (
     keepsShape(answer, roundTrip)
   ) {
     return answer.map((block, index) => ({
-      ...block,
       ...NodeApi.extractProps(source[index]),
       children: block.children,
+      type: source[index].type,
     }));
   }
 

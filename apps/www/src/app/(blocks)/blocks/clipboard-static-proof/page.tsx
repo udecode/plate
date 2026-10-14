@@ -1,7 +1,7 @@
 'use client';
 
 import { schema, TextApi } from 'platejs';
-import { definePlugin, EditorPreview, useStaticEditor } from 'platejs/react';
+import { definePlugin, EditorPreview, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 import { createPortal } from 'react-dom';
 
@@ -67,7 +67,7 @@ const proofValue = {
 const plugins = [PaintPlugin, FigurePlugin] as const;
 
 function FramedPreview() {
-  const editor = useStaticEditor({ plugins, initialValue: proofValue });
+  const editor = useCreateEditor({ plugins, initialValue: proofValue });
   const [body, setBody] = React.useState<HTMLElement | null>(null);
   const frameRef = React.useRef<HTMLIFrameElement>(null);
 
@@ -101,8 +101,8 @@ function FramedPreview() {
 }
 
 export default function ClipboardStaticProofPage() {
-  const first = useStaticEditor({ plugins, initialValue: proofValue });
-  const second = useStaticEditor({ plugins, initialValue: proofValue });
+  const first = useCreateEditor({ plugins, initialValue: proofValue });
+  const second = useCreateEditor({ plugins, initialValue: proofValue });
 
   return (
     <main>

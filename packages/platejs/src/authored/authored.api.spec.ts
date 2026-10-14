@@ -4,6 +4,7 @@ import { it } from 'node:test';
 import {
   BaseParagraphPlugin,
   createEditor,
+  createEditorView,
   DebugPlugin,
   definePlugin,
   type RuntimePluginReference,
@@ -34,35 +35,106 @@ it('attributes proposals to the editor user', () => {
   );
 });
 
-for (const [retainHistory, status] of [
-  [true, 'applied'],
-  [false, 'unavailable'],
-] as const) {
-  it(`reverts an accepted edit only when configured to retain history (${retainHistory})`, () => {
-    const editor = createEditor({
-      plugins: [
-        BaseSuggestionPlugin,
-        AuthoredPlugin.configure({ initialState: { retainHistory } }),
-      ],
-      initialValue,
-      userId: 'alice',
-    });
-    editor.update.text.delete({
-      at: {
-        anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 3 },
+it('loads text that rests on a review context', () => {
+  const ctx = 'c:72aa276b81fc0419';
+  const value = {
+    children: [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            authored: [
+              { at: 1, author: 'bob', change: 'B', kind: 'insert' },
+              { ctx, kind: 'in' },
+            ],
+            text: 'X',
+          },
+        ],
       },
-    });
-    const authored = editor.plugin(AuthoredPlugin);
-
-    assert.equal(
-      authored.update.revert({
-        selection: authored.read.select({ authorId: 'alice' }),
-      }).status,
-      status
-    );
+    ],
+    roots: {
+      '$authored-contexts': [
+        {
+          at: 2,
+          author: 'alice',
+          change: 'A',
+          children: [{ text: '' }],
+          ctx,
+          type: 'authored-context',
+        },
+      ],
+    },
+  };
+  const editor = createEditor({
+    plugins: [BaseParagraphPlugin, AuthoredPlugin],
+    initialValue: value,
   });
-}
+
+  assert.deepEqual(editor.read.value(), value);
+});
+
+it('loads a document with stacked insertions compacted and decisions settled', () => {
+  const A = { at: 2, author: 'alice', change: 'A', kind: 'insert' };
+  const B = { at: 1, author: 'bob', change: 'B', kind: 'insert' };
+  const rejected = (kind: 'delete' | 'held') => ({
+    authored: [{ at: 3, author: 'bob', change: 'bob:1', kind }],
+    text: 'b',
+  });
+  const verdicts = [
+    {
+      at: 3,
+      change: 'bob:1',
+      children: [{ text: '' }],
+      type: 'authored-verdict',
+      verdict: 'reject',
+    },
+  ];
+  const editor = createEditor({
+    plugins: [BaseParagraphPlugin, AuthoredPlugin],
+    initialValue: {
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'a' },
+            rejected('delete'),
+            { authored: [A], text: 'c' },
+            { authored: [A, B], text: 'X' },
+          ],
+        },
+      ],
+      roots: { '$authored-verdicts': verdicts },
+    },
+  });
+  const ctx = 'c:72aa276b81fc0419';
+
+  assert.deepEqual(editor.read.value(), {
+    children: [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'a' },
+          rejected('held'),
+          { authored: [A], text: 'c' },
+          { authored: [B, { ctx, kind: 'in' }], text: 'X' },
+        ],
+      },
+    ],
+    roots: {
+      '$authored-contexts': [
+        {
+          at: 2,
+          author: 'alice',
+          change: 'A',
+          children: [{ text: '' }],
+          ctx,
+          type: 'authored-context',
+        },
+      ],
+      '$authored-verdicts': verdicts,
+    },
+  });
+});
 
 for (const userId of [undefined, '']) {
   it(`writes and proposes as the local user when the user ID is ${JSON.stringify(userId)}`, () => {
@@ -84,7 +156,9 @@ for (const userId of [undefined, '']) {
             editor.read.authored.changes().items.map(({ authorId }) => authorId)
           ),
         ],
-        text: editor.read.children()[0]?.children[0]?.text,
+        text: createEditorView(editor, {
+          authored: { preview: 'accepted' },
+        }).read.text.string([]),
       },
       { authors: ['local'], text: 'Base!' }
     );

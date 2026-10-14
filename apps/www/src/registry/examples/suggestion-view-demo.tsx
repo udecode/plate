@@ -24,11 +24,7 @@ export default function SuggestionViewDemo() {
   });
 
   return (
-    <EditorRoot
-      editor={editor}
-      readOnly
-      authored={{ intent: 'edit', projection: 'markup' }}
-    >
+    <EditorRoot editor={editor} readOnly>
       <SuggestionViewContent />
     </EditorRoot>
   );
@@ -36,10 +32,11 @@ export default function SuggestionViewDemo() {
 
 function SuggestionViewContent() {
   const editor = useEditor();
-  const projection = useEditorViewState(
-    editor,
-    () => editor.plugin(AuthoredPlugin).read.view().projection
-  );
+  const projection = useEditorViewState(editor, () => {
+    const view = editor.plugin(AuthoredPlugin).read.view();
+
+    return 'preview' in view ? view.preview : 'markup';
+  });
 
   return (
     <div className="flex w-full flex-col gap-4 p-4 sm:p-6">
@@ -47,12 +44,10 @@ function SuggestionViewContent() {
         aria-label="Document projection"
         onValueChange={(value) => {
           const authored = editor.plugin(AuthoredPlugin);
-          if (
-            value === 'accepted' ||
-            value === 'proposed' ||
-            value === 'markup'
-          ) {
-            authored.api.setView({ intent: 'edit', projection: value });
+          if (value === 'accepted' || value === 'proposed') {
+            authored.api.setView({ preview: value });
+          } else if (value === 'markup') {
+            authored.api.setView({ intent: 'edit' });
           }
         }}
         size="sm"
@@ -74,7 +69,7 @@ function SuggestionViewContent() {
       <EditorContainer className="h-[200px] rounded-md border">
         <Editor
           aria-label="Suggestion projection document"
-          className="h-auto px-8 pb-8 sm:px-12"
+          className="h-auto px-[clamp(24px,8%,48px)] pb-8"
           readOnly
           variant="demo"
         />

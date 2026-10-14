@@ -448,17 +448,15 @@ const importProjectedDOMSelection = ({
 
   writeRuntimeSelection(
     editor,
-    projectedSelection.anchor.fragmentId
-      ? null
-      : SelectionApi.text(
-          {
-            anchor: projectedSelection.anchor.point,
-            focus: projectedSelection.anchor.point,
-          },
-          isPliteViewSelectionCollapsed(projectedSelection)
-            ? { affinity: projectedSelection.anchor.affinity }
-            : undefined
-        )
+    SelectionApi.text(
+      {
+        anchor: projectedSelection.anchor.point,
+        focus: projectedSelection.anchor.point,
+      },
+      isPliteViewSelectionCollapsed(projectedSelection)
+        ? { affinity: projectedSelection.anchor.affinity }
+        : undefined
+    )
   );
   writePliteViewSelection(editor, projectedSelection);
   setEditableModelSelectionPreference({
@@ -615,6 +613,13 @@ export const setEditableModelSelectionPreference = ({
   inputController.preferModelSelectionForInputRef.current =
     preferModelSelection;
   inputController.state.selectionSource = nextSelectionSource;
+  if (
+    preferModelSelection &&
+    nextSelectionSource === 'app-owned' &&
+    inputController.state.selectionChangeOrigin === 'native-user'
+  ) {
+    inputController.state.selectionChangeOrigin = null;
+  }
   inputController.state.modelSelectionPreference = {
     preferModelSelection,
     reason: nextReason,

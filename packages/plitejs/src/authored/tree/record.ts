@@ -9,7 +9,11 @@ import {
   getInternalDocumentChangeEntries,
   valueRoot,
 } from '../../core/change/document-change';
-import { DocumentIndex } from '../../core/change/document-index';
+import {
+  DocumentIndex,
+  type IndexedNodeRange,
+} from '../../core/change/document-index';
+import { type JsonRecord, jsonEqual } from '../../core/change/json';
 import {
   applyPropertyModifications,
   RootChange,
@@ -22,32 +26,37 @@ import {
   encodeNodes,
   type JsonEditorValue,
   type JsonNode,
-  type JsonRecord,
   type JsonToken,
-  jsonEqual,
   openToken,
   PreparedTokenSlice,
   textToken,
 } from '../../core/change/tokens';
-import type { PropertyModification } from '../../core/change/transform';
+import {
+  normalizeSetValues,
+  type PropertyModification,
+} from '../../core/change/transform';
 import type { EditorJsonValue } from '../../interfaces/json';
+import { getDefined } from '../../internal/get-defined';
+import type { Dependencies } from '../facts/dependencies';
+import { isEditingChange } from '../facts/editing';
+import { incarnationOf } from '../facts/records';
+import { unrepresentable } from '../refusal';
 import { isCut } from './cuts';
 import { type FormatTag, type LayerValue, writeLayer } from './layers';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
-  readAuthoredMarks,
-  withAuthoredMarks,
-  withMarksThroughout,
+  type AuthoredMember,
+  readMembers,
+  withMembers,
 } from './marks';
 import { isTextBlock } from './resolve';
-
-export type AuthoredRecordIntent = 'edit' | 'propose';
 
 export type AuthoredRecordInput = Readonly<{
   before: JsonEditorValue;
   /** Id of the change a Suggesting transaction creates. */
   changeId: string;
+  dependencies: Dependencies;
   createRoots: ReadonlySet<string>;
   /**
    * A fresh id for each format tag and inline split cut, unique across
@@ -64,9 +73,22 @@ export type AuthoredRecordInput = Readonly<{
     root: string
   ) => readonly JsonNode[];
   deleteRoots: ReadonlySet<string>;
+  /**
+   * Whether an empty text keeps property `key` at `value` under `parents`,
+   * nearest first, as the canonical form decides.
+   */
+  emptyTextKeeps: (
+    key: string,
+    value: unknown,
+    parents: ReadonlyArray<Readonly<JsonRecord>>,
+    root: string
+  ) => boolean;
   /** A forced change: "own" then means this change, not the writer. */
   forcedChangeId?: string | null;
-  intent: AuthoredRecordIntent;
+  /** The forced change's incarnation, when it is not `<change>@<now>`. */
+  inc?: string | null;
+  /** The steps start with a command frame's seed. */
+  framed?: boolean;
   /** Whether an element with `props` is inline, so a split of it records a cut. */
   isInline: (props: Readonly<JsonRecord>) => boolean;
   /** Whether a split's continued element keeps property `key` of `props`. */
@@ -91,17 +113,18 @@ export type AuthoredRecordResult = Readonly<{
   change: DocumentChange;
   indexedAfter: ReadonlyMap<string, DocumentIndex>;
   /**
-   * Map a selection position in the plain draft after the last step into the
-   * recorded document: at a removal kept in place, the caret goes to the side
-   * the deletion moved away from.
+   * Map a position in the plain draft after the last step into the recorded
+   * document. A selection position is a `caret`, the default: at a removal
+   * kept in place, it goes to the side the deletion moved away from.
    */
-  mapPosition: (root: string, position: number, assoc: -1 | 1) => number;
+  mapPosition: (
+    root: string,
+    position: number,
+    assoc: -1 | 1,
+    caret?: boolean
+  ) => number;
+  writtenPlain: boolean;
 }>;
-
-/** A Suggesting edit whose review form the schema cannot hold. */
-export class AuthoredUnrepresentableError extends Error {
-  override name = 'AuthoredUnrepresentableError';
-}
 
 type Props = Readonly<JsonRecord>;
 
@@ -127,15 +150,23 @@ type Op =
 
 // One section run of a plain step, in review coordinates: `before` and
 // `removed` address the review draft, `after` the step's output with its
-// inserted tokens as the plain step wrote them, and `plainFrom` the plain
-// draft before the step.
+// inserted tokens as the plain step wrote them, and `plainFrom` and `plainAt`
+// the plain draft before the step.
 type Group =
   | Readonly<{
       after: number;
       before: number;
-      data: readonly PropertyModification[] | null;
+      data: null;
       kind: 'kept';
       length: number;
+    }>
+  | Readonly<{
+      after: number;
+      before: number;
+      data: readonly PropertyModification[];
+      kind: 'kept';
+      length: 1;
+      plainAt: number;
     }>
   | Readonly<{
       after: number;
@@ -186,14 +217,33 @@ const propsOf = (node: unknown): Props => {
   return props;
 };
 
-const withMarks = (props: Props, marks: readonly AuthoredMark[]): Props =>
-  withAuthoredMarks(props, marks);
+const withoutHeld = (props: Props) => {
+  const members = readMembers(props);
 
-// A copy that lands somewhere is a new node and carries no cuts, so each cut
-// keeps one fragment per side: a struck source keeps them, and `relinkCuts`
-// moves them off a removed one.
-const withoutCuts = (props: Props) =>
-  readAuthoredMarks(props).filter((mark) => !isCut(mark));
+  return members.some((member) => member.kind === 'held')
+    ? withMembers(
+        props,
+        members.filter((member) => member.kind !== 'held')
+      )
+    : props;
+};
+
+// Structure that a write inside the element leaves in place under every
+// outcome.
+const BOUNDARY_KINDS: ReadonlySet<AuthoredMember['kind']> = new Set([
+  'join',
+  'split',
+  'unwrap',
+  'wrap',
+]);
+
+const bareContextAt = (index: DocumentIndex, position: number) =>
+  index
+    .openContextAt(position)
+    .filter(
+      (entry) => entry.contentFrom <= position && position <= entry.contentTo
+    )
+    .map((entry) => withMembers(propsOf(index.node(entry.path)), []));
 
 const identity: PosMap = (position) => position;
 
@@ -224,6 +274,61 @@ const mapBack = (change: RootChange, position: number, assoc: -1 | 1) => {
   return before + position - after;
 };
 
+const mapForward = (change: RootChange, position: number) => {
+  let after = 0;
+  let before = 0;
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = change.sections[index];
+    const inserted = change.sections[index + 1];
+
+    if (before + length > position) {
+      return inserted < 0 ? after + position - before : after;
+    }
+    before += length;
+    after += inserted < 0 ? length : inserted;
+  }
+
+  return after + position - before;
+};
+
+/**
+ * The accepted position at the far side of an empty accepted leaf whose
+ * stored letters `change` hid, with the stored edge of that leaf on the side
+ * of `caret`, which sits at one end of those letters.
+ */
+const farEdge = (change: RootChange, index: DocumentIndex, caret: number) => {
+  const at = mapForward(change, caret);
+  const from = mapBack(change, at, -1);
+  const to = mapBack(change, at, 1);
+
+  if (from === to || (caret !== from && caret !== to)) return null;
+
+  const [open] = index.slice(from - 1, from).tokens;
+  const [close] = index.slice(to, to + 1).tokens;
+
+  if (
+    open?.kind !== 'open' ||
+    open.nodeKind !== 'text' ||
+    close?.kind !== 'close' ||
+    mapBack(change, at - 1, 1) !== from - 1 ||
+    mapBack(change, at + 1, -1) !== to + 1
+  ) {
+    return null;
+  }
+
+  return caret === from
+    ? { position: at + 1, stored: from - 1 }
+    : { position: at - 1, stored: to + 1 };
+};
+
+const bothUnclaimed = (
+  before: Readonly<JsonRecord>,
+  after: Readonly<JsonRecord>
+) =>
+  !Object.hasOwn(before, AUTHORED_MARKS_KEY) &&
+  !Object.hasOwn(after, AUTHORED_MARKS_KEY);
+
 /**
  * Rebase a plain step into review coordinates through `map`, from the plain
  * draft before the step to the review draft, and map the step's output
@@ -243,6 +348,7 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
       plainBefore: number;
       reviewAfter: number;
       reviewBefore: number;
+      reviewTo: number;
     }>
   > = [];
 
@@ -253,9 +359,13 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
     // the review draft keeps at either edge stays out of it, so new text
     // follows a deletion and a removal leaves earlier struck content alone.
     const replacesNext = inserted < 0 && pair + 1 < step.sections.length / 2;
+    // A removal ends before hidden content after it, wherever the caret
+    // sits, so the caret never pulls that content in.
     const reviewEnd = Math.max(
       reviewBefore,
-      map(plainBefore + length, replacesNext ? 1 : -1)
+      inserted === 0 && length > 0
+        ? map(plainBefore + length, -1, false)
+        : map(plainBefore + length, replacesNext ? 1 : -1)
     );
     const removed = reviewEnd - reviewBefore;
 
@@ -267,6 +377,7 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
         plainBefore,
         reviewAfter,
         reviewBefore,
+        reviewTo: reviewEnd,
       });
       if (inserted === -2) {
         // Each edited token maps on its own, so struck content the review
@@ -292,6 +403,7 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
             data,
             kind: 'kept',
             length: 1,
+            plainAt: plainBefore + offset,
           });
           at = token + 1;
         }
@@ -327,6 +439,7 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
         plainBefore,
         reviewAfter,
         reviewBefore,
+        reviewTo: reviewEnd,
       });
       groups.push({
         after: reviewAfter,
@@ -351,6 +464,7 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
       plainBefore,
       reviewAfter,
       reviewBefore,
+      reviewTo: reviewLength,
     });
     groups.push({
       after: reviewAfter,
@@ -371,11 +485,25 @@ const rebase = (step: RootChange, map: PosMap, reviewLength: number) => {
         return output.reviewAfter + position - output.plainAfter;
       }
 
-      return (
-        output.reviewAfter +
-        map(output.plainBefore + position - output.plainAfter, assoc, caret) -
-        output.reviewBefore
+      const review = map(
+        output.plainBefore + position - output.plainAfter,
+        assoc,
+        caret
       );
+      // An earlier step can move a caret across a removal, into the review
+      // stretch of another output, or into one this step replaces, where it
+      // sits at the replacement.
+      const holds = (other: (typeof outputs)[number]) =>
+        other.reviewBefore <= review && review <= other.reviewTo;
+      const owner =
+        (review < output.reviewBefore || review > output.reviewTo
+          ? (outputs.find((other) => !other.inserted && holds(other)) ??
+            outputs.find(holds))
+          : undefined) ?? output;
+
+      return owner.inserted
+        ? owner.reviewAfter
+        : owner.reviewAfter + review - owner.reviewBefore;
     }
 
     return reviewAfter;
@@ -452,7 +580,9 @@ const groupsChange = (groups: readonly Group[]) => {
 
 type RootFold = {
   composed: RootChange | null;
+  frameIndex: DocumentIndex | null;
   index: DocumentIndex;
+  leftward: boolean;
   map: PosMap;
   created: boolean;
   touched: boolean;
@@ -469,21 +599,24 @@ type RootFold = {
 export const recordAuthoredSteps = (
   input: AuthoredRecordInput
 ): AuthoredRecordResult => {
-  const { intent } = input;
   const changeId = input.forcedChangeId ?? input.changeId;
+  const inc = input.inc ?? undefined;
+  const own = incarnationOf({ at: input.now, change: changeId, inc });
   const isOwn = (mark: AuthoredMark) =>
     input.forcedChangeId
-      ? mark.change === input.forcedChangeId
+      ? incarnationOf(mark) === own
       : mark.author === input.writer;
-  const markOf = (
-    kind: Exclude<AuthoredMark['kind'], 'format'>
-  ): AuthoredMark => ({
+  const base = {
     at: input.now,
     author: input.writer,
     change: changeId,
-    kind,
-  });
+    ...(inc === undefined ? {} : { inc }),
+  };
+  const markOf = (
+    kind: Exclude<AuthoredMark['kind'], 'format'>
+  ): AuthoredMark => (kind === 'split' ? { ...base, kind } : { ...base, kind });
   const folds = new Map<string, RootFold>();
+  let writtenPlain = true;
   const foldOf = (root: string) => {
     let fold = folds.get(root);
 
@@ -492,9 +625,11 @@ export const recordAuthoredSteps = (
 
       fold = {
         composed: null,
+        frameIndex: null,
         index: DocumentIndex.fromValue(
           created ? [] : valueRoot(input.before, root)
         ),
+        leftward: true,
         map: identity,
         created,
         touched: false,
@@ -505,25 +640,60 @@ export const recordAuthoredSteps = (
     return fold;
   };
 
-  if (intent === 'propose' && input.deleteRoots.size > 0) {
-    throw new AuthoredUnrepresentableError(
-      'Suggesting cannot delete a named root; suggest deleting its content.'
-    );
-  }
-
   for (const step of input.steps) {
-    for (const [root, rootChange] of getInternalDocumentChangeEntries(
+    for (const [root, written] of getInternalDocumentChangeEntries(
       step.change
     )) {
       const fold = foldOf(root);
+      const plain = step.indexedBefore?.get(root);
+      // A fitted slice writes anew the open tokens of the blocks it lands in.
+      const rootChange =
+        plain && step.origin === 'slice'
+          ? written.alignOpens(plain, bothUnclaimed)
+          : written;
 
       // The review draft runs its own canonical pass, so canonical
       // construction only moves the plain draft away from it.
       if (step.origin === 'canonical') {
         const previous = fold.map;
+        const seed = input.framed && step === input.steps[0];
+        // A frame's seed hides content, so where it removed some, a position
+        // has a stored edge on each side; a caret at one edge picks it, so the
+        // next letter lands on the line the caret shows.
+        const caretAt =
+          seed && input.selectionBefore?.root === root
+            ? input.selectionBefore.position
+            : null;
 
-        fold.map = (position, assoc, caret) =>
-          previous(mapBack(rootChange, position, assoc), assoc, caret);
+        // Where the seed hid every letter of a leaf, the accepted leaf is
+        // empty and both its edges sit at the caret, so in Suggesting a write
+        // at its far edge, such as Enter's split, takes the stored edge on the
+        // caret's side.
+        const far =
+          caretAt === null ? null : farEdge(rootChange, fold.index, caretAt);
+
+        if (seed) {
+          fold.frameIndex =
+            step.indexedAfter?.get(root) ?? rootChange.apply(fold.index);
+        } else if (fold.frameIndex) {
+          fold.frameIndex = rootChange.apply(fold.frameIndex);
+        }
+
+        fold.map = (position, assoc, caret) => {
+          if (far && position === far.position) {
+            return previous(far.stored, assoc, caret);
+          }
+
+          const before = mapBack(rootChange, position, assoc);
+
+          if (caret !== false && caretAt !== null && before !== caretAt) {
+            const other = mapBack(rootChange, position, assoc < 0 ? 1 : -1);
+
+            if (other === caretAt) return previous(caretAt, assoc, caret);
+          }
+
+          return previous(before, assoc, caret);
+        };
         continue;
       }
 
@@ -542,15 +712,20 @@ export const recordAuthoredSteps = (
         recorded = groupsChange(groups);
       } else {
         const result = new RootRecorder(fold.index, {
+          dependencies: input.dependencies,
           plainToReview,
           changeId,
           createTagId: input.createTagId,
+          emptyTextKeeps: (key, value, parents) =>
+            input.emptyTextKeeps(key, value, parents, root),
+          framed: input.framed === true,
           fill: (site) => input.fill(site, root),
-          intent,
+          frameIndex: fold.frameIndex,
           isInline: input.isInline,
           isOwn,
           keepsOnSplit: (props, path, key, draftRoot) =>
             input.keepsOnSplit(props, path, root, key, draftRoot),
+          leftward: fold.leftward,
           markOf,
           moveRole: step.move?.role ?? null,
           oneText: input.oneText ?? (() => false),
@@ -564,8 +739,11 @@ export const recordAuthoredSteps = (
 
         recorded = result.change;
         mapRecorded = result.mapPosition;
+        fold.leftward = result.leftward;
+        writtenPlain &&= result.writtenPlain;
       }
       fold.touched = true;
+      if (fold.frameIndex) fold.frameIndex = rootChange.apply(fold.frameIndex);
       if (!recorded.empty) {
         fold.index = recorded.apply(fold.index);
         fold.composed = fold.composed
@@ -604,17 +782,25 @@ export const recordAuthoredSteps = (
       deleteRoots: input.deleteRoots,
     }),
     indexedAfter,
-    mapPosition: (root, position, assoc) =>
-      folds.get(root)?.map(position, assoc, true) ?? position,
+    mapPosition: (root, position, assoc, caret = true) =>
+      folds.get(root)?.map(position, assoc, caret) ?? position,
+    writtenPlain,
   };
 };
 
 type RecorderOptions = Readonly<{
+  dependencies: Dependencies;
   plainToReview: PosMap;
   changeId: string;
   createTagId: () => string;
+  emptyTextKeeps: (
+    key: string,
+    value: unknown,
+    parents: readonly Props[]
+  ) => boolean;
   fill: (site: readonly Props[]) => readonly JsonNode[];
-  intent: AuthoredRecordIntent;
+  frameIndex: DocumentIndex | null;
+  framed: boolean;
   isInline: (props: Props) => boolean;
   isOwn: (mark: AuthoredMark) => boolean;
   keepsOnSplit: (
@@ -623,6 +809,7 @@ type RecorderOptions = Readonly<{
     key: string,
     draftRoot: readonly JsonNode[]
   ) => boolean;
+  leftward: boolean;
   markOf: (kind: Exclude<AuthoredMark['kind'], 'format'>) => AuthoredMark;
   moveRole: 'landing' | 'source' | null;
   oneText: (type: string) => boolean;
@@ -644,21 +831,56 @@ class RootRecorder {
     this.options = options;
   }
 
-  private get propose() {
-    return this.options.intent === 'propose';
+  private marks(props: unknown) {
+    return this.options.dependencies.marks(props);
+  }
+
+  private withMarks(
+    props: Props,
+    marks: readonly AuthoredMark[],
+    fresh = false
+  ): Props {
+    return this.options.dependencies.props(props, marks, fresh);
+  }
+
+  // A copy that lands somewhere is a new node and carries no cuts, so each cut
+  // keeps one fragment per side: a struck source keeps them, and `relinkCuts`
+  // moves them off a removed one.
+  private withoutCuts(props: Props) {
+    return this.marks(props).filter((mark) => !isCut(mark));
+  }
+
+  private hasMarkKind(props: Props, kind: AuthoredMark['kind']) {
+    return this.marks(props).some((mark) => mark.kind === kind);
+  }
+
+  /** Whether two leaves read the same to review, however each stores it. */
+  private sameReview(left: Props, right: Props) {
+    const read = (props: Props) => ({
+      held: readMembers(props).filter((member) => member.kind === 'held'),
+      marks: normalizeSetValues(this.marks(props)),
+      props: withMembers(props, []),
+    });
+
+    return jsonEqual(read(left), read(right));
   }
 
   record(groups: readonly Group[]) {
+    const plain = new Set(
+      groups.filter(
+        (group) => group.kind === 'replace' && this.settlesPlain(group)
+      )
+    );
+
     if (this.options.origin !== 'move' || !this.recordNodeMove(groups)) {
       for (const group of groups) {
         if (group.kind === 'replace') {
-          this.recordGroup(group);
+          if (plain.has(group)) this.writePlain(group);
+          else this.recordGroup(group);
           continue;
         }
         if (group.data) {
-          for (let offset = 0; offset < group.length; offset += 1) {
-            this.recordProperties(group.before + offset, group.data);
-          }
+          this.recordProperties(group.before, group.data, group.plainAt);
         }
         this.pieces.push({
           afterFrom: group.after,
@@ -673,9 +895,133 @@ class RootRecorder {
 
     return {
       change: recorded,
+      leftward:
+        this.pieces.findLast((piece) => piece.kind === 'removed')?.leftward ??
+        this.options.leftward,
       mapPosition: (position: number, assoc: -1 | 1, caret?: boolean) =>
         this.mapPosition(recorded, position, assoc, caret === true),
+      writtenPlain: groups.every((group) =>
+        group.kind === 'replace' ? plain.has(group) : !group.data
+      ),
     };
+  }
+
+  /**
+   * Whether accepting the claims an Editing write would record for this group
+   * gives the plain group under every outcome of the pending changes.
+   */
+  private settlesPlain({
+    before,
+    plainFrom,
+    plainRemoved,
+    removed,
+    slice,
+  }: Extract<Group, { kind: 'replace' }>) {
+    const { changeId, frameIndex, moveRole, origin } = this.options;
+
+    if (
+      !isEditingChange(changeId) ||
+      moveRole !== null ||
+      origin === 'move' ||
+      origin === 'wrap' ||
+      origin === 'unwrap' ||
+      removed !== plainRemoved
+    ) {
+      return false;
+    }
+
+    const to = before + removed;
+
+    // A frame shows lines the review draft lacks, such as the empty line of a
+    // quote whose only line is struck, where the plain group has nowhere to
+    // land.
+    if (
+      frameIndex &&
+      !(
+        jsonEqual(
+          bareContextAt(this.index, before),
+          bareContextAt(frameIndex, plainFrom)
+        ) &&
+        jsonEqual(
+          bareContextAt(this.index, to),
+          bareContextAt(frameIndex, plainFrom + plainRemoved)
+        )
+      )
+    ) {
+      return false;
+    }
+
+    const reviewed = (token: JsonToken) =>
+      token.kind === 'open' && readMembers(token.props).length > 0;
+
+    if (
+      slice.tokens.some(reviewed) ||
+      this.index.slice(before, to).tokens.some(reviewed)
+    ) {
+      return false;
+    }
+
+    // The slice splits as many elements around it as it closes before it
+    // opens one.
+    let depth = 0;
+    let closes = 0;
+
+    for (const token of slice.tokens) {
+      if (token.kind === 'text' || token.nodeKind !== 'element') continue;
+      if (token.kind === 'open') depth += 1;
+      else if (depth > 0) depth -= 1;
+      else closes += 1;
+    }
+
+    const atBefore = this.contextAt(before);
+    const elements = atBefore.filter((context) => context.kind === 'element');
+    const split = new Set(closes > 0 ? elements.slice(-closes) : []);
+    const contexts =
+      to === before ? atBefore : [...atBefore, ...this.contextAt(to)];
+
+    return contexts.every((context) => {
+      const members = readMembers(context.props);
+
+      if (context.kind === 'text') return members.length === 0;
+      // An element the group joins or splits decides with everything in it,
+      // as a join waits on a line that holds only another author's text.
+      if (
+        split.has(context) ||
+        context.contentFrom > before ||
+        context.contentTo < to
+      ) {
+        return (
+          members.length === 0 &&
+          !this.index
+            .slice(context.contentFrom, context.contentTo)
+            .tokens.some(reviewed)
+        );
+      }
+
+      return members.every((member) => BOUNDARY_KINDS.has(member.kind));
+    });
+  }
+
+  private writePlain({
+    after,
+    before,
+    removed,
+    slice,
+  }: Extract<Group, { kind: 'replace' }>) {
+    const to = before + removed;
+
+    if (removed > 0) this.ops.push({ from: before, kind: 'remove', to });
+    if (slice.length > 0) {
+      this.ops.push({ at: to, kind: 'insert', tokens: slice.tokens });
+      this.pieces.push({
+        afterFrom: after,
+        afterTo: after + slice.length,
+        at: to,
+        kind: 'inserted',
+        offsets: Array.from({ length: slice.length + 1 }, (_, at) => at),
+      });
+    }
+    if (removed > 0) this.pushRemoved(after, before, to);
   }
 
   private recordGroup(group: Extract<Group, { kind: 'replace' }>) {
@@ -694,7 +1040,6 @@ class RootRecorder {
       return;
     }
     if (
-      this.propose &&
       this.options.origin === 'split' &&
       removed === 0 &&
       slice.length === 2 &&
@@ -730,6 +1075,8 @@ class RootRecorder {
         ? { depth, wraps }
         : null;
     }
+
+    if (removed === 0 || slice.length === 0) return null;
 
     return enclosureOf(
       this.index.slice(group.before, group.before + removed),
@@ -788,13 +1135,16 @@ class RootRecorder {
    * A step that removes one boundary: a leaf merge, which keeps the review
    * leaves apart when their properties differ and is dropped when the review
    * draft holds other content between them; or, in Suggesting, a container
-   * merge, which records as a move of the right container's children.
+   * merge or a merge into a struck line, which records as a move of the right
+   * block's children.
    */
   private recordBoundaryRemoval(group: Extract<Group, { kind: 'replace' }>) {
     const { after, before, removed } = group;
-    const { tokens } = this.index.slice(before, before + removed);
-    const first = tokens[0];
-    const last = tokens.at(-1);
+    const [first] = this.index.slice(before, before + 1).tokens;
+    const [last] = this.index.slice(
+      before + removed - 1,
+      before + removed
+    ).tokens;
 
     if (first?.kind !== 'close' || last?.kind !== 'open') return false;
     if (first.nodeKind === 'text' && last.nodeKind === 'text') {
@@ -807,10 +1157,10 @@ class RootRecorder {
         const merged =
           this.formattedProps(
             rightProps,
-            withMarks(leftProps, readAuthoredMarks(rightProps))
+            withMembers(leftProps, readMembers(rightProps))
           ) ?? rightProps;
 
-        if (jsonEqual(merged, leftProps)) {
+        if (this.sameReview(merged, leftProps)) {
           this.ops.push({ from: before, kind: 'remove', to: before + 2 });
           return true;
         }
@@ -823,11 +1173,17 @@ class RootRecorder {
       this.pushRemoved(after, before, before + removed);
       return true;
     }
-    if (!this.propose || first.nodeKind !== 'element') return false;
+    if (first.nodeKind !== 'element') return false;
 
     const right = this.index.nodeStartingAt(before + removed - 1);
 
-    if (!right || isTextBlock(this.index.node(right.path))) return false;
+    if (
+      !right ||
+      (isTextBlock(this.index.node(right.path)) &&
+        !this.mergesIntoStruckLine(group))
+    ) {
+      return false;
+    }
 
     const children = this.index.slice(right.contentFrom, right.contentTo);
 
@@ -849,6 +1205,36 @@ class RootRecorder {
   }
 
   /**
+   * Whether a block merge starts inside a line a pending deletion strikes,
+   * where the write removed text at the line's end that the review draft keeps
+   * struck. The merged line then stands where the struck one does, after the
+   * line break before it, as Editing's merge leaves it. A join mark cannot say
+   * so: a decision lands it on the nearest block it keeps, and accepting the
+   * deletion takes the struck line away. A merge that removes only the
+   * boundary, such as Backspace at the start of the right block, joins the
+   * line before it.
+   */
+  private mergesIntoStruckLine(group: Extract<Group, { kind: 'replace' }>) {
+    const { before, plainFrom } = group;
+    const left = this.index
+      .openContextAt(before)
+      .find((entry) => entry.kind === 'element' && entry.contentTo === before);
+
+    if (
+      !left ||
+      !this.hasMarkKind(propsOf(this.index.node(left.path)), 'delete')
+    ) {
+      return false;
+    }
+
+    const textEnd = this.options.plainToReview(plainFrom - 1, -1);
+
+    return this.index
+      .slice(textEnd, before)
+      .tokens.some((token) => token.kind === 'text');
+  }
+
+  /**
    * A container split in Suggesting records as a new container holding a
    * moved copy of the children after the split point.
    */
@@ -867,7 +1253,14 @@ class RootRecorder {
 
     const container = this.contextAt(before).at(-1);
 
-    if (container?.kind !== 'element') return false;
+    // A split that opens another type splits a block the schema completes
+    // the container with, not the container.
+    if (
+      container?.kind !== 'element' ||
+      open.props.type !== container.props.type
+    ) {
+      return false;
+    }
 
     const entry = this.index.nodeRange(container.path);
 
@@ -882,8 +1275,8 @@ class RootRecorder {
       tokens: [
         openToken(
           'element',
-          withMarks(open.props, [
-            ...readAuthoredMarks(open.props),
+          this.withMarks(open.props, [
+            ...this.marks(open.props),
             this.options.markOf('insert'),
           ])
         ),
@@ -928,9 +1321,12 @@ class RootRecorder {
 
     if (replacements.length !== 2 || !source || !landing) return false;
 
-    const sourceTo = source.before + source.removed;
-    const copy = this.index.slice(source.before, sourceTo).tokens;
     const { plainToReview } = this.options;
+    const [copyFrom, copyTo] = this.withoutStruckEdges(
+      source.before,
+      source.before + source.removed
+    );
+    const copy = this.index.slice(copyFrom, copyTo).tokens;
 
     for (const group of groups) {
       if (group.kind === 'kept') {
@@ -941,22 +1337,13 @@ class RootRecorder {
           kind: 'kept',
         });
       } else if (group === source) {
-        if (this.propose) {
-          this.strike(
-            source.before,
-            sourceTo,
-            this.contextAt(source.before),
-            'move'
-          );
-        } else {
-          this.ops.push({ from: source.before, kind: 'remove', to: sourceTo });
-        }
-        this.pushRemoved(source.after, source.before, sourceTo);
+        this.strike(copyFrom, copyTo, this.contextAt(copyFrom), 'move');
+        this.pushRemoved(source.after, copyFrom, copyTo);
       } else {
         this.ops.push({
           at: landing.before,
           kind: 'insert',
-          tokens: this.propose ? this.movedCopy(copy) : copy,
+          tokens: this.movedCopy(copy),
         });
         this.pieces.push({
           afterFrom: landing.after,
@@ -966,13 +1353,75 @@ class RootRecorder {
           offsets: Array.from(
             { length: landing.slice.length + 1 },
             (_, offset) =>
-              plainToReview(source.plainFrom + offset, -1) - source.before
+              offset === 0
+                ? 0
+                : plainToReview(source.plainFrom + offset, -1) - copyFrom
           ),
         });
       }
     }
 
     return true;
+  }
+
+  private withoutStruckEdges(from: number, to: number): [number, number] {
+    const { offsets, tokens } = this.index.slice(from, to);
+    const hidden = ([open, end]: readonly [number, number]) => {
+      const first = tokens[open];
+      let live = false;
+
+      if (first.kind !== 'open' || !this.hasMarkKind(first.props, 'delete')) {
+        return false;
+      }
+      for (let index = open; index < end; index += 1) {
+        const token = tokens[index];
+
+        if (token.kind === 'open' && token.nodeKind === 'text') {
+          live = !this.hasMarkKind(token.props, 'delete');
+        } else if (token.kind === 'text' && live) {
+          return false;
+        }
+      }
+
+      return true;
+    };
+    const opens: number[] = [];
+    const nodes: Array<[number, number]> = [];
+
+    tokens.forEach((token, index) => {
+      if (token.kind === 'open') {
+        opens.push(index);
+      } else if (token.kind === 'close') {
+        const open = opens.pop();
+
+        if (open !== undefined && opens.length === 0) {
+          nodes.push([open, index + 1]);
+        }
+      }
+    });
+
+    let start = 0;
+    let end = tokens.length;
+    let first = 0;
+    let last = nodes.length;
+
+    while (first < last && nodes[first][0] === start && hidden(nodes[first])) {
+      start = nodes[first][1];
+      first += 1;
+    }
+    while (
+      last > first &&
+      nodes[last - 1][1] === end &&
+      hidden(nodes[last - 1])
+    ) {
+      end = nodes[last - 1][0];
+      last -= 1;
+    }
+
+    const at = (index: number) =>
+      index < tokens.length ? from + offsets[index] : to;
+
+    return start < end ? [at(start), at(end)] : [from, to];
   }
 
   private movedCopy(tokens: readonly JsonToken[]) {
@@ -982,7 +1431,10 @@ class RootRecorder {
       token.kind === 'open'
         ? openToken(
             token.nodeKind,
-            withMarks(token.props, [...withoutCuts(token.props), mark])
+            this.withMarks(token.props, [
+              ...this.withoutCuts(token.props),
+              mark,
+            ])
           )
         : token
     );
@@ -995,10 +1447,13 @@ class RootRecorder {
       beforeTo: to,
       kind: 'removed',
       // Only a caret at the removal's start, as Delete leaves it, steps
-      // rightward; a caret at its end may sit past the closing tokens.
+      // rightward; a caret at its end may sit past the closing tokens. A
+      // later step of the same command, such as the text merge after a block
+      // join, keeps the direction the first one took.
       leftward:
-        this.options.selectionBefore === null ||
-        this.options.selectionBefore > from,
+        this.options.selectionBefore === null
+          ? this.options.leftward
+          : this.options.selectionBefore > from,
     });
   }
 
@@ -1025,18 +1480,90 @@ class RootRecorder {
 
   private recordProperties(
     at: number,
-    modifications: readonly PropertyModification[]
+    modifications: readonly PropertyModification[],
+    frameAt: number | null = null
   ) {
     const previous = this.propsStartingAt(at);
-    const next = applyPropertyModifications(
+    let next = applyPropertyModifications(
       previous,
       modifications.filter(
         (modification) => modification.key !== AUTHORED_MARKS_KEY
       )
     );
+    const entry = this.index.nodeStartingAt(at);
+
+    // The canonical form drops some keys from an empty text, and a change to
+    // one there would record a suggestion that applies nothing.
+    if (entry && this.index.node(entry.path).text === '') {
+      const parents = entry.path
+        .slice(1)
+        .map((_, depth) =>
+          propsOf(this.index.node(entry.path.slice(0, depth + 1)))
+        )
+        .reverse();
+
+      const dropped = Object.keys({ ...previous, ...next }).filter(
+        (key) =>
+          !jsonEqual(previous[key], next[key]) &&
+          !this.options.emptyTextKeeps(key, next[key] ?? previous[key], parents)
+      );
+
+      next = Object.fromEntries([
+        ...Object.entries(next).filter(([key]) => !dropped.includes(key)),
+        ...dropped
+          .filter((key) => Object.hasOwn(previous, key))
+          .map((key) => [key, previous[key]]),
+      ]);
+    }
+
     const props = this.formattedProps(previous, next);
 
     if (props) this.ops.push({ at, kind: 'props', props });
+    const frameText =
+      frameAt === null
+        ? undefined
+        : this.options.frameIndex?.nodeStartingAt(frameAt);
+
+    if (frameText?.kind === 'text' && entry?.kind === 'text') {
+      this.spreadProperties(
+        entry,
+        previous,
+        modifications,
+        this.options.plainToReview(frameText.to, -1)
+      );
+    }
+  }
+
+  /**
+   * The frame's document merges a text piece with the later pieces that only
+   * crossed-out content separates from it when their properties match, so a
+   * property change on the merged text reaches each of them.
+   */
+  private spreadProperties(
+    entry: IndexedNodeRange,
+    previous: Props,
+    modifications: readonly PropertyModification[],
+    end: number
+  ) {
+    const ordinary = (props: Props) => withMembers(props, []);
+    const parent = entry.path.slice(0, -1);
+
+    for (
+      let next = this.index.nodeStartingAt(entry.to);
+      next?.kind === 'text' &&
+      next.from < end &&
+      next.path.length === entry.path.length &&
+      jsonEqual(next.path.slice(0, -1), parent);
+      next = this.index.nodeStartingAt(next.to)
+    ) {
+      const props = propsOf(this.index.node(next.path));
+
+      if (this.hasMarkKind(props, 'delete')) {
+        continue;
+      }
+      if (!jsonEqual(ordinary(props), ordinary(previous))) return;
+      this.recordProperties(next.from, modifications);
+    }
   }
 
   /**
@@ -1055,14 +1582,14 @@ class RootRecorder {
 
     if (keys.length === 0) return null;
 
-    const marks = readAuthoredMarks(previous);
+    const marks = this.marks(previous);
 
-    if (this.propose && marks.some((mark) => mark.kind === 'delete')) {
+    if (marks.some((mark) => mark.kind === 'delete')) {
       return null;
     }
 
-    const { createTagId, intent, isOwn, markOf, source } = this.options;
-    const { at, author, change } = markOf('insert');
+    const { changeId, createTagId, isOwn, markOf, source } = this.options;
+    const { at, author, change, inc } = markOf('insert');
     const ownInsertion = marks.some(
       (mark) => mark.kind === 'insert' && isOwn(mark)
     );
@@ -1072,7 +1599,7 @@ class RootRecorder {
 
     for (const key of keys) {
       const written = writeLayer({
-        intent,
+        intent: isEditingChange(changeId) ? 'edit' : 'propose',
         isOwn,
         next: next[key] as LayerValue,
         ownInsertion,
@@ -1083,6 +1610,7 @@ class RootRecorder {
           at,
           author,
           change,
+          ...(inc === undefined ? {} : { inc }),
           id: createTagId(),
           key,
           kind: 'format',
@@ -1093,7 +1621,7 @@ class RootRecorder {
       tags = [...tags.filter((tag) => tag.key !== key), ...written];
     }
 
-    return withMarks(next, [
+    return this.withMarks(next, [
       ...marks.filter((mark) => mark.kind !== 'format'),
       ...tags,
     ]);
@@ -1108,27 +1636,29 @@ class RootRecorder {
     const startContext = this.contextAt(from);
     const landing = this.options.moveRole === 'landing';
 
-    if (!this.propose) {
-      if (to > from) this.ops.push({ from, kind: 'remove', to });
-      this.recordInsertion({
-        after,
-        at: to,
-        contexts: startContext,
-        inserted,
-        landing,
-        openLeaf: leafOf(startContext),
-        removedFrom: from,
-      });
-      return;
-    }
-
+    // Pending deletions the write puts back, as a replace that moves struck
+    // content does, so its source is struck over them and every decision
+    // keeps one copy.
+    const reinserted = new Set(
+      inserted.tokens.flatMap((token) =>
+        token.kind === 'open'
+          ? this.marks(token.props)
+              .filter((mark) => mark.kind === 'delete')
+              .map(incarnationOf)
+          : []
+      )
+    );
     const struck = this.strike(
       from,
       to,
       startContext,
-      this.options.moveRole === 'source' ? 'move' : 'delete'
+      this.options.moveRole === 'source' ? 'move' : 'delete',
+      reinserted
     );
 
+    if (this.options.framed && inserted.length === 0) {
+      this.keepEmptiedLine(from, to, startContext);
+    }
     this.recordInsertion({
       after,
       at: to,
@@ -1138,7 +1668,129 @@ class RootRecorder {
       openLeaf: struck.openLeaf,
       reopen: struck.reopen,
       removedFrom: from,
+      startContexts: startContext,
     });
+  }
+
+  /**
+   * A line another author's pending deletion strikes stands in the frame only
+   * through its live content. When a removal inside it takes the last of that
+   * content, the frame still holds the emptied line, so an empty line with its
+   * properties follows it. A suggested one stood only while the line's
+   * deletions and the removed content's insertions did, so it rests on both.
+   */
+  private keepEmptiedLine(
+    from: number,
+    to: number,
+    contexts: readonly Context[]
+  ) {
+    const line = contexts.findLast((context) => context.kind === 'element');
+
+    if (
+      !line ||
+      to > line.contentTo ||
+      !isTextBlock(this.index.node(line.path)) ||
+      !this.hasMarkKind(line.props, 'delete') ||
+      !this.holdsLiveContent(line, from, from) ||
+      this.holdsLiveContent(line, from, to)
+    ) {
+      return;
+    }
+
+    const { isOwn, markOf } = this.options;
+    const lineMarks = this.marks(line.props);
+    const resting = [
+      ...lineMarks.flatMap((mark) =>
+        mark.kind === 'delete'
+          ? [asInsertion(mark)]
+          : mark.kind === 'insert'
+            ? [mark]
+            : []
+      ),
+      ...this.removedLiveContent(line, from, to).flatMap((props) =>
+        this.marks(props).filter((mark) => mark.kind === 'insert')
+      ),
+    ].filter((mark) => !isOwn(mark));
+    const node = this.options.dependencies.throughout(
+      {
+        ...this.withMarks(
+          line.props,
+          lineMarks.filter((mark) => mark.kind === 'format'),
+          true
+        ),
+        children: [
+          { ...this.withMarks(leafOf(contexts) ?? {}, [], true), text: '' },
+        ],
+      },
+      [...resting, markOf('insert')]
+    );
+
+    this.ops.push({
+      at: line.contentTo + 1,
+      kind: 'insert',
+      tokens: encodeNodes([node]).slice.tokens,
+    });
+  }
+
+  /**
+   * Whether `line` keeps content that accepting everything leaves once
+   * `[from, to)` is gone: a letter of a leaf no deletion strikes, or an
+   * element none strikes.
+   */
+  private holdsLiveContent(line: Context, from: number, to: number) {
+    const { offsets, tokens } = this.index.slice(
+      line.contentFrom,
+      line.contentTo
+    );
+    let liveLeaf = false;
+
+    return tokens.some((token, index) => {
+      const at = line.contentFrom + offsets[index];
+
+      if (token.kind === 'text') {
+        return liveLeaf && (at < from || at + token.text.length > to);
+      }
+      if (token.kind !== 'open') return false;
+
+      const live = !this.hasMarkKind(token.props, 'delete');
+
+      if (token.nodeKind === 'text') {
+        liveLeaf = live;
+        return false;
+      }
+
+      return live && (at < from || at >= to);
+    });
+  }
+
+  private removedLiveContent(line: Context, from: number, to: number) {
+    const { offsets, tokens } = this.index.slice(
+      line.contentFrom,
+      line.contentTo
+    );
+    const removed: Props[] = [];
+    let leaf: Props | null = null;
+
+    tokens.forEach((token, index) => {
+      const at = line.contentFrom + offsets[index];
+
+      if (token.kind === 'open') {
+        const live = !this.hasMarkKind(token.props, 'delete');
+
+        if (token.nodeKind === 'text') leaf = live ? token.props : null;
+        else if (live && at >= from && at < to) removed.push(token.props);
+      } else if (
+        token.kind === 'text' &&
+        leaf &&
+        at < to &&
+        at + token.text.length > from &&
+        !removed.includes(leaf)
+      ) {
+        removed.push(leaf);
+      }
+    });
+
+    return removed;
   }
 
   /**
@@ -1151,7 +1803,8 @@ class RootRecorder {
     from: number,
     to: number,
     startContext: readonly Context[],
-    mode: StrikeMode
+    mode: StrikeMode,
+    reinserted: ReadonlySet<string> = new Set()
   ) {
     const stack: Context[] = [...startContext];
     const opened = new Set<number>();
@@ -1164,11 +1817,15 @@ class RootRecorder {
       marks.some(
         (mark) =>
           mark.kind === 'delete' &&
-          (mode === 'delete' || mark.change === changeId)
+          (mode === 'delete' || mark.change === changeId) &&
+          !reinserted.has(incarnationOf(mark))
       );
+    // Content another author's pending insertion also holds, as a move's copy
+    // of one's own text, stays for that insertion's decision.
     const withdrawn = (marks: readonly AuthoredMark[]) =>
       mode === 'delete' &&
-      marks.some((mark) => mark.kind === 'insert' && isOwn(mark));
+      marks.some((mark) => mark.kind === 'insert' && isOwn(mark)) &&
+      !marks.some((mark) => mark.kind === 'insert' && !isOwn(mark));
     // A node is removed outright only when everything inside it is withdrawn too,
     // so another author's pending content inside it stays to be decided.
     const withdrawnThroughout = (open: number, close: number) => {
@@ -1177,7 +1834,7 @@ class RootRecorder {
 
         if (token.kind !== 'open') continue;
 
-        const marks = readAuthoredMarks(
+        const marks = this.marks(
           this.propsStartingAt(from + localOffsets[inner])
         );
         // An empty unmarked text, such as an inline element's spacer, holds
@@ -1188,7 +1845,16 @@ class RootRecorder {
           local[inner + 1]?.kind === 'close' &&
           marks.length === 0;
 
-        if (!spacer && !withdrawn(marks)) return false;
+        const ownBoundary =
+          mode === 'delete' &&
+          token.nodeKind === 'element' &&
+          marks.length > 0 &&
+          marks.every(
+            (mark) =>
+              (mark.kind === 'split' || mark.kind === 'wrap') && isOwn(mark)
+          );
+
+        if (!spacer && !ownBoundary && !withdrawn(marks)) return false;
       }
 
       return true;
@@ -1209,6 +1875,12 @@ class RootRecorder {
       Context,
       { removed: boolean; survived: boolean }
     >();
+    // A container a suggestion deletes whole owns what is inside it, so
+    // accepting it removes content whose own deletion is rejected. An Editing
+    // write is accepted at once, so it leaves another author's pending
+    // deletion to be decided.
+    const deletedWhole = new Set<Context>();
+    const ownsStruck = !isEditingChange(changeId);
     // A struck element whose every child is withdrawn keeps its default
     // child, so every element holds a child.
     const emptiedKeptElementAt = new Map<
@@ -1219,18 +1891,19 @@ class RootRecorder {
         site: readonly Props[];
       }>
     >();
+    // Open tokens of wrappers a pending unwrap dissolves, which a frame's
+    // command never saw.
+    const unwrappedOpens = new Set<number>();
     const survivingIndexBefore = (index: number) => {
       let back = index - 1;
 
-      for (
-        let open = removedOpenByClose.get(back);
-        open !== undefined;
-        open = removedOpenByClose.get(back)
-      ) {
-        back = open - 1;
-      }
+      for (;;) {
+        const open = removedOpenByClose.get(back);
 
-      return back;
+        if (open !== undefined) back = open - 1;
+        else if (unwrappedOpens.has(back)) back -= 1;
+        else return back;
+      }
     };
     const boundaryMark = (previous: JsonToken | undefined) =>
       markOf(
@@ -1252,7 +1925,7 @@ class RootRecorder {
           throw new Error('Text tokens must sit inside a text node.');
         }
 
-        const marks = readAuthoredMarks(leaf.props);
+        const marks = this.marks(leaf.props);
 
         if (struck(marks)) continue;
         if (withdrawn(marks)) {
@@ -1265,7 +1938,7 @@ class RootRecorder {
         }
         if (!opened.has(leaf.contentFrom) && firstSplitLeaf !== leaf) {
           // Split the leaf so only the removed characters are struck.
-          const struckProps = withMarks(leaf.props, [
+          const struckProps = this.withMarks(leaf.props, [
             ...marks,
             strikeMark(leaf, position),
           ]);
@@ -1293,7 +1966,7 @@ class RootRecorder {
           path: entry?.path ?? [],
           props,
         };
-        const marks = readAuthoredMarks(props);
+        const marks = this.marks(props);
         const removedOutright =
           close !== undefined && withdrawnThroughout(index, close);
         const parent = stack.at(-1);
@@ -1312,7 +1985,15 @@ class RootRecorder {
             index = close;
             continue;
           }
-          const strikeOpIndex = struck(marks) ? null : this.ops.length;
+          const insideDeletedWhole =
+            ownsStruck &&
+            mode === 'delete' &&
+            stack.some((above) => deletedWhole.has(above)) &&
+            !marks.some(
+              (mark) => mark.kind === 'delete' && mark.change === changeId
+            );
+          const strikeOpIndex =
+            struck(marks) && !insideDeletedWhole ? null : this.ops.length;
 
           if (token.nodeKind === 'element') {
             wholeElementByClose.set(close, {
@@ -1325,13 +2006,14 @@ class RootRecorder {
             this.ops.push({
               at: position,
               kind: 'props',
-              props: withMarks(props, [...marks, markOf('delete')]),
+              props: this.withMarks(props, [...marks, markOf('delete')]),
             });
           }
           if (token.nodeKind === 'text') {
             index = close;
           } else {
             stack.push(context);
+            if (strikeOpIndex !== null) deletedWhole.add(context);
             keptElementChildren.set(context, {
               removed: false,
               survived: false,
@@ -1347,7 +2029,7 @@ class RootRecorder {
           openLeaf = props;
           if (struck(marks) || withdrawn(marks)) continue;
 
-          const struckProps = withMarks(props, [
+          const struckProps = this.withMarks(props, [
             ...marks,
             strikeMark(context, context.contentFrom),
           ]);
@@ -1358,11 +2040,31 @@ class RootRecorder {
           continue;
         }
 
+        // The block after such a wrapper meets the boundary before it.
+        if (
+          this.options.framed &&
+          marks.some((mark) => mark.kind === 'unwrap')
+        ) {
+          unwrappedOpens.add(index);
+          openLeaf = null;
+          continue;
+        }
+
         const previousIndex = survivingIndexBefore(index);
         const previous = local[previousIndex];
+        const mergeTarget = wholeElementByClose.get(previousIndex);
+        // Withdrawing merges into the element before, which must be the one
+        // the write merges into or one this change strikes, whose strike
+        // becomes the boundary instead. Another change's struck element in
+        // between takes a join, which lands past it.
         const withdrawsOwnBoundary =
           mode === 'delete' &&
           previous?.kind === 'close' &&
+          (!mergeTarget ||
+            mergeTarget.strikeOpIndex !== null ||
+            this.marks(mergeTarget.props).some(
+              (mark) => mark.kind === 'delete' && mark.change === changeId
+            )) &&
           marks.some(
             (mark) =>
               (mark.kind === 'split' || mark.kind === 'wrap') && isOwn(mark)
@@ -1370,7 +2072,6 @@ class RootRecorder {
 
         if (withdrawsOwnBoundary) {
           const previousAt = from + localOffsets[previousIndex];
-          const mergeTarget = wholeElementByClose.get(previousIndex);
 
           this.ops.push({
             from: previousAt,
@@ -1380,14 +2081,14 @@ class RootRecorder {
           this.ops.push({ from: position, kind: 'remove', to: position + 1 });
           emptiedKeptElementAt.delete(previousIndex);
           if (mergeTarget) {
-            const targetMarks = readAuthoredMarks(mergeTarget.props);
+            const targetMarks = this.marks(mergeTarget.props);
             const withoutOwnDelete = targetMarks.filter(
               (mark) => !(mark.kind === 'delete' && mark.change === changeId)
             );
             const boundaryInsteadOfStrike: Op = {
               at: from + localOffsets[mergeTarget.open],
               kind: 'props',
-              props: withMarks(mergeTarget.props, [
+              props: this.withMarks(mergeTarget.props, [
                 ...withoutOwnDelete,
                 boundaryMark(local[survivingIndexBefore(mergeTarget.open)]),
               ]),
@@ -1402,11 +2103,20 @@ class RootRecorder {
           continue;
         }
 
-        this.ops.push({
-          at: position,
-          kind: 'props',
-          props: withMarks(props, [...marks, boundaryMark(previous)]),
-        });
+        const boundary = boundaryMark(previous);
+
+        // A boundary a pending join already removes is gone from the frame's
+        // document, so the fold never joins it a second time.
+        if (
+          boundary.kind !== 'join' ||
+          !marks.some((mark) => mark.kind === 'join')
+        ) {
+          this.ops.push({
+            at: position,
+            kind: 'props',
+            props: this.withMarks(props, [...marks, boundary]),
+          });
+        }
         openLeaf = null;
         continue;
       }
@@ -1420,7 +2130,7 @@ class RootRecorder {
         emptiedKeptElementAt.set(index, {
           at: position,
           marks: [
-            ...readAuthoredMarks(closed.props).filter(
+            ...this.marks(closed.props).filter(
               (mark) => mark.kind === 'insert' || mark.kind === 'delete'
             ),
             ...(whole && whole.strikeOpIndex !== null
@@ -1450,7 +2160,9 @@ class RootRecorder {
         at,
         kind: 'insert',
         tokens: encodeNodes(
-          children.map((child) => withMarksThroughout(child, marks))
+          children.map((child) =>
+            this.options.dependencies.throughout(child, marks)
+          )
         ).slice.tokens,
       });
     }
@@ -1477,10 +2189,10 @@ class RootRecorder {
       openLeaf: Props | null;
       removedFrom: number;
       reopen?: Props | null;
+      startContexts?: readonly Context[];
     }>
   ) {
     const { at, inserted, landing } = input;
-    const { propose } = this;
     const output: JsonToken[] = [];
     const outputTextOffsets: number[] = [];
     const local = inserted.tokens;
@@ -1508,7 +2220,7 @@ class RootRecorder {
       for (const context of [...stack].reverse()) {
         if (context.kind !== 'element') continue;
 
-        const own = readAuthoredMarks(context.props).find(
+        const own = this.marks(context.props).find(
           (mark) => mark.kind === 'insert' && this.options.isOwn(mark)
         );
 
@@ -1524,31 +2236,172 @@ class RootRecorder {
 
       return null;
     };
-    const landed = (props: Props) => {
-      const marks = withoutCuts(props);
+    const insertedMarks = () => {
+      const own = ownElement();
 
-      return propose
-        ? withMarks(props, [...marks, this.options.markOf('insert')])
-        : withMarks(props, marks);
+      return own
+        ? [own.mark]
+        : [
+            ...this.containedInsertMarks(stack, at),
+            this.adjacentOwnInsert(stack, at) ?? this.options.markOf('insert'),
+          ];
+    };
+    const withInserted = (props: Props, added: readonly AuthoredMark[]) =>
+      this.withMarks(props, [...this.marks(props), ...added]);
+    const insertedLeaves = new Set<Context>();
+    const landed = (props: Props) => {
+      const marks = this.withoutCuts(props);
+
+      return this.withMarks(props, [...marks, this.options.markOf('insert')]);
     };
     let trailingLeafProps: Props | null = input.reopen ?? leafOf(stack);
     let closedElement = false;
+    // The slice was written for the elements open where the replacement
+    // starts, but a Suggesting insertion lands after the struck range, inside
+    // the elements open where it ends. The slice's closes of elements the
+    // struck range already closed are dropped, and inline elements only the
+    // end has close before the slice writes into them. That holds only while each
+    // piece of content lands in the element it was written for, or inline in
+    // an element of the same type that the struck range joins to it, which
+    // keeps content before the struck range.
+    const elementsOf = (contexts: readonly Context[]) =>
+      contexts.filter((context) => context.kind === 'element');
+    const keyOf = (context: Context | undefined) => context?.path.join(',');
+    const written = elementsOf(input.startContexts ?? input.contexts);
+    const lands = elementsOf(input.contexts);
+    const landKeys = new Set(lands.map(keyOf));
+    const shared = new Set(
+      written.map(keyOf).filter((key) => landKeys.has(key))
+    );
+    let closedByStrike = written.length - lands.length;
+    let realigned = false;
+    let misplaced = false;
+    let reopened = false;
+    const misplacedReplacement = () =>
+      unrepresentable(
+        'Suggesting cannot place this replacement after the content it replaces.'
+      );
+    const closeLanding = () => {
+      for (; closedByStrike < 0; closedByStrike += 1) {
+        const inner = lands.at(-1);
+
+        if (misplaced || !inner || !this.options.isInline(inner.props)) {
+          throw misplacedReplacement();
+        }
+        closeLeaf();
+        if (stack.at(-1)?.kind === 'text') stack.pop();
+        emit(closeToken('element'));
+        const closed = stack.pop();
+
+        if (closed) splitFrom.push(closed);
+        lands.pop();
+        closedElement = true;
+        realigned = true;
+      }
+    };
+    const place = (inline: boolean) => {
+      if (reopened) return;
+      closeLanding();
+
+      const into = written.at(-1);
+      const onto = lands.at(-1);
+      const joined =
+        inline &&
+        into !== undefined &&
+        onto !== undefined &&
+        !shared.has(keyOf(into)) &&
+        !shared.has(keyOf(onto)) &&
+        into.props.type === onto.props.type &&
+        input.removedFrom > into.contentFrom + 1;
+
+      if (keyOf(into) !== keyOf(onto) && !joined) misplaced = true;
+      if (misplaced && realigned) throw misplacedReplacement();
+    };
     // A split closes elements innermost first and its continuations reopen
     // them outermost first, so each continuation pops the element it continues.
     const splitFrom: Context[] = [];
 
+    // Text that lands directly in an element holding blocks, or in the root,
+    // goes into the block the schema completes it with, recorded as the
+    // writer's insertion. A split in such an element, as Enter writes it,
+    // splits that block, and the block after the split is a fill too.
+    let filled = 0;
+    const fills = new Set<Context>();
+    const fillAt = (leaf = false, root = false) => {
+      const top = stack.at(-1);
+
+      if (
+        !this.options.framed ||
+        (top ? top.kind !== 'element' : !root) ||
+        outLeaf !== null
+      ) {
+        return;
+      }
+
+      const [first] = this.options.fill(
+        stack.map((context) => context.props).reverse()
+      );
+
+      if (!first || typeof first.text === 'string' || !first.children) return;
+
+      const { children, ...props } = first;
+      const withInsertMark = (marked: Props) =>
+        this.withMarks(marked, [
+          ...this.marks(marked),
+          this.options.markOf('insert'),
+        ]);
+      const fillProps = withInsertMark(props);
+      const fill: Context = {
+        contentFrom: at,
+        contentTo: at,
+        kind: 'element',
+        path: [],
+        props: fillProps,
+      };
+
+      emit(openToken('element', fillProps));
+      stack.push(fill);
+      fills.add(fill);
+      filled += 1;
+
+      const [text] = children as JsonNode[];
+
+      if (leaf && text && typeof text.text === 'string') {
+        const { text: _text, ...leafProps } = text;
+
+        ensureLeaf(withInsertMark(leafProps));
+        stack.push({ ...fill, kind: 'text', props: outLeaf ?? leafProps });
+      }
+    };
+    const [first] = local;
+    const splitsFill = first?.kind === 'close';
+
+    if (first?.kind === 'close') fillAt(first.nodeKind === 'text', true);
+
+    const unfill = () => {
+      if (filled === 0) return;
+      closeLeaf();
+      for (; filled > 0; filled -= 1) {
+        emit(closeToken('element'));
+        stack.pop();
+      }
+    };
+
     for (let index = 0; index < local.length; index += 1) {
       const token = local[index];
 
+      if (token.kind !== 'text' && !splitsFill) unfill();
       if (token.kind === 'text') {
+        place(true);
+        fillAt(false, true);
         const leaf = stack.at(-1);
         const leafProps =
           leaf && leaf.kind === 'text' ? leaf.props : ({} as Props);
         const desired = landing
           ? landed(leafProps)
-          : propose
-            ? this.suggestedTextProps(leaf, at, ownElement())
-            : this.editedTextProps(leaf, leafProps, at);
+          : leaf && insertedLeaves.has(leaf)
+            ? leaf.props
+            : this.suggestedTextProps(leaf, at, ownElement());
 
         ensureLeaf(desired);
         for (let offset = 0; offset < token.text.length; offset += 1) {
@@ -1561,20 +2414,10 @@ class RootRecorder {
       const close = token.kind === 'open' ? closeOf.get(index) : undefined;
 
       if (token.kind === 'open' && close !== undefined) {
+        place(token.nodeKind === 'text' || this.options.isInline(token.props));
         closeLeaf();
         const subtree = local.slice(index, close + 1);
-        const own = landing || !propose ? null : ownElement();
-        const added = landing
-          ? null
-          : !propose
-            ? []
-            : own
-              ? [own.mark]
-              : [
-                  ...this.containedInsertMarks(stack, at),
-                  this.adjacentOwnInsert(stack, at) ??
-                    this.options.markOf('insert'),
-                ];
+        const added = landing ? null : insertedMarks();
 
         for (const item of subtree) {
           if (item.kind === 'text') {
@@ -1591,10 +2434,7 @@ class RootRecorder {
                   item.nodeKind,
                   added === null
                     ? landed(item.props)
-                    : withMarks(item.props, [
-                        ...readAuthoredMarks(item.props),
-                        ...added,
-                      ])
+                    : withInserted(item.props, added)
                 )
           );
         }
@@ -1607,15 +2447,26 @@ class RootRecorder {
         // follows it, as a wrap writes it, and after a close splits its
         // block. A text continues the leaf the document goes on in, which is
         // opened once its properties are known.
+        closeLanding();
+        reopened = true;
         closeLeaf();
         outputTextOffsets.push(outLength);
-        stack.push({
+        const insertedLeaf =
+          token.nodeKind === 'text' &&
+          !landing &&
+          this.options.origin === 'slice';
+        const continuing: Context = {
           contentFrom: at,
           contentTo: at,
           kind: token.nodeKind,
           path: [],
-          props: token.props,
-        });
+          props: insertedLeaf
+            ? withInserted(token.props, insertedMarks())
+            : token.props,
+        };
+
+        stack.push(continuing);
+        if (insertedLeaf) insertedLeaves.add(continuing);
         if (token.nodeKind === 'text') {
           trailingLeafProps = this.continuedLeafProps(baseLeaf, token.props);
           continue;
@@ -1624,8 +2475,8 @@ class RootRecorder {
         // deletion of the element it splits, whose existence it shares, and
         // the pending writes of each property the split keeps.
         const continued = closedElement ? splitFrom.pop() : undefined;
-        const shared = continued
-          ? readAuthoredMarks(continued.props).filter(
+        const inherited = continued
+          ? this.marks(continued.props).filter(
               (mark) =>
                 mark.kind === 'insert' ||
                 mark.kind === 'delete' ||
@@ -1638,18 +2489,34 @@ class RootRecorder {
                   ))
             )
           : [];
-        const suggested = propose && !ownElement();
+        const own = ownElement();
+        // Text that survives rejecting one's own insertion needs the split's
+        // own claim to come back together.
+        const suggested =
+          !own ||
+          (continued !== undefined &&
+            continued.path.length > 0 &&
+            !this.rejectingEmpties(this.index.node(continued.path), own.mark));
         const rightCuts = this.splitInline(continued, token.props, suggested);
+
+        if (continued && fills.has(continued)) {
+          fills.add(getDefined(stack.at(-1)));
+          filled += 1;
+        }
 
         emit(
           openToken(
             'element',
-            withMarks(token.props, [
-              ...readAuthoredMarks(token.props),
-              ...shared,
+            this.withMarks(token.props, [
+              ...this.marks(token.props),
+              ...inherited,
               ...(rightCuts ?? []),
               ...(suggested && !rightCuts
-                ? [this.options.markOf(closedElement ? 'split' : 'wrap')]
+                ? [
+                    closedElement
+                      ? this.splitOf(continued)
+                      : this.options.markOf('wrap'),
+                  ]
                 : []),
             ])
           )
@@ -1665,16 +2532,37 @@ class RootRecorder {
         trailingLeafProps = null;
         continue;
       }
+      closeLanding();
+      written.pop();
+      if (closedByStrike > 0) {
+        if (misplaced) throw misplacedReplacement();
+        closedByStrike -= 1;
+        realigned = true;
+        closeLeaf();
+        outputTextOffsets.push(outLength);
+        continue;
+      }
+      lands.pop();
       closeLeaf();
       outputTextOffsets.push(outLength);
       emit(token);
       const closed = stack.pop();
 
       if (closed) splitFrom.push(closed);
+      if (closed && fills.has(closed)) filled -= 1;
       closedElement = true;
     }
 
+    // An insertion that ends by opening the next leaf, as Enter does, leaves
+    // the caret inside that leaf, so the leaf opens before the insertion ends.
+    if (trailingLeafProps !== null && local.at(-1)?.kind === 'open') {
+      ensureLeaf(trailingLeafProps);
+    }
     outputTextOffsets.push(outLength);
+    if (filled > 0) {
+      trailingLeafProps = null;
+      unfill();
+    }
     if (trailingLeafProps === null) closeLeaf();
     else ensureLeaf(trailingLeafProps);
 
@@ -1715,7 +2603,7 @@ class RootRecorder {
       return null;
     }
 
-    const marks = readAuthoredMarks(continued.props);
+    const marks = this.marks(continued.props);
     const moved = marks.filter((mark) => isCut(mark) && mark.side === 'end');
 
     if (!suggested && moved.length === 0) return null;
@@ -1739,7 +2627,7 @@ class RootRecorder {
     this.ops.push({
       at: continued.contentFrom - 1,
       kind: 'props',
-      props: withMarks(continued.props, [
+      props: this.withMarks(continued.props, [
         ...marks.filter((mark) => !moved.includes(mark)),
         ...(cut ? [{ ...cut, side: 'end' as const }] : []),
       ]),
@@ -1768,32 +2656,8 @@ class RootRecorder {
     if (!base) return next;
 
     return (
-      this.formattedProps(base, withMarks(next, readAuthoredMarks(base))) ??
-      base
+      this.formattedProps(base, this.withMarks(next, this.marks(base))) ?? base
     );
-  }
-
-  /**
-   * Editing text inside struck text splits the deletion, and text at an
-   * insertion's edge stays out of it; text inside an insertion joins it.
-   */
-  private editedTextProps(
-    leaf: Context | undefined,
-    props: Props,
-    at: number
-  ): Props {
-    const marks = readAuthoredMarks(props);
-    const atEdge =
-      leaf?.kind === 'text' &&
-      (at === leaf.contentFrom || at === leaf.contentTo);
-    const kept = marks.filter((mark) => {
-      if (mark.kind === 'delete' || mark.kind === 'format') return false;
-      if (mark.kind !== 'insert' || !atEdge || !leaf) return true;
-
-      return this.sharedNeighborInserts(leaf, at).includes(mark);
-    });
-
-    return kept.length === marks.length ? props : withMarks(props, kept);
   }
 
   private suggestedTextProps(
@@ -1802,16 +2666,18 @@ class RootRecorder {
     ownElement: Readonly<{ mark: AuthoredMark; oneText: boolean }> | null
   ): Props {
     if (!leaf || leaf.kind !== 'text') {
-      return withMarks({}, [ownElement?.mark ?? this.options.markOf('insert')]);
+      return this.withMarks({}, [
+        ownElement?.mark ?? this.options.markOf('insert'),
+      ]);
     }
 
-    const marks = readAuthoredMarks(leaf.props);
+    const marks = this.marks(leaf.props);
     const own = marks.find(
       (mark) => mark.kind === 'insert' && this.options.isOwn(mark)
     );
     const struck = marks.some((mark) => mark.kind === 'delete');
 
-    if (own && !struck) return leaf.props;
+    if (own && !struck) return withoutHeld(leaf.props);
     if (ownElement) {
       // Text in one's own pending element carries that element's insert mark,
       // so a late edit is reviewable; a one-text element cannot split.
@@ -1819,9 +2685,11 @@ class RootRecorder {
         (mark) => mark.kind !== 'delete' && mark.kind !== 'format'
       );
 
-      return ownElement.oneText
-        ? withMarks(leaf.props, live)
-        : withMarks(leaf.props, [...live, ownElement.mark]);
+      return this.withMarks(
+        leaf.props,
+        ownElement.oneText ? live : [...live, ownElement.mark],
+        true
+      );
     }
 
     const inside = leaf.contentFrom < at && at < leaf.contentTo;
@@ -1829,26 +2697,75 @@ class RootRecorder {
       ? marks.filter((mark) => mark.kind === 'insert')
       : this.sharedNeighborInserts(leaf, at);
 
-    return withMarks(leaf.props, [
-      ...kept,
-      this.adjacentOwnInsert([leaf], at) ?? this.options.markOf('insert'),
-    ]);
+    return this.withMarks(
+      leaf.props,
+      [
+        ...kept,
+        this.adjacentOwnInsert([leaf], at) ?? this.options.markOf('insert'),
+      ],
+      true
+    );
   }
 
-  /** Insert marks an edge insertion keeps: only those on both sides of it. */
+  /**
+   * Insert marks an edge insertion keeps: only those on both sides of it, in
+   * the left side's order.
+   */
   private sharedNeighborInserts(leaf: Context, at: number) {
-    const neighbor = this.neighborLeaf(leaf, at === leaf.contentFrom ? -1 : 1);
-    const mine = readAuthoredMarks(leaf.props).filter(
-      (mark) => mark.kind === 'insert'
-    );
+    const leftEdge = at === leaf.contentFrom;
+    const neighbor = this.neighborLeaf(leaf, leftEdge ? -1 : 1);
 
     if (!neighbor) return [];
 
-    const theirs = readAuthoredMarks(neighbor);
+    const inserts = (props: Props) =>
+      this.marks(props).filter((mark) => mark.kind === 'insert');
+    const [left, right] = leftEdge
+      ? [inserts(neighbor), inserts(leaf.props)]
+      : [inserts(leaf.props), inserts(neighbor)];
+    const keys = new Set(right.map(incarnationOf));
 
-    return mine.filter((mark) =>
-      theirs.some((other) => jsonEqual(other, mark))
-    );
+    return left.filter((mark) => keys.has(incarnationOf(mark)));
+  }
+
+  private splitOf(source: Context | undefined): AuthoredMark {
+    const { at, author, change, inc } = this.options.markOf('split');
+    const marks = source ? this.marks(source.props) : [];
+    const join = marks.find((mark) => mark.kind === 'join');
+    const follows = join
+      ? incarnationOf(join)
+      : marks.flatMap((mark) =>
+          mark.kind === 'split' && mark.cut === undefined && mark.follows
+            ? [mark.follows]
+            : []
+        )[0];
+
+    return {
+      at,
+      author,
+      change,
+      ...(inc === undefined ? {} : { inc }),
+      ...(follows === undefined ? {} : { follows }),
+      kind: 'split',
+    };
+  }
+
+  private rejectingEmpties(node: unknown, own: AuthoredMark): boolean {
+    const { children, text } = node as {
+      children?: readonly unknown[];
+      text?: unknown;
+    };
+
+    if (typeof text === 'string') {
+      return (
+        text === '' ||
+        this.marks(propsOf(node)).some(
+          (mark) =>
+            mark.kind === 'insert' && incarnationOf(mark) === incarnationOf(own)
+        )
+      );
+    }
+
+    return (children ?? []).every((child) => this.rejectingEmpties(child, own));
   }
 
   /** One's own pending insertion at either edge of an insertion is amended. */
@@ -1876,7 +2793,7 @@ class RootRecorder {
     }
 
     for (const props of candidates) {
-      const marks = readAuthoredMarks(props);
+      const marks = this.marks(props);
 
       if (marks.some((mark) => mark.kind === 'delete')) continue;
 
@@ -1896,7 +2813,7 @@ class RootRecorder {
     if (!leaf || leaf.kind !== 'text') return [];
     if (!(leaf.contentFrom < at && at < leaf.contentTo)) return [];
 
-    return readAuthoredMarks(leaf.props).filter(
+    return this.marks(leaf.props).filter(
       (mark) => mark.kind === 'insert' && !this.options.isOwn(mark)
     );
   }
@@ -1913,7 +2830,7 @@ class RootRecorder {
 
     for (const props of neighbors) {
       const own = props
-        ? readAuthoredMarks(props).find(
+        ? this.marks(props).find(
             (mark) => mark.kind === 'delete' && this.options.isOwn(mark)
           )
         : undefined;
@@ -2042,7 +2959,13 @@ class RootRecorder {
     let removed: Extract<Piece, { kind: 'removed' }> | null = null;
 
     for (const piece of this.pieces) {
-      if (piece.kind === 'removed' && piece.after === position) removed = piece;
+      if (
+        piece.kind === 'removed' &&
+        (piece.after === position ||
+          (caret && this.besideRemoval(piece, position)))
+      ) {
+        removed = piece;
+      }
     }
     for (const piece of this.pieces) {
       if (piece.kind === 'removed') continue;
@@ -2084,16 +3007,70 @@ class RootRecorder {
 
     if (removed) {
       const right = caret ? !removed.leftward : assoc === 1;
+      const edge = right ? removed.beforeTo : removed.beforeFrom;
 
       return (
         recorded.mapPos(
-          right ? removed.beforeTo : removed.beforeFrom,
+          caret ? this.intoLeaf(edge, right) : edge,
           right ? 1 : -1
         ) ?? position
       );
     }
 
     return position;
+  }
+
+  /**
+   * Whether a caret sits at a removal with only text-leaf boundaries between,
+   * which an edit leaves when it puts the caret in the next or previous leaf.
+   */
+  private besideRemoval(
+    removed: Extract<Piece, { kind: 'removed' }>,
+    position: number
+  ) {
+    for (const piece of this.pieces) {
+      if (piece.kind !== 'kept') continue;
+      if (position < piece.afterFrom || position > piece.afterTo) continue;
+
+      const at = piece.beforeFrom + position - piece.afterFrom;
+
+      if (piece.afterTo === removed.after) {
+        return this.onlyLeafBoundaries(at, removed.beforeFrom);
+      }
+      if (piece.afterFrom === removed.after) {
+        return this.onlyLeafBoundaries(removed.beforeTo, at);
+      }
+    }
+
+    return false;
+  }
+
+  private onlyLeafBoundaries(from: number, to: number) {
+    return (
+      from <= to &&
+      this.index
+        .slice(from, to)
+        .tokens.every(
+          (token) => token.kind !== 'text' && token.nodeKind === 'text'
+        )
+    );
+  }
+
+  private intoLeaf(position: number, right: boolean) {
+    const boundary = (from: number, kind: 'close' | 'open') => {
+      const token = this.index.slice(from, from + 1).tokens[0];
+
+      return token?.kind === kind && token.nodeKind === 'text';
+    };
+    let at = position;
+
+    if (right) {
+      while (boundary(at, 'open')) at += 1;
+    } else {
+      while (at > 0 && boundary(at - 1, 'close')) at -= 1;
+    }
+
+    return at;
   }
 }
 
@@ -2151,6 +3128,19 @@ const enclosureOf = (
 
   return { depth, wraps };
 };
+
+const asInsertion = ({
+  at,
+  author,
+  change,
+  inc,
+}: AuthoredMark): AuthoredMark => ({
+  at,
+  author,
+  change,
+  ...(inc === undefined ? {} : { inc }),
+  kind: 'insert',
+});
 
 const leafOf = (contexts: readonly Context[]): Props | null => {
   const leaf = contexts.at(-1);

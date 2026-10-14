@@ -1,0 +1,20 @@
+---
+id: 2026-10-12-toolbar-button-names
+date: 2026-10-12
+status: draft
+kind: fix
+summary: 'Name icon-only toolbar buttons for assistive tech'
+change: { 'type': 'source', 'date': '2026-10-12', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-12-toolbar-button-tooltip-name","kind":"fix","migrationNotes":[]} -->
+
+- **`toolbar`**: `ToolbarButton` uses a string `tooltip` as the button's accessible name when you pass no `aria-label`. Screen readers announce icon-only buttons such as Link by that name, and `getByRole('button', { name: 'Link' })` finds them.
+<!-- entry: {"id":"2026-10-12-toolbar-button-value-names","kind":"fix","migrationNotes":[]} -->
+- **`turn-into-toolbar-button`**, **`mode-toolbar-button`**: Name the button with its label and current value, such as "Turn into: Text" and "Editing mode: Editing". The mode button keeps its name when narrow screens hide its text.
+<!-- entry: {"id":"2026-10-12-toolbar-split-button-names","kind":"fix","migrationNotes":[]} -->
+- **`list-toolbar-button`**, **`media-toolbar-button`**: Name both halves of each split button, such as "Bulleted list" and "Bulleted list styles", or "Image" and "Image options".
+<!-- entry: {"id":"2026-10-12-toolbar-duplicate-labels","kind":"wiring","migrationNotes":[]} -->
+- **`history-toolbar-button`**, **`import-toolbar-button`**, **`export-toolbar-button`**, **`table-toolbar-button`**, **`comment-toolbar-button`**, **`more-toolbar-button`**, **`emoji-toolbar-button`**, **`table`**: Remove each `aria-label` that repeated the button's `tooltip`. The accessible names stay the same.

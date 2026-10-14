@@ -35,6 +35,8 @@ TODO: The largest risk and what limits it.
 - slate-identity: pending
 - named-symptom: pending
 - final-artifacts: pending
+- inherited-budget: pending: <file>.md beside this plan, then the step whose frozen budget this run judges, or N/A: <reason>
+- inherited-budget-result: pending: pass: <evidence>, or fail: <evidence>; causes <id>, <id>
 
 Boundaries:
 - allowed runtime/packages/apps: pending

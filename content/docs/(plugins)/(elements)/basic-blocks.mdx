@@ -71,7 +71,7 @@ Use `BaseBasicBlocksKit` in static or server-safe rendering paths.
 <ComponentSource name="basic-blocks-static" />
 
 ```tsx
-import { createStaticEditor } from 'platejs/static';
+import { createEditor } from 'platejs';
 
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 
@@ -82,7 +82,7 @@ const value = [
   },
 ];
 
-export const staticEditor = createStaticEditor({
+export const editor = createEditor({
   plugins: [...BaseBasicBlocksKit],
   initialValue: value,
 });

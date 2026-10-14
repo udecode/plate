@@ -51,7 +51,6 @@
         "../../packages/platejs/src/react/features/comments/index.ts"
       ],
       "platejs/compiler": ["../../packages/platejs/src/compiler/index.tsx"],
-      "platejs/csv": ["../../packages/platejs/src/csv/index.ts"],
       "platejs/date": ["../../packages/platejs/src/features/date/index.ts"],
       "platejs/date/react": [
         "../../packages/platejs/src/react/features/date/index.ts"
@@ -94,6 +93,7 @@
       "platejs/layout/react": [
         "../../packages/platejs/src/react/features/layout/index.ts"
       ],
+      "platejs/lint": ["../../packages/platejs/src/features/lint/index.ts"],
       "platejs/markdown": ["../../packages/platejs/src/markdown/index.ts"],
       "platejs/math": ["../../packages/platejs/src/math/index.ts"],
       "platejs/math/react": ["../../packages/platejs/src/math/react/index.ts"],

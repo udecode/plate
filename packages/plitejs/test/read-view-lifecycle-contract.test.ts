@@ -7,7 +7,6 @@ import {
   definePlugin,
   type EditorStateView,
   setEditorReadOnly,
-  txRead,
 } from 'plitejs';
 
 import {
@@ -534,23 +533,6 @@ describe('read view lifecycle', () => {
       /function intrinsic property "name" was redefined/
     );
     assert.equal(getterCalls, 0);
-  });
-
-  it('keeps internal tx-read markers outside the callable method tree', () => {
-    const method = txRead(() => true);
-    const editor = createEditor({
-      plugins: [
-        definePlugin('markedRead', {
-          read: () => ({ method }),
-        }),
-      ],
-    });
-
-    assert.deepEqual(
-      Reflect.ownKeys(method).filter((key) => typeof key === 'symbol'),
-      []
-    );
-    assert.equal(editor.read.markedRead.method(), true);
   });
 
   it('rejects reentrant reads while constructing a read group', () => {

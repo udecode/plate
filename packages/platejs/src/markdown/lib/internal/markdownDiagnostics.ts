@@ -1,6 +1,7 @@
 import type { Node as UnistNode, Position } from 'unist';
 
 import { ElementApi, type Descendant } from '../../../core';
+import { isMetadataRootKey } from '../../../facade';
 import type {
   MarkdownDiagnostic,
   MarkdownErrorDiagnostic,
@@ -161,9 +162,9 @@ export const createMarkdownModelLocator = (
   };
 
   visit(document.children, []);
-  Object.entries(document.roots ?? {}).forEach(([root, nodes]) =>
-    visit(nodes, [], root)
-  );
+  Object.entries(document.roots ?? {}).forEach(([root, nodes]) => {
+    if (!isMetadataRootKey(root)) visit(nodes, [], root);
+  });
 
   return (node) => locations.get(node);
 };

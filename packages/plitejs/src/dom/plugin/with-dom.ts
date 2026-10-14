@@ -5,6 +5,7 @@ import {
   type PluginApiFactoryContext,
   type EditorTransactionChangeContext,
   LocationApi,
+  txLocate,
   type Editor as EditorType,
 } from '../..';
 import {
@@ -239,8 +240,9 @@ export function dom(
       ? {}
       : {
           update: ({ tx }) => ({
-            insertData: (data: DataTransfer) =>
-              tx.command(domCommands.insertData, data),
+            insertData: txLocate(false, (data: DataTransfer) =>
+              tx.command(domCommands.insertData, data)
+            ),
           }),
         }),
   });

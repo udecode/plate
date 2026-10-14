@@ -8,6 +8,7 @@ Validate stored URLs by what they do. The schema enforces each role's floor at e
 - Image `url` accepts web and `blob:` URLs and base64 `data:` URLs of raster images; audio, video and file `url` accept web and `blob:` URLs; embed `url` accepts only absolute `http` and `https` URLs
 - Relative URLs stay valid except for embeds, and an empty URL is an unresolved placeholder; a URL with control characters, a backslash or a leading `//` is rejected
 - Media insertion refuses a URL its role does not accept
+- Add `getLinkHref(url, { allowedSchemes })`, which returns the href a link may open or `undefined`, so UI outside the link feature links only what a link would
 - Remove `sanitizeUrl` and the link option `dangerouslySkipSanitization`
 
 **Migration:** Replace `dangerouslySkipSanitization: true` with the schemes your links need:

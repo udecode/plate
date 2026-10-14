@@ -1,5 +1,5 @@
 {
-  "tag": "v0.9.67",
+  "tag": "v0.9.84",
   "branch": "next",
   "protected": "main",
   "delivery": "user",
@@ -47,11 +47,11 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "20d23d2a188e92605e2215704adb7ca3a86f2b5e32289810e2f84888e2171737",
+    "block": "477eed8e8b04851e01a0ad4231f6713745efd9dc658fb31b11781657901ce8ac",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
-      ".agents/pstack/cross.mjs": "18e6b962cd829768c36e304eeeaad7f632c8e14a55054dba8d220eac8b6196bb",
+      ".agents/pstack/cross.mjs": "d3567ef3ac413a541f1a918f6670ce15d49f9bf38e9cb8fc9732f0c5aa8559d6",
       ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
       ".agents/pstack/freeze.mjs": "6a4f314d07235936da116d73e116a45e7a03821084f5044f84f84d3ec122e332",
       ".agents/pstack/lead.mjs": "2beae3cdca46116818fb1f5b4f8ac4b78bc16ad0f0e94a9dbaadec1011861cf9",
@@ -59,20 +59,22 @@
       ".agents/pstack/proof.mjs": "5a65de9344d25559f080c91653e22f59f23def3b5b3c312a319440221b8f2144",
       ".agents/pstack/reply.mjs": "36db86ef0f6af915d4a2ac58fea6be62417234a0b1348462e61c8d4f46fd71a3",
       ".agents/pstack/reread.mjs": "17d61f197ea79896c67ed3dc184f02e67d71621188030313250f0229c98349fb",
-      ".agents/pstack/decisions-check.mjs": "8d771f8c0c59df3220de2a41cdac7092f6e0c2f19c3bebc5e46d5242aceb416c",
-      ".agents/pstack/plan-open.mjs": "701ba00e8b651851de566c26a28142606bd0694f109ca52dce274d54966b69fb",
-      ".agents/pstack/plan-page.mjs": "16f12de5bcafa5aea6bbd3a388c8ad64e113f08a443d3c6fb17cee12fe45287f",
-      ".agents/pstack/status.mjs": "be0e23111171f10ef00e19cdc6204a10ea2b7e1fa83130333dc18d8c3f8b930f",
-      ".agents/pstack/rules/close.md": "1956ea5189852f378fb66e49e65d2d55810b2b23cb2d60fbc91e8818d7ddb2ba",
+      ".agents/pstack/decisions-check.mjs": "4200b1233408861b7436cdc4adb30f3cdb55366d85286c908b97565226bfa41c",
+      ".agents/pstack/levels.mjs": "41485566fe83fb37d0ea668b12fb412b6e317c660eaf2b3a6dfaaa0c7f3f0a19",
+      ".agents/pstack/plan-open.mjs": "b379db52274bbf459b2c8909120c5c7ad4ec46a2302016a63d1e3e6e81a08423",
+      ".agents/pstack/plan-page.mjs": "3e28763553c82a75f75a3e143b3738e64bef196e355904da00eeccb9676811be",
+      ".agents/pstack/status.mjs": "de8d5c262040fc345884b4668069fc277c2e77ecd6d2c75188524938bb09d969",
+      ".agents/pstack/rules/chips.md": "a7a02d40324c723d9ec1782a4e0bcec45196b12f08af776b113d6de40d090eb3",
+      ".agents/pstack/rules/close.md": "56fc14947b4d5d8fe327a923c84355e4d7eda56a959589e229cf280dad124110",
       ".agents/pstack/rules/long-runs.md": "b9215736b3a004bfdb2e0bf79d93bf540bff84e533abd8fca3cc4661db4a30a9",
       ".agents/pstack/rules/pages.md": "4a437e2db42fe0d01c41777ffb5e9788b23d5bb1bac5f94a4fb58f20f19b5ec9",
-      ".agents/pstack/rules/panel.md": "9564bda52b270f534eaf650ac74c8c31f88378b3a2a9a12311cb8ad3aa421123",
-      ".agents/pstack/rules/reflect.md": "dde25e7981850028132b8ea802925433ccc66b30bcf69c10e47dfce27de9de24",
-      ".agents/pstack/rules/tests.md": "fc0fa4a8fc7d5672d16ce8e2b6a556cf925e0f7023f80647f15eea7a669105cb",
+      ".agents/pstack/rules/panel.md": "50eb16598d666b74e224e419ff9e26e1cf8e497bff764256f1346abbc4211147",
+      ".agents/pstack/rules/reflect.md": "97fa96ea1959494709313f2d7877345dc3f8d0fd93e88d35e0ea0d22a18f58d2",
+      ".agents/pstack/rules/tests.md": "853d8650c2a897d36f2ac97883c7e0fb265cf950a0f9567e22fc816682a1bb70",
       ".agents/pstack/rules/title.md": "3790bd24dd6a72b615d394823a5ea46e7fc949e2d3d2248a6358c29d1ed19db5",
-      ".agents/pstack/rules/trails.md": "b8c612258a1ebf5cb720b6c9b72203a17d5d95741f9c36db5562a7664c9e80a1"
+      ".agents/pstack/rules/trails.md": "df808e0228a76435614d01f349bf7fb810f9e9679ddd6c471b8a337b81931e35"
     },
-    "source": "4e20562a043cb5d11fd1b4055fa780d7a68afb7b"
+    "source": "e09d58af617e01859ce8be6e7f0a988e1caa3992"
   },
   "pageTopic": {
     "field": "review_scopes",

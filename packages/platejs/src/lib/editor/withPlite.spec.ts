@@ -26,7 +26,7 @@ describe('createEditor', () => {
       ],
     });
 
-    expect(editor.read.schema.createDefaultRootChild()).toEqual({
+    expect(editor.read.schema.createDefaultChild({ at: [0] })).toEqual({
       children: [{ text: '' }],
       type: 'paragraph',
     });
@@ -62,6 +62,18 @@ describe('createEditor', () => {
       version: 1,
     });
     expect(editor.read.text.string([])).toBe('slotted document');
+  });
+
+  it('selects the document end when autoSelect is end', () => {
+    const editor = createEditor({
+      autoSelect: 'end',
+      initialValue: [{ children: [{ text: 'content' }], type: 'paragraph' }],
+    });
+
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 7, path: [0, 0] },
+      focus: { offset: 7, path: [0, 0] },
+    });
   });
 });
 

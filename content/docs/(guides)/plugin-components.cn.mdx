@@ -123,6 +123,45 @@ export const QuotePlugin = definePlugin('quote', {
 
 需要 class、嵌套控件、popover、toolbar、resize handle 或插件 state 时，使用自定义组件。
 
+## 嵌入式组件
+
+void element 可以承载自行处理指针、键盘、剪贴板和焦点的组件，例如绘图画布。用带有
+`contentEditable={false}` 和 `data-editor-root-chrome-ignore="true"` 的元素包裹该组件。
+
+```tsx showLineNumbers
+'use client';
+
+import type { ExcalidrawPlugin } from 'platejs/excalidraw/react';
+import { type EditorElementProps, EditorElement } from 'platejs/react';
+
+export function ExcalidrawElement({
+  children,
+  ...props
+}: EditorElementProps<typeof ExcalidrawPlugin>) {
+  return (
+    <EditorElement {...props}>
+      <div contentEditable={false} data-editor-root-chrome-ignore="true">
+        {/* 在这里渲染画布。 */}
+      </div>
+      {children}
+    </EditorElement>
+  );
+}
+```
+
+在带标记的包裹元素内，编辑器把指针、键盘、剪贴板和焦点事件以及 DOM 变更交给该组件。
+编辑器对 `input`、`textarea`、`button` 等原生控件也是这样处理。在包裹元素之外点击仍会选中该节点。
+[Excalidraw](/docs/excalidraw) element 是一个完整示例。
+
+<Callout type="info" title="编辑器仍会接管的按键">
+  在 IME 组合输入之外，编辑器会在组件自身的按键处理器运行之前接管撤销和重做快捷键，
+  无论按键发生在带标记的组件、原生控件还是嵌套编辑器中。可编辑的编辑器会为它们运行自身的历史记录，
+  即使没有可撤销的内容。只读编辑器只会拦截它们，因此原生文本框仍会执行浏览器自身的撤销。
+  编辑器还会接管嵌套编辑器中的 Shift+方向键；当自身选区位于另一个根时，也会接管任意组件中的 Shift+方向键。
+  当编辑器持有由它自己绘制的选区时，例如跨根的选区，它还会接管任意组件中的 Backspace、Delete 和 Enter，
+  按住 Alt、Ctrl 或 Meta 时除外。
+</Callout>
+
 ## API 参考
 
 | API | 用途 | 说明 |
@@ -131,3 +170,4 @@ export const QuotePlugin = definePlugin('quote', {
 | `EditorLeaf` | Mark 和 decoration 文本。 | 默认渲染 `span`；用于声明 `schema.mark` 的插件。 |
 | `plugin.configure({ component: Component })` | 绑定普通节点组件。 | 在同一次终结配置中加入组件和所有用户覆盖。 |
 | `plugin.configure({ component: 'tag' })` | 使用原生 HTML 标签。 | 接受 `'blockquote'`、`'strong'` 或 `'code'` 等标签。 |
+| `data-editor-root-chrome-ignore="true"` | 包裹自行处理输入的组件。 | 与 `contentEditable={false}` 一起使用；撤销和重做快捷键仍由编辑器接管。 |

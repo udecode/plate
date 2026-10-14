@@ -3,13 +3,14 @@ import type {
   EditorStateSchemaApi,
   Value,
 } from '../..';
+import type { JsonRecord } from '../../core/change/json';
 import {
   isElementNode,
   isTextNode,
   nodeProps,
   type JsonNode,
-  type JsonRecord,
 } from '../../core/change/tokens';
+import { isMetadataRootKey } from '../../internal/root-location';
 import type { ComparisonDocument } from './comparison-internal';
 import { comparisonHash, stableStringify } from './comparison-internal';
 import type { ComparisonSpan } from './comparison-types';
@@ -83,7 +84,9 @@ export const createComparisonIndex = <V extends Value>(
   const roots = new Map<string | null, ComparisonRootIndex>();
   const rootNames: Array<string | null> = [
     null,
-    ...Object.keys(document.roots ?? {}).sort(),
+    ...Object.keys(document.roots ?? {})
+      .filter((root) => !isMetadataRootKey(root))
+      .sort(),
   ];
   let textUnits = 0;
 

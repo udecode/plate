@@ -1,49 +1,50 @@
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-for (const [destination, findTarget] of [
-  [
-    'a focusable control',
-    (fixture: Locator) =>
-      fixture.getByRole('textbox', { name: 'Outside field' }),
-  ],
-  [
-    'the page background',
-    (_fixture: Locator, page: Page) =>
-      page.getByRole('heading', { name: 'Explicit editor blur' }),
-  ],
+for (const [edit, leave] of [
+  ['typing', 'an outside field click'],
+  ['typing', 'a page click'],
+  ['End', 'Escape'],
 ] as const) {
-  test(`a click on ${destination} right after typing blurs the editor`, async ({
+  test(`${leave} right after ${edit} blurs the editor and keeps it blurred`, async ({
     page,
   }) => {
     await page.clock.install();
     await page.goto('/focus-blur');
 
-    const fixture = page.getByRole('region', { name: 'default', exact: true });
-    const editor = page.getByRole('textbox', { name: 'default editor' });
-    const focusState = fixture.getByRole('status', { name: 'Editor focus' });
-    const target = (await findTarget(fixture, page).boundingBox())!;
+    const fixture = page.getByRole('region', { name: 'draft', exact: true });
+    const editor = page.getByRole('textbox', { name: 'draft editor' });
+    const focusState = fixture.getByRole('status', { name: 'Draft focus' });
+    const field = (await fixture
+      .getByRole('textbox', { name: 'Outside field' })
+      .boundingBox())!;
 
     await editor.getByText('one').click();
-    await expect(focusState).toHaveAttribute('data-focused', 'true');
-    // The frozen clock holds the selection write for this keystroke open
-    // across the click, so the blur lands inside it every run.
-    await page.keyboard.type('x');
-    await page.mouse.click(
-      target.x + target.width / 2,
-      target.y + target.height / 2
-    );
-
-    await expect(editor).not.toBeFocused();
-    await expect(focusState).toHaveAttribute('data-editor-blur-count', '1');
-    await expect(focusState).toHaveAttribute('data-focused', 'false');
-
-    await page.clock.runFor(100);
-    await editor.getByText('onex').click();
     await page.keyboard.press('End');
+    await expect(focusState).toHaveAttribute('data-focused', 'true');
+    // Pausing the clock holds the timers that settle the next edit's selection
+    // write, so the blur always lands while that write is still in flight.
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+    await (edit === 'typing'
+      ? page.keyboard.type('x')
+      : page.keyboard.press(edit));
+    await (leave === 'Escape'
+      ? page.keyboard.press('Escape')
+      : leave === 'a page click'
+        ? page.mouse.click(5, 5)
+        : page.mouse.click(
+            field.x + field.width / 2,
+            field.y + field.height / 2
+          ));
+    await page.clock.runFor(200);
+
+    await expect(focusState).toHaveAttribute('data-blur-count', '1');
+    await expect(focusState).toHaveAttribute('data-focused', 'false');
+    await expect(editor).not.toBeFocused();
+
+    await page.clock.resume();
+    await editor.click();
     await page.keyboard.type('y');
-    await expect(editor.locator('[data-editor-node="element"]').first()).toHaveText(
-      'onexy'
-    );
+    await expect(editor).toContainText('y');
   });
 }
 

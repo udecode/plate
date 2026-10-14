@@ -70,6 +70,17 @@ export function useExcalidrawSync({
       }
     };
     synchronize.current = sync;
+    // Excalidraw writes an open label's text back to its element when the label
+    // closes, and its API cannot close one. Closing it with Escape before the
+    // canvas shows a document change lets onChange re-project instead of save.
+    const release = editor.subscribeCommit(() => {
+      if (applying || !api.getAppState().editingTextElement) return;
+      if (current()?.[0].data === source) return;
+      editor.api.dom
+        .resolveDOMNode(key)
+        ?.querySelector('textarea.excalidraw-wysiwyg')
+        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
     const unsubscribe = api.onChange((elements, state, files) => {
       if (!active || applying || state.isLoading) return;
       const entry = current();
@@ -97,14 +108,19 @@ export function useExcalidrawSync({
         files: serialized.files,
       };
       canvasJSON = nextJSON;
-      source = data;
-      editor.update.nodes.set({ data }, { at: entry[1] });
+      applying = true;
+      try {
+        editor.update.nodes.set({ data }, { at: entry[1] });
+      } finally {
+        applying = false;
+      }
       source = current()?.[0].data;
     });
     sync();
     return () => {
       active = false;
       synchronize.current = null;
+      release();
       unsubscribe();
     };
   }, [api, editor, excalidraw, key]);

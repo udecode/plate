@@ -3,13 +3,17 @@
 import { useSearchParams } from 'next/navigation';
 import { schema } from 'platejs';
 import {
+  type AuthoredChange,
+  AuthoredPlugin,
+  projectAuthoredDocument,
+} from 'platejs/authored';
+import {
   EditorContent,
   EditorRoot,
   HeadingPlugin,
   createEditor,
   definePlugin,
 } from 'platejs/react';
-import { authoredTreeProof } from 'plitejs/authored';
 import React, { Suspense } from 'react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
@@ -21,10 +25,19 @@ import { ListKit } from '@/registry/components/editor/list';
 import { TableKit } from '@/registry/components/editor/table';
 
 // Proof route for Phase 1 of docs/plans/2026-10-08-authored-review.md, with a
-// `values` fixture for docs/plans/2026-10-10-authored-values.md's S8, and
-// `fill` and `title` fixtures for T9 of docs/plans/2026-10-11-authored-fill.md.
+// `values` fixture for docs/plans/2026-10-10-authored-values.md's S8, `fill`
+// and `title` fixtures for T9 of docs/plans/2026-10-11-authored-fill.md, and
+// a `page` fixture with /docs/suggestion's plugins for P1.1 of
+// docs/plans/2026-10-12-suggestions-complete.md, on the production authored
+// plugin. `?intent=plain` mounts the same editor without it, as the plain side
+// of a comparison.
 
 type Gesture = 'removeCell' | 'removeTitle' | 'unwrapGroup';
+type Intent = 'edit' | 'plain' | 'propose';
+
+const INTENTS: readonly Intent[] = ['edit', 'plain', 'propose'];
+const isIntent = (value: string): value is Intent =>
+  INTENTS.some((intent) => intent === value);
 
 declare global {
   interface Window {
@@ -40,6 +53,10 @@ declare global {
       ) => unknown;
       /** A structural edit no key press makes. */
       gesture: (name: Gesture) => void;
+      /** Replace the document, outside history, with another page's value. */
+      load: (children: readonly unknown[]) => void;
+      /** The document with every pending change accepted or rejected, uncommitted. */
+      project: (projection: 'accepted' | 'proposed') => unknown[];
       setIntent: (intent: 'edit' | 'propose') => void;
     };
   }
@@ -144,8 +161,15 @@ const titleRoot = schema.content.prefix(
   schema.content.group('block', { default: { type: 'paragraph' }, min: 1 })
 );
 
+const pageFixture = [
+  { type: 'paragraph', children: [{ text: 'First line' }] },
+  { type: 'paragraph', children: [{ text: 'Second line' }] },
+  { type: 'paragraph', children: [{ text: 'Last line' }] },
+];
+
 const fixtures = {
   fill: fillFixture,
+  page: pageFixture,
   title: titleFixture,
   values: valuesFixture,
 } as const;
@@ -189,38 +213,46 @@ const AuthoredPaint = definePlugin('authoredPaint', {
 function AuthoredReviewProof() {
   const params = useSearchParams();
   const [{ editor, proof }] = React.useState(() => {
-    const plugin = authoredTreeProof({
-      authorId: 'alice',
-      intent: params?.get('intent') === 'propose' ? 'propose' : 'edit',
-    });
-    const fixture = params?.get('fixture');
+    const intent = params?.get('intent') ?? 'edit';
 
-    return {
-      editor: createEditor({
-        initialValue:
-          fixture && Object.hasOwn(fixtures, fixture)
-            ? fixtures[fixture as keyof typeof fixtures]
-            : initialValue,
-        plugins: [
-          ...(fixture === 'title' ? BasicBlocksKit : []),
-          ...TableKit,
-          ...ColumnKit,
-          ...ListKit,
-          ...CodeBlockKit,
-          ...LinkKit,
-          ...BasicMarksKit,
-          FillGridPlugin,
-          AuthoredPaint,
-          plugin,
-        ],
-        ...(fixture === 'title' ? { schema: { root: titleRoot } } : {}),
-      }),
-      proof: plugin,
-    };
+    if (!isIntent(intent)) {
+      throw new Error(`Unknown intent "${intent}".`);
+    }
+
+    const plugin = intent === 'plain' ? null : AuthoredPlugin;
+    const fixture = params?.get('fixture');
+    const kits =
+      fixture === 'page'
+        ? [...BasicBlocksKit, ...BasicMarksKit]
+        : [
+            ...(fixture === 'title' ? BasicBlocksKit : []),
+            ...TableKit,
+            ...ColumnKit,
+            ...ListKit,
+            ...CodeBlockKit,
+            ...LinkKit,
+            ...BasicMarksKit,
+            FillGridPlugin,
+          ];
+
+    const created = createEditor({
+      initialValue:
+        fixture && Object.hasOwn(fixtures, fixture)
+          ? fixtures[fixture as keyof typeof fixtures]
+          : initialValue,
+      plugins: [...kits, AuthoredPaint, ...(plugin ? [plugin] : [])],
+      userId: 'alice',
+      ...(fixture === 'title' ? { schema: { root: titleRoot } } : {}),
+    });
+
+    if (plugin && intent !== 'plain') {
+      created.plugin(plugin).api.setView({ intent });
+    }
+
+    return { editor: created, proof: plugin };
   });
 
   React.useEffect(() => {
-    const { api } = editor.plugin(proof);
     const targets: Record<Gesture, (node: FixtureNode) => boolean> = {
       removeCell: (node) =>
         node.type === 'fillCell' && node.children?.[0]?.text === 'a',
@@ -235,11 +267,61 @@ function AuthoredReviewProof() {
         if (name === 'unwrapGroup') tx.nodes.unwrap({ at: found[1] });
         else tx.nodes.remove({ at: found[1] });
       });
+    const load = (children: readonly unknown[]) =>
+      editor.update((tx) => {
+        // Recorded as a remote replacement, so no recorder rewrites it.
+        tx.tags.add('collaboration');
+        tx.history.skip();
+        tx.value.replace({ children } as never);
+      });
+
+    if (!proof) {
+      const missing = () => {
+        throw new Error('The plain editor has no review tree.');
+      };
+
+      window.authoredProof = {
+        decide: missing,
+        gesture,
+        load,
+        project: missing,
+        setIntent: missing,
+      };
+      return;
+    }
+
+    const authored = editor.plugin(proof);
+    // An id the document no longer holds decides as stale.
+    const changeOf = (id: string): AuthoredChange =>
+      authored.read.change(id) ?? {
+        authorId: '',
+        createdAt: 0,
+        id,
+        kind: 'insert',
+        ranges: [],
+        revision: -1,
+      };
 
     window.authoredProof = {
-      decide: api.decide,
+      decide: (decisions) =>
+        authored.update.decide(
+          [decisions].flat().map((decision) => ({
+            action: decision.action,
+            changes: decision.changes.map(changeOf),
+          }))
+        ),
       gesture,
-      setIntent: api.setIntent,
+      load,
+      project: (projection) => {
+        const projected = projectAuthoredDocument(editor.read.value(), {
+          editor,
+          projection,
+        });
+        if (!projected.ok) throw new Error('This schema generates values.');
+
+        return [...projected.document.children];
+      },
+      setIntent: (intent) => authored.api.setView({ intent }),
     };
   }, [editor, proof]);
 

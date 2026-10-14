@@ -7,8 +7,12 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { createEditor, createEditorView } from '../../../packages/plitejs/src';
-import { authored } from '../../../packages/plitejs/src/authored';
-import { authoredState } from '../../../packages/plitejs/src/authored/state';
+import {
+  authored,
+  type AuthoredChange,
+  type AuthoredPage,
+  type AuthoredQuery,
+} from '../../../packages/plitejs/src/authored';
 
 const option = (name: string) =>
   process.argv
@@ -71,6 +75,19 @@ const paragraph = (text: string) => ({
   children: [{ text }],
 });
 const point = (block: number, offset: number) => ({ path: [block, 0], offset });
+// Every pending change, read page by page because a page holds at most 200.
+const pendingChanges = (editor: {
+  read: { authored: { changes: (query: AuthoredQuery) => AuthoredPage } };
+}) => {
+  const changes: AuthoredChange[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = editor.read.authored.changes({ cursor, limit: 200 });
+    changes.push(...page.items);
+    cursor = page.cursor ?? undefined;
+  } while (cursor);
+  return changes;
+};
 
 if (option('mode') === 'seed') {
   const seedStart = performance.now();
@@ -79,7 +96,7 @@ if (option('mode') === 'seed') {
     initialValue: Array.from({ length: size }, () => paragraph('Base')),
   });
   const view = createEditorView(editor, {
-    authored: { intent: 'propose', projection: 'proposed' },
+    authored: { intent: 'propose' },
   });
   for (let block = 0; block < size; block++) {
     view.update.text.insert('q', { at: point(block, 4) });
@@ -124,11 +141,17 @@ if (option('mode') === 'seed') {
   });
   const constructed = performance.now();
   const view = createEditorView(editor, {
-    authored: { intent: 'propose', projection: 'proposed' },
+    authored: { intent: 'propose' },
+  });
+  const acceptedView = createEditorView(editor, {
+    authored: { preview: 'accepted' },
+  });
+  const proposedView = createEditorView(editor, {
+    authored: { preview: 'proposed' },
   });
   const viewed = performance.now();
-  const accepted = editor.read.children();
-  const proposed = view.read.children();
+  const accepted = acceptedView.read.children();
+  const proposed = proposedView.read.children();
   const read = performance.now();
   assert.deepEqual(
     accepted,
@@ -142,32 +165,25 @@ if (option('mode') === 'seed') {
       paragraph(`${index < 55 ? 'x' : ''}Baseq`)
     )
   );
-  assert.equal(editor.read.getField(authoredState).changes?.count, size + 55);
-  assert.equal(
-    editor.read.getField(authoredState).operations?.count,
-    size + 55
-  );
   const queryStart = performance.now();
-  const selection = editor.read.authored.select({ status: 'pending' });
+  const pending = pendingChanges(editor);
   const queried = performance.now();
-  assert.equal(
-    selection.changes.length,
-    size + (phase === 'proposed' ? 55 : 0)
-  );
-  const selected = selection.changes[0];
+  assert.equal(pending.length, size + (phase === 'proposed' ? 55 : 0));
+  const selected = pending[0];
   assert.ok(selected);
   const detailStart = performance.now();
   const details = editor.read.authored.details(selected.id);
   const detailed = performance.now();
   assert.ok(details);
   assert.equal(details.change.id, selected.id);
-  assert.equal(details.parts.status, 'available');
+  assert.ok(details.parts.length > 0);
   const cachedDetailStart = performance.now();
-  assert.equal(editor.read.authored.details(selected.id), details);
+  assert.deepEqual(editor.read.authored.details(selected.id), details);
   const cachedDetailRead = performance.now();
+  const last = size - 1;
   const visibleRange = {
-    anchor: point(0, size - 1),
-    focus: point(5, size - 1),
+    anchor: { path: [last, 0], offset: 0 },
+    focus: { path: [last, 1], offset: 1 },
   };
   const localizedStart = performance.now();
   const localized = view.read.authored.changesAt(visibleRange);
@@ -177,27 +193,24 @@ if (option('mode') === 'seed') {
   assert.deepEqual(view.read.authored.changesAt(visibleRange), localized);
   const cachedLocalizedAt = performance.now();
   const editStart = performance.now();
-  view.update.text.insert('!', { at: point(size - 1, 5) });
+  view.update.text.insert('!', { at: { path: [last, 1], offset: 1 } });
   const edited = performance.now();
-  assert.deepEqual(view.read.children()[size - 1], paragraph('Baseq!'));
+  assert.deepEqual(proposedView.read.children()[last], paragraph('Baseq!'));
   const updatedRange = {
     ...visibleRange,
-    focus: point(6, size - 1),
+    focus: { path: [last, 2], offset: 1 },
   };
   const updatedLocalizedStart = performance.now();
   assert.ok(view.read.authored.changesAt(updatedRange).length > 0);
   const updatedLocalizedAt = performance.now();
-  assert.deepEqual(editor.read.children(), accepted);
+  assert.deepEqual(acceptedView.read.children(), accepted);
   const saveStart = performance.now();
   const saved = JSON.stringify(editor.read.value());
   const savedAt = performance.now();
   const decisionStart = performance.now();
   const decision = editor.update.authored.decide({
     action: 'accept',
-    selection: {
-      changes: [selected],
-      documentId: selection.documentId,
-    },
+    changes: [selected],
   });
   const decided = performance.now();
   assert.equal(decision.status, 'applied');
@@ -234,7 +247,7 @@ if (option('mode') === 'seed') {
     },
     savedBytes: saved.length,
     correctness:
-      'pass: complete accepted/proposed content, counts, pending selection, lazy semantic detail with cached identity, and continued proposed input',
+      'pass: complete accepted/proposed content, counts, pending selection, lazy semantic detail read twice with equal results, and continued proposed input',
     sourceBefore,
     sourceAfter,
     sourcesUnchanged: true,

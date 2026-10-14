@@ -3,7 +3,7 @@ import type {
   EditorDocumentValue,
   EditorSchemaValidationDiagnostic,
   InternalEditorSchemaApi,
-  NativeAuthoredProjectionDiagnostic,
+  AuthoredProjectionDiagnostic,
   RootKey,
   RuntimePluginReference,
   Value,
@@ -51,7 +51,7 @@ type HtmlPolicyDiagnostic<T extends object> =
   | Readonly<T & { severity: 'warning' }>;
 
 export type HtmlDiagnostic =
-  | NativeAuthoredProjectionDiagnostic
+  | AuthoredProjectionDiagnostic
   | (HtmlDiagnosticContext &
       Readonly<{
         code: 'html-invalid-source';
@@ -188,6 +188,16 @@ export type HtmlParseOptions = Readonly<{
 export type HtmlSerializeOptions = Readonly<{
   lossPolicy?: 'allow' | 'reject';
   plugins: readonly RuntimePluginReference[];
+  /**
+   * Version of an authored document to export. `accepted` drops pending changes
+   * and `proposed` applies them as plain content. Either choice adds an
+   * `authored-lossy-projection` warning while changes are pending. Required
+   * when the document has authored metadata, which every document from an
+   * editor with the authored plugin carries, even with no pending change.
+   * Omitting it or passing any other value then throws, and so does a valid
+   * value when `plugins` lacks the authored plugin. A document without authored
+   * metadata ignores it.
+   */
   projection?: 'accepted' | 'proposed';
   schema?: EditorApplicationSchema;
 }>;
@@ -200,6 +210,16 @@ export type HtmlEditorParseOptions = Omit<
 export type HtmlEditorSerializeOptions = Readonly<{
   document?: EditorDocumentValue;
   lossPolicy?: 'allow' | 'reject';
+  /**
+   * Version of an authored document to export. `accepted` drops pending changes
+   * and `proposed` applies them as plain content. Either choice adds an
+   * `authored-lossy-projection` warning while changes are pending. Required
+   * when the document has authored metadata, which every document from an
+   * editor with the authored plugin carries, even with no pending change.
+   * Omitting it or passing any other value then throws, and so does a valid
+   * value when the editor lacks the authored plugin. A document without
+   * authored metadata ignores it.
+   */
   projection?: 'accepted' | 'proposed';
 }>;
 

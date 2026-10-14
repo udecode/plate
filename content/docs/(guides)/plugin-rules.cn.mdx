@@ -16,9 +16,9 @@ description: 配置常见的编辑行为。
 
 - **`'default'`**: Plate 的默认行为。
 - **`'reset'`**: 将当前块重置为默认段落，保留内容。
-- **`'exit'`**: 退出当前块结构，在其后插入新段落。详见 [Exit Break](/docs/exit-break) 了解此行为的更多信息。
+- **`'exit'`**: 退出最近的结构，并在其后插入其父节点的默认块，例如段落。详见 [Exit Break](/docs/exit-break) 了解如何确定退出的结构。
 - **`'lift'`**: 将当前块从最近匹配的祖先容器中提升出来，一次只移除一层结构。
-- **`'deleteExit'`**: 删除内容后退出块。
+- **`'deleteExit'`**: 向后删除，然后像 `'exit'` 一样退出。
 - **`'lineBreak'`**: 插入换行符 (`\n`) 而非拆分块。
 
 ### `default`
@@ -66,7 +66,7 @@ description: 配置常见的编辑行为。
 
 ### `exit`
 
-通过在其后插入新段落来退出当前块结构。
+退出最近的结构，并在其后插入其父节点的默认块，详见 [Exit Break](/docs/exit-break)。
 
 ```tsx
 <blockquote>
@@ -107,7 +107,7 @@ description: 配置常见的编辑行为。
 
 ### `deleteExit`
 
-删除内容后退出块。
+向后删除，然后像 `'exit'` 一样退出。
 
 ```tsx
 <blockquote>

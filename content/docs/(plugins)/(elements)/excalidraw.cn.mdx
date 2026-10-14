@@ -95,3 +95,14 @@ editor.plugin(BaseExcalidrawPlugin).update.insert(
 保存绘图、持久状态和引用的图片文件，忽略平移、缩放及选区变化。文档更新和
 撤销会反映到画布，并清除不再适用的画布撤销记录。该 hook 返回 `void`；加载期间
 `api` 和 `excalidraw` 可以为 `null`。
+
+撤销和重做快捷键即使在画布获得焦点时也会运行文档历史记录，hook 会把结果重新绘制到画布；
+只读模式下它们不执行任何操作。画布自带的撤销按钮撤销 Excalidraw 的本地步骤，hook 会把结果保存到节点。
+
+### 自定义组件
+
+自定义画布组件需要保留 registry 元素的三个部分：
+
+- 带有 `contentEditable={false}` 和 `data-editor-root-chrome-ignore="true"` 的包裹元素，让画布自行处理输入。参见[嵌入式组件](/cn/docs/plugin-components#嵌入式组件)。
+- `viewModeEnabled={readOnly}`，其中 `readOnly` 来自 `useEditorReadOnly()`，使只读文档保持 Excalidraw 的查看模式。
+- `@excalidraw/excalidraw/index.css` 样式导入。

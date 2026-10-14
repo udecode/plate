@@ -39,7 +39,7 @@ export const PlateViewFactsContext = React.createContext({
 
 export function usePlateModel() {
   const model = React.useContext(PlateModelContext);
-  if (!model) throw new Error('PlateContent requires a Plate provider.');
+  if (!model) throw new Error('EditorContent requires an EditorRoot.');
   return model;
 }
 

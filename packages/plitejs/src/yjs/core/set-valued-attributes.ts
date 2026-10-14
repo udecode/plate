@@ -1,7 +1,6 @@
 import { assertEditorJsonValue } from '../../core/value-codec';
 import type { YjsAttributeRecord } from './attributes';
-
-export const YJS_SET_VALUE_ATTRIBUTE_PREFIX = 'plite:yjs-set:';
+import { YJS_SET_VALUE_KEY_PREFIX } from './keys';
 
 const canonicalJson = (value: unknown): string => {
   assertEditorJsonValue(value, 'Yjs set-valued attribute item');
@@ -26,7 +25,7 @@ const canonicalJson = (value: unknown): string => {
 };
 
 const propertyPrefix = (property: string): string =>
-  `${YJS_SET_VALUE_ATTRIBUTE_PREFIX}${encodeURIComponent(property)}:`;
+  `${YJS_SET_VALUE_KEY_PREFIX}${encodeURIComponent(property)}:`;
 
 export const createYjsSetValueAttributeKey = (
   property: string,
@@ -35,7 +34,7 @@ export const createYjsSetValueAttributeKey = (
   `${propertyPrefix(property)}${encodeURIComponent(canonicalJson(value))}`;
 
 export const isYjsSetValueAttribute = (key: string): boolean =>
-  key.startsWith(YJS_SET_VALUE_ATTRIBUTE_PREFIX);
+  key.startsWith(YJS_SET_VALUE_KEY_PREFIX);
 
 export const getYjsSetValueAttributeKeys = (
   attributes: Readonly<YjsAttributeRecord>,
@@ -71,13 +70,13 @@ export const readYjsSetValueAttributes = (
   for (const [key, value] of Object.entries(attributes)) {
     if (!isYjsSetValueAttribute(key)) continue;
 
-    const separator = key.indexOf(':', YJS_SET_VALUE_ATTRIBUTE_PREFIX.length);
+    const separator = key.indexOf(':', YJS_SET_VALUE_KEY_PREFIX.length);
 
     if (separator === -1) continue;
 
     try {
       const property = decodeURIComponent(
-        key.slice(YJS_SET_VALUE_ATTRIBUTE_PREFIX.length, separator)
+        key.slice(YJS_SET_VALUE_KEY_PREFIX.length, separator)
       );
 
       if (

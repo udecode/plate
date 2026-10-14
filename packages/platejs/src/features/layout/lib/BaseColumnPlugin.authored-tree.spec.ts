@@ -1,4 +1,6 @@
-import { authoredTreeProof } from 'plitejs/authored';
+import { createAuthoredPlugin } from 'plitejs/authored';
+
+import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
 
 import { BaseParagraphPlugin, createEditor } from '../../../core';
 import {
@@ -29,7 +31,7 @@ const group = (...widths: number[]) => ({
 });
 
 const make = (initialValue: unknown[], intent: 'edit' | 'propose' = 'edit') => {
-  const proof = authoredTreeProof({
+  const proof = createAuthoredPlugin({
     authorId: 'alice',
     createChangeId: () => 'alice:1',
     intent,
@@ -45,7 +47,7 @@ const make = (initialValue: unknown[], intent: 'edit' | 'propose' = 'edit') => {
     ],
   });
 
-  return { editor, proof: editor.plugin(proof).api };
+  return { editor, proof: authoredTestApi(editor) };
 };
 
 type Editor = ReturnType<typeof make>['editor'];
@@ -77,13 +79,11 @@ describe('columns beside a pending column deletion', () => {
     const suggest = () => {
       const run = make([group(20, 30, 50)]);
 
-      run.proof.propose('bob:1', () =>
-        run.editor.update((tx) => tx.nodes.remove({ at: [0, struck] }))
+      run.proof.propose('bob:1', (tx) =>
+        tx.nodes.remove({ at: [0, struck] })
       );
-      run.proof.propose('alice:1', () =>
-        run.editor.update((tx) =>
-          tx.columnGroup.setColumns({ at: [0], widths: ['30%', '70%'] })
-        )
+      run.proof.propose('alice:1', (tx) =>
+        tx.columnGroup.setColumns({ at: [0], widths: ['30%', '70%'] })
       );
 
       return run;
@@ -164,8 +164,8 @@ describe('columns beside a pending column deletion', () => {
       const run = make([...initialValue, paragraph('dragged')]);
 
       if (struck !== null) {
-        run.proof.propose('bob:1', () =>
-          run.editor.update((tx) => tx.nodes.remove({ at: [0, struck] }))
+        run.proof.propose('bob:1', (tx) =>
+          tx.nodes.remove({ at: [0, struck] })
         );
       }
       const result = run.editor.api.transfer.move({
@@ -256,8 +256,8 @@ describe('stacked width suggestions', () => {
     const run = make([group(20, 30, 50)]);
 
     editing.editor.update((tx) => tx.nodes.remove({ at: [0, 2] }));
-    run.proof.propose('alice:1', () =>
-      run.editor.update((tx) => tx.column.insert({}, { at: [0, 3] }))
+    run.proof.propose('alice:1', (tx) =>
+      tx.column.insert({}, { at: [0, 3] })
     );
     run.editor.update((tx) => tx.nodes.remove({ at: [0, 2] }));
     run.proof.decide({ action: 'reject', changes: ['alice:1'] });
@@ -269,11 +269,11 @@ describe('stacked width suggestions', () => {
     const setup = () => {
       const run = make([group(30, 70)]);
 
-      run.proof.propose('alice:1', () =>
-        run.editor.update((tx) => tx.column.insert({}, { at: [0, 2] }))
+      run.proof.propose('alice:1', (tx) =>
+        tx.column.insert({}, { at: [0, 2] })
       );
-      run.proof.propose('bob:1', () =>
-        run.editor.update((tx) => tx.column.insert({}, { at: [0, 1] }))
+      run.proof.propose('bob:1', (tx) =>
+        tx.column.insert({}, { at: [0, 1] })
       );
       typeInFirstColumn(run.editor, 0);
 
@@ -308,16 +308,14 @@ describe('stacked width suggestions', () => {
     const setup = () => {
       const run = make([group(20, 30, 50)]);
 
-      run.proof.propose('bob:1', () =>
-        run.editor.update((tx) => tx.nodes.remove({ at: [0, 2] }))
+      run.proof.propose('bob:1', (tx) =>
+        tx.nodes.remove({ at: [0, 2] })
       );
-      run.proof.propose('carol:1', () =>
-        run.editor.update((tx) => tx.column.insert({}, { at: [0, 0] }))
+      run.proof.propose('carol:1', (tx) =>
+        tx.column.insert({}, { at: [0, 0] })
       );
-      run.proof.propose('alice:1', () =>
-        run.editor.update((tx) =>
-          tx.columnGroup.setColumns({ at: [0], widths: ['25%', '25%', '50%'] })
-        )
+      run.proof.propose('alice:1', (tx) =>
+        tx.columnGroup.setColumns({ at: [0], widths: ['25%', '25%', '50%'] })
       );
 
       return run;
@@ -358,10 +356,8 @@ describe('stacked width suggestions', () => {
       width: '100%',
     };
 
-    run.proof.propose('alice:1', () =>
-      run.editor.update((tx) =>
-        tx.columnGroup.setColumns({ at: [0], widths: ['60%', '40%'] })
-      )
+    run.proof.propose('alice:1', (tx) =>
+      tx.columnGroup.setColumns({ at: [0], widths: ['60%', '40%'] })
     );
     run.editor.update((tx) => tx.nodes.insert(column, { at: [0, 2] }));
     run.proof.decide({ action: 'reject', changes: ['alice:1'] });
@@ -369,5 +365,32 @@ describe('stacked width suggestions', () => {
     // Editing alone gives 15/35/50; the correction's 50 for the new column
     // carries no tag, so the repair rescales from it (a named limit).
     expect(widths(run.editor)).toEqual([20, 46.67, 33.33]);
+  });
+});
+
+describe('moveMiddle beside pending content', () => {
+  it('decides on the middle column as accepting everything shows it', () => {
+    const review = make([group(20, 30, 50)]);
+    const editing = make([group(20, 30, 50)]);
+    const middle = {
+      anchor: { offset: 0, path: [0, 1, 0, 0] },
+      focus: { offset: 1, path: [0, 1, 0, 0] },
+    };
+    const moveMiddle = (editor: Editor) =>
+      editor.update.column.moveMiddle(
+        [editor.read.children()[0] as never, [0]],
+        { direction: 'left' }
+      );
+
+    review.proof.propose('bob:1', (tx) => tx.text.delete({ at: middle }));
+    moveMiddle(review.editor);
+    review.proof.decide({
+      action: 'accept',
+      changes: pending(review.editor.read.value().children as readonly Node[]),
+    });
+    editing.editor.update((tx) => tx.text.delete({ at: middle }));
+    moveMiddle(editing.editor);
+
+    expect(review.editor.read.children()).toEqual(editing.editor.read.children());
   });
 });

@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -22,23 +23,28 @@ test('saves migrated JSON and reopens it without rerunning history', async ({
     text: 'Migrated automatically v53',
   });
   const insertAtStart = (text: string) =>
-    editor.evaluate((element, value) => {
-      (
-        element as HTMLElement & {
-          __pliteBrowserHandle: {
-            insertTextAt: (
-              text: string,
-              point: { offset: number; path: number[] },
-              policy: { tags: string[] }
-            ) => void;
-          };
-        }
-      ).__pliteBrowserHandle.insertTextAt(
-        value,
-        { offset: 0, path: [0, 0] },
-        { tags: ['document-migration-proof'] }
-      );
-    }, text);
+    editor.evaluate(
+      (element, [value, key]) => {
+        (
+          element as HTMLElement &
+            Record<
+              string,
+              {
+                insertTextAt: (
+                  text: string,
+                  point: { offset: number; path: number[] },
+                  policy: { tags: string[] }
+                ) => void;
+              }
+            >
+        )[key].insertTextAt(
+          value,
+          { offset: 0, path: [0, 0] },
+          { tags: ['document-migration-proof'] }
+        );
+      },
+      [text, BROWSER_HANDLE_KEY] as const
+    );
 
   await insertAtStart('saved marker ');
   await expect(editor).toContainText('saved marker');

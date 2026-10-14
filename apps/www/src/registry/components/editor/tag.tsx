@@ -2,7 +2,7 @@
 
 import type { LinkProps } from 'next/link';
 import Link from 'next/link';
-import { property } from 'platejs';
+import { BaseLinkPlugin, getLinkHref, property } from 'platejs';
 import {
   type EditorElementProps,
   definePlugin,
@@ -10,6 +10,7 @@ import {
   useEditorFocused,
   useEditorReadOnly,
   useElementSelected,
+  usePluginStore,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -28,18 +29,69 @@ export const TagPlugin = definePlugin('tag', {
   },
 });
 
-const ABSOLUTE_HREF_REGEX = /^[a-z][a-z\d+\-.]*:/i;
+// Next's development check throws on a path segment in brackets, which it
+// reads as a route pattern.
+function escapePath(pathname: string) {
+  return pathname.replaceAll('[', '%5B').replaceAll(']', '%5D');
+}
 
-function toLinkHref(href: string): LinkProps<string>['href'] {
-  if (ABSOLUTE_HREF_REGEX.test(href)) return new URL(href);
-  if (href.startsWith('#')) return { hash: href.slice(1) };
-  if (href.startsWith('?')) return { search: href.slice(1) };
+// Next encodes `?` and `#` inside a pathname, so a relative href keeps its
+// search and hash in their own fields.
+function toRelativeHref(href: string): LinkProps<string>['href'] {
+  const hashIndex = href.indexOf('#');
+  const beforeHash = hashIndex === -1 ? href : href.slice(0, hashIndex);
+  const searchIndex = beforeHash.indexOf('?');
 
-  return { pathname: href };
+  return {
+    hash: hashIndex === -1 ? '' : href.slice(hashIndex),
+    pathname: escapePath(
+      searchIndex === -1 ? beforeHash : beforeHash.slice(0, searchIndex)
+    ),
+    search: searchIndex === -1 ? '' : beforeHash.slice(searchIndex),
+  };
+}
+
+function TagLink({
+  children,
+  href,
+}: {
+  children: React.ReactNode;
+  href: string | undefined;
+}) {
+  if (href === undefined) return children;
+  if (!URL.canParse(href)) {
+    return <Link href={toRelativeHref(href)}>{children}</Link>;
+  }
+
+  const url = new URL(href);
+
+  // Next's formatter drops `//` from a URL object with another scheme, such
+  // as `vscode://settings`.
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return <a href={href}>{children}</a>;
+  }
+
+  url.pathname = escapePath(url.pathname);
+
+  return <Link href={url}>{children}</Link>;
+}
+
+function ConfiguredTagLink({
+  children,
+  url,
+}: {
+  children: React.ReactNode;
+  url: string;
+}) {
+  const allowedSchemes = usePluginStore(BaseLinkPlugin, 'allowedSchemes');
+
+  return (
+    <TagLink href={getLinkHref(url, { allowedSchemes })}>{children}</TagLink>
+  );
 }
 
 export function TagElement(props: EditorElementProps<typeof TagPlugin>) {
-  const { element } = props;
+  const { editor, element } = props;
   const selected = useElementSelected();
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
@@ -68,7 +120,11 @@ export function TagElement(props: EditorElementProps<typeof TagPlugin>) {
     >
       <span contentEditable={false}>
         {readOnly && element.url ? (
-          <Link href={toLinkHref(element.url)}>{badge}</Link>
+          editor.plugin(BaseLinkPlugin).installed ? (
+            <ConfiguredTagLink url={element.url}>{badge}</ConfiguredTagLink>
+          ) : (
+            <TagLink href={getLinkHref(element.url)}>{badge}</TagLink>
+          )
         ) : (
           badge
         )}

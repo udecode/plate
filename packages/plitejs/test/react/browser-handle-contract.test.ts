@@ -20,6 +20,7 @@ import {
   createEditableInputControllerState,
 } from '../../src/react/editable/input-controller';
 import { createEditor } from '../../src/react/plugin/with-react';
+import { BROWSER_HANDLE_KEY } from '../../src/testing';
 
 const testSchedulers = new Set<ReturnType<typeof createDOMPhaseScheduler>>();
 type BrowserHandleOptions = Parameters<typeof attachRuntimeBrowserHandle>[0];
@@ -75,7 +76,7 @@ test('browser handle applies direct text writes and canonical document changes',
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  element.__pliteBrowserHandle?.insertTextAt('!', {
+  element[BROWSER_HANDLE_KEY]?.insertTextAt('!', {
     offset: 3,
     path: [0, 0],
   });
@@ -83,7 +84,7 @@ test('browser handle applies direct text writes and canonical document changes',
     { type: 'paragraph', children: [{ text: 'one!' }] },
   ]);
 
-  element.__pliteBrowserHandle?.deleteTextAt({
+  element[BROWSER_HANDLE_KEY]?.deleteTextAt({
     anchor: { offset: 3, path: [0, 0] },
     focus: { offset: 4, path: [0, 0] },
   });
@@ -96,19 +97,19 @@ test('browser handle applies direct text writes and canonical document changes',
     children: [{ type: 'paragraph', children: [{ text: 'remote' }] }],
   };
 
-  element.__pliteBrowserHandle?.applyChange(
+  element[BROWSER_HANDLE_KEY]?.applyChange(
     DocumentChange.between(before, after).toJSON(),
     { tags: ['remote-change', 'history-skip'] }
   );
   expect(editor.read((state) => state.value())).toEqual(after);
-  expect(element.__pliteBrowserHandle?.getLastCommit()).toMatchObject({
+  expect(element[BROWSER_HANDLE_KEY]?.getLastCommit()).toMatchObject({
     change: { version: 3 },
     changedRoots: [null],
     classifications: [{ root: null, text: true }],
     tags: ['remote-change', 'history-skip'],
   });
 
-  element.__pliteBrowserHandle?.applyValueChange(
+  element[BROWSER_HANDLE_KEY]?.applyValueChange(
     {
       children: [{ type: 'paragraph', children: [{ text: 'value diff' }] }],
     },
@@ -117,7 +118,7 @@ test('browser handle applies direct text writes and canonical document changes',
   expect(editor.read((state) => state.children())).toEqual([
     { type: 'paragraph', children: [{ text: 'value diff' }] },
   ]);
-  expect(element.__pliteBrowserHandle?.getLastCommit()).toMatchObject({
+  expect(element[BROWSER_HANDLE_KEY]?.getLastCommit()).toMatchObject({
     change: { version: 3 },
     changedRoots: [null],
     tags: ['value-change', 'history-skip'],
@@ -148,7 +149,7 @@ test('browser handle focuses its attached root when one runtime has multiple roo
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  element.__pliteBrowserHandle?.focus();
+  element[BROWSER_HANDLE_KEY]?.focus();
 
   expect(document.activeElement).toBe(element);
   element.remove();
@@ -173,8 +174,8 @@ test('browser handle undo and redo no-op when history is disabled', () => {
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  expect(() => element.__pliteBrowserHandle?.undo()).not.toThrow();
-  expect(() => element.__pliteBrowserHandle?.redo()).not.toThrow();
+  expect(() => element[BROWSER_HANDLE_KEY]?.undo()).not.toThrow();
+  expect(() => element[BROWSER_HANDLE_KEY]?.redo()).not.toThrow();
   expect(forceRender).not.toHaveBeenCalled();
 });
 
@@ -216,15 +217,15 @@ test('browser handle leaves text-only multi-root history to direct DOM sync', ()
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  element.__pliteBrowserHandle?.applyValueChange(after);
+  element[BROWSER_HANDLE_KEY]?.applyValueChange(after);
   forceRender.mockClear();
 
-  element.__pliteBrowserHandle?.undo();
+  element[BROWSER_HANDLE_KEY]?.undo();
 
   expect(editor.read((state) => state.value())).toEqual(before);
   expect(forceRender).not.toHaveBeenCalled();
 
-  element.__pliteBrowserHandle?.redo();
+  element[BROWSER_HANDLE_KEY]?.redo();
 
   expect(editor.read((state) => state.value())).toEqual(after);
   expect(forceRender).not.toHaveBeenCalled();
@@ -250,9 +251,9 @@ test('browser handle selectAll selects the whole editor', () => {
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  element.__pliteBrowserHandle?.selectAll();
+  element[BROWSER_HANDLE_KEY]?.selectAll();
 
-  expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
+  expect(element[BROWSER_HANDLE_KEY]?.getSelection()).toEqual({
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 3, path: [1, 0] },
   });
@@ -280,13 +281,13 @@ test('browser handle preserves multi-node selection', () => {
 
   editor.update.selection.set(SelectionApi.nodes([[0], [1]]));
 
-  expect(element.__pliteBrowserHandle?.getModelSelection()).toEqual({
+  expect(element[BROWSER_HANDLE_KEY]?.getModelSelection()).toEqual({
     anchorPath: [0],
     focusPath: [1],
     kind: 'node',
     paths: [[0], [1]],
   });
-  expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
+  expect(element[BROWSER_HANDLE_KEY]?.getSelection()).toEqual({
     anchor: { offset: 0, path: [0, 0] },
     focus: { offset: 3, path: [1, 0] },
   });
@@ -316,20 +317,20 @@ test('browser handle keeps named-root selections local to its attached root', ()
   });
 
   editor.update.selection.set({ path: [0, 0], offset: 2 });
-  expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
+  expect(element[BROWSER_HANDLE_KEY]?.getSelection()).toEqual({
     anchor: { offset: 2, path: [0, 0], root: 'header' },
     focus: { offset: 2, path: [0, 0], root: 'header' },
   });
 
   editor.update.selection.setNodes([[0]]);
-  expect(element.__pliteBrowserHandle?.getModelSelection()).toEqual({
+  expect(element[BROWSER_HANDLE_KEY]?.getModelSelection()).toEqual({
     anchorPath: [0],
     focusPath: [0],
     kind: 'node',
     paths: [[0]],
     root: 'header',
   });
-  expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
+  expect(element[BROWSER_HANDLE_KEY]?.getSelection()).toEqual({
     anchor: { offset: 0, path: [0, 0], root: 'header' },
     focus: { offset: 6, path: [0, 0], root: 'header' },
   });
@@ -355,9 +356,9 @@ test('browser handle exposes model block texts independently of rendered DOM', (
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  expect(element.__pliteBrowserHandle?.getBlockTexts()).toEqual(['one', 'two']);
-  expect(element.__pliteBrowserHandle?.getBlockText(1)).toBe('two');
-  expect(element.__pliteBrowserHandle?.getBlockText(2)).toBeNull();
+  expect(element[BROWSER_HANDLE_KEY]?.getBlockTexts()).toEqual(['one', 'two']);
+  expect(element[BROWSER_HANDLE_KEY]?.getBlockText(1)).toBe('two');
+  expect(element[BROWSER_HANDLE_KEY]?.getBlockText(2)).toBeNull();
 });
 
 test('browser handle selectRange flushes pending native text repair first', () => {
@@ -389,16 +390,16 @@ test('browser handle selectRange flushes pending native text repair first', () =
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  element.__pliteBrowserHandle?.selectRange({
+  element[BROWSER_HANDLE_KEY]?.selectRange({
     anchor: { offset: 1, path: [1, 0] },
     focus: { offset: 1, path: [1, 0] },
   });
 
   expect(flushPendingNativeTextInput).toHaveBeenCalledTimes(1);
-  expect(element.__pliteBrowserHandle?.getInputState()).toMatchObject({
+  expect(element[BROWSER_HANDLE_KEY]?.getInputState()).toMatchObject({
     pendingNativeTextInputRepairPathKey: null,
   });
-  expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
+  expect(element[BROWSER_HANDLE_KEY]?.getSelection()).toEqual({
     anchor: { offset: 1, path: [1, 0] },
     focus: { offset: 1, path: [1, 0] },
   });
@@ -424,7 +425,7 @@ test('browser handle selectRange clears projected view selection', () => {
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  element.__pliteBrowserHandle?.setViewSelection({
+  element[BROWSER_HANDLE_KEY]?.setViewSelection({
     anchor: { point: { offset: 1, path: [0, 0] } },
     focus: { point: { offset: 1, path: [1, 0] } },
     graph: [
@@ -433,15 +434,15 @@ test('browser handle selectRange clears projected view selection', () => {
     ],
   });
 
-  expect(element.__pliteBrowserHandle?.getViewSelection()).not.toBeNull();
+  expect(element[BROWSER_HANDLE_KEY]?.getViewSelection()).not.toBeNull();
 
-  element.__pliteBrowserHandle?.selectRange({
+  element[BROWSER_HANDLE_KEY]?.selectRange({
     anchor: { offset: 1, path: [1, 0] },
     focus: { offset: 1, path: [1, 0] },
   });
 
-  expect(element.__pliteBrowserHandle?.getViewSelection()).toBeNull();
-  expect(element.__pliteBrowserHandle?.getSelection()).toEqual({
+  expect(element[BROWSER_HANDLE_KEY]?.getViewSelection()).toBeNull();
+  expect(element[BROWSER_HANDLE_KEY]?.getSelection()).toEqual({
     anchor: { offset: 1, path: [1, 0] },
     focus: { offset: 1, path: [1, 0] },
   });
@@ -467,7 +468,7 @@ test('browser handle importDOMSelection clears projected view selection', () => 
     setExplicitViewportBackedSelection: vi.fn(),
   });
 
-  element.__pliteBrowserHandle?.setViewSelection({
+  element[BROWSER_HANDLE_KEY]?.setViewSelection({
     anchor: { point: { offset: 1, path: [0, 0] } },
     focus: { point: { offset: 1, path: [1, 0] } },
     graph: [
@@ -476,13 +477,13 @@ test('browser handle importDOMSelection clears projected view selection', () => 
     ],
   });
 
-  expect(element.__pliteBrowserHandle?.getViewSelection()).not.toBeNull();
+  expect(element[BROWSER_HANDLE_KEY]?.getViewSelection()).not.toBeNull();
 
-  expect(() => element.__pliteBrowserHandle?.importDOMSelection()).toThrow(
+  expect(() => element[BROWSER_HANDLE_KEY]?.importDOMSelection()).toThrow(
     /Cannot resolve a DOM node/
   );
 
-  expect(element.__pliteBrowserHandle?.getViewSelection()).toBeNull();
+  expect(element[BROWSER_HANDLE_KEY]?.getViewSelection()).toBeNull();
 });
 
 test('browser handle selectAll marks viewport-backed selections', () => {
@@ -506,17 +507,17 @@ test('browser handle selectAll marks viewport-backed selections', () => {
     setExplicitViewportBackedSelection,
   });
 
-  element.__pliteBrowserHandle?.selectAll();
+  element[BROWSER_HANDLE_KEY]?.selectAll();
 
   expect(setExplicitViewportBackedSelection).toHaveBeenCalledWith(true);
-  expect(element.__pliteBrowserHandle?.getInputState()).toMatchObject({
+  expect(element[BROWSER_HANDLE_KEY]?.getInputState()).toMatchObject({
     modelSelectionPreference: {
       reason: 'viewport-backed',
       selectionSource: 'viewport-backed',
     },
     selectionSource: 'viewport-backed',
   });
-  const trace = element.__pliteBrowserHandle?.getKernelTrace().at(-1);
+  const trace = element[BROWSER_HANDLE_KEY]?.getKernelTrace().at(-1);
 
   expect(trace).toMatchObject({
     command: { kind: 'select-all' },

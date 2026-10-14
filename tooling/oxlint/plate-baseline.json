@@ -104,7 +104,6 @@
       "() => previous(editor, innerOptions13 as never),"
     ],
     "packages/plitejs/src/core/public-state.ts": [
-      "(options.props ?? getDefaultBlockProps(path, root)) as never,",
       "command(editorCommands.removeNodes, { options: options as never });",
       "command(editorCommands.setNodes, { options: options as never, props })",
       "const update = registration.factory(state as never, editor, context);",
@@ -137,6 +136,7 @@
       "authored={ownerAuthored as never}"
     ]
   },
+  "plate/no-branded-value": {},
   "plate/no-one-off-editor-type": {
     "packages/cli/src/generate.ts": ["type CompiledEditor = Readonly<{"],
     "packages/platejs/src/features/combobox/lib/combobox.ts": [
@@ -290,14 +290,8 @@
     ]
   },
   "plate/no-second-name": {
-    "packages/platejs/src/csv/lib/CsvPlugin.ts": [
-      "export type CsvParseOptions = ParseConfig;"
-    ],
     "packages/platejs/src/docx/export/lib/internal/docx-document.ts": [
       "export type NumberingOptions = ListStyleDefaults;"
-    ],
-    "packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.ts": [
-      "export type ExcalidrawDataState = ImportedDataState;"
     ],
     "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": [
       "export type FootnotePluginState = ComboboxState;"

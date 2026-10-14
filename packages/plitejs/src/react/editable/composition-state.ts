@@ -21,7 +21,6 @@ import {
 import { createTypedText } from '../../transforms-text/insert-text';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import { readPliteViewSelection } from '../view-selection';
 import {
   getMountedEditableDOMRuntime,
   hasMountedEditableCompositionOwner,
@@ -177,15 +176,7 @@ const preventNoneditableComposition = ({
   readOnly: boolean;
   setComposing?: EditableCompositionStateSetter;
 }) => {
-  if (
-    !(
-      readOnly ||
-      readPliteViewSelection(editor)?.segments.parts.some(
-        (part) => part.fragment
-      )
-    ) ||
-    !ReactEditor.hasEditableTarget(editor, event.target)
-  ) {
+  if (!readOnly || !ReactEditor.hasEditableTarget(editor, event.target)) {
     return false;
   }
 
@@ -205,7 +196,7 @@ const preventNoneditableComposition = ({
   failures.attempt(() => {
     event.stopPropagation();
   });
-  if (pendingCompositionEnd?.ownership === 'plite') {
+  if (pendingCompositionEnd?.ownership === 'editor') {
     failures.attempt(() => pendingCompositionEnd.flush({ publish: false }));
   } else {
     failures.attempt(() => pendingCompositionEnd?.cancel());
@@ -281,7 +272,7 @@ const schedulePendingCompositionEnd = ({
   discardFallback: () => void;
   finishComposing: () => void;
   inputController: EditableInputController;
-  ownership: 'external' | 'plite';
+  ownership: 'external' | 'editor';
   resolveFallbackTarget: () => Range | null;
   runOwnedDOMMutation: (callback: () => void) => void;
   scheduleTask: NonNullable<EditableInputController['scheduleTask']>;
@@ -542,12 +533,12 @@ const schedulePendingCompositionEnd = ({
       const failures = createCompositionFailureScope();
 
       if (
-        ownership === 'plite' &&
+        ownership === 'editor' &&
         inputController.state.compositionSession?.modelCommitted
       ) {
         settle();
       }
-      if (ownership === 'plite') {
+      if (ownership === 'editor') {
         const fallbackTarget = failures.attempt(resolveFallbackTarget);
 
         if (fallbackTarget.ok) {
@@ -962,7 +953,7 @@ export const applyEditableCompositionEnd = ({
       },
       finishComposing,
       inputController,
-      ownership: 'plite',
+      ownership: 'editor',
       resolveFallbackTarget: releaseTarget,
       runOwnedDOMMutation,
       scheduleTask,
@@ -1009,7 +1000,7 @@ export const applyEditableCompositionStart = ({
   if (ReactEditor.hasSelectableTarget(editor, event.target)) {
     const pendingCompositionEnd = inputController?.state.pendingCompositionEnd;
 
-    if (pendingCompositionEnd?.ownership === 'plite') {
+    if (pendingCompositionEnd?.ownership === 'editor') {
       pendingCompositionEnd.flush();
     } else {
       pendingCompositionEnd?.cancel();

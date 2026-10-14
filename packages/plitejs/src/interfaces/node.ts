@@ -154,6 +154,17 @@ export interface NodeTextRangeRoot {
   readonly children: readonly Descendant[];
 }
 
+/**
+ * A read view or transaction, such as `state` in `editor.read` or `tx` in
+ * `editor.update`. Its own schema joins inline runs and its own content rule
+ * skips non-content text, so a search reads the document that view reads.
+ */
+export interface NodeTextRangeView {
+  children(): readonly Descendant[];
+  readonly nodes: { isContent(node: Node): boolean };
+  readonly schema: { isInline(element: Element): boolean };
+}
+
 export type NodeTextRangeEntry = readonly [Node | NodeTextRangeRoot, Path];
 
 /**
@@ -170,9 +181,14 @@ export type NodeTextRangeQuery =
 
 export interface NodeFindTextRangesOptions {
   /**
-   * Search only content text of a live editor root: text a capability keeps
-   * without counting it as content, such as struck suggestions, is skipped,
-   * and a match may run across it.
+   * Search only the node at this path and its descendants. The path must
+   * exist. Ranges keep their paths from the root.
+   */
+  at?: Path;
+  /**
+   * Search only content text of an editor, read view or transaction root:
+   * text a capability keeps without counting it as content, such as struck
+   * suggestions, is skipped, and a match may run across it.
    */
   content?: boolean;
   /**
@@ -263,13 +279,13 @@ export interface NodeInterface {
   fragment: (root: Ancestor, range: Range) => readonly Descendant[];
 
   /**
-   * Find ranges for a text query inside text runs. Live editor roots use the
-   * compiled schema to join text through inline descendants without crossing
-   * block boundaries. String queries are literal; use a regular expression or
-   * callback for custom matching.
+   * Find ranges for a text query inside text runs. Editor, read view and
+   * transaction roots use their schema to join text through inline
+   * descendants without crossing block boundaries. String queries are
+   * literal; use a regular expression or callback for custom matching.
    */
   findTextRanges: (
-    root: Node | NodeTextRangeRoot,
+    root: Node | NodeTextRangeRoot | NodeTextRangeView,
     query: NodeTextRangeQuery,
     options?: NodeFindTextRangesOptions
   ) => readonly Range[];
@@ -797,16 +813,22 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
   },
 
   findTextRanges(
-    root: Node | NodeTextRangeRoot,
+    root: Node | NodeTextRangeRoot | NodeTextRangeView,
     query: NodeTextRangeQuery,
     options: NodeFindTextRangesOptions = {}
   ): Range[] {
     const ranges: Range[] = [];
-    const schema = NodeApi.isEditor(root) ? getEditorSchema(root) : null;
+    const editor = NodeApi.isEditor(root) ? root : null;
+    const view =
+      !editor && typeof (root as { children?: unknown }).children === 'function'
+        ? (root as NodeTextRangeView)
+        : null;
+    const schema = editor ? getEditorSchema(editor) : view?.schema;
     const isContent = (node: Text) =>
       !options.content ||
-      !NodeApi.isEditor(root) ||
-      isEditorContent(root, node);
+      (editor
+        ? isEditorContent(editor, node)
+        : (view?.nodes.isContent(node) ?? true));
 
     const collectTextRun = (
       node: Descendant,
@@ -861,7 +883,15 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       });
     };
 
-    visit(root, []);
+    const tree = view
+      ? { children: view.children() }
+      : (root as Node | NodeTextRangeRoot);
+
+    if (options.at) {
+      visit(NodeApi.get(tree as Node, options.at), options.at);
+    } else {
+      visit(tree, []);
+    }
 
     return ranges;
   },

@@ -423,14 +423,14 @@ describe('PliteElement node ref binding', () => {
       ],
     });
     const nodeKey = editorGetNodeKey(editor, [0]);
-    const pliteNode = readElement(editor, [0]);
+    const editorNode = readElement(editor, [0]);
 
     if (!nodeKey) {
       throw new Error('Missing node key at 0');
     }
 
     const BoundNode = ({ revision }: { revision: number }) => {
-      const ref = usePliteNodeRef(nodeKey, { path: [0], pliteNode });
+      const ref = usePliteNodeRef(nodeKey, { path: [0], editorNode });
 
       return (
         <div

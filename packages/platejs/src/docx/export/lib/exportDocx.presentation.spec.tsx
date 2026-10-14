@@ -71,7 +71,7 @@ describe('exportDocx presentation', () => {
     });
 
     createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     }).update.text.insert('XY', {
       at: {
         anchor: { offset: 1, path: [0, 0, 0] },
@@ -242,7 +242,7 @@ describe('exportDocx presentation', () => {
     });
 
     createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     }).update.text.insert('XY', { at: { offset: 3, path: [0, 0] } });
 
     const result = await exportDocx(editor, {
@@ -253,8 +253,8 @@ describe('exportDocx presentation', () => {
           ]),
           target: {
             range: {
-              anchor: { offset: 3, path: [0, 0] },
-              focus: { offset: 5, path: [0, 0] },
+              anchor: { offset: 0, path: [0, 1] },
+              focus: { offset: 2, path: [0, 1] },
             },
           },
         },

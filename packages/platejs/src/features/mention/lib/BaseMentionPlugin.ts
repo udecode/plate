@@ -5,6 +5,8 @@ import {
   type NodeInsertOptions,
   PLUGINS,
   property,
+  txLocate,
+  locateAt,
 } from '../../../core';
 import {
   getCaretInline,
@@ -135,50 +137,53 @@ export const BaseMentionPlugin = definePlugin(PLUGINS.mention, {
       },
     }),
   update: ({ store, tx, schema: { type } }) => ({
-    insert: (
-      { label, ref }: { ref: string; label?: string },
-      options: NodeInsertOptions = {}
-    ) => {
-      if (!isNonBlankRef(ref)) {
-        throw new TypeError('Mention ref must be a non-empty string.');
-      }
+    insert: txLocate(
+      locateAt(1),
+      (
+        { label, ref }: { ref: string; label?: string },
+        options: NodeInsertOptions = {}
+      ) => {
+        if (!isNonBlankRef(ref)) {
+          throw new TypeError('Mention ref must be a non-empty string.');
+        }
 
-      const selection =
-        options.at === undefined && tx.selection.nodes().length === 0
-          ? tx.selection()
+        const selection =
+          options.at === undefined && tx.selection.nodes().length === 0
+            ? tx.selection()
+            : undefined;
+        const blockPath = selection
+          ? tx.nodes.block({ at: selection.focus })?.[1]
           : undefined;
-      const blockPath = selection
-        ? tx.nodes.block({ at: selection.focus })?.[1]
-        : undefined;
-      const insertSpaceAfter =
-        store.get().insertSpaceAfterMention &&
-        blockPath &&
-        selection &&
-        tx.points.isEnd(selection.anchor, blockPath);
-      const mention = {
-        children: [{ text: '' }],
-        ...(label === undefined ? {} : { label }),
-        ref,
-        type,
-      };
+        const insertSpaceAfter =
+          store.get().insertSpaceAfterMention &&
+          blockPath &&
+          selection &&
+          tx.points.isEnd(selection.anchor, blockPath);
+        const mention = {
+          children: [{ text: '' }],
+          ...(label === undefined ? {} : { label }),
+          ref,
+          type,
+        };
 
-      tx.nodes.insert(
-        insertSpaceAfter ? [mention, { text: ' ' }] : mention,
-        options
-      );
+        tx.nodes.insert(
+          insertSpaceAfter ? [mention, { text: ' ' }] : mention,
+          options
+        );
 
-      if (options.at !== undefined || options.select) return;
+        if (options.at !== undefined || options.select) return;
 
-      if (insertSpaceAfter && blockPath) {
-        const at = tx.points.end(blockPath);
+        if (insertSpaceAfter && blockPath) {
+          const at = tx.points.end(blockPath);
 
-        if (at) tx.selection.set(at);
-      } else {
-        const inline = getCaretInline(tx, type);
+          if (at) tx.selection.set(at);
+        } else {
+          const inline = getCaretInline(tx, type);
 
-        if (inline) selectAfterInline(tx, inline);
+          if (inline) selectAfterInline(tx, inline);
+        }
       }
-    },
+    ),
   }),
 });
 

@@ -208,7 +208,7 @@ const restored = createEditor({
 
 如果安装了[评论](/docs/comment)，请将 `editor.plugin(CommentsPlugin).api.toJSON()` 与文档、应用版本和对话代次一起原子保存。验证关联后，在新 editor 中用 `CommentsPlugin.configure({ initialState: { initialComments } })` 加载保存的 `CommentsJSON`。实时 thread target 只包含语义身份，通过 `attachment(id)` 读取位置。接受、拒绝和撤销建议决定都会保留讨论；解决或重新打开 thread 不进入文档 undo。
 
-历史预览和恢复保留当前对话，并只使用所选版本可验证的目标。参阅[评论的历史版本](/docs/comment#历史版本)。
+历史预览和恢复保留当前对话，并只使用所选版本可验证的目标。参阅[评论的历史版本](/cn/docs/comment#历史版本)。
 
 ## 导出显式投影
 
@@ -216,6 +216,12 @@ const restored = createEditor({
 record 时使用 `review`。Clean projection 在省略 pending change 或把 conflict
 解析到一侧时返回 diagnostic。每个 helper 都接收或捕获完整 document，包括
 named root 和 metadata。
+
+安装了 authored 插件的 editor 会给每个 document 写入 authored metadata，即使
+还没有人提出 proposal。对这样的 document 执行 HTML、Markdown、plain text 与
+static HTML 导出时，`projection` 必须是 `accepted` 或 `proposed`，否则抛出
+`TypeError`。没有 authored metadata 的 document 不需要 projection。DOCX export
+始终需要 projection。
 
 ### JSON
 

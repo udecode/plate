@@ -21,11 +21,7 @@ export const CodeBlockRules = {
       fence,
       on,
       priority,
-      enabled: (context) =>
-        (!enabled || enabled(context)) &&
-        !context.editor.read.nodes.some({
-          type: BaseCodeBlockPlugin,
-        }),
+      enabled,
       apply: ({ decline, editor, tx }, match) => {
         if (
           !tx.nodes.replace(

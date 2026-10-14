@@ -33,7 +33,7 @@ Take the user's scope, or the files they name. Read the root and scoped `AGENTS.
 - Expected values produced by the helper or renderer under test.
 - Mocks that implement the asserted behavior, or one mock standing in for different APIs.
 - Fixtures that supply what the owner should produce, or persistence asserted against a store the path never writes.
-- Assertions on a value the code returns as a constant.
+- Assertions on a value the code returns as a constant, unless users are promised that value.
 - Negative controls that pass for an unrelated reason, such as a crash or a denial from a different guard.
 - Names or fixtures that promise more than the input exercises.
 - Tests coupled to historical documents or plans whose content keeps changing.
@@ -44,6 +44,7 @@ Keep a test that independently enforces one of the contracts listed at the top, 
 
 - call ordering when the order is observable behavior;
 - a regression with a credible failure mode;
+- a pin on a constant users are promised, such as a documented default, when the test names that promise;
 - a source inspection that is the cheapest independent guard, failing when the user-facing key, byte or path changes and surviving an identifier rename; when the project's Tests rule bans source-text tests, the guard moves to its lint or a check script;
 - a test that fails on the current tree. Treat it as a possible bug, reproduce it and repair the owner or the fixture instead of deleting it.
 

@@ -290,7 +290,7 @@ describe('useEditorHistory', () => {
       };
       const wrapper = ({ children }: { children: ReactNode }) => (
         <EditorRoot
-          authored={{ intent: 'propose', projection: 'markup' }}
+          authored={{ intent: 'propose' }}
           editor={editor}
         >
           <Editable aria-label="History editor" />
@@ -300,28 +300,28 @@ describe('useEditorHistory', () => {
       );
       const { result } = renderHook(() => useEditorHistory(), { wrapper });
 
+      const decided = action === 'accept' ? 'body draft' : 'body';
+
       await act(async () => {
         mountedEditor.update.authored.decide({
           action,
-          selection: mountedEditor.read.authored.select({ ids: [changeId] }),
+          changes: [mountedEditor.read.authored.change(changeId)!],
         });
       });
 
-      expect(editor.read.authored.change(changeId)?.status).toBe(
-        action === 'accept' ? 'accepted' : 'rejected'
-      );
+      expect(editor.read.authored.change(changeId)).toBeNull();
+      expect(editor.read.text.string([])).toBe(decided);
       expect(result.current.canUndo).toBe(true);
 
       await act(async () => result.current.undo());
 
-      expect(editor.read.authored.change(changeId)?.status).toBe('pending');
+      expect(editor.read.authored.change(changeId)?.id).toBe(changeId);
       expect(result.current.canRedo).toBe(true);
 
       await act(async () => result.current.redo());
 
-      expect(editor.read.authored.change(changeId)?.status).toBe(
-        action === 'accept' ? 'accepted' : 'rejected'
-      );
+      expect(editor.read.authored.change(changeId)).toBeNull();
+      expect(editor.read.text.string([])).toBe(decided);
       expect(result.current.canRedo).toBe(false);
     });
   }

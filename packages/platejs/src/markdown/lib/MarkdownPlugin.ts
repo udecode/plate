@@ -370,13 +370,10 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
         )
       ),
     serialize: (options = {}) => {
-      const document = options.document ?? context.read.value();
-
-      assertMarkdownProjection(document, options.projection);
       const projected = projectPlateFormatDocument(
         editor,
-        document,
-        options.projection ?? 'proposed'
+        options.document ?? context.read.value(),
+        options.projection
       );
 
       return withMarkdownRuntime(editor, store.get(), (runtime) =>
@@ -391,17 +388,6 @@ export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {
   }),
 }));
 
-const assertMarkdownProjection = (
-  document: EditorDocumentValue,
-  projection: 'accepted' | 'proposed' | undefined
-) => {
-  if (document.meta?.authored !== undefined && !projection) {
-    throw new TypeError(
-      'Markdown serialization requires a projection for authored documents.'
-    );
-  }
-};
-
 const withDetachedMarkdownRuntime = <T>(
   options: Readonly<{
     plugins: readonly RuntimePluginReference[];
@@ -414,8 +400,8 @@ const withDetachedMarkdownRuntime = <T>(
       plugins: [MarkdownPlugin, ...options.plugins],
       ...(options.schema ? { schema: options.schema } : {}),
     },
-    ({ editor }) =>
-      editor.read((state) =>
+    ({ editor, readState }) =>
+      readState((state) =>
         run(
           createMarkdownRuntime(
             editor,
@@ -443,29 +429,24 @@ export const serializeMarkdown = (
 ): MarkdownSerializeResult => {
   const { plugins, schema, ...policy } = options;
 
-  assertMarkdownProjection(document, policy.projection);
-
   return withPlateFormatCompilation(
     { plugins: [MarkdownPlugin, ...plugins], ...(schema ? { schema } : {}) },
-    ({ editor, projectDocument, readDocument }) => {
-      const projected = projectDocument(
+    ({ editor, readDocument }) =>
+      readDocument(
         document,
-        policy.projection ?? 'proposed'
-      );
-
-      return readDocument(projected.document, (state, ownedDocument) =>
-        serializeMarkdownWithRuntime(
-          createMarkdownRuntime(
-            editor,
-            editor.plugin(MarkdownPlugin).store.get(),
-            state
-          ),
-          ownedDocument,
-          policy,
-          projected.diagnostics
-        )
-      );
-    }
+        policy.projection,
+        (state, ownedDocument, diagnostics) =>
+          serializeMarkdownWithRuntime(
+            createMarkdownRuntime(
+              editor,
+              editor.plugin(MarkdownPlugin).store.get(),
+              state
+            ),
+            ownedDocument,
+            policy,
+            diagnostics
+          )
+      )
   );
 };
 

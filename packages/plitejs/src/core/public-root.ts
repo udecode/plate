@@ -11,7 +11,7 @@ export { MAIN_ROOT_KEY } from '../internal/root-location';
 
 export const assertPublicRootKey = (root: string | undefined) => {
   if (root === MAIN_ROOT_KEY) {
-    throw new Error('[Plite] Omit root to target the primary document.');
+    throw new Error('Omit root to target the primary document.');
   }
 };
 
@@ -43,7 +43,7 @@ export const getReadLocationRoot = (
   const root = getCommonLocationRoot(...locations);
 
   if (root === null) {
-    throw new Error('Cannot read a Plite location across multiple roots.');
+    throw new Error('Cannot read an editor location across multiple roots.');
   }
 
   return root;

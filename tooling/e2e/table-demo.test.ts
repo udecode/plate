@@ -876,7 +876,7 @@ test.describe('table registry demo', () => {
   test.describe('native Chromium clipboard', () => {
     test.describe.configure({ mode: 'serial' });
 
-    test('pastes CSV plain text into selected table cells', async ({
+    test('pastes tab-separated text into selected table cells', async ({
       browserName,
       context,
       page,
@@ -905,7 +905,7 @@ test.describe('table registry demo', () => {
         });
 
         await writeClipboard(page, {
-          'text/plain': 'Alpha,Beta\nOne,Two',
+          'text/plain': 'Alpha\tBeta\nOne\tTwo',
         });
         expect(
           await editor.evaluate((element) =>
@@ -917,7 +917,7 @@ test.describe('table registry demo', () => {
         ).toHaveCount(4);
         const pasted = await pasteClipboardAndReadFormats(page);
 
-        expect(pasted.formats?.['text/plain']).toBe('Alpha,Beta\nOne,Two');
+        expect(pasted.formats?.['text/plain']).toBe('Alpha\tBeta\nOne\tTwo');
         runtimeErrors.assertNone();
         expect(tableDiagnostics.read()).toEqual([]);
 
@@ -933,7 +933,48 @@ test.describe('table registry demo', () => {
       }
     });
 
-    test('exports table selections as exact CSV, TSV, and plain text', async ({
+    test('keeps comma text whole in each selected table cell', async ({
+      browserName,
+      context,
+      page,
+    }) => {
+      test.skip(browserName !== 'chromium', 'Native Chromium clipboard proof');
+
+      await context.grantPermissions(['clipboard-read', 'clipboard-write'], {
+        origin: 'http://localhost:3000',
+      });
+
+      const runtimeErrors = recordBrowserRuntimeErrors(page, {
+        strict: true,
+      });
+      const editor = getEditor(page);
+      const table = getOriginalTable(page);
+
+      try {
+        await page.goto('/blocks/table-demo');
+        await expect(editor).toHaveCount(1);
+        await expect(table).toHaveCount(1);
+        await selectCellRectangle(page, table, editor, {
+          expectedCount: 4,
+          moves: ['ArrowRight', 'ArrowDown'],
+          startId: 'table-demo-heading-name',
+        });
+        await writeClipboard(page, { 'text/plain': 'Alpha,Beta\nOne,Two' });
+        await pasteClipboardAndReadFormats(page);
+        runtimeErrors.assertNone();
+
+        await expectCellTexts(table, {
+          'table-demo-heading-element': 'Alpha,Beta\nOne,Two',
+          'table-demo-heading-name': 'Alpha,Beta\nOne,Two',
+          'table-demo-image-element': 'Alpha,Beta\nOne,Two',
+          'table-demo-image-name': 'Alpha,Beta\nOne,Two',
+        });
+      } finally {
+        runtimeErrors.stop();
+      }
+    });
+
+    test('exports table selections as tab-separated plain text', async ({
       browserName,
       context,
       page,
@@ -962,8 +1003,6 @@ test.describe('table registry demo', () => {
 
         const copied = await copySelectionAndReadFormats(page);
 
-        expect(copied['text/csv']).toBe('Heading,\nImage,Yes\n');
-        expect(copied['text/tsv']).toBe('Heading\t\nImage\tYes\n');
         expect(copied['text/plain']).toBe('Heading\t\nImage\tYes\n');
         expect(copied['text/html']).toContain('<table');
         expect(copied['application/x-editor-fragment']).toBeTruthy();

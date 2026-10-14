@@ -4,12 +4,18 @@ import { standardKeymap } from '@codemirror/commands';
 import { keymap } from '@codemirror/view';
 import { createCodeMirrorAdapter } from 'platejs/code-block/codemirror';
 import { defineEditorSchema, property, schema } from 'plitejs';
-import { authored, type AuthoredPlugin } from 'plitejs/authored';
+import {
+  type AuthoredChange,
+  type AuthoredMark,
+  authored,
+  type AuthoredPlugin,
+} from 'plitejs/authored';
 import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
   type RenderElementProps,
+  type RenderLeafProps,
   type RenderVoidProps,
   useEditor,
   useEditorContext,
@@ -20,6 +26,7 @@ import {
 import { useCallback, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 import { textareaAdapter } from './external-text';
 
@@ -48,7 +55,7 @@ const inlineSchema = defineEditorSchema('schema:authored-example-inline', {
   },
   root: schema.content.not(schema.content.text()),
 });
-const proposal = { intent: 'propose', projection: 'proposed' } as const;
+const proposal = { intent: 'propose' } as const;
 const paragraph = (text: string) => ({
   type: 'paragraph',
   children: [{ text }],
@@ -194,6 +201,25 @@ const ReviewVoid = ({ element }: RenderVoidProps) => {
 };
 const renderVoid = (props: RenderVoidProps) => <ReviewVoid {...props} />;
 
+const ReviewLeaf = ({ attributes, children, leaf }: RenderLeafProps) => {
+  const kinds = new Set(
+    ((leaf.authored ?? []) as readonly AuthoredMark[]).map((mark) => mark.kind)
+  );
+  return (
+    <span
+      {...attributes}
+      className={cn(
+        kinds.has('insert') && 'bg-emerald-100 text-emerald-800 underline',
+        kinds.has('delete') && 'bg-red-50 text-red-700 line-through',
+        kinds.has('format') && 'bg-amber-100'
+      )}
+    >
+      {children}
+    </span>
+  );
+};
+const renderLeaf = (props: RenderLeafProps) => <ReviewLeaf {...props} />;
+
 const ReviewElement = ({
   authoring,
   external,
@@ -212,7 +238,7 @@ const ReviewElement = ({
     case 'code': {
       return (
         <div {...attributes}>
-          {external && mode.projection !== 'markup'
+          {external && !('intent' in mode && mode.intent === 'propose')
             ? external === 'codemirror'
               ? slots.externalText({
                   adapter: codeMirrorAdapter,
@@ -294,6 +320,7 @@ const ReviewEditable = ({
       aria-label={label}
       className="min-h-44 rounded-lg border p-4 outline-none focus:ring-2 focus:ring-blue-500/30"
       renderElement={renderElement}
+      renderLeaf={renderLeaf}
       renderVoid={renderVoid}
     />
   );
@@ -320,7 +347,7 @@ const ReviewSurface = ({
     <div className="grid gap-3">
       <div className="flex flex-wrap gap-2" aria-label={`${label} controls`}>
         <Button
-          aria-pressed={mode.projection === 'proposed'}
+          aria-pressed={'intent' in mode && mode.intent === 'propose'}
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => review.api.setView(proposal)}
           size="sm"
@@ -329,26 +356,31 @@ const ReviewSurface = ({
           Suggest
         </Button>
         <Button
-          aria-pressed={mode.projection === 'markup'}
+          aria-pressed={'intent' in mode && mode.intent === 'edit'}
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() =>
-            review.api.setView({ intent: 'propose', projection: 'markup' })
-          }
+          onClick={() => review.api.setView({ intent: 'edit' })}
           size="sm"
           variant="outline"
         >
-          Show changes
+          Edit
         </Button>
         <Button
-          aria-pressed={mode.intent === 'edit'}
+          aria-pressed={'preview' in mode && mode.preview === 'accepted'}
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() =>
-            review.api.setView({ intent: 'edit', projection: 'accepted' })
-          }
+          onClick={() => review.api.setView({ preview: 'accepted' })}
           size="sm"
           variant="outline"
         >
-          Edit accepted
+          Preview accepted
+        </Button>
+        <Button
+          aria-pressed={'preview' in mode && mode.preview === 'proposed'}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => review.api.setView({ preview: 'proposed' })}
+          size="sm"
+          variant="outline"
+        >
+          Preview proposed
         </Button>
         <Button
           disabled={readOnly}
@@ -379,14 +411,27 @@ const ReviewCards = ({ authoring }: { authoring: AuthoredPlugin }) => {
   const review = editor.plugin(authoring);
   const readOnly = useEditorReadOnly();
   const pending = useEditorSelector((currentEditor) =>
-    currentEditor.plugin(authoring).read.changes({ status: 'pending' })
+    currentEditor.plugin(authoring).read.changes()
   );
   const [result, setResult] = useState('');
+  const byAuthor = (authorId: string) => {
+    const changes: AuthoredChange[] = [];
+    let cursor: string | undefined;
+
+    do {
+      const page = review.read.changes({ authorId, cursor, limit: 200 });
+
+      changes.push(...page.items);
+      cursor = page.cursor ?? undefined;
+    } while (cursor);
+
+    return changes;
+  };
   const decide = (
     action: 'accept' | 'reject',
-    selection: ReturnType<typeof review.read.select>
+    changes: readonly AuthoredChange[]
   ) => {
-    const outcome = review.update.decide({ action, selection });
+    const outcome = review.update.decide({ action, changes });
     setResult(
       outcome.status === 'applied'
         ? `${action === 'accept' ? 'Accepted' : 'Rejected'} ${
@@ -404,12 +449,7 @@ const ReviewCards = ({ authoring }: { authoring: AuthoredPlugin }) => {
           <div className="flex gap-2" key={authorId}>
             <Button
               disabled={readOnly}
-              onClick={() =>
-                decide(
-                  'accept',
-                  review.read.select({ authorId, status: 'pending' })
-                )
-              }
+              onClick={() => decide('accept', byAuthor(authorId))}
               size="sm"
               variant="outline"
             >
@@ -417,12 +457,7 @@ const ReviewCards = ({ authoring }: { authoring: AuthoredPlugin }) => {
             </Button>
             <Button
               disabled={readOnly}
-              onClick={() =>
-                decide(
-                  'reject',
-                  review.read.select({ authorId, status: 'pending' })
-                )
-              }
+              onClick={() => decide('reject', byAuthor(authorId))}
               size="sm"
               variant="outline"
             >
@@ -447,18 +482,14 @@ const ReviewCards = ({ authoring }: { authoring: AuthoredPlugin }) => {
               <div className="flex gap-2">
                 <Button
                   disabled={readOnly}
-                  onClick={() =>
-                    decide('accept', review.read.select({ ids: [change.id] }))
-                  }
+                  onClick={() => decide('accept', [change])}
                   size="sm"
                 >
                   Accept
                 </Button>
                 <Button
                   disabled={readOnly}
-                  onClick={() =>
-                    decide('reject', review.read.select({ ids: [change.id] }))
-                  }
+                  onClick={() => decide('reject', [change])}
                   size="sm"
                   variant="outline"
                 >
@@ -504,7 +535,7 @@ const AuthoredChangesDocument = ({
   const [{ authoring, setAuthorId }] = useState(() => {
     let authorId = 'alice';
     return {
-      authoring: authored({ authorId: () => authorId, retainHistory: true }),
+      authoring: authored({ authorId: () => authorId }),
       setAuthorId: (value: string) => {
         authorId = value;
       },
@@ -518,8 +549,9 @@ const AuthoredChangesDocument = ({
   return (
     <div className="grid gap-6">
       <p>
-        Every mounted view shares one document while keeping its own projection
-        and input policy. Suggested edits remain pending until reviewed.
+        Every mounted view shares one document while keeping its own view:
+        editing, suggesting or a read-only preview. Suggested edits remain
+        pending until reviewed.
       </p>
       <div className="flex flex-wrap gap-4">
         <label className="flex items-center gap-3">
@@ -569,6 +601,7 @@ const AuthoredChangesDocument = ({
             >
               <h2 className="font-semibold">Accepted content</h2>
               <EditorRoot
+                authored={{ preview: 'accepted' }}
                 editor={editor}
                 root={sample === 'named-root' ? 'notes' : undefined}
               >
@@ -621,7 +654,7 @@ const AuthoredChangesDocument = ({
                   >
                     <h2 className="font-semibold">{label}</h2>
                     <EditorRoot
-                      authored={{ intent: 'propose', projection: 'markup' }}
+                      authored={{ intent: 'propose' }}
                       editor={editor}
                       readOnly
                       root={sample === 'named-root' ? 'notes' : undefined}

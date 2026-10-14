@@ -1,6 +1,6 @@
 // Donor rows preserve the shared cross-browser fixture signature.
 import { expect, type Locator, type Page, test } from '@playwright/test';
-import {
+import { BROWSER_HANDLE_KEY,
   assertNoIllegalKernelTransitions,
   assertBrowserSelectionContract,
   createBrowserDestructiveEditingGauntlet,
@@ -571,7 +571,7 @@ const getBrowserUndoHotkey = async (root: Locator) =>
     );
 
 const selectEndOfFirstBlockWithDOMSelection = async (root: Locator) => {
-  await root.evaluate((element: HTMLElement) => {
+  await root.evaluate((element: HTMLElement, key) => {
     const firstBlock = element.querySelector('[data-editor-node="element"]');
 
     if (!firstBlock) {
@@ -600,13 +600,13 @@ const selectEndOfFirstBlockWithDOMSelection = async (root: Locator) => {
     selection.setBaseAndExtent(lastTextNode, offset, lastTextNode, offset);
     document.dispatchEvent(new Event('selectionchange'));
 
-    const handle = (element as Record<string, any>).__pliteBrowserHandle;
+    const handle = (element as Record<string, any>)[key];
     const importedSelection = handle?.importDOMSelection?.();
 
     if (!importedSelection) {
       throw new Error('Cannot import browser selection into Plite');
     }
-  });
+  }, BROWSER_HANDLE_KEY);
 };
 
 const dispatchWebKitCompositionEnd = async (root: Locator, data = 'あああ') => {
@@ -1799,11 +1799,11 @@ test.describe('On richtext example', () => {
       focus: { path: [0, 2], offset: ' text'.length },
     };
     const getActiveInputIntent = () =>
-      editor.root.evaluate((element: HTMLElement) => {
-        const handle = (element as Record<string, any>).__pliteBrowserHandle;
+      editor.root.evaluate((element: HTMLElement, key) => {
+        const handle = (element as Record<string, any>)[key];
 
         return handle?.getInputState?.().activeIntent ?? null;
-      });
+      }, BROWSER_HANDLE_KEY);
 
     try {
       await editor.selection.selectDOM(preCompositionSelection);
@@ -2341,14 +2341,14 @@ test.describe('On richtext example', () => {
 
     for (const row of rows) {
       await test.step(row.name, async () => {
-        await editor.root.evaluate((element, value) => {
-          const handle = (element as Record<string, any>).__pliteBrowserHandle;
+        await editor.root.evaluate((element, [value, key]) => {
+          const handle = (element as Record<string, any>)[key];
 
           if (!handle?.applyValueChange) {
             throw new Error('Cannot apply composition topology fixture');
           }
           handle.applyValueChange({ children: value });
-        }, row.value);
+        }, [row.value, BROWSER_HANDLE_KEY] as const);
         await editor.selection.selectDOM(row.selection);
         await editor.ime.compose({
           committedText: row.committedText,
@@ -2720,8 +2720,8 @@ test.describe('On richtext example', () => {
     });
 
     await editor.root.evaluate(
-      (element: HTMLElement, { insertedPrefix }) => {
-        const handle = (element as Record<string, any>).__pliteBrowserHandle;
+      (element: HTMLElement, [{ insertedPrefix }, key]) => {
+        const handle = (element as Record<string, any>)[key];
 
         if (!handle?.insertTextAt) {
           throw new Error('Cannot insert model text during IME composition');
@@ -2732,7 +2732,7 @@ test.describe('On richtext example', () => {
           path: [0, 0],
         });
       },
-      { insertedPrefix: prefix }
+      [{ insertedPrefix: prefix }, BROWSER_HANDLE_KEY] as const
     );
 
     await client.send('Input.imeSetComposition', {
@@ -2789,8 +2789,8 @@ test.describe('On richtext example', () => {
     });
 
     await editor.root.evaluate(
-      (element: HTMLElement, { deleted, offset }) => {
-        const handle = (element as Record<string, any>).__pliteBrowserHandle;
+      (element: HTMLElement, [{ deleted, offset }, key]) => {
+        const handle = (element as Record<string, any>)[key];
 
         if (!handle?.deleteTextAt) {
           throw new Error('Cannot delete model text during IME composition');
@@ -2801,7 +2801,7 @@ test.describe('On richtext example', () => {
           focus: { offset: offset + deleted.length, path: [0, 0] },
         });
       },
-      { deleted: deletedText, offset: compositionOffset }
+      [{ deleted: deletedText, offset: compositionOffset }, BROWSER_HANDLE_KEY] as const
     );
 
     await client.send('Input.imeSetComposition', {

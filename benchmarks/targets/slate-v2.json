@@ -27,7 +27,7 @@
         "upgrade": "Normal 100/100 and large 1000/1000 blocks/pending deletions, two mounted shared views, three fresh passes with 20 warmups and 100 trusted keys. Every pass requires keydown-to-verified-paint-boundary p95 <= 50 ms and p99 <= 100 ms. All raw rows retained; a normal failure stops large."
       },
       "correctness": {
-        "command": "pnpm --filter plitejs test:react test/react/authored-fragment-provider.test.tsx test/react/dom-repair-policy-contract.test.ts && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
+        "command": "pnpm --filter plitejs test:react test/react/dom-repair-policy-contract.test.ts && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
         "policy": "Every key retains trusted event identity, exact native input target, model text, DOM text, focused native caret and paint-boundary readiness. Accepted and independent content, all saved pending records and mounted retained fragments remain exact. Uses the actual route's explicit virtualized rendering; record its mounted paths and boundaries. Double requestAnimationFrame is a presentation opportunity, not a compositor timestamp. No complete large-document DOM, cold-mount, heap, 1/8-view, physical IME or complete F30 claim."
       },
       "artifacts": [
@@ -62,7 +62,7 @@
         "upgrade": "At 100 blocks, measure 1, 2 and 8 real shared Editable roots; at 1000 blocks, measure two complete roots. Three alternating fresh-context zero, matched pending-insertion and retained-deletion arms use 10 warmups and 50 trusted keys. Every arm requires paint-boundary p95 <= 50 ms and p99 <= 100 ms. Retained p95 overhead is at most the larger of 1 ms or 10% against the matched arm, and post-GC JS heap is at most 1.5x that equal-record/card/view control."
       },
       "correctness": {
-        "command": "pnpm --filter plitejs test:react test/react/authored-fragment-provider.test.tsx test/react/authored-view.test.tsx test/react/plite-runtime-provider-contract.test.tsx && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
+        "command": "pnpm --filter plitejs test:react test/react/plite-runtime-provider-contract.test.tsx && pnpm --filter plite test:plite-browser:chromium authored-changes.spec.ts",
         "policy": "Mount exactly the selected shared view count and blocks times views top-level elements with no viewport placeholders. Each markup view retains every deleted counterpart; all projected views receive the typed proposal while accepted content, original pending IDs and the independent editor stay exact. Runtime errors and every trusted input guard must remain empty. This does not prove cold page hydration or disabled-capability overhead."
       },
       "artifacts": [
@@ -129,7 +129,7 @@
         "upgrade": "Three alternating passes of 20 warmups and 100 samples at each frozen cohort. Native p95 <= 50 ms (stress <= 100 ms), p99 <= 100 ms; large/stress <= 0.8 baseline unless both under 1 ms; zero overhead <= max(1 ms, 10%)."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-changes-contract.test.ts packages/plitejs/test/authored-structure-contract.test.ts packages/plitejs/test/authored-view-contract.test.ts packages/platejs/src/authored/authored.api.spec.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-plugin.test.ts packages/plitejs/test/authored-tree-record.test.ts packages/platejs/src/authored/authored.api.spec.ts",
         "policy": "Same proposed text and review count after every edit, accepted content preserved, native save/reload checked. Edits and reads use actual native headless views. No overlap ownership ratio, DOM/paint, heap or complete F30 claim."
       },
       "artifacts": [
@@ -148,75 +148,6 @@
       }
     },
     {
-      "id": "plite-authored-checkpoint",
-      "question": "Does a native proposal amendment publish a coherent immutable checkpoint with logarithmic changed pages and no unrelated payload cloning at 100, 1000 and 10000 retained changes?",
-      "owner": "plite",
-      "family": "core-authored",
-      "kind": "current",
-      "cwd": ".",
-      "command": "PLITE_AUTHORED_CHECKPOINT_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-checkpoint-benchmark.ts --output=tmp/plite-authored-checkpoint-benchmark.json",
-      "metrics": {
-        "primary": "plite_authored_checkpoint_passed",
-        "direction": "higher",
-        "unit": "boolean",
-        "printsMetric": true,
-        "upgrade": "Three alternating passes of 10 warmups and 30 samples at each frozen cohort. Native p95 <= 50 ms, p99 <= 100 ms, <= 0.8 of whole-collection replacement unless both are below 1 ms. Changed pages <= ceil(log2(n)) + 1; unrelated payload clones = 0."
-      },
-      "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-changes-contract.test.ts packages/plitejs/test/value-codec.test.ts",
-        "policy": "Native save/reload and logical change revisions must match; accepted content and prior snapshots remain unchanged. Capture and immutable publication are included; full serialization is separate. No browser or heap claim."
-      },
-      "artifacts": [
-        {
-          "path": "tmp/plite-authored-checkpoint-benchmark.json",
-          "required": true
-        }
-      ],
-      "docs": {
-        "sources": [
-          "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md"
-        ]
-      },
-      "thresholds": {
-        "promotion": "plite_authored_checkpoint_passed=1"
-      }
-    },
-    {
-      "id": "plite-authored-retention",
-      "question": "Does installed native authored state retain bounded cold heap for one, 1000 and 10000 closed contribution pairs under default and archival policy?",
-      "owner": "plitejs/authored",
-      "family": "core-authored",
-      "kind": "current",
-      "cwd": ".",
-      "command": "PLITE_AUTHORED_RETENTION_STRICT=1 bun --expose-gc --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-authored-retention-benchmark.ts --output=tmp/plite-authored-retention-benchmark.json",
-      "metrics": {
-        "primary": "plite_authored_retention_passed",
-        "direction": "higher",
-        "unit": "boolean",
-        "printsMetric": true,
-        "upgrade": "Three fresh isolated cold loads per policy at one, 1000 and 10000 accepted insert/delete pairs. After equivalent warmup and forced GC, default total heap must stay within 1.5x the same-contribution full-retention archive control."
-      },
-      "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-retention-contract.test.ts packages/plitejs/test/authored-history-contract.test.ts packages/plitejs/test/yjs/authored-contract.spec.ts",
-        "policy": "Both policies restore the same accepted document and exact operation count with no pending changes. Default persistence omits closed fixture bodies; the archive control retains those same bodies. The target measures retained JavaScript heap after cold load, not construction peak, DOM/provider memory, zero-review overhead or mounted-view heap."
-      },
-      "artifacts": [
-        {
-          "path": "tmp/plite-authored-retention-benchmark.json",
-          "required": true
-        }
-      ],
-      "docs": {
-        "sources": [
-          "docs/plans/2026-09-10-native-authored-changes-and-suggestions.md",
-          "docs/plans/artifacts/native-authored-changes/retention-heap-contract.json"
-        ]
-      },
-      "thresholds": {
-        "promotion": "plite_authored_retention_passed=1"
-      }
-    },
-    {
       "id": "plite-authored-collaboration",
       "question": "Does the installed native authored owner receive one Yjs operation and publish exact accepted and proposed content within the frozen collaboration budgets at 100, 1000 and 10000 pending changes?",
       "owner": "plitejs/authored+yjs",
@@ -232,8 +163,8 @@
         "upgrade": "Three passes of five warmups and 50 distinct-block receives for proposed and accepted insertion at 100, 1000 and 10000 seeded proposals. One canonical native N-operation seed per cohort initializes each Yjs pair through its genesis checkpoint. Every phase runs in a fresh process. Accepted rows at 1000 and 10000 changes first prime that path with 55 untimed operations on a disposable prior-cohort owner of 100 or 1000 changes. This reproduces the frozen cohort-order JIT state without contaminating proposed timing or carrying large heaps between measured rows. Receipt includes missing-update encoding, synchronous Yjs apply and one proposed-view read. Every aggregate requires p95 <= 50 ms, p99 <= 100 ms and p95 within 1.1x plus 2 ms of the immutable version-4 design-target artifact on the same machine class."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/yjs/authored-contract.spec.ts packages/plitejs/test/authored-history-contract.test.ts packages/plitejs/test/authored-retention-contract.test.ts",
-        "policy": "Every receive adds one native operation and preserves exact accepted and proposed content, logical and pending counts, immutable initial snapshots, duplicate-update identity and saved-value reload. The package tests cover concurrent proposals, decisions, retained content, checkpoints, history and local retention. Provider lifecycle, awareness, browser input, DOM, heap and paint remain separate gates."
+        "command": "bun test --preload ./config/plite-source-test-setup.ts packages/plitejs/test/authored-tree-collab.test.ts packages/plitejs/test/yjs/authored-legacy-room-contract.spec.ts",
+        "policy": "Every receive adds one native operation and preserves exact accepted and proposed content, logical and pending counts, immutable initial snapshots, duplicate-update identity and saved-value reload. The package tests cover concurrent proposals and decisions through the ordinary binding. Provider lifecycle, awareness, browser input, DOM, heap and paint remain separate gates."
       },
       "artifacts": [
         {
@@ -339,7 +270,7 @@
       },
       "correctness": {
         "command": "bun test ./packages/platejs/src/authored/authored.api.spec.ts",
-        "policy": "Promotion requires that AuthoredPlugin attributes writes to the editor's user, applies the configured retention, writes as the local user without a userId, rejects a NUL userId and warns once beside Yjs."
+        "policy": "Promotion requires that AuthoredPlugin attributes writes to the editor's user, writes as the local user without a userId, rejects a NUL userId and warns once beside Yjs."
       },
       "artifacts": [
         {
@@ -930,7 +861,7 @@
         "upgrade": "At 1k, 10k, and 100k annotations in one dense node or at least 1,000 distributed nodes, interleave three warmups and nine measured samples for one, two, and four exact views. A private candidate needs at least 20% and 1 ms p95 improvement, or at least 15% and 8 MiB retained-structure improvement, with no applicable cohort over 10% slower. Baseline rows below 1 ms are timing noise."
       },
       "correctness": {
-        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/anchor-contract.ts ./packages/plitejs/test/anchor-mapping-contract.ts ./packages/plitejs/test/range-anchor-contract.ts ./packages/plitejs/test/history/anchor-history-contract.ts ./packages/plitejs/test/authored-anchor-contract.test.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/annotation-store-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx test/react/view-source-fault-boundary.test.ts",
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plitejs/test/anchor-contract.ts ./packages/plitejs/test/anchor-mapping-contract.ts ./packages/plitejs/test/range-anchor-contract.ts ./packages/plitejs/test/history/anchor-history-contract.ts && pnpm --filter plitejs exec vitest run --config ./vitest.config.mjs test/react/annotation-store-contract.test.tsx test/react/decoration-manager-contract.test.ts test/react/decoration-rendering-contract.test.tsx test/react/view-source-fault-boundary.test.ts",
         "policy": "Every prototype must select the same candidate IDs, resolve the same per-view targets, dirty the same node buckets, and publish the same subscriber wake count as the current node-key scalar baseline. Production locality and historical snapshot isolation remain covered by react-stable-id-overlay-source."
       },
       "artifacts": [

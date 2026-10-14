@@ -56,7 +56,7 @@ const createPresenceYjs = (options: {
   doc: Y.Doc;
   initialReady: YjsInitialReadiness;
   seed?: true;
-}) => yjs({ ...options, rootName: 'plitejs' });
+}) => yjs(options);
 const HistoryPlugin = history();
 type YjsEditor = CustomEditor<
   readonly [typeof HistoryPlugin, ReturnType<typeof createPresenceYjs>]
@@ -89,7 +89,7 @@ type TextEntry = {
 const DEFAULT_YJS_URL =
   process.env.NEXT_PUBLIC_PLITE_YJS_URL ?? 'ws://localhost:4444/yjs';
 const DEFAULT_ROOM =
-  process.env.NEXT_PUBLIC_PLITE_YJS_ROOM ?? 'plite-yjs-hocuspocus-demo';
+  process.env.NEXT_PUBLIC_PLITE_YJS_ROOM ?? 'yjs-hocuspocus-demo';
 const DEFAULT_TOKEN = process.env.NEXT_PUBLIC_PLITE_YJS_TOKEN;
 
 const INITIAL_VALUE: CustomValue = [
@@ -1173,6 +1173,8 @@ const CommandButton = ({
     onClick={(event) => {
       handleCommandClick(event, onRun);
     }}
+    // iOS WebKit still sends mousedown after a prevented pointerdown, which blurs the editor.
+    onMouseDown={(event) => event.preventDefault()}
     onPointerDown={(event) => {
       handleCommandPointerDown(event, onRun);
     }}

@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, definePlugin, type EditorCommit } from 'plitejs';
+import {
+  createEditor,
+  createEditorView,
+  definePlugin,
+  type EditorCommit,
+  txOnly,
+} from 'plitejs';
 import { compilePluginInput, initializePluginEntries } from 'plitejs/internal';
 
 describe('plugin portal', () => {
@@ -91,6 +97,160 @@ describe('plugin portal', () => {
 
     assert.equal(editor.read.text.string([]), 'test!');
     assert.deepEqual(commit?.tags, ['scoped']);
+  });
+
+  it('refuses reads and transaction-only methods through both portal forms', () => {
+    let controlRuns = 0;
+    const Probe = definePlugin('portalProbe', {
+      read: ({ state }) => ({ peek: () => state.text.string([]) }),
+      update: ({ tx }) => ({
+        control: txOnly(() => {
+          controlRuns += 1;
+        }),
+        direct() {
+          tx.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+        },
+      }),
+    });
+    const editor = createEditor({
+      plugins: [Probe] as const,
+      initialValue: [{ children: [{ text: 'test' }], type: 'paragraph' }],
+    });
+    const portal = editor.plugin(Probe).update as unknown as Record<
+      string,
+      (...args: unknown[]) => unknown
+    > &
+      ((policy: { tags: string }) => Record<string, () => unknown>);
+    const { version } = editor.read.runtime.snapshot();
+
+    assert.throws(() => portal.peek(), /is read-only\./);
+    assert.throws(() => portal({ tags: 'scoped' }).peek(), /is read-only\./);
+    assert.throws(() => portal.control(), /is transaction-only\./);
+    assert.throws(
+      () => portal({ tags: 'scoped' }).control(),
+      /is transaction-only\./
+    );
+    assert.equal(controlRuns, 0);
+    assert.equal(editor.read.runtime.snapshot().version, version);
+
+    let commit: EditorCommit | undefined;
+
+    editor.subscribeCommit((nextCommit) => {
+      commit = nextCommit;
+    });
+    portal({ tags: 'scoped' }).direct();
+
+    assert.equal(editor.read.text.string([]), 'test!');
+    assert.deepEqual(commit?.tags, ['scoped']);
+  });
+
+  it('refuses a transaction-only callable group and its members through direct calls', () => {
+    let runs = 0;
+    const Control = definePlugin('rootControl', {
+      update: () =>
+        txOnly(Object.assign(() => (runs += 1), { child: () => (runs += 1) })),
+    });
+    const editor = createEditor({ plugins: [Control] as const });
+    const direct = editor.update as unknown as Record<
+      string,
+      { call: (thisArg: unknown) => unknown; child: () => unknown }
+    >;
+    const portal = editor.plugin(Control).update as unknown as {
+      child: () => unknown;
+    };
+
+    assert.throws(() => portal.child(), /is transaction-only\./);
+    assert.throws(() => direct.rootControl.child(), /is transaction-only\./);
+    assert.throws(
+      () => direct.rootControl.call(undefined),
+      /is transaction-only\./
+    );
+    assert.equal(runs, 0);
+
+    editor.update((tx) => {
+      (
+        tx as unknown as Record<string, { child: () => unknown }>
+      ).rootControl.child();
+    });
+
+    assert.equal(runs, 1);
+  });
+
+  it('runs an update method defined by a getter beside a read group', () => {
+    let runs = 0;
+    const Getter = definePlugin('getterUpdate', {
+      read: () => ({ peek: () => runs }),
+      update: () => ({
+        get write() {
+          return () => (runs += 1);
+        },
+      }),
+    });
+    const editor = createEditor({ plugins: [Getter] as const });
+
+    editor.plugin(Getter).update.write();
+    editor.update.getterUpdate.write();
+
+    assert.equal(runs, 2);
+  });
+
+  it('runs a getter-defined update method through an editor view', () => {
+    let runs = 0;
+    const Getter = definePlugin('getterViewUpdate', {
+      read: () => ({ peek: () => runs }),
+      update: () => ({
+        get write() {
+          return () => (runs += 1);
+        },
+      }),
+    });
+    const view = createEditorView(createEditor({ plugins: [Getter] as const }));
+
+    view.plugin(Getter).update.write();
+    view.update.getterViewUpdate.write();
+
+    assert.equal(runs, 2);
+  });
+
+  it('refuses a transaction-only callable group named plugin through direct calls', () => {
+    let runs = 0;
+    const Control = definePlugin('plugin', {
+      update: () =>
+        txOnly(Object.assign(() => undefined, { child: () => (runs += 1) })),
+    });
+    const editor = createEditor({ plugins: [Control] as const });
+    const direct = editor.update as unknown as Record<
+      string,
+      { child: () => unknown }
+    >;
+    const portal = editor.plugin(Control).update as unknown as {
+      child: () => unknown;
+    };
+
+    assert.throws(() => portal.child(), /is transaction-only\./);
+    assert.throws(() => direct.plugin.child(), /is transaction-only\./);
+    assert.equal(runs, 0);
+
+    editor.update((tx) => {
+      (
+        tx as unknown as Record<string, { child: () => unknown }>
+      ).plugin.child();
+    });
+
+    assert.equal(runs, 1);
+  });
+
+  it('runs both portal forms on a plugin named plugin', () => {
+    let calls = 0;
+    const Plugin = definePlugin('plugin', {
+      update: () => ({ run: () => (calls += 1) }),
+    });
+    const editor = createEditor({ plugins: [Plugin] as const });
+
+    editor.plugin(Plugin).update({ tags: 'scoped' }).run();
+    editor.plugin(Plugin).update.run();
+
+    assert.equal(calls, 2);
   });
 
   it('rejects update method names reserved by JavaScript protocols', () => {

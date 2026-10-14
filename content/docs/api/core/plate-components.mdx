@@ -61,10 +61,10 @@ The prop requires an installed authored capability. Each `EditorRoot` configures
 
 ## Read-only view
 
-Use `EditorPreview` with a static editor when you need rendered content and Plate copy behavior without an editable surface.
+Use `EditorPreview` when you need rendered content and Plate copy behavior without an editable surface.
 
 ```tsx title="components/read-only-editor.tsx"
-import { EditorPreview, useStaticEditor } from "platejs/react";
+import { EditorPreview, useCreateEditor } from "platejs/react";
 
 const value = [
   {
@@ -74,9 +74,7 @@ const value = [
 ];
 
 export function ReadOnlyEditor() {
-  const editor = useStaticEditor({ initialValue: value });
-
-  if (!editor) return null;
+  const editor = useCreateEditor({ initialValue: value });
 
   return <EditorPreview editor={editor} />;
 }
@@ -471,7 +469,7 @@ Read-only static renderer with Plate copy support.
 <API name="EditorPreview">
   <APIProps>
     <APIItem name="editor" type="Editor">
-      Static editor instance.
+      Editor to render.
     </APIItem>
     <APIItem
       name="onCopy"

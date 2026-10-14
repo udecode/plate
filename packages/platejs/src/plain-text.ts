@@ -1,7 +1,7 @@
 import {
   createEditorView,
   type EditorDocumentValue,
-  type NativeAuthoredProjectionDiagnostic,
+  type AuthoredProjectionDiagnostic,
   type StructuralPlainTextDiagnostic,
 } from './facade';
 import { serializePlatePlainText } from './internal/plugin/compilePlainTextMappings';
@@ -14,7 +14,7 @@ import {
 } from './lib/editor/withPlite';
 
 export type PlainTextDiagnostic =
-  | NativeAuthoredProjectionDiagnostic
+  | AuthoredProjectionDiagnostic
   | StructuralPlainTextDiagnostic;
 
 export type PlainTextSerializeResult = Readonly<{
@@ -23,6 +23,16 @@ export type PlainTextSerializeResult = Readonly<{
 }>;
 
 export type PlainTextEditorOptions = Readonly<{
+  /**
+   * Version of an authored document to export. `accepted` drops pending changes
+   * and `proposed` applies them as plain content. Either choice adds an
+   * `authored-lossy-projection` warning while changes are pending. Required
+   * when the document has authored metadata, which every document from an
+   * editor with the authored plugin carries, even with no pending change.
+   * Omitting it or passing any other value then throws, and so does a valid
+   * value when the editor or `plugins` lacks the authored plugin. A document
+   * without authored metadata ignores it.
+   */
   projection?: 'accepted' | 'proposed';
 }>;
 
@@ -37,11 +47,10 @@ const serializeEditorPlainText = (
   document: EditorDocumentValue,
   options: PlainTextEditorOptions
 ): PlainTextSerializeResult => {
-  assertPlainTextProjection(document, options);
   const projected = projectPlateFormatDocument(
     editor,
     document,
-    options.projection ?? 'proposed'
+    options.projection
   );
   const view = createEditorView(editor, {
     document: projected.document,
@@ -67,17 +76,6 @@ const serializeEditorPlainText = (
   });
 };
 
-const assertPlainTextProjection = (
-  document: EditorDocumentValue,
-  options: PlainTextEditorOptions
-) => {
-  if (document.meta?.authored !== undefined && !options.projection) {
-    throw new TypeError(
-      'Plain-text serialization requires projection when the document contains authored changes.'
-    );
-  }
-};
-
 export function serializePlainText(
   editor: Editor,
   options?: PlainTextEditorOptions
@@ -98,18 +96,12 @@ export function serializePlainText(
       'Detached plain-text serialization requires plugins configuration.'
     );
   }
-  const { plugins, schema, ...projectionOptions } = options;
-  assertPlainTextProjection(source, projectionOptions);
+  const { plugins, projection, schema } = options;
 
   return withPlateFormatCompilation(
     { plugins, ...(schema ? { schema } : {}) },
-    ({ editor, projectDocument, readDocument }) => {
-      const projected = projectDocument(
-        source,
-        projectionOptions.projection ?? 'proposed'
-      );
-
-      return readDocument(projected.document, (state, document) => {
+    ({ editor, readDocument }) =>
+      readDocument(source, projection, (state, document, diagnostics) => {
         const result = serializePlatePlainText(
           editor,
           {
@@ -122,12 +114,8 @@ export function serializePlainText(
 
         return Object.freeze({
           data: result.data,
-          diagnostics: Object.freeze([
-            ...projected.diagnostics,
-            ...result.diagnostics,
-          ]),
+          diagnostics: Object.freeze([...diagnostics, ...result.diagnostics]),
         });
-      });
-    }
+      })
   );
 }

@@ -55,6 +55,9 @@ const plateJsPlugins = {
 const htmlParserOwnerMessage =
   'Parse HTML with parseHtmlAst from packages/platejs/src/lib/plugins/html/htmlAst.ts, which needs no browser DOM.';
 
+const docxDomParserOwnerMessage =
+  'DOCX builds a DOM document only through parseDocxHtml, parseDocxXml or captureDocxDomParsers in packages/platejs/src/docx/internal/domParser.ts. HTML that needs no DOM document goes through parseHtmlAst from packages/platejs/src/lib/plugins/html/htmlAst.ts.';
+
 const forbiddenUdecodeImport = {
   regex: '^@udecode(?:/|$)',
   message:
@@ -209,10 +212,15 @@ export default defineConfig({
         // Phase 1 proof surfaces of the authored review tree, which installs
         // a raw Plite plugin; the phase's revert removes them.
         'apps/www/src/app/dev/authored-review/page.tsx',
+        'packages/platejs/src/authored/__tests__/authoredTestApi.ts',
+        'packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.authored-tree.spec.ts',
         'packages/platejs/src/features/table/lib/BaseTablePlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/details/lib/BaseDetailsPlugin.authored-tree.spec.ts',
+        'packages/platejs/src/features/find/lib/BaseFindPlugin.authored-tree.spec.ts',
+        'packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/layout/lib/BaseColumnPlugin.authored-tree.spec.ts',
         'packages/platejs/src/features/list/lib/BaseListPlugin.authored-tree.spec.ts',
+        'packages/platejs/src/math/lib/BaseEquationPlugin.authored-tree.spec.ts',
       ],
       rules: {
         'no-restricted-imports': [
@@ -340,6 +348,28 @@ export default defineConfig({
         'no-restricted-properties': [
           'error',
           { property: 'DOMParser', message: htmlParserOwnerMessage },
+        ],
+      },
+    },
+    {
+      files: [
+        'packages/platejs/src/docx/**/*.{cjs,cts,js,jsx,mjs,mjsx,mts,ts,tsx}',
+      ],
+      excludeFiles: [
+        'packages/platejs/src/docx/internal/domParser.ts',
+        'packages/platejs/src/docx/**/*.spec.*',
+        'packages/platejs/src/docx/**/*.test.*',
+        'packages/platejs/src/docx/**/*.slow.*',
+        'packages/platejs/src/docx/**/__tests__/**',
+      ],
+      rules: {
+        'no-restricted-globals': [
+          'error',
+          { name: 'DOMParser', message: docxDomParserOwnerMessage },
+        ],
+        'no-restricted-properties': [
+          'error',
+          { property: 'DOMParser', message: docxDomParserOwnerMessage },
         ],
       },
     },
@@ -500,6 +530,26 @@ export default defineConfig({
       ],
       rules: {
         'plate/no-schema-placement-copy': 'error',
+      },
+    },
+    {
+      files: [
+        'packages/platejs/src/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
+        'packages/plitejs/src/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
+        'packages/test/src/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
+        'apps/www/src/registry/components/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
+        'apps/www/src/registry/hooks/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
+        'apps/www/src/registry/lib/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
+      ],
+      excludeFiles: [
+        'packages/test/src/device/**',
+        '**/*.spec.*',
+        '**/*.test.*',
+        '**/*.slow.*',
+        '**/__tests__/**',
+      ],
+      rules: {
+        'plate/no-branded-value': 'error',
       },
     },
     {

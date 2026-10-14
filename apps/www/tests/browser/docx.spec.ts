@@ -83,7 +83,7 @@ test('a Word file imports and exports through the toolbar', async ({
     const artifact = await download;
     const path = await artifact.path();
 
-    expect(artifact.suggestedFilename()).toBe('plate.docx');
+    expect(artifact.suggestedFilename()).toBe('document.docx');
     expect(path).not.toBeNull();
     const word = await JSZip.loadAsync(await readFile(path));
     const wordXml = await word.file('word/document.xml')!.async('string');

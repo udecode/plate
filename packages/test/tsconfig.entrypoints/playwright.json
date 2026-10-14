@@ -25,6 +25,9 @@
       "path": "../../platejs/tsconfig.entrypoints/root.json"
     },
     {
+      "path": "../../platejs/tsconfig.entrypoints/testing.json"
+    },
+    {
       "path": "./browser.json"
     },
     {

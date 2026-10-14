@@ -1,6 +1,8 @@
 import { dispatchCommand } from '../core/command-registry';
+import { landTextWrite } from '../core/content-landing';
 import { editorCommands } from '../core/editor-commands';
 import {
+  getChildren,
   getCurrentMarks,
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -11,6 +13,7 @@ import {
 } from '../core/public-state';
 import {
   LocationApi,
+  PointApi,
   RangeApi,
   SelectionApi,
   type Location as PliteLocation,
@@ -92,6 +95,9 @@ export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
       let target = tx.resolveTarget({ at: options.at });
       if (!target && !hasExplicitAt && tx.getModelSelection() == null) {
         target = getDefaultInsertLocation(editor);
+      }
+      if (PointApi.isPoint(target) || RangeApi.isRange(target)) {
+        target = landTextWrite(editor, target, getChildren(editor));
       }
 
       if (

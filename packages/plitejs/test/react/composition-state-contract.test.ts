@@ -245,7 +245,7 @@ describe('composition state', () => {
       inputController.state.pendingCompositionEnd = {
         cancel: vi.fn(),
         flush: vi.fn(() => false),
-        ownership: 'plite',
+        ownership: 'editor',
         phase: 'end-pending',
         replaceWithInput: (input) => {
           pendingInput.current = input;
@@ -499,7 +499,7 @@ describe('composition state', () => {
       expect(inputController.state).toMatchObject({
         isComposing: true,
         pendingCompositionEnd: {
-          ownership: 'plite',
+          ownership: 'editor',
           phase: 'end-pending',
         },
         selectionSource: 'composition-owned',
@@ -573,7 +573,7 @@ describe('composition state', () => {
         setComposing,
       });
       expect(inputController.state.pendingCompositionEnd).toMatchObject({
-        ownership: 'plite',
+        ownership: 'editor',
         phase: 'end-pending',
       });
 
@@ -679,7 +679,7 @@ describe('composition state', () => {
         });
         const { pendingCompositionEnd } = inputController.state;
 
-        if (pendingCompositionEnd?.ownership !== 'plite') {
+        if (pendingCompositionEnd?.ownership !== 'editor') {
           throw new Error('expected Plite-owned composition end');
         }
         if (phase === 'input-claimed') {
@@ -752,7 +752,7 @@ describe('composition state', () => {
       });
       const { pendingCompositionEnd } = inputController.state;
 
-      if (pendingCompositionEnd?.ownership !== 'plite') {
+      if (pendingCompositionEnd?.ownership !== 'editor') {
         throw new Error('expected Plite-owned composition end');
       }
       let thrown: unknown;
@@ -1003,7 +1003,7 @@ describe('composition state', () => {
       });
       const { pendingCompositionEnd } = inputController.state;
 
-      if (pendingCompositionEnd?.ownership !== 'plite') {
+      if (pendingCompositionEnd?.ownership !== 'editor') {
         throw new Error('expected Plite-owned composition end');
       }
       if (!compositionSelection) {
@@ -1142,8 +1142,8 @@ describe('composition state', () => {
 
         const { pendingCompositionEnd } = inputController.state;
 
-        expect(pendingCompositionEnd?.ownership).toBe('plite');
-        if (pendingCompositionEnd?.ownership !== 'plite') {
+        expect(pendingCompositionEnd?.ownership).toBe('editor');
+        if (pendingCompositionEnd?.ownership !== 'editor') {
           throw new Error('expected Plite-owned composition end');
         }
 
@@ -1244,7 +1244,7 @@ describe('composition state', () => {
       });
       const { pendingCompositionEnd } = inputController.state;
 
-      if (pendingCompositionEnd?.ownership !== 'plite') {
+      if (pendingCompositionEnd?.ownership !== 'editor') {
         throw new Error('expected Plite-owned composition end');
       }
       pendingCompositionEnd.replaceWithInput({
@@ -1325,7 +1325,7 @@ describe('composition state', () => {
       });
       const { pendingCompositionEnd } = inputController.state;
 
-      if (pendingCompositionEnd?.ownership !== 'plite') {
+      if (pendingCompositionEnd?.ownership !== 'editor') {
         throw new Error('expected Plite-owned composition end');
       }
       pendingCompositionEnd.replaceWithInput({
@@ -1402,7 +1402,7 @@ describe('composition state', () => {
       });
       const { pendingCompositionEnd } = inputController.state;
 
-      if (pendingCompositionEnd?.ownership !== 'plite') {
+      if (pendingCompositionEnd?.ownership !== 'editor') {
         throw new Error('expected Plite-owned composition end');
       }
       pendingCompositionEnd.replaceWithInput(
@@ -1517,7 +1517,7 @@ describe('composition state', () => {
       });
       const { pendingCompositionEnd } = inputController.state;
 
-      if (pendingCompositionEnd?.ownership !== 'plite') {
+      if (pendingCompositionEnd?.ownership !== 'editor') {
         throw new Error('expected Plite-owned composition end');
       }
       expect(() =>
@@ -1592,7 +1592,7 @@ describe('composition state', () => {
       });
       const { pendingCompositionEnd } = inputController.state;
 
-      if (pendingCompositionEnd?.ownership !== 'plite') {
+      if (pendingCompositionEnd?.ownership !== 'editor') {
         throw new Error('expected Plite-owned composition end');
       }
       let thrown: unknown;
@@ -1759,7 +1759,7 @@ describe('composition state', () => {
       });
       const { pendingCompositionEnd } = inputController.state;
 
-      if (pendingCompositionEnd?.ownership !== 'plite') {
+      if (pendingCompositionEnd?.ownership !== 'editor') {
         throw new Error('expected Plite-owned composition end');
       }
       pendingCompositionEnd.replaceWithInput({
@@ -2115,7 +2115,7 @@ describe('composition state', () => {
           setComposing,
         });
         expect(inputController.state.pendingCompositionEnd).toMatchObject({
-          ownership: 'plite',
+          ownership: 'editor',
           phase: 'end-pending',
         });
 

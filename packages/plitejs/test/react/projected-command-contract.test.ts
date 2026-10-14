@@ -304,7 +304,7 @@ describe('projected editable commands', () => {
       initialValue,
     });
     const editor = createEditorView(source, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     }) as unknown as ReactRuntimeEditor;
     editor.update.text.insert('XYZ', { at: point(SHARED_ROOT, [0, 0], 2) });
     const graph = createPliteViewBoundaryGraph([
@@ -329,41 +329,56 @@ describe('projected editable commands', () => {
         data: data as unknown as DataTransfer,
       },
     });
-    expect(source.read.children()).toEqual(initialValue.children);
-    expect(source.read.root(SHARED_ROOT)).toEqual(
+    const accepted = createEditorView(source, {
+      authored: { preview: 'accepted' },
+    });
+    const proposed = createEditorView(source, {
+      authored: { preview: 'proposed' },
+    });
+
+    expect(accepted.read.children()).toEqual(initialValue.children);
+    expect(accepted.read.root(SHARED_ROOT)).toEqual(
       initialValue.roots[SHARED_ROOT]
     );
-    expect(editor.read.children()).toEqual([
+    expect(proposed.read.children()).toEqual([
       paragraph('Before'),
       contentCard(),
       paragraph('ter'),
     ]);
-    expect(editor.read.root(SHARED_ROOT)).toEqual([paragraph('InZ')]);
+    expect(proposed.read.root(SHARED_ROOT)).toEqual([paragraph('InZ')]);
   });
 
-  it('replaces proposed selection coordinates through the originating authored view', () => {
+  it('types over a view selection in a suggesting view as a suggestion', () => {
     const source = createEditor({
       plugins: [authored({ authorId: 'alice' }), dom()],
       initialValue: [paragraph('AB')],
     });
     const editor = createEditorView(source, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     }) as unknown as ReactRuntimeEditor;
     editor.update.text.insert('XYZ', { at: point(undefined, [0, 0], 1) });
     const graph = createPliteViewBoundaryGraph([{ path: [0], root: 'main' }]);
     writePliteViewSelection(
       editor,
       createPliteViewSelection(graph, {
-        anchor: { point: point(undefined, [0, 0], 1) },
-        focus: { point: point(undefined, [0, 0], 4) },
+        anchor: { point: point(undefined, [0, 1], 0) },
+        focus: { point: point(undefined, [0, 1], 3) },
       })
     );
     applyEditableCommand({
       editor,
       command: { kind: 'insert-text', text: '!' },
     });
-    expect(source.read.children()).toEqual([paragraph('AB')]);
-    expect(editor.read.children()).toEqual([paragraph('A!B')]);
+    expect(
+      createEditorView(source, {
+        authored: { preview: 'accepted' },
+      }).read.children()
+    ).toEqual([paragraph('AB')]);
+    expect(
+      createEditorView(source, {
+        authored: { preview: 'proposed' },
+      }).read.children()
+    ).toEqual([paragraph('A!B')]);
   });
 
   it('typing over a projected selection replaces the visible span across roots in one commit', () => {

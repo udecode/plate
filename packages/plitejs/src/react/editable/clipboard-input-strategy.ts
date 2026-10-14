@@ -33,6 +33,7 @@ import {
   indicateDOMDropTarget,
   resolveDOMDropTarget,
 } from '../../dom/plugin/dom-drag';
+import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
 import {
   beginDragSession,
   clearDragSession,
@@ -50,7 +51,6 @@ import {
   readPliteViewSelection,
   writePliteViewSelection,
 } from '../view-selection';
-import { getDragAutoScrollTarget } from './drag-auto-scroll-target';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableCommand } from './editing-kernel';
 import {
@@ -384,7 +384,7 @@ export const applyEditableCut = ({
     if (viewSelection && !isPliteViewSelectionCollapsed(viewSelection)) {
       const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
 
-      if (resolution.kind === 'ambiguous' || resolution.kind === 'retained') {
+      if (resolution.kind === 'ambiguous') {
         return clipboardResult({ command: null });
       }
       if (resolution.kind === 'stale') {
@@ -758,7 +758,19 @@ export const applyEditableDragStart = ({
       });
       draggedBlock =
         NodeApi.isElement(voidNode) && !editorIsInline(editor, voidNode);
-      draggedRange = range;
+      // An inline void's own range is collapsed inside its empty text and
+      // starts no move session. It moves as the range between the texts that
+      // always sit on both of its sides.
+      draggedRange = draggedBlock
+        ? range
+        : {
+            anchor: editorPoint(editor, PathApi.previous(voidPath), {
+              edge: 'end',
+            }),
+            focus: editorPoint(editor, PathApi.next(voidPath), {
+              edge: 'start',
+            }),
+          };
     }
 
     state.draggedBlock = draggedBlock;

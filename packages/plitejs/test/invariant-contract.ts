@@ -7,7 +7,7 @@ describe('internal invariant contract', () => {
   it('throws a contextual Plite invariant error', () => {
     assert.throws(
       () => failInvariant('Expected a document start point'),
-      new Error('Plite invariant failed: Expected a document start point')
+      new Error('Invariant failed: Expected a document start point')
     );
   });
 });

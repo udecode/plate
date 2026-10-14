@@ -73,8 +73,7 @@ const createPeer = (
     yjs({
       doc,
       initialReady: true,
-      rootName: 'plitejs',
-      ...(doc.getMap('plitejs:schema').size === 0 ? { seed: true } : {}),
+      ...(doc.getMap('document:schema').size === 0 ? { seed: true } : {}),
     })
   );
 
@@ -97,8 +96,7 @@ const createContentRootPeer = (
     yjs({
       doc,
       initialReady: true,
-      rootName: 'plitejs',
-      ...(doc.getMap('plitejs:schema').size === 0 ? { seed: true } : {}),
+      ...(doc.getMap('document:schema').size === 0 ? { seed: true } : {}),
     })
   );
 
@@ -125,7 +123,6 @@ describe('plitejs/yjs multi-root document contract', () => {
       yjs({
         doc,
         initialReady: true,
-        rootName: 'plitejs',
         seed: true,
       })
     );
@@ -137,12 +134,12 @@ describe('plitejs/yjs multi-root document contract', () => {
       at: { offset: 6, path: [0, 0] },
     });
 
-    assert.deepEqual(readPliteValueFromYjs(doc.getXmlElement('plitejs')), [
+    assert.deepEqual(readPliteValueFromYjs(doc.getXmlElement('document')), [
       paragraph('Body!'),
     ]);
     assert.deepEqual(
       readPliteValueFromYjs(
-        doc.getMap<Y.XmlElement>('plitejs:roots').get('header')!
+        doc.getMap<Y.XmlElement>('document:roots').get('header')!
       ),
       [paragraph('Header!')]
     );

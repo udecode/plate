@@ -190,5 +190,5 @@ export const MyFileDropPlugin = definePlugin('myFileDrop', {
 
 草稿持久化类型是 `upload`，并且需要 `kind`。`File`、进度和错误只留在
 编辑器状态中。已完成的媒体保存 URL 和普通媒体字段。JSON 保留未完成草稿；
-外部 HTML、Markdown 和静态渲染会省略它们。静态编辑器加载草稿时须包含
+外部 HTML、Markdown 和静态渲染会省略它们。为静态渲染加载草稿的编辑器须包含
 `BaseUploadPlugin`；只渲染已完成媒体时只需媒体插件。

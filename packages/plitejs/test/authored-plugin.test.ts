@@ -1,0 +1,742 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import {
+  ContentSlice,
+  createEditor,
+  createEditorView,
+  defineEditorSchema,
+  editorCommands,
+  type EditorUpdateTransaction,
+  schema,
+} from 'plitejs';
+
+import type { AuthoredView } from '../src/authored';
+import { createAuthoredPlugin } from '../src/authored/authored';
+import { setEditorComposing } from '../src/internal';
+import { reviewedValue } from './support/authored';
+
+const Blocks = defineEditorSchema('authored-plugin-blocks', {
+  elements: {
+    heading: schema.element.textBlock(),
+    paragraph: schema.element.textBlock(),
+  },
+  id: 'authored-plugin-blocks',
+  root: schema.content.types(['paragraph', 'heading'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+
+const mark = (
+  change: string,
+  kind: 'delete' | 'insert' | 'join',
+  at: number,
+  author = 'carol'
+) => ({ at, author, change, kind });
+
+// "Keep old new text more": carol replaces "old" with "new", dave adds " more".
+const start = [
+  {
+    children: [
+      { text: 'Keep ' },
+      { authored: [mark('carol:1', 'delete', 1)], text: 'old' },
+      { authored: [mark('carol:2', 'insert', 2)], text: 'new' },
+      { text: ' text' },
+      { authored: [mark('dave:3', 'insert', 3, 'dave')], text: ' more' },
+    ],
+    type: 'paragraph',
+  },
+];
+
+const make = (intent: 'edit' | 'propose' = 'edit') => {
+  const editor = createEditor({
+    initialValue: structuredClone(start) as never,
+    plugins: [
+      Blocks,
+      createAuthoredPlugin({
+        authorId: 'bob',
+        createChangeId: () => 'bob:1',
+        intent,
+        now: () => 10,
+      }),
+    ],
+  });
+  const authored = editor as unknown as {
+    api: {
+      authored: {
+        setView: (view: AuthoredView) => void;
+        subscribeChanges: (
+          listener: (ids: readonly string[]) => void
+        ) => () => void;
+      };
+    };
+    read: { authored: Record<string, (...args: any[]) => any> };
+  };
+
+  return { authored, editor };
+};
+
+const run = (
+  editor: ReturnType<typeof make>['editor'],
+  write: (tx: EditorUpdateTransaction & { authored: any }) => unknown
+) => {
+  let result: unknown;
+
+  editor.update((tx) => {
+    result = write(tx as never);
+  });
+
+  return result;
+};
+
+const textOf = (value: readonly unknown[]) =>
+  (value as Array<{ children: Array<{ text: string }> }>)
+    .map((block) => block.children.map((child) => child.text).join(''))
+    .join('\n');
+
+const caret = (path: number[], offset: number) => ({
+  anchor: { offset, path },
+  focus: { offset, path },
+});
+
+describe('authored plugin', () => {
+  it('previews each projection without changing the stored document', () => {
+    const { authored, editor } = make();
+    const read = (view: AuthoredView) => {
+      authored.api.authored.setView(view);
+      return [authored.read.authored.view(), textOf(editor.read.children())];
+    };
+
+    assert.deepEqual(read({ preview: 'accepted' }), [
+      { preview: 'accepted' },
+      'Keep old text',
+    ]);
+    assert.equal(authored.read.authored.changes().items.length, 3);
+    assert.deepEqual(read({ preview: 'proposed' }), [
+      { preview: 'proposed' },
+      'Keep new text more',
+    ]);
+    assert.deepEqual(read({ intent: 'propose' }), [
+      { intent: 'propose' },
+      'Keep oldnew text more',
+    ]);
+    assert.deepEqual(editor.read.children(), start);
+  });
+
+  it('switches the view once a composition ends, keeping the last switch asked for', async () => {
+    const { authored, editor } = make();
+
+    setEditorComposing(editor, true);
+    authored.api.authored.setView({ intent: 'propose' });
+    authored.api.authored.setView({ preview: 'proposed' });
+    await Promise.resolve();
+
+    assert.deepEqual(authored.read.authored.view(), { intent: 'edit' });
+
+    setEditorComposing(editor, false);
+    await Promise.resolve();
+
+    assert.deepEqual(authored.read.authored.view(), { preview: 'proposed' });
+  });
+
+  it('reads pending changes by page, author, range, details and group', () => {
+    const { authored } = make();
+    const { read } = authored;
+    const ids = (changes: ReadonlyArray<{ id: string }>) =>
+      changes.map((change) => change.id);
+
+    assert.deepEqual(ids(read.authored.changes().items), [
+      'carol:1',
+      'carol:2',
+      'dave:3',
+    ]);
+    assert.deepEqual(ids(read.authored.changes({ authorId: 'dave' }).items), [
+      'dave:3',
+    ]);
+
+    const first = read.authored.changes({ limit: 1 });
+
+    assert.deepEqual(
+      [ids(first.items), first.cursor],
+      [['carol:1'], 'carol:1']
+    );
+    assert.deepEqual(
+      ids(read.authored.changes({ cursor: first.cursor, limit: 2 }).items),
+      ['carol:2', 'dave:3']
+    );
+    assert.throws(
+      () => read.authored.changes({ authorId: 'dave', cursor: first.cursor }),
+      /Stale authored page cursor/
+    );
+    assert.deepEqual(
+      ids(
+        read.authored.changesAt({
+          anchor: { offset: 1, path: [0, 2] },
+          focus: { offset: 2, path: [0, 2] },
+        })
+      ),
+      ['carol:2']
+    );
+    assert.deepEqual(read.authored.details('carol:1').parts, [
+      {
+        action: 'delete',
+        after: null,
+        before: { content: [{ text: 'old' }], openEnd: 0, openStart: 0 },
+        kind: 'content',
+        range: {
+          anchor: { offset: 0, path: [0, 1] },
+          focus: { offset: 3, path: [0, 1] },
+        },
+      },
+    ]);
+    assert.deepEqual(
+      read.authored
+        .groups()
+        .map(
+          (group: {
+            changes: Array<{ id: string }>;
+            id: string;
+            rank: number;
+          }) => [group.id, group.rank, ids(group.changes)]
+        ),
+      [
+        ['carol:1', 0, ['carol:1', 'carol:2']],
+        ['dave:3', 1, ['dave:3']],
+      ]
+    );
+  });
+
+  it('reads content that runs across an inline edge or fills a block as one part', () => {
+    const insert = mark('ann:1', 'insert', 4, 'ann');
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [
+            { text: 'Use ' },
+            {
+              children: [{ authored: [insert], text: 'links' }],
+              type: 'link',
+            },
+            { text: '' },
+            { authored: [insert], text: ' here' },
+            { children: [{ text: '' }], type: 'mention' },
+            { authored: [insert], text: 'after' },
+          ],
+          type: 'paragraph',
+        },
+        {
+          authored: [insert],
+          children: [{ authored: [insert], text: 'New line' }],
+          type: 'paragraph',
+        },
+      ] as never,
+      plugins: [
+        defineEditorSchema('authored-plugin-inlines', {
+          elements: {
+            link: { content: schema.content.text(), inline: true },
+            mention: { inline: true, void: 'inline' },
+            paragraph: schema.element.textBlock(),
+          },
+          id: 'authored-plugin-inlines',
+          root: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          unknown: 'reject',
+          version: 1,
+        }),
+        createAuthoredPlugin({ authorId: 'bob' }),
+      ],
+    });
+    const read = (editor as unknown as ReturnType<typeof make>['authored']).read
+      .authored;
+    const inserted = read
+      .details('ann:1')
+      .parts.map(
+        (part: { after: { content: unknown[] } }) => part.after.content
+      );
+
+    assert.deepEqual(inserted, [
+      [{ text: 'links' }, { text: ' here' }],
+      [{ text: 'after' }],
+      [{ children: [{ text: 'New line' }], type: 'paragraph' }],
+    ]);
+    assert.equal(read.change('ann:1').ranges.length, 3);
+  });
+
+  it('reads the same groups until the document changes', () => {
+    const { authored, editor } = make();
+    const groups = authored.read.authored.groups();
+
+    assert.equal(authored.read.authored.groups(), groups);
+    run(editor, (tx) => {
+      tx.selection.set(caret([0, 0], 0));
+      tx.command(editorCommands.insertText, { text: 'Z' });
+    });
+    assert.notEqual(authored.read.authored.groups(), groups);
+  });
+
+  it('decides inside an update and refuses a change read before it went', () => {
+    const { authored, editor } = make();
+    const read = authored.read.authored.change('carol:2');
+
+    assert.deepEqual(
+      run(editor, (tx) =>
+        tx.authored.decide({ action: 'accept', changes: [read] })
+      ),
+      { ids: ['carol:2'], status: 'applied' }
+    );
+    assert.equal(textOf(editor.read.children()), 'Keep oldnew text more');
+    assert.equal(authored.read.authored.change('carol:2'), null);
+    assert.deepEqual(
+      run(editor, (tx) =>
+        tx.authored.decide({ action: 'reject', changes: [read] })
+      ),
+      { ids: ['carol:2'], status: 'stale' }
+    );
+  });
+
+  it('blocks a decision that would remove another change unless that change is decided too', () => {
+    const ann = mark('ann:1', 'insert', 4, 'ann');
+    const { authored, editor } = make();
+
+    authored.api.authored.setView({ intent: 'edit' });
+    editor.update((tx) =>
+      tx.nodes.insert(
+        {
+          children: [
+            { text: 'Base' },
+            { authored: [ann], text: ' dr' },
+            { authored: [ann, mark('bob:2', 'insert', 5, 'bob')], text: '!' },
+            { authored: [ann], text: 'aft' },
+          ],
+          type: 'paragraph',
+        } as never,
+        { at: [1] }
+      )
+    );
+    const change = (id: string) => authored.read.authored.change(id);
+
+    assert.deepEqual(
+      run(editor, (tx) =>
+        tx.authored.decide({ action: 'reject', changes: [change('ann:1')] })
+      ),
+      { ids: ['ann:1'], status: 'blocked', with: ['bob:2'] }
+    );
+    assert.deepEqual(
+      run(editor, (tx) =>
+        tx.authored.decide({
+          action: 'reject',
+          changes: [change('ann:1'), change('bob:2')],
+        })
+      ),
+      { ids: ['ann:1', 'bob:2'], status: 'applied' }
+    );
+    assert.equal(textOf(editor.read.children()).split('\n')[1], 'Base');
+  });
+
+  it('records writes under a proposed change in a document that already holds changes', () => {
+    const { authored, editor } = make();
+
+    run(editor, (tx) => {
+      tx.authored.propose({ changeId: 'bob:9' });
+      tx.selection.set(caret([0, 0], 5));
+      tx.command(editorCommands.insertText, { text: 'Z' });
+    });
+
+    assert.deepEqual(
+      authored.read.authored
+        .changes({ authorId: 'bob' })
+        .items.map((change: { id: string; kind: string }) => [
+          change.id,
+          change.kind,
+        ]),
+      [['bob:9', 'insert']]
+    );
+    authored.api.authored.setView({ preview: 'accepted' });
+    assert.equal(textOf(editor.read.children()), 'Keep old text');
+  });
+
+  it('refuses a proposal under the change Editing records under', () => {
+    const { authored, editor } = make();
+
+    assert.throws(
+      () =>
+        run(editor, (tx) => {
+          tx.authored.propose({ changeId: '~edit:bob' });
+          tx.selection.set(caret([0, 0], 5));
+          tx.command(editorCommands.insertText, { text: 'Z' });
+        }),
+      /reserved for Editing/
+    );
+    assert.deepEqual(
+      authored.read.authored.changes({ authorId: 'bob' }).items,
+      []
+    );
+  });
+
+  it('proposes a slice that replaces the text and type of a block as a format change', () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'Old' }], type: 'paragraph' }],
+      plugins: [
+        Blocks,
+        createAuthoredPlugin({
+          authorId: 'bob',
+          createChangeId: () => 'bob:1',
+          intent: 'propose',
+          now: () => 10,
+        }),
+      ],
+    });
+
+    editor.update((tx) =>
+      tx.slice.replace(
+        ContentSlice.fromJSON({
+          content: [
+            { children: [{ text: 'New' }], type: 'heading' },
+            { children: [{ text: 'Two' }], type: 'paragraph' },
+          ],
+          openEnd: 0,
+          openStart: 0,
+        }),
+        {
+          at: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 3, path: [0, 0] },
+          },
+        }
+      )
+    );
+    const authored = editor as unknown as ReturnType<typeof make>['authored'];
+    const view = (preview: 'accepted' | 'proposed') => {
+      authored.api.authored.setView({ preview });
+
+      return editor.read
+        .children()
+        .map((block) => [block.type, textOf([block])]);
+    };
+
+    assert.deepEqual(view('accepted'), [['paragraph', 'Old']]);
+    assert.deepEqual(view('proposed'), [
+      ['heading', 'New'],
+      ['paragraph', 'Two'],
+    ]);
+  });
+
+  it('keeps the block a change joins into when the same change deleted its text', () => {
+    const ann = (kind: 'delete' | 'insert' | 'join') =>
+      mark('ann:1', kind, 4, 'ann');
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ authored: [ann('delete')], text: 'A' }],
+          type: 'heading',
+        },
+        {
+          authored: [ann('join')],
+          children: [
+            { authored: [ann('delete')], text: 'C' },
+            { authored: [ann('insert')], text: 'a' },
+          ],
+          type: 'paragraph',
+        },
+      ] as never,
+      plugins: [Blocks, createAuthoredPlugin({ authorId: 'bob' })],
+    });
+    const authored = editor as unknown as ReturnType<typeof make>['authored'];
+
+    run(editor, (tx) =>
+      tx.authored.decide({
+        action: 'accept',
+        changes: [authored.read.authored.change('ann:1')],
+      })
+    );
+
+    assert.deepEqual(editor.read.children(), [
+      { children: [{ text: 'a' }], type: 'heading' },
+    ]);
+  });
+
+  it('keeps an anchor inside the letters a rejection keeps', () => {
+    const { authored, editor } = make();
+    // Over "Keep old new": "old" is struck, "new" inserted.
+    const held = editor.anchor(
+      {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 2, path: [0, 1] },
+      },
+      { association: 'inward', deletion: 'drop' }
+    );
+
+    run(editor, (tx) =>
+      tx.authored.decide({
+        action: 'reject',
+        changes: [
+          authored.read.authored.change('carol:1'),
+          authored.read.authored.change('carol:2'),
+        ],
+      })
+    );
+
+    assert.equal(textOf(editor.read.children()), 'Keep old text more');
+    assert.deepEqual(held.resolve(), {
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 7, path: [0, 0] },
+    });
+  });
+
+  it('writes a rejected change again as a new incarnation', () => {
+    let time = 10;
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'Keep' }], type: 'paragraph' }],
+      plugins: [
+        Blocks,
+        createAuthoredPlugin({
+          authorId: 'bob',
+          createIncarnationId: () => 'rt:1',
+          now: () => (time += 1),
+        }),
+      ],
+    });
+    const authored = editor as unknown as ReturnType<typeof make>['authored'];
+    const write = (text: string) =>
+      run(editor, (tx) => {
+        tx.authored.propose({ changeId: 'bob:ai' });
+        tx.selection.set(caret([0, 0], 4));
+        tx.command(editorCommands.insertText, { text });
+      });
+
+    write(' one');
+    run(editor, (tx) =>
+      tx.authored.decide({
+        action: 'reject',
+        changes: [authored.read.authored.change('bob:ai')],
+      })
+    );
+    write(' two');
+
+    assert.deepEqual(editor.read.children()[0].children, [
+      { text: 'Keep' },
+      {
+        authored: [{ ...mark('bob:ai', 'insert', 12, 'bob'), inc: 'rt:1' }],
+        text: ' two',
+      },
+    ]);
+  });
+
+  it('strikes on Backspace in Suggesting the text a rejected replacement gives back', () => {
+    let count = 0;
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'abc' }], type: 'paragraph' }],
+      plugins: [
+        Blocks,
+        createAuthoredPlugin({
+          authorId: 'bob',
+          createChangeId: () => `bob:${(count += 1)}`,
+          intent: 'propose',
+          now: () => 7,
+        }),
+      ],
+    });
+    const authored = editor as unknown as ReturnType<typeof make>['authored'];
+
+    run(editor, (tx) => {
+      tx.selection.set({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      });
+      tx.text.insert('X');
+    });
+    run(editor, (tx) =>
+      tx.authored.decide({
+        action: 'reject',
+        changes: [authored.read.authored.change('bob:1')],
+      })
+    );
+    run(editor, (tx) => {
+      tx.selection.set(caret([0, 1], 1));
+      tx.command(editorCommands.delete, {
+        direction: 'backward',
+        unit: 'character',
+      });
+    });
+
+    assert.deepEqual(reviewedValue(editor).children, [
+      {
+        children: [
+          { text: 'a' },
+          { authored: [mark('bob:2', 'delete', 7, 'bob')], text: 'b' },
+          { text: 'c' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('holds the deletion of a rejected replacement in the commit the decision makes', () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'abc' }], type: 'paragraph' }],
+      plugins: [
+        Blocks,
+        createAuthoredPlugin({
+          authorId: 'bob',
+          createChangeId: () => 'bob:1',
+          intent: 'propose',
+          now: () => 7,
+        }),
+      ],
+    });
+    const authored = editor as unknown as ReturnType<typeof make>['authored'];
+    const committed: unknown[] = [];
+
+    run(editor, (tx) => {
+      tx.selection.set({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      });
+      tx.text.insert('X');
+    });
+
+    const unsubscribe = editor.subscribeCommit(() =>
+      committed.push(editor.read.children())
+    );
+
+    run(editor, (tx) =>
+      tx.authored.decide({
+        action: 'reject',
+        changes: [authored.read.authored.change('bob:1')],
+      })
+    );
+    unsubscribe();
+
+    assert.deepEqual(committed, [
+      [
+        {
+          children: [
+            { text: 'a' },
+            {
+              authored: [
+                { at: 7, author: 'bob', change: 'bob:1', kind: 'held' },
+              ],
+              text: 'b',
+            },
+            { text: 'c' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    ]);
+  });
+
+  it('writes a change only a verdict names again as a new incarnation', () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [{ children: [{ text: 'Keep' }], type: 'paragraph' }],
+        roots: {
+          '$authored-verdicts': [
+            {
+              at: 5,
+              change: 'bob:ai',
+              children: [{ text: '' }],
+              type: 'authored-verdict',
+              verdict: 'reject',
+            },
+          ],
+        },
+      } as never,
+      plugins: [
+        Blocks,
+        createAuthoredPlugin({
+          authorId: 'bob',
+          createIncarnationId: () => 'rt:1',
+          now: () => 12,
+        }),
+      ],
+    });
+
+    run(editor, (tx) => {
+      tx.authored.propose({ changeId: 'bob:ai' });
+      tx.selection.set(caret([0, 0], 4));
+      tx.command(editorCommands.insertText, { text: ' two' });
+    });
+
+    assert.deepEqual(editor.read.children()[0].children, [
+      { text: 'Keep' },
+      {
+        authored: [{ ...mark('bob:ai', 'insert', 12, 'bob'), inc: 'rt:1' }],
+        text: ' two',
+      },
+    ]);
+  });
+
+  it('notifies the changes whose marks change until unsubscribed', () => {
+    const { authored, editor } = make();
+    const seen: string[][] = [];
+    const stop = authored.api.authored.subscribeChanges((ids) =>
+      seen.push([...ids])
+    );
+
+    run(editor, (tx) =>
+      tx.authored.decide({
+        action: 'reject',
+        changes: [authored.read.authored.change('dave:3')],
+      })
+    );
+    run(editor, (tx) => {
+      tx.selection.set(caret([0, 0], 0));
+      tx.command(editorCommands.insertText, { text: 'Z' });
+    });
+    stop();
+    run(editor, (tx) =>
+      tx.authored.decide({
+        action: 'accept',
+        changes: [authored.read.authored.change('carol:1')],
+      })
+    );
+
+    assert.deepEqual(seen, [['dave:3']]);
+  });
+
+  it('keeps the node keys of a preview view across commits', () => {
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'alpha' }], type: 'paragraph' },
+        { children: [{ text: 'beta' }], type: 'paragraph' },
+      ],
+      plugins: [Blocks, createAuthoredPlugin({ authorId: 'alice' })],
+    });
+    const accepted = createEditorView(editor, {
+      authored: { preview: 'accepted' },
+    });
+    const writer = createEditorView(editor, {
+      authored: { intent: 'propose' },
+    });
+    const keysOf = () =>
+      accepted.read
+        .children()
+        .flatMap((block) => [
+          accepted.key(block),
+          accepted.key(block.children[0]),
+        ]);
+    const keys = keysOf();
+
+    writer.update.text.insert('++', { at: caret([0, 0], 0).anchor });
+    editor.update.text.insert('!', { at: caret([1, 0], 0).anchor });
+
+    assert.equal(textOf(accepted.read.children()), 'alpha\n!beta');
+    assert.deepEqual(keysOf(), keys);
+
+    editor.update((tx) =>
+      tx.nodes.insert(
+        { children: [{ text: 'gamma' }], type: 'paragraph' } as never,
+        { at: [2] }
+      )
+    );
+
+    assert.equal(textOf(accepted.read.children()), 'alpha\n!beta\ngamma');
+    assert.deepEqual(keysOf().slice(0, 4), keys);
+  });
+});

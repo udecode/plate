@@ -11,12 +11,22 @@ import {
   type EditorDocumentValue,
   EditorSchemaValidationError,
   type Element,
+  ElementApi,
   ElementIdPlugin,
   type MarkdownPluginRegistry,
-  PLUGINS,
   TextApi,
 } from '../../../core';
-import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
+import { isMetadataRootKey } from '../../../facade';
+import {
+  getCompiledPlateModelBinding,
+  getCompiledPlatePlugin,
+} from '../../../internal/plugin/compilePlateModel';
+import {
+  getMarkdownParagraphType,
+  landsMarkdownParagraph,
+  UNLANDED_MARKDOWN_PARAGRAPH_TYPE,
+} from '../../../internal/plugin/markdownParagraph';
+import { createPluginFormatRegistry } from '../../../internal/plugin/pluginFormatOperation';
 import { createValidatedContentSlice } from '../../../internal/utils/trustedContentSlice';
 import type { NormalizePluginState } from '../../../lib/plugin/PluginDefinition';
 import { mdastToSlate } from '../deserializer/mdastToSlate';
@@ -47,6 +57,7 @@ import {
   ReportedMarkdownFailureError,
 } from './markdownDiagnostics';
 import type { MarkdownSerializeDocumentValue } from './markdownDocument';
+import { getMarkdownParagraphLanding } from './markdownIntrinsics';
 import {
   type CompiledMarkdownMappings,
   compileMarkdownMappings,
@@ -127,26 +138,11 @@ export const createMarkdownRuntime = (
   state: MarkdownRuntimeEditorState
 ): MarkdownRuntime => {
   const formats = compileMarkdownMappings(editor);
-  const registry = Object.freeze({
-    has: (plugin) => {
-      const descriptor =
-        typeof plugin === 'string'
-          ? getCompiledPlatePlugin(editor, plugin)
-          : plugin;
-
-      return descriptor ? editor.plugin(descriptor).installed : false;
-    },
-    type: (plugin) => {
-      const descriptor =
-        typeof plugin === 'string'
-          ? getCompiledPlatePlugin(editor, plugin)
-          : plugin;
-
-      if (!descriptor) return undefined;
-      const portal = editor.plugin(descriptor);
-      return portal.installed ? portal.schema.type : undefined;
-    },
-  }) satisfies MarkdownPluginRegistry;
+  const registry = createPluginFormatRegistry(
+    (name) => getCompiledPlatePlugin(editor, name),
+    (name) =>
+      getCompiledPlateModelBinding(editor, name)?.elementType ?? undefined
+  );
 
   registerMarkdownMappings(getMarkdownMappingsRegistryKey(options), formats);
 
@@ -292,33 +288,6 @@ export const markdownToSlateNodesWithRuntime = (
     .use(remarkToSlate, mergedOptions);
 
   return toSlateProcessor.processSync(data).result;
-};
-
-export const deserializeMdWithRuntime = (
-  runtime: MarkdownRuntime,
-  data: string,
-  options: MarkdownParsePolicy = {},
-  diagnostics = new MarkdownDiagnostics()
-): EditorDocumentValue => {
-  const output = markdownToSlateNodesWithRuntime(
-    runtime,
-    data,
-    options,
-    diagnostics
-  );
-
-  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
-
-  return {
-    children: output.map((item) =>
-      TextApi.isText(item)
-        ? {
-            children: [item],
-            type: paragraphType,
-          }
-        : item
-    ),
-  };
 };
 
 declare module 'unified' {
@@ -467,6 +436,17 @@ const runParsedNodes = (
   hooks?: MarkdownSegmentHooks
 ): Descendant[] | null => {
   if (reportByteLimit(source, options, diagnostics)) return null;
+  if (
+    landsMarkdownParagraph(runtime.registry) &&
+    runtime.state.schema.element(UNLANDED_MARKDOWN_PARAGRAPH_TYPE)
+  ) {
+    reportUnlandedParagraph(
+      diagnostics,
+      `The schema declares "${UNLANDED_MARKDOWN_PARAGRAPH_TYPE}", which Markdown reserves for its own paragraph.`
+    );
+
+    return null;
+  }
 
   try {
     return markdownToSlateNodesWithRuntime(
@@ -709,7 +689,7 @@ const normalizeDocumentChildren = (
   runtime: MarkdownRuntime,
   children: readonly Descendant[]
 ): Element[] => {
-  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const paragraphType = getMarkdownParagraphType(runtime.registry);
   const output: Element[] = [];
   let inline: Descendant[] = [];
   const flushInline = () => {
@@ -730,6 +710,104 @@ const normalizeDocumentChildren = (
   flushInline();
 
   return output;
+};
+
+const reportUnlandedParagraph = (
+  diagnostics: MarkdownDiagnostics,
+  message: string,
+  path?: readonly number[]
+) =>
+  diagnostics.report({
+    action: 'dropped',
+    code: 'markdown-unsupported-node',
+    impact: 'lossy',
+    message,
+    ...(path ? { model: Object.freeze({ path }) } : {}),
+    nodeType: 'paragraph',
+    owner: 'markdown',
+    phase: 'parse',
+    severity: 'error',
+  });
+
+const findMarkdownParagraph = (
+  nodes: readonly Descendant[],
+  path: readonly number[]
+): readonly number[] | undefined => {
+  for (const [index, node] of nodes.entries()) {
+    if (!ElementApi.isElement(node)) continue;
+    if (node.type === UNLANDED_MARKDOWN_PARAGRAPH_TYPE) return [...path, index];
+
+    const found = findMarkdownParagraph(node.children, [...path, index]);
+
+    if (found) return found;
+  }
+
+  return undefined;
+};
+
+const landMarkdownParagraphs = (
+  runtime: MarkdownRuntime,
+  children: readonly Element[],
+  diagnostics: MarkdownDiagnostics
+): Element[] => {
+  const { schema } = runtime.state;
+
+  return children.map((node, index) => {
+    if (node.type !== UNLANDED_MARKDOWN_PARAGRAPH_TYPE) {
+      const nested = findMarkdownParagraph(node.children, [index]);
+
+      if (nested) {
+        reportUnlandedParagraph(
+          diagnostics,
+          `No paragraph plugin is installed, so a Markdown paragraph inside "${node.type}" has no block to land in.`,
+          nested
+        );
+      }
+
+      return node;
+    }
+
+    const fallback = getMarkdownParagraphLanding(schema, index);
+
+    if (
+      !fallback ||
+      node.children.some(
+        (child) =>
+          ElementApi.isElement(child) &&
+          !schema.allowsElementType(fallback.type, child.type)
+      )
+    ) {
+      reportUnlandedParagraph(
+        diagnostics,
+        `No paragraph plugin is installed, and the root's default block at position ${index} cannot hold a Markdown paragraph's text.`,
+        [index]
+      );
+
+      return node;
+    }
+
+    const { children: inline, type: _type, ...properties } = node;
+    const kept: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(properties)) {
+      if (schema.property({ key, placement: 'element', type: fallback.type })) {
+        kept[key] = value;
+        continue;
+      }
+      diagnostics.report({
+        code: 'markdown-property-omitted',
+        key,
+        message: `Markdown paragraph property "${key}" is not declared on "${fallback.type}" and was omitted.`,
+        model: Object.freeze({ path: [index], property: key }),
+        owner: 'markdown',
+        phase: 'parse',
+        reason: 'unsupported',
+        severity: 'warning',
+      });
+    }
+
+    return { ...fallback, ...kept, children: inline };
+  });
 };
 
 const reportSchemaInvalid = (
@@ -833,9 +911,14 @@ export const parseMarkdownDocumentWithRuntime = (
   }
   // Normalized top-level blocks are elements. Fitting copies them, so a
   // document parse needs no frozen snapshot.
+  const children = normalizeDocumentChildren(runtime, parsed);
   const input = Object.freeze({
-    children: normalizeDocumentChildren(runtime, parsed),
+    children: landsMarkdownParagraph(runtime.registry)
+      ? landMarkdownParagraphs(runtime, children, diagnostics)
+      : children,
   });
+
+  if (diagnostics.failure()) return documentParseFailure(diagnostics);
   let document: EditorDocumentValue;
 
   try {
@@ -871,6 +954,20 @@ export const parseMarkdownSliceWithRuntime = (
   );
 
   if (!conversion.nodes || diagnostics.failure()) {
+    return sliceParseFailure(diagnostics);
+  }
+
+  const unlanded =
+    landsMarkdownParagraph(runtime.registry) &&
+    findMarkdownParagraph(conversion.nodes, []);
+
+  if (unlanded) {
+    reportUnlandedParagraph(
+      diagnostics,
+      'No paragraph plugin is installed, and only a document parse lands a Markdown paragraph.',
+      unlanded
+    );
+
     return sliceParseFailure(diagnostics);
   }
   try {
@@ -933,10 +1030,12 @@ export const parseMarkdownInlineWithRuntime = (
 
   if (!parsed || diagnostics.failure()) return sliceParseFailure(diagnostics);
   const blocks = normalizeDocumentChildren(runtime, parsed);
-  const paragraphType = runtime.registry.type(PLUGINS.paragraph) ?? 'paragraph';
   const [block] = blocks;
 
-  if (blocks.length !== 1 || block?.type !== paragraphType) {
+  if (
+    blocks.length !== 1 ||
+    block?.type !== getMarkdownParagraphType(runtime.registry)
+  ) {
     diagnostics.report({
       actual: blocks.length,
       code: 'markdown-inline-blocks',
@@ -971,6 +1070,7 @@ export const serializeMarkdownWithRuntime = (
   const diagnostics = new MarkdownDiagnostics(initialDiagnostics);
 
   Object.keys(document.roots ?? {})
+    .filter((root) => !isMetadataRootKey(root))
     .sort()
     .forEach((root) => {
       diagnostics.report({

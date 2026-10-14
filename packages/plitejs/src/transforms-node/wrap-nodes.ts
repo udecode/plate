@@ -7,9 +7,11 @@ import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import {
   type Element,
+  type Location,
   LocationApi,
   NodeApi,
   type Point,
+  type Range,
   RangeApi,
   SelectionApi,
 } from '../interfaces';
@@ -21,9 +23,10 @@ import {
   isBlock as editorIsBlock,
   isEdge as editorIsEdge,
   leaf as editorLeaf,
+  point as editorPoint,
   range as editorRange,
 } from '../interfaces/editor';
-import { PathApi } from '../interfaces/path';
+import { type Path, PathApi } from '../interfaces/path';
 import type {
   NodeMutationMethods,
   NodeWrapNodesOptions,
@@ -36,6 +39,52 @@ import { insertNodes } from './insert-nodes';
 import { moveNodes } from './move-nodes';
 import { splitNodes } from './split-nodes';
 
+function* contentPaths(editor: Editor, range: Range) {
+  const [start, end] = RangeApi.edges(range);
+  const schema = getEditorSchema(editor);
+
+  for (const [node, path] of getNodes(editor, {
+    at: range,
+    match: (candidate) =>
+      NodeApi.isText(candidate) ||
+      (NodeApi.isElement(candidate) &&
+        schema.isInline(candidate) &&
+        schema.isVoid(candidate)),
+    mode: 'lowest',
+  })) {
+    if (
+      !NodeApi.isText(node) ||
+      (PathApi.equals(path, end.path) ? end.offset : node.text.length) >
+        (PathApi.equals(path, start.path) ? start.offset : 0)
+    ) {
+      yield path;
+    }
+  }
+}
+
+const trimToContent = (editor: Editor, range: Range): Range | null => {
+  let first: Path | undefined;
+  let last: Path | undefined;
+
+  for (const path of contentPaths(editor, range)) {
+    first ??= path;
+    last = path;
+  }
+
+  if (!first || !last) return null;
+
+  const [start, end] = RangeApi.edges(range);
+
+  return {
+    anchor: PathApi.equals(first, start.path)
+      ? start
+      : editorPoint(editor, first, { edge: 'start' }),
+    focus: PathApi.equals(last, end.path)
+      ? end
+      : editorPoint(editor, last, { edge: 'end' }),
+  };
+};
+
 export const wrapNodes = ((
   editor: Editor,
   element: Element,
@@ -45,8 +94,12 @@ export const wrapNodes = ((
     let target = tx.resolveTarget({ at: options.at });
     const mode = options.mode ?? 'lowest';
     const split = options.split ?? false;
-    const voids = options.voids ?? false;
+    const schema = getEditorSchema(editor);
+    const wrapsInline = schema.isInline(element);
     const hasExplicitSelector = options.match != null || options.type != null;
+    const trimsToContent =
+      split && wrapsInline && !hasExplicitSelector && RangeApi.isRange(target);
+    const entersVoids = !trimsToContent && (options.voids ?? false);
     let match = normalizeNodeMatch(options.type, options.match);
     const wrapper = {
       ...element,
@@ -59,7 +112,7 @@ export const wrapNodes = ((
 
     if (SelectionApi.isNode(target)) {
       const anchors = Array.from(
-        getNodes(editor, { at: target, match, mode, voids }),
+        getNodes(editor, { at: target, match, mode, voids: entersVoids }),
         ([, path]) =>
           editor.anchor(path, {
             association: 'forward',
@@ -86,6 +139,98 @@ export const wrapNodes = ((
         match = (node) =>
           NodeApi.isElement(node) && editorIsBlock(editor, node);
       }
+    }
+
+    if (trimsToContent && LocationApi.isRange(target)) {
+      const content = trimToContent(editor, target);
+
+      if (!content) return;
+      target = content;
+    }
+
+    const spanOf = (at: Location) => {
+      let firstPath: Path | undefined;
+      let lastPath: Path | undefined;
+
+      for (const [, path] of getNodes(editor, {
+        at,
+        match,
+        mode,
+        voids: entersVoids,
+      })) {
+        firstPath ??= path;
+        lastPath = path;
+      }
+
+      if (!firstPath || !lastPath || firstPath.length === 0) return null;
+
+      const common = PathApi.common(firstPath, lastPath);
+
+      return {
+        commonPath: PathApi.equals(common, firstPath)
+          ? PathApi.parent(common)
+          : common,
+        firstPath,
+        lastPath,
+      };
+    };
+    const checksFit = wrapsInline && !hasExplicitSelector;
+    const spanIn = (rootPath: Path) => {
+      const scope = RangeApi.isRange(target)
+        ? RangeApi.intersection(target, editorRange(editor, rootPath))
+        : target;
+
+      if (
+        !LocationApi.isLocation(scope) ||
+        (trimsToContent &&
+          RangeApi.isRange(scope) &&
+          contentPaths(editor, scope).next().done)
+      ) {
+        return null;
+      }
+
+      const span = spanOf(scope);
+
+      if (!span || !checksFit) return span;
+
+      const [parent] = getNode(editor, span.commonPath);
+      const depth = span.commonPath.length;
+
+      return NodeApi.isElement(parent) &&
+        schema.canWrap(parent, {
+          ...wrapper,
+          children: parent.children.slice(
+            span.firstPath[depth],
+            span.lastPath[depth] + 1
+          ),
+        })
+        ? span
+        : null;
+    };
+    const landsAt = (point: Point) => {
+      const block = editorAbove(editor, {
+        at: point,
+        match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
+      });
+
+      return !checksFit || !block || spanIn(block[1]) !== null;
+    };
+
+    if (
+      checksFit &&
+      LocationApi.isRange(target) &&
+      !Array.from(
+        getNodes(editor, {
+          at: target,
+          match: (node) =>
+            NodeApi.isElement(node) && editorIsBlock(editor, node),
+          mode: 'lowest',
+          voids: entersVoids,
+        }),
+        ([, path]) => path
+      ).some((path) => spanIn(path))
+    ) {
+      return;
     }
 
     if (LocationApi.isPath(target) && !hasExplicitSelector && !split) {
@@ -124,23 +269,27 @@ export const wrapNodes = ((
       };
       const shouldAlwaysSplit = (point: Point) => !isAtBlockEdge(point);
 
-      splitNodes(editor, {
-        at: end,
-        match,
-        voids,
-        always: shouldAlwaysSplit(end),
-      });
+      if (landsAt(end)) {
+        splitNodes(editor, {
+          at: end,
+          match,
+          voids: entersVoids,
+          always: shouldAlwaysSplit(end),
+        });
+      }
 
-      splitNodes(editor, {
-        at: start,
-        match,
-        voids,
-        always: shouldAlwaysSplit(start),
-      });
+      if (landsAt(start)) {
+        splitNodes(editor, {
+          at: start,
+          match,
+          voids: entersVoids,
+          always: shouldAlwaysSplit(start),
+        });
+      }
 
       target = rangeAnchor.release() ?? target;
 
-      if (LocationApi.isRange(target)) {
+      if (!trimsToContent && LocationApi.isRange(target)) {
         let [nextStart, nextEnd] = RangeApi.edges(target);
         const [startLeaf] = editorLeaf(editor, nextStart);
         const [endLeaf] = editorLeaf(editor, nextEnd);
@@ -175,11 +324,11 @@ export const wrapNodes = ((
     const roots = Array.from(
       getNodes(editor, {
         at: target,
-        match: getEditorSchema(editor).isInline(element)
+        match: wrapsInline
           ? (node) => NodeApi.isElement(node) && editorIsBlock(editor, node)
           : (node) => NodeApi.isEditor(node),
         mode: 'lowest',
-        voids,
+        voids: entersVoids,
       })
     );
     let nextSelection = LocationApi.isRange(target)
@@ -190,34 +339,11 @@ export const wrapNodes = ((
       : null;
 
     for (const [, rootPath] of roots) {
-      const scopedTarget = LocationApi.isRange(target)
-        ? RangeApi.intersection(target, editorRange(editor, rootPath))
-        : target;
+      const span = spanIn(rootPath);
 
-      if (!scopedTarget) {
-        continue;
-      }
+      if (!span) continue;
 
-      const matches = Array.from(
-        getNodes(editor, { at: scopedTarget, match, mode, voids })
-      );
-
-      if (matches.length === 0) {
-        continue;
-      }
-
-      const [first] = matches;
-      const last = getDefined(matches.at(-1));
-      const [, firstPath] = first;
-      const [, lastPath] = last;
-
-      if (firstPath.length === 0 && lastPath.length === 0) {
-        continue;
-      }
-
-      const commonPath = PathApi.equals(firstPath, lastPath)
-        ? PathApi.parent(firstPath)
-        : PathApi.common(firstPath, lastPath);
+      const { commonPath, firstPath, lastPath } = span;
       const depth = commonPath.length + 1;
       const wrapperPath = PathApi.next(lastPath.slice(0, depth));
       const firstChildIndex = firstPath[commonPath.length];
@@ -290,7 +416,11 @@ export const wrapNodes = ((
         })
       );
 
-      insertNodes(editor, { ...wrapper }, { at: wrapperPath, voids });
+      insertNodes(
+        editor,
+        { ...wrapper },
+        { at: wrapperPath, voids: entersVoids }
+      );
       const wrapperAnchor = editor.anchor(wrapperPath, {
         association: 'forward',
         deletion: 'drop',

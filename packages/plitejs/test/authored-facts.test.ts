@@ -1,0 +1,564 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+
+import {
+  createEditor,
+  createEditorView,
+  defineEditorSchema,
+  schema,
+} from 'plitejs';
+
+import { createAuthoredPlugin } from '../src/authored/authored';
+import { compactClaims, expandContexts } from '../src/authored/facts/compact';
+import { claimsOf, factsOf } from '../src/authored/facts/facts';
+import {
+  CONTEXTS_ROOT,
+  contextElementOf,
+  contextRecordOf,
+  VERDICTS_ROOT,
+  verdictElementOf,
+} from '../src/authored/facts/records';
+import { normalizeSetValues } from '../src/core/change/transform';
+import { authoredTestApi } from './support/authored';
+
+const Blocks = defineEditorSchema('authored-facts-blocks', {
+  elements: { paragraph: schema.element.textBlock() },
+  id: 'authored-facts-blocks',
+  root: schema.content.type('paragraph', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+
+type Node = Readonly<{
+  authored?: readonly unknown[];
+  children?: readonly Node[];
+  text?: string;
+}>;
+
+type Value = Readonly<{
+  children: readonly Node[];
+  roots?: Readonly<Record<string, readonly unknown[]>>;
+}>;
+
+const entriesIn = (nodes: readonly Node[]): number =>
+  nodes.reduce(
+    (sum, node) =>
+      sum + (node.authored?.length ?? 0) + entriesIn(node.children ?? []),
+    0
+  );
+
+/**
+ * What recording gives when Alice and Bob take turns proposing two letters
+ * between the two the last proposal inserted, so each proposal sits inside
+ * every earlier one.
+ */
+const stacked = (k: number): Value => {
+  const claims = (depth: number) =>
+    normalizeSetValues(
+      Array.from({ length: depth }, (_, index) => ({
+        at: index + 1,
+        author: index % 2 === 0 ? 'alice' : 'bob',
+        change: `c${2 * index + 1}`,
+        kind: 'insert',
+      }))
+    );
+  const outer = Array.from({ length: k - 1 }, (_, index) => index + 1);
+
+  return {
+    children: [
+      {
+        children: [
+          { text: 'se' },
+          ...outer.map((depth) => ({ authored: claims(depth), text: 'x' })),
+          { authored: claims(k), text: 'xy' },
+          ...outer
+            .reverse()
+            .map((depth) => ({ authored: claims(depth), text: 'y' })),
+          { text: 'ed' },
+        ],
+        type: 'paragraph',
+      } as Node,
+    ],
+  };
+};
+
+const A = { at: 2, author: 'alice', change: 'A', kind: 'insert' };
+const B = { at: 1, author: 'bob', change: 'B', kind: 'insert' };
+
+const reusedId: Value = {
+  children: [
+    {
+      children: [
+        { authored: [A], text: 'he' },
+        { authored: [B, A], text: 'X' },
+        { authored: [A], text: 'rs' },
+        { text: ' ' },
+        { authored: [B], text: 'Y' },
+      ],
+      type: 'paragraph',
+    } as Node,
+  ],
+};
+
+describe('authored review facts', () => {
+  for (const [k, entries, contexts] of [
+    [1, 1, 0],
+    [10, 36, 9],
+    [50, 196, 49],
+    [100, 396, 99],
+    [200, 796, 199],
+  ]) {
+    it(`compacts ${k} nested proposals to ${entries} claims and ${contexts} contexts`, () => {
+      const value = stacked(k);
+      const compacted = compactClaims(value);
+
+      assert.deepEqual(
+        {
+          contexts: compacted.roots?.[CONTEXTS_ROOT]?.length ?? 0,
+          entries: entriesIn(compacted.children),
+          expanded: expandContexts(compacted),
+        },
+        { contexts, entries, expanded: value }
+      );
+    });
+  }
+
+  it('stores bytes linear in the nesting depth', () => {
+    const bytes = (k: number) =>
+      JSON.stringify(compactClaims(stacked(k))).length;
+
+    assert.ok(
+      bytes(200) < 2.1 * bytes(100),
+      `${bytes(200)} > 2.1 × ${bytes(100)}`
+    );
+  });
+
+  it('keeps a reused change id on each node that carries it', () => {
+    const compacted = compactClaims(reusedId);
+    const { ctx } = contextRecordOf(null, {
+      at: 2,
+      author: 'alice',
+      change: 'A',
+    });
+
+    assert.deepEqual(compacted, {
+      children: [
+        {
+          children: [
+            { authored: [A], text: 'he' },
+            { authored: [B, { ctx, kind: 'in' }], text: 'X' },
+            { authored: [A], text: 'rs' },
+            { text: ' ' },
+            { authored: [B], text: 'Y' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      roots: {
+        [CONTEXTS_ROOT]: [
+          contextElementOf(
+            contextRecordOf(null, { at: 2, author: 'alice', change: 'A' })
+          ),
+        ],
+      },
+    });
+    assert.deepEqual(expandContexts(compacted), reusedId);
+  });
+
+  const C = { at: 3, author: 'carol', change: 'C', kind: 'insert' };
+  const inA = contextRecordOf(null, A);
+  const inAB = contextRecordOf(inA.ctx, B);
+  const inB = contextRecordOf(null, B);
+  const inBA = contextRecordOf(inB.ctx, A);
+  const claimsAt = (value: Value, at: number) =>
+    claimsOf(value.children[0].children![at], factsOf(value))
+      .map((claim) => claim.change)
+      .toSorted();
+  const resting = (marks: readonly unknown[], records: readonly unknown[]) => ({
+    children: [
+      {
+        children: [
+          { authored: [A], text: 'he' },
+          { authored: [A], text: 'r' },
+          { authored: [B, { ctx: inA.ctx, kind: 'in' }], text: 'b' },
+          { authored: marks, text: 'X' },
+        ],
+        type: 'paragraph',
+      } as Node,
+    ],
+    roots: {
+      [CONTEXTS_ROOT]: records.map((record) =>
+        contextElementOf(record as never)
+      ),
+    },
+  });
+
+  it('moves the insertions a node holds beside its context into one context', () => {
+    const value = resting([B, C, { ctx: inA.ctx, kind: 'in' }], [inA]);
+    const compacted = compactClaims(value);
+
+    assert.deepEqual(compacted.children[0].children?.[3], {
+      authored: [C, { ctx: inAB.ctx, kind: 'in' }],
+      text: 'X',
+    });
+    assert.deepEqual(compacted.roots?.[CONTEXTS_ROOT], [
+      contextElementOf(inA),
+      contextElementOf(inAB),
+    ]);
+    assert.deepEqual(claimsAt(compacted, 3), ['A', 'B', 'C']);
+  });
+
+  it('folds the two contexts two peers compacting one node at once leave on it', () => {
+    const value = resting(
+      [C, { ctx: inAB.ctx, kind: 'in' }, { ctx: inBA.ctx, kind: 'in' }],
+      [inA, inAB, inB, inBA]
+    );
+    const compacted = compactClaims(value);
+
+    assert.deepEqual(compacted.children[0].children?.[3], {
+      authored: [C, { ctx: inAB.ctx, kind: 'in' }],
+      text: 'X',
+    });
+    assert.deepEqual(compacted.roots, value.roots);
+    assert.deepEqual(claimsAt(compacted, 3), ['A', 'B', 'C']);
+  });
+});
+
+describe('authored review fact validation', () => {
+  const alice = { at: 2, author: 'alice', change: 'A' };
+  const root = contextRecordOf(null, alice);
+  const refused = (reason: string) => ({ message: reason });
+  const load = (value: Value) => () =>
+    createEditor({
+      initialValue: value as never,
+      plugins: [Blocks, createAuthoredPlugin({ authorId: 'dana' })],
+    });
+  const restingOn = (ctx: string, records: readonly unknown[]): Value => ({
+    children: [
+      {
+        children: [{ authored: [B, { ctx, kind: 'in' }], text: 'X' }],
+        type: 'paragraph',
+      } as Node,
+    ],
+    roots: { [CONTEXTS_ROOT]: records },
+  });
+
+  it('refuses text resting on a context the document lacks', () => {
+    assert.throws(
+      load(restingOn(root.ctx, [])),
+      refused(
+        `Review context ${root.ctx} is missing. Save the whole read.value(), not only its children, so review contexts travel with the text.`
+      )
+    );
+  });
+
+  it('refuses contexts that rest on each other', () => {
+    assert.throws(
+      load(
+        restingOn('c:one', [
+          { ...contextElementOf(root), base: 'c:two', ctx: 'c:one' },
+          { ...contextElementOf(root), base: 'c:one', ctx: 'c:two' },
+        ])
+      ),
+      refused('Review context c:one rests on itself.')
+    );
+  });
+
+  it('reads two equal records as one context', () => {
+    const value = restingOn(root.ctx, [
+      contextElementOf(root),
+      contextElementOf(root),
+    ]);
+
+    load(value)();
+    assert.equal(factsOf(value).contexts.size, 1);
+  });
+
+  it('refuses two different records under one id', () => {
+    assert.throws(
+      load(
+        restingOn(root.ctx, [
+          contextElementOf(root),
+          { ...contextElementOf(root), author: 'mallory' },
+        ])
+      ),
+      refused(`Review context ${root.ctx} does not match its content.`)
+    );
+  });
+});
+
+describe('authored admission', () => {
+  it('compacts stacked insertions an undo brings back, in the commit that brings them', () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }] as never,
+      plugins: [Blocks, createAuthoredPlugin({ authorId: 'dana' })],
+    });
+
+    editor.update({ tags: ['historic'] }, (tx) => {
+      tx.nodes.insert(reusedId.children[0] as never, { at: [1] });
+    });
+
+    assert.deepEqual(editor.read.value(), {
+      children: [
+        { children: [{ text: 'x' }], type: 'paragraph' },
+        {
+          children: [
+            { authored: [A], text: 'he' },
+            {
+              authored: [B, { ctx: contextRecordOf(null, A).ctx, kind: 'in' }],
+              text: 'X',
+            },
+            { authored: [A], text: 'rs' },
+            { text: ' ' },
+            { authored: [B], text: 'Y' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      roots: { [CONTEXTS_ROOT]: [contextElementOf(contextRecordOf(null, A))] },
+    });
+  });
+
+  const bob = { at: 2, author: 'bob', change: 'bob:1' };
+  const rejected = (kind: 'delete' | 'held') => ({
+    children: [
+      {
+        children: [
+          { text: 'a' },
+          { authored: [{ ...bob, kind }], text: 'b' },
+          { text: 'c' },
+        ],
+        type: 'paragraph',
+      },
+    ],
+    roots: {
+      [VERDICTS_ROOT]: [verdictElementOf({ member: bob, verdict: 'reject' })],
+    },
+  });
+
+  it('settles the document a view shows', () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }] as never,
+      plugins: [Blocks, createAuthoredPlugin({ authorId: 'dana' })],
+    });
+
+    assert.deepEqual(
+      createEditorView(editor, {
+        document: rejected('delete') as never,
+      }).read.value(),
+      rejected('held')
+    );
+  });
+
+  const replacing = (intent: 'edit' | 'propose') => {
+    const source = createEditor({
+      initialValue: {
+        children: [
+          { children: [{ text: 'x' }], type: 'paragraph' },
+          reusedId.children[0],
+          ...rejected('delete').children,
+        ],
+        roots: rejected('delete').roots,
+      } as never,
+      plugins: [Blocks, createAuthoredPlugin({ authorId: 'zed' })],
+    });
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }] as never,
+      plugins: [
+        Blocks,
+        createAuthoredPlugin({ authorId: 'dana', intent, now: () => 5 }),
+      ],
+    });
+
+    editor.update((tx) => {
+      if (intent === 'propose') tx.authored.propose({ changeId: 'D' });
+      tx.value.replace(source.read.value() as never);
+    });
+
+    return { replaced: expandContexts(editor.read.value()), source };
+  };
+
+  it('stores a replacing value that rests on review contexts as it is, in Editing', () => {
+    const { replaced, source } = replacing('edit');
+
+    assert.deepEqual(replaced, expandContexts(source.read.value()));
+  });
+
+  it('nests the claims of a replacing value that rests on review contexts under the writer’s, in Suggesting', () => {
+    const D = { at: 5, author: 'dana', change: 'D', kind: 'insert' };
+
+    assert.deepEqual(replacing('propose').replaced, {
+      children: [
+        { children: [{ text: 'x' }], type: 'paragraph' },
+        {
+          authored: [D],
+          children: [
+            { authored: [A, D], text: 'he' },
+            { authored: [B, A, D], text: 'X' },
+            { authored: [A, D], text: 'rs' },
+            { authored: [D], text: ' ' },
+            { authored: [B, D], text: 'Y' },
+          ],
+          type: 'paragraph',
+        },
+        {
+          authored: [D],
+          children: [
+            { authored: [D], text: 'a' },
+            { authored: [{ ...bob, kind: 'held' }, D], text: 'b' },
+            { authored: [D], text: 'c' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      roots: rejected('held').roots,
+    });
+  });
+
+  it('stores a replacing value that holds 50 nested proposals stacked as loading it does, and in 4k + 1 claims and k contexts in Suggesting', () => {
+    const value = stacked(50);
+    const editorOf = (
+      initialValue: unknown,
+      intent: 'edit' | 'propose' = 'edit'
+    ) =>
+      createEditor({
+        initialValue: initialValue as never,
+        plugins: [
+          Blocks,
+          createAuthoredPlugin({ authorId: 'dana', intent, now: () => 5 }),
+        ],
+      });
+    const replaced = (intent: 'edit' | 'propose') => {
+      const editor = editorOf(
+        [{ children: [{ text: 'x' }], type: 'paragraph' }],
+        intent
+      );
+
+      editor.update((tx) => {
+        if (intent === 'propose') tx.authored.propose({ changeId: 'D' });
+        tx.value.replace(value as never);
+      });
+
+      return editor.read.value() as Value;
+    };
+    const suggested = replaced('propose');
+
+    assert.deepEqual(
+      {
+        edit: replaced('edit'),
+        suggested: {
+          contexts: suggested.roots?.[CONTEXTS_ROOT]?.length,
+          entries: entriesIn(suggested.children),
+        },
+      },
+      {
+        edit: editorOf(value).read.value(),
+        suggested: { contexts: 50, entries: 201 },
+      }
+    );
+  });
+
+  it('stores a root a replacing value adds as it is, with the review contexts it rests on, in Editing', () => {
+    // An open schema lets a document hold roots it does not declare.
+    const Open = defineEditorSchema('authored-facts-open', {
+      elements: { paragraph: schema.element.textBlock() },
+      id: 'authored-facts-open',
+      root: schema.content.types(['paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'preserve',
+      version: 1,
+    });
+    const source = createEditor({
+      initialValue: {
+        children: [{ children: [{ text: 'x' }], type: 'paragraph' }],
+        roots: { aside: reusedId.children },
+      } as never,
+      plugins: [Open, createAuthoredPlugin({ authorId: 'zed' })],
+    });
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'x' }], type: 'paragraph' }] as never,
+      plugins: [Open, createAuthoredPlugin({ authorId: 'dana' })],
+    });
+
+    editor.update((tx) => tx.value.replace(source.read.value() as never));
+    assert.deepEqual(
+      expandContexts(editor.read.value()),
+      expandContexts(source.read.value())
+    );
+  });
+
+  it('keeps the records struck text rests on when a Suggesting replacement brings none', () => {
+    const D = { at: 5, author: 'dana', change: 'D' };
+    const editor = createEditor({
+      initialValue: reusedId.children as never,
+      plugins: [
+        Blocks,
+        createAuthoredPlugin({
+          authorId: 'dana',
+          intent: 'propose',
+          now: () => 5,
+        }),
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.authored.propose({ changeId: 'D' });
+      tx.value.replace({
+        children: [{ children: [{ text: 'q' }], type: 'paragraph' }],
+      } as never);
+    });
+    assert.deepEqual(expandContexts(editor.read.value()), {
+      children: [
+        {
+          children: [
+            { authored: [A, { ...D, kind: 'delete' }], text: 'he' },
+            { authored: [B, A, { ...D, kind: 'delete' }], text: 'X' },
+            { authored: [A, { ...D, kind: 'delete' }], text: 'rs' },
+            { authored: [{ ...D, kind: 'delete' }], text: ' ' },
+            { authored: [B, { ...D, kind: 'delete' }], text: 'Y' },
+            { authored: [{ ...D, kind: 'insert' }], text: 'q' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
+  });
+});
+
+describe('authored incarnations', () => {
+  it('gives two peers proposing a decided id in one millisecond distinct incarnations', () => {
+    const peer = () => {
+      const editor = createEditor({
+        initialValue: [
+          {
+            children: [{ authored: [A], text: 'hers' }],
+            type: 'paragraph',
+          },
+        ] as never,
+        plugins: [
+          Blocks,
+          createAuthoredPlugin({ authorId: 'alice', now: () => 5 }),
+        ],
+      });
+
+      authoredTestApi(editor).decide({ action: 'reject', changes: ['A'] });
+      editor.update((tx) => {
+        tx.authored.propose({ changeId: 'A' });
+        tx.text.insert('!', { at: { offset: 0, path: [0, 0] } });
+      });
+
+      return (editor.read.children()[0] as Node).children ?? [];
+    };
+    const [left, right] = [peer(), peer()];
+    const incOf = (leaves: readonly Node[]) =>
+      (leaves[0]?.authored?.[0] as { inc?: string } | undefined)?.inc;
+
+    assert.notEqual(incOf(left), undefined);
+    assert.notEqual(incOf(left), incOf(right));
+  });
+});

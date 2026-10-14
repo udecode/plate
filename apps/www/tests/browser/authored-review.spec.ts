@@ -22,15 +22,20 @@ const MODES: Array<[Intent, string]> = [
   ['propose', 'Suggesting'],
 ];
 
-type Fixture = 'fill' | 'title' | 'values';
+type Fixture = 'fill' | 'page' | 'title' | 'values';
 
 const READY: Record<Fixture, RegExp> = {
   fill: /First line/,
+  page: /First line/,
   title: /Title/,
   values: /Alpha/,
 };
 
-const open = async (page: Page, intent: Intent, fixture?: Fixture) => {
+const open = async (
+  page: Page,
+  intent: Intent | 'plain',
+  fixture?: Fixture
+) => {
   await page.goto(
     `/dev/authored-review?intent=${intent}${fixture ? `&fixture=${fixture}` : ''}`
   );
@@ -87,6 +92,20 @@ const compositionEnds = async (editor: BrowserEditorHarness) => {
 
 const typed = (intent: Intent, text: string) =>
   intent === 'propose' ? `${text}[insert:alice]` : text;
+
+/** The block texts of the document with every pending change accepted or rejected. */
+const projected = (page: Page, projection: 'accepted' | 'proposed') =>
+  page.evaluate((which) => {
+    const value = window.authoredProof?.project(which) as
+      | Array<{ children: Array<{ text: string }> }>
+      | undefined;
+
+    if (!value) throw new Error('the proof route is not ready');
+
+    return value.map((block) =>
+      block.children.map((leaf) => leaf.text).join('')
+    );
+  }, projection);
 
 /** The viewport point at a text offset, for a native drop there. */
 const pointAt = (
@@ -174,9 +193,19 @@ const forgedEnvelope = (text: string) => {
   return `<p data-editor-fragment="${encoded}" data-editor-fragment-format="x-editor-fragment">${text}</p>`;
 };
 
+// A letter typed or pasted inside struck letters lands where a plain editor
+// puts it, after them; in Editing it joins the live text that follows.
+const afterStruck = (intent: Intent, text: string) => [
+  'Alpha ',
+  'gone[delete:bob]',
+  ...(intent === 'edit' ? [`${text} beta `] : [typed(intent, text), ' beta ']),
+  'theirs[insert:bob]',
+  ' gamma',
+];
+
 test.describe('authored review tree native input', () => {
   for (const [intent, mode] of MODES) {
-    test(`click inside struck text puts a native caret there, and typing splits the deletion (${mode})`, async ({
+    test(`click inside struck text puts a native caret there, and typing lands after the struck letters (${mode})`, async ({
       page,
     }) => {
       const errors = recordBrowserRuntimeErrors(page, { strict: true });
@@ -192,19 +221,11 @@ test.describe('authored review tree native input', () => {
       await editor.assert.collapsedModelDOMSelection({
         offset: 1,
         path: [0, 2],
-        text: 'X',
+        text: intent === 'edit' ? 'X beta ' : 'X',
       });
       await editor.type('Y');
 
-      expect(await leaves(editor, 0)).toEqual([
-        'Alpha ',
-        'go[delete:bob]',
-        typed(intent, 'XY'),
-        'ne[delete:bob]',
-        ' beta ',
-        'theirs[insert:bob]',
-        ' gamma',
-      ]);
+      expect(await leaves(editor, 0)).toEqual(afterStruck(intent, 'XY'));
       expect(await anomalies(editor)).toEqual([]);
       errors.assertNone();
     });
@@ -241,20 +262,12 @@ test.describe('authored review tree native input', () => {
       });
       await editor.type('Z');
 
-      expect(await leaves(editor, 0)).toEqual([
-        'Alpha ',
-        'gon[delete:bob]',
-        typed(intent, 'Z'),
-        'e[delete:bob]',
-        ' beta ',
-        'theirs[insert:bob]',
-        ' gamma',
-      ]);
+      expect(await leaves(editor, 0)).toEqual(afterStruck(intent, 'Z'));
       expect(await anomalies(editor)).toEqual([]);
       errors.assertNone();
     });
 
-    test(`paste inside struck text splits the deletion (${mode})`, async ({
+    test(`paste inside struck text lands after the struck letters (${mode})`, async ({
       page,
     }) => {
       const errors = recordBrowserRuntimeErrors(page, { strict: true });
@@ -265,19 +278,11 @@ test.describe('authored review tree native input', () => {
       await editor.assert.collapsedModelDOMSelection({
         offset: 1,
         path: [0, 2],
-        text: 'P',
+        text: intent === 'edit' ? 'P beta ' : 'P',
       });
       await editor.type('Q');
 
-      expect(await leaves(editor, 0)).toEqual([
-        'Alpha ',
-        'go[delete:bob]',
-        typed(intent, 'PQ'),
-        'ne[delete:bob]',
-        ' beta ',
-        'theirs[insert:bob]',
-        ' gamma',
-      ]);
+      expect(await leaves(editor, 0)).toEqual(afterStruck(intent, 'PQ'));
       expect(await anomalies(editor)).toEqual([]);
       errors.assertNone();
     });
@@ -353,7 +358,7 @@ test.describe('authored review tree native input', () => {
     });
   }
 
-  test('Backspace and Delete remove struck text in Editing', async ({
+  test('Backspace and Delete inside struck text remove the nearest live letters in Editing', async ({
     page,
   }) => {
     const errors = recordBrowserRuntimeErrors(page, { strict: true });
@@ -362,56 +367,36 @@ test.describe('authored review tree native input', () => {
     await editor.dom.clickTextOffset({ offset: 2, path: [0, 1] });
     await editor.press('Backspace');
     await editor.press('Delete');
-    await editor.assert.collapsedModelDOMSelection({
-      offset: 1,
-      path: [0, 1],
-      text: 'ge',
-    });
     await editor.type('X');
 
-    expect(await leaves(editor, 0)).toEqual([
-      'Alpha ',
-      'g[delete:bob]',
-      'X',
-      'e[delete:bob]',
-      ' beta ',
-      'theirs[insert:bob]',
-      ' gamma',
-    ]);
+    const [proposedLine] = await projected(page, 'proposed');
+
+    expect(proposedLine).toBe('AlphaXbeta theirs gamma');
+    expect(await leaves(editor, 0)).toContain('gone[delete:bob]');
     expect(await anomalies(editor)).toEqual([]);
     errors.assertNone();
   });
 
-  test('Backspace steps leftward and Delete rightward over struck text in Suggesting', async ({
+  test('Backspace and Delete at the end of struck text strike the nearest live letters in Suggesting', async ({
     page,
   }) => {
     const errors = recordBrowserRuntimeErrors(page, { strict: true });
     const editor = await open(page, 'propose');
+    const start = await projected(page, 'accepted');
 
     await editor.selection.collapse({ offset: 4, path: [0, 1] });
     await editor.focus();
     await editor.press('Backspace');
-    await editor.assert.collapsedModelDOMSelection({
-      offset: 3,
-      path: [0, 1],
-      text: 'gone',
-    });
     await editor.press('Delete');
-    await editor.assert.collapsedModelDOMSelection({
-      offset: 4,
-      path: [0, 1],
-      text: 'gone',
-    });
-
-    expect(await leaves(editor, 0)).toEqual([
-      'Alpha ',
-      'gone[delete:bob]',
-      ' beta ',
-      'theirs[insert:bob]',
-      ' gamma',
-    ]);
     await editor.type('X');
-    expect(await leaves(editor, 0)).toContain('X[insert:alice]');
+
+    const [proposedLine] = await projected(page, 'proposed');
+
+    expect(proposedLine).toBe('AlphaXbeta theirs gamma');
+    expect(await projected(page, 'accepted')).toEqual(start);
+    expect(await leaves(editor, 0)).toEqual(
+      expect.arrayContaining(['gone[delete:bob]', 'X[insert:alice]'])
+    );
     expect(await anomalies(editor)).toEqual([]);
     errors.assertNone();
   });
@@ -443,26 +428,68 @@ test.describe('authored review tree native input', () => {
     errors.assertNone();
   });
 
-  test('Editing text typed inside a struck block survives accepting the deletion', async ({
-    page,
-  }) => {
-    const errors = recordBrowserRuntimeErrors(page, { strict: true });
-    const editor = await open(page, 'edit');
+  for (const [intent, mode, caret] of [
+    ['edit', 'Editing', { offset: 9, path: [0, 4], text: ' gammaNEW' }],
+    ['propose', 'Suggesting', { offset: 3, path: [0, 5], text: 'NEW' }],
+  ] as const) {
+    test(`text typed inside a struck block lands at the end of the line before it (${mode})`, async ({
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
 
-    await editor.dom.clickTextOffset({ offset: 6, path: [1, 0] });
-    await editor.type('NEW');
-    await page.evaluate(() =>
-      window.authoredProof?.decide({ action: 'accept', changes: ['bob:3'] })
-    );
+      await editor.dom.clickTextOffset({ offset: 6, path: [1, 0] });
+      await editor.type('NEW');
+      await editor.assert.collapsedModelDOMSelection({
+        ...caret,
+        path: [...caret.path],
+      });
+      const firstLine = await leaves(editor, 0);
 
-    expect(await blocks(editor)).toEqual([
-      'Alpha gone beta theirs gamma',
-      'NEW',
-      'Plain line',
-    ]);
-    expect(await anomalies(editor)).toEqual([]);
-    errors.assertNone();
-  });
+      expect(firstLine.at(-1)).toBe(
+        intent === 'edit' ? ' gammaNEW' : typed(intent, 'NEW')
+      );
+      await page.evaluate(() =>
+        window.authoredProof?.decide({ action: 'accept', changes: ['bob:3'] })
+      );
+
+      expect(await blocks(editor)).toEqual([
+        'Alpha gone beta theirs gammaNEW',
+        'Plain line',
+      ]);
+      expect(await anomalies(editor)).toEqual([]);
+      errors.assertNone();
+    });
+
+    test(`Enter inside a struck block opens a line after the line before it (${mode})`, async ({
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
+
+      await editor.dom.clickTextOffset({ offset: 6, path: [1, 0] });
+      await editor.press('Enter');
+      await editor.type('Q');
+      await editor.assert.collapsedModelDOMSelection({
+        offset: 1,
+        path: [1, 0],
+        text: 'Q',
+      });
+      await page.evaluate(() =>
+        window.authoredProof?.decide({ action: 'accept', changes: ['bob:3'] })
+      );
+
+      const accepted = await blocks(editor);
+
+      expect(accepted.map((block) => block.replace(/\[.*\]$/, ''))).toEqual([
+        'Alpha gone beta theirs gamma',
+        'Q',
+        'Plain line',
+      ]);
+      expect(await anomalies(editor)).toEqual([]);
+      errors.assertNone();
+    });
+  }
 
   for (const [intent, mode, expected, caret] of [
     [
@@ -870,4 +897,351 @@ test.describe('authored review fills as Editing does', () => {
     ]);
     errors.assertNone();
   });
+});
+
+// P1.1 of docs/plans/2026-10-12-suggestions-complete.md: where the caret goes
+// and what each key records, beside an editor without the review tree.
+test.describe('authored review tree caret', () => {
+  type Caret = { offset: number; path: number[]; text: string };
+  type Point = { offset: number; path: number[] };
+  type State = { caret: Point | undefined; tree: string[] };
+
+  const LINE_DELETE =
+    process.platform === 'darwin' ? 'Meta+Backspace' : 'Shift+Home, Backspace';
+  const PAGE = ['First line', 'Second line', 'Last line'];
+
+  /** Each block as its leaves, `text[kind:author]` when marked, after the block's own marks. */
+  const review = async (editor: BrowserEditorHarness) =>
+    ((await editor.get.modelValue()) as { children: Block[] }).children.map(
+      (block) =>
+        `${block.authored?.length ? `[${block.authored.map((mark) => mark.kind).join(',')}] ` : ''}${block.children
+          .map((leaf) =>
+            leaf.authored?.length
+              ? `${leaf.text}[${leaf.authored.map((mark) => `${mark.kind}:${mark.author}`).join(',')}]`
+              : leaf.text
+          )
+          .join('|')}`
+    );
+
+  const press = async (editor: BrowserEditorHarness, key: string) => {
+    if (key.startsWith('type ')) {
+      await editor.type(key.slice('type '.length));
+    } else if (key === 'line delete' && process.platform === 'darwin') {
+      await editor.press('Meta+Backspace');
+    } else if (key === 'line delete') {
+      await editor.page.keyboard.press('Shift+Home');
+      await editor.press('Backspace');
+    } else {
+      await editor.press(key);
+    }
+  };
+
+  const state = async (editor: BrowserEditorHarness): Promise<State> => {
+    const selection = await editor.get.selection();
+
+    return { caret: selection?.anchor, tree: await review(editor) };
+  };
+
+  const plainRun = async (
+    page: Page,
+    start: Point,
+    keys: readonly string[]
+  ) => {
+    const editor = await open(page, 'plain', 'page');
+    const states: State[] = [];
+
+    await editor.dom.clickTextOffset(start);
+    for (const key of keys) {
+      await press(editor, key);
+      states.push(await state(editor));
+    }
+
+    return states;
+  };
+
+  const CASES: ReadonlyArray<{
+    /** Also run in Editing, where an unmarked document records the plain steps. */
+    editing?: true;
+    name: string;
+    start: Point;
+    steps: ReadonlyArray<{ caret: Caret; key: string; tree: string[] }>;
+  }> = [
+    {
+      editing: true,
+      name: 'Enter at a line’s end, then typing',
+      start: { offset: 10, path: [0, 0] },
+      steps: [
+        {
+          caret: { offset: 0, path: [1, 0], text: '' },
+          key: 'Enter',
+          tree: ['First line', '[split] ', 'Second line', 'Last line'],
+        },
+        {
+          caret: { offset: 2, path: [1, 0], text: 'ab' },
+          key: 'type ab',
+          tree: [
+            'First line',
+            '[split] ab[insert:alice]',
+            'Second line',
+            'Last line',
+          ],
+        },
+      ],
+    },
+    {
+      name: `the owner’s sequence, line delete as ${LINE_DELETE}, Enter twice, Backspace three times, then typing`,
+      start: { offset: 11, path: [1, 0] },
+      steps: [
+        {
+          caret: { offset: 0, path: [1, 0], text: 'Second line' },
+          key: 'line delete',
+          tree: ['First line', 'Second line[delete:alice]', 'Last line'],
+        },
+        {
+          caret: { offset: 0, path: [2, 0], text: 'Second line' },
+          key: 'Enter',
+          tree: [
+            'First line',
+            '',
+            '[split] Second line[delete:alice]',
+            'Last line',
+          ],
+        },
+        {
+          caret: { offset: 0, path: [3, 0], text: 'Second line' },
+          key: 'Enter',
+          tree: [
+            'First line',
+            '',
+            '[split] ',
+            '[split] Second line[delete:alice]',
+            'Last line',
+          ],
+        },
+        {
+          caret: { offset: 0, path: [2, 0], text: 'Second line' },
+          key: 'Backspace',
+          tree: [
+            'First line',
+            '',
+            '[split] Second line[delete:alice]',
+            'Last line',
+          ],
+        },
+        {
+          caret: { offset: 0, path: [2, 0], text: 'Second line' },
+          key: 'Backspace',
+          tree: [
+            'First line',
+            '[delete] [delete:alice]',
+            '[split] Second line[delete:alice]',
+            'Last line',
+          ],
+        },
+        {
+          caret: { offset: 10, path: [0, 0], text: 'First line' },
+          key: 'Backspace',
+          tree: [
+            'First line',
+            '[delete] Second line[delete:alice]',
+            'Last line',
+          ],
+        },
+        {
+          caret: { offset: 2, path: [0, 1], text: 'ab' },
+          key: 'type ab',
+          tree: [
+            'First line|ab[insert:alice]',
+            '[delete] Second line[delete:alice]',
+            'Last line',
+          ],
+        },
+      ],
+    },
+  ];
+
+  for (const { editing, name, start, steps } of CASES) {
+    const keys = steps.map((step) => step.key);
+
+    if (editing) {
+      test(`Editing matches the plain editor after every key: ${name}`, async ({
+        page,
+      }) => {
+        const errors = recordBrowserRuntimeErrors(page, { strict: true });
+        const plain = await plainRun(page, start, keys);
+        const editor = await open(page, 'edit', 'page');
+
+        await editor.dom.clickTextOffset(start);
+        for (const [index, key] of keys.entries()) {
+          await press(editor, key);
+          expect(await state(editor), `after ${key}`).toEqual(plain[index]);
+        }
+        expect(plain[0].caret).toEqual({ offset: 0, path: [1, 0] });
+        errors.assertNone();
+      });
+    }
+
+    test(`Suggesting records each key and keeps the caret where it was typed: ${name}`, async ({
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const plain = await plainRun(page, start, keys);
+      const editor = await open(page, 'propose', 'page');
+
+      await editor.dom.clickTextOffset(start);
+      let before = await state(editor);
+
+      for (const [index, step] of steps.entries()) {
+        await press(editor, step.key);
+        expect(await review(editor), `tree after ${step.key}`).toEqual(
+          step.tree
+        );
+        await editor.assert.collapsedModelDOMSelection(step.caret);
+        await editor.assert.focusOwner('editor');
+
+        const after = await state(editor);
+
+        expect(after, `${step.key} changed nothing`).not.toEqual(before);
+        before = after;
+        expect(
+          await projected(page, 'proposed'),
+          `accepting everything after ${step.key}`
+        ).toEqual(plain[index].tree);
+        expect(
+          await projected(page, 'accepted'),
+          `rejecting everything after ${step.key}`
+        ).toEqual(PAGE);
+      }
+      errors.assertNone();
+    });
+  }
+
+  for (const [intent, key, caret, afterTyping] of [
+    // Editing keeps the other author's struck block, now after the joined
+    // line, so rejecting their deletion brings it back.
+    [
+      'edit',
+      'Backspace',
+      { offset: 6, path: [0, 4], text: ' gammaPlain line' },
+      [
+        'Alpha |gone[delete:bob]| beta |theirs[insert:bob]| gammaabPlain line',
+        '[delete] Struck block[delete:bob]',
+      ],
+    ],
+    [
+      'edit',
+      'Delete',
+      { offset: 6, path: [0, 4], text: ' gammaPlain line' },
+      [
+        'Alpha |gone[delete:bob]| beta |theirs[insert:bob]| gammaabPlain line',
+        '[delete] Struck block[delete:bob]',
+      ],
+    ],
+    [
+      'propose',
+      'Backspace',
+      { offset: 6, path: [0, 4], text: ' gamma' },
+      [
+        'Alpha |gone[delete:bob]| beta |theirs[insert:bob]| gamma|ab[insert:alice]',
+        '[delete] Struck block[delete:bob]',
+        '[join] Plain line',
+      ],
+    ],
+    [
+      'propose',
+      'Delete',
+      { offset: 0, path: [2, 0], text: 'Plain line' },
+      [
+        'Alpha |gone[delete:bob]| beta |theirs[insert:bob]| gamma',
+        '[delete] Struck block[delete:bob]',
+        '[join] ab[insert:alice]|Plain line',
+      ],
+    ],
+  ] as const) {
+    test(`${key} next to another author’s struck block joins across it (${intent === 'edit' ? 'Editing' : 'Suggesting'})`, async ({
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
+
+      await editor.dom.clickTextOffset(
+        key === 'Backspace'
+          ? { offset: 0, path: [2, 0] }
+          : { offset: 6, path: [0, 4] }
+      );
+      await editor.press(key);
+      await editor.assert.collapsedModelDOMSelection({
+        ...caret,
+        path: [...caret.path],
+      });
+      await editor.type('ab');
+      expect(await review(editor)).toEqual(afterTyping);
+      errors.assertNone();
+    });
+  }
+
+  // End puts the caret after the struck text, so the typed letters follow it.
+  for (const [trigger, block] of [
+    [
+      '#',
+      {
+        type: 'heading',
+        children: [
+          {
+            text: 'Second line',
+            authored: [expect.objectContaining({ kind: 'delete' })],
+          },
+          {
+            text: 'ab',
+            authored: [expect.objectContaining({ kind: 'insert' })],
+          },
+        ],
+      },
+    ],
+    [
+      '>',
+      {
+        type: 'blockquote',
+        children: [
+          expect.objectContaining({
+            children: [
+              {
+                text: 'Second line',
+                authored: [expect.objectContaining({ kind: 'delete' })],
+              },
+              {
+                text: 'ab',
+                authored: [expect.objectContaining({ kind: 'insert' })],
+              },
+            ],
+          }),
+        ],
+      },
+    ],
+  ] as const) {
+    test(`a \`${trigger} \` input rule typed after a struck line converts the line in Suggesting`, async ({
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, 'propose', 'page');
+
+      await editor.dom.clickTextOffset({ offset: 11, path: [1, 0] });
+      await press(editor, 'line delete');
+      await editor.press('End');
+      await editor.assert.collapsedModelDOMSelection({
+        offset: 11,
+        path: [1, 0],
+        text: 'Second line',
+      });
+      await editor.type(`${trigger} `);
+      await editor.type('ab');
+
+      const value = (await editor.get.modelValue()) as {
+        children: unknown[];
+      };
+
+      expect(value.children[1]).toMatchObject(block);
+      errors.assertNone();
+    });
+  }
 });

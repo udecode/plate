@@ -1,13 +1,7 @@
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import { getEditorRuntimeOwner } from './editor-runtime';
 
-/**
- * Whether a node is content for reads that ask for content. A capability that
- * keeps non-content nodes in the document, such as struck suggestions,
- * registers it; without one every node is content.
- *
- * @internal
- */
+/** @internal */
 export type EditorContent = (editor: Editor, node: unknown) => boolean;
 
 const CONTENT = new WeakMap<Editor, EditorContent>();

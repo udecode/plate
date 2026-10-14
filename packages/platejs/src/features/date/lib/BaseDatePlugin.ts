@@ -4,6 +4,8 @@ import {
   property,
   type ElementOf,
   type NodeInsertOptions,
+  txLocate,
+  locateAt,
 } from '../../../core';
 import { normalizeDateValue, parseCanonicalDateValue } from './dateValue';
 
@@ -66,26 +68,29 @@ export const BaseDatePlugin = definePlugin(PLUGINS.date, {
   },
 }).extend(({ schema: { type } }) => ({
   update: ({ tx }) => ({
-    insert: (
-      { value }: { value?: Date | string } = {},
-      options: NodeInsertOptions = {}
-    ) => {
-      const normalized = normalizeDateValue(value ?? new Date());
+    insert: txLocate(
+      locateAt(1),
+      (
+        { value }: { value?: Date | string } = {},
+        options: NodeInsertOptions = {}
+      ) => {
+        const normalized = normalizeDateValue(value ?? new Date());
 
-      if (!normalized) return;
+        if (!normalized) return;
 
-      tx.nodes.insert(
-        [
-          {
-            children: [{ text: '' }],
-            type,
-            value: normalized,
-          },
-          { text: ' ' },
-        ],
-        options
-      );
-    },
+        tx.nodes.insert(
+          [
+            {
+              children: [{ text: '' }],
+              type,
+              value: normalized,
+            },
+            { text: ' ' },
+          ],
+          options
+        );
+      }
+    ),
   }),
 }));
 

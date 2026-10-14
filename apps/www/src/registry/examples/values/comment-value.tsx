@@ -131,7 +131,7 @@ export const createCommentSnapshot = (document = commentValue) => {
     },
   ];
   const comments: CommentsJSON = {
-    kind: 'plate-comments',
+    kind: 'comments',
     version: 1,
     threads: commentThreads,
     ranges: ranges.map(({ threadId, range }) => {

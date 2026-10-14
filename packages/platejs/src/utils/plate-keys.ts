@@ -17,7 +17,6 @@ export const PLUGINS = {
   column: 'column',
   columnGroup: 'columnGroup',
   copilot: 'copilot',
-  csv: 'csv',
   date: 'date',
   debug: 'debug',
   dnd: 'dnd',

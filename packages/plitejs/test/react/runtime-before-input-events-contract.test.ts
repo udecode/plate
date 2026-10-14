@@ -316,7 +316,7 @@ test('pending composition input captures immutable input before one model commit
   inputController.state.pendingCompositionEnd = {
     cancel: vi.fn(),
     flush: vi.fn(() => false),
-    ownership: 'plite',
+    ownership: 'editor',
     phase: 'end-pending',
     replaceWithInput: (input) => {
       pendingInput.current = input;
@@ -383,7 +383,7 @@ test('pending composition input records only an actual document commit', () => {
   inputController.state.pendingCompositionEnd = {
     cancel: vi.fn(),
     flush: vi.fn(() => false),
-    ownership: 'plite',
+    ownership: 'editor',
     phase: 'end-pending',
     replaceWithInput: (input) => {
       pendingInput.current = input;

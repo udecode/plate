@@ -1,6 +1,7 @@
 import { writeFileSync } from 'node:fs';
 
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
   startBrowserNativeEventTrace,
@@ -26,35 +27,40 @@ test('keeps homepage paragraph composition beside inline links and the next inpu
   const transitions: unknown[] = [];
   const capture = async (phase: string) => {
     transitions.push(
-      await root.evaluate((element, capturedPhase) => {
-        const handle = (
-          element as HTMLElement & {
-            __pliteBrowserHandle: {
-              getModelSelection: () => unknown;
-              getViewSelection: () => unknown;
-              getDOMSelection: () => unknown;
-              getInputState: () => unknown;
-            };
-          }
-        ).__pliteBrowserHandle;
-        const native = element.ownerDocument.getSelection();
-        return {
-          phase: capturedPhase,
-          native: {
-            anchorOffset: native?.anchorOffset,
-            focusOffset: native?.focusOffset,
-            text: native?.focusNode?.textContent,
-            path: native?.focusNode?.parentElement
-              ?.closest('[data-editor-node="text"]')
-              ?.getAttribute('data-editor-path'),
-            focused: element.ownerDocument.activeElement === element,
-          },
-          model: handle.getModelSelection(),
-          view: handle.getViewSelection(),
-          dom: handle.getDOMSelection(),
-          input: handle.getInputState(),
-        };
-      }, phase)
+      await root.evaluate(
+        (element, [capturedPhase, key]) => {
+          const handle = (
+            element as HTMLElement &
+              Record<
+                string,
+                {
+                  getModelSelection: () => unknown;
+                  getViewSelection: () => unknown;
+                  getDOMSelection: () => unknown;
+                  getInputState: () => unknown;
+                }
+              >
+          )[key];
+          const native = element.ownerDocument.getSelection();
+          return {
+            phase: capturedPhase,
+            native: {
+              anchorOffset: native?.anchorOffset,
+              focusOffset: native?.focusOffset,
+              text: native?.focusNode?.textContent,
+              path: native?.focusNode?.parentElement
+                ?.closest('[data-editor-node="text"]')
+                ?.getAttribute('data-editor-path'),
+              focused: element.ownerDocument.activeElement === element,
+            },
+            model: handle.getModelSelection(),
+            view: handle.getViewSelection(),
+            dom: handle.getDOMSelection(),
+            input: handle.getInputState(),
+          };
+        },
+        [phase, BROWSER_HANDLE_KEY] as const
+      )
     );
   };
 

@@ -92,7 +92,7 @@ export default function SuggestionPersistenceDemo() {
       <EditorRoot
         editor={editor}
         key={editor.id}
-        authored={{ intent: 'propose', projection: 'markup' }}
+        authored={{ intent: 'propose' }}
       >
         <SuggestionPersistenceContent />
       </EditorRoot>
@@ -113,7 +113,7 @@ function SuggestionPersistenceContent() {
       </Toolbar>
       <Editor
         aria-label="Saved suggestions document"
-        className="h-auto min-h-[200px] px-8 pb-12 sm:px-12"
+        className="h-auto min-h-[200px] px-[clamp(24px,8%,48px)] pb-12"
         variant="demo"
       />
     </EditorContainer>

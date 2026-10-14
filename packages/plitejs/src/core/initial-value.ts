@@ -23,37 +23,31 @@ const rejectInitialDocumentShape = (issue: EditorDocumentShapeIssue): never => {
     case 'children':
     case 'missing': {
       throw new Error(
-        '[Plite] initialValue is invalid! Expected a list of elements or a document value with children.'
+        'initialValue is invalid! Expected a list of elements or a document value with children.'
       );
     }
     case 'json': {
-      throw new Error(
-        '[Plite] initialValue must encode to JSON-compatible data.'
-      );
+      throw new Error('initialValue must encode to JSON-compatible data.');
     }
     case 'field': {
       throw new Error(
-        `[Plite] initialValue.${issue.field} is not supported. Store application data in initialValue.meta.`
+        `initialValue.${issue.field} is not supported. Store application data in initialValue.meta.`
       );
     }
     case 'meta': {
-      throw new Error(
-        '[Plite] initialValue.meta is invalid! Expected an object.'
-      );
+      throw new Error('initialValue.meta is invalid! Expected an object.');
     }
     case 'roots': {
-      throw new Error(
-        '[Plite] initialValue.roots is invalid! Expected an object.'
-      );
+      throw new Error('initialValue.roots is invalid! Expected an object.');
     }
     case 'primary-root': {
       throw new Error(
-        '[Plite] initialValue.roots.main is invalid. Use initialValue.children for the primary document.'
+        'initialValue.roots.main is invalid. Use initialValue.children for the primary document.'
       );
     }
     case 'root': {
       throw new Error(
-        `[Plite] initialValue.roots.${issue.root} is invalid! Expected a list of elements.`
+        `initialValue.roots.${issue.root} is invalid! Expected a list of elements.`
       );
     }
   }
@@ -76,7 +70,7 @@ export const normalizeEditorValue = (
   if (Array.isArray(input)) {
     const children = snapshotEditorJsonValue(
       input,
-      '[Plite] initialValue'
+      'initialValue'
     ) as Descendant[];
 
     return {
@@ -90,7 +84,7 @@ export const normalizeEditorValue = (
   const value = readEditorDocument(input, rejectInitialDocumentShape);
   const children = snapshotEditorJsonValue(
     value.children,
-    '[Plite] initialValue.children'
+    'initialValue.children'
   ) as Descendant[];
   const meta =
     value.meta === undefined
@@ -109,7 +103,7 @@ export const normalizeEditorValue = (
       key,
       snapshotEditorJsonValue(
         root,
-        `[Plite] initialValue.roots.${key}`
+        `initialValue.roots.${key}`
       ) as Descendant[],
     ])
   );

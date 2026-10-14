@@ -10,6 +10,12 @@ import {
 import { createEditorView } from '../../../facade';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import {
+  BaseHeadingPlugin,
+  HeadingRules,
+} from '../../basic-nodes/lib/BaseHeadingPlugins';
+import { BaseBoldPlugin } from '../../basic-nodes/lib/BaseMarkPlugins';
+import { BaseLinkPlugin } from '../../link/lib/BaseLinkPlugin';
+import {
   BaseDetailsPlugin,
   BaseDetailsSummaryPlugin,
 } from './BaseDetailsPlugin';
@@ -25,6 +31,276 @@ const BaseInlinePlugin = definePlugin('testInline', {
 });
 
 describe('BaseDetailsPlugin', () => {
+  it('sets a mixed Summary and paragraph selection without toggling an existing heading off', () => {
+    const editor = createEditor({
+      plugins: [...plugins, BaseHeadingPlugin],
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', level: 2, children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ],
+    });
+    editor.update.selection.set({
+      anchor: { path: [0, 0, 0], offset: 0 },
+      focus: { path: [0, 1, 0], offset: 4 },
+    });
+    editor.update.heading.setLevel(2);
+    expect(editor.read.nodes.get([0, 0])?.[0]).toMatchObject({
+      type: 'summary',
+      level: 2,
+    });
+    expect(editor.read.nodes.get([0, 1])?.[0]).toMatchObject({
+      type: 'heading',
+      level: 2,
+    });
+    editor.update.blocks.reset({ unset: 'level' });
+    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
+      type: 'summary',
+      children: [{ text: 'Title' }],
+    });
+    expect(editor.read.nodes.get([0, 1])?.[0]).toEqual({
+      type: 'paragraph',
+      children: [{ text: 'Body' }],
+    });
+  });
+
+  it('toggles a required heading and a leveled title off to their own defaults', () => {
+    const editor = createEditor({
+      plugins: [...plugins, BaseHeadingPlugin],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          })
+        ),
+      },
+      initialValue: [
+        { type: 'heading', level: 1, children: [{ text: 'Doc' }] },
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', level: 1, children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ],
+    });
+    editor.update.selection.set({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0, 0], offset: 5 },
+    });
+
+    editor.update.heading.toggle({ level: 1 });
+
+    expect(editor.read.children()).toEqual([
+      { type: 'heading', level: 1, children: [{ text: 'Doc' }] },
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Body' }] },
+        ],
+      },
+    ]);
+  });
+
+  it.each([false, true])(
+    'turns a body heading and a leveled title back into text (nested: %s)',
+    (nested) => {
+      const details = {
+        type: 'details',
+        children: [
+          { type: 'summary', level: 2, children: [{ text: 'Title' }] },
+          { type: 'heading', level: 2, children: [{ text: 'Sub' }] },
+        ],
+      };
+      const editor = createEditor({
+        plugins: [...plugins, BaseHeadingPlugin],
+        initialValue: [
+          nested
+            ? {
+                type: 'details',
+                children: [
+                  { type: 'summary', children: [{ text: 'Outer' }] },
+                  details,
+                ],
+              }
+            : details,
+        ],
+      });
+      const at = nested ? [0, 1] : [0];
+      editor.update.selection.set({
+        anchor: { path: [...at, 0, 0], offset: 0 },
+        focus: { path: [...at, 1, 0], offset: 3 },
+      });
+
+      editor.update.blocks.reset({ unset: 'level' });
+
+      expect(editor.read.nodes.get(at)?.[0]).toEqual({
+        type: 'details',
+        children: [
+          { type: 'summary', children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Sub' }] },
+        ],
+      });
+    }
+  );
+
+  it('reads a title level from HTML only when the heading is the sole child', () => {
+    const editor = createEditor({
+      plugins: [...plugins, BaseHeadingPlugin],
+    });
+
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<details><summary> <h2>Title</h2> </summary><p>B</p></details>'
+      )[0]
+    ).toHaveProperty(['children', 0, 'level'], 2);
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<details><summary><h2>Title</h2> more</summary><p>B</p></details>'
+      )[0]
+    ).not.toHaveProperty(['children', 0, 'level']);
+  });
+
+  it('preserves a heading through Details wrap and unwrap, and splits its title into plain body text', () => {
+    const editor = createEditor({
+      plugins: [...plugins, BaseHeadingPlugin],
+      initialValue: [
+        { type: 'heading', level: 2, children: [{ text: 'Title' }] },
+      ],
+    });
+    editor.update.selection.set({ path: [0, 0], offset: 2 });
+    editor.update.details.wrap();
+    expect(editor.read.nodes.get([0, 0])?.[0]).toMatchObject({
+      type: 'summary',
+      level: 2,
+    });
+    editor.update.selection.set({ path: [0, 0, 0], offset: 2 });
+    editor.update.break.insert();
+    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
+      type: 'summary',
+      level: 2,
+      children: [{ text: 'Ti' }],
+    });
+    expect(editor.read.nodes.get([0, 1])?.[0]).toEqual({
+      type: 'paragraph',
+      children: [{ text: 'tle' }],
+    });
+    editor.update.details.unwrap({ at: [0] });
+    expect(editor.read.nodes.get([0])?.[0]).toEqual({
+      type: 'heading',
+      level: 2,
+      children: [{ text: 'Ti' }],
+    });
+  });
+
+  it('round-trips a marked heading title as Summary content', () => {
+    const editor = createEditor({
+      plugins: [...plugins, BaseHeadingPlugin, BaseBoldPlugin, BaseLinkPlugin],
+    });
+    const html =
+      '<details><summary><h2><strong>Title</strong> <a href="https://example.com">link</a></h2></summary><h3>Body heading</h3><details><summary><h1>Nested</h1></summary><p>Body</p></details></details>';
+    const parsed = editor.api.html.parseSlice(html);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) throw new Error(parsed.diagnostics[0].message);
+    expect(parsed.slice.content).toMatchObject([
+      {
+        type: 'details',
+        children: [
+          {
+            type: 'summary',
+            level: 2,
+            children: [
+              { text: 'Title', bold: true },
+              { text: ' ' },
+              {
+                type: 'link',
+                url: 'https://example.com',
+                children: [{ text: 'link' }],
+              },
+            ],
+          },
+          { type: 'heading', level: 3, children: [{ text: 'Body heading' }] },
+          {
+            type: 'details',
+            children: [
+              { type: 'summary', level: 1, children: [{ text: 'Nested' }] },
+              { type: 'paragraph', children: [{ text: 'Body' }] },
+            ],
+          },
+        ],
+      },
+    ]);
+    const encoded = editor.api.html.serialize({
+      document: { children: parsed.slice.content },
+    });
+    expect(encoded.diagnostics).toEqual([]);
+    expect(encoded.data).toContain('<summary><h2>');
+    expect(parseHtmlSliceContent(editor, encoded.data)).toEqual(
+      parsed.slice.content
+    );
+  });
+
+  it('formats a Summary in place through heading shortcuts and input rules [EDIT-DETAILS-TITLE-LEVEL-001]', () => {
+    const editor = createEditor({
+      plugins: [
+        ...plugins,
+        BaseHeadingPlugin.configure({ inputRules: [HeadingRules.markdown()] }),
+      ],
+      initialValue: [
+        {
+          type: 'details',
+          children: [
+            { type: 'summary', children: [{ text: 'Title' }] },
+            { type: 'paragraph', children: [{ text: 'Body' }] },
+          ],
+        },
+      ],
+    });
+    editor.update.selection.set({ path: [0, 0, 0], offset: 5 });
+    const key = editor.key([0]);
+    const titleKey = editor.key([0, 0]);
+    editor.update.heading.toggle({ level: 2 });
+    expect(editor.read.children()).toEqual([
+      {
+        type: 'details',
+        children: [
+          { type: 'summary', level: 2, children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Body' }] },
+        ],
+      },
+    ]);
+    expect(editor.key([0])).toBe(key);
+    expect(editor.key([0, 0])).toBe(titleKey);
+    editor.update.heading.toggle({ level: 2 });
+    expect(editor.read.nodes.get([0, 0])?.[0]).not.toHaveProperty('level');
+    editor.update.selection.set({ path: [0, 0, 0], offset: 0 });
+    editor.update.text.insert('##');
+    editor.update.text.insert(' ');
+    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
+      type: 'summary',
+      level: 2,
+      children: [{ text: 'Title' }],
+    });
+    editor.update.selection.set({ path: [0, 0, 0], offset: 0 });
+    editor.update.text.insert('##');
+    editor.update.text.insert(' ');
+    expect(editor.read.nodes.get([0, 0])?.[0]).toEqual({
+      type: 'summary',
+      level: 2,
+      children: [{ text: '## Title' }],
+    });
+  });
+
   it('closes Details in a read-only view and moves the writable selection to its Summary', () => {
     const editor = createEditor({
       plugins,
@@ -76,6 +352,48 @@ describe('BaseDetailsPlugin', () => {
     expect(details.store.get('isOpen', editor.key([1])!)).toBe(true);
   });
 
+  it.each([true, false])(
+    'restores nested authored Details disclosure through unwrap undo and redo (open: %s)',
+    (open) => {
+      const editor = createEditor({
+        plugins: [...plugins, AuthoredPlugin],
+        initialValue: [
+          {
+            type: 'details',
+            children: [
+              { type: 'summary', children: [{ text: 'Outer' }] },
+              {
+                type: 'details',
+                children: [
+                  { type: 'summary', children: [{ text: 'Inner' }] },
+                  { type: 'paragraph', children: [{ text: 'Body' }] },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+      const details = editor.plugin(BaseDetailsPlugin);
+      const before = editor.read.children();
+      details.api.setOpen(editor.key([0])!, true);
+      const innerKey = editor.key([0, 1])!;
+      details.api.setOpen(innerKey, open);
+      editor.update.selection.set({ path: [0, 1, 0, 0], offset: 0 });
+      editor.update.text.deleteBackward({ unit: 'character' });
+      const unwrapped = editor.read.children();
+
+      for (let cycle = 0; cycle < 2; cycle++) {
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(before);
+        expect(details.store.get('isOpen', editor.key([0])!)).toBe(true);
+        expect(editor.key([0, 1])).toBe(innerKey);
+        expect(details.store.get('isOpen', editor.key([0, 1])!)).toBe(open);
+        editor.api.history.redo();
+        expect(editor.read.children()).toEqual(unwrapped);
+      }
+    }
+  );
+
   it('keeps loaded authored Details open through edits and closes in the calling view', () => {
     const authoredPlugins = [BaseDetailsPlugin, AuthoredPlugin];
     const initial = createEditor({
@@ -93,7 +411,7 @@ describe('BaseDetailsPlugin', () => {
       ],
     });
     const proposing = createEditorView(initial, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     });
     proposing.update((tx) => {
       tx.text.delete({
@@ -110,7 +428,7 @@ describe('BaseDetailsPlugin', () => {
       initialValue: initial.read.value(),
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'edit', projection: 'markup' },
+      authored: { intent: 'edit' },
     });
     const details = view.plugin(BaseDetailsPlugin);
     const key = view.key([1])!;

@@ -17,7 +17,7 @@ import {
   RangeApi,
   SelectionApi,
 } from '../../../../core';
-import { failInvariant } from '../../internal/failInvariant';
+import { failInvariant } from '../../../../internal/failInvariant';
 import type { TableCellElement } from '../BaseTablePlugin';
 import { createTableContext, type TableContext } from './context';
 import type { TableGrid, TableGridAnchor } from './grid';
@@ -522,6 +522,18 @@ export const getTableSelectionExpansion = (
   if (!target) return null;
 
   return Object.freeze({ anchor: view.anchor, focus: target });
+};
+
+export const isRectangularTableSelection = (view: TableSelectionView) => {
+  const selectedArea = view.anchors.reduce(
+    (area, anchor) => area + anchor.colSpan * anchor.rowSpan,
+    0
+  );
+  const boundsArea =
+    (view.bounds.maxCol - view.bounds.minCol + 1) *
+    (view.bounds.maxRow - view.bounds.minRow + 1);
+
+  return view.complete && selectedArea === boundsArea;
 };
 
 export const projectTableSelection = (view: TableSelectionView): Element => {

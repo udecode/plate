@@ -41,7 +41,7 @@ export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
     <button
       className={cn(
         'w-fit cursor-pointer rounded-sm bg-muted px-1 text-muted-foreground',
-        inlineSuggestionVariants()
+        inlineSuggestionVariants({ on: 'parent' })
       )}
       contentEditable={false}
       draggable

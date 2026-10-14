@@ -359,6 +359,78 @@ test.describe('Inlines example', {
       .toContain('https://example.com afterIn addition to block nodes');
   });
 
+  test('pastes a URL over a selected line break as text', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'Desktop inline editing proof'
+    );
+
+    const editor = await openExample(page, 'plite/inlines', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+
+    await editor.selection.selectDOM({
+      anchor: { path: [0, 6], offset: 1 },
+      focus: { path: [1, 0], offset: 0 },
+    });
+    await editor.clipboard.pasteText('https://example.com/line-break');
+
+    await expect
+      .poll(async () =>
+        (await editor.get.blockTexts()).map((text) =>
+          text.replaceAll('\u00A0', ' ')
+        )
+      )
+      .toEqual([
+        expect.stringContaining(
+          '.https://example.com/line-breakThere are two ways to add links.'
+        ),
+      ]);
+    await expect(
+      editor.root.locator('a[href="https://example.com/line-break"]')
+    ).toHaveCount(0);
+  });
+
+  test('inserts URL text over a selected line break as text', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'Desktop inline editing proof'
+    );
+
+    const editor = await openExample(page, 'plite/inlines', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+
+    await editor.selection.selectDOM({
+      anchor: { path: [0, 6], offset: 1 },
+      focus: { path: [1, 0], offset: 0 },
+    });
+    await editor.insertText('https://example.com/line-break');
+
+    await expect
+      .poll(async () =>
+        (await editor.get.blockTexts()).map((text) =>
+          text.replaceAll('\u00A0', ' ')
+        )
+      )
+      .toEqual([
+        expect.stringContaining(
+          '.https://example.com/line-breakThere are two ways to add links.'
+        ),
+      ]);
+    await expect(
+      editor.root.locator('a[href="https://example.com/line-break"]')
+    ).toHaveCount(0);
+  });
+
   test('places Enter after a typed inline link outside the link', async ({
     page,
   }, testInfo) => {

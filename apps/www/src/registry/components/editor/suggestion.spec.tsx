@@ -1,4 +1,4 @@
-import { AuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin, projectAuthoredDocument } from 'platejs/authored';
 import { createEditor } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
 
@@ -19,7 +19,6 @@ describe('SuggestionKit', () => {
 
     expect(editor.plugin(AuthoredPlugin).read.view()).toEqual({
       intent: 'edit',
-      projection: 'accepted',
     });
   });
 
@@ -34,26 +33,21 @@ describe('SuggestionKit', () => {
 
     expect(suggestion.installed).toBe(true);
     expect(suggestion.read.mode()).toBe('editing');
-    expect(authored.read.view()).toEqual({
-      intent: 'edit',
-      projection: 'accepted',
-    });
+    expect(authored.read.view()).toEqual({ intent: 'edit' });
 
     suggestion.api.setMode('suggesting');
     editor.update.text.insert(' proposed', {
       at: { offset: 8, path: [0, 0] },
     });
 
-    expect(editor.read.value().children).toEqual([
-      { children: [{ text: 'Accepted' }], type: 'paragraph' },
-    ]);
+    expect(
+      projectAuthoredDocument(editor.read.value(), { projection: 'accepted' })
+        .document.children
+    ).toEqual([{ children: [{ text: 'Accepted' }], type: 'paragraph' }]);
     expect(suggestion.read.mode()).toBe('suggesting');
-    expect(authored.read.view()).toEqual({
-      intent: 'propose',
-      projection: 'markup',
-    });
+    expect(authored.read.view()).toEqual({ intent: 'propose' });
     expect(authored.read.changes().items).toEqual([
-      expect.objectContaining({ authorId: 'alice', status: 'pending' }),
+      expect.objectContaining({ authorId: 'alice', kind: 'insert' }),
     ]);
   });
 

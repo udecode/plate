@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
+import { BROWSER_HANDLE_KEY, recordBrowserRuntimeErrors } from '@platejs/test/playwright';
 
 test.describe('iframe editor', () => {
   test.beforeEach(async ({ page }) => {
@@ -22,8 +22,8 @@ test.describe('iframe editor', () => {
       .locator('body')
       .getByRole('textbox');
 
-    await textbox.evaluate((element: HTMLElement) => {
-      const handle = (element as Record<string, any>).__pliteBrowserHandle;
+    await textbox.evaluate((element: HTMLElement, key) => {
+      const handle = (element as Record<string, any>)[key];
 
       if (!handle?.selectRange || !handle?.insertText) {
         throw new Error('Missing Plite browser handle');
@@ -34,7 +34,7 @@ test.describe('iframe editor', () => {
         focus: { path: [0, 0], offset: 0 },
       });
       handle.insertText('Hello World');
-    });
+    }, BROWSER_HANDLE_KEY);
     await expect(textbox).toContainText('Hello World');
     await page.waitForTimeout(50);
     expect(pliteErrors).toEqual([]);
@@ -79,8 +79,8 @@ test.describe('iframe editor', () => {
     const textbox = frame.locator('body').getByRole('textbox');
 
     try {
-      await textbox.evaluate((element: HTMLElement) => {
-        const handle = (element as Record<string, any>).__pliteBrowserHandle;
+      await textbox.evaluate((element: HTMLElement, key) => {
+        const handle = (element as Record<string, any>)[key];
         const mediaQueries = Array.from(
           element.querySelectorAll('[data-editor-string="true"]')
         ).find((node) => node.textContent === 'media queries');
@@ -106,7 +106,7 @@ test.describe('iframe editor', () => {
         element.ownerDocument.dispatchEvent(
           new Event('selectionchange', { bubbles: true })
         );
-      });
+      }, BROWSER_HANDLE_KEY);
 
       await page.getByRole('button', { name: 'Bold' }).click();
 

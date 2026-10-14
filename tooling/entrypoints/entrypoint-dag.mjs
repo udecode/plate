@@ -73,9 +73,9 @@ export const rootFeatureDependencies = Object.freeze({
   'basic-nodes': [],
   'basic-styles': [],
   'code-block': ['dom'],
-  indent: [],
+  indent: ['standard/basic-nodes'],
   link: [],
-  list: ['standard/indent'],
+  list: ['standard/basic-nodes', 'standard/indent'],
 });
 
 export const publicFeatureDependencies = Object.freeze({
@@ -88,12 +88,13 @@ export const publicFeatureDependencies = Object.freeze({
   find: [],
   footnote: ['combobox'],
   layout: [],
+  lint: [],
   media: ['dom'],
   mention: ['combobox'],
   'slash-command': ['combobox'],
   suggestion: ['authored'],
   table: ['dom'],
-  toc: [],
+  toc: ['standard/basic-nodes'],
 });
 
 export const publicFeatureReactEntrypoints = Object.freeze([
@@ -277,11 +278,6 @@ export const entrypointDags = {
       'code-drawing/react': client(
         directory('code-drawing/react', ['code-drawing', 'core', 'react-core'])
       ),
-      csv: headless(
-        directory('csv', ['core'], [], {
-          peerDependencies: ['@types/papaparse', 'papaparse'],
-        })
-      ),
       diff: headless(
         directory('diff', [], ['plitejs/diff'], {
           peerDependencies: ['diff-match-patch-ts'],
@@ -289,7 +285,7 @@ export const entrypointDags = {
       ),
       dom: client(directory('dom', [], ['plitejs/dom'])),
       'docx/paste': client(
-        directory('docx/paste', ['core', 'docx-html'], [], {
+        directory('docx/paste', ['core', 'docx-html', 'docx-internal'], [], {
           peerDependencies: ['juice'],
         })
       ),
@@ -339,15 +335,11 @@ export const entrypointDags = {
         )
       ),
       'docx-html': client(
-        privateDirectory('docx/html', ['core'], [], {
+        privateDirectory('docx/html', ['core', 'docx-internal'], [], {
           peerDependencies: ['validator'],
         })
       ),
-      excalidraw: headless(
-        directory('excalidraw', ['core'], [], {
-          peerDependencies: ['@excalidraw/excalidraw'],
-        })
-      ),
+      excalidraw: headless(directory('excalidraw', ['core'])),
       'excalidraw/react': client(
         directory(
           'excalidraw/react',
@@ -501,7 +493,6 @@ export const entrypointDags = {
         'code-drawing',
         'code-drawing/react',
         'compiler',
-        'csv',
         'docx/export',
         'docx/import',
         'docx/paste',
@@ -603,9 +594,14 @@ export const entrypointDags = {
         })
       ),
       playwright: headless(
-        directory('playwright', ['browser', 'proof', 'root'], ['platejs'], {
-          peerDependencies: ['@playwright/test'],
-        })
+        directory(
+          'playwright',
+          ['browser', 'proof', 'root'],
+          ['platejs', 'platejs/testing'],
+          {
+            peerDependencies: ['@playwright/test'],
+          }
+        )
       ),
       proof: headless(directory('proof')),
       react: client(

@@ -1,5 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 
+import { BROWSER_HANDLE_KEY } from '../../packages/plitejs/src/internal/browser-protocol';
 import { recordBrowserRuntimeErrors } from '../../packages/test/src/playwright/runtime-errors';
 
 const selectedNodePaths = (page: Page) =>
@@ -17,14 +18,16 @@ const selectedNodePaths = (page: Page) =>
     );
 
 const modelSelection = (page: Page) =>
-  page.locator('[data-editor="true"][contenteditable="true"]').evaluate(
-    (element) =>
-      (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: { getModelSelection: () => unknown };
-        }
-      ).__pliteBrowserHandle?.getModelSelection() ?? null
-  );
+  page
+    .locator('[data-editor="true"][contenteditable="true"]')
+    .evaluate(
+      (element, key) =>
+        (
+          element as HTMLElement &
+            Record<string, { getModelSelection: () => unknown } | undefined>
+        )[key]?.getModelSelection() ?? null,
+      BROWSER_HANDLE_KEY
+    );
 
 const copySelectionAndReadFormats = async (page: Page) => {
   await page.evaluate(() => {

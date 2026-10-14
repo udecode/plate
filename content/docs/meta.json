@@ -104,11 +104,11 @@
     "[Slash Command](/docs/slash-command)",
     "[Drag & Drop](/docs/dnd)",
     "[Navigation Feedback](/docs/navigation-feedback)",
+    "[Linting](/docs/lint)",
     "[Tabbable](/docs/tabbable)",
     "[Toolbar](/docs/toolbar)",
     "[Yjs](/docs/yjs)",
     "[Multi Select](/docs/multi-select)",
-    "[CSV](/docs/csv)",
     "[DOCX](/docs/docx)",
     "---Components---",
     "[Components](/docs/components)",
@@ -180,6 +180,7 @@
     "[Mention Nodes](/docs/components/mention)",
     "[Paragraph Element](/docs/components/paragraph)",
     "[Find](/docs/components/find)",
+    "[Lint](/docs/components/lint)",
     "[Slash Input Element](/docs/components/slash)",
     "[Table Element](/docs/components/table)",
     "[TOC Element](/docs/components/toc)",
@@ -201,6 +202,7 @@
     "[Code Drawing Demo](/docs/examples/code-drawing)",
     "[Single Block Demo](/docs/examples/single-block)",
     "[Find Demo](/docs/examples/find)",
+    "[Lint Demo](/docs/examples/lint)",
     "[AI Demo](/docs/examples/ai)",
     "[Align Demo](/docs/examples/align)",
     "[Autoformat Demo](/docs/examples/autoformat)",
@@ -226,7 +228,6 @@
     "[Media Demo](/docs/examples/media)",
     "[Mention Demo](/docs/examples/mention)",
     "[Block Placeholder Demo](/docs/examples/block-placeholder)",
-    "[Serializing CSV Demo](/docs/examples/csv)",
     "[Serializing Docx Demo](/docs/examples/docx)",
     "[Serializing HTML Demo](/docs/examples/html)",
     "[Serializing Markdown Demo](/docs/examples/markdown)",
@@ -811,6 +812,12 @@
               "titleCn": "查找"
             },
             {
+              "description": "Lint kit with example rules, severity underlines and a caret popover with fixes.",
+              "href": "/docs/components/lint",
+              "title": "Lint",
+              "titleCn": "文本检查"
+            },
+            {
               "description": "A command input component for inserting various elements.",
               "href": "/docs/components/slash",
               "title": "Slash Command",
@@ -930,6 +937,12 @@
               "href": "/docs/examples/find",
               "title": "Find Demo",
               "titleCn": "查找"
+            },
+            {
+              "description": "Lint a document with local and server rules, a findings list and fixes.",
+              "href": "/docs/examples/lint",
+              "title": "Lint Demo",
+              "titleCn": "文本检查"
             },
             {
               "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
@@ -1082,12 +1095,6 @@
               "href": "/docs/examples/block-placeholder",
               "title": "Block Placeholder Demo",
               "titleCn": "Block Placeholder"
-            },
-            {
-              "description": "Copy paste from CSV to Plate.",
-              "href": "/docs/examples/csv",
-              "title": "Serializing CSV Demo",
-              "titleCn": "Serializing CSV"
             },
             {
               "description": "Copy paste from DOCX to Plate.",
@@ -1844,6 +1851,12 @@
                   "titleCn": "Navigation Feedback"
                 },
                 {
+                  "description": "Check text blocks with your own rules and fix findings from a popover or a list.",
+                  "href": "/docs/lint",
+                  "title": "Linting",
+                  "titleCn": "文本检查"
+                },
+                {
                   "description": "Maintain a consistent tab order for tabbable elements.",
                   "href": "/docs/tabbable",
                   "title": "Tabbable",
@@ -1873,12 +1886,6 @@
             },
             {
               "items": [
-                {
-                  "description": "Copy paste from CSV to Plate.",
-                  "href": "/docs/csv",
-                  "title": "CSV",
-                  "titleCn": "CSV"
-                },
                 {
                   "description": "Paste from Word, import DOCX files, and export to Word.",
                   "href": "/docs/docx",
@@ -2424,6 +2431,11 @@
         "title": "Navigation Feedback",
         "titleCn": "Navigation Feedback"
       },
+      "/docs/lint": {
+        "description": "Check text blocks with your own rules and fix findings from a popover or a list.",
+        "title": "Linting",
+        "titleCn": "文本检查"
+      },
       "/docs/tabbable": {
         "description": "Maintain a consistent tab order for tabbable elements.",
         "title": "Tabbable",
@@ -2444,11 +2456,6 @@
         "label": "Editor",
         "title": "Multi Select",
         "titleCn": "Multi Select"
-      },
-      "/docs/csv": {
-        "description": "Copy paste from CSV to Plate.",
-        "title": "CSV",
-        "titleCn": "CSV"
       },
       "/docs/docx": {
         "description": "Paste from Word, import DOCX files, and export to Word.",
@@ -2798,6 +2805,11 @@
         "title": "Find",
         "titleCn": "查找"
       },
+      "/docs/components/lint": {
+        "description": "Lint kit with example rules, severity underlines and a caret popover with fixes.",
+        "title": "Lint",
+        "titleCn": "文本检查"
+      },
       "/docs/components/slash": {
         "description": "A command input component for inserting various elements.",
         "title": "Slash Command",
@@ -2894,6 +2906,11 @@
         "description": "Find text with keyboard navigation and transient highlights.",
         "title": "Find Demo",
         "titleCn": "查找"
+      },
+      "/docs/examples/lint": {
+        "description": "Lint a document with local and server rules, a findings list and fixes.",
+        "title": "Lint Demo",
+        "titleCn": "文本检查"
       },
       "/docs/examples/ai": {
         "description": "AI menu with commands, streaming responses in a preview or directly into the editor.",
@@ -3021,11 +3038,6 @@
       "/docs/examples/block-placeholder": {
         "title": "Block Placeholder Demo",
         "titleCn": "Block Placeholder"
-      },
-      "/docs/examples/csv": {
-        "description": "Copy paste from CSV to Plate.",
-        "title": "Serializing CSV Demo",
-        "titleCn": "Serializing CSV"
       },
       "/docs/examples/docx": {
         "description": "Copy paste from DOCX to Plate.",

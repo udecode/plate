@@ -77,6 +77,12 @@ export interface OwnedAnnotationStore<
   destroy: () => void;
 }
 
+const authoredPreview = (editor: EditorType) => {
+  const view = readAuthoredView(editor);
+
+  return view && 'preview' in view ? view.preview : null;
+};
+
 const EMPTY_METRICS = Object.freeze({
   annotationResolveCount: 0,
   annotationSubscriberWakeCount: 0,
@@ -236,9 +242,7 @@ const createPliteAnnotationStoreInternal = <TData>(
   let destroyed = false;
   let subscriberCount = 0;
   let lastSnapshot = dormant ? null : editor.read.runtime.snapshot();
-  let lastProjection = dormant
-    ? undefined
-    : readAuthoredView(editor)?.projection;
+  let lastProjection = dormant ? undefined : authoredPreview(editor);
 
   const refreshCandidates = (
     candidateIds: readonly string[] | null = null,
@@ -268,7 +272,7 @@ const createPliteAnnotationStoreInternal = <TData>(
 
     currentAnnotations = annotationsResult.value;
     lastSnapshot = editor.read.runtime.snapshot();
-    lastProjection = readAuthoredView(editor)?.projection;
+    lastProjection = authoredPreview(editor);
     const changedIds = mappedResult.value.changedEntityIds;
     const changed =
       changedIds.length > 0 ||
@@ -315,7 +319,7 @@ const createPliteAnnotationStoreInternal = <TData>(
     if (
       snapshot.children !== lastSnapshot?.children ||
       snapshot.index !== lastSnapshot?.index ||
-      readAuthoredView(editor)?.projection !== lastProjection
+      authoredPreview(editor) !== lastProjection
     ) {
       refreshCandidates(null, true, 'editor');
     }
@@ -323,7 +327,7 @@ const createPliteAnnotationStoreInternal = <TData>(
   const subscribeToEditor = () => {
     const unsubscribeCommit = editor.subscribeCommit((change) => {
       if (destroyed || !shouldRefreshForEditorChange(change)) return;
-      if (readAuthoredView(editor)?.projection !== lastProjection) {
+      if (authoredPreview(editor) !== lastProjection) {
         refreshCandidates(null, true, 'editor');
         return;
       }
@@ -343,7 +347,7 @@ const createPliteAnnotationStoreInternal = <TData>(
 
       if (candidateIds && candidateIds.length === 0) {
         lastSnapshot = editor.read.runtime.snapshot();
-        lastProjection = readAuthoredView(editor)?.projection;
+        lastProjection = authoredPreview(editor);
         return;
       }
 

@@ -257,7 +257,7 @@ describe('Files admission and lifetime', () => {
       userId: 'alice',
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'edit', projection: 'markup' },
+      authored: { intent: 'edit' },
     });
     const owner = view.plugin(BaseUploadPlugin);
 
@@ -314,7 +314,7 @@ describe('Files admission and lifetime', () => {
       userId: 'alice',
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'edit', projection: 'markup' },
+      authored: { intent: 'edit' },
     });
     const owner = view.plugin(BaseUploadPlugin);
 

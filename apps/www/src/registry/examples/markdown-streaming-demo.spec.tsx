@@ -2,8 +2,7 @@ import { afterEach, beforeEach, expect, it, jest } from 'bun:test';
 
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { act, fireEvent, render } from '@testing-library/react';
-import { NodeApi } from 'platejs';
-import { createStaticEditor } from 'platejs/static';
+import { createEditor, NodeApi } from 'platejs';
 import * as React from 'react';
 
 import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';
@@ -219,8 +218,7 @@ it('the static preview uses the same partial and strict parses', async () => {
     expect(demo.output()).not.toMatch(/<\/?column/);
     expect(demo.editor.read.text.string([])).toBe('');
 
-    // Spliced previews show the same blocks as a fresh parse of the draft.
-    const parser = createStaticEditor({ plugins: BaseEditorKit });
+    const parser = createEditor({ plugins: BaseEditorKit });
     const text = (source: string, partial: boolean) => {
       const result = parser.api.markdown.parseSlice(
         source,

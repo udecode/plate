@@ -180,6 +180,8 @@
     "test:partition:proof": {
       "cache": true,
       "dependsOn": [
+        "platejs#typecheck:partition:proxies",
+        "platejs#typecheck:partition:react",
         "typecheck:partition:browser",
         "typecheck:partition:playwright",
         "typecheck:partition:proof"
@@ -203,6 +205,7 @@
       "cache": true,
       "dependsOn": [
         "platejs#typecheck:partition:react",
+        "typecheck:partition:playwright",
         "typecheck:partition:react"
       ],
       "inputs": [
@@ -356,6 +359,7 @@
       "cache": true,
       "dependsOn": [
         "platejs#typecheck:partition:root",
+        "platejs#typecheck:partition:testing",
         "typecheck:partition:browser",
         "typecheck:partition:proof",
         "typecheck:partition:root"

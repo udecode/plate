@@ -126,12 +126,15 @@ export const STATUSES = [
   'gap',
   'inconclusive',
   'kept',
+  'landed',
+  'offered',
   'open',
   'partial',
   'proven',
   'recorded',
   'reverted',
   'skipped',
+  'started',
   'superseded',
   'verified',
 ];
@@ -147,6 +150,44 @@ export function parseFence(line) {
   return { marker: match[1], lang: words[0] ?? '', tag };
 }
 export const isFence = (line) => parseFence(line) !== null;
+
+export const OPEN_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[ \]/u;
+export const CLOSED_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[[xX]\]/u;
+
+// Each line of a Markdown file with its HTML comments cut out. A fence line
+// comes back with `fence`, and a line inside a fence or a comment with `hidden`.
+export function markdownLines(markdown) {
+  const lines = [];
+  let fenced = false;
+  let commented = false;
+  for (const [index, raw] of markdown.split('\n').entries()) {
+    if (/^\s*(?:```|~~~)/u.test(raw)) {
+      fenced = !fenced;
+      lines.push({ fence: true, index, line: '', raw });
+      continue;
+    }
+    let line = raw;
+    if (!fenced && commented) {
+      const end = line.indexOf('-->');
+      if (end !== -1) {
+        commented = false;
+        line = line.slice(end + 3);
+      }
+    }
+    if (fenced || commented) {
+      lines.push({ hidden: true, index, line: '', raw });
+      continue;
+    }
+    line = line.replace(/<!--.*?-->/gu, '');
+    const start = line.indexOf('<!--');
+    if (start !== -1) {
+      commented = true;
+      line = line.slice(0, start);
+    }
+    lines.push({ index, line, raw });
+  }
+  return lines;
+}
 
 export function readFence(lines, start) {
   const { marker, lang, tag } = parseFence(lines[start]);

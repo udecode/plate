@@ -39,6 +39,16 @@ describe('HtmlPlugin', () => {
     ]);
   });
 
+  it('reads a custom element as inline text', () => {
+    const result = createEditor().api.html.parse(
+      '<p>Ship it <relative-time datetime="2026-10-12">Oct 12</relative-time> today</p>'
+    );
+
+    expect(result.ok && result.document.children).toEqual([
+      { children: [{ text: 'Ship it Oct 12 today' }], type: 'paragraph' },
+    ]);
+  });
+
   it('lifts block images out of HTML text blocks without dropping them', () => {
     const editor = createEditor({ plugins: [BaseImagePlugin] });
     const html = '<p>Keep <img src="https://example.com/a.png">more</p>';

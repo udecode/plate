@@ -8,9 +8,9 @@ Translate canonical Plite document changes and shared effects through Yjs with a
 
 Transport registered shared effects exactly once through versioned records, retry unknown effect codecs after registration, compact acknowledged events safely, and preserve fitted slice changes through reconnect and concurrent edits.
 
-**Migration:** Import `YjsPlugin` from `platejs/yjs/react`, create a complete descriptor with `YjsPlugin.create(options)`, and install that descriptor. Raw Plite editors import `yjs` from `plitejs/yjs` and install `yjs(options)` through `editor.install(...)`. Import raw React cursor and provider-state hooks from `plitejs/yjs/react`; Plate consumers use `platejs/yjs/react`. Serialized adapter metadata uses `plite:*` keys.
+**Migration:** Import `YjsPlugin` from `platejs/yjs/react`, create a complete descriptor with `YjsPlugin.create(options)`, and install that descriptor. Raw Plite editors import `yjs` from `plitejs/yjs` and install `yjs(options)` through `editor.install(...)`. Import raw React cursor and provider-state hooks from `plitejs/yjs/react`; Plate consumers use `platejs/yjs/react`. The default root is `document`, and serialized adapter metadata uses the reserved `yjs:*` keys, so an application field may not start with `yjs:`.
 
-Encode exact derived or named schema identities in Yjs schema metadata format 2, require every claimed room to carry that identity, and reject older room metadata envelopes.
+Encode exact derived or named schema identities in Yjs schema metadata format 3, require every claimed room to carry that identity, and reject room metadata envelopes in any other format.
 
 Synchronize primary children and named roots as one document, preserve root-qualified awareness selections, and group multi-root commits into one Yjs transaction. Preserve shared character identity across compatible text replacements so remote positions survive canonical history replay.
 

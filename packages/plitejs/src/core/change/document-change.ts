@@ -5,6 +5,7 @@ import {
   type DocumentChangeRootClassification,
 } from './classification';
 import { DocumentIndex } from './document-index';
+import { deepFreeze, isRecord, jsonEqual } from './json';
 import {
   RootChange,
   type RootChangeJson,
@@ -12,14 +13,7 @@ import {
   type SectionData,
   type TrackMode,
 } from './root-change';
-import {
-  deepFreeze,
-  isRecord,
-  type JsonEditorValue,
-  jsonEqual,
-  type JsonNode,
-  type JsonPoint,
-} from './tokens';
+import type { JsonEditorValue, JsonNode, JsonPoint } from './tokens';
 
 export type DocumentChangedRange = Readonly<{
   fromAfter: number;
@@ -65,7 +59,7 @@ export function assertNamedDocumentRootKey(
   assertDocumentRootKey(root);
 
   if (root === 'main') {
-    throw new Error('[Plite] Omit root to target the primary document.');
+    throw new Error('Omit root to target the primary document.');
   }
 }
 
@@ -308,7 +302,13 @@ export const freezeRootClassification = (
   });
 };
 
-export const valueRoot = (value: JsonEditorValue, root: string) =>
+export const valueRoot = <T>(
+  value: Readonly<{
+    children: readonly T[];
+    roots?: Readonly<Record<string, readonly T[]>>;
+  }>,
+  root: string
+): readonly T[] =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
 
 export const readCanonicalChangeSetJson = (
@@ -686,6 +686,28 @@ export const createInternalDocumentChange = (
     roots,
   });
 };
+
+/** @internal */
+export const filterDocumentChangeRoots = (
+  change: DocumentChange,
+  keep: (root: string) => boolean
+) =>
+  createInternalDocumentChange(
+    new Map(
+      [...getInternalDocumentChangeEntries(change)].filter(([root]) =>
+        keep(root)
+      )
+    ),
+    {
+      classifications: new Map(
+        [...getInternalDocumentChangeClassificationEntries(change)].filter(
+          ([root]) => keep(root)
+        )
+      ),
+      createRoots: [...change.createRoots].filter(keep),
+      deleteRoots: [...change.deleteRoots].filter(keep),
+    }
+  );
 
 /**
  * Carry target-document runtime identities inside inserted node slices.

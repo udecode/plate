@@ -1,5 +1,7 @@
 import { defineEditorSchema, schema, property } from '../../../facade';
+import { BaseBlockquotePlugin } from '../../../features/basic-nodes/lib/BaseBlockPlugins';
 import { BaseHeadingPlugin } from '../../../features/basic-nodes/lib/BaseHeadingPlugins';
+import { BaseCalloutPlugin } from '../../../features/callout/lib/BaseCalloutPlugin';
 import { deleteBackward, deleteForward, insertBreak } from '../../../testing';
 import { createEditor } from '../../editor';
 import { definePlugin } from '../../plugin';
@@ -174,9 +176,100 @@ describe('OverridePlugin', () => {
     ]);
   });
 
-  it('exits a structural application root with one undoable root sibling', () => {
-    const CalloutPlugin = definePlugin('structuralExitCallout', {
+  it('exits only the callout when Enter leaves its empty last line inside a quote [EDIT-GLOBAL-003]', () => {
+    const editor = createEditor({
+      plugins: [BaseBlockquotePlugin, BaseCalloutPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0, 0] },
+        focus: { offset: 4, path: [0, 0, 0] },
+      },
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'foo\n' }], icon: '💡', type: 'callout' },
+          ],
+          type: 'blockquote',
+        },
+      ],
+    });
+
+    insertBreak(editor);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { children: [{ text: 'foo' }], icon: '💡', type: 'callout' },
+          { children: [{ text: '' }], type: 'paragraph' },
+        ],
+        type: 'blockquote',
+      },
+    ]);
+  });
+
+  it('keeps the line break when deleteExit has no room to land a block', () => {
+    const CalloutPlugin = definePlugin('fullRootCallout', {
       schema: { element: schema.element.textBlock() },
+      rules: { break: { emptyLineEnd: 'deleteExit' } },
+    });
+    const selection = {
+      anchor: { offset: 4, path: [0, 0] },
+      focus: { offset: 4, path: [0, 0] },
+    };
+    const editor = createEditor({
+      plugins: [CalloutPlugin],
+      schema: {
+        root: schema.content.group('block', {
+          default: { type: 'paragraph' },
+          min: 1,
+          max: 1,
+        }),
+      },
+      selection: { kind: 'text', ...selection },
+      initialValue: [
+        { children: [{ text: 'foo\n' }], type: 'fullRootCallout' },
+      ],
+    });
+
+    insertBreak(editor);
+
+    expect({
+      children: editor.read.children(),
+      selection: editor.read.selection(),
+    }).toEqual({
+      children: [{ children: [{ text: 'foo\n' }], type: 'fullRootCallout' }],
+      selection,
+    });
+  });
+
+  it('leaves an expanded selection to ordinary Enter under an exit rule', () => {
+    const ExitPlugin = definePlugin('defaultExitBlock', {
+      schema: { element: schema.element.textBlock() },
+      rules: { break: { default: 'exit' } },
+    });
+    const editor = createEditor({
+      plugins: [ExitPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'abcd' }], type: 'defaultExitBlock' },
+      ],
+    });
+
+    insertBreak(editor);
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'a' }], type: 'defaultExitBlock' },
+      { children: [{ text: 'd' }], type: 'defaultExitBlock' },
+    ]);
+  });
+
+  it('exits only the callout inside a structural application root, in one undo step [EDIT-GLOBAL-003]', () => {
+    const CalloutPlugin = definePlugin('structuralExitCallout', {
+      schema: { element: schema.element.textBlock({ ownsExit: true }) },
       rules: { break: { emptyLineEnd: 'deleteExit' } },
     });
     const SectionPlugin = definePlugin('structuralExitSection', {
@@ -216,17 +309,14 @@ describe('OverridePlugin', () => {
       {
         children: [
           { children: [{ text: 'foo' }], type: 'structuralExitCallout' },
+          { children: [{ text: '' }], type: 'paragraph' },
         ],
-        type: 'structuralExitSection',
-      },
-      {
-        children: [{ children: [{ text: '' }], type: 'paragraph' }],
         type: 'structuralExitSection',
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      anchor: { offset: 0, path: [1, 0, 0] },
-      focus: { offset: 0, path: [1, 0, 0] },
+      anchor: { offset: 0, path: [0, 1, 0] },
+      focus: { offset: 0, path: [0, 1, 0] },
     });
 
     editor.api.history.undo();

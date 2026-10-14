@@ -170,7 +170,9 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     targetDocument.addEventListener('pointerdown', handleOutsidePointerDown);
   }
   targetDocument.addEventListener('mousedown', handleOutsideMouseDown);
-  targetDocument.addEventListener('focusin', handleFocusIn);
+  // Capture, so a refocus ends the window before the editor's own focus
+  // handler, which React runs at its root, reads it.
+  targetDocument.addEventListener('focusin', handleFocusIn, true);
 
   return () => {
     outsideFocusBoundaryRevision += 1;
@@ -181,7 +183,7 @@ export const attachEditableOutsideFocusBoundaryListener = ({
       );
     }
     targetDocument.removeEventListener('mousedown', handleOutsideMouseDown);
-    targetDocument.removeEventListener('focusin', handleFocusIn);
+    targetDocument.removeEventListener('focusin', handleFocusIn, true);
   };
 };
 

@@ -9,19 +9,18 @@ import {
   type TreeIndexChildren,
   type TreeIndexNode,
 } from '../resolved-token-cursor';
+import { cloneFrozen, cloneJson, type JsonRecord } from './json';
 import {
   assertNode,
   CLAIMED_PREPARED_SOURCES,
-  cloneFrozen,
-  cloneJson,
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
   encodeNodes,
+  encodeTrustedNodes,
   isElementNode,
   isTextNode,
   type JsonNode,
   type JsonPoint,
-  type JsonRecord,
   type JsonToken,
   type NodeKind,
   nodeProps,
@@ -150,7 +149,7 @@ export const decodeNodes = (
           return true;
         }
 
-        const sourceTokens = encodeNodes([token.sourceNode]).slice.tokens;
+        const sourceTokens = encodeTrustedNodes([token.sourceNode], false);
 
         return (
           token.sourceTokenCount === sourceTokens.length &&
@@ -514,6 +513,16 @@ export class DocumentIndex {
     return DocumentIndex.remember(new DocumentIndex(value));
   }
 
+  /** @internal */
+  static fromIndexedNodes(nodes: readonly JsonNode[]) {
+    return (
+      DocumentIndex.immutableCache.get(nodes) ??
+      DocumentIndex.remember(
+        new DocumentIndex(nodes, PreparedTokenSlice.fromIndexedNodes(nodes))
+      )
+    );
+  }
+
   static fromIndexedValue(indexed: IndexedValue) {
     return DocumentIndex.remember(
       new DocumentIndex(indexed.value, undefined, indexed.index)
@@ -540,7 +549,7 @@ export class DocumentIndex {
 
   private checkedIndexedValue(): IndexedValue {
     if (this.value.length !== this.tree.children.length) {
-      throw new Error('A document root array changed outside Plite.');
+      throw new Error('A document root array changed outside the editor.');
     }
 
     return { index: this.tree, value: this.value };

@@ -4,6 +4,7 @@ import type {
   NodeForTypeSelector,
 } from '../interfaces/editor';
 import {
+  getChildren as editorGetChildren,
   getSnapshot as editorGetSnapshot,
   isElementReadOnly as editorIsElementReadOnly,
   isVoid as editorIsVoid,
@@ -11,6 +12,7 @@ import {
 } from '../interfaces/editor';
 import { LocationApi } from '../interfaces/location';
 import {
+  type Descendant,
   type Node,
   NodeApi,
   type NodeEntry,
@@ -98,25 +100,33 @@ export function* nodes<T extends Node>(
     to = last;
   }
 
+  const descend = ([node, path]: NodeEntry) => {
+    if (pass?.([node, path])) return false;
+    if (!NodeApi.isElement(node)) return true;
+
+    return (
+      voids ||
+      (!editorIsVoid(editor, node) && !editorIsElementReadOnly(editor, node))
+    );
+  };
+
+  if (reverse && !universal) {
+    yield* matchBackward<T>(
+      [editor, []],
+      editorGetChildren(editor),
+      { from, match, mode, to },
+      descend
+    );
+    return;
+  }
+
   const nodeEntries = NodeApi.nodes(editor, {
     from,
     to,
-    pass: ([node, path]) => {
-      if (pass?.([node, path])) return true;
-      if (!NodeApi.isElement(node)) return false;
-      if (
-        !voids &&
-        (editorIsVoid(editor, node) || editorIsElementReadOnly(editor, node))
-      ) {
-        return true;
-      }
-
-      return false;
-    },
+    pass: (entry) => !descend(entry),
   });
 
   const matches: Array<NodeEntry<T>> = [];
-  const shouldBuffer = reverse || universal;
   let hit: NodeEntry<T> | undefined;
 
   for (const [node, path] of nodeEntries) {
@@ -148,7 +158,7 @@ export function* nodes<T extends Node>(
       mode === 'lowest' ? hit : ([node, path] as unknown as NodeEntry<T>);
 
     if (emit) {
-      if (shouldBuffer) {
+      if (universal) {
         matches.push(emit);
       } else {
         yield emit;
@@ -160,7 +170,7 @@ export function* nodes<T extends Node>(
 
   // Since lowest is always emitting one behind, catch up at the end.
   if (mode === 'lowest' && hit) {
-    if (shouldBuffer) {
+    if (universal) {
       matches.push(hit);
     } else {
       yield hit;
@@ -169,7 +179,61 @@ export function* nodes<T extends Node>(
 
   // Universal defers to ensure that the match occurs in every branch, so we
   // yield all of the matches after iterating.
-  if (shouldBuffer) {
+  if (universal) {
     yield* reverse ? matches.reverse() : matches;
   }
+}
+
+// Yields the matches in the exact reverse of the forward walk, starting at
+// `to`, so a reverse read stops at its first match instead of collecting every
+// match from the document start.
+function* matchBackward<T extends Node>(
+  [node, path]: NodeEntry,
+  children: readonly Descendant[] | null,
+  search: Readonly<{
+    from: Path;
+    match: (node: Node, path: Path) => boolean;
+    mode: 'all' | 'highest' | 'lowest';
+    to: Path;
+  }>,
+  descend: (entry: NodeEntry) => boolean
+): Generator<NodeEntry<T>, boolean, undefined> {
+  const { from, match, mode, to } = search;
+
+  if (mode === 'highest' && match(node, path)) {
+    yield [node, path] as unknown as NodeEntry<T>;
+
+    return true;
+  }
+
+  let below = false;
+
+  if (children && children.length > 0 && descend([node, path])) {
+    const first = PathApi.isAncestor(path, from) ? from[path.length] : 0;
+    const last = PathApi.isAncestor(path, to)
+      ? Math.min(to[path.length], children.length - 1)
+      : children.length - 1;
+
+    for (let index = last; index >= first; index--) {
+      const child = children[index];
+      const matched = yield* matchBackward<T>(
+        [child, path.concat(index)],
+        NodeApi.isText(child) ? null : child.children,
+        search,
+        descend
+      );
+
+      below ||= matched;
+    }
+  }
+
+  if (mode === 'highest') return false;
+
+  const matched = match(node, path);
+
+  if (matched && (mode === 'all' || !below)) {
+    yield [node, path] as unknown as NodeEntry<T>;
+  }
+
+  return matched || below;
 }

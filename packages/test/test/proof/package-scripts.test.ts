@@ -35,6 +35,7 @@ const expectedBrowserRuntimeSubpathExports = {
     'validateRawMobileProof',
   ],
   playwright: [
+    'BROWSER_HANDLE_KEY',
     'DEFAULT_RUNTIME_ERROR_PATTERNS',
     'assertNoIllegalKernelTransitions',
     'assertBrowserCaretVisibleInScrollableParent',
@@ -138,6 +139,14 @@ describe('package scripts', () => {
             ?.trim();
 
           if (!name) {
+            continue;
+          }
+
+          const reexportedFromPackage = new RegExp(
+            `export\\s+\\{[^}]*\\b${name}\\b[^}]*\\}\\s+from\\s+'[^.'][^']*'`
+          );
+
+          if (reexportedFromPackage.test(source)) {
             continue;
           }
 

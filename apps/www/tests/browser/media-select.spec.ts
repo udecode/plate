@@ -28,9 +28,9 @@ const openMediaDemo = async (page: Page, caseId: string, type: string) => {
     root.evaluate((element) =>
       (
         element as HTMLElement & {
-          __pliteBrowserHandle?: { getModelSelection: () => unknown };
+          __EDITOR_BROWSER_HANDLE__?: { getModelSelection: () => unknown };
         }
-      ).__pliteBrowserHandle?.getModelSelection()
+      ).__EDITOR_BROWSER_HANDLE__?.getModelSelection()
     );
 
   expect(index).toBeGreaterThan(0);

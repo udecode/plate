@@ -1,8 +1,7 @@
 'use client';
 
 import { ArrowDownToLineIcon } from 'lucide-react';
-import { createEditorView } from 'platejs';
-import { AuthoredPlugin, isAuthoredEditor } from 'platejs/authored';
+import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { exportDocx, type DocxComment } from 'platejs/docx/export';
 import { MarkdownPlugin } from 'platejs/markdown';
@@ -94,15 +93,12 @@ export function ExportToolbarButton() {
 
     if (!authored.installed) return 'clean:proposed';
 
-    const unresolved = (['pending', 'conflicted'] as const).some(
-      (status) =>
-        authored.read.changes({
-          limit: 1,
-          status,
-        }).items.length > 0
-    );
+    const unresolved = authored.read.changes({ limit: 1 }).items.length > 0;
+    const view = authored.read.view();
 
-    return `${unresolved ? 'unresolved' : 'clean'}:${authored.read.view().projection}`;
+    return `${unresolved ? 'unresolved' : 'clean'}:${
+      'preview' in view ? view.preview : 'proposed'
+    }`;
   });
   const [authoredStatus, mountedProjection] = authoredState.split(':');
   const unresolved = authoredStatus === 'unresolved';
@@ -131,7 +127,7 @@ export function ExportToolbarButton() {
   </body>
 </html>`;
 
-      downloadBlob(new Blob([html], { type: 'text/html' }), 'plate.html');
+      downloadBlob(new Blob([html], { type: 'text/html' }), 'document.html');
       toastWarnings(result.diagnostics);
     } catch (error) {
       console.error('Could not export HTML.', error);
@@ -152,7 +148,7 @@ export function ExportToolbarButton() {
     }
     downloadBlob(
       new Blob([result.data], { type: 'text/markdown' }),
-      'plate.md'
+      'document.md'
     );
     toastWarnings(result.diagnostics);
   };
@@ -165,12 +161,7 @@ export function ExportToolbarButton() {
       const docxComments: DocxComment[] = [];
 
       if (commentsInstalled) {
-        const commentEditor = isAuthoredEditor(model)
-          ? createEditorView(model, {
-              authored: { intent: 'edit', projection: 'proposed' },
-            })
-          : model;
-        const comments = commentEditor.plugin(CommentsPlugin);
+        const comments = model.plugin(CommentsPlugin);
         const users = comments.store.get('users');
 
         comments.api.getThreads().forEach((thread) => {
@@ -234,7 +225,7 @@ export function ExportToolbarButton() {
         return;
       }
 
-      downloadBlob(result.blob, 'plate.docx');
+      downloadBlob(result.blob, 'document.docx');
       toastWarnings(result.diagnostics);
       if (omittedCommentCount > 0) {
         toast.warning(
@@ -257,12 +248,7 @@ export function ExportToolbarButton() {
       modal={false}
     >
       <DropdownMenuTrigger>
-        <ToolbarButton
-          aria-label="Export"
-          pressed={open}
-          tooltip="Export"
-          isDropdown
-        >
+        <ToolbarButton pressed={open} tooltip="Export" isDropdown>
           <ArrowDownToLineIcon className="size-4" />
         </ToolbarButton>
       </DropdownMenuTrigger>

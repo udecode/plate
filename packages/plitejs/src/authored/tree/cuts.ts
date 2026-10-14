@@ -4,15 +4,17 @@ import {
   valueRoot,
 } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
+import type { JsonRecord } from '../../core/change/json';
 import { RootChange } from '../../core/change/root-change';
-import type { JsonEditorValue, JsonRecord } from '../../core/change/tokens';
+import type { JsonEditorValue } from '../../core/change/tokens';
 import { getDefined } from '../../internal/get-defined';
+import { isMetadataRootKey } from '../../internal/root-location';
+import type { Dependencies } from '../facts/dependencies';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
   type CutTag,
   readAuthoredMarks,
-  withAuthoredMarks,
 } from './marks';
 
 type Node = JsonRecord & { children?: readonly Node[]; text?: string };
@@ -24,9 +26,6 @@ export const cutsOf = (node: unknown) => readAuthoredMarks(node).filter(isCut);
 
 const isText = (node: Node) => typeof node.text === 'string';
 
-const withMarks = (node: Node, marks: readonly AuthoredMark[]): Node =>
-  withAuthoredMarks(node, marks);
-
 /**
  * The element a rejected cut joins: the left fragment's properties and tags,
  * except the cut, the right fragment's other cut tags, and only the insert
@@ -37,34 +36,31 @@ const joinFragments = (
   left: Node,
   between: readonly Node[],
   right: Node,
-  cut: string
+  cut: string,
+  dependencies: Dependencies
 ): Node => {
-  const rightMarks = readAuthoredMarks(right);
+  const rightMarks = dependencies.marks(right);
   const sharedByRight = (mark: AuthoredMark) =>
     rightMarks.some(
       (other) => other.kind === mark.kind && other.change === mark.change
     );
   const marks = [
-    ...readAuthoredMarks(left).filter((mark) =>
-      isCut(mark)
-        ? mark.cut !== cut
-        : (mark.kind !== 'insert' && mark.kind !== 'delete') ||
-          sharedByRight(mark)
-    ),
+    ...dependencies
+      .marks(left)
+      .filter((mark) =>
+        isCut(mark)
+          ? mark.cut !== cut
+          : (mark.kind !== 'insert' && mark.kind !== 'delete') ||
+            sharedByRight(mark)
+      ),
     ...rightMarks.filter((mark) => isCut(mark) && mark.cut !== cut),
   ];
+  const { children: _children, ...props } = left;
 
-  return withMarks(
-    {
-      ...left,
-      children: [
-        ...(left.children ?? []),
-        ...between,
-        ...(right.children ?? []),
-      ],
-    },
-    marks
-  );
+  return {
+    ...dependencies.props(props, marks),
+    children: [...(left.children ?? []), ...between, ...(right.children ?? [])],
+  };
 };
 
 /** Tags one fragment carries and the other lacks, which a join would lose. */
@@ -84,11 +80,16 @@ const oneSided = (
       )
   );
 
-const contentMarksIn = (node: Node): AuthoredMark[] => [
-  ...readAuthoredMarks(node).filter(
-    (mark) => mark.kind === 'insert' || mark.kind === 'delete'
+const contentMarksIn = (
+  node: Node,
+  dependencies: Dependencies
+): AuthoredMark[] => [
+  ...dependencies
+    .marks(node)
+    .filter((mark) => mark.kind === 'insert' || mark.kind === 'delete'),
+  ...(node.children ?? []).flatMap((child) =>
+    contentMarksIn(child, dependencies)
   ),
-  ...(node.children ?? []).flatMap(contentMarksIn),
 ];
 
 /**
@@ -104,6 +105,8 @@ const contentMarksIn = (node: Node): AuthoredMark[] => [
 export const joinRejectedCuts = (
   nodes: readonly Node[],
   decision: Readonly<{
+    /** Reads each fragment's insertions, its context's included, and writes the join's. */
+    dependencies: Dependencies;
     endSurvives: (cut: string) => boolean;
     rejected: (cut: CutTag) => boolean;
     survives: (node: Node) => boolean;
@@ -143,16 +146,17 @@ export const joinRejectedCuts = (
       if (between.some((other) => !isText(other) && decision.survives(other))) {
         continue;
       }
-      const leftMarks = readAuthoredMarks(left);
-      const rightMarks = readAuthoredMarks(current);
+      const { dependencies } = decision;
+      const leftMarks = dependencies.marks(left);
+      const rightMarks = dependencies.marks(current);
 
       decision.wait([
         ...oneSided(leftMarks, rightMarks),
         ...oneSided(rightMarks, leftMarks),
-        ...between.flatMap(contentMarksIn),
+        ...between.flatMap((other) => contentMarksIn(other, dependencies)),
       ]);
       out.splice(leftIndex);
-      current = joinFragments(left, between, current, start.cut);
+      current = joinFragments(left, between, current, start.cut, dependencies);
       joined.set(current, joined.get(left) ?? left);
     }
     out.push(current);
@@ -174,7 +178,9 @@ const keyOf = (cut: string, side: CutTag['side']) => `${cut}:${side}`;
 const rootsOf = (value: JsonEditorValue) =>
   new Map<string, readonly Node[]>([
     ['main', value.children],
-    ...(Object.entries(value.roots ?? {}) as Array<[string, readonly Node[]]>),
+    ...(Object.entries(value.roots ?? {}).filter(
+      ([root]) => !isMetadataRootKey(root)
+    ) as Array<[string, readonly Node[]]>),
   ]);
 
 type TokenRange = readonly [from: number, to: number];
@@ -360,13 +366,13 @@ export const relinkCuts = (
   change: DocumentChange,
   before: JsonEditorValue,
   after: JsonEditorValue,
-  afterIndexOf: (root: string) => DocumentIndex
+  afterIndexOf: (root: string) => DocumentIndex,
+  beforeIndexOf: (root: string) => DocumentIndex = (root) =>
+    DocumentIndex.fromValue(valueRoot(before, root))
 ): Readonly<{
   change: DocumentChange;
   indexes: ReadonlyMap<string, DocumentIndex>;
 }> | null => {
-  const beforeIndexOf = (root: string) =>
-    DocumentIndex.fromValue(valueRoot(before, root));
   const was = new Map<string, RemovedHolder>();
   const is = new Map<string, Holder>();
 

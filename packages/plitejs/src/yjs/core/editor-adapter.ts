@@ -1,4 +1,3 @@
-import { isAuthoredOperationEffect } from '../../core/authored-runtime';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import { runTrustedUpdate } from '../../core/public-state';
 import type {
@@ -53,7 +52,7 @@ export const YjsUpdatePolicy = Object.freeze({
   } satisfies EditorUpdatePolicy),
 });
 
-const SELECTION_ROOT_TYPE = 'plite-yjs-selection-root';
+const SELECTION_ROOT_TYPE = 'root';
 
 const sanitizeImportSelection = (
   children: readonly Descendant[],
@@ -183,21 +182,7 @@ export const createYjsEditorAdapter = (
             tx.selection.set(nextSelection);
           }
 
-          for (const effect of effects) {
-            if (
-              typeof effect !== 'function' &&
-              isAuthoredOperationEffect(editor, effect)
-            ) {
-              tx.effects.emit(effect.type, effect.value);
-            }
-          }
           for (const pending of effects) {
-            if (
-              typeof pending !== 'function' &&
-              isAuthoredOperationEffect(editor, pending)
-            ) {
-              continue;
-            }
             const effect = typeof pending === 'function' ? pending() : pending;
             if (effect) tx.effects.emit(effect.type, effect.value);
           }

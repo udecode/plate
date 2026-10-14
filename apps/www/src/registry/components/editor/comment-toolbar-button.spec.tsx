@@ -2,6 +2,7 @@ import { afterAll, expect, it } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { AuthoredPlugin } from 'platejs/authored';
 import type { CommentMutationResult } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor, EditorRoot } from 'platejs/react';
@@ -139,6 +140,56 @@ it('discovers open, resolved, and unavailable conversations in a read-only view'
     expect(view.queryByText('Resolved conversation')).toBeNull();
     expect(view.getByText('No resolved comments')).not.toBeNull();
   });
+});
+
+it("lists a rejected suggestion's conversation as detached, not on the text beside it", async () => {
+  const editor = createEditor({
+    plugins: [
+      AuthoredPlugin,
+      CommentsPlugin.configure({
+        initialState: { users: { alice: { id: 'alice', name: 'Alice' } } },
+      }),
+    ],
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'Review this sentence.' }] },
+    ],
+    userId: 'alice',
+  });
+  let changeId = '';
+  editor.update((tx) => {
+    changeId = tx.authored.propose();
+    tx.text.insert(' carefully', { at: { offset: 11, path: [0, 0] } });
+  });
+  applied(
+    await editor.plugin(CommentsPlugin).api.createThread({
+      body: createCommentValue('Why carefully?'),
+      id: 'why',
+      target: { id: changeId, type: 'change' },
+    })
+  );
+  const view = renderButton(editor as never);
+
+  act(() => {
+    const authored = editor.plugin(AuthoredPlugin);
+
+    authored.update.decide({
+      action: 'reject',
+      changes: [authored.read.change(changeId)!],
+    });
+  });
+  fireEvent.click(view.getByRole('button', { name: 'All comments' }));
+
+  const row = view.baseElement.querySelector('[data-all-comments-row="why"]');
+
+  expect(editor.read.text.string([])).toBe('Review this sentence.');
+  expect(row?.getAttribute('data-target')).toBe('unavailable');
+  expect(row?.textContent).toContain('Why carefully?');
+  expect(row?.textContent).toContain('Target unavailable in this view');
+  expect(
+    view
+      .getByRole('button', { name: 'Show in document' })
+      .hasAttribute('disabled')
+  ).toBe(true);
 });
 
 it('mounts one page and keeps dirty replies in place until cancel', async () => {

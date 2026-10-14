@@ -82,6 +82,9 @@ editor.api.dom.focus();
 失去焦点的确切 `Editable` 会读取其实时规范选择。展开范围显示高亮，折叠
 范围显示光标。焦点返回编辑器或移到未标记目标时，非活动绘制会被清除。
 
+该标记只在焦点位于别处时保持选区绘制。若要让节点内的组件自行处理输入，请使用
+[嵌入式组件](/cn/docs/plugin-components#嵌入式组件)中的 `data-editor-root-chrome-ignore` 标记。
+
 ### 设置绘制样式
 
 Plate 提供中性的输出标记，产品 CSS 决定外观：

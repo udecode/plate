@@ -8,9 +8,11 @@ import {
   createEditorView,
   type Element,
 } from '../../../packages/plitejs/src';
-import { authored } from '../../../packages/plitejs/src/authored';
-import { records } from '../../../packages/plitejs/src/authored/record-tree';
-import { authoredState } from '../../../packages/plitejs/src/authored/state';
+import {
+  authored,
+  type AuthoredPage,
+  type AuthoredQuery,
+} from '../../../packages/plitejs/src/authored';
 import { yjs } from '../../../packages/plitejs/src/yjs';
 
 type Phase = 'accepted-insertion' | 'proposed-insertion';
@@ -68,14 +70,28 @@ const summarize = (values: readonly number[]) => ({
   p99: percentile(values, 0.99),
   samples: values,
 });
-const operationCount = (editor: ReturnType<typeof createEditor>) =>
-  editor.read.getField(authoredState).operations?.count ?? 0;
-const changeCount = (editor: ReturnType<typeof createEditor>) =>
-  editor.read.getField(authoredState).changes?.count ?? 0;
-const pendingCount = (editor: ReturnType<typeof createEditor>) =>
-  [...records(editor.read.getField(authoredState).changes)].filter(
-    ([, record]) => record.status === 'pending'
-  ).length;
+// Counts the editor's commits; a receive publishes one.
+const countCommits = (editor: {
+  subscribeCommit: (listener: () => void) => () => void;
+}) => {
+  const counter = { count: 0 };
+  editor.subscribeCommit(() => {
+    counter.count += 1;
+  });
+  return counter;
+};
+const pendingCount = (editor: {
+  read: { authored: { changes: (query: AuthoredQuery) => AuthoredPage } };
+}) => {
+  let count = 0;
+  let cursor: string | undefined;
+  do {
+    const page = editor.read.authored.changes({ cursor, limit: 200 });
+    count += page.items.length;
+    cursor = page.cursor ?? undefined;
+  } while (cursor);
+  return count;
+};
 
 const checkpointJson = readFileSync(fixturePath, 'utf-8');
 const primeAcceptedRuntime = () => {
@@ -88,7 +104,7 @@ const primeAcceptedRuntime = () => {
     initialValue: base,
   });
   const fixtureView = createEditorView(fixture, {
-    authored: { intent: 'propose', projection: 'proposed' },
+    authored: { intent: 'propose' },
   });
   for (let block = 0; block < primerSize; block += 1) {
     fixtureView.update.text.insert('q', { at: point(4, block) });
@@ -99,7 +115,7 @@ const primeAcceptedRuntime = () => {
   const source = createEditor({
     plugins: [
       authored({ authorId: 'primer-alice' }),
-      yjs({ doc: sourceDoc, rootName }),
+      yjs({ doc: sourceDoc, initialReady: true, rootName, seed: true }),
     ],
     initialValue: JSON.parse(JSON.stringify(fixture.read.value())),
   });
@@ -108,32 +124,33 @@ const primeAcceptedRuntime = () => {
   const receiver = createEditor({
     plugins: [
       authored({ authorId: 'primer-bob' }),
-      yjs({ doc: receiverDoc, rootName }),
+      yjs({ doc: receiverDoc, initialReady: true, rootName }),
     ],
   });
-  const receiverView = createEditorView(receiver, {
-    authored: { intent: 'propose', projection: 'proposed' },
-  });
+  const receiverViews = {
+    accepted: createEditorView(receiver, { authored: { preview: 'accepted' } }),
+    proposed: createEditorView(receiver, { authored: { preview: 'proposed' } }),
+  };
+  const receiverCommits = countCommits(receiver);
   sync(receiverDoc, sourceDoc);
 
   for (let block = 0; block < operations; block += 1) {
     source.update.text.insert('x', { at: point(0, block) });
-    const beforeOperations = operationCount(receiver);
+    const beforeOperations = receiverCommits.count;
     sync(sourceDoc, receiverDoc);
-    receiverView.read.children();
+    receiverViews.proposed.read.children();
     assert.equal(
-      operationCount(receiver) - beforeOperations,
+      receiverCommits.count - beforeOperations,
       contract.budget.incomingOperations
     );
   }
-  assert.equal(changeCount(receiver), primerSize + operations);
   assert.equal(pendingCount(receiver), primerSize);
   assert.deepEqual(
-    receiver.read.children(),
+    receiverViews.accepted.read.children(),
     base.map((_, index) => paragraph(index < operations ? 'xBase' : 'Base'))
   );
   assert.deepEqual(
-    receiverView.read.children(),
+    receiverViews.proposed.read.children(),
     base.map((_, index) => paragraph(`${index < operations ? 'x' : ''}Baseq`))
   );
 
@@ -158,36 +175,40 @@ const run = (
   const source = createEditor({
     plugins: [
       authored({ authorId: 'alice' }),
-      yjs({ doc: sourceDoc, rootName }),
+      yjs({ doc: sourceDoc, initialReady: true, rootName, seed: true }),
     ],
     initialValue: JSON.parse(checkpointJson),
   });
   const sourceView = createEditorView(source, {
-    authored: { intent: 'propose', projection: 'proposed' },
+    authored: { intent: 'propose' },
   });
+  const sourceViews = {
+    accepted: createEditorView(source, { authored: { preview: 'accepted' } }),
+    proposed: createEditorView(source, { authored: { preview: 'proposed' } }),
+  };
   const receiverDoc = new Y.Doc();
   sync(sourceDoc, receiverDoc);
   const receiver = createEditor({
     plugins: [
       authored({ authorId: 'bob' }),
-      yjs({ doc: receiverDoc, rootName }),
+      yjs({ doc: receiverDoc, initialReady: true, rootName }),
     ],
   });
-  const receiverView = createEditorView(receiver, {
-    authored: { intent: 'propose', projection: 'proposed' },
-  });
+  const receiverViews = {
+    accepted: createEditorView(receiver, { authored: { preview: 'accepted' } }),
+    proposed: createEditorView(receiver, { authored: { preview: 'proposed' } }),
+  };
+  const receiverCommits = countCommits(receiver);
   sync(receiverDoc, sourceDoc);
-  assert.equal(operationCount(receiver), size);
-  assert.equal(changeCount(receiver), size);
   assert.equal(pendingCount(receiver), size);
-  assert.deepEqual(receiver.read.children(), base);
+  assert.deepEqual(receiverViews.accepted.read.children(), base);
   assert.deepEqual(
-    receiverView.read.children(),
+    receiverViews.proposed.read.children(),
     Array.from({ length: size }, () => paragraph('Baseq'))
   );
   const setupMs = performance.now() - setupStarted;
-  const initialAccepted = receiver.read.value();
-  const initialProposed = receiverView.read.value();
+  const initialAccepted = receiverViews.accepted.read.value();
+  const initialProposed = receiverViews.proposed.read.value();
   const initialAcceptedJson = JSON.stringify(initialAccepted);
   const initialProposedJson = JSON.stringify(initialProposed);
   const durations: number[] = [];
@@ -201,16 +222,16 @@ const run = (
     (proposed ? sourceView : source).update.text.insert('x', {
       at: point(0, block),
     });
-    const beforeOperations = operationCount(receiver);
+    const beforeOperations = receiverCommits.count;
     const started = performance.now();
     const update = Y.encodeStateAsUpdate(
       sourceDoc,
       Y.encodeStateVector(receiverDoc)
     );
     Y.applyUpdate(receiverDoc, update);
-    const projected = receiverView.read.children();
+    const projected = receiverViews.proposed.read.children();
     const duration = performance.now() - started;
-    const operationDelta = operationCount(receiver) - beforeOperations;
+    const operationDelta = receiverCommits.count - beforeOperations;
     assert.equal(operationDelta, contract.budget.incomingOperations);
     lastUpdate = update;
 
@@ -221,11 +242,10 @@ const run = (
     const expectedProposed = base.map((_, index) =>
       paragraph(`${index < count ? 'x' : ''}Baseq`)
     );
-    assert.deepEqual(receiver.read.children(), expectedAccepted);
+    assert.deepEqual(receiverViews.accepted.read.children(), expectedAccepted);
     assert.deepEqual(projected, expectedProposed);
-    assert.deepEqual(source.read.children(), expectedAccepted);
-    assert.deepEqual(sourceView.read.children(), expectedProposed);
-    assert.equal(changeCount(receiver), size + count);
+    assert.deepEqual(sourceViews.accepted.read.children(), expectedAccepted);
+    assert.deepEqual(sourceViews.proposed.read.children(), expectedProposed);
     assert.equal(pendingCount(receiver), size + (proposed ? count : 0));
     assert.equal(JSON.stringify(initialAccepted), initialAcceptedJson);
     assert.equal(JSON.stringify(initialProposed), initialProposedJson);
@@ -238,14 +258,20 @@ const run = (
   }
 
   assert.ok(lastUpdate);
-  const stateBeforeDuplicate = receiver.read.getField(authoredState);
-  const acceptedBeforeDuplicate = JSON.stringify(receiver.read.value());
-  const proposedBeforeDuplicate = JSON.stringify(receiverView.read.value());
+  const commitsBeforeDuplicate = receiverCommits.count;
+  const acceptedBeforeDuplicate = JSON.stringify(
+    receiverViews.accepted.read.value()
+  );
+  const proposedBeforeDuplicate = JSON.stringify(
+    receiverViews.proposed.read.value()
+  );
   Y.applyUpdate(receiverDoc, lastUpdate);
   const duplicateUpdateIdempotent =
-    receiver.read.getField(authoredState) === stateBeforeDuplicate &&
-    JSON.stringify(receiver.read.value()) === acceptedBeforeDuplicate &&
-    JSON.stringify(receiverView.read.value()) === proposedBeforeDuplicate;
+    receiverCommits.count === commitsBeforeDuplicate &&
+    JSON.stringify(receiverViews.accepted.read.value()) ===
+      acceptedBeforeDuplicate &&
+    JSON.stringify(receiverViews.proposed.read.value()) ===
+      proposedBeforeDuplicate;
   assert.equal(duplicateUpdateIdempotent, true);
 
   const reloadStarted = performance.now();
@@ -254,10 +280,13 @@ const run = (
     initialValue: JSON.parse(JSON.stringify(receiver.read.value())),
   });
   const reloadedView = createEditorView(reloaded, {
-    authored: { intent: 'propose', projection: 'proposed' },
+    authored: { preview: 'proposed' },
   });
   assert.deepEqual(reloaded.read.children(), receiver.read.children());
-  assert.deepEqual(reloadedView.read.children(), receiverView.read.children());
+  assert.deepEqual(
+    reloadedView.read.children(),
+    receiverViews.proposed.read.children()
+  );
   const reloadMs = performance.now() - reloadStarted;
 
   const row = {

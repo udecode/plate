@@ -28,6 +28,7 @@ export {
   type CaretVisibilitySnapshot,
 } from './caret-visibility';
 export { withExclusiveClipboardAccess } from './clipboard';
+export { BROWSER_HANDLE_KEY } from './constants';
 export { takeDisplayedSelectionSnapshotForRoot } from './displayed-selection';
 export {
   getBrowserEditable,

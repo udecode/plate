@@ -14,7 +14,10 @@ import {
   schema,
   type Descendant,
 } from '../../src/index';
-import { createYjsNode } from '../../src/yjs/core/document';
+import {
+  createYjsNode,
+  readPliteValueFromYjs,
+} from '../../src/yjs/core/document';
 import { yjs } from '../../src/yjs/core/plugin';
 import {
   createYjsSchemaEnvelope,
@@ -22,6 +25,11 @@ import {
   readYjsSchemaEnvelope,
 } from '../../src/yjs/core/schema-metadata';
 import type { YjsInitialReadiness } from '../../src/yjs/core/types';
+import {
+  FORMAT_2_ALPHA_ROOT_UPDATE,
+  FORMAT_2_AUTHORED_DEFAULT_ROOT_UPDATE,
+  FORMAT_2_DEFAULT_ROOT_UPDATE,
+} from './support/format-2-rooms';
 
 const rootName = 'schema-identity-contract';
 
@@ -56,6 +64,64 @@ class TestInitialReadiness implements YjsInitialReadiness {
     for (const listener of this.listeners) listener();
   }
 }
+
+const FORMAT_2_REFUSAL =
+  'Cannot open a Yjs document written with schema metadata format 2; this editor reads format 3.';
+
+const format2Room = (update: string): Y.Doc => {
+  const doc = new Y.Doc();
+
+  Y.applyUpdate(doc, Buffer.from(update, 'base64'));
+
+  return doc;
+};
+
+// Compares the whole encoded document, because a deletion does not move the
+// state vector.
+const bindFormat2Room = (update: string, bindRootName?: string) => {
+  const doc = format2Room(update);
+  const before = Y.encodeStateAsUpdate(doc);
+  let updates = 0;
+  let refusal: string | undefined;
+
+  doc.on('update', () => {
+    updates += 1;
+  });
+  try {
+    createEditor({
+      initialValue: [paragraph('local')],
+      plugins: [
+        yjs({
+          doc,
+          initialReady: true,
+          seed: true,
+          ...(bindRootName === undefined ? {} : { rootName: bindRootName }),
+        }),
+      ],
+    });
+  } catch (error) {
+    refusal = (error as Error).message;
+  }
+
+  return {
+    error: refusal,
+    unchanged: Buffer.compare(before, Y.encodeStateAsUpdate(doc)) === 0,
+    updates,
+  };
+};
+
+const bindBesideOldEnvelope = (current: unknown) => {
+  const doc = new Y.Doc();
+
+  doc.getMap('old').set('title', 'saved');
+  doc.getMap('old:schema').set('current', current);
+
+  return () =>
+    createEditor({
+      initialValue: [paragraph('local')],
+      plugins: [yjs({ doc, initialReady: true, rootName, seed: true })],
+    });
+};
 
 const paragraph = (text: string): Descendant => ({
   children: [{ text }],
@@ -259,7 +325,7 @@ describe('plitejs/yjs schema identity contract', () => {
 
     doc
       .getMap(getYjsSchemaMetadataName(rootName))
-      .set('current', { format: 1, identity: null });
+      .set('current', { format: 3, identity: null });
 
     assert.throws(
       () =>
@@ -273,7 +339,7 @@ describe('plitejs/yjs schema identity contract', () => {
 
   it('rejects claimed schema metadata without an identity', () => {
     const metadata = {
-      get: () => ({ format: 2, identity: null }),
+      get: () => ({ format: 3, identity: null }),
     } as unknown as Y.Map<unknown>;
 
     assert.throws(
@@ -286,7 +352,7 @@ describe('plitejs/yjs schema identity contract', () => {
     const extraKey = Symbol('extra');
     const derivedIdentity = { fingerprint: 'schema', kind: 'derived' };
     const envelopeWithSymbol = {
-      format: 2,
+      format: 3,
       identity: null,
       [extraKey]: true,
     };
@@ -299,11 +365,11 @@ describe('plitejs/yjs schema identity contract', () => {
       'format',
       {
         enumerable: true,
-        get: () => 2,
+        get: () => 3,
       }
     );
     const exoticEnvelope = Object.assign(Object.create({ inherited: true }), {
-      format: 2,
+      format: 3,
       identity: null,
     });
     const exoticIdentity = Object.assign(Object.create({ inherited: true }), {
@@ -312,10 +378,10 @@ describe('plitejs/yjs schema identity contract', () => {
 
     for (const value of [
       envelopeWithSymbol,
-      { format: 2, identity: identityWithSymbol },
+      { format: 3, identity: identityWithSymbol },
       accessorEnvelope,
       exoticEnvelope,
-      { format: 2, identity: exoticIdentity },
+      { format: 3, identity: exoticIdentity },
     ]) {
       const metadata = {
         get: () => value,
@@ -328,11 +394,25 @@ describe('plitejs/yjs schema identity contract', () => {
     }
   });
 
+  it('rejects schema metadata whose format is undefined', () => {
+    const metadata = {
+      get: () => ({
+        format: undefined,
+        identity: { fingerprint: 'schema', kind: 'derived' },
+      }),
+    } as unknown as Y.Map<unknown>;
+
+    assert.throws(
+      () => readYjsSchemaEnvelope(metadata),
+      /Invalid Yjs schema metadata envelope/
+    );
+  });
+
   it('rejects schema metadata with a zero schema version', () => {
     const doc = new Y.Doc();
 
     doc.getMap(getYjsSchemaMetadataName(rootName)).set('current', {
-      format: 2,
+      format: 3,
       identity: {
         fingerprint: 'schema-v0',
         id: 'article',
@@ -349,6 +429,121 @@ describe('plitejs/yjs schema identity contract', () => {
         }),
       /Invalid Yjs schema metadata envelope/
     );
+  });
+
+  it('refuses a format 2 room saved under the old default root and writes nothing', () => {
+    assert.deepEqual(
+      bindFormat2Room(FORMAT_2_DEFAULT_ROOT_UPDATE),
+      {
+        error: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}`,
+        unchanged: true,
+        updates: 0,
+      },
+      'the refused room stays byte-identical and emits no update'
+    );
+  });
+
+  it('refuses a format 2 room saved under another explicit root and writes nothing', () => {
+    assert.deepEqual(
+      bindFormat2Room(FORMAT_2_ALPHA_ROOT_UPDATE, 'beta'),
+      {
+        error: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}`,
+        unchanged: true,
+        updates: 0,
+      },
+      'the refused room stays byte-identical and emits no update'
+    );
+  });
+
+  it('refuses a format 2 authored room whose content lives only in shared effects', () => {
+    assert.deepEqual(
+      bindFormat2Room(FORMAT_2_AUTHORED_DEFAULT_ROOT_UPDATE),
+      {
+        error: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}`,
+        unchanged: true,
+        updates: 0,
+      },
+      'the refused room stays byte-identical and emits no update'
+    );
+  });
+
+  it('refuses a format 2 envelope that carries an extra field', () => {
+    assert.throws(
+      bindBesideOldEnvelope({
+        extra: true,
+        format: 2,
+        identity: { fingerprint: 'schema', kind: 'derived' },
+      }),
+      { message: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}` }
+    );
+  });
+
+  it('refuses a format 2 envelope whose identity carries an extra field', () => {
+    assert.throws(
+      bindBesideOldEnvelope({
+        format: 2,
+        identity: { extra: true, fingerprint: 'schema', kind: 'derived' },
+      }),
+      { message: `Editor plugin "yjs" activation failed: ${FORMAT_2_REFUSAL}` }
+    );
+  });
+
+  it('leaves a remote-only application array named like a schema envelope readable', () => {
+    const source = new Y.Doc();
+    const doc = new Y.Doc();
+
+    source.getArray('log:schema').push(['entry']);
+    Y.applyUpdate(doc, Y.encodeStateAsUpdate(source));
+    createEditor({
+      initialValue: [paragraph('local')],
+      plugins: [yjs({ doc, initialReady: true, rootName, seed: true })],
+    });
+
+    assert.deepEqual(doc.getArray('log:schema').toArray(), ['entry']);
+  });
+
+  it('refuses the schema envelope a format 2 room stores under its own root', () => {
+    const doc = format2Room(FORMAT_2_ALPHA_ROOT_UPDATE);
+
+    assert.throws(
+      () =>
+        readYjsSchemaEnvelope(doc.getMap(getYjsSchemaMetadataName('alpha'))),
+      { message: FORMAT_2_REFUSAL }
+    );
+  });
+
+  it('admits a room beside an app map named like a schema envelope', () => {
+    const doc = new Y.Doc();
+
+    doc.getMap('settings').set('theme', 'dark');
+    doc.getMap('settings:schema').set('current', { format: 1, identity: null });
+    createEditor({
+      initialValue: [paragraph('local')],
+      plugins: [yjs({ doc, initialReady: true, rootName, seed: true })],
+    });
+
+    assert.deepEqual(readPliteValueFromYjs(doc.getXmlElement(rootName)), [
+      paragraph('local'),
+    ]);
+  });
+
+  it('admits a room beside an app map that stores an editor schema contract', () => {
+    const doc = new Y.Doc();
+
+    doc.getMap('settings').set('theme', 'dark');
+    doc.getMap('settings:schema').set('current', {
+      fingerprint: 'fnv1a64:contract',
+      formatVersion: 1,
+      identity: { fingerprint: 'fnv1a64:contract', kind: 'derived' },
+    });
+    createEditor({
+      initialValue: [paragraph('local')],
+      plugins: [yjs({ doc, initialReady: true, rootName, seed: true })],
+    });
+
+    assert.deepEqual(readPliteValueFromYjs(doc.getXmlElement(rootName)), [
+      paragraph('local'),
+    ]);
   });
 
   it('waits for application readiness before importing a claimed room', () => {
@@ -405,7 +600,7 @@ describe('plitejs/yjs schema identity contract', () => {
 
     assert.equal(root.length, 1);
     assert.deepEqual(metadata.get('current'), {
-      format: 2,
+      format: 3,
       identity: editor.read.schema.identity(),
     });
     assert.equal(
@@ -699,7 +894,7 @@ describe('plitejs/yjs schema identity contract', () => {
         revision: expectedPayloadRevision,
       });
       assert.deepEqual(metadata.get('current'), {
-        format: 2,
+        format: 3,
         identity: editor.read.schema.identity(),
       });
       assert.equal(root.length, 1);

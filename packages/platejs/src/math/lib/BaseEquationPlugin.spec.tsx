@@ -5,11 +5,10 @@ import { jsxt, type TestEditor } from '#platejs-test-internal';
 import {
   BaseParagraphPlugin,
   createEditor,
-  definePlugin,
   editorCommands,
-  schema,
   PLUGINS,
 } from '../../core';
+import { BaseCodeBlockPlugin } from '../../features/code-block';
 import {
   BaseEquationPlugin,
   BaseInlineEquationPlugin,
@@ -19,14 +18,6 @@ import {
 } from './BaseEquationPlugin';
 
 jsxt;
-
-const CodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1, max: 1 }),
-    },
-  },
-});
 
 describe('BaseEquationPlugin', () => {
   it('configures equation as a void element and exposes its insert update', () => {
@@ -320,7 +311,7 @@ describe('math input rules', () => {
         BaseEquationPlugin.configure({
           inputRules: [blockMathRule],
         }),
-        ...(withCodeBlock ? [CodeBlockPlugin] : []),
+        ...(withCodeBlock ? [BaseCodeBlockPlugin] : []),
       ] as const,
       selection: value.selection,
       initialValue: value.children,

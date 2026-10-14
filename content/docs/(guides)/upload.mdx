@@ -210,6 +210,6 @@ export const MyFileDropPlugin = definePlugin('myFileDrop', {
 The draft has persisted type `upload` and a required `kind`, while its
 `File`, progress, and failure stay in editor state. Completed media stores a
 URL and ordinary media fields. JSON preserves unresolved drafts; external HTML,
-Markdown, and static rendering omit them. A static editor that loads drafts
-must include `BaseUploadPlugin`; completed media alone needs only the media
+Markdown, and static rendering omit them. An editor that loads drafts for
+static rendering must include `BaseUploadPlugin`; completed media alone needs only the media
 plugins.

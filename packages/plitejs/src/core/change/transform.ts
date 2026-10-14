@@ -1,5 +1,5 @@
 import { assertEditorJsonValue } from '../value-codec';
-import { cloneFrozen, isRecord, jsonEqual } from './tokens';
+import { cloneFrozen, isRecord, jsonEqual } from './json';
 
 export type PropertyModification =
   | Readonly<{ key: string; type: 'add'; values: readonly unknown[] }>

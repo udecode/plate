@@ -42,7 +42,7 @@ type DOMTextFlowObservation = {
   flush: () => void;
 };
 
-const DOM_TEXT_FLOW_SEGMENT = Symbol('plite.domTextFlowSegment');
+const DOM_TEXT_FLOW_SEGMENT = Symbol('domTextFlowSegment');
 type DOMTextFlowBoundNode = globalThis.Node & {
   [DOM_TEXT_FLOW_SEGMENT]?: DOMTextFlowSegment | null;
 };

@@ -603,6 +603,8 @@ const BlockButton = ({
       onClick={(event) => {
         handleToolbarButtonClick(event, runCommand);
       }}
+      // iOS WebKit still sends mousedown after a prevented pointerdown, which blurs the editor.
+      onMouseDown={(event) => event.preventDefault()}
       onPointerDown={(event) => {
         handleToolbarButtonPointerDown(event, runCommand);
       }}
@@ -624,6 +626,7 @@ const ClearFormattingButton = () => {
       onClick={(event) => {
         handleToolbarButtonClick(event, runCommand);
       }}
+      onMouseDown={(event) => event.preventDefault()}
       onPointerDown={(event) => {
         handleToolbarButtonPointerDown(event, runCommand);
       }}
@@ -654,6 +657,7 @@ const MarkButton = ({
       onClick={(event) => {
         handleToolbarButtonClick(event, runCommand);
       }}
+      onMouseDown={(event) => event.preventDefault()}
       onPointerDown={(event) => {
         handleToolbarButtonPointerDown(event, runCommand);
       }}

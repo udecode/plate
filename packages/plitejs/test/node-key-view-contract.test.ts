@@ -25,11 +25,11 @@ it('publishes a replacement key unchanged into an existing authored view', () =>
     tx.nodes.replace(paragraph('after'), { at: [0], select: true });
     replacementKey = tx.key([0]);
   });
-  view.api.authored.setView({ intent: 'propose', projection: 'markup' });
+  view.api.authored.setView({ intent: 'propose' });
 
   assert.notEqual(replacementKey, originalKey);
-  assert.equal(view.key([0]), replacementKey);
-  assert.equal(view.read.nodes.get(originalKey!), undefined);
+  // The struck paragraph keeps its place before the one that replaces it.
+  assert.deepEqual([view.key([0]), view.key([1])], [originalKey, replacementKey]);
   assert.equal(
     NodeApi.string(view.read.nodes.get(replacementKey!)![0]),
     'after'

@@ -23,6 +23,7 @@ export {
   unhangRange,
 } from '../interfaces/editor';
 export { end } from '../editor/end';
+export { BROWSER_HANDLE_KEY } from '../internal/browser-protocol';
 export {
   getLiveSelection as getEditorLiveSelection,
   setEditorFocused,

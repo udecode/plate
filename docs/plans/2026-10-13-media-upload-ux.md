@@ -169,6 +169,8 @@ editor.plugin(imagePlugin).api.preview.open(path, props.element.url);
 
 18 步里完成 17 步，开着 1 步（第 4 步），没有跳过或阻塞。
 
+合并 `next` 时，第 7 步的 plitejs 方向键改动让给了 `next` 上按页面是否绘制 caption 来判断的新规则，`plite-empty-object-text-arrows` 这个 changeset 也一起删了。结果是上下方向键和向右键会跳过隐藏的空 caption，向左键从后一个块退回来时仍会在空 caption 里停一次（`EDIT-CAPTION-NAV-003`）。`media-caption.spec.ts` 按这个规则改了期望。`media-caption-delete.spec.ts` 的 "Delete clears a fully selected caption" 在 `origin/next` 上同样失败（`nextctl-delete-a1.log`），和这次合并无关。
+
 ## Open work
 
 - "arrow keys traverse the image owner before its caption" 在第 9 步之后的 15 次运行里有 2 次在测试工具设置光标时超时（`final5-chromium-a3.log`、`final8-chromium-a1.log`），第 9 步之前的 10 次里没有出现；单独重跑都能过。可能和图片工具栏多了 Preview 按钮有关，也可能只是偶发，没在 HEAD 上核对。记录在本计划。owner: felixfeng. stop: 下一次 "full" 跑完整矩阵时确认或修掉，或到 2026-10-20。

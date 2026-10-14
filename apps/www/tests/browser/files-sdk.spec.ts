@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -137,12 +138,13 @@ test('local playground completes and deletes an R2-backed image from a physical 
   const root = page.locator('[data-editor="true"]').first();
   const editor = createBrowserEditorHarness(page, 'playground R2 upload', root);
   const modelSelection = () =>
-    root.evaluate((element) =>
-      (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: { getModelSelection: () => unknown };
-        }
-      ).__pliteBrowserHandle?.getModelSelection()
+    root.evaluate(
+      (element, key) =>
+        (
+          element as HTMLElement &
+            Record<string, { getModelSelection: () => unknown } | undefined>
+        )[key]?.getModelSelection(),
+      BROWSER_HANDLE_KEY
     );
   await editor.ready({
     editor: 'visible',

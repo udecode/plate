@@ -146,7 +146,7 @@ export const getPendingCompositionInputOwnership = ({
   inputController: EditableInputController;
   inputType: string;
   native: boolean;
-}): 'external' | 'none' | 'plite' | 'settled' => {
+}): 'external' | 'none' | 'editor' | 'settled' => {
   const pending = inputController.state.pendingCompositionEnd;
 
   if (!pending || !isCompositionFinalInputType(inputType)) {
@@ -158,7 +158,7 @@ export const getPendingCompositionInputOwnership = ({
   if (native || findEditorDOMRootRuntime(editor)?.isWebKitHost) return 'none';
   if (!ReactEditor.isComposing(editor)) return 'none';
 
-  return 'plite';
+  return 'editor';
 };
 
 export const claimSettledCompositionInput = ({
@@ -207,7 +207,7 @@ export const queuePendingCompositionModelInput = ({
 }) => {
   const { pendingCompositionEnd } = inputController.state;
 
-  if (pendingCompositionEnd?.ownership !== 'plite') return false;
+  if (pendingCompositionEnd?.ownership !== 'editor') return false;
 
   const capturedInput = captureCompositionModelInput({
     command,
@@ -729,7 +729,7 @@ export const useRuntimeBeforeInputEvents = ({
             handledDOMBeforeInputRef.current = true;
 
             if (
-              pendingCompositionInputOwnership === 'plite' &&
+              pendingCompositionInputOwnership === 'editor' &&
               typeof data === 'string' &&
               isCompositionFinalInputType(type) &&
               queuePendingCompositionModelInput({
@@ -919,7 +919,7 @@ export const useRuntimeBeforeInputEvents = ({
           let didRepairNonNativeDOMTextInput = false;
 
           if (
-            pendingCompositionInputOwnership !== 'plite' &&
+            pendingCompositionInputOwnership !== 'editor' &&
             deferNativeTextInputRepair &&
             !native &&
             type === 'insertText' &&
@@ -1023,7 +1023,7 @@ export const useRuntimeBeforeInputEvents = ({
           }
 
           if (
-            pendingCompositionInputOwnership === 'plite' &&
+            pendingCompositionInputOwnership === 'editor' &&
             typeof data === 'string' &&
             isCompositionFinalInputType(type)
           ) {

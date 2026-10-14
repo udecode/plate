@@ -207,7 +207,7 @@ describe('plite-react app-owned customization', () => {
     const seen: string[] = [];
 
     editorReplace(editor, { children: createChildren(), selection: null });
-    render(
+    const rendered = render(
       <TestEditorSurface
         editor={editor}
         id="scroll-forwarding"
@@ -217,6 +217,12 @@ describe('plite-react app-owned customization', () => {
       />
     );
 
+    await act(async () => {
+      rendered.container.querySelector<HTMLElement>('[data-editor]')!.focus();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
+    });
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
@@ -235,7 +241,7 @@ describe('plite-react app-owned customization', () => {
     const seen: string[] = [];
 
     editorReplace(editor, { children: createChildren(), selection: null });
-    render(
+    const rendered = render(
       <TestEditorSurface
         editor={editor}
         id="remote-scroll-skip"
@@ -245,6 +251,12 @@ describe('plite-react app-owned customization', () => {
       />
     );
 
+    await act(async () => {
+      rendered.container.querySelector<HTMLElement>('[data-editor]')!.focus();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
+    });
     await act(async () => {
       editor.update(ReactUpdatePolicy.preserveSelection, (tx) => {
         tx.selection.set({

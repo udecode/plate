@@ -16,7 +16,7 @@ const paragraph = (text: string) => ({
 describe('authored comparison import', () => {
   it('captures one comparison change as a native pending proposal', async () => {
     const editor = createEditor({
-      plugins: [authored({ authorId: 'alice', retainHistory: true })],
+      plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Before')],
     });
     const comparison = await compare({
@@ -31,10 +31,11 @@ describe('authored comparison import', () => {
     expect(imported.mappings.map(({ groupId }) => groupId)).toEqual(
       comparison.changes.map(({ id }) => id)
     );
-    expect(editor.read.authored.change(imported.ids[0])?.status).toBe(
-      'pending'
-    );
-    expect(editor.read.children()).toEqual([paragraph('Before')]);
+    expect(editor.read.authored.change(imported.ids[0])).not.toBeNull();
+    expect(
+      projectAuthoredDocument(editor.read.value(), { projection: 'accepted' })
+        .document.children
+    ).toEqual([paragraph('Before')]);
     expect(
       projectAuthoredDocument(editor.read.value(), { projection: 'proposed' })
         .document.children
@@ -45,7 +46,7 @@ describe('authored comparison import', () => {
       status: 'unchanged',
     });
     const reloaded = createEditor({
-      plugins: [authored({ authorId: 'bob', retainHistory: true })],
+      plugins: [authored({ authorId: 'bob' })],
       initialValue: structuredClone(editor.read.value()),
     });
     expect(proposeAuthoredComparison(reloaded, { comparison }).status).toBe(
@@ -54,13 +55,13 @@ describe('authored comparison import', () => {
     expect(
       reloaded.update.authored.decide({
         action: 'accept',
-        selection: reloaded.read.authored.select({ ids: imported.ids }),
+        changes: imported.ids.map((id) => reloaded.read.authored.change(id)!),
       }).status
     ).toBe('applied');
     expect(reloaded.read.children()).toEqual([paragraph('After')]);
   });
 
-  it('rejects stale content, stale authored metadata, and forged comparison ids', async () => {
+  it('rejects stale content and forged comparison ids', async () => {
     const editor = createEditor({
       plugins: [authored({ authorId: 'alice' })],
       initialValue: [paragraph('Before')],
@@ -82,23 +83,6 @@ describe('authored comparison import', () => {
       reason: 'document',
       status: 'stale',
     });
-
-    const frontier = createEditor({
-      plugins: [authored({ authorId: 'alice' })],
-      initialValue: [paragraph('Before')],
-    });
-    const frontierComparison = await compare({
-      before: frontier.read.value(),
-      after: [paragraph('After')],
-      schema: frontier.read.schema,
-    });
-    frontier.update((tx) => {
-      tx.authored.propose();
-      tx.text.insert(' draft', { at: { offset: 6, path: [0, 0] } });
-    });
-    expect(
-      proposeAuthoredComparison(frontier, { comparison: frontierComparison })
-    ).toEqual({ reason: 'authored-frontier', status: 'stale' });
   });
 
   it('imports a resolved three-way contribution against the live baseline', async () => {

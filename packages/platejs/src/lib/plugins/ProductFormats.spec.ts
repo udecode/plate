@@ -1,7 +1,20 @@
 import { describe, expect, it, spyOn } from 'bun:test';
 
-import { ContentSlice, property, schema, type ValueOf } from '../../core';
+import {
+  BaseParagraphPlugin,
+  ContentSlice,
+  property,
+  schema,
+  type PluginFormatRegistry,
+  type ValueOf,
+} from '../../core';
 import { writeDataTransferFragment } from '../../dom';
+import {
+  BaseBoldPlugin,
+  BaseHeadingPlugin,
+  HeadingRules,
+} from '../../features/basic-nodes';
+import { BaseImagePlugin } from '../../features/media';
 import { createEditor } from '../editor';
 import { definePlugin } from '../plugin';
 
@@ -179,6 +192,89 @@ describe('product formats', () => {
     ).toBe(true);
     expect(editor.read.children()).toEqual([createParagraph('before')]);
     expect(editor.plugin(FallbackPlugin).store.get('label')).toBe('after');
+  });
+
+  it('answers a descriptor only for the installed plugin it names', () => {
+    const ask = (
+      options: Readonly<{ plugins: readonly unknown[]; schema?: unknown }>,
+      query: (registry: PluginFormatRegistry) => unknown
+    ) => {
+      let answer: unknown;
+      const ProbePlugin = definePlugin('registryProbe', {
+        dataTransferFormats: [
+          {
+            mimeType: 'application/x-registry',
+            scope: 'document',
+            decode: ({ registry }) => {
+              answer = query(registry);
+
+              return null;
+            },
+          },
+        ],
+      });
+
+      createEditor({
+        ...options,
+        plugins: [...options.plugins, ProbePlugin],
+      } as never).api.dom.clipboard.insertData(
+        createDataTransfer('application/x-registry', 'value')
+      );
+
+      return answer;
+    };
+    const textBlock = { schema: { element: schema.element.textBlock() } };
+    const ForeignParagraph = definePlugin('paragraph', textBlock);
+    const ExampleA = definePlugin('example', textBlock);
+    const ExampleB = definePlugin('example', textBlock);
+
+    expect(
+      ask({ plugins: [ForeignParagraph] }, (registry) => [
+        registry.has(BaseParagraphPlugin),
+        registry.type(BaseParagraphPlugin),
+        registry.has('paragraph'),
+        registry.type('paragraph'),
+      ])
+    ).toEqual([false, undefined, true, 'paragraph']);
+    expect(
+      ask({ plugins: [BaseParagraphPlugin] }, (registry) => [
+        registry.has(ForeignParagraph),
+        registry.has(BaseParagraphPlugin),
+      ])
+    ).toEqual([false, true]);
+    expect(
+      ask({ plugins: [ExampleA] }, (registry) => [
+        registry.has(ExampleA),
+        registry.has(ExampleB),
+        registry.type(ExampleB),
+      ])
+    ).toEqual([true, false, undefined]);
+    expect(
+      ask(
+        {
+          plugins: [
+            BaseHeadingPlugin.configure({
+              inputRules: [HeadingRules.markdown()],
+            }),
+          ],
+          schema: {
+            overrides: [
+              schema.override(BaseHeadingPlugin, { element: { type: 'h' } }),
+            ],
+          },
+        },
+        (registry) => registry.type(BaseHeadingPlugin)
+      )
+    ).toBe('h');
+    expect(
+      ask({ plugins: [BaseBoldPlugin] }, (registry) => [
+        registry.has(BaseBoldPlugin),
+        registry.type(BaseBoldPlugin),
+      ])
+    ).toEqual([true, undefined]);
+    expect(
+      ask({ plugins: [BaseImagePlugin] }, (registry) => registry.has('image'))
+    ).toBe(true);
   });
 
   it('allows disjoint equal-priority claims with a stable owner tie-break', () => {

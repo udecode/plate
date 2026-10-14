@@ -59,7 +59,7 @@ export function LabelsField() {
 - `Escape`、`mod+Enter` 或点击外部会关闭菜单并清除搜索。
 - 只有大小写不同的标签视为同一个。第一个标签保留，因此表单值中重复的标签只显示一次。
 - 撤销和重做快捷键已关闭，选中的标签不会被撤销。
-- 只读字段会把带 `url` 的标签渲染为链接。
+- 只读字段仅在 [`getLinkHref`](/cn/docs/link#getlinkhref) 接受标签的 `url` 时把标签渲染为链接。`url` 被拒绝的标签（例如 `javascript:` 地址或只有 `https://`）显示为没有链接的标签。
 - 把标签拖到另一个标签之前会移动它。把标签放到另一个标签之后不会产生任何变化。
 
 要修改这些规则，请编辑复制的 `select-editor.tsx` 中的 `SelectTagPlugin`；要修改按键，请编辑字段的按键处理函数。
@@ -95,7 +95,7 @@ export function LabelsField() {
     标签文本。
   </APIItem>
   <APIItem name="url" type="string" optional>
-    只读标签渲染的链接。
+    [`getLinkHref`](/cn/docs/link#getlinkhref) 接受时，只读标签渲染的链接。
   </APIItem>
 </APIAttributes>
 </API>

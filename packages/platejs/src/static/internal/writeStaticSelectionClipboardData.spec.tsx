@@ -1,15 +1,20 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { NodeApi, schema, TextApi } from '../../core';
+import {
+  type Editor,
+  createEditor,
+  NodeApi,
+  schema,
+  TextApi,
+} from '../../core';
 import { definePlugin } from '../../lib';
 import { createDataTransfer } from '../../testing';
 import { EditorStatic } from '../components/PlateStatic';
-import { createStaticEditor } from '../editor/withStatic';
 import { writeStaticSelectionClipboardData } from './writeStaticSelectionClipboardData';
 
 const renderEditor = (
-  editor: ReturnType<typeof createStaticEditor>,
+  editor: Editor,
   document: Document = globalThis.document
 ) => {
   document.body.innerHTML = ReactDOMServer.renderToStaticMarkup(
@@ -43,7 +48,7 @@ describe('writeStaticSelectionClipboardData', () => {
   });
 
   it('declines absent and other-preview selections', () => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       initialValue: [{ children: [{ text: 'Alpha' }], type: 'paragraph' }],
     });
     const first = renderEditor(editor);
@@ -75,7 +80,7 @@ describe('writeStaticSelectionClipboardData', () => {
   });
 
   it('copies partial model text across blocks from exact coordinates', () => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       initialValue: [
         { children: [{ text: 'Alpha' }], type: 'paragraph' },
         { children: [{ text: 'Omega' }], type: 'paragraph' },
@@ -118,7 +123,7 @@ describe('writeStaticSelectionClipboardData', () => {
             : [],
       },
     });
-    const editor = createStaticEditor({
+    const editor = createEditor({
       initialValue: [{ children: [{ text: 'abcdef' }], type: 'paragraph' }],
       plugins: [paint],
     });
@@ -147,7 +152,7 @@ describe('writeStaticSelectionClipboardData', () => {
   });
 
   it('copies a selected empty sentinel as its model block', () => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
     const host = renderEditor(editor);
@@ -189,7 +194,7 @@ describe('writeStaticSelectionClipboardData', () => {
         },
       },
     });
-    const editor = createStaticEditor({
+    const editor = createEditor({
       initialValue: {
         children: [
           {
@@ -224,7 +229,7 @@ describe('writeStaticSelectionClipboardData', () => {
   });
 
   it('uses the selected iframe document', () => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       initialValue: [{ children: [{ text: 'Frame' }], type: 'paragraph' }],
     });
     const iframe = document.createElement('iframe');
@@ -250,7 +255,7 @@ describe('writeStaticSelectionClipboardData', () => {
   });
 
   it('declines stale coordinate markers', () => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       initialValue: [{ children: [{ text: 'Alpha' }], type: 'paragraph' }],
     });
     const host = renderEditor(editor);

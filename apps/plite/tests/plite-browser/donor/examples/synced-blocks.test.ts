@@ -1,5 +1,5 @@
 import { expect, type Locator, test } from '@playwright/test';
-import {
+import { BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   openExample,
   recordBrowserRuntimeErrors,
@@ -196,17 +196,15 @@ const getViewSelection = (
     | ReturnType<typeof getSyncedEditor>
     | ReturnType<typeof getSyncedEditorByRoot>
 ): Promise<BrowserRawViewSelectionSnapshot | null> =>
-  root.evaluate((element: HTMLElement) => {
+  root.evaluate((element: HTMLElement, key) => {
     const handle = (
-      element as HTMLElement & {
-        __pliteBrowserHandle?: {
+      element as HTMLElement & Record<string, {
           getViewSelection?: () => BrowserRawViewSelectionSnapshot | null;
-        };
-      }
-    ).__pliteBrowserHandle;
+        } | undefined>
+    )[key];
 
     return handle?.getViewSelection?.() ?? null;
-  });
+  }, BROWSER_HANDLE_KEY);
 
 const setViewSelection = (
   root:
@@ -214,38 +212,34 @@ const setViewSelection = (
     | ReturnType<typeof getSyncedEditorByRoot>,
   selection: unknown
 ) =>
-  root.evaluate((element: HTMLElement, nextSelection) => {
+  root.evaluate((element: HTMLElement, [nextSelection, key]) => {
     const handle = (
-      element as HTMLElement & {
-        __pliteBrowserHandle?: {
+      element as HTMLElement & Record<string, {
           setViewSelection?: (selection: unknown) => void;
-        };
-      }
-    ).__pliteBrowserHandle;
+        } | undefined>
+    )[key];
 
     if (!handle?.setViewSelection) {
       throw new Error('This editor surface does not expose setViewSelection');
     }
 
     handle.setViewSelection(nextSelection);
-  }, selection);
+  }, [selection, BROWSER_HANDLE_KEY] as const);
 
 const getProjectedNativeAffordanceMatrix = (
   root:
     | ReturnType<typeof getSyncedEditor>
     | ReturnType<typeof getSyncedEditorByRoot>
 ) =>
-  root.evaluate((element: HTMLElement) => {
+  root.evaluate((element: HTMLElement, key) => {
     const handle = (
-      element as HTMLElement & {
-        __pliteBrowserHandle?: {
+      element as HTMLElement & Record<string, {
           getProjectedNativeAffordanceMatrix?: () => unknown;
-        };
-      }
-    ).__pliteBrowserHandle;
+        } | undefined>
+    )[key];
 
     return handle?.getProjectedNativeAffordanceMatrix?.() ?? null;
-  });
+  }, BROWSER_HANDLE_KEY);
 
 const skipMobileDesktopVerticalKeyboardProof = (testInfo: {
   project: { name: string };
@@ -2630,19 +2624,17 @@ test.describe('synced blocks example', () => {
         });
       await expect
         .poll(() =>
-          outerEditor.evaluate((element: HTMLElement) => {
+          outerEditor.evaluate((element: HTMLElement, key) => {
             const handle = (
-              element as HTMLElement & {
-                __pliteBrowserHandle?: {
+              element as HTMLElement & Record<string, {
                   getLastCommit?: () => {
                     changedRoots?: (string | null)[];
                   } | null;
-                };
-              }
-            ).__pliteBrowserHandle;
+                } | undefined>
+            )[key];
 
             return handle?.getLastCommit?.()?.changedRoots ?? [];
-          })
+          }, BROWSER_HANDLE_KEY)
         )
         .toEqual([SHARED_ROOT]);
 

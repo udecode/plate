@@ -1,5 +1,5 @@
 import { DocumentChange } from '../core/change/document-change';
-import { jsonEqual } from '../core/change/tokens';
+import { jsonEqual } from '../core/change/json';
 import { fingerprintEditorJson } from '../core/json-fingerprint';
 import {
   COMPARISON_POLICY,
@@ -125,13 +125,10 @@ export const proposeAuthoredComparison = <V extends Value>(
   )}`;
   const mappings = selectedIds.map((groupId) => ({ changeId, groupId }));
   const authoredRead = editor.read.authored as {
-    change: (id: string) => { status: string } | null;
+    change: (id: string) => unknown;
   };
-  const existing = authoredRead.change(changeId);
-  if (existing) {
-    return existing.status === 'pending' || existing.status === 'conflicted'
-      ? { ids: [changeId], mappings, status: 'unchanged' }
-      : { reason: 'authored-frontier', status: 'stale' };
+  if (authoredRead.change(changeId)) {
+    return { ids: [changeId], mappings, status: 'unchanged' };
   }
 
   const schema: EditorStateSchemaApi<V> = editor.read.schema;

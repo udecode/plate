@@ -44,3 +44,29 @@ test.each([false, true])(
     expect(view.getByTestId('focused').textContent).toBe('true');
   }
 );
+
+test('an editor refocused right after an outside press reports focus', async () => {
+  const editor = createEditor();
+  const view = render(
+    <EditorRoot editor={editor}>
+      <Editable aria-label="editor" />
+      <button type="button">outside</button>
+      <FocusState />
+    </EditorRoot>
+  );
+  const textbox = view.getByRole('textbox');
+  const outside = view.getByRole('button', { name: 'outside' });
+
+  await act(async () => textbox.focus());
+  await act(async () => {
+    outside.dispatchEvent(
+      new MouseEvent('mousedown', { bubbles: true, cancelable: true })
+    );
+    outside.focus();
+    // A popover returns focus to the editor before the press settles.
+    textbox.focus();
+  });
+
+  expect(document.activeElement).toBe(textbox);
+  expect(view.getByTestId('focused').textContent).toBe('true');
+});

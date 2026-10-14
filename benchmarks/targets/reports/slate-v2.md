@@ -10,13 +10,13 @@ The latest run comes from the target's receipt, written by `bench:targets:run` f
 
 ## Summary
 
-- Targets: 56
-- Required artifacts: 57
-- Recorded artifacts: 54
+- Targets: 54
+- Required artifacts: 55
+- Recorded artifacts: 52
 - Missing optional artifacts: 0
 - Missing required artifacts: 3
-- Status counts: recorded=53, missing-required-artifact=3
-- Latest runs: none=53, passed=3
+- Status counts: recorded=51, missing-required-artifact=3
+- Latest runs: none=51, passed=3
 
 ## Targets
 
@@ -45,10 +45,8 @@ The latest run comes from the target's receipt, written by `bench:targets:run` f
 | plate-authored-construction | plate-authored | plate_authored_construction_normal_ratio | recorded | 1/1 | none | - | yes |
 | plate-code-block-text-flow-browser | react-text-flow | plate_code_block_text_flow_max_budget_ratio | recorded | 1/1 | none | - | yes |
 | plite-annotation-view-index | react-locality | plite_annotation_view_index_baseline_retained | recorded | 2/2 | none | - | yes |
-| plite-authored-checkpoint | core-authored | plite_authored_checkpoint_passed | recorded | 1/1 | none | - | yes |
 | plite-authored-collaboration | collaboration | plite_authored_collaboration_passed | recorded | 1/1 | none | - | yes |
 | plite-authored-mounted | browser-authored | plite_authored_mounted_passed | recorded | 1/1 | none | - | yes |
-| plite-authored-retention | core-authored | plite_authored_retention_passed | recorded | 1/1 | none | - | yes |
 | plite-authored-scale | core-authored | plite_authored_scale_passed | recorded | 1/1 | none | - | yes |
 | plite-authored-typing | browser-authored | plite_authored_typing_passed | recorded | 1/1 | none | - | yes |
 | plite-command-dispatch | core-command | plite_command_dispatch_worst_budget_ratio | recorded | 1/1 | none | - | yes |

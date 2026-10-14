@@ -578,6 +578,24 @@ export const registryFeatures: Registry['items'] = [
     dependencies: ['platejs'],
     files: [
       {
+        path: 'components/editor/lint.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'lint',
+    type: 'registry:component',
+    description:
+      'Lint rules with severity underlines, a caret popover with fixes, and F8 to move between findings.',
+    title: 'Lint',
+    meta: {
+      docs: [{ route: '/docs/lint' }],
+      examples: ['lint-demo'],
+    },
+  },
+  {
+    dependencies: ['platejs'],
+    files: [
+      {
         path: 'components/editor/date.tsx',
         type: 'registry:component',
       },

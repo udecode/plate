@@ -2,8 +2,9 @@
 title: Media object and editable content ownership
 type: decision
 status: accepted
-updated: 2026-10-04
+updated: 2026-10-13
 source_refs:
+  - ../../../packages/plitejs/src/react/editable/caret-engine.ts
   - ../../../packages/plitejs/src/interfaces/schema.ts
   - ../../../packages/plitejs/src/core/schema-compiler.ts
   - ../../../packages/plitejs/src/core/public-state.ts
@@ -18,7 +19,7 @@ related:
 
 # Media object and editable content ownership
 
-**Audit of 2026-10-04.** Pursue. The object-role model holds, but the latest Pursue never landed: Plite's neutral caret engine still decides whether to enter an object's child text from document text length, mirroring the copied Caption's hide-when-empty rule, and still reads owner-stop direction from the Editable host instead of the local run. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-media-audit` and `2026-10-04-media-audit-2` hold the evidence.
+**Review of 2026-10-13.** Pursue, built. The object-role model holds. Plite's caret engine now reads two facts from the page instead of the document. Arrow keys stop in an object's child text only while the page draws it, apart from one backward stop in a mounted empty child. Left and right follow the computed direction of the block that holds the caret. The [media review](../../plans/2026-10-13-media-review.md) holds the proof and limits. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-media-audit` and `2026-10-04-media-audit-2` hold the earlier evidence.
 
 Plite owns a strict object role for independently meaningful blocks with
 editable children. All five Plate media descriptors use that role while keeping
@@ -118,3 +119,17 @@ horizontal owner movement reads the Editable host's direction. Mixed local
 direction, visible empty children in non-media objects, media embed reverse
 entry, and non-Chromium media runs remain unproved. No new public flag or
 media-specific navigation plugin is justified by this review.
+
+The [2026-10-13 media review](../../plans/2026-10-13-media-review.md) answers
+that question with one private policy in `caret-engine.ts`. A child text stop
+counts only when no element from the text up to its owner computes
+`display: none` or `content-visibility: hidden` and the text does not compute
+`visibility: hidden`. A backward horizontal move keeps one stop in a mounted
+empty child, which `EDIT-CAPTION-NAV-003` requires and which reveals the stock
+caption. Arrow direction comes from the lowest block holding the caret, or from
+the selected object. Copied UI may now hide or show captions as it likes
+without a hidden caret or a skipped visible caption. Its browser cases pass
+five warm Chromium runs and one WebKit run. Firefox could not start in the
+run's environment. An app that hides an empty caption for good still gets one
+invisible backward stop, and content-root and projected-view direction keep
+their own reads.

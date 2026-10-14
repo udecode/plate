@@ -2397,6 +2397,82 @@ describe('JSON document change algebra', () => {
     assert.ok(ranges.every((range) => range[0] <= range[1]));
   });
 
+  it('freezes at most four entries per deleted token inverting a run of 300 block deletions', () => {
+    const before = DocumentIndex.fromValue(
+      asJsonNodes(
+        Array.from({ length: 302 }, (_, index) => paragraph(`p${index}`))
+      )
+    );
+    let change = removeNodeChange(before, [1]);
+    let after = change.apply(before);
+
+    for (let index = 1; index < 300; index++) {
+      const removal = removeNodeChange(after, [1]);
+
+      change = change.compose(removal);
+      after = removal.apply(after);
+    }
+
+    const { freeze } = Object;
+    let frozenEntries = 0;
+    let inverse: RootChange;
+
+    Object.freeze = (value: unknown) => {
+      if (Array.isArray(value)) frozenEntries += value.length;
+      return freeze(value);
+    };
+    try {
+      inverse = change.invert(before);
+    } finally {
+      Object.freeze = freeze;
+    }
+
+    const deletedTokens = before.length - after.length;
+
+    assert.deepEqual(inverse.apply(after).value, before.value);
+    assert.ok(
+      frozenEntries <= 4 * deletedTokens,
+      `inverting ${deletedTokens} deleted tokens froze ${frozenEntries} array entries`
+    );
+  });
+
+  it('inverts runs of text and block deletions on an edited document', () => {
+    const original = DocumentIndex.fromValue(
+      asJsonNodes(
+        Array.from({ length: 8 }, (_, index) => paragraph(`p${index}`))
+      )
+    );
+    const before = insertTextChange(original, [0, 0], 2, 'abcdef').apply(
+      original
+    );
+    let change = RootChange.empty(before.length);
+    let after = before;
+    const remove = (step: RootChange) => {
+      change = change.compose(step);
+      after = step.apply(after);
+    };
+
+    for (let index = 0; index < 3; index++) {
+      remove(removeTextChange(after, [0, 0], 3, 'b'));
+    }
+    for (let index = 0; index < 3; index++) {
+      remove(removeNodeChange(after, [2]));
+    }
+
+    assert.deepEqual(
+      after.value,
+      asJsonNodes([
+        paragraph('p0aef'),
+        ...[1, 5, 6, 7].map((index) => paragraph(`p${index}`)),
+      ])
+    );
+    assert.deepEqual(
+      change.invert(before).apply(after).value,
+      before.value,
+      'the inverse restores the edited document'
+    );
+  });
+
   it('structurally shares untouched JSON and preserves moved node identity', () => {
     const before = DocumentIndex.fromValue(
       asJsonNodes([paragraph('a'), paragraph('b'), paragraph('c')])

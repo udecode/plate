@@ -6,9 +6,7 @@ import type { Value } from 'platejs';
 
 jsx;
 
-export const excalidrawInitialData: Partial<
-  Pick<ExcalidrawElement, 'data' | 'width'>
-> = {
+export const excalidrawInitialData: Partial<Pick<ExcalidrawElement, 'data'>> = {
   data: {
     elements: [
       {
@@ -79,7 +77,7 @@ export const excalidrawValue = (
       使用 Excalidraw
       插件释放您的创造力，它使您能够直接在编辑器中嵌入和绘制图表。
     </hp>
-    <hexcalidraw {...excalidrawInitialData} width="50%">
+    <hexcalidraw {...excalidrawInitialData}>
       <htext />
     </hexcalidraw>
   </fragment>

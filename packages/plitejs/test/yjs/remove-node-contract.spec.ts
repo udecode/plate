@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import * as Y from 'yjs';
 
 import type { Descendant } from '../../src/index';
+import { setYjsAttribute } from '../../src/yjs/core/attributes';
 import {
   createVirtualYjsMovePlaceholder,
   createYjsText,
@@ -26,6 +27,14 @@ import {
   syncConnectedPeers,
   undoHistoryPeerAndSync,
 } from './support/collaboration';
+
+const yParagraph = (): Y.XmlElement => {
+  const node = new Y.XmlElement('element');
+
+  setYjsAttribute(node, 'type', 'paragraph');
+
+  return node;
+};
 
 const initialValue = (): Descendant[] => [
   paragraph('alpha'),
@@ -55,8 +64,8 @@ const insertRemoteText = (peer: Peer): void => {
 describe('plitejs/yjs remove_node collaboration contract', () => {
   it('matches hidden text removals by text content', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
-    const parent = new Y.XmlElement('paragraph');
+    const root = doc.get('document', Y.XmlElement);
+    const parent = yParagraph();
     const wrong = createYjsText('wrong', {});
     const right = createYjsText('right', {});
 
@@ -78,10 +87,10 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
 
   it('matches hidden element removals by child content when candidates share a type', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
+    const root = doc.get('document', Y.XmlElement);
     const parent = new Y.XmlElement('root');
-    const wrong = new Y.XmlElement('paragraph');
-    const right = new Y.XmlElement('paragraph');
+    const wrong = yParagraph();
+    const right = yParagraph();
 
     wrong.insert(0, [createYjsText('wrong', {})]);
     right.insert(0, [createYjsText('right', {})]);
@@ -109,11 +118,11 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
 
   it('matches hidden element removals through virtual placeholder content', () => {
     const doc = new Y.Doc();
-    const root = doc.get('plitejs', Y.XmlElement);
+    const root = doc.get('document', Y.XmlElement);
     const parent = new Y.XmlElement('root');
     const movedText = createYjsText('right', {});
-    const wrong = new Y.XmlElement('paragraph');
-    const right = new Y.XmlElement('paragraph');
+    const wrong = yParagraph();
+    const right = yParagraph();
 
     root.insert(0, [parent]);
     parent.insert(0, [movedText]);

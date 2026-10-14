@@ -9,3 +9,5 @@ Replace navigation target selectors, path targets, highlight variants, and the g
 Bind plugin API factories to the exact editor or mounted view that exposes them while sharing plugin configuration and stores. Capture the editor inside the `api` factory when a command needs view-specific focus, scrolling, or feedback.
 
 Allow footnote navigation when `navigationFeedback` is disabled.
+
+**Migration:** Set the feedback duration with the `--editor-nav-feedback-duration` CSS variable instead of `--plate-nav-feedback-duration`.

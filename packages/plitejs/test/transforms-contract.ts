@@ -1879,6 +1879,90 @@ describe('plite transforms contract', () => {
     );
   });
 
+  it('blocks.reset gives a block in a required leading slot that slot', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-required-position', {
+          elements: {
+            box: {
+              content: schema.content.prefix(
+                [{ element: 'heading', properties: { level: 1 } }],
+                schema.content.types(['heading', 'paragraph'], {
+                  default: { type: 'paragraph' },
+                })
+              ),
+            },
+            heading: {
+              content: schema.content.text(),
+              properties: { level: property.number() },
+            },
+            paragraph: { content: schema.content.text() },
+          },
+          root: schema.content.types(['box'], { min: 1 }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'box',
+          children: [
+            { level: 1, type: 'heading', children: [{ text: 'Title' }] },
+            { level: 2, type: 'heading', children: [{ text: 'Sub' }] },
+          ],
+        },
+      ],
+    });
+
+    editor.update.selection.setNodes([
+      [0, 0],
+      [0, 1],
+    ]);
+
+    assert.equal(editor.update.blocks.reset(), true);
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'box',
+        children: [
+          { level: 1, type: 'heading', children: [{ text: 'Title' }] },
+          { type: 'paragraph', children: [{ text: 'Sub' }] },
+        ],
+      },
+    ]);
+  });
+
+  it('blocks.reset removes unset properties the default keeps', () => {
+    const editor = createEditor({
+      plugins: [
+        defineEditorSchema('schema:reset-unset', {
+          elements: {
+            box: {
+              content: schema.content.types(['title'], {
+                default: { type: 'title' },
+                min: 1,
+              }),
+            },
+            title: {
+              content: schema.content.text(),
+              properties: { level: property.number() },
+            },
+          },
+          root: schema.content.types(['box'], { min: 1 }),
+        }),
+      ],
+      initialValue: [
+        {
+          type: 'box',
+          children: [{ level: 2, type: 'title', children: [{ text: 'T' }] }],
+        },
+      ],
+    });
+
+    editor.update.blocks.reset({ at: [0, 0], unset: 'level' });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'box', children: [{ type: 'title', children: [{ text: 'T' }] }] },
+    ]);
+  });
+
   it('blocks.toggle changes only exact disjoint node selections', () => {
     const editor = createEditor({
       plugins: [
@@ -2308,6 +2392,421 @@ describe('plite transforms contract', () => {
       },
       { type: 'block', children: [{ text: 'wo' }] },
     ]);
+  });
+
+  it('wrapNodes with split refuses a range inside a read-only block, even with voids', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('wrap-read-only-block-badge', {
+        badge: { inline: true, readOnly: true },
+        link: { inline: true },
+        locked: { readOnly: true },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'locked',
+          children: [
+            { text: 'a' },
+            { type: 'badge', children: [{ text: 'b' }] },
+            { text: '.' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 2], offset: 1 },
+      },
+    });
+    const before = editorGetSnapshot(editor).children;
+    let wrapped: boolean | undefined;
+
+    editor.update((tx) => {
+      wrapped = tx.nodes.wrap(
+        { type: 'link', children: [] },
+        { split: true, voids: true }
+      );
+    });
+
+    assert.equal(wrapped, false);
+    assert.deepEqual(editorGetSnapshot(editor).children, before);
+  });
+
+  it('wrapNodes with split and voids wraps a selected inline void whole', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('wrap-voids-inline-void', {
+        link: {
+          content: schema.content.any([
+            schema.content.text(),
+            schema.content.group('inline'),
+          ]),
+          inline: true,
+        },
+        mention: { void: 'inline' },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'block',
+          children: [
+            { text: 'a' },
+            { type: 'mention', children: [{ text: '' }] },
+            { text: 'b' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 2], offset: 0 },
+      },
+    });
+    let wrapped: boolean | undefined;
+
+    editor.update((tx) => {
+      wrapped = tx.nodes.wrap(
+        { type: 'link', children: [] },
+        { split: true, voids: true }
+      );
+    });
+
+    assert.equal(wrapped, true);
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'block',
+        children: [
+          { text: 'a' },
+          {
+            type: 'link',
+            children: [
+              { text: '' },
+              { type: 'mention', children: [{ text: '' }] },
+              { text: '' },
+            ],
+          },
+          { text: 'b' },
+        ],
+      },
+    ]);
+  });
+
+  it('wrapNodes with split and a type keeps text before a selected inline void out', () => {
+    const editor = createEditor();
+    const open = schema.content.any([
+      schema.content.text(),
+      schema.content.group('inline'),
+    ]);
+
+    editor.install(
+      defineTestSchema('wrap-type-start-void', {
+        mention: { void: 'inline' },
+        outer: { content: open, inline: true },
+        wrapper: { content: open, inline: true },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'block',
+          children: [
+            { text: '' },
+            {
+              type: 'outer',
+              children: [
+                { text: 'a' },
+                { type: 'mention', children: [{ text: '' }] },
+                { text: 'tail' },
+              ],
+            },
+            { text: '' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 1, 0], offset: 1 },
+        focus: { path: [0, 1, 2], offset: 2 },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.wrap(
+        { type: 'wrapper', children: [] },
+        { split: true, type: 'outer' }
+      );
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'block',
+        children: [
+          { text: '' },
+          { type: 'outer', children: [{ text: 'a' }] },
+          { text: '' },
+          {
+            type: 'wrapper',
+            children: [
+              { text: '' },
+              {
+                type: 'outer',
+                children: [
+                  { text: '' },
+                  { type: 'mention', children: [{ text: '' }] },
+                  { text: 'ta' },
+                ],
+              },
+              { text: '' },
+            ],
+          },
+          { text: '' },
+          { type: 'outer', children: [{ text: 'il' }] },
+          { text: '' },
+        ],
+      },
+    ]);
+  });
+
+  it('wrapNodes with voids refuses a link over a badge in a read-only block', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('wrap-voids-read-only-badge', {
+        badge: { inline: true, readOnly: true },
+        link: { inline: true },
+        locked: { readOnly: true },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'locked',
+          children: [
+            { text: 'a' },
+            { type: 'badge', children: [{ text: 'b' }] },
+            { text: '.' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 2], offset: 1 },
+      },
+    });
+    const before = editorGetSnapshot(editor).children;
+    let wrapped: boolean | undefined;
+
+    editor.update((tx) => {
+      wrapped = tx.nodes.wrap({ type: 'link', children: [] }, { voids: true });
+    });
+
+    assert.equal(wrapped, false);
+    assert.deepEqual(editorGetSnapshot(editor).children, before);
+  });
+
+  it('wrapNodes with split wraps text inside an inline that can hold the wrapper', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('wrap-inside-open-inline', {
+        link: { inline: true },
+        span: {
+          content: schema.content.any([
+            schema.content.text(),
+            schema.content.group('inline'),
+          ]),
+          inline: true,
+        },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'block',
+          children: [
+            { text: '' },
+            { type: 'span', children: [{ text: 'abc' }] },
+            { text: '' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 1, 0], offset: 1 },
+        focus: { path: [0, 1, 0], offset: 2 },
+      },
+    });
+    let wrapped: boolean | undefined;
+
+    editor.update((tx) => {
+      wrapped = tx.nodes.wrap({ type: 'link', children: [] }, { split: true });
+    });
+
+    assert.equal(wrapped, true);
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'block',
+        children: [
+          { text: '' },
+          {
+            type: 'span',
+            children: [
+              { text: 'a' },
+              { type: 'link', children: [{ text: 'b' }] },
+              { text: 'c' },
+            ],
+          },
+          { text: '' },
+        ],
+      },
+    ]);
+  });
+
+  it('wrapNodes with split leaves a read-only inline at the range end whole', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('wrap-read-only-end', {
+        badge: { inline: true, readOnly: true },
+        span: {
+          content: schema.content.any([
+            schema.content.text(),
+            schema.content.group('inline'),
+          ]),
+          inline: true,
+        },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'block',
+          children: [
+            { text: 'a' },
+            { type: 'badge', children: [{ text: 'b' }] },
+            { text: '.' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 2], offset: 0 },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.nodes.wrap({ type: 'span', children: [] }, { split: true });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'block',
+        children: [
+          { text: '' },
+          { type: 'span', children: [{ text: 'a' }] },
+          { text: '' },
+          { type: 'badge', children: [{ text: 'b' }] },
+          { text: '.' },
+        ],
+      },
+    ]);
+  });
+
+  it('wrapNodes with split and a text match wraps text that only touches a link', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('wrap-match-beside-link', { link: { inline: true } })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'block',
+          children: [
+            { text: 'a' },
+            { type: 'link', children: [{ text: 'b' }] },
+            { text: '.' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 1, 0], offset: 0 },
+      },
+    });
+    let wrapped: boolean | undefined;
+
+    editor.update((tx) => {
+      wrapped = tx.nodes.wrap(
+        { type: 'link', children: [] },
+        { match: NodeApi.isText, split: true }
+      );
+    });
+
+    assert.equal(wrapped, true);
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      {
+        type: 'block',
+        children: [
+          { text: '' },
+          { type: 'link', children: [{ text: 'a' }] },
+          { text: '' },
+          { type: 'link', children: [{ text: 'b' }] },
+          { text: '.' },
+        ],
+      },
+    ]);
+  });
+
+  it('wrapNodes in all mode refuses a wrapper that cannot hold an inline it matched', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('wrap-all-mode-nested', {
+        link: { inline: true },
+        span: {
+          content: schema.content.any([
+            schema.content.text(),
+            schema.content.group('inline'),
+          ]),
+          inline: true,
+        },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'block',
+          children: [
+            { text: '' },
+            { type: 'span', children: [{ text: 'abc' }] },
+            { text: '' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 1, 0], offset: 1 },
+        focus: { path: [0, 1, 0], offset: 2 },
+      },
+    });
+    const before = editorGetSnapshot(editor).children;
+    let wrapped: boolean | undefined;
+
+    editor.update((tx) => {
+      wrapped = tx.nodes.wrap({ type: 'link', children: [] }, { mode: 'all' });
+    });
+
+    assert.equal(wrapped, false);
+    assert.deepEqual(editorGetSnapshot(editor).children, before);
   });
 
   it('wrapNodes can honor match and leave rejected nodes alone', () => {

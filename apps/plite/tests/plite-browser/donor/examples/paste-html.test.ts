@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
-import {
+import { BROWSER_HANDLE_KEY,
   assertNoIllegalKernelTransitions,
   createBrowserClipboardPasteGauntlet,
   createBrowserDropDataGauntlet,
@@ -119,15 +119,15 @@ const insertDataWithHandle = async (
   editor: Awaited<ReturnType<typeof openExample>>,
   payload: { html?: string; text?: string }
 ) => {
-  await editor.root.evaluate((element: HTMLElement, nextPayload) => {
-    const handle = (element as Record<string, any>).__pliteBrowserHandle;
+  await editor.root.evaluate((element: HTMLElement, [nextPayload, key]) => {
+    const handle = (element as Record<string, any>)[key];
 
     if (!handle?.insertData) {
       throw new Error('Missing Plite browser insertData handle');
     }
 
     handle.insertData(nextPayload);
-  }, payload);
+  }, [payload, BROWSER_HANDLE_KEY] as const);
 };
 
 const expectFontSizeCloseTo = async (locator: Locator, expectedPx: number) => {
