@@ -65,7 +65,7 @@ Now the editor tracks the text holder, which survives the draft. When a draft en
 - [x] Repeated acceptance proof on the first fix's bytes, which the owner then checked by hand; the recovery replaced that fix, so a later step reruns it. — `docs/plans/artifacts/ime-empty-block/accept-spec-a1.log`
 - [x] Reflect on the workflow correction. — `docs/plans/artifacts/ime-empty-block/reflect/brief.md`
 - [x] Owner hand check on macOS with WeType: the empty-paragraph caret and Escape then typing both work (2026-10-15). — `docs/plans/2026-10-14-ime-empty-block.decisions.tsv`
-- [x] Android Chrome 154 check on the owner's phone, typed with real key taps and read back over DevTools. WeType pinyin, its commit and English keep text and caret right. A Korean keyboard turns `한글` into `ㅎ하한ㄱ그글`, and HEAD does the same, so this change did not cause it. — `docs/plans/artifacts/ime-empty-block/android/ko-hangul.json`, `docs/plans/artifacts/ime-empty-block/android/head-ko-hangul.json`
+- [x] Android Chrome 154 check on the owner's phone, on the journal version, typed with real key taps and read back over DevTools. WeType pinyin, its commit and English keep text and caret right. A Korean keyboard turns `한글` into `ㅎ하한ㄱ그글`, and HEAD does the same, so this change did not cause it. — `docs/plans/artifacts/ime-empty-block/android/ko-hangul.json`, `docs/plans/artifacts/ime-empty-block/android/head-ko-hangul.json`
 - [x] PR panel round 1 on the diff. One critical, the cancel replay undoing structure without its text, and four warnings were applied, and five warnings were deferred. — `docs/plans/artifacts/ime-empty-block/panel1/`
 - [x] PR panel round 2 on the fixes. The replay restored corruption that a queued repair had fixed, so the journal replay left the loop and was reverted. A caret on the empty host or its leaf now keeps native ownership. — `docs/plans/artifacts/ime-empty-block/panel2/`
 - [x] Run architect on the Escape recovery and adopt its winner. It rebuilds the empty line's block from the model, wakes the parent in the same flush and exports the caret synchronously. — `docs/plans/artifacts/ime-empty-block/architect2/judge/answer.md`
@@ -111,14 +111,24 @@ What landed is pushed to branch `fix/ime-empty-block`. The PR against `next` wai
 Proof and its limits come next.
 
 - On the final bytes, frozen as `219c937`, the Chromium spec passes 25 of 25 over five repeats, and the CDP probes pass 5 of 5, the key burst 10 of 10. The plitejs React partition passes 1371, the dom partition 291, typecheck is clean, and the Plite Chromium IME rows pass 30 with 2 skipped (`fin-*.log`).
-- Six of seven final mutants fail their named test (`final/mutate-run.log`). The seventh, a cached-path lookup, is equivalent now that the key is read before the end handler.
+- Six of seven final mutants fail their named test (`final/mutate-run.log`). The seventh, a cached-path lookup, gives the same answer on every case the tests reach, because the key is now read before the end handler. A model change during the composition, before the end handler, is untested.
 - No jsdom test fails when a text's own redraw key is removed, here or at HEAD.
-- `pnpm check` fails 16 of 25 steps on the final bytes, and the same 16 fail at HEAD in a detached worktree with identical error lines that name no task file. Run alone, `test` fails the same 5 tests as HEAD, `test-slow` fails 10 that HEAD also fails (HEAD fails 12), the plitejs tests fail the same 10 authored and Yjs tests, and `cli-test` passes on both.
-- Every browser run simulated Chrome's input method through CDP. A real macOS input method ran only on the journal version, and Android ran with real key taps on the owner's phone, where WeType was right and a Korean keyboard showed two bugs that HEAD shares. Safari and Firefox were not run.
+- `pnpm check` fails 16 of 25 steps on the final bytes, and the same 16 fail at HEAD in a detached worktree with identical error lines that name no task file. Run alone, `test` fails the same 9 tests as HEAD (5 Bun and 4 Node), `test-slow` fails 10 that HEAD also fails (HEAD fails 12), the plitejs tests fail the same 10 authored and Yjs tests, and `cli-test` passes on both.
+- Every browser run simulated Chrome's input method through CDP. A real macOS input method and the Android pass both ran only on the journal version. On the owner's phone, driven with real key taps, WeType was right and a Korean keyboard showed two bugs that HEAD shares. Safari and Firefox were not run.
 - The hand drive did not run, because this session has no browser tool.
 - Element rendering keeps HEAD's render counts at 1001 blocks; its timing was inconclusive on a loaded host (`bench/cand-fanout.json`).
 
-Counts: 23 items in all, the 19 plan steps and 4 close gates. 18 steps are done, and the PR step is partial until the PR opens. Of the gates, the suggested task is done, the hand drive is blocked, and the decision-trail review and a second reflect are open.
+- The run wrote `packages/plitejs/src/react/editable`, which the started suggested task `task_f1475754` also writes, before it checked the task ledger. That task started on 2026-10-12 and has not landed. The PR goes ahead under a Defaults row, and Open work tracks the task.
+
+Counts: 23 items in all, the 19 plan steps and 4 close gates. 18 steps are done, and the PR step is partial until the PR opens. Of the gates, the suggested task, the decision-trail review and the second reflect are done, and the hand drive is blocked.
+
+Decision-trail review, reviewed by gpt-6.1-sol @xhigh (`trail/sol.md`). No critical finding.
+
+- Warning, applied: the run passed over the started task `task_f1475754` without a decision-log row. The row is now logged.
+- Warning, applied: "equivalent" overstated the cached-path mutant. The proof line above now names the untested window.
+- Warning, kept as a limit: the text's own redraw key rests on a source trace with no failing case.
+- Nit, applied: `test` fails 9 tests on both sides, not 5, because the first count missed Node's `not ok` lines.
+- Nit, deferred: the PR body header says plan review did not run, though the recovery plan had a panel. The header comes from the shared page renderer. owner: the owner (natamox). stop: the owner takes or drops a renderer fix in the shared source.
 
 The first reflect ran one opus reviewer over the three lenses. Nothing applied without approval, because no lesson was a script fix or a same-length rewording.
 
@@ -146,3 +156,33 @@ Backlog, each with owner: the owner (natamox) and stop: the owner takes or drops
 - The Delivery rule's root `pnpm lint:fix` rewrites committed files on `next`, so it should always scope to the task's paths, through the shared source.
 - A hook that reports a missing todo list or decision log before the first product edit, so a skipped workflow shows without the owner.
 - An architect entry for reviewing an already-built fix with its patch and premises, through the shared source.
+
+The second reflect ran one opus reviewer over the three lenses on the transcript after the first reflect (`reflect2/reply.md`). The lead synthesized it. Nothing applied without approval: the one script fix that qualifies, `decisions-check.mjs` refusing a `warning:` decision, lives in the shared source and goes through `sync-pstack`'s Lesson mode.
+
+Accepted, waiting for the owner's approval:
+
+- Add a physical-phone recipe to `verify`'s Android proof: `adb reverse` for the dev server, `adb forward` to Chrome's DevTools for read-only observation, `ime set` and `input tap` for the keyboard, then restore. Add adb device checks to the `verify` description, so an agent drives an attached phone instead of scripting taps for the owner.
+- Register a device observer with `page.addInitScript`, so a page reload does not drop it.
+- Ask for the owner's hand check only after every review that can change the code, because a later fix makes it stale.
+- Ask a question that needs the owner's word, such as opening a PR on red checks, as soon as it is known, not at the final hand-back.
+- Republish the page when a review overturns something the owner already confirmed.
+- Compare failing-test names, and require that both sides ran tests, in a HEAD comparison; a summary of failed steps matched while HEAD ran no Bun tests.
+- Note in `verify`'s testing reference that a live DOM node inside `toMatchObject` can hang vitest, and that `fireEvent` inside a layout effect nests `act`.
+- Note the shell traps here: zsh does not split `$P`, an unmatched glob aborts the command, and the checkout path has a space.
+
+Rejected:
+
+- Narrow the Android step to the journal version as a rule; it is applied to this Close instead.
+- Treat the off-scope Korean Backspace diagnosis as a lesson; it took minutes and went to Open work.
+
+Backlog, each with owner: the owner (natamox) and stop: the owner takes or drops it:
+
+- `decisions-check.mjs` should accept a `warning:` decision, through `sync-pstack`'s Lesson mode.
+- `proof-worktree.mjs --install` should rebuild Bun or fail when the worktree's Bun is the placeholder; the hand-built worktrees here ran no Bun tests until the binary was copied in.
+- A read-only Stop hook that reports progress lines not in the reply language the owner's memory names; the text rule failed again in this run.
+- `freeze.mjs` could take every dirty task path, instead of a hand-written list of about 12.
+- `plan-page.mjs --pr` prints a path rather than the body; the PR mode docs should say so.
+- `rebuildCancelledLine` is optional only so about 30 contract tests compile, so a caller that leaves it out silently loses the recovery; making it required means updating those tests.
+- A plan check that flags a closed step whose proof predates the latest build.
+- The repeats of the first reflect's Backlog: the mise preamble on every command, the `sleep` before each Codex seat that works around `cross.mjs` 429s, and the installed pstack 0.9.67 against the v0.9.84 pin.
+
