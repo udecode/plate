@@ -16,10 +16,8 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { committedLines, defaultsWords, isAcceptingWord, landed, proofKey, proofStates, recordsExit, runPaths } from './status.mjs';
+import { CLOSED_BOX, committedLines, defaultsWords, isAcceptingWord, landed, markdownLines, OPEN_BOX, proofKey, proofStates, recordsExit, runPaths } from './status.mjs';
 
-const OPEN_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[ \]/u;
-const CLOSED_BOX = /^\s*(?:(?:[-*+]|\d+\.)\s+)+\[[xX]\]/u;
 const ITEM = /^\s*(?:[-*+]|\d+\.)\s+/u;
 const PLACEHOLDER = /\b(?:TODO|TBD|FIXME)\b/u;
 const FINDINGS = /^#{1,6}\s+.*\b(?:deferred|open (?:items|findings|questions|work)|follow-?ups?|known gaps|gaps|residual)\b/iu;
@@ -79,31 +77,15 @@ function openLines(path) {
     }
     closedBox = null;
   };
-  let fenced = false;
-  let commented = false;
   let findings = false;
   let findingsLevel = 0;
   let gate = null;
-  for (const [index, raw] of text.split('\n').entries()) {
-    if (/^\s*(?:```|~~~)/u.test(raw)) {
+  for (const { fence, hidden, index, line, raw } of markdownLines(text)) {
+    if (fence) {
       checkClosedBox();
-      fenced = !fenced;
       continue;
     }
-    if (fenced) continue;
-    let line = raw;
-    if (commented) {
-      const end = line.indexOf('-->');
-      if (end === -1) continue;
-      commented = false;
-      line = line.slice(end + 3);
-    }
-    line = line.replace(/<!--.*?-->/gu, '');
-    const start = line.indexOf('<!--');
-    if (start !== -1) {
-      commented = true;
-      line = line.slice(0, start);
-    }
+    if (hidden) continue;
     if (closedBox && line.trim() && raw.search(/\S/u) > closedBox.indent && !OPEN_BOX.test(line) && !CLOSED_BOX.test(line)) {
       closedBox.text += ` ${line.trim()}`;
       if (!committed.has(raw)) closedBox.fresh += ` ${line.trim()}`;
