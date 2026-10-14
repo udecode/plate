@@ -561,6 +561,24 @@ describe('node selection scroll frames', () => {
     }
   });
 
+  it('updates hits when a block grows inside a fixed-size editable', () => {
+    const f = fixture();
+    try {
+      f.pointer('pointerDown', f.editable);
+      f.pointer('pointerMove', f.ownerDocument, 150);
+      f.flush();
+      f.flush();
+      expect(f.selected()).toEqual(['block 0', 'block 1']);
+
+      f.grow(0, 160);
+      f.flush();
+      f.flush();
+      expect(f.selected()).toEqual(['block 0']);
+    } finally {
+      f.close();
+    }
+  });
+
   it('observes nothing after a release with a candidate refresh pending', () => {
     const f = fixture();
     try {

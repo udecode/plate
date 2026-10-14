@@ -482,6 +482,11 @@ export function NodeSelectionDrag({
       }
       if (gesture.invalid === 'candidates') {
         gesture.candidates = getSelectionCandidates(editor, editable);
+        sizeObserver.disconnect();
+        sizeObserver.observe(editable);
+        for (const { target } of gesture.candidates) {
+          sizeObserver.observe(target, { box: 'border-box' });
+        }
         gesture.baseEntries = getSelectionEntries(
           editor,
           gesture.baseEntries.map(({ key }) => key)
@@ -615,6 +620,9 @@ export function NodeSelectionDrag({
         attributeFilter: ['data-node-selection-target'],
       });
       sizeObserver.observe(editable);
+      for (const { target } of candidates) {
+        sizeObserver.observe(target, { box: 'border-box' });
+      }
       editable.focus({ preventScroll: true });
     };
     const moveGesture = (point: { x: number; y: number }) => {

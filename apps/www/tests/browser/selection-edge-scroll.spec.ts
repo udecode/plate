@@ -332,6 +332,107 @@ const SHAPES = {
   'a scroller cut off by an outer box': 'cut',
 } as const;
 
+for (const scale of [1, 0.75]) {
+  test(`block marquee updates a growing target at scale ${scale}`, async ({
+    page,
+  }, testInfo) => {
+    const errors = recordBrowserRuntimeErrors(page);
+    try {
+      await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
+      await page.goto('/blocks/media-demo');
+      const root = editorRoot(page);
+      await expect(page.getByText('sample.pdf', { exact: true })).toBeVisible();
+      await root.evaluate((el: PliteBrowserHandleElement, zoom) => {
+        const handle = el.__pliteBrowserHandle!;
+        const file = handle
+          .getValue()
+          .children.find((node) => 'type' in node && node.type === 'file');
+        if (!file) throw new Error('Missing file fixture');
+        handle.applyValueChange({
+          children: [
+            { type: 'paragraph', children: [{ text: 'Start' }] },
+            file,
+            { type: 'paragraph', children: [{ text: 'Outside the marquee' }] },
+          ],
+        });
+        el.style.height = '650px';
+        el.style.overflowY = 'scroll';
+        el.style.transform = `scale(${zoom})`;
+        el.style.transformOrigin = 'top left';
+      }, scale);
+      const start = page.getByText('Start', { exact: true });
+      const next = page.getByText('Outside the marquee', { exact: true });
+      await start.click();
+      const startBox = await start.boundingBox();
+      const nextBox = await next.boundingBox();
+      const editableBox = await root.boundingBox();
+      const file = root.locator('[data-editor-path="1"]');
+      const fileBox = await file.boundingBox();
+      if (!startBox || !nextBox || !editableBox || !fileBox) {
+        throw new Error('Missing media geometry');
+      }
+      const initialScroll = await readScroll(scrollerOf(root));
+      const origin = { x: startBox.x - 70 * scale, y: startBox.y + 2 };
+      expect(
+        await page.evaluate(
+          (point) =>
+            document
+              .elementFromPoint(point.x, point.y)
+              ?.getAttribute('contenteditable'),
+          origin
+        )
+      ).toBe('true');
+      await page.mouse.move(origin.x, origin.y);
+      await page.mouse.down();
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+          })
+      );
+      await page.mouse.move(fileBox.x + 60, fileBox.y + 8, { steps: 8 });
+      await expect(file.locator('figcaption')).toBeVisible();
+      await expect
+        .poll(async () => {
+          const box = await next.boundingBox();
+          return box?.y;
+        })
+        .toBeGreaterThan(nextBox.y + 10);
+      await page.mouse.move(fileBox.x + 60, nextBox.y + 2, { steps: 8 });
+      await expect
+        .poll(async () => {
+          const { selection } = await readSelection(root);
+          return selection;
+        })
+        .toMatchObject({
+          kind: 'node',
+          paths: [[0], [1]],
+        });
+      const currentBox = await root.boundingBox();
+      expect(currentBox?.height).toBe(editableBox.height);
+      expect(currentBox?.width).toBe(editableBox.width);
+      expect(await readScroll(scrollerOf(root))).toEqual(initialScroll);
+      await page.screenshot({
+        path: testInfo.outputPath('resized-target.png'),
+      });
+      await page.mouse.up();
+      await expect
+        .poll(async () => {
+          const { selection } = await readSelection(root);
+          return selection;
+        })
+        .toMatchObject({
+          kind: 'node',
+          paths: [[0], [1]],
+        });
+      errors.assertNone();
+    } finally {
+      await page.mouse.up();
+      errors.stop();
+    }
+  });
+}
+
 const reshape = (scroller: Locator, shape: 'cut' | 'tall') =>
   scroller.evaluate((el: HTMLElement, kind) => {
     const frame = el.parentElement!;
