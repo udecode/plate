@@ -145,6 +145,43 @@ describe('plate oxlint rules', () => {
     }
   );
 
+  tester.run('no-selection-root-copy', plugin.rules['no-selection-root-copy'], {
+    invalid: [
+      {
+        ...ts("if ('anchor' in at) return at.anchor.root;"),
+        errors: [{ messageId: 'copy' }],
+      },
+      {
+        ...ts('const root = selection?.focus?.root;'),
+        errors: [{ messageId: 'copy' }],
+      },
+      {
+        ...ts("const root = range.anchor['root'] ?? range.focus.root;"),
+        errors: [{ messageId: 'copy' }, { messageId: 'copy' }],
+      },
+      {
+        ...ts('const { root } = range.anchor;'),
+        errors: [{ messageId: 'copy' }],
+      },
+      {
+        ...ts('const { anchor: { root } } = range;'),
+        errors: [{ messageId: 'copy' }],
+      },
+    ],
+    valid: [
+      ts('const root = SelectionApi.root(range);'),
+      ts("return 'root' in at ? at.root : undefined;"),
+      ts('const { root } = point;'),
+      ts('const path = range.anchor.path;'),
+      ts(
+        'if (!selection || selection.anchor.root !== selection.focus.root) return null;'
+      ),
+      ts(
+        'const same = selection?.anchor.root === root && selection.focus.root === root;'
+      ),
+    ],
+  });
+
   tester.run(
     'no-schema-placement-copy',
     plugin.rules['no-schema-placement-copy'],

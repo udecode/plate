@@ -433,3 +433,96 @@ for (const targetTag of ['p', 'h2']) {
     }
   });
 }
+
+test('list drop: a copied text drop lands like a paste at the same caret [EDIT-CLIPBOARD-LIST-LANDING-001]', async ({
+  browserName,
+  page,
+}, testInfo) => {
+  test.skip(browserName !== 'chromium', 'Native clipboard permissions');
+  expect(testInfo.retry).toBe(0);
+
+  const romanTwoFamily = {
+    anchor: { offset: 0, path: [12, 0] },
+    focus: { offset: 10, path: [14, 0] },
+  };
+  const decimal111End = { offset: 11, path: [8, 0] };
+  const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+  try {
+    const pasted = await openListDemo(page, 'list-drop:paste');
+
+    await pasted.editor.selection.selectDOM(romanTwoFamily);
+    await pasted.editor.focus();
+    await page.keyboard.press('ControlOrMeta+C');
+    await pasted.editor.selection.selectDOM({
+      anchor: decimal111End,
+      focus: decimal111End,
+    });
+    await page.keyboard.press('ControlOrMeta+V');
+    await expect
+      .poll(async () => {
+        const value = await pasted.blocks();
+
+        return value[8].text;
+      })
+      .toBe('Decimal 111Roman 2');
+    const paste = await pasted.blocks();
+
+    const dropped = await openListDemo(page, 'list-drop:drop');
+
+    await dropped.editor.selection.selectDOM(romanTwoFamily);
+    await dropped.editor.focus();
+    // Playwright's mouse only extends a text selection, so this fires the DOM
+    // drag events a native drag would.
+    await dropped.root.evaluate((element) => {
+      const apple = /Mac|iPad|iPhone|iPod/.test(navigator.platform);
+      const at = (text: string, nth: number, edge: 'end' | 'start') => {
+        const target = [...element.querySelectorAll('[data-editor-string]')]
+          .filter((candidate) => candidate.textContent === text)
+          .at(nth)!;
+        const rect = target.getBoundingClientRect();
+
+        return {
+          target,
+          x: edge === 'start' ? rect.left + 2 : rect.right - 1,
+          y: rect.top + rect.height / 2,
+        };
+      };
+      const dataTransfer = new DataTransfer();
+      const fire = (
+        type: string,
+        { target, x, y }: ReturnType<typeof at>,
+        copy = false
+      ) =>
+        target.dispatchEvent(
+          new DragEvent(type, {
+            altKey: copy && apple,
+            bubbles: true,
+            cancelable: true,
+            clientX: x,
+            clientY: y,
+            ctrlKey: copy && !apple,
+            dataTransfer,
+          })
+        );
+      const to = at('Decimal 111', 0, 'end');
+
+      fire('dragstart', at('Decimal 11', -1, 'start'));
+      fire('dragover', to, true);
+      fire('drop', to, true);
+      fire('dragend', to, true);
+    });
+    await expect
+      .poll(async () => {
+        const value = await dropped.blocks();
+
+        return value[8].text;
+      })
+      .toBe('Decimal 111Roman 2');
+
+    expect(await dropped.blocks()).toEqual(paste);
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});

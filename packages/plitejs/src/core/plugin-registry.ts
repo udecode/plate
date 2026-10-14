@@ -153,6 +153,7 @@ const builtInTransactionMembers: Record<
   points: true,
   ranges: true,
   root: true,
+  records: true,
   roots: true,
   runtime: true,
   schema: true,

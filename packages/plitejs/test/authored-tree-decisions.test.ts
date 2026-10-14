@@ -789,6 +789,7 @@ describe('authored review tree decisions on recorded structure', () => {
           createAuthoredPlugin({
             authorId: author,
             createChangeId: () => change,
+            createIncarnationId: () => 'd:1',
             intent,
             now: () => 1,
           }),

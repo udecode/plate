@@ -19,6 +19,13 @@ import {
   getCommandRuntime,
 } from './command-definition';
 import { getEditorCommandDocument } from './command-document';
+import {
+  type EditorFrameBody,
+  evaluateInEditorCommandFrame,
+  probeInEditorCommandFrame,
+  runInEditorCommandFrame,
+  runSelectionOnlyInEditorUpdate,
+} from './command-frame';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import {
   type CompiledCommandPipeline,
@@ -29,18 +36,13 @@ import { profileCoreDuration } from './profiling';
 import {
   applyTransactionSpec,
   continueTransactionSpec,
-  type EditorFrameBody,
   enterEditorRead,
-  evaluateInEditorCommandFrame,
   getActiveEditorUpdateTags,
   getActiveEditorTransaction,
   isBuildingTransactionSpec,
   isInTransaction,
   isTransactionSpec,
   isTransactionSpecContinuation,
-  probeInEditorCommandFrame,
-  runInEditorCommandFrame,
-  runSelectionOnlyInEditorUpdate,
   withTransactionSpecDraftRead,
 } from './public-state';
 

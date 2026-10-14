@@ -165,7 +165,7 @@ describe('schema identity contract', () => {
     }, /does not match current schema/);
   });
 
-  it('loads an envelope saved before a plugin added metadata roots', () => {
+  it('loads an envelope saved before a plugin declared record sets', () => {
     const ArticleSchema = defineEditorSchema('schema:article-records', {
       elements: { paragraph: schema.element.textBlock() },
       id: 'article-records',
@@ -176,12 +176,7 @@ describe('schema identity contract', () => {
     const editor = createEditor({
       plugins: [
         ArticleSchema,
-        definePlugin('records', {
-          schema: {
-            elements: { record: schema.element.textBlock() },
-            roots: { $records: schema.content.type('record') },
-          },
-        }),
+        definePlugin('records', { schema: { records: { notes: {} } } }),
       ],
     });
     const document = {
@@ -193,65 +188,16 @@ describe('schema identity contract', () => {
     assert.deepEqual(editor.read.value(), document);
   });
 
-  it('refuses a metadata root’s record loaded into the primary root of the default schema', () => {
-    const Records = definePlugin('records', {
-      schema: {
-        elements: { record: schema.element.textBlock() },
-        roots: { $records: schema.content.type('record') },
-      },
-    });
-
+  it('refuses records of a set no plugin declares', () => {
     assert.throws(
       () =>
         createEditor({
-          initialValue: [
-            { children: [{ text: 'a' }], type: 'paragraph' },
-            { children: [{ text: '' }], type: 'record' },
-          ],
-          plugins: [Records],
-        }),
-      EditorSchemaValidationError
-    );
-  });
-
-  it('refuses a metadata root’s record inserted into the primary root of the default schema', () => {
-    const editor = createEditor({
-      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
-      plugins: [
-        definePlugin('records', {
-          schema: {
-            elements: { record: schema.element.textBlock() },
-            roots: { $records: schema.content.type('record') },
+          initialValue: {
+            children: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+            records: { notes: { n: { at: 1 } } },
           },
         }),
-      ],
-    });
-
-    assert.throws(() =>
-      editor.update((tx) =>
-        tx.nodes.insert(
-          { children: [{ text: '' }], type: 'record' } as never,
-          { at: [1] }
-        )
-      )
-    );
-  });
-
-  it('refuses a contribution that mixes metadata roots with content', () => {
-    assert.throws(
-      () =>
-        compileEditorSchemaContributions([
-          record('records', {
-            elements: { record: schema.element.textBlock() },
-            roots: {
-              $records: schema.content.type('record'),
-              notes: schema.content.type('record'),
-            },
-          }),
-        ]),
-      (error) =>
-        error instanceof EditorSchemaCompileError &&
-        error.diagnostics[0]?.code === 'mixed-metadata-root-contribution'
+      /Undeclared record set "notes" in editor schema\./
     );
   });
 

@@ -1,8 +1,15 @@
 import { canonicalJsonKey } from '../../core/change/transform';
-import { hashSchemaIdentityString } from '../../core/schema-compiler';
-import { getDefined } from '../../internal/get-defined';
-import { isMetadataRootKey } from '../../internal/root-location';
 import {
+  deriveValue,
+  getValueRecords,
+  showValueRecords,
+  withoutRecordSet,
+} from '../../core/record-store';
+import { hashSchemaIdentityString } from '../../core/schema-compiler';
+import type { EditorDocumentRecords } from '../../interfaces/editor';
+import { getDefined } from '../../internal/get-defined';
+import {
+  isContextInsertion,
   type MarkBase,
   readAuthoredMarks,
   readRestsOn,
@@ -19,17 +26,18 @@ import {
   type NodesPerIncarnation,
 } from './facts';
 import {
-  CONTEXTS_ROOT,
+  CONTEXTS,
   type ContextRecord,
-  contextElementOf,
   incarnationOf,
   memberOf,
+  putContexts,
 } from './records';
 
 type Node = Readonly<Record<string, unknown>>;
 
 type Value = Readonly<{
   children: readonly unknown[];
+  records?: EditorDocumentRecords;
   roots?: Readonly<Record<string, readonly unknown[]>>;
 }>;
 
@@ -63,30 +71,24 @@ const mapNodes = (
 
 const mapValue = <V extends Value>(
   value: V,
-  rewrite: (node: Node) => Node,
-  roots: (
-    roots: Readonly<Record<string, readonly unknown[]>>
-  ) => Readonly<Record<string, readonly unknown[]>>
-): V => {
-  const children = mapNodes(value.children, rewrite);
-  const mapped = Object.fromEntries(
-    Object.entries(value.roots ?? {}).map(([root, nodes]) => [
-      root,
-      isMetadataRootKey(root) ? nodes : mapNodes(nodes, rewrite),
-    ])
-  );
-  const nextRoots = roots(mapped);
-  const { roots: _roots, ...plain } = value;
-
-  return {
-    ...plain,
-    children,
-    ...(Object.keys(nextRoots).length > 0 ? { roots: nextRoots } : {}),
-  } as unknown as V;
-};
+  rewrite: (node: Node) => Node
+): V =>
+  deriveValue(value, {
+    children: mapNodes(value.children, rewrite),
+    ...(value.roots
+      ? {
+          roots: Object.fromEntries(
+            Object.entries(value.roots).map(([root, nodes]) => [
+              root,
+              mapNodes(nodes, rewrite),
+            ])
+          ),
+        }
+      : {}),
+  } as Partial<V>);
 
 const insertsOf = (node: unknown) =>
-  readAuthoredMarks(node).filter((mark) => mark.kind === 'insert');
+  readAuthoredMarks(node).filter(isContextInsertion);
 
 const memberHash = (member: MarkBase) =>
   hashSchemaIdentityString(canonicalJsonKey(memberOf(member)));
@@ -150,7 +152,7 @@ export const compactClaims = <V extends Value>(
 
   if (
     !targets.some(([, nodes, at]) =>
-      at.some((index) => holdsStacked(nodes[index]))
+      at.some((index) => holdsStacked(nodes.at(index)))
     )
   ) {
     return value;
@@ -167,7 +169,7 @@ export const compactClaims = <V extends Value>(
       [
         ...new Map(
           claimsOf(node, facts)
-            .filter((claim) => claim.kind === 'insert')
+            .filter(isContextInsertion)
             .map((claim) => [incarnationOf(claim), memberOf(claim)])
         ).values(),
       ],
@@ -180,7 +182,7 @@ export const compactClaims = <V extends Value>(
 
     return withRestsOn(
       withAuthoredMarks(node, [
-        ...readAuthoredMarks(node).filter((mark) => mark.kind !== 'insert'),
+        ...readAuthoredMarks(node).filter((mark) => !isContextInsertion(mark)),
         own.find((mark) => incarnationOf(mark) === incarnationOf(inner)) ?? {
           ...inner,
           kind: 'insert',
@@ -190,59 +192,61 @@ export const compactClaims = <V extends Value>(
     );
   };
   const compacted = new Map(
-    targets.map(([root, nodes, at]) => {
+    targets.flatMap(([root, nodes, at]) => {
       let next: unknown[] | null = null;
 
       for (const index of at) {
-        if (!holdsStacked(nodes[index])) continue;
-        next ??= [...nodes];
-        next[index] = mapNodes([nodes[index]], rewrite)[0];
+        const node = nodes.at(index);
+
+        if (!holdsStacked(node)) continue;
+        next ??= nodes.slice();
+        next[index] = mapNodes([node], rewrite)[0];
       }
 
-      return [root, next ?? nodes];
+      return next ? [[root, next] as const] : [];
     })
   );
-  const roots = Object.fromEntries(
-    Object.entries(value.roots ?? {}).map(([root, nodes]) => [
-      root,
-      compacted.get(root) ?? nodes,
-    ])
+  const children = compacted.get('main');
+
+  return deriveValue(
+    value,
+    {
+      ...(children ? { children } : {}),
+      ...(value.roots
+        ? {
+            roots: Object.fromEntries(
+              Object.entries(value.roots).map(([root, nodes]) => [
+                root,
+                compacted.get(root) ?? nodes,
+              ])
+            ),
+          }
+        : {}),
+    } as Partial<V>,
+    putContexts(minted.values())
   );
-
-  if (minted.size > 0) {
-    roots[CONTEXTS_ROOT] = [
-      ...(roots[CONTEXTS_ROOT] ?? []),
-      ...[...minted.values()].map(contextElementOf),
-    ];
-  }
-
-  return {
-    ...value,
-    children: compacted.get('main'),
-    ...(Object.keys(roots).length > 0 ? { roots } : {}),
-  };
 };
 
 export const expandContexts = <V extends Value>(value: V): V => {
   const facts = factsOf(value);
+  const expanded = mapValue(value, (node) => {
+    const contexts = readRestsOn(node);
 
-  return mapValue(
-    value,
-    (node) => {
-      const contexts = readRestsOn(node);
+    if (contexts.length === 0) return node;
 
-      if (contexts.length === 0) return node;
+    const members = contexts.flatMap(({ ctx }) => membersOf(facts, ctx));
 
-      const members = contexts.flatMap(({ ctx }) => membersOf(facts, ctx));
+    return withRestsOn(
+      withAuthoredMarks(node, [
+        ...readAuthoredMarks(node),
+        ...members.map((member) => ({ ...member, kind: 'insert' as const })),
+      ]),
+      null
+    );
+  });
 
-      return withRestsOn(
-        withAuthoredMarks(node, [
-          ...readAuthoredMarks(node),
-          ...members.map((member) => ({ ...member, kind: 'insert' as const })),
-        ]),
-        null
-      );
-    },
-    ({ [CONTEXTS_ROOT]: _contexts, ...roots }) => roots
+  return showValueRecords(
+    { ...expanded },
+    withoutRecordSet(getValueRecords(value), CONTEXTS)
   );
 };

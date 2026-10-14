@@ -133,7 +133,8 @@ For route-level editor proof, simulate real use:
 - scroll away and back, then continue typing;
 - rendering-control changes when the example exposes them.
 
-When using the in-app Browser:
+Claude Code's built-in browser and Claude in Chrome have no locator API; drive
+them as verify's Drive section says. When using Codex's in-app Browser:
 
 - use Browser Playwright locators for keyboard shortcut proof such as
   `ControlOrMeta+Z`, select-all, copy, paste, and arrow-key assertions;

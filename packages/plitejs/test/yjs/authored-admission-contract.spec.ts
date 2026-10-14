@@ -6,16 +6,13 @@ import * as Y from 'yjs';
 import { createAuthoredPlugin } from '../../src/authored/authored';
 import {
   authoredRecords,
-  CONTEXTS_ROOT,
-  contextElementOf,
   contextRecordOf,
-  VERDICTS_ROOT,
-  verdictElementOf,
+  verdictIdOf,
 } from '../../src/authored/facts/records';
 import { authoredMarksSchema } from '../../src/authored/tree/marks';
 import { createEditor, definePlugin } from '../../src/index';
 import { yjs } from '../../src/yjs/core/plugin';
-import { authoredTestApi } from '../support/authored';
+import { authoredTestApi, reviewRecords } from '../support/authored';
 
 const ann = { at: 1, author: 'ann', change: 'A', kind: 'insert' };
 const bob = { at: 2, author: 'bob', change: 'B', kind: 'insert' };
@@ -93,17 +90,11 @@ describe('plitejs/yjs authored admission', () => {
       send(second.doc, first.doc);
 
       const reader = peer(copyOf(dana.doc), WithoutAdmission);
-      const bobContextMintedByEachPeer = [
-        contextElementOf(inBob),
-        contextElementOf(inBob),
-      ];
       const upgraded = {
         admission: { state: 'ready' },
         value: {
           children: [paragraph({ text: 'a' }, compacted)],
-          roots: {
-            [CONTEXTS_ROOT]: bobContextMintedByEachPeer,
-          },
+          records: reviewRecords({ contexts: [inBob] }),
         },
       };
 
@@ -119,7 +110,11 @@ describe('plitejs/yjs authored admission', () => {
     const writer = peer(room, WithoutAdmission, [paragraph({ text: 'a' })]);
     const dana = peer(
       copyOf(room),
-      createAuthoredPlugin({ authorId: 'dana', intent: 'edit' })
+      createAuthoredPlugin({
+        authorId: 'dana',
+        createIncarnationId: () => 'd:1',
+        intent: 'edit',
+      })
     );
 
     writer.editor.update((tx) => {
@@ -132,7 +127,7 @@ describe('plitejs/yjs authored admission', () => {
       admission: { state: 'ready' },
       value: {
         children: [paragraph({ text: 'a' }, compacted)],
-        roots: { [CONTEXTS_ROOT]: [contextElementOf(inBob)] },
+        records: reviewRecords({ contexts: [inBob] }),
       },
     };
 
@@ -145,30 +140,42 @@ describe('plitejs/yjs authored admission', () => {
       admission: { state: 'ready' },
       value: {
         children: [paragraph({ text: 'a' }, { authored: [ann], text: 'x' })],
-        roots: {
-          [CONTEXTS_ROOT]: [contextElementOf(inBob)],
-          [VERDICTS_ROOT]: [
-            verdictElementOf({ member: bob, verdict: 'accept' }),
+        records: reviewRecords({
+          contexts: [inBob],
+          verdicts: [
+            {
+              decision: 'd:1',
+              member: { at: bob.at, change: bob.change },
+              verdict: 'accept',
+            },
           ],
-        },
+        }),
       },
     };
 
     assert.deepEqual([dana.read(), writer.read()], [accepted, accepted]);
   });
 
-  it('refuses a verdict that a peer without the record roots writes into the content', () => {
+  it('refuses a remote verdict whose id names other content', () => {
     const room = new Y.Doc();
-    const writer = peer(room, WithoutContexts, [paragraph({ text: 'a' })]);
-    const erin = peer(copyOf(room), createAuthoredPlugin({ authorId: 'erin' }));
 
-    writer.editor.update((tx) => {
-      tx.nodes.insert(
-        verdictElementOf({ member: bob, verdict: 'accept' }) as never,
-        { at: [1] }
-      );
+    peer(room, WithoutAdmission, [paragraph({ text: 'a' })]);
+
+    const erin = peer(copyOf(room), createAuthoredPlugin({ authorId: 'erin' }));
+    const forger = copyOf(room);
+    const id = verdictIdOf({
+      decision: 'd:1',
+      member: { at: 2, change: 'B' },
+      verdict: 'accept',
     });
-    send(room, erin.doc);
+
+    forger
+      .getMap('document:records:authored-verdicts')
+      .set(
+        id,
+        JSON.stringify({ at: 2, change: 'B', decision: 'd:1', verdict: 'reject' })
+      );
+    send(forger, erin.doc);
 
     const { admission, value } = erin.read();
 
@@ -178,9 +185,36 @@ describe('plitejs/yjs authored admission', () => {
         value,
       },
       {
-        cause:
-          'EditorSchemaValidationError: Editor primary root cannot contain "authored-verdict".',
+        cause: `AuthoredMarkError: Review verdict ${id} is malformed.`,
         value: { children: [paragraph({ text: 'a' })] },
+      }
+    );
+  });
+
+  it('refuses a remote drop of a context text still rests on', () => {
+    const room = new Y.Doc();
+
+    peer(room, createAuthoredPlugin({ authorId: 'ann' }), [paragraph(stacked)]);
+
+    const erin = peer(copyOf(room), createAuthoredPlugin({ authorId: 'erin' }));
+    const forger = copyOf(room);
+
+    forger.getMap('document:records:authored-contexts').delete(inBob.ctx);
+    send(forger, erin.doc);
+
+    const { admission, value } = erin.read();
+
+    assert.deepEqual(
+      {
+        cause: admission.state === 'error' && String(admission.cause),
+        value,
+      },
+      {
+        cause: `AuthoredMarkError: Review context ${inBob.ctx} was dropped while text rests on it.`,
+        value: {
+          children: [paragraph(compacted)],
+          records: reviewRecords({ contexts: [inBob] }),
+        },
       }
     );
   });

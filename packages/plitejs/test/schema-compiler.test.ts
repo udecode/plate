@@ -2088,6 +2088,29 @@ describe('schema compiler', () => {
     );
   });
 
+  it('keeps the fingerprint of a schema whose voids and objects own their exit', () => {
+    const Media = defineEditorSchema('schema:media', {
+      elements: {
+        divider: { void: 'block' },
+        image: schema.element.textBlock({ object: true }),
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'media',
+      root: schema.content.types(['paragraph', 'divider', 'image'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+
+    assert.equal(
+      compileEditorSchemaContributions([record(Media.name, Media.schema)])
+        .identity.fingerprint,
+      'fnv1a64:2cef62983b4aa32c'
+    );
+  });
+
   it('reuses compiled schema while publishing a new descriptor identity', () => {
     const slot = definePluginSlot('article-schema');
     const create = () =>

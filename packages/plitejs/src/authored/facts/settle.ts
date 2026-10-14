@@ -1,4 +1,4 @@
-import { isMetadataRootKey } from '../../internal/root-location';
+import { deriveValue } from '../../core/record-store';
 import {
   decideKey,
   type FormatTag,
@@ -15,8 +15,9 @@ import {
   withMembers,
 } from '../tree/marks';
 import { createDependencies, type Dependencies } from './dependencies';
+import { isEditingChange } from './editing';
 import { claimsOf, outcomeOf, type ReviewFacts } from './facts';
-import { CONTEXTS_ROOT, contextElementOf, incarnationOf } from './records';
+import { incarnationOf, putContexts } from './records';
 
 type Node = Readonly<Record<string, unknown>> & {
   children?: readonly Node[];
@@ -87,10 +88,16 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
   );
   let changed = dropped.size > 0;
   const kept: AuthoredMember[] = [];
+  // Editing's claim that its block goes with a pending join stays until the
+  // resolver lands that join.
+  const follows = (member: AuthoredMember) =>
+    member.kind === 'insert' &&
+    isEditingChange(member.change) &&
+    member.follows !== undefined;
   // An accepted insertion leaves the node, whether it is a claim or a member
   // of the context the node rests on.
   const inserts = claimsOf(node, facts).filter(
-    (mark) => mark.kind === 'insert'
+    (mark) => mark.kind === 'insert' && !follows(mark)
   );
   const pendingInserts = inserts.filter(
     (mark) => outcomeOf(facts, mark) !== 'accept'
@@ -99,6 +106,10 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
 
   for (const member of members) {
     if (member.kind === 'format' && dropped.has(member)) continue;
+    if (follows(member)) {
+      kept.push(member);
+      continue;
+    }
     if (member.kind === 'in' || member.kind === 'insert') {
       if (!insertsSettled) kept.push(member);
       continue;
@@ -118,7 +129,7 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
         if (member.kind !== 'held') changed = true;
         continue;
       }
-      if (facts.verdicts.get(incarnationOf(claim))?.has('reject')) {
+      if (facts.hasVerdict(incarnationOf(claim), 'reject')) {
         pass.reopenedRejections.add(incarnationOf(claim));
       }
       if (member.kind === 'held') changed = true;
@@ -223,7 +234,7 @@ export const settleValue = <V extends Value>(
     returnsHeld,
   };
 
-  if (facts.verdicts.size === 0) {
+  if (!facts.hasVerdicts) {
     return { reopenedRejections: pass.reopenedRejections, value: null };
   }
 
@@ -234,41 +245,29 @@ export const settleValue = <V extends Value>(
   const children = settleIn('main', value.children as readonly Node[]);
   const roots = Object.entries(value.roots ?? {}).map(
     ([root, nodes]) =>
-      [
-        root,
-        nodes,
-        isMetadataRootKey(root)
-          ? nodes
-          : settleIn(root, nodes as readonly Node[]),
-      ] as const
+      [root, nodes, settleIn(root, nodes as readonly Node[])] as const
   );
-  const contexts = pass.dependencies.minted().map(contextElementOf);
-  const settledRoots = new Map(
-    roots.map(([root, , settled]) => [root, settled])
-  );
-
-  if (contexts.length > 0) {
-    settledRoots.set(CONTEXTS_ROOT, [
-      ...(value.roots?.[CONTEXTS_ROOT] ?? []),
-      ...contexts,
-    ]);
-  }
-
-  const rootsChanged =
-    contexts.length > 0 ||
-    roots.some(([, nodes, settled]) => settled !== nodes);
+  const minted = pass.dependencies.minted();
+  const rootsChanged = roots.some(([, nodes, settled]) => settled !== nodes);
 
   return {
     reopenedRejections: pass.reopenedRejections,
     value:
-      children === value.children && !rootsChanged
+      children === value.children && !rootsChanged && minted.length === 0
         ? null
-        : {
-            ...value,
-            children,
-            ...(rootsChanged
-              ? { roots: Object.fromEntries(settledRoots) }
-              : {}),
-          },
+        : deriveValue(
+            value,
+            {
+              children,
+              ...(rootsChanged
+                ? {
+                    roots: Object.fromEntries(
+                      roots.map(([root, , settled]) => [root, settled])
+                    ),
+                  }
+                : {}),
+            } as Partial<V>,
+            putContexts(minted)
+          ),
   };
 };

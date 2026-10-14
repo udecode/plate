@@ -24,9 +24,12 @@ import {
   type DocumentChange,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
+  valueRootIndex,
+  valueRootNodes,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import { DocumentIndex, type NodeList } from './change/document-index';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { toInternalRoot, toPublicRoot } from './public-root';
@@ -161,8 +164,7 @@ export const getEditorCommitSnapshot = <V extends Value>(
 };
 
 /**
- * Return a commit's whole document value, its named and metadata roots
- * included.
+ * Return a commit's whole document value, its named roots included.
  *
  * @internal
  */
@@ -333,14 +335,14 @@ const getNodeKeyAtPath = (index: SnapshotIndex, path: readonly number[]) =>
   index.keyAt(path);
 
 const getDescendantAtPath = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   path: readonly number[]
 ): Descendant | null => {
   let descendants = children;
   let node: Descendant | undefined;
 
   for (const index of path) {
-    node = descendants[index];
+    node = descendants.at(index);
 
     if (!node) return null;
 
@@ -433,6 +435,7 @@ const createCommitChanged = ({
     getPendingSelectionMarks(selectionBefore),
     getPendingSelectionMarks(selectionAfter)
   );
+  const recordsChanged = getInternalDocumentChangeRecords(changes).size > 0;
   const beforeIndexes = new Map<RootKey, SnapshotIndex>();
   const afterIndexes = new Map<RootKey, SnapshotIndex>();
   const rootDetails = new Map<RootKey, RootChangeDetails>();
@@ -493,8 +496,8 @@ const createCommitChanged = ({
       return empty;
     }
 
-    const beforeDocument = DocumentIndex.fromValue(valueRoot(before, root));
-    const afterDocument = DocumentIndex.fromValue(valueRoot(after, root));
+    const beforeDocument = valueRootIndex(before, root);
+    const afterDocument = valueRootIndex(after, root);
     const movedTargetIndex = change.movedNode(beforeDocument)?.targetPath[0];
     const ranges: TopLevelRuntimeRange[] = [];
 
@@ -605,7 +608,7 @@ const createCommitChanged = ({
     }
 
     if (classification && !classification.structure) {
-      const afterRoot = valueRoot(after, root) as readonly Descendant[];
+      const afterRoot = valueRootNodes(after, root) as NodeList<Descendant>;
       const touchedChangedNodeKeys = new Set<NodeKey>();
       const changedNodeKeys = new Set<NodeKey>();
       const pathNodeKeys = new Set<NodeKey>();
@@ -1058,7 +1061,9 @@ const createCommitChanged = ({
 
   return Object.freeze({
     has: (kind, root) => hasInRoot(kind, toInternalRoot(root)),
-    hasAny: (kind) => knownRoots.some((root) => hasInRoot(kind, root)),
+    hasAny: (kind) =>
+      (recordsChanged && (kind === 'document' || kind === 'snapshot')) ||
+      knownRoots.some((root) => hasInRoot(kind, root)),
     hasNodeKey: (nodeKey, kind) =>
       kind === 'path' && !aggregateNodeKeys.has(kind)
         ? hasPathNodeKey(nodeKey)

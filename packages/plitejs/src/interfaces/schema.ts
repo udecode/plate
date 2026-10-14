@@ -329,20 +329,15 @@ export type SchemaContentRoot<
 /** Shared roots may use their grammar directly; ownership defaults to shared. */
 export type SchemaContentRootInput = SchemaContent | SchemaContentRoot;
 
-/** One named-root grammar plus how history treats the root. */
-export type SchemaRoot<TContent extends SchemaContent = SchemaContent> =
-  Readonly<{
-    content: TContent;
-    /**
-     * `retain` leaves this root's changes out of undo and redo, so a record
-     * another change still points at outlives the undo of the commit that
-     * wrote it.
-     */
-    history?: 'retain';
-  }>;
-
-/** Named roots may use their grammar directly. */
-export type SchemaRootInput = SchemaContent | SchemaRoot;
+/** One set of keyed records the document keeps beside its children. */
+export type SchemaRecordSet = Readonly<{
+  /**
+   * `retain` leaves this set's puts and drops out of undo and redo, so a
+   * record another change still points at outlives the undo of the commit
+   * that wrote it.
+   */
+  history?: 'retain';
+}>;
 
 /** One content-root slot projected onto matching element types. */
 export type SchemaContentRootContribution<
@@ -486,7 +481,11 @@ export type EditorSchemaElement = Readonly<{
     isolating: boolean;
     markableVoid: boolean;
     object: boolean;
-    /** Whether the text block declares `ownsExit`; false for voids and objects. */
+    /**
+     * Whether the element owns its exit, which every void and object does, as
+     * does a text block that declares `ownsExit`. `tx.break.exit` treats a
+     * selected block that owns its exit as a structure of its own.
+     */
     ownsExit: boolean;
     readOnly: boolean;
     selectable: boolean;
@@ -637,8 +636,8 @@ export type EditorSchemaContribution<
   TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<
     Record<string, SchemaGroup>
   >,
-  TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<
-    Record<string, SchemaRootInput>
+  TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
+    Record<string, SchemaContent>
   >,
   TContentRoots extends readonly SchemaContentRootContribution[] =
     readonly SchemaContentRootContribution[],
@@ -651,16 +650,15 @@ export type EditorSchemaContribution<
   /** Closed-composition policy; ordinary feature contributions omit this. */
   overrides?: readonly EditorSchemaOverride[];
   properties?: TProperties;
+  /**
+   * Keyed record sets beside the document's children, such as review records.
+   * Changes, history and collaboration carry them; no read of `children` or
+   * `roots` meets them.
+   */
+  records?: Readonly<Record<string, SchemaRecordSet>>;
   /** The complete schema definition exclusively owns the primary root. */
   root?: never;
-  /**
-   * Named secondary roots only. The reserved key `main` is invalid. A key that
-   * starts with `$` names a metadata root: changes, history and collaboration
-   * carry it, but serializers, exports, copies, diffs and element IDs leave it
-   * out, and two peers that create it at once keep both peers' records. A
-   * contribution that declares one declares only metadata roots and their
-   * elements.
-   */
+  /** Named secondary roots only. The reserved key `main` is invalid. */
   roots?: TRoots;
   unknown?: never;
   version?: never;
@@ -670,7 +668,7 @@ type EditorSchemaDefinitionBase<
   TElements extends Readonly<Record<string, SchemaElement>>,
   TProperties extends readonly SchemaProperty[],
   TGroups extends Readonly<Record<string, SchemaGroup>>,
-  TRoots extends Readonly<Record<string, SchemaRootInput>>,
+  TRoots extends Readonly<Record<string, SchemaContent>>,
   TContentRoots extends readonly SchemaContentRootContribution[],
 > = Readonly<{
   contentRoots?: TContentRoots;
@@ -678,6 +676,8 @@ type EditorSchemaDefinitionBase<
   groups?: TGroups;
   overrides?: never;
   properties?: TProperties;
+  /** Keyed record sets beside the document's children. */
+  records?: Readonly<Record<string, SchemaRecordSet>>;
   /** The implicit primary document root. */
   root: SchemaContent;
   /** Named secondary roots only. The reserved key `main` is invalid. */
@@ -694,8 +694,8 @@ export type EditorSchemaDerivedDefinition<
   TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<
     Record<string, SchemaGroup>
   >,
-  TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<
-    Record<string, SchemaRootInput>
+  TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
+    Record<string, SchemaContent>
   >,
   TContentRoots extends readonly SchemaContentRootContribution[] =
     readonly SchemaContentRootContribution[],
@@ -721,8 +721,8 @@ export type EditorSchemaNamedDefinition<
   TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<
     Record<string, SchemaGroup>
   >,
-  TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<
-    Record<string, SchemaRootInput>
+  TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
+    Record<string, SchemaContent>
   >,
   TContentRoots extends readonly SchemaContentRootContribution[] =
     readonly SchemaContentRootContribution[],
@@ -748,8 +748,8 @@ export type EditorSchemaDefinition<
   TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<
     Record<string, SchemaGroup>
   >,
-  TRoots extends Readonly<Record<string, SchemaRootInput>> = Readonly<
-    Record<string, SchemaRootInput>
+  TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
+    Record<string, SchemaContent>
   >,
   TContentRoots extends readonly SchemaContentRootContribution[] =
     readonly SchemaContentRootContribution[],
@@ -1732,24 +1732,6 @@ type SchemaDeclarationRoots<TDeclaration> = TDeclaration extends {
   ? NonNullable<TRoots>
   : Readonly<Record<never, never>>;
 
-// A contribution that declares a metadata root declares only those roots and
-// their elements, so the content value type leaves its elements out.
-type SchemaContentDeclaration<TDeclaration> = TDeclaration extends unknown
-  ? [
-      Extract<keyof SchemaDeclarationRoots<TDeclaration>, `$${string}`>,
-    ] extends [never]
-    ? TDeclaration
-    : never
-  : never;
-
-type SchemaContentElements<TDeclarations> = [
-  SchemaContentDeclaration<TDeclarations>,
-] extends [never]
-  ? Readonly<Record<never, never>>
-  : SchemaUnionToIntersection<
-      SchemaDeclarationElements<SchemaContentDeclaration<TDeclarations>>
-    >;
-
 type SchemaDeclarationProperty<TDeclaration> = TDeclaration extends {
   properties?: ReadonlyArray<infer TProperty>;
 }
@@ -1796,7 +1778,9 @@ type SchemaComposedDefinition<
 > = Readonly<
   {
     contentRoots: ReadonlyArray<SchemaDeclarationContentRoot<TDeclarations>>;
-    elements: SchemaContentElements<TDeclarations>;
+    elements: SchemaUnionToIntersection<
+      SchemaDeclarationElements<TDeclarations>
+    >;
     groups: SchemaUnionToIntersection<SchemaDeclarationGroups<TDeclarations>>;
     properties: ReadonlyArray<SchemaDeclarationProperty<TDeclarations>>;
     root: TComplete['root'];

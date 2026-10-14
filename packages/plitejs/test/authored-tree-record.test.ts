@@ -20,6 +20,7 @@ import {
   authoredTestApi,
   expandedChildren,
   reviewedValue,
+  storedContexts,
 } from './support/authored';
 
 const AT = 1000;
@@ -314,8 +315,8 @@ describe('authored review tree recording', () => {
       [mark('insert', 'dan')]
     );
     assert.deepEqual(
-      value.roots?.['$authored-contexts']
-        ?.filter(({ ctx }) => restsOn.has(ctx))
+      storedContexts(editor.read.value())
+        .filter(({ ctx }) => restsOn.has(ctx))
         .map(({ author, base, change }) => ({ author, base, change })),
       [{ author: 'bob', base: undefined, change: 'bob:1' }]
     );
@@ -369,12 +370,8 @@ describe('authored review tree recording', () => {
       tx.text.insert('!', { at: point(1, [0, 1]) });
     });
 
-    const value = editor.read.value() as {
-      roots?: Record<string, ReadonlyArray<Record<string, unknown>>>;
-    };
-
     assert.deepEqual(
-      value.roots?.['$authored-contexts']?.map(({ author, base, change }) => ({
+      storedContexts(editor.read.value()).map(({ author, base, change }) => ({
         author,
         base,
         change,
@@ -396,19 +393,19 @@ describe('authored review tree recording', () => {
       );
     });
 
-    const contexts =
-      (
-        editor.read.value() as {
-          roots?: Record<string, ReadonlyArray<Record<string, unknown>>>;
-        }
-      ).roots?.['$authored-contexts'] ?? [];
+    const contexts = storedContexts(editor.read.value());
     const authorOf = new Map(contexts.map(({ author, ctx }) => [ctx, author]));
 
     assert.deepEqual(
-      contexts.map(({ author, base }) => ({ author, on: authorOf.get(base) })),
+      contexts
+        .map(({ author, base }) => ({
+          author,
+          on: base === undefined ? undefined : authorOf.get(base),
+        }))
+        .sort((left, right) => String(left.author).localeCompare(String(right.author))),
       [
-        { author: 'bob', on: undefined },
         { author: 'ann', on: 'bob' },
+        { author: 'bob', on: undefined },
       ]
     );
   });

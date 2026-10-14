@@ -6,6 +6,7 @@ import type {
   SerializedEditorValue,
 } from '../interfaces/editor';
 import type { EditorJsonValue } from '../interfaces/json';
+import { lazyRootOf } from './change/lazy-root';
 import {
   freezeOwnedJsonValue,
   isImmutable,
@@ -100,11 +101,16 @@ export const getEditorJsonRecordEntries = (
 
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
 
-    if (!descriptor?.enumerable || !Object.hasOwn(descriptor, 'value')) {
-      return null;
+    if (!descriptor?.enumerable) return null;
+    if (Object.hasOwn(descriptor, 'value')) {
+      entries.push([key, descriptor.value]);
+      continue;
     }
 
-    entries.push([key, descriptor.value]);
+    const lazy = lazyRootOf(value, key);
+
+    if (!lazy) return null;
+    entries.push([key, lazy.value]);
   }
 
   return entries;

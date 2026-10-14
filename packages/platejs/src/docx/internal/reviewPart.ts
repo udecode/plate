@@ -1,3 +1,4 @@
+import type { EditorDocumentRecords } from 'plitejs';
 import { hashSchemaIdentityString } from 'plitejs/internal';
 
 import type { Value } from '../../core';
@@ -13,11 +14,11 @@ export const isCustomXmlItem = (part: string) =>
 
 /**
  * The stored top-level blocks that hold review marks, each bound to the
- * bookmark around its rendering, and the document's metadata roots.
+ * bookmark around its rendering, and the document's review records.
  */
 export type ReviewPart = Readonly<{
   bindings: readonly ReviewPartBinding[];
-  roots: Readonly<Record<string, Value>>;
+  records?: EditorDocumentRecords;
   version: 1;
 }>;
 
@@ -34,8 +35,11 @@ const isElementList = (value: unknown): value is Value =>
   Array.isArray(value) &&
   value.every((node) => isRecord(node) && Array.isArray(node.children));
 
-const isRoots = (value: unknown): value is ReviewPart['roots'] =>
-  isRecord(value) && Object.values(value).every(isElementList);
+const isRecords = (value: unknown): value is EditorDocumentRecords =>
+  isRecord(value) &&
+  Object.values(value).every(
+    (set) => isRecord(set) && Object.values(set).every(isRecord)
+  );
 
 const isBinding = (value: unknown): value is ReviewPartBinding =>
   isRecord(value) &&
@@ -59,14 +63,14 @@ export const parseReviewPart = (source: string): ReviewPart | null => {
     !value.bindings.every(isBinding) ||
     new Set(value.bindings.map(({ name }) => name)).size !==
       value.bindings.length ||
-    !isRoots(value.roots)
+    (value.records !== undefined && !isRecords(value.records))
   ) {
     return null;
   }
 
   return Object.freeze({
     bindings: Object.freeze(value.bindings),
-    roots: value.roots,
+    ...(value.records === undefined ? {} : { records: value.records }),
     version: 1,
   });
 };

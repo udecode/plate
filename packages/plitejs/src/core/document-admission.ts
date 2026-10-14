@@ -7,6 +7,7 @@ import { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import { definePluginPoint } from './plugin-point';
 import { getPluginContributions } from './plugin-registry';
+import { getValueRecords, showValueRecords } from './record-store';
 
 /**
  * A plugin's rule for the documents an editor loads and commits. A loaded
@@ -66,9 +67,21 @@ export const admitDocument = (
 ): Readonly<{ change: DocumentChange; document: AdmittedDocument }> => {
   const repaired = admission?.load(document) ?? null;
 
-  return repaired
-    ? { change: repaired.change, document: repaired.value as AdmittedDocument }
-    : { change: DocumentChange.empty, document: document as AdmittedDocument };
+  if (!repaired) {
+    return { change: DocumentChange.empty, document: document as AdmittedDocument };
+  }
+
+  // A repair can carry its records beside the value; a shown document holds
+  // them as its `records` field.
+  const { records: _records, ...rest } = repaired.value;
+
+  return {
+    change: repaired.change,
+    document: showValueRecords(
+      rest,
+      getValueRecords(repaired.value)
+    ) as unknown as AdmittedDocument,
+  };
 };
 
 /** @internal */

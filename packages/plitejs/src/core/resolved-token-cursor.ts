@@ -1,5 +1,6 @@
 import { getDefined } from '../internal/get-defined';
 import type { JsonNode } from './change/tokens';
+import { MeasuredSequence } from './measured-sequence';
 
 type NodeKind = 'element' | 'text';
 
@@ -7,13 +8,10 @@ export type TreeIndexNode = {
   children?: TreeIndexChildren;
   kind: NodeKind;
   length: number;
+  node: JsonNode;
 };
 
-export type TreeIndexChildren = {
-  children: readonly TreeIndexNode[];
-  length: number;
-  offsets: readonly number[];
-};
+export type TreeIndexChildren = MeasuredSequence<TreeIndexNode>;
 
 export type ResolvedTokenEntry = {
   contentFrom: number;
@@ -32,89 +30,35 @@ type CursorFrame = {
 
 const isTextNode = (node: JsonNode) => typeof node.text === 'string';
 
-export const createTreeIndexChildren = (
-  children: readonly TreeIndexNode[]
-): TreeIndexChildren => {
-  const offsets: number[] = [];
-  let length = 0;
-
-  for (const child of children) {
-    offsets.push(length);
-    length += child.length;
-  }
-
-  return {
-    // Tree indexes are package-private persistent values. Every caller owns
-    // the array it supplies and copies before editing, so freezing and copying
-    // the same wide index again only adds O(n) publication work.
-    children,
-    length,
-    offsets,
-  };
-};
-
-export const replaceTreeIndexChild = (
-  run: TreeIndexChildren,
-  index: number,
-  child: TreeIndexNode
-): TreeIndexChildren => {
-  const children = [...run.children];
-  const delta = child.length - getDefined(run.children[index]).length;
-
-  children[index] = child;
-  if (delta === 0) {
-    return { children, length: run.length, offsets: run.offsets };
-  }
-
-  const offsets = run.offsets.slice();
-
-  for (let next = index + 1; next < offsets.length; next += 1) {
-    offsets[next] += delta;
-  }
-
-  return { children, length: run.length + delta, offsets };
-};
-
 export const createTreeIndexNode = (node: JsonNode): TreeIndexNode => {
   if (isTextNode(node)) {
-    return { kind: 'text', length: node.text.length + 2 };
+    return { kind: 'text', length: node.text.length + 2, node };
   }
 
   if (!Array.isArray(node.children)) throw new Error('Invalid JSON node.');
 
-  const children = createTreeIndexChildren(
-    node.children.map(createTreeIndexNode)
-  );
+  const children = createTreeIndex(node.children);
 
-  return { children, kind: 'element', length: children.length + 2 };
+  return { children, kind: 'element', length: children.totalLength + 2, node };
 };
 
 export const createTreeIndex = (nodes: readonly JsonNode[]) =>
-  createTreeIndexChildren(nodes.map(createTreeIndexNode));
+  MeasuredSequence.from(nodes.map(createTreeIndexNode));
 
-const findChildIndexAtPosition = (
+const childAtPosition = (
   children: TreeIndexChildren,
   contentFrom: number,
   position: number
 ) => {
-  const target = position - contentFrom;
-  let low = 0;
-  let high = children.offsets.length - 1;
-  let match = -1;
+  const index = children.locate(position - contentFrom);
 
-  while (low <= high) {
-    const middle = (low + high) >>> 1;
-    const offset = children.offsets[middle];
-
-    if (offset <= target) {
-      match = middle;
-      low = middle + 1;
-    } else {
-      high = middle - 1;
-    }
-  }
-
-  return match;
+  return index < 0
+    ? null
+    : {
+        child: getDefined(children.at(index)),
+        from: contentFrom + children.startOf(index),
+        index,
+      };
 };
 
 /** Package-private cursor for resolving token positions against a tree index. */
@@ -127,18 +71,17 @@ export class ResolvedTokenCursor {
   }
 
   childBoundaryAt(position: number) {
-    if (position < 0 || position > this.tree.length) return null;
+    if (position < 0 || position > this.tree.totalLength) return null;
 
     let children = this.tree;
     let contentFrom = 0;
     const parentPath: number[] = [];
 
     while (true) {
-      const index = findChildIndexAtPosition(children, contentFrom, position);
+      const found = childAtPosition(children, contentFrom, position);
 
-      if (index >= 0) {
-        const child = children.children[index];
-        const from = contentFrom + children.offsets[index];
+      if (found) {
+        const { child, from, index } = found;
 
         if (position === from) {
           return { index, parentPath: [...parentPath] };
@@ -156,8 +99,8 @@ export class ResolvedTokenCursor {
         }
       }
 
-      return position === contentFrom + children.length
-        ? { index: children.children.length, parentPath: [...parentPath] }
+      return position === contentFrom + children.totalLength
+        ? { index: children.size, parentPath: [...parentPath] }
         : null;
     }
   }
@@ -167,7 +110,7 @@ export class ResolvedTokenCursor {
    * token range.
    */
   siblingRunCovering(from: number, to: number) {
-    if (from < 0 || to <= from || to > this.tree.length) {
+    if (from < 0 || to <= from || to > this.tree.totalLength) {
       throw new RangeError(`Invalid document range ${from}..${to}.`);
     }
 
@@ -176,10 +119,12 @@ export class ResolvedTokenCursor {
     const parentPath: number[] = [];
 
     while (true) {
-      const first = findChildIndexAtPosition(children, contentFrom, from);
-      const last = findChildIndexAtPosition(children, contentFrom, to - 1);
-      const child = children.children[first];
-      const childFrom = contentFrom + children.offsets[first];
+      const {
+        child,
+        from: childFrom,
+        index: first,
+      } = getDefined(childAtPosition(children, contentFrom, from));
+      const last = children.locate(to - 1 - contentFrom);
 
       if (
         first === last &&
@@ -199,7 +144,7 @@ export class ResolvedTokenCursor {
 
   /** Return the outer-to-inner node stack containing one token position. */
   openContextAt(position: number): readonly ResolvedTokenEntry[] {
-    if (position < 0 || position > this.tree.length) {
+    if (position < 0 || position > this.tree.totalLength) {
       throw new RangeError(`Invalid document position ${position}.`);
     }
 
@@ -209,11 +154,10 @@ export class ResolvedTokenCursor {
     let contentFrom = 0;
 
     while (true) {
-      const index = findChildIndexAtPosition(children, contentFrom, position);
+      const found = childAtPosition(children, contentFrom, position);
 
-      if (index < 0) break;
-      const child = children.children[index];
-      const from = contentFrom + children.offsets[index];
+      if (!found) break;
+      const { child, from, index } = found;
       const to = from + child.length;
 
       if (position < from || to < position) break;
@@ -231,7 +175,7 @@ export class ResolvedTokenCursor {
   }
 
   nodeRangesTouching(from: number, to = from): readonly ResolvedTokenEntry[] {
-    if (from < 0 || to < from || to > this.tree.length) {
+    if (from < 0 || to < from || to > this.tree.totalLength) {
       throw new RangeError(`Invalid document range ${from}..${to}.`);
     }
 
@@ -239,30 +183,23 @@ export class ResolvedTokenCursor {
     const path: number[] = [];
 
     const visit = (children: TreeIndexChildren, contentFrom: number) => {
-      let index = Math.max(
-        0,
-        findChildIndexAtPosition(children, contentFrom, from)
-      );
+      let first = Math.max(0, children.locate(from - contentFrom));
 
-      while (index > 0) {
-        const previousIndex = index - 1;
-        const previous = children.children[previousIndex];
-        const previousFrom = contentFrom + children.offsets[previousIndex];
+      while (first > 0) {
+        const previousStart = contentFrom + children.startOf(first - 1);
 
-        if (previousFrom + previous.length < from) break;
+        if (previousStart + getDefined(children.at(first - 1)).length < from) {
+          break;
+        }
 
-        index = previousIndex;
+        first -= 1;
       }
 
-      for (; index < children.children.length; index++) {
-        const child = children.children[index];
-        const childFrom = contentFrom + children.offsets[index];
+      children.forEach(first, (child, index, start) => {
+        const childFrom = contentFrom + start;
 
-        if (childFrom > to) break;
-
-        const childTo = childFrom + child.length;
-
-        if (childTo < from) continue;
+        if (childFrom > to) return false;
+        if (childFrom + child.length < from) return true;
 
         path.push(index);
 
@@ -275,7 +212,9 @@ export class ResolvedTokenCursor {
         if (child.children) visit(child.children, childFrom + 1);
 
         path.pop();
-      }
+
+        return true;
+      });
     };
 
     visit(this.tree, 0);
@@ -284,7 +223,7 @@ export class ResolvedTokenCursor {
   }
 
   nodeStartingAt(position: number) {
-    if (position < 0 || position > this.tree.length) return null;
+    if (position < 0 || position > this.tree.totalLength) return null;
 
     this.frames.length = 0;
 
@@ -292,12 +231,11 @@ export class ResolvedTokenCursor {
     let contentFrom = 0;
 
     while (true) {
-      const index = findChildIndexAtPosition(children, contentFrom, position);
+      const found = childAtPosition(children, contentFrom, position);
 
-      if (index < 0) return null;
+      if (!found) return null;
 
-      const child = children.children[index];
-      const from = contentFrom + children.offsets[index];
+      const { child, from, index } = found;
 
       this.frames.push({ children, contentFrom, index });
 
@@ -352,7 +290,7 @@ export class ResolvedTokenCursor {
   }
 
   textAt(position: number) {
-    if (position < 0 || position > this.tree.length) return null;
+    if (position < 0 || position > this.tree.totalLength) return null;
 
     this.seek(position);
 
@@ -360,7 +298,7 @@ export class ResolvedTokenCursor {
   }
 
   private assertPosition(position: number) {
-    if (position < 0 || position > this.tree.length) {
+    if (position < 0 || position > this.tree.totalLength) {
       throw new RangeError(`Position ${position} is outside the document.`);
     }
   }
@@ -385,8 +323,8 @@ export class ResolvedTokenCursor {
 
     if (!frame) return null;
 
-    const node = frame.children.children[frame.index];
-    const from = frame.contentFrom + frame.children.offsets[frame.index];
+    const node = getDefined(frame.children.at(frame.index));
+    const from = frame.contentFrom + frame.children.startOf(frame.index);
 
     return this.createEntry(
       node,
@@ -409,7 +347,7 @@ export class ResolvedTokenCursor {
     const current = this.currentEntry();
     const currentNode = this.currentNode();
 
-    if (current && currentNode?.children?.children.length) {
+    if (current && currentNode?.children?.size) {
       this.frames.push({
         children: currentNode.children,
         contentFrom: current.from + 1,
@@ -422,7 +360,7 @@ export class ResolvedTokenCursor {
     while (this.frames.length > 0) {
       const frame = getDefined(this.frames.at(-1));
 
-      if (frame.index + 1 < frame.children.children.length) {
+      if (frame.index + 1 < frame.children.size) {
         frame.index += 1;
 
         return true;
@@ -451,12 +389,12 @@ export class ResolvedTokenCursor {
       const entry = getDefined(this.currentEntry());
       const node = getDefined(this.currentNode());
 
-      if (!node.children?.children.length) return true;
+      if (!node.children?.size) return true;
 
       this.frames.push({
         children: node.children,
         contentFrom: entry.from + 1,
-        index: node.children.children.length - 1,
+        index: node.children.size - 1,
       });
     }
   }
@@ -464,7 +402,7 @@ export class ResolvedTokenCursor {
   private currentNode() {
     const frame = this.frames.at(-1);
 
-    return frame?.children.children[frame.index] ?? null;
+    return frame?.children.at(frame.index) ?? null;
   }
 
   private pointIn(entry: ResolvedTokenEntry, position: number) {
@@ -487,12 +425,11 @@ export class ResolvedTokenCursor {
     let contentFrom = 0;
 
     while (true) {
-      const index = findChildIndexAtPosition(children, contentFrom, position);
+      const found = childAtPosition(children, contentFrom, position);
 
-      if (index < 0) return false;
+      if (!found) return false;
 
-      const child = children.children[index];
-      const from = contentFrom + children.offsets[index];
+      const { child, from, index } = found;
 
       this.frames.push({ children, contentFrom, index });
 

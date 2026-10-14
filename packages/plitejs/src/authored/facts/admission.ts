@@ -2,18 +2,27 @@ import {
   createInternalDocumentChange,
   DocumentChange,
   getInternalDocumentChangeRanges,
+  getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
-  valueRoot,
 } from '../../core/change/document-change';
-import type { DocumentIndex } from '../../core/change/document-index';
+import {
+  type DocumentIndex,
+  NO_NODES,
+  type NodeList,
+  rootNodesOf,
+} from '../../core/change/document-index';
 import type { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import type { DocumentAdmission } from '../../core/document-admission';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
+import {
+  getRecordSetVersion,
+  getValueRecords,
+  recordOpsBetween,
+} from '../../core/record-store';
 import type { EditorDocumentValue } from '../../interfaces/editor';
 import type { Path } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
-import { isMetadataRootKey } from '../../internal/root-location';
 import {
   AuthoredMarkError,
   createAuthoredMarksValidator,
@@ -24,18 +33,20 @@ import { assertEditingDeletionsHeld } from '../tree/resolve';
 import { compactClaims, type TopLevelIndicesByRoot } from './compact';
 import {
   addCounts,
+  assertRecordStore,
+  assertRecordWrites,
   contentRootsOf,
   factsOf,
   insertionsIn,
   insertionsOf,
   rememberInsertions,
 } from './facts';
-import { appendRecords, CONTEXTS_ROOT, VERDICTS_ROOT } from './records';
+import { CONTEXTS, VERDICTS } from './records';
 import { settleValue } from './settle';
 
 const firstChildEndingAfter = (index: DocumentIndex, position: number) => {
   let low = 0;
-  let high = index.value.length;
+  let high = index.size;
 
   while (low < high) {
     const middle = Math.floor((low + high) / 2);
@@ -55,8 +66,8 @@ const firstChildEndingAfter = (index: DocumentIndex, position: number) => {
 const changedSpan = (
   change: DocumentChange,
   root: string,
-  before: readonly unknown[],
-  after: readonly unknown[],
+  before: NodeList<unknown>,
+  after: NodeList<unknown>,
   index: DocumentIndex
 ) => {
   if (change.createRoots.has(root) || change.deleteRoots.has(root)) {
@@ -89,9 +100,10 @@ const repairOf = (
   indexOf: (root: string) => DocumentIndex
 ) => {
   const changes = new Map<string, RootChange>();
+  const settledRoots = contentRootsOf(settled);
 
   for (const [root, nodes] of contentRootsOf(after)) {
-    const next = valueRoot(settled, root);
+    const next = settledRoots.get(root) ?? NO_NODES;
 
     if (next === nodes) continue;
 
@@ -102,13 +114,13 @@ const repairOf = (
       : Array.from({ length: nodes.length }, (_, child) => child);
 
     for (const child of at) {
-      if (next[child] === nodes[child]) continue;
+      if (next.at(child) === nodes.at(child)) continue;
 
       const step = getDefined(
         getInternalDocumentRootChange(
           DocumentChange.between(
-            { children: [nodes[child]] },
-            { children: [next[child]] },
+            { children: [getDefined(nodes.at(child))] },
+            { children: [getDefined(next.at(child))] },
             { isSetValued: isAuthoredSetValued }
           ),
           'main'
@@ -121,44 +133,76 @@ const repairOf = (
     if (composed) changes.set(root, composed);
   }
 
-  const contexts = valueRoot(settled, CONTEXTS_ROOT) ?? [];
-  const minted = appendRecords(
-    after,
-    CONTEXTS_ROOT,
-    contexts.slice(after.roots?.[CONTEXTS_ROOT]?.length ?? 0)
-  );
-  const repair = createInternalDocumentChange(changes);
-
-  return minted ? repair.compose(minted) : repair;
+  return createInternalDocumentChange(changes, {
+    records: recordOpsBetween(getValueRecords(after), getValueRecords(settled)),
+  });
 };
 
 export const createDocumentMarksValidator = () => {
   const { authorOf, validate } = createAuthoredMarksValidator();
+  /** Validate the given nodes of `value`'s roots, each listed at its index. */
+  const validateIn = (
+    value: EditorDocumentValue,
+    roots: Iterable<NodeList<unknown>>
+  ) => {
+    const facts = factsOf(value);
+    const restsOn = (ctx: string, path: Path) => {
+      if (!facts.contexts.has(ctx)) {
+        throw new AuthoredMarkError(
+          `Review context ${ctx} is missing. Save the whole read.value(), not only its children, so review contexts travel with the text.`,
+          path,
+          { cause: new EditorMissingReferenceError(ctx) }
+        );
+      }
+    };
+
+    for (const nodes of roots) validate(nodes, restsOn);
+  };
 
   return {
     authorOf,
-    validate: (value: EditorDocumentValue) => {
-      const facts = factsOf(value);
-      const restsOn = (ctx: string, path: Path) => {
-        if (!facts.contexts.has(ctx)) {
-          throw new AuthoredMarkError(
-            `Review context ${ctx} is missing. Save the whole read.value(), not only its children, so review contexts travel with the text.`,
-            path,
-            { cause: new EditorMissingReferenceError(ctx) }
-          );
-        }
-      };
-
-      validate(value.children, restsOn);
-      for (const [root, children] of Object.entries(value.roots ?? {})) {
-        if (!isMetadataRootKey(root)) validate(children, restsOn);
-      }
-    },
+    validate: (value: EditorDocumentValue) =>
+      validateIn(value, contentRootsOf(value).values()),
+    validateIn,
   };
+};
+
+/**
+ * Refuse a change that drops a context text still rests on. Contexts are never
+ * removed while a room is live, so the record cannot arrive later and the
+ * binding must not wait for it.
+ */
+const assertDroppedContextsUnused = (
+  after: EditorDocumentValue,
+  dropped: ReadonlySet<string>
+) => {
+  const { validate } = createAuthoredMarksValidator();
+  const restsOn = (ctx: string, path: Path) => {
+    if (dropped.has(ctx)) {
+      throw new AuthoredMarkError(
+        `Review context ${ctx} was dropped while text rests on it.`,
+        path
+      );
+    }
+  };
+
+  for (const children of contentRootsOf(after).values()) {
+    validate(children, restsOn);
+  }
 };
 
 export const authoredAdmission: DocumentAdmission = {
   commit: ({ after, before, change, indexOf }) => {
+    const records = getInternalDocumentChangeRecords(change);
+    const dropped = new Set(
+      [...(records.get(CONTEXTS) ?? [])].flatMap(([ctx, json]) =>
+        json === null ? [ctx] : []
+      )
+    );
+
+    assertRecordWrites(getValueRecords(after), records);
+    if (dropped.size > 0) assertDroppedContextsUnused(after, dropped);
+
     const previous = insertionsOf(before);
     const counts = new Map(previous.counts);
     const flipped = new Set<string>();
@@ -197,8 +241,9 @@ export const authoredAdmission: DocumentAdmission = {
     // A decision, or an incarnation a verdict names starting or stopping to
     // insert, can settle claims anywhere.
     const whole =
-      before.roots?.[VERDICTS_ROOT] !== after.roots?.[VERDICTS_ROOT] ||
-      [...flipped].some((incarnation) => facts.verdicts.has(incarnation));
+      getRecordSetVersion(getValueRecords(before), VERDICTS) !==
+        getRecordSetVersion(getValueRecords(after), VERDICTS) ||
+      [...flipped].some((incarnation) => facts.hasVerdict(incarnation));
     const inserting = { has: (incarnation: string) => counts.has(incarnation) };
     const admitted =
       settleValue(
@@ -215,17 +260,18 @@ export const authoredAdmission: DocumentAdmission = {
       : repairOf(after, admitted, whole ? null : scope, indexOf);
   },
   load: (document) => {
+    assertRecordStore(getValueRecords(document));
     createDocumentMarksValidator().validate(document);
 
     const compacted = compactClaims(document);
     const facts = factsOf(compacted);
     const value =
-      (facts.verdicts.size === 0
-        ? null
-        : settleValue(compacted, facts, 'document').value) ?? compacted;
+      (facts.hasVerdicts
+        ? settleValue(compacted, facts, 'document').value
+        : null) ?? compacted;
 
     for (const children of contentRootsOf(value).values()) {
-      assertEditingDeletionsHeld(children, readAuthoredMarks);
+      assertEditingDeletionsHeld(children.slice(), readAuthoredMarks);
     }
 
     return value === document

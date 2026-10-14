@@ -5,21 +5,22 @@ import {
   createEditor,
   createEditorView,
   defineEditorSchema,
+  DocumentChange,
   schema,
 } from 'plitejs';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
 import { compactClaims, expandContexts } from '../src/authored/facts/compact';
 import { claimsOf, factsOf } from '../src/authored/facts/facts';
-import {
-  CONTEXTS_ROOT,
-  contextElementOf,
-  contextRecordOf,
-  VERDICTS_ROOT,
-  verdictElementOf,
-} from '../src/authored/facts/records';
+import { contextRecordOf } from '../src/authored/facts/records';
 import { normalizeSetValues } from '../src/core/change/transform';
-import { authoredTestApi } from './support/authored';
+import type { EditorDocumentRecords } from '../src/interfaces/editor';
+import {
+  authoredTestApi,
+  recordsOf,
+  reviewRecords,
+  storedContexts,
+} from './support/authored';
 
 const Blocks = defineEditorSchema('authored-facts-blocks', {
   elements: { paragraph: schema.element.textBlock() },
@@ -40,7 +41,7 @@ type Node = Readonly<{
 
 type Value = Readonly<{
   children: readonly Node[];
-  roots?: Readonly<Record<string, readonly unknown[]>>;
+  records?: EditorDocumentRecords;
 }>;
 
 const entriesIn = (nodes: readonly Node[]): number =>
@@ -117,7 +118,7 @@ describe('authored review facts', () => {
 
       assert.deepEqual(
         {
-          contexts: compacted.roots?.[CONTEXTS_ROOT]?.length ?? 0,
+          contexts: storedContexts(compacted).length,
           entries: entriesIn(compacted.children),
           expanded: expandContexts(compacted),
         },
@@ -127,8 +128,12 @@ describe('authored review facts', () => {
   }
 
   it('stores bytes linear in the nesting depth', () => {
-    const bytes = (k: number) =>
-      JSON.stringify(compactClaims(stacked(k))).length;
+    const bytes = (k: number) => {
+      const compacted = compactClaims(stacked(k));
+
+      return JSON.stringify({ ...compacted, records: recordsOf(compacted) })
+        .length;
+    };
 
     assert.ok(
       bytes(200) < 2.1 * bytes(100),
@@ -144,7 +149,7 @@ describe('authored review facts', () => {
       change: 'A',
     });
 
-    assert.deepEqual(compacted, {
+    assert.deepEqual({ ...compacted, records: recordsOf(compacted) }, {
       children: [
         {
           children: [
@@ -157,13 +162,11 @@ describe('authored review facts', () => {
           type: 'paragraph',
         },
       ],
-      roots: {
-        [CONTEXTS_ROOT]: [
-          contextElementOf(
-            contextRecordOf(null, { at: 2, author: 'alice', change: 'A' })
-          ),
+      records: reviewRecords({
+        contexts: [
+          contextRecordOf(null, { at: 2, author: 'alice', change: 'A' }),
         ],
-      },
+      }),
     });
     assert.deepEqual(expandContexts(compacted), reusedId);
   });
@@ -177,7 +180,10 @@ describe('authored review facts', () => {
     claimsOf(value.children[0].children![at], factsOf(value))
       .map((claim) => claim.change)
       .toSorted();
-  const resting = (marks: readonly unknown[], records: readonly unknown[]) => ({
+  const resting = (
+    marks: readonly unknown[],
+    contexts: Parameters<typeof reviewRecords>[0]['contexts']
+  ): Value => ({
     children: [
       {
         children: [
@@ -189,11 +195,7 @@ describe('authored review facts', () => {
         type: 'paragraph',
       } as Node,
     ],
-    roots: {
-      [CONTEXTS_ROOT]: records.map((record) =>
-        contextElementOf(record as never)
-      ),
-    },
+    records: reviewRecords({ contexts }),
   });
 
   it('moves the insertions a node holds beside its context into one context', () => {
@@ -204,10 +206,10 @@ describe('authored review facts', () => {
       authored: [C, { ctx: inAB.ctx, kind: 'in' }],
       text: 'X',
     });
-    assert.deepEqual(compacted.roots?.[CONTEXTS_ROOT], [
-      contextElementOf(inA),
-      contextElementOf(inAB),
-    ]);
+    assert.deepEqual(
+      recordsOf(compacted),
+      reviewRecords({ contexts: [inA, inAB] })
+    );
     assert.deepEqual(claimsAt(compacted, 3), ['A', 'B', 'C']);
   });
 
@@ -222,7 +224,7 @@ describe('authored review facts', () => {
       authored: [C, { ctx: inAB.ctx, kind: 'in' }],
       text: 'X',
     });
-    assert.deepEqual(compacted.roots, value.roots);
+    assert.deepEqual(recordsOf(compacted), value.records);
     assert.deepEqual(claimsAt(compacted, 3), ['A', 'B', 'C']);
   });
 });
@@ -236,19 +238,22 @@ describe('authored review fact validation', () => {
       initialValue: value as never,
       plugins: [Blocks, createAuthoredPlugin({ authorId: 'dana' })],
     });
-  const restingOn = (ctx: string, records: readonly unknown[]): Value => ({
+  const restingOn = (
+    ctx: string,
+    contexts: Readonly<Record<string, unknown>>
+  ): Value => ({
     children: [
       {
         children: [{ authored: [B, { ctx, kind: 'in' }], text: 'X' }],
         type: 'paragraph',
       } as Node,
     ],
-    roots: { [CONTEXTS_ROOT]: records },
+    records: { 'authored-contexts': contexts } as EditorDocumentRecords,
   });
 
   it('refuses text resting on a context the document lacks', () => {
     assert.throws(
-      load(restingOn(root.ctx, [])),
+      load(restingOn(root.ctx, {})),
       refused(
         `Review context ${root.ctx} is missing. Save the whole read.value(), not only its children, so review contexts travel with the text.`
       )
@@ -258,32 +263,21 @@ describe('authored review fact validation', () => {
   it('refuses contexts that rest on each other', () => {
     assert.throws(
       load(
-        restingOn('c:one', [
-          { ...contextElementOf(root), base: 'c:two', ctx: 'c:one' },
-          { ...contextElementOf(root), base: 'c:one', ctx: 'c:two' },
-        ])
+        restingOn('c:one', {
+          'c:one': { base: 'c:two', member: root.member },
+          'c:two': { base: 'c:one', member: root.member },
+        })
       ),
       refused('Review context c:one rests on itself.')
     );
   });
 
-  it('reads two equal records as one context', () => {
-    const value = restingOn(root.ctx, [
-      contextElementOf(root),
-      contextElementOf(root),
-    ]);
-
-    load(value)();
-    assert.equal(factsOf(value).contexts.size, 1);
-  });
-
-  it('refuses two different records under one id', () => {
+  it('refuses a record its id does not hash', () => {
     assert.throws(
       load(
-        restingOn(root.ctx, [
-          contextElementOf(root),
-          { ...contextElementOf(root), author: 'mallory' },
-        ])
+        restingOn(root.ctx, {
+          [root.ctx]: { member: { ...root.member, author: 'mallory' } },
+        })
       ),
       refused(`Review context ${root.ctx} does not match its content.`)
     );
@@ -318,7 +312,7 @@ describe('authored admission', () => {
           type: 'paragraph',
         },
       ],
-      roots: { [CONTEXTS_ROOT]: [contextElementOf(contextRecordOf(null, A))] },
+      records: reviewRecords({ contexts: [contextRecordOf(null, A)] }),
     });
   });
 
@@ -334,9 +328,15 @@ describe('authored admission', () => {
         type: 'paragraph',
       },
     ],
-    roots: {
-      [VERDICTS_ROOT]: [verdictElementOf({ member: bob, verdict: 'reject' })],
-    },
+    records: reviewRecords({
+      verdicts: [
+        {
+          decision: 'd:1',
+          member: { at: bob.at, change: bob.change },
+          verdict: 'reject',
+        },
+      ],
+    }),
   });
 
   it('settles the document a view shows', () => {
@@ -361,7 +361,7 @@ describe('authored admission', () => {
           reusedId.children[0],
           ...rejected('delete').children,
         ],
-        roots: rejected('delete').roots,
+        records: rejected('delete').records,
       } as never,
       plugins: [Blocks, createAuthoredPlugin({ authorId: 'zed' })],
     });
@@ -414,7 +414,7 @@ describe('authored admission', () => {
           type: 'paragraph',
         },
       ],
-      roots: rejected('held').roots,
+      records: rejected('held').records,
     });
   });
 
@@ -450,7 +450,7 @@ describe('authored admission', () => {
       {
         edit: replaced('edit'),
         suggested: {
-          contexts: suggested.roots?.[CONTEXTS_ROOT]?.length,
+          contexts: storedContexts(suggested).length,
           entries: entriesIn(suggested.children),
         },
       },
@@ -528,6 +528,49 @@ describe('authored admission', () => {
       ],
     });
   });
+});
+
+describe('authored records across a value change', () => {
+  const blocks = [{ children: [{ text: 'q' }], type: 'paragraph' }];
+  const changes = {
+    between: (editor: ReturnType<typeof createEditor>) =>
+      editor.update((tx) =>
+        tx.changes.apply(
+          DocumentChange.between(editor.read.value(), {
+            children: blocks,
+          } as never)
+        )
+      ),
+    replace: (editor: ReturnType<typeof createEditor>) =>
+      editor.update((tx) => tx.value.replace({ children: blocks } as never)),
+  };
+
+  for (const [name, change] of Object.entries(changes)) {
+    it(`keeps the records through a ${name} that brings none, and loads them again`, () => {
+      const plugins = [Blocks, createAuthoredPlugin({ authorId: 'dana' })];
+      const editor = createEditor({
+        initialValue: reusedId.children as never,
+        plugins,
+      });
+      const { records } = editor.read.value();
+
+      change(editor);
+
+      const reloaded = createEditor({
+        initialValue: editor.read.value() as never,
+        plugins,
+      });
+
+      assert.notEqual(records, undefined);
+      assert.deepEqual(
+        [editor.read.value(), reloaded.read.value()],
+        [
+          { children: blocks, records },
+          { children: blocks, records },
+        ]
+      );
+    });
+  }
 });
 
 describe('authored incarnations', () => {

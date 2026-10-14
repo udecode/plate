@@ -5,9 +5,6 @@ import type { Range } from '../interfaces/range';
 /** @internal */
 export const MAIN_ROOT_KEY = 'main';
 
-/** @internal */
-export const isMetadataRootKey = (root: string) => root.startsWith('$');
-
 export type RootVisibility = 'explicit' | 'implicit';
 
 export type PointRootMeta = {

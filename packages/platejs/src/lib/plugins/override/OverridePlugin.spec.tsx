@@ -150,7 +150,10 @@ describe('OverridePlugin', () => {
   it('handles deleteExit through OverridePlugin command policy', () => {
     const CalloutPlugin = definePlugin('callout', {
       schema: {
-        element: { content: schema.content.open({ default: 'text', min: 1 }) },
+        element: {
+          content: schema.content.open({ default: 'text', min: 1 }),
+          ownsExit: true,
+        },
       },
       rules: {
         break: {
@@ -209,7 +212,7 @@ describe('OverridePlugin', () => {
 
   it('keeps the line break when deleteExit has no room to land a block', () => {
     const CalloutPlugin = definePlugin('fullRootCallout', {
-      schema: { element: schema.element.textBlock() },
+      schema: { element: schema.element.textBlock({ ownsExit: true }) },
       rules: { break: { emptyLineEnd: 'deleteExit' } },
     });
     const selection = {

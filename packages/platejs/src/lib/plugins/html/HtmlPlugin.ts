@@ -11,7 +11,6 @@ import {
   EditorSchemaValidationError,
   ElementApi,
   getCompiledEditorSchemaFromApi,
-  isMetadataRootKey,
   schema as schemaDefinition,
   reportEditorLifecycleError,
   TextApi,
@@ -3858,9 +3857,7 @@ export const parseHtmlSliceWithEditor = (
 const htmlDocumentDiagnostics = (
   document: EditorDocumentValue
 ): readonly HtmlWarningDiagnostic[] => {
-  const roots = Object.keys(document.roots ?? {}).filter(
-    (root) => !isMetadataRootKey(root)
-  );
+  const roots = Object.keys(document.roots ?? {});
   const metadata = Object.keys(document.meta ?? {}).filter(
     (key) => key !== 'authored'
   );

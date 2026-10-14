@@ -14,7 +14,7 @@ import {
 import type { AuthoredView } from '../src/authored';
 import { createAuthoredPlugin } from '../src/authored/authored';
 import { setEditorComposing } from '../src/internal';
-import { reviewedValue } from './support/authored';
+import { reviewedValue, reviewRecords } from './support/authored';
 
 const Blocks = defineEditorSchema('authored-plugin-blocks', {
   elements: {
@@ -635,17 +635,15 @@ describe('authored plugin', () => {
     const editor = createEditor({
       initialValue: {
         children: [{ children: [{ text: 'Keep' }], type: 'paragraph' }],
-        roots: {
-          '$authored-verdicts': [
+        records: reviewRecords({
+          verdicts: [
             {
-              at: 5,
-              change: 'bob:ai',
-              children: [{ text: '' }],
-              type: 'authored-verdict',
+              decision: 'd:1',
+              member: { at: 5, change: 'bob:ai' },
               verdict: 'reject',
             },
           ],
-        },
+        }),
       } as never,
       plugins: [
         Blocks,

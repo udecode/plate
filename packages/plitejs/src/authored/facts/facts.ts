@@ -1,5 +1,17 @@
+import { type NodeList, rootNodesOf } from '../../core/change/document-index';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
-import { isMetadataRootKey } from '../../internal/root-location';
+import {
+  getRecord,
+  getRecordCount,
+  getRecordEntries,
+  getRecordSetVersion,
+  getValueRecords,
+  hasRecordWithPrefix,
+  type RecordOps,
+  type RecordStore,
+} from '../../core/record-store';
+import type { EditorDocumentRecords } from '../../interfaces/editor';
+import { getDefined } from '../../internal/get-defined';
 import {
   type AuthoredMark,
   AuthoredMarkError,
@@ -9,162 +21,237 @@ import {
 } from '../tree/marks';
 import { isEditingChange } from './editing';
 import {
-  CONTEXTS_ROOT,
+  CONTEXTS,
   type ContextRecord,
+  changeVerdictProbeOf,
   contextIdOf,
   contextRecordOf,
   incarnationOf,
-  parseContextElement,
-  parseVerdictElement,
+  parseContext,
+  parseVerdict,
   type Verdict,
-  VERDICTS_ROOT,
+  VERDICTS,
+  verdictProbeOf,
 } from './records';
 
 export type ReviewFacts = Readonly<{
-  contexts: ReadonlyMap<string, ContextRecord>;
-  decidedChangeIds: ReadonlySet<string>;
+  contexts: ContextLookup['contexts'];
+  /** Whether a verdict names any incarnation of `change`. */
+  decides: (change: string) => boolean;
+  /** Whether any verdict is stored. */
+  hasVerdicts: boolean;
+  /** Whether a verdict, or one with `verdict`, names `incarnation`. */
+  hasVerdict: (incarnation: string, verdict?: Verdict) => boolean;
   insertedIncarnations: () => Readonly<{
     has: (incarnation: string) => boolean;
   }>;
-  verdicts: ReadonlyMap<string, ReadonlySet<Verdict>>;
 }>;
 
 /** Where context records are read from: a document's, or a recording's that adds to them. */
 export type ContextLookup = Readonly<{
-  contexts: Pick<ReadonlyMap<string, ContextRecord>, 'get' | 'has'>;
+  contexts: Readonly<{
+    get: (ctx: string) => ContextRecord | undefined;
+    has: (ctx: string) => boolean;
+  }>;
 }>;
 
 type Roots = Readonly<Record<string, readonly unknown[]>>;
 
-type Value = Readonly<{ children: readonly unknown[]; roots?: Roots }>;
+type Value = Readonly<{
+  children: readonly unknown[];
+  records?: EditorDocumentRecords;
+  roots?: Roots;
+}>;
 
 const EMPTY: readonly unknown[] = Object.freeze([]);
 
-const PARSED_CONTEXTS = new WeakMap<object, ContextRecord>();
+// Parsed contexts by id, each checked against its stored text before reuse.
+// A context's id hashes its content, so one entry serves every version and
+// document that holds it.
+const PARSED = new Map<
+  string,
+  Readonly<{ json: string; record: ContextRecord }>
+>();
+const PARSED_LIMIT = 1 << 15;
 
-const parseContextAt = (node: unknown, index: number) => {
-  const cached = PARSED_CONTEXTS.get(node as object);
+const readContext = (
+  store: RecordStore,
+  ctx: string
+): ContextRecord | undefined => {
+  const json = getRecord(store, CONTEXTS, ctx);
 
-  if (cached) return cached;
+  if (json === undefined) return undefined;
 
-  const record = parseContextElement(node);
+  const cached = PARSED.get(ctx);
+
+  if (cached?.json === json) return cached.record;
+
+  const record = parseContext(ctx, json);
 
   if (!record) {
-    throw new AuthoredMarkError(`A record in ${CONTEXTS_ROOT} is malformed.`, [
-      index,
-    ]);
+    throw new AuthoredMarkError(`Review context ${ctx} is malformed.`, []);
   }
-  PARSED_CONTEXTS.set(node as object, record);
+  if (PARSED.size >= PARSED_LIMIT) {
+    PARSED.delete(PARSED.keys().next().value as string);
+  }
+  PARSED.set(ctx, { json, record });
 
   return record;
 };
 
-const HASHED = new WeakSet<ContextRecord>();
+const missingBase = (ctx: string, base: string) =>
+  new AuthoredMarkError(
+    `Review context ${ctx} rests on missing context ${base}.`,
+    [],
+    { cause: new EditorMissingReferenceError(base) }
+  );
 
-const assertContentId = (record: ContextRecord, index: number) => {
-  if (HASHED.has(record)) return;
+const assertContentId = (record: ContextRecord) => {
   if (record.ctx !== contextIdOf(record.base, record.member)) {
     throw new AuthoredMarkError(
       `Review context ${record.ctx} does not match its content.`,
-      [index]
+      []
     );
   }
-  HASHED.add(record);
 };
 
 // A content id makes a cycle a hash collision, and FNV-1a preimages can be
 // computed, so a peer could forge one; every chain must reach a root context.
-const assertChainsEnd = (
-  records: readonly ContextRecord[],
-  byId: ReadonlyMap<string, ContextRecord>
+const assertChainEnds = (
+  record: ContextRecord,
+  get: (ctx: string) => ContextRecord | undefined,
+  ended: Set<string>
 ) => {
-  const ended = new Set<string>();
+  const walked = new Set<string>();
+  let current: ContextRecord | undefined = record;
 
-  records.forEach((record, index) => {
-    const walked = new Set<string>();
-    let current: ContextRecord | undefined = record;
-
-    while (current && !ended.has(current.ctx)) {
-      if (walked.has(current.ctx)) {
-        throw new AuthoredMarkError(
-          `Review context ${record.ctx} rests on itself.`,
-          [index]
-        );
-      }
-      walked.add(current.ctx);
-      if (current.base === null) break;
-
-      const base = byId.get(current.base);
-
-      if (!base) {
-        throw new AuthoredMarkError(
-          `Review context ${current.ctx} rests on missing context ${current.base}.`,
-          [index]
-        );
-      }
-      current = base;
+  while (current && !ended.has(current.ctx)) {
+    if (walked.has(current.ctx)) {
+      throw new AuthoredMarkError(
+        `Review context ${record.ctx} rests on itself.`,
+        []
+      );
     }
-    for (const ctx of walked) ended.add(ctx);
-  });
+    walked.add(current.ctx);
+    if (current.base === null) break;
+
+    const base = get(current.base);
+
+    if (!base) throw missingBase(current.ctx, current.base);
+    current = base;
+  }
+  for (const ctx of walked) ended.add(ctx);
+};
+
+const assertVerdict = (id: string, json: string) => {
+  if (!parseVerdict(id, json)) {
+    throw new AuthoredMarkError(`Review verdict ${id} is malformed.`, []);
+  }
+};
+
+/**
+ * Check the review records `ops` writes into `store`, the records after them.
+ * A stored context was checked when it was written, so a chain walk stops at
+ * the first context this write did not add.
+ */
+export const assertRecordWrites = (store: RecordStore, ops: RecordOps) => {
+  const contexts = ops.get(CONTEXTS);
+  const verdicts = ops.get(VERDICTS);
+
+  if (contexts) {
+    const written = new Map<string, ContextRecord>();
+
+    for (const [ctx, json] of contexts) {
+      if (json === null) continue;
+
+      const record = parseContext(ctx, json);
+
+      if (!record) {
+        throw new AuthoredMarkError(`Review context ${ctx} is malformed.`, []);
+      }
+      written.set(ctx, record);
+    }
+
+    const ended = new Set<string>();
+    const get = (ctx: string) => {
+      const record = written.get(ctx);
+
+      if (record) return record;
+      if (getRecord(store, CONTEXTS, ctx) !== undefined) ended.add(ctx);
+
+      return readContext(store, ctx);
+    };
+
+    for (const record of written.values()) {
+      assertChainEnds(record, get, ended);
+    }
+    written.forEach(assertContentId);
+  }
+  for (const [id, json] of verdicts ?? []) {
+    if (json !== null) assertVerdict(id, json);
+  }
+};
+
+/** Check every review record `store` holds, as a load does once. */
+export const assertRecordStore = (store: RecordStore) => {
+  const ended = new Set<string>();
+  const get = (ctx: string) => readContext(store, ctx);
+
+  const records = [...getRecordEntries(store, CONTEXTS)].map(([ctx]) =>
+    getRecordDefined(get(ctx))
+  );
+
+  for (const record of records) assertChainEnds(record, get, ended);
+  records.forEach(assertContentId);
+  for (const [id, json] of getRecordEntries(store, VERDICTS)) {
+    assertVerdict(id, json);
+  }
+};
+
+const getRecordDefined = (record: ContextRecord | undefined) => {
+  if (!record) throw new Error('A listed context has no record.');
+
+  return record;
 };
 
 type RecordFacts = Omit<ReviewFacts, 'insertedIncarnations'>;
 
-const buildRecordFacts = (
-  contexts: readonly unknown[],
-  verdicts: readonly unknown[]
-): RecordFacts => {
-  const records = contexts.map(parseContextAt);
-  const byId = new Map(records.map((record) => [record.ctx, record]));
+const RECORD_FACTS = new WeakMap<object, RecordFacts>();
 
-  assertChainsEnd(records, byId);
-  // Each id hashes its record's content, so a duplicate id is an equal record.
-  records.forEach(assertContentId);
+const NO_RECORD_FACTS: RecordFacts = Object.freeze({
+  contexts: Object.freeze({ get: () => undefined, has: () => false }),
+  decides: () => false,
+  hasVerdict: () => false,
+  hasVerdicts: false,
+});
 
-  const byIncarnation = new Map<string, Set<Verdict>>();
-  const decidedChangeIds = new Set<string>();
-
-  verdicts.forEach((node, index) => {
-    const record = parseVerdictElement(node);
-
-    if (!record) {
-      throw new AuthoredMarkError(
-        `A record in ${VERDICTS_ROOT} is malformed.`,
-        [index]
-      );
-    }
-
-    const key = incarnationOf(record.member);
-    const set = byIncarnation.get(key) ?? new Set();
-
-    set.add(record.verdict);
-    byIncarnation.set(key, set);
-    decidedChangeIds.add(record.member.change);
-  });
-
-  return { contexts: byId, decidedChangeIds, verdicts: byIncarnation };
-};
-
-const RECORD_FACTS = new WeakMap<
-  readonly unknown[],
-  WeakMap<readonly unknown[], RecordFacts>
->();
-
-const recordFactsOf = (roots: Roots | undefined) => {
-  const contexts = roots?.[CONTEXTS_ROOT] ?? EMPTY;
-  const verdicts = roots?.[VERDICTS_ROOT] ?? EMPTY;
-  let byVerdicts = RECORD_FACTS.get(contexts);
-
-  if (!byVerdicts) {
-    byVerdicts = new WeakMap();
-    RECORD_FACTS.set(contexts, byVerdicts);
+const recordFactsOf = (store: RecordStore): RecordFacts => {
+  if (
+    getRecordSetVersion(store, CONTEXTS) === null &&
+    getRecordSetVersion(store, VERDICTS) === null
+  ) {
+    return NO_RECORD_FACTS;
   }
 
-  let facts = byVerdicts.get(verdicts);
+  let facts = RECORD_FACTS.get(store);
 
   if (!facts) {
-    facts = buildRecordFacts(contexts, verdicts);
-    byVerdicts.set(verdicts, facts);
+    facts = Object.freeze({
+      contexts: Object.freeze({
+        get: (ctx: string) => readContext(store, ctx),
+        has: (ctx: string) => getRecord(store, CONTEXTS, ctx) !== undefined,
+      }),
+      decides: (change: string) =>
+        hasRecordWithPrefix(store, VERDICTS, changeVerdictProbeOf(change)),
+      hasVerdict: (incarnation: string, verdict?: Verdict) =>
+        hasRecordWithPrefix(
+          store,
+          VERDICTS,
+          verdictProbeOf(incarnation, verdict)
+        ),
+      hasVerdicts: getRecordCount(store, VERDICTS) > 0,
+    });
+    RECORD_FACTS.set(store, facts);
   }
 
   return facts;
@@ -176,11 +263,9 @@ export const contentRootsOf = <T>(
     roots?: Readonly<Record<string, readonly T[]>>;
   }>
 ) =>
-  new Map<string, readonly T[]>([
-    ['main', value.children],
-    ...Object.entries(value.roots ?? {}).filter(
-      ([root]) => !isMetadataRootKey(root)
-    ),
+  new Map<string, NodeList<T>>([
+    ['main', rootNodesOf(value, 'children')],
+    ...Object.entries(value.roots ?? {}),
   ]);
 
 const contentOf = (value: Value) => [...contentRootsOf(value).values()];
@@ -210,11 +295,11 @@ const carriedInsertions = (
 
 const insertedIncarnationsIn = (
   records: RecordFacts,
-  content: ReadonlyArray<readonly unknown[]>
+  content: ReadonlyArray<NodeList<unknown>>
 ) => {
   const inserting = new Set<string>();
-  const visit = (nodes: readonly unknown[]) => {
-    for (const node of nodes) {
+  const visit = (nodes: NodeList<unknown>) => {
+    nodes.forEach((node) => {
       carriedInsertions(node, records, (incarnation) =>
         inserting.add(incarnation)
       );
@@ -222,7 +307,7 @@ const insertedIncarnationsIn = (
       const { children } = node as { children?: unknown };
 
       if (Array.isArray(children)) visit(children);
-    }
+    });
   };
 
   content.forEach(visit);
@@ -231,21 +316,25 @@ const insertedIncarnationsIn = (
 };
 
 const DOCUMENT_FACTS = new WeakMap<
-  readonly unknown[],
-  Readonly<{ content: ReadonlyArray<readonly unknown[]>; facts: ReviewFacts }>
+  NodeList<unknown>,
+  Readonly<{
+    content: ReadonlyArray<NodeList<unknown>>;
+    facts: ReviewFacts;
+    records: RecordFacts;
+  }>
 >();
 
 export const factsOf = (value: Value): ReviewFacts => {
-  const records = recordFactsOf(value.roots);
+  const records = recordFactsOf(getValueRecords(value));
   const content = contentOf(value);
-  const cached = DOCUMENT_FACTS.get(value.children);
+  const main = getDefined(content[0]);
+  const cached = DOCUMENT_FACTS.get(main);
 
   if (
     cached &&
     cached.content.length === content.length &&
     cached.content.every((children, index) => children === content[index]) &&
-    cached.facts.contexts === records.contexts &&
-    cached.facts.verdicts === records.verdicts
+    cached.records === records
   ) {
     return cached.facts;
   }
@@ -257,7 +346,7 @@ export const factsOf = (value: Value): ReviewFacts => {
       (inserted ??= insertedIncarnationsIn(records, content)),
   });
 
-  DOCUMENT_FACTS.set(value.children, { content, facts });
+  DOCUMENT_FACTS.set(main, { content, facts, records });
 
   return facts;
 };
@@ -268,12 +357,12 @@ export type NodesPerIncarnation = ReadonlyMap<string, number>;
 
 type Insertions = Readonly<{
   counts: NodesPerIncarnation;
-  roots: ReadonlyMap<string, readonly unknown[]>;
+  roots: ReadonlyMap<string, NodeList<unknown>>;
 }>;
 
 const NONE: NodesPerIncarnation = new Map();
 const SUMMARIES = new WeakMap<object, NodesPerIncarnation>();
-const INSERTIONS = new WeakMap<readonly unknown[], Insertions>();
+const INSERTIONS = new WeakMap<NodeList<unknown>, Insertions>();
 
 export const addCounts = (
   counts: Map<string, number>,
@@ -322,7 +411,7 @@ export const insertionsIn = (
 
 export const insertionsOf = (value: Value): Insertions => {
   const roots = contentRootsOf(value);
-  const cached = INSERTIONS.get(value.children);
+  const cached = INSERTIONS.get(getDefined(roots.get('main')));
 
   if (
     cached &&
@@ -336,9 +425,9 @@ export const insertionsOf = (value: Value): Insertions => {
   const counts = new Map<string, number>();
 
   for (const nodes of roots.values()) {
-    for (const node of nodes) {
+    nodes.forEach((node) => {
       addCounts(counts, insertionsIn(node, facts), 1);
-    }
+    });
   }
 
   return rememberInsertions(value, counts);
@@ -350,7 +439,7 @@ export const rememberInsertions = (
 ): Insertions => {
   const insertions = { counts, roots: contentRootsOf(value) };
 
-  INSERTIONS.set(value.children, insertions);
+  INSERTIONS.set(getDefined(insertions.roots.get('main')), insertions);
 
   return insertions;
 };
@@ -426,10 +515,9 @@ export const outcomeOf = (
   if (isEditingChange(mark.change)) return 'accept';
 
   const key = incarnationOf(mark);
-  const verdicts = facts.verdicts.get(key);
 
-  if (!verdicts) return 'pending';
-  if (verdicts.has('accept')) return 'accept';
+  if (!facts.hasVerdict(key)) return 'pending';
+  if (facts.hasVerdict(key, 'accept')) return 'accept';
 
   const replacementPending = facts.insertedIncarnations().has(key);
 
@@ -523,7 +611,7 @@ export const marksOf = (
 ): readonly AuthoredMark[] => {
   const claims = claimsOf(node, facts);
 
-  return facts.verdicts.size === 0 &&
+  return !facts.hasVerdicts &&
     !claims.some((mark) => isEditingChange(mark.change))
     ? claims
     : claims.filter((mark) => outcomeOf(facts, mark) === 'pending');
@@ -541,14 +629,14 @@ export const standingClaimsOf = (
 ): readonly AuthoredMark[] => {
   const claims = claimsOf(node, lookup);
 
-  return facts.verdicts.size === 0
+  return !facts.hasVerdicts
     ? claims
     : claims.filter((mark) => outcomeOf(facts, mark) !== 'reject');
 };
 
 export const isAccepted = (facts: ReviewFacts, mark: AuthoredMark) =>
   isEditingChange(mark.change) ||
-  (facts.verdicts.size > 0 && outcomeOf(facts, mark) === 'accept');
+  (facts.hasVerdicts && outcomeOf(facts, mark) === 'accept');
 
 export const isSettledDeletion = (node: unknown, facts: ReviewFacts) =>
   readAuthoredMarks(node).some(

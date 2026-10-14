@@ -2,14 +2,13 @@ import { getDefined } from '../../internal/get-defined';
 import { isImmutable, rememberImmutableArray } from '../clone';
 import {
   createTreeIndex,
-  createTreeIndexChildren,
   createTreeIndexNode,
-  replaceTreeIndexChild,
   ResolvedTokenCursor,
   type TreeIndexChildren,
   type TreeIndexNode,
 } from '../resolved-token-cursor';
 import { cloneFrozen, cloneJson, type JsonRecord } from './json';
+import { lazyRootOf, type Roots } from './lazy-root';
 import {
   assertNode,
   CLAIMED_PREPARED_SOURCES,
@@ -61,6 +60,13 @@ export type DecodeFrame = {
 };
 
 export type ChangedOutputRange = readonly [number, number];
+
+export type NodeList<T = JsonNode> = Readonly<{
+  at: (index: number) => T | undefined;
+  forEach: (visit: (node: T, index: number) => void) => void;
+  length: number;
+  slice: (from?: number, to?: number) => T[];
+}>;
 
 export const decodeNodes = (
   slice: PreparedTokenSlice,
@@ -268,55 +274,49 @@ export const nodeAtPath = (
   return getDefined(node);
 };
 
-export type IndexedValue = {
-  index: TreeIndexChildren;
-  value: readonly JsonNode[];
-};
-
 const freezeElementWithChildren = (
   node: JsonNode,
   children: readonly JsonNode[]
 ) => Object.freeze({ ...node, children: Object.freeze(children) }) as JsonNode;
 
-export const replaceIndexedChildren = (
-  indexed: IndexedValue,
+const elementWithChildren = (
+  element: JsonNode,
+  children: TreeIndexChildren
+): TreeIndexNode => ({
+  children,
+  kind: 'element',
+  length: children.totalLength + 2,
+  node: freezeElementWithChildren(
+    element,
+    children.map((child) => child.node)
+  ),
+});
+
+const replaceIndexedChildren = (
+  tree: TreeIndexChildren,
   parentPath: readonly number[],
-  replace: (
-    value: readonly JsonNode[],
-    index: TreeIndexChildren
-  ) => IndexedValue
-): IndexedValue => {
-  if (parentPath.length === 0) return replace(indexed.value, indexed.index);
+  replace: (children: TreeIndexChildren) => TreeIndexChildren
+): TreeIndexChildren => {
+  if (parentPath.length === 0) return replace(tree);
 
   const childIndex = parentPath[0];
-  const node = indexed.value[childIndex];
-  const nodeIndex = indexed.index.children[childIndex];
+  const entry = tree.at(childIndex);
 
-  if (!node || !nodeIndex || !isElementNode(node) || !nodeIndex.children) {
+  if (!entry?.children || !isElementNode(entry.node)) {
     throw new Error(`Cannot resolve element at [${parentPath}].`);
   }
 
-  const nested = replaceIndexedChildren(
-    { index: nodeIndex.children, value: node.children },
-    parentPath.slice(1),
-    replace
+  return tree.set(
+    childIndex,
+    elementWithChildren(
+      entry.node,
+      replaceIndexedChildren(entry.children, parentPath.slice(1), replace)
+    )
   );
-  const nextValue = [...indexed.value];
-
-  nextValue[childIndex] = freezeElementWithChildren(node, nested.value);
-
-  return {
-    index: replaceTreeIndexChild(indexed.index, childIndex, {
-      children: nested.index,
-      kind: 'element',
-      length: nested.index.length + 2,
-    }),
-    value: nextValue,
-  };
 };
 
-export const spliceIndexedChildren = (
-  indexed: IndexedValue,
+const spliceIndexedChildren = (
+  tree: TreeIndexChildren,
   parentPath: readonly number[],
   index: number,
   deleteCount: number,
@@ -324,26 +324,19 @@ export const spliceIndexedChildren = (
   cloneInserted = true,
   insertedIndexes?: readonly TreeIndexNode[]
 ) =>
-  replaceIndexedChildren(indexed, parentPath, (value, tree) => {
-    const nextValue = [...value];
-    const nextIndexes = [...tree.children];
-    const frozenInserted = cloneInserted ? inserted.map(cloneFrozen) : inserted;
-
-    nextValue.splice(index, deleteCount, ...frozenInserted);
-    nextIndexes.splice(
+  replaceIndexedChildren(tree, parentPath, (children) =>
+    children.splice(
       index,
       deleteCount,
-      ...(insertedIndexes ?? frozenInserted.map(createTreeIndexNode))
-    );
+      insertedIndexes ??
+        (cloneInserted ? inserted.map(cloneFrozen) : inserted).map(
+          createTreeIndexNode
+        )
+    )
+  );
 
-    return {
-      index: createTreeIndexChildren(nextIndexes),
-      value: nextValue,
-    };
-  });
-
-export const updateIndexedNode = (
-  indexed: IndexedValue,
+const updateIndexedNode = (
+  tree: TreeIndexChildren,
   path: readonly number[],
   update: (node: JsonNode) => JsonNode
 ) => {
@@ -351,26 +344,20 @@ export const updateIndexedNode = (
 
   if (index === undefined) throw new Error('Cannot update the document root.');
 
-  return replaceIndexedChildren(indexed, path.slice(0, -1), (value, tree) => {
-    const node = value[index];
+  return replaceIndexedChildren(tree, path.slice(0, -1), (children) => {
+    const entry = children.at(index);
 
-    if (!node) throw new Error(`Cannot resolve node at [${path}].`);
+    if (!entry) throw new Error(`Cannot resolve node at [${path}].`);
 
-    const updatedNode = update(node);
+    const updatedNode = update(entry.node);
     const nextNode = isElementNode(updatedNode)
       ? (Object.freeze({
           ...cloneFrozen(nodeProps(updatedNode)),
           children: updatedNode.children,
         }) as JsonNode)
       : cloneFrozen(updatedNode);
-    const nextValue = [...value];
 
-    nextValue[index] = nextNode;
-
-    return {
-      index: replaceTreeIndexChild(tree, index, createTreeIndexNode(nextNode)),
-      value: nextValue,
-    };
+    return children.set(index, createTreeIndexNode(nextNode));
   });
 };
 
@@ -387,104 +374,105 @@ type IndexedNodeUpdateBranch = {
 };
 
 const updateIndexedNodes = (
-  indexed: IndexedValue,
+  tree: TreeIndexChildren,
   branch: IndexedNodeUpdateBranch
-): IndexedValue => {
-  const nextValue = [...indexed.value];
-  const nextIndexes = [...indexed.index.children];
+): TreeIndexChildren => {
+  const updated = new Map<number, TreeIndexNode>();
 
   for (const [index, update] of branch.children) {
-    const node = nextValue[index];
-    const nodeIndex = nextIndexes[index];
+    const entry = tree.at(index);
 
-    if (!node || !nodeIndex) {
+    if (!entry) {
       throw new Error(`Cannot resolve node at child index ${index}.`);
     }
 
-    let nextNode = node;
-    let nextIndex = nodeIndex;
+    let next = entry;
 
     if (update.children.size > 0) {
-      if (!isElementNode(nextNode) || !nextIndex.children) {
+      if (!next.children || !isElementNode(next.node)) {
         throw new Error(`Cannot descend through text at child index ${index}.`);
       }
-      const nested = updateIndexedNodes(
-        { index: nextIndex.children, value: nextNode.children },
-        update
+      next = elementWithChildren(
+        next.node,
+        updateIndexedNodes(next.children, update)
       );
-
-      nextNode = freezeElementWithChildren(nextNode, nested.value);
-      nextIndex = {
-        children: nested.index,
-        kind: 'element',
-        length: nested.index.length + 2,
-      };
     }
 
     if (update.props) {
-      nextNode = isTextNode(nextNode)
-        ? cloneFrozen({ ...update.props, text: nextNode.text })
-        : Object.freeze({
-            ...cloneFrozen(update.props),
-            children: nextNode.children,
-          });
+      const { node } = next;
+
+      next = {
+        ...next,
+        node: isTextNode(node)
+          ? cloneFrozen({ ...update.props, text: node.text })
+          : Object.freeze({
+              ...cloneFrozen(update.props),
+              children: node.children,
+            }),
+      };
     }
 
     if (update.text !== undefined) {
-      if (!isTextNode(nextNode)) {
+      if (!isTextNode(next.node)) {
         throw new Error(`Cannot update element text at child index ${index}.`);
       }
-      nextNode = Object.freeze({ ...nextNode, text: update.text });
-      nextIndex = { kind: 'text', length: update.text.length + 2 };
+      next = {
+        kind: 'text',
+        length: update.text.length + 2,
+        node: Object.freeze({ ...next.node, text: update.text }),
+      };
     }
 
-    nextValue[index] = nextNode;
-    nextIndexes[index] = nextIndex;
+    updated.set(index, next);
   }
 
-  return {
-    index: createTreeIndexChildren(nextIndexes),
-    value: nextValue,
-  };
+  return tree.setAll(updated);
 };
+
+/** @internal */
+export const rootIndexOf = <K extends string>(source: Roots<K>, key: K) =>
+  lazyRootOf(source, key) ??
+  DocumentIndex.fromValue((source[key] ?? []) as readonly JsonNode[]);
+
+export const NO_NODES: NodeList<never> = Object.freeze([]);
+
+/**
+ * An array an index built reads as that index's node list, so a root keeps
+ * one identity whether a value holds it lazily or as that array.
+ *
+ * @internal
+ */
+export const rootNodesOf = <T, K extends string>(
+  source: Readonly<Partial<Record<K, readonly T[]>>>,
+  key: K
+) =>
+  (lazyRootOf(source, key)?.nodes ??
+    DocumentIndex.nodesOf(source[key] ?? NO_NODES)) as NodeList<T>;
 
 export class DocumentIndex {
   private static readonly immutableCache = new WeakMap<object, DocumentIndex>();
 
   readonly length: number;
-  readonly value: readonly JsonNode[];
 
   private readonly tree: TreeIndexChildren;
   private resolvedTokenCursor?: ResolvedTokenCursor;
+  private nodeList?: NodeList;
   private tokenCache?: PreparedTokenSlice;
+  private valueCache?: readonly JsonNode[];
 
   private constructor(
-    nodes: readonly JsonNode[],
+    tree: TreeIndexChildren,
     tokens?: PreparedTokenSlice,
-    tree?: TreeIndexChildren
+    value?: readonly JsonNode[]
   ) {
-    if (tree && !tokens) {
-      this.length = tree.length;
-      this.tree = tree;
-      this.value = nodes;
-      return;
-    }
+    this.length = tree.totalLength;
+    this.tokenCache = tokens;
+    this.tree = tree;
+    this.valueCache = value;
+  }
 
-    if (tokens) {
-      this.length = tokens.length;
-      this.tokenCache = tokens;
-      this.tree = tree ?? createTreeIndex(nodes);
-      this.value = nodes;
-      return;
-    }
-
-    const value = isImmutable(nodes) ? nodes : cloneFrozen(nodes);
-    const encoded = encodeNodes(value);
-
-    this.length = encoded.slice.length;
-    this.tokenCache = encoded.slice;
-    this.tree = tree ?? createTreeIndex(value);
-    this.value = value;
+  get size() {
+    return this.tree.size;
   }
 
   get tokenCount() {
@@ -497,11 +485,28 @@ export class DocumentIndex {
     return this.tokenCache;
   }
 
+  /**
+   * The top-level nodes as one array, built on the first read, since a commit
+   * that edits one block copies only the sequence path to it.
+   */
+  get value(): readonly JsonNode[] {
+    if (!this.valueCache) {
+      this.valueCache = this.tree.map((entry) => entry.node);
+      DocumentIndex.remember(this);
+    }
+
+    return this.valueCache;
+  }
+
   static fromTokens(tokens: PreparedTokenSlice) {
     const decoded = decodeNodes(tokens);
 
     return DocumentIndex.remember(
-      new DocumentIndex(decoded.nodes, decoded.tokens)
+      new DocumentIndex(
+        createTreeIndex(decoded.nodes),
+        decoded.tokens,
+        decoded.nodes
+      )
     );
   }
 
@@ -510,7 +515,11 @@ export class DocumentIndex {
 
     if (cached) return cached;
 
-    return DocumentIndex.remember(new DocumentIndex(value));
+    const nodes = isImmutable(value) ? value : cloneFrozen(value);
+
+    return DocumentIndex.remember(
+      new DocumentIndex(createTreeIndex(nodes), encodeNodes(nodes).slice, nodes)
+    );
   }
 
   /** @internal */
@@ -518,15 +527,22 @@ export class DocumentIndex {
     return (
       DocumentIndex.immutableCache.get(nodes) ??
       DocumentIndex.remember(
-        new DocumentIndex(nodes, PreparedTokenSlice.fromIndexedNodes(nodes))
+        new DocumentIndex(
+          createTreeIndex(nodes),
+          PreparedTokenSlice.fromIndexedNodes(nodes),
+          nodes
+        )
       )
     );
   }
 
-  static fromIndexedValue(indexed: IndexedValue) {
-    return DocumentIndex.remember(
-      new DocumentIndex(indexed.value, undefined, indexed.index)
-    );
+  static fromTree(tree: TreeIndexChildren) {
+    return new DocumentIndex(tree);
+  }
+
+  /** @internal */
+  static nodesOf(value: NodeList<unknown>): NodeList<unknown> {
+    return DocumentIndex.immutableCache.get(value)?.nodes ?? value;
   }
 
   static fromChangedTokens(
@@ -536,29 +552,35 @@ export class DocumentIndex {
     const decoded = decodeNodes(tokens, changedRanges);
 
     return DocumentIndex.remember(
-      new DocumentIndex(decoded.nodes, decoded.tokens)
+      new DocumentIndex(
+        createTreeIndex(decoded.nodes),
+        decoded.tokens,
+        decoded.nodes
+      )
     );
   }
 
   private static remember(document: DocumentIndex) {
-    DocumentIndex.immutableCache.set(document.value, document);
-    rememberImmutableArray(document.value);
+    const value = getDefined(document.valueCache);
+
+    DocumentIndex.immutableCache.set(value, document);
+    rememberImmutableArray(value);
 
     return document;
   }
 
-  private checkedIndexedValue(): IndexedValue {
-    if (this.value.length !== this.tree.children.length) {
+  private checkedTree() {
+    if (this.valueCache && this.valueCache.length !== this.tree.size) {
       throw new Error('A document root array changed outside the editor.');
     }
 
-    return { index: this.tree, value: this.value };
+    return this.tree;
   }
 
   childPosition(parentPath: readonly number[], index: number) {
-    const children =
+    const count =
       parentPath.length === 0
-        ? this.value
+        ? this.tree.size
         : (() => {
             const parent = this.node(parentPath);
 
@@ -566,14 +588,14 @@ export class DocumentIndex {
               throw new Error(`Node at [${parentPath}] is not an element.`);
             }
 
-            return parent.children;
+            return parent.children.length;
           })();
 
-    if (!Number.isInteger(index) || index < 0 || index > children.length) {
+    if (!Number.isInteger(index) || index < 0 || index > count) {
       throw new RangeError(`Invalid child index ${index} at [${parentPath}].`);
     }
 
-    if (index < children.length) {
+    if (index < count) {
       return this.entry([...parentPath, index]).from;
     }
 
@@ -599,8 +621,50 @@ export class DocumentIndex {
     return this.cursor().openContextAt(position);
   }
 
+  child(index: number) {
+    return this.tree.at(index)?.node;
+  }
+
+  get nodes(): NodeList {
+    const { tree } = this;
+
+    this.nodeList ??= Object.freeze({
+      at: (index: number) => this.child(index),
+      forEach: (visit: (node: JsonNode, index: number) => void) => {
+        tree.forEach(0, (entry, index) => {
+          visit(entry.node, index);
+        });
+      },
+      length: tree.size,
+      slice: (from = 0, to = tree.size) =>
+        tree.slice(from, to).map((entry) => entry.node),
+    });
+
+    return this.nodeList;
+  }
+
+  /**
+   * Where this index's top-level nodes and `other`'s differ, as
+   * `[from, to, otherFrom, otherTo]` in order, without walking the nodes two
+   * versions of one document share.
+   *
+   * @internal
+   */
+  changedChildren(other: DocumentIndex) {
+    return this.tree.changedRanges(
+      other.tree,
+      (left, right) => left.node === right.node
+    );
+  }
+
   node(path: readonly number[]) {
-    return nodeAtPath(this.value, path);
+    const top = path.length === 0 ? undefined : this.child(path[0]);
+
+    if (!top) throw new Error(`Cannot resolve node at [${path}].`);
+
+    return path.length === 1
+      ? top
+      : nodeAtPath(isElementNode(top) ? top.children : [], path.slice(1));
   }
 
   nodeRange(path: readonly number[]) {
@@ -652,14 +716,10 @@ export class DocumentIndex {
       throw new Error('Cannot insert the document root.');
     }
 
-    return DocumentIndex.fromIndexedValue(
-      spliceIndexedChildren(
-        this.checkedIndexedValue(),
-        path.slice(0, -1),
-        index,
-        0,
-        [node]
-      )
+    return DocumentIndex.fromTree(
+      spliceIndexedChildren(this.checkedTree(), path.slice(0, -1), index, 0, [
+        node,
+      ])
     );
   }
 
@@ -669,9 +729,9 @@ export class DocumentIndex {
     deleteCount: number,
     nodes: readonly JsonNode[]
   ) {
-    return DocumentIndex.fromIndexedValue(
+    return DocumentIndex.fromTree(
       spliceIndexedChildren(
-        this.checkedIndexedValue(),
+        this.checkedTree(),
         parentPath,
         index,
         deleteCount,
@@ -691,9 +751,9 @@ export class DocumentIndex {
     deleteCount: number,
     nodes: readonly JsonNode[]
   ) {
-    return DocumentIndex.fromIndexedValue(
+    return DocumentIndex.fromTree(
       spliceIndexedChildren(
-        this.checkedIndexedValue(),
+        this.checkedTree(),
         parentPath,
         index,
         deleteCount,
@@ -714,22 +774,22 @@ export class DocumentIndex {
     deleteCount: number,
     prepared: PreparedNodeSlice
   ) {
-    return DocumentIndex.fromIndexedValue(
+    return DocumentIndex.fromTree(
       spliceIndexedChildren(
-        this.checkedIndexedValue(),
+        this.checkedTree(),
         parentPath,
         index,
         deleteCount,
         prepared.nodes,
         false,
-        prepared.index.children
+        prepared.index.toArray()
       )
     );
   }
 
   withExactNodeProperties(path: readonly number[], props: JsonRecord) {
-    return DocumentIndex.fromIndexedValue(
-      updateIndexedNode(this.checkedIndexedValue(), path, (node) =>
+    return DocumentIndex.fromTree(
+      updateIndexedNode(this.checkedTree(), path, (node) =>
         isTextNode(node)
           ? { ...props, text: node.text }
           : { ...props, children: node.children }
@@ -756,9 +816,7 @@ export class DocumentIndex {
       branch.text = update.text;
     }
 
-    return DocumentIndex.fromIndexedValue(
-      updateIndexedNodes(this.checkedIndexedValue(), root)
-    );
+    return DocumentIndex.fromTree(updateIndexedNodes(this.checkedTree(), root));
   }
 
   withMovedNode(path: readonly number[], newPath: readonly number[]) {
@@ -773,29 +831,16 @@ export class DocumentIndex {
     const targetParent = newPath.slice(0, -1);
 
     if (pathKey(sourceParent) === pathKey(targetParent)) {
-      return DocumentIndex.fromIndexedValue(
-        replaceIndexedChildren(
-          this.checkedIndexedValue(),
-          sourceParent,
-          (value, tree) => {
-            const nextValue = [...value];
-            const nextIndexes = [...tree.children];
-            const [node] = nextValue.splice(sourceIndex, 1);
-            const [nodeIndex] = nextIndexes.splice(sourceIndex, 1);
+      return DocumentIndex.fromTree(
+        replaceIndexedChildren(this.checkedTree(), sourceParent, (children) => {
+          const moved = children.at(sourceIndex);
 
-            if (!node || !nodeIndex) {
-              throw new Error(`Cannot resolve node at [${path}].`);
-            }
+          if (!moved) throw new Error(`Cannot resolve node at [${path}].`);
 
-            nextValue.splice(targetIndex, 0, node);
-            nextIndexes.splice(targetIndex, 0, nodeIndex);
-
-            return {
-              index: createTreeIndexChildren(nextIndexes),
-              value: nextValue,
-            };
-          }
-        )
+          return children
+            .splice(sourceIndex, 1, [])
+            .splice(targetIndex, 0, [moved]);
+        })
       );
     }
 
@@ -807,7 +852,7 @@ export class DocumentIndex {
     }
 
     const without = spliceIndexedChildren(
-      this.checkedIndexedValue(),
+      this.checkedTree(),
       sourceParent,
       sourceIndex,
       1,
@@ -815,7 +860,7 @@ export class DocumentIndex {
     );
 
     // The moved node is already a frozen member, and anchors follow it by identity.
-    return DocumentIndex.fromIndexedValue(
+    return DocumentIndex.fromTree(
       spliceIndexedChildren(
         without,
         transformedTarget.slice(0, -1),
@@ -828,8 +873,8 @@ export class DocumentIndex {
   }
 
   withNodeProperties(path: readonly number[], properties: JsonRecord) {
-    return DocumentIndex.fromIndexedValue(
-      updateIndexedNode(this.checkedIndexedValue(), path, (node) => {
+    return DocumentIndex.fromTree(
+      updateIndexedNode(this.checkedTree(), path, (node) => {
         const next = { ...node } as JsonRecord;
 
         for (const [key, value] of Object.entries(properties)) {
@@ -852,20 +897,14 @@ export class DocumentIndex {
       throw new Error('Cannot remove the document root.');
     }
 
-    return DocumentIndex.fromIndexedValue(
-      spliceIndexedChildren(
-        this.checkedIndexedValue(),
-        path.slice(0, -1),
-        index,
-        1,
-        []
-      )
+    return DocumentIndex.fromTree(
+      spliceIndexedChildren(this.checkedTree(), path.slice(0, -1), index, 1, [])
     );
   }
 
   withText(path: readonly number[], from: number, to: number, text: string) {
-    return DocumentIndex.fromIndexedValue(
-      updateIndexedNode(this.checkedIndexedValue(), path, (node) => {
+    return DocumentIndex.fromTree(
+      updateIndexedNode(this.checkedTree(), path, (node) => {
         if (!isTextNode(node)) {
           throw new Error(`Node at [${path}] is not text.`);
         }
@@ -906,11 +945,14 @@ export class DocumentIndex {
       throw new Error(`Node at [${run.parentPath}] is not an element.`);
     }
 
-    const siblings = parent ? parent.children : this.value;
+    const siblings = parent
+      ? parent.children.slice(run.first, run.last + 1)
+      : this.tree.slice(run.first, run.last + 1).map((entry) => entry.node);
 
-    return PreparedTokenSlice.fromIndexedNodes(
-      siblings.slice(run.first, run.last + 1)
-    ).slice(from - run.from, to - run.from);
+    return PreparedTokenSlice.fromIndexedNodes(siblings).slice(
+      from - run.from,
+      to - run.from
+    );
   }
 
   private cursor() {
@@ -933,10 +975,10 @@ export class DocumentIndex {
     for (let depth = 0; depth < path.length; depth++) {
       const index = path[depth];
 
-      node = children.children[index];
+      node = children.at(index);
       if (!node) throw new Error(`Cannot resolve token range at [${path}].`);
 
-      position += children.offsets[index];
+      position += children.startOf(index);
 
       if (depth < path.length - 1) {
         if (!node.children) {

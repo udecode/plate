@@ -3,6 +3,7 @@ import type { JsonNode } from '../../core/change/tokens';
 import {
   type AuthoredMark,
   type AuthoredMember,
+  isContextInsertion,
   readAuthoredMarks,
   readMembers,
   withMembers,
@@ -25,11 +26,7 @@ export type Dependencies = ContextLookup &
     marks: (node: unknown) => readonly AuthoredMark[];
     /** The context records `props` and `throughout` added. */
     minted: () => readonly ContextRecord[];
-    /**
-     * `props` holding `marks`, which a caller reads through `marks`: the last
-     * insertion stays a claim and the others become the context it rests on.
-     * `fresh` drops the held deletions `props` carries, for new content.
-     */
+    /** `fresh` drops the held deletions `props` carries, for new content. */
     props: (
       props: Readonly<JsonRecord>,
       marks: readonly AuthoredMark[],
@@ -53,20 +50,20 @@ export const createDependencies = (
   };
   const marks = (node: unknown) => {
     const own = readAuthoredMarks(node);
-    const inserts = own.filter((mark) => mark.kind === 'insert');
+    const inserts = own.filter(isContextInsertion);
 
     return inserts.length < 2
       ? claimsOf(node, recording)
       : [
           ...contextClaimsOf(node, recording),
-          ...own.filter((mark) => mark.kind !== 'insert'),
+          ...own.filter((mark) => !isContextInsertion(mark)),
           ...outerToInner(inserts, carried),
         ];
   };
   const props: Dependencies['props'] = (target, written, fresh = false) => {
     const seen = new Set<string>();
-    const inserts = written.filter((mark) => {
-      if (mark.kind !== 'insert') return false;
+    const unique = written.filter((mark) => {
+      if (mark.kind !== 'insert') return true;
 
       const key = incarnationOf(mark);
 
@@ -75,6 +72,7 @@ export const createDependencies = (
 
       return true;
     });
+    const inserts = unique.filter(isContextInsertion);
     const claim = inserts.at(-1);
     const { ctx, records } = contextFor(
       recording,
@@ -91,7 +89,7 @@ export const createDependencies = (
       : readMembers(target).filter((member) => member.kind === 'held');
 
     return withMembers(target, [
-      ...written.filter((mark) => mark.kind !== 'insert'),
+      ...unique.filter((mark) => !isContextInsertion(mark)),
       ...(claim ? [claim] : []),
       ...held,
       ...(ctx === null ? [] : [{ ctx, kind: 'in' as const }]),

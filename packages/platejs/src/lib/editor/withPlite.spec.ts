@@ -157,3 +157,33 @@ describe('createEditor removed options', () => {
     });
   });
 });
+
+describe('createEditor unknown options', () => {
+  const initialValue = [{ children: [{ text: 'One' }], type: 'paragraph' }];
+
+  it('refuses an option it does not take', () => {
+    const options = { initialValue, value: initialValue };
+
+    expect(() => createEditor(options)).toThrow(
+      'Unknown editor option "value". Use "initialValue" to set the document.'
+    );
+  });
+
+  it('refuses an editor that a getter adds while it reads the options', () => {
+    const options = {
+      get id(): string {
+        Object.defineProperty(options, 'editor', {
+          enumerable: true,
+          value: createPliteEditor(),
+        });
+
+        return 'getter';
+      },
+      initialValue,
+    };
+
+    expect(() => createEditor(options)).toThrow(
+      'Plate editor constructors always create a new editor'
+    );
+  });
+});

@@ -89,6 +89,9 @@ gives an `empty` target, and anything else gives a `context` target with the
 block where the paste starts. Return the `slice` to land, and add
 `replaceEmpty` to replace an `empty` target with whole blocks.
 
+A text drag that copies, such as one from another editor or a read-only view,
+lands at its drop point through the same read, without command handlers.
+
 ```ts
 import { definePlugin, editorReads } from "platejs";
 

@@ -42,11 +42,8 @@ export const exitBreak = (
 
   const [node, blockPath] = block;
   const landingAt = (path: Path) => (before ? path : PathApi.next(path));
-  const ownsExit = (element: Element) => {
-    const behavior = schema.getElementBehavior(element);
-
-    return behavior.void || behavior.object || behavior.ownsExit;
-  };
+  const ownsExit = (element: Element) =>
+    schema.getElementBehavior(element).ownsExit;
 
   if (ownsExit(node) && (!match || match(node, blockPath))) {
     const at = landingAt(blockPath);

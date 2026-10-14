@@ -48,7 +48,10 @@ const restartsRoundCount = (line) => {
 const roundsSince = (lines) => lines.slice(lines.findLastIndex(restartsRoundCount) + 1).filter(opens).length;
 
 const LEDGER = 'suggested-tasks.decisions.tsv';
-const CHIP = /^([\w-]+) (Now|After): \S.* \((?:high|xhigh)\)$/u;
+// Ledgers hold offers made before titles dropped After: and (high), so parsing
+// accepts both and only append refuses a new offer in the old form.
+const CHIP = /^([\w-]+) (?:(Now|After): )?\S/u;
+const OLD_TITLE = /^[\w-]+ After: | \(high\)$/u;
 const CHIP_RESULT = /^(offered|started|landed|dismissed (?:done|superseded|gone|stopped|(dup|replaced) ([\w-]+)))(?:[.:;,]?(?:\s.*)?)?$/u;
 const CHIP_FROM = {
   started: ['offered', 'started'],
@@ -90,7 +93,7 @@ const moveOf = (outcome) => (outcome[2] ? `dismissed ${outcome[2]}` : outcome[1]
 
 function chipProblems([, decision, , evidence, result], chips, where) {
   const [, id] = decision.match(CHIP) ?? [];
-  if (!id) return [`${where}: a chip row's decision is "<task id> Now: <title> (high)", with After: for a task that waits for something and (xhigh) for one that needs design judgment`];
+  if (!id) return [`${where}: a chip row's decision is "<task id> <title>", with Now: before a title that can start now and (xhigh) after one that needs design judgment`];
   const outcome = result.match(CHIP_RESULT);
   if (!outcome) return [`${where}: a chip row's result is offered, started, landed, or dismissed with done, superseded, gone, stopped, dup <task id> or replaced <task id>`];
   const move = moveOf(outcome);
@@ -300,6 +303,7 @@ function append(path, batch, run) {
       continue;
     }
     const row = [stamp, ...cells].join('\t');
+    if (cells[0] === 'chip' && /^offered\b/u.test(cells[4]) && OLD_TITLE.test(cells[1])) found.push(`${where}: a new title drops After: and (high), which are the defaults; it keeps only Now: and (xhigh)`);
     if (cells[0] === 'chip' && !ledger) found.push(`${where}: chip rows go in the project's ledger ${join(plansDir(), LEDGER)}, because a suggested task outlives the run that offered it`);
     found.push(...rowProblems(row, where, opened, ledger ? chips : null), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
     if (opens(row) && opened && !written) {

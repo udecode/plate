@@ -5,7 +5,7 @@ import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
   getActiveUpdateRoot,
-  getChildren,
+  getChildList,
   runEditorTransaction,
 } from '../core/public-state';
 import type { EditorStaticApi } from '../interfaces/editor';
@@ -54,7 +54,7 @@ export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
   if (selection && !RangeApi.isRange(selection)) return;
 
   const landed =
-    selection && landTextWrite(editor, selection, getChildren(editor));
+    selection && landTextWrite(editor, selection, getChildList(editor));
 
   if (landed && landed !== selection) {
     runEditorTransaction(editor, (tx) => {

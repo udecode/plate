@@ -695,13 +695,15 @@ const withViewTransaction = <V extends Value>(
               : selectionInput
           : selectionInput;
 
+      // A replacement that names no records keeps the editor's.
+      const { records: _records, ...content } = value;
       const scopedInput: SnapshotInput<V> = {
         ...(viewState.root === MAIN_ROOT_KEY
-          ? { ...value, children: input.children }
+          ? { ...content, children: input.children }
           : {
-              ...value,
+              ...content,
               roots: {
-                ...value.roots,
+                ...content.roots,
                 [viewState.root]: input.children,
               },
             }),
@@ -1073,6 +1075,8 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.first(...args)),
     fragment: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.fragment(...args)),
+    getChildList: () =>
+      withRootRead(editor, viewState, () => baseRuntime.getChildList()),
     getChildren: () =>
       withRootRead(editor, viewState, () => baseRuntime.getChildren()),
     getFragment: () =>

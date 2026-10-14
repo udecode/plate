@@ -199,7 +199,8 @@ Current priorities:
 - `platejs` and `platejs/react` call the live editor type `Editor`; package and
   entrypoint establish the layer. React creation uses `useCreateEditor(options,
   deps?)`. Every Plate constructor and creation hook allocates a new editor and
-  refuses an `editor` option. Static and server output use the same
+  refuses an `editor` option, and, like Plite's constructors, any other option
+  outside its closed set. Static and server output use the same
   constructors. `platejs/static` adds renderers such as `EditorStatic` and
   `renderStaticHtml`, never a second constructor or creation hook. An app renders an existing editor with
   `EditorRoot` and binds controls to it with `EditorProvider`. `useEditor()`
@@ -430,7 +431,7 @@ Current priorities:
   attributes something to the local user. Plite still requires a non-empty
   author at every write and invents none.
   Comments keeps its independent thread lifecycle. Load existing suggestions
-  through the complete `initialValue`, metadata roots included, preserving
+  through the complete `initialValue`, records included, preserving
   authors and change IDs; initialization never replays edits under switched
   identities. `EditorRoot authored` configures the exact mounted view through
   the native owner. Changed intent or preview inputs reconfigure that view;
@@ -616,7 +617,7 @@ Current priorities:
   boundary and returns an exact current envelope; missing versions and identity
   drift fail closed before callbacks. Raw documents require an explicit source
   at each conversion, and with one, `migrateDocument` reads any input as raw. A
-  step sees only `children`, `meta` and `roots`; every other stored top-level
+  step sees only `children`, `meta`, `roots` and `records`; every other stored top-level
   field arrives in its `legacy` record, a step lifts it into `meta` or `roots`,
   and completion refuses a field no step lifted. Ordinary editor creation and
   replacement accept current input only. The persistence owner allocates each

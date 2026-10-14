@@ -8,7 +8,6 @@ import type { JsonRecord } from '../../core/change/json';
 import { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
 import { getDefined } from '../../internal/get-defined';
-import { isMetadataRootKey } from '../../internal/root-location';
 import type { Dependencies } from '../facts/dependencies';
 import {
   AUTHORED_MARKS_KEY,
@@ -178,9 +177,7 @@ const keyOf = (cut: string, side: CutTag['side']) => `${cut}:${side}`;
 const rootsOf = (value: JsonEditorValue) =>
   new Map<string, readonly Node[]>([
     ['main', value.children],
-    ...(Object.entries(value.roots ?? {}).filter(
-      ([root]) => !isMetadataRootKey(root)
-    ) as Array<[string, readonly Node[]]>),
+    ...(Object.entries(value.roots ?? {}) as Array<[string, readonly Node[]]>),
   ]);
 
 type TokenRange = readonly [from: number, to: number];

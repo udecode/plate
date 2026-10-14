@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  ContentSlice,
   createEditor,
   createEditorView,
   defineEditorSchema,
@@ -258,6 +259,141 @@ describe('transfer', () => {
     );
     assert.deepEqual(texts(source), ['Alpha']);
     assert.deepEqual(texts(destination), ['Bee', 'Al']);
+  });
+
+  it('lands what fits on a text copy at a point and reports the loss', () => {
+    const source = createEditor({
+      initialValue: [paragraph('Alpha')],
+      plugins: [transfer()],
+    });
+    const destination = createEditor({
+      initialValue: [paragraph('Bee')],
+      maxLength: 5,
+      plugins: [transfer()],
+    });
+
+    const outcome = destination.api.transfer.copy({
+      from: source,
+      range: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 5, path: [0, 0] },
+      },
+      to: { point: { offset: 3, path: [0, 0] } },
+    });
+
+    assert.deepEqual(
+      outcome.status === 'copied' &&
+        outcome.diagnostics.map(({ impact }) => impact),
+      ['lossy']
+    );
+    assert.deepEqual(texts(destination), ['BeeAl']);
+  });
+
+  it('lands a text copy at a point as the slice landing read shapes it, with no loss', () => {
+    const tagged = definePlugin('tagged-landing', {
+      readMiddleware: ({ around }) => [
+        around(editorReads.slice.landing, ({ next }) => {
+          const { slice } = next();
+
+          return {
+            slice: ContentSlice.withContent(
+              slice,
+              slice.content.map((node) => ({ ...node, landed: true })),
+              { open: 'preserve' }
+            ),
+          };
+        }),
+      ],
+    });
+    const source = createEditor({
+      initialValue: [paragraph('Alpha'), paragraph('Bravo'), paragraph('Echo')],
+      plugins: [transfer()],
+    });
+    const destination = createEditor({
+      initialValue: [paragraph('Delta')],
+      plugins: [transfer(), tagged],
+    });
+
+    const outcome = destination.api.transfer.copy({
+      from: source,
+      range: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [2, 0] },
+      },
+      to: { point: { offset: 5, path: [0, 0] } },
+    });
+
+    assert.deepEqual(
+      {
+        children: destination.read.children(),
+        diagnostics: outcome.status === 'copied' && outcome.diagnostics,
+      },
+      {
+        children: [
+          paragraph('DeltaAlpha'),
+          { ...paragraph('Bravo'), landed: true },
+          { ...paragraph('Echo'), landed: true },
+        ],
+        diagnostics: [],
+      }
+    );
+  });
+
+  it('replaces an empty block with the whole blocks a text copy lands, keeping its properties as a paste does', () => {
+    const replacing = definePlugin('replacing-landing', {
+      readMiddleware: ({ around }) => [
+        around(editorReads.slice.landing, ({ input, next }) => {
+          const landed = next();
+
+          return input.target.kind === 'empty'
+            ? {
+                ...landed,
+                replaceEmpty: {
+                  slice: ContentSlice.closed(landed.slice.content),
+                },
+              }
+            : landed;
+        }),
+      ],
+    });
+    const loud = (text: string) => ({ ...paragraph(text), tone: 'loud' });
+    const source = createEditor({
+      initialValue: [loud('Alpha'), loud('Bravo')],
+      plugins: [transfer()],
+    });
+    const destination = createEditor({
+      initialValue: [
+        paragraph('Before'),
+        { ...paragraph(''), align: 'center' },
+        paragraph('After'),
+      ],
+      plugins: [transfer(), replacing],
+    });
+
+    const outcome = destination.api.transfer.copy({
+      from: source,
+      range: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 5, path: [1, 0] },
+      },
+      to: { point: { offset: 0, path: [1, 0] } },
+    });
+
+    assert.deepEqual(
+      {
+        children: destination.read.children(),
+        diagnostics: outcome.status === 'copied' && outcome.diagnostics,
+      },
+      {
+        children: [
+          paragraph('Before'),
+          { ...loud('Alpha'), align: 'center' },
+          loud('Bravo'),
+          paragraph('After'),
+        ],
+        diagnostics: [],
+      }
+    );
   });
 
   it('keeps a persisted id when a block moves across roots of one document', () => {

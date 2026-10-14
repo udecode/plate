@@ -69,17 +69,10 @@ describe('AIChatPlugin read.markdown', () => {
             ],
           },
         ],
-        roots: {
-          '$authored-contexts': [
-            {
-              at: 2,
-              author: 'alice',
-              change: 'A',
-              children: [{ text: '' }],
-              ctx,
-              type: 'authored-context',
-            },
-          ],
+        records: {
+          'authored-contexts': {
+            [ctx]: { member: { at: 2, author: 'alice', change: 'A' } },
+          },
         },
       },
     });

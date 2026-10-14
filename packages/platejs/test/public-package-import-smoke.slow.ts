@@ -397,6 +397,7 @@ const internalBridgeRuntimeExportExpectations = {
     'assertDetachedSelectionSupported',
     'assertEditorDocumentContainers',
     'assertEditorJsonValue',
+    'assertEditorOptions',
     'assertPublicRootKey',
     'assertSelectionSupported',
     'collapse',

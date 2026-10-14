@@ -37,7 +37,6 @@ import {
   editorCommands,
   HistoryPlugin,
 } from '../../core';
-import { isMetadataRootKey } from '../../facade';
 import { isListItem } from '../../features/list/lib/listIndex.internal';
 import {
   BaseTableCellPlugin,
@@ -397,12 +396,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     return result;
   };
   const withReviewRecords = (blocks: readonly Element[]) => {
-    const records = Object.entries(editor.read.value().roots ?? {}).filter(
-      ([root]) => isMetadataRootKey(root)
-    );
+    const { records } = editor.read.value();
 
-    return records.length > 0
-      ? { children: [...blocks], roots: Object.fromEntries(records) }
+    return records
+      ? { children: [...blocks], records }
       : { children: [...blocks] };
   };
   // Blocks as the proposed document shows them, without review marks.

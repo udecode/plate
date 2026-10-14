@@ -2287,6 +2287,117 @@ describe('BaseListPlugin transfer steps', () => {
   });
 });
 
+describe('BaseListPlugin transfer copies', () => {
+  const item = (
+    text: string,
+    indent: number,
+    listType: ListType,
+    listId: string
+  ) => ({ children: [{ text }], indent, listId, listType, type: 'paragraph' });
+  const source = () =>
+    createEditor({
+      initialValue: [
+        item('One', 1, ListType.Numbered, 'source'),
+        item('Two', 2, ListType.Numbered, 'source'),
+        item('Three', 1, ListType.Numbered, 'source'),
+      ],
+      selection: undefined,
+    });
+  const target = () =>
+    createEditor({
+      initialValue: [
+        item('X', 1, ListType.Bulleted, 'target'),
+        item('Y', 2, ListType.Bulleted, 'target'),
+        item('Z', 1, ListType.Bulleted, 'target'),
+      ],
+      selection: undefined,
+    });
+  const landed = (editor: ReturnType<typeof createEditor>) =>
+    editor.read
+      .children()
+      .map((node) => [NodeApi.string(node), node.indent, node.listId]);
+
+  it('lands a text drop from another editor at the caret depth in a list of its own [EDIT-CLIPBOARD-LIST-LANDING-001]', () => {
+    const from = source();
+    const editor = target();
+
+    editor.api.transfer.move({
+      from,
+      range: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 5, path: [2, 0] },
+      },
+      to: { point: { offset: 1, path: [1, 0] } },
+    });
+
+    const fresh = editor.read.children()[2].listId;
+
+    expect(landed(editor)).toEqual([
+      ['X', 1, 'target'],
+      ['YOne', 2, 'target'],
+      ['Two', 3, fresh],
+      ['Three', 2, fresh],
+      ['Z', 1, 'target'],
+    ]);
+    expect(fresh).not.toBe('source');
+  });
+
+  it('lands whole items dropped from another editor into an empty paragraph as a paste does, with no loss [EDIT-CLIPBOARD-LIST-LANDING-001]', () => {
+    const from = source();
+    const editor = createEditor({
+      initialValue: [
+        item('X', 1, ListType.Numbered, 'target'),
+        { children: [{ text: '' }], type: 'paragraph' },
+        { children: [{ text: 'Z' }], type: 'paragraph' },
+      ],
+      selection: undefined,
+    });
+
+    const outcome = editor.api.transfer.move({
+      from,
+      range: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 5, path: [2, 0] },
+      },
+      to: { point: { offset: 0, path: [1, 0] } },
+    });
+
+    expect({
+      diagnostics: outcome.status === 'copied' && outcome.diagnostics,
+      landed: landed(editor),
+    }).toEqual({
+      diagnostics: [],
+      landed: [
+        ['X', 1, 'target'],
+        ['One', 1, 'target'],
+        ['Two', 2, 'target'],
+        ['Three', 1, 'target'],
+        ['Z', undefined, undefined],
+      ],
+    });
+  });
+
+  it('keeps the depths of list items dropped from another editor beside a block', () => {
+    const from = source();
+    const editor = target();
+
+    editor.api.transfer.move({
+      from,
+      nodes: [0, 1, 2].map((index) => from.key([index])!),
+      to: { edge: 'after', key: editor.key([1])! },
+    });
+
+    expect(landed(editor).map(([text, indent]) => [text, indent])).toEqual([
+      ['X', 1],
+      ['Y', 2],
+      ['One', 1],
+      ['Two', 2],
+      ['Three', 1],
+      ['Z', 1],
+    ]);
+  });
+});
+
 describe('BaseListPlugin list identity', () => {
   const listItem = (text: string, extra: Record<string, unknown> = {}) => ({
     children: [{ text }],

@@ -8,6 +8,7 @@ import type { Path } from '../interfaces/path';
 import { getDefined } from '../internal/get-defined';
 import {
   assignFreshNodeKey,
+  bindNodeKeyOnce,
   getOrCreateNodeKey,
   getNodeKeyForNode,
   setNodeKey,
@@ -1060,13 +1061,11 @@ const mapChangedNodeKeys = (
       return false;
     }
 
-    const targetNode = segment.after.node(targetPath);
-
     if (
       binding !== 'none' &&
-      getNodeKeyForNode(targetNode, editor) !== nodeKey
+      !bindNodeKeyOnce(segment.after.node(targetPath), editor, nodeKey)
     ) {
-      setNodeKey(targetNode, editor, nodeKey);
+      return false;
     }
     usedNodeKeys.add(nodeKey);
     usedTargetPaths.add(targetKey);
@@ -1825,7 +1824,7 @@ export const advancePathStableSnapshotIndex = (
         )
       : index;
 
-  for (const candidate of runtimeCandidates ?? []) {
+  const keyed = (runtimeCandidates ?? []).map((candidate) => {
     const path = [...candidate.path] as Path;
 
     if (after.node(path) !== candidate.node) {
@@ -1834,9 +1833,28 @@ export const advancePathStableSnapshotIndex = (
       );
     }
 
-    const nodeKey = sourceIndex.keyAt(path);
+    return { node: candidate.node, nodeKey: sourceIndex.keyAt(path) };
+  });
 
-    if (nodeKey) setNodeKey(candidate.node, editor, nodeKey);
+  const republishesNodeKeyedElsewhere = keyed.some(({ node, nodeKey }) => {
+    const currentNodeKey = getNodeKeyForNode(node, editor);
+
+    return currentNodeKey !== null && currentNodeKey !== nodeKey;
+  });
+
+  if (republishesNodeKeyedElsewhere) {
+    return mapSnapshotIndexThroughChange(
+      before,
+      after,
+      change,
+      sourceIndex,
+      editor,
+      new Set(),
+      runtimeCandidates
+    );
+  }
+  for (const { node, nodeKey } of keyed) {
+    if (nodeKey) setNodeKey(node, editor, nodeKey);
   }
 
   if (sourceIndex !== index) return sourceIndex;

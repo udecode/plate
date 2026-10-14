@@ -24,7 +24,7 @@ import {
   getEditorSchema,
 } from './editor-runtime';
 import { getContentSlice } from './get-content-slice';
-import { subscribeEditorRefusals } from './refusal';
+import { getInsertRemainingLength, limitSliceToLength } from './insert-limit';
 import {
   insertionPath,
   type JsonValue,
@@ -38,16 +38,25 @@ import {
 } from './landing';
 import { definePlugin } from './plugin';
 import { getConfiguredPluginRegistry } from './plugin-registry';
+import { toPublicRoot } from './public-root';
 import {
   finalizeTransactionRepresentation,
   measureDraftInsertion,
+  readAtSliceFitTarget,
   replaceSliceAtBlockBoundary,
+  withCommandSliceFit,
   withDraftMove,
   withEditorUpdateRootScope,
 } from './public-state';
 import { executeEditorRead } from './read-registry';
+import { subscribeEditorRefusals } from './refusal';
 import { EditorSchemaValidationError } from './schema-validation';
 import { screenReaderAnnouncementEffect } from './screen-reader-announcement';
+import {
+  landSlice,
+  prepareEmptyBlockReplacement,
+  resolveSliceLandingTarget,
+} from './slice-landing';
 import {
   type DraftLanding,
   guardLanding,
@@ -479,7 +488,7 @@ const runTransfer = (
     landing.kind === 'wrap' && landing.wrap.replaced
       ? [landing.wrap.replaced]
       : [];
-  const expected: readonly Descendant[] = slice
+  let expected: readonly Descendant[] = slice
     ? slice.content
     : source.kind === 'nodes'
       ? [
@@ -502,8 +511,8 @@ const runTransfer = (
         drafted.children,
         children,
         frame && {
-          change: frame.change,
-          root: targetRoot,
+          mapPosition: (position, association) =>
+            frame.mapPosition(targetRoot, position, association),
           stored: rootChildren(frame.stored as JsonValue, targetRoot),
         }
       );
@@ -707,6 +716,73 @@ const runTransfer = (
         });
       };
 
+      const landAsPaste = (at: Point, copied: ContentSlice) => {
+        const options = { at };
+        const viewRoot = toPublicRoot(targetRoot);
+        const resolved = readAtSliceFitTarget(
+          editor,
+          viewRoot,
+          options,
+          (state, location, root) => ({
+            remaining: getInsertRemainingLength(state, { at: location }),
+            target: resolveSliceLandingTarget(state, location, root),
+          })
+        );
+
+        if (!resolved) return false;
+        const { remaining, target } = resolved;
+        const limited = limitSliceToLength(copied, remaining);
+
+        if (limited.content.length === 0 && copied.content.length > 0) {
+          return false;
+        }
+        if (limited !== copied) {
+          diagnostics.push({
+            impact: 'lossy',
+            message: 'Some dragged content does not fit here.',
+          });
+        }
+        const { replaceEmpty, slice: shaped } = landSlice(editor, {
+          slice: limited,
+          source: copied,
+          target,
+        });
+
+        if (target.kind === 'empty' && replaceEmpty) {
+          const replacement = readAtSliceFitTarget(
+            editor,
+            viewRoot,
+            options,
+            (state) =>
+              prepareEmptyBlockReplacement(
+                editor,
+                state,
+                target,
+                replaceEmpty,
+                remaining
+              )
+          );
+
+          if (
+            replacement &&
+            withCommandSliceFit(
+              editor,
+              { remaining, replaceEmptyBlock: true },
+              () => tx.slice.replace(replacement, options)
+            )
+          ) {
+            expected = replacement.content;
+
+            return true;
+          }
+        }
+        expected = shaped.content;
+
+        return withCommandSliceFit(editor, { remaining }, () =>
+          tx.slice.replace(shaped, options)
+        );
+      };
+
       if (landing.kind === 'point') {
         const start = tx.anchor(landing.point, {
           association: 'backward',
@@ -731,7 +807,9 @@ const runTransfer = (
           () =>
             !!point &&
             !!slice &&
-            asMove('landing', () => tx.slice.replace(slice, { at: point }))
+            (copy
+              ? landAsPaste(point, slice)
+              : asMove('landing', () => tx.slice.replace(slice, { at: point })))
         );
 
         if (!placed.result) refuse('schema');

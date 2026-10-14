@@ -7,14 +7,20 @@ import { authoredVeto } from '../core/authored-veto';
 import {
   createInternalDocumentChange,
   DocumentChange,
-  filterDocumentChangeRoots,
-  getInternalDocumentChangeEntries,
   getInternalDocumentChangeRanges,
+  getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
   valueRoot,
+  valueRootIndex,
+  withDocumentChangeRecords,
 } from '../core/change/document-change';
-import { DocumentIndex } from '../core/change/document-index';
+import {
+  DocumentIndex,
+  rootIndexOf,
+  rootNodesOf,
+} from '../core/change/document-index';
 import { deepFreeze, jsonEqual } from '../core/change/json';
+import { copyFields, setLazyRoot } from '../core/change/lazy-root';
 import type { RootChange } from '../core/change/root-change';
 import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
 import {
@@ -50,6 +56,14 @@ import {
   withEditorDocumentProjection,
 } from '../core/public-state';
 import {
+  composeRecordOps,
+  deriveValue,
+  getValueRecords,
+  NO_RECORD_OPS,
+  recordOpsBetween,
+  withValueRecords,
+} from '../core/record-store';
+import {
   EditorRefusalError,
   publishEditorRefusal,
   subscribeEditorRefusals,
@@ -73,7 +87,6 @@ import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
-import { isMetadataRootKey } from '../internal/root-location';
 import {
   type AuthoredChangeIndex,
   groupAuthoredChanges,
@@ -92,19 +105,16 @@ import {
   factsOf,
   isSettledDeletion,
   marksOf,
-  primeInsertions,
   type ReviewFacts,
 } from './facts/facts';
 import {
-  appendRecords,
   authoredRecords,
-  carryRecords,
-  CONTEXTS_ROOT,
   type ContextRecord,
-  contextElementOf,
   incarnationOf,
-  verdictElementOf,
-  VERDICTS_ROOT,
+  putContexts,
+  putVerdicts,
+  type VerdictRecord,
+  withStore,
 } from './facts/records';
 import {
   type AuthoredLocationMap,
@@ -120,11 +130,12 @@ import {
   unrepresentable,
 } from './refusal';
 import { authoredResolveSchemaOf } from './resolve-schema';
+import { createReviewLedger } from './ledger/ledger';
 import {
+  acceptedChange,
   characterAlignedChange,
-  createCommandProjector,
   structuralAcceptedChange,
-} from './tree/command-projection';
+} from './tree/alignment';
 import { relinkCuts } from './tree/cuts';
 import { acceptedValues, type FormatTag } from './tree/layers';
 import {
@@ -139,6 +150,7 @@ import { recordAuthoredSteps } from './tree/record';
 import { completeProposed } from './tree/record-completion';
 import {
   type AuthoredResolveSchema,
+  followsOf,
   projectAuthoredValue,
   isTextBlock,
   resolveAuthoredChildren,
@@ -287,16 +299,11 @@ const claimOf = (value: EditorDocumentValue, change: string) => {
     return null;
   };
 
-  return find([
-    ...value.children,
-    ...Object.entries(value.roots ?? {}).flatMap(([root, children]) =>
-      isMetadataRootKey(root) ? [] : children
-    ),
-  ]);
+  return find([...value.children, ...Object.values(value.roots ?? {}).flat()]);
 };
 
 const positionOf = (value: JsonEditorValue, root: string, point: Point) =>
-  DocumentIndex.fromValue(valueRoot(value, root)).positionAt(point);
+  valueRootIndex(value, root).positionAt(point);
 
 type WrittenMap = Readonly<{
   after: JsonEditorValue;
@@ -413,11 +420,10 @@ const assertFramedLaw = (
     return;
   }
 
-  const change = structuralAcceptedChange(written, accepted);
-
-  if (!change) return;
-
-  const rootChange = getInternalDocumentRootChange(change, root);
+  const rootChange = getInternalDocumentRootChange(
+    acceptedChange(written, accepted, { isSetValued: isAuthoredSetValued }),
+    root
+  );
   const index = DocumentIndex.fromValue(valueRoot(accepted, root));
 
   for (const edge of ['anchor', 'focus'] as const) {
@@ -431,11 +437,22 @@ const assertFramedLaw = (
       !([-1, 1] as const).some((assoc) => {
         const point = index.pointAt(mapped, assoc);
 
-        return point !== null && PointApi.equals(point, expected);
+        return (
+          point !== null &&
+          point.offset === expected.offset &&
+          PathApi.equals(point.path, expected.path)
+        );
       })
     ) {
       throw new Error(
-        `A framed recording does not accept to its commands' ${edge}.`
+        `A framed recording does not accept to its commands' ${edge}: ${JSON.stringify(
+          {
+            accepted: valueRoot(accepted, root),
+            stored: stored.selection[edge],
+            whereCommandsLeftIt: expected,
+            written: valueRoot(written, root),
+          }
+        )}`
       );
     }
   }
@@ -446,7 +463,11 @@ const assertFramedLaw = (
 // arrays, which stay the same until the document changes.
 const DOCUMENT_KEYS = new WeakMap<
   object,
-  Readonly<{ key: object; roots: ReadonlyArray<[string, unknown]> }>
+  Readonly<{
+    key: object;
+    records: object;
+    roots: ReadonlyArray<[string, unknown]>;
+  }>
 >();
 const INDEXES = new WeakMap<object, AuthoredChangeIndex>();
 const PROJECTIONS = new WeakMap<
@@ -456,10 +477,13 @@ const PROJECTIONS = new WeakMap<
 
 const documentKeyOf = (value: JsonEditorValue) => {
   const roots = Object.entries(value.roots ?? {});
-  const cached = DOCUMENT_KEYS.get(value.children);
+  const records = getValueRecords(value);
+  const main = rootNodesOf(value, 'children');
+  const cached = DOCUMENT_KEYS.get(main);
 
   if (
     cached &&
+    cached.records === records &&
     cached.roots.length === roots.length &&
     cached.roots.every(
       ([root, children], index) =>
@@ -471,7 +495,7 @@ const documentKeyOf = (value: JsonEditorValue) => {
 
   const key = {};
 
-  DOCUMENT_KEYS.set(value.children, { key, roots });
+  DOCUMENT_KEYS.set(main, { key, records, roots });
   return key;
 };
 
@@ -559,39 +583,21 @@ const decidedChange = (
       isSetValued: isAuthoredSetValued,
     });
 
-  return [CONTEXTS_ROOT, VERDICTS_ROOT].reduce((change, root) => {
-    const appended = appendRecords(
-      value,
-      root,
-      (decided.roots?.[root] ?? []).slice(value.roots?.[root]?.length ?? 0)
-    );
-
-    return appended ? change.compose(appended) : change;
-  }, content);
+  return withDocumentChangeRecords(
+    content,
+    recordOpsBetween(getValueRecords(value), getValueRecords(decided))
+  );
 };
 
-/** `value` without its metadata roots, which a decision only appends to. */
+/** `value` without its records, which a decision only adds to. */
 const contentOf = (value: JsonEditorValue): JsonEditorValue => {
-  if (!value.roots) return value;
+  const { records: _records, ...plain } = value;
 
-  const { roots, ...plain } = value;
-  const content = Object.entries(roots).filter(
-    ([root]) => !isMetadataRootKey(root)
-  );
-
-  return content.length === 0
-    ? plain
-    : { ...plain, roots: Object.fromEntries(content) };
+  return plain;
 };
 
 const contentChangeOf = (change: DocumentChange) =>
-  [
-    ...change.createRoots,
-    ...change.deleteRoots,
-    ...[...getInternalDocumentChangeEntries(change)].map(([root]) => root),
-  ].some(isMetadataRootKey)
-    ? filterDocumentChangeRoots(change, (root) => !isMetadataRootKey(root))
-    : change;
+  withDocumentChangeRecords(change, NO_RECORD_OPS);
 
 type OwnRun = Readonly<{ from: number; path: readonly number[]; to: number }>;
 
@@ -634,6 +640,25 @@ const holdsOwnStructure = (node: JsonNode, facts: ReviewFacts): boolean =>
       (mark.kind === 'join' || mark.kind === 'split') &&
       isEditingChange(mark.change)
   ) || (node.children ?? []).some((child) => holdsOwnStructure(child, facts));
+
+/** The pending joins Editing's claims in `node` say their blocks go with. */
+const ownFollowed = (node: JsonNode, facts: ReviewFacts): string[] => [
+  ...claimsOf(node, facts).flatMap((mark) => {
+    const key = isEditingChange(mark.change) ? followsOf(mark) : undefined;
+
+    return key ? [key] : [];
+  }),
+  ...(node.children ?? []).flatMap((child) => ownFollowed(child, facts)),
+];
+
+const carriesJoin = (
+  node: JsonNode,
+  keys: ReadonlySet<string>,
+  facts: ReviewFacts
+): boolean =>
+  claimsOf(node, facts).some(
+    (mark) => mark.kind === 'join' && keys.has(incarnationOf(mark))
+  ) || (node.children ?? []).some((child) => carriesJoin(child, keys, facts));
 
 /**
  * The run around blocks `from` to `to` of the element at `path`: a
@@ -769,16 +794,18 @@ const acceptOwn = (
   dependencies: Dependencies,
   base: ReviewFacts
 ) => {
-  const minted = dependencies.minted();
-  const facts =
-    minted.length === 0
+  const minted = new Map(
+    dependencies.minted().map((record) => [record.ctx, record] as const)
+  );
+  const facts: ReviewFacts =
+    minted.size === 0
       ? base
       : {
           ...base,
-          contexts: new Map([
-            ...base.contexts,
-            ...minted.map((record) => [record.ctx, record] as const),
-          ]),
+          contexts: {
+            get: (ctx) => minted.get(ctx) ?? base.contexts.get(ctx),
+            has: (ctx) => minted.has(ctx) || base.contexts.has(ctx),
+          },
         };
   const outcome = (id: string) => (isEditingChange(id) ? 'accept' : 'keep');
   const own = (kind: AuthoredMark['kind']) => (node: unknown) =>
@@ -794,10 +821,37 @@ const acceptOwn = (
 
     if (!rootChange) continue;
 
-    // A run whose element the resolution would change resolves one level up.
+    // A run whose element the resolution would change resolves one level up,
+    // and one holding a block that goes with a pending join reaches the
+    // join's line, so its resolution sees whether that join waits.
     const resolveRun = (first: OwnRun) => {
       for (let run = first; ;) {
-        const nodes = childrenOf(index, run.path).slice(run.from, run.to);
+        const siblings = childrenOf(index, run.path);
+        const keys = new Set(
+          siblings
+            .slice(run.from, run.to)
+            .flatMap((node) => ownFollowed(node, facts))
+        );
+
+        if (keys.size > 0) {
+          const lines = siblings.flatMap((node, at) =>
+            carriesJoin(node, keys, facts) ? [at] : []
+          );
+
+          if (lines.length === 0 && run.path.length > 0) {
+            const at = getDefined(run.path.at(-1));
+
+            run = runAround(index, run.path.slice(0, -1), at, at + 1, facts);
+            continue;
+          }
+          run = {
+            ...run,
+            from: Math.min(run.from, ...lines),
+            to: Math.max(run.to, ...lines.map((at) => at + 1)),
+          };
+        }
+
+        const nodes = siblings.slice(run.from, run.to);
 
         if (run.path.length === 0) {
           return {
@@ -920,20 +974,9 @@ const incarnationsOf = (index: AuthoredChangeIndex, id: string) =>
 
 const withVerdicts = (
   value: JsonEditorValue,
-  verdicts: readonly JsonNode[]
+  verdicts: readonly VerdictRecord[]
 ): JsonEditorValue =>
-  verdicts.length === 0
-    ? value
-    : ({
-        ...value,
-        roots: {
-          ...value.roots,
-          [VERDICTS_ROOT]: [
-            ...(value.roots?.[VERDICTS_ROOT] ?? []),
-            ...verdicts,
-          ],
-        },
-      } as JsonEditorValue);
+  verdicts.length === 0 ? value : deriveValue(value, {}, putVerdicts(verdicts));
 
 const PREVIEW_MAPS = new WeakMap<object, Map<string, AuthoredLocationMap>>();
 
@@ -1185,9 +1228,13 @@ export const createAuthoredPlugin = (
     }
     if (resolution.unplaceable) return { result: { ids, status: 'invalid' } };
 
+    // One token per decision, so a peer's decision on the same incarnation
+    // gets its own key and an undo drops only this one.
+    const decision = createIncarnationId();
     const verdicts = [...actions].flatMap(([id, verdict]) =>
-      [...incarnationsOf(index, id)].map(({ at, change, inc }) =>
-        verdictElementOf({
+      [...incarnationsOf(index, id)].map(
+        ({ at, change, inc }): VerdictRecord => ({
+          decision,
           member: inc === undefined ? { at, change } : { at, change, inc },
           verdict,
         })
@@ -1424,7 +1471,7 @@ export const createAuthoredPlugin = (
         const decided =
           !claim &&
           (state.marks.authorOf(changeId) !== null ||
-            factsOf(value).decidedChangeIds.has(changeId));
+            factsOf(value).decides(changeId));
 
         // A pending change takes more writes; an id decided before starts a
         // new incarnation, so its old claims and verdicts never touch it.
@@ -1459,7 +1506,12 @@ export const createAuthoredPlugin = (
       STATES.set(owner, state);
       onCleanup(() => STATES.delete(owner));
       const carryReadPreviewKeys = (commit: EditorCommit) => {
-        if (commit.before.children === commit.after.children) return;
+        if (
+          rootNodesOf(commit.before, 'children') ===
+          rootNodesOf(commit.after, 'children')
+        ) {
+          return;
+        }
 
         const projected = PROJECTIONS.get(
           documentKeyOf(getEditorCommitValue(commit, 'before'))
@@ -1538,7 +1590,11 @@ export const createAuthoredPlugin = (
         })
       );
 
-      const assertDocumentMarks = state.marks.validate;
+      const ledger = createReviewLedger(
+        owner,
+        () => authoredResolveSchemaOf(editor),
+        state.marks
+      );
       const passesThrough = () => {
         const update = getActiveEditorUpdateId(editor);
 
@@ -1546,21 +1602,18 @@ export const createAuthoredPlugin = (
       };
 
       beforePublish(() => {
-        const value = editor.read.value();
-
-        assertDocumentMarks(value);
-        primeInsertions(value);
+        ledger.prepare(editor.read.value() as JsonEditorValue);
       });
-      onCleanup(registerEditorDraftGuard(editor, assertDocumentMarks));
+      onCleanup(
+        registerEditorDraftGuard(editor, (value) =>
+          ledger.check(value as JsonEditorValue)
+        )
+      );
       // A node's own marks decide, so live text inside a struck block reads.
       onCleanup(
         registerEditorContent(editor, (reader, node) => !isStruck(reader, node))
       );
       // Commands decide on the document with every pending change accepted.
-      const project = createCommandProjector(
-        () => authoredResolveSchemaOf(editor),
-        { isSetValued: isAuthoredSetValued }
-      );
       onCleanup(
         registerEditorCommandDocument(editor, {
           checkRecorded: (input) => {
@@ -1578,19 +1631,7 @@ export const createAuthoredPlugin = (
               return null;
             }
 
-            const projected = project(value);
-
-            return (
-              projected && {
-                carried: projected.carried && {
-                  change: projected.carried.change,
-                  from: projected.carried
-                    .from as EditorDocumentValue['children'],
-                },
-                change: projected.change,
-                value: projected.value as EditorDocumentValue,
-              }
-            );
+            return ledger.frame(value as JsonEditorValue);
           },
         })
       );
@@ -1628,8 +1669,8 @@ export const createAuthoredPlugin = (
 
             return change === step.change ? step : { ...step, change };
           });
-          const carried = carryRecords(before, after);
-          const known = factsOf(carried.committed);
+          const ownRecords = getInternalDocumentChangeRecords(input.change);
+          const known = factsOf(withStore(before, getValueRecords(after)));
 
           if ('preview' in updateView) {
             throw new Error('A preview view takes no writes.');
@@ -1700,7 +1741,7 @@ export const createAuthoredPlugin = (
               completeChildrenAt(editor, site.map(elementOf), [], root)
                 .children,
             forcedChangeId: forced?.changeId ?? (editing ? changeId : null),
-            framed: input.framed === true,
+            projection: input.projection,
             inc: forced?.inc ?? null,
             isInline: (props) =>
               getEditorSchema(editor).isInline(elementOf(props)),
@@ -1762,22 +1803,26 @@ export const createAuthoredPlugin = (
           ].filter(
             (root) => root !== 'main' && !contentChange.deleteRoots.has(root)
           );
-          const { roots: _beforeRoots, ...plain } = before;
-          const valueOf = (indexes: ReadonlyMap<string, DocumentIndex>) =>
-            ({
-              ...plain,
-              children: indexes.get('main')?.value ?? before.children,
-              ...(roots.length > 0
-                ? {
-                    roots: Object.fromEntries(
-                      roots.map((root) => [
-                        root,
-                        indexes.get(root)?.value ?? valueRoot(before, root),
-                      ])
-                    ),
-                  }
-                : {}),
-            }) as JsonEditorValue;
+          const beforeRecords = getValueRecords(before);
+          const valueOf = (indexes: ReadonlyMap<string, DocumentIndex>) => {
+            const next = copyFields({}, before, ['records', 'roots']);
+
+            setLazyRoot(
+              next,
+              'children',
+              indexes.get('main') ?? rootIndexOf(before, 'children')
+            );
+            if (roots.length > 0) {
+              next.roots = Object.fromEntries(
+                roots.map((root) => [
+                  root,
+                  indexes.get(root)?.value ?? valueRoot(before, root),
+                ])
+              );
+            }
+
+            return withValueRecords(next, beforeRecords) as typeof before;
+          };
           const written = valueOf(recorded.indexedAfter);
           const relink = relinkCuts(
             recorded.change,
@@ -1876,19 +1921,10 @@ export const createAuthoredPlugin = (
           const indexedAfter = owned?.indexes ?? writtenIndexes;
           // The context records the writes rest on go with them, so no
           // node ever points at a record its document lacks.
-          const records = [
-            appendRecords(before, CONTEXTS_ROOT, [
-              ...(carried.records.get(CONTEXTS_ROOT) ?? []),
-              ...restedOn(dependencies.minted(), later, indexedAfter).map(
-                contextElementOf
-              ),
-            ]),
-            appendRecords(
-              before,
-              VERDICTS_ROOT,
-              carried.records.get(VERDICTS_ROOT) ?? []
-            ),
-          ];
+          const records = composeRecordOps(
+            ownRecords,
+            putContexts(restedOn(dependencies.minted(), later, indexedAfter))
+          );
 
           return {
             anchorChange: (plainAfter) =>
@@ -1897,11 +1933,7 @@ export const createAuthoredPlugin = (
                   next ? anchor.compose(next) : anchor,
                 recorded.anchorChange(plainAfter)
               ),
-            change: records.reduce(
-              (change: DocumentChange, appended) =>
-                appended ? change.compose(appended) : change,
-              later
-            ),
+            change: withDocumentChangeRecords(later, records),
             indexedAfter,
             mapPosition,
             // A caret where accepting removes the writer's struck run stays on

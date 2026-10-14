@@ -70,6 +70,7 @@ import {
 } from '../schema-compiler';
 import { EditorSchemaValidationError } from '../schema-validation';
 import { mapSelectionWithContext } from '../selection-protocol';
+import { recordStoreFromJson, showValueRecords } from '../record-store';
 import { assertEditorJsonValue, snapshotEditorJsonValue } from '../value-codec';
 import {
   type EditorSchemaFitReport,
@@ -1335,7 +1336,6 @@ export const compileSliceFitter = <V extends Value>(
         const canOpenAtRoot = declarative
           ? [declarative.primaryRoot, ...declarative.roots.values()].some(
               (compiledRoot) =>
-                compiledRoot.role === 'content' &&
                 allContentAllowed(declarative, compiledRoot.content, content)
             )
           : content.every(
@@ -4155,7 +4155,17 @@ export const compileSliceFitter = <V extends Value>(
     }
 
     builder.finalize();
-    const document = builder.value as EditorDocumentValue<V>;
+    // Fitting reaches no record, so a document's records pass through.
+    const document = (
+      innerInput2.records === undefined
+        ? builder.value
+        : Object.freeze(
+            showValueRecords(
+              { ...builder.value },
+              recordStoreFromJson(innerInput2.records)
+            )
+          )
+    ) as EditorDocumentValue<V>;
 
     validateDocument(document);
     if (selectionInput && !mappedSelection) {

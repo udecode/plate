@@ -68,12 +68,12 @@ export type DocumentMigrationSelectionContext = Readonly<{
   selection: Exclude<Selection, null>;
 }>;
 
-/** Stored top-level fields outside `children`, `meta` and `roots`. */
+/** Stored top-level fields outside `children`, `meta`, `roots` and `records`. */
 export type DocumentMigrationLegacy = Readonly<Record<string, EditorJsonValue>>;
 
 /**
- * A migration document admits only `children`, `meta` and `roots`; any other
- * key fails to compile with a message naming the `legacy` channel.
+ * A migration document admits only `children`, `meta`, `roots` and `records`;
+ * any other key fails to compile with a message naming the `legacy` channel.
  */
 export type ClosedMigrationDocument<TDocument> = {
   readonly [TKey in keyof TDocument]: TKey extends keyof EditorDocumentValue

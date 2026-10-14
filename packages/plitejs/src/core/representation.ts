@@ -19,8 +19,9 @@ import {
   getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
   mapInternalDocumentChangePosition,
+  valueRootIndex,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import { DocumentIndex, type NodeList } from './change/document-index';
 import { RootChange, reconcileChildrenStep } from './change/root-change';
 import type { JsonEditorValue, PreparedTokenSlice } from './change/tokens';
 import {
@@ -390,14 +391,14 @@ const getRootChildren = (value: JsonEditorValue, root: string) =>
     : (value.roots?.[root] ?? [])) as readonly Descendant[];
 
 const getDescendant = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   path: readonly number[]
 ) => {
   let descendants = children;
   let node: Descendant | undefined;
 
   for (const index of path) {
-    node = descendants[index];
+    node = descendants.at(index);
     if (!node) return undefined;
     descendants = ElementApi.isElement(node) ? node.children : [];
   }
@@ -896,13 +897,19 @@ const replaceCanonicalChildWindow = (
   beforeDocument: DocumentIndex | null,
   options: CanonicalizeOptions = {}
 ) => {
-  const rootChildren = draft.document.value as readonly Descendant[];
-  const rootData = { children: rootChildren } as unknown as Editor;
+  const rootChildren = draft.document.nodes as NodeList<Descendant>;
+  const { document } = draft;
+  const rootData = {
+    get children() {
+      return document.value;
+    },
+  } as unknown as Editor;
   const node = path.length === 0 ? rootData : getDescendant(rootChildren, path);
 
   if (!node || TextApi.isText(node as Descendant)) return;
 
-  const source = path.length === 0 ? rootChildren : (node as Element).children;
+  const source: NodeList<Descendant> =
+    path.length === 0 ? rootChildren : (node as Element).children;
   const parent = ElementApi.isElement(node) ? node : rootData;
   const contentSpec = ElementApi.isElement(parent)
     ? schema.getElementContent(parent.type)
@@ -920,16 +927,14 @@ const replaceCanonicalChildWindow = (
     root,
   });
   const baselineAt = (from: number) =>
-    beforeDocument
-      ? { children: beforeDocument.value as readonly Descendant[], path, from }
-      : undefined;
+    beforeDocument ? { document: beforeDocument, from, path } : undefined;
   const propertyNodes = new Map<number, Descendant>();
   const propertyNodeAt = (index: number) => {
     const cached = propertyNodes.get(index);
 
     if (cached) return cached;
     const canonical = schema.canonicalizeChildren(
-      [source[index]],
+      [getDefined(source.at(index))],
       root,
       ancestors,
       false,
@@ -947,7 +952,7 @@ const replaceCanonicalChildWindow = (
   const inlineContent =
     ElementApi.isElement(parent) &&
     (kind === null
-      ? inlineContentWithoutProgram(editor, parent, source, schema)
+      ? inlineContentWithoutProgram(editor, parent, parent.children, schema)
       : kind === 'inline');
   // The changed range plus two unchanged children on each side contains each
   // radius-one representation dependency. Inline content's edge context below
@@ -956,11 +961,16 @@ const replaceCanonicalChildWindow = (
   let to = Math.min(source.length, Math.max(window.to, window.from) + 2);
   let program = contentSpec;
 
-  if (kind === 'mixed' && contentSpec) {
-    ({ from, program, to } = mixedContentWindow(source, contentSpec, schema, {
-      from,
-      to,
-    }));
+  if (kind === 'mixed' && contentSpec && ElementApi.isElement(parent)) {
+    ({ from, program, to } = mixedContentWindow(
+      parent.children,
+      contentSpec,
+      schema,
+      {
+        from,
+        to,
+      }
+    ));
   }
 
   if (inlineContent) {
@@ -1076,7 +1086,7 @@ const replaceCanonicalChildWindow = (
   const previousParent = beforeDocument
     ? path.length === 0
       ? null
-      : getDescendant(beforeDocument.value as readonly Descendant[], path)
+      : getDescendant(beforeDocument.nodes as NodeList<Descendant>, path)
     : null;
   const previousChildren =
     beforeDocument && options.displacement !== 'none'
@@ -1238,11 +1248,10 @@ export const constructCanonicalDocumentChange = (
   }
   const protectedInlineSpacersFor = (root: string) => {
     const fromOptions = options.preserveInlineSpacersAdjacentTo?.(root);
-    const current = getRootChildren(after, root);
     const fromPreparation = new Set(
       (fitPreparation?.protectedInlineSpacerPaths?.get(root) ?? []).flatMap(
         (path) => {
-          const node = getDescendant(current, path);
+          const node = getDescendant(getRootChildren(after, root), path);
 
           return node && ElementApi.isElement(node) && schema.isInline(node)
             ? [node]
@@ -1267,9 +1276,8 @@ export const constructCanonicalDocumentChange = (
   for (const root of touchedRoots) {
     if (change.deleteRoots.has(root)) continue;
 
-    const current = getRootChildren(after, root);
     const document =
-      options.indexedAfter?.get(root) ?? DocumentIndex.fromValue(current);
+      options.indexedAfter?.get(root) ?? valueRootIndex(after, root);
     const draft: CanonicalRootDraft = {
       change: RootChange.empty(document.length),
       document,
@@ -1277,7 +1285,7 @@ export const constructCanonicalDocumentChange = (
     const rootChange = getInternalDocumentRootChange(change, root);
     const beforeDocument = options.before
       ? (options.indexedBefore?.get(root) ??
-        DocumentIndex.fromValue(getRootChildren(options.before, root)))
+        valueRootIndex(options.before, root))
       : null;
     const move =
       beforeDocument && rootChange
@@ -1326,6 +1334,7 @@ export const constructCanonicalDocumentChange = (
     }
 
     if (fitPreparation?.forceRoots?.has(root)) {
+      const current = getRootChildren(after, root);
       const canonical = fitRootChildren(editor, current, root, {
         document: after as EditorDocumentValue,
         preserveInlineSpacersAdjacentTo: protectedInlineSpacersFor(root),
@@ -1412,8 +1421,8 @@ export const constructCanonicalDocumentChange = (
       after as import('../interfaces/editor').EditorDocumentValue
     );
 
-    if (rootSpec && current.length < rootSpec.min) {
-      addChildWindow(windows, [], current.length, current.length);
+    if (rootSpec && document.size < rootSpec.min) {
+      addChildWindow(windows, [], document.size, document.size);
     }
 
     profileCoreDuration('representation-window-apply', () => {

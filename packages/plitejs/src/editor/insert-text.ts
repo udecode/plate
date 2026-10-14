@@ -2,7 +2,7 @@ import { dispatchCommand } from '../core/command-registry';
 import { landTextWrite } from '../core/content-landing';
 import { editorCommands } from '../core/editor-commands';
 import {
-  getChildren,
+  getChildList,
   getCurrentMarks,
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -97,7 +97,7 @@ export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
         target = getDefaultInsertLocation(editor);
       }
       if (PointApi.isPoint(target) || RangeApi.isRange(target)) {
-        target = landTextWrite(editor, target, getChildren(editor));
+        target = landTextWrite(editor, target, getChildList(editor));
       }
 
       if (

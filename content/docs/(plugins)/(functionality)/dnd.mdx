@@ -190,6 +190,8 @@ editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
 
 Pass `from` with another editor to move or copy from it. Between independent editors a move always copies.
 
+Text copied to a `point` lands there as a paste would. [`editorReads.slice.landing`](/docs/clipboard#where-a-paste-lands) shapes it, so copied list items take the depth of the item they land in. Blocks copied to an edge keep their own depths.
+
 `to` also accepts a block's side, `{ key, side: 'start' | 'end' }`, which places the blocks beside it when a feature builds side landings, such as the Column plugin. A side takes only a move inside one document; a copy refuses with `policy`. Ask before offering the action, as the handle menu does:
 
 ```tsx

@@ -216,7 +216,7 @@ Use `source: 'current'` only when the raw document already uses the current
 schema. With an explicit `source`, `migrateDocument` reads its input as a raw
 document, so pass a persisted envelope without it.
 
-A step's `document` holds only `children`, `meta` and `roots`. Any other field
+A step's `document` holds only `children`, `meta`, `roots` and `records`. Any other field
 stored at the document's top level arrives in `legacy`. Lift it into `meta` and
 return the remaining fields as `legacy`; a step that omits `legacy` passes it on
 unchanged. `migrateDocument` refuses a field that no step lifted.

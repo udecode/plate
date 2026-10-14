@@ -6,12 +6,22 @@ import type { Element } from '../interfaces/element';
 import type { Descendant } from '../interfaces/node';
 import type { AuthoredResolveSchema } from './tree/resolve';
 
+// One resolve schema per editor and compiled schema, so readers that cache
+// resolved content can key on it.
+const RESOLVE_SCHEMAS = new WeakMap<
+  object,
+  Readonly<{ resolve: AuthoredResolveSchema; schema: object }>
+>();
+
 export const authoredResolveSchemaOf = (
   editor: Editor
 ): AuthoredResolveSchema => {
   const schema = getEditorSchema(editor);
+  const cached = RESOLVE_SCHEMAS.get(editor);
 
-  return {
+  if (cached?.schema === schema) return cached.resolve;
+
+  const resolve: AuthoredResolveSchema = {
     complete: (children, site, root, vacated) => {
       const completion = completeChildrenAt(
         editor,
@@ -44,4 +54,8 @@ export const authoredResolveSchemaOf = (
         : null;
     },
   };
+
+  RESOLVE_SCHEMAS.set(editor, { resolve, schema });
+
+  return resolve;
 };

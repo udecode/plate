@@ -24,6 +24,7 @@ import {
   isElementNode,
   isTextNode,
   type JsonNode,
+  type JsonTextNode,
   type JsonToken,
   type JsonTokenData,
   nodeProps,
@@ -1094,12 +1095,7 @@ export const createStructurallyAlignedChanges = (
       displaced = true;
     }
 
-    if (
-      sourceCount > 0 &&
-      targetCount > 0 &&
-      sourceCount !== targetCount &&
-      (sourceCount === 1 || targetCount === 1)
-    ) {
+    if (sourceCount > 0 && targetCount > 0 && sourceCount !== targetCount) {
       const sourceRun = source.slice(prefix, sourceEnd);
       const targetRun = target.slice(prefix, targetEnd);
 
@@ -1109,31 +1105,67 @@ export const createStructurallyAlignedChanges = (
         sourceRun.map((node) => node.text).join('') ===
           targetRun.map((node) => node.text).join('')
       ) {
-        // Retain the characters: replacing the run would remap interior selections.
-        addPropertyChanges(sourceRun[0], targetRun[0], [...parentPath, prefix]);
+        // Retain the characters: replacing the run would remap interior
+        // selections. A source leaf boundary stays where a target leaf starts
+        // and merges away elsewhere, and a target leaf that starts inside a
+        // source leaf splits it.
+        const startsOf = (run: readonly JsonTextNode[]) => {
+          let offset = 0;
 
-        if (targetCount === 1) {
-          for (let index = prefix + 1; index < sourceEnd; index++) {
-            const boundary = before.childPosition(parentPath, index);
+          return run.map((node) => {
+            const at = offset;
+
+            offset += node.text.length;
+            return at;
+          });
+        };
+        const sourceStarts = startsOf(sourceRun);
+        const targetStarts = startsOf(targetRun);
+        let next = 1;
+        const splitAt = (targetIndex: number) => {
+          const offset = getDefined(targetStarts[targetIndex]);
+          const index = sourceStarts.findLastIndex((at) => at <= offset);
+
+          changes.push({
+            from: before.positionAt({
+              path: [...parentPath, prefix + index],
+              offset: offset - getDefined(sourceStarts[index]),
+            }),
+            insert: PreparedTokenSlice.fromTokens([
+              closeToken('text'),
+              openToken(
+                'text',
+                getProperties(getDefined(targetRun[targetIndex]))
+              ),
+            ]),
+          });
+        };
+
+        addPropertyChanges(sourceRun[0], targetRun[0], [...parentPath, prefix]);
+        for (let index = 1; index < sourceRun.length; index++) {
+          const at = getDefined(sourceStarts[index]);
+
+          for (
+            ;
+            next < targetCount && getDefined(targetStarts[next]) < at;
+            next += 1
+          ) {
+            splitAt(next);
+          }
+          if (next < targetCount && targetStarts[next] === at) {
+            addPropertyChanges(
+              getDefined(sourceRun[index]),
+              getDefined(targetRun[next]),
+              [...parentPath, prefix + index]
+            );
+            next += 1;
+          } else {
+            const boundary = before.childPosition(parentPath, prefix + index);
+
             changes.push({ from: boundary - 1, to: boundary + 1 });
           }
-        } else {
-          let offset = targetRun[0].text.length;
-
-          for (let index = 1; index < targetRun.length; index++) {
-            changes.push({
-              from: before.positionAt({
-                path: [...parentPath, prefix],
-                offset,
-              }),
-              insert: PreparedTokenSlice.fromTokens([
-                closeToken('text'),
-                openToken('text', getProperties(targetRun[index])),
-              ]),
-            });
-            offset += targetRun[index].text.length;
-          }
         }
+        for (; next < targetCount; next += 1) splitAt(next);
 
         displaced = true;
         return true;

@@ -7,6 +7,7 @@ import type {
 import type { DraftStep } from './change/builder';
 import type { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
+import type { CommandProjection } from './command-document';
 import { getEditorRuntimeOwner } from './editor-runtime';
 
 /**
@@ -23,12 +24,13 @@ export type EditorDocumentRecorder = (
   input: Readonly<{
     after: EditorDocumentValue;
     before: EditorDocumentValue;
+    /** From `before`, or in a command frame from the projected document. */
     change: DocumentChange;
     /**
-     * The steps start with a command frame's seed, which hides content the
-     * frame's commands never saw.
+     * The projection of `before` a command frame's commands wrote the steps
+     * on, which hides content they never saw.
      */
-    framed?: boolean;
+    projection?: CommandProjection;
     selection: Selection;
     selectionBefore: Selection;
     selectionBeforeRoot: string;
@@ -57,9 +59,16 @@ export type EditorDocumentRecorder = (
 /** @internal */
 export type EditorDraftGuardPhase = 'plain' | 'recorded';
 
-/** A command frame's draft: `change` maps `stored` to what the frame wrote. */
+/**
+ * A command frame's draft: `mapPosition` maps a position of `stored` to what
+ * the frame wrote.
+ */
 export type DraftGuardFrame = Readonly<{
-  change: DocumentChange;
+  mapPosition: (
+    root: string,
+    position: number,
+    association: 'backward' | 'forward'
+  ) => number | null;
   stored: EditorDocumentValue;
 }>;
 

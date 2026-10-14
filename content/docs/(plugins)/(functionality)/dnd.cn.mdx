@@ -188,6 +188,8 @@ editor.api.transfer.move({ announce: 'Moved down', to: 'next' });
 
 传入另一个编辑器作为 `from`，即可从该编辑器移动或复制。在相互独立的编辑器之间，移动总是复制。
 
+复制到某个 `point` 的文本会像粘贴一样落在该处。[`editorReads.slice.landing`](/docs/clipboard) 决定落地内容，因此复制的列表项采用落点所在列表项的层级。复制到区块边缘的区块保持各自的层级。
+
 `to` 也接受区块的一侧 `{ key, side: 'start' | 'end' }`。当某个功能（例如分栏插件）构建侧边放置时，区块会落到它旁边。侧边只接受同一文档内的移动；复制会以 `policy` 拒绝。像手柄菜单一样，在提供操作之前先检查：
 
 ```tsx

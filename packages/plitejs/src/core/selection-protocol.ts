@@ -22,8 +22,9 @@ import {
   getInternalDocumentRootChange,
   mapInternalDocumentChangePosition,
   type DocumentChange,
+  valueRootIndex,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import type { DocumentIndex } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorSchema } from './editor-runtime';
@@ -87,9 +88,6 @@ const assertBuiltInSelection: (
   }
 };
 
-const rootValue = (value: JsonEditorValue, root: RootKey) =>
-  root === 'main' ? value.children : (value.roots?.[root] ?? []);
-
 const projectSelectionPoint = (point: Point): Point =>
   Object.freeze({
     offset: point.offset,
@@ -104,18 +102,17 @@ const projectSelectionRange = (range: Range): Range =>
   });
 
 const rawNodeAt = (
-  children: ReadonlyArray<Record<string, unknown>>,
+  document: DocumentIndex,
   path: Path
 ): Record<string, unknown> | null => {
-  let descendants = children;
-  let node: Record<string, unknown> | undefined;
+  let node: Record<string, unknown> | undefined =
+    path.length === 0 ? undefined : document.child(path[0]);
 
-  for (const index of path) {
-    node = descendants[index];
+  for (const index of path.slice(1)) {
     if (!node) return null;
-    descendants = Array.isArray(node.children)
-      ? (node.children as ReadonlyArray<Record<string, unknown>>)
-      : [];
+    node = Array.isArray(node.children)
+      ? (node.children as ReadonlyArray<Record<string, unknown>>)[index]
+      : undefined;
   }
 
   return node ?? null;
@@ -333,7 +330,7 @@ const createMapContext = (
     const backwardPosition = mapInternalDocumentChangePosition(
       change,
       targetRoot,
-      DocumentIndex.fromValue(rootValue(before, targetRoot)).positionAt({
+      valueRootIndex(before, targetRoot).positionAt({
         offset: point.offset,
         path: point.path,
       }),
@@ -342,7 +339,7 @@ const createMapContext = (
     const forwardPosition = mapInternalDocumentChangePosition(
       change,
       targetRoot,
-      DocumentIndex.fromValue(rootValue(before, targetRoot)).positionAt({
+      valueRootIndex(before, targetRoot).positionAt({
         offset: point.offset,
         path: point.path,
       }),
@@ -394,10 +391,8 @@ const createMapContext = (
 
     if (change.deleteRoots.has(targetRoot)) return null;
 
-    const beforeDocument = DocumentIndex.fromValue(
-      rootValue(before, targetRoot)
-    );
-    const afterDocument = DocumentIndex.fromValue(rootValue(after, targetRoot));
+    const beforeDocument = valueRootIndex(before, targetRoot);
+    const afterDocument = valueRootIndex(after, targetRoot);
     const association = options.association === 'backward' ? -1 : 1;
     const position = beforeDocument.positionAt({
       offset: point.offset,
@@ -429,7 +424,10 @@ const createMapContext = (
     );
     const next =
       mapped == null ? null : afterDocument.pointAt(mapped, association);
-    const sourceNode = rawNodeAt(rootValue(before, targetRoot), point.path);
+    const sourceNode = rawNodeAt(
+      valueRootIndex(before, targetRoot),
+      point.path
+    );
     const preservesNonEmptyTextPosition =
       options.preferPositionMapping &&
       typeof sourceNode?.text === 'string' &&
@@ -454,7 +452,7 @@ const createMapContext = (
       ? runtimeIndexes?.after.pathOf(nodeKey)
       : undefined;
     const retainedNode = retainedPath
-      ? rawNodeAt(rootValue(after, targetRoot), retainedPath)
+      ? rawNodeAt(valueRootIndex(after, targetRoot), retainedPath)
       : null;
     const sourceText = sourceNode?.text;
     const retainedText = retainedNode?.text;
@@ -499,8 +497,8 @@ const createMapContext = (
     }
     if (nodeKey) return null;
 
-    const beforeDocument = DocumentIndex.fromValue(rootValue(before, root));
-    const afterDocument = DocumentIndex.fromValue(rootValue(after, root));
+    const beforeDocument = valueRootIndex(before, root);
+    const afterDocument = valueRootIndex(after, root);
     const nodeRange = beforeDocument.nodeRange(path);
     let nodeWasRemoved = false;
 
@@ -538,9 +536,7 @@ const createMapContext = (
       throw new Error('An editor selection range cannot cross document roots.');
     }
 
-    const beforeDocument = DocumentIndex.fromValue(
-      rootValue(before, targetRoot)
-    );
+    const beforeDocument = valueRootIndex(before, targetRoot);
     const anchorPosition = beforeDocument.positionAt(range.anchor);
     const focusPosition = beforeDocument.positionAt(range.focus);
     const associations = getRangeEndpointAssociations(
@@ -585,7 +581,7 @@ export const getSelectionRanges = (
   if (SelectionApi.isNode(selection)) {
     const root = SelectionApi.root(selection) ?? 'main';
     const includeRoot = selection.root !== undefined;
-    const document = DocumentIndex.fromValue(rootValue(documentValue, root));
+    const document = valueRootIndex(documentValue, root);
 
     return Object.freeze(
       selection.paths.map((path) => {
@@ -703,9 +699,7 @@ export const assertSelectionSupported = (
     }
 
     try {
-      const document = DocumentIndex.fromValue(
-        rootValue(jsonDocumentValue, rangeRoot)
-      );
+      const document = valueRootIndex(jsonDocumentValue, rangeRoot);
 
       document.positionAt(range.anchor);
       document.positionAt(range.focus);
@@ -732,7 +726,7 @@ export const assertSelectionSupported = (
     const nodeRoot = selection.root ?? root;
 
     for (const path of selection.paths) {
-      if (!rawNodeAt(rootValue(jsonDocumentValue, nodeRoot), path)) {
+      if (!rawNodeAt(valueRootIndex(jsonDocumentValue, nodeRoot), path)) {
         throw new Error(
           `Node selection path [${path}] points outside document root "${nodeRoot}".`
         );
@@ -869,7 +863,9 @@ export const mapSelectionThroughChange = (
 
   if (SelectionApi.isNode(selection)) {
     if (
-      selection.paths.some((path) => !rawNodeAt(rootValue(before, root), path))
+      selection.paths.some(
+        (path) => !rawNodeAt(valueRootIndex(before, root), path)
+      )
     ) {
       return null;
     }
@@ -881,7 +877,7 @@ export const mapSelectionThroughChange = (
     }
 
     try {
-      const document = DocumentIndex.fromValue(rootValue(before, rangeRoot));
+      const document = valueRootIndex(before, rangeRoot);
 
       document.positionAt(selection.anchor);
       document.positionAt(selection.focus);

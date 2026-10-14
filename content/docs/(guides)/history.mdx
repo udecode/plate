@@ -87,7 +87,7 @@ const externalValueEffect = defineEffect<Transition>({
   invert: ({ previous, value }) => ({ previous: value, value: previous }),
   key: "external-value.set",
 });
-const ExternalValuePlugin = definePlugin("external-value", {
+const ExternalValuePlugin = definePlugin("externalValue", {
   effectTypes: [externalValueEffect],
 });
 const editor = createEditor({ plugins: [ExternalValuePlugin] });

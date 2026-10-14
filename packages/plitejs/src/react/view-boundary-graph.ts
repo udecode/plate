@@ -6,7 +6,6 @@ import {
   type Range,
   type RootKey,
 } from '..';
-import { isMetadataRootKey } from '../internal/root-location';
 import { getPointRoot, MAIN_ROOT_KEY } from './root-key';
 import {
   createPliteViewBoundaryGraph,
@@ -47,11 +46,7 @@ export const createPliteViewBoundaryRootMap = (value: {
   roots?: Readonly<Record<string, readonly Descendant[]>>;
 }): Readonly<Record<string, readonly Descendant[]>> => ({
   [MAIN_ROOT_KEY]: value.children,
-  ...Object.fromEntries(
-    Object.entries(value.roots ?? {}).filter(
-      ([root]) => !isMetadataRootKey(root)
-    )
-  ),
+  ...value.roots,
 });
 
 export const clonePliteViewBoundaryPath = (path: Path): Path =>

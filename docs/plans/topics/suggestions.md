@@ -1,6 +1,6 @@
 # Suggestions and tracked-change review
 
-Page: https://claude.ai/artifact/4wACjvwLyVZGT5A6AEYUQD
+Page: https://claude.ai/artifact/Dxh6ofPPaKban1rAawYEf8
 
 Plite's native authored capability owns suggested edits: change identity, retained content, dependencies, the accepted, proposed and markup views, and atomic accept and reject. Plate owns `BaseSuggestionPlugin` (suggestion mode and decorations), `SuggestionPlugin`, the copied `SuggestionKit` and discussion UI, and `AuthoredPlugin`, which stamps every write with the editor's `userId`. The ledger asks which proposed-edit, accept/reject and attribution policies belong to Suggestions, and which reuse native authored changes (`docs/research/review-scopes/suggestions.json`). Native authored ownership (2026-09-10), the `EditorRoot authored` view input and its five intent and projection pairs (2026-09-17), plugin-owned content attributes (2026-09-14), the direct replacement of fully selected pending changes (2026-09-22) one fixed user per editor for suggestions, comments and copied UI (2026-10-07) and constructors that always create a new editor (2026-10-08) have landed, with browser cases in `apps/www/tests/browser/suggestion.spec.ts`. An editor with no `userId` writes as the local user `'local'`. `node tooling/scripts/review-ledger.mjs show suggestions` prints the scope's full history.
 

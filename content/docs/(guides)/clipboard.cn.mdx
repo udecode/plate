@@ -64,6 +64,8 @@ Headless command 从 `ContentSlice` 开始，不让 `DataTransfer` 离开 DOM bo
 目标。空块中的折叠光标得到 `empty`，其他情况得到 `context`，并带有粘贴起点所在的块。
 返回要落地的 `slice`，也可以加上 `replaceEmpty`，用整块内容替换 `empty` 目标。
 
+复制文本的拖拽（例如来自另一个编辑器或只读视图）会在放下的位置通过同一个读取落地，但不运行命令处理器。
+
 ```ts
 import { definePlugin, editorReads } from 'platejs';
 

@@ -1140,6 +1140,45 @@ describe('authored review tree commands', () => {
       );
     });
 
+    it(`D3 a drag of text holding another author's insertion or deletion moves it in ${mode}`, () => {
+      const cases = [
+        {
+          accepted: [p('b'), p('cdaxy')],
+          end: 2,
+          rejected: [p('b'), p('cda')],
+          start: [
+            p('a', { authored: [mark('insert')], text: 'xy' }, 'b'),
+            p('cd'),
+          ],
+        },
+        {
+          accepted: [p('b'), p('cda')],
+          end: 1,
+          rejected: [p('b'), p('cdax')],
+          start: [p('a', struck('x'), 'b'), p('cd')],
+        },
+      ];
+
+      for (const { accepted, end, rejected, start } of cases) {
+        const editor = make(start, intent, [transfer()]);
+        const result = editor.api.transfer.move({
+          range: selectionOf([
+            [[0, 0], 0],
+            [[0, 1], end],
+          ]),
+          to: { point: { offset: 2, path: [1, 0] } },
+        });
+        const raw = expandedChildren(editor);
+
+        assert.equal(result.status, 'moved');
+        assert.deepEqual(unmarked(decided(raw, 'accept')), accepted);
+        assert.deepEqual(
+          decided(raw, 'reject', intent === 'edit' ? 'carol' : 'bob'),
+          intent === 'edit' ? rejected : start
+        );
+      }
+    });
+
     it(`admits a native letter only where the accepted document has the caret in ${mode}`, () => {
       const native = (start: Node[], at: At) => {
         const editor = make(start, intent);

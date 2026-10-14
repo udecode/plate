@@ -8,11 +8,67 @@ import type {
   AuthoredView,
 } from '../../src/authored';
 import { expandContexts } from '../../src/authored/facts/compact';
+import {
+  type ContextRecord,
+  putContexts,
+  putVerdicts,
+  type VerdictRecord,
+} from '../../src/authored/facts/records';
 import { authoredResolveSchemaOf } from '../../src/authored/resolve-schema';
 import { projectAuthoredValue } from '../../src/authored/tree/resolve';
 import type { JsonEditorValue } from '../../src/core/change/tokens';
-import type { AnyEditor } from '../../src/interfaces/editor';
-import { isMetadataRootKey } from '../../src/internal/root-location';
+import {
+  composeRecordOps,
+  getValueRecords,
+  recordStoreToJson,
+} from '../../src/core/record-store';
+import type {
+  AnyEditor,
+  EditorDocumentRecords,
+} from '../../src/interfaces/editor';
+
+/** A document's `records` holding these review contexts and verdicts. */
+export const reviewRecords = ({
+  contexts = [],
+  verdicts = [],
+}: Readonly<{
+  contexts?: readonly ContextRecord[];
+  verdicts?: readonly VerdictRecord[];
+}>): EditorDocumentRecords =>
+  Object.fromEntries(
+    [...composeRecordOps(putContexts(contexts), putVerdicts(verdicts))].map(
+      ([set, writes]) => [
+        set,
+        Object.fromEntries(
+          [...writes].map(([id, json]) => [id, JSON.parse(json ?? 'null')])
+        ),
+      ]
+    )
+  );
+
+/** A value's records as JSON, whether it holds them as a field or beside it. */
+export const recordsOf = (value: object): EditorDocumentRecords =>
+  recordStoreToJson(
+    getValueRecords(value as Readonly<{ records?: EditorDocumentRecords }>)
+  );
+
+/** The review contexts a document stores, each with its member's fields. */
+export const storedContexts = (value: object) =>
+  Object.entries(recordsOf(value)['authored-contexts'] ?? {}).map(
+    ([ctx, record]) => {
+      const { base, member } = record as Readonly<{
+        base?: string;
+        member: Readonly<{
+          at: number;
+          author: string;
+          change: string;
+          inc?: string;
+        }>;
+      }>;
+
+      return { ...member, base, ctx };
+    }
+  );
 
 type IdDecision = Readonly<{
   action: AuthoredDecision['action'];
@@ -123,8 +179,8 @@ export const reviewedValue = (input: AnyEditor) => {
     children: readonly Node[];
     roots?: Readonly<Record<string, readonly Node[]>>;
   };
-  const roots = Object.entries(value.roots ?? {}).flatMap(([root, nodes]) =>
-    isMetadataRootKey(root) ? [] : [[root, review(nodes)] as const]
+  const roots = Object.entries(value.roots ?? {}).map(
+    ([root, nodes]) => [root, review(nodes)] as const
   );
 
   return {

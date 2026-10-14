@@ -16,7 +16,6 @@ import {
   type MarkdownPluginRegistry,
   TextApi,
 } from '../../../core';
-import { isMetadataRootKey } from '../../../facade';
 import {
   getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
@@ -1070,7 +1069,6 @@ export const serializeMarkdownWithRuntime = (
   const diagnostics = new MarkdownDiagnostics(initialDiagnostics);
 
   Object.keys(document.roots ?? {})
-    .filter((root) => !isMetadataRootKey(root))
     .sort()
     .forEach((root) => {
       diagnostics.report({

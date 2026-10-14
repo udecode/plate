@@ -17,6 +17,7 @@ import { readPliteValueFromYjs } from '../../src/yjs/core/document';
 import { yjs } from '../../src/yjs/core/plugin';
 import {
   createYjsTestEditor,
+  readEditorYjsState,
   undoEditorHistory,
 } from './support/collaboration';
 
@@ -142,6 +143,32 @@ describe('plitejs/yjs multi-root document contract', () => {
         doc.getMap<Y.XmlElement>('document:roots').get('header')!
       ),
       [paragraph('Header!')]
+    );
+
+    cleanup();
+  });
+
+  it('lowers a commit that changes two roots one root at a time', () => {
+    const editor = createYjsTestEditor({
+      children: [paragraph('Body')],
+      roots: { header: [paragraph('Header')] },
+    });
+    const cleanup = editor.install(
+      yjs({ doc: new Y.Doc(), initialReady: true, seed: true })
+    );
+    const seen = readEditorYjsState(editor).trace().length;
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+      tx.roots.replace('header', [paragraph('Header'), paragraph('More')]);
+    });
+
+    assert.deepEqual(
+      readEditorYjsState(editor)
+        .trace()
+        .slice(seen)
+        .map((entry) => 'changedRanges' in entry),
+      [true, true]
     );
 
     cleanup();

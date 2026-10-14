@@ -281,7 +281,6 @@ const createBenchmarkEditor = (children, selection, plugins = []) => {
 const createPlateBenchmarkEditor = (children, selection, counters) => {
   const editor = createPlateEditor({
     initialValue: children,
-    nodeId: false,
     plugins: [
       createPlateBenchmarkFormatPlugin(
         counters,

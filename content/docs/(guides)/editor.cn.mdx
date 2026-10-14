@@ -190,7 +190,7 @@ const current = migrateDocument(legacyDocument, {
 只有当原始文档已使用当前 schema 时，才使用 `source: 'current'`。显式 `source` 会把输入
 当作原始文档读取，所以 persisted envelope 不要传入它。
 
-步骤的 `document` 只包含 `children`、`meta` 和 `roots`。文档顶层存储的其他字段会进入
+步骤的 `document` 只包含 `children`、`meta`、`roots` 和 `records`。文档顶层存储的其他字段会进入
 `legacy`。把字段提升到 `meta`，再把剩余字段作为 `legacy` 返回；省略 `legacy` 的步骤会原样
 传递它。没有任何步骤提升的字段会被 `migrateDocument` 拒绝。
 

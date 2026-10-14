@@ -21,8 +21,12 @@ import {
   txSelection,
 } from 'plitejs';
 
+import { DocumentIndex } from '../src/core/change/document-index';
 import { getCommandRuntime } from '../src/core/command-definition';
-import { registerEditorCommandDocument } from '../src/core/command-document';
+import {
+  projectionMapOf,
+  registerEditorCommandDocument,
+} from '../src/core/command-document';
 import {
   evaluateCommand,
   probeCommandNativeEquivalent,
@@ -73,10 +77,13 @@ const framedEditor = (
     plugins,
   });
 
-  registerEditorDocumentRecorder(editor, ({ change, selection }) => ({
-    change,
-    selection,
-  }));
+  registerEditorDocumentRecorder(
+    editor,
+    ({ change, projection, selection }) => ({
+      change: projection ? projection.map.change().compose(change) : change,
+      selection,
+    })
+  );
   registerEditorCommandDocument(editor, {
     project: (value) => {
       const kept = hideMarked(value.children);
@@ -86,7 +93,8 @@ const framedEditor = (
       const projected = Object.freeze({ ...value, children: kept });
 
       return {
-        change: DocumentChange.between(value, projected),
+        indexes: new Map([['main', DocumentIndex.fromValue(kept)]]),
+        map: projectionMapOf(DocumentChange.between(value, projected)),
         value: projected,
       };
     },

@@ -60,9 +60,11 @@ For auth-gated Linear uploads, the helper automatically retries with cookies fro
 
 ## Workflow
 
-Tracker comments and replies require explicit message authority. Prepare or
-return the transcript locally when publication is not authorized. Cache location
-and reuse rules below do not grant permission to post.
+A tracker comment or reply that anyone outside the team can read, such as one on
+a public repository, needs explicit message authority; one only the team can read
+follows the project's message rule. Prepare or return the transcript locally when
+publication is not authorized. Cache location and reuse rules below do not grant
+permission to post.
 
 1. Run the helper once for each relevant video.
 2. Give each run a short, bug-focused `--title`.

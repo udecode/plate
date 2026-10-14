@@ -22,6 +22,11 @@ import {
   EDITOR_TO_PENDING_SELECTION,
   findEditorDOMRootRuntime,
 } from '../../dom/internal';
+import {
+  assertEditorOptions,
+  type CheckedEditorOptions,
+  EDITOR_OPTION_KEYS,
+} from '../../internal/editor-options';
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import type { AnyEditor } from '../editable/runtime-editor-api';
 import {
@@ -155,12 +160,24 @@ export type CreateEditorOptions<
     lifecycleErrorSink?: EditorLifecycleErrorSink<Editor<V, TPlugins>>;
   };
 
+/** @internal */
+export const REACT_EDITOR_OPTION_KEYS = {
+  ...EDITOR_OPTION_KEYS,
+  clipboardFormatKey: true,
+} satisfies Record<keyof CreateEditorOptions, true>;
+
 export function createEditor<
-  const TOptions extends CreateEditorOptions<any, readonly unknown[]> & {
+  const TOptions extends Omit<
+    CreateEditorOptions<any, readonly unknown[]>,
+    'lifecycleErrorSink'
+  > & {
     plugins: readonly unknown[];
   },
 >(
-  options: TOptions
+  options: CheckedEditorOptions<
+    TOptions,
+    CreateEditorOptions<any, readonly unknown[]>
+  >
 ): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
 
 export function createEditor<
@@ -176,6 +193,7 @@ export function createEditor<
   V extends Value = Value,
   const TPlugins extends readonly unknown[] = readonly [],
 >(options: CreateEditorOptions<V, TPlugins> = {}): Editor<V, TPlugins> {
+  assertEditorOptions(options, REACT_EDITOR_OPTION_KEYS);
   const {
     clipboardFormatKey,
     plugins: authoredPlugins,

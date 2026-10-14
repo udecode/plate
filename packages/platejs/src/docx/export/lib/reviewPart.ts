@@ -312,7 +312,7 @@ export const addDocxReview = async (
       name,
       nodes,
     })),
-    roots: review.roots,
+    ...(review.records === undefined ? {} : { records: review.records }),
     version: 1,
   };
 

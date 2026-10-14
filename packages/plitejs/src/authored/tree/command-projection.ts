@@ -1,7 +1,9 @@
 import {
   createInternalDocumentChange,
   DocumentChange,
+  getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
+  valueRoot,
 } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
 import { deepFreeze, jsonEqual, type JsonRecord } from '../../core/change/json';
@@ -20,6 +22,7 @@ import {
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
 } from '../../core/change/tokens';
+import { deriveValue } from '../../core/record-store';
 import { survivalUnder } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
 import { factsOf, type ReviewFacts } from '../facts/facts';
@@ -39,6 +42,8 @@ type Options = Readonly<{ isSetValued?: DocumentSetPropertyResolver }>;
 type Projection = Readonly<{
   carried?: Readonly<{ change: RootChange; from: readonly JsonNode[] }>;
   change: DocumentChange;
+  /** The accepted document's index of each root `change` changes. */
+  indexes: ReadonlyMap<string, DocumentIndex>;
   value: JsonEditorValue;
 }>;
 type Run = Readonly<{
@@ -60,20 +65,20 @@ const withoutStruckChildren = (
         : node
     );
 
-const withoutStruck = (value: JsonEditorValue): JsonEditorValue => ({
-  ...value,
-  children: withoutStruckChildren(value.children),
-  ...(value.roots
-    ? {
-        roots: Object.fromEntries(
-          Object.entries(value.roots).map(([root, children]) => [
-            root,
-            withoutStruckChildren(children),
-          ])
-        ),
-      }
-    : {}),
-});
+const withoutStruck = (value: JsonEditorValue): JsonEditorValue =>
+  deriveValue(value, {
+    children: withoutStruckChildren(value.children),
+    ...(value.roots
+      ? {
+          roots: Object.fromEntries(
+            Object.entries(value.roots).map(([root, children]) => [
+              root,
+              withoutStruckChildren(children),
+            ])
+          ),
+        }
+      : {}),
+  });
 
 const UNSET_MARKS = Object.freeze([
   Object.freeze({ key: AUTHORED_MARKS_KEY, type: 'unset' as const }),
@@ -333,11 +338,11 @@ export const characterAlignedChange = (
         removed.fill(1, range.from, range.to);
         return;
       }
-      if (settledBy.joins(node)) {
+      // A join lands in the block before it inside the same container, so
+      // the first block of one keeps its open.
+      if (settledBy.joins(node) && previous !== null) {
         removed[range.from] = 1;
-        if (previous !== null) {
-          dropCloses(nodes[previous], [...path, previous]);
-        }
+        dropCloses(nodes[previous], [...path, previous]);
       }
       previous = index;
       collect(node.children ?? [], at);
@@ -492,10 +497,12 @@ export const structuralAcceptedChange = (
   return change && createInternalDocumentChange(new Map([['main', change]]));
 };
 
-// The change from a stored run to its accepted form: structural when the
-// walk reproduces the resolver, else aligned by characters, else two diffs,
-// struck nodes first, so a kept leaf stays aligned.
-const acceptedChange = (
+/**
+ * The change from a stored document to its accepted form: structural when the walk
+ * reproduces the resolver, else aligned by characters, else two diffs, struck
+ * nodes first, so a kept leaf stays aligned.
+ */
+export const acceptedChange = (
   stored: JsonEditorValue,
   accepted: JsonEditorValue,
   options: Options
@@ -523,7 +530,18 @@ const projectWhole = (
   );
   const change = acceptedChange(stored, accepted, options);
 
-  return change.empty ? null : { change, value: accepted };
+  return change.empty
+    ? null
+    : {
+        change,
+        indexes: new Map(
+          [...getInternalDocumentChangeEntries(change)].map(([root]) => [
+            root,
+            DocumentIndex.fromValue(valueRoot(accepted, root)),
+          ])
+        ),
+        value: accepted,
+      };
 };
 
 // A block with no marks anywhere in it: reading its few properties is cheaper
@@ -947,7 +965,10 @@ export const createCommandProjector = (
       state.change && {
         carried: state.carried,
         change: state.change,
-        value: Object.freeze({ ...stored, children: state.accepted.value }),
+        indexes: new Map([['main', state.accepted]]),
+        value: Object.freeze(
+          deriveValue(stored, { children: state.accepted.value })
+        ),
       }
     );
   };

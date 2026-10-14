@@ -168,9 +168,13 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
                     return;
                   }
 
+                  // A replacement that names no records keeps the
+                  // editor's.
+                  const { records: _records, ...content } = before;
+
                   tx.value.replace({
-                    ...before,
-                    roots: { ...before.roots, [root]: children },
+                    ...content,
+                    roots: { ...content.roots, [root]: children },
                     selection: readEditorSelection(owner),
                   });
                 });

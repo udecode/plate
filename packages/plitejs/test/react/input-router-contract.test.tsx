@@ -646,7 +646,7 @@ test('material beforeinput commands bypass direct DOM repair at the mounted sele
       }),
     ],
     initialValue,
-    selection: {
+    initialSelection: {
       kind: 'text',
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },

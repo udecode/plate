@@ -180,7 +180,7 @@ export type {
 } from 'plitejs/internal';
 
 export type { AnyEditor as RuntimeAnyEditor } from 'plitejs/internal';
-export { isMetadataRootKey, normalizeSetValues } from 'plitejs/internal';
+export { normalizeSetValues } from 'plitejs/internal';
 export type {
   EditorDirectUpdate,
   EditorGenericMethod,

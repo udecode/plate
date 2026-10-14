@@ -17,9 +17,9 @@ import type {
   EditorCommitContext,
   EditorCommitHandler,
   EditorCommand,
-  EditorCommandPlace,
   EditorCoreStateView,
   EditorCoreUpdateTransaction,
+  EditorDocumentRecords,
   EditorDocumentValue,
   EditorEffect,
   EditorEffectType,
@@ -172,32 +172,39 @@ import {
   getDocumentChangeTopLevelRanges,
 } from './change/classification';
 import {
+  createInternalDocumentChange,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
   DocumentChange,
   valueRoot,
+  valueRootIndex,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import { DocumentIndex, type NodeList } from './change/document-index';
+import {
+  copyFields,
+  copyRoot,
+  lazyRootOf,
+  setLazyRoot,
+} from './change/lazy-root';
 import type { RootChange } from './change/root-change';
-import type {
-  JsonEditorValue,
-  JsonToken,
-  PreparedTokenSlice,
-} from './change/tokens';
+import type { JsonEditorValue, PreparedTokenSlice } from './change/tokens';
 import {
   cloneFrozen,
   cloneValue,
   freezeOwnedJsonValue,
   isImmutable,
 } from './clone';
+import { getEditorCommandDocument } from './command-document';
 import {
-  type EditorDocumentState,
-  getEditorCommandDocument,
-} from './command-document';
+  COMMAND_FRAMES,
+  FRAMED_SPECS,
+  frameUpdateMethods,
+  runInEditorCommandFrame,
+} from './command-frame';
 import { createEditorCommit } from './commit';
 import { isEditorContent } from './content';
-import { isInRemovedContent, landTextWrite, nodeAt } from './content-landing';
+import { landTextWrite } from './content-landing';
 import { ContentSlice } from './content-slice';
 import { rewriteContentRootReferences } from './content-slice-roots';
 import {
@@ -259,7 +266,6 @@ import { PLUGIN_UPDATE_ORIGIN } from './plugin-dispatch';
 import {
   assertPluginPublicationInactive,
   type PluginRegistry,
-  getCompiledEditorSchema,
   getPluginContributions,
   getPluginRegistry,
   hasChangeListeners as hasPluginChangeListeners,
@@ -276,16 +282,27 @@ import {
   toPublicRoot,
   usesImplicitSelectionLocation,
 } from './public-root';
+import {
+  deriveValue,
+  EMPTY_RECORD_STORE,
+  getValueRecords,
+  recordDrop,
+  recordOpsBetween,
+  recordPut,
+  recordPutsOf,
+  type RecordStore,
+  recordStoreFromJson,
+  recordStoreToJson,
+  showValueRecords,
+  withValueRecords,
+} from './record-store';
 import { EditorRefusalError, publishEditorRefusal } from './refusal';
 import {
   canonicalizeRootChildren,
   constructCanonicalDocumentChange,
   getProtectedInlineSpacerEntries,
 } from './representation';
-import {
-  areEditorSchemaIdentitiesEqual,
-  getEditorSchemaIdentityWithoutMetadataRoots,
-} from './schema-compiler';
+import { areEditorSchemaIdentitiesEqual } from './schema-compiler';
 import {
   EditorNoncanonicalChangeError,
   EditorSchemaValidationError,
@@ -329,11 +346,7 @@ import {
   defineUpdateAnnotation,
   mapEffect,
 } from './transaction-values';
-import {
-  copyTxMethodMarkers,
-  getTxMethodLocate,
-  isTxOnlyMethod,
-} from './tx-only';
+import { copyTxMethodMarkers, isTxOnlyMethod } from './tx-only';
 import {
   getCurrentUpdateTags,
   popUpdateTagContext,
@@ -427,6 +440,8 @@ type TransactionSnapshot = {
   previousVersion: number;
   protectedInlineSpacerPaths: Map<string, Path[]>;
   reason: 'replace' | null;
+  /** The records the transaction started from. */
+  records: RecordStore;
   runtimeIndexRollbacks: Map<SnapshotIndex, () => void>;
   selection: Selection;
   selectionRoot: string;
@@ -459,7 +474,7 @@ type MaterializedAfterCommitHandler = {
   handler: EditorCommitHandler<Editor>;
 };
 
-const CHILDREN = new WeakMap<Editor, readonly Descendant[]>();
+const CHILDREN = new WeakMap<Editor, ChildrenSource>();
 export const documentReplacement = defineUpdateAnnotation<boolean>({
   key: 'document.replace',
 });
@@ -470,6 +485,13 @@ const ROOTS = new WeakMap<
 const DOCUMENT_STATE = new WeakMap<
   Editor,
   Record<string, unknown> | undefined
+>();
+const RECORDS = new WeakMap<Editor, RecordStore>();
+// Each editor memoizes its latest store's JSON, so two editors reading in turn
+// never rebuild each other's.
+const RECORDS_JSON = new WeakMap<
+  Editor,
+  Readonly<{ json: EditorDocumentRecords; store: RecordStore }>
 >();
 const EDITOR_COMPOSING = new WeakMap<AnyPluginEditor, boolean>();
 const EDITOR_FOCUSED = new WeakMap<AnyPluginEditor, boolean>();
@@ -524,7 +546,7 @@ export const hasEditorProjectionSnapshotIndex = (
   children: readonly Descendant[]
 ) => projectionIndexes(editor).has(children);
 
-const advanceSnapshotIndex = (
+export const advanceSnapshotIndex = (
   owner: Editor,
   beforeDocument: DocumentIndex,
   afterDocument: DocumentIndex,
@@ -759,7 +781,7 @@ export const setEditorStateViewTransform = (
   };
 };
 
-type TransactionSpecContext = {
+export type TransactionSpecContext = {
   activeChildrenRoot?: string;
   activeUpdateRoot?: string;
   baseDraftEpoch: number;
@@ -854,7 +876,7 @@ export const recordEditorHistoryReplayReceipt = (
 export const readEditorHistoryReplayReceipt = (result: object) =>
   EDITOR_HISTORY_REPLAY_RECEIPTS.get(result);
 
-const getTransactionSpecContext = (editor: Editor) =>
+export const getTransactionSpecContext = (editor: Editor) =>
   TRANSACTION_SPEC_CONTEXTS.get(editor)?.at(-1);
 
 const getReadProjection = (editor: Editor) => {
@@ -927,7 +949,7 @@ const withContextsBelow = <T>(
   }
 };
 
-const getTransactionSnapshot = (editor: Editor) =>
+export const getTransactionSnapshot = (editor: Editor) =>
   getTransactionSpecContext(editor)?.snapshot;
 
 /**
@@ -1294,9 +1316,8 @@ const RECORDING_FRONTIERS = new WeakMap<
   TransactionSnapshot,
   RecordingFrontier
 >();
-const COMMAND_FRAMES = new WeakSet<Editor>();
 
-type RecordedDraft = NonNullable<ReturnType<EditorDocumentRecorder>>;
+export type RecordedDraft = NonNullable<ReturnType<EditorDocumentRecorder>>;
 
 /** The draft commands wrote: `change` maps `before` to the builder's value. */
 type PlainDraft = Readonly<{
@@ -1333,7 +1354,7 @@ const carryDraftNodeKeys = (
   for (const [root, rootChange] of getInternalDocumentChangeEntries(
     plain.change
   )) {
-    const after = DocumentIndex.fromValue(valueRoot(written, root));
+    const after = valueRootIndex(written, root);
     let draft: SnapshotIndex | null = null;
 
     rootChange.iterChangedRanges((fromA, toA, from, to) => {
@@ -1390,7 +1411,7 @@ const carryDraftNodeKeys = (
   }
 };
 
-const commitRecordedDraft = (
+export const commitRecordedDraft = (
   editor: Editor,
   context: TransactionSpecContext,
   recorded: RecordedDraft,
@@ -1427,7 +1448,7 @@ const commitRecordedDraft = (
   context.exitAnchorScope();
   context.exitAnchorScope = enterAnchorScope(
     editor,
-    getChangeValue(snapshot.roots) as EditorDocumentValue
+    getChangeValue(snapshot.roots, snapshot.records) as EditorDocumentValue
   );
   for (const restore of snapshot.runtimeIndexRollbacks.values()) restore();
   snapshot.runtimeIndexRollbacks.clear();
@@ -1435,7 +1456,7 @@ const commitRecordedDraft = (
   snapshot.discardedNodeKeys.clear();
   snapshot.builder = createEditorDocumentChangeBuilder(
     editor,
-    getChangeValue(snapshot.roots),
+    getChangeValue(snapshot.roots, snapshot.records),
     snapshot.builderValidation ? { validation: snapshot.builderValidation } : {}
   );
   snapshot.activeChange = { change: snapshot.builder.change };
@@ -1482,7 +1503,7 @@ const composeDraftSteps = (steps: readonly DraftStep[]) =>
     DocumentChange.empty
   );
 
-const runEditorDocumentRecorder = (editor: Editor) => {
+export const runEditorDocumentRecorder = (editor: Editor) => {
   const context = getTransactionSpecContext(editor);
   const snapshot = context?.snapshot;
 
@@ -1506,7 +1527,7 @@ const runEditorDocumentRecorder = (editor: Editor) => {
   const plain: PlainDraft = {
     before:
       frontier?.value ??
-      (getChangeValue(snapshot.roots) as EditorDocumentValue),
+      (getChangeValue(snapshot.roots, snapshot.records) as EditorDocumentValue),
     change: frontier ? composeDraftSteps(steps) : snapshot.activeChange.change,
   };
   const recorded = recorder({
@@ -1537,7 +1558,10 @@ const admitTransactionDraft = (editor: Editor) => {
 
   if (!admission) return;
 
-  let before = getChangeValue(snapshot.roots) as EditorDocumentValue;
+  let before = getChangeValue(
+    snapshot.roots,
+    snapshot.records
+  ) as EditorDocumentValue;
   let { change } = snapshot.activeChange;
 
   for (let pass = 0; ; pass += 1) {
@@ -1573,667 +1597,6 @@ const admitTransactionDraft = (editor: Editor) => {
     snapshot.admissionRepair =
       snapshot.admissionRepair?.compose(change) ?? change;
   }
-};
-
-const FRAMED_SPECS = new WeakMap<TransactionSpec, readonly Descendant[]>();
-
-/**
- * Locates a command's input before its frame opens, while reads still see the
- * stored document, and returns what runs in the frame.
- *
- * @internal
- */
-export type EditorFrameBody<T> = (place: EditorCommandPlace) => () => T;
-
-/** @internal */
-export const evaluateInEditorCommandFrame = <
-  T extends { result: TransactionSpec | false },
->(
-  editor: Editor,
-  body: EditorFrameBody<T>
-): T | null => {
-  if (getTransactionSpecContext(editor)) return null;
-  const probed = probeInEditorCommandFrame(editor, body);
-
-  if (!probed) return null;
-  if (probed.value.result !== false) {
-    FRAMED_SPECS.set(probed.value.result, probed.stored.children);
-  }
-
-  return probed.value;
-};
-
-/** @internal */
-export const probeInEditorCommandFrame = <T>(
-  editor: Editor,
-  body: EditorFrameBody<T>
-): Readonly<{
-  moved: boolean;
-  stored: EditorDocumentValue;
-  value: T;
-}> | null => {
-  const document = getEditorCommandDocument(editor);
-
-  if (!document || COMMAND_FRAMES.has(editor)) return null;
-
-  const stored = (getTransactionSnapshot(editor)?.builder.value ??
-    getEditorDocumentValue(editor)) as EditorDocumentValue;
-  const projected = document.project(stored);
-
-  if (!projected) return null;
-
-  const storedSelection = getCurrentSelection(editor);
-  const selectionRoot = getCurrentSelectionRoot(editor);
-  const root = storedSelection
-    ? (SelectionApi.root(storedSelection) ?? selectionRoot)
-    : selectionRoot;
-  const rootChange = getInternalDocumentRootChange(projected.change, root);
-  const index = DocumentIndex.fromValue(valueRoot(stored, root));
-  // A point strictly inside content the projection removes has no place in
-  // the frame, so a write there lands elsewhere.
-  const insideRemoved = (point: Point) => {
-    if (!rootChange) return false;
-    const position = index.positionAt(point);
-    let before = 0;
-
-    for (let pair = 0; pair < rootChange.sections.length; pair += 2) {
-      const length = getDefined(rootChange.sections[pair]);
-      const inserted = getDefined(rootChange.sections[pair + 1]);
-
-      if (inserted >= 0 && before < position && position < before + length) {
-        return true;
-      }
-      before += length;
-      if (before > position) return false;
-    }
-
-    return false;
-  };
-  const moved =
-    storedSelection?.kind === 'text' &&
-    (insideRemoved(storedSelection.anchor) ||
-      insideRemoved(storedSelection.focus));
-  const placed = createFramePlace(
-    editor,
-    projected.change,
-    stored,
-    projected.value,
-    selectionRoot
-  );
-  const selection = placed.selection(storedSelection);
-  const evaluate = body(placed.place);
-  const frame = createTransactionSpecContext(editor);
-  const { snapshot } = frame;
-
-  COMMAND_FRAMES.add(editor);
-  try {
-    enterFrameDraft(
-      editor,
-      frame,
-      stored,
-      projected,
-      snapshot.baseRuntimeIndexes[MAIN_ROOT_KEY],
-      selection
-    );
-    snapshot.implicitTarget = null;
-    snapshot.implicitTargetResolved = false;
-    snapshot.implicitTargetFrame = {
-      context: frame,
-      storedSelection,
-      toFrame: placed.selection,
-    };
-
-    return {
-      moved,
-      stored,
-      value: withTransactionSpecDraftRead(editor, evaluate),
-    };
-  } finally {
-    COMMAND_FRAMES.delete(editor);
-    disposeTransactionSpecContext(editor, frame);
-  }
-};
-
-/** @internal */
-export const runSelectionOnlyInEditorUpdate = <T>(
-  editor: Editor,
-  declaration: string,
-  run: () => T
-) => {
-  const before = getTransactionSnapshot(editor)?.builder.value;
-  const applied = run();
-
-  if (getTransactionSnapshot(editor)?.builder.value !== before) {
-    throw new Error(`${declaration}, so it cannot change content.`);
-  }
-
-  return applied;
-};
-
-const frameUpdateMethods = (
-  editor: Editor,
-  groupName: string,
-  value: unknown,
-  path: readonly string[] = []
-): unknown => {
-  if (typeof value === 'function') {
-    // A tx-only method configures the update it runs in and writes no
-    // content, so it runs there instead of in the command document.
-    if (isTxOnlyMethod(value)) return value;
-
-    const method = value as (...args: unknown[]) => unknown;
-    const name = [groupName, ...path].join('.');
-    const framed = function (this: unknown, ...args: unknown[]) {
-      const locate = getTxMethodLocate(method);
-
-      if (locate === 'stored') return Reflect.apply(method, this, args);
-      if (locate === 'selection') {
-        return runSelectionOnlyInEditorUpdate(
-          editor,
-          `Plugin method "${name}" declares txSelection`,
-          () => Reflect.apply(method, this, args)
-        );
-      }
-
-      if (locate === undefined && args.some((arg) => arg !== undefined)) {
-        throw new Error(
-          `Plugin method "${name}" takes arguments, so it must declare txLocate while a command document is registered.`
-        );
-      }
-
-      let result: unknown;
-      const ran = runInEditorCommandFrame(editor, (place) => {
-        const located = locate ? locate(args, place) : args;
-
-        return () => {
-          if (located === null) return false;
-
-          let owner: unknown = (
-            getUpdateView(editor) as unknown as Record<string, unknown>
-          )[groupName];
-          let member = owner;
-
-          for (const key of path) {
-            owner = member;
-            member = (member as Record<string, unknown>)[key];
-          }
-          result = Reflect.apply(
-            member as (...args: unknown[]) => unknown,
-            owner,
-            located
-          );
-
-          return true;
-        };
-      });
-
-      return ran === null ? Reflect.apply(method, this, args) : result;
-    };
-
-    copyTxMethodMarkers(method, framed);
-
-    return Object.assign(
-      framed,
-      frameUpdateMembers(editor, groupName, method, path)
-    );
-  }
-  if (value && typeof value === 'object') {
-    return frameUpdateMembers(editor, groupName, value, path);
-  }
-
-  return value;
-};
-
-const frameUpdateMembers = (
-  editor: Editor,
-  groupName: string,
-  members: object,
-  path: readonly string[]
-) =>
-  Object.fromEntries(
-    Object.entries(members).map(([key, member]) => [
-      key,
-      frameUpdateMethods(editor, groupName, member, [...path, key]),
-    ])
-  );
-
-const LAST_FRAME_INDEXES = new WeakMap<
-  Editor,
-  Readonly<{ children: readonly Descendant[]; index: SnapshotIndex }>
->();
-
-const enterFrameDraft = (
-  editor: Editor,
-  frame: TransactionSpecContext,
-  stored: EditorDocumentValue,
-  projected: Readonly<{
-    carried?: Readonly<{
-      change: RootChange;
-      from: EditorDocumentValue['children'];
-    }>;
-    change: DocumentChange;
-    value: EditorDocumentValue;
-  }>,
-  storedIndex: (() => SnapshotIndex) | undefined,
-  selection: Selection
-) => {
-  const { snapshot } = frame;
-  const projectedRoot = getInternalDocumentRootChange(
-    projected.change,
-    MAIN_ROOT_KEY
-  );
-
-  snapshot.roots = {
-    [MAIN_ROOT_KEY]: projected.value.children,
-    ...projected.value.roots,
-  };
-  snapshot.rootIndexes = {};
-  snapshot.baseRuntimeIndexes = {};
-  snapshot.baseSnapshots = {};
-  if (storedIndex && projectedRoot) {
-    let mapped: SnapshotIndex | undefined;
-
-    snapshot.baseRuntimeIndexes[MAIN_ROOT_KEY] = () => {
-      if (mapped) return mapped;
-
-      const { carried } = projected;
-      const last = LAST_FRAME_INDEXES.get(editor);
-      const { children } = projected.value;
-
-      mapped =
-        carried && last?.children === carried.from
-          ? advanceSnapshotIndex(
-              editor,
-              DocumentIndex.fromValue(carried.from),
-              DocumentIndex.fromValue(children),
-              carried.change,
-              last.index,
-              { binding: 'inherited' }
-            )
-          : mapSnapshotIndexThroughChange(
-              DocumentIndex.fromValue(valueRoot(stored, MAIN_ROOT_KEY)),
-              DocumentIndex.fromValue(children),
-              projectedRoot,
-              storedIndex(),
-              editor,
-              new Set(),
-              undefined,
-              'inherited'
-            );
-      LAST_FRAME_INDEXES.set(editor, { children, index: mapped });
-
-      return mapped;
-    };
-  }
-  // The accept-all projection of a valid review tree is valid, so the frame
-  // adopts it as its validated baseline.
-  getEditorSchema(editor).adoptDocumentBaseline(projected.value);
-  snapshot.builder = createEditorDocumentChangeBuilder(editor, projected.value);
-  snapshot.activeChange = { change: snapshot.builder.change };
-  frame.selection = selection;
-  snapshot.selection = selection;
-  frame.exitAnchorScope();
-  frame.exitAnchorScope = enterAnchorScope(editor, projected.value);
-};
-
-/**
- * Where stored locations land in a frame. A point first lands where a text
- * write lands, then maps. A range places its start forward and its end
- * backward, so stored content at its edges stays out; ends that cross collapse
- * to where the caret would go. A path keeps its node, or has no place when the
- * projection removes it. A location without a root addresses the update's
- * root, and a selection without one its own root.
- */
-const createFramePlace = (
-  editor: Editor,
-  change: DocumentChange,
-  stored: EditorDocumentValue,
-  projected: EditorDocumentValue,
-  selectionRoot: string
-) => {
-  const locationRoot = getEditorUpdateRoot(editor);
-  const map = (selection: Selection, fallbackRoot: string) =>
-    mapSelectionThroughChange(
-      editor,
-      selection,
-      change,
-      stored,
-      projected,
-      fallbackRoot
-    );
-  // A stored point maps to a position in the frame. One at a line's edge,
-  // beside a leaf, reads on that leaf, so a point beside hidden content at
-  // the edge stays on its line.
-  const toFrame = (
-    point: Point,
-    root: string,
-    assoc: -1 | 1,
-    mapAssoc: -1 | 1 = assoc
-  ) => {
-    const position = change.mapPosition(
-      DocumentIndex.fromValue(valueRoot(stored, root)).positionAt(point),
-      {
-        association: mapAssoc < 0 ? 'backward' : 'forward',
-        ...(root === MAIN_ROOT_KEY ? {} : { root }),
-      }
-    );
-
-    if (position === null) return null;
-
-    const after = DocumentIndex.fromValue(valueRoot(projected, root));
-    const [next] =
-      position < after.length ? after.slice(position, position + 1).tokens : [];
-    const [previous] =
-      position > 0 ? after.slice(position - 1, position).tokens : [];
-    const isElement = (token: JsonToken | undefined, kind: 'close' | 'open') =>
-      token?.kind === kind && token.nodeKind === 'element';
-    const side =
-      isElement(next, 'close') &&
-      previous?.kind !== 'open' &&
-      !isElement(previous, 'close')
-        ? -1
-        : isElement(previous, 'open') &&
-            next?.kind !== 'close' &&
-            !isElement(next, 'open')
-          ? 1
-          : assoc;
-    const placed = after.pointAt(position, side);
-
-    return (
-      placed && { ...point, offset: placed.offset, path: [...placed.path] }
-    );
-  };
-  // A caret no surviving line can take, as in a container whose every line
-  // is gone, stays in what replaces its line, such as the line completion
-  // gives that container.
-  const caret = (point: Point, fallbackRoot: string) => {
-    const root = point.root ?? fallbackRoot;
-    const document = valueRoot(stored, root);
-    const landed = landTextWrite(editor, point, document);
-
-    return toFrame(
-      landed,
-      root,
-      1,
-      isInRemovedContent(editor, landed, document) ? -1 : 1
-    );
-  };
-  const span = (range: Range, fallbackRoot: string) => {
-    const collapsed = (point: Point) => {
-      const placed = caret(point, fallbackRoot);
-
-      return placed && { anchor: placed, focus: placed };
-    };
-
-    if (PointApi.equals(range.anchor, range.focus)) {
-      return collapsed(range.anchor);
-    }
-
-    const root = SelectionApi.root(range) ?? fallbackRoot;
-    const backward = RangeApi.isBackward(range);
-    const [start, end] = backward
-      ? [range.focus, range.anchor]
-      : [range.anchor, range.focus];
-    const from = toFrame(start, root, 1);
-    const to = toFrame(end, root, -1);
-
-    if (!from || !to || PointApi.compare(from, to) >= 0) {
-      return collapsed(start);
-    }
-
-    const [anchor, focus] = backward ? [to, from] : [from, to];
-
-    return {
-      anchor: {
-        ...range.anchor,
-        offset: anchor.offset,
-        path: [...anchor.path],
-      },
-      focus: { ...range.focus, offset: focus.offset, path: [...focus.path] },
-    };
-  };
-
-  const path = (at: Path): Path | null => {
-    if (at.length === 0) return at;
-
-    const mapped = map(SelectionApi.nodes([at]), locationRoot);
-
-    if (mapped?.kind === 'node') return getDefined(mapped.paths[0]);
-
-    const parentPath = at.slice(0, -1);
-    const childCount = (value: EditorDocumentValue, parent: Path) => {
-      const children = valueRoot(value, locationRoot);
-
-      if (parent.length === 0) return children.length;
-
-      const node = nodeAt(children, parent);
-
-      return node && !NodeApi.isText(node) ? node.children.length : null;
-    };
-
-    if (at.at(-1) !== childCount(stored, parentPath)) return null;
-
-    const placed = path(parentPath);
-    const count = placed && childCount(projected, placed);
-
-    return placed && count !== null ? [...placed, count] : null;
-  };
-
-  function location<T extends NodeTarget | NodeSelection | Span>(
-    at: T
-  ): T | null;
-  function location(
-    at: NodeTarget | NodeSelection | Span
-  ): NodeTarget | NodeSelection | Span | null {
-    if (SelectionApi.isNode(at)) {
-      const mapped = map(at, locationRoot);
-
-      return mapped?.kind === 'node' ? mapped : null;
-    }
-    if (PointApi.isPoint(at)) return caret(at, locationRoot);
-    if (LocationApi.isSpan(at)) {
-      const from = path(at[0]);
-      const to = path(at[1]);
-
-      return from && to && [from, to];
-    }
-    if (RangeApi.isRange(at)) {
-      const placed = span(at, locationRoot);
-
-      return placed && { ...at, ...placed };
-    }
-
-    const resolved = resolveNodeTargetLocation(editor, at);
-    const placed = resolved && PathApi.isPath(resolved) ? path(resolved) : null;
-
-    return placed && (typeof at === 'string' || NodeApi.isDescendant(at))
-      ? at
-      : placed;
-  }
-
-  const place: EditorCommandPlace = Object.freeze({ location });
-
-  return Object.freeze({
-    place,
-    selection: (selection: Selection): Selection => {
-      if (selection?.kind !== 'text') return map(selection, selectionRoot);
-
-      const placed = span(selection, selectionRoot);
-
-      return placed && { ...selection, ...placed };
-    },
-  });
-};
-
-/** @internal */
-export const runInEditorCommandFrame = (
-  editor: Editor,
-  body: EditorFrameBody<boolean>,
-  framedOn?: readonly Descendant[]
-): boolean | null => {
-  const document = getEditorCommandDocument(editor);
-  const recorder = getEditorDocumentRecorder(editor);
-  const outer = getTransactionSpecContext(editor);
-
-  if (
-    !document ||
-    !recorder ||
-    outer?.kind !== 'update' ||
-    COMMAND_FRAMES.has(editor)
-  ) {
-    return null;
-  }
-  runEditorDocumentRecorder(editor);
-
-  const stored = outer.snapshot.builder.value as EditorDocumentValue;
-
-  if (framedOn && stored.children !== framedOn) {
-    throw new Error('Cannot apply a stale framed spec.');
-  }
-  const projected = document.project(stored);
-
-  if (!projected) return null;
-
-  const placed = createFramePlace(
-    editor,
-    projected.change,
-    stored,
-    projected.value,
-    outer.selectionRoot
-  );
-  const selection = placed.selection(outer.selection);
-  const target = outer.snapshot.implicitTarget
-    ? placed.selection(outer.snapshot.implicitTarget)
-    : null;
-  const run = body(placed.place);
-  const frame = createTransactionSpecContext(editor);
-  const { snapshot } = frame;
-  let recorded: RecordedDraft | null = null;
-  let written: EditorDocumentState | null = null;
-
-  COMMAND_FRAMES.add(editor);
-  try {
-    const outerIndex =
-      outer.snapshot.rootIndexes[MAIN_ROOT_KEY] ??
-      outer.snapshot.baseRuntimeIndexes[MAIN_ROOT_KEY]?.() ??
-      (outer.snapshot.childrenRoot === MAIN_ROOT_KEY
-        ? outer.snapshot.previousSnapshot?.index
-        : undefined);
-
-    enterFrameDraft(
-      editor,
-      frame,
-      stored,
-      projected,
-      outerIndex && (() => outerIndex),
-      selection
-    );
-    if (snapshot.implicitTargetResolved) {
-      snapshot.implicitTarget = target;
-    } else {
-      snapshot.implicitTargetFrame = {
-        context: frame,
-        storedSelection: outer.selection,
-        toFrame: placed.selection,
-      };
-    }
-
-    if (!withTransactionSpecDraftRead(editor, run)) return false;
-    finalizeTransactionRepresentation(editor);
-    const change = projected.change.compose(snapshot.builder.change);
-
-    runEditorDraftGuards(
-      editor,
-      'plain',
-      snapshot.builder.value as EditorDocumentValue,
-      { change, stored }
-    );
-
-    if (!snapshot.builder.change.empty || frame.selectionWritten) {
-      recorded = recorder({
-        after: snapshot.builder.value as EditorDocumentValue,
-        before: stored,
-        change,
-        framed: true,
-        selection: frame.selection,
-        selectionBefore: outer.selection,
-        selectionBeforeRoot: outer.selectionRoot,
-        selectionRoot: frame.selectionRoot,
-        steps: [
-          {
-            indexedAfter: new Map(
-              [...getInternalDocumentChangeEntries(projected.change)].map(
-                ([root]) => [
-                  root,
-                  DocumentIndex.fromValue(
-                    getDocumentRootChildren(projected.value, root)
-                  ),
-                ]
-              )
-            ),
-            change: projected.change,
-            move: null,
-            origin: 'canonical',
-            source: 'command',
-          },
-          ...snapshot.builder.draftSteps,
-        ],
-        tags: getActiveEditorUpdateTags(editor),
-        update: outer.id,
-      });
-      if (!recorded) {
-        throw new Error('A command frame needs a recorder that records it.');
-      }
-      written = {
-        selection: frame.selection,
-        value: snapshot.builder.value as EditorDocumentValue,
-      };
-    }
-    // Effects name places in the frame's document, so they map to the
-    // document the update commits. The state they reduced, like any state the
-    // frame wrote, carries over as written.
-    if (snapshot.effects.length > 0) {
-      const out = change.invert(stored);
-      const toStored = recorded ? out.compose(recorded.change) : out;
-
-      for (const effect of snapshot.effects) {
-        const mapped = mapEffect(effect, toStored);
-
-        if (mapped) outer.snapshot.effects.push(mapped);
-      }
-      outer.changed = true;
-    }
-    if (snapshot.dirtyStateKeys.size > 0) {
-      outer.documentState = frame.documentState;
-      for (const key of snapshot.dirtyStateKeys) {
-        outer.snapshot.dirtyStateKeys.add(key);
-      }
-      outer.changed = true;
-    }
-    outer.snapshot.afterCommitHandlers.push(...snapshot.afterCommitHandlers);
-    for (const [key, entry] of snapshot.annotations) {
-      outer.snapshot.annotations.set(key, entry);
-    }
-    for (const tag of snapshot.tags) outer.snapshot.tags.add(tag);
-  } finally {
-    COMMAND_FRAMES.delete(editor);
-    disposeTransactionSpecContext(editor, frame);
-  }
-  if (!recorded) return true;
-  commitRecordedDraft(editor, outer, recorded, frame.selectionRoot);
-  outer.changed = true;
-  if (written) {
-    document.checkRecorded?.({
-      frame: written,
-      root: frame.selectionRoot,
-      stored: {
-        selection: outer.selection,
-        value: outer.snapshot.builder.value as EditorDocumentValue,
-      },
-    });
-  }
-
-  return true;
 };
 
 /** Reject an external side effect while an editor transaction is speculative. */
@@ -2351,23 +1714,81 @@ const initializeVersionState = (editor: Editor) => {
   setSnapshotVersion(editor, 0);
 };
 
+const getEditorRecordsJson = (editor: Editor, store: RecordStore) => {
+  const cached = RECORDS_JSON.get(editor);
+
+  if (cached?.store === store) return cached.json;
+
+  const json = recordStoreToJson(store);
+
+  RECORDS_JSON.set(editor, { json, store });
+
+  return json;
+};
+
+type ChildrenSource = DocumentIndex | readonly Descendant[];
+
+const EMPTY_CHILDREN: readonly Descendant[] = Object.freeze([]);
+
+const childrenOf = (source: ChildrenSource) =>
+  source instanceof DocumentIndex
+    ? (source.value as readonly Descendant[])
+    : source;
+
+const rootSourceOf = (
+  roots: Readonly<Record<string, readonly Descendant[]>>,
+  root: string
+): ChildrenSource => lazyRootOf(roots, root) ?? roots[root] ?? EMPTY_CHILDREN;
+
+const setRoot = (
+  target: Record<string, unknown>,
+  root: string,
+  source: ChildrenSource
+) => {
+  if (source instanceof DocumentIndex) setLazyRoot(target, root, source);
+  else target[root] = source;
+};
+
+const withRoot = (
+  roots: Readonly<Record<string, readonly Descendant[]>>,
+  root: string,
+  source: ChildrenSource
+): Readonly<Record<string, readonly Descendant[]>> => {
+  const next = copyFields({}, roots);
+
+  setRoot(next, root, source);
+
+  return next as Record<string, readonly Descendant[]>;
+};
+
+const rootsOfValue = (
+  value: JsonEditorValue
+): Readonly<Record<string, readonly Descendant[]>> => {
+  const roots: Record<string, readonly Descendant[]> = {};
+
+  copyRoot(roots, MAIN_ROOT_KEY, value, 'children');
+
+  return Object.assign(roots, value.roots);
+};
+
 const createEditorDocumentValue = <V extends Value>({
-  children,
+  editor,
   fields,
   meta,
+  records,
   roots,
 }: {
-  children: V;
+  editor: Editor;
   fields: ReadonlyMap<string, Pick<EditorStateField, 'persist' | 'serialize'>>;
   meta: Record<string, unknown> | undefined;
+  records: RecordStore;
   roots: Readonly<Record<string, readonly Descendant[]>>;
 }): EditorDocumentValue<V> => {
-  const mainChildren = (roots[MAIN_ROOT_KEY] ?? children) as unknown as V;
-  const extraRoots = Object.fromEntries(
-    Object.entries(roots)
-      .filter(([key]) => key !== MAIN_ROOT_KEY)
-      .map(([root, rootChildren]) => [root, rootChildren as unknown as V])
-  ) as Record<string, V>;
+  const extraRoots: Record<string, readonly Descendant[]> = {};
+
+  for (const root of Object.keys(roots)) {
+    if (root !== MAIN_ROOT_KEY) extraRoots[root] = roots[root];
+  }
   const persistentMetaKeys = Object.keys(meta ?? {}).filter((key) => {
     const field = fields.get(key);
 
@@ -2403,11 +1824,35 @@ const createEditorDocumentValue = <V extends Value>({
         return freezeOwnedJsonValue(result);
       })()
     : undefined;
-  return Object.freeze({
-    children: mainChildren,
-    ...(persistentMeta ? { meta: persistentMeta } : {}),
-    ...(hasExtraRoots ? { roots: Object.freeze(extraRoots) } : {}),
-  });
+  const value: Record<string, unknown> = {};
+
+  if (Object.hasOwn(roots, MAIN_ROOT_KEY)) {
+    copyRoot(value, 'children', roots, MAIN_ROOT_KEY);
+  } else {
+    value.children = Object.freeze([]);
+  }
+  if (persistentMeta) value.meta = persistentMeta;
+
+  showValueRecords(value, records, (store) =>
+    getEditorRecordsJson(editor, store)
+  );
+  if (hasExtraRoots) value.roots = Object.freeze(extraRoots);
+
+  return Object.freeze(value) as EditorDocumentValue<V>;
+};
+
+/**
+ * The records of the document `editor` reads: its transaction draft's, or its
+ * committed ones.
+ *
+ * @internal
+ */
+export const getEditorDocumentRecords = (editor: Editor): RecordStore => {
+  const context = getTransactionSpecContext(editor);
+
+  return context
+    ? getValueRecords(context.snapshot.builder.value)
+    : (RECORDS.get(editor) ?? EMPTY_RECORD_STORE);
 };
 
 const getCurrentChildrenRoot = (editor: Editor): string =>
@@ -2584,7 +2029,7 @@ const readNodePath = (
   return undefined;
 };
 
-const resolveNodeTargetLocation = (
+export const resolveNodeTargetLocation = (
   editor: Editor,
   target: NodeTarget
 ): Location | undefined => {
@@ -3334,34 +2779,45 @@ const hasTransactionNetChanges = (
   );
 };
 
-export const getChildren = <V extends Value>(editor: Editor<V>): V => {
+const getChildrenSource = (editor: Editor): ChildrenSource => {
   const projection = getReadProjection(editor);
   if (projection) {
     const root = getCurrentChildrenRoot(editor);
-    return (
-      root === MAIN_ROOT_KEY
-        ? projection.children
-        : (projection.roots?.[root] ?? [])
-    ) as V;
+    return root === MAIN_ROOT_KEY
+      ? projection.children
+      : (projection.roots?.[root] ?? EMPTY_CHILDREN);
   }
   const context = getTransactionSpecContext(editor);
 
   if (context) {
     const { value } = context.snapshot.builder;
-    const children =
-      context.currentChildrenRoot === MAIN_ROOT_KEY
-        ? value.children
-        : (value.roots?.[context.currentChildrenRoot] ?? []);
 
-    return children as V;
+    return context.currentChildrenRoot === MAIN_ROOT_KEY
+      ? (lazyRootOf(value, 'children') ??
+          (value.children as readonly Descendant[]))
+      : ((value.roots?.[context.currentChildrenRoot] as
+          | readonly Descendant[]
+          | undefined) ?? EMPTY_CHILDREN);
   }
 
-  const children = CHILDREN.get(editor);
-
-  if (children) return children as V;
-
-  return (editor.read?.children?.() ?? []) as V;
+  return getStoredChildrenSource(editor);
 };
+
+export const getChildren = <V extends Value>(editor: Editor<V>): V =>
+  childrenOf(getChildrenSource(editor)) as V;
+
+/** @internal */
+export const getChildList = (editor: Editor): NodeList<Descendant> => {
+  const source = getChildrenSource(editor);
+
+  return source instanceof DocumentIndex
+    ? (source.nodes as NodeList<Descendant>)
+    : source;
+};
+
+const getStoredChildrenSource = (editor: Editor): ChildrenSource =>
+  CHILDREN.get(editor) ??
+  ((editor.read?.children?.() ?? []) as readonly Descendant[]);
 
 export const getEditorDocumentRoots = (
   editor: Editor
@@ -3372,25 +2828,12 @@ export const getEditorDocumentRoots = (
   }
   const context = getTransactionSpecContext(editor);
 
-  if (context) {
-    const { value } = context.snapshot.builder;
+  if (context) return rootsOfValue(context.snapshot.builder.value);
 
-    return {
-      [MAIN_ROOT_KEY]: value.children as unknown as readonly Descendant[],
-      ...(value.roots as unknown as
-        | Readonly<Record<string, readonly Descendant[]>>
-        | undefined),
-    };
-  }
-
-  const children = getChildren(editor);
+  const children = getStoredChildrenSource(editor);
   const storedRoots = ROOTS.get(editor);
 
-  if (!storedRoots) {
-    return {
-      [MAIN_ROOT_KEY]: children,
-    };
-  }
+  if (!storedRoots) return withRoot({}, MAIN_ROOT_KEY, children);
 
   const currentRoot = getCurrentChildrenRoot(editor);
 
@@ -3398,12 +2841,9 @@ export const getEditorDocumentRoots = (
     return storedRoots;
   }
 
-  return storedRoots[currentRoot] === children
+  return rootSourceOf(storedRoots, currentRoot) === children
     ? storedRoots
-    : {
-        ...storedRoots,
-        [currentRoot]: children,
-      };
+    : withRoot(storedRoots, currentRoot, children);
 };
 
 export const getEditorDocumentValue = <V extends Value>(
@@ -3411,9 +2851,10 @@ export const getEditorDocumentValue = <V extends Value>(
 ): EditorDocumentValue<V> =>
   withEditorRootChildren(editor, MAIN_ROOT_KEY, () =>
     createEditorDocumentValue({
-      children: getChildren(editor),
+      editor,
       fields: getStateFieldIdentityMap(editor),
       meta: getDocumentState(editor),
+      records: getEditorDocumentRecords(editor),
       roots: getEditorDocumentRoots(editor),
     })
   );
@@ -3427,10 +2868,10 @@ export const getLiveNode = (
   }
 
   let node: PliteNode | undefined;
-  let children: readonly Descendant[] = getChildren(editor);
+  let children: NodeList<Descendant> = getChildList(editor);
 
   for (let index = 0; index < path.length; index += 1) {
-    node = children[path[index]];
+    node = children.at(path[index]);
 
     if (!node) {
       return undefined;
@@ -6053,7 +5494,7 @@ const getSpecSafeTransactionGroup = (value: unknown): unknown => {
   );
 };
 
-const getUpdateView = <
+export const getUpdateView = <
   V extends Value,
   TPlugins extends readonly unknown[] = readonly [],
 >(
@@ -7077,6 +6518,37 @@ const getUpdateView = <
           return getActiveDocumentChangeBuilder(editor).change !== before;
         }) ?? false,
     }),
+    records: Object.freeze({
+      drop: (set: string, id: string) => {
+        runActive(() => {
+          applyDocumentChange(
+            editor,
+            createInternalDocumentChange(new Map(), {
+              records: recordDrop(set, id),
+            })
+          );
+        });
+      },
+      put: (
+        set: string,
+        id: string,
+        record: Readonly<Record<string, unknown>>
+      ) => {
+        runActive(() => {
+          applyDocumentChange(
+            editor,
+            createInternalDocumentChange(new Map(), {
+              records: recordPut(
+                getEditorDocumentRecords(editor),
+                set,
+                id,
+                record
+              ),
+            })
+          );
+        });
+      },
+    }),
     roots: Object.freeze({
       create: (root, children) => {
         runActive(() => {
@@ -7598,7 +7070,7 @@ export const getActiveEditorTransaction = <
 export const isBuildingTransactionSpec = (editor: Editor) =>
   getTransactionSpecContext(editor)?.kind === 'spec';
 
-const createTransactionSpecContext = (editor: Editor) => {
+export const createTransactionSpecContext = (editor: Editor) => {
   const parent = getTransactionSpecContext(editor);
   const parentSnapshot = getTransactionSnapshot(editor);
   const activeChildrenRoot = getEditorChildrenRoot(editor);
@@ -7616,9 +7088,10 @@ const createTransactionSpecContext = (editor: Editor) => {
 
         return () => baseSnapshot.index;
       })();
+  const records = getEditorDocumentRecords(editor);
   const builder = parentSnapshot
     ? parentSnapshot.builder.fork({ validation: 'defer-to-parent' })
-    : createEditorDocumentChangeBuilder(editor, getChangeValue(roots));
+    : createEditorDocumentChangeBuilder(editor, getChangeValue(roots, records));
   const token = { active: true };
   const snapshot: TransactionSnapshot = {
     activeChange: { change: builder.change },
@@ -7646,6 +7119,7 @@ const createTransactionSpecContext = (editor: Editor) => {
       parentSnapshot?.protectedInlineSpacerPaths
     ),
     reason: null,
+    records,
     rootIndexes: {},
     roots,
     runtimeIndexRollbacks: new Map(),
@@ -7691,7 +7165,7 @@ const createTransactionSpecContext = (editor: Editor) => {
   return context;
 };
 
-const disposeTransactionSpecContext = (
+export const disposeTransactionSpecContext = (
   editor: Editor,
   context: TransactionSpecContext
 ) => {
@@ -7766,7 +7240,10 @@ const reconcileExclusiveElementOwnedRoots = (editor: Editor) => {
 
   if (!snapshot) return false;
   const schema: InternalEditorSchemaApi = getEditorSchema(editor);
-  const before = getChangeValue(snapshot.roots) as EditorDocumentValue;
+  const before = getChangeValue(
+    snapshot.roots,
+    snapshot.records
+  ) as EditorDocumentValue;
   const after = snapshot.builder.value as EditorDocumentValue;
   const { change } = snapshot.builder;
   const candidates = schema.getOrphanedElementOwnedRoots({
@@ -7912,13 +7389,11 @@ export const applyTransactionSpecToDocument = (
   if (!TRANSACTION_SPEC_DOCUMENT_STATES.has(spec)) return document;
 
   return createEditorDocumentValue({
-    children: document.children,
+    editor,
     fields: getStateFieldIdentityMap(editor),
     meta: TRANSACTION_SPEC_DOCUMENT_STATES.get(spec),
-    roots: {
-      [MAIN_ROOT_KEY]: document.children,
-      ...document.roots,
-    },
+    records: getValueRecords(document),
+    roots: rootsOfValue(document),
   });
 };
 
@@ -8455,22 +7930,21 @@ const enterEditorRootChildren = (
 
   const previousActiveChildrenRoot = ACTIVE_CHILDREN_ROOT.get(editor);
   const previousRoot = getCurrentChildrenRoot(editor);
-  const previousChildren = getChildren(editor);
+  const previousChildren = getStoredChildrenSource(editor);
   const previousRoots = getEditorDocumentRoots(editor);
-  const previousRootChildren = previousRoots[previousRoot];
 
   if (
     previousRoot === targetRoot &&
-    previousRootChildren === previousChildren
+    Object.hasOwn(previousRoots, previousRoot) &&
+    rootSourceOf(previousRoots, previousRoot) === previousChildren
   ) {
     return undefined;
   }
 
   const hadTargetRoot = Object.hasOwn(previousRoots, targetRoot);
-  const rootChildren = previousRoots[targetRoot] ?? [];
 
   ROOTS.set(editor, previousRoots);
-  CHILDREN.set(editor, rootChildren);
+  CHILDREN.set(editor, rootSourceOf(previousRoots, targetRoot));
   ACTIVE_CHILDREN_ROOT.set(editor, targetRoot);
   CURRENT_CHILDREN_ROOT.set(editor, targetRoot);
 
@@ -8480,10 +7954,7 @@ const enterEditorRootChildren = (
       hadTargetRoot || Object.hasOwn(currentRoots, targetRoot)
         ? getEditorDocumentRoots(editor)
         : previousRoots;
-    const restoreRoot = previousRoot;
-    const restoredChildren = nextRoots[restoreRoot] ?? [];
-
-    CHILDREN.set(editor, restoredChildren);
+    CHILDREN.set(editor, rootSourceOf(nextRoots, previousRoot));
     ROOTS.set(editor, nextRoots);
     CURRENT_CHILDREN_ROOT.set(editor, previousRoot);
     if (previousActiveChildrenRoot === undefined) {
@@ -9035,22 +8506,22 @@ export const getSnapshot = (editor: Editor): EditorSnapshot => {
     return cached;
   }
 
-  const liveChildren = getChildren(editor);
-  const children = isImmutable(liveChildren)
-    ? liveChildren
-    : cloneFrozen(liveChildren);
+  const live = getChildrenSource(editor);
+  const children =
+    live instanceof DocumentIndex || isImmutable(live)
+      ? live
+      : cloneFrozen(live);
   const selection = cloneFrozenEditorJsonValue(getCurrentSelection(editor));
   const owner = getEditorRuntimeOwner(editor);
   let index: SnapshotIndex | undefined;
-  const snapshot = {
-    children,
-    selection,
-    version: getVersion(editor),
-  };
+  const snapshot: Record<string, unknown> = {};
 
+  setRoot(snapshot, 'children', children);
+  snapshot.selection = selection;
+  snapshot.version = getVersion(editor);
   Object.defineProperty(snapshot, 'index', {
     enumerable: true,
-    get: () => (index ??= buildSnapshotIndex(owner, children)),
+    get: () => (index ??= buildSnapshotIndex(owner, childrenOf(children))),
   });
 
   const frozen = Object.freeze(snapshot) as unknown as EditorSnapshot;
@@ -9232,29 +8703,30 @@ const getCurrentRootSnapshot = (
   version = getVersion(editor)
 ): EditorSnapshot => {
   const owner = getEditorRuntimeOwner(editor);
-  const liveChildren = getEditorDocumentRoots(editor)[root] ?? [];
+  const live = rootSourceOf(getEditorDocumentRoots(editor), root);
   const selectionRoot = getCurrentSelectionRoot(editor);
-  const children = isImmutable(liveChildren)
-    ? liveChildren
-    : profileCoreDuration(
-        'snapshot-clone-children',
-        snapshotChildren.bind(undefined, owner, liveChildren, previousSnapshot)
-      );
-  const snapshot = {
-    children,
-    selection: getRootScopedSelection(
-      getCurrentSelection(editor),
-      selectionRoot,
-      root
-    ),
-    version,
-  };
-  DocumentIndex.fromValue(children);
+  const children =
+    live instanceof DocumentIndex || isImmutable(live)
+      ? live
+      : profileCoreDuration(
+          'snapshot-clone-children',
+          snapshotChildren.bind(undefined, owner, live, previousSnapshot)
+        );
+  const snapshot: Record<string, unknown> = {};
+
+  setRoot(snapshot, 'children', children);
+  snapshot.selection = getRootScopedSelection(
+    getCurrentSelection(editor),
+    selectionRoot,
+    root
+  );
+  snapshot.version = version;
+  if (!(children instanceof DocumentIndex)) DocumentIndex.fromValue(children);
   Object.defineProperty(snapshot, 'index', {
     enumerable: true,
     get: snapshotIndexReader(
       owner,
-      children,
+      () => childrenOf(children),
       knownIndex,
       knownIndex ? undefined : previousSnapshot
     ),
@@ -9265,7 +8737,7 @@ const getCurrentRootSnapshot = (
 
 const snapshotIndexReader = (
   owner: Editor,
-  children: readonly Descendant[],
+  children: () => readonly Descendant[],
   known: SnapshotIndex | undefined,
   previousSnapshot: EditorSnapshot | undefined
 ) => {
@@ -9274,7 +8746,7 @@ const snapshotIndexReader = (
 
   return () => {
     index ??= profileCoreDuration('snapshot-build-index', () => {
-      const builtIndex = buildSnapshotIndex(owner, children);
+      const builtIndex = buildSnapshotIndex(owner, children());
 
       return previous && snapshotIndexesEqual(previous.index, builtIndex)
         ? previous.index
@@ -9293,9 +8765,10 @@ const getListenerSnapshot = (
   withEditorRootChildren(editor, MAIN_ROOT_KEY, () => getSnapshot(editor));
 
 const CHANGE_VALUES = new WeakMap<
-  readonly Descendant[],
+  ChildrenSource,
   Array<
     Readonly<{
+      records: RecordStore;
       roots: ReadonlyArray<readonly [string, readonly Descendant[]]>;
       value: JsonEditorValue;
     }>
@@ -9303,14 +8776,17 @@ const CHANGE_VALUES = new WeakMap<
 >();
 
 const getChangeValue = (
-  roots: Readonly<Record<string, readonly Descendant[]>>
+  roots: Readonly<Record<string, readonly Descendant[]>>,
+  records: RecordStore
 ): JsonEditorValue => {
-  const children = roots[MAIN_ROOT_KEY] ?? [];
-  const rootEntries = Object.entries(roots)
-    .filter(([root]) => root !== MAIN_ROOT_KEY)
-    .sort(([left], [right]) => left.localeCompare(right));
-  const cached = CHANGE_VALUES.get(children)?.find(
+  const main = rootSourceOf(roots, MAIN_ROOT_KEY);
+  const rootEntries = Object.keys(roots)
+    .filter((root) => root !== MAIN_ROOT_KEY)
+    .sort((left, right) => left.localeCompare(right))
+    .map((root) => [root, roots[root]] as const);
+  const cached = CHANGE_VALUES.get(main)?.find(
     (entry) =>
+      entry.records === records &&
       entry.roots.length === rootEntries.length &&
       entry.roots.every(
         ([root, value], index) =>
@@ -9319,15 +8795,25 @@ const getChangeValue = (
   );
 
   if (cached) return cached.value;
-  const secondaryRoots = Object.freeze(Object.fromEntries(rootEntries));
-  const value = Object.freeze({
-    children,
-    ...(rootEntries.length > 0 ? { roots: secondaryRoots } : {}),
-  });
-  const entries = CHANGE_VALUES.get(children) ?? [];
+  const fields: Record<string, unknown> = {};
+
+  if (Object.hasOwn(roots, MAIN_ROOT_KEY)) {
+    copyRoot(fields, 'children', roots, MAIN_ROOT_KEY);
+  } else {
+    fields.children = EMPTY_CHILDREN;
+  }
+  if (rootEntries.length > 0) {
+    fields.roots = Object.freeze(Object.fromEntries(rootEntries));
+  }
+  const value = withValueRecords(
+    Object.freeze(fields) as JsonEditorValue,
+    records
+  );
+  const entries = CHANGE_VALUES.get(main) ?? [];
 
   entries.push(
     Object.freeze({
+      records,
       roots: Object.freeze(
         rootEntries.map(([root, rootChildren]) =>
           Object.freeze([root, rootChildren] as const)
@@ -9336,7 +8822,7 @@ const getChangeValue = (
       value,
     })
   );
-  CHANGE_VALUES.set(children, entries);
+  CHANGE_VALUES.set(main, entries);
 
   return value;
 };
@@ -9396,7 +8882,7 @@ const getProtectedInlineSpacerNodes = (
   return nodes;
 };
 
-const createEditorDocumentChangeBuilder = (
+export const createEditorDocumentChangeBuilder = (
   editor: Editor,
   value: JsonEditorValue,
   options: Readonly<{
@@ -9488,7 +8974,7 @@ const rebindTransactionBuilderToCurrentSchema = (
   const accumulated = snapshot.activeChange.change;
   const builder = createEditorDocumentChangeBuilder(
     editor,
-    getChangeValue(snapshot.roots),
+    getChangeValue(snapshot.roots, snapshot.records),
     { validation: 'configuration-publication' }
   );
 
@@ -9534,13 +9020,15 @@ export const applyBuiltDocumentChange = (
   const { nodeKeyTransfers, ...applyOptions } = options;
 
   if (nodeKeyTransfers) {
-    const children = getDocumentRootChildren(step.after, root);
+    const after = valueRootIndex(step.after, root);
     const owner = getEditorRuntimeOwner(editor);
 
     for (const transfer of nodeKeyTransfers) {
-      const node = NodeApi.get({ children } as PliteNode, transfer.path);
-
-      inheritNodeKeys(node as Descendant, transfer.source, owner);
+      inheritNodeKeys(
+        after.node(transfer.path) as Descendant,
+        transfer.source,
+        owner
+      );
     }
   }
 
@@ -9693,7 +9181,7 @@ export const recordTransactionDocumentChange = (
   snapshot.activeChange = {
     change: snapshot.activeChange.change.compose(
       change,
-      getChangeValue(snapshot.roots)
+      getChangeValue(snapshot.roots, snapshot.records)
     ),
   };
 
@@ -9786,12 +9274,10 @@ const inheritDocumentChangeStepNodeKeys = (
   for (const [root, rootChange] of getInternalDocumentChangeEntries(
     step.change
   )) {
-    const beforeChildren = getDocumentRootChildren(step.before, root);
-    const afterChildren = getDocumentRootChildren(step.after, root);
     const before =
-      step.indexedBefore.get(root) ?? DocumentIndex.fromValue(beforeChildren);
+      step.indexedBefore.get(root) ?? valueRootIndex(step.before, root);
     const after =
-      step.indexedAfter.get(root) ?? DocumentIndex.fromValue(afterChildren);
+      step.indexedAfter.get(root) ?? valueRootIndex(step.after, root);
     const currentIndex = snapshot.rootIndexes[root];
     const baseIndex = snapshot.baseRuntimeIndexes[root];
     const previousIndex =
@@ -9804,7 +9290,7 @@ const inheritDocumentChangeStepNodeKeys = (
           currentIndex ??
           baseIndex?.() ??
           previousIndex ??
-          buildSnapshotIndex(owner, beforeChildren)
+          buildSnapshotIndex(owner, getDocumentRootChildren(step.before, root))
       ));
     const mapIndex = () => {
       const source = getSourceIndex();
@@ -9904,14 +9390,10 @@ const applyTransactionSpecDocumentChangeStep = (
 
   const before = step.before as EditorDocumentValue;
   const after = step.after as EditorDocumentValue;
-  const roots = {
-    [MAIN_ROOT_KEY]: after.children,
-    ...after.roots,
-  } as Record<string, readonly Descendant[]>;
+  const hasRoot = (root: string) =>
+    root === MAIN_ROOT_KEY || Object.hasOwn(after.roots ?? {}, root);
   const activeRoot = getCurrentChildrenRoot(editor);
-  const nextRoot = Object.hasOwn(roots, activeRoot)
-    ? activeRoot
-    : MAIN_ROOT_KEY;
+  const nextRoot = hasRoot(activeRoot) ? activeRoot : MAIN_ROOT_KEY;
   const selectionBefore = getCurrentSelection(editor);
   const selectionRoot = getCurrentSelectionRoot(editor);
   const hasExplicitSelection = Object.hasOwn(options, 'selectionAfter');
@@ -9955,8 +9437,7 @@ const applyTransactionSpecDocumentChangeStep = (
   setCurrentSelection(
     editor,
     mappedSelection,
-    options.selectionRoot ??
-      (Object.hasOwn(roots, selectionRoot) ? selectionRoot : nextRoot)
+    options.selectionRoot ?? (hasRoot(selectionRoot) ? selectionRoot : nextRoot)
   );
   if (hasExplicitSelection) {
     specContext.selectionWritten = true;
@@ -10208,12 +9689,18 @@ const createEditorUpdateDraftContext = (
     'transaction-roots-snapshot',
     () =>
       childrenRoot === MAIN_ROOT_KEY || Object.hasOwn(roots, childrenRoot)
-        ? { ...roots, [childrenRoot]: previousSnapshot.children }
-        : { ...roots }
+        ? withRoot(
+            roots,
+            childrenRoot,
+            lazyRootOf(previousSnapshot, 'children') ??
+              previousSnapshot.children
+          )
+        : withRoot(roots, MAIN_ROOT_KEY, rootSourceOf(roots, MAIN_ROOT_KEY))
   );
+  const records = RECORDS.get(editor) ?? EMPTY_RECORD_STORE;
   const builder = createEditorDocumentChangeBuilder(
     editor,
-    getChangeValue(transactionRoots)
+    getChangeValue(transactionRoots, records)
   );
   const documentState = copyDocumentState(DOCUMENT_STATE.get(editor));
   const selection = previousSnapshot.selection ?? getCurrentSelection(editor);
@@ -10246,6 +9733,7 @@ const createEditorUpdateDraftContext = (
     previousVersion: previousSnapshot.version,
     protectedInlineSpacerPaths: new Map(),
     reason: null,
+    records,
     rootIndexes: {},
     roots: transactionRoots,
     runtimeIndexRollbacks: new Map(),
@@ -10287,9 +9775,10 @@ const createEditorUpdateDraftContext = (
     context.exitAnchorScope = enterAnchorScope(
       editor,
       createEditorDocumentValue({
-        children: (transactionRoots[MAIN_ROOT_KEY] ?? []) as Value,
+        editor,
         fields: getStateFieldIdentityMap(editor),
         meta: documentState,
+        records,
         roots: transactionRoots,
       })
     );
@@ -10330,7 +9819,10 @@ export const setTransactionDocumentProjection = (
   snapshot.rootIndexes = {};
   snapshot.baseRuntimeIndexes = {};
   snapshot.baseSnapshots = {};
-  snapshot.builder = createEditorDocumentChangeBuilder(editor, value);
+  snapshot.builder = createEditorDocumentChangeBuilder(
+    editor,
+    getChangeValue(snapshot.roots, snapshot.records)
+  );
   snapshot.activeChange = { change: snapshot.builder.change };
   snapshot.previousSnapshot = null;
   snapshot.previousSnapshot = getTransactionRootSnapshot(
@@ -10365,7 +9857,10 @@ export const restoreTransactionSourceSelection = (
     throw new Error('A view selection requires an active transaction.');
   }
   const { snapshot } = context;
-  const before = getChangeValue(snapshot.roots) as EditorDocumentValue;
+  const before = getChangeValue(
+    snapshot.roots,
+    snapshot.records
+  ) as EditorDocumentValue;
   const after = snapshot.builder.value as EditorDocumentValue;
   context.selection = mapSelectionThroughChange(
     editor,
@@ -10400,7 +9895,7 @@ export const setTransactionPublicationChange = (
   snapshot.discardedNodeKeys.clear();
   snapshot.builder = createEditorDocumentChangeBuilder(
     editor,
-    getChangeValue(snapshot.roots)
+    getChangeValue(snapshot.roots, snapshot.records)
   );
   snapshot.activeChange = { change: snapshot.builder.change };
   context.selection = snapshot.selection;
@@ -10441,8 +9936,9 @@ const publishTransactionDraft = (
     : MAIN_ROOT_KEY;
 
   ROOTS.set(editor, roots);
+  RECORDS.set(editor, getValueRecords(context.snapshot.builder.value));
   CURRENT_CHILDREN_ROOT.set(editor, currentRoot);
-  CHILDREN.set(editor, roots[currentRoot] ?? []);
+  CHILDREN.set(editor, rootSourceOf(roots, currentRoot));
   setSelectionStateSelection(editor, selection, context.selectionRoot);
   if (documentState === undefined) DOCUMENT_STATE.delete(editor);
   else DOCUMENT_STATE.set(editor, documentState);
@@ -10692,15 +10188,12 @@ export const runEditorTransaction = (
           incrementEditorTransactionDepth(editor, depth);
           try {
             const draftValue = snapshot.builder.value as EditorDocumentValue;
-            const draftRoots = {
-              [MAIN_ROOT_KEY]: draftValue.children,
-              ...draftValue.roots,
-            } as Record<string, readonly Descendant[]>;
+            const draftRoots = rootsOfValue(draftValue);
             const beforeValue = Object.freeze(
-              getChangeValue(snapshot.roots)
+              getChangeValue(snapshot.roots, snapshot.records)
             ) as EditorDocumentValue;
             const afterValue = Object.freeze(
-              getChangeValue(draftRoots)
+              getChangeValue(draftRoots, getValueRecords(draftValue))
             ) as EditorDocumentValue;
             const canonicalChanges = snapshot.activeChange.change;
             const canonicalIndexes =
@@ -10884,14 +10377,19 @@ export const runEditorTransaction = (
 
               setCachedSnapshot(editor, rootSnapshot, root);
             }
-            const committedRoots = {
-              ...getEditorDocumentRoots(editor),
-              [MAIN_ROOT_KEY]: afterSnapshot.children,
-            } as Record<string, readonly Descendant[]>;
+            const committedMain =
+              lazyRootOf(afterSnapshot, 'children') ?? afterSnapshot.children;
 
-            ROOTS.set(editor, committedRoots);
+            ROOTS.set(
+              editor,
+              withRoot(
+                getEditorDocumentRoots(editor),
+                MAIN_ROOT_KEY,
+                committedMain
+              )
+            );
             if (getCurrentChildrenRoot(editor) === MAIN_ROOT_KEY) {
-              CHILDREN.set(editor, afterSnapshot.children);
+              CHILDREN.set(editor, committedMain);
             }
           });
 
@@ -10994,13 +10492,12 @@ const createRootFitTransactionSpec = (
   if (!applicable) {
     const current = getActiveDocumentChangeBuilder(editor)
       .value as EditorDocumentValue;
-    const candidate =
+    const candidate = deriveValue<JsonEditorValue>(
+      current,
       root === MAIN_ROOT_KEY
-        ? { ...current, children: input.content }
-        : {
-            ...current,
-            roots: { ...current.roots, [root]: input.content },
-          };
+        ? { children: input.content }
+        : { roots: { ...current.roots, [root]: input.content } }
+    );
 
     const schema: InternalEditorSchemaApi = getEditorSchema(editor);
 
@@ -11086,14 +10583,8 @@ const readDirectSnapshotInput = (
 
   const source = envelope.schema;
   const current = getEditorSchema(editor).identity();
-  const withoutMetadataRoots = getEditorSchemaIdentityWithoutMetadataRoots(
-    getCompiledEditorSchema(editor)
-  );
 
-  if (
-    !areEditorSchemaIdentitiesEqual(source, current) &&
-    !areEditorSchemaIdentitiesEqual(source, withoutMetadataRoots)
-  ) {
+  if (!areEditorSchemaIdentitiesEqual(source, current)) {
     throw new Error(
       `Persisted document schema ${JSON.stringify(
         source
@@ -11255,6 +10746,24 @@ export const replaceTransformedSnapshot = (
       ])) {
         setStateValueByKey(editor, key, nextMeta[key]);
       }
+      // Records are never removed while a room is live, since content a peer
+      // writes at the same time can still name them, so a replacement's
+      // records add to the editor's.
+      if (snapshotInput.records !== undefined) {
+        const records = recordPutsOf(
+          recordOpsBetween(
+            getEditorDocumentRecords(editor),
+            recordStoreFromJson(snapshotInput.records)
+          )
+        );
+
+        if (records.size > 0) {
+          applyDocumentChange(
+            editor,
+            createInternalDocumentChange(new Map(), { records })
+          );
+        }
+      }
 
       getActiveUpdateView(editor).annotations.set(documentReplacement, true);
     }
@@ -11402,13 +10911,16 @@ export const initializeEditorSchemaSnapshot = (
         selection: undefined,
       };
   const meta = deserializeSnapshotMeta(editor, fitted.document.meta);
-  const document = {
-    children: fitted.document.children,
-    ...(Object.keys(meta).length === 0 ? {} : { meta }),
-    ...(fitted.document.roots === undefined
-      ? {}
-      : { roots: fitted.document.roots }),
-  };
+  const document = withValueRecords(
+    {
+      children: fitted.document.children,
+      ...(Object.keys(meta).length === 0 ? {} : { meta }),
+      ...(fitted.document.roots === undefined
+        ? {}
+        : { roots: fitted.document.roots }),
+    },
+    recordStoreFromJson(snapshotInput.records)
+  );
 
   const admitted = admitEditorDocument(editor, document);
 
@@ -11502,6 +11014,7 @@ export const initializePublicState = <
 
   CHILDREN.set(editor, initialChildren);
   ROOTS.set(editor, initialRoots);
+  RECORDS.set(editor, initialValue.records);
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
   DOCUMENT_STATE.set(editor, initialValue.meta);
   EDITOR_COMPOSING.set(editor, false);
@@ -11547,7 +11060,8 @@ const adoptEditorSchemaDocument = (
   editor: Editor,
   value: EditorDocumentValue
 ) => {
-  const document = cloneFrozenEditorJsonValue(value);
+  const records = getValueRecords(value);
+  const document = withValueRecords(cloneFrozenEditorJsonValue(value), records);
 
   getEditorSchema(editor).adoptDocumentBaseline(document);
 
@@ -11558,6 +11072,7 @@ const adoptEditorSchemaDocument = (
 
   CHILDREN.set(editor, roots[MAIN_ROOT_KEY]);
   ROOTS.set(editor, roots);
+  RECORDS.set(editor, records);
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
   if (document.meta === undefined) DOCUMENT_STATE.delete(editor);
   else DOCUMENT_STATE.set(editor, document.meta);
