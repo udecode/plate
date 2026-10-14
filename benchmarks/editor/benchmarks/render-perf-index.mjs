@@ -150,10 +150,10 @@ function renderIndexHtml({ evidence, health, internals, richText, targets }) {
       ? targets.nonOkTargets
           .map(
             (target) =>
-              `<li><strong>${escapeHtml(target.id)}</strong><br><span class="meta">status=${escapeHtml(target.status)}; metric=${escapeHtml(target.metric)}; run <code>pnpm bench:targets:dry-run -- ${escapeHtml(target.id)}</code></span></li>`
+              `<li><strong>${escapeHtml(target.id)}</strong><br><span class="meta">Historical status=${escapeHtml(target.status)}; metric=${escapeHtml(target.metric)}. Use the benchmark skill to select a current runner.</span></li>`
           )
           .join('')
-      : '<li><strong>No required target artifacts missing</strong><br><span class="meta">Use <code>pnpm bench:targets:list</code>, <code>pnpm bench:targets:dry-run -- &lt;target-id&gt;</code>, then <code>[$slate-ar-perf] &lt;target-id&gt;</code>.</span></li>';
+      : '<li><strong>No historical target artifacts missing</strong><br><span class="meta">Use the benchmark skill to select a current runner.</span></li>';
 
   return `<!doctype html>
 <html lang="en">

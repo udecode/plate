@@ -348,14 +348,9 @@ After any tranche changes truth:
 7. refresh [2026-04-13-slate-v2-full-no-regression-story-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-13-slate-v2-full-no-regression-story-plan.md)
 5. refresh any touched verdict docs
 
-## Command Pack
+## Current workflow
 
-- [reconsolidate-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/commands/reconsolidate-roadmap.md)
-- [replan-remaining-work.md](/Users/zbeyens/git/plate-2/docs/slate-v2/commands/replan-remaining-work.md)
-- [reinterview-remaining-scope.md](/Users/zbeyens/git/plate-2/docs/slate-v2/commands/reinterview-remaining-scope.md)
-- [run-perf-gates.md](/Users/zbeyens/git/plate-2/docs/slate-v2/commands/run-perf-gates.md)
-- [refresh-file-review-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/commands/refresh-file-review-ledger.md)
-- [launch-next-ralph-batch.md](/Users/zbeyens/git/plate-2/docs/slate-v2/commands/launch-next-ralph-batch.md)
+Use [the maintainer workflow](../development/agent-skills.md) for current Plate work.
 
 ## Next Move
 

@@ -105,4 +105,20 @@ describe('docx roundtrip', () => {
 
     expect(roundtrippedNodes.length).toBeGreaterThan(0);
   });
+
+  it('keeps every mark of a leaf that carries several marks', async () => {
+    const editor = createTestEditor();
+    const nodes: TNode[] = [
+      {
+        children: [{ bold: true, italic: true, text: 'bold italic' }],
+        type: 'p',
+      },
+    ];
+    const roundtrippedNodes = await importDocxBuffer(
+      editor,
+      await exportNodesToDocx(nodes)
+    );
+
+    expect(roundtrippedNodes).toEqual(nodes);
+  });
 });

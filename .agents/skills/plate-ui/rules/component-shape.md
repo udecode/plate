@@ -1,109 +1,39 @@
-# Component Shape & Editor Access
+# Component Shape and Editor Access
 
-## Contents
+`VISION.md` owns the plugin and component direction. This reference records
+the published contracts that copied registry code consumes.
 
-- Node context hooks
-- Preserve props passthrough
-- Plugin access
-- Base/live split
-- Keep helpers local
+Plate owns framework-defined plugin fields. Registry code consumes those
+contracts instead of restating them.
 
----
-
-## Node context hooks
-
-For node renderers already inside Plate element context:
-
-- use `useElement()` when you need the current element object
-- use `usePath()` when you need the current element path
-- do **not** reach for `useNodePath()` for dynamic validity state that must
-  survive sibling path shifts
-
----
-
-## Preserve props passthrough
-
-If a renderer forwards to `PlateElement` or `SlateElement`, keep the full
-incoming `props` object intact and destructure from it locally:
-
-**Correct:**
+| Plugin field | Consumer contract |
+| --- | --- |
+| live `node.component` | `PlateElementProps<TElement>` or `PlateLeafProps<TText>` from `platejs/react` |
+| static `node.component` | `SlateElementProps<TElement>` or `SlateLeafProps<TText>` from `platejs/static` |
+| live `render.beforeEditable` / `afterEditable` / `beforeContainer` / `afterContainer` | `EditableSiblingComponent` |
+| live `render.aboveNodes` / `belowNodes` | `RenderNodeWrapper`, `RenderNodeWrapperProps`, `RenderNodeWrapperFunction` |
+| static `render.aboveNodes` / `belowNodes` | `RenderStaticNodeWrapper`, `RenderStaticNodeWrapperProps`, `RenderStaticNodeWrapperFunction` |
 
 ```tsx
-export function MyElement(props: PlateElementProps<TNode>) {
-  const { editor, element } = props;
+import {
+  type PlateElementProps,
+  PlateElement,
+  createPlatePlugin,
+} from 'platejs/react';
 
+function FeatureElement(props: PlateElementProps) {
   return <PlateElement {...props} />;
 }
+
+const FeaturePlugin = createPlatePlugin({
+  key: 'feature',
+  node: {
+    component: FeatureElement,
+    isElement: true,
+  },
+});
 ```
 
-**Incorrect:**
-
-```tsx
-export function MyElement({
-  editor,
-  element,
-  ...props
-}: PlateElementProps<TNode>) {
-  return <PlateElement {...props} />;
-}
-```
-
-That drops required renderer props from the passthrough object.
-
----
-
-## Plugin access
-
-Prefer the repo’s direct patterns:
-
-```tsx
-const api = editor.getApi(CommentPlugin).comment;
-const tf = editor.getTransforms(CommentPlugin).comment;
-```
-
-Or:
-
-```tsx
-const { api, editor } = useEditorPlugin(CommentPlugin);
-```
-
-Do **not** invent local wrappers like:
-
-```tsx
-const getCommentApi = (editor) => ...
-const getCommentTransforms = (editor) => ...
-```
-
-unless multiple files genuinely need the same typed adapter.
-
----
-
-## Base/live split
-
-If a surface has both static/base and live renderers, keep the split explicit:
-
-```tsx
-export const BaseMathKit = [
-  BaseInlineEquationPlugin.withComponent(InlineEquationElementStatic),
-  BaseEquationPlugin.withComponent(EquationElementStatic),
-];
-
-export const MathKit = [
-  InlineEquationPlugin.withComponent(InlineEquationElement),
-  EquationPlugin.withComponent(EquationElement),
-];
-```
-
-Do not hide this behind a factory if the explicit array is clearer.
-
----
-
-## Keep helpers local
-
-If a helper is used once, keep it in the component file.
-
-Extract only when:
-
-- it becomes a stable package contract
-- or multiple files need it
-- or the helper stops being UI-specific
+Forward full renderer props. Let `configure` and `extend` callbacks infer their
+editor context. Repair weak package typing instead of rebuilding framework
+fields in copied UI.
