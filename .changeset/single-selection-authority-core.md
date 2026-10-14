@@ -9,3 +9,5 @@ Remove `@platejs/selection` integration, expose Plite one-or-many node selection
 Keep block selection scrolling while the pointer stays near an edge of the editor's visible area, at the same speed as text selection, keep the drag's starting point on the content where it began while the editor scrolls or changes size, and clip the drag rectangle to the visible part of the editor.
 
 Keep marquee hit areas current when blocks resize during a drag, including media that reveal captions inside fixed-size editors.
+
+End block marquee selection when releasing the pointer over native media controls or losing pointer capture.

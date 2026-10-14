@@ -332,6 +332,56 @@ const SHAPES = {
   'a scroller cut off by an outer box': 'cut',
 } as const;
 
+test('block marquee ends when released over native audio controls', async ({
+  page,
+}, testInfo) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
+    await page.goto('/blocks/playground');
+    const root = editorRoot(page);
+    const audio = root.locator('audio').first();
+    await expect(audio).toBeVisible();
+    await audio.scrollIntoViewIfNeeded();
+    const box = await audio.boundingBox();
+    if (!box) throw new Error('Missing audio geometry');
+    const origin = { x: box.x - 70, y: box.y + box.height / 2 };
+    expect(
+      await page.evaluate(
+        (point) =>
+          document.elementFromPoint(point.x, point.y) ===
+          document.querySelector('[data-editor="true"]'),
+        origin
+      )
+    ).toBe(true);
+    await page.mouse.move(origin.x, origin.y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, origin.y, { steps: 12 });
+    const marquee = page.locator('[data-slot="node-selection-drag"]');
+    await expect(marquee).toBeVisible();
+    const held = await readSelection(root);
+    expect(held.selection?.kind).toBe('node');
+    await page.mouse.up();
+    await expect(marquee).toHaveCount(0);
+    await page.mouse.move(origin.x, box.y + box.height + 100, { steps: 10 });
+    await expect
+      .poll(async () => {
+        const { selection } = await readSelection(root);
+        return selection;
+      })
+      .toEqual(held.selection);
+    const { native } = await readSelection(root);
+    expect(native).toBe('');
+    await page.screenshot({
+      path: testInfo.outputPath('audio-after-release.png'),
+    });
+    errors.assertNone();
+  } finally {
+    await page.mouse.up();
+    errors.stop();
+  }
+});
+
 for (const scale of [1, 0.75]) {
   test(`block marquee updates a growing target at scale ${scale}`, async ({
     page,

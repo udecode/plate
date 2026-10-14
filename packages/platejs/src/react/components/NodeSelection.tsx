@@ -613,6 +613,7 @@ export function NodeSelectionDrag({
         pointerId,
         start: captureStart(point, candidates, contentOrigin(editableRect)),
       };
+      editable.setPointerCapture(pointerId);
       candidateObserver.observe(editable, {
         childList: true,
         subtree: true,
@@ -631,7 +632,7 @@ export function NodeSelectionDrag({
       scheduleUpdate();
     };
     const cancelGesture = () => {
-      stopObserving();
+      clearGesture();
       if (frame !== undefined) ownerWindow.cancelAnimationFrame(frame);
       frame = undefined;
       if (finishFrame !== undefined) {
@@ -643,7 +644,6 @@ export function NodeSelectionDrag({
       }
       clickResetTimer = undefined;
       suppressClick = false;
-      gesture = undefined;
       setSelectionRect(null);
     };
     const finishGesture = () => {
@@ -651,7 +651,6 @@ export function NodeSelectionDrag({
 
       if (frame !== undefined) ownerWindow.cancelAnimationFrame(frame);
       updateSelection(false);
-      stopObserving();
       if (!gesture) return;
       const committedPaths = editor.read.selection
         .nodes()
@@ -660,7 +659,7 @@ export function NodeSelectionDrag({
       const committedFocusPath = gesture.lastFocusPath;
       const committedChange = editor.read.lastCommit();
 
-      gesture = undefined;
+      clearGesture();
       suppressClick = true;
       clickResetTimer = ownerWindow.setTimeout(() => {
         clickResetTimer = undefined;
@@ -769,9 +768,14 @@ export function NodeSelectionDrag({
       }
     });
     const sizeObserver = new ownerWindow.ResizeObserver(onGeometryChange);
-    const stopObserving = () => {
+    const clearGesture = () => {
       candidateObserver.disconnect();
       sizeObserver.disconnect();
+      const pointerId = gesture?.pointerId;
+      gesture = undefined;
+      if (pointerId !== undefined && editable.hasPointerCapture(pointerId)) {
+        editable.releasePointerCapture(pointerId);
+      }
     };
 
     const onKey = (event: KeyboardEvent) => {
@@ -871,6 +875,7 @@ export function NodeSelectionDrag({
     ownerDocument.addEventListener('keydown', onKey, true);
     ownerDocument.addEventListener('keyup', onKey, true);
     ownerDocument.addEventListener('click', onClick, true);
+    ownerDocument.addEventListener('lostpointercapture', onPointerEnd, true);
     ownerDocument.addEventListener('pointercancel', onPointerEnd, true);
     ownerDocument.addEventListener('pointerdown', onPointerDown, true);
     ownerDocument.addEventListener('pointermove', onPointerMove, {
@@ -888,6 +893,11 @@ export function NodeSelectionDrag({
       ownerDocument.removeEventListener('keydown', onKey, true);
       ownerDocument.removeEventListener('keyup', onKey, true);
       ownerDocument.removeEventListener('click', onClick, true);
+      ownerDocument.removeEventListener(
+        'lostpointercapture',
+        onPointerEnd,
+        true
+      );
       ownerDocument.removeEventListener('pointercancel', onPointerEnd, true);
       ownerDocument.removeEventListener('pointerdown', onPointerDown, true);
       ownerDocument.removeEventListener('pointermove', onPointerMove, true);
