@@ -3,6 +3,43 @@ import { expect, type Locator, test } from '@playwright/test';
 import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
 
+const readDetails = (root: Locator, title: string) =>
+  root.evaluate((element: PliteBrowserHandleElement, targetTitle) => {
+    const handle = element.__pliteBrowserHandle!;
+    const find = (
+      nodes: ReturnType<typeof handle.getValue>['children']
+    ): (typeof nodes)[number] | undefined => {
+      for (const node of nodes) {
+        const children = 'children' in node ? node.children : undefined;
+
+        if (!children) continue;
+        if (
+          node.type === 'details' &&
+          children[0] &&
+          JSON.stringify(children[0]).includes(targetTitle)
+        ) {
+          return node;
+        }
+
+        const found = find(children);
+
+        if (found) return found;
+      }
+
+      return undefined;
+    };
+    return find(handle.getValue().children);
+  }, title);
+
+const waitForHandle = (root: Locator) =>
+  expect
+    .poll(() =>
+      root.evaluate((element: PliteBrowserHandleElement) =>
+        Boolean(element.__pliteBrowserHandle)
+      )
+    )
+    .toBe(true);
+
 for (const route of ['details-demo', 'playground']) {
   test(`${route} formats a nested Details title without replacing its Summary`, async ({
     page,
@@ -67,33 +104,11 @@ for (const route of ['details-demo', 'playground']) {
           )
         )
         .toEqual(selectionBefore);
-      const readSummary = () =>
-        root.evaluate((element: PliteBrowserHandleElement, targetKey) => {
-          const handle = element.__pliteBrowserHandle!;
-          const find = (
-            nodes: ReturnType<typeof handle.getValue>['children']
-          ): unknown => {
-            for (const node of nodes) {
-              const children = 'children' in node ? node.children : undefined;
+      const readSummary = async () => {
+        const node = await readDetails(root, title);
 
-              if (!children) continue;
-              if (
-                node.type === 'details' &&
-                children[0] &&
-                JSON.stringify(children[0]).includes(targetKey)
-              ) {
-                return children[0];
-              }
-
-              const found = find(children);
-
-              if (found) return found;
-            }
-
-            return undefined;
-          };
-          return find(handle.getValue().children);
-        }, title);
+        return node && 'children' in node ? node.children?.[0] : undefined;
+      };
       await expect
         .poll(readSummary)
         .toMatchObject({ type: 'summary', level: 2 });
@@ -196,6 +211,7 @@ test('details-demo centers the toggle chevron on a heading title line', async ({
     const root = page
       .locator('[data-editor="true"][contenteditable="true"]')
       .first();
+    await waitForHandle(root);
     const name = 'Why use semantic Details?';
     const details = root
       .getByText(name, { exact: true })
@@ -252,13 +268,7 @@ test('details-demo keeps a heading title in its Summary on the paragraph shortcu
       .locator('[data-editor="true"][contenteditable="true"]')
       .first();
     const name = 'Why use semantic Details?';
-    await expect
-      .poll(() =>
-        root.evaluate((element: PliteBrowserHandleElement) =>
-          Boolean(element.__pliteBrowserHandle)
-        )
-      )
-      .toBe(true);
+    await waitForHandle(root);
     const key = await root
       .getByText(name, { exact: true })
       .locator(
@@ -268,7 +278,7 @@ test('details-demo keeps a heading title in its Summary on the paragraph shortcu
     const details = root.locator(
       `.editor-details[data-editor-node-key="${key}"]`
     );
-    const before = await details.textContent();
+    const before = await readDetails(root, name);
     await details.getByText(name, { exact: true }).click();
     await page.keyboard.press('ControlOrMeta+Alt+1');
     await expect(
@@ -276,10 +286,7 @@ test('details-demo keeps a heading title in its Summary on the paragraph shortcu
     ).toBeVisible();
     await page.keyboard.press('ControlOrMeta+Alt+0');
     await expect(details.getByRole('heading')).toHaveCount(0);
-    await expect(details.locator('.editor-detailsSummary').first()).toHaveText(
-      name
-    );
-    await expect(details).toHaveText(before!);
+    await expect.poll(() => readDetails(root, name)).toEqual(before);
     errors.assertNone();
   } finally {
     errors.stop();

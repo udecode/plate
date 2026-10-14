@@ -159,7 +159,7 @@
       "style": "radix-rhea"
     }
   ],
-  "generation": "32e19d4da428e1612e2333ab0ad65d3faad3bb1844f88662a6f2a6ecc27a2ce3",
+  "generation": "3fa89e06209a9c7a1338b2361f2006c6a6bb70eb0a0b2f957b2c3d1353745174",
   "itemCount": 318,
   "payloads": {
     "overlays/base-luma/floating-popover.json": "970d8e66abcc67a92801140819b2a1d80d66d6e03d75e9270d5a53b6219e3bcc",
@@ -340,7 +340,7 @@
     "r/details-docs.json": "36e422c4b5df5b107cffe0922d2f957d97a4d919e418e802cc2227d268bfd830",
     "r/details-static.json": "84faafb8f7900743ed696417117be63243d6655cf96cd79595e3b0cc30aa0da1",
     "r/details-toolbar-button.json": "5c8c3a49242ac25f95c0c63df3350d8d37f6b87f4b1034d4d51961d416f637c8",
-    "r/details.json": "6847de355db76104b0e03166cb9caafd73a1d716343ea43b759f52b46ad3cf7b",
+    "r/details.json": "524c581c5bff52476975a5820dd3d258039fd86cdcd62f5aabe51f35da1bf5f1",
     "r/diff.json": "24169fb92004adc474ed03604292aeaed34f9fec40650e9ff086cec481a273f7",
     "r/discussion-docs.json": "00b418e3526053b08f2bdedb7b8d4c13898f7dbe19ba69d45194c87e1fbab8ce",
     "r/discussion.json": "e063b5305967078ffdbd699c8cf713485e4f038712d6a6eac8c3c68dca5f7acb",
@@ -659,7 +659,7 @@
     "rd/details-docs.json": "36e422c4b5df5b107cffe0922d2f957d97a4d919e418e802cc2227d268bfd830",
     "rd/details-static.json": "b709a315db39ef5d18feec9594736a091f64411494bcba325bf9b67aa7efaeee",
     "rd/details-toolbar-button.json": "74b90e519c85621254d4354d4e56d5a2ca379cf91318206bf8992437cfd6b132",
-    "rd/details.json": "ce1652fdd721bdb9894c6e6924c08a5a39d3d537c3a2a10aa2bb0f8bff17f6a9",
+    "rd/details.json": "3839a88d117290f103af8df14118e3cd2cd7ca5feef2e001c5e6baf2402c5c8a",
     "rd/diff.json": "24169fb92004adc474ed03604292aeaed34f9fec40650e9ff086cec481a273f7",
     "rd/discussion-docs.json": "00b418e3526053b08f2bdedb7b8d4c13898f7dbe19ba69d45194c87e1fbab8ce",
     "rd/discussion.json": "31d5edd2409b59604b55f730e3269d7aeb18e81f8a824c1ac04541de7f8f4b8d",

@@ -74,7 +74,7 @@
     {
       "id": "2026-10-13-details-preserve-titles-when-applying-d1de3b79",
       "kind": "fix",
-      "summary": "Render a Details title that has a heading level with that heading's style, and center its toggle on the title's first line",
+      "summary": "Render a Details title that has a heading level with that heading's style, and center its toggle on the title's first line at the heading's own font size",
       "details": [],
       "migrationNotes": [],
       "targets": ["details", "details-static", "heading", "heading-static"],

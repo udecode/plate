@@ -26,17 +26,26 @@ export function DetailsElement(
   const { api } = useEditor().plugin(BaseDetailsPlugin);
   const open = detailsKey !== undefined && openKeys.has(detailsKey);
   const bodyId = React.useId();
-  const titleLevel = useEditorSelector((current) => {
-    if (detailsKey === undefined) return;
+  const titleLevel = useEditorSelector(
+    (current) => {
+      const path =
+        detailsKey === undefined
+          ? undefined
+          : current.read.nodes.get(detailsKey)?.[1];
 
-    const path = current.read.nodes.get(detailsKey)?.[1];
-
-    if (!path) return;
-
-    return current.read.nodes.get([...path, 0], {
-      type: DetailsSummaryPlugin,
-    })?.[0].level;
-  });
+      return path
+        ? current.read.nodes.get([...path, 0], {
+            type: DetailsSummaryPlugin,
+          })?.[0].level
+        : undefined;
+    },
+    {
+      shouldUpdate: (change) =>
+        !change ||
+        detailsKey === undefined ||
+        change.changed.hasNodeKey(detailsKey, 'node'),
+    }
+  );
 
   return (
     <EditorElement {...props} className="relative my-1 pl-6">
@@ -105,10 +114,8 @@ function DetailsToggleLine({
   return (
     <span
       className={cn(
-        'flex h-6 items-center',
         level && headingVariants({ level }),
-        level && 'h-[1lh]',
-        'absolute top-0 -left-0.5 m-0 p-0'
+        'absolute top-0 -left-0.5 m-0 flex h-[1lh] items-center p-0'
       )}
       contentEditable={false}
     >

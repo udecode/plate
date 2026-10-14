@@ -1,4 +1,6 @@
 import { schema } from '../../core';
+import { BaseHeadingPlugin } from '../../features/basic-nodes/lib/BaseHeadingPlugins';
+import { BaseDetailsPlugin } from '../../features/details/lib/BaseDetailsPlugin';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createEditor as createHeadlessEditor } from '../../lib/editor/withPlite';
 import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin/definePlugin';
@@ -103,6 +105,39 @@ describe('Editor core package', () => {
       {
         children: [{ children: [{ text: '' }], type: 'paragraph' }],
         type: 'applicationSection',
+      },
+    ]);
+  });
+
+  it('keeps a Details title in its Summary when the paragraph shortcut also covers a body heading', () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'Title' }], level: 2, type: 'summary' },
+            { children: [{ text: 'Body' }], level: 2, type: 'heading' },
+          ],
+          type: 'details',
+        },
+      ],
+      plugins: [BaseDetailsPlugin, BaseHeadingPlugin],
+    });
+
+    editor.update.selection.set({
+      anchor: { offset: 0, path: [0, 0, 0] },
+      focus: { offset: 4, path: [0, 1, 0] },
+    });
+    getPlateRuntime(editor).shortcuts['paragraph.toggle']?.handler?.({
+      editor,
+    } as never);
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [
+          { children: [{ text: 'Title' }], type: 'summary' },
+          { children: [{ text: 'Body' }], type: 'paragraph' },
+        ],
+        type: 'details',
       },
     ]);
   });
