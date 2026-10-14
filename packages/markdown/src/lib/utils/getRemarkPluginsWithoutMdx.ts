@@ -1,5 +1,7 @@
 import type { Plugin } from 'unified';
 
+import baseRemarkMdx from 'remark-mdx';
+
 export const REMARK_MDX_TAG = 'remarkMdx';
 
 export const tagRemarkPlugin = (pluginFn: any, tag: string) => {
@@ -11,4 +13,8 @@ export const tagRemarkPlugin = (pluginFn: any, tag: string) => {
 };
 
 export const getRemarkPluginsWithoutMdx = (plugins: Plugin[]) =>
-  plugins.filter((plugin) => (plugin as any).__pluginTag !== REMARK_MDX_TAG);
+  plugins.filter(
+    (plugin) =>
+      plugin !== baseRemarkMdx &&
+      !('__pluginTag' in plugin && plugin.__pluginTag === REMARK_MDX_TAG)
+  );

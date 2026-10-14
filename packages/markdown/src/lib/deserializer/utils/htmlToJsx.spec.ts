@@ -123,3 +123,7 @@ describe('htmlToJsx', () => {
     expect(result).toContain('id="main"');
   });
 });
+
+it('preserves a complete native email autolink during HTML conversion', () => {
+  expect(htmlToJsx('<br@example.com>')).toBe('<br@example.com>');
+});

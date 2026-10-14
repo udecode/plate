@@ -18,14 +18,13 @@ import type { MdRules, PlateType } from '../types';
 
 import { mdastToSlate } from './mdastToSlate';
 import {
-  type ParseMarkdownBlocksOptions,
-  htmlToJsx,
-  parseMarkdownBlocks,
-} from './utils';
+  normalizeProcessorHtml,
+  replaceRawMdx,
+  setupMarkdownParser,
+} from '../internal/remarkMdx';
+import { type ParseMarkdownBlocksOptions, parseMarkdownBlocks } from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptionsDeserialize';
 import { markdownToSlateNodesSafely } from './utils/markdownToSlateNodesSafely';
-
-// TODO: fixes tests
 
 export type DeserializeMdOptions = {
   allowedNodes?: PlateType[] | null;
@@ -51,7 +50,8 @@ export const markdownToAstProcessor = (
 
   return unified()
     .use(remarkParse)
-    .use(mergedOptions.remarkPlugins ?? [])
+    .use(setupMarkdownParser)
+    .use((mergedOptions.remarkPlugins ?? []).map(replaceRawMdx))
     .parse(data);
 };
 
@@ -60,14 +60,17 @@ export const markdownToSlateNodes = (
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ): Descendant[] => {
-  const processedData = options?.withoutMdx ? data : htmlToJsx(data);
-
   const mergedOptions = getMergedOptionsDeserialize(editor, options);
 
   const toSlateProcessor = unified()
     .use(remarkParse)
-    .use(mergedOptions.remarkPlugins ?? [])
+    .use(setupMarkdownParser)
+    .use((mergedOptions.remarkPlugins ?? []).map(replaceRawMdx))
     .use(remarkToSlate, mergedOptions);
+
+  const processedData = options?.withoutMdx
+    ? data
+    : normalizeProcessorHtml(toSlateProcessor, data);
 
   if (options?.memoize) {
     return parseMarkdownBlocks(processedData, options.parser).flatMap(
@@ -111,7 +114,6 @@ export const deserializeMd = (
 
   if (!output) return [];
 
-  // when output is inline text, we need to wrap the text in a paragraph
   return output.map((item) =>
     TextApi.isText(item)
       ? ({
@@ -129,7 +131,6 @@ declare module 'unified' {
 }
 
 const remarkToSlate: Plugin<[DeserializeMdOptions?], Root, Descendant[]> =
-  // TODO: options
   function (options = {}) {
     this.compiler = (node) => mdastToSlate(node as Root, options);
   };
