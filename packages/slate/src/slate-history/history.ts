@@ -68,8 +68,11 @@ export const HistoryApi = {
   withMerging(editor: Editor, fn: () => void): void {
     const prev = editor.api.isMerging();
     MERGING.set(editor, true);
-    fn();
-    MERGING.set(editor, prev);
+    try {
+      fn();
+    } finally {
+      MERGING.set(editor, prev);
+    }
   },
 
   /**
@@ -78,12 +81,18 @@ export const HistoryApi = {
    * will be merged as usual.
    */
   withNewBatch(editor: Editor, fn: () => void): void {
-    const prev = editor.api.isMerging();
+    const prevMerging = editor.api.isMerging();
+    const prevSplitting = editor.api.isSplittingOnce();
     MERGING.set(editor, true);
     SPLITTING_ONCE.set(editor, true);
-    fn();
-    MERGING.set(editor, prev);
-    SPLITTING_ONCE.delete(editor);
+    try {
+      fn();
+    } finally {
+      MERGING.set(editor, prevMerging);
+      if (!prevSplitting) {
+        SPLITTING_ONCE.delete(editor);
+      }
+    }
   },
 
   /**
@@ -93,8 +102,11 @@ export const HistoryApi = {
   withoutMerging(editor: Editor, fn: () => void): void {
     const prev = editor.api.isMerging();
     MERGING.set(editor, false);
-    fn();
-    MERGING.set(editor, prev);
+    try {
+      fn();
+    } finally {
+      MERGING.set(editor, prev);
+    }
   },
 
   /**
@@ -104,8 +116,11 @@ export const HistoryApi = {
   withoutSaving(editor: Editor, fn: () => void): void {
     const prev = editor.api.isSaving();
     SAVING.set(editor, false);
-    fn();
-    SAVING.set(editor, prev);
+    try {
+      fn();
+    } finally {
+      SAVING.set(editor, prev);
+    }
   },
 };
 
