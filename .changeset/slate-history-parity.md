@@ -1,5 +1,5 @@
 ---
-'@platejs/slate': patch
+"@platejs/slate": patch
 ---
 
 Bring the bundled history plugin up to date with slate-history:
