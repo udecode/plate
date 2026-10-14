@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { globSync, isDynamicPattern } from 'tinyglobby';
 
 import {
+  findGitVisibleTestFiles,
   TEST_DEFERRED_FILE_PATTERNS,
   TEST_IGNORE_PATTERNS,
 } from '../config/test-suites.mjs';
@@ -71,11 +72,10 @@ const normalizeFilter = (value) =>
     .replace(LEADING_DOT_SLASH_RE, '')
     .replace(TRAILING_SLASH_RE, '');
 
-const allDeferredFiles = globSync(TEST_DEFERRED_FILE_PATTERNS, {
-  cwd: process.cwd(),
-  ignore: DEFERRED_IGNORE_PATTERNS,
-  onlyFiles: true,
-}).sort();
+const allDeferredFiles = findGitVisibleTestFiles(
+  TEST_DEFERRED_FILE_PATTERNS,
+  DEFERRED_IGNORE_PATTERNS
+);
 
 const staticFilters = [];
 const dynamicMatches = new Set();

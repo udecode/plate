@@ -14,6 +14,7 @@ import { dirname, join, resolve } from 'node:path';
 import { globSync, isDynamicPattern } from 'tinyglobby';
 
 import {
+  findGitVisibleTestFiles,
   TEST_IGNORE_PATTERNS,
   TEST_SLOW_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
@@ -78,11 +79,10 @@ for (let i = 0; i < rawArgs.length; i++) {
   pathFilters.push(arg);
 }
 
-const allSlowFiles = globSync(TEST_SLOW_FILE_PATTERNS, {
-  cwd: process.cwd(),
-  ignore: TEST_IGNORE_PATTERNS,
-  onlyFiles: true,
-}).sort();
+const allSlowFiles = findGitVisibleTestFiles(
+  TEST_SLOW_FILE_PATTERNS,
+  TEST_IGNORE_PATTERNS
+);
 
 const normalizeFilter = (value) =>
   value
