@@ -164,6 +164,7 @@
   },
   "include": ["**/*", "./tooling/config/global.d.ts"],
   "exclude": [
+    "docs/plans/artifacts",
     "node_modules",
     "**/node_modules",
     "dist",
