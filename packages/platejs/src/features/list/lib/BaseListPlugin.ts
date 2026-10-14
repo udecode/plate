@@ -1357,7 +1357,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       };
     },
   }))
-  .extend({
+  .extend(() => ({
     // Review marks cannot hold list numbering yet, so a list item, or a
     // block turning into one, refuses Suggesting.
     contributions: [
@@ -1406,10 +1406,8 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
           caret !== undefined &&
           SelectionApi.root(caret) === undefined &&
           entry !== undefined &&
-          [
-            editor.plugin(BaseParagraphPlugin).schema.type,
-            headingType,
-          ].includes(entry[0].type) &&
+          (entry[0].type === editor.plugin(BaseParagraphPlugin).schema.type ||
+            entry[0].type === headingType) &&
           state.nodes.isEmpty(entry[0]) &&
           Object.keys(state.schema.getElementContentRoots(entry[0])).length ===
             0 &&
@@ -1677,7 +1675,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
         return next();
       }),
     ],
-  })
+  }))
   .extend({
     corrections: [
       {
