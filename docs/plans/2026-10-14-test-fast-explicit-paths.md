@@ -1,6 +1,7 @@
 # Test runners run stale spec copies
 
 Status: executed, waiting on PR review
+Page: https://claude.ai/artifact/54MpwC1HhHons4z7xJWvcR
 Playbook: bug-fix
 
 ## Brief
