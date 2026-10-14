@@ -1,5 +1,5 @@
 {
-  "generation": "8db5ee8877f4ac33ba107bc596abdb04a08a54b5dba1b4842432e885f32f1c44",
+  "generation": "950d0a64a8ba6b2f495ca97bceeb8a9c5397a4fe4dcebe2d8a965d841f6c71ed",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1643,7 +1643,6 @@
         {
           "dependencies": [
             "platejs",
-            "class-variance-authority",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1671,7 +1670,11 @@
           },
           "name": "media-preview-dialog",
           "title": "Media Preview Dialog",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "button",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -1748,7 +1751,8 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/resize-handle",
-            "@plate/caption"
+            "@plate/caption",
+            "@plate/media-toolbar"
           ]
         },
         {
@@ -1861,7 +1865,8 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/resize-handle",
-            "@plate/caption"
+            "@plate/caption",
+            "@plate/media-toolbar"
           ]
         },
         {
@@ -1920,6 +1925,7 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/caption",
+            "@plate/media-toolbar",
             "@plate/resize-handle"
           ]
         },
@@ -3086,11 +3092,9 @@
         {
           "dependencies": [
             "platejs",
-            "@types/papaparse@^5.3.16",
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
             "juice@^11.0.1",
-            "papaparse@^5.5.3",
             "validator@^13.15.15"
           ],
           "files": [
@@ -6320,33 +6324,6 @@
             "@plate/ai",
             "@plate/dnd"
           ],
-          "type": "registry:example",
-          "meta": {
-            "registry": false
-          }
-        },
-        {
-          "dependencies": [
-            "@platejs/test"
-          ],
-          "description": "Copy paste from CSV to Plate.",
-          "files": [
-            {
-              "path": "examples/demo.tsx",
-              "type": "registry:example"
-            },
-            {
-              "path": "examples/values/deserialize-csv-value.tsx",
-              "type": "registry:example"
-            }
-          ],
-          "name": "csv-demo",
-          "registryDependencies": [
-            "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
-          ],
-          "title": "Serializing CSV",
           "type": "registry:example",
           "meta": {
             "registry": false
@@ -8428,7 +8405,6 @@
         {
           "dependencies": [
             "platejs",
-            "class-variance-authority",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -8456,7 +8432,11 @@
           },
           "name": "media-preview-dialog",
           "title": "Media Preview Dialog",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "button",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -8533,7 +8513,8 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/resize-handle",
-            "@plate/caption"
+            "@plate/caption",
+            "@plate/media-toolbar"
           ]
         },
         {
@@ -8646,7 +8627,8 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/resize-handle",
-            "@plate/caption"
+            "@plate/caption",
+            "@plate/media-toolbar"
           ]
         },
         {
@@ -8705,6 +8687,7 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/caption",
+            "@plate/media-toolbar",
             "@plate/resize-handle"
           ]
         },
@@ -9871,11 +9854,9 @@
         {
           "dependencies": [
             "platejs",
-            "@types/papaparse@^5.3.16",
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
             "juice@^11.0.1",
-            "papaparse@^5.5.3",
             "validator@^13.15.15"
           ],
           "files": [
@@ -13105,33 +13086,6 @@
             "@plate/ai",
             "@plate/dnd"
           ],
-          "type": "registry:example",
-          "meta": {
-            "registry": false
-          }
-        },
-        {
-          "dependencies": [
-            "@platejs/test"
-          ],
-          "description": "Copy paste from CSV to Plate.",
-          "files": [
-            {
-              "path": "examples/demo.tsx",
-              "type": "registry:example"
-            },
-            {
-              "path": "examples/values/deserialize-csv-value.tsx",
-              "type": "registry:example"
-            }
-          ],
-          "name": "csv-demo",
-          "registryDependencies": [
-            "@plate/editor",
-            "@plate/ai",
-            "@plate/dnd"
-          ],
-          "title": "Serializing CSV",
           "type": "registry:example",
           "meta": {
             "registry": false

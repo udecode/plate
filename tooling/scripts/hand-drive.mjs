@@ -24,9 +24,7 @@ const ROOT = path.resolve(
   '../..'
 );
 const DRIVE_DIR = 'docs/plans/artifacts/drive';
-const PHONE_MAX_WIDTH = 480;
 const DESKTOP_MIN_WIDTH = 1200;
-const PREVIEW_MIN_RATIO = 0.31;
 const LOOK_PAGE_LIMIT = 6;
 const SETTLE_MS = 5000;
 const PLITE_EXAMPLES_DIR = 'apps/www/src/app/(app)/examples/plite';
@@ -66,11 +64,6 @@ const appendJsonl = (file, record) => {
   mkdirSync(path.dirname(file), { recursive: true });
   appendFileSync(file, `${JSON.stringify(record)}\n`);
 };
-
-const withChinese = (pages) =>
-  pages.flatMap((page) =>
-    page.startsWith('/docs') ? [page, `/cn${page}`] : [page]
-  );
 
 function previewNames(text) {
   const prose = [];
@@ -143,7 +136,7 @@ function readSources(root) {
       }))
     : [];
 
-  return { docs: new Set(docs), items, loaders, previews };
+  return { items, loaders, previews };
 }
 
 const docsRoutes = (item) =>
@@ -199,24 +192,7 @@ function itemPages(item, sources) {
     }
   }
 
-  return unique(withChinese(pages.filter(Boolean)));
-}
-
-function previewOf(item, sources) {
-  const shown = [item, ...examplesOf(item, sources)];
-  for (const each of shown) {
-    const page = (sources.previews.get(each.name) ?? []).find(
-      (route) => !route.startsWith('/cn/')
-    );
-    if (page) return { name: each.name, page };
-  }
-  const example = shown.find((each) => each.type === 'registry:example');
-  return example
-    ? {
-        name: example.name,
-        page: `/docs/examples/${registryExampleSlug(example.name)}`,
-      }
-    : undefined;
+  return unique(pages.filter((page) => page && !page.startsWith('/cn/')));
 }
 
 function itemsShowing(item, items) {
@@ -246,28 +222,21 @@ function filePages(file, sources, routes, currentBlob) {
   if (named && named.blob === currentBlob(file)) {
     return named.none
       ? { kind: 'none' }
-      : { kind: 'pages', own: named.pages, primary: named.pages[0], reach: [] };
+      : { kind: 'pages', own: named.pages, reach: [] };
   }
   if (!SHOWN_ROOTS.test(file) || NOT_SHOWN.test(file)) return { kind: 'none' };
   if (currentBlob(file) === null) return { kind: 'unmapped' };
   if (file.startsWith('content/docs/')) {
     if (!file.endsWith('.mdx')) return { kind: 'unmapped' };
-    const route = sourcePathToDocsRoute(file.slice('content/docs/'.length));
-    const servedInChinese =
-      !file.endsWith('.cn.mdx') &&
-      !sources.docs.has(file.replace(/\.mdx$/, '.cn.mdx'));
     return {
       kind: 'pages',
-      own: servedInChinese ? [route, `/cn${route}`] : [route],
-      primary: route,
+      own: [sourcePathToDocsRoute(file.slice('content/docs/'.length))],
       reach: [],
     };
   }
 
   let own = [];
   let reach = [];
-  let primary;
-  let preview;
 
   if (file.startsWith(REGISTRY_DIR)) {
     const relative = file.slice(REGISTRY_DIR.length);
@@ -281,9 +250,9 @@ function filePages(file, sources, routes, currentBlob) {
       item.files?.some((entry) => entry.path === twin)
     );
     if (twin !== relative) {
-      own = unique(owners.flatMap((item) => itemPages(item, sources))).filter(
-        (page) => page.startsWith('/cn/')
-      );
+      own = unique(owners.flatMap((item) => itemPages(item, sources)))
+        .filter((page) => page.startsWith('/docs'))
+        .map((page) => `/cn${page}`);
     } else {
       own = unique(owners.flatMap((item) => itemPages(item, sources)));
       reach = unique(
@@ -291,8 +260,6 @@ function filePages(file, sources, routes, currentBlob) {
           itemsShowing(item, sources.items).map(primaryPage)
         )
       ).filter((page) => page && !own.includes(page));
-      primary = owners.map(primaryPage).find(Boolean);
-      preview = owners.map((item) => previewOf(item, sources)).find(Boolean);
     }
   }
 
@@ -300,17 +267,15 @@ function filePages(file, sources, routes, currentBlob) {
 
   if (own.length === 0 && reach.length === 0) return { kind: 'unmapped' };
 
-  return { kind: 'pages', own: unique(own), preview, primary, reach };
+  return { kind: 'pages', own: unique(own), reach };
 }
 
 function cellsFor(files, sources, routes, currentBlob) {
   const cells = new Map();
   const unmapped = [];
-  const add = (route, variant, file, preview) => {
-    const key = preview
-      ? `${route} ${variant} ${preview}`
-      : `${route} ${variant}`;
-    const cell = cells.get(key) ?? { files: [], key, preview, route, variant };
+  const add = (route, variant, file) => {
+    const key = `${route} ${variant}`;
+    const cell = cells.get(key) ?? { files: [], key, route, variant };
     if (!cell.files.includes(file)) cell.files.push(file);
     cells.set(key, cell);
   };
@@ -322,30 +287,14 @@ function cellsFor(files, sources, routes, currentBlob) {
       unmapped.push(file);
       continue;
     }
-    const english = pages.own.filter((page) => !page.startsWith('/cn/'));
     const look =
-      english.length + pages.reach.length <= LOOK_PAGE_LIMIT
+      pages.own.length + pages.reach.length <= LOOK_PAGE_LIMIT
         ? [...pages.own, ...pages.reach]
         : pages.own.length > 0
           ? pages.own
           : pages.reach.slice(0, 1);
-    const primary = pages.primary ?? look[0];
 
-    for (const page of look) {
-      if (page.startsWith('/cn/')) {
-        add(page, '1280 light', file);
-        continue;
-      }
-      add(page, '375 light', file);
-      add(page, '1280 light', file);
-      if (page === primary) {
-        add(page, '375 dark', file);
-        add(page, '1280 dark', file);
-      }
-    }
-    if (pages.preview) {
-      add(pages.preview.page, 'preview-min', file, pages.preview.name);
-    }
+    for (const page of look) add(page, 'desktop', file);
     for (const page of pages.reach) {
       if (!look.includes(page)) add(page, 'load', file);
     }
@@ -368,26 +317,8 @@ function foldLoadsIntoLooks(cells) {
   ];
 }
 
-function showsVariant(visit, cell) {
-  if (cell.variant === 'preview-min') {
-    return (
-      visit.width >= DESKTOP_MIN_WIDTH &&
-      visit.previews.some(
-        (preview) =>
-          preview.name === cell.preview &&
-          preview.group > 0 &&
-          preview.width / preview.group <= PREVIEW_MIN_RATIO
-      )
-    );
-  }
-  const [width, theme] = cell.variant.split(' ');
-  return (
-    visit.theme === theme &&
-    (width === '375'
-      ? visit.width > 0 && visit.width <= PHONE_MAX_WIDTH
-      : visit.width >= DESKTOP_MIN_WIDTH)
-  );
-}
+const showsDesktop = (visit) =>
+  visit.theme === 'light' && visit.width >= DESKTOP_MIN_WIDTH;
 
 const errorsWinTies = (a, b) => a.errors.length - b.errors.length;
 
@@ -419,18 +350,18 @@ function judge(cells, { lastWrite, visits }) {
     }
 
     const matching = visits.filter(
-      (visit) => !visit.frame && onPage(visit) && showsVariant(visit, cell)
+      (visit) => !visit.frame && onPage(visit) && showsDesktop(visit)
     );
     const handDriven = matching.filter((visit) => !visit.webdriver);
-    const failsOrShowsVariant = (visit) =>
-      visit.errors.length > 0 || showsVariant(visit, cell);
+    const failsOrShowsDesktop = (visit) =>
+      visit.errors.length > 0 || showsDesktop(visit);
     const current = visits.findLast(
       (visit) =>
         !visit.frame &&
         !visit.webdriver &&
         onPage(visit) &&
         counts(visit) &&
-        failsOrShowsVariant(visit)
+        failsOrShowsDesktop(visit)
     );
 
     if (current) {
@@ -609,7 +540,7 @@ function hook({ dir, root }) {
     JSON.stringify({
       decision: 'block',
       reason: [
-        `The hand drive is not done: ${open.length} cells and ${result.unmapped.length} unmapped files are open for the browser-visible files this session edited. Open each cell's page in the built-in browser against the www-drive server at its width and theme, at least ${SETTLE_MS / 1000} s after the last edit to its files, take a screenshot and read it, then run node tooling/scripts/hand-drive.mjs check, as verify's Hand drive section says. The owner's message starting with "skip drive" waives the edits made before it.`,
+        `The hand drive is not done: ${open.length} cells and ${result.unmapped.length} unmapped files are open for the browser-visible files this session edited. Open each cell's page in the built-in browser against the www-drive server at desktop width in light, at least ${SETTLE_MS / 1000} s after the last edit to its files, take a screenshot and read it, then run node tooling/scripts/hand-drive.mjs check, as verify's Hand drive section says. The owner's message starting with "skip drive" waives the edits made before it.`,
         ...lines.slice(0, 40),
         ...(lines.length > 40 ? [`… and ${lines.length - 40} more`] : []),
       ].join('\n'),

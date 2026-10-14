@@ -21,7 +21,13 @@ import {
 
 import { CaptionButton } from './caption';
 
-function MediaToolbarContent({ plugin }: { plugin: MediaPlugin }) {
+function MediaToolbarContent({
+  onPreview,
+  plugin,
+}: {
+  onPreview?: () => void;
+  plugin: MediaPlugin;
+}) {
   const editor = useEditor();
   const element = useElement(plugin);
   const [isEditing, setIsEditing] = React.useState(false);
@@ -90,6 +96,19 @@ function MediaToolbarContent({ plugin }: { plugin: MediaPlugin }) {
         Edit link
       </Button>
 
+      {onPreview && (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={onPreview}
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
+        >
+          Preview
+        </Button>
+      )}
+
       <CaptionButton size="sm" variant="ghost">
         Caption
       </CaptionButton>
@@ -116,12 +135,17 @@ function MediaToolbarContent({ plugin }: { plugin: MediaPlugin }) {
 export function MediaToolbar({
   children,
   disabled = false,
+  onPreview,
+  placement = 'bottom',
   plugin,
   selected,
 }: {
   children: React.ReactElement;
   disabled?: boolean;
+  onPreview?: () => void;
   plugin: MediaPlugin;
+  /** `top` keeps the toolbar off the block below a short media node. */
+  placement?: 'bottom' | 'top';
   selected: boolean;
 }) {
   const isFocusedLast = useFocusedLast();
@@ -133,12 +157,16 @@ export function MediaToolbar({
       <FloatingPopoverAnchor element={children} />
 
       <FloatingPopoverContent
+        align={placement === 'bottom' ? 'center' : 'end'}
         className="w-auto p-1"
+        side={placement}
         onInitialFocus={(e) => {
           e.preventDefault();
         }}
       >
-        {open ? <MediaToolbarContent plugin={plugin} /> : null}
+        {open ? (
+          <MediaToolbarContent onPreview={onPreview} plugin={plugin} />
+        ) : null}
       </FloatingPopoverContent>
     </FloatingPopover>
   );

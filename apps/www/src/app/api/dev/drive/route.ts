@@ -9,7 +9,6 @@ type Visit = {
   errors: string[];
   frame: boolean;
   path: string;
-  previews: Array<{ group: number; name: string; width: number }>;
   rendered?: number;
   sent: number;
   theme: 'dark' | 'light';
@@ -23,7 +22,6 @@ const isNumber = (value: unknown): value is number =>
 function parseVisit(body: unknown, receipt: number): Visit | null {
   if (typeof body !== 'object' || body === null) return null;
   const visit = body as Record<string, unknown>;
-  const { previews } = visit;
   const { errors } = visit;
 
   if (
@@ -31,15 +29,6 @@ function parseVisit(body: unknown, receipt: number): Visit | null {
     !errors.every((error) => typeof error === 'string') ||
     typeof visit.frame !== 'boolean' ||
     typeof visit.path !== 'string' ||
-    !Array.isArray(previews) ||
-    !previews.every(
-      (preview) =>
-        typeof preview === 'object' &&
-        preview !== null &&
-        isNumber(preview.group) &&
-        typeof preview.name === 'string' &&
-        isNumber(preview.width)
-    ) ||
     (visit.rendered !== undefined &&
       (!isNumber(visit.rendered) || visit.rendered > receipt)) ||
     !isNumber(visit.sent) ||
@@ -54,11 +43,6 @@ function parseVisit(body: unknown, receipt: number): Visit | null {
     errors,
     frame: visit.frame,
     path: visit.path,
-    previews: previews.map(({ group, name, width }) => ({
-      group,
-      name,
-      width,
-    })),
     rendered: visit.rendered,
     sent: visit.sent,
     theme: visit.theme,

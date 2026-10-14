@@ -62,6 +62,8 @@ const expandableLineThreshold = 15;
 const plateUiChangeExpandableLineThreshold = 10;
 const languageClassNamePattern = /language-(\w+)/;
 const trailingNewlinePattern = /\n$/;
+const inlineCodeClassName =
+  'rounded-sm bg-muted px-1.5 py-0.5 font-mono text-xs';
 const releaseHeadingLabels: Record<string, string> = {
   'Major Changes': 'Breaking Changes',
   'Minor Changes': 'Features',
@@ -365,38 +367,15 @@ function PlateUiReleaseChangeItem({
 
   return (
     <article className="rounded-md border bg-surface/40 p-4" ref={articleRef}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h3 className="font-heading text-base font-semibold tracking-tight">
-            Plate UI
-            {change.release.status === 'latest' ? (
-              <Badge className="ml-2 align-middle" variant="outline">
-                Latest
-              </Badge>
-            ) : null}
-          </h3>
-          <Button
-            asChild
-            className="mt-2 h-auto max-w-full justify-start px-2.5 py-1.5 text-left text-sm leading-5 whitespace-normal"
-            size="sm"
-            variant="secondary"
-          >
-            <a href={titleHref} rel="noreferrer" target="_blank">
-              {change.pullRequest ? <GitPullRequestIcon /> : <FileJsonIcon />}
-              <span>
-                {change.pullRequest ? (
-                  <>
-                    <span className="font-mono text-xs">
-                      PR {change.pullRequest.number}
-                    </span>
-                    <span className="text-muted-foreground"> · </span>
-                  </>
-                ) : null}
-                {change.summary}
-              </span>
-            </a>
-          </Button>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <h3 className="font-heading text-base font-semibold tracking-tight">
+          Plate UI
+          {change.release.status === 'latest' ? (
+            <Badge className="ml-2 align-middle" variant="outline">
+              Latest
+            </Badge>
+          ) : null}
+        </h3>
         <div className="flex flex-wrap items-center justify-end gap-2">
           {showSyncGuide ? (
             <Button asChild size="sm" variant="secondary">
@@ -413,6 +392,27 @@ function PlateUiReleaseChangeItem({
           </Button>
         </div>
       </div>
+      <Button
+        asChild
+        className="mt-2 h-auto max-w-full justify-start px-2.5 py-1.5 text-left text-sm leading-5 whitespace-normal"
+        size="sm"
+        variant="secondary"
+      >
+        <a href={titleHref} rel="noreferrer" target="_blank">
+          {change.pullRequest ? <GitPullRequestIcon /> : <FileJsonIcon />}
+          <span>
+            {change.pullRequest ? (
+              <>
+                <span className="font-mono text-xs">
+                  PR {change.pullRequest.number}
+                </span>
+                <span className="text-muted-foreground"> · </span>
+              </>
+            ) : null}
+            <InlineMarkdown content={change.summary} />
+          </span>
+        </a>
+      </Button>
 
       <div className="relative mt-4">
         <div
@@ -436,12 +436,14 @@ function PlateUiReleaseChangeItem({
                 </div>
               </div>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                {entry.summary}
+                <InlineMarkdown content={entry.summary} />
               </p>
               {entry.migrationNotes.length > 0 ? (
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-muted-foreground">
                   {entry.migrationNotes.map((note) => (
-                    <li key={note}>{note}</li>
+                    <li key={note}>
+                      <InlineMarkdown content={note} />
+                    </li>
                   ))}
                 </ul>
               ) : null}
@@ -575,13 +577,7 @@ function MarkdownContent({ content }: { content: string }) {
           }
 
           return (
-            <code
-              className={cn(
-                'rounded-sm bg-muted px-1.5 py-0.5 font-mono text-xs',
-                className
-              )}
-              {...props}
-            >
+            <code className={cn(inlineCodeClassName, className)} {...props}>
               {children}
             </code>
           );
@@ -705,6 +701,32 @@ function MarkdownContent({ content }: { content: string }) {
         ),
       }}
       remarkPlugins={[remarkGfm]}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+}
+
+function InlineMarkdown({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      allowedElements={['a', 'code', 'em', 'strong']}
+      components={{
+        // Entry text can name link syntax, such as `[label](mention:ref)` in a
+        // migration note, and the summary chip is itself a link, so a link
+        // renders as its source text.
+        a: ({ children, node }) =>
+          node?.position
+            ? content.slice(
+                node.position.start.offset,
+                node.position.end.offset
+              )
+            : children,
+        code: ({ children }) => (
+          <code className={inlineCodeClassName}>{children}</code>
+        ),
+      }}
+      unwrapDisallowed
     >
       {content}
     </ReactMarkdown>

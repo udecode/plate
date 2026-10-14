@@ -407,6 +407,12 @@ export type SchemaElementInput = Readonly<{
   isolating?: boolean;
   markableVoid?: boolean;
   object?: boolean;
+  /**
+   * Declares the text block a structure of its own, such as a code block:
+   * `tx.break.exit` leaves it before any container around it. Text blocks
+   * only; voids and objects always own their exit.
+   */
+  ownsExit?: boolean;
   properties?: SchemaElementProperties;
   readOnly?: boolean;
   selectable?: boolean;
@@ -480,6 +486,8 @@ export type EditorSchemaElement = Readonly<{
     isolating: boolean;
     markableVoid: boolean;
     object: boolean;
+    /** Whether the text block declares `ownsExit`; false for voids and objects. */
+    ownsExit: boolean;
     readOnly: boolean;
     selectable: boolean;
     void: boolean;

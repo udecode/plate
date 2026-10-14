@@ -266,17 +266,22 @@ Use break methods from `tx.break`.
 
 #### `tx.break.exit(options?)`
 
-Leave the structure around the selected block and insert the default block
-that the structure's parent declares at that position.
+Leave the nearest structure around the selected block and insert the default
+block that the structure's parent declares at that position.
 
-The walk starts at the selected block's parent. It stops at the first ancestor
-that sits directly in a root, or whose parent can directly hold the root's
-default block, such as a paragraph. That default is the block the root adds
-after any blocks it requires first, whatever the ancestor's position. The walk
-checks only its type, so a default that requires a property such as `id` does
-not stop it. With a paragraph default, a table row holds
-no paragraph, so the walk passes a cell and its row and stops at the table.
-With no such ancestor, the selected block is the structure.
+The selected block is the structure when it owns its exit: a void, an object,
+or a text block whose schema declares `ownsExit`, such as a code block. It
+stays the structure only when its parent can build a default beside it that
+does not put the caret inside another block that owns its exit.
+
+Otherwise the walk starts at the selected block's parent. It stops at the first
+ancestor that sits directly in a root, sits in a parent that declares no
+content, or sits in a parent whose content after any required leading blocks
+admits a text block, such as a paragraph. A table row holds only cells, so the
+walk passes a cell and its row and stops at the table. The walk also passes an
+ancestor that does not sit directly in a root when its default would put the
+caret back inside an element of the ancestor's own type. With no such ancestor, the selected block
+is the structure.
 
 The method inserts the new block after the structure, or before it with
 `before: true`, and selects it.
@@ -286,14 +291,16 @@ editor.update.break.exit();
 ```
 
 Returns `false` without changing the document when the selection is not a
-collapsed caret, or when the structure's parent declares no default block or
-has no room for it.
+collapsed caret, or when the structure's parent declares no default block, has
+no room for it, cannot fill a required property of that default, or would give
+the caret no text to land in. Any other failure to build the default throws.
 
 Options:
 
 - `before?: boolean`: Insert before the structure instead of after it.
-- `match?: (node, path) => boolean`: Limit which ancestors can be the
-  structure. The selected block is the fallback.
+- `match?: (node, path) => boolean`: Limit which levels can be the structure:
+  the selected block when it owns its exit, then its ancestors. The selected
+  block is the fallback.
 
 #### `tx.break.insert()`
 

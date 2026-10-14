@@ -19,7 +19,6 @@
       "platejs/comments": ["./src/features/comments/index.ts"],
       "platejs/comments/react": ["./src/react/features/comments/index.ts"],
       "platejs/compiler": ["./src/compiler/index.tsx"],
-      "platejs/csv": ["./src/csv/index.ts"],
       "platejs/date": ["./src/features/date/index.ts"],
       "platejs/date/react": ["./src/react/features/date/index.ts"],
       "platejs/details": ["./src/features/details/index.ts"],

@@ -21,22 +21,6 @@ const goTo = (path: string) => {
   happyDOM.setURL(`http://localhost${path}`);
 };
 
-const resizeCallbacks = new Map<Element, () => void>();
-
-class ResizeObserverStub {
-  readonly callback: () => void;
-
-  constructor(callback: () => void) {
-    this.callback = callback;
-  }
-
-  disconnect() {}
-
-  observe(element: Element) {
-    resizeCallbacks.set(element, () => this.callback());
-  }
-}
-
 const settle = () =>
   new Promise((resolve) => {
     setTimeout(resolve, 400);
@@ -55,7 +39,6 @@ function capturePosts() {
 }
 
 describe('DriveBeacon', () => {
-  const resizeObserver = window.ResizeObserver;
   const { sendBeacon } = navigator;
   const consoleError = console.error;
   const { addEventListener } = window;
@@ -64,10 +47,6 @@ describe('DriveBeacon', () => {
 
   beforeEach(() => {
     goTo('/docs/lint');
-    Object.defineProperty(window, 'ResizeObserver', {
-      configurable: true,
-      value: ResizeObserverStub,
-    });
     window.addEventListener = ((
       type: string,
       listener: EventListenerOrEventListenerObject,
@@ -84,38 +63,12 @@ describe('DriveBeacon', () => {
       window.removeEventListener(type, listener);
     }
     window.addEventListener = addEventListener;
-    resizeCallbacks.clear();
     console.error = consoleError;
     delete window.__driveReporter;
-    Object.defineProperty(window, 'ResizeObserver', {
-      configurable: true,
-      value: resizeObserver,
-    });
     Object.defineProperty(navigator, 'sendBeacon', {
       configurable: true,
       value: sendBeacon,
     });
-  });
-
-  it('posts a preview resize that fires no window event, as a drag released off its handle does', async () => {
-    const posted = capturePosts();
-    let width = 1280;
-    const { container, unmount } = render(
-      <div>
-        <div data-preview-panel="lint-demo" />
-        <DriveBeacon />
-      </div>
-    );
-    const panel = container.querySelector('[data-preview-panel]')!;
-    panel.getBoundingClientRect = () => ({ width }) as DOMRect;
-    await settle();
-
-    width = 375;
-    resizeCallbacks.get(panel)?.();
-    await settle();
-    unmount();
-
-    expect(JSON.parse(posted.at(-1)!).previews[0].width).toBe(375);
   });
 
   it('posts a visit after a client move', async () => {

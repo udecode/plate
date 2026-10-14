@@ -30,7 +30,6 @@ Do not infer that every base plugin needs a React wrapper.
 
 - [HtmlPlugin.ts](../../../../packages/platejs/src/lib/plugins/html/HtmlPlugin.ts)
 - [MarkdownPlugin.ts](../../../../packages/platejs/src/markdown/lib/MarkdownPlugin.ts)
-- [CsvPlugin.ts](../../../../packages/platejs/src/csv/lib/CsvPlugin.ts)
 
 Copy:
 

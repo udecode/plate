@@ -61,6 +61,7 @@ import {
 } from './internal/paste';
 import {
   getTableSelectionNeighbor,
+  isRectangularTableSelection,
   projectTableSelection,
   readTableSelection,
   type TableSelectionView,
@@ -77,6 +78,7 @@ import {
   parseTableCellHtml,
   resetImportedTableCellSpans,
 } from './internal/tableCellHtml';
+import { parseTabSeparated } from './internal/tabularText';
 import type {
   BorderDirection,
   TableAxisInsertOptions,
@@ -207,13 +209,6 @@ const projectTableSelectionSlice = (
 };
 
 const toPublicTableSelection = (view: TableSelectionView): TableSelection => {
-  const selectedArea = view.anchors.reduce(
-    (area, anchor) => area + anchor.colSpan * anchor.rowSpan,
-    0
-  );
-  const boundsArea =
-    (view.bounds.maxCol - view.bounds.minCol + 1) *
-    (view.bounds.maxRow - view.bounds.minRow + 1);
   const anchor = view.cellKeys[view.anchors.indexOf(view.anchor)];
   const focus = view.cellKeys[view.anchors.indexOf(view.focus)];
 
@@ -226,7 +221,7 @@ const toPublicTableSelection = (view: TableSelectionView): TableSelection => {
     bounds: view.bounds,
     cells: Object.freeze([...view.cellEntries]),
     focus,
-    rectangular: view.complete && selectedArea === boundsArea,
+    rectangular: isRectangularTableSelection(view),
     ...(view.root === undefined ? {} : { root: view.root }),
     table: [
       view.table as TableElement,
@@ -2295,212 +2290,385 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
       ],
     };
   })
-  .extend((context) => ({
-    commands: ({ around, handle }) => [
-      around(domCommands.insertData, ({ input, next, state }) => {
-        const exact = context.editor.api.dom.clipboard.readSlice(input);
-        const view = readTableSelection(state, {
-          cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
-          selection: state.selection(),
-          tableType: context.schema.type,
-        });
-        const hasStructuralTarget = (view?.anchors.length ?? 0) > 1;
+  .extend((context) => {
+    const readTabularTarget = (
+      state: Parameters<typeof readTableSelection>[0]
+    ) => {
+      const view = readTableSelection(state, {
+        cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
+        selection: state.selection(),
+        tableType: context.schema.type,
+      });
 
-        if (hasStructuralTarget && exact.kind === 'invalid') {
-          context.editor
-            .plugin(DebugPlugin)
-            .api.warn(
-              'Table paste rejected: invalid-source.',
-              'TABLE_MUTATION_DIAGNOSTIC',
-              { kind: 'invalid-source', reason: 'malformed-exact' }
+      return view &&
+        view.anchors.length > 1 &&
+        isRectangularTableSelection(view)
+        ? view
+        : null;
+    };
+
+    return {
+      dataTransferFormats: [
+        {
+          accept: ({ data, snapshot, state }) =>
+            !snapshot.getData('text/html') &&
+            !snapshot.getData('text/markdown') &&
+            snapshot.files.length === 0 &&
+            data.includes('\t') &&
+            readTabularTarget(state) !== null,
+          decode: ({ data, report, state }) => {
+            const view = readTabularTarget(state);
+
+            if (!view) return null;
+
+            const rows = parseTabSeparated(data);
+            const height = Math.min(
+              rows.length,
+              view.bounds.maxRow - view.bounds.minRow + 1
             );
+            const width = Math.min(
+              rows.reduce((widest, row) => Math.max(widest, row.length), 0),
+              view.bounds.maxCol - view.bounds.minCol + 1
+            );
+            const dropped = rows
+              .flatMap((row, index) =>
+                index < height ? row.slice(width) : row
+              )
+              .filter(Boolean).length;
+            const paragraphType =
+              context.editor.plugin(BaseParagraphPlugin).schema.type;
 
-          return state.transaction(() => {});
-        }
-        if (exact.kind === 'slice') {
-          const table = getTablePasteElement(exact.slice, {
+            if (dropped > 0) {
+              report({
+                impact: 'lossy',
+                message: `Left out ${dropped} pasted ${dropped === 1 ? 'field' : 'fields'} that do not fit the selected cells.`,
+              });
+            }
+
+            return ContentSlice.closed([
+              {
+                children: rows.slice(0, height).map((row) => ({
+                  ...createTableRow(context.editor, { columns: 0 }),
+                  children: Array.from({ length: width }, (_, column) =>
+                    createTableCell(context.editor, {
+                      children: (row[column] ?? '')
+                        .split(/\r\n|\r|\n/)
+                        .map((line) => ({
+                          children: [{ text: line }],
+                          type: paragraphType,
+                        })),
+                    })
+                  ),
+                })),
+                type: context.schema.type,
+              },
+            ]);
+          },
+          mimeType: 'text/plain',
+          priority: 30,
+        },
+      ],
+      commands: ({ around, handle }) => [
+        around(domCommands.insertData, ({ input, next, state }) => {
+          const exact = context.editor.api.dom.clipboard.readSlice(input);
+          const view = readTableSelection(state, {
+            cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
+            selection: state.selection(),
+            tableType: context.schema.type,
+          });
+          const hasStructuralTarget = (view?.anchors.length ?? 0) > 1;
+
+          if (hasStructuralTarget && exact.kind === 'invalid') {
+            context.editor
+              .plugin(DebugPlugin)
+              .api.warn(
+                'Table paste rejected: invalid-source.',
+                'TABLE_MUTATION_DIAGNOSTIC',
+                { kind: 'invalid-source', reason: 'malformed-exact' }
+              );
+
+            return state.transaction(() => {});
+          }
+          if (exact.kind === 'slice') {
+            const table = getTablePasteElement(exact.slice, {
+              tableType: context.schema.type,
+            });
+
+            if (table) {
+              const grid = compileTableGrid(table);
+
+              if (
+                grid.height === 0 ||
+                grid.width === 0 ||
+                grid.anchors.length === 0
+              ) {
+                context.editor
+                  .plugin(DebugPlugin)
+                  .api.warn(
+                    'Table paste rejected: invalid-source.',
+                    'TABLE_MUTATION_DIAGNOSTIC',
+                    { kind: 'invalid-source', reason: 'empty' }
+                  );
+
+                return state.transaction(() => {});
+              }
+            }
+          }
+
+          return next();
+        }),
+        around(editorCommands.select, ({ input, state, next }) =>
+          next({
+            ...input,
+            target: RangeApi.isRange(input.target)
+              ? clampTableSelection(context.schema.type, input.target, state)
+              : input.target,
+          })
+        ),
+        around(editorCommands.setSelection, ({ input, state, next }) => {
+          const selection = state.selection();
+
+          if (!selection || SelectionApi.isNode(selection)) return next();
+
+          const nextSelection = { ...selection, ...input.props };
+          const clamped = clampTableSelection(
+            context.schema.type,
+            nextSelection,
+            state
+          );
+
+          return next({
+            ...input,
+            props:
+              clamped === nextSelection
+                ? input.props
+                : { ...input.props, focus: clamped.focus },
+          });
+        }),
+        handle(editorCommands.delete, ({ input, state }) => {
+          const selection = state.selection();
+
+          if (
+            !selection ||
+            SelectionApi.isNode(selection) ||
+            !state.selection.isCollapsed()
+          ) {
+            return false;
+          }
+
+          const reverse = input.direction === 'forward';
+          const cellEntry = state.nodes.block({
+            type: BaseTableCellPlugin,
+          });
+
+          if (cellEntry) {
+            const edge = reverse
+              ? state.points.end(cellEntry[1])
+              : state.points.start(cellEntry[1]);
+
+            return edge && PointApi.equals(selection.anchor, edge)
+              ? state.transaction(() => {})
+              : false;
+          }
+
+          const nextPoint = reverse
+            ? state.points.after(selection, { unit: input.unit })
+            : state.points.before(selection, { unit: input.unit });
+
+          if (
+            nextPoint &&
+            state.nodes.block({
+              at: nextPoint,
+              type: BaseTableCellPlugin,
+            })
+          ) {
+            return state.transaction((tx) => {
+              tx.selection.move({ reverse: !reverse });
+            });
+          }
+
+          return false;
+        }),
+        handle(editorCommands.deleteFragment, ({ input, state }) => {
+          const target = input.at ?? state.selection();
+
+          if (!target) return false;
+          const view = readTableSelection(state, {
+            at: target,
+            cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
+            selection: state.selection(),
             tableType: context.schema.type,
           });
 
-          if (table) {
-            const grid = compileTableGrid(table);
-
-            if (
-              grid.height === 0 ||
-              grid.width === 0 ||
-              grid.anchors.length === 0
-            ) {
-              context.editor
-                .plugin(DebugPlugin)
-                .api.warn(
-                  'Table paste rejected: invalid-source.',
-                  'TABLE_MUTATION_DIAGNOSTIC',
-                  { kind: 'invalid-source', reason: 'empty' }
-                );
-
-              return state.transaction(() => {});
-            }
+          if (
+            !view ||
+            (!SelectionApi.isNode(target) && view.cellEntries.length < 2)
+          ) {
+            return false;
           }
-        }
 
-        return next();
-      }),
-      around(editorCommands.select, ({ input, state, next }) =>
-        next({
-          ...input,
-          target: RangeApi.isRange(input.target)
-            ? clampTableSelection(context.schema.type, input.target, state)
-            : input.target,
-        })
-      ),
-      around(editorCommands.setSelection, ({ input, state, next }) => {
-        const selection = state.selection();
-
-        if (!selection || SelectionApi.isNode(selection)) return next();
-
-        const nextSelection = { ...selection, ...input.props };
-        const clamped = clampTableSelection(
-          context.schema.type,
-          nextSelection,
-          state
-        );
-
-        return next({
-          ...input,
-          props:
-            clamped === nextSelection
-              ? input.props
-              : { ...input.props, focus: clamped.focus },
-        });
-      }),
-      handle(editorCommands.delete, ({ input, state }) => {
-        const selection = state.selection();
-
-        if (
-          !selection ||
-          SelectionApi.isNode(selection) ||
-          !state.selection.isCollapsed()
-        ) {
-          return false;
-        }
-
-        const reverse = input.direction === 'forward';
-        const cellEntry = state.nodes.block({
-          type: BaseTableCellPlugin,
-        });
-
-        if (cellEntry) {
-          const edge = reverse
-            ? state.points.end(cellEntry[1])
-            : state.points.start(cellEntry[1]);
-
-          return edge && PointApi.equals(selection.anchor, edge)
-            ? state.transaction(() => {})
-            : false;
-        }
-
-        const nextPoint = reverse
-          ? state.points.after(selection, { unit: input.unit })
-          : state.points.before(selection, { unit: input.unit });
-
-        if (
-          nextPoint &&
-          state.nodes.block({
-            at: nextPoint,
-            type: BaseTableCellPlugin,
-          })
-        ) {
           return state.transaction((tx) => {
-            tx.selection.move({ reverse: !reverse });
-          });
-        }
+            const cellPaths = view.cellEntries.map(([, path]) => path);
 
-        return false;
-      }),
-      handle(editorCommands.deleteFragment, ({ input, state }) => {
-        const target = input.at ?? state.selection();
-
-        if (!target) return false;
-        const view = readTableSelection(state, {
-          at: target,
-          cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
-          selection: state.selection(),
-          tableType: context.schema.type,
-        });
-
-        if (
-          !view ||
-          (!SelectionApi.isNode(target) && view.cellEntries.length < 2)
-        ) {
-          return false;
-        }
-
-        return state.transaction((tx) => {
-          const cellPaths = view.cellEntries.map(([, path]) => path);
-
-          view.cellEntries.forEach(([, path]) => {
-            tx.nodes.replaceChildren(
-              [
-                {
-                  children: [{ text: '' }],
-                  type: context.editor.plugin(BaseParagraphPlugin).schema.type,
-                },
-              ],
-              { at: path }
-            );
-          });
-          tx.selection.setNodes(cellPaths, {
-            anchor: view.tablePath.concat(view.anchor.path),
-            focus: view.tablePath.concat(view.focus.path),
-          });
-        });
-      }),
-      around(editorCommands.replaceSlice, ({ input, state, next }) => {
-        const { slice } = input;
-        const target = input.options?.at ?? state.selection();
-        const rejectTablePaste = (diagnostic: TablePasteDiagnostic): false => {
-          context.editor
-            .plugin(DebugPlugin)
-            .api.warn(
-              `Table paste rejected: ${diagnostic.kind}.`,
-              'TABLE_MUTATION_DIAGNOSTIC',
-              diagnostic
-            );
-
-          return false;
-        };
-
-        if (!target) return next();
-        const view = readTableSelection(state, {
-          at: target,
-          cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
-          selection: state.selection(),
-          tableType: context.schema.type,
-        });
-
-        if (!view) return next();
-
-        const prepared = prepareTablePaste(slice, {
-          createCell: ({ children, header, sourceRow }) =>
-            createTableCell(context.editor, {
-              children: children ? [...children] : undefined,
-              header,
-              row: sourceRow,
-            }),
-          createRow: () => createTableRow(context.editor, { columns: 0 }),
-          tableType: context.schema.type,
-        });
-
-        if (prepared === null) {
-          if (view.anchors.length <= 1) return next();
-          let fitted = false;
-          const transaction = state.transaction(() => {
-            fitted = fitSlicePlacements(context.editor, slice, {
-              placements: view.cellEntries.map(([, path]) => ({
-                at: path,
-                content: slice.content,
-              })),
+            view.cellEntries.forEach(([, path]) => {
+              tx.nodes.replaceChildren(
+                [
+                  {
+                    children: [{ text: '' }],
+                    type: context.editor.plugin(BaseParagraphPlugin).schema
+                      .type,
+                  },
+                ],
+                { at: path }
+              );
             });
+            tx.selection.setNodes(cellPaths, {
+              anchor: view.tablePath.concat(view.anchor.path),
+              focus: view.tablePath.concat(view.focus.path),
+            });
+          });
+        }),
+        around(editorCommands.replaceSlice, ({ input, state, next }) => {
+          const { slice } = input;
+          const target = input.options?.at ?? state.selection();
+          const rejectTablePaste = (
+            diagnostic: TablePasteDiagnostic
+          ): false => {
+            context.editor
+              .plugin(DebugPlugin)
+              .api.warn(
+                `Table paste rejected: ${diagnostic.kind}.`,
+                'TABLE_MUTATION_DIAGNOSTIC',
+                diagnostic
+              );
+
+            return false;
+          };
+
+          if (!target) return next();
+          const view = readTableSelection(state, {
+            at: target,
+            cellTypes: [context.editor.plugin(BaseTableCellPlugin).schema.type],
+            selection: state.selection(),
+            tableType: context.schema.type,
+          });
+
+          if (!view) return next();
+
+          const prepared = prepareTablePaste(slice, {
+            createCell: ({ children, header, sourceRow }) =>
+              createTableCell(context.editor, {
+                children: children ? [...children] : undefined,
+                header,
+                row: sourceRow,
+              }),
+            createRow: () => createTableRow(context.editor, { columns: 0 }),
+            tableType: context.schema.type,
+          });
+
+          if (prepared === null) {
+            if (view.anchors.length <= 1) return next();
+            let fitted = false;
+            const transaction = state.transaction(() => {
+              fitted = fitSlicePlacements(context.editor, slice, {
+                placements: view.cellEntries.map(([, path]) => ({
+                  at: path,
+                  content: slice.content,
+                })),
+              });
+            });
+
+            return fitted
+              ? transaction
+              : rejectTablePaste({
+                  kind: 'invalid-source',
+                  reason: 'content-rejected',
+                });
+          }
+          if ('kind' in prepared) return rejectTablePaste(prepared);
+          if (view.anchors.length > 1 && !isRectangularTableSelection(view)) {
+            return rejectTablePaste({
+              kind: 'invalid-target',
+              reason: 'shape-mismatch',
+            });
+          }
+
+          const { root } = view;
+          const fillBounds = view.anchors.length > 1 ? view.bounds : undefined;
+          const { defaultTableWidth, minColumnWidth } = context.store.get();
+          const plan = planPreparedTablePaste(view.context, prepared, {
+            createCell: ({ children, header, sourceRow }) =>
+              createTableCell(context.editor, {
+                children: children ? [...children] : undefined,
+                header,
+                row: sourceRow,
+              }),
+            createRow: () => createTableRow(context.editor, { columns: 0 }),
+            disableExpand: !context.store.get().expandOnPaste,
+            ...(fillBounds ? { fillBounds } : {}),
+            ...(defaultTableWidth === null
+              ? {}
+              : { initialTableWidth: defaultTableWidth }),
+            minColumnWidth,
+            ...(root === undefined ? {} : { root }),
+            startCol: fillBounds?.minCol ?? view.anchor.col,
+            startRow: fillBounds?.minRow ?? view.anchor.row,
+          });
+
+          if (plan.kind !== 'plan') return rejectTablePaste(plan);
+
+          let fitted = true;
+          const transaction = state.transaction((tx) => {
+            applyTableMutationPlan(tx, {
+              kind: 'plan',
+              operations: plan.operations,
+            });
+
+            for (const group of plan.placementGroups) {
+              if (
+                !fitSlicePlacements(context.editor, group.source, {
+                  placements: group.placements,
+                })
+              ) {
+                fitted = false;
+                return;
+              }
+            }
+            if (!fitted) return;
+
+            const selectedPaths = [
+              ...new Map(
+                plan.placementGroups.flatMap((group) =>
+                  group.placements.map(({ at }) => [at.join(','), at] as const)
+                )
+              ).values(),
+            ];
+
+            if (selectedPaths.length > 1) {
+              const firstPath = selectedPaths[0];
+              const anchorPath =
+                selectedPaths.find(
+                  (path) =>
+                    PathApi.equals(path, plan.selection.anchor.path) ||
+                    PathApi.isAncestor(path, plan.selection.anchor.path)
+                ) ?? selectedPaths[0];
+              const focusPath =
+                selectedPaths.find(
+                  (path) =>
+                    PathApi.equals(path, plan.selection.focus.path) ||
+                    PathApi.isAncestor(path, plan.selection.focus.path)
+                ) ?? selectedPaths.at(-1);
+
+              if (firstPath && anchorPath && focusPath) {
+                tx.selection.setNodes([firstPath, ...selectedPaths.slice(1)], {
+                  anchor: anchorPath,
+                  focus: focusPath,
+                  ...(root === undefined ? {} : { root }),
+                });
+              }
+            } else {
+              tx.selection.set(plan.selection);
+            }
           });
 
           return fitted
@@ -2509,145 +2677,51 @@ export const BaseTablePlugin = BaseTableSchemaPlugin.extend(({ store }) => ({
                 kind: 'invalid-source',
                 reason: 'content-rejected',
               });
-        }
-        if ('kind' in prepared) return rejectTablePaste(prepared);
-        if (
-          view.anchors.length > 1 &&
-          !toPublicTableSelection(view).rectangular
-        ) {
-          return rejectTablePaste({
-            kind: 'invalid-target',
-            reason: 'shape-mismatch',
-          });
-        }
-
-        const { root } = view;
-        const fillBounds = view.anchors.length > 1 ? view.bounds : undefined;
-        const { defaultTableWidth, minColumnWidth } = context.store.get();
-        const plan = planPreparedTablePaste(view.context, prepared, {
-          createCell: ({ children, header, sourceRow }) =>
-            createTableCell(context.editor, {
-              children: children ? [...children] : undefined,
-              header,
-              row: sourceRow,
-            }),
-          createRow: () => createTableRow(context.editor, { columns: 0 }),
-          disableExpand: !context.store.get().expandOnPaste,
-          ...(fillBounds ? { fillBounds } : {}),
-          ...(defaultTableWidth === null
-            ? {}
-            : { initialTableWidth: defaultTableWidth }),
-          minColumnWidth,
-          ...(root === undefined ? {} : { root }),
-          startCol: fillBounds?.minCol ?? view.anchor.col,
-          startRow: fillBounds?.minRow ?? view.anchor.row,
-        });
-
-        if (plan.kind !== 'plan') return rejectTablePaste(plan);
-
-        let fitted = true;
-        const transaction = state.transaction((tx) => {
-          applyTableMutationPlan(tx, {
-            kind: 'plan',
-            operations: plan.operations,
-          });
-
-          for (const group of plan.placementGroups) {
-            if (
-              !fitSlicePlacements(context.editor, group.source, {
-                placements: group.placements,
+        }),
+        around(editorCommands.insertText, ({ state, next }) => {
+          const selection = state.selection();
+          const view = selection
+            ? readTableSelection(state, {
+                at: selection,
+                cellTypes: [
+                  context.editor.plugin(BaseTableCellPlugin).schema.type,
+                ],
+                selection,
+                tableType: context.schema.type,
               })
-            ) {
-              fitted = false;
-              return;
-            }
+            : null;
+
+          if (
+            !selection ||
+            !view ||
+            (!SelectionApi.isNode(selection) && view.cellEntries.length < 2)
+          ) {
+            return next();
           }
-          if (!fitted) return;
-
-          const selectedPaths = [
-            ...new Map(
-              plan.placementGroups.flatMap((group) =>
-                group.placements.map(({ at }) => [at.join(','), at] as const)
-              )
-            ).values(),
-          ];
-
-          if (selectedPaths.length > 1) {
-            const firstPath = selectedPaths[0];
-            const anchorPath =
-              selectedPaths.find(
-                (path) =>
-                  PathApi.equals(path, plan.selection.anchor.path) ||
-                  PathApi.isAncestor(path, plan.selection.anchor.path)
-              ) ?? selectedPaths[0];
-            const focusPath =
-              selectedPaths.find(
-                (path) =>
-                  PathApi.equals(path, plan.selection.focus.path) ||
-                  PathApi.isAncestor(path, plan.selection.focus.path)
-              ) ?? selectedPaths.at(-1);
-
-            if (firstPath && anchorPath && focusPath) {
-              tx.selection.setNodes([firstPath, ...selectedPaths.slice(1)], {
-                anchor: anchorPath,
-                focus: focusPath,
-                ...(root === undefined ? {} : { root }),
-              });
-            }
-          } else {
-            tx.selection.set(plan.selection);
-          }
-        });
-
-        return fitted
-          ? transaction
-          : rejectTablePaste({
-              kind: 'invalid-source',
-              reason: 'content-rejected',
+          const focusPath = view.tablePath.concat(view.focus.path);
+          const focus = state.points.start(focusPath);
+          const transaction = state.transaction((tx) => {
+            view.cellEntries.forEach(([, path]) => {
+              tx.nodes.replaceChildren(
+                [
+                  {
+                    children: [{ text: '' }],
+                    type: context.editor.plugin(BaseParagraphPlugin).schema
+                      .type,
+                  },
+                ],
+                { at: path }
+              );
             });
-      }),
-      around(editorCommands.insertText, ({ state, next }) => {
-        const selection = state.selection();
-        const view = selection
-          ? readTableSelection(state, {
-              at: selection,
-              cellTypes: [
-                context.editor.plugin(BaseTableCellPlugin).schema.type,
-              ],
-              selection,
-              tableType: context.schema.type,
-            })
-          : null;
 
-        if (
-          !selection ||
-          !view ||
-          (!SelectionApi.isNode(selection) && view.cellEntries.length < 2)
-        ) {
-          return next();
-        }
-        const focusPath = view.tablePath.concat(view.focus.path);
-        const focus = state.points.start(focusPath);
-        const transaction = state.transaction((tx) => {
-          view.cellEntries.forEach(([, path]) => {
-            tx.nodes.replaceChildren(
-              [
-                {
-                  children: [{ text: '' }],
-                  type: context.editor.plugin(BaseParagraphPlugin).schema.type,
-                },
-              ],
-              { at: path }
-            );
+            if (focus) tx.selection.set({ anchor: focus, focus });
           });
 
-          if (focus) tx.selection.set({ anchor: focus, focus });
-        });
-
-        return next.after(transaction);
-      }),
-    ],
-  }));
+          return next.after(transaction);
+        }),
+      ],
+    };
+  });
 
 export type TableDefinition = DefinitionOf<typeof BaseTablePlugin>;
 

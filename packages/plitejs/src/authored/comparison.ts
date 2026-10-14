@@ -1,5 +1,5 @@
 import { DocumentChange } from '../core/change/document-change';
-import { jsonEqual } from '../core/change/tokens';
+import { jsonEqual } from '../core/change/json';
 import { fingerprintEditorJson } from '../core/json-fingerprint';
 import {
   COMPARISON_POLICY,

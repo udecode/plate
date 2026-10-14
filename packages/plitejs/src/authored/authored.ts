@@ -14,13 +14,9 @@ import {
   valueRoot,
 } from '../core/change/document-change';
 import { DocumentIndex } from '../core/change/document-index';
+import { deepFreeze, jsonEqual } from '../core/change/json';
 import type { RootChange } from '../core/change/root-change';
-import {
-  deepFreeze,
-  type JsonEditorValue,
-  type JsonNode,
-  jsonEqual,
-} from '../core/change/tokens';
+import type { JsonEditorValue, JsonNode } from '../core/change/tokens';
 import {
   type EditorFrameRecording,
   registerEditorCommandDocument,

@@ -35,6 +35,9 @@ const captionVariants = cva('max-w-full', {
 
 export function useCaptionFocused(path: Path) {
   return useEditorSelector((editor) => {
+    // A media NodeSelection also reads as a caret at the caption start.
+    if (editor.read.selection.nodes().length > 0) return false;
+
     const selection = editor.read.selection();
 
     return (
@@ -46,7 +49,6 @@ export function useCaptionFocused(path: Path) {
 }
 
 export function Caption({
-  active,
   align,
   children,
   className,
@@ -56,7 +58,6 @@ export function Caption({
   style,
   ...props
 }: React.ComponentProps<'figcaption'> & {
-  active: boolean;
   align?: 'center' | 'left' | 'right';
   element: Element;
   placeholder?: string;
@@ -74,7 +75,8 @@ export function Caption({
         !change || !nodeKey || change.changed.hasNodeKey(nodeKey, 'node'),
     }
   );
-  const hidden = !active && empty;
+  const focused = useCaptionFocused(path);
+  const hidden = !focused && empty;
 
   return (
     <figcaption
@@ -82,7 +84,7 @@ export function Caption({
       className={cn(
         captionVariants({ align }),
         'relative mt-2 min-h-6 w-full bg-inherit p-0 font-[inherit] text-inherit',
-        active && empty && 'flex items-center',
+        focused && empty && 'flex items-center',
         'after:pointer-events-none after:text-muted-foreground after:content-[attr(data-placeholder)]',
         'print:placeholder:text-transparent',
         className

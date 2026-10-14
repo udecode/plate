@@ -24,7 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         defaultTheme="light"
         disableTransitionOnChange
         enableColorScheme
-        enableSystem
+        enableSystem={process.env.NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME !== '1'}
       >
         <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
       </ThemeProvider>

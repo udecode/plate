@@ -19,6 +19,7 @@ export default defineDirectPackageConfig(
       'yjs/index': 'src/yjs/index.ts',
       'yjs/react/index': 'src/yjs/react/index.ts',
     },
+    unbundle: true,
   },
   {
     runtimeImportBoundaries: [

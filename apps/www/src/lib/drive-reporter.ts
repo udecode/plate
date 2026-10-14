@@ -49,14 +49,6 @@ export function installDriveReporter() {
         errors: reported,
         frame: window.top !== window,
         path: window.location.pathname,
-        previews: Array.from(
-          document.querySelectorAll('[data-preview-panel]'),
-          (panel) => ({
-            group: panel.parentElement?.getBoundingClientRect().width ?? 0,
-            name: panel.getAttribute('data-preview-panel') ?? '',
-            width: panel.getBoundingClientRect().width,
-          })
-        ),
         rendered: window.__driveRendered,
         sent: Date.now(),
         theme: document.documentElement.classList.contains('dark')

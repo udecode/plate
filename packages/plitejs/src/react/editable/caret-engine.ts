@@ -464,31 +464,19 @@ const isObjectTextDrawn = (
   return false;
 };
 
+// Child text the page does not draw has no keyboard stop, so an empty caption
+// the stock UI hides is skipped in both directions (EDIT-CAPTION-NAV-003).
 const getObjectReverseEntryTarget = (
   editor: ReactRuntimeEditor,
-  point: Point,
-  axis: 'horizontal' | 'vertical'
+  point: Point
 ) => {
   const owner = getSelectableOwnerAncestorNodeSelection(editor, point);
 
   if (!owner || !getPathElement(editor, owner.path)) return null;
 
-  const caret = SelectionApi.text({ anchor: point, focus: point });
-
-  if (isObjectTextDrawn(editor, owner.path, point.path)) return caret;
-
-  // Empty child text keeps one backward stop (EDIT-CAPTION-NAV-003), because
-  // the stock caption shows once it holds the caret.
-  const keepsEmptyStop =
-    axis === 'horizontal' &&
-    getPathElement(editor, point.path) &&
-    editor.read((state) => {
-      const node = state.nodes.get(owner.path)?.[0];
-
-      return node ? NodeApi.string(node) === '' : false;
-    });
-
-  return keepsEmptyStop ? caret : owner.selection;
+  return isObjectTextDrawn(editor, owner.path, point.path)
+    ? SelectionApi.text({ anchor: point, focus: point })
+    : owner.selection;
 };
 
 const getStepPastTarget = (editor: ReactRuntimeEditor, path: Path) => {
@@ -559,7 +547,7 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
       );
 
       return point
-        ? (getObjectReverseEntryTarget(editor, point, 'vertical') ??
+        ? (getObjectReverseEntryTarget(editor, point) ??
             SelectionApi.text({ anchor: point, focus: point }))
         : null;
     }
@@ -794,7 +782,7 @@ export const getSelectableOwnerHorizontalNavigationTarget = ({
     if (!point) return null;
 
     return (
-      getObjectReverseEntryTarget(editor, point, 'horizontal') ??
+      getObjectReverseEntryTarget(editor, point) ??
       SelectionApi.text({ anchor: point, focus: point })
     );
   }
@@ -819,9 +807,7 @@ export const getSelectableOwnerHorizontalNavigationTarget = ({
       state.points.before(selection.focus, { unit: 'character' })
     );
 
-    return previous
-      ? getObjectReverseEntryTarget(editor, previous, 'horizontal')
-      : null;
+    return previous ? getObjectReverseEntryTarget(editor, previous) : null;
   }
 
   const next = editor.read((state) => {

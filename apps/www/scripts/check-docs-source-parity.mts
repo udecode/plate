@@ -1,8 +1,14 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
+import { getTableOfContents } from 'fumadocs-core/content/toc';
 import matter from 'gray-matter';
 
+import {
+  apiItemAnchor,
+  apiListAnchor,
+  apiReferenceAnchor,
+} from '@/lib/docs-anchors';
 import { registryExampleSlug, sourcePathToDocsRoute } from '@/lib/docs-routes';
 import { PLATE_DEFAULT_REGISTRY_STYLE } from '@/lib/plate-registry-styles';
 import { getRegistryMetadata } from '@/lib/registry-metadata';
@@ -39,6 +45,21 @@ const PACKAGE_INSTALL_COMMAND_REGEX =
   /^\s*(?:npm\s+(?:i|install)|pnpm\s+(?:add|install)|yarn\s+(?:add|install)|bun\s+(?:add|install))\s+(.+)$/u;
 const PACKAGE_IMPORT_REGEX =
   /\b(?:from\s+|import\s*\(\s*|require\s*\(\s*)['"]((?:platejs|plitejs)(?:\/[^'"]+)?)['"]/gu;
+const DOCS_ANCHOR_LINK_REGEX = /\]\(((?:\/cn)?\/docs[^\s#)]*)?#([^\s)]+)\)/g;
+const CODE_FENCE_REGEX = /^\s*(?:```|~~~)/;
+const API_TAG_REGEX = /<(\/?)(API[A-Za-z]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
+const JSX_STRING_ATTRIBUTE_REGEX = /\b(\w+)=(?:"([^"]*)"|'([^']*)')/g;
+const API_LIST_TYPES: Record<string, string> = {
+  APIAttributes: 'attributes',
+  APIListAPI: 'api',
+  APIMethods: 'methods',
+  APIOptions: 'options',
+  APIParameters: 'parameters',
+  APIProps: 'props',
+  APIReturns: 'returns',
+  APIState: 'state',
+  APITransforms: 'transforms',
+};
 const registry = getRegistryMetadata();
 
 const appOnlyDocsRoutes = new Set([
@@ -235,6 +256,157 @@ async function checkPackageDocs() {
   assert(
     errors.length === 0,
     `Package documentation is stale:\n${errors.map((error) => `- ${error}`).join('\n')}`
+  );
+}
+
+function withoutCodeFences(lines: string[]) {
+  let fenced = false;
+
+  return lines.map((line) => {
+    if (CODE_FENCE_REGEX.test(line)) {
+      fenced = !fenced;
+      return '';
+    }
+
+    return fenced ? '' : line;
+  });
+}
+
+function getJsxStringAttributes(attributes: string) {
+  return new Map(
+    [...attributes.matchAll(JSX_STRING_ATTRIBUTE_REGEX)].map((match) => [
+      match[1],
+      match[2] ?? match[3],
+    ])
+  );
+}
+
+function getDocsAnchors(source: string) {
+  const { content } = matter(source);
+  const anchors = new Set(
+    getTableOfContents(content).map((item) => item.url.slice(1))
+  );
+  const apiNames: string[] = [];
+  const listTypes: string[] = [];
+  const markup = withoutCodeFences(content.split('\n')).join('\n');
+
+  for (const [tag, closing, name, rawAttributes] of markup.matchAll(
+    API_TAG_REGEX
+  )) {
+    const attributes = getJsxStringAttributes(rawAttributes);
+    const selfClosing = tag.endsWith('/>');
+    const listType =
+      name === 'APIList'
+        ? (attributes.get('listType') ?? 'parameters')
+        : API_LIST_TYPES[name];
+    const apiName = apiNames.at(-1);
+
+    if (closing) {
+      if (name === 'API') apiNames.pop();
+      else if (listType) listTypes.pop();
+    } else if (name === 'API') {
+      if (!selfClosing) apiNames.push(attributes.get('name') ?? '');
+    } else if (listType) {
+      if (apiName) anchors.add(apiListAnchor(apiName, listType));
+      if (!selfClosing) listTypes.push(listType);
+    } else if (name === 'APIItem' && apiName) {
+      anchors.add(
+        apiItemAnchor(apiName, listTypes.at(-1), attributes.get('name') ?? '')
+      );
+    } else if (name === 'APISubListItem' && apiName) {
+      anchors.add(
+        apiItemAnchor(
+          apiName,
+          listTypes.at(-1),
+          attributes.get('parent') ?? '',
+          attributes.get('name') ?? ''
+        )
+      );
+    } else if (name === 'APIReference') {
+      anchors.add(
+        apiReferenceAnchor(
+          attributes.get('package') ?? '',
+          attributes.get('symbol') ?? ''
+        )
+      );
+    }
+  }
+
+  return anchors;
+}
+
+async function checkDocsAnchors(sourcePaths: string[]) {
+  const sourcePathByRoute = new Map(
+    sourcePaths.map((sourcePath) => [
+      sourcePathToDocsRoute(sourcePath),
+      sourcePath,
+    ])
+  );
+  const sources = new Map(
+    await Promise.all(
+      sourcePaths.map(
+        async (sourcePath) =>
+          [
+            sourcePath,
+            await fs.readFile(path.join(CONTENT_DIR, sourcePath), 'utf-8'),
+          ] as const
+      )
+    )
+  );
+  const anchorsBySourcePath = new Map(
+    [...sources].map(([sourcePath, source]) => [
+      sourcePath,
+      getDocsAnchors(source),
+    ])
+  );
+  const resolveRouteWithEnglishFallback = (route: string) =>
+    sourcePathByRoute.get(route) ??
+    sourcePathByRoute.get(route.replace(CN_DOCS_PREFIX_REGEX, ''));
+  const errors: string[] = [];
+
+  for (const [sourcePath, source] of sources) {
+    const lines = withoutCodeFences(source.split('\n'));
+
+    for (const [index, line] of lines.entries()) {
+      for (const [, href = '', encodedAnchor] of line.matchAll(
+        DOCS_ANCHOR_LINK_REGEX
+      )) {
+        const link = `${href}#${encodedAnchor}`;
+        const anchor = decodeURIComponent(encodedAnchor);
+        const route = normalizeDocsHref(href);
+        const targetPath = href
+          ? resolveRouteWithEnglishFallback(route)
+          : sourcePath;
+
+        if (!targetPath) {
+          errors.push(
+            `${sourcePath}:${index + 1}: ${link} opens no MDX docs page`
+          );
+          continue;
+        }
+        if (anchorsBySourcePath.get(targetPath)?.has(anchor)) continue;
+
+        const cnTwin = sourcePathByRoute.get(hrefWithLocale(route, 'cn'));
+        const hint =
+          sourcePath.endsWith('.cn.mdx') &&
+          DOCS_HREF_REGEX.test(href) &&
+          cnTwin &&
+          anchorsBySourcePath.get(cnTwin)?.has(anchor)
+            ? `; link /cn${link} instead`
+            : '';
+
+        errors.push(
+          `${sourcePath}:${index + 1}: ${link} has no #${anchor} on ${targetPath}${hint}`
+        );
+      }
+    }
+  }
+
+  assert(
+    errors.length === 0,
+    `Docs links name anchors their target page does not render:\n${errors
+      .map((error) => `- ${error}`)
+      .join('\n')}`
   );
 }
 
@@ -557,7 +729,8 @@ async function checkDocsRegistry() {
 }
 
 try {
-  const sourceRoutes = getSourceRoutes(await getGeneratedSourcePaths());
+  const sourcePaths = [...new Set(await getGeneratedSourcePaths())];
+  const sourceRoutes = getSourceRoutes(sourcePaths);
   const docsMeta = await readDocsMeta();
 
   checkDocsMetaOverlay(docsMeta);
@@ -567,6 +740,7 @@ try {
   checkChineseFallbackDocRoutes(sourceRoutes);
   checkChinesePagerHrefLookup();
   await checkPackageDocs();
+  await checkDocsAnchors(sourcePaths);
   await checkDocsRegistry();
   console.info('Docs source parity check passed.');
 } catch (error) {

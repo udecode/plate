@@ -144,6 +144,8 @@ packages/platejs/docs/
 /playwright/.cache/
 .turbo
 .vercel
+# Swift Package Manager cache from running tooling/ime/macos-ime.swift
+/.build/
 
 *.local
 

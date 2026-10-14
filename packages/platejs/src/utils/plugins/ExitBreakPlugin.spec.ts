@@ -8,7 +8,9 @@ import {
 } from '../../features/basic-nodes/lib/BaseBlockPlugins';
 import { BaseHeadingPlugin } from '../../features/basic-nodes/lib/BaseHeadingPlugins';
 import { BaseCodeBlockPlugin } from '../../features/code-block/lib/BaseCodeBlockPlugin';
+import { BaseDetailsPlugin } from '../../features/details/lib/BaseDetailsPlugin';
 import { BaseColumnPlugin } from '../../features/layout/lib/BaseColumnPlugin';
+import { BaseImagePlugin } from '../../features/media/lib/image/BaseImagePlugin';
 import { ExitBreakPlugin } from './ExitBreakPlugin';
 
 describe('ExitBreakPlugin', () => {
@@ -152,6 +154,225 @@ describe('ExitBreakPlugin', () => {
         type: 'columnGroup',
       },
     ]);
+  });
+
+  it('lands a paragraph after an image inside its column [EDIT-GLOBAL-001]', () => {
+    const image = {
+      children: [{ text: 'cap' }],
+      type: 'image',
+      url: 'https://example.com/a.png',
+    };
+    const editor = createEditor({
+      plugins: [ExitBreakPlugin, BaseColumnPlugin, BaseImagePlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0, 0, 0] },
+        focus: { offset: 1, path: [0, 0, 0, 0] },
+      },
+      initialValue: [
+        {
+          children: [
+            { children: [image], type: 'column', width: '50%' },
+            {
+              children: [{ children: [{ text: 'r' }], type: 'paragraph' }],
+              type: 'column',
+              width: '50%',
+            },
+          ],
+          type: 'columnGroup',
+        },
+      ],
+    });
+
+    editor.plugin(ExitBreakPlugin).update.insert();
+
+    expect({
+      children: editor.read.children(),
+      selection: editor.read.selection(),
+    }).toEqual({
+      children: [
+        {
+          children: [
+            {
+              children: [
+                image,
+                { children: [{ text: '' }], type: 'paragraph' },
+              ],
+              type: 'column',
+              width: '50%',
+            },
+            {
+              children: [{ children: [{ text: 'r' }], type: 'paragraph' }],
+              type: 'column',
+              width: '50%',
+            },
+          ],
+          type: 'columnGroup',
+        },
+      ],
+      selection: {
+        anchor: { offset: 0, path: [0, 0, 1, 0] },
+        focus: { offset: 0, path: [0, 0, 1, 0] },
+      },
+    });
+  });
+
+  it('lands a paragraph after a divider inside its column [EDIT-GLOBAL-001]', () => {
+    const editor = createEditor({
+      plugins: [ExitBreakPlugin, BaseColumnPlugin, BaseHorizontalRulePlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 0, 0] },
+      },
+      initialValue: [
+        {
+          children: [
+            {
+              children: [{ children: [{ text: '' }], type: 'horizontalRule' }],
+              type: 'column',
+              width: '50%',
+            },
+            {
+              children: [{ children: [{ text: 'r' }], type: 'paragraph' }],
+              type: 'column',
+              width: '50%',
+            },
+          ],
+          type: 'columnGroup',
+        },
+      ],
+    });
+
+    editor.plugin(ExitBreakPlugin).update.insert();
+
+    expect({
+      children: editor.read.children(),
+      selection: editor.read.selection(),
+    }).toEqual({
+      children: [
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: '' }], type: 'horizontalRule' },
+                { children: [{ text: '' }], type: 'paragraph' },
+              ],
+              type: 'column',
+              width: '50%',
+            },
+            {
+              children: [{ children: [{ text: 'r' }], type: 'paragraph' }],
+              type: 'column',
+              width: '50%',
+            },
+          ],
+          type: 'columnGroup',
+        },
+      ],
+      selection: {
+        anchor: { offset: 0, path: [0, 0, 1, 0] },
+        focus: { offset: 0, path: [0, 0, 1, 0] },
+      },
+    });
+  });
+
+  it('lands a paragraph after a code block inside a details body, in one undo step [EDIT-GLOBAL-001]', () => {
+    const initialValue = [
+      {
+        children: [
+          { children: [{ text: 's' }], type: 'summary' },
+          { children: [{ text: 'x' }], type: 'codeBlock' },
+        ],
+        type: 'details',
+      },
+    ];
+    const editor = createEditor({
+      plugins: [ExitBreakPlugin, BaseCodeBlockPlugin, BaseDetailsPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 1, 0] },
+        focus: { offset: 1, path: [0, 1, 0] },
+      },
+      initialValue,
+    });
+
+    editor.plugin(ExitBreakPlugin).update.insert();
+
+    expect({
+      children: editor.read.children(),
+      selection: editor.read.selection(),
+    }).toEqual({
+      children: [
+        {
+          children: [
+            { children: [{ text: 's' }], type: 'summary' },
+            { children: [{ text: 'x' }], type: 'codeBlock' },
+            { children: [{ text: '' }], type: 'paragraph' },
+          ],
+          type: 'details',
+        },
+      ],
+      selection: {
+        anchor: { offset: 0, path: [0, 2, 0] },
+        focus: { offset: 0, path: [0, 2, 0] },
+      },
+    });
+
+    editor.api.history.undo();
+
+    expect(editor.read.children()).toEqual(initialValue);
+  });
+
+  it('lands a new section after a paragraph in a root that holds only sections, in one undo step', () => {
+    const SectionPlugin = definePlugin('exitBreakSection', {
+      schema: {
+        element: {
+          content: schema.content.elements([BaseParagraphPlugin], { min: 1 }),
+        },
+      },
+    });
+    const initialValue = [
+      {
+        children: [{ children: [{ text: 'x' }], type: 'paragraph' }],
+        type: 'exitBreakSection',
+      },
+    ];
+    const editor = createEditor({
+      plugins: [ExitBreakPlugin, SectionPlugin],
+      schema: {
+        root: schema.content.element(SectionPlugin, { min: 1 }),
+      },
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0, 0] },
+        focus: { offset: 1, path: [0, 0, 0] },
+      },
+      initialValue,
+    });
+
+    editor.plugin(ExitBreakPlugin).update.insert();
+
+    expect({
+      children: editor.read.children(),
+      selection: editor.read.selection(),
+    }).toEqual({
+      children: [
+        ...initialValue,
+        {
+          children: [{ children: [{ text: '' }], type: 'paragraph' }],
+          type: 'exitBreakSection',
+        },
+      ],
+      selection: {
+        anchor: { offset: 0, path: [1, 0, 0] },
+        focus: { offset: 0, path: [1, 0, 0] },
+      },
+    });
+
+    editor.api.history.undo();
+
+    expect(editor.read.children()).toEqual(initialValue);
   });
 
   it('exits the table, not a cell or row its parent creates by default', () => {

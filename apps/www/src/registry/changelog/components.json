@@ -6,7 +6,23 @@
       "2026-08-14-author-editor-runtime",
       "2026-07-29-preserve-feature-example-wiring"
     ],
-    "exit-break-demo": ["2026-10-14-exit-break-demo-copy"],
+    "exit-break-demo": [
+      "2026-10-14-exit-break-demo-copy",
+      "2026-10-14-exit-break-demo-nearest-structure"
+    ],
+    "editor-plugins": [
+      "2026-10-14-remove-csv-plugin",
+      "2026-09-19-files-sdk-upload-kit",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-24-keep-editor-contracts-app-owned",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-18-isolate-docx-file-io",
+      "2026-08-18-separate-document-migrations",
+      "2026-08-17-automatic-document-migrations",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
     "details": [
       "2026-10-13-details-heading-titles",
       "2026-10-10-details-selection",
@@ -154,6 +170,55 @@
     ],
     "lint": ["2026-10-13-lint"],
     "lint-demo": ["2026-10-13-lint"],
+    "caption": [
+      "2026-10-13-media-caption-preview",
+      "2026-08-31-stabilize-hidden-media-captions",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-23-rich-media-caption-children"
+    ],
+    "media-image": [
+      "2026-10-13-media-caption-preview",
+      "2026-10-01-native-block-drag",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-audio": [
+      "2026-10-13-media-caption-preview",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-embed": [
+      "2026-10-13-media-caption-preview",
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-file": [
+      "2026-10-13-media-caption-preview",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-video": [
+      "2026-10-13-media-caption-preview",
+      "2026-10-01-native-block-drag",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "media-preview-dialog": [
+      "2026-10-13-media-caption-preview",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2025-11-20-biome-ultracite"
+    ],
+    "media-toolbar": [
+      "2026-10-13-media-caption-preview",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-04-infer-node-props-from-plugins",
+      "2025-11-20-biome-ultracite"
+    ],
     "comment": [
       "2026-10-13-static-editor-previews",
       "2026-10-07-editor-user",
@@ -708,16 +773,6 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
-    "media-image": [
-      "2026-10-01-native-block-drag",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "media-video": [
-      "2026-10-01-native-block-drag",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
-    ],
     "upload": [
       "2026-10-01-native-block-drag",
       "2026-09-21-upload-provider-items",
@@ -786,18 +841,6 @@
     "files-api": [
       "2026-09-21-upload-provider-items",
       "2026-09-19-files-sdk-upload-kit"
-    ],
-    "editor-plugins": [
-      "2026-09-19-files-sdk-upload-kit",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-24-keep-editor-contracts-app-owned",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-18-isolate-docx-file-io",
-      "2026-08-18-separate-document-migrations",
-      "2026-08-17-automatic-document-migrations",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "media": [
       "2026-09-19-files-sdk-upload-kit",
@@ -1018,12 +1061,6 @@
       "2025-11-20-biome-ultracite"
     ],
     "select-command": ["2026-08-31-inline-component-props"],
-    "caption": [
-      "2026-08-31-stabilize-hidden-media-captions",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-23-rich-media-caption-children"
-    ],
     "inactive-selection-demo": ["2026-08-31-transient-editor-geometry"],
     "link-toolbar-button": [
       "2026-08-31-transient-editor-geometry",
@@ -1051,14 +1088,6 @@
     "find-replace-demo": [
       "2026-08-28-canonical-editor-api-names",
       "2026-08-18-fix-editor-runtime-interactions"
-    ],
-    "media-preview-dialog": [
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-20-improve-editor-control-accessibility",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2025-11-20-biome-ultracite"
     ],
     "expect-defined": ["2026-08-28-inline-required-value-checks"],
     "font-color-toolbar-button": [
@@ -1106,10 +1135,6 @@
       "2026-07-26-plugin-store-state",
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite"
-    ],
-    "media-embed": [
-      "2026-08-20-improve-editor-control-accessibility",
-      "2026-08-17-flat-editor-registry"
     ],
     "media-embed-static": [
       "2026-08-20-improve-editor-control-accessibility",
@@ -1179,13 +1204,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
     ],
-    "media-toolbar": [
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-04-infer-node-props-from-plugins",
-      "2025-11-20-biome-ultracite"
-    ],
     "toggle-toolbar-button": [
       "2026-08-17-flat-editor-registry",
       "2026-08-16-direct-react-component-families"
@@ -1202,9 +1220,7 @@
     "media-image-static": ["2026-08-17-flat-editor-registry"],
     "kbd": ["2026-08-17-flat-editor-registry"],
     "kbd-static": ["2026-08-17-flat-editor-registry"],
-    "media-audio": ["2026-08-17-flat-editor-registry"],
     "media-audio-static": ["2026-08-17-flat-editor-registry"],
-    "media-file": ["2026-08-17-flat-editor-registry"],
     "media-file-static": ["2026-08-17-flat-editor-registry"],
     "media-video-static": ["2026-08-17-flat-editor-registry"],
     "paragraph": ["2026-08-17-flat-editor-registry"],

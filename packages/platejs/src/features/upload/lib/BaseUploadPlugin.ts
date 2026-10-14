@@ -842,8 +842,12 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
               ) {
                 const anchor =
                   insertOptions.after === undefined
-                    ? undefined
+                    ? tx.nodes.block()?.[0]
                     : tx.nodes.block({ at: insertOptions.after })?.[0];
+                // A submit at the selection fills an empty block, as paste does.
+                const replaceEmpty =
+                  insertOptions.replaceEmpty ??
+                  insertOptions.after === undefined;
                 const inserted = tx.blocks.insertAfter(
                   elements.map(({ element }) => element),
                   {
@@ -851,11 +855,10 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
                     at: insertOptions.after,
                     // An empty structural block, such as a details summary,
                     // keeps its slot; the file lands beside it instead.
-                    ...(insertOptions.replaceEmpty &&
-                    anchor &&
-                    !updateEditor.read.schema.isBlockContent(anchor)
-                      ? { replaceEmpty: false }
-                      : {}),
+                    replaceEmpty:
+                      replaceEmpty &&
+                      (!anchor ||
+                        updateEditor.read.schema.isBlockContent(anchor)),
                   }
                 );
                 if (!inserted) return false;

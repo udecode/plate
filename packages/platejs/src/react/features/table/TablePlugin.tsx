@@ -20,10 +20,11 @@ import {
   createTableNodeSelection,
   getTableSelectionExpansion,
   getTableSelectionNeighbor,
-  projectTableSelection,
+  isRectangularTableSelection,
   readTableSelection,
   type TableSelectionView,
 } from '../../../features/table/lib/internal/selection';
+import { serializeTabSeparated } from '../../../features/table/lib/internal/tabularText';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
   type Editor,
@@ -41,12 +42,6 @@ import {
   getTableSelectionCellRef,
   updateTableSelectionHostState,
 } from './tableSelectionHostBinding.internal';
-
-const csvSpecialCharacterPattern = /[",\r\n]/;
-const escapeCsvField = (value: string) =>
-  csvSpecialCharacterPattern.test(value)
-    ? `"${value.replaceAll('"', '""')}"`
-    : value;
 
 const readInternalSelection = (
   editor: Editor,
@@ -68,34 +63,28 @@ const writeTableSelection = (
   const view = readInternalSelection(editor);
 
   if (!view || view.cellEntries.length <= 1) return 'unhandled';
-  const selectedArea = view.anchors.reduce(
-    (area, anchor) => area + anchor.colSpan * anchor.rowSpan,
-    0
+  if (!isRectangularTableSelection(view)) return 'rejected';
+  const { bounds, grid } = view;
+  const tsv = serializeTabSeparated(
+    grid.slots
+      .slice(bounds.minRow, bounds.maxRow + 1)
+      .map((slots, offset) =>
+        slots
+          .slice(bounds.minCol, bounds.maxCol + 1)
+          .map((anchor, column) =>
+            anchor?.row === bounds.minRow + offset &&
+            anchor.col === bounds.minCol + column
+              ? anchor.cell.children
+                  .map((block) => NodeApi.string(block))
+                  .join('\n')
+              : ''
+          )
+      )
   );
-  const boundsArea =
-    (view.bounds.maxCol - view.bounds.minCol + 1) *
-    (view.bounds.maxRow - view.bounds.minRow + 1);
-
-  if (!view.complete || selectedArea !== boundsArea) return 'rejected';
-  const rows = projectTableSelection(view).children;
-  const values = rows.map((row) =>
-    NodeApi.isElement(row)
-      ? row.children.map((cell) => NodeApi.string(cell))
-      : []
-  );
-  const csv = `${values
-    .map((row) => row.map(escapeCsvField).join(','))
-    .join('\n')}\n`;
-  const tsv = `${values.map((row) => row.join('\t')).join('\n')}\n`;
 
   try {
     editor.api.dom.clipboard.writeSlice(data, {
-      formats: {
-        'text/csv': csv,
-        'text/plain': tsv,
-        'text/tab-separated-values': tsv,
-        'text/tsv': tsv,
-      },
+      formats: { 'text/plain': tsv },
       slice: editor.read.slice.export(),
     });
   } catch {

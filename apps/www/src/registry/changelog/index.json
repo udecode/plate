@@ -38,6 +38,42 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-14-exit-break-demo-nearest-structure",
+      "href": "/registry/changelog/2026-10-14-exit-break-demo-nearest-structure.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Describe the nearest-structure exit in the exit break demo",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["exit-break-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-14-remove-csv-plugin",
+      "href": "/registry/changelog/2026-10-14-remove-csv-plugin.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Remove CsvPlugin from the editor kit",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor-plugins"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-13-details-heading-titles",
       "href": "/registry/changelog/2026-10-13-details-heading-titles.json",
       "status": "draft",
@@ -109,6 +145,33 @@
       },
       "targets": ["lint", "lint-demo"],
       "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-13-media-caption-preview",
+      "href": "/registry/changelog/2026-10-13-media-caption-preview.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep empty media captions hidden on select, restore image preview and add the media toolbar to file, audio and video",
+      "change": {
+        "type": "source",
+        "date": "2026-10-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "caption",
+        "media-image",
+        "media-audio",
+        "media-embed",
+        "media-file",
+        "media-video",
+        "media-preview-dialog",
+        "media-toolbar"
+      ],
+      "entries": 3,
       "diagnostics": []
     },
     {

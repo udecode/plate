@@ -290,9 +290,6 @@
     ]
   },
   "plate/no-second-name": {
-    "packages/platejs/src/csv/lib/CsvPlugin.ts": [
-      "export type CsvParseOptions = ParseConfig;"
-    ],
     "packages/platejs/src/docx/export/lib/internal/docx-document.ts": [
       "export type NumberingOptions = ListStyleDefaults;"
     ],

@@ -1,7 +1,9 @@
-import { afterAll, describe, expect, it, mock } from 'bun:test';
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
+
+const readOnlyMock = mock(() => false);
 
 mock.module('platejs/react', () => ({
   EditorElement: ({
@@ -16,17 +18,20 @@ mock.module('platejs/react', () => ({
   useEditor: () => ({
     read: Object.assign(() => undefined, {
       nodes: { get: () => undefined },
-      selection: () => null,
+      selection: Object.assign(() => null, { nodes: () => [] }),
     }),
   }),
   useEditorFocused: () => false,
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector({
-      read: { nodes: { get: () => undefined }, selection: () => null },
+      read: {
+        nodes: { get: () => undefined },
+        selection: Object.assign(() => null, { nodes: () => [] }),
+      },
     }),
   useElement: () => ({ children: [{ text: '' }], type: 'file' }),
   useEditorMounted: () => true,
-  useEditorReadOnly: () => false,
+  useEditorReadOnly: () => readOnlyMock(),
   useElementSelected: () => false,
   usePath: () => [0],
 }));
@@ -36,17 +41,26 @@ mock.module('@/lib/utils', () => ({
     values.filter(Boolean).join(' '),
 }));
 
+mock.module('./media-toolbar', () => ({
+  MediaToolbar: ({ children }: React.PropsWithChildren) => children,
+}));
+
 describe('FileElement', () => {
+  beforeEach(() => {
+    readOnlyMock.mockReset();
+    readOnlyMock.mockReturnValue(false);
+  });
+
   afterAll(() => {
     mock.restore();
   });
 
-  it('renders without requiring suggestion plugin data', async () => {
+  const renderFile = async () => {
     const { FileElement } = await import(
       `./media-file?test=${Math.random().toString(36).slice(2)}`
     );
 
-    const view = render(
+    return render(
       <FileElement
         attributes={{}}
         editor={{ read: { selection: () => null } } as any}
@@ -68,6 +82,10 @@ describe('FileElement', () => {
         <span data-testid="caption-content">Quarterly report</span>
       </FileElement>
     );
+  };
+
+  it('renders without requiring suggestion plugin data', async () => {
+    const view = await renderFile();
 
     expect(view.container.querySelector('a')?.getAttribute('href')).toBe(
       'https://cdn.example.com/report.pdf'
@@ -77,5 +95,13 @@ describe('FileElement', () => {
     expect(
       view.getByTestId('caption-content').closest('figcaption')
     ).toBeTruthy();
+  });
+
+  it('lets a read-only click follow the file link', async () => {
+    readOnlyMock.mockReturnValue(true);
+
+    const view = await renderFile();
+
+    expect(fireEvent.click(view.container.querySelector('a')!)).toBe(true);
   });
 });

@@ -264,11 +264,14 @@ export type PluginBase<
      * Defines actions on insert break based on block state.
      *
      * - `'default'`: Default behavior
-     * - `'exit'`: Exit the current block
+     * - `'exit'`: Leave the nearest structure through `tx.break.exit`, landing
+     *   a block after it. A text block that should be left before its
+     *   container, such as a callout, declares `ownsExit` in its schema.
      * - `'lift'`: Lift the current block out of the nearest matching ancestor
      * - `'reset'`: Reset block to default paragraph type
      * - `'lineBreak'`: Insert newline character
-     * - `'deleteExit'`: Delete backward then exit
+     * - `'deleteExit'`: Delete backward, then leave the nearest structure as
+     *   `'exit'` does
      */
     break?: BreakRules<C>;
     /**

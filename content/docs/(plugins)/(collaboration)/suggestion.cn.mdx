@@ -239,7 +239,7 @@ const result = authored.update.decide({
 });
 ```
 
-使用 `action: 'reject'` 拒绝 change。请检查 `result.status`：其他编辑可能使 selection 变为 `stale`，依赖或冲突可能使其变为 `blocked`。[Authored Changes](/docs/authored-changes#审阅-change)介绍查询、预览、批量决定和结果处理。
+使用 `action: 'reject'` 拒绝 change。请检查 `result.status`：其他编辑可能使 selection 变为 `stale`，依赖或冲突可能使其变为 `blocked`。[Authored Changes](/cn/docs/authored-changes#审阅-change)介绍查询、预览、批量决定和结果处理。
 
 ## 保存和重新加载
 
@@ -252,9 +252,9 @@ const savedComments = editor.plugin(CommentsPlugin).api.toJSON();
 
 按同一个应用版本和对话代次原子保存文档与 `CommentsJSON`。加载前验证关联，并使用相同的内容插件。只保存 `children` 会丢失 authored record。
 
-创建新 editor，将文档传给 `initialValue`，并配置 `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`。本地 undo stack 从空开始。文档保留每个 change 的作者和 ID，使回复仍可定位同一建议。将 `userId` 设置为当前作者；加载其他作者的建议不需要切换身份或重放编辑。历史预览和恢复请参阅[当前对话与历史目标的关联](/docs/comment#历史版本)。
+创建新 editor，将文档传给 `initialValue`，并配置 `CommentsPlugin.configure({ initialState: { initialComments: savedComments } })`。本地 undo stack 从空开始。文档保留每个 change 的作者和 ID，使回复仍可定位同一建议。将 `userId` 设置为当前作者；加载其他作者的建议不需要切换身份或重放编辑。历史预览和恢复请参阅[当前对话与历史目标的关联](/cn/docs/comment#历史版本)。
 
-选择显式的[导出投影](/docs/authored-changes#导出显式投影)。HTML 与 Markdown
+选择显式的[导出投影](/cn/docs/authored-changes#导出显式投影)。HTML 与 Markdown
 只携带可见的 `accepted` 或 `proposed` content。Plate 需要恢复完整 review record
 时保存 authored JSON；需要 Word revision 时使用 DOCX `review` export。
 

@@ -402,7 +402,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
 - The default block that Enter on a block void or `tx.break.exit` creates is
   its landing parent's default for the landing index, or the root's for a
   top-level position. The compiled content grammar builds and admits it in the
-  active root, and a refused placement changes nothing. Typing or plain-text
+  active root. For Enter on a block void, and for `tx.break.exit` at the level
+  where it stops, a refused placement, a required property the default cannot
+  fill, or a default whose caret path ends without text changes nothing; any
+  other failure to build the default throws. Typing or plain-text
   paste over picked blocks builds each new block the same way, line `n` at the
   picked slot plus `n`, and admits the replacement first; a refused
   replacement changes nothing. A block pick whose slots build no block changes
@@ -413,13 +416,24 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   `schema.copy` reads its site. A parent without declared content, such as an
   element the schema does not declare, takes the root's default for the root
   slot that holds it, built as a root child.
-  `tx.break.exit` leaves
-  the nearest ancestor that sits in a root or whose parent can directly hold
-  the type of the root's default block, the one the root adds after any
-  required leading slots, whatever the ancestor's position. Under a paragraph
-  default, a cell in a row therefore stays part of its table's structure. The
-  walk reads that type from the compiled root program and builds only the
-  landing block.
+  `tx.break.exit` leaves the nearest structure. The selected block is that
+  structure when it owns its exit: a void, an object, or a text block whose
+  schema declares `ownsExit`. Only a block text element may declare that
+  compiled behavior fact, and the contract and fingerprint carry it only when
+  true. The block stays the structure while its parent builds a default beside
+  it whose caret path, the landing and each last child, holds no block that
+  owns its exit. Otherwise exit takes the nearest strict ancestor that is a
+  root child, sits in a parent with no declared content, or sits in a parent
+  whose ordinary content, a prefix program's remainder or else the whole
+  program, admits a text block. It passes an ancestor that is not a root child
+  when its landing's caret path holds the ancestor's own type, so no container
+  landing below the top level puts the caret back into the type it left. Under a paragraph default, a cell in a row
+  therefore stays part of its table's structure. A container level whose
+  landing cannot be built changes nothing and never climbs. `match` filters
+  every candidate level, the owning block included, and the selected block
+  stays the last resort. At the top level that last resort lands the root's
+  default whatever it is, so under a root whose default is a code block, exit
+  from a top-level code block lands another code block.
 - Structural commands used for shorthand conversion report whether they staged
   a change. An inadmissible placement or no-op returns `false` without claiming
   a successful mutation; the canonical schema and change builder remain the

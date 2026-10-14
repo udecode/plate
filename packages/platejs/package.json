@@ -100,11 +100,6 @@
       "import": "./dist/compiler/index.js",
       "default": "./dist/compiler/index.js"
     },
-    "./csv": {
-      "types": "./dist/csv/index.d.ts",
-      "import": "./dist/csv/index.js",
-      "default": "./dist/csv/index.js"
-    },
     "./date": {
       "types": "./dist/features/date/index.d.ts",
       "import": "./dist/features/date/index.js",
@@ -390,7 +385,6 @@
     "lint:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs comments-react",
     "lint:partition:compiler": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs compiler",
     "lint:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs core",
-    "lint:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs csv",
     "lint:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs date",
     "lint:partition:date-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs date-react",
     "lint:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs details",
@@ -466,7 +460,6 @@
     "test:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs comments-react",
     "test:partition:compiler": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs compiler",
     "test:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs core",
-    "test:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs csv",
     "test:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs date",
     "test:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details",
     "test:partition:details-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs details-react",
@@ -527,7 +520,6 @@
     "typecheck:partition:comments-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs comments-react",
     "typecheck:partition:compiler": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs compiler",
     "typecheck:partition:core": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs core",
-    "typecheck:partition:csv": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs csv",
     "typecheck:partition:date": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs date",
     "typecheck:partition:date-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs date-react",
     "typecheck:partition:details": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs details",
@@ -628,7 +620,6 @@
     "@types/katex": "0.16.7",
     "@types/lodash": "^4.17.13",
     "@types/node": "24.12.0",
-    "@types/papaparse": "^5.3.16",
     "@types/plantuml-encoder": "^1.4.2",
     "@types/react": "19.2.7",
     "@types/use-sync-external-store": "1.5.0",
@@ -650,7 +641,6 @@
     "mammoth": "^1.9.0",
     "mermaid": "^11.6.1",
     "mime-types": "^2.1.35",
-    "papaparse": "^5.5.3",
     "plantuml-encoder": "^1.4.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -676,7 +666,6 @@
     "@codemirror/view": "^6.41.0",
     "@excalidraw/excalidraw": "0.18.0",
     "@tanstack/react-virtual": "^3.13.25",
-    "@types/papaparse": "^5.3.16",
     "ai": "^6.0.0",
     "color-name": "^2.0.0",
     "diff-match-patch-ts": "^0.6.0",
@@ -691,7 +680,6 @@
     "mammoth": "^1.9.0",
     "mermaid": "^11.6.1",
     "mime-types": "^2.1.35",
-    "papaparse": "^5.5.3",
     "plantuml-encoder": "^1.4.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0",
@@ -724,9 +712,6 @@
       "optional": true
     },
     "@tanstack/react-virtual": {
-      "optional": true
-    },
-    "@types/papaparse": {
       "optional": true
     },
     "ai": {
@@ -769,9 +754,6 @@
       "optional": true
     },
     "mime-types": {
-      "optional": true
-    },
-    "papaparse": {
       "optional": true
     },
     "plantuml-encoder": {

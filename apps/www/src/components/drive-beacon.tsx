@@ -8,15 +8,9 @@ export function DriveBeacon() {
 
   React.useEffect(() => {
     let timer: number | undefined;
-    // react-resizable-panels stops propagation of a drag's pointerup released
-    // off the handle, so the window pointerup listener misses that resize.
-    const panelObserver = new ResizeObserver(() => schedule());
     const schedule = () => {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
-        for (const panel of document.querySelectorAll('[data-preview-panel]')) {
-          panelObserver.observe(panel);
-        }
         window.__driveReporter?.sendOnceParsed();
       }, 300);
     };
@@ -32,7 +26,6 @@ export function DriveBeacon() {
 
     return () => {
       window.clearTimeout(timer);
-      panelObserver.disconnect();
       themeObserver.disconnect();
       window.removeEventListener('resize', schedule);
       window.removeEventListener('pointerup', schedule);

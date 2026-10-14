@@ -17,9 +17,9 @@ Plugin rules use specific action names to define behavior:
 
 - **`'default'`**: Default Plate behavior.
 - **`'reset'`**: Changes the current block to a default paragraph, keeping content.
-- **`'exit'`**: Exits the current block, inserting a new paragraph after it. See [Exit Break](/docs/exit-break) to learn more about this behavior.
+- **`'exit'`**: Leaves the nearest structure and inserts its parent's default block after it, such as a paragraph. See [Exit Break](/docs/exit-break) for how it picks the structure.
 - **`'lift'`**: Lifts the current block out of the nearest matching ancestor container, changing one structural level at a time.
-- **`'deleteExit'`**: Deletes content then exits the block.
+- **`'deleteExit'`**: Deletes backward, then exits as `'exit'` does.
 - **`'lineBreak'`**: Inserts a line break (`\n`) instead of splitting the block.
 
 ### `default`
@@ -67,7 +67,7 @@ After pressing `Enter` with `rules: { break: { empty: 'reset' } }`:
 
 ### `exit`
 
-Exits the current block structure by inserting a new paragraph after it.
+Leaves the nearest structure and inserts its parent's default block after it, as [Exit Break](/docs/exit-break) describes.
 
 ```tsx
 <blockquote>
@@ -108,7 +108,7 @@ After pressing `Enter` with `rules: { break: { empty: 'lift' } }`:
 
 ### `deleteExit`
 
-Deletes content then exits the block.
+Deletes backward, then exits as `'exit'` does.
 
 ```tsx
 <blockquote>

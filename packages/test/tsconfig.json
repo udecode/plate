@@ -33,7 +33,6 @@
         "../platejs/src/react/features/comments/index.ts"
       ],
       "platejs/compiler": ["../platejs/src/compiler/index.tsx"],
-      "platejs/csv": ["../platejs/src/csv/index.ts"],
       "platejs/date": ["../platejs/src/features/date/index.ts"],
       "platejs/date/react": ["../platejs/src/react/features/date/index.ts"],
       "platejs/details": ["../platejs/src/features/details/index.ts"],

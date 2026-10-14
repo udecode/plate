@@ -2097,7 +2097,8 @@ Plugin surface:
   plugin, node type, key, or content root exists
 - renderers keep only the asset chrome non-editable and render the ordinary
   media child slot as the caption
-- renderers may hide `[{ text: '' }]` until the asset has `NodeSelection`;
+- renderers keep an empty `[{ text: '' }]` caption hidden until a
+  `TextSelection` enters it, so selecting the asset does not shift the layout;
   placeholder visibility does not change the document
 - current markdown/MDX contract keeps supported MDX attributes on round-trip
 - current media embed contract persists one canonical render `url` plus current
@@ -2191,9 +2192,10 @@ nothing follows
 ```
 
 note: `ArrowDown` moves from asset focus into the media element's direct inline
-children while the page draws them. The stock caption shows while its media is
-selected, so `ArrowDown` from stock media always enters the caption. Whether the
-page draws the caption comes from the mounted DOM, not from its text.
+children while the page draws them. The stock caption hides an empty caption
+even while its media is selected, so `ArrowDown` from stock media enters only a
+populated caption. Whether the page draws the caption comes from the mounted
+DOM, not from its text.
 
 - `EDIT-CAPTION-NAV-002` `locked`
 
@@ -2218,10 +2220,9 @@ TextSelection at caption start
 note: horizontal movement treats the owner as a separate keyboard stop before
 its editable children. Forward movement from the owner enters caption text the
 page draws and otherwise moves on to the next stop. Reverse movement visits
-caption end, then the owner, then the preceding text. A mounted empty caption
-still has one reverse text-caret stop while the page hides it, because entering
-it reveals the stock caption. Populated caption text the page does not draw has
-no stop, so reverse movement stops on the owner. The physical arrow keys follow
+caption end, then the owner, then the preceding text. Caption text the page
+does not draw, empty or populated, has no stop, so reverse movement stops on the
+owner. The physical arrow keys follow
 the computed direction of the block that holds the caret, or of the selected
 media. They reverse in an RTL block inside an LTR editable, and this logical
 order stays the same.
@@ -2230,6 +2231,7 @@ order stays the same.
 
 ```text
 ↓ from the final visual line of text immediately before media
+with a populated caption
 =>
 media NodeSelection + ↓
 =>
@@ -2267,9 +2269,10 @@ media NodeSelection + ↓
 the caption entry of EDIT-CAPTION-NAV-001
 ```
 
-note: the stock caption hides an empty caption while its media is neither
-selected nor holding the caret, so reverse vertical entry stops on the
-selectable asset, and selecting the asset reveals the caption. Captions an app
+note: the stock caption hides an empty caption until it holds the caret, so
+reverse vertical entry stops on the selectable asset and the next `ArrowDown`
+moves past the hidden caption. The media toolbar's Caption button puts the
+caret in an empty caption. Captions an app
 hides with CSS follow the same rule. Whether the page draws the caption comes
 from the mounted DOM, not from its text.
 

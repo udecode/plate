@@ -18,6 +18,7 @@ export const BaseCalloutPlugin = definePlugin(PLUGINS.callout, {
     }),
   schema: {
     element: schema.element.textBlock({
+      ownsExit: true,
       properties: {
         backgroundColor: property.string(),
         icon: property.string({

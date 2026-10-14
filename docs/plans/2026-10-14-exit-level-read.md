@@ -2,7 +2,7 @@
 
 Status: executed: ready for your commit
 Playbook: plan
-Page: https://claude.ai/artifact/4SZJpRkYK1Fay3boEK8URB
+Page: https://claude.ai/artifact/33HNCihduRT9CK3UN74eYT
 
 ## Brief
 
@@ -75,6 +75,7 @@ The run directory `docs/plans/artifacts/2026-10-14-exit-level-read/architect/` h
 | Three red tests from another session | Not counted against this change; they stay red as before (look) | Wait for that session to make them pass first | wait for them | small |
 | Review of this plan | The design contest only, since nothing public changes | Also run a review panel on the plan | panel | detail |
 | Where this page lives | Its own page | The page of the earlier exit block plan | exit page | detail |
+| This plan's page | The new page https://claude.ai/artifact/33HNCihduRT9CK3UN74eYT, since https://claude.ai/artifact/4SZJpRkYK1Fay3boEK8URB no longer opens from this account | Drop the new page and restore the old link | old page | detail |
 | Checks broken by other sessions' unfinished work | Count this work as done; those checks fail the same without it (look) | Wait for those sessions, then rerun | rerun after them | small |
 
 ## Steps
@@ -95,7 +96,7 @@ The run directory `docs/plans/artifacts/2026-10-14-exit-level-read/architect/` h
 | Writing passes: `deslop`, `no-comments` on code; `unslop` on the plan and docs | yes | deslop changed nothing; no-comments deleted two comments (`docs/plans/artifacts/2026-10-14-exit-level-read/review/no-comments-1.md`); unslop on the docs sentence, the Vision bullet, the plan's Brief and its Close |
 | `pnpm check` steps the edits reach: plitejs typecheck, knowledge | yes | typecheck passes (`docs/plans/artifacts/2026-10-14-exit-level-read/final-plitejs-typecheck-a1.log`); knowledge fails only on other sessions' citations (`docs/plans/artifacts/2026-10-14-exit-level-read/check-knowledge-a1.log`), accepted under "rerun after them" |
 | `plate-docs` on `content/docs/api/editor-transforms.mdx` | yes | registry rebuilt and fresh, source builds, parity passes (`docs/plans/artifacts/2026-10-14-exit-level-read/docs-registry-check-a1.log`, `docs/plans/artifacts/2026-10-14-exit-level-read/docs-parity-a1.log`); `check:docs` stops on another session's export (`docs/plans/artifacts/2026-10-14-exit-level-read/docs-check-a1.log`) |
-| Hand drive of the changed docs page | yes | 8 of 8 cells on `/docs/exit-break` and `/docs/api/editor-transforms`, with native Mod+Enter from a table cell in a column (`docs/plans/artifacts/2026-10-14-exit-level-read/hand-drive-check-a1.log`) |
+| Hand drive of the changed docs page | yes | 8 of 8 cells on `/docs/exit-break` and `/docs/api/editor-transforms`, with native Mod+Enter from a table cell in a column (`docs/plans/artifacts/2026-10-14-exit-level-read/hand-drive-check-a1.log`); the transforms page re-driven on fresh loads after a stale tab logged another session's hot-reload warning (`docs/plans/artifacts/2026-10-14-exit-level-read/hand-drive-check-a2.log`) |
 | `pnpm lint:task` on the task's files, last check that edits code | yes | clean; it reformatted spec (c) only (`docs/plans/artifacts/2026-10-14-exit-level-read/lint-task-a1.log`) |
 | Benchmark rerun on the final bytes (step 5) | yes | passes: candidate 0.849 to 0.978 times base, planted 1.299 to 1.387, max load 8.18 (`docs/plans/artifacts/2026-10-14-exit-level-read/bench/paired-a2.log`, `docs/plans/artifacts/2026-10-14-exit-level-read/bench/checklist-a2.txt`); attempt a1 was voided by load 9.32 |
 | Changeset decision through `changeset` | yes | one bullet added to `.changeset/platejs-exit-break-default.md` for the id case; the prefix-root fix needs none because no shipped root has such a prefix |
@@ -134,7 +135,7 @@ Proof and its limits:
 - The benchmark passes the frozen line in all six cohorts. The candidate measured 0.849 to 0.978 times base, and the planted slowdown 1.299 to 1.387 (`docs/plans/artifacts/2026-10-14-exit-level-read/bench/paired-a2.log`). It times a programmatic Mod+Enter in happy-dom. No speedup is claimed, because the profile puts the level read at 1 to 2 percent of the process (`docs/plans/artifacts/2026-10-14-exit-level-read/bench/checklist-a2.txt`).
 - The docs registry is fresh and the docs parity check passes. `check:docs` stops at its first link on another session's `SchemaRoot` export, with the same error when this run's hunks are reverted (`docs/plans/artifacts/2026-10-14-exit-level-read/attribute-api-reference-without-a1.log`). The knowledge check's 104 findings neither come from nor cite any file this run touched (`docs/plans/artifacts/2026-10-14-exit-level-read/attribute-knowledge-a1.txt`), but no run with this change reverted backs that, so it stays inferred. Both are accepted under "rerun after them".
 - `docs/plans/artifacts/2026-10-14-exit-level-read/bench/paired-a2-analyze-a1.log` re-judges the saved measurements with its command and exit code, because the original run log records neither.
-- The hand drive covered 8 of 8 cells. Native Mod+Enter from a table cell inside a column landed the paragraph after the table, inside the column. It ran in the app's built-in Chromium only.
+- The hand drive covered 8 of 8 cells. A tab left open on the transforms page later logged a React script-tag warning while other sessions hot-reloaded shared files, so this run re-drove those four cells on fresh loads with no console errors (`docs/plans/artifacts/2026-10-14-exit-level-read/hand-drive-check-a2.log`). Native Mod+Enter from a table cell inside a column landed the paragraph after the table, inside the column. It ran in the app's built-in Chromium only.
 
 Counts, over 6 steps and 3 open work items: 6 done, step 4 among them on its accepted narrower proof; 0 partial; 0 skipped; 0 blocked; 3 open.
 
