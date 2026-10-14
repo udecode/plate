@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-14-details-slash-placement",
+      "href": "/registry/changelog/2026-10-14-details-slash-placement.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep slash-created blocks visible after closed Details",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["slash-kit"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-14-details-unwrap-targets",
       "href": "/registry/changelog/2026-10-14-details-unwrap-targets.json",
       "status": "draft",

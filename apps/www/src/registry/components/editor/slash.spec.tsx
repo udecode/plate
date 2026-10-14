@@ -7,7 +7,12 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { BaseCodeBlockPlugin, BaseHeadingPlugin, type Value } from 'platejs';
+import {
+  BaseBlockquotePlugin,
+  BaseCodeBlockPlugin,
+  BaseHeadingPlugin,
+  type Value,
+} from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { AuthoredPlugin } from 'platejs/authored';
 import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
@@ -116,12 +121,14 @@ const runSlash = async ({
   caret,
   heading = true,
   initialValue,
+  open = false,
   option,
   query,
 }: {
   caret: { offset: number; path: number[] };
   heading?: boolean;
   initialValue: Value;
+  open?: boolean;
   option: string;
   query: string;
 }) => {
@@ -137,6 +144,8 @@ const runSlash = async ({
       ...(heading ? [BaseHeadingPlugin] : []),
       BaseDetailsSummaryPlugin,
       BaseDetailsPlugin,
+      BaseBlockquotePlugin,
+      BaseCodeBlockPlugin,
       ...SlashKit,
     ],
     initialValue,
@@ -152,6 +161,11 @@ const runSlash = async ({
   await act(async () => {
     root.focus();
     viewEditor!.update.selection.set(caret);
+    if (open) {
+      viewEditor!
+        .plugin(BaseDetailsPlugin)
+        .api.setOpen(viewEditor!.key([0])!, true);
+    }
   });
 
   for (const data of `/${query}`) {
@@ -186,6 +200,58 @@ const closedDetails = (title: Record<string, unknown>): Value => [
     type: 'details',
   },
 ];
+
+for (const [option, query, inserted] of [
+  [
+    'Blockquote',
+    'quote',
+    {
+      type: 'blockquote',
+      children: [{ type: 'paragraph', children: [{ text: '' }] }],
+    },
+  ],
+  ['Code Block', 'code', { type: 'codeBlock', children: [{ text: '' }] }],
+] as const) {
+  test.each(['', 'Title '])(
+    `inserts ${option} after a closed Details with title %j`,
+    async (text) => {
+      const children = closedDetails({ children: [{ text }] });
+
+      expect(
+        await runSlash({
+          caret: { offset: text.length, path: [0, 0, 0] },
+          initialValue: children,
+          option,
+          query,
+        })
+      ).toEqual([...children, inserted]);
+    }
+  );
+}
+
+test('keeps block insertion inside an expanded Details', async () => {
+  expect(
+    await runSlash({
+      caret: { offset: 6, path: [0, 0, 0] },
+      initialValue: closedDetails({ children: [{ text: 'Title ' }] }),
+      open: true,
+      option: 'Blockquote',
+      query: 'quote',
+    })
+  ).toEqual([
+    {
+      type: 'details',
+      children: [
+        { type: 'summary', children: [{ text: 'Title ' }] },
+        {
+          type: 'blockquote',
+          children: [{ type: 'paragraph', children: [{ text: '' }] }],
+        },
+        { type: 'paragraph', children: [{ text: 'Body' }] },
+      ],
+    },
+  ]);
+});
 
 test.each(['', 'Title '])(
   'formats a closed title %j with Heading 2 in place',

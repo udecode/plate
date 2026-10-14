@@ -1,6 +1,10 @@
 {
   "schemaVersion": 1,
   "components": {
+    "slash-kit": [
+      "2026-10-14-details-slash-placement",
+      "2026-07-26-plugin-store-state"
+    ],
     "turn-into-toolbar-button": [
       "2026-10-14-details-unwrap-targets",
       "2026-10-13-details-heading-titles",
@@ -1588,7 +1592,6 @@
       "2026-07-23-terminal-plugin-configure",
       "2025-12-15-add-option-editor-collaborative-features"
     ],
-    "slash-kit": ["2026-07-26-plugin-store-state"],
     "suggestion-kit": [
       "2026-07-26-plugin-store-state",
       "2026-07-24-compose-markdown-footnotes",
