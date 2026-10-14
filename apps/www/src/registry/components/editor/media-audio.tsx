@@ -1,22 +1,25 @@
 'use client';
 
-import type { AudioPlugin } from 'platejs/media/react';
+import { AudioPlugin } from 'platejs/media/react';
 import {
   type EditorElementProps,
   EditorElement,
+  useEditor,
   useEditorFocused,
+  useEditorReadOnly,
   useElementSelected,
-  usePath,
 } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-import { Caption, useCaptionFocused } from './caption';
+import { Caption } from './caption';
+import { MediaToolbar } from './media-toolbar';
 
 export function AudioElement(props: EditorElementProps<typeof AudioPlugin>) {
-  const path = usePath();
+  const editor = useEditor();
   const focused = useEditorFocused();
+  const readOnly = useEditorReadOnly();
   const selected = useElementSelected({ mode: 'node' });
   const textAlign =
     'textAlign' in props.element &&
@@ -25,37 +28,57 @@ export function AudioElement(props: EditorElementProps<typeof AudioPlugin>) {
       props.element.textAlign === 'center')
       ? props.element.textAlign
       : 'center';
-  const captionFocused = useCaptionFocused(path);
 
   return (
-    <EditorElement
-      {...props}
-      attributes={{
-        ...props.attributes,
-        'data-node-selection-highlight': 'self',
+    <MediaToolbar
+      onPreview={() => {
+        window.open(props.element.url, '_blank', 'noopener,noreferrer');
       }}
-      className="mb-1"
+      plugin={AudioPlugin}
+      selected={selected}
+      placement="top"
     >
-      <figure className="group relative cursor-default [&>figcaption]:min-h-20">
-        <div
-          className={cn(
-            'h-16 rounded-sm',
-            focused && selected && 'ring-2 ring-ring ring-offset-2'
-          )}
-          contentEditable={false}
-        >
-          {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}
-          <audio className="size-full" src={props.element.url} controls />
-        </div>
-        <Caption
-          active={selected || captionFocused}
-          align={textAlign}
-          element={props.element}
-          slots={props.slots}
-        >
-          {props.children}
-        </Caption>
-      </figure>
-    </EditorElement>
+      <EditorElement
+        {...props}
+        attributes={{
+          ...props.attributes,
+          'data-node-selection-highlight': 'self',
+        }}
+      >
+        <figure className="group relative cursor-default [&>figcaption]:min-h-20">
+          <div className="py-1" contentEditable={false}>
+            <div
+              className={cn(
+                'rounded-full',
+                focused && selected && 'ring-2 ring-ring ring-offset-2'
+              )}
+            >
+              {/* oxlint-disable-next-line jsx-a11y/media-has-caption -- [P0 behavior-boundary] User media has no caption-track field; an empty fabricated track would falsely claim accessibility. */}
+              <audio
+                className="block w-full"
+                src={props.element.url}
+                controls
+                onFocus={() => {
+                  if (readOnly) return;
+
+                  // The native controls take focus once a click ends, so arrow
+                  // keys would drive the player. Select the audio and give the
+                  // keyboard back to the editor.
+                  editor.update.selection.setNodes([props.element]);
+                  editor.api.dom.focus();
+                }}
+              />
+            </div>
+          </div>
+          <Caption
+            align={textAlign}
+            element={props.element}
+            slots={props.slots}
+          >
+            {props.children}
+          </Caption>
+        </figure>
+      </EditorElement>
+    </MediaToolbar>
   );
 }

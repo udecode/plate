@@ -14,7 +14,7 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-import { Caption, useCaptionFocused } from './caption';
+import { Caption } from './caption';
 import { imagePlugin } from './media-preview-dialog';
 import { MediaToolbar } from './media-toolbar';
 import {
@@ -35,12 +35,15 @@ export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
       ? props.element.textAlign
       : 'center';
   const editor = useEditor();
-  const captionFocused = useCaptionFocused(path);
   const previewOpen = usePluginStore(imagePlugin, 'previewOpen');
+  const openPreview = () => {
+    editor.plugin(imagePlugin).api.preview.open(path, props.element.url);
+  };
 
   return (
     <MediaToolbar
       disabled={previewOpen}
+      onPreview={openPreview}
       plugin={ImagePlugin}
       selected={selected}
     >
@@ -83,11 +86,7 @@ export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
                       node: props.element,
                     });
                   }}
-                  onDoubleClickCapture={() => {
-                    editor
-                      .plugin(imagePlugin)
-                      .api.preview.open(props.element, props.element.url);
-                  }}
+                  onDoubleClickCapture={openPreview}
                 />
               </div>
               <ResizeHandle
@@ -99,7 +98,6 @@ export function ImageElement(props: EditorElementProps<typeof imagePlugin>) {
             </Resizable>
           </div>
           <Caption
-            active={selected || captionFocused}
             align={textAlign}
             element={props.element}
             slots={props.slots}

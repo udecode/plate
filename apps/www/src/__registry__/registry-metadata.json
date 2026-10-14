@@ -1,5 +1,5 @@
 {
-  "generation": "313cdf7c24030343365e30acb6a9173bb88431833ffa61603f0020dd9dd10ab7",
+  "generation": "91bdbbff6c07ee95aea0b3cef9d9479cb3766486919aae9438e1bc691bb30335",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1643,7 +1643,6 @@
         {
           "dependencies": [
             "platejs",
-            "class-variance-authority",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -1671,7 +1670,11 @@
           },
           "name": "media-preview-dialog",
           "title": "Media Preview Dialog",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "button",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -1748,7 +1751,8 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/resize-handle",
-            "@plate/caption"
+            "@plate/caption",
+            "@plate/media-toolbar"
           ]
         },
         {
@@ -1861,7 +1865,8 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/resize-handle",
-            "@plate/caption"
+            "@plate/caption",
+            "@plate/media-toolbar"
           ]
         },
         {
@@ -1920,6 +1925,7 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/caption",
+            "@plate/media-toolbar",
             "@plate/resize-handle"
           ]
         },
@@ -8399,7 +8405,6 @@
         {
           "dependencies": [
             "platejs",
-            "class-variance-authority",
             "diff-match-patch-ts@^0.6.0",
             "lucide-react"
           ],
@@ -8427,7 +8432,11 @@
           },
           "name": "media-preview-dialog",
           "title": "Media Preview Dialog",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "button",
+            "separator"
+          ]
         },
         {
           "dependencies": [
@@ -8504,7 +8513,8 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/resize-handle",
-            "@plate/caption"
+            "@plate/caption",
+            "@plate/media-toolbar"
           ]
         },
         {
@@ -8617,7 +8627,8 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/resize-handle",
-            "@plate/caption"
+            "@plate/caption",
+            "@plate/media-toolbar"
           ]
         },
         {
@@ -8676,6 +8687,7 @@
           "type": "registry:component",
           "registryDependencies": [
             "@plate/caption",
+            "@plate/media-toolbar",
             "@plate/resize-handle"
           ]
         },

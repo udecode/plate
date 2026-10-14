@@ -30,15 +30,24 @@ mock.module('@/lib/utils', () => ({
     values.filter(Boolean).join(' '),
 }));
 
+const captionCaret = {
+  anchor: { offset: 0, path: [0, 0] },
+  focus: { offset: 0, path: [0, 0] },
+};
+
+const readSelection = (
+  range: typeof captionCaret | null,
+  nodes: unknown[] = []
+) =>
+  Object.assign(() => undefined, {
+    nodes: { get: () => undefined },
+    selection: Object.assign(() => range, { nodes: () => nodes }),
+  });
+
 describe('Caption', () => {
   beforeEach(() => {
     useEditorMock.mockReset();
-    useEditorMock.mockReturnValue({
-      read: Object.assign(() => undefined, {
-        nodes: { get: () => undefined },
-        selection: () => null,
-      }),
-    });
+    useEditorMock.mockReturnValue({ read: readSelection(null) });
     useElementMock.mockReset();
   });
 
@@ -52,7 +61,6 @@ describe('Caption', () => {
     );
     const view = render(
       <Caption
-        active={false}
         element={{ children: [{ text: '' }], type: 'image' }}
         slots={{} as any}
       >
@@ -64,13 +72,13 @@ describe('Caption', () => {
     expect(view.getByTestId('caption-content')).toBeTruthy();
   });
 
-  it('reveals an empty caption for a media node selection', async () => {
+  it('reveals an empty caption while the caret is inside it', async () => {
+    useEditorMock.mockReturnValue({ read: readSelection(captionCaret) });
     const { Caption } = await import(
       `./caption?test=${Math.random().toString(36).slice(2)}`
     );
     const view = render(
       <Caption
-        active
         element={{ children: [{ text: '' }], type: 'image' }}
         slots={{} as any}
       >
@@ -80,28 +88,10 @@ describe('Caption', () => {
 
     const caption = view.container.querySelector('figcaption');
 
-    expect(caption).toBeTruthy();
+    expect(caption?.hidden).toBe(false);
     expect(caption?.getAttribute('data-placeholder')).toBe(
       'Write a caption...'
     );
-    expect(view.getAllByTestId('caption-content')).toHaveLength(1);
-  });
-
-  it('keeps direct caption content mounted for a caption text selection', async () => {
-    const { Caption } = await import(
-      `./caption?text=${Math.random().toString(36).slice(2)}`
-    );
-    const view = render(
-      <Caption
-        active
-        element={{ children: [{ text: '' }], type: 'image' }}
-        slots={{} as any}
-      >
-        <span data-testid="caption-content" />
-      </Caption>
-    );
-
-    expect(view.container.querySelector('figcaption')).toBeTruthy();
     expect(view.getAllByTestId('caption-content')).toHaveLength(1);
   });
 
@@ -111,7 +101,6 @@ describe('Caption', () => {
     );
     const view = render(
       <Caption
-        active={false}
         element={{ children: [{ text: 'Visible caption' }], type: 'image' }}
         slots={{} as any}
       >
@@ -125,53 +114,27 @@ describe('Caption', () => {
     ).toBeTruthy();
   });
 
-  it('matches descendant text focus without treating NodeSelection as caption focus', async () => {
+  it('treats only a caret inside the caption as caption focus', async () => {
     const { useCaptionFocused } = await import(
       `./caption?selection=${Math.random().toString(36).slice(2)}`
     );
-    useEditorMock.mockReturnValue({
-      read: {
-        selection: () => ({
-          anchorPath: [0],
-          focusPath: [0],
-          kind: 'node',
-          paths: [[0]],
-        }),
-      },
-    });
 
+    useEditorMock.mockReturnValue({
+      read: readSelection(captionCaret, [[{ type: 'image' }, [0]]]),
+    });
     const nodeSelection = renderHook(() => useCaptionFocused([0]));
 
     expect(nodeSelection.result.current).toBe(false);
     nodeSelection.unmount();
 
-    useEditorMock.mockReturnValue({
-      read: {
-        selection: () => ({
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 0, path: [0, 0] },
-          kind: 'text',
-        }),
-      },
-    });
-
+    useEditorMock.mockReturnValue({ read: readSelection(captionCaret) });
     const captionSelection = renderHook(() => useCaptionFocused([0]));
 
     expect(captionSelection.result.current).toBe(true);
     captionSelection.unmount();
 
-    useEditorMock.mockReturnValue({
-      read: {
-        selection: () => ({
-          anchorPath: [1],
-          focusPath: [1],
-          kind: 'node',
-          paths: [[1]],
-        }),
-      },
-    });
-
-    const otherSelection = renderHook(() => useCaptionFocused([0]));
+    useEditorMock.mockReturnValue({ read: readSelection(captionCaret) });
+    const otherSelection = renderHook(() => useCaptionFocused([1]));
 
     expect(otherSelection.result.current).toBe(false);
   });

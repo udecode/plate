@@ -1,26 +1,16 @@
 'use client';
 
-import { cva } from 'class-variance-authority';
 import { ArrowLeft, ArrowRight, Download, Minus, Plus, X } from 'lucide-react';
-import { type NodeKey, isHotkey } from 'platejs';
-import { BaseImagePlugin, type ImageElement } from 'platejs/media';
+import { type NodeKey, type Path, isHotkey } from 'platejs';
+import { BaseImagePlugin } from 'platejs/media';
 import { ImagePlugin } from 'platejs/media/react';
 import { useComposedRef, useEditor, usePluginStore } from 'platejs/react';
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-
-const buttonVariants = cva('rounded bg-[rgba(0,0,0,0.5)] px-1', {
-  defaultVariants: {
-    variant: 'default',
-  },
-  variants: {
-    variant: {
-      default: 'text-white',
-      disabled: 'cursor-not-allowed text-gray-400',
-    },
-  },
-});
 
 const SCROLL_SPEED = 4;
 const DEFAULT_DOWNLOAD_FILENAME = 'image';
@@ -86,10 +76,12 @@ export const imagePlugin = ImagePlugin.extend({
           });
         }
       },
-      open: (element: ImageElement, resolvedUrl = element.url) => {
-        const currentKey = editor.key(element);
+      // Keys differ between the owner and view editors, so the image passes
+      // its path and this editor resolves every key.
+      open: (at: Path, resolvedUrl: string) => {
+        const currentKey = editor.key(at);
 
-        if (currentKey == null) return;
+        if (!currentKey) return;
 
         store.set({
           preview: {
@@ -190,7 +182,8 @@ export const imagePlugin = ImagePlugin.extend({
 }));
 
 export function MediaPreviewDialog() {
-  const { api } = useEditor().plugin(imagePlugin);
+  const editor = useEditor();
+  const { api } = editor.plugin(imagePlugin);
   const preview = usePluginStore(imagePlugin, 'preview');
   const isOpen = usePluginStore(imagePlugin, 'previewOpen');
   const {
@@ -263,10 +256,11 @@ export function MediaPreviewDialog() {
       api.preview.close();
     };
 
-    document.addEventListener('keydown', onKeyDown);
+    // Capture so an editor or popover handler cannot swallow Escape first.
+    document.addEventListener('keydown', onKeyDown, true);
 
     return () => {
-      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keydown', onKeyDown, true);
     };
   }, [api.preview, isOpen]);
 
@@ -282,12 +276,12 @@ export function MediaPreviewDialog() {
     link.remove();
   };
 
-  return (
+  if (!isOpen) return null;
+
+  // Portal to the body so no ancestor stacking context or overlay covers it.
+  return createPortal(
     <div
-      className={cn(
-        'fixed top-0 left-0 z-50 h-screen w-screen select-none',
-        !isOpen && 'hidden'
-      )}
+      className="fixed top-0 left-0 z-50 h-screen w-screen select-none"
       onContextMenu={(e) => {
         e.stopPropagation();
       }}
@@ -298,123 +292,109 @@ export function MediaPreviewDialog() {
         onClick={api.preview.close}
         type="button"
       />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="relative flex max-h-screen w-full items-center">
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="relative flex max-h-screen w-full items-center justify-center">
           <PreviewImage
             className={cn(
-              'mx-auto block max-h-[calc(100vh-4rem)] w-auto object-contain transition-transform'
+              'mx-auto block max-h-[calc(100vh-10rem)] w-auto object-contain transition-transform'
             )}
           />
-          <div className="absolute bottom-0 left-1/2 z-40 flex w-fit -translate-x-1/2 justify-center gap-4 p-2 text-center text-white">
-            <div className="flex gap-1">
-              <button
-                aria-label="Previous image"
-                className={cn(
-                  buttonVariants({
-                    variant: prevDisabled ? 'disabled' : 'default',
-                  })
-                )}
-                disabled={prevDisabled}
-                onClick={api.preview.previous}
-                type="button"
-              >
-                <ArrowLeft />
-              </button>
-              {(currentPreviewIndex ?? 0) + 1}
-              <button
-                aria-label="Next image"
-                className={cn(
-                  buttonVariants({
-                    variant: nextDisabled ? 'disabled' : 'default',
-                  })
-                )}
-                disabled={nextDisabled}
-                onClick={api.preview.next}
-                type="button"
-              >
-                <ArrowRight />
-              </button>
-            </div>
-            <div className="flex">
-              <button
-                aria-label="Zoom out"
-                className={cn(
-                  buttonVariants({
-                    variant: zoomOutDisabled ? 'disabled' : 'default',
-                  })
-                )}
-                disabled={zoomOutDisabled}
-                onClick={api.preview.zoomOut}
-                type="button"
-              >
-                <Minus className="size-4" />
-              </button>
-              <div className="mx-px">
-                {isEditingScale ? (
-                  <>
-                    <ScaleInput
-                      key={scale}
-                      className="w-10 rounded px-1 text-slate-500 outline"
-                      scale={scale}
-                      onCommit={(nextScale) => {
-                        api.preview.setScale(nextScale);
-                        api.preview.setEditingScale(false);
-                      }}
-                    />{' '}
-                    <span>%</span>
-                  </>
-                ) : (
-                  <button
-                    aria-label="Set zoom level"
-                    className="border-0 bg-transparent p-0 text-inherit"
-                    onClick={() => {
-                      api.preview.setEditingScale(true);
-                    }}
-                    type="button"
-                  >
-                    {`${scale * 100}%`}
-                  </button>
-                )}
+          <div className="pointer-events-auto fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1 rounded-lg border bg-popover p-1 text-popover-foreground shadow-md">
+            <Button
+              aria-label="Previous image"
+              disabled={prevDisabled}
+              onClick={api.preview.previous}
+              size="icon-sm"
+              variant="ghost"
+            >
+              <ArrowLeft />
+            </Button>
+            <span className="min-w-10 text-center text-sm text-muted-foreground tabular-nums">
+              {(currentPreviewIndex ?? 0) + 1} / {previewList.length}
+            </span>
+            <Button
+              aria-label="Next image"
+              disabled={nextDisabled}
+              onClick={api.preview.next}
+              size="icon-sm"
+              variant="ghost"
+            >
+              <ArrowRight />
+            </Button>
+            <Separator
+              className="mx-1 data-[orientation=vertical]:h-5"
+              orientation="vertical"
+            />
+            <Button
+              aria-label="Zoom out"
+              disabled={zoomOutDisabled}
+              onClick={api.preview.zoomOut}
+              size="icon-sm"
+              variant="ghost"
+            >
+              <Minus />
+            </Button>
+            {isEditingScale ? (
+              <div className="flex items-center gap-1 px-1 text-sm">
+                <ScaleInput
+                  key={scale}
+                  className="h-7 w-12 rounded-md border bg-transparent px-1.5 text-center tabular-nums outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  scale={scale}
+                  onCommit={(nextScale) => {
+                    api.preview.setScale(nextScale);
+                    api.preview.setEditingScale(false);
+                  }}
+                />
+                %
               </div>
-              <button
-                aria-label="Zoom in"
-                className={cn(
-                  buttonVariants({
-                    variant: zoomInDisabled ? 'disabled' : 'default',
-                  })
-                )}
-                disabled={zoomInDisabled}
-                onClick={api.preview.zoomIn}
-                type="button"
+            ) : (
+              <Button
+                aria-label="Set zoom level"
+                className="min-w-14 tabular-nums"
+                onClick={() => {
+                  api.preview.setEditingScale(true);
+                }}
+                size="sm"
+                variant="ghost"
               >
-                <Plus className="size-4" />
-              </button>
-            </div>
-            <button
+                {`${scale * 100}%`}
+              </Button>
+            )}
+            <Button
+              aria-label="Zoom in"
+              disabled={zoomInDisabled}
+              onClick={api.preview.zoomIn}
+              size="icon-sm"
+              variant="ghost"
+            >
+              <Plus />
+            </Button>
+            <Separator
+              className="mx-1 data-[orientation=vertical]:h-5"
+              orientation="vertical"
+            />
+            <Button
               aria-label="Download image"
-              className={cn(
-                buttonVariants({
-                  variant: downloadDisabled ? 'disabled' : 'default',
-                })
-              )}
               disabled={downloadDisabled}
               onClick={handleDownload}
-              type="button"
+              size="icon-sm"
+              variant="ghost"
             >
-              <Download className="size-4" />
-            </button>
-            <button
+              <Download />
+            </Button>
+            <Button
               aria-label="Close preview"
-              className={cn(buttonVariants())}
               onClick={api.preview.close}
-              type="button"
+              size="icon-sm"
+              variant="ghost"
             >
-              <X className="size-4" />
-            </button>
+              <X />
+            </Button>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    editor.api.dom.getWindow().document.body
   );
 }
 
@@ -441,7 +421,7 @@ function PreviewImage({
   return (
     <button
       aria-label={isZoomIn ? 'Zoom in preview image' : 'Zoom out preview image'}
-      className="block border-0 bg-transparent p-0"
+      className="pointer-events-auto block border-0 bg-transparent p-0"
       onClick={(event) => {
         event.stopPropagation();
         api.preview[isZoomIn ? 'zoomIn' : 'zoomOut']();

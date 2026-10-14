@@ -22,7 +22,7 @@ import { Tweet } from 'react-tweet';
 
 import { cn } from '@/lib/utils';
 
-import { Caption, useCaptionFocused } from './caption';
+import { Caption } from './caption';
 import { MediaToolbar } from './media-toolbar';
 import {
   mediaResizeHandleVariants,
@@ -56,7 +56,6 @@ export function MediaEmbedElement(
   const isYoutube = embed?.provider === 'youtube';
   const youtubeId = isYoutube ? embed.id : undefined;
   const editor = useEditor();
-  const captionFocused = useCaptionFocused(path);
   const provider = embed?.provider;
 
   return (
@@ -158,7 +157,6 @@ export function MediaEmbedElement(
             </Resizable>
           </div>
           <Caption
-            active={selected || captionFocused}
             align={textAlign}
             element={props.element}
             slots={props.slots}
