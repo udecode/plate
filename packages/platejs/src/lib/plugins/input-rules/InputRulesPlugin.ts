@@ -1,8 +1,9 @@
+import { getPluginContributions } from 'plitejs/internal';
+
 import { domCommands } from '../../../dom/plite-dom.internal';
 import {
   type EditorStateView,
   editorCommands,
-  NodeApi,
   RangeApi,
 } from '../../../facade';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
@@ -14,6 +15,7 @@ import {
   isInputRuleDecline,
   isInputRuleContinuation,
 } from './inputRuleContinuation.internal';
+import { inputRuleVeto } from './inputRuleVeto';
 import type {
   InsertBreakInputRuleContext,
   InsertBreakInputRuleReadContext,
@@ -24,6 +26,13 @@ import type {
   InsertTextInputRuleReadContext,
   SelectionInputRuleContext,
 } from './types';
+
+const insertsAtCaret = (
+  at: unknown,
+  selection: ReturnType<EditorStateView['selection']>
+) =>
+  !at ||
+  (!!selection && RangeApi.isRange(at) && RangeApi.equals(at, selection));
 
 const invalidApplyResult = () =>
   new Error(
@@ -181,6 +190,19 @@ export const InputRulesPlugin = definePlugin('inputRules', {
     };
   };
 
+  const vetoTypesByRules = new WeakMap<object, readonly string[]>();
+  const isVetoed = (state: Pick<EditorStateView, 'nodes'>) => {
+    const { inputRules } = getPlateRuntime(editor);
+    let types = vetoTypesByRules.get(inputRules);
+
+    if (!types) {
+      types = [...new Set(getPluginContributions(editor, inputRuleVeto))];
+      vetoTypesByRules.set(inputRules, types);
+    }
+
+    return types.length > 0 && state.nodes.some({ type: types });
+  };
+
   return {
     commands: ({ around }) => [
       around(domCommands.insertData, ({ input, state, next }) => {
@@ -188,7 +210,7 @@ export const InputRulesPlugin = definePlugin('inputRules', {
 
         const firstRule = rules[0];
 
-        if (!firstRule) return next();
+        if (!firstRule || isVetoed(state)) return next();
 
         const dataTypes = new Set(input.types);
         const selectionContext = createSelectionContext({ state });
@@ -292,7 +314,7 @@ export const InputRulesPlugin = definePlugin('inputRules', {
 
         const firstRule = rules[0];
 
-        if (!firstRule) return next();
+        if (!firstRule || isVetoed(state)) return next();
 
         const selectionContext = createSelectionContext({ state });
         const context = {
@@ -371,25 +393,20 @@ export const InputRulesPlugin = definePlugin('inputRules', {
         const rules =
           getPlateRuntime(editor).inputRules.insertText.byTrigger[input.text] ??
           [];
-        const target = input.options?.at;
-        const resolvedTarget = NodeApi.isNode(target)
-          ? state.nodes.path(target)
-          : target;
-
-        if (NodeApi.isNode(target) && !resolvedTarget) return next();
-
-        const commandOptions = input.options
-          ? { ...input.options, at: resolvedTarget }
-          : undefined;
-
         const firstRule = rules[0];
 
-        if (!firstRule) return next();
+        if (
+          !firstRule ||
+          !insertsAtCaret(input.options?.at, state.selection()) ||
+          isVetoed(state)
+        ) {
+          return next();
+        }
 
         const selectionContext = createSelectionContext({ state });
         const context = {
           cause: 'insertText',
-          options: commandOptions,
+          options: input.options,
           plugin: firstRule.plugin,
           text: input.text,
           ...selectionContext,

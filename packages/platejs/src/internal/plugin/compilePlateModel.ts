@@ -93,7 +93,7 @@ export type PlateModelPublication = Readonly<{
   pluginInputs: readonly RuntimePluginReference[];
 }>;
 
-const PLATE_BLOCK_CONTENT_SCHEMA_GROUP = 'plate:block-content';
+const PLATE_BLOCK_CONTENT_SCHEMA_GROUP = 'core:block-content';
 const resolvingSchemaIdentities = new WeakMap<object, Set<object>>();
 
 const evaluatePluginSchemaIdentity = (
@@ -1099,9 +1099,9 @@ export const compilePlateModel = (editor: Editor): CompiledPlateModel => {
       ...declaredProperties,
       ...(textProperty ? [textProperty] : []),
     ]);
-    const ownsPropertyKey = pluginProperties.some(
-      (property) => property.key === propertyKey
-    );
+    // A Plite plugin's schema lists its properties, so their local ids are
+    // indexes; only a property declared under the plugin's key is primary.
+    const ownsPropertyKey = Object.hasOwn(propertyHandles, propertyKey);
 
     properties.push(...declaredProperties);
     contentRoots.push(...declaredContentRoots);

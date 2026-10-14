@@ -12,7 +12,7 @@ test('pure text insertion rejects replacements and reports the inserted span', (
 });
 
 test('native text insert delta uses DOM diff when mobile reports a collapsed whitespace boundary', () => {
-  const pliteText = 'This is DOM imported editable ';
+  const editorText = 'This is DOM imported editable ';
   const textHostText = 'This is DOM imported !editable ';
   const boundaryOffset = 'This is DOM imported '.length;
 
@@ -20,7 +20,7 @@ test('native text insert delta uses DOM diff when mobile reports a collapsed whi
     getNativeTextInsertDelta({
       inputText: '!',
       selectionOffset: boundaryOffset,
-      pliteText,
+      editorText,
       textHostText,
     })
   ).toEqual({

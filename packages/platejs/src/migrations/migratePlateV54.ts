@@ -1,3 +1,4 @@
+import { projectAuthoredDocument } from '../authored';
 import {
   DocumentChange,
   type EditorDocumentValue,
@@ -155,32 +156,20 @@ export const migrateV54: PlateV54Migration = (context) => {
     });
   }
 
-  const accepted = context.target.schema.fitDocument(
-    shapeDocument(context, legacy.accepted).document
+  // Asserts the target installs the authored plugin, whose schema keeps marks.
+  getDocumentMigrationAuthoredCapability(context.target);
+  const document = context.target.schema.fitDocument(
+    shapeDocument(context, legacy.review).document
   );
-  let previous = accepted;
-  const revisions = legacy.revisions.map((revision) => {
-    const proposed = context.target.schema.fitDocument(
-      shapeDocument(context, revision.proposed).document
+
+  if (
+    projectAuthoredDocument(document, { projection: 'proposed' }).pending !==
+    legacy.changes
+  ) {
+    throw new Error(
+      'Plate v54 migration cannot convert legacy suggestions whose nodes the target schema reshapes.'
     );
-    const change = DocumentChange.between(previous, proposed);
-
-    previous = proposed;
-
-    return Object.freeze({
-      authorId: revision.authorId,
-      change,
-      createdAt: revision.createdAt,
-      id: revision.id,
-    });
-  });
-  const document = getDocumentMigrationAuthoredCapability(
-    context.target
-  ).createCheckpoint({
-    accepted,
-    revisions,
-    schema,
-  });
+  }
 
   return Object.freeze({
     document,
@@ -199,7 +188,7 @@ export const migrateV54: PlateV54Migration = (context) => {
         schema,
         shapedSelection,
         shapedSource.document,
-        accepted
+        document
       );
     },
   });

@@ -1,11 +1,6 @@
-import {
-  BaseParagraphPlugin,
-  createEditor,
-  definePlugin,
-  PLUGINS,
-  schema,
-} from '../../../core';
+import { BaseParagraphPlugin, createEditor } from '../../../core';
 import { BaseBlockquotePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
+import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
 import { BaseBoldPlugin } from '../../basic-nodes/lib/BaseMarkPlugins';
 import { BaseListPlugin } from './BaseListPlugin';
 import { getListIndexMetrics } from './listIndex.internal';
@@ -25,10 +20,6 @@ const plain = (text: string, extra: Record<string, unknown> = {}) => ({
   ...extra,
 });
 
-const HeadingPlugin = definePlugin(PLUGINS.heading, {
-  schema: { element: schema.element.textBlock() },
-});
-
 const lifecycleErrors: unknown[] = [];
 
 afterEach(() => {
@@ -45,9 +36,9 @@ const editorOf = (initialValue: unknown[]) =>
       BaseParagraphPlugin,
       BaseBoldPlugin,
       BaseBlockquotePlugin,
-      HeadingPlugin,
+      BaseHeadingPlugin,
       BaseListPlugin.configure({
-        targetPlugins: [BaseParagraphPlugin, HeadingPlugin],
+        targetPlugins: [BaseParagraphPlugin, BaseHeadingPlugin],
       }),
     ],
   } as never);

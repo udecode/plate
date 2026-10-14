@@ -13,6 +13,8 @@ import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceC
 import { createPluginContext } from '../../../lib/plugin/createPluginContext.internal';
 import { createEditor } from '../../../react/core';
 import { dispatchPlateShortcut } from '../../../react/utils/dispatchPlateShortcut.internal';
+import { BaseBlockquotePlugin } from '../../basic-nodes';
+import { BaseListPlugin } from '../../list';
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 
 describe('BaseIndentPlugin', () => {
@@ -169,6 +171,59 @@ describe('BaseIndentPlugin', () => {
     expect(press(true)).toBe(true);
   });
 
+  it('lets Shift+Tab leave the blockquote plugin, not a plugin that only shares its name', () => {
+    const quoted = (quote: typeof BaseBlockquotePlugin) => {
+      const editor = createEditor({
+        plugins: [BaseParagraphPlugin, BaseIndentPlugin, quote],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 0, 0] },
+          focus: { offset: 0, path: [0, 0, 0] },
+        },
+        initialValue: [
+          {
+            children: [{ children: [{ text: 'One' }], type: 'paragraph' }],
+            type: 'blockquote',
+          },
+        ],
+      });
+      const handled = dispatchPlateShortcut(
+        editor,
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          code: 'Tab',
+          key: 'Tab',
+          shiftKey: true,
+        }),
+        'keydown',
+        getPlateRuntime(editor).shortcutTable
+      );
+
+      return { children: editor.read.children(), handled };
+    };
+
+    expect(quoted(BaseBlockquotePlugin)).toEqual({
+      children: [{ children: [{ text: 'One' }], type: 'paragraph' }],
+      handled: true,
+    });
+    expect(
+      quoted(
+        definePlugin('blockquote', {
+          schema: { element: { content: schema.content.group('block') } },
+        }) as never
+      )
+    ).toEqual({
+      children: [
+        {
+          children: [{ children: [{ text: 'One' }], type: 'paragraph' }],
+          type: 'blockquote',
+        },
+      ],
+      handled: true,
+    });
+  });
+
   it('decodes CSS indentation through configured units', () => {
     const IndentPlugin = BaseIndentPlugin.configure({
       initialState: {
@@ -189,6 +244,32 @@ describe('BaseIndentPlugin', () => {
         type: 'paragraph',
       },
     ]);
+  });
+
+  it('reads a margin between two indent levels as the nearer level', () => {
+    const editor = createHeadlessEditor({
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
+    });
+
+    expect(
+      editor.api.html.parse(
+        '<p style="margin-left:36px">a</p><ul><li style="margin-left:36px">b</li></ul>'
+      )
+    ).toMatchObject({
+      diagnostics: [],
+      document: {
+        children: [
+          { children: [{ text: 'a' }], indent: 2, type: 'paragraph' },
+          {
+            children: [{ text: 'b' }],
+            indent: 2,
+            listType: 'bulleted',
+            type: 'paragraph',
+          },
+        ],
+      },
+      ok: true,
+    });
   });
 
   it('uses the plugin type instead of an injected node key', () => {

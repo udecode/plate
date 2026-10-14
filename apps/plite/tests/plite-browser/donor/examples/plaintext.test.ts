@@ -1,5 +1,5 @@
 import { expect, type Locator, test } from '@playwright/test';
-import {
+import { BROWSER_HANDLE_KEY,
   assertBrowserSelectionContract,
   type BrowserTestOptions,
   openExample,
@@ -1269,6 +1269,53 @@ test.describe('plaintext example', () => {
     });
   });
 
+  for (const { key, path, text, title } of [
+    { key: 'End', path: [1, 0], text: '', title: 'End in an empty line' },
+    { key: 'Home', path: [1, 0], text: '', title: 'Home in an empty line' },
+    {
+      key: 'End',
+      path: [0, 0],
+      text: 'First line',
+      title: 'End at the end of a line',
+    },
+  ]) {
+    test(`keeps the caret on its line for ${title}`, async ({
+      page,
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name === 'mobile' ||
+          testInfo.project.name === 'webkit',
+        'Desktop Chromium/Firefox line-boundary proof'
+      );
+
+      const editor = await openExample(page, 'plite/plaintext', {
+        ready: {
+          editor: 'visible',
+        },
+      });
+      const offset = key === 'End' ? text.length : 0;
+
+      await editor.selection.selectAll();
+      await page.keyboard.insertText('First line');
+      await page.keyboard.press('Enter');
+      await page.keyboard.press('Enter');
+      await page.keyboard.insertText('Last line');
+      await editor.assert.blockTexts(['First line', '', 'Last line']);
+      await editor.selection.select({
+        anchor: { path, offset },
+        focus: { path, offset },
+      });
+
+      await page.keyboard.press(key);
+
+      await editor.assert.collapsedModelDOMSelection({
+        offset,
+        path,
+        text,
+      });
+    });
+  }
+
   for (const preparation of ['handle', 'pointer'] as const) {
     for (const boundary of ['start', 'end'] as const) {
       test(`imports native line boundaries after ${preparation} preparation: ${boundary}`, async ({
@@ -1296,25 +1343,23 @@ test.describe('plaintext example', () => {
           if (preparation === 'pointer') {
             await editor.dom.clickTextOffset({ path: [0, 0], offset: 16 });
           } else {
-            await editor.root.evaluate((element: HTMLElement) => {
+            await editor.root.evaluate((element: HTMLElement, key) => {
               const handle = (
-                element as HTMLElement & {
-                  __pliteBrowserHandle: {
+                element as HTMLElement & Record<string, {
                     focus: () => void;
                     selectRange: (range: {
                       anchor: { path: number[]; offset: number };
                       focus: { path: number[]; offset: number };
                     }) => void;
-                  };
-                }
-              ).__pliteBrowserHandle;
+                  }>
+              )[key];
 
               handle.selectRange({
                 anchor: { path: [0, 0], offset: 16 },
                 focus: { path: [0, 0], offset: 16 },
               });
               handle.focus();
-            });
+            }, BROWSER_HANDLE_KEY);
           }
 
           await editor.assert.selection({
@@ -1813,12 +1858,14 @@ test.describe('plaintext example', () => {
             caretOffset,
             endOffset,
             inputType,
+            key,
             sourceText,
             startOffset,
           }: {
             caretOffset: number;
             endOffset: number;
             inputType: 'deleteWordBackward' | 'deleteWordForward';
+            key: string;
             sourceText: string;
             startOffset: number;
           }
@@ -1867,23 +1914,24 @@ test.describe('plaintext example', () => {
           return {
             defaultPrevented: event.defaultPrevented,
             dispatched,
-            handle: (element as any).__pliteBrowserHandle
+            handle: (element as any)[key]
               ? {
-                  lastCommit: (
-                    element as any
-                  ).__pliteBrowserHandle.getLastCommit?.(),
-                  selection: (
-                    element as any
-                  ).__pliteBrowserHandle.getSelection?.(),
-                  text: (element as any).__pliteBrowserHandle.getText?.(),
-                  trace: (
-                    element as any
-                  ).__pliteBrowserHandle.getKernelTrace?.(),
+                  lastCommit: (element as any)[key].getLastCommit?.(),
+                  selection: (element as any)[key].getSelection?.(),
+                  text: (element as any)[key].getText?.(),
+                  trace: (element as any)[key].getKernelTrace?.(),
                 }
               : null,
           };
         },
-        { caretOffset, endOffset, inputType, sourceText: text, startOffset }
+        {
+          caretOffset,
+          endOffset,
+          inputType,
+          key: BROWSER_HANDLE_KEY,
+          sourceText: text,
+          startOffset,
+        }
       );
     };
 
@@ -2183,14 +2231,12 @@ test.describe('plaintext example', () => {
     await editor.selection.selectAll();
     await page.keyboard.insertText('i');
 
-    await editor.root.evaluate(async (element: HTMLElement) => {
+    await editor.root.evaluate(async (element: HTMLElement, key) => {
       const handle = (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: {
+        element as HTMLElement & Record<string, {
             getElementByPath: (path: number[]) => HTMLElement | null;
-          };
-        }
-      ).__pliteBrowserHandle;
+          } | undefined>
+      )[key];
       const textHost = handle?.getElementByPath([0, 0]);
       const resolveTextOffset = (offset: number) => {
         if (!textHost) {
@@ -2296,23 +2342,21 @@ test.describe('plaintext example', () => {
           inputType: 'insertText',
         })
       );
-    });
+    }, BROWSER_HANDLE_KEY);
 
     await editor.assert.text('IS');
 
     await editor.selection.selectAll();
     await page.keyboard.insertText('🙂 ');
-    await editor.root.evaluate((element: HTMLElement) => {
+    await editor.root.evaluate((element: HTMLElement, key) => {
       const handle = (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: {
+        element as HTMLElement & Record<string, {
             resolveDOMPoint: (point: {
               offset: number;
               path: number[];
             }) => readonly [Node, number] | null;
-          };
-        }
-      ).__pliteBrowserHandle;
+          } | undefined>
+      )[key];
       const start = handle?.resolveDOMPoint({
         offset: '🙂'.length,
         path: [0, 0],
@@ -2342,7 +2386,7 @@ test.describe('plaintext example', () => {
         }),
       ];
       element.dispatchEvent(event);
-    });
+    }, BROWSER_HANDLE_KEY);
 
     await editor.assert.text('🙂. ');
   });

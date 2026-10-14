@@ -11,12 +11,11 @@ import {
   type NamedRootKey,
   type NodeKey,
   type Path,
-  PLUGINS,
   type RootKey,
 } from '../../../core';
 import { getEditorCommitSnapshot } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
-import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
+import { BaseHeadingPlugin } from '../../basic-nodes';
 import type { ListStyle, ListType } from './BaseListPlugin';
 import {
   changeLanes,
@@ -111,11 +110,9 @@ export const getElementListStyle = (element: Element): string | undefined => {
 };
 
 export const getHeadingType = (editor: Editor) => {
-  const headingDescriptor = getCompiledPlatePlugin(editor, PLUGINS.heading);
+  const heading = editor.plugin(BaseHeadingPlugin);
 
-  return headingDescriptor
-    ? editor.plugin(headingDescriptor).schema.type
-    : undefined;
+  return heading.installed ? heading.schema.type : undefined;
 };
 
 export const readListFacts = (element: Element): ListFacts | undefined => {

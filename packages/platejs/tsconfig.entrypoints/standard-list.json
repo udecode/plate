@@ -25,6 +25,9 @@
       "path": "./core.json"
     },
     {
+      "path": "./standard-basic-nodes.json"
+    },
+    {
       "path": "./standard-indent.json"
     }
   ]

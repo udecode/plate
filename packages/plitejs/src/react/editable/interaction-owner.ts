@@ -13,7 +13,7 @@ export const registerExternalTextHost = (
   owner: ExternalHostOwner
 ) => {
   if (EXTERNAL_HOSTS.has(host)) {
-    throw new Error('Plite external text host already has an owner.');
+    throw new Error('The external text host already has an owner.');
   }
   EXTERNAL_HOSTS.set(host, owner);
   return () => {

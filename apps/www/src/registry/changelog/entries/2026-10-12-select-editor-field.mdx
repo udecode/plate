@@ -15,7 +15,7 @@ diagnostics: []
 
 <!-- entry: {"id":"2026-10-12-select-editor-keys-links-7c2e41a9","kind":"fix","migrationNotes":[]} -->
 
-- **`select-editor`**: Move the active option with ArrowUp and ArrowDown wherever the caret is, close the menu and clear the search on Escape and mod+Enter, and link read-only chips to their `url`.
+- **`select-editor`**: Move the active option with ArrowUp and ArrowDown wherever the caret is, close the menu and clear the search on Escape and mod+Enter, and link a read-only chip to its `url` only when `getLinkHref` accepts it, so a chip with a script or malformed `url` shows without a link instead of breaking the field.
 
 <!-- entry: {"id":"2026-10-12-select-editor-tag-item-5d90b3e2","kind":"remove","migrationNotes":["Install select-editor instead of tag; it copies tag.tsx with the tag element plugin."]} -->
 

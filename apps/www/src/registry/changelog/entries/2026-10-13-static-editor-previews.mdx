@@ -1,0 +1,18 @@
+---
+id: 2026-10-13-static-editor-previews
+date: 2026-10-13
+status: draft
+kind: wiring
+summary: 'Read-only previews and HTML export create their editor with createEditor or useCreateEditor'
+change: { 'type': 'source', 'date': '2026-10-13', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-13-comment-previews-create-their-editor-3f94348f","kind":"wiring","migrationNotes":[]} -->
+
+- **`comment`**, **`comment-review-demo`**, **`markdown-streaming-demo`**: Create each read-only preview editor with `useCreateEditor` from `platejs/react`, with the same plugins and dependencies as before.
+
+<!-- entry: {"id":"2026-10-13-html-export-create-editor","kind":"wiring","migrationNotes":[]} -->
+
+- **`html-export`**: Create the server page's export editor with `createEditor` from `platejs` and the client preview's editor with `useCreateEditor` from `platejs/react`, and keep rendering both through `EditorStatic`.

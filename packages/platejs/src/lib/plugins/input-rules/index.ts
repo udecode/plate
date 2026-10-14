@@ -4,4 +4,5 @@
 
 export * from './createInputRules';
 export * from './defineInputRule';
+export * from './inputRuleVeto';
 export * from './types';

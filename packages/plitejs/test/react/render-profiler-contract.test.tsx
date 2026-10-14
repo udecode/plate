@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 
 import { EditorElement, EditorLeaf, EditorText } from '../../src/react';
-import { PliteSpacer } from '../../src/react/components/plite-spacer';
+import { EditorSpacer } from '../../src/react/components/plite-spacer';
 import { TextString } from '../../src/react/components/text-string';
 import { ZeroWidthString } from '../../src/react/components/zero-width-string';
 import {
@@ -73,9 +73,9 @@ describe('plite-react render profiler contract', () => {
             <TextString text="alpha" />
           </EditorLeaf>
         </EditorText>
-        <PliteSpacer>
+        <EditorSpacer>
           <ZeroWidthString length={2} />
-        </PliteSpacer>
+        </EditorSpacer>
       </EditorElement>
     );
 

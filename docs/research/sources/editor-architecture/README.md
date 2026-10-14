@@ -3,6 +3,11 @@
 This directory holds compiled summaries for the editor-architecture comparison
 lane.
 
+Start a new comparison with [the current editor selector](candidates.md) and
+[the October 2026 source findings](current-comparison.md). The selector separates
+engines, frameworks, block editors, document processors and specialist input or
+layout projects. The linked run records its source sample and unresolved gaps.
+
 Current scope:
 
 - decorations / annotations / widget architecture

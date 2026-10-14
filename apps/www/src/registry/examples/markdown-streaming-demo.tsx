@@ -15,7 +15,7 @@ import {
   ElementApi,
 } from 'platejs';
 import type { MarkdownSliceParseResult } from 'platejs/markdown';
-import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import {
   type HTMLAttributes,
   useDeferredValue,
@@ -398,13 +398,7 @@ export default function MarkdownStreamingDemo() {
     },
     []
   );
-  const editorStatic = useStaticEditor(
-    {
-      plugins: BaseEditorKit,
-    },
-    []
-  );
-  // The static preview renders each parse as a document; nothing is edited.
+  const editorStatic = useCreateEditor({ plugins: BaseEditorKit }, []);
   const [staticDocument, setStaticDocument] = useState<EditorDocumentValue>();
   const latestOutput = useMemo(
     () => ({ document: staticDocument, error, status }),

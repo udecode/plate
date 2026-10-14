@@ -26,11 +26,11 @@ npx shadcn@latest add @plate/editor-plugins-static
 
 ### 渲染静态内容
 
-在 Server Component 中创建静态编辑器，并使用 `<EditorStatic>` 渲染。
+在 Server Component 中创建编辑器，并使用 `<EditorStatic>` 渲染。
 
 ```tsx title="app/documents/page.tsx" showLineNumbers
-import type { Value } from 'platejs';
-import { createStaticEditor, EditorStatic } from 'platejs/static';
+import { createEditor, type Value } from 'platejs';
+import { EditorStatic } from 'platejs/static';
 
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 
@@ -46,7 +46,7 @@ const value: Value = [
 ];
 
 export default function DocumentsPage() {
-  const editor = createStaticEditor({
+  const editor = createEditor({
     plugins: BaseEditorKit,
     initialValue: value,
   });
@@ -60,8 +60,8 @@ export default function DocumentsPage() {
 如果路由需要静态 Plate 视图的服务端 HTML，而不是 React 树，请使用 `renderStaticHtml`。
 
 ```tsx title="app/api/document-html/route.ts" showLineNumbers
-import type { Value } from 'platejs';
-import { createStaticEditor, renderStaticHtml } from 'platejs/static';
+import { createEditor, type Value } from 'platejs';
+import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 import { EditorStatic } from '@/components/editor/editor-static';
@@ -78,7 +78,7 @@ const value: Value = [
 ];
 
 export async function GET() {
-  const editor = createStaticEditor({
+  const editor = createEditor({
     plugins: BaseEditorKit,
     initialValue: value,
   });
@@ -109,13 +109,13 @@ npm install platejs marked remark-parse remark-stringify unified
 
 | 运行时 | 导入路径 | 用途 |
 | --- | --- | --- |
-| Server Component | `platejs/static` | 使用 `<EditorStatic>` 生成只读 React 输出。 |
-| Route Handler | `platejs/static` | 使用 `renderStaticHtml` 进行静态 React 渲染。 |
+| Server Component | `platejs`、`platejs/static` | 使用 `<EditorStatic>` 生成只读 React 输出。 |
+| Route Handler | `platejs`、`platejs/static` | 使用 `renderStaticHtml` 进行静态 React 渲染。 |
 | Node.js 脚本 | `platejs`、`platejs/*` | 验证、迁移和 Markdown 输入/输出。 |
 | 客户端编辑器 | `platejs/react`、`platejs/*/react` | 可编辑 UI、hooks 和工具栏交互。 |
 
 <Callout type="info">
-  `createStaticEditor` 包含静态输出所需的 core DOM capability。需要渲染输出时使用它；脚本只读取或转换值时使用 `createEditor`。
+  `platejs` 的 `createEditor` 会安装静态输出所需的 core DOM capability。同一个编辑器既可用于渲染输出，也可用于只读取或转换值的脚本。
 </Callout>
 
 ## 后续步骤

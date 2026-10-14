@@ -542,6 +542,7 @@ export function TurnIntoToolbarButton() {
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
         <ToolbarButton
+          aria-label={`Turn into: ${getTurnIntoLabel(leafValue)}`}
           className="min-w-[125px]"
           disabled={readOnly || !hasSelection}
           pressed={open}

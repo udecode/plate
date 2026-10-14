@@ -5,9 +5,15 @@ import {
   authoredDocumentCapabilityPoint,
   type NativeAuthoredDocumentCapability,
 } from './core/authored-document-capability';
-import { initializeAuthoredDocument } from './core/authored-runtime';
 import type { DocumentChange } from './core/change/document-change';
 import { createCommandDispatch } from './core/command-registry';
+import {
+  admitDocument,
+  admitEditorDocument,
+  type DocumentAdmission,
+  documentAdmissionPoint,
+  onlyDocumentAdmission,
+} from './core/document-admission';
 import { assertNoDocumentViewRead } from './core/document-view-read';
 import {
   createEditorReadApi,
@@ -29,7 +35,6 @@ import {
 } from './core/editor-schema';
 import {
   createEditorViewPluginApis,
-  getPluginContributions,
   prepareInitialPluginPublication,
   prepareScopedPluginPublication,
   setEditorLifecycleErrorSink,
@@ -38,6 +43,7 @@ import {
   assertPluginPublicationInactive,
   createPluginRegistry,
   finalizePluginRegistry,
+  getPluginContributions,
   getPluginRegistry,
   initializeBasePluginRegistry,
   registerEffectTypeInRegistry,
@@ -61,6 +67,7 @@ import {
   initializePublicState,
   readEditor,
   repairEditorValue,
+  saveEditorSchemaDocument,
   snapshotInitialDocumentState,
   subscribe,
   subscribeCommit,
@@ -175,7 +182,7 @@ export type EditorValueFromOptions<TOptions> = [
   ? InitialValueFromOptions<TOptions>
   : EditorValueFromPlugins<PluginsFromOptions<TOptions>>;
 
-const createEditorId = () => `plite-editor-${(nextEditorId += 1)}`;
+const createEditorId = () => `editor-${(nextEditorId += 1)}`;
 
 const publishInitialPlugins = <TEditor extends AnyEditor>(
   editor: TEditor,
@@ -211,7 +218,7 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
         input as PluginInput,
         !explicitInitialDocument
       );
-  const initialDocument = getEditorDocumentValue(editor);
+  const restoreDocument = saveEditorSchemaDocument(editor);
   const initialSelection = getLiveSelection(editor);
   const initialSelectionRoot = getCurrentSelectionRoot(editor);
   const preparedDocumentValidated =
@@ -221,7 +228,13 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
 
   try {
     // Plugins activate on the document they publish.
-    adoptInitialDocumentChange(editor, publication.documentChange);
+    adoptInitialDocumentChange(
+      editor,
+      publication.documentChange,
+      onlyDocumentAdmission(
+        publication.schemaCompilation().contributions(documentAdmissionPoint)
+      )
+    );
     publication.stage();
     publication.commit();
     const validatePublishedDocument = (
@@ -232,7 +245,7 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
 
       if (requireExplicitDocument && publishedDocument.children.length === 0) {
         throw new Error(
-          '[Plite] initialValue is invalid! Expected at least one element.'
+          'initialValue is invalid! Expected at least one element.'
         );
       }
 
@@ -280,26 +293,36 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
         spec,
         getEditorDocumentValue(editor)
       );
+      const admitted = admitEditorDocument(editor, initializedDocument);
 
-      initializeEditorSchemaDocument(editor, initializedDocument);
+      initializeEditorSchemaDocument(editor, admitted.document);
       if (spec.selection) {
+        const root = spec.selection.root ?? 'main';
+
         initializeEditorSchemaSelection(
           editor,
-          spec.selection.value,
-          spec.selection.root ?? 'main'
+          mapSelectionThroughChange(
+            editor,
+            spec.selection.value,
+            admitted.change,
+            initializedDocument,
+            admitted.document,
+            root,
+            { association: 'backward', preferPositionMapping: true }
+          ),
+          root
         );
       }
       validatePublishedDocument(
         explicitInitialDocument || !!options.initialValue
       );
     }
-    initializeAuthoredDocument(editor);
     publication.beforePublish();
     publication.finalize();
     invalidateEditorTransactionSpecs(editor);
   } catch (error) {
     publication.rollback();
-    initializeEditorSchemaDocument(editor, initialDocument);
+    restoreDocument();
     initializeEditorSchemaSelection(
       editor,
       initialSelection,
@@ -316,26 +339,28 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
 
 const adoptInitialDocumentChange = (
   editor: AnyEditor,
-  change: DocumentChange
+  change: DocumentChange,
+  admission: DocumentAdmission | null
 ) => {
   if (change.empty) return;
 
   const initialDocument = getEditorDocumentValue(editor);
   const initialSelection = getLiveSelection(editor);
   const initialSelectionRoot = getCurrentSelectionRoot(editor);
-  const document = change.apply(initialDocument) as ReturnType<
-    typeof getEditorDocumentValue
-  >;
+  const admitted = admitDocument(
+    admission,
+    change.apply(initialDocument) as ReturnType<typeof getEditorDocumentValue>
+  );
 
-  initializeEditorSchemaDocument(editor, document);
+  initializeEditorSchemaDocument(editor, admitted.document);
   if (!initialSelection) return;
 
   const mapped = mapSelectionThroughChange(
     editor,
     initialSelection,
-    change,
+    change.compose(admitted.change),
     initialDocument,
-    document,
+    admitted.document,
     initialSelectionRoot,
     { association: 'backward', preferPositionMapping: true }
   );
@@ -460,14 +485,6 @@ export const withCompiledEditorSchemaCapabilityEntries = <T>(
     if (authored.length > 1) {
       throw new Error(
         'Editor schema compilation received multiple authored document capabilities.'
-      );
-    }
-    const ownsAuthored = compilation.fields.some(
-      ({ key }) => key === 'authored'
-    );
-    if (ownsAuthored !== (authored.length === 1)) {
-      throw new Error(
-        'The authored state field and document capability must be installed together.'
       );
     }
 
@@ -729,7 +746,7 @@ const createEditorImplementation = <
 
   registerEffectTypeInRegistry(
     baseRegistry,
-    'plite:screen-reader-announcement',
+    'core:screen-reader-announcement',
     screenReaderAnnouncementEffect
   );
   initializeBasePluginRegistry(editor, finalizePluginRegistry(baseRegistry));
@@ -749,13 +766,14 @@ const createEditorImplementation = <
 
     if (initialState.explicit && initialDocument.children.length === 0) {
       throw new Error(
-        '[Plite] initialValue is invalid! Expected at least one element.'
+        'initialValue is invalid! Expected at least one element.'
       );
     }
     assertSelectionSupported(editor, getLiveSelection(editor), initialDocument);
     adoptInitialDocumentChange(
       editor as AnyEditor,
-      constructLoadedDocumentChange(editor, initialDocument)
+      constructLoadedDocumentChange(editor, initialDocument),
+      null
     );
   }
 

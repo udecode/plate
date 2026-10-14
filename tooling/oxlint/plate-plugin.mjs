@@ -873,6 +873,185 @@ const noInlineHydrationFlag = {
   },
 };
 
+const PLITE_TOKENS = new Set(['plite', 'plitejs']);
+
+const COMPONENT_NAME = /^[A-Z][A-Za-z0-9]*[a-z][A-Za-z0-9]*$/u;
+
+const COMPONENT_WRAPPERS = new Set(['forwardRef', 'memo']);
+
+const wordTokens = (word) =>
+  word
+    .replace(/([a-z0-9])([A-Z])/gu, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/gu, '$1 $2')
+    .replace(/([A-Za-z])([0-9])/gu, '$1 $2')
+    .split(' ');
+
+const WORD = /[A-Za-z0-9]+/gu;
+
+const isProseWord = (text, start, end) =>
+  !/[-_:/$.@]/u.test(text[start - 1] ?? '') &&
+  !/[-_:/$]/u.test(text[end] ?? '') &&
+  !(text[end] === '.' && /[A-Za-z0-9]/u.test(text[end + 1] ?? ''));
+
+const isRegistryName = (text, start, end) =>
+  text.slice(start - 1, end + 1) === '@plate/';
+
+const textBrand = (text, inPlite) => {
+  for (const { 0: word, index: start } of text.matchAll(WORD)) {
+    const end = start + word.length;
+    const lower = word.toLowerCase();
+    if (lower === 'platejs' || isRegistryName(text, start, end)) continue;
+    const tokens = wordTokens(word).map((token) => token.toLowerCase());
+    if (tokens.some((token) => PLITE_TOKENS.has(token))) return 'Plite';
+    if (
+      tokens.includes('plate') &&
+      (inPlite || word !== 'Plate' || !isProseWord(text, start, end))
+    ) {
+      return 'Plate';
+    }
+  }
+  return null;
+};
+
+const nameBrand = (name, inPlite) => {
+  const tokens = (name.match(WORD) ?? [])
+    .flatMap(wordTokens)
+    .map((token) => token.toLowerCase());
+  if (tokens.some((token) => PLITE_TOKENS.has(token))) return 'Plite';
+  if (inPlite && tokens.includes('plate')) return 'Plate';
+  return null;
+};
+
+const MODULE_SOURCE_PARENTS = new Set([
+  'ExportAllDeclaration',
+  'ExportNamedDeclaration',
+  'ImportDeclaration',
+  'ImportExpression',
+  'TSExternalModuleReference',
+  'TSImportType',
+  'TSModuleDeclaration',
+]);
+
+const isRequire = (callee) =>
+  callee.name === 'require' ||
+  (memberName(callee) === 'resolve' && callee.object.name === 'require');
+
+const isModuleSpecifier = (literal) => {
+  const { parent } = literal;
+  return (
+    MODULE_SOURCE_PARENTS.has(parent?.type) ||
+    (parent?.type === 'CallExpression' &&
+      parent.arguments[0] === literal &&
+      isRequire(parent.callee))
+  );
+};
+
+const isProcessEnv = (node) =>
+  memberName(node) === 'env' &&
+  node.object.type === 'Identifier' &&
+  node.object.name === 'process';
+
+const isComponentInit = (init) => {
+  if (isFunction(init)) return true;
+  if (init?.type !== 'CallExpression') return false;
+  const name =
+    init.callee.type === 'MemberExpression'
+      ? memberName(init.callee)
+      : init.callee.name;
+  return COMPONENT_WRAPPERS.has(name);
+};
+
+const noBrandedValue = {
+  create(context) {
+    const inPlite = relativeFilename(context).startsWith('packages/plitejs/');
+    const reportText = (node, text) => {
+      const brand = textBrand(text, inPlite);
+      if (brand) context.report({ data: { brand }, messageId: 'text', node });
+    };
+    const reportName = (node, name) => {
+      const brand = nameBrand(name, inPlite);
+      if (brand) context.report({ data: { brand }, messageId: 'name', node });
+    };
+    const reportPrefixedName = (node) => {
+      if (node?.type === 'Identifier' && node.name.startsWith('__')) {
+        reportName(node, node.name);
+      }
+    };
+
+    return {
+      ClassBody(node) {
+        for (const member of node.body) {
+          if (
+            (member.type === 'PropertyDefinition' ||
+              member.type === 'AccessorProperty') &&
+            !member.computed &&
+            !member.declare &&
+            member.key.type === 'Identifier'
+          ) {
+            reportName(member.key, member.key.name);
+          }
+        }
+      },
+      FunctionDeclaration({ id }) {
+        if (!id) return;
+        if (COMPONENT_NAME.test(id.name)) reportName(id, id.name);
+        else reportPrefixedName(id);
+      },
+      FunctionExpression({ id }) {
+        if (id && COMPONENT_NAME.test(id.name)) reportName(id, id.name);
+      },
+      JSXText(node) {
+        reportText(node, node.value);
+      },
+      Literal(node) {
+        if (typeof node.value !== 'string' || isModuleSpecifier(node)) return;
+        reportText(node, node.value);
+      },
+      MemberExpression(node) {
+        if (node.computed || node.property.type !== 'Identifier') return;
+        if (isProcessEnv(node.object)) {
+          reportName(node.property, node.property.name);
+        } else {
+          reportPrefixedName(node.property);
+        }
+      },
+      ObjectExpression(node) {
+        for (const property of node.properties) {
+          if (
+            property.type === 'Property' &&
+            !property.computed &&
+            property.key.type === 'Identifier'
+          ) {
+            reportName(property.key, property.key.name);
+          }
+        }
+      },
+      TemplateElement(node) {
+        reportText(node, node.value.cooked ?? node.value.raw);
+      },
+      VariableDeclarator({ id, init }) {
+        if (id.type !== 'Identifier') return;
+        if (COMPONENT_NAME.test(id.name) && isComponentInit(init)) {
+          reportName(id, id.name);
+        } else {
+          reportPrefixedName(id);
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'Values users can observe, such as stored keys, ids, messages and component names, never name Plite, and name Plate only in Plate prose.',
+    },
+    messages: {
+      name: 'This name reaches users and names {{brand}} (baselined in this file: {{baselined}}). Give it a neutral name for its job; package names and Plate prose are the only places the brand appears.',
+      text: 'This value reaches users and names {{brand}} (baselined in this file: {{baselined}}). Give it a neutral name for its job; `platejs`, `@plate/<item>` and the word "Plate" in Plate prose are the only places the brand appears.',
+    },
+    type: 'problem',
+  },
+};
+
 export { noAsNever };
 
 export default {
@@ -887,6 +1066,7 @@ export default {
     ),
     'no-annotated-inferred-callback': noAnnotatedInferredCallback,
     'no-as-never': withBaseline('no-as-never', noAsNever),
+    'no-branded-value': withBaseline('no-branded-value', noBrandedValue),
     'no-inline-hydration-flag': noInlineHydrationFlag,
     'no-one-off-editor-type': withBaseline(
       'no-one-off-editor-type',

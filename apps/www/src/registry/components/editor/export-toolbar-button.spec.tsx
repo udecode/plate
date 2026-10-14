@@ -76,13 +76,14 @@ describe('ExportToolbarButton', () => {
     });
 
     const proposed = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     });
 
     proposed.update.text.insert('++', { at: { offset: 0, path: [0, 0] } });
+    // The suggested "++" is a leaf of its own, so "BCD" starts the next one.
     const proposedRange = {
-      anchor: { offset: 3, path: [0, 0] },
-      focus: { offset: 6, path: [0, 0] },
+      anchor: { offset: 1, path: [0, 1] },
+      focus: { offset: 4, path: [0, 1] },
     };
     const created = await proposed.plugin(CommentsPlugin).api.createThread({
       body: [{ children: [{ text: 'Comment' }], type: 'paragraph' }],
@@ -100,7 +101,7 @@ describe('ExportToolbarButton', () => {
     const view = render(
       <EditorRoot
         editor={editor}
-        authored={{ intent: 'edit', projection: 'accepted' }}
+        authored={{ preview: 'accepted' }}
       >
         <ExportToolbarButton />
       </EditorRoot>

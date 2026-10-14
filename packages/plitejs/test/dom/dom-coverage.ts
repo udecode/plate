@@ -48,7 +48,7 @@ const testView = (editor: DOMTestEditor) => {
   return view;
 };
 
-const CANNOT_RESOLVE_DOM_NODE = /Cannot resolve a DOM node from Plite node/;
+const CANNOT_RESOLVE_DOM_NODE = /Cannot resolve a DOM node from an editor node/;
 
 const createNestedEditor = () => {
   const editor = createEditor({ plugins: [dom()] });

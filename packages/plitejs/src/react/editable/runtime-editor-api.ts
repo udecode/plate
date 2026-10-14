@@ -14,8 +14,11 @@ import {
   hasEditorRuntime,
   setEditorRuntime,
 } from '../../core/editor-runtime';
-import { definePlugin, getPluginContributions } from '../../core/plugin';
-import { inheritPluginRegistry as inheritPluginRegistryCore } from '../../core/plugin-registry';
+import { definePlugin } from '../../core/plugin';
+import {
+  getPluginContributions,
+  inheritPluginRegistry as inheritPluginRegistryCore,
+} from '../../core/plugin-registry';
 import { toInternalRoot } from '../../core/public-root';
 import {
   applyTransactionSpec,

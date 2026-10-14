@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -293,23 +294,25 @@ test('code-block: CodeMirror preserves code editing, IME, and remote updates', a
       .poll(() => editor.get.modelBlockText(blockIndex))
       .toBe(expected);
 
-    await root.evaluate((element) => {
+    await root.evaluate((element, key) => {
       (
-        element as HTMLElement & {
-          __pliteBrowserHandle: {
-            insertTextAt: (
-              text: string,
-              point: { offset: number; path: number[] },
-              policy: { tags: string[] }
-            ) => void;
-          };
-        }
-      ).__pliteBrowserHandle.insertTextAt(
+        element as HTMLElement &
+          Record<
+            string,
+            {
+              insertTextAt: (
+                text: string,
+                point: { offset: number; path: number[] },
+                policy: { tags: string[] }
+              ) => void;
+            }
+          >
+      )[key].insertTextAt(
         'REMOTE:',
         { offset: 0, path: [2, 0] },
         { tags: ['remote'] }
       );
-    });
+    }, BROWSER_HANDLE_KEY);
     expected = `REMOTE:${expected}`;
     await expect
       .poll(() => editor.get.modelBlockText(blockIndex))

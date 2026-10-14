@@ -6,7 +6,7 @@ import {
   type EditorStateView,
   type NodeKey,
 } from '../../../core';
-import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
+import { BaseHeadingPlugin } from '../../basic-nodes';
 
 export type Heading = {
   depth: number;
@@ -39,10 +39,9 @@ export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
       if (queryHeading) return queryHeading(state);
 
       const headings: Heading[] = [];
-      const headingDescriptor = getCompiledPlatePlugin(editor, PLUGINS.heading);
+      const heading = editor.plugin(BaseHeadingPlugin);
 
-      if (!headingDescriptor) return headings;
-      const heading = editor.plugin(headingDescriptor);
+      if (!heading.installed) return headings;
 
       for (const [node] of state.nodes.entries({
         at: [],

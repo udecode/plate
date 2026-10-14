@@ -11,6 +11,7 @@ import type * as EditorModule from "./plugins";
 export interface EditorText extends Text {
   readonly text: string;
   readonly ai?: boolean;
+  readonly authored?: readonly (unknown)[];
   readonly backgroundColor?: string;
   readonly bold?: boolean;
   readonly code?: boolean;
@@ -28,6 +29,7 @@ export interface EditorText extends Text {
 export interface AudioElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "audio";
+  readonly authored?: readonly (unknown)[];
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
   readonly url: string;
   readonly width?: number | string;
@@ -36,8 +38,11 @@ export interface AudioElement extends Element {
 export interface BlockquoteElement extends Element {
   readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "blockquote";
+  readonly authored?: readonly (unknown)[];
   readonly checked?: boolean;
   readonly indent?: number;
+  readonly listId?: string;
+  readonly listLevels?: unknown;
   readonly listRestart?: number;
   readonly listStart?: number;
   readonly listStyle?: string;
@@ -47,6 +52,7 @@ export interface BlockquoteElement extends Element {
 export interface CalloutElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "callout";
+  readonly authored?: readonly (unknown)[];
   readonly backgroundColor?: string;
   readonly icon: string;
   readonly variant?: string;
@@ -55,9 +61,12 @@ export interface CalloutElement extends Element {
 export interface CodeBlockElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "codeBlock";
+  readonly authored?: readonly (unknown)[];
   readonly checked?: boolean;
   readonly indent?: number;
   readonly language?: string;
+  readonly listId?: string;
+  readonly listLevels?: unknown;
   readonly listRestart?: number;
   readonly listStart?: number;
   readonly listStyle?: string;
@@ -67,25 +76,31 @@ export interface CodeBlockElement extends Element {
 export interface ColumnElement extends Element {
   readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "column";
+  readonly authored?: readonly (unknown)[];
   readonly width: string;
 }
 
 export interface ColumnGroupElement extends Element {
   readonly children: readonly (ColumnElement)[];
   readonly type: "columnGroup";
+  readonly authored?: readonly (unknown)[];
 }
 
 export interface DateElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "date";
+  readonly authored?: readonly (unknown)[];
   readonly value: string;
 }
 
 export interface DetailsElement extends Element {
   readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | DetailsSummaryElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "details";
+  readonly authored?: readonly (unknown)[];
   readonly checked?: boolean;
   readonly indent?: number;
+  readonly listId?: string;
+  readonly listLevels?: unknown;
   readonly listRestart?: number;
   readonly listStart?: number;
   readonly listStyle?: string;
@@ -95,12 +110,14 @@ export interface DetailsElement extends Element {
 export interface EquationElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "equation";
+  readonly authored?: readonly (unknown)[];
   readonly latex: string;
 }
 
 export interface FileElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "file";
+  readonly authored?: readonly (unknown)[];
   readonly name?: string;
   readonly url: string;
   readonly width?: number | string;
@@ -109,22 +126,27 @@ export interface FileElement extends Element {
 export interface FootnoteDefinitionElement extends Element {
   readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "footnoteDefinition";
+  readonly authored?: readonly (unknown)[];
   readonly ref: string;
 }
 
 export interface FootnoteElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "footnoteReference";
+  readonly authored?: readonly (unknown)[];
   readonly ref: string;
 }
 
 export interface HeadingElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "heading";
+  readonly authored?: readonly (unknown)[];
   readonly checked?: boolean;
   readonly indent?: number;
   readonly level: 1 | 2 | 3 | 4 | 5 | 6;
   readonly lineHeight?: number | string;
+  readonly listId?: string;
+  readonly listLevels?: unknown;
   readonly listRestart?: number;
   readonly listStart?: number;
   readonly listStyle?: string;
@@ -135,14 +157,18 @@ export interface HeadingElement extends Element {
 export interface HorizontalRuleElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "horizontalRule";
+  readonly authored?: readonly (unknown)[];
 }
 
 export interface ImageElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "image";
   readonly alt?: string;
+  readonly authored?: readonly (unknown)[];
   readonly checked?: boolean;
   readonly indent?: number;
+  readonly listId?: string;
+  readonly listLevels?: unknown;
   readonly listRestart?: number;
   readonly listStart?: number;
   readonly listStyle?: string;
@@ -158,12 +184,14 @@ export interface ImageElement extends Element {
 export interface InlineEquationElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "inlineEquation";
+  readonly authored?: readonly (unknown)[];
   readonly latex: string;
 }
 
 export interface LinkElement extends Element {
   readonly children: readonly (EditorText)[];
   readonly type: "link";
+  readonly authored?: readonly (unknown)[];
   readonly target?: string;
   readonly url: string;
 }
@@ -171,6 +199,7 @@ export interface LinkElement extends Element {
 export interface MediaEmbedElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "mediaEmbed";
+  readonly authored?: readonly (unknown)[];
   readonly provider?: string;
   readonly sourceUrl?: string;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -181,6 +210,7 @@ export interface MediaEmbedElement extends Element {
 export interface MentionElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "mention";
+  readonly authored?: readonly (unknown)[];
   readonly label?: string;
   readonly ref: string;
 }
@@ -188,9 +218,12 @@ export interface MentionElement extends Element {
 export interface ParagraphElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "paragraph";
+  readonly authored?: readonly (unknown)[];
   readonly checked?: boolean;
   readonly indent?: number;
   readonly lineHeight?: number | string;
+  readonly listId?: string;
+  readonly listLevels?: unknown;
   readonly listRestart?: number;
   readonly listStart?: number;
   readonly listStyle?: string;
@@ -201,11 +234,13 @@ export interface ParagraphElement extends Element {
 export interface DetailsSummaryElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "summary";
+  readonly authored?: readonly (unknown)[];
 }
 
 export interface TableElement extends Element {
   readonly children: readonly (TableRowElement)[];
   readonly type: "table";
+  readonly authored?: readonly (unknown)[];
   readonly columnWidths?: readonly (null | number)[];
   readonly marginLeft?: number;
 }
@@ -213,6 +248,7 @@ export interface TableElement extends Element {
 export interface TableCellElement extends Element {
   readonly children: readonly (AudioElement | BlockquoteElement | CalloutElement | CodeBlockElement | ColumnGroupElement | DetailsElement | EquationElement | FileElement | FootnoteDefinitionElement | HeadingElement | HorizontalRuleElement | ImageElement | MediaEmbedElement | ParagraphElement | TableElement | TocElement | UploadElement | VideoElement)[];
   readonly type: "tableCell";
+  readonly authored?: readonly (unknown)[];
   readonly backgroundColor?: string;
   readonly borders?: unknown;
   readonly colSpan?: number;
@@ -223,23 +259,27 @@ export interface TableCellElement extends Element {
 export interface TableRowElement extends Element {
   readonly children: readonly (TableCellElement)[];
   readonly type: "tableRow";
+  readonly authored?: readonly (unknown)[];
   readonly height?: number;
 }
 
 export interface TocElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "toc";
+  readonly authored?: readonly (unknown)[];
 }
 
 export interface UploadElement extends Element {
   readonly children: readonly [EditorText];
   readonly type: "upload";
+  readonly authored?: readonly (unknown)[];
   readonly kind: "audio" | "file" | "image" | "video";
 }
 
 export interface VideoElement extends Element {
   readonly children: readonly (DateElement | FootnoteElement | InlineEquationElement | LinkElement | MentionElement | EditorText)[];
   readonly type: "video";
+  readonly authored?: readonly (unknown)[];
   readonly provider?: string;
   readonly sourceUrl?: string;
   readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -301,11 +341,13 @@ export type Mutations = Readonly<{
   readonly audio: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
       readonly url: string;
       readonly width?: number | string;
@@ -315,16 +357,22 @@ export type Mutations = Readonly<{
   readonly blockquote: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
@@ -335,11 +383,13 @@ export type Mutations = Readonly<{
   readonly callout: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly backgroundColor?: string;
       readonly icon?: string;
       readonly variant?: string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly backgroundColor?: string;
       readonly icon: string;
       readonly variant?: string;
@@ -350,18 +400,24 @@ export type Mutations = Readonly<{
   readonly codeBlock: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
       readonly language?: string;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
       readonly language?: string;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
@@ -372,25 +428,33 @@ export type Mutations = Readonly<{
   readonly column: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly width?: string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly width: string;
     }>;
     readonly type: "column";
   }>;
   readonly columnGroup: Readonly<{
     readonly block: true;
-    readonly construction: Readonly<Record<PropertyKey, never>>;
-    readonly properties: Readonly<Record<PropertyKey, never>>;
+    readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
+    }>;
+    readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
+    }>;
     readonly type: "columnGroup";
   }>;
   readonly date: Readonly<{
     readonly block: false;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly value: string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly value: string;
     }>;
     readonly type: "date";
@@ -398,16 +462,22 @@ export type Mutations = Readonly<{
   readonly details: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
       readonly listType?: "bulleted" | "numbered" | "task";
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
@@ -418,9 +488,11 @@ export type Mutations = Readonly<{
   readonly equation: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly latex?: string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly latex: string;
     }>;
     readonly type: "equation";
@@ -428,11 +500,13 @@ export type Mutations = Readonly<{
   readonly file: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly name?: string;
       readonly url: string;
       readonly width?: number | string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly name?: string;
       readonly url: string;
       readonly width?: number | string;
@@ -442,9 +516,11 @@ export type Mutations = Readonly<{
   readonly footnoteDefinition: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly ref: string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly ref: string;
     }>;
     readonly type: "footnoteDefinition";
@@ -452,9 +528,11 @@ export type Mutations = Readonly<{
   readonly footnote: Readonly<{
     readonly block: false;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly ref: string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly ref: string;
     }>;
     readonly type: "footnoteReference";
@@ -462,10 +540,13 @@ export type Mutations = Readonly<{
   readonly heading: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
       readonly level: 1 | 2 | 3 | 4 | 5 | 6;
       readonly lineHeight?: number | string;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
@@ -473,10 +554,13 @@ export type Mutations = Readonly<{
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
       readonly level: 1 | 2 | 3 | 4 | 5 | 6;
       readonly lineHeight?: number | string;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
@@ -487,16 +571,23 @@ export type Mutations = Readonly<{
   }>;
   readonly horizontalRule: Readonly<{
     readonly block: true;
-    readonly construction: Readonly<Record<PropertyKey, never>>;
-    readonly properties: Readonly<Record<PropertyKey, never>>;
+    readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
+    }>;
+    readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
+    }>;
     readonly type: "horizontalRule";
   }>;
   readonly image: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
       readonly alt?: string;
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
@@ -510,8 +601,11 @@ export type Mutations = Readonly<{
     }>;
     readonly properties: Readonly<{
       readonly alt?: string;
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
@@ -528,9 +622,11 @@ export type Mutations = Readonly<{
   readonly inlineEquation: Readonly<{
     readonly block: false;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly latex?: string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly latex: string;
     }>;
     readonly type: "inlineEquation";
@@ -538,10 +634,12 @@ export type Mutations = Readonly<{
   readonly link: Readonly<{
     readonly block: false;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly target?: string;
       readonly url: string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly target?: string;
       readonly url: string;
     }>;
@@ -550,6 +648,7 @@ export type Mutations = Readonly<{
   readonly mediaEmbed: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly provider?: string;
       readonly sourceUrl?: string;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -557,6 +656,7 @@ export type Mutations = Readonly<{
       readonly width?: number | string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly provider?: string;
       readonly sourceUrl?: string;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -568,10 +668,12 @@ export type Mutations = Readonly<{
   readonly mention: Readonly<{
     readonly block: false;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly label?: string;
       readonly ref: string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly label?: string;
       readonly ref: string;
     }>;
@@ -580,9 +682,12 @@ export type Mutations = Readonly<{
   readonly paragraph: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
       readonly lineHeight?: number | string;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
@@ -590,9 +695,12 @@ export type Mutations = Readonly<{
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly checked?: boolean;
       readonly indent?: number;
       readonly lineHeight?: number | string;
+      readonly listId?: string;
+      readonly listLevels?: unknown;
       readonly listRestart?: number;
       readonly listStart?: number;
       readonly listStyle?: string;
@@ -604,17 +712,23 @@ export type Mutations = Readonly<{
   }>;
   readonly detailsSummary: Readonly<{
     readonly block: true;
-    readonly construction: Readonly<Record<PropertyKey, never>>;
-    readonly properties: Readonly<Record<PropertyKey, never>>;
+    readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
+    }>;
+    readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
+    }>;
     readonly type: "summary";
   }>;
   readonly table: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly columnWidths?: readonly (null | number)[];
       readonly marginLeft?: number;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly columnWidths?: readonly (null | number)[];
       readonly marginLeft?: number;
     }>;
@@ -623,6 +737,7 @@ export type Mutations = Readonly<{
   readonly tableCell: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly backgroundColor?: string;
       readonly borders?: unknown;
       readonly colSpan?: number;
@@ -630,6 +745,7 @@ export type Mutations = Readonly<{
       readonly rowSpan?: number;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly backgroundColor?: string;
       readonly borders?: unknown;
       readonly colSpan?: number;
@@ -641,25 +757,33 @@ export type Mutations = Readonly<{
   readonly tableRow: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly height?: number;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly height?: number;
     }>;
     readonly type: "tableRow";
   }>;
   readonly toc: Readonly<{
     readonly block: true;
-    readonly construction: Readonly<Record<PropertyKey, never>>;
-    readonly properties: Readonly<Record<PropertyKey, never>>;
+    readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
+    }>;
+    readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
+    }>;
     readonly type: "toc";
   }>;
   readonly upload: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly kind: "audio" | "file" | "image" | "video";
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly kind: "audio" | "file" | "image" | "video";
     }>;
     readonly type: "upload";
@@ -667,6 +791,7 @@ export type Mutations = Readonly<{
   readonly video: Readonly<{
     readonly block: true;
     readonly construction: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly provider?: string;
       readonly sourceUrl?: string;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";
@@ -674,6 +799,7 @@ export type Mutations = Readonly<{
       readonly width?: number | string;
     }>;
     readonly properties: Readonly<{
+      readonly authored?: readonly (unknown)[];
       readonly provider?: string;
       readonly sourceUrl?: string;
       readonly textAlign?: "center" | "end" | "justify" | "left" | "right" | "start";

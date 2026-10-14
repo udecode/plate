@@ -6,8 +6,8 @@ import type {
   RuntimePluginDependencyReference,
   RuntimePluginDefinition,
   RuntimePluginReference,
+  EditorDirectUpdate,
   EditorReadMethodTree,
-  EditorUpdatePolicy,
   Editor as RuntimeEditor,
   Element,
   Path,
@@ -490,8 +490,7 @@ type PluginRuntimeContext<
   /** Capability identity and API/update namespace. */
   name: C['name'];
   /** One-shot updates owned by the current plugin, without its name namespace. */
-  update: InferOwnUpdate<C> &
-    ((policy: EditorUpdatePolicy) => InferOwnUpdate<C>);
+  update: EditorDirectUpdate<InferOwnUpdate<C>>;
   /** State-bound reads owned by the current plugin. */
   read: InferOwnRead<C>;
   /** Mutable editor-local state and pure named selectors owned by this plugin. */

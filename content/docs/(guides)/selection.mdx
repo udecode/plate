@@ -89,6 +89,11 @@ expanded range renders a highlight. A collapsed range renders a caret. Focus
 returning to the editor or moving to an unmarked target removes the inactive
 paint.
 
+This marker only keeps the selection painted while focus is elsewhere. To let a
+widget inside a node handle its own input, use the
+`data-editor-root-chrome-ignore` marker from
+[Embedded widgets](/docs/plugin-components#embedded-widgets).
+
 ### Style the paint
 
 Plate publishes neutral output hooks. Product CSS owns their appearance:
@@ -192,9 +197,10 @@ does not establish that browser input and visible selection are correct.
 A block element can declare `object: true` when it owns both an asset and
 editable child content. An object is selectable and structurally isolating,
 while its children remain ordinary editable content. Selecting the owner node
-focuses the asset and keeps native selection empty. ArrowDown enters its text;
-ArrowUp from the leading visual boundary returns to node selection. Backspace
-or Delete removes a selected owner.
+focuses the asset and keeps native selection empty. ArrowDown enters its text
+while the page draws it and otherwise moves to the next block; ArrowUp from the
+leading visual boundary returns to node selection. Backspace or Delete removes a
+selected owner.
 
 Clicking a noneditable descendant selects the owner; clicking editable text
 selects text. Use `useElementSelected({ mode: 'node' })` for the exact asset

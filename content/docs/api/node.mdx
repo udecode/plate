@@ -83,11 +83,26 @@ Get the first node entry in a root node from a `path`.
 
 Get the sliced fragment represented by the `range`.
 
-#### `NodeApi.findTextRanges(root: Node | NodeTextRangeRoot, query: NodeTextRangeQuery, options?) => Range[]`
+#### `NodeApi.findTextRanges(root: Node | NodeTextRangeRoot | NodeTextRangeView, query: NodeTextRangeQuery, options?) => Range[]`
 
 Find ranges for a text query inside text leaves or text-only ancestor children.
 String queries are literal. Use a regular expression or callback for custom
 matching.
+
+An editor, a read view (`state` in `editor.read`) or a transaction (`tx` in
+`editor.update`) joins text across inline elements, and `content: true` skips
+text that is not content, such as struck suggestions. A transaction root reads
+its draft. `at` limits the search to one node and its descendants, at a path
+that must exist; the ranges keep their paths from the root.
+
+```ts
+editor.update((tx) => {
+  const ranges = NodeApi.findTextRanges(tx, /\s+,/g, {
+    at: [2],
+    content: true,
+  });
+});
+```
 
 #### `NodeApi.get(root: Node, path: Path) => Node`
 

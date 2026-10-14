@@ -35,7 +35,7 @@ Export complete `*PluginState` contracts for audio, file, video, image, media em
 - Convert legacy v53 media identities, captions, missing URLs, and retired placeholder IDs through the shared `migrateV54` application document step.
 - Accept caption strings or inline children as construction input and persist them as direct media children.
 - Model image, file, audio, video, and embed as non-void objects with editable direct caption children. Keep empty-caption assets meaningful and transfer only selected caption text when the owner is not selected.
-- Move the unselected caption suffix into a fresh paragraph on Enter without duplicating the media node, including expanded selections that cross into the following paragraph.
+- Move the unselected caption suffix on Enter into a fresh block after the media, the one the media's container declares there (a paragraph in most editors), without duplicating the media node, including expanded selections that cross into the following paragraph.
 - Use capability name `mediaEmbed` and persisted element type `mediaEmbed`, persist media alignment as `textAlign`, and preserve relative media widths.
 - Set media widths through the descriptor's standard update: `editor.plugin(ImagePlugin).update.set({ width }, { at: element })`.
 - Preserve standalone media embeds through clipboard sanitization by carrying sanitized URL and normalized width metadata on the owning figure.

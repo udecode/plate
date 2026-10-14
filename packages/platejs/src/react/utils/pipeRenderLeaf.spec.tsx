@@ -7,19 +7,36 @@ import { property } from '../../core';
 import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor } from '../editor/withPlate';
+import {
+  setDOMTextSyncRendererCapability,
+  setRetainedTextFlowRendererCapability,
+} from '../plite-react';
 import { definePlugin } from '../plugin/definePlugin';
 import { pipeRenderLeaf } from './pipeRenderLeaf.internal';
 import { pipeRenderText } from './pipeRenderText.internal';
 
 const attributes = { 'data-editor-leaf': true, 'data-testid': 'Leaf' } as any;
-const retainedTextFlowCapability = Symbol.for(
-  'plitejs/react/retained-text-flow-renderer-capability'
-);
 
 const text = { test: true, text: 'test' };
 
+const keyWrittenBy = (
+  setCapability: typeof setDOMTextSyncRendererCapability
+): symbol =>
+  Object.getOwnPropertySymbols(
+    setCapability(
+      () => null,
+      () => true
+    )
+  )[0];
+const domTextSyncKey = keyWrittenBy(setDOMTextSyncRendererCapability);
+const retainedTextFlowKey = keyWrittenBy(setRetainedTextFlowRendererCapability);
+
+const getDOMTextSyncCapability = (renderer: object) =>
+  Reflect.get(renderer, domTextSyncKey) as (context: {
+    marks: object;
+  }) => boolean;
 const getRetainedTextFlowCapability = (renderer: object) =>
-  Reflect.get(renderer, retainedTextFlowCapability) as
+  Reflect.get(renderer, retainedTextFlowKey) as
     | ((context: { marks: Readonly<Record<string, unknown>> }) => boolean)
     | undefined;
 
@@ -94,10 +111,7 @@ it('keeps element-targeted injection transforms out of leaf capability', () => {
       plugins: [BaseParagraphPlugin, injectionPlugin],
     })
   )!;
-  const resolveDOMTextSyncCapability = Reflect.get(
-    renderLeaf,
-    Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object }) => boolean;
+  const resolveDOMTextSyncCapability = getDOMTextSyncCapability(renderLeaf);
 
   expect(resolveDOMTextSyncCapability({ marks: {} })).toBe(true);
   expect(getRetainedTextFlowCapability(renderLeaf)?.({ marks: {} })).toBe(true);
@@ -117,10 +131,7 @@ it('fails DOM text sync closed for untargeted text injection transforms', () => 
       plugins: [injectionPlugin],
     })
   )!;
-  const resolveDOMTextSyncCapability = Reflect.get(
-    renderLeaf,
-    Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object }) => boolean;
+  const resolveDOMTextSyncCapability = getDOMTextSyncCapability(renderLeaf);
 
   expect(resolveDOMTextSyncCapability({ marks: {} })).toBe(false);
   expect(getRetainedTextFlowCapability(renderLeaf)?.({ marks: {} })).toBe(
@@ -142,10 +153,7 @@ it('fails DOM text sync closed for untargeted text style transforms', () => {
       plugins: [injectionPlugin],
     })
   )!;
-  const resolveDOMTextSyncCapability = Reflect.get(
-    renderLeaf,
-    Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object }) => boolean;
+  const resolveDOMTextSyncCapability = getDOMTextSyncCapability(renderLeaf);
 
   expect(resolveDOMTextSyncCapability({ marks: {} })).toBe(false);
   expect(getRetainedTextFlowCapability(renderLeaf)?.({ marks: {} })).toBe(
@@ -164,10 +172,7 @@ it('fails DOM text sync closed for active custom plugin components', () => {
       plugins: [componentPlugin],
     })
   )!;
-  const resolveDOMTextSyncCapability = Reflect.get(
-    renderLeaf,
-    Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object }) => boolean;
+  const resolveDOMTextSyncCapability = getDOMTextSyncCapability(renderLeaf);
 
   expect(
     resolveDOMTextSyncCapability({
@@ -733,10 +738,7 @@ it('renders present falsy mark values and keeps DOM text sync closed', () => {
   });
   const editor = createEditor({ plugins: [booleanPlugin, numericPlugin] });
   const Text = pipeRenderText(editor)!;
-  const resolveDOMTextSyncCapability = Reflect.get(
-    Text,
-    Symbol.for('plitejs/react/dom-text-sync-renderer-capability')
-  ) as (context: { marks: object }) => boolean;
+  const resolveDOMTextSyncCapability = getDOMTextSyncCapability(Text);
   const { container } = render(
     <Text
       attributes={attributes}

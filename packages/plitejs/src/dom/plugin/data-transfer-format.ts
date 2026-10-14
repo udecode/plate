@@ -6,15 +6,18 @@ import {
   type EditorMarks,
   type Element,
   type Editor,
+  type NamedRootKey,
+  type NodeEntry,
+  type NodeSelection,
   type SchemaProperty,
   type TransactionSpec,
   type Value,
   ContentSlice as ContentSliceApi,
   definePlugin,
-  definePluginPoint,
   editorCommands,
   type Plugin,
   NodeApi,
+  PathApi,
   RangeApi,
   SelectionApi,
 } from '../..';
@@ -26,14 +29,14 @@ import { createDetachedContentSlice } from '../../core/content-slice';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
 import { importContentSlice } from '../../core/import-content-slice';
-import {
-  getPluginContributions,
-  reportEditorLifecycleError,
-} from '../../core/plugin';
+import { reportEditorLifecycleError } from '../../core/plugin';
+import { definePluginPoint } from '../../core/plugin-point';
 import {
   getCompiledEditorSchema,
+  getPluginContributions,
   getPluginRegistry as getInternalPluginRegistry,
 } from '../../core/plugin-registry';
+import { MAIN_ROOT_KEY, toPublicRoot } from '../../core/public-root';
 import {
   applyTransactionSpec,
   attachTransactionSpecAfterCommit,
@@ -48,6 +51,7 @@ import {
 } from '../../core/schema-compiler';
 import { EditorSchemaValidationError } from '../../core/schema-validation';
 import { getSelection as getEditorSelection } from '../../interfaces/editor';
+import { getDefined } from '../../internal/get-defined';
 
 const DATA_TRANSFER_FORMATS = definePluginPoint<
   DataTransferFormatRegistration<any>
@@ -204,52 +208,41 @@ type DataTransferSliceElement<V extends Value> = Extract<
   Element
 >;
 
-const createPlainTextFallbackBlocks = <V extends Value>(
+const createPlainTextBlocks = <V extends Value>(
   state: EditorCoreStateView<V>,
-  blockType: string,
   lines: readonly string[],
+  blockAt: (line: number) => Element | null,
   activeMarks: EditorMarks | null
 ): ReadonlyArray<DescendantIn<V>> | null => {
   const createText = (text: string) =>
     Object.freeze({ ...activeMarks, text }) as DescendantIn<V>;
+  const wrappersByType = new Map<
+    string,
+    ReadonlyArray<Readonly<Record<string, unknown>>> | null
+  >();
+  const blocks: Array<DescendantIn<V>> = [];
 
-  if (!state.schema.element(blockType)) {
-    return lines.map(
-      (text) =>
-        Object.freeze({
-          children: Object.freeze([createText(text)]),
-          type: blockType,
-        }) as DescendantIn<V>
-    );
-  }
-  const block = (() => {
-    try {
-      return state.schema.create(blockType);
-    } catch (error) {
-      if (!(error instanceof EditorSchemaValidationError)) throw error;
-      // A block with required construction properties, such as a heading
-      // level, cannot be default-built; new lines use the root default block.
-      const fallback = state.schema.createDefaultRootChild();
+  for (const [line, text] of lines.entries()) {
+    const block = blockAt(line);
 
-      return NodeApi.isElement(fallback) ? fallback : null;
+    if (!block) return null;
+    if (!wrappersByType.has(block.type)) {
+      wrappersByType.set(
+        block.type,
+        state.schema.findWrapping(block, createText(''))?.map((type) => {
+          const { children: _children, ...properties } =
+            state.schema.create(type);
+
+          return properties;
+        }) ?? null
+      );
     }
-  })();
 
-  if (!block) return null;
-  const wrapping = state.schema.findWrapping(block, createText(''));
+    const wrappers = wrappersByType.get(block.type);
 
-  if (!wrapping) return null;
+    if (!wrappers) return null;
 
-  const wrapperProperties = wrapping.map((type) => {
-    const wrapper = state.schema.create(type);
-    const { children: _children, ...properties } = wrapper;
-
-    return properties;
-  });
-  const { children: _children, ...blockProperties } = block;
-
-  return lines.map((text) => {
-    const child = wrapperProperties.reduceRight<DescendantIn<V>>(
+    const child = wrappers.reduceRight<DescendantIn<V>>(
       (nested, properties) =>
         Object.freeze({
           ...properties,
@@ -257,12 +250,67 @@ const createPlainTextFallbackBlocks = <V extends Value>(
         }) as DescendantIn<V>,
       createText(text)
     );
+    const { children: _children, ...properties } = block;
 
-    return Object.freeze({
-      ...blockProperties,
-      children: Object.freeze([child]),
-    }) as DescendantIn<V>;
-  });
+    blocks.push(
+      Object.freeze({
+        ...properties,
+        children: Object.freeze([child]),
+      }) as DescendantIn<V>
+    );
+  }
+
+  return blocks;
+};
+
+const createPlainTextLineBlocks = <V extends Value>(
+  state: EditorCoreStateView<V>,
+  [block, path]: NodeEntry<Element>,
+  root: NamedRootKey | undefined,
+  lines: readonly string[],
+  activeMarks: EditorMarks | null
+): ReadonlyArray<DescendantIn<V>> | null => {
+  if (!state.schema.element(block.type)) {
+    return lines.map(
+      (text) =>
+        Object.freeze({
+          children: Object.freeze([Object.freeze({ ...activeMarks, text })]),
+          type: block.type,
+        }) as DescendantIn<V>
+    );
+  }
+  const built = (() => {
+    try {
+      return state.schema.create(block.type);
+    } catch (error) {
+      if (!(error instanceof EditorSchemaValidationError)) throw error;
+
+      return null;
+    }
+  })();
+  const parentPath = PathApi.parent(path);
+  const index = getDefined(path.at(-1));
+
+  return createPlainTextBlocks(
+    state,
+    lines,
+    (line) => {
+      if (built) return built;
+      // A type with required construction properties, such as a heading
+      // level, cannot be built by type alone. The first line merges into
+      // `block`, so it copies `block`; each later line takes the default child
+      // of its own slot.
+      if (line === 0) return state.schema.copy(block, { at: path, root });
+
+      const next = state.schema.createDefaultChild({
+        at: [...parentPath, index + line],
+        root,
+      });
+
+      return NodeApi.isElement(next) ? next : null;
+    },
+    activeMarks
+  );
 };
 
 const createPlainTextInlineSlice = <V extends Value>(
@@ -314,38 +362,55 @@ const createPlainTextInlineSlice = <V extends Value>(
   );
 };
 
+const createPlainTextSliceOverPick = <V extends Value>(
+  state: EditorCoreStateView<V>,
+  { paths: [first], root }: NodeSelection,
+  data: string
+): ContentSlice<V> | null => {
+  const parentPath = PathApi.parent(first);
+  const index = getDefined(first.at(-1));
+  const content = createPlainTextBlocks(
+    state,
+    data.split(NEWLINE_SPLIT_RE),
+    (line) => {
+      const block = state.schema.createDefaultChild({
+        at: [...parentPath, index + line],
+        root,
+      });
+
+      return NodeApi.isElement(block) ? block : null;
+    },
+    null
+  );
+
+  if (!content) return null;
+
+  Object.freeze(content);
+
+  return createDetachedContentSlice<V>(content, 0, 0, {
+    canonicalFor: state.schema,
+  });
+};
+
 const createDefaultPlainTextDataTransferFormat = <V extends Value>(
   editor?: Editor<V, any>
 ) =>
   prepareDataTransferFormat<V>({
     mimeType: 'text/plain',
-    key: 'plite-plain-text',
+    key: 'core:plain-text',
     decode: ({ data, state }) => {
       const selection = state.selection();
       const semanticSelection = editor ? getEditorSelection(editor) : null;
 
-      if (SelectionApi.isNode(semanticSelection)) {
-        const defaultChild = state.schema.createDefaultRootChild(
-          semanticSelection.root,
-          semanticSelection.paths[0][0]
-        );
-
-        if (!defaultChild || !NodeApi.isElement(defaultChild)) return null;
-
-        const content = createPlainTextFallbackBlocks(
-          state,
-          defaultChild.type,
-          data.split(NEWLINE_SPLIT_RE),
-          null
-        );
-
-        if (!content) return null;
-
-        Object.freeze(content);
-
-        return createDetachedContentSlice<V>(content, 0, 0, {
-          canonicalFor: state.schema,
-        });
+      if (
+        SelectionApi.isNode(semanticSelection) &&
+        state.selection
+          .nodes()
+          .every(
+            ([node]) => NodeApi.isElement(node) && state.schema.isBlock(node)
+          )
+      ) {
+        return createPlainTextSliceOverPick(state, semanticSelection, data);
       }
 
       const at = selection ?? state.points.end([]);
@@ -400,9 +465,10 @@ const createDefaultPlainTextDataTransferFormat = <V extends Value>(
 
       if (inlineSlice) return inlineSlice;
 
-      const content = createPlainTextFallbackBlocks(
+      const content = createPlainTextLineBlocks(
         state,
-        block.type,
+        [block, blockPath],
+        toPublicRoot(start.root ?? MAIN_ROOT_KEY),
         lines,
         activeMarks
       );

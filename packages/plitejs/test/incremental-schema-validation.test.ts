@@ -706,6 +706,19 @@ describe('incremental schema validation', () => {
     }
   });
 
+  it('keeps live updates valid after an editor with another schema adopts the document', () => {
+    const editor = createValidationEditor();
+    createEditor({ initialValue: editor.read.value() });
+
+    editor.update((tx) =>
+      tx.text.insert('!', { at: { offset: 5, path: [0, 0, 0] } })
+    );
+
+    assert.deepEqual(editor.read.children(), [
+      section([paragraph('alpha!'), paragraph('beta')]),
+    ]);
+  });
+
   it('stamps an explicit document when initial plugin publication is empty', () => {
     const editor = createEditor({
       plugins: [],

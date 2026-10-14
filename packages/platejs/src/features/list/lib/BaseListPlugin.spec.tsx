@@ -13,9 +13,19 @@ import {
   type InitialValue,
   type Value,
 } from '../../../core';
+import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
+import { MarkdownPlugin } from '../../../markdown';
+import { nameListIds } from '../../../markdown/lib/__tests__/nameListIds';
+import { dispatchPlateShortcut } from '../../../react/utils/dispatchPlateShortcut.internal';
+import {
+  BaseBlockquotePlugin,
+  BaseHorizontalRulePlugin,
+} from '../../basic-nodes/lib/BaseBlockPlugins';
 import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
+import { BaseBoldPlugin } from '../../basic-nodes/lib/BaseMarkPlugins';
+import { BaseCodeBlockPlugin } from '../../code-block';
 import { BaseIndentPlugin } from '../../indent';
-import { BaseImagePlugin } from '../../media';
+import { BaseAudioPlugin, BaseImagePlugin } from '../../media';
 import { BaseTablePlugin } from '../../table';
 import {
   BaseListPlugin,
@@ -167,6 +177,101 @@ describe('BaseListPlugin canonical model', () => {
   });
 
   it('keeps single-item toggles inside heading sequence boundaries', () => {
+    const editor = createProductEditor({
+      initialValue: [
+        {
+          children: [{ text: 'Paragraph' }],
+          indent: 1,
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'Heading' }],
+          indent: 1,
+          level: 1,
+          listType: 'numbered',
+          type: 'heading',
+        },
+      ],
+      plugins: [
+        BaseHeadingPlugin,
+        BaseListPlugin.configure({
+          targetPlugins: [BaseParagraphPlugin, BaseHeadingPlugin],
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+    });
+
+    editor.update.list.toggle({ type: ListType.Bulleted });
+
+    expect(editor.read.children()).toMatchObject([
+      { listType: 'bulleted', type: 'paragraph' },
+      { listType: 'numbered', type: 'heading' },
+    ]);
+  });
+
+  it('lifts a root item on Shift+Tab only out of the blockquote plugin', () => {
+    const untab = (quote: typeof BaseBlockquotePlugin) => {
+      const editor = createProductEditor({
+        initialValue: [
+          {
+            children: [
+              {
+                children: [{ text: 'Item' }],
+                indent: 1,
+                listType: 'bulleted',
+                type: 'paragraph',
+              },
+            ],
+            type: 'blockquote',
+          },
+        ],
+        plugins: [BaseParagraphPlugin, quote, BaseListPlugin],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 0, 0] },
+          focus: { offset: 0, path: [0, 0, 0] },
+        },
+      });
+
+      dispatchPlateShortcut(
+        editor,
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          code: 'Tab',
+          key: 'Tab',
+          shiftKey: true,
+        }),
+        'keydown',
+        getPlateRuntime(editor).shortcutTable
+      );
+
+      return editor.read.children();
+    };
+
+    expect(untab(BaseBlockquotePlugin)).toEqual([
+      { children: [{ text: 'Item' }], type: 'paragraph' },
+    ]);
+    expect(
+      untab(
+        definePlugin('blockquote', {
+          schema: { element: { content: schema.content.group('block') } },
+        }) as never
+      )
+    ).toMatchObject([
+      {
+        children: [{ listType: 'bulleted', type: 'paragraph' }],
+        type: 'blockquote',
+      },
+    ]);
+  });
+
+  it('draws no heading boundary for a plugin that only shares the heading name', () => {
     const HeadingPlugin = definePlugin(PLUGINS.heading, {
       schema: { element: schema.element.textBlock() },
     });
@@ -202,7 +307,7 @@ describe('BaseListPlugin canonical model', () => {
 
     expect(editor.read.children()).toMatchObject([
       { listType: 'bulleted', type: 'paragraph' },
-      { listType: 'numbered', type: 'heading' },
+      { listType: 'bulleted', type: 'heading' },
     ]);
   });
 
@@ -965,6 +1070,601 @@ describe('BaseListPlugin canonical model', () => {
       { children: [{ text: 'One' }], indent: 2, listType: 'numbered' },
       { children: [{ text: 'Two' }], indent: 2, listType: 'bulleted' },
       { children: [{ text: 'Three' }], indent: 2, listType: 'bulleted' },
+    ]);
+  });
+
+  it.each([
+    [
+      'a code block',
+      '<ol><li><p>Install</p><pre><code>npm i</code></pre></li><li>Run</li></ol>',
+      '1. Install\n\n   ```\n   npm i\n   ```\n2. Run',
+      [
+        {
+          children: [{ text: 'Install' }],
+          indent: 1,
+          listId: 'a',
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+        { children: [{ text: 'npm i' }], indent: 2, type: 'codeBlock' },
+        {
+          children: [{ text: 'Run' }],
+          indent: 1,
+          listId: 'a',
+          listType: 'numbered',
+          type: 'paragraph',
+        },
+      ],
+    ],
+    [
+      'a paragraph after a nested list',
+      '<ul><li><p>a</p><ul><li>c</li></ul><p>b</p></li></ul>',
+      '- a\n\n  - c\n\n  b',
+      [
+        {
+          children: [{ text: 'a' }],
+          indent: 1,
+          listId: 'a',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'c' }],
+          indent: 2,
+          listId: 'a',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+        { children: [{ text: 'b' }], indent: 2, type: 'paragraph' },
+      ],
+    ],
+    [
+      'a paragraph before a nested list',
+      '<ul><li><p>a</p><p>b</p><ul><li>c</li></ul></li></ul>',
+      '- a\n\n  b\n\n  - c',
+      [
+        {
+          children: [{ text: 'a' }],
+          indent: 1,
+          listId: 'a',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+        { children: [{ text: 'b' }], indent: 2, type: 'paragraph' },
+        {
+          children: [{ text: 'c' }],
+          indent: 2,
+          listId: 'a',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+      ],
+    ],
+    [
+      'a heading as its first block',
+      '<ul><li><h1>Title</h1><p>body</p></li></ul>',
+      '- # Title\n\n  body',
+      [
+        {
+          children: [{ text: 'Title' }],
+          indent: 1,
+          level: 1,
+          listId: 'a',
+          listType: 'bulleted',
+          type: 'heading',
+        },
+        { children: [{ text: 'body' }], indent: 2, type: 'paragraph' },
+      ],
+    ],
+    [
+      'an image after its paragraph',
+      '<ul><li><p>a</p><img alt="i" src="https://platejs.org/i.png"><p>b</p></li></ul>',
+      '- a\n\n  ![i](https://platejs.org/i.png)\n\n  b',
+      [
+        {
+          children: [{ text: 'a' }],
+          indent: 1,
+          listId: 'a',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+        {
+          alt: 'i',
+          children: [{ text: '' }],
+          indent: 2,
+          type: 'image',
+          url: 'https://platejs.org/i.png',
+        },
+        { children: [{ text: 'b' }], indent: 2, type: 'paragraph' },
+      ],
+    ],
+    [
+      'a list as its first block',
+      '<ul><li><ul><li>a</li><li>b</li></ul></li></ul>',
+      '- - a\n  - b',
+      [
+        {
+          children: [{ text: '' }],
+          indent: 1,
+          listId: 'a',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'a' }],
+          indent: 2,
+          listId: 'a',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'b' }],
+          indent: 2,
+          listId: 'a',
+          listType: 'bulleted',
+          type: 'paragraph',
+        },
+      ],
+    ],
+  ])(
+    'keeps %s of an HTML list item as the matching Markdown does',
+    (_name, html, markdown, expected) => {
+      const targetPlugins = [
+        PLUGINS.heading,
+        PLUGINS.paragraph,
+        PLUGINS.codeBlock,
+        PLUGINS.image,
+      ];
+      const editor = createProductEditor({
+        plugins: [
+          BaseIndentPlugin.configure({ targetPlugins }),
+          BaseListPlugin.configure({ targetPlugins }),
+          BaseCodeBlockPlugin,
+          BaseHeadingPlugin,
+          BaseImagePlugin,
+          MarkdownPlugin,
+        ],
+      });
+      const children = (
+        result:
+          | ReturnType<typeof editor.api.html.parse>
+          | ReturnType<typeof editor.api.markdown.parse>
+      ) =>
+        result.ok
+          ? { children: nameListIds(result.document.children) }
+          : result.diagnostics;
+
+      expect([
+        children(editor.api.html.parse(html)),
+        children(editor.api.markdown.parse(markdown)),
+      ]).toEqual([{ children: expected }, { children: expected }]);
+    }
+  );
+
+  it.each([
+    ['a plain div', '<ul><li><div><p>a</p><p>b</p></div></li></ul>'],
+    [
+      'indented markup',
+      '<ul>\n  <li>\n    <p>a</p>\n    <p>b</p>\n  </li>\n</ul>',
+    ],
+    ['one div per line', '<ul><li><div>a</div><div>b</div></li></ul>'],
+    ['a section', '<ul><li><section><p>a</p><p>b</p></section></li></ul>'],
+    ['a custom element', '<ul><li><x-wrap><p>a</p><p>b</p></x-wrap></li></ul>'],
+  ])('keeps the blocks of an HTML list item wrapped in %s', (_name, html) => {
+    const result = createProductEditor({
+      plugins: [BaseListPlugin],
+    }).api.html.parse(html);
+
+    expect(result.ok && nameListIds(result.document.children)).toEqual([
+      {
+        children: [{ text: 'a' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      { children: [{ text: 'b' }], indent: 2, type: 'paragraph' },
+    ]);
+  });
+
+  it('keeps an HTML list item line whole around an image the editor cannot hold, as Markdown does', () => {
+    const editor = createProductEditor({
+      plugins: [BaseListPlugin, MarkdownPlugin],
+    });
+    const items = [
+      {
+        children: [{ text: 'ab' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+    ];
+    const html = editor.api.html.parse(
+      '<ul><li><p>a<img alt="i" src="https://platejs.org/i.png">b</p></li></ul>',
+      { lossPolicy: 'allow' }
+    );
+    const markdown = editor.api.markdown.parse(
+      '- a![i](https://platejs.org/i.png)b',
+      { lossPolicy: 'allow' }
+    );
+
+    expect([
+      html.ok && nameListIds(html.document.children),
+      markdown.ok && nameListIds(markdown.document.children),
+    ]).toEqual([items, items]);
+  });
+
+  it('warns about the style an HTML list item no longer gives the blocks it moves out', () => {
+    const result = createProductEditor({
+      plugins: [BaseBoldPlugin, BaseListPlugin],
+    }).api.html.parse(
+      '<ul><li style="font-weight:bold"><p>a</p><p>b</p></li></ul>',
+      { lossPolicy: 'reject' }
+    );
+
+    expect(result.ok && nameListIds(result.document.children)).toEqual([
+      {
+        children: [{ bold: true, text: 'a' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      { children: [{ text: 'b' }], indent: 2, type: 'paragraph' },
+    ]);
+    expect(
+      result.diagnostics.map(({ code, message, severity }) => ({
+        code,
+        message,
+        severity,
+      }))
+    ).toEqual([
+      {
+        code: 'html-unsupported-content',
+        message:
+          'List HTML dropped the style "font-weight: bold" of <li> when it moved what the element held.',
+        severity: 'warning',
+      },
+    ]);
+  });
+
+  it('warns about the style of a wrapper around HTML list item blocks', () => {
+    const result = createProductEditor({
+      plugins: [BaseListPlugin],
+    }).api.html.parse(
+      '<ul><li><div style="text-align:center"><p>a</p><p>b</p></div></li></ul>'
+    );
+
+    expect(result.diagnostics.map(({ message }) => message)).toEqual([
+      'List HTML dropped the style "text-align: center" of <div> when it moved what the element held.',
+    ]);
+  });
+
+  it('reports the data attribute of a wrapper around an HTML list item block', () => {
+    const result = createProductEditor({
+      plugins: [BaseListPlugin],
+    }).api.html.parse(
+      '<ul><li><div data-text-indent="2"><p>a</p></div></li></ul>'
+    );
+
+    expect(result.diagnostics.map(({ message }) => message)).toEqual([
+      'No HTML mapping represents attribute "data-text-indent" on <div>; it was omitted.',
+    ]);
+  });
+
+  it('keeps ruby and the other elements browsers lay out inline in its HTML list item line', () => {
+    const result = createProductEditor({
+      plugins: [BaseListPlugin],
+    }).api.html.parse(
+      '<ul><li>a<ruby>b</ruby><datalist></datalist><noscript>c</noscript><slot>d</slot>e</li></ul>'
+    );
+
+    expect(result.ok && nameListIds(result.document.children)).toEqual([
+      {
+        children: [{ text: 'abcde' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('keeps an audio in an HTML list item text under that item', () => {
+    const result = createProductEditor({
+      plugins: [BaseAudioPlugin, BaseListPlugin],
+    }).api.html.parse(
+      '<ol><li>Listen <audio controls src="https://platejs.org/a.mp3"></audio> now</li><li>next</li></ol>'
+    );
+
+    expect(result.ok && nameListIds(result.document.children)).toEqual([
+      {
+        children: [{ text: 'Listen ' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'numbered',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: '' }],
+        type: 'audio',
+        url: 'https://platejs.org/a.mp3',
+      },
+      { children: [{ text: 'now' }], indent: 2, type: 'paragraph' },
+      {
+        children: [{ text: 'next' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'numbered',
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('puts the blocks of an HTML list item one level under its nesting when Indent cannot read its margin', () => {
+    const result = createProductEditor({
+      plugins: [BaseListPlugin],
+    }).api.html.parse(
+      '<ul><li>x<ul><li style="margin-left:2em"><p>a</p><p>b</p></li></ul></li></ul>'
+    );
+
+    expect(result.ok && nameListIds(result.document.children)).toEqual([
+      {
+        children: [{ text: 'x' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'a' }],
+        indent: 2,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      { children: [{ text: 'b' }], indent: 3, type: 'paragraph' },
+    ]);
+  });
+
+  it('puts the blocks of an HTML list item one level under the depth its margin gives', () => {
+    const result = createProductEditor({
+      plugins: [BaseListPlugin],
+    }).api.html.parse(
+      '<ul><li style="margin-left:48px"><p>a</p><p>b</p></li></ul>'
+    );
+
+    expect(result.ok && nameListIds(result.document.children)).toEqual([
+      {
+        children: [{ text: 'a' }],
+        indent: 2,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      { children: [{ text: 'b' }], indent: 3, type: 'paragraph' },
+    ]);
+  });
+
+  it('reads a Markdown item that opens with a heading the list cannot hold as a list paragraph, as HTML does', () => {
+    const editor = createProductEditor({
+      plugins: [BaseListPlugin, BaseHeadingPlugin, MarkdownPlugin],
+    });
+    const items = [
+      {
+        children: [{ text: 'A' }],
+        indent: 1,
+        listId: 'a',
+        listStart: 3,
+        listType: 'numbered',
+        type: 'paragraph',
+      },
+      {
+        children: [{ text: 'b' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'numbered',
+        type: 'paragraph',
+      },
+    ];
+    const markdown = editor.api.markdown.parse('3. # A\n4. b', {
+      lossPolicy: 'allow',
+    });
+    const html = editor.api.html.parse(
+      '<ol start="3"><li><h1>A</h1></li><li>b</li></ol>'
+    );
+
+    expect([
+      markdown.ok && nameListIds(markdown.document.children),
+      html.ok && nameListIds(html.document.children),
+    ]).toEqual([items, items]);
+    expect(
+      markdown.diagnostics.map(({ code, message, severity }) => ({
+        code,
+        message,
+        severity,
+      }))
+    ).toEqual([
+      {
+        code: 'markdown-unsupported-node',
+        message:
+          'List Markdown replaced "heading" with "paragraph": the list cannot hold it.',
+        severity: 'warning',
+      },
+    ]);
+  });
+
+  it('takes a Markdown item out of its list when the list cannot hold its first block and that block is not a line of text', () => {
+    const editor = createProductEditor({
+      plugins: [
+        BaseBlockquotePlugin,
+        BaseHorizontalRulePlugin,
+        BaseListPlugin,
+        MarkdownPlugin,
+      ],
+    });
+    const source = '- ***\n- > q\n- b';
+    const allowed = editor.api.markdown.parse(source, { lossPolicy: 'allow' });
+
+    expect(allowed.ok && nameListIds(allowed.document.children)).toEqual([
+      { children: [{ text: '' }], type: 'horizontalRule' },
+      {
+        children: [{ children: [{ text: 'q' }], type: 'paragraph' }],
+        type: 'blockquote',
+      },
+      {
+        children: [{ text: 'b' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+    ]);
+    expect(allowed.diagnostics.map(({ message }) => message)).toEqual([
+      'List Markdown unwrapped "horizontalRule" from its list item: the list cannot hold it.',
+      'List Markdown unwrapped "blockquote" from its list item: the list cannot hold it.',
+    ]);
+    expect(editor.api.markdown.parse(source, { lossPolicy: 'reject' }).ok).toBe(
+      false
+    );
+  });
+
+  it('keeps a nested Markdown item that leaves its list among its parent item blocks', () => {
+    const result = createProductEditor({
+      plugins: [
+        BaseBlockquotePlugin,
+        BaseIndentPlugin.configure({
+          targetPlugins: [BaseParagraphPlugin, BaseBlockquotePlugin],
+        }),
+        BaseListPlugin,
+        MarkdownPlugin,
+      ],
+    }).api.markdown.parse('- a\n  - > q\n- b', { lossPolicy: 'allow' });
+
+    expect(result.ok && nameListIds(result.document.children)).toEqual([
+      {
+        children: [{ text: 'a' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      {
+        children: [{ children: [{ text: 'q' }], type: 'paragraph' }],
+        indent: 2,
+        type: 'blockquote',
+      },
+      {
+        children: [{ text: 'b' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+    ]);
+  });
+
+  it('keeps a later list item block the editor cannot indent and warns in both formats', () => {
+    const editor = createProductEditor({
+      plugins: [BaseListPlugin, BaseCodeBlockPlugin, MarkdownPlugin],
+    });
+    const html = editor.api.html.parse(
+      '<ul><li><p>Install</p><pre><code>npm i</code></pre></li></ul>',
+      { lossPolicy: 'reject' }
+    );
+    const markdown = editor.api.markdown.parse(
+      '- Install\n\n  ```\n  npm i\n  ```',
+      { lossPolicy: 'reject' }
+    );
+    const blocks = [
+      {
+        children: [{ text: 'Install' }],
+        indent: 1,
+        listId: 'a',
+        listType: 'bulleted',
+        type: 'paragraph',
+      },
+      { children: [{ text: 'npm i' }], type: 'codeBlock' },
+    ];
+
+    expect([
+      html.ok && nameListIds(html.document.children),
+      markdown.ok && nameListIds(markdown.document.children),
+    ]).toEqual([blocks, blocks]);
+    expect([
+      html.diagnostics.map(({ code, message, severity }) => ({
+        code,
+        message,
+        severity,
+      })),
+      markdown.diagnostics.map(({ code, message, severity }) => ({
+        code,
+        message,
+        severity,
+      })),
+    ]).toEqual([
+      [
+        {
+          code: 'html-unsupported-content',
+          message:
+            'No HTML mapping represents attribute "data-indent" on <pre>; it was omitted.',
+          severity: 'warning',
+        },
+      ],
+      [
+        {
+          code: 'markdown-unsupported-node',
+          message:
+            'List Markdown omitted property "indent" on "codeBlock": the schema does not allow it.',
+          severity: 'warning',
+        },
+      ],
+    ]);
+  });
+
+  it('streams a list item block the editor cannot indent like a fresh parse', () => {
+    const editor = createProductEditor({
+      plugins: [BaseListPlugin, BaseCodeBlockPlugin, MarkdownPlugin],
+    });
+    const source = 'Intro\n\n- a\n\n  ```\n  x\n  ```\n\nTail';
+    const options = { lossPolicy: 'allow', partial: true } as const;
+    const named = (
+      result: ReturnType<typeof editor.api.markdown.parseSlice>
+    ) =>
+      result.ok
+        ? {
+            ...result,
+            slice: {
+              ...result.slice,
+              content: nameListIds(result.slice.content),
+            },
+          }
+        : result;
+    let previous: ReturnType<typeof editor.api.markdown.parseSlice> | undefined;
+
+    for (let end = 1; end <= source.length; end++) {
+      const prefix = source.slice(0, end);
+
+      previous = editor.api.markdown.parseSlice(prefix, {
+        ...options,
+        previous,
+      });
+      expect(named(previous)).toEqual(
+        named(editor.api.markdown.parseSlice(prefix, options))
+      );
+    }
+
+    expect(previous?.diagnostics).toMatchObject([
+      {
+        code: 'markdown-unsupported-node',
+        source: {
+          end: { column: 6, line: 7, offset: 27 },
+          excerpt: '- a\n\n  ```\n  x\n  ```',
+          nodeType: 'list',
+          start: { column: 1, line: 3, offset: 7 },
+        },
+      },
     ]);
   });
 

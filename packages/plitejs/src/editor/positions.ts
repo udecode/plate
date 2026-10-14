@@ -94,46 +94,35 @@ const assertValidPoint = (entry: LiveTextEntry, point: Point) => {
   }
 };
 
-const collectTextEntries = (
-  nodes: readonly Descendant[],
-  parentPath: Path = []
-): LiveTextEntry[] => {
-  const entries: LiveTextEntry[] = [];
+function* walkTextEntries(
+  children: readonly Descendant[],
+  parentPath: Path,
+  start: Path,
+  end: Path,
+  reverse: boolean
+): Generator<LiveTextEntry, void, undefined> {
+  const depth = parentPath.length;
+  const first = PathApi.isAncestor(parentPath, start) ? start[depth] : 0;
+  const last = PathApi.isAncestor(parentPath, end)
+    ? Math.min(end[depth], children.length - 1)
+    : children.length - 1;
 
-  nodes.forEach((node, index) => {
+  for (
+    let index = reverse ? last : first;
+    reverse ? index >= first : index <= last;
+    index += reverse ? -1 : 1
+  ) {
+    const node = children[index];
     const path = [...parentPath, index] as Path;
 
     if (NodeApi.isText(node)) {
-      entries.push({ path, text: node.text });
-      return;
+      yield { path, text: node.text };
+      continue;
     }
 
-    entries.push(...collectTextEntries(node.children, path));
-  });
-
-  return entries;
-};
-
-const getTextEntriesForTopLevel = (
-  editor: Editor,
-  blockIndex: number
-): LiveTextEntry[] => {
-  const node = getLiveNode(editor, [blockIndex]);
-
-  if (!node) {
-    return [];
+    yield* walkTextEntries(node.children, path, start, end, reverse);
   }
-
-  if (NodeApi.isText(node)) {
-    return [{ path: [blockIndex] as Path, text: node.text }];
-  }
-
-  if (!NodeApi.isElement(node)) {
-    return [];
-  }
-
-  return collectTextEntries(node.children, [blockIndex]);
-};
+}
 
 const getTextEntryAtPath = (
   editor: Editor,
@@ -162,134 +151,86 @@ const getTextBlockPath = (editor: Editor, path: Path): Path => {
   return path[0] == null ? [] : ([path[0]] as Path);
 };
 
-const getLiveTextEntriesInRange = (
+const toPositionSegment = (
   editor: Editor,
-  range: Range
-): LiveTextEntry[] => {
-  const [start, end] = RangeApi.edges(range);
+  entry: LiveTextEntry,
+  start: Point,
+  end: Point,
+  voids: boolean
+): PositionSegment | null => {
+  const atomicPoint = getAtomicNonTraversablePoint(editor, entry.path, voids);
 
-  if (PathApi.compare(start.path, end.path) === 0) {
-    const entry = getTextEntryAtPath(editor, start.path);
-
-    if (!entry) {
-      return [];
+  if (atomicPoint) {
+    if (!atomicPoint.isStart) {
+      return null;
     }
 
-    assertValidPoint(entry, start);
-    assertValidPoint(entry, end);
-    return [entry];
+    if (
+      comparePoints(atomicPoint.point, start) < 0 ||
+      comparePoints(atomicPoint.point, end) > 0
+    ) {
+      return null;
+    }
+
+    return {
+      atomic: true,
+      groupPath: getTextBlockPath(editor, atomicPoint.point.path),
+      path: atomicPoint.point.path,
+      start: atomicPoint.point.offset,
+      end: atomicPoint.point.offset,
+      text: '',
+    };
   }
 
-  if (start.path[0] != null && start.path[0] === end.path[0]) {
-    return getTextEntriesForTopLevel(editor, start.path[0]);
+  const comparedToStart = PathApi.compare(entry.path, start.path);
+  const comparedToEnd = PathApi.compare(entry.path, end.path);
+
+  if (comparedToStart < 0 || comparedToEnd > 0) {
+    return null;
   }
 
-  return collectTextEntries(editorGetChildren(editor));
+  const from = comparedToStart === 0 ? start.offset : 0;
+  const to = comparedToEnd === 0 ? end.offset : entry.text.length;
+
+  return {
+    groupPath: getTextBlockPath(editor, entry.path),
+    path: entry.path,
+    start: from,
+    end: to,
+    text: entry.text.slice(from, to),
+  };
 };
 
-const getPositionSegments = (
+function* getPositionSegments(
   editor: Editor,
   range: Range,
-  options: { voids?: boolean } = {}
-): PositionSegment[] => {
-  const { voids = false } = options;
+  { reverse, voids }: { reverse: boolean; voids: boolean }
+): Generator<PositionSegment, void, undefined> {
   const [start, end] = RangeApi.edges(range);
-  const entries = getLiveTextEntriesInRange(editor, range);
-  const startEntry = entries.find(
-    (entry) => PathApi.compare(entry.path, start.path) === 0
-  );
-  const endEntry = entries.find(
-    (entry) => PathApi.compare(entry.path, end.path) === 0
-  );
+  const startEntry = getTextEntryAtPath(editor, start.path);
+  const endEntry = getTextEntryAtPath(editor, end.path);
 
   if (!startEntry || !endEntry) {
-    return [];
+    return;
   }
 
   assertValidPoint(startEntry, start);
   assertValidPoint(endEntry, end);
 
-  return entries.flatMap<PositionSegment>((entry) => {
-    const atomicPoint = getAtomicNonTraversablePoint(editor, entry.path, voids);
+  for (const entry of walkTextEntries(
+    editorGetChildren(editor),
+    [],
+    start.path,
+    end.path,
+    reverse
+  )) {
+    const segment = toPositionSegment(editor, entry, start, end, voids);
 
-    if (atomicPoint) {
-      if (!atomicPoint.isStart) {
-        return [];
-      }
-
-      if (
-        comparePoints(atomicPoint.point, start) < 0 ||
-        comparePoints(atomicPoint.point, end) > 0
-      ) {
-        return [];
-      }
-
-      return [
-        {
-          atomic: true,
-          groupPath: getTextBlockPath(editor, atomicPoint.point.path),
-          path: atomicPoint.point.path,
-          start: atomicPoint.point.offset,
-          end: atomicPoint.point.offset,
-          text: '',
-        },
-      ];
+    if (segment && segment.end >= segment.start) {
+      yield segment;
     }
-
-    const comparedToStart = PathApi.compare(entry.path, start.path);
-    const comparedToEnd = PathApi.compare(entry.path, end.path);
-
-    if (comparedToStart < 0 || comparedToEnd > 0) {
-      return [];
-    }
-
-    if (comparedToStart === 0 && comparedToEnd === 0) {
-      return [
-        {
-          groupPath: getTextBlockPath(editor, entry.path),
-          path: entry.path,
-          start: start.offset,
-          end: end.offset,
-          text: entry.text.slice(start.offset, end.offset),
-        },
-      ];
-    }
-
-    if (comparedToStart === 0) {
-      return [
-        {
-          groupPath: getTextBlockPath(editor, entry.path),
-          path: entry.path,
-          start: start.offset,
-          end: entry.text.length,
-          text: entry.text.slice(start.offset),
-        },
-      ];
-    }
-
-    if (comparedToEnd === 0) {
-      return [
-        {
-          groupPath: getTextBlockPath(editor, entry.path),
-          path: entry.path,
-          start: 0,
-          end: end.offset,
-          text: entry.text.slice(0, end.offset),
-        },
-      ];
-    }
-
-    return [
-      {
-        groupPath: getTextBlockPath(editor, entry.path),
-        path: entry.path,
-        start: 0,
-        end: entry.text.length,
-        text: entry.text,
-      },
-    ];
-  });
-};
+  }
+}
 
 const mapLogicalOffsetToPoint = (
   segments: PositionSegment[],
@@ -340,25 +281,32 @@ const mapLogicalOffsetToPoint = (
   };
 };
 
-const groupPositionSegmentsByBlock = (segments: PositionSegment[]) => {
-  const groups: PositionSegment[][] = [];
+// A reverse walk delivers each run backward, and every position collector
+// reads document order before applying `reverse` itself, so runs flip back.
+function* groupPositionSegments(
+  segments: Iterable<PositionSegment>,
+  keyOf: (segment: PositionSegment) => Path,
+  reverse: boolean
+): Generator<PositionSegment[], void, undefined> {
+  let group: PositionSegment[] = [];
+  let key: Path | undefined;
 
   for (const segment of segments) {
-    const lastGroup = groups.at(-1);
+    const segmentKey = keyOf(segment);
 
-    if (
-      !lastGroup ||
-      !PathApi.equals(lastGroup[0]?.groupPath ?? [], segment.groupPath)
-    ) {
-      groups.push([segment]);
-      continue;
+    if (key && !PathApi.equals(key, segmentKey)) {
+      yield reverse ? group.reverse() : group;
+      group = [];
     }
 
-    lastGroup.push(segment);
+    key = segmentKey;
+    group.push(segment);
   }
 
-  return groups;
-};
+  if (group.length > 0) {
+    yield reverse ? group.reverse() : group;
+  }
+}
 
 const pushUniquePoint = (points: Point[], point: Point) => {
   const previous = points.at(-1);
@@ -545,23 +493,10 @@ export function* positions(
     return;
   }
 
-  const segments = getPositionSegments(editor, range, { voids }).filter(
-    (segment) => segment.end >= segment.start
-  );
-
-  if (segments.length === 0) {
-    return;
-  }
-
-  if (unit === 'block' || unit === 'line') {
-    yield* collectBlockBoundaryPoints(segments, reverse);
-    return;
-  }
+  const segments = getPositionSegments(editor, range, { reverse, voids });
 
   if (unit === 'offset') {
-    const orderedSegments = reverse ? [...segments].reverse() : segments;
-
-    for (const segment of orderedSegments) {
+    for (const segment of segments) {
       if (reverse) {
         for (let offset = segment.end; offset >= segment.start; offset -= 1) {
           yield { path: segment.path, offset };
@@ -576,23 +511,28 @@ export function* positions(
     return;
   }
 
-  if (unit === 'character') {
-    const orderedGroups = reverse
-      ? groupPositionSegmentsByBlock(segments).reverse()
-      : groupPositionSegmentsByBlock(segments);
+  // collectBlockBoundaryPoints joins segments that share a groupPath even
+  // when a nested block sits between them, and a groupPath never leaves its
+  // top-level block, so line and block units group by top-level block.
+  const lineUnit = unit === 'block' || unit === 'line';
 
-    for (const group of orderedGroups) {
-      yield* collectCharacterPositions(group, reverse);
+  for (const group of groupPositionSegments(
+    segments,
+    lineUnit
+      ? (segment) => segment.path.slice(0, 1)
+      : (segment) => segment.groupPath,
+    reverse
+  )) {
+    if (lineUnit) {
+      yield* collectBlockBoundaryPoints(group, reverse);
+      continue;
     }
 
-    return;
-  }
+    if (unit === 'character') {
+      yield* collectCharacterPositions(group, reverse);
+      continue;
+    }
 
-  const orderedGroups = reverse
-    ? groupPositionSegmentsByBlock(segments).reverse()
-    : groupPositionSegmentsByBlock(segments);
-
-  for (const group of orderedGroups) {
     const text = group.map((segment) => segment.text).join('');
     const logicalPositions = [reverse ? text.length : 0];
     let consumed = 0;

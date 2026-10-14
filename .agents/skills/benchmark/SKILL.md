@@ -53,7 +53,10 @@ Before the architecture owner may lock that target:
 
 1. Identify the user operation, current owner, proposed owner, independent
    scale variables, repeated units, and applicable normal, large, stress, and
-   pathological cohorts.
+   pathological cohorts. Scale variables include the feature's own state,
+   such as blocks that hold a suggestion, not only the document's size. The
+   test that counts the operation's work in `pnpm check` sweeps each one,
+   from the first operation on.
 2. Freeze the absolute/relative budget and noise rule before reading the target
    result. Reuse an honest existing budget when one exists. Run each budget
    line on the baseline first. A line the baseline already fails or nears
@@ -78,7 +81,14 @@ Before the architecture owner may lock that target:
    and the correctness/native guard. The probe writes every cohort's
    measurements to an attempt-indexed log in the run directory before it
    asserts any line, then asserts every frozen line itself and fails when a
-   budget input is missing. Only a measured run that passes every line, outside
+   budget input is missing. A paired wall-clock ratio line runs through
+   `node .agents/rules/benchmark/scripts/paired-timing.mjs`. The runner refuses
+   a config unless every frozen cohort has a planted arm and a same-code arm.
+   It judges each cohort apart. A cohort is inconclusive while a planted arm
+   exceeds the budget by no more than the same-code noise, or while that noise
+   reaches the candidate's distance to the budget. A conclusive miss on any
+   cohort fails the run, and a host past its load limit makes the run
+   inconclusive. Only a measured run that passes every line, outside
    the loaded-host case in the methodology, rewrites a tracked receipt. It also
    runs once on a known-bad input, which must fail with the probe's own
    assertion text, as Harness Repair asks of a gate. Each cohort reads its
@@ -92,7 +102,10 @@ Before the architecture owner may lock that target:
    them behind a bare pass.
 5. Accept the target only when the result meets the frozen contract and the
    evidence isolates the claimed owner. An inconclusive result leaves the
-   decision `defer` or `gate` with the next probe named. Keeping or dismissing
+   decision `defer` or `gate` with the next probe named. A `gate` writes that
+   probe and its frozen budget into the step that runs it, in whichever plan
+   owns that step, with the rule that a miss sends the target back to
+   `architect`. Keeping or dismissing
    code on a cost argument needs a matched run with that code removed.
 
 An asymptotic table, review score, profiler suspicion, future benchmark plan,
@@ -105,7 +118,10 @@ source identity, then run the correctness guard. While a fix is still changing,
 check it with one quick pass of the affected rows; the full interleaved protocol
 runs once, on the final tree, and again only when a later change touches the
 measured path or a result misses its budget. A disposable prototype proves
-the design decision only; it never proves the shipped implementation.
+the design decision only; it never proves the shipped implementation. When
+that rerun conclusively misses a frozen line under its noise rule, the target
+goes back to `architect` at once, as the Perf issue playbook's Pivot section
+says; an inconclusive line stays a `gate`.
 
 ## Comparison Law
 

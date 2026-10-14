@@ -7,17 +7,36 @@ import {
   property,
   schema,
   target,
+  txLocate,
   type DefinitionOf,
+  type EditorCommandPlace,
   type EditorNodesOptions,
   type Element,
   type NodeMatchPredicate,
 } from '../../../core';
-import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
+import { BaseBlockquotePlugin } from '../../basic-nodes';
+import {
+  isNonNegativeSafeInteger,
+  toIndentLevel,
+} from './indentLevel.internal';
 
 export type IndentChangeOptions = {
   nodes?: Omit<EditorNodesOptions<Element>, 'match'> & {
     match?: NodeMatchPredicate<Element>;
   };
+};
+
+const locateNodes = (
+  [options]: [options?: IndentChangeOptions],
+  place: EditorCommandPlace
+): [options?: IndentChangeOptions] | null => {
+  const nodes = options?.nodes;
+
+  if (nodes?.at === undefined) return [options];
+
+  const at = place.location(nodes.at);
+
+  return at && [{ ...options, nodes: { ...nodes, at } }];
 };
 
 export type IndentPluginState = {
@@ -26,7 +45,7 @@ export type IndentPluginState = {
   /**
    * Indentation offset used in `(offset * element.indent) + unit`.
    *
-   * @default 40
+   * @default 24
    */
   offset: number;
   /**
@@ -43,8 +62,24 @@ const initialState: IndentPluginState = {
   unit: 'px',
 };
 
-const isNonNegativeSafeInteger = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+const readHtmlMarginIndent = (
+  element: HTMLElement,
+  { offset = 24, unit = 'px' }: Readonly<IndentPluginState>
+) => {
+  const styleValue = element.style.marginLeft;
+
+  if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) {
+    return undefined;
+  }
+
+  // A margin from a source that indents on another grid, such as 40px steps,
+  // decodes to the nearest level instead of losing its indentation.
+  return toIndentLevel(
+    Math.round(
+      Number(unit ? styleValue.slice(0, -unit.length) : styleValue) / offset
+    )
+  );
+};
 
 export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
   initialState,
@@ -101,36 +136,42 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
     };
 
     return {
-      decrease: (options?: IndentChangeOptions) => change(-1, options),
-      increase: (options?: IndentChangeOptions) => change(1, options),
+      decrease: txLocate(locateNodes, (options?: IndentChangeOptions) =>
+        change(-1, options)
+      ),
+      increase: txLocate(locateNodes, (options?: IndentChangeOptions) =>
+        change(1, options)
+      ),
     };
   },
   formats: ({ defineFormats }) =>
     defineFormats({
       html: {
+        // Priority 60 runs this before List's prepareDocument, which reads an
+        // item's depth before it moves the item's later blocks one level
+        // deeper, so a depth that only a margin gives must be on data-indent.
+        prepareDocument: ({ document, pluginState }) => {
+          document.body
+            .querySelectorAll<HTMLElement>(
+              'li[style]:not([data-indent]):not([aria-level])'
+            )
+            .forEach((item) => {
+              const value = readHtmlMarginIndent(item, pluginState);
+
+              if (value) item.dataset.indent = String(value);
+            });
+        },
+        priority: 60,
         decode: ({ element, pluginState, preserve }) => {
-          const { offset = 24, unit = 'px' } = pluginState;
           const dataValue =
             element.dataset.indent ?? element.getAttribute('aria-level');
 
           if (dataValue) {
-            const value = Number(dataValue);
-
             if (element.dataset.indent !== undefined) preserve('data-indent');
 
-            return Number.isFinite(value) && value > 0 ? value : undefined;
+            return toIndentLevel(Number(dataValue));
           }
-          const styleValue = element.style.marginLeft;
-
-          if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) {
-            return undefined;
-          }
-          const numericValue = unit
-            ? styleValue.slice(0, -unit.length)
-            : styleValue;
-          const value = Number(numericValue) / offset;
-
-          return Number.isFinite(value) && value > 0 ? value : undefined;
+          return readHtmlMarginIndent(element, pluginState);
         },
         encode: ({ pluginState, value }) => {
           const { offset = 24, unit = 'px' } = pluginState;
@@ -170,15 +211,15 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
         const [element, path] = entry;
 
         if (!element.indent) {
-          const quote = getCompiledPlatePlugin(editor, PLUGINS.blockquote);
+          const quote = editor.plugin(BaseBlockquotePlugin);
           const inQuote =
-            !!quote &&
+            quote.installed &&
             !!editor.read.nodes.above({
               at: path,
               match: (node, nodePath) =>
                 nodePath.length < path.length &&
                 ElementApi.isElement(node) &&
-                node.type === editor.plugin(quote).schema.type,
+                node.type === quote.schema.type,
             });
 
           return !inQuote;

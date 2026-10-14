@@ -6,6 +6,7 @@ import {
   takeDisplayedSelectionSnapshotForRoot,
   takeSelectionSnapshot,
 } from '../../src/playwright';
+import { BROWSER_HANDLE_KEY } from '../../src/playwright/constants';
 import { waitForSelectionRange } from '../../src/playwright/selection-handle';
 import { waitForSelectionSync } from '../../src/playwright/selection-snapshots';
 
@@ -143,7 +144,7 @@ describe('playwright selection snapshots', () => {
 
     const root = document.querySelector<HTMLElement>('[data-editor]')!;
 
-    (root as any).__pliteBrowserHandle = {
+    (root as any)[BROWSER_HANDLE_KEY] = {
       getSelection: () => ({
         anchor: { offset: 3, path: [47, 119, 1, 0] },
         focus: { offset: 3, path: [47, 119, 1, 0] },
@@ -177,7 +178,7 @@ describe('playwright selection snapshots', () => {
     window.getSelection()?.removeAllRanges();
     window.getSelection()?.addRange(nativeRange);
 
-    (root as any).__pliteBrowserHandle = {
+    (root as any)[BROWSER_HANDLE_KEY] = {
       getSelection: () => ({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 4, path: [9999, 0] },
@@ -204,7 +205,7 @@ describe('playwright selection snapshots', () => {
       focus: { offset: 0, path: [0, 0] },
     };
 
-    (root as any).__pliteBrowserHandle = {
+    (root as any)[BROWSER_HANDLE_KEY] = {
       getSelection: () => {
         reads += 1;
         return selection;
@@ -242,7 +243,7 @@ describe('playwright selection snapshots', () => {
       focus: { path: [0, 0], offset: 6 },
     };
     let reads = 0;
-    (root as any).__pliteBrowserHandle = {
+    (root as any)[BROWSER_HANDLE_KEY] = {
       getDOMSelection: () => {
         reads += 1;
         return native;
@@ -352,7 +353,7 @@ describe('playwright selection snapshots', () => {
 
     const root = document.querySelector<HTMLElement>('[data-editor]')!;
 
-    (root as any).__pliteBrowserHandle = {
+    (root as any)[BROWSER_HANDLE_KEY] = {
       getSelection: () => ({
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 3, path: [1, 0] },

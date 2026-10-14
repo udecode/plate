@@ -147,7 +147,6 @@ export const createYjsPeerWithEditor = <TEditor extends TestEditor>(
       ...(cursorData === undefined ? {} : { cursorData }),
       doc,
       initialReady: true,
-      rootName: 'plitejs',
       ...(seedUpdate === undefined ? { seed: true as const } : {}),
     })
   );

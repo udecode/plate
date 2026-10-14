@@ -15,8 +15,9 @@ import {
   transfer,
 } from 'plitejs';
 
-import { authoredTreeProof } from '../src/authored/tree/proof-plugin';
+import { createAuthoredPlugin } from '../src/authored/authored';
 import { dispatchCommand } from '../src/internal';
+import { authoredTestApi, reviewedValue } from './support/authored';
 
 type Node = Record<string, unknown>;
 
@@ -91,7 +92,7 @@ const editorFor = (
     plugins: [
       ...(plugins as []),
       transfer(),
-      authoredTreeProof({
+      createAuthoredPlugin({
         authorId: author,
         createChangeId: () => `${author}:1`,
         intent,
@@ -114,13 +115,13 @@ const decided = (
 ) => {
   const editor = editorFor(value, 'edit', 'carol');
 
-  editor.api.authoredTree.decide({ action, changes });
+  authoredTestApi(editor).decide({ action, changes });
 
-  return editor.read.value();
+  return reviewedValue(editor);
 };
 
 describe('authored review tree recording, step by step', () => {
-  it('keeps text typed into a struck paragraph after one Editing transaction moves it', () => {
+  it('lands text typed into a struck paragraph that the same Editing transaction moved on the kept text before it', () => {
     const editor = editorFor(
       struckBy(
         [paragraph(text('a')), paragraph(text('gone')), paragraph(text('c'))],
@@ -133,16 +134,15 @@ describe('authored review tree recording, step by step', () => {
       tx.nodes.move({ at: [1], to: [2] });
       tx.text.insert('X', { at: point(2, [2, 0]) });
     });
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
 
     assert.deepEqual(editor.read.children(), [
       paragraph(text('a')),
-      paragraph(text('c')),
-      paragraph(text('X')),
+      paragraph(text('cX')),
     ]);
   });
 
-  it('keeps text typed into two paragraphs of a struck quote after an Editing delete across them', () => {
+  it('lands text typed into a struck quote after an Editing delete inside it on the kept text after it', () => {
     const editor = editorFor(
       struckBy(
         [
@@ -163,12 +163,9 @@ describe('authored review tree recording, step by step', () => {
       tx.text.insert('X', { at: point(1, [0, 0, 0]) });
       tx.text.insert('Y', { at: point(1, [0, 1, 0]) });
     });
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
 
-    assert.deepEqual(editor.read.children(), [
-      quote(paragraph(text('X')), paragraph(text('Y'))),
-      paragraph(text('tail')),
-    ]);
+    assert.deepEqual(editor.read.children(), [paragraph(text('YXtail'))]);
   });
 
   it('keeps the deletion on a paragraph an Editing move takes out of a struck quote', () => {
@@ -184,7 +181,7 @@ describe('authored review tree recording, step by step', () => {
     );
 
     editor.update((tx) => tx.nodes.move({ at: [0, 0], to: [1] }));
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
 
     assert.deepEqual(editor.read.children(), [paragraph(text('tail'))]);
   });
@@ -291,8 +288,16 @@ describe('authored review tree recording, step by step', () => {
     });
     const recorded = editor.read.value();
 
-    // A limit: without a move link the old suggestion does not come back.
-    assert.deepEqual(decided(recorded, 'reject', ['bob:1']).children, [
+    // A limit: without a move link the old suggestion does not come back, so
+    // rejecting the relocation takes it too and waits until it is decided.
+    assert.deepEqual(
+      authoredTestApi(editorFor(recorded, 'edit', 'carol')).decide({
+        action: 'reject',
+        changes: ['bob:1'],
+      }),
+      { ids: ['bob:1'], status: 'blocked', with: ['bob:0'] }
+    );
+    assert.deepEqual(decided(recorded, 'reject', ['bob:0', 'bob:1']).children, [
       paragraph(text('a')),
       paragraph(text('c')),
     ]);
@@ -336,7 +341,7 @@ describe('authored review tree recording, step by step', () => {
     });
 
     assert.deepEqual(editor.read.children(), [
-      paragraph(text('bc', alices), text('a')),
+      paragraph(text('abc', alices), text('a')),
     ]);
   });
 
@@ -387,7 +392,7 @@ describe('authored review tree recording, step by step', () => {
       const editor = editorFor(unwrap('propose'), 'edit', 'carol', []);
 
       assert.equal(
-        editor.api.authoredTree.decide({ action, changes: ['bob:1'] }).status,
+        authoredTestApi(editor).decide({ action, changes: ['bob:1'] }).status,
         'applied'
       );
 

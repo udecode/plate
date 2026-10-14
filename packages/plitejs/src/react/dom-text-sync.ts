@@ -2,7 +2,6 @@ import type { Text } from '..';
 import type { DecorationSlice } from './decoration-source';
 
 export type DOMTextSyncOptOutReason =
-  | 'retained-content'
   | 'empty-text'
   | 'decoration'
   | 'custom-leaf'
@@ -24,10 +23,10 @@ export type DOMTextSyncRendererCapabilityContext = Readonly<{
 }>;
 
 const DOM_TEXT_SYNC_RENDERER_CAPABILITY = Symbol.for(
-  'plitejs/react/dom-text-sync-renderer-capability'
+  'editor-runtime.dom-text-sync-renderer-capability'
 );
 const RETAINED_TEXT_FLOW_RENDERER_CAPABILITY = Symbol.for(
-  'plitejs/react/retained-text-flow-renderer-capability'
+  'editor-runtime.retained-text-flow-renderer-capability'
 );
 
 const defineRendererCapability =

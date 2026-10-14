@@ -29,10 +29,10 @@ import {
   usePageLayout,
   usePageLayoutFragments,
 } from '../../src/pagination/react';
-import { PliteRuntimeView } from '../../src/react/components/plite';
+import { EditorRuntimeView } from '../../src/react/components/plite';
 import {
   createReactRuntimeViewEditor,
-  PliteRuntimeProvider,
+  EditorRuntimeProvider,
 } from '../../src/react/hooks/use-plite-runtime';
 
 const registeredDom = typeof document === 'undefined';
@@ -647,7 +647,7 @@ describe('PagedEditable', () => {
     [0, 2],
     [0, 8],
   ])(
-    'keeps a retained authored fragment from %p to %p inside its run container',
+    'keeps the text a suggested deletion from %p to %p strikes inside line containers',
     (start, end) => {
       const errors: string[] = [];
       const originalError = console.error;
@@ -662,7 +662,7 @@ describe('PagedEditable', () => {
         });
         const view = createReactRuntimeViewEditor(
           createEditorView(source, {
-            authored: { intent: 'propose', projection: 'markup' },
+            authored: { intent: 'propose' },
           })
         );
 
@@ -673,35 +673,39 @@ describe('PagedEditable', () => {
           },
         });
         const mounted = render(
-          <PliteRuntimeProvider editor={view}>
-            <PliteRuntimeView directEditor={view}>
+          <EditorRuntimeProvider editor={view}>
+            <EditorRuntimeView directEditor={view}>
               <PagedEditable
                 aria-label="Document"
                 engine={engine}
                 page={page}
               />
-            </PliteRuntimeView>
-          </PliteRuntimeProvider>
+            </EditorRuntimeView>
+          </EditorRuntimeProvider>
         );
 
         const host = mounted.getByRole('textbox', { name: 'Document' });
         const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT);
+        const inside: string[] = [];
         const outside: string[] = [];
 
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
           const text = node.textContent?.replaceAll('\uFEFF', '') ?? '';
 
-          if (text && !node.parentElement?.closest('[data-pagination-line]')) {
+          if (!text) continue;
+          if (node.parentElement?.closest('[data-pagination-line]')) {
+            inside.push(text);
+          } else {
             outside.push(text);
           }
         }
 
         expect({
-          containers: host.querySelectorAll('[data-pagination-line]').length,
           duplicateKeys: errors.filter((error) => error.includes('same key'))
             .length,
+          inside: inside.join(''),
           outside,
-        }).toEqual({ containers: 1, duplicateKeys: 0, outside: [] });
+        }).toEqual({ duplicateKeys: 0, inside: 'ABCDEFGH', outside: [] });
       } finally {
         console.error = originalError;
       }

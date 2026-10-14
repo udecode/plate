@@ -1,6 +1,8 @@
 import {
+  callPluginUpdateMethod,
   type InternalCompiledPluginPublicationEntry,
   resolveInstalledPlugin,
+  resolvePluginMethod,
 } from 'plitejs/internal';
 
 import type {
@@ -26,10 +28,9 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { getPluginStore } from '../../internal/plugin/pluginStore';
 import {
-  getPluginDescriptorMetadata,
-  getPluginSourceReferences,
   getPluginSchemaFamily,
   isNominalPluginDescriptor,
+  isPluginDescriptorOf,
   isResolvedPluginDescriptor,
 } from '../../internal/utils/mergePlugins';
 import type { Editor, InternalBaseEditorWithInstalledPlugins } from '../editor';
@@ -76,30 +77,6 @@ export const createPlatePluginPortal = (
     descriptor as AnyBasePlugin | PluginReference,
     false
   ) as AnyBasePluginPortal;
-
-const isPluginDescriptorSourceOf = (
-  source: AnyBasePlugin | AnyPluginBase | PluginReference,
-  installed: AnyBasePlugin
-) => {
-  if (
-    getPluginSourceReferences(installed).includes(source) ||
-    getPluginSourceReferences(source).includes(installed)
-  ) {
-    return true;
-  }
-
-  const sourceMetadata = getPluginDescriptorMetadata(source);
-  const installedStages = getPluginDescriptorMetadata(installed).stages;
-
-  return (
-    !sourceMetadata.configured &&
-    !sourceMetadata.resolved &&
-    sourceMetadata.stages.length <= installedStages.length &&
-    sourceMetadata.stages.every(
-      (stage, index) => stage === installedStages[index]
-    )
-  );
-};
 
 export function createPluginContext<
   V extends Value,
@@ -150,13 +127,7 @@ const createPluginAccess = (
     if (!descriptor) return true;
     const compiled = getCompiledPlatePlugin(editor, name);
 
-    if (compiled) {
-      return (
-        getPluginSchemaFamily(descriptor) === getPluginSchemaFamily(compiled) &&
-        (descriptor === compiled ||
-          isPluginDescriptorSourceOf(descriptor, compiled))
-      );
-    }
+    if (compiled) return isPluginDescriptorOf(descriptor, compiled);
     return (
       resolveInstalledPlugin(
         editor as Parameters<typeof resolveInstalledPlugin>[0],
@@ -174,12 +145,7 @@ const createPluginAccess = (
     }
     const compiled = getCompiledPlatePlugin(editor, name);
 
-    if (
-      compiled &&
-      descriptor &&
-      (descriptor === compiled ||
-        isPluginDescriptorSourceOf(descriptor, compiled))
-    ) {
+    if (compiled && descriptor && isPluginDescriptorOf(descriptor, compiled)) {
       return compiled;
     }
 
@@ -477,46 +443,13 @@ const createPluginAccess = (
 
     return Reflect.get(Reflect.get(editor, 'api'), plugin.name) ?? {};
   };
-  const resolveOwnCapabilityPath = (
-    source: unknown,
-    path: readonly PropertyKey[]
-  ) => {
-    let owner: unknown = source;
-    let value: unknown = source;
-
-    for (const key of path) {
-      const receiver = owner;
-      owner = value;
-      if (
-        (typeof value !== 'object' || value === null) &&
-        typeof value !== 'function'
-      ) {
-        return { owner: undefined, value: undefined };
-      }
-      const innerDescriptor2 = Object.getOwnPropertyDescriptor(value, key);
-
-      if (!innerDescriptor2 || !('value' in innerDescriptor2)) {
-        if (
-          typeof value === 'function' &&
-          (key === 'call' || key === 'apply')
-        ) {
-          const method = value;
-          owner = (...args: unknown[]) => Reflect.apply(method, receiver, args);
-          value = Function.prototype[key];
-          continue;
-        }
-        return { owner: undefined, value: undefined };
-      }
-      ({ value } = innerDescriptor2);
-    }
-
-    return { owner, value };
-  };
   const createUpdateFacade = (
     path: readonly PropertyKey[],
     policy?: EditorUpdatePolicy
-  ): unknown =>
-    new Proxy(
+  ): unknown => {
+    const label = `Plugin update command "${path.map(String).join('.')}"`;
+
+    return new Proxy(
       (...args: unknown[]) => {
         let result: unknown;
 
@@ -526,20 +459,15 @@ const createPluginAccess = (
           throw new TypeError('Plate editor update API is not callable.');
         }
         const callback = (transaction: Record<PropertyKey, unknown>) => {
-          const ownGroup = transaction[getPlugin().name];
-          const own = resolveOwnCapabilityPath(ownGroup, path);
-          const { owner, value } =
-            typeof own?.value === 'function'
+          const own = resolvePluginMethod(transaction[getPlugin().name], path);
+
+          result = callPluginUpdateMethod(
+            label,
+            typeof own.value === 'function'
               ? own
-              : resolveOwnCapabilityPath(transaction, path);
-
-          if (typeof value !== 'function') {
-            throw new TypeError(
-              `Plugin update command "${path.map(String).join('.')}" is not callable.`
-            );
-          }
-
-          result = Reflect.apply(value, owner, args);
+              : resolvePluginMethod(transaction, path),
+            args
+          );
         };
 
         Reflect.apply(
@@ -562,6 +490,7 @@ const createPluginAccess = (
         },
       }
     );
+  };
   const createReadFacade = (path: readonly PropertyKey[]): unknown =>
     new Proxy(
       (...args: unknown[]) =>
@@ -573,8 +502,10 @@ const createPluginAccess = (
 
           return Reflect.apply(editorRead, editor, [
             (state: Record<PropertyKey, unknown>) => {
-              const group = state[getPlugin().name];
-              const { owner, value } = resolveOwnCapabilityPath(group, path);
+              const { owner, value } = resolvePluginMethod(
+                state[getPlugin().name],
+                path
+              );
 
               if (typeof value !== 'function') {
                 throw new TypeError(

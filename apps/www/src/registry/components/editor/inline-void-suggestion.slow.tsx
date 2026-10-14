@@ -2,7 +2,6 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { fireEvent, render } from '@testing-library/react';
 import type { LinkElement } from 'platejs';
-import * as EditorRoot from 'platejs';
 import type { DateElement } from 'platejs/date';
 import type { EquationElement } from 'platejs/math';
 import type { MentionElement } from 'platejs/mention';
@@ -84,17 +83,6 @@ mock.module('platejs/react', () => ({
 mock.module('platejs/math/react', () => ({
   EquationPlugin: EquationPluginMock,
   InlineEquationPlugin: InlineEquationPluginMock,
-}));
-
-mock.module('platejs', () => ({
-  ...EditorRoot,
-  formatDateValue: (date: Date) =>
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,
-      '0'
-    )}-${String(date.getDate()).padStart(2, '0')}`,
-  getDateDisplayLabel: (value: string) => value,
-  parseCanonicalDateValue: () => new Date(2026, 3, 13),
 }));
 
 mock.module('@/components/ui/button', () => ({
@@ -205,7 +193,7 @@ describe('inline authored-change styling', () => {
     mock.restore();
   });
 
-  it('styles retained mention deletions', async () => {
+  it('paints a suggested mention', async () => {
     const { MentionElement } = await import(
       `./mention?test=${Math.random().toString(36).slice(2)}`
     );
@@ -232,7 +220,7 @@ describe('inline authored-change styling', () => {
         .querySelector('[data-testid="plate-element"]')
         ?.className.split(' ')
     ).toContain(
-      'in-data-[editor-retained=delete]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
+      '[&[data-editor-authored-change]]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
     );
   });
 
@@ -262,7 +250,7 @@ describe('inline authored-change styling', () => {
         .querySelector('[data-testid="plate-element"]')
         ?.className.split(' ')
     ).toContain(
-      '[&:has([data-editor-authored-kind=insert])]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
+      '[&[data-editor-authored-change]]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
     );
   });
 
@@ -292,17 +280,14 @@ describe('inline authored-change styling', () => {
     fireEvent.click(trigger!);
     expect(view.getByTestId('calendar')).toBeTruthy();
     expect(trigger?.className).toContain(
-      '[&:has([data-editor-authored-kind=insert])]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
-    );
-    expect(trigger?.className).toContain(
-      'in-data-[editor-retained=delete]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
+      '[[data-editor-authored-change]>&]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
     );
     expect(trigger?.getAttribute('draggable')).toBe('true');
     expect(wrapper.getAttribute('draggable')).toBeNull();
     expect(trigger?.getAttribute('type')).toBe('button');
   });
 
-  it('styles retained inline equation deletions', async () => {
+  it('paints a suggested inline equation through its element', async () => {
     const element = {
       children: [{ text: '' }],
       latex: 'E = mc^2',
@@ -326,7 +311,7 @@ describe('inline authored-change styling', () => {
     );
 
     expect(trigger?.className).toContain(
-      'in-data-[editor-retained=delete]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
+      '[[data-editor-authored-change]>&]:bg-[var(--suggestion-bg,var(--color-emerald-100))]!'
     );
     expect(trigger?.getAttribute('type')).toBe('button');
   });

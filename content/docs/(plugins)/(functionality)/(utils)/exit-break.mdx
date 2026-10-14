@@ -9,7 +9,7 @@ title: Exit Break
 ## Features
 
 - Exit from nested block structures (like code blocks, tables, columns) using keyboard shortcuts.
-- Automatically determines the appropriate exit point based on block hierarchy.
+- Inserts the block the surrounding container declares as its default, such as a paragraph in a column.
 
 </PackageInfo>
 
@@ -96,7 +96,7 @@ const editor = createEditor({
 
 ### `ExitBreakPlugin`
 
-Provides transforms to exit nested block structures automatically. The plugin determines the appropriate exit point by finding the first ancestor that allows standard block siblings.
+Provides shortcuts that leave the current block structure through [`tx.break.exit`](/docs/api/editor-transforms#txbreakexitoptions).
 
 <API name="ExitBreakPlugin">
 <APIOptions>
@@ -118,17 +118,20 @@ Provides transforms to exit nested block structures automatically. The plugin de
 
 ## How exit break works
 
-Exit break uses the compiled element content grammar to determine where a
-paragraph can be inserted when exiting nested structures.
+Exit break reads each container's content grammar. It walks up from the
+caret's block and stops at the first ancestor whose parent can hold the
+document's default block. The block it inserts is that parent's own default.
 
 ### Exit point determination
 
 When you trigger exit break:
 
-1. Starts from the current text block (e.g., paragraph inside a table cell)
-2. Traverses up the document tree looking at each ancestor
-3. Finds the first ancestor whose parent allows a paragraph child
-4. Inserts a new paragraph as a sibling to that ancestor
+1. Starts from the block that holds the caret (e.g., paragraph inside a table cell)
+2. Walks up its ancestors
+3. Stops at the first ancestor that sits directly in the document, or whose parent can hold the document's default block, such as a paragraph
+4. Inserts that parent's default block next to the ancestor
+
+When that parent declares no default block or has no room for another one, nothing changes.
 
 ### Examples
 
@@ -157,7 +160,7 @@ When you trigger exit break:
 </columnGroup>
 
 // Second exit
-<columnGroup>                            // ← Exit point (root allows blocks)
+<columnGroup>                            // ← Exit point (top-level block)
   <column>                               // group allows columns only
     <table>                              
       <tableRow>
@@ -174,7 +177,7 @@ When you trigger exit break:
 
 ### Custom plugin configuration
 
-Declare each custom element's allowed child content:
+Declare each custom element's allowed child content and its default. An exit passes ancestors whose parent cannot hold a paragraph, such as a cell in a row, and inserts the default that the landing parent declares:
 
 ```tsx
 import { definePlugin, schema } from 'platejs';
@@ -191,7 +194,10 @@ const CustomTablePlugin = definePlugin('table', {
 const CustomTableRowPlugin = definePlugin('tr', {
   schema: {
     element: {
-      content: schema.content.types(['td', 'th'], { min: 1 }),
+      content: schema.content.types(['td', 'th'], {
+        default: { type: 'td' },
+        min: 1,
+      }),
     },
   },
 });
@@ -199,7 +205,10 @@ const CustomTableRowPlugin = definePlugin('tr', {
 const CustomTableCellPlugin = definePlugin('td', {
   schema: {
     element: {
-      content: schema.content.group('block', { min: 1 }),
+      content: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
     },
   },
 });

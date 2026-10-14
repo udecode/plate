@@ -10,7 +10,7 @@ import type {
   Text,
 } from '../../../../core';
 import { ElementApi } from '../../../../core';
-import { failInvariant } from '../../internal/failInvariant';
+import { failInvariant } from '../../../../internal/failInvariant';
 import type { TableCellElement, TableRowElement } from '../BaseTablePlugin';
 import { createDetachedTableContext, type TableContext } from './context';
 import {

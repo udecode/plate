@@ -3,6 +3,7 @@ import {
   type EditorDocumentValue,
   type Element,
   ElementApi,
+  isMetadataRootKey,
   type Path,
   type RootKey,
   MAIN_ROOT_KEY,
@@ -29,7 +30,10 @@ export const elementIdRootChildren = (
 
 export const elementIdDocumentRoots = (
   value: EditorDocumentValue
-): readonly RootKey[] => [MAIN_ROOT_KEY, ...Object.keys(value.roots ?? {})];
+): readonly RootKey[] => [
+  MAIN_ROOT_KEY,
+  ...Object.keys(value.roots ?? {}).filter((root) => !isMetadataRootKey(root)),
+];
 
 export const assertElementIds = (value: EditorDocumentValue): void => {
   const locations = new Map<string, ElementIdLocation>();

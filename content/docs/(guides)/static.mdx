@@ -75,7 +75,7 @@ See a complete server-side static rendering example:
 
 Initialize a Plate editor instance using `createEditor` with component-bound plugins. This is analogous to using `useCreateEditor` for the interactive `<EditorRoot>` component.
 
-```tsx title="lib/plate-static-editor.ts"
+```tsx title="lib/editor.ts"
 import { createEditor } from 'platejs';
 import { BaseBasicBlocksKit } from '@/components/editor/basic-blocks-static';
 // Import any other desired base plugins, such as MarkdownPlugin.
@@ -89,7 +89,7 @@ const editor = createEditor({
   initialValue: [
     {
       type: 'paragraph',
-      children: [{ text: 'Hello from a static Plate editor!' }],
+      children: [{ text: 'Hello from Plate!' }],
     },
   ],
 });
@@ -219,14 +219,14 @@ For cases where you need **minimal interactivity** with static content, use `<Ed
 ### Example: server component with both static views
 
 ```tsx title="app/document/page.tsx"
-import { createStaticEditor, EditorStatic } from 'platejs/static';
+import { createEditor } from 'platejs';
+import { EditorStatic } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 import { InteractiveViewer } from './interactive-viewer';
 
 export default async function DocumentPage() {
   const content = await fetchDocument(); // Your document data
-  // Server-side static editor
-  const editor = createStaticEditor({
+  const editor = createEditor({
     plugins: BaseEditorKit,
     initialValue: content,
   });
@@ -254,11 +254,11 @@ export default async function DocumentPage() {
 ```tsx title="app/document/interactive-viewer.tsx"
 'use client';
 
-import { EditorPreview, useStaticEditor } from 'platejs/react';
+import { EditorPreview, useCreateEditor } from 'platejs/react';
 import { BaseEditorKit } from '@/components/editor/plugins-static';
 
 export function InteractiveViewer({ value }) {
-  const editor = useStaticEditor({
+  const editor = useCreateEditor({
     plugins: BaseEditorKit,
     initialValue: value,
   });
@@ -272,13 +272,13 @@ export function InteractiveViewer({ value }) {
 - **Client-side only**: Requires `'use client'` directive
 - **Adds interactivity**: Enables user interactions with the content (e.g., text selection, copying, future interactions like tooltips, highlights, etc.)
 - **Minimal overhead**: Still uses `EditorStatic` internally for rendering
-- **Use with `useStaticEditor`**: Creates a static editor optimized for view-only React components
+- **Use with `useCreateEditor`**: Creates the editor inside the client component
 - **Exact copy payloads**: `EditorPreview` resolves selection against its own
   static host and writes the same model slice, HTML, and plain-text payloads as
   a mounted editor
 
 <Callout type="warning" title="Server Component Compatibility">
-  `EditorPreview` cannot be used in Server Components. If you're passing an editor from a server component to a client component, you'll encounter serialization errors. Use `EditorStatic` on the server side, or create the editor client-side with `useStaticEditor`.
+  `EditorPreview` cannot be used in Server Components. If you're passing an editor from a server component to a client component, you'll encounter serialization errors. Use `EditorStatic` on the server side, or create the editor client-side with `useCreateEditor`.
 </Callout>
 
 ## `EditorStatic` vs. `EditorPreview` vs. `EditorRoot` + `readOnly`
@@ -377,6 +377,11 @@ const result = await renderStaticHtml(editor, {
 });
 ```
 
+When the live editor installs authored changes, also pass
+`projection: 'accepted'` or `'proposed'`. Its document carries authored metadata
+even before any proposal, and `renderStaticHtml` throws a `TypeError` without a
+projection.
+
 For each element component, mark component, and wrapper slot function an
 installed plugin declares, the plugin of the same name in `presentation`
 supplies the drawing, also on an element that no installed plugin renders.
@@ -425,7 +430,7 @@ interface EditorStaticProps<E = Editor>
 ```
 
 - **`document`**: A document rendered through the editor's plugins instead of the editor's own value; see [Render a document](#render-a-document).
-- **`editor`**: An editor created with `createEditor` or `createStaticEditor`, including component-bound plugins required by the value.
+- **`editor`**: An editor created with `createEditor` or `useCreateEditor`, including component-bound plugins required by the value.
 
 ## Next steps
 

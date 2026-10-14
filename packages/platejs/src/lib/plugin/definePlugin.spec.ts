@@ -1,7 +1,8 @@
-import { property } from '../../core';
+import { property, txOnly } from '../../core';
 import { defineRuntimePlugin } from '../../facade';
 import { mergePlugins } from '../../internal/utils/mergePlugins';
 import { createEditor } from '../editor';
+import { createPluginContext } from './createPluginContext.internal';
 import { definePlugin } from './definePlugin';
 
 const value = [{ children: [{ text: '' }], type: 'paragraph' }] as const;
@@ -327,5 +328,96 @@ describe('definePlugin', () => {
     expect(Plugin.targetPlugins[0]).toBe(ParagraphPlugin);
     expect(Plugin.initialState.allowedPlugins[0]).toBe(ParagraphPlugin);
     expect(Object.isFrozen(Plugin.targetPlugins)).toBe(true);
+  });
+
+  it('runs a function shared by read and update as an update through the shortcut', () => {
+    let calls = 0;
+    const shared = () => {
+      calls += 1;
+    };
+    const Plugin = definePlugin('sharedMethod', {
+      read: () => ({ peek: shared }),
+      update: () => ({ poke: shared }),
+    });
+    const editor = createEditor({ plugins: [Plugin], initialValue: value });
+
+    editor.update.sharedMethod.poke();
+
+    expect(calls).toBe(1);
+  });
+
+  it('rejects a promise from a function shared by read and update', () => {
+    const thenable = { then: () => undefined };
+    const shared = () => thenable;
+    const Plugin = definePlugin('sharedPromise', {
+      read: () => ({ peek: shared }),
+      update: () => ({ poke: shared }),
+    });
+    const editor = createEditor({ plugins: [Plugin], initialValue: value });
+
+    expect(() =>
+      editor.update((tx) => {
+        tx.sharedPromise.poke();
+      })
+    ).toThrow('Transaction authors must be synchronous');
+  });
+
+  it('refuses a read and a transaction-only control through a Plate portal and ctx.update', () => {
+    let controlRuns = 0;
+    const Plugin = definePlugin('guardedPortal', {
+      read: () => ({ peek: () => 'read' }),
+      update: () => ({
+        control: txOnly(() => {
+          controlRuns += 1;
+        }),
+      }),
+    });
+    const editor = createEditor({ plugins: [Plugin], initialValue: value });
+    const portal = editor.plugin(Plugin).update as unknown as Record<
+      string,
+      (...args: unknown[]) => unknown
+    >;
+    const context = createPluginContext(editor, Plugin)
+      .update as unknown as Record<string, (...args: unknown[]) => unknown>;
+
+    expect(() => portal.peek()).toThrow('is read-only.');
+    expect(() => portal.control()).toThrow('is transaction-only.');
+    expect(() => portal.control.call(undefined)).toThrow(
+      'is transaction-only.'
+    );
+    expect(() => context.peek()).toThrow('is read-only.');
+    expect(() => context.control()).toThrow('is transaction-only.');
+    expect(controlRuns).toBe(0);
+  });
+
+  it('falls back to the whole transaction for a plugin with no transaction group', () => {
+    const Plugin = definePlugin('groupless', {
+      api: () => ({ ready: () => true }),
+    });
+    const editor = createEditor({ plugins: [Plugin], initialValue: value });
+    const update = createPluginContext(editor, Plugin).update as unknown as {
+      text: { insert: (text: string, options: unknown) => void };
+    };
+
+    update.text.insert('x', { at: { offset: 0, path: [0, 0] } });
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'x' }], type: 'paragraph' },
+    ]);
+  });
+
+  it('runs a callable read root with itself as the receiver', () => {
+    const Plugin = definePlugin('selfRead', {
+      read: () =>
+        Object.assign(
+          function root(this: { nested: () => string }) {
+            return this.nested();
+          },
+          { nested: () => 'nested' }
+        ),
+    });
+    const editor = createEditor({ plugins: [Plugin], initialValue: value });
+
+    expect(createPluginContext(editor, Plugin).read()).toBe('nested');
   });
 });

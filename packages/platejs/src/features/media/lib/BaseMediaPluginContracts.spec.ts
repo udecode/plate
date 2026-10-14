@@ -8,6 +8,8 @@ import {
   schema,
 } from '../../../core';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
+import { BaseBlockquotePlugin } from '../../basic-nodes/lib/BaseBlockPlugins';
+import { BaseHeadingPlugin } from '../../basic-nodes/lib/BaseHeadingPlugins';
 import { BaseTextAlignPlugin } from '../../basic-styles/lib/BaseStylePlugins';
 import type { BaseUploadPlugin } from '../../upload/lib/BaseUploadPlugin';
 import {
@@ -250,6 +252,72 @@ describe('Base media plugin contracts', () => {
     };
 
     rows.forEach(verifyCaptionSplit);
+  });
+
+  it('splits a caption into the block the media parent declares at that position', () => {
+    const TitlePlugin = definePlugin('title', {
+      schema: { element: schema.element.textBlock() },
+    });
+    const image = {
+      children: [{ text: 'hello' }],
+      type: PLUGINS.image,
+      url: 'https://platejs.org/example',
+    };
+    const headedEditor = createEditor({
+      plugins: [BaseHeadingPlugin, BaseImagePlugin],
+      schema: {
+        root: schema.content.prefix(
+          [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
+          schema.content.group('block', {
+            default: { type: PLUGINS.paragraph },
+            min: 1,
+          })
+        ),
+      },
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [1, 0] },
+        focus: { offset: 2, path: [1, 0] },
+      },
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: PLUGINS.heading },
+        image,
+      ],
+    });
+    const quotedEditor = createEditor({
+      plugins: [TitlePlugin, BaseBlockquotePlugin, BaseImagePlugin],
+      schema: {
+        root: schema.content.group('block', {
+          default: { type: 'title' },
+          min: 1,
+        }),
+      },
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0, 0] },
+        focus: { offset: 2, path: [0, 0, 0] },
+      },
+      initialValue: [{ children: [image], type: PLUGINS.blockquote }],
+    });
+
+    headedEditor.update.break.insert();
+    quotedEditor.update.break.insert();
+
+    expect([
+      headedEditor.read.children()[2],
+      quotedEditor.read.children(),
+    ]).toEqual([
+      { children: [{ text: 'llo' }], type: PLUGINS.paragraph },
+      [
+        {
+          children: [
+            { ...image, children: [{ text: 'he' }] },
+            { children: [{ text: 'llo' }], type: PLUGINS.paragraph },
+          ],
+          type: PLUGINS.blockquote,
+        },
+      ],
+    ]);
   });
 
   it('exits media captions without duplicating the owner across selection shapes', () => {

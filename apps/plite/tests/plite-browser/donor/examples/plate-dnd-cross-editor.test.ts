@@ -1,4 +1,4 @@
-import {
+import { BROWSER_HANDLE_KEY,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
 import { expect, test, type Page } from '@playwright/test';
@@ -277,8 +277,8 @@ test.describe('Plate native block drag', () => {
       await pressHandle(page, sourceHandle);
       await moveOver(page, targetBlock, 0.25);
       // The drag selected the block; deleting the selection unmounts its handle.
-      await source.evaluate((element) =>
-        Reflect.get(element, '__pliteBrowserHandle').deleteFragment()
+      await source.evaluate((element, key) =>
+        Reflect.get(element, key).deleteFragment(), BROWSER_HANDLE_KEY
       );
       await expect(sourceModel).toHaveText('keep');
       await moveOver(page, targetBlock, 0.3);

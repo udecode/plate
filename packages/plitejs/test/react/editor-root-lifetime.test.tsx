@@ -15,8 +15,8 @@ const paragraph = (text: string) => ({
   type: 'paragraph',
   children: [{ text }],
 });
-const accepted = { intent: 'edit', projection: 'accepted' } as const;
-const proposal = { intent: 'propose', projection: 'proposed' } as const;
+const accepted = { preview: 'accepted' } as const;
+const proposal = { intent: 'propose' } as const;
 
 class DataTransferStub {
   data = new Map<string, string>();
@@ -37,7 +37,7 @@ class DataTransferStub {
 
 test('pastes plain text at the caret in a mounted authored view', async () => {
   const source = createEditor({
-    plugins: [authored({ authorId: 'alice', retainHistory: true })],
+    plugins: [authored({ authorId: 'alice' })],
     initialValue: [paragraph('A separate document.')],
   });
   let view!: ReturnType<typeof useEditorContext>;
@@ -82,27 +82,24 @@ test('reconciles authored policy values without resetting commands on unrelated 
     view = useEditorContext();
     return <Editable aria-label="policy" />;
   };
-  const tree = (projection: 'markup' | 'proposed') => (
-    <EditorRoot editor={source} authored={{ intent: 'propose', projection }}>
+  const tree = (intent: 'edit' | 'propose') => (
+    <EditorRoot editor={source} authored={{ intent }}>
       <Capture />
     </EditorRoot>
   );
-  const mounted = render(tree('markup'));
+  const mounted = render(tree('propose'));
   const first = view;
 
-  expect(view.plugin(authoring).read.view()).toEqual({
-    intent: 'propose',
-    projection: 'markup',
-  });
+  expect(view.plugin(authoring).read.view()).toEqual(proposal);
   await act(async () => view.plugin(authoring).api.setView(accepted));
-  mounted.rerender(tree('markup'));
+  mounted.rerender(tree('propose'));
   expect(view).toBe(first);
   expect(view.plugin(authoring).read.view()).toEqual(accepted);
 
-  mounted.rerender(tree('proposed'));
+  mounted.rerender(tree('edit'));
   expect(view).toBe(first);
-  expect(view.plugin(authoring).read.view()).toEqual(proposal);
-  expect(source.plugin(authoring).read.view()).toEqual(accepted);
+  expect(view.plugin(authoring).read.view()).toEqual({ intent: 'edit' });
+  expect(source.plugin(authoring).read.view()).toEqual({ intent: 'edit' });
   mounted.unmount();
 });
 
@@ -145,10 +142,7 @@ test('captures source defaults once and keeps mounted policy independent', async
   expect(first.read.authored.view()).toEqual(accepted);
 
   await act(async () =>
-    configured.api.authored.setView({
-      intent: 'propose',
-      projection: 'markup',
-    })
+    configured.api.authored.setView(proposal)
   );
   act(() => setEditorReadOnly(configured, true));
   mounted.rerender(tree(2));
@@ -164,10 +158,7 @@ test('captures source defaults once and keeps mounted policy independent', async
 
   const remounted = render(tree(4));
   expect(mountedEditor).not.toBe(first);
-  expect(mountedEditor.read.authored.view()).toEqual({
-    intent: 'propose',
-    projection: 'markup',
-  });
+  expect(mountedEditor.read.authored.view()).toEqual(proposal);
   expect(mountedEditor.read.view.isReadOnly()).toBe(true);
   expect(() => staleInsert('x')).toThrow(/read-only/);
   remounted.unmount();

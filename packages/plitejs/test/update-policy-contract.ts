@@ -34,6 +34,35 @@ const workflowCapability = definePlugin('workflow', {
   }),
 });
 
+const readingCapability = definePlugin('reading', {
+  read: ({ state }) => ({
+    text: () => state.text.string([]),
+  }),
+  update: ({ tx }) => ({
+    append(text: string) {
+      tx.text.insert(text);
+    },
+  }),
+});
+
+const readOnlyCapability = definePlugin('readOnlyReading', {
+  read: ({ state }) => ({
+    text: () => state.text.string([]),
+  }),
+});
+
+let groupControlRuns = 0;
+
+const groupCapability = definePlugin('grouped', {
+  update: () => ({
+    group: Object.assign(() => undefined, {
+      control: txOnly(() => {
+        groupControlRuns += 1;
+      }),
+    }),
+  }),
+});
+
 const escapedState = defineStateField({
   key: 'update-policy.escaped-state',
   initial: () => '',
@@ -428,5 +457,77 @@ describe('update policy contract', () => {
 
     editor.update.workflow.direct('!');
     assert.equal(editor.read.text.string([]), 'one!');
+  });
+
+  it('rejects read methods from dynamic direct dispatch', () => {
+    const editor = createEditor({
+      plugins: [readingCapability, readOnlyCapability] as const,
+    });
+
+    replaceEditorValue(editor, {
+      children: [paragraph('one')],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+
+    const { version } = editor.read.runtime.snapshot();
+    const dynamicUpdate = editor.update as unknown as Record<
+      string,
+      Record<string, (...args: unknown[]) => unknown>
+    >;
+
+    assert.throws(
+      () => dynamicUpdate.reading.text(),
+      /"reading" method "text" is read-only\./
+    );
+    assert.throws(
+      () => dynamicUpdate.readOnlyReading.text(),
+      /"readOnlyReading" method "text" is read-only\./
+    );
+    assert.equal(editor.read.runtime.snapshot().version, version);
+
+    editor.update.reading.append('!');
+    assert.equal(editor.read.text.string([]), 'one!');
+  });
+
+  it('rejects a transaction-only method called through call or apply', () => {
+    const editor = createEditor({
+      plugins: [workflowCapability, groupCapability] as const,
+    });
+
+    replaceEditorValue(editor, {
+      children: [paragraph('one')],
+      selection: {
+        kind: 'text' as const,
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+
+    const { version } = editor.read.runtime.snapshot();
+    const dynamicUpdate = editor.update as unknown as Record<
+      string,
+      Record<string, Record<string, (...args: unknown[]) => unknown>>
+    >;
+
+    groupControlRuns = 0;
+    assert.throws(
+      () => dynamicUpdate.workflow.scoped.call(undefined, '!'),
+      /is transaction-only\./
+    );
+    assert.throws(
+      () => dynamicUpdate.workflow.scoped.apply(undefined, ['!']),
+      /is transaction-only\./
+    );
+    assert.throws(
+      () => dynamicUpdate.grouped.group.control.call(undefined),
+      /is transaction-only\./
+    );
+    assert.equal(groupControlRuns, 0);
+    assert.equal(editor.read.text.string([]), 'one');
+    assert.equal(editor.read.runtime.snapshot().version, version);
   });
 });

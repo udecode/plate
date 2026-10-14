@@ -1333,6 +1333,7 @@ export const compileSliceFitter = <V extends Value>(
         const canOpenAtRoot = declarative
           ? [declarative.primaryRoot, ...declarative.roots.values()].some(
               (compiledRoot) =>
+                compiledRoot.role === 'content' &&
                 allContentAllowed(declarative, compiledRoot.content, content)
             )
           : content.every(

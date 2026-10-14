@@ -7,6 +7,7 @@ import type {
   EditorCommandInput,
   EditorCommandContinuation,
   EditorCommandDispatch,
+  EditorCommandPlace,
   EditorCommandRegistration,
   EditorCommandResult,
   EditorStateView,
@@ -17,6 +18,7 @@ import {
   getCommandRegistrationRuntime,
   getCommandRuntime,
 } from './command-definition';
+import { getEditorCommandDocument } from './command-document';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import {
   type CompiledCommandPipeline,
@@ -27,13 +29,18 @@ import { profileCoreDuration } from './profiling';
 import {
   applyTransactionSpec,
   continueTransactionSpec,
+  type EditorFrameBody,
   enterEditorRead,
+  evaluateInEditorCommandFrame,
   getActiveEditorUpdateTags,
   getActiveEditorTransaction,
   isBuildingTransactionSpec,
   isInTransaction,
   isTransactionSpec,
   isTransactionSpecContinuation,
+  probeInEditorCommandFrame,
+  runInEditorCommandFrame,
+  runSelectionOnlyInEditorUpdate,
   withTransactionSpecDraftRead,
 } from './public-state';
 
@@ -431,8 +438,108 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   editor: TEditor,
   command: EditorCommand<Input, TEditor>,
   input: Input
-) =>
-  applyCommandEvaluation(editor, evaluateCommandChain(editor, command, input));
+): boolean => {
+  const owner = getEditorRuntimeOwner(editor);
+  const run = () =>
+    applyCommandEvaluation(
+      editor,
+      evaluateCommandChain(editor, command, input)
+    );
+
+  if (!getEditorCommandDocument(owner)) return run();
+
+  const { selection } = getCommandRuntime(command);
+
+  if (!selection) assertCommandLocated(command, input);
+
+  const applyWith = (located: Input) => {
+    const { result } = evaluateCommandChain(editor, command, located);
+
+    if (result === false) return false;
+    applyTransactionSpec(owner, result);
+
+    return true;
+  };
+  const apply = () => {
+    getActiveEditorTransaction(owner)?.tags.add('semantic-command');
+
+    if (selection) {
+      return runSelectionOnlyInEditorUpdate(
+        owner,
+        `Command "${command.id}" declares selection: true`,
+        () => applyWith(input)
+      );
+    }
+
+    return (
+      runInEditorCommandFrame(owner, (place) => {
+        const located = locateCommandInput(command, input, place);
+
+        return () => located !== null && applyWith(located);
+      }) ?? run()
+    );
+  };
+
+  if (isInTransaction(owner)) return apply();
+
+  let applied = false;
+
+  editor.update({ tags: 'semantic-command' }, () => {
+    applied = apply();
+  });
+
+  return applied;
+};
+
+const assertCommandLocated = <Input, TEditor extends BaseEditor<any, any>>(
+  command: EditorCommand<Input, TEditor>,
+  input: Input
+) => {
+  if (input !== undefined && getCommandRuntime(command).locate === undefined) {
+    throw new Error(
+      `Command "${command.id}" takes input, so it must declare locate, locate: false or selection: true while a command document is registered.`
+    );
+  }
+};
+
+const locateCommandInput = <Input, TEditor extends BaseEditor<any, any>>(
+  command: EditorCommand<Input, TEditor>,
+  input: Input,
+  place: EditorCommandPlace
+): Input | null => {
+  const { locate } = getCommandRuntime(command);
+
+  return locate ? locate(input, place) : input;
+};
+
+const NOTHING_EVALUATED: EditorCommandEvaluation = Object.freeze({
+  materialHandlers: EMPTY_MATERIAL_HANDLERS,
+  nativeEquivalent: false,
+  result: false,
+});
+
+const getCommandFrameBody = <Input, TEditor extends BaseEditor<any, any>>(
+  editor: TEditor,
+  command: EditorCommand<Input, TEditor>,
+  input: Input
+): EditorFrameBody<EditorCommandEvaluation> | null => {
+  if (
+    !getEditorCommandDocument(getEditorRuntimeOwner(editor)) ||
+    getCommandRuntime(command).selection
+  ) {
+    return null;
+  }
+  assertCommandLocated(command, input);
+
+  return (place) => {
+    const located = locateCommandInput(command, input, place);
+
+    return () =>
+      located === null
+        ? NOTHING_EVALUATED
+        : evaluateCommandChain(editor, command, located);
+  };
+};
 
 /**
  * Evaluate one pure command without publishing its transaction.
@@ -445,12 +552,16 @@ export const evaluateCommand = <TCommand extends EditorCommandDescriptor>(
   ...input: [EditorCommandInput<TCommand>] extends [void]
     ? [] | [input: EditorCommandInput<TCommand>]
     : [input: EditorCommandInput<TCommand>]
-): EditorCommandEvaluation =>
-  evaluateCommandChain(
-    editor,
-    command as unknown as EditorCommand<unknown, Editor>,
-    input[0]
+): EditorCommandEvaluation => {
+  const typed = command as unknown as EditorCommand<unknown, Editor>;
+  const body = getCommandFrameBody(editor, typed, input[0]);
+
+  return (
+    (body &&
+      evaluateInEditorCommandFrame(getEditorRuntimeOwner(editor), body)) ??
+    evaluateCommandChain(editor, typed, input[0])
   );
+};
 
 /** Evaluate one pure command against an explicit detached draft state. */
 export const evaluateCommandWithState = <
@@ -492,13 +603,14 @@ export const probeCommandNativeEquivalent = <
     ? [] | [input: EditorCommandInput<TCommand>]
     : [input: EditorCommandInput<TCommand>]
 ): EditorCommandNativeProbe => {
-  const evaluation = evaluateCommandChain(
-    editor,
-    command as unknown as EditorCommand<unknown, Editor>,
-    input[0]
-  );
+  const typed = command as unknown as EditorCommand<unknown, Editor>;
+  const body = getCommandFrameBody(editor, typed, input[0]);
+  const framed =
+    body && probeInEditorCommandFrame(getEditorRuntimeOwner(editor), body);
+  const evaluation =
+    framed?.value ?? evaluateCommandChain(editor, typed, input[0]);
 
-  return evaluation.nativeEquivalent
+  return evaluation.nativeEquivalent && !framed?.moved
     ? NATIVE_EQUIVALENT_PROBE
     : Object.freeze({
         materialHandlers: evaluation.materialHandlers,

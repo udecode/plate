@@ -42,6 +42,7 @@
     "packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx",
     "packages/platejs/src/features/list/lib/BaseListPlugin.ts",
     "packages/platejs/src/features/list/lib/index.ts",
+    "packages/platejs/src/features/list/lib/listHtml.internal.ts",
     "packages/platejs/src/features/list/lib/listIdentity.internal.ts",
     "packages/platejs/src/features/list/lib/listIndex.internal.slow.ts",
     "packages/platejs/src/features/list/lib/listIndex.internal.spec.ts",

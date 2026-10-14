@@ -22,17 +22,23 @@ import type { AnyEditor as Editor } from '../../interfaces/editor';
 import { type Element, ElementApi } from '../../interfaces/element';
 import type { Descendant } from '../../interfaces/node';
 import { getDefined } from '../../internal/get-defined';
+import type { Dependencies } from '../facts/dependencies';
 import { type FormatTag, type LayerValue, writeLayer } from './layers';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
   readAuthoredMarks,
-  withAuthoredMarks,
-  withMarksThroughout,
+  readMembers,
+  withMembers,
 } from './marks';
 import { type ProposedChild, proposedChildren, proposedHost } from './proposed';
 
-type Mark = Readonly<{ at: number; author: string; change: string }>;
+type Mark = Readonly<{
+  at: number;
+  author: string;
+  change: string;
+  inc?: string;
+}>;
 
 export type RecordCompletionInput = Readonly<{
   after: JsonEditorValue;
@@ -40,6 +46,7 @@ export type RecordCompletionInput = Readonly<{
   /** The recorded change from `before` to `after`. */
   change: DocumentChange;
   createTagId: () => string;
+  dependencies: Dependencies;
   editor: Editor;
   /** The indexes of `after`, by root. */
   indexes: ReadonlyMap<string, DocumentIndex>;
@@ -114,7 +121,7 @@ const shapeOf = (nodes: readonly Descendant[]) =>
  * insertions, so rejecting any of them removes it, and a decision builds
  * whatever the host then lacks.
  */
-const dependencies = (
+const restingChanges = (
   host: JsonNode | null,
   lifted: readonly JsonNode[],
   children: readonly JsonNode[],
@@ -131,9 +138,15 @@ const dependencies = (
   const insertionsOf = (marks: readonly AuthoredMark[]) => {
     const byChange = new Map<string, AuthoredMark>();
 
-    for (const { at, author, change } of marks) {
+    for (const { at, author, change, inc } of marks) {
       if (!isOwn({ change }) && !byChange.has(change)) {
-        byChange.set(change, { at, author, change, kind: 'insert' });
+        byChange.set(change, {
+          at,
+          author,
+          change,
+          ...(inc === undefined ? {} : { inc }),
+          kind: 'insert',
+        });
       }
     }
 
@@ -369,14 +382,16 @@ export const completeProposed = (
       if (completion.built.length === 0) continue;
 
       const used = new Set<JsonNode>();
-      const { deletions, reshapes } = dependencies(
+      const { deletions, reshapes } = restingChanges(
         host ?? null,
         lifted,
         hostChildren,
         isOwn
       );
       const ancestorMarks = site.flatMap((node) =>
-        readAuthoredMarks(node).filter((mark) => mark.kind === 'insert')
+        input.dependencies
+          .marks(node)
+          .filter((mark) => mark.kind === 'insert')
       );
       const proposedWith = (placed: readonly ProposedChild[]) => {
         const nodes = [...inputs];
@@ -440,16 +455,22 @@ export const completeProposed = (
           continue;
         }
 
+        const [own, ...others] = [
+          insertMark,
+          ...ancestorMarks,
+          ...rests,
+        ].filter(
+          (mark, at, all) =>
+            all.findIndex((other) => other.change === mark.change) === at
+        );
+
         inserted += 1;
         edits.push({
           kind: 'insert',
-          node: withMarksThroughout(
-            withoutMarks(node),
-            [insertMark, ...ancestorMarks, ...rests].filter(
-              (mark, at, all) =>
-                all.findIndex((other) => other.change === mark.change) === at
-            )
-          ),
+          node: input.dependencies.throughout(withoutMarks(node), [
+            ...others,
+            getDefined(own),
+          ]),
           path: insertionPath(
             completion.sources,
             built.index,
@@ -588,6 +609,7 @@ const keptShell = (
   const ownDeletes = marks.filter(
     (mark) => mark.kind === 'delete' && options.isOwn(mark)
   );
+  const withdrawn = new Set<unknown>(ownDeletes);
   const previous = propsOf(shell);
   const tags: FormatTag[] = [];
   const set: Record<string, unknown> = {};
@@ -631,13 +653,16 @@ const keptShell = (
       ...(Object.keys(set).length > 0 ? { set: set as JsonRecord } : {}),
       ...(unset.length > 0 ? { unset } : {}),
     },
-    props: withAuthoredMarks(
+    props: withMembers(
       Object.fromEntries(
         Object.entries({ ...previous, ...set }).filter(
           ([key]) => !unset.includes(key)
         )
       ),
-      [...marks.filter((mark) => !ownDeletes.includes(mark)), ...tags]
+      [
+        ...readMembers(shell).filter((member) => !withdrawn.has(member)),
+        ...tags,
+      ]
     ),
   };
 };

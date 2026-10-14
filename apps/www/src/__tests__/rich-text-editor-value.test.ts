@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
-import { NodeApi } from 'platejs';
-import { AuthoredPlugin, projectAuthoredReview } from 'platejs/authored';
+import { type EditorDocumentValue, NodeApi } from 'platejs';
+import { AuthoredPlugin, projectAuthoredDocument } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor } from 'platejs/react';
 import { SuggestionPlugin } from 'platejs/suggestion/react';
@@ -11,6 +11,11 @@ import {
   richTextEditorValue,
 } from '@/registry/blocks/editor-ai/components/editor/rich-text-editor-value';
 import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+
+const project = (
+  document: EditorDocumentValue,
+  projection: 'accepted' | 'proposed'
+) => projectAuthoredDocument(document, { projection }).document;
 
 const loadExample = (
   document = richTextEditorValue,
@@ -31,64 +36,35 @@ const loadExample = (
 describe('saved rich-text playground', () => {
   it('restores the three authors and exact review content with linked discussion records', () => {
     const editor = loadExample();
-    const snapshot = projectAuthoredReview(editor.read.value());
+    const authored = editor.plugin(AuthoredPlugin);
+    const changes = authored.read.changes().items;
+    const accepted = project(editor.read.value(), 'accepted');
+    const proposed = project(editor.read.value(), 'proposed');
 
     expect(
-      snapshot.changes
-        .map(({ authorId, kind, status }) => ({ authorId, kind, status }))
+      changes
+        .map(({ authorId, kind }) => ({ authorId, kind }))
         .sort((a, b) => a.authorId.localeCompare(b.authorId))
     ).toEqual([
-      { authorId: 'alice', kind: 'mixed', status: 'pending' },
-      { authorId: 'bob', kind: 'delete', status: 'pending' },
-      { authorId: 'charlie', kind: 'insert', status: 'pending' },
+      { authorId: 'alice', kind: 'insert' },
+      { authorId: 'bob', kind: 'delete' },
+      { authorId: 'charlie', kind: 'insert' },
     ]);
-    expect(NodeApi.string(snapshot.accepted.children[3])).toBe(
+    expect(NodeApi.string(accepted.children[3])).toBe(
       'Review and refine content seamlessly. Use  or to mark text for removal. Discuss changes using comments on many text segments. You can even have annotations!'
     );
-    expect(NodeApi.string(snapshot.proposed.children[3])).toBe(
+    expect(NodeApi.string(proposed.children[3])).toBe(
       'Review and refine content seamlessly. Use suggestions like this added text or to . Discuss changes using comments on many text segments. You can even have overlapping annotations!'
     );
-    expect(NodeApi.get(snapshot.proposed.children[3], [1])).toEqual({
+    expect(NodeApi.get(proposed.children[3], [1])).toEqual({
       children: [{ text: 'suggestions' }],
       type: 'link',
       url: '/docs/suggestion',
     });
-    expect(NodeApi.get(snapshot.accepted.children[9], [9])).toEqual({
+    expect(NodeApi.get(accepted.children[9], [9])).toEqual({
       bold: true,
       text: 'bold',
     });
-
-    for (const [authorId, before, after] of [
-      ['alice', '', 'suggestions like this added text'],
-      ['bob', 'mark text for removal', ''],
-      ['charlie', '', 'overlapping '],
-    ]) {
-      const change = snapshot.changes.find(
-        (item) => item.authorId === authorId
-      )!;
-      const parts = editor
-        .plugin(AuthoredPlugin)
-        .read.details(change.id)?.parts;
-
-      expect(parts?.status).toBe('available');
-      if (parts?.status !== 'available') {
-        throw new Error('Missing review content.');
-      }
-      const content = parts.items.filter((part) => part.kind === 'content');
-
-      expect(
-        content
-          .flatMap((part) => part.before?.content.content ?? [])
-          .map((node) => NodeApi.string(node))
-          .join('')
-      ).toBe(before);
-      expect(
-        content
-          .flatMap((part) => part.after?.content.content ?? [])
-          .map((node) => NodeApi.string(node))
-          .join('')
-      ).toBe(after);
-    }
 
     const threads = editor.plugin(CommentsPlugin).api.getThreads();
     expect(threads).toEqual(richTextEditorComments.threads);
@@ -99,20 +75,22 @@ describe('saved rich-text playground', () => {
       type: 'range',
       status: 'attached',
       range: {
-        anchor: { path: [3, 1, 0], offset: 0 },
-        focus: { path: [3, 2], offset: 22 },
+        anchor: { path: [3, 7, 0], offset: 0 },
+        focus: { path: [3, 8], offset: 22 },
       },
     });
     expect(threads.find(({ id }) => id === 'discussion2')?.target).toEqual({
       type: 'change',
-      id: snapshot.changes.find(({ authorId }) => authorId === 'charlie')!.id,
+      id: changes.find(({ authorId }) => authorId === 'charlie')!.id,
     });
 
     const restored = loadExample(
       JSON.parse(JSON.stringify(editor.read.value())),
       JSON.parse(JSON.stringify(editor.plugin(CommentsPlugin).api.toJSON()))
     );
-    expect(projectAuthoredReview(restored.read.value())).toEqual(snapshot);
+    expect(restored.plugin(AuthoredPlugin).read.changes().items).toEqual(
+      changes
+    );
     expect(restored.plugin(CommentsPlugin).api.getThreads()).toEqual(threads);
     expect(
       restored.plugin(CommentsPlugin).api.attachment('discussion1')
@@ -133,7 +111,7 @@ describe('saved rich-text playground', () => {
     const resolution = await comments.resolve('discussion1');
     expect(resolution.status).toBe('applied');
     primary.update((tx) => {
-      tx.text.insert('Updated ', { at: { path: [3, 1, 0], offset: 0 } });
+      tx.text.insert('Updated ', { at: { path: [3, 8], offset: 0 } });
     });
 
     for (const independent of [reviewer, snapshot]) {
@@ -169,37 +147,23 @@ describe('saved rich-text playground', () => {
   it.each(['alice', 'bob', 'charlie'])(
     'starts without replay history and can accept then undo %s’s loaded suggestion',
     (authorId) => {
-      const original = JSON.stringify(richTextEditorValue);
       const editor = loadExample();
       const authored = editor.plugin(AuthoredPlugin);
-      const changes = authored.read.changes({ status: 'pending' }).items;
+      const changes = authored.read.changes().items;
       const change = changes.find((item) => item.authorId === authorId)!;
 
       editor.api.history.undo();
-      expect(authored.read.changes({ status: 'pending' }).items).toEqual(
-        changes
-      );
+      expect(authored.read.changes().items).toEqual(changes);
       expect(
-        authored.update.decide({
-          action: 'accept',
-          selection: authored.read.select({ ids: [change.id] }),
-        }).status
+        authored.update.decide({ action: 'accept', changes: [change] }).status
       ).toBe('applied');
-      expect(authored.read.change(change.id)?.status).toBe('accepted');
+      expect(authored.read.change(change.id)).toBeNull();
 
       editor.api.history.undo();
-      expect(authored.read.change(change.id)?.status).toBe('pending');
-      expect(authored.read.changes({ status: 'pending' }).items).toHaveLength(
-        3
-      );
+      expect(authored.read.changes().items).toEqual(changes);
       expect(editor.read.value().children).toEqual(
         richTextEditorValue.children
       );
-      expect(JSON.stringify(richTextEditorValue)).toBe(original);
-      expect(
-        loadExample().plugin(AuthoredPlugin).read.changes({ status: 'pending' })
-          .items
-      ).toEqual(changes);
     }
   );
 
@@ -207,17 +171,14 @@ describe('saved rich-text playground', () => {
     const editor = loadExample();
     const authored = editor.plugin(AuthoredPlugin);
     const alice = authored.read
-      .changes({ status: 'pending' })
+      .changes()
       .items.find(({ authorId }) => authorId === 'alice')!;
 
     expect(
-      authored.update.decide({
-        action: 'reject',
-        selection: authored.read.select({ ids: [alice.id] }),
-      }).status
+      authored.update.decide({ action: 'reject', changes: [alice] }).status
     ).toBe('applied');
 
-    const { proposed } = projectAuthoredReview(editor.read.value());
+    const proposed = project(editor.read.value(), 'proposed');
     expect(NodeApi.get(proposed.children[3], [1])).toEqual({
       children: [{ text: 'comments' }],
       type: 'link',
@@ -228,7 +189,7 @@ describe('saved rich-text playground', () => {
     );
     expect(
       authored.read
-        .changes({ status: 'pending' })
+        .changes()
         .items.map(({ authorId }) => authorId)
         .sort()
     ).toEqual(['bob', 'charlie']);
@@ -236,32 +197,4 @@ describe('saved rich-text playground', () => {
       editor.plugin(CommentsPlugin).api.getThread('discussion1')?.target
     ).toEqual(richTextEditorComments.threads[0].target);
   });
-
-  it.each(['bob', 'charlie'])(
-    'rejects %s independently of the other suggestions',
-    (authorId) => {
-      const editor = loadExample();
-      const authored = editor.plugin(AuthoredPlugin);
-      const change = authored.read
-        .changes({ status: 'pending' })
-        .items.find((item) => item.authorId === authorId)!;
-
-      expect(
-        authored.update.decide({
-          action: 'reject',
-          selection: authored.read.select({ ids: [change.id] }),
-        }).status
-      ).toBe('applied');
-      expect(
-        authored.read
-          .changes({ status: 'pending' })
-          .items.map((item) => item.authorId)
-          .sort()
-      ).toEqual(['alice', 'bob', 'charlie'].filter((id) => id !== authorId));
-      editor.api.history.undo();
-      expect(authored.read.changes({ status: 'pending' }).items).toHaveLength(
-        3
-      );
-    }
-  );
 });

@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import { chromium } from '@playwright/test';
 
+import { BROWSER_HANDLE_KEY } from '../../../packages/plitejs/src/internal/browser-protocol.ts';
 import {
   hasExactCodeHighlight,
   hasInsertedCodeHighlight,
@@ -236,14 +237,12 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
 
     await page
       .waitForFunction(
-        ({
-          blockIndex: targetBlockIndex,
-          expectedLength,
-          expectedLines,
-          mode,
-        }) => {
+        ([
+          { blockIndex: targetBlockIndex, expectedLength, expectedLines, mode },
+          key,
+        ]) => {
           const root = document.querySelector('.editor-editor');
-          const handle = root?.__pliteBrowserHandle;
+          const handle = root?.[key];
           const block = document.querySelector('.editor-codeBlock');
           const text = handle?.getBlockText(targetBlockIndex);
 
@@ -282,19 +281,22 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
             !block.querySelector('[data-code-block-codemirror]')
           );
         },
-        {
-          blockIndex,
-          expectedLength: expectedInitialText.length,
-          expectedLines: lineCount,
-          mode: renderMode,
-        },
+        [
+          {
+            blockIndex,
+            expectedLength: expectedInitialText.length,
+            expectedLines: lineCount,
+            mode: renderMode,
+          },
+          BROWSER_HANDLE_KEY,
+        ],
         { timeout: 30_000 }
       )
       .catch(async (error) => {
         const installed = await page
           .evaluate(
-            () =>
-              !!document.querySelector('.editor-editor')?.__pliteBrowserHandle
+            (key) => !!document.querySelector('.editor-editor')?.[key],
+            BROWSER_HANDLE_KEY
           )
           .catch(() => false);
 
@@ -309,9 +311,9 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
 
     const navigationToQueryableMs = performance.now() - navigationStartedAt;
     const before = await page.evaluate(
-      async ({ blockIndex: targetBlockIndex, mode }) => {
+      async ([{ blockIndex: targetBlockIndex, mode }, key]) => {
         const root = document.querySelector('.editor-editor');
-        const handle = root.__pliteBrowserHandle;
+        const handle = root[key];
         const block = document.querySelector('.editor-codeBlock');
         const code = block.querySelector('pre code');
         const host = block.querySelector('[data-code-block-codemirror]');
@@ -356,7 +358,7 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
           totalDocumentElements: document.querySelectorAll('*').length,
         };
       },
-      { blockIndex, mode: renderMode }
+      [{ blockIndex, mode: renderMode }, BROWSER_HANDLE_KEY]
     );
 
     const input =
@@ -366,9 +368,9 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
 
     await input.focus();
     await page.waitForFunction(
-      ({ blockIndex: targetBlockIndex, expectedOffset, mode }) => {
+      ([{ blockIndex: targetBlockIndex, expectedOffset, mode }, key]) => {
         const root = document.querySelector('.editor-editor');
-        const handle = root?.__pliteBrowserHandle;
+        const handle = root?.[key];
         const selection = handle?.getSelection();
         const active = document.activeElement;
         const focusReady =
@@ -384,20 +386,23 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
           selection.focus.offset === expectedOffset
         );
       },
-      {
-        blockIndex,
-        expectedOffset: before.modelTextLength,
-        mode: renderMode,
-      }
+      [
+        {
+          blockIndex,
+          expectedOffset: before.modelTextLength,
+          mode: renderMode,
+        },
+        BROWSER_HANDLE_KEY,
+      ]
     );
     await page.evaluate(() => globalThis.startInputClockBeforeEditorHandlers());
 
     await page.keyboard.insertText(insertedText);
 
     const timing = await page.evaluate(
-      async ({ blockIndex: targetBlockIndex, expectedSuffix, mode }) => {
+      async ([{ blockIndex: targetBlockIndex, expectedSuffix, mode }, key]) => {
         const root = document.querySelector('.editor-editor');
-        const handle = root.__pliteBrowserHandle;
+        const handle = root[key];
         const block = document.querySelector('.editor-codeBlock');
         const startedAt = globalThis.readInputStart(
           globalThis.__plateCodeBlockBenchmarkInputStartedAt
@@ -459,13 +464,16 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
           })}`
         );
       },
-      { blockIndex, expectedSuffix: insertedText, mode: renderMode }
+      [
+        { blockIndex, expectedSuffix: insertedText, mode: renderMode },
+        BROWSER_HANDLE_KEY,
+      ]
     );
 
     const after = await page.evaluate(
-      ({ blockIndex: targetBlockIndex, expectedSuffix, mode }) => {
+      ([{ blockIndex: targetBlockIndex, expectedSuffix, mode }, key]) => {
         const root = document.querySelector('.editor-editor');
-        const handle = root.__pliteBrowserHandle;
+        const handle = root[key];
         const block = document.querySelector('.editor-codeBlock');
         const code = block.querySelector('pre code');
         const host = block.querySelector('[data-code-block-codemirror]');
@@ -497,7 +505,10 @@ const runSample = async ({ browser, phase, roundIndex, strategyName }) => {
           totalDocumentElements: document.querySelectorAll('*').length,
         };
       },
-      { blockIndex, expectedSuffix: insertedText, mode: renderMode }
+      [
+        { blockIndex, expectedSuffix: insertedText, mode: renderMode },
+        BROWSER_HANDLE_KEY,
+      ]
     );
 
     const contractFailures = [];

@@ -14,8 +14,7 @@ registries finish a descriptor with one terminal `.configure()` call, including
 | `.extend()` | Adapt an imported/prebuilt descriptor, use a constructor-inaccessible shared factory, or consume an earlier-stage type. | Widens the plugin type. |
 | `.configure()` | Override existing fields for one consumer. | Terminal and non-widening. |
 
-`definePlugin()` and `definePlugin()` own every independent author
-contribution:
+`definePlugin()` owns every independent author contribution:
 
 | Field | Owns |
 | --- | --- |
@@ -171,6 +170,98 @@ delegates only when it calls `next()` or `next.after(prefix)`; returning `false`
 rejects the command and stops fallback. `next.after(prefix)` evaluates downstream
 behavior against the state produced by that prefix. Plugin order determines
 handler order; the descriptor preserves input inference.
+
+### Place locations under suggestions
+
+Plite's review tree keeps pending [suggestions](/docs/suggestion) inside the
+edited document. It runs commands and plugin update methods on the proposed
+document, the one with every pending suggestion accepted, and records the
+result back as suggestions. There, a command that takes input and an update
+method called with arguments must declare where the stored locations in them
+land in the proposed document, or that they hold none. One that declares
+nothing throws. The editor places the selection itself, so a command that only
+reads the selection declares nothing about it. Plate's built-in commands and
+plugins declare theirs.
+
+<Callout type="info">
+  The `SuggestionPlugin` kit does not run commands on the review tree. There,
+  commands use the view's coordinates, as [Authored
+  changes](/docs/authored-changes#configure-a-view) describes, and the
+  declarations have no effect.
+</Callout>
+
+A command declares `locate`. It maps each stored target through
+`place.location(target)` and returns `null` when a target has no place, so the
+command does nothing:
+
+```ts title="clear-highlight.ts" showLineNumbers
+import { defineCommand, type Location } from 'platejs';
+
+export const clearHighlight = defineCommand<{ at?: Location }>(
+  'highlight.clear',
+  {
+    locate: (input, place) => {
+      if (input.at === undefined) return input;
+
+      const at = place.location(input.at);
+
+      return at === null ? null : { ...input, at };
+    },
+    build: ({ input, state }) =>
+      state.transaction((tx) => {
+        tx.nodes.unset('highlight', {
+          at: input.at ?? [],
+          match: (node) => Boolean(Reflect.get(node, 'highlight')),
+        });
+      }),
+  }
+);
+```
+
+A point lands where typing there would land, and a range leaves the stored
+content at its edges out. A path lands on its node's path, and a node or node
+key stays as given. Declare `locate: false` when the input holds no location,
+or `selection: true` for a command that only moves the selection. A
+`selection` command runs on the stored document and throws if it changes
+content.
+
+Update methods declare the same choices with `txLocate`, `locateAt`, and
+`txSelection`:
+
+```ts title="highlight-plugin.ts" showLineNumbers
+import {
+  definePlugin,
+  locateAt,
+  txLocate,
+  txSelection,
+  type Location,
+} from 'platejs';
+
+export const HighlightPlugin = definePlugin('highlight', {
+  update: ({ tx }) => ({
+    clear: txLocate(locateAt(0), ({ at = [] }: { at?: Location } = {}) => {
+      tx.nodes.unset('highlight', {
+        at,
+        match: (node) => Boolean(Reflect.get(node, 'highlight')),
+      });
+    }),
+    setColor: txLocate(false, (color: string) => {
+      tx.marks.add('highlight', color);
+    }),
+    toStart: txSelection(() => {
+      tx.selection.collapse({ edge: 'start' });
+    }),
+  }),
+});
+```
+
+| Helper | Use it for |
+| --- | --- |
+| `txLocate(locate, method)` | A method whose arguments hold locations. `locate(args, place)` returns the arguments with each location placed, or `null` to do nothing. |
+| `locateAt(index, ...keys)` | A `locate` for an options argument at `index` whose targets sit under `keys`, `at` by default. |
+| `txLocate(false, method)` | A method whose arguments hold no location. |
+| `txSelection(method)` | A method that only moves the selection. It runs on the stored document and throws if it changes content. |
+| `txOnly(method)` | A control that only changes the active transaction, such as `tx.history.merge()`. Call it on `tx`. A one-shot call through `editor.update.<plugin>` or a plugin portal throws. |
 
 ## Declare feature format mappings
 

@@ -13,7 +13,6 @@ export function RedoToolbarButton(
 
   return (
     <ToolbarButton
-      aria-label="Redo"
       {...props}
       aria-busy={pending !== null}
       disabled={!canRedo}
@@ -32,7 +31,6 @@ export function UndoToolbarButton(
 
   return (
     <ToolbarButton
-      aria-label="Undo"
       {...props}
       aria-busy={pending !== null}
       disabled={!canUndo}

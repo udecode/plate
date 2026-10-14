@@ -110,7 +110,7 @@ const anchor = fixture.anchor(
   { association: 'inward', deletion: 'nearest' }
 );
 const initialComments: CommentsJSON = {
-  kind: 'plate-comments',
+  kind: 'comments',
   ranges: [{ range: fixture.anchor.save(anchor), threadId: 'paged-comment' }],
   threads: [
     {

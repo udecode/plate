@@ -18,14 +18,14 @@ export const getDOMTextRepairInsert = ({
   inputText,
   preferCapturedInsert,
   selectionOffset,
-  pliteText,
+  editorText,
   targetInsert,
   textHostText,
 }: {
   inputText: string;
   preferCapturedInsert?: boolean;
   selectionOffset: number;
-  pliteText: string;
+  editorText: string;
   targetInsert?: {
     offset: number;
     text: string;
@@ -34,7 +34,7 @@ export const getDOMTextRepairInsert = ({
 }) => {
   const clampedTargetInsert = targetInsert
     ? {
-        offset: Math.max(0, Math.min(pliteText.length, targetInsert.offset)),
+        offset: Math.max(0, Math.min(editorText.length, targetInsert.offset)),
         text: targetInsert.text,
       }
     : null;
@@ -46,11 +46,11 @@ export const getDOMTextRepairInsert = ({
   const insert = getNativeTextInsertDelta({
     inputText,
     selectionOffset,
-    pliteText,
+    editorText,
     textHostText,
   });
 
-  if (applyTextInsert(pliteText, insert) === textHostText) {
+  if (applyTextInsert(editorText, insert) === textHostText) {
     return insert;
   }
 

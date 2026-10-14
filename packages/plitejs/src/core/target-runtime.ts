@@ -19,19 +19,18 @@ const targetRuntimeKey = (editor: Editor) => getEditorRuntime(editor);
 
 export const resolveTargetRuntimeImplicitTarget = (
   editor: Editor,
-  fallback: Selection,
-  applyTarget: (target: Selection) => void
-): Selection => {
+  fallback: Selection
+): Readonly<{ target: Selection }> | null => {
   const key = targetRuntimeKey(editor);
 
   if (TARGET_RUNTIME_ACTIVE.has(key)) {
-    return fallback;
+    return null;
   }
 
   const runtime = TARGET_RUNTIME.get(key);
 
   if (!runtime) {
-    return fallback;
+    return null;
   }
 
   TARGET_RUNTIME_ACTIVE.add(key);
@@ -41,11 +40,10 @@ export const resolveTargetRuntimeImplicitTarget = (
       fallback,
       reason: 'implicit-target',
     });
-    if (JSON.stringify(target ?? null) !== JSON.stringify(fallback ?? null)) {
-      applyTarget(target);
-    }
 
-    return target;
+    return JSON.stringify(target ?? null) === JSON.stringify(fallback ?? null)
+      ? null
+      : { target };
   } finally {
     TARGET_RUNTIME_ACTIVE.delete(key);
   }

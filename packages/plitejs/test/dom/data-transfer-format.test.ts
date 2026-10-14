@@ -16,6 +16,9 @@ import {
   type Descendant,
   type EditorLifecycleError,
   type EditorLifecycleErrorSink,
+  type EditorSelection,
+  type Plugin,
+  type Value,
 } from 'plitejs';
 
 import {
@@ -334,6 +337,409 @@ test('plain-text fallback starts new lines with the default block when the ancho
   ]);
 });
 
+const nestedPasteSubtitle = (text: string, level: string) => ({
+  children: [{ text }],
+  level,
+  type: 'subtitle',
+});
+
+const pasteIntoNested = (
+  plugin: Plugin,
+  initialValue: Value,
+  initialSelection: EditorSelection,
+  text: string
+) => {
+  const editor = createEditor({
+    plugins: [plugin, dom()] as const,
+    initialSelection,
+    initialValue,
+  });
+  const data = new DataTransferStub();
+
+  data.setData('text/plain', text);
+  editor.api.dom.clipboard.insertData(data);
+
+  return editor.read.children();
+};
+
+const boxedPasteSchema = defineEditorSchema(
+  'schema:data-transfer-nested-test',
+  {
+    elements: {
+      box: {
+        content: schema.content.prefix(
+          [{ element: 'subtitle', properties: { level: 'h3' } }],
+          schema.content.types(['paragraph', 'subtitle', 'title'], {
+            default: { type: 'paragraph' },
+          })
+        ),
+      },
+      paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+      subtitle: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: { level: property.string({ required: true }) },
+      },
+      title: { content: schema.content.text({ default: 'text', min: 1 }) },
+    },
+    id: 'data-transfer-nested-test',
+    root: schema.content.types(['title', 'paragraph', 'box'], {
+      default: { type: 'title' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  }
+);
+
+test('plain-text paste over a nested picked block lands the blocks its parent declares there', () => {
+  expect(
+    pasteIntoNested(
+      boxedPasteSchema,
+      [
+        {
+          children: [nestedPasteSubtitle('L', 'h3'), paragraph('q')],
+          type: 'box',
+        },
+      ],
+      SelectionApi.nodes([[0, 1]]),
+      'one\ntwo'
+    )
+  ).toEqual([
+    {
+      children: [
+        nestedPasteSubtitle('L', 'h3'),
+        paragraph('one'),
+        paragraph('two'),
+      ],
+      type: 'box',
+    },
+  ]);
+});
+
+test('plain-text paste over a picked prefix block builds each line at its own slot', () => {
+  expect(
+    pasteIntoNested(
+      boxedPasteSchema,
+      [
+        {
+          children: [nestedPasteSubtitle('L', 'h3'), paragraph('q')],
+          type: 'box',
+        },
+      ],
+      SelectionApi.nodes([[0, 0]]),
+      'one\ntwo'
+    )
+  ).toEqual([
+    {
+      children: [
+        nestedPasteSubtitle('one', 'h3'),
+        paragraph('two'),
+        paragraph('q'),
+      ],
+      type: 'box',
+    },
+  ]);
+});
+
+test("plain-text paste after a nested block that needs properties starts new lines with its parent's default", () => {
+  expect(
+    pasteIntoNested(
+      boxedPasteSchema,
+      [
+        {
+          children: [
+            nestedPasteSubtitle('L', 'h3'),
+            nestedPasteSubtitle('Sub', 'h2'),
+          ],
+          type: 'box',
+        },
+      ],
+      SelectionApi.text({
+        anchor: { offset: 3, path: [0, 1, 0] },
+        focus: { offset: 3, path: [0, 1, 0] },
+      }),
+      'a\nb\nc'
+    )
+  ).toEqual([
+    {
+      children: [
+        nestedPasteSubtitle('L', 'h3'),
+        nestedPasteSubtitle('Suba', 'h2'),
+        paragraph('b'),
+        paragraph('c'),
+      ],
+      type: 'box',
+    },
+  ]);
+});
+
+test('plain-text paste after a block that needs properties builds each new line at its own slot', () => {
+  const twoSlotSchema = defineEditorSchema(
+    'schema:data-transfer-two-slot-test',
+    {
+      elements: {
+        box: {
+          content: schema.content.prefix(
+            [
+              { element: 'subtitle', properties: { level: 'h1' } },
+              { element: 'subtitle', properties: { level: 'h2' } },
+            ],
+            schema.content.types(['paragraph', 'subtitle'], {
+              default: { type: 'paragraph' },
+            })
+          ),
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        subtitle: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          properties: { level: property.string({ required: true }) },
+        },
+      },
+      id: 'data-transfer-two-slot-test',
+      root: schema.content.types(['paragraph', 'box'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    }
+  );
+  let pasted: ContentSlice | null = null;
+  const editor = createEditor({
+    plugins: [
+      twoSlotSchema,
+      dom(),
+      definePlugin('capture-two-slot-slice', {
+        commands: ({ around }) => [
+          around(editorCommands.replaceSlice, ({ input, next }) => {
+            pasted = input.slice;
+
+            return next();
+          }),
+        ],
+      }),
+    ] as const,
+    initialSelection: SelectionApi.text({
+      anchor: { offset: 1, path: [0, 0, 0] },
+      focus: { offset: 1, path: [0, 0, 0] },
+    }),
+    initialValue: [
+      {
+        children: [
+          nestedPasteSubtitle('A', 'h1'),
+          nestedPasteSubtitle('B', 'h2'),
+        ],
+        type: 'box',
+      },
+    ],
+  });
+  const data = new DataTransferStub();
+
+  data.setData('text/plain', 'a\nb\nc');
+  editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
+
+  expect(pasted).toEqual({
+    content: [
+      nestedPasteSubtitle('a', 'h1'),
+      nestedPasteSubtitle('b', 'h2'),
+      paragraph('c'),
+    ],
+    openEnd: 1,
+    openStart: 1,
+  });
+});
+
+test('plain-text paste over a picked block in a full container changes nothing', () => {
+  const oneBlockSchema = defineEditorSchema(
+    'schema:data-transfer-one-block-test',
+    {
+      elements: {
+        box: {
+          content: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            max: 1,
+            min: 1,
+          }),
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'data-transfer-one-block-test',
+      root: schema.content.types(['paragraph', 'box'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    }
+  );
+  expect(
+    pasteIntoNested(
+      oneBlockSchema,
+      [{ children: [paragraph('q')], type: 'box' }],
+      SelectionApi.nodes([[0, 0]]),
+      'one\ntwo'
+    )
+  ).toEqual([{ children: [paragraph('q')], type: 'box' }]);
+});
+
+test('plain-text paste over a picked block changes nothing when a later line has no slot', () => {
+  const oneSlotSchema = defineEditorSchema(
+    'schema:data-transfer-one-slot-test',
+    {
+      elements: {
+        box: {
+          content: schema.content.prefix(
+            [{ element: 'paragraph' }],
+            schema.content.types(['paragraph'], { max: 0 })
+          ),
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      id: 'data-transfer-one-slot-test',
+      root: schema.content.types(['paragraph', 'box'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    }
+  );
+
+  expect(
+    pasteIntoNested(
+      oneSlotSchema,
+      [{ children: [paragraph('q')], type: 'box' }],
+      SelectionApi.nodes([[0, 0]]),
+      'one\ntwo'
+    )
+  ).toEqual([{ children: [paragraph('q')], type: 'box' }]);
+});
+
+test('plain-text paste over a picked void in an undeclared container lands the default of the slot that holds it', () => {
+  expect(
+    pasteIntoNested(
+      definePlugin('data-transfer-undeclared-void-test', {
+        schema: { elements: { image: { void: 'block' } } },
+      }),
+      [
+        {
+          children: [
+            { children: [{ text: '' }], type: 'image' },
+            paragraph('r'),
+          ],
+          type: 'quote',
+        },
+      ],
+      SelectionApi.nodes([[0, 0]]),
+      'one\ntwo'
+    )
+  ).toEqual([
+    {
+      children: [paragraph('one'), paragraph('two'), paragraph('r')],
+      type: 'quote',
+    },
+  ]);
+});
+
+test('plain-text paste over a picked inline pastes as over its text', () => {
+  const linkSchema = defineEditorSchema(
+    'schema:data-transfer-inline-pick-test',
+    {
+      elements: {
+        link: { content: schema.content.text(), inline: true },
+        paragraph: schema.element.textBlock(),
+      },
+      id: 'data-transfer-inline-pick-test',
+      root: schema.content.types(['paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    }
+  );
+
+  expect(
+    pasteIntoNested(
+      linkSchema,
+      [
+        {
+          children: [
+            { text: 'a' },
+            { children: [{ text: 'L' }], type: 'link' },
+            { text: 'b' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      SelectionApi.nodes([[0, 1]]),
+      'x'
+    )
+  ).toEqual([
+    {
+      children: [
+        { text: 'ax' },
+        { children: [{ text: '' }], type: 'link' },
+        { text: 'b' },
+      ],
+      type: 'paragraph',
+    },
+  ]);
+});
+
+test('plain-text paste over a picked block in an undeclared container lands the default of the slot that holds it', () => {
+  expect(
+    pasteIntoNested(
+      definePlugin('data-transfer-derived-schema-test', {}),
+      [{ children: [paragraph('q'), paragraph('r')], type: 'quote' }],
+      SelectionApi.nodes([[0, 0]]),
+      'one\ntwo'
+    )
+  ).toEqual([
+    {
+      children: [paragraph('one'), paragraph('two'), paragraph('r')],
+      type: 'quote',
+    },
+  ]);
+});
+
+test('plain-text paste keeps one line in a block that needs properties when the next slot declares no default', () => {
+  const headedSchema = defineEditorSchema('schema:data-transfer-headed-test', {
+    elements: {
+      paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+      subtitle: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        properties: { level: property.string({ required: true }) },
+      },
+    },
+    id: 'data-transfer-headed-test',
+    root: schema.content.prefix(
+      [{ element: 'subtitle', properties: { level: 'h1' } }],
+      schema.content.types(['paragraph'])
+    ),
+    unknown: 'reject',
+    version: 1,
+  });
+
+  expect(
+    pasteIntoNested(
+      headedSchema,
+      [nestedPasteSubtitle('Sub', 'h1')],
+      SelectionApi.text({
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      }),
+      'x'
+    )
+  ).toEqual([nestedPasteSubtitle('Subx', 'h1')]);
+});
+
 test('plain-text inline wrappers preserve validated properties and schema construction', () => {
   let captured: ContentSlice | null = null;
   const editor = createInlineFormatEditor((slice) => {
@@ -394,7 +800,7 @@ test('plain-text inline wrappers reject undeclared closed-schema properties', ()
   expect(diagnostics[0]).toMatchObject({
     pluginName: 'editor-dom',
     mimeType: 'text/plain',
-    key: 'plite-plain-text',
+    key: 'core:plain-text',
     phase: 'decode',
     source: 'data-transfer-format',
   });

@@ -371,6 +371,16 @@ test('accepts an --expect-fail run that fails with every named failure', (t) => 
   );
 });
 
+test('accepts an --expect-fail run that fails with a named TypeScript diagnostic', (t) => {
+  const result = runExpectingFailure(
+    t,
+    'echo "src/a.ts(3,1): error TS2578: Unused directive."; exit 2',
+    ['src/a.ts(3,1): error TS2578']
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+});
+
 test('refuses an --expect-fail run whose named failure appears only in its command line', (t) => {
   const result = runExpectingFailure(t, 'exit 1 # (fail) named case', [
     '(fail) named case',
@@ -378,6 +388,28 @@ test('refuses an --expect-fail run whose named failure appears only in its comma
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /does not show: \(fail\) named case/u);
+});
+
+test('refuses an --expect-fail run whose named text shows only on a passing line', (t) => {
+  const result = runExpectingFailure(
+    t,
+    'echo "  ✓  1 [chromium] › a.spec.ts:3:9 › named case"; echo "  1) [chromium] › a.spec.ts:9:9 › other case"; exit 1',
+    ['named case']
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /does not show: named case/u);
+});
+
+test('refuses an --expect-fail run whose named text shows only on a skipped line', (t) => {
+  const result = runExpectingFailure(
+    t,
+    'echo "  -  1 [chromium] › a.spec.ts:3:9 › named case"; echo "  1) [chromium] › a.spec.ts:9:9 › other case"; exit 1',
+    ['named case']
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /does not show: named case/u);
 });
 
 test('creates a worktree without a command when the proof helper is absent', (t) => {

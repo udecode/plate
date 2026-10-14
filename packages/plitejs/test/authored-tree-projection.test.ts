@@ -1,3 +1,4 @@
+import { authoredTestApi } from './support/authored';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
@@ -10,7 +11,7 @@ import {
   target,
 } from 'plitejs';
 
-import { authoredTreeProof } from '../src/authored/tree/proof-plugin';
+import { createAuthoredPlugin } from '../src/authored/authored';
 import { projectAuthoredFragment } from '../src/authored/tree/resolve';
 
 const struck = { at: 1, author: 'bob', change: 'bob:1', kind: 'delete' };
@@ -85,7 +86,7 @@ const ColumnWidths = definePlugin('projection-column-widths', {
 describe('authored review tree projections', () => {
   it('reads correction-derived values unrecomputed in the pure proposed read, and names the container', () => {
     const editor = createEditor({
-      plugins: [Columns, ColumnWidths, authoredTreeProof({ authorId: 'bob' })],
+      plugins: [Columns, ColumnWidths, createAuthoredPlugin({ authorId: 'bob' })],
       initialValue: [
         {
           type: 'column_group',
@@ -100,9 +101,9 @@ describe('authored review tree projections', () => {
         },
       ],
     });
-    const proposed = editor.api.authoredTree.project('proposed');
+    const proposed = authoredTestApi(editor).project('proposed');
 
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['bob:1'] });
 
     const widths = (children: readonly unknown[]) =>
       (children[0] as { children: Array<{ width: number }> }).children.map(
@@ -112,7 +113,14 @@ describe('authored review tree projections', () => {
     assert.deepEqual(widths(proposed.value.children), [25, 25]);
     assert.deepEqual(widths(editor.read.children()), [50, 50]);
     assert.deepEqual(proposed.diagnostics, [
-      { code: 'authored-uncorrected', path: [0], type: 'column_group' },
+      {
+        code: 'authored-uncorrected',
+        message:
+          'A decision restructured the children of column_group, and corrections that depend on them did not run.',
+        path: [0],
+        severity: 'warning',
+        type: 'column_group',
+      },
     ]);
   });
 

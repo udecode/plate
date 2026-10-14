@@ -138,6 +138,56 @@ describe('element-owned root lifecycle', () => {
     );
   });
 
+  it('cascades an exclusive root when its owner is removed after an edit inside it', () => {
+    const editor = createContentRootEditor(
+      [paragraph('body'), portal('exclusive-portal', 'exclusive:1')],
+      { 'exclusive:1': [paragraph('caption')] }
+    );
+
+    editor.update((tx) =>
+      tx.text.insert('label', { at: { path: [1, 0], offset: 0 } })
+    );
+    editor.update((tx) => tx.nodes.remove({ at: [1] }));
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      {
+        children: [paragraph('body')],
+      }
+    );
+  });
+
+  it('cascades an exclusive root when its owner is removed after a delete from inside it into the next block', () => {
+    const editor = createContentRootEditor(
+      [
+        paragraph('body'),
+        {
+          ...portal('exclusive-portal', 'exclusive:1'),
+          children: [{ text: 'label' }],
+        },
+        paragraph('tail'),
+      ],
+      { 'exclusive:1': [paragraph('caption')] }
+    );
+
+    editor.update((tx) =>
+      tx.text.delete({
+        at: {
+          anchor: { offset: 2, path: [1, 0] },
+          focus: { offset: 0, path: [2, 0] },
+        },
+      })
+    );
+    editor.update((tx) => tx.nodes.remove({ at: [1] }));
+
+    assert.deepEqual(
+      editor.read((state) => state.value()),
+      {
+        children: [paragraph('body')],
+      }
+    );
+  });
+
   it('preserves a root on move and clones it on duplicate', () => {
     const editor = createContentRootEditor(
       [paragraph('body'), portal('exclusive-portal', 'exclusive:1')],

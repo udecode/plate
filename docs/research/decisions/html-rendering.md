@@ -2,7 +2,7 @@
 title: HTML conversion and static rendering
 type: decision
 status: accepted
-updated: 2026-10-04
+updated: 2026-10-13
 related:
   - conversion-boundary.md
   - ../../plans/2026-09-30-content-root-locations.md
@@ -11,6 +11,8 @@ related:
 # HTML conversion and static rendering
 
 **Audit of 2026-10-04.** Pursue. The content-root closure holds, but static output still publishes a second editor vocabulary, createStaticEditor, StaticEditor, CreateStaticEditorOptions and useStaticEditor, that has been a pure alias of createEditor since its static plugins were deleted on 2026-09-15, plus a zustand store factory on platejs/static with no static job; Vision says branded editor variants and fake aliases do not survive. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-html-audit` and `2026-10-04-html-audit-2` hold the evidence.
+
+**Review of 2026-10-13.** Pursue, adopted locally by the [html review](../../plans/2026-10-13-html-review.md). Static and server output use the root `createEditor` and, in React, `useCreateEditor`; `platejs/static` holds renderers only, such as `EditorStatic` and `renderStaticHtml`. The cut removes `createStaticEditor`, `StaticEditor`, `CreateStaticEditorOptions`, `useStaticEditor`, the zustand re-export and the six static node prop types no file imported. A comment preview keeps one `useCreateEditor` editor per comment body; one editor for a whole comment list stays open in the html subject.
 
 Retain the adopted immutable document reader, explicit conversion loss
 accounting and static reuse described in [conversion boundary ownership](conversion-boundary.md).

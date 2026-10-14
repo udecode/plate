@@ -1,7 +1,7 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 import type { EditorUpdatePolicy } from 'platejs';
 
-import {
+import { BROWSER_HANDLE_KEY,
   openExample,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -132,18 +132,16 @@ test.describe('document state example', () => {
     );
     await expect(titleInput).toBeFocused();
 
-    await editor.root.evaluate((element) => {
+    await editor.root.evaluate((element, key) => {
       const handle = (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: {
+        element as HTMLElement & Record<string, {
             insertTextAt: (
               text: string,
               at: { offset: number; path: number[]; root?: string },
               policy?: EditorUpdatePolicy
             ) => void;
-          };
-        }
-      ).__pliteBrowserHandle;
+          } | undefined>
+      )[key];
 
       if (!handle) {
         throw new Error('Missing Plite browser handle');
@@ -163,7 +161,7 @@ test.describe('document state example', () => {
           ],
         }
       );
-    });
+    }, BROWSER_HANDLE_KEY);
 
     await expect(editor.root).toContainText('Remote Title changes');
     await expect(titleInput).toBeFocused();
@@ -194,21 +192,19 @@ test.describe('document state example', () => {
     await titleInput.click();
     await expect(titleInput).toBeFocused();
 
-    await editor.root.evaluate((element, prefix) => {
-      const root = element as HTMLElement & {
-        __pliteBrowserHandle?: {
+    await editor.root.evaluate((element, [prefix, key]) => {
+      const root = element as HTMLElement & Record<string, {
           insertTextAt: (
             text: string,
             at: { offset: number; path: number[]; root?: string },
             policy?: EditorUpdatePolicy
           ) => void;
-        };
-      };
+        } | undefined>;
 
       root.addEventListener(
         'focus',
         () => {
-          const handle = root.__pliteBrowserHandle;
+          const handle = root[key];
 
           if (!handle) {
             throw new Error('Missing Plite browser handle');
@@ -230,7 +226,7 @@ test.describe('document state example', () => {
         },
         { once: true }
       );
-    }, focusMutationPrefix);
+    }, [focusMutationPrefix, BROWSER_HANDLE_KEY] as const);
 
     await editor.focus();
 

@@ -5,6 +5,7 @@ import {
   schema,
   PLUGINS,
 } from '../../../core';
+import { BaseHeadingPlugin } from '../../basic-nodes';
 import { BaseTocPlugin } from './BaseTocPlugin';
 
 const TestParagraphPlugin = definePlugin(PLUGINS.paragraph, {
@@ -15,16 +16,7 @@ const TestParagraphPlugin = definePlugin(PLUGINS.paragraph, {
   },
 });
 
-const TestHeadingPlugins = [
-  definePlugin(PLUGINS.heading, {
-    schema: {
-      element: {
-        content: schema.content.text({ default: 'text', min: 1 }),
-        properties: { level: property.number({ required: true }) },
-      },
-    },
-  }),
-];
+const TestHeadingPlugins = [BaseHeadingPlugin];
 
 describe('BaseTocPlugin', () => {
   it('configures toc as a block void element', () => {
@@ -228,6 +220,43 @@ describe('BaseTocPlugin.read.headings', () => {
         type: 'heading',
       },
     ]);
+  });
+
+  it('reads a heading whose type the app renames', () => {
+    const editor = createEditor({
+      plugins: [BaseTocPlugin, BaseHeadingPlugin],
+      schema: {
+        overrides: [
+          schema.override(BaseHeadingPlugin, { element: { type: 'h' } }),
+        ],
+      },
+      initialValue: [{ children: [{ text: 'Title' }], level: 2, type: 'h' }],
+    });
+
+    expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([
+      { depth: 2, key: editor.key([0])!, title: 'Title', type: 'h' },
+    ]);
+  });
+
+  it('ignores a different plugin that only shares the heading name', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseTocPlugin,
+        definePlugin(PLUGINS.heading, {
+          schema: {
+            element: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+              properties: { level: property.number({ required: true }) },
+            },
+          },
+        }),
+      ],
+      initialValue: [
+        { children: [{ text: 'Title' }], level: 1, type: 'heading' },
+      ],
+    });
+
+    expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([]);
   });
 
   it('uses the configured queryHeading override when present', () => {

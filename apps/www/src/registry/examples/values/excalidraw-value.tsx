@@ -6,9 +6,7 @@ import type { Value } from 'platejs';
 
 jsx;
 
-export const excalidrawInitialData: Partial<
-  Pick<ExcalidrawElement, 'data' | 'width'>
-> = {
+export const excalidrawInitialData: Partial<Pick<ExcalidrawElement, 'data'>> = {
   data: {
     elements: [
       {
@@ -79,7 +77,7 @@ export const excalidrawValue = (
       Unleash your creativity with the Excalidraw plugin, which enables you to
       embed and draw diagrams directly within your editor.
     </hp>
-    <hexcalidraw {...excalidrawInitialData} width="50%">
+    <hexcalidraw {...excalidrawInitialData}>
       <htext />
     </hexcalidraw>
   </fragment>

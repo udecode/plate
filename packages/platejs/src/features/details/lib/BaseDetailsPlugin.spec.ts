@@ -411,7 +411,7 @@ describe('BaseDetailsPlugin', () => {
       ],
     });
     const proposing = createEditorView(initial, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     });
     proposing.update((tx) => {
       tx.text.delete({
@@ -428,7 +428,7 @@ describe('BaseDetailsPlugin', () => {
       initialValue: initial.read.value(),
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'edit', projection: 'markup' },
+      authored: { intent: 'edit' },
     });
     const details = view.plugin(BaseDetailsPlugin);
     const key = view.key([1])!;

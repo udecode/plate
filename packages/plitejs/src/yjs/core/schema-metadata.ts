@@ -1,4 +1,4 @@
-import type * as Y from 'yjs';
+import * as Y from 'yjs';
 
 import {
   areEditorSchemaIdentitiesEqual,
@@ -7,17 +7,16 @@ import {
 import type { EditorSchemaIdentity } from '../../index';
 import { isRecord } from './record';
 
-const SCHEMA_METADATA_FORMAT = 2;
+const SCHEMA_METADATA_FORMAT = 3;
 const SCHEMA_METADATA_KEY = 'current';
+const SCHEMA_METADATA_SUFFIX = ':schema';
 
 export type YjsSchemaEnvelope = Readonly<{
-  format: 2;
+  format: typeof SCHEMA_METADATA_FORMAT;
   identity: EditorSchemaIdentity;
 }>;
 
-const readEnvelopeProperties = (
-  value: unknown
-): Readonly<{ format: unknown; identity: unknown }> | undefined => {
+const readEnvelopeIdentity = (value: unknown): unknown => {
   if (!isRecord(value)) return undefined;
 
   try {
@@ -44,12 +43,10 @@ const readEnvelopeProperties = (
       return undefined;
     }
 
-    return { format: format.value, identity: identity.value };
+    return identity.value;
   } catch {
-    // Invalid metadata is treated as absent and renegotiated by the provider.
+    return undefined;
   }
-
-  return undefined;
 };
 
 const freezeIdentity = (
@@ -76,7 +73,32 @@ export const createYjsSchemaEnvelope = (
   });
 
 export const getYjsSchemaMetadataName = (rootName: string): string =>
-  `${rootName}:schema`;
+  `${rootName}${SCHEMA_METADATA_SUFFIX}`;
+
+const readOwnValue = (value: unknown, key: string): unknown => {
+  if (!isRecord(value)) return undefined;
+
+  try {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+
+    return descriptor && Object.hasOwn(descriptor, 'value')
+      ? descriptor.value
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const assertSchemaMetadataFormat = (format: unknown): void => {
+  if (format === SCHEMA_METADATA_FORMAT) return;
+  if (typeof format !== 'number') {
+    throw new Error('Invalid Yjs schema metadata envelope.');
+  }
+
+  throw new Error(
+    `Cannot open a Yjs document written with schema metadata format ${format}; this editor reads format ${SCHEMA_METADATA_FORMAT}.`
+  );
+};
 
 export const readYjsSchemaEnvelope = (
   metadata: Y.Map<unknown>
@@ -85,14 +107,54 @@ export const readYjsSchemaEnvelope = (
 
   if (value === undefined) return null;
 
-  const properties = readEnvelopeProperties(value);
-  const identity = readEditorSchemaIdentity(properties?.identity);
+  assertSchemaMetadataFormat(readOwnValue(value, 'format'));
 
-  if (properties?.format !== SCHEMA_METADATA_FORMAT || identity === undefined) {
+  const identity = readEditorSchemaIdentity(readEnvelopeIdentity(value));
+
+  if (identity === undefined) {
     throw new Error('Invalid Yjs schema metadata envelope.');
   }
 
   return createYjsSchemaEnvelope(identity);
+};
+
+// Yjs leaves a root that only a remote update created as a bare AbstractType,
+// and getMap would permanently retype it, so a later getArray or getText on
+// that name throws; the entry is read from the item store instead.
+const readRootMapEntry = (
+  type: NonNullable<ReturnType<Y.Doc['share']['get']>>,
+  key: string
+): unknown => {
+  const { constructor } = type;
+
+  if (constructor !== Y.Map && constructor !== Y.AbstractType) return undefined;
+
+  const item = type._map.get(key);
+
+  return item === undefined || item.deleted
+    ? undefined
+    : item.content.getContent()[item.length - 1];
+};
+
+export const assertYjsDocumentSchemaFormats = (doc: Y.Doc): void => {
+  for (const [name, type] of doc.share) {
+    if (!name.endsWith(SCHEMA_METADATA_SUFFIX)) continue;
+
+    const value = readRootMapEntry(type, SCHEMA_METADATA_KEY);
+    const format = readOwnValue(value, 'format');
+    const identity = readOwnValue(value, 'identity');
+    const kind = readOwnValue(identity, 'kind');
+
+    if (
+      typeof format !== 'number' ||
+      (kind !== 'derived' && kind !== 'named') ||
+      typeof readOwnValue(identity, 'fingerprint') !== 'string'
+    ) {
+      continue;
+    }
+
+    assertSchemaMetadataFormat(format);
+  }
 };
 
 export const writeYjsSchemaEnvelope = (

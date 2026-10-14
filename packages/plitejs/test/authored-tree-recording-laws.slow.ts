@@ -8,27 +8,40 @@ import {
   createEditor,
   defineEditorSchema,
   definePlugin,
+  editorCommands,
   EditorSchemaValidationError,
   NodeApi,
+  type NodeKey,
+  PathApi,
+  type Point,
+  PointApi,
   property,
   schema,
   target,
   transfer,
 } from 'plitejs';
+import { history } from 'plitejs/history';
 
+import { createAuthoredPlugin } from '../src/authored/authored';
+import { compactClaims, expandContexts } from '../src/authored/facts/compact';
+import { authoredResolveSchemaOf } from '../src/authored/resolve-schema';
 import {
   type AuthoredMarkKind,
   authoredMarksSchema,
   readAuthoredMarks,
 } from '../src/authored/tree/marks';
-import {
-  authoredResolveSchemaOf,
-  authoredTreeProof,
-} from '../src/authored/tree/proof-plugin';
 import { proposedChildren } from '../src/authored/tree/proposed';
-import { AuthoredUnrepresentableError } from '../src/authored/tree/record';
 import { projectAuthoredValue } from '../src/authored/tree/resolve';
+import {
+  EditorRefusalError,
+  subscribeEditorRefusals,
+} from '../src/core/refusal';
 import { getDefined } from '../src/internal/get-defined';
+import {
+  authoredTestApi,
+  expandedChildren,
+  reviewedValue,
+} from './support/authored';
 import { helpers, shapes } from './support/content-shapes';
 
 type Node = Record<string, unknown> & {
@@ -37,7 +50,11 @@ type Node = Record<string, unknown> & {
 };
 type Editor = ReturnType<typeof editorFor>;
 type Command =
-  | Readonly<{ at: string; kind: 'break' | 'paste' | 'type'; side: number }>
+  | Readonly<{
+      at: string;
+      kind: 'break' | 'nest' | 'paste' | 'type';
+      side: number;
+    }>
   | Readonly<{ at: string; direction: 'backward' | 'forward'; kind: 'delete' }>
   | Readonly<{ from: string; kind: 'deleteRange' | 'typeOver'; to: string }>
   | Readonly<{ at: string; kind: 'removeLink' | 'unwrap' | 'wrap' }>
@@ -50,7 +67,7 @@ type Command =
   | Readonly<{ at: string; kind: 'transferText'; to: string }>
   | Readonly<{ kind: 'replaceChildren'; shift: number }>;
 type Edit = Readonly<{
-  author: 'alice' | 'bob';
+  author: 'alice' | 'bob' | 'dan' | 'erin';
   command: Command;
   intent: 'edit' | 'propose';
 }>;
@@ -71,37 +88,54 @@ const Quotes = defineEditorSchema('recording-laws', {
 });
 const LETTERS = 'abcdefghijkl';
 
+/** A refused update reports and returns; the laws handle it as thrown. */
+const throwingRefusals = <E>(editor: E) => {
+  subscribeEditorRefusals(editor as never, (refusal) => {
+    throw new EditorRefusalError(refusal, 'refused');
+  });
+
+  return editor;
+};
+const isRefusal = (error: unknown) =>
+  error instanceof EditorSchemaValidationError ||
+  error instanceof EditorRefusalError;
+
 const editorFor = (
   initialValue: readonly Node[],
   author: string,
   intent: 'edit' | 'propose' | 'plain',
-  changeId: string,
-  withSchema = true
+  changeId: string | (() => string),
+  withSchema = true,
+  withHistory = false
 ) =>
-  createEditor({
-    plugins: [
-      ...(withSchema ? [Quotes] : []),
-      transfer(),
-      // Plain editing reads review marks as ordinary properties, so a
-      // document holding suggestions loads, and nothing records.
-      intent === 'plain'
-        ? definePlugin('recording-laws-marks', {
-            schema: authoredMarksSchema,
-          })
-        : authoredTreeProof({
-            authorId: author,
-            createChangeId: () => changeId,
-            intent,
-            now: () => 1,
-          }),
-    ],
-    initialValue: initialValue as never,
-  });
+  throwingRefusals(
+    createEditor({
+      plugins: [
+        ...(withSchema ? [Quotes] : []),
+        ...(withHistory ? [history()] : []),
+        transfer(),
+        // Plain editing reads review marks as ordinary properties, so a
+        // document holding suggestions loads, and nothing records.
+        intent === 'plain'
+          ? definePlugin('recording-laws-marks', {
+              schema: authoredMarksSchema,
+            })
+          : createAuthoredPlugin({
+              authorId: author,
+              createChangeId:
+                typeof changeId === 'string' ? () => changeId : changeId,
+              intent,
+              now: () => 1,
+            }),
+      ],
+      initialValue: initialValue as never,
+    })
+  );
 
 const texts = (children: readonly Node[]) =>
   [...NodeApi.texts({ children } as never)] as Array<[Node, number[]]>;
 const locate = (editor: Editor, letter: string) => {
-  for (const [node, path] of texts(editor.read.children())) {
+  for (const [node, path] of texts(expandedChildren(editor))) {
     const offset = (node.text ?? '').indexOf(letter);
 
     if (offset !== -1) return { offset, path };
@@ -116,6 +150,7 @@ const run = (editor: Editor, command: Command, typed: string): boolean => {
 
   switch (command.kind) {
     case 'type':
+    case 'nest':
     case 'break':
     case 'paste': {
       if (!at) return false;
@@ -124,7 +159,9 @@ const run = (editor: Editor, command: Command, typed: string): boolean => {
       editor.update((tx) => {
         tx.selection.set({ anchor: caret, focus: caret });
         if (command.kind === 'type') tx.text.insert(typed);
-        else if (command.kind === 'break') tx.break.insert();
+        else if (command.kind === 'nest') {
+          tx.text.insert(typed + typed.toLowerCase());
+        } else if (command.kind === 'break') tx.break.insert();
         else {
           tx.slice.replace(
             ContentSlice.fromJSON({
@@ -197,7 +234,8 @@ const run = (editor: Editor, command: Command, typed: string): boolean => {
       // at the root, so only quotes are unwrapped.
       if (
         command.kind === 'unwrap' &&
-        (editor.read.children() as readonly Node[])[block[0]]?.type !== 'quote'
+        (expandedChildren(editor) as readonly Node[])[block[0]]?.type !==
+          'quote'
       ) {
         return false;
       }
@@ -254,7 +292,7 @@ const run = (editor: Editor, command: Command, typed: string): boolean => {
       return true;
     }
     case 'replaceChildren': {
-      const children = editor.read.children() as readonly Node[];
+      const children = expandedChildren(editor) as readonly Node[];
       const shift = command.shift % children.length;
 
       if (shift === 0) return false;
@@ -273,10 +311,6 @@ const run = (editor: Editor, command: Command, typed: string): boolean => {
     }
   }
 };
-
-const isRefusal = (error: unknown) =>
-  error instanceof EditorSchemaValidationError ||
-  error instanceof AuthoredUnrepresentableError;
 
 /**
  * Apply `edit`, or return null when its command does not apply, the schema
@@ -311,7 +345,7 @@ const apply = (
     throw error;
   }
 
-  return editor.read.children() as readonly Node[];
+  return expandedChildren(editor) as readonly Node[];
 };
 
 const letterArbitrary = (pool: string) => fc.constantFrom(...pool.split(''));
@@ -379,17 +413,47 @@ const documentArbitrary = fc
           }
     );
   });
-const historyArbitrary = fc.array(
+const editArbitrary = fc.record({
+  author: fc.constantFrom('alice' as const, 'bob' as const),
+  command: commandArbitrary(LETTERS.slice(0, 8)),
+  intent: fc.constantFrom('edit' as const, 'propose' as const),
+});
+// Proposals by four authors, each typing a two-letter word, its letter and
+// its lowercase twin, into or beside a word an earlier one typed, so
+// insertions nest and meet at their edges, nested or not.
+const nestingArbitrary = fc.array(
   fc.record({
-    author: fc.constantFrom('alice' as const, 'bob' as const),
-    command: commandArbitrary(LETTERS.slice(0, 8)),
-    intent: fc.constantFrom('edit' as const, 'propose' as const),
+    author: fc.constantFrom(
+      'alice' as const,
+      'bob' as const,
+      'dan' as const,
+      'erin' as const
+    ),
+    command: fc.record({
+      at: letterArbitrary('abcdMNOPmnop'),
+      kind: fc.constant('nest' as const),
+      side: fc.constantFrom(0, 1),
+    }),
+    intent: fc.constant('propose' as const),
   }),
-  { maxLength: 3, minLength: 0 }
+  { maxLength: 4, minLength: 2 }
+);
+const withNesting = (edits: fc.Arbitrary<Edit[]>) =>
+  fc.oneof(
+    { arbitrary: edits, weight: 2 },
+    {
+      arbitrary: fc
+        .tuple(nestingArbitrary, edits)
+        .map(([nesting, rest]) => [...nesting, ...rest.slice(0, 1)]),
+      weight: 1,
+    }
+  );
+const historyArbitrary = withNesting(
+  fc.array(editArbitrary, { maxLength: 3, minLength: 0 })
 );
 
 const projection = (value: readonly Node[], read: 'accepted' | 'proposed') =>
-  editorFor(value, 'carol', 'edit', 'carol:1').api.authoredTree.project(read)
+  authoredTestApi(editorFor(value, 'carol', 'edit', 'carol:1')).project(read)
     .value.children as Node[];
 const letterCounts = (value: readonly Node[]) => {
   const counts = new Map<string, number>();
@@ -401,156 +465,6 @@ const letterCounts = (value: readonly Node[]) => {
   }
 
   return counts;
-};
-const jsonEqual = (left: unknown, right: unknown) =>
-  JSON.stringify(left) === JSON.stringify(right);
-// A text block holds texts and inline links.
-const isInlineContent = (node: Node) =>
-  typeof node.text === 'string' || node.type === 'link';
-/**
- * Editing runs on the review tree, where an element that a pending change of
- * a `removing` kind takes away still stands. Editing's completion fills that
- * element, and the fill would keep it alive or lift into its parent, so this
- * strikes the fill by that change. The recorder's own fills carry insert
- * marks, so this leaves them alone.
- */
-const withEditingFillsStruck = (
-  nodes: readonly Node[],
-  removing: readonly AuthoredMarkKind[] = ['delete']
-): Node[] =>
-  nodes.map((node) => {
-    if (!node.children) return node;
-
-    const deletes = readAuthoredMarks(node).flatMap((mark) =>
-      removing.includes(mark.kind) ? [{ ...mark, kind: 'delete' as const }] : []
-    );
-    const isFill = (child: Node) =>
-      !!child.children &&
-      readAuthoredMarks(child).length === 0 &&
-      child.children.every(
-        (text) => text.text === '' && readAuthoredMarks(text).length === 0
-      );
-    const children = withEditingFillsStruck(node.children, removing).map(
-      (child) =>
-        deletes.length > 0 && isFill(child)
-          ? {
-              ...child,
-              authored: deletes,
-              children: (child.children ?? []).map((text) => ({
-                ...text,
-                authored: deletes,
-              })),
-            }
-          : child
-    );
-
-    return { ...node, children };
-  });
-const hasStruckTextBlock = (nodes: readonly Node[]): boolean =>
-  nodes.some(
-    (node) =>
-      typeof node.text !== 'string' &&
-      ((node.children ?? []).every(isInlineContent)
-        ? readAuthoredMarks(node).some((mark) => mark.kind === 'delete')
-        : hasStruckTextBlock(node.children ?? []))
-  );
-const withMergedTexts = (nodes: readonly Node[]) => {
-  const out: Node[] = [];
-
-  for (const node of nodes) {
-    const previous = out.at(-1);
-    const { text: _text, ...props } = node;
-    const { text: _previousText, ...previousProps } = previous ?? {};
-
-    if (
-      typeof node.text === 'string' &&
-      typeof previous?.text === 'string' &&
-      jsonEqual(props, previousProps)
-    ) {
-      out[out.length - 1] = { ...previous, text: previous.text + node.text };
-    } else {
-      out.push(node);
-    }
-  }
-
-  return out;
-};
-/**
- * The first letter of each text block that follows a struck text block in
- * `before`: the only blocks whose boundary the named join limit moves.
- */
-const afterStruckTextBlocks = (before: readonly Node[]) => {
-  const blocks: Node[] = [];
-  const collect = (nodes: readonly Node[]) => {
-    for (const node of nodes) {
-      if (typeof node.text === 'string') continue;
-      if ((node.children ?? []).every(isInlineContent)) blocks.push(node);
-      else collect(node.children ?? []);
-    }
-  };
-
-  collect(before);
-
-  return new Set(
-    blocks.flatMap((block, index) =>
-      index > 0 &&
-      readAuthoredMarks(blocks[index - 1]).some(
-        (mark) => mark.kind === 'delete'
-      )
-        ? [
-            [...texts([block])].map(([leaf]) => leaf.text ?? '').join('')[0] ??
-              '',
-          ]
-        : []
-    )
-  );
-};
-const withJoinedTextBlocks = (
-  nodes: readonly Node[],
-  joins: ReadonlySet<string>
-): Node[] => {
-  const out: Node[] = [];
-
-  for (const node of nodes) {
-    if (typeof node.text === 'string') {
-      out.push(node);
-      continue;
-    }
-
-    const previous = out.at(-1);
-    const textBlock = (node.children ?? []).every(isInlineContent);
-    const first = [...texts([node])]
-      .map(([leaf]) => leaf.text ?? '')
-      .join('')[0];
-
-    if (
-      textBlock &&
-      first !== undefined &&
-      joins.has(first) &&
-      previous !== undefined &&
-      previous.type === node.type &&
-      (previous.children ?? []).every(isInlineContent)
-    ) {
-      out[out.length - 1] = {
-        ...previous,
-        children: withMergedTexts([
-          ...(previous.children ?? []),
-          ...(node.children ?? []),
-        ]),
-      };
-      continue;
-    }
-    out.push(
-      textBlock
-        ? node
-        : {
-            ...node,
-            children: withJoinedTextBlocks(node.children ?? [], joins),
-          }
-    );
-  }
-
-  return out;
 };
 const changesIn = (value: readonly Node[]) => {
   const changes = new Set<string>();
@@ -589,6 +503,78 @@ const replay = (initial: readonly Node[], history: readonly Edit[]) => {
 };
 
 const TYPED = 'Z';
+
+/**
+ * A text write run in a plain editor on the document accepting everything
+ * gives, when each letter it targets appears once in `before`, unstruck, so
+ * the letter names the same position in both documents, and `before` holds no
+ * pending join; null otherwise.
+ */
+const onProposed = (before: readonly Node[], command: Command) => {
+  if (
+    command.kind !== 'deleteRange' &&
+    command.kind !== 'typeOver' &&
+    command.kind !== 'type'
+  ) {
+    return null;
+  }
+
+  const letters = 'at' in command ? [command.at] : [command.from, command.to];
+  const holders = (letter: string) =>
+    texts(before).filter(([node]) => node.text?.includes(letter));
+
+  if (
+    letters.some((letter) => {
+      const found = holders(letter);
+
+      return (
+        found.length !== 1 ||
+        found[0][0].text?.indexOf(letter) !==
+          found[0][0].text?.lastIndexOf(letter) ||
+        readAuthoredMarks(found[0][0]).some((mark) => mark.kind === 'delete')
+      );
+    })
+  ) {
+    return null;
+  }
+
+  const joins = (nodes: readonly Node[]): boolean =>
+    nodes.some(
+      (node) =>
+        readAuthoredMarks(node).some((mark) => mark.kind === 'join') ||
+        joins(node.children ?? [])
+    );
+
+  // A limit: a pending join keeps two blocks where the proposed document
+  // holds one, so a range over both removes them where a plain editor keeps
+  // an empty block.
+  if (joins(before)) return null;
+
+  // A limit: a physical write acts on stored positions as given, so a range
+  // across a container's edge keeps the emptied container a plain editor
+  // removes. Commands, which decide on the accepted document, cross it.
+  const parents = letters.map((letter) =>
+    PathApi.parent(PathApi.parent(holders(letter)[0][1])).join(',')
+  );
+
+  if (new Set(parents).size > 1) return null;
+
+  const editor = editorFor(
+    projection(before, 'proposed'),
+    'bob',
+    'plain',
+    'bob:plain'
+  );
+
+  try {
+    if (!run(editor, command, TYPED)) return null;
+  } catch (error) {
+    if (isRefusal(error)) return null;
+    throw error;
+  }
+
+  return expandedChildren(editor) as readonly Node[];
+};
 
 const deleteAcrossOwnPasteBetweenQuotes = [
   [
@@ -631,23 +617,61 @@ const deleteBackwardOverOwnPaste = [
   { from: 'd', kind: 'deleteRange', to: 'a' },
 ] as never;
 
+type RecordedLaw = (
+  recorded: Readonly<{
+    before: readonly Node[];
+    command: Command;
+    edited: readonly Node[];
+    history: ReadonlyArray<Readonly<{ command: Command }>>;
+    suggested: readonly Node[];
+  }>
+) => void;
+type Prepare = (value: readonly Node[]) => readonly Node[];
+
+/**
+ * Runs `command` as Bob in both intents on the document `history` gives
+ * `initial`, and checks `law` on the results. False when the command does
+ * not apply in both.
+ */
+const recordedCase =
+  (law: RecordedLaw, prepare: Prepare = (value) => value) =>
+  (
+    initial: readonly Node[],
+    history: readonly Edit[],
+    command: Command
+  ): boolean => {
+    const before = prepare(replay(initial, history));
+    const suggested = apply(
+      before,
+      { author: 'bob', command, intent: 'propose' },
+      'bob:last',
+      TYPED
+    );
+    const edited = apply(
+      before,
+      { author: 'bob', command, intent: 'edit' },
+      'bob:last',
+      TYPED
+    );
+
+    if (!suggested || !edited) return false;
+    law({ before, command, edited, history, suggested });
+
+    return true;
+  };
+
 /**
  * Runs one generated command as Bob in both intents on a document a generated
  * history of Alice's and Bob's edits produced, and checks `law` on the
  * results when the command applies in both.
  */
 const recordedCommands = (
-  law: (
-    recorded: Readonly<{
-      before: readonly Node[];
-      edited: readonly Node[];
-      suggested: readonly Node[];
-    }>
-  ) => void,
+  law: RecordedLaw,
   numRuns: number,
-  prepare: (value: readonly Node[]) => readonly Node[] = (value) => value
+  prepare?: Prepare
 ) => {
   let compared = 0;
+  const run = recordedCase(law, prepare);
 
   fc.assert(
     fc.property(
@@ -655,23 +679,7 @@ const recordedCommands = (
       historyArbitrary,
       commandArbitrary(LETTERS.slice(0, 8)),
       (initial, history, command) => {
-        const before = prepare(replay(initial, history));
-        const suggested = apply(
-          before,
-          { author: 'bob', command, intent: 'propose' },
-          'bob:last',
-          TYPED
-        );
-        const edited = apply(
-          before,
-          { author: 'bob', command, intent: 'edit' },
-          'bob:last',
-          TYPED
-        );
-
-        if (!suggested || !edited) return;
-        compared += 1;
-        law({ before, edited, suggested });
+        if (run(initial, history, command)) compared += 1;
       }
     ),
     {
@@ -898,117 +906,840 @@ const recordedCommands = (
   return compared;
 };
 
-describe('authored review tree recording laws', () => {
-  it('gives typed text no deletion and every letter one owner, and rejecting everything undoes a suggestion', () => {
-    const compared = recordedCommands(({ before, edited, suggested }) => {
-      const childless = (nodes: readonly Node[]): boolean =>
-        nodes.some(
-          (node) =>
-            typeof node.text !== 'string' &&
-            ((node.children ?? []).length === 0 ||
-              childless(node.children ?? []))
-        );
+type Caret = Readonly<{ letter: string; side: 0 | 1 }>;
+type CommandStep =
+  | Readonly<{
+      at: Caret;
+      direction: 'backward' | 'forward';
+      kind: 'delete';
+      unit: 'character' | 'line' | 'word';
+    }>
+  | Readonly<{ at: Caret; kind: 'break' | 'type' }>
+  | Readonly<{
+      direction: 'backward' | 'forward';
+      from: Caret;
+      kind: 'fragment';
+      to: Caret;
+    }>;
+type TextBlock = Readonly<{ path: number[]; text: string }>;
 
-      assert.ok(
-        !childless(suggested),
-        `an element holds no child: ${JSON.stringify(suggested)}`
+const caretArbitrary = fc.record({
+  letter: letterArbitrary(LETTERS.slice(0, 8)),
+  side: fc.constantFrom(0 as const, 1 as const),
+});
+const directionArbitrary = fc.constantFrom(
+  'backward' as const,
+  'forward' as const
+);
+const stepArbitrary: fc.Arbitrary<CommandStep> = fc.oneof(
+  fc.record({
+    at: caretArbitrary,
+    direction: directionArbitrary,
+    kind: fc.constant('delete' as const),
+    unit: fc.constantFrom(
+      'character' as const,
+      'line' as const,
+      'word' as const
+    ),
+  }),
+  fc.record({
+    at: caretArbitrary,
+    kind: fc.constantFrom('break' as const, 'type' as const),
+  }),
+  fc.record({
+    direction: directionArbitrary,
+    from: caretArbitrary,
+    kind: fc.constant('fragment' as const),
+    to: caretArbitrary,
+  })
+);
+
+const runStep = (
+  editor: Editor,
+  selection: Readonly<{ anchor: Point; focus: Point }>,
+  step: CommandStep
+) =>
+  editor.update((tx) => {
+    tx.selection.set(selection);
+    if (step.kind === 'delete') {
+      tx.command(editorCommands.delete, {
+        direction: step.direction,
+        unit: step.unit,
+      });
+    } else if (step.kind === 'fragment') {
+      tx.command(editorCommands.deleteFragment, { direction: step.direction });
+    } else if (step.kind === 'break') {
+      tx.command(editorCommands.insertBreak);
+    } else {
+      tx.command(editorCommands.insertText, { text: TYPED });
+    }
+  });
+
+const textBlocks = (
+  nodes: readonly Node[],
+  path: readonly number[] = []
+): TextBlock[] =>
+  nodes.flatMap((node, index) => {
+    if (!node.children) return [];
+
+    const at = [...path, index];
+
+    return node.children.every((child) => typeof child.text === 'string')
+      ? [{ path: at, text: node.children.map((child) => child.text).join('') }]
+      : textBlocks(node.children, at);
+  });
+
+const MARKER = '¶';
+
+/** `value` with a live, unmarked marker letter at `point`. */
+const withMarker = (value: readonly Node[], point: Point): Node[] => {
+  const clone = structuredClone(value) as Node[];
+  const parent = point.path
+    .slice(0, -1)
+    .reduce<Node>((node, index) => getDefined(node.children)[index], {
+      children: clone,
+    });
+  const children = getDefined(parent.children) as Node[];
+  const leafIndex = getDefined(point.path.at(-1));
+  const leaf = children[leafIndex];
+  const text = leaf.text ?? '';
+
+  children.splice(
+    leafIndex,
+    1,
+    ...[
+      { ...leaf, text: text.slice(0, point.offset) },
+      { text: MARKER },
+      { ...leaf, text: text.slice(point.offset) },
+    ].filter((node) => node.text !== '')
+  );
+
+  return clone;
+};
+
+const isStruck = (node: Node) =>
+  readAuthoredMarks(node).some((mark) => mark.kind === 'delete');
+const survives = (node: Node): boolean =>
+  !isStruck(node) || (node.children ?? []).some(survives);
+
+/**
+ * Where accepting everything puts a stored point: a text block, counted in
+ * document order, and an offset in its text, read by projecting a live marker
+ * put there. A caret in a line that does not survive lands as a text write
+ * does, at the nearest surviving line beside it in its parent, the one before
+ * first. A range's start in such a line moves to the next live line, and its
+ * end, like a caret with no such neighbor, to the end of the live line before.
+ */
+const acceptedSpot = (
+  before: readonly Node[],
+  point: Point,
+  lean: 'ahead' | 'back' | 'caret'
+): Readonly<{ block: number; offset: number }> => {
+  const nodeAt = (path: readonly number[]) =>
+    path.reduce<Node | undefined>((node, index) => node?.children?.[index], {
+      children: before,
+    });
+  const edgeOf = (path: number[], backward: boolean): Point | null => {
+    const node = getDefined(nodeAt(path));
+
+    if (typeof node.text === 'string') {
+      return { offset: backward ? node.text.length : 0, path };
+    }
+    if (!survives(node)) return null;
+
+    const children = node.children ?? [];
+
+    for (
+      let index = backward ? children.length - 1 : 0;
+      index >= 0 && index < children.length;
+      index += backward ? -1 : 1
+    ) {
+      const found = edgeOf([...path, index], backward);
+
+      if (found) return found;
+    }
+
+    return null;
+  };
+  const gone = point.path
+    .slice(0, -1)
+    .map((_, depth) => point.path.slice(0, depth + 1))
+    .find((path) => !survives(getDefined(nodeAt(path))));
+  // The start of the line completion gives where the gone node stood.
+  const completed = (path: readonly number[]) => {
+    const replace = (nodes: readonly Node[], at: readonly number[]): Node[] =>
+      nodes.map((node, index) =>
+        index !== at[0]
+          ? node
+          : at.length === 1
+            ? { children: [{ text: MARKER }], type: 'paragraph' }
+            : { ...node, children: replace(node.children ?? [], at.slice(1)) }
       );
-      for (const value of [suggested, edited]) {
-        for (const [node] of texts(value)) {
-          if (!node.text?.includes(TYPED)) continue;
-          assert.ok(
-            !readAuthoredMarks(node).some((mark) => mark.kind === 'delete'),
-            `typed text carries a deletion: ${JSON.stringify(value)}`
-          );
-        }
-      }
-      for (const read of ['accepted', 'proposed'] as const) {
-        for (const [letter, count] of letterCounts(
-          projection(suggested, read)
-        )) {
-          assert.ok(count <= 1, `${letter} doubled in ${read}`);
-        }
-      }
-      const kept = letterCounts(suggested);
+    const blocks = textBlocks(projection(replace(before, path), 'proposed'));
 
-      for (const [node] of texts(before)) {
-        if (
-          !readAuthoredMarks(node).some(
-            (mark) => mark.kind === 'insert' && mark.author !== 'bob'
-          )
+    return {
+      block: blocks.findIndex(({ text }) => text.includes(MARKER)),
+      offset: 0,
+    };
+  };
+
+  if (gone && lean === 'caret') {
+    const parent = gone.slice(0, -1);
+    const at = getDefined(gone.at(-1));
+
+    for (const step of [-1, 1]) {
+      for (let index = at + step; nodeAt([...parent, index]); index += step) {
+        const landed = edgeOf([...parent, index], step < 0);
+
+        if (landed) return acceptedSpot(before, landed, lean);
+      }
+    }
+
+    // A container whose lines are all gone keeps the line completion gives
+    // it, and the caret stays in that line.
+    if (gone.length > 1) return completed(gone);
+  }
+  if (gone) {
+    const lines = textBlocks(before).filter(({ path }) =>
+      survives(getDefined(nodeAt(path)))
+    );
+    const previous = lines.findLast(
+      ({ path }) => PathApi.compare(path, point.path) < 0
+    );
+    const next = lines.find(
+      ({ path }) => PathApi.compare(path, point.path) > 0
+    );
+    const landing =
+      lean === 'ahead'
+        ? ((next && edgeOf(next.path, false)) ??
+          (previous && edgeOf(previous.path, true)))
+        : ((previous && edgeOf(previous.path, true)) ??
+          (next && edgeOf(next.path, false)));
+
+    if (landing) return acceptedSpot(before, landing, lean);
+
+    // With no line left, every place is a line completion gives: the nearest
+    // top-level container's that stays, else the root's.
+    if (gone.length === 1) {
+      for (const step of [-1, 1]) {
+        for (
+          let index = gone[0] + step;
+          index >= 0 && index < before.length;
+          index += step
         ) {
-          continue;
+          if (survives(before[index])) return completed([index, 0]);
         }
+      }
+    }
+
+    return completed(gone);
+  }
+
+  const blocks = textBlocks(projection(withMarker(before, point), 'proposed'));
+  const block = blocks.findIndex(({ text }) => text.includes(MARKER));
+
+  return { block, offset: blocks[block].text.indexOf(MARKER) };
+};
+
+const isStruckLeaf = (node: Node) =>
+  typeof node.text === 'string' &&
+  readAuthoredMarks(node).some((mark) => mark.kind === 'delete');
+const mostJoins = (nodes: readonly Node[]): number =>
+  Math.max(
+    0,
+    ...nodes.map((node) =>
+      Math.max(
+        readAuthoredMarks(node).filter((mark) => mark.kind === 'join').length,
+        mostJoins(node.children ?? [])
+      )
+    )
+  );
+const decided = (
+  value: readonly Node[],
+  action: 'accept' | 'reject',
+  changes = changesIn(value)
+) => {
+  const editor = editorFor(value, 'carol', 'edit', 'carol:1');
+  const result =
+    changes.length > 0
+      ? authoredTestApi(editor).decide({ action, changes })
+      : { status: 'unchanged' as const };
+
+  return {
+    status: result.status,
+    value: reviewedValue(editor).children as readonly Node[],
+  };
+};
+
+/**
+ * Accepting everything after Bob's command, in either intent, gives what a
+ * plain editor gives on the accepted document, and accepting or rejecting
+ * everything applies. `counts.plain` counts the plain-editor comparisons.
+ */
+const acceptsLikePlainEditor =
+  (counts: { plain: number }): RecordedLaw =>
+  ({ before, command, edited, history, suggested }) => {
+    // A limit, as in the command law: a write over another author's
+    // pending move is not settled.
+    const plain = history.some(({ command: earlier }) =>
+      ['moveNode', 'transferNode', 'transferText'].includes(earlier.kind)
+    )
+      ? null
+      : onProposed(before, command);
+
+    if (plain) {
+      counts.plain += 1;
+      assert.deepEqual(projection(suggested, 'proposed'), plain);
+      assert.deepEqual(projection(edited, 'proposed'), plain);
+    }
+    for (const action of ['accept', 'reject'] as const) {
+      const editor = editorFor(suggested, 'carol', 'edit', 'carol:1');
+      const result = authoredTestApi(editor).decide({
+        action,
+        changes: changesIn(suggested),
+      });
+
+      assert.equal(
+        result.status,
+        changesIn(suggested).length > 0 ? 'applied' : 'unchanged',
+        `${action} everything did not apply: ${JSON.stringify(suggested)}`
+      );
+    }
+  };
+
+const commandCounts = () => ({
+  blocked: 0,
+  compared: 0,
+  joined: 0,
+  movedHidden: 0,
+  struckEnd: 0,
+});
+
+/**
+ * Runs `step` as Bob, in `intent`, on the document `history` gives
+ * `initial` and on a plain editor holding its accepted form: accepting
+ * everything gives what the plain editor gives, before and after a letter
+ * typed next.
+ */
+const commandCase =
+  (counts: ReturnType<typeof commandCounts>) =>
+  (
+    initial: readonly Node[],
+    history: readonly Edit[],
+    step: CommandStep,
+    intent: 'edit' | 'propose'
+  ): void => {
+    const before = replay(initial, history);
+    const stored = (caret: Caret) => {
+      const found = locate(
+        editorFor(before, 'bob', 'plain', 'bob:plain'),
+        caret.letter
+      );
+
+      return found && { ...found, offset: found.offset + caret.side };
+    };
+    const ends =
+      step.kind === 'fragment'
+        ? [stored(step.from), stored(step.to)]
+        : [stored(step.at), stored(step.at)];
+    const [anchor, focus] = ends;
+
+    if (!anchor || !focus) return;
+
+    const accepted = textBlocks(projection(before, 'proposed'));
+    const plainPoint = ({
+      block,
+      offset,
+    }: ReturnType<typeof acceptedSpot>) => ({
+      offset,
+      path: [...accepted[block].path, 0],
+    });
+    const caretAt = (point: Point) =>
+      plainPoint(acceptedSpot(before, point, 'caret'));
+    const backward = PointApi.compare(anchor, focus) > 0;
+    const [start, end] = backward ? [focus, anchor] : [anchor, focus];
+    const from = acceptedSpot(before, start, 'ahead');
+    const to = acceptedSpot(before, end, 'back');
+    const crossed =
+      from.block > to.block ||
+      (from.block === to.block && from.offset >= to.offset);
+    const plainSelection = crossed
+      ? { anchor: caretAt(start), focus: caretAt(start) }
+      : backward
+        ? { anchor: plainPoint(to), focus: plainPoint(from) }
+        : { anchor: plainPoint(from), focus: plainPoint(to) };
+    const plain = editorFor(
+      projection(before, 'proposed'),
+      'bob',
+      'plain',
+      'bob:plain'
+    );
+
+    try {
+      runStep(plain, plainSelection, step);
+    } catch (error) {
+      if (isRefusal(error)) return;
+      throw error;
+    }
+
+    const review = editorFor(before, 'bob', intent, 'bob:last');
+    const context = JSON.stringify({ before, intent, step });
+
+    runStep(review, { anchor, focus }, step);
+    const after = expandedChildren(review) as readonly Node[];
+
+    counts.compared += 1;
+    if (holdsMark(before, 'join')) counts.joined += 1;
+    if (
+      [anchor, focus].some((point) =>
+        isStruckLeaf(
+          getDefined(
+            editorFor(before, 'bob', 'plain', 'bob:plain').read.nodes.get(
+              point.path
+            )
+          )[0] as Node
+        )
+      )
+    ) {
+      counts.struckEnd += 1;
+    }
+    const sameAsPlain = (label: string, value: readonly Node[]) => {
+      const acceptedValue = projection(value, 'proposed');
+      const expected = expandedChildren(plain);
+
+      assert.deepEqual(
+        acceptedValue,
+        expected,
+        `${label}: ${context} gives ${JSON.stringify(acceptedValue)}, not ${JSON.stringify(expected)}`
+      );
+    };
+
+    sameAsPlain('accepting everything differs from the plain editor', after);
+    assert.ok(mostJoins(after) <= 1, `a line carries two joins: ${context}`);
+    if (intent === 'propose') {
+      // Bob's command can grow or withdraw his own earlier suggestions,
+      // so rejecting all of his changes is what gives back the start.
+      const bob = (value: readonly Node[]) =>
+        changesIn(value).filter((change) => change.startsWith('bob:'));
+      const rejected = decided(after, 'reject', bob(after));
+      const original = decided(before, 'reject', bob(before));
+
+      assert.deepEqual(
+        decided(after, 'reject').value,
+        decided(before, 'reject').value,
+        `rejecting everything differs: ${context}`
+      );
+      if (rejected.status === 'blocked' || original.status === 'blocked') {
+        counts.blocked += 1;
+      } else {
+        assert.deepEqual(
+          rejected.value,
+          original.value,
+          `rejecting Bob's changes does not give back the original: ${context}`
+        );
+      }
+    } else {
+      const left = letterCounts(after);
+
+      // Editing decides only Bob's own suggestions.
+      for (const [node] of texts(before).filter(
+        ([leaf]) =>
+          isStruckLeaf(leaf) &&
+          readAuthoredMarks(leaf).some(
+            (mark) => mark.kind === 'delete' && mark.author !== 'bob'
+          )
+      )) {
         for (const letter of node.text ?? '') {
           assert.ok(
-            kept.has(letter),
-            `${letter} of another author lost: ${JSON.stringify(suggested)}`
+            left.has(letter),
+            `Editing removed Alice's struck "${letter}": ${context}`
           );
         }
       }
-      assert.deepEqual(
-        projection(suggested, 'accepted'),
-        projection(before, 'accepted')
+    }
+
+    // A limit: a line Bob's command moves copies the hidden letters in
+    // it, and the caret after that move is not settled.
+    const movesHidden = (nodes: readonly Node[]): boolean =>
+      nodes.some(
+        (node) =>
+          (readAuthoredMarks(node).some(
+            (mark) => mark.kind === 'insert' && mark.change === 'bob:last'
+          ) &&
+            texts([node]).some(
+              ([leaf]) =>
+                isStruckLeaf(leaf) &&
+                readAuthoredMarks(leaf).some(
+                  (mark) => mark.kind === 'insert' && mark.change === 'bob:last'
+                )
+            )) ||
+          movesHidden(node.children ?? [])
       );
-    }, 250);
+
+    if (movesHidden(after)) {
+      counts.movedHidden += 1;
+      return;
+    }
+    for (const editor of [review, plain]) {
+      editor.update((tx) =>
+        tx.command(editorCommands.insertText, { text: 'Y' })
+      );
+    }
+    sameAsPlain(
+      'a letter typed next lands elsewhere',
+      expandedChildren(review)
+    );
+  };
+
+/**
+ * Typed text carries no deletion, no letter doubles, no letter of another
+ * author's insertion is lost, and rejecting everything after Bob's command
+ * gives what rejecting everything before it gives.
+ */
+const undoesSuggestion: RecordedLaw = ({ before, edited, suggested }) => {
+  const childless = (nodes: readonly Node[]): boolean =>
+    nodes.some(
+      (node) =>
+        typeof node.text !== 'string' &&
+        ((node.children ?? []).length === 0 || childless(node.children ?? []))
+    );
+
+  assert.ok(
+    !childless(suggested),
+    `an element holds no child: ${JSON.stringify(suggested)}`
+  );
+  for (const value of [suggested, edited]) {
+    for (const [node] of texts(value)) {
+      if (!node.text?.includes(TYPED)) continue;
+      assert.ok(
+        !readAuthoredMarks(node).some((mark) => mark.kind === 'delete'),
+        `typed text carries a deletion: ${JSON.stringify(value)}`
+      );
+    }
+  }
+  for (const read of ['accepted', 'proposed'] as const) {
+    for (const [letter, count] of letterCounts(projection(suggested, read))) {
+      assert.ok(count <= 1, `${letter} doubled in ${read}`);
+    }
+  }
+  const kept = letterCounts(suggested);
+
+  for (const [node] of texts(before)) {
+    if (
+      !readAuthoredMarks(node).some(
+        (mark) => mark.kind === 'insert' && mark.author !== 'bob'
+      )
+    ) {
+      continue;
+    }
+    for (const letter of node.text ?? '') {
+      assert.ok(
+        kept.has(letter),
+        `${letter} of another author lost: ${JSON.stringify(suggested)}`
+      );
+    }
+  }
+  assert.deepEqual(
+    projection(suggested, 'accepted'),
+    projection(before, 'accepted')
+  );
+};
+
+/**
+ * Undoing Bob’s commands and a decision on every change restores each
+ * document before them, and redoing restores each result.
+ */
+const undoRestores = (
+  initial: readonly Node[],
+  edits: readonly Edit[],
+  commands: readonly Command[],
+  intent: 'edit' | 'propose',
+  action: 'accept' | 'reject'
+): 'compared' | 'unchanged' => {
+  let minted = 0;
+  const editor = editorFor(
+    replay(initial, edits),
+    'bob',
+    intent,
+    () => `bob:${++minted}`,
+    true,
+    true
+  );
+  const states = [expandedChildren(editor)];
+
+  for (const [index, command] of commands.entries()) {
+    try {
+      if (!run(editor, command, 'XYZ'[index])) continue;
+    } catch (error) {
+      if (isRefusal(error)) break;
+      throw error;
+    }
+    if (!isDeepStrictEqual(expandedChildren(editor), states.at(-1))) {
+      states.push(expandedChildren(editor));
+    }
+  }
+  if (states.length < 2) return 'unchanged';
+
+  const label = `in ${intent} after ${JSON.stringify(commands)}`;
+  // History may merge adjacent commands into one step, and a command
+  // that leaves the document as it was may still take one, so each
+  // step lands on the same, an earlier, or a later recorded document.
+  const walk = (direction: 'redo' | 'undo') => {
+    const ahead = direction === 'undo' ? -1 : 1;
+    const last = direction === 'undo' ? 0 : states.length - 1;
+    const pending = () =>
+      direction === 'undo'
+        ? editor.read.history.hasUndo()
+        : editor.read.history.hasRedo();
+    let at = states.length - 1 - last;
+
+    while (pending()) {
+      editor.api.history[direction]();
+      while (
+        at >= 0 &&
+        at < states.length &&
+        !isDeepStrictEqual(states[at], expandedChildren(editor))
+      ) {
+        at += ahead;
+      }
+      assert.ok(
+        at >= 0 && at < states.length,
+        `${direction} ${label} gave ${JSON.stringify(expandedChildren(editor))}`
+      );
+    }
+    assert.equal(at, last, `${direction} ${label} stopped early`);
+  };
+
+  walk('undo');
+  walk('redo');
+
+  const last = expandedChildren(editor);
+  const decided = authoredTestApi(editor).decide({
+    action,
+    changes: changesIn(last),
+  });
+
+  if (decided.status !== 'applied') return 'compared';
+
+  const after = expandedChildren(editor);
+
+  editor.api.history.undo();
+  assert.deepEqual(expandedChildren(editor), last, `undo ${action} ${label}`);
+  editor.api.history.redo();
+  assert.deepEqual(expandedChildren(editor), after, `redo ${action} ${label}`);
+  return 'compared';
+};
+
+describe('authored review tree recording laws', () => {
+  it('gives typed text no deletion and every letter one owner, and rejecting everything undoes a suggestion', () => {
+    const compared = recordedCommands(undoesSuggestion, 250);
 
     assert.ok(compared > 150, `only ${compared} commands compared`);
   });
 
-  it('accepting everything gives what Editing gives, and accepting or rejecting everything applies', () => {
-    const compared = recordedCommands(
-      ({ before, edited, suggested }) => {
-        const proposed = projection(
-          withEditingFillsStruck(suggested),
-          'proposed'
-        );
-        const editing = projection(withEditingFillsStruck(edited), 'proposed');
-        // A fill in an element a pending unwrap dissolves looks like a block
-        // the command emptied there, so instead of striking it on both sides
-        // the law lets the suggestion lack it.
-        const unwrapFillsGone = projection(
-          withEditingFillsStruck(edited, ['delete', 'unwrap']),
-          'proposed'
-        );
+  it('keeps every recorded document through compaction and expansion', () => {
+    let stacked = 0;
+    const compared = recordedCommands(({ before, edited, suggested }) => {
+      for (const children of [before, edited, suggested]) {
+        const value = { children };
+        const compacted = compactClaims(value);
 
-        // Two named limits: Editing, run on the review tree, fills an element
-        // a pending deletion strikes or a pending unwrap dissolves, which the
-        // Open work of docs/plans/2026-10-11-authored-fill.md keeps until
-        // commands run on the proposed document; and, pinned by a decisions
-        // test, a join whose block Editing merges into struck text lands in
-        // the nearest kept text block of the same parent when suggested.
-        if (
-          !jsonEqual(proposed, editing) &&
-          !jsonEqual(proposed, unwrapFillsGone)
-        ) {
-          assert.ok(
-            hasStruckTextBlock(before),
-            'only a join into struck text moves a boundary'
-          );
-          assert.deepEqual(
-            withJoinedTextBlocks(proposed, afterStruckTextBlocks(before)),
-            withJoinedTextBlocks(editing, afterStruckTextBlocks(before))
-          );
-        }
-        for (const action of ['accept', 'reject'] as const) {
-          const editor = editorFor(suggested, 'carol', 'edit', 'carol:1');
-          const result = editor.api.authoredTree.decide({
-            action,
-            changes: changesIn(suggested),
-          });
+        if (compacted !== value) stacked += 1;
+        assert.deepEqual(expandContexts(compacted).children, children);
+      }
+    }, 600);
 
-          assert.equal(
-            result.status,
-            changesIn(suggested).length > 0 ? 'applied' : 'unchanged',
-            `${action} everything did not apply: ${JSON.stringify(suggested)}`
-          );
+    assert.ok(compared > 360, `only ${compared} commands compared`);
+    assert.ok(stacked >= 10, `only ${stacked} documents held a stack`);
+  });
+
+  it('accepting everything after a command in either intent gives what a plain editor gives on the accepted document, and accepting or rejecting everything applies', () => {
+    const counts = { plain: 0 };
+    const compared = recordedCommands(acceptsLikePlainEditor(counts), 250);
+
+    console.info(JSON.stringify({ compared, plainCompared: counts.plain }));
+    assert.ok(compared > 150, `only ${compared} commands compared`);
+    assert.ok(
+      counts.plain > 4,
+      `only ${counts.plain} commands compared with a plain editor`
+    );
+  });
+
+  it('undoing commands and a decision restores each document before them, review marks included, and redoing them restores each result', () => {
+    let compared = 0;
+
+    fc.assert(
+      fc.property(
+        documentArbitrary,
+        historyArbitrary,
+        fc.array(commandArbitrary(LETTERS.slice(0, 8)), {
+          maxLength: 3,
+          minLength: 1,
+        }),
+        fc.constantFrom('edit' as const, 'propose' as const),
+        fc.constantFrom('accept' as const, 'reject' as const),
+        (initial, history, commands, intent, action) => {
+          if (
+            undoRestores(initial, history, commands, intent, action) ===
+            'compared'
+          ) {
+            compared += 1;
+          }
         }
-      },
-      250,
-      withEditingFillsStruck
+      ),
+      {
+        examples: [
+          // A suggested move selects the moved copy, not the struck original.
+          [
+            [
+              { type: 'paragraph', children: [{ text: 'ab' }] },
+              {
+                type: 'quote',
+                children: [{ type: 'paragraph', children: [{ text: 'cd' }] }],
+              },
+            ],
+            [],
+            [{ at: 'a', edge: 'after', kind: 'transferNode', to: 'c' }],
+            'propose',
+            'reject',
+          ] as never,
+          [
+            [
+              { type: 'paragraph', children: [{ text: 'ab' }] },
+              {
+                type: 'quote',
+                children: [
+                  { type: 'paragraph', children: [{ text: 'cd' }] },
+                  { type: 'paragraph', children: [{ text: 'ef' }] },
+                ],
+              },
+            ],
+            [],
+            [
+              { kind: 'replaceChildren', shift: 1 },
+              { at: 'f', direction: 'backward', kind: 'delete' },
+              { from: 'a', kind: 'typeOver', to: 'a' },
+            ],
+            'propose',
+            'accept',
+          ] as never,
+          [
+            [
+              {
+                type: 'quote',
+                children: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+              },
+              { type: 'paragraph', children: [{ text: 'cd' }] },
+            ],
+            [
+              {
+                author: 'alice',
+                command: { at: 'c', edge: 'after', kind: 'moveNode', to: 'a' },
+                intent: 'propose',
+              },
+            ],
+            [
+              { at: 'c', direction: 'forward', kind: 'delete' },
+              { from: 'a', kind: 'typeOver', to: 'a' },
+            ],
+            'edit',
+            'reject',
+          ] as never,
+          // The second drag moves a struck letter onto itself.
+          [
+            [
+              { type: 'paragraph', children: [{ text: 'ab' }] },
+              { type: 'paragraph', children: [{ text: 'cd' }] },
+            ],
+            [
+              {
+                author: 'alice',
+                command: { kind: 'replaceChildren', shift: 1 },
+                intent: 'propose',
+              },
+            ],
+            [
+              { at: 'd', kind: 'transferText', to: 'a' },
+              { at: 'd', kind: 'transferText', to: 'a' },
+            ],
+            'edit',
+            'accept',
+          ] as never,
+        ],
+        numRuns: 250,
+      }
     );
 
-    assert.ok(compared > 150, `only ${compared} commands compared`);
+    assert.ok(compared > 150, `only ${compared} command runs compared`);
+  });
+
+  it('a command gives, once everything is accepted, what a plain editor gives on the accepted document, and a letter typed next lands where it does', () => {
+    const counts = commandCounts();
+
+    fc.assert(
+      fc.property(
+        documentArbitrary,
+        // Limits: a pending unwrap comes only from a write outside commands,
+        // as Plate's keys record lifting a line out of a quote as a move, and
+        // commands that cross its wrapper's edge are not settled. Commands
+        // over another author's pending move are not settled either.
+        historyArbitrary.map((history) =>
+          history.filter(
+            ({ command, intent }) =>
+              (command.kind !== 'unwrap' || intent !== 'propose') &&
+              command.kind !== 'moveNode' &&
+              command.kind !== 'transferNode' &&
+              command.kind !== 'transferText'
+          )
+        ),
+        stepArbitrary,
+        fc.constantFrom('edit' as const, 'propose' as const),
+        commandCase(counts)
+      ),
+      {
+        examples: [
+          // Rejecting Bob's break waits on Alice's pending text, so every run
+          // meets a rejection that waits on another change.
+          [
+            [
+              { type: 'paragraph', children: [{ text: 'ab' }] },
+              { type: 'paragraph', children: [{ text: 'cd' }] },
+              {
+                type: 'quote',
+                children: [{ type: 'paragraph', children: [{ text: 'ef' }] }],
+              },
+            ],
+            [
+              {
+                author: 'alice',
+                command: { at: 'd', kind: 'type', side: 1 },
+                intent: 'propose',
+              },
+              {
+                author: 'bob',
+                command: { at: 'b', kind: 'wrap' },
+                intent: 'edit',
+              },
+            ],
+            { at: { letter: 'd', side: 1 }, kind: 'break' },
+            'propose',
+          ] as never,
+        ],
+        numRuns: 250,
+      }
+    );
+
+    console.info(JSON.stringify(counts));
+    assert.ok(
+      counts.compared > 150,
+      `only ${counts.compared} commands compared`
+    );
+    assert.ok(counts.joined >= 3, `only ${counts.joined} with a pending join`);
+    assert.ok(counts.blocked >= 1, 'no rejection waited on another change');
+    assert.ok(
+      counts.struckEnd > 10,
+      `only ${counts.struckEnd} with an end in struck text`
+    );
   });
 
   it('reads each element’s proposed children as accepting everything holds them before completion builds', () => {
@@ -1080,19 +1811,13 @@ describe('authored review tree recording laws', () => {
   });
 
   it('decides recorded changes to one document in every order, with and without content declarations', () => {
+    let blocked = 0;
     let compared = 0;
 
     fc.assert(
       fc.property(
         documentArbitrary,
-        fc.array(
-          fc.record({
-            author: fc.constantFrom('alice' as const, 'bob' as const),
-            command: commandArbitrary(LETTERS.slice(0, 8)),
-            intent: fc.constantFrom('edit' as const, 'propose' as const),
-          }),
-          { maxLength: 4, minLength: 1 }
-        ),
+        withNesting(fc.array(editArbitrary, { maxLength: 4, minLength: 1 })),
         fc.array(
           fc.constantFrom(
             'accept' as const,
@@ -1131,18 +1856,15 @@ describe('authored review tree recording laws', () => {
               throw error;
             }
 
-            const decide = (
-              value: readonly Node[],
-              batch: readonly string[]
-            ) => {
+            const decide = (value: unknown, batch: readonly string[]) => {
               const editor = editorFor(
-                value,
+                value as readonly Node[],
                 'carol',
                 'edit',
                 'carol:1',
                 withSchema
               );
-              const result = editor.api.authoredTree.decide(
+              const result = authoredTestApi(editor).decide(
                 (['accept', 'reject'] as const).map((action) => ({
                   action,
                   changes: batch.filter(
@@ -1153,7 +1875,8 @@ describe('authored review tree recording laws', () => {
 
               return {
                 result,
-                value: editor.read.children() as readonly Node[],
+                reviewed: reviewedValue(editor).children,
+                value: editor.read.value(),
               };
             };
             const together = decide(recorded, [...decisions.keys()]);
@@ -1162,7 +1885,8 @@ describe('authored review tree recording laws', () => {
             const order = [...decisions.keys()];
 
             order.push(...order.splice(0, rotation % order.length));
-            let value: readonly Node[] = recorded;
+            let value: unknown = recorded;
+            let reviewed: unknown = recorded;
             let admissible = true;
 
             while (order.length > 0 && admissible) {
@@ -1170,6 +1894,7 @@ describe('authored review tree recording laws', () => {
               let step = decide(value, [...batch]);
 
               while (step.result.status === 'blocked') {
+                blocked += 1;
                 // A change the decision set leaves undecided cannot join it.
                 if (step.result.with.some((change) => !decisions.has(change))) {
                   admissible = false;
@@ -1183,19 +1908,16 @@ describe('authored review tree recording laws', () => {
                   order.splice(order.indexOf(change), 1);
                 }
               }
-              ({ value } = step);
+              ({ reviewed, value } = step);
             }
             if (!admissible) continue;
             compared += 1;
-            assert.deepEqual(value, together.value);
+            assert.deepEqual(reviewed, together.reviewed);
           }
           for (const action of ['accept', 'reject'] as const) {
-            const { status } = editorFor(
-              recorded,
-              'carol',
-              'edit',
-              'carol:1'
-            ).api.authoredTree.decide({ action, changes });
+            const { status } = authoredTestApi(
+              editorFor(recorded, 'carol', 'edit', 'carol:1')
+            ).decide({ action, changes });
 
             assert.ok(
               status === 'applied' || status === 'unchanged',
@@ -1207,6 +1929,7 @@ describe('authored review tree recording laws', () => {
       { numRuns: 300 }
     );
     assert.ok(compared > 150, `only ${compared} decision orders compared`);
+    assert.ok(blocked >= 1, 'no decision waited on another change');
   });
 });
 
@@ -1243,7 +1966,7 @@ describe('authored review tree recording laws for cuts', () => {
             ) {
               throw new Error(`no letter ${word[offset]}`);
             }
-            value = editor.read.children();
+            value = expandedChildren(editor);
           });
 
           const bounds = [
@@ -1256,18 +1979,20 @@ describe('authored review tree recording laws for cuts', () => {
           const remover = editorFor(value, 'eve', intent, 'eve:1');
 
           run(remover, { at: removed[0], kind: 'removeLink' }, '');
-          value = remover.read.children();
+          value = expandedChildren(remover);
 
           const actions = new Map([
             ...enters.map((change) => [change, 'reject'] as const),
             ...(intent === 'propose' ? [['eve:1', 'accept'] as const] : []),
           ]);
-          const decide = (
-            current: readonly Node[],
-            changes: readonly string[]
-          ) => {
-            const editor = editorFor(current, 'carol', 'edit', 'carol:1');
-            const result = editor.api.authoredTree.decide(
+          const decide = (current: unknown, changes: readonly string[]) => {
+            const editor = editorFor(
+              current as readonly Node[],
+              'carol',
+              'edit',
+              'carol:1'
+            );
+            const result = authoredTestApi(editor).decide(
               (['accept', 'reject'] as const).flatMap((action) => {
                 const picked = changes.filter(
                   (change) => actions.get(change) === action
@@ -1277,12 +2002,17 @@ describe('authored review tree recording laws for cuts', () => {
               })
             );
 
-            return { result, value: editor.read.children() as readonly Node[] };
+            return {
+              result,
+              reviewed: reviewedValue(editor).children,
+              value: editor.read.value(),
+            };
           };
           const order = [...actions.keys()].sort(
             () => shuffle.next().value - 500
           );
-          let stepped = value;
+          let stepped: unknown = value;
+          let reviewed: unknown = value;
           let waiting: string[] = [];
 
           for (const change of order) {
@@ -1290,7 +2020,7 @@ describe('authored review tree recording laws for cuts', () => {
             const step = decide(stepped, waiting);
 
             if (step.result.status === 'blocked') continue;
-            stepped = step.value;
+            ({ reviewed, value: stepped } = step);
             waiting = [];
           }
 
@@ -1308,8 +2038,8 @@ describe('authored review tree recording laws for cuts', () => {
 
           assert.deepEqual(
             {
-              batch: decide(value, [...actions.keys()]).value,
-              stepped,
+              batch: decide(value, [...actions.keys()]).reviewed,
+              stepped: reviewed,
               waiting,
             },
             { batch: expected, stepped: expected, waiting: [] },
@@ -2057,27 +2787,32 @@ const namedWorlds: World[] = [
 ];
 const WORLDS = [...shapeWorlds, ...namedWorlds];
 
+/** An editor with no schema, which takes any step a world's schema refuses. */
+const schemaFreeEditor = (value: readonly Node[]) =>
+  createEditor({ initialValue: structuredClone(value) as never });
 const fillEditor = (
   world: World,
   value: readonly Node[],
   review?: Readonly<{ author: string; change: string }>
 ) =>
-  createEditor({
-    initialValue: structuredClone(value) as never,
-    plugins: [
-      world.plugin,
-      ...(review
-        ? [
-            authoredTreeProof({
-              authorId: review.author,
-              createChangeId: () => review.change,
-              intent: 'propose',
-              now: () => 1,
-            }),
-          ]
-        : []),
-    ] as never,
-  });
+  throwingRefusals(
+    createEditor({
+      initialValue: structuredClone(value) as never,
+      plugins: [
+        world.plugin,
+        ...(review
+          ? [
+              createAuthoredPlugin({
+                authorId: review.author,
+                createChangeId: () => review.change,
+                intent: 'propose',
+                now: () => 1,
+              }),
+            ]
+          : []),
+      ] as never,
+    })
+  );
 const plainNodes = (nodes: readonly Node[]): Node[] =>
   nodes.map(({ authored: _authored, children, ...rest }) =>
     children ? { ...rest, children: plainNodes(children) } : rest
@@ -2092,54 +2827,153 @@ const unmarkedElements = (nodes: readonly Node[]): number =>
         : count,
     0
   );
+const reviewer = (world: World, value: unknown) =>
+  createEditor({
+    initialValue: structuredClone(value) as never,
+    plugins: [world.plugin, createAuthoredPlugin({ authorId: 'zed' })],
+  });
 const decideAll = (
   world: World,
-  value: readonly Node[],
+  value: unknown,
   decisions: ReadonlyArray<
     Readonly<{ action: 'accept' | 'reject'; changes: readonly string[] }>
   >
 ) => {
-  const editor = createEditor({
-    initialValue: structuredClone(value) as never,
-    plugins: [world.plugin, authoredTreeProof({ authorId: 'zed' })] as never,
-  });
-  const result = (editor.api as Editor['api']).authoredTree.decide(
+  const editor = reviewer(world, value);
+  const result = authoredTestApi(editor as never).decide(
     decisions.filter((decision) => decision.changes.length > 0)
   );
 
-  return { children: editor.read.children() as readonly Node[], result };
+  return {
+    children: reviewedValue(editor as never).children as readonly Node[],
+    result,
+    value: editor.read.value(),
+  };
 };
+type RecordedStep = readonly [
+  name: string,
+  typed: string,
+  authorBuiltFill: boolean,
+];
 type Recorded = Readonly<{
   change: string;
-  steps: ReadonlyArray<readonly [string, string]>;
+  steps: readonly RecordedStep[];
 }>;
-/** Editing replaying `steps` from the start; null when a step finds no target, `refused` when Editing refuses one. */
-const replayEditing = (
+const emptyElementKeys = (editor: ReturnType<typeof fillEditor>) => {
+  const keys = new Set<NodeKey>();
+  const visit = (nodes: readonly Node[], parent: readonly number[]) => {
+    nodes.forEach((node, index) => {
+      const path = [...parent, index];
+
+      if (!node.children) return;
+      if (node.children.every((child) => child.text === '')) {
+        const key = editor.key(path);
+
+        if (key) keys.add(key);
+      }
+      visit(node.children, path);
+    });
+  };
+
+  visit(editor.read.children() as readonly Node[], []);
+
+  return keys;
+};
+/**
+ * Editing replaying `steps` from the start as their authors saw them: a fill
+ * a step builds where its author's view built none goes, and a step the plain
+ * replay refuses, which its author's view took, applies without the schema,
+ * which then judges the result once.
+ */
+const replayAsAuthorsSaw = (
   world: World,
   start: readonly Node[],
-  steps: ReadonlyArray<readonly [string, string]>
-): readonly Node[] | 'refused' | null => {
+  steps: readonly RecordedStep[]
+):
+  | Readonly<{ kind: 'authorView' | 'plain'; value: readonly Node[] }>
+  | Readonly<{ kind: 'noTarget' }>
+  | Readonly<{ kind: 'refused' }> => {
   const editor = fillEditor(world, start);
+  const unauthoredFills = new Set<NodeKey>();
+  let schemaless: ReturnType<typeof schemaFreeEditor> | null = null;
+  const unauthoredPaths = () =>
+    [...emptyElementKeys(editor)]
+      .filter((key) => unauthoredFills.has(key))
+      .map((key) => editor.read.nodes.path(key))
+      .filter((path) => path !== null && path !== undefined)
+      .sort((left, right) => PathApi.compare(right, left));
 
-  for (const [name, typed] of steps) {
+  for (const [name, typed, authorBuiltFill] of steps) {
     const step = getDefinedGesture(world, name)(
-      editingKids(editor.read.children() as readonly Node[]),
+      editingKids(expandedChildren(schemaless ?? editor) as readonly Node[]),
       typed
     );
 
-    if (!step) return null;
+    if (!step) return { kind: 'noTarget' };
+    if (schemaless) {
+      schemaless.update((tx) => {
+        step(tx);
+        tx.selection.set(null);
+      });
+      continue;
+    }
+
+    const before = emptyElementKeys(editor);
+
     try {
       editor.update((tx) => {
         step(tx);
         tx.selection.set(null);
       });
     } catch (error) {
-      if (isRefusal(error)) return 'refused';
-      throw error;
+      if (!isRefusal(error)) throw error;
+      const gone = unauthoredPaths();
+      const schemaFree = schemaFreeEditor(expandedChildren(editor));
+
+      schemaFree.update((tx) => {
+        for (const at of gone) tx.nodes.remove({ at });
+        step(tx);
+        tx.selection.set(null);
+      });
+      schemaless = schemaFree;
+      continue;
+    }
+    if (authorBuiltFill) continue;
+    for (const key of emptyElementKeys(editor)) {
+      if (!before.has(key)) unauthoredFills.add(key);
     }
   }
 
-  return editor.read.children();
+  if (!schemaless) {
+    const gone = unauthoredPaths();
+
+    if (gone.length > 0) {
+      editor.update((tx) => {
+        for (const at of gone) tx.nodes.remove({ at });
+        tx.selection.set(null);
+      });
+    }
+
+    return {
+      kind: gone.length === 0 ? 'plain' : 'authorView',
+      value: expandedChildren(editor),
+    };
+  }
+
+  const value = expandedChildren(schemaless) as readonly Node[];
+
+  try {
+    const judged = expandedChildren(
+      fillEditor(world, value)
+    ) as readonly Node[];
+
+    return isDeepStrictEqual(plainNodes(judged), plainNodes(value))
+      ? { kind: 'authorView', value }
+      : { kind: 'refused' };
+  } catch (error) {
+    if (isRefusal(error)) return { kind: 'refused' };
+    throw error;
+  }
 };
 const getDefinedGesture = (world: World, name: string) => {
   const found = world.gestures[name];
@@ -2163,6 +2997,7 @@ describe('authored review tree fill laws', () => {
     let leftOut = 0;
     let orders = 0;
     let sets = 0;
+    let authorViews = 0;
 
     fc.assert(
       fc.property(
@@ -2196,19 +3031,20 @@ describe('authored review tree fill laws', () => {
               change,
             });
             const editing = fillEditor(world, edited);
-            const done: Array<readonly [string, string]> = [];
+            const done: RecordedStep[] = [];
 
             for (const [part, pick] of step.gestures.entries()) {
               const name = getDefined(names[pick % names.length]);
               const typed = String.fromCharCode(77 + index * 2 + part);
               const inEditing = getDefinedGesture(world, name)(
-                editingKids(editing.read.children() as readonly Node[]),
+                editingKids(expandedChildren(editing) as readonly Node[]),
                 typed
               );
 
               if (!inEditing) continue;
 
-              const editedBefore = editing.read.children();
+              const editedBefore = expandedChildren(editing);
+              const fillsBefore = emptyElementKeys(editing);
 
               try {
                 editing.update((tx) => {
@@ -2219,22 +3055,27 @@ describe('authored review tree fill laws', () => {
                 if (isRefusal(error)) continue;
                 throw error;
               }
+              const authorBuiltFill = [...emptyElementKeys(editing)].some(
+                (key) => !fillsBefore.has(key)
+              );
 
               const inReview = getDefinedGesture(world, name)(
-                proposedKids(suggesting.read.children() as readonly Node[]),
+                proposedKids(expandedChildren(suggesting) as readonly Node[]),
                 typed
               );
 
               if (!inReview) {
                 // Removing what Editing rebuilds at once changes nothing.
-                if (isDeepStrictEqual(editing.read.children(), editedBefore)) {
+                if (
+                  isDeepStrictEqual(expandedChildren(editing), editedBefore)
+                ) {
                   continue;
                 }
                 // Only a fill a maximum defers (R1) leaves Editing a place
                 // the review lacks.
                 assert.ok(
                   world.bounded,
-                  `"${name}" has no place in the review of ${world.name} after ${JSON.stringify([...recorded, { change, steps: done }])}\n${JSON.stringify(suggesting.read.children())}`
+                  `"${name}" has no place in the review of ${world.name} after ${JSON.stringify([...recorded, { change, steps: done }])}\n${JSON.stringify(expandedChildren(suggesting))}`
                 );
                 unlocatable.set(
                   `${world.name} | ${name}`,
@@ -2243,10 +3084,10 @@ describe('authored review tree fill laws', () => {
                 return;
               }
               const unmarked = unmarkedElements(
-                suggesting.read.children() as readonly Node[]
+                expandedChildren(suggesting) as readonly Node[]
               );
               const marksBefore = marksByChange(
-                suggesting.read.children() as readonly Node[]
+                expandedChildren(suggesting) as readonly Node[]
               );
 
               try {
@@ -2275,12 +3116,12 @@ describe('authored review tree fill laws', () => {
               }
               assert.ok(
                 unmarkedElements(
-                  suggesting.read.children() as readonly Node[]
+                  expandedChildren(suggesting) as readonly Node[]
                 ) <= unmarked,
                 `the recorder slot built an unmarked element: ${world.name}, ${name}`
               );
               const marksAfter = marksByChange(
-                suggesting.read.children() as readonly Node[]
+                expandedChildren(suggesting) as readonly Node[]
               );
 
               joined ||= [...marksAfter].some(
@@ -2291,11 +3132,11 @@ describe('authored review tree fill laws', () => {
                 `${world.name} | ${name}`,
                 (runs.get(`${world.name} | ${name}`) ?? 0) + 1
               );
-              done.push([name, typed]);
+              done.push([name, typed, authorBuiltFill]);
             }
             if (done.length === 0) continue;
-            review = suggesting.read.children() as readonly Node[];
-            edited = editing.read.children() as readonly Node[];
+            review = expandedChildren(suggesting) as readonly Node[];
+            edited = expandedChildren(editing) as readonly Node[];
             recorded.push({ change, steps: done });
           }
 
@@ -2330,7 +3171,10 @@ describe('authored review tree fill laws', () => {
             `rejecting everything differs from the start in ${context}`
           );
 
-          // Every order of one complete decision set ends where the batch does.
+          // Every order of one complete decision set ends where the batch
+          // does. A batch the schema refuses decides nothing, while an order
+          // still applies the decisions independent of the refused ones, so
+          // each order of a refused batch is refused too.
           const actionOf = (change: string) =>
             accepts[changes.indexOf(change) % accepts.length]
               ? 'accept'
@@ -2345,9 +3189,14 @@ describe('authored review tree fill laws', () => {
             steps.every(([name]) => world.everyOrder?.includes(name))
           );
 
+          const loaded = reviewedValue(reviewer(world, review) as never)
+            .children as readonly Node[];
+
           for (const order of permutations(changes)) {
-            let value = review;
+            let value: unknown = review;
+            let children = loaded;
             const pending = [...order];
+            let refused = false;
 
             while (pending.length > 0) {
               const batch = new Set([getDefined(pending.shift())]);
@@ -2357,7 +3206,7 @@ describe('authored review tree fill laws', () => {
                 assert.ok(!everyOrder, `a decision waited in ${context}`);
                 assert.deepEqual(
                   step.children,
-                  value,
+                  children,
                   `a blocked decision changed ${context}`
                 );
                 for (const change of step.result.with) {
@@ -2368,11 +3217,19 @@ describe('authored review tree fill laws', () => {
                 }
                 step = decideAll(world, value, split([...batch]));
               }
-              value = step.children;
+              refused ||= step.result.status === 'invalid';
+              ({ children, value } = step);
             }
             orders += 1;
+            if (together.result.status === 'invalid') {
+              assert.ok(
+                refused,
+                `order ${order.join(', ')} applies a set its batch refuses in ${context}`
+              );
+              continue;
+            }
             assert.deepEqual(
-              value,
+              children,
               together.children,
               `order ${order.join(', ')} differs in ${context}`
             );
@@ -2392,15 +3249,14 @@ describe('authored review tree fill laws', () => {
             return;
           }
 
-          // Each complete decision set equals Editing replaying what it accepts.
           for (let mask = 0; mask < 2 ** changes.length; mask += 1) {
             const kept = recorded.filter((_, index) => (mask >> index) & 1);
-            const oracle = replayEditing(
+            const oracle = replayAsAuthorsSaw(
               world,
               start,
               kept.flatMap(({ steps }) => steps)
             );
-            const decided = decideAll(world, review, [
+            const outcome = decideAll(world, review, [
               { action: 'accept', changes: kept.map(({ change }) => change) },
               {
                 action: 'reject',
@@ -2410,24 +3266,25 @@ describe('authored review tree fill laws', () => {
               },
             ]);
 
-            if (oracle === null) {
+            if (oracle.kind === 'noTarget') {
               leftOut += 1;
               continue;
             }
-            if (oracle === 'refused') {
+            if (oracle.kind === 'refused') {
               refusedSets += 1;
               assert.equal(
-                decided.result.status,
+                outcome.result.status,
                 'invalid',
                 `a set Editing refuses applied in ${context}`
               );
               continue;
             }
             sets += 1;
+            if (oracle.kind === 'authorView') authorViews += 1;
             assert.deepEqual(
-              plainNodes(decided.children),
-              plainNodes(oracle),
-              `accepting ${JSON.stringify(kept.map(({ change }) => change))} differs from Editing in ${context}`
+              plainNodes(outcome.children),
+              plainNodes(oracle.value),
+              `accepting ${JSON.stringify(kept.map(({ change }) => change))} differs from Editing as its authors saw it in ${context}`
             );
           }
         }
@@ -2454,9 +3311,13 @@ describe('authored review tree fill laws', () => {
     );
 
     process.stdout.write(
-      `fill law: ${runs.size} gestures recorded, ${orders} orders, ${sets} decision sets, ${refusedSets} sets Editing refuses, ${leftOut} left out, ${coalesced} with joined insertions, ${[...unlocatable.values()].reduce((sum, count) => sum + count, 0)} histories reaching what a maximum deferred (${[...unlocatable].map(([key, count]) => `${key}: ${count}`).join('; ')}), ${liftedPendingUnwrap} lifting a pending unwrap, ${deferred.length} R1 deferrals, ${refusedAtMaximum.length} refusals at a maximum (${[...new Set(refusedAtMaximum)].join('; ')})\n${deferred.join('\n')}\n`
+      `fill law: ${runs.size} gestures recorded, ${orders} orders, ${sets} decision sets, ${authorViews} differing from a plain replay, ${refusedSets} sets Editing refuses, ${leftOut} left out, ${coalesced} with joined insertions, ${[...unlocatable.values()].reduce((sum, count) => sum + count, 0)} histories reaching what a maximum deferred (${[...unlocatable].map(([key, count]) => `${key}: ${count}`).join('; ')}), ${liftedPendingUnwrap} lifting a pending unwrap, ${deferred.length} R1 deferrals, ${refusedAtMaximum.length} refusals at a maximum (${[...new Set(refusedAtMaximum)].join('; ')})\n${deferred.join('\n')}\n`
     );
     assert.deepEqual(unexercised, [], 'every gesture records in its world');
+    assert.ok(
+      authorViews > 0,
+      'a decision set differs from a plain replay where its authors saw otherwise'
+    );
   });
 });
 
@@ -2509,7 +3370,42 @@ const TITLE = 'a required title';
 // Probe 12's grid and title histories, cases 6a and 6b, two authors on a
 // title, probe 8's two-cell orders and probe 4's two texts, then one history
 // for each gesture a random history rarely reaches.
+const EMPTIED_BY: Readonly<Record<string, string>> = {
+  'type into an empty cell': 'delete cell a',
+  'type into an empty heading': 'delete the title',
+  'type into an empty text': 'delete every character',
+};
 const FILL_EXAMPLES = [
+  // Seed 1896659244: deleting the title behind Bob's pending heading built no
+  // fill in Ann's view, so accepting Ann's changes alone builds none. Seed
+  // 43389289 adds a deletion of the paragraph; seed 393318344 makes both of
+  // Ann's steps one change of Bob's, in each order.
+  example(TITLE, [
+    ['bob', 'insert a heading above the prefix'],
+    ['ann', 'delete the title'],
+    ['ann', 'insert a heading above the prefix'],
+  ]),
+  example(TITLE, [
+    ['bob', 'insert a heading above the prefix'],
+    ['ann', 'insert a heading above the prefix'],
+    ['ann', 'delete the title'],
+  ]),
+  example(TITLE, [
+    ['bob', 'insert a heading above the prefix'],
+    ['ann', 'delete the title'],
+    ['ann', 'insert a heading above the prefix'],
+    ['ann', 'delete the paragraph'],
+  ]),
+  example(TITLE, [
+    ['ann', 'insert a heading above the prefix'],
+    ['bob', 'delete the title', 'insert a heading above the prefix'],
+    ['ann', 'delete the paragraph'],
+  ]),
+  example(TITLE, [
+    ['ann', 'insert a heading above the prefix'],
+    ['bob', 'insert a heading above the prefix', 'delete the title'],
+    ['ann', 'delete the paragraph'],
+  ]),
   example(TITLE, [
     ['ann', 'insert a heading above the prefix'],
     ['ann', 'delete the title'],
@@ -2584,11 +3480,50 @@ const FILL_EXAMPLES = [
     ['ann', 'delete cell a', 'delete cell b'],
     ['bob', 'type into an empty cell'],
   ]),
+  // Under a maximum of two, only one change deleting both cells leaves an
+  // empty cell to type into.
+  example('grid of two cells under a minimum and maximum of two', [
+    ['ann', 'delete cell a', 'delete cell b'],
+    ['bob', 'type into an empty cell'],
+  ]),
   example('two texts one change each empties (probe 4)', [
     ['ann', 'delete a'],
     ['bob', 'delete b'],
   ]),
+  // Seed 825394039: once Bob's heading goes, the plain replay refuses Ann's
+  // paragraph before the title, which her view took.
+  example(
+    TITLE,
+    [
+      ['bob', 'insert a heading above the prefix'],
+      ['ann', 'insert a paragraph before the title'],
+      ['ann', 'insert a heading above the prefix'],
+    ],
+    [false, false, false, false]
+  ),
+  // Seeds 4 and -1976749684: a refused batch beside an independent decision.
+  example(
+    TITLE,
+    [
+      ['ann', 'delete the body heading'],
+      ['bob', 'insert a heading above the prefix'],
+      ['ann', 'insert a paragraph before the title'],
+    ],
+    [false, false, true, false]
+  ),
+  // Seed -1657036058: the same, with the independent decision last.
+  example(
+    TITLE,
+    [
+      ['ann', 'insert a heading above the prefix'],
+      ['bob', 'insert a paragraph before the title', 'delete the body heading'],
+      ['ann', 'delete the paragraph'],
+    ],
+    [false, true, false, false]
+  ),
   example('a parent-scoped static default on a text', [['ann', 'delete a']]),
+  // Seed 5: only a first gesture finds b, so a random run can miss it.
+  example('a parent-scoped static default on a text', [['ann', 'delete b']]),
   example('a parent-scoped static default on a text', [
     ['ann', 'remove the text holding a'],
     ['bob', 'type into an empty text'],
@@ -2605,6 +3540,20 @@ const FILL_EXAMPLES = [
     ['ann', 'remove the text holding h'],
     ['bob', 'type into an empty text'],
   ]),
+  // Every gesture as a first step, so coverage of one a first step can record
+  // never waits on a random history reaching it. Typing into an empty element
+  // follows the gesture that empties one.
+  ...WORLDS.flatMap((world) =>
+    Object.keys(world.gestures).map((name) => {
+      const emptiedBy = EMPTIED_BY[name];
+
+      return example(world.name, [
+        emptiedBy && emptiedBy in world.gestures
+          ? (['ann', emptiedBy, name] as const)
+          : (['ann', name] as const),
+      ]);
+    })
+  ),
 ];
 const permutations = <T>(items: readonly T[]): T[][] =>
   items.length <= 1
@@ -2614,3 +3563,363 @@ const permutations = <T>(items: readonly T[]): T[][] =>
           (rest) => [item, ...rest]
         )
       );
+
+describe('authored review tree folded defects', () => {
+  const p = (text: string): Node => ({
+    type: 'paragraph',
+    children: [{ text }],
+  });
+  const quote = (...children: Node[]): Node => ({ type: 'quote', children });
+  const acceptsAll = recordedCase(acceptsLikePlainEditor({ plain: 0 }));
+
+  it('accepts text typed over a quote line Bob split inside Alice’s pending deletion as Editing does (seed -1186800544)', () => {
+    assert.ok(
+      acceptsAll(
+        [quote(p('ab'), p('cd')), p('ef'), p('gh')],
+        [
+          {
+            author: 'alice',
+            command: { from: 'f', kind: 'deleteRange', to: 'a' },
+            intent: 'propose',
+          },
+          {
+            author: 'bob',
+            command: { at: 'g', kind: 'break', side: 0 },
+            intent: 'propose',
+          },
+        ],
+        { from: 'c', kind: 'typeOver', to: 'h' }
+      )
+    );
+  });
+
+  it('accepts everything after Alice types over a range holding the quote her Backspace struck (seed -904070578)', () => {
+    const recorded = replay(
+      [p('ab'), quote(p('cd')), p('ef'), p('gh')],
+      [
+        {
+          author: 'alice',
+          command: { at: 'c', direction: 'backward', kind: 'delete' },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { from: 'h', kind: 'typeOver', to: 'a' },
+          intent: 'propose',
+        },
+      ]
+    );
+
+    assert.equal(decided(recorded, 'accept').status, 'applied');
+  });
+
+  it('accepts a physical deletion of lines Alice already struck as Editing does', () => {
+    assert.ok(
+      acceptsAll(
+        [p('ab'), p('cd'), p('ef'), p('gh')],
+        [
+          {
+            author: 'alice',
+            command: { from: 'c', kind: 'deleteRange', to: 'g' },
+            intent: 'propose',
+          },
+        ],
+        { from: 'd', kind: 'deleteRange', to: 'g' }
+      )
+    );
+  });
+
+  it('accepts a physical deletion across lines Alice moved as Editing does', () => {
+    assert.ok(
+      acceptsAll(
+        [p('ab'), quote(p('cd'), p('ef')), p('gh')],
+        [
+          {
+            author: 'alice',
+            command: { at: 'a', edge: 'after', kind: 'moveNode', to: 'g' },
+            intent: 'propose',
+          },
+          {
+            author: 'alice',
+            command: { at: 'g', edge: 'before', kind: 'moveNode', to: 'a' },
+            intent: 'edit',
+          },
+        ],
+        { from: 'f', kind: 'deleteRange', to: 'a' }
+      )
+    );
+  });
+
+  it('records an Editing Delete at a quote’s edge as the accepted document shows it (f-23)', () => {
+    const counts = commandCounts();
+
+    commandCase(counts)(
+      [p('ab'), p('cd'), quote(p('ef')), p('gh')],
+      [
+        {
+          author: 'alice',
+          command: { from: 'd', kind: 'deleteRange', to: 'e' },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { from: 'a', kind: 'typeOver', to: 'f' },
+          intent: 'propose',
+        },
+      ],
+      {
+        at: { letter: 'a', side: 0 },
+        direction: 'forward',
+        kind: 'delete',
+        unit: 'character',
+      },
+      'edit'
+    );
+    assert.equal(counts.compared, 1);
+  });
+
+  it('lands a letter typed after an Editing range delete as a plain editor does, after an Editing reorder moved the line a pending join pulls (seed 804742650)', () => {
+    const counts = commandCounts();
+
+    commandCase(counts)(
+      [p('ab'), quote(p('cd'), p('ef'))],
+      [
+        {
+          author: 'alice',
+          command: { at: 'c', direction: 'backward', kind: 'delete' },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { kind: 'replaceChildren', shift: 1 },
+          intent: 'edit',
+        },
+      ],
+      {
+        direction: 'backward',
+        from: { letter: 'c', side: 0 },
+        kind: 'fragment',
+        to: { letter: 'e', side: 0 },
+      },
+      'edit'
+    );
+    assert.equal(counts.compared, 1);
+  });
+
+  it('keeps the line a suggested Delete empties at a quote’s edge (f-23)', () => {
+    const counts = commandCounts();
+
+    commandCase(counts)(
+      [p('ab'), p('cd'), quote(p('ef')), p('gh')],
+      [
+        {
+          author: 'alice',
+          command: { from: 'd', kind: 'deleteRange', to: 'e' },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { from: 'a', kind: 'typeOver', to: 'f' },
+          intent: 'propose',
+        },
+      ],
+      {
+        at: { letter: 'a', side: 0 },
+        direction: 'forward',
+        kind: 'delete',
+        unit: 'character',
+      },
+      'propose'
+    );
+    assert.equal(counts.compared, 1);
+  });
+
+  it('records an Editing Enter in a line Alice struck across a quote (f-24)', () => {
+    const counts = commandCounts();
+
+    commandCase(counts)(
+      [p('ab'), quote(p('cd'), p('ef')), p('gh')],
+      [
+        {
+          author: 'alice',
+          command: { from: 'g', kind: 'deleteRange', to: 'd' },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { from: 'a', kind: 'deleteRange', to: 'h' },
+          intent: 'edit',
+        },
+      ],
+      { at: { letter: 'g', side: 0 }, kind: 'break' },
+      'edit'
+    );
+    assert.equal(counts.compared, 1);
+  });
+
+  it('keeps the line an Editing Enter splits off a pending join inside the quote that wraps it (f-27)', () => {
+    const counts = commandCounts();
+
+    commandCase(counts)(
+      [p('ab'), p('cd')],
+      [
+        {
+          author: 'alice',
+          command: { at: 'c', direction: 'backward', kind: 'delete' },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { at: 'a', kind: 'wrap' },
+          intent: 'edit',
+        },
+      ],
+      { at: { letter: 'd', side: 0 }, kind: 'break' },
+      'edit'
+    );
+    assert.equal(counts.compared, 1);
+  });
+
+  it('keeps the line a suggested Enter splits off a pending join inside the quote that wraps it (f-27)', () => {
+    const counts = commandCounts();
+
+    commandCase(counts)(
+      [p('ab'), p('cd')],
+      [
+        {
+          author: 'alice',
+          command: { at: 'c', direction: 'backward', kind: 'delete' },
+          intent: 'propose',
+        },
+        {
+          author: 'alice',
+          command: { at: 'a', kind: 'wrap' },
+          intent: 'edit',
+        },
+      ],
+      { at: { letter: 'd', side: 0 }, kind: 'break' },
+      'propose'
+    );
+    assert.equal(counts.compared, 1);
+  });
+
+  it('keeps a line Alice split off outside the quote when Bob joins its source into the quote (seed 496851576)', () => {
+    assert.ok(
+      recordedCase(acceptsLikePlainEditor({ plain: 0 }))(
+        [p('ab'), p('cd'), quote(p('ef'), p('gh'))],
+        [
+          {
+            author: 'alice',
+            command: { kind: 'replaceChildren', shift: 1 },
+            intent: 'edit',
+          },
+          {
+            author: 'alice',
+            command: { at: 'b', kind: 'break', side: 0 },
+            intent: 'propose',
+          },
+        ],
+        { from: 'a', kind: 'deleteRange', to: 'h' }
+      )
+    );
+  });
+
+  it('keeps a line Bob moves after a pending join inside the quote that wraps it', () => {
+    assert.ok(
+      recordedCase(acceptsLikePlainEditor({ plain: 0 }))(
+        [p('ab'), p('cd'), p('ef')],
+        [
+          {
+            author: 'alice',
+            command: { at: 'c', direction: 'backward', kind: 'delete' },
+            intent: 'propose',
+          },
+          {
+            author: 'alice',
+            command: { at: 'a', kind: 'wrap' },
+            intent: 'edit',
+          },
+        ],
+        { at: 'e', edge: 'after', kind: 'moveNode', to: 'a' }
+      )
+    );
+  });
+
+  for (const [name, retyped] of [
+    ['typed in Editing', { at: 'a', kind: 'type', side: 0 }],
+    ['typed over in Editing', { from: 'a', kind: 'typeOver', to: 'a' }],
+  ] as const) {
+    it(`rejects everything after Bob splits a line Alice suggested, holding a letter ${name}, to the document before the split`, () => {
+      const counts = commandCounts();
+
+      commandCase(counts)(
+        [p('ab'), p('cd')],
+        [
+          {
+            author: 'alice',
+            command: { kind: 'replaceChildren', shift: 1 },
+            intent: 'propose',
+          },
+          { author: 'alice', command: retyped, intent: 'edit' },
+        ],
+        { at: { letter: 'a', side: 0 }, kind: 'break' },
+        'propose'
+      );
+      assert.equal(counts.compared, 1);
+    });
+  }
+
+  it('rejects everything after Bob splits a line inside his own suggested rotation, to the document before the split', () => {
+    assert.ok(
+      recordedCase(undoesSuggestion)(
+        [p('ab'), p('cd'), quote(p('ef'))],
+        [
+          {
+            author: 'bob',
+            command: { kind: 'replaceChildren', shift: 2 },
+            intent: 'propose',
+          },
+          {
+            author: 'alice',
+            command: { at: 'f', kind: 'transferText', to: 'a' },
+            intent: 'edit',
+          },
+          {
+            author: 'alice',
+            command: { at: 'a', kind: 'transferText', to: 'f' },
+            intent: 'edit',
+          },
+        ],
+        { at: 'a', kind: 'break', side: 1 }
+      )
+    );
+  });
+
+  it('undoes accepting Bob’s suggested text moves and rotation over Alice’s rotations (seed 225757176)', () => {
+    assert.equal(
+      undoRestores(
+        [p('ab'), p('cd')],
+        [
+          {
+            author: 'alice',
+            command: { kind: 'replaceChildren', shift: 1 },
+            intent: 'propose',
+          },
+          {
+            author: 'alice',
+            command: { kind: 'replaceChildren', shift: 1 },
+            intent: 'edit',
+          },
+        ],
+        [
+          { at: 'd', kind: 'transferText', to: 'a' },
+          { at: 'a', kind: 'transferText', to: 'd' },
+          { kind: 'replaceChildren', shift: 1 },
+        ],
+        'propose',
+        'accept'
+      ),
+      'compared'
+    );
+  });
+});

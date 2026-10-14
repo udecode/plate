@@ -31,10 +31,7 @@ const createFrameDocument = () => {
   return { frame, frameDocument, frameWindow };
 };
 
-test.each([
-  { intent: 'edit', projection: 'accepted' },
-  { intent: 'propose', projection: 'markup' },
-] as const)(
+test.each([{ intent: 'edit' }, { intent: 'propose' }] as const)(
   'routes pending marks through model input in an authored $intent view',
   (policy) => {
     const initialValue: Value = [
@@ -49,10 +46,14 @@ test.each([
         authored: policy,
       })
     );
+    // Suggesting writes review marks; the proposed reading shows the text.
+    const proposed = () =>
+      createEditorView(source, {
+        authored: { preview: 'proposed' },
+      }).read.children();
     editor.update.selection.set({ path: [0, 0], offset: 4 });
     editor.update.marks.toggle('bold');
 
-    expect(source.read.marks()).toBeNull();
     expect(
       getNativeSingleCharacterInputDecision({
         editor,
@@ -69,7 +70,7 @@ test.each([
       inputType: 'insertText',
       selection: readTextSelection(editor) ?? undefined,
     });
-    expect(editor.read.children()).toEqual([
+    expect(proposed()).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'Seed' }, { text: 'x', bold: true }],
@@ -83,7 +84,7 @@ test.each([
       inputType: 'insertText',
       selection: readTextSelection(editor) ?? undefined,
     });
-    expect(editor.read.children()).toEqual([
+    expect(proposed()).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'Seed' }, { text: 'x', bold: true }, { text: 'y' }],

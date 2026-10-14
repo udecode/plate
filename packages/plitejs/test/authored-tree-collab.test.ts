@@ -5,6 +5,7 @@ import {
   createEditor,
   definePlugin,
   defineEditorSchema,
+  type EditorUpdateTransaction,
   property,
   schema,
   target,
@@ -12,9 +13,11 @@ import {
 import { history } from 'plitejs/history';
 import * as Y from 'yjs';
 
-import { authoredTreeProof } from '../src/authored/tree/proof-plugin';
+import { createAuthoredPlugin } from '../src/authored/authored';
+import { expandContexts } from '../src/authored/facts/compact';
 import { yjs } from '../src/yjs';
 import { getActiveYjsController } from '../src/yjs/core/controller-registry';
+import { authoredTestApi } from './support/authored';
 
 // Phase 1 of docs/plans/2026-10-08-authored-review.md: two clients on the
 // ordinary Yjs binding. Each case asserts convergence and prints its outcome
@@ -59,14 +62,16 @@ type Peer = ReturnType<typeof createPeer>;
 const createPeer = (
   authorId: string,
   doc: Y.Doc,
-  initialValue: Array<Record<string, unknown>>,
+  initialValue:
+    | Array<Record<string, unknown>>
+    | Readonly<{ children: unknown[]; roots?: Record<string, unknown[]> }>,
   intent: Intent,
   plugins: ReadonlyArray<typeof Columns> = []
 ) => {
   const editor = createEditor({
     plugins: [
       ...plugins,
-      authoredTreeProof({
+      createAuthoredPlugin({
         authorId,
         createChangeId: counter(authorId),
         intent,
@@ -119,7 +124,7 @@ const pair = (
   const bob = createPeer(
     'bob',
     rightDoc,
-    JSON.parse(JSON.stringify(alice.editor.read.children())),
+    JSON.parse(JSON.stringify(alice.editor.read.value())),
     intents[1],
     plugins
   );
@@ -129,18 +134,7 @@ const pair = (
   return { alice, bob };
 };
 
-const api = (peer: Peer) =>
-  (
-    peer.editor.api as {
-      authoredTree: {
-        decide: (decision: {
-          action: 'accept' | 'reject';
-          changes: readonly string[];
-        }) => { status: string };
-        setIntent: (intent: Intent) => void;
-      };
-    }
-  ).authoredTree;
+const api = (peer: Peer) => authoredTestApi(peer.editor);
 
 const paragraph = (...children: Array<Record<string, unknown>>) => ({
   type: 'paragraph',
@@ -785,7 +779,9 @@ describe('authored review tree concurrency limits on two clients', () => {
     ],
   ] as const) {
     for (const aliceFirst of [true, false]) {
-      it(`limits a suggested deletion of a paragraph while the other client ${name}, ${aliceFirst ? "alice's delivered first" : "bob's delivered first"}`, () => {
+      it(`limits a suggested deletion of a paragraph while the other client ${name}, ${
+        aliceFirst ? "alice's delivered first" : "bob's delivered first"
+      }`, () => {
         const { alice, bob } = pair(
           [paragraph(text('ab')), paragraph(text('z'))],
           ['propose', intent]
@@ -806,7 +802,9 @@ describe('authored review tree concurrency limits on two clients', () => {
   }
 
   for (const aliceFirst of [true, false]) {
-    it(`limits a join accepted while the other client deletes its target in Editing, which loses the joined text, ${aliceFirst ? "alice's delivered first" : "bob's delivered first"}`, () => {
+    it(`limits a join accepted while the other client deletes its target in Editing, which loses the joined text, ${
+      aliceFirst ? "alice's delivered first" : "bob's delivered first"
+    }`, () => {
       const { alice, bob } = pair(
         [
           paragraph(text('a')),
@@ -943,7 +941,7 @@ describe('authored property tags on several clients', () => {
         plugins: [
           Formats,
           SumTo100,
-          authoredTreeProof({
+          createAuthoredPlugin({
             authorId: name,
             createChangeId: counter(name),
             // Ordered ids, so a fork's smallest-id bottom is the same in
@@ -966,8 +964,7 @@ describe('authored property tags on several clients', () => {
       });
 
       made.push({
-        api: (editor.api as unknown as { authoredTree: Client['api'] })
-          .authoredTree,
+        api: authoredTestApi(editor),
         doc: docs[index],
         editor,
       });
@@ -1015,10 +1012,10 @@ describe('authored property tags on several clients', () => {
       .filter((mark) => mark.kind === 'format')
       .map((mark) => mark.change)
       .sort();
-  const setColor = (client: Client, color: string) =>
-    client.editor.update((tx) =>
-      tx.nodes.set({ color } as never, { at: [0, 0] })
-    );
+  const color = (tx: EditorUpdateTransaction, value: string) =>
+    tx.nodes.set({ color: value } as never, { at: [0, 0] });
+  const setColor = (client: Client, value: string) =>
+    client.editor.update((tx) => color(tx, value));
   const word = [paragraph({ text: 'word' })];
 
   for (const order of [
@@ -1089,7 +1086,7 @@ describe('authored property tags on several clients', () => {
         const [alice, bob] = clients(['alice', 'bob'], word, order);
 
         setColor(alice, 'red');
-        alice.api.propose('alice:2', () => setColor(alice, 'green'));
+        alice.api.propose('alice:2', (tx) => color(tx, 'green'));
         setColor(bob, 'blue');
         syncAll([alice, bob]);
 
@@ -1100,7 +1097,7 @@ describe('authored property tags on several clients', () => {
 
         setColor(alice, 'red');
         syncAll([alice, bob]);
-        alice.api.propose('alice:1', () => setColor(alice, 'green'));
+        alice.api.propose('alice:1', (tx) => color(tx, 'green'));
         setColor(bob, 'blue');
         syncAll([alice, bob]);
 
@@ -1160,7 +1157,7 @@ describe('authored property tags on several clients', () => {
         setColor(alice, 'red');
         setColor(bob, 'blue');
         syncAll([alice, bob]);
-        alice.api.propose('alice:2', () => setColor(alice, 'green'));
+        alice.api.propose('alice:2', (tx) => color(tx, 'green'));
         syncAll([alice, bob]);
 
         return [alice, bob] as const;
@@ -1269,7 +1266,7 @@ describe('authored property tags on several clients', () => {
       setColor(alice, 'red');
       setColor(bob, 'blue');
       send(alice, carol);
-      carol.api.propose('carol:1', () => setColor(carol, 'green'));
+      carol.api.propose('carol:1', (tx) => color(tx, 'green'));
       syncAll([alice, bob, carol]);
       const partial = alice.api.decide({
         action: 'reject',
@@ -1345,14 +1342,14 @@ describe('authored property tags on several clients', () => {
         rejectionVersusStack: race((alice, bob) => {
           setColor(alice, 'red');
           syncAll([alice, bob]);
-          bob.api.propose('bob:1', () => setColor(bob, 'blue'));
+          bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
           alice.api.decide({ action: 'reject', changes: ['alice:1'] });
         }),
         // Two reviewers decide overlapping batches on one key differently.
         overlappingBatches: race((alice, bob, carol) => {
           setColor(alice, 'red');
           syncAll([alice, bob, carol]);
-          bob.api.propose('bob:1', () => setColor(bob, 'blue'));
+          bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
           syncAll([alice, bob, carol]);
           alice.api.decide({ action: 'accept', changes: ['alice:1', 'bob:1'] });
           carol.api.decide({ action: 'reject', changes: ['alice:1', 'bob:1'] });
@@ -1361,7 +1358,7 @@ describe('authored property tags on several clients', () => {
         takeoverVersusStack: race((alice, bob, carol) => {
           setColor(alice, 'red');
           syncAll([alice, bob, carol]);
-          bob.api.propose('bob:1', () => setColor(bob, 'blue'));
+          bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
           carol.api.setIntent('edit');
           setColor(carol, 'green');
         }),
@@ -1369,7 +1366,7 @@ describe('authored property tags on several clients', () => {
         withdrawalVersusStack: race((alice, bob) => {
           setColor(alice, 'red');
           syncAll([alice, bob]);
-          bob.api.propose('bob:1', () => setColor(bob, 'blue'));
+          bob.api.propose('bob:1', (tx) => color(tx, 'blue'));
           alice.editor.update((tx) =>
             tx.nodes.unset('color' as never, { at: [0, 0] })
           );
@@ -1434,12 +1431,12 @@ describe('authored property tags on several clients', () => {
           type: 'group',
         },
       ];
-      const preset = (client: Client, sizes: readonly number[]) =>
-        client.editor.update((tx) =>
-          sizes.forEach((size, index) =>
-            tx.nodes.set({ size } as never, { at: [0, index] })
-          )
+      const sizesIn = (tx: EditorUpdateTransaction, sizes: readonly number[]) =>
+        sizes.forEach((size, index) =>
+          tx.nodes.set({ size } as never, { at: [0, index] })
         );
+      const preset = (client: Client, sizes: readonly number[]) =>
+        client.editor.update((tx) => sizesIn(tx, sizes));
       const [left, right] = clients(['alice', 'bob'], group, order);
 
       preset(left, [40, 60]);
@@ -1447,7 +1444,7 @@ describe('authored property tags on several clients', () => {
       right.editor.update((tx) =>
         tx.nodes.set({ size: 25 } as never, { at: [0, 0] })
       );
-      right.api.propose('bob:9', () => preset(right, [10, 90]));
+      right.api.propose('bob:9', (tx) => sizesIn(tx, [10, 90]));
       syncAll([left, right]);
       left.api.decide({ action: 'reject', changes: ['alice:1', 'bob:9'] });
       syncAll([left, right]);
@@ -1498,4 +1495,504 @@ describe('authored property tags on several clients', () => {
       );
     });
   }
+});
+
+describe('review verdicts on two clients', () => {
+  const A = { at: AT, author: 'alice', change: 'alice:9', kind: 'insert' };
+  const B = { at: AT, author: 'bob', change: 'bob:9', kind: 'insert' };
+  const starts = {
+    flat: () => [
+      paragraph({ text: 'a' }, { text: 'hers', authored: [A] }, { text: 'b' }),
+    ],
+    nested: () => [
+      paragraph(
+        { text: 'a' },
+        { text: 'he', authored: [A] },
+        { text: 'X', authored: [A, B] },
+        { text: 'rs', authored: [A] },
+        { text: 'b' }
+      ),
+    ],
+    replacement: () => [
+      paragraph(
+        { text: 'a' },
+        { text: 'old', authored: [{ ...A, kind: 'delete' }] },
+        { text: 'new', authored: [A] },
+        { text: 'b' }
+      ),
+    ],
+    deletion: () => [
+      paragraph(
+        { text: 'a' },
+        { text: 'old', authored: [{ ...A, kind: 'delete' }] },
+        { text: 'b' }
+      ),
+    ],
+    format: () => [
+      paragraph(
+        { text: 'a' },
+        {
+          authored: [
+            { ...A, id: 'alice:9:color', key: 'color', kind: 'format' },
+          ],
+          color: 'red',
+          text: 'old',
+        },
+        { text: 'b' }
+      ),
+    ],
+  };
+  type Start = keyof typeof starts;
+  type Action = (peer: Peer, start: Start) => unknown;
+
+  const peersOf = (
+    authors: readonly [string, string],
+    value: Array<Record<string, unknown>>
+  ) => {
+    const leftDoc = new Y.Doc();
+    const rightDoc = new Y.Doc();
+
+    documents.add(leftDoc);
+    documents.add(rightDoc);
+    const left = createPeer(authors[0], leftDoc, value, 'propose');
+
+    Y.applyUpdate(rightDoc, Y.encodeStateAsUpdate(leftDoc));
+    const right = createPeer(
+      authors[1],
+      rightDoc,
+      JSON.parse(JSON.stringify(left.editor.read.value())),
+      'propose'
+    );
+
+    deliver(right, left);
+
+    return [left, right] as const;
+  };
+  // Each leaf with every insertion it belongs to, however it stores them.
+  const leaves = (peer: Peer) =>
+    (
+      expandContexts(peer.editor.read.value()).children as Array<{
+        children: any[];
+      }>
+    ).flatMap((block) =>
+      block.children.map(({ authored, text, ...props }) =>
+        [
+          text,
+          ...Object.entries(props).map(
+            ([key, value]) => `{${key}=${String(value)}}`
+          ),
+          ...(authored
+            ? [
+                `|${authored.map((m: any) => `${m.kind}:${m.change}`).join(',')}`,
+              ]
+            : []),
+        ].join('')
+      )
+    );
+  const leafAt = (peer: Peer, text: string) =>
+    (peer.editor.read.children()[0] as any).children.findIndex(
+      (leaf: any) => leaf.text === text
+    );
+  const roundsUntilSettled = 2;
+  const exchange = (left: Peer, right: Peer, leftFirst: boolean) => {
+    for (let round = 0; round < roundsUntilSettled; round += 1) {
+      if (leftFirst) {
+        deliver(left, right);
+        deliver(right, left);
+      } else {
+        deliver(right, left);
+        deliver(left, right);
+      }
+    }
+  };
+
+  const decide =
+    (action: 'accept' | 'reject', id = 'alice:9'): Action =>
+    (peer) =>
+      api(peer).decide({ action, changes: [id] });
+  const typeInside: Action = (peer, start) => {
+    const [text, offset] =
+      start === 'flat'
+        ? ['hers', 2]
+        : start === 'nested'
+          ? ['rs', 1]
+          : start === 'replacement'
+            ? ['new', 1]
+            : ['old', 1];
+
+    peer.editor.update((tx) =>
+      tx.text.insert('Q', { at: point(offset, [0, leafAt(peer, text)]) })
+    );
+  };
+  const withdraw =
+    (text: (start: Start) => string, from = 0, to = 2): Action =>
+    (peer, start) =>
+      peer.editor.update((tx) =>
+        tx.text.delete({
+          at: {
+            anchor: point(from, [0, leafAt(peer, text(start))]),
+            focus: point(to, [0, leafAt(peer, text(start))]),
+          },
+        })
+      );
+  const firstPiece = withdraw((start) => (start === 'flat' ? 'hers' : 'he'));
+
+  const race = (
+    name: string,
+    authors: readonly [string, string],
+    first: Action,
+    second: Action,
+    expected: Partial<Record<Start, readonly string[]>>
+  ) => {
+    for (const [start, outcome] of Object.entries(expected) as Array<
+      [Start, readonly string[]]
+    >) {
+      for (const leftFirst of [true, false]) {
+        it(`${name}, ${start} start, ${
+          leftFirst ? 'left' : 'right'
+        } delivered first`, () => {
+          const [left, right] = peersOf(authors, starts[start]());
+
+          first(left, start);
+          second(right, start);
+          exchange(left, right, leftFirst);
+          converged(left, right);
+          record(
+            `${name} (${start}, ${leftFirst ? 'left' : 'right'} first)`,
+            leaves(left)
+          );
+          assert.deepEqual(leaves(left), outcome);
+        });
+      }
+    }
+  };
+
+  race(
+    'accept || typing inside',
+    ['alice', 'bob'],
+    decide('accept'),
+    typeInside,
+    {
+      flat: ['ahe', 'Q|insert:bob:1', 'rsb'],
+      nested: ['ahe', 'X|insert:bob:9', 'r', 'Q|insert:bob:1', 'sb'],
+    }
+  );
+  race(
+    'reject || typing inside',
+    ['alice', 'bob'],
+    decide('reject'),
+    typeInside,
+    {
+      flat: [
+        'a',
+        'he|insert:alice:9',
+        'Q|insert:alice:9,insert:bob:1',
+        'rs|insert:alice:9',
+        'b',
+      ],
+      nested: [
+        'a',
+        'he|insert:alice:9',
+        'X|insert:alice:9,insert:bob:9',
+        'r|insert:alice:9',
+        'Q|insert:alice:9,insert:bob:1',
+        's|insert:alice:9',
+        'b',
+      ],
+    }
+  );
+  race(
+    'reject a replacement || typing inside its new text',
+    ['alice', 'bob'],
+    decide('reject'),
+    typeInside,
+    {
+      replacement: [
+        'a',
+        'old|delete:alice:9',
+        'n|insert:alice:9',
+        'Q|insert:alice:9,insert:bob:1',
+        'ew|insert:alice:9',
+        'b',
+      ],
+    }
+  );
+  race(
+    'accept || accept the nested change',
+    ['alice', 'bob'],
+    decide('accept'),
+    decide('accept', 'bob:9'),
+    {
+      nested: ['aheXrsb'],
+    }
+  );
+  race(
+    'accept || accept',
+    ['alice', 'bob'],
+    decide('accept'),
+    decide('accept'),
+    {
+      flat: ['ahersb'],
+      replacement: ['anewb'],
+    }
+  );
+  race(
+    'accept || the nested author amends',
+    ['alice', 'bob'],
+    decide('accept'),
+    (peer) =>
+      peer.editor.update((tx) =>
+        tx.text.insert('Z', { at: point(1, [0, leafAt(peer, 'X')]) })
+      ),
+    { nested: ['ahe', 'XZ|insert:bob:9', 'rsb'] }
+  );
+  race(
+    'accept || the author amends',
+    ['bob', 'alice'],
+    decide('accept'),
+    typeInside,
+    {
+      flat: ['aheQrsb'],
+    }
+  );
+  race('withdraw || typing inside', ['alice', 'bob'], firstPiece, typeInside, {
+    flat: [
+      'a',
+      'he|insert:alice:9',
+      'Q|insert:alice:9,insert:bob:1',
+      'rs|insert:alice:9',
+      'b',
+    ],
+    nested: [
+      'a',
+      'X|insert:alice:9,insert:bob:9',
+      'r|insert:alice:9',
+      'Q|insert:alice:9,insert:bob:1',
+      's|insert:alice:9',
+      'b',
+    ],
+  });
+  race(
+    'two withdrawals of one change',
+    ['alice', 'alice'],
+    firstPiece,
+    (peer, start) =>
+      start === 'flat'
+        ? withdraw(() => 'hers', 2, 4)(peer, start)
+        : withdraw(() => 'rs')(peer, start),
+    { flat: ['ab'], nested: ['a', 'X|insert:alice:9,insert:bob:9', 'b'] }
+  );
+  race('withdraw || reject', ['alice', 'bob'], firstPiece, decide('reject'), {
+    flat: ['ab'],
+    nested: ['a', 'X|insert:alice:9,insert:bob:9', 'rs|insert:alice:9', 'b'],
+  });
+  race(
+    'accept || reject',
+    ['alice', 'bob'],
+    decide('accept'),
+    decide('reject'),
+    {
+      flat: ['ab'],
+      nested: ['ahe', 'X|insert:bob:9', 'rsb'],
+      replacement: ['ab'],
+    }
+  );
+
+  const typeInEditing: Action = (peer, start) => {
+    api(peer).setIntent('edit');
+    typeInside(peer, start);
+  };
+
+  race(
+    'accept a deletion || typing inside it in Editing',
+    ['alice', 'bob'],
+    decide('accept'),
+    typeInEditing,
+    { deletion: ['aQb'] }
+  );
+  race(
+    'reject a format || typing inside it in Editing',
+    ['alice', 'bob'],
+    decide('reject'),
+    typeInEditing,
+    { format: ['ao', 'Q{color=red}', 'ldb'] }
+  );
+
+  for (const [action, start] of [
+    ['accept', 'flat'],
+    ['reject', 'replacement'],
+  ] as const) {
+    it(`undoes and redoes a ${action} on the other client`, () => {
+      const [left, right] = peersOf(['alice', 'bob'], starts[start]());
+      const stages: Record<string, readonly string[]> = {};
+
+      decide(action)(left, start);
+      exchange(left, right, true);
+      converged(left, right);
+      stages.decided = leaves(left);
+      left.editor.api.history.undo();
+      exchange(left, right, true);
+      converged(left, right);
+      stages.undone = leaves(left);
+      left.editor.api.history.redo();
+      exchange(left, right, true);
+      converged(left, right);
+      stages.redone = leaves(left);
+      record(`undo and redo of a ${action}`, stages);
+      assert.deepEqual(
+        stages,
+        action === 'accept'
+          ? {
+              decided: ['ahersb'],
+              undone: ['a', 'hers|insert:alice:9', 'b'],
+              redone: ['ahersb'],
+            }
+          : {
+              decided: ['a', 'old|held:alice:9', 'b'],
+              undone: ['a', 'old|delete:alice:9', 'new|insert:alice:9', 'b'],
+              redone: ['a', 'old|held:alice:9', 'b'],
+            }
+      );
+    });
+  }
+
+  for (const start of ['flat', 'replacement'] as const) {
+    it(`keeps a ${start} change accepted when one client undoes its accept while the other accepts`, () => {
+      const [left, right] = peersOf(['alice', 'bob'], starts[start]());
+
+      decide('accept')(left, start);
+      decide('accept')(right, start);
+      left.editor.api.history.undo();
+      exchange(left, right, true);
+      converged(left, right);
+      record(
+        `undo of an accept while the other client accepts (${start})`,
+        leaves(left)
+      );
+      assert.deepEqual(leaves(left), start === 'flat' ? ['ahersb'] : ['anewb']);
+    });
+  }
+
+  it('gives back a rejected replacement when only the typing inside it arrives', () => {
+    const [decider, typer] = peersOf(['alice', 'bob'], starts.replacement());
+
+    decide('reject')(decider, 'replacement');
+    typeInside(typer, 'replacement');
+    deliver(typer, decider);
+    record('reject || typing inside, typing delivered only', leaves(decider));
+    assert.deepEqual(leaves(decider), [
+      'a',
+      'old|delete:alice:9',
+      'n|insert:alice:9',
+      'Q|insert:alice:9,insert:bob:1',
+      'ew|insert:alice:9',
+      'b',
+    ]);
+  });
+
+  for (const [removed, remove, expected] of [
+    [
+      'its text',
+      (tx: EditorUpdateTransaction) =>
+        tx.text.delete({
+          at: { anchor: point(0, [2, 0]), focus: point(2, [2, 0]) },
+        }),
+      ['a', 'old|held:alice:9', 'b', 'c', '|insert:alice:9'],
+    ],
+    [
+      'its block',
+      (tx: EditorUpdateTransaction) => tx.nodes.remove({ at: [2] }),
+      ['a', 'old|held:alice:9', 'b', 'c'],
+    ],
+  ] as const) {
+    it(`holds a rejected deletion again once ${removed}, which gave it back, goes`, () => {
+      const [decider, typer] = peersOf(
+        ['alice', 'bob'],
+        [
+          paragraph(
+            { text: 'a' },
+            { text: 'old', authored: [{ ...A, kind: 'delete' }] },
+            { text: 'b' }
+          ),
+          paragraph({ text: 'c' }, { text: 'new', authored: [A] }),
+        ]
+      );
+      const stages: Record<string, readonly string[]> = {};
+
+      decide('reject')(decider, 'replacement');
+      api(typer).setIntent('edit');
+      typer.editor.update((tx) => {
+        tx.selection.set({ anchor: point(1, [1, 1]), focus: point(1, [1, 1]) });
+        tx.break.insert();
+      });
+      deliver(typer, decider);
+      stages.given = leaves(decider);
+      api(decider).setIntent('edit');
+      decider.editor.update(remove);
+      stages.removed = leaves(decider);
+      record(
+        `a cross-block replacement given back, then ${removed} removed`,
+        stages
+      );
+      assert.deepEqual(stages, {
+        given: ['a', 'old|delete:alice:9', 'b', 'c', 'ew|insert:alice:9'],
+        removed: expected,
+      });
+    });
+  }
+});
+
+describe('review contexts on two clients', () => {
+  it('keeps the context the first key typed in it rests on after that key is undone, while the other client’s text rests on it', () => {
+    const carol = {
+      at: AT,
+      author: 'carol',
+      change: 'carol:9',
+      kind: 'insert',
+    };
+    const { alice, bob } = pair([
+      paragraph(
+        { text: 'a' },
+        { text: 'hers', authored: [carol] },
+        { text: 'b' }
+      ),
+    ]);
+    const contextsOf = (peer: Peer) =>
+      (
+        (
+          peer.editor.read.value() as {
+            roots?: Record<string, ReadonlyArray<{ ctx: string }>>;
+          }
+        ).roots?.['$authored-contexts'] ?? []
+      ).map(({ ctx }) => ctx);
+
+    alice.editor.update((tx) => tx.text.insert('X', { at: point(2, [0, 1]) }));
+    deliver(alice, bob);
+    bob.editor.update((tx) => tx.text.insert('Y', { at: point(1, [0, 3]) }));
+    deliver(bob, alice);
+
+    const minted = contextsOf(alice);
+
+    assert.equal(minted.length, 1);
+    alice.editor.api.history.undo();
+    deliver(alice, bob);
+    deliver(bob, alice);
+    converged(alice, bob);
+
+    for (const peer of [alice, bob]) {
+      assert.deepEqual(contextsOf(peer), minted);
+      const [, ...leaves] = (
+        peer.editor.read.children()[0] as {
+          children: ReadonlyArray<Record<string, unknown>>;
+        }
+      ).children;
+      const typed = leaves.find((leaf) => leaf.text === 'Y');
+
+      assert.ok(typed, JSON.stringify(leaves));
+      assert.deepEqual(peer.editor.read.authored.reviewOf(typed).marks, [
+        carol,
+        { at: AT, author: 'bob', change: 'bob:1', kind: 'insert' },
+      ]);
+    }
+  });
 });

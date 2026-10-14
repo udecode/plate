@@ -7,7 +7,7 @@ import type {
   PluginReference,
 } from './PluginDefinition';
 
-export const pluginFormatMapDeclaration = Symbol('plate.pluginFormatMap');
+export const pluginFormatMapDeclaration = Symbol('pluginFormatMap');
 
 export function createDefinePluginFormats<
   C extends AnyBasePluginDefinition,

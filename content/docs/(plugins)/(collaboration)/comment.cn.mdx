@@ -141,7 +141,7 @@ if (attachment?.type === "range" && attachment.status === "attached") {
 
 ### 保存和加载
 
-显式保存时调用 `toJSON()`。它同步返回 `CommentsJSON`：`{ kind: 'plate-comments', version: 1, threads, ranges }`。`threads` 包含已发布的语义记录，`ranges` 为每个范围线程保存 `{ threadId, range: EditorDocumentRange | null }`，不包含本地草稿。将 `EditorDocumentRange` 视为不透明数据。
+显式保存时调用 `toJSON()`。它同步返回 `CommentsJSON`：`{ kind: 'comments', version: 1, threads, ranges }`。`threads` 包含已发布的语义记录，`ranges` 为每个范围线程保存 `{ threadId, range: EditorDocumentRange | null }`，不包含本地草稿。将 `EditorDocumentRange` 视为不透明数据。
 
 原子保存文档和 Comments JSON。此例中的 `repository` 是应用的存储适配器，它在提交前检查预期版本：
 
@@ -245,7 +245,7 @@ const savedRanges = new Map(
   revision.comments.ranges.map(({ threadId, range }) => [threadId, range])
 );
 const initialComments: CommentsJSON = {
-  kind: "plate-comments",
+  kind: "comments",
   version: 1,
   threads: currentComments.threads,
   ranges: currentComments.threads.flatMap((thread) =>

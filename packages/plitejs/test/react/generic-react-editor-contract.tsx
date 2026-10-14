@@ -76,7 +76,7 @@ const initialValue: CustomValue = [
 ];
 
 declare const dataTransfer: DataTransfer;
-declare const pliteNode: PliteNode;
+declare const editorNode: PliteNode;
 
 const ReactPlugin = react({ dom: dom() });
 const _reactPluginName: 'react' = ReactPlugin.name;
@@ -155,7 +155,7 @@ const authoredReactEditor = createEditor({
   initialValue,
 });
 const configuredAuthoredView = createEditorView(authoredReactEditor, {
-  authored: { intent: 'propose', projection: 'proposed' },
+  authored: { intent: 'propose' },
 });
 const InferredSchema = defineEditorSchema('schema:derived', {
   elements: {
@@ -211,7 +211,7 @@ manualReactHistoryEditor.api.dom.focus();
 manualReactHistoryEditor.read((state) => state.history());
 manualReactHistoryEditor.api.history.undo();
 
-reactEditor.api.dom.resolvePath(pliteNode);
+reactEditor.api.dom.resolvePath(editorNode);
 reactEditor.api.dom.clipboard.insertData(dataTransfer);
 reactEditor.api.react.isComposing();
 reactEditor.plugin(ReactPlugin).api.isComposing();
@@ -473,7 +473,7 @@ const EditorRootInferenceProbe = () => (
       {null}
     </EditorRoot>
     <EditorRoot
-      authored={{ intent: 'edit', projection: 'accepted' }}
+      authored={{ preview: 'accepted' }}
       editor={configuredAuthoredView}
       onValueChange={({ editor, value }) => {
         const result: 'pong' = editor.api['custom-api'].ping();
@@ -488,7 +488,7 @@ const EditorRootInferenceProbe = () => (
     <EditorRoot>{null}</EditorRoot>
     <EditorRoot
       // @ts-expect-error authored policy requires the installed capability
-      authored={{ intent: 'propose', projection: 'markup' }}
+      authored={{ intent: 'propose' }}
       editor={defaultReactEditor}
     >
       {null}

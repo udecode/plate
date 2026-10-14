@@ -383,7 +383,7 @@ describe('DOCX source eligibility', () => {
       { feature: 'part', part: 'word/header1.bin' },
     ],
     [
-      'a custom XML data store',
+      'a custom XML data store in a namespace export does not write',
       {
         documentRelationships: [
           {
@@ -393,7 +393,23 @@ describe('DOCX source eligibility', () => {
         ],
         parts: { 'customXml/item1.xml': '<b:Sources xmlns:b="urn:example"/>' },
       },
-      { feature: 'relationship', part: 'word/_rels/document.xml.rels' },
+      { feature: 'markup', part: 'customXml/item1.xml' },
+    ],
+    [
+      'a custom XML data item holding Word markup',
+      {
+        documentRelationships: [
+          {
+            target: '../customXml/item1.xml',
+            type: `${RELATIONSHIPS}/customXml`,
+          },
+        ],
+        parts: {
+          'customXml/item1.xml':
+            '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>',
+        },
+      },
+      { feature: 'markup', part: 'customXml/item1.xml' },
     ],
   ])('refuses %s', async (_name, spec, expected) => {
     expect(await violations(spec)).toContainEqual(

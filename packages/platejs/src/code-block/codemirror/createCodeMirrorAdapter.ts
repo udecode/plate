@@ -202,7 +202,7 @@ export function createCodeMirrorAdapter({
         if (!applyingCodeMirror) return;
 
         throw new Error(
-          'CodeMirror update listeners must not synchronously mutate CodeMirror or Plite; use a transaction filter or an editing command.'
+          'CodeMirror update listeners must not synchronously mutate CodeMirror or the editor; use a transaction filter or an editing command.'
         );
       };
 

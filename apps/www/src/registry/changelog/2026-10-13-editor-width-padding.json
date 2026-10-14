@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-13-editor-width-padding",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-13-editor-width-padding.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-13",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Size editor side padding to the editor's own width",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-static",
+      "files": ["apps/www/src/registry/components/editor/editor-static.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-overlap-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-overlap-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-persistence-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-persistence-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-review-demo",
+      "files": [
+        "apps/www/src/registry/examples/comment-review-demo.tsx",
+        "apps/www/src/registry/examples/values/comment-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-demo",
+      "files": ["apps/www/src/registry/examples/suggestion-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-format-demo",
+      "files": ["apps/www/src/registry/examples/suggestion-format-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-persistence-demo",
+      "files": [
+        "apps/www/src/registry/examples/suggestion-persistence-demo.tsx",
+        "apps/www/src/registry/examples/values/suggestion-document.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-view-demo",
+      "files": [
+        "apps/www/src/registry/examples/suggestion-view-demo.tsx",
+        "apps/www/src/registry/examples/values/suggestion-document.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-13-editor-width-padding-variants",
+      "kind": "fix",
+      "summary": "Size the side padding of the `default`, `demo` and `fullWidth` variants to the editor's own width instead of the viewport. Padding shrinks to 24 px in a narrow editor, so a 180 px editor gets a 132 px text column instead of 52 px. Editors at least 512 px wide, or 640 px for `fullWidth`, keep their current padding.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor", "editor-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-editor-width-padding",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-13-editor-width-padding-demos",
+      "kind": "fix",
+      "summary": "Size the editor's side padding to its own width instead of the viewport. Padding shrinks to 24 px in a narrow editor, and editors at least 600 px wide keep 48 px.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "comment-demo",
+        "comment-overlap-demo",
+        "comment-persistence-demo",
+        "comment-review-demo",
+        "suggestion-demo",
+        "suggestion-format-demo",
+        "suggestion-persistence-demo",
+        "suggestion-view-demo"
+      ],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-13",
+          "entry": "2026-10-13-editor-width-padding",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

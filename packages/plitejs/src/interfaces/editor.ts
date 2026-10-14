@@ -47,7 +47,7 @@ import type {
   SchemaDescendantInValue,
   EditorSchemaSource,
 } from '../core/schema-source.internal';
-import type { TxOnlyMethod, TxReadMethod } from '../core/tx-only';
+import type { TxOnlyMethod } from '../core/tx-only';
 import { addMark as executeAddMarkCommand } from '../editor/add-mark';
 import { deleteBackward as executeDeleteBackwardCommand } from '../editor/delete-backward';
 import { deleteForward as executeDeleteForwardCommand } from '../editor/delete-forward';
@@ -357,9 +357,15 @@ export type NodeTarget<N extends Descendant = Descendant> =
 export type EditorReplaceChildrenOptions = Omit<
   NodeReplaceChildrenOptions,
   'at'
-> & {
-  at: NodeTarget<Element>;
-};
+> &
+  (
+    | {
+        at: Path;
+        /** Named root the path addresses. Omit for this editor's or view's root. */
+        root?: NamedRootKey;
+      }
+    | { at: Exclude<NodeTarget<Element>, Path>; root?: never }
+  );
 
 /** Options for replacing exactly one node with zero or more nodes. */
 export type EditorReplaceNodeOptions = {
@@ -1306,7 +1312,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
         split?: boolean;
         type: TType;
         voids?: boolean;
-      }): void;
+      }): boolean;
       (options?: {
         at?: NodeSelectionTarget;
         match?: NodeMatch<NodeIn<V>>;
@@ -1314,7 +1320,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
         split?: boolean;
         type?: NodeTypeSelector;
         voids?: boolean;
-      }): void;
+      }): boolean;
     };
     wrap: {
       <const TType extends NodeTypeSelector>(
@@ -1399,7 +1405,23 @@ export type EditorTransactionSliceApi<V extends Value = Value> = Pick<
   ) => boolean;
 };
 
+export type EditorBreakExitOptions = {
+  /** Land before the exited structure instead of after it. */
+  before?: boolean;
+  /** Which ancestors may be exited; the selected block stays the last resort. */
+  match?: (node: Element, path: Path) => boolean;
+};
+
 export type EditorTransactionBreakApi = {
+  /**
+   * Leave the nearest structure around the collapsed selection. The structure
+   * is the nearest ancestor of the selected block that is a root child, or
+   * whose parent can directly hold the type of the root's default block after
+   * its required leading blocks; with none, it is the selected block. Inserts
+   * and selects the default that the structure's parent declares at the
+   * landing position. Returns whether a block landed; false changes nothing.
+   */
+  exit: (options?: EditorBreakExitOptions) => boolean;
   insert: () => void;
   insertSoft: () => void;
 };
@@ -1487,10 +1509,18 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
     node: TNode,
     options: Readonly<{ at: Path; root?: NamedRootKey }>
   ) => TNode;
-  /** Create the declared default child for one document root. */
-  createDefaultRootChild: <TRoot extends RootKey>(
-    root?: NamedRootKey<TRoot>,
-    index?: number
+  /**
+   * Create the default child that the parent of `at` declares for the slot
+   * `at` ends in. A one-step path names a slot of the root. The parent and its
+   * ancestors are read from the root's current document; the slot need not
+   * exist. A parent without declared `content`, such as an undeclared element
+   * type, yields the root's default child for the root slot holding it, built
+   * as a root child. Returns null when the parent is missing or the deciding
+   * `content` has no default child for that slot. Omit `root` for the primary
+   * root.
+   */
+  createDefaultChild: (
+    options: Readonly<{ at: Path; root?: NamedRootKey }>
   ) => Descendant | null;
   /** Semantic resources changed by the current configuration publication. */
   delta: () => EditorSchemaDelta | null;
@@ -1709,10 +1739,10 @@ export type EditorTransactionSpecBuilder<
   Readonly<{
     plugin: EditorTransactionPluginPortal<
       V,
-      PluginSpecMethods<EditorInstalledTransactionGroups<V, TPlugins>>
+      PluginUpdateMethods<EditorInstalledTransactionGroups<V, TPlugins>>
     >;
   }> &
-  PluginSpecMethods<EditorInstalledTransactionGroups<V, TPlugins>> &
+  PluginUpdateMethods<EditorInstalledTransactionGroups<V, TPlugins>> &
   EditorSelectionCapability<EditorSelection>;
 
 export type EditorReadMethods<
@@ -1729,9 +1759,7 @@ export type EditorRead<
 
 type EditorBivariantMethods<T> = {
   [
-    K in keyof T as T[K] extends
-      | TxOnlyMethod<(...args: any[]) => any>
-      | TxReadMethod<(...args: any[]) => any>
+    K in keyof T as T[K] extends TxOnlyMethod<(...args: any[]) => any>
       ? never
       : K
   ]: T[K] extends EditorGenericMethod<(...args: any[]) => any>
@@ -1798,28 +1826,37 @@ export type EditorCoreUpdateMethods<
 };
 
 type PluginUpdateMethods<TGroups> = {
-  [K in keyof TGroups]: TGroups[K] extends object
-    ? EditorBivariantMethods<TGroups[K]>
-    : TGroups[K];
+  [K in keyof TGroups]: TGroups[K] extends TxOnlyMethod<
+    (...args: never[]) => unknown
+  >
+    ? Readonly<Record<never, never>>
+    : TGroups[K] extends object
+      ? EditorBivariantMethods<TGroups[K]>
+      : TGroups[K];
 };
 
-type EditorSpecBivariantMethods<T> = {
-  [
-    K in keyof T as T[K] extends TxOnlyMethod<(...args: any[]) => any>
-      ? never
-      : K
-  ]: T[K] extends EditorGenericMethod<(...args: any[]) => any>
-    ? T[K]
-    : T[K] extends (...args: any[]) => any
-      ? BivariantFunction<T[K]>
-      : T[K];
-};
+type EditorDirectUpdateMethods<TMethods> =
+  TMethods extends TxOnlyMethod<(...args: never[]) => unknown>
+    ? Readonly<Record<never, never>>
+    : {
+        [
+          K in keyof TMethods as TMethods[K] extends TxOnlyMethod<
+            (...args: never[]) => unknown
+          >
+            ? never
+            : K
+        ]: TMethods[K];
+      };
 
-type PluginSpecMethods<TGroups> = {
-  [K in keyof TGroups]: TGroups[K] extends object
-    ? EditorSpecBivariantMethods<TGroups[K]>
-    : TGroups[K];
-};
+/**
+ * A plugin's update methods called directly. Each call opens its own update,
+ * so top-level transaction-only controls are left out, and a transaction-only
+ * group offers nothing.
+ *
+ * @internal
+ */
+export type EditorDirectUpdate<TMethods> = EditorDirectUpdateMethods<TMethods> &
+  ((policy: EditorUpdatePolicy) => EditorDirectUpdateMethods<TMethods>);
 
 type EditorAvailableUpdatePolicy<TTxGroups> = Readonly<
   Omit<EditorUpdatePolicy, 'history'> &
@@ -1897,16 +1934,15 @@ export type EditorUpdatePolicyFor<TEditor extends BaseEditor<any, any>> =
 
 export type EditorViewOptions<TRoot extends RootKey = RootKey> = {
   /**
-   * Native authored input and rendering policy for this view. `edit + markup`
-   * keeps pending review content visible while accepted targets receive direct
-   * edits. Replacements that fully contain pending changes resolve them in the
-   * same transaction; partial retained or dependency-spanning targets stay
-   * protected.
+   * How this view treats suggestions. An `intent` view edits the document
+   * with its review marks: `edit` applies writes as written and `propose`
+   * records them as suggestions. A `preview` view reads the document with
+   * every pending change accepted (`proposed`) or rejected (`accepted`) and
+   * takes no writes.
    */
-  authored?: Readonly<
-    | { intent: 'edit'; projection: 'accepted' | 'markup' | 'proposed' }
-    | { intent: 'propose'; projection: 'markup' | 'proposed' }
-  >;
+  authored?:
+    | Readonly<{ intent: 'edit' | 'propose' }>
+    | Readonly<{ preview: 'accepted' | 'proposed' }>;
   /**
    * Immutable document the view reads instead of the source editor's value.
    * Reads, plugin reads and plugin APIs resolve against it through the source
@@ -2191,6 +2227,18 @@ export type EditorCommandContext<Input, TEditor = Editor> = {
   tags: readonly EditorUpdateTag[];
 };
 
+/**
+ * Where a command's stored targets land in the document it decides on. A
+ * point lands where typing there would land, a range keeps content at its
+ * edges out, and a path or a span's paths land on their nodes' paths. A node
+ * or node key names its node in both documents, so it stays as given. Each
+ * target keeps its kind, and `location` returns null when it has no place
+ * there.
+ */
+export type EditorCommandPlace = Readonly<{
+  location: <T extends NodeTarget | NodeSelection | Span>(at: T) => T | null;
+}>;
+
 export type EditorCommandContinuation<Input> = ((
   ...input: [] | [input: Input]
 ) => EditorCommandResult) & {
@@ -2407,7 +2455,7 @@ export type EditorCommandCapabilities<TEditor> =
   >
     ? Readonly<{
         state: EditorInstalledReadGroups<V, TPlugins>;
-        transaction: PluginSpecMethods<
+        transaction: PluginUpdateMethods<
           EditorInstalledUpdateGroups<V, TPlugins>
         >;
         value: V;
@@ -2576,8 +2624,7 @@ export type PluginPortal<TPlugin, V extends Value = Value> = Readonly<{
   /** Whether this exact descriptor or an adopted descendant is installed. */
   installed: boolean;
   read: EditorReadValueFromPlugin<V, TPlugin>;
-  update: EditorUpdateValueFromPlugin<V, TPlugin> &
-    ((policy: EditorUpdatePolicy) => EditorUpdateValueFromPlugin<V, TPlugin>);
+  update: EditorDirectUpdate<EditorUpdateValueFromPlugin<V, TPlugin>>;
 }>;
 
 export type EditorAnchorApi = {
@@ -2751,12 +2798,16 @@ export type PluginSchemaFactory = (
   context: PluginSchemaFactoryContext
 ) => EditorSchemaDeclaration;
 
+// Non-exported `declare class` brands use getters, not fields: Playwright's
+// Babel runs its class-field transform on them before stripping them, and
+// throws on any field there.
+
 /**
  * Erased runtime descriptor reference. Exact author capabilities live only in
  * `Plugin<D>`'s private invariant witness.
  */
 declare class PrivatePluginReferenceBrand {
-  protected readonly pluginReference: true;
+  protected get pluginReference(): true;
 }
 
 export type PluginReference = Readonly<{
@@ -2791,7 +2842,7 @@ export type PluginDefinition = Readonly<{
 }>;
 
 declare class PrivatePluginWitness<TWitness> {
-  protected readonly witness: TWitness;
+  protected get witness(): TWitness;
 }
 
 type PluginWitnessOf<TPlugin> =
@@ -2868,7 +2919,7 @@ type PluginDependencyContract = Readonly<{
 }>;
 
 declare class PrivatePluginDependencyWitness<TContract> {
-  protected readonly dependencyContract: TContract;
+  protected get dependencyContract(): TContract;
 }
 
 /**
@@ -3254,10 +3305,35 @@ type EditorResolvedArrayPluginAndDependencies<TPlugin> =
       : never
     : never;
 
+// TypeScript absorbs fixed elements into an `any` or `unknown` rest element's
+// union, so `TPlugins[number]` of `[...any[], DOMPlugin]` is `any`.
+type EditorResolvedVariadicPlugins<TPlugins extends readonly unknown[]> =
+  TPlugins extends readonly [
+    infer TFirst,
+    ...infer TRest extends readonly unknown[],
+  ]
+    ? readonly [
+        ...EditorResolvedInstalledPlugins<readonly [TFirst]>,
+        ...EditorResolvedVariadicPlugins<TRest>,
+      ]
+    : TPlugins extends readonly [
+          ...infer TRest extends readonly unknown[],
+          infer TLast,
+        ]
+      ? readonly [
+          ...EditorResolvedVariadicPlugins<TRest>,
+          ...EditorResolvedInstalledPlugins<readonly [TLast]>,
+        ]
+      : unknown extends TPlugins[number]
+        ? readonly []
+        : ReadonlyArray<
+            EditorResolvedArrayPluginAndDependencies<TPlugins[number]>
+          >;
+
 export type EditorResolvedInstalledPlugins<
   TPlugins extends readonly unknown[],
 > = number extends TPlugins['length']
-  ? ReadonlyArray<EditorResolvedArrayPluginAndDependencies<TPlugins[number]>>
+  ? EditorResolvedVariadicPlugins<TPlugins>
   : TPlugins extends readonly []
     ? readonly []
     : TPlugins extends readonly [
@@ -3637,12 +3713,6 @@ export interface EditorBlockOptions<
 }
 
 export interface EditorAfterOptions {
-  /**
-   * Step by content: text a capability keeps in the document without counting
-   * it as content, such as struck suggestions, is skipped, so `distance`
-   * counts only content characters and block boundaries.
-   */
-  content?: boolean;
   distance?: number;
   unit?: TextUnitAdjustment;
   voids?: boolean;
@@ -3654,12 +3724,6 @@ export interface EditorBeforeOptions {
    * before it.
    */
   afterMatch?: boolean;
-  /**
-   * Step by content: text a capability keeps in the document without counting
-   * it as content, such as struck suggestions, is skipped, so `distance`
-   * counts only content characters and block boundaries.
-   */
-  content?: boolean;
   distance?: number;
   /** Return the current block start when a match is not found before crossing blocks. */
   matchBlockStart?: boolean;

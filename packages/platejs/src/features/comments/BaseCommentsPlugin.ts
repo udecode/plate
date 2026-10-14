@@ -109,7 +109,7 @@ export type PendingComment = Readonly<{ excerpt: string }>;
 
 /** Save together with the exact document revision; ordinary reload starts fresh undo. */
 export type CommentsJSON = Readonly<{
-  kind: 'plate-comments';
+  kind: 'comments';
   ranges: ReadonlyArray<
     Readonly<{
       range: EditorDocumentRange | null;
@@ -313,7 +313,7 @@ const decodeComments = (value: unknown): CommentsJSON => {
   const input = snapshotCommentData(value);
   if (
     !record(input) ||
-    input.kind !== 'plate-comments' ||
+    input.kind !== 'comments' ||
     input.version !== 1 ||
     !Array.isArray(input.threads) ||
     !Array.isArray(input.ranges)
@@ -348,7 +348,7 @@ const decodeComments = (value: unknown): CommentsJSON => {
     seen.add(target.threadId);
   }
   return Object.freeze({
-    kind: 'plate-comments',
+    kind: 'comments',
     version: 1,
     threads: Object.freeze(threads),
     ranges: input.ranges,
@@ -1180,7 +1180,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             (thread) => thread.status === 'published'
           );
           return Object.freeze({
-            kind: 'plate-comments',
+            kind: 'comments',
             version: 1,
             threads: Object.freeze(records),
             ranges: Object.freeze(

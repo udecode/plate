@@ -3,6 +3,7 @@ import type {
   EditorCommitListener,
   EditorCorrection,
   EditorEffectType,
+  PluginPoint,
   PluginReference,
   EditorNodeChangeHandler,
   EditorStateView,
@@ -124,18 +125,48 @@ export type PluginContributionRegistration = Readonly<{
 
 const PLUGIN_REGISTRIES = new WeakMap<Editor, PluginRegistryStore>();
 
-const reservedStateGroupNames = new Set([
-  'marks',
-  'nodes',
-  'points',
-  'ranges',
-  'schema',
-  'selection',
-  'text',
-  'value',
-]);
+// Read groups also land on `tx`, so a read or update group with one of these
+// names would replace that built-in.
+const builtInTransactionMembers: Record<
+  Exclude<
+    Extract<keyof EditorUpdateTransaction | keyof EditorStateView, string>,
+    'plugin'
+  >,
+  true
+> = {
+  anchor: true,
+  annotations: true,
+  blocks: true,
+  break: true,
+  changes: true,
+  children: true,
+  command: true,
+  effects: true,
+  fragment: true,
+  getField: true,
+  key: true,
+  lastCommit: true,
+  marks: true,
+  meta: true,
+  nodes: true,
+  plugins: true,
+  points: true,
+  ranges: true,
+  root: true,
+  roots: true,
+  runtime: true,
+  schema: true,
+  selection: true,
+  setField: true,
+  slice: true,
+  tags: true,
+  text: true,
+  transaction: true,
+  value: true,
+  view: true,
+};
 
-const reservedTxGroupNames = new Set([...reservedStateGroupNames, 'roots']);
+const reservedGroupNames = new Set(Object.keys(builtInTransactionMembers));
 
 export const createPluginRegistry = <TEditor extends Editor = Editor>(
   options: Readonly<{
@@ -570,6 +601,23 @@ export const assertPluginPublicationInactive = (editor: Editor) => {
     );
   }
 };
+
+/** @internal */
+export const getRegistryContributions = <TValue>(
+  registry: Pick<PluginRegistry, 'contributions'>,
+  point: PluginPoint<TValue>
+) =>
+  Object.freeze(
+    (registry.contributions.get(point) ?? []).map(
+      ({ value }) => value as Readonly<TValue>
+    )
+  );
+
+/** @internal */
+export const getPluginContributions = <TValue>(
+  editor: Editor,
+  point: PluginPoint<TValue>
+) => getRegistryContributions(getPluginRegistry(editor), point);
 
 export const getPluginRegistry = <TEditor extends Editor>(
   editor: TEditor
@@ -1063,15 +1111,14 @@ export const hasChangeListeners = (editor: Editor) => {
 
 const registerViewGroup = <TRegistration>(
   groups: Map<string, { pluginName: string; factory: TRegistration }>,
-  reservedNames: Set<string>,
   kind: 'editor' | 'state' | 'tx',
   pluginName: string,
   groupName: string,
   factory: TRegistration
 ) => {
-  if (reservedNames.has(groupName)) {
+  if (reservedGroupNames.has(groupName)) {
     throw new Error(
-      `Editor plugin "${pluginName}" ${kind} group "${groupName}" is reserved by Plite core.`
+      `Editor plugin "${pluginName}" ${kind} group "${groupName}" is reserved by the editor core.`
     );
   }
 
@@ -1101,7 +1148,6 @@ export const registerStateGroupInRegistry = <TEditor extends Editor>(
 ) =>
   registerViewGroup(
     registry.stateGroups,
-    reservedStateGroupNames,
     'state',
     pluginName,
     groupName,
@@ -1113,12 +1159,4 @@ export const registerTxGroupInRegistry = <TEditor extends Editor>(
   pluginName: string,
   groupName: string,
   factory: EditorTxGroupFactory<TEditor>
-) =>
-  registerViewGroup(
-    registry.txGroups,
-    reservedTxGroupNames,
-    'tx',
-    pluginName,
-    groupName,
-    factory
-  );
+) => registerViewGroup(registry.txGroups, 'tx', pluginName, groupName, factory);

@@ -179,10 +179,7 @@ describe('AIChatPlugin streaming', () => {
 
     expect(editor.read.text.string([])).toBe('');
     expect(editor.read.value()).toEqual(before);
-    expect(editor.read.authored.view()).toEqual({
-      intent: 'edit',
-      projection: 'accepted',
-    });
+    expect(editor.read.authored.view()).toEqual({ intent: 'edit' });
     expect(
       ai.store.get('previewValue').map((node) => NodeApi.string(node))
     ).toEqual(['hello world']);

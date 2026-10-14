@@ -119,7 +119,7 @@ editor.update.lineHeight.set(1.5, { at: [] });
 | `BaseLineHeightPlugin`         | `platejs`       | Headless plugin that stores `lineHeight`, injects block props, and parses HTML line-height styles. |
 | `LineHeightPlugin`             | `platejs/react` | React wrapper around `BaseLineHeightPlugin`.                                                       |
 | `editor.update.lineHeight.set` | `platejs`       | Bound update method exposed by the plugin.                                                         |
-| `LineHeightKit`                | Registry kit                  | Server-safe setup shared by live and static editors.                                               |
+| `LineHeightKit`                | Registry kit                  | Server-safe setup shared by live and static kits.                                                  |
 | `LineHeightToolbarButton`      | Registry UI                   | Dropdown that writes values through `lineHeight.set`.                                              |
 
 The package owns line-height storage and parsing. The registry owns the dropdown UI and allowed value list.

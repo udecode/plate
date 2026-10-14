@@ -19,6 +19,7 @@ import {
   entrypointPackageNames,
   getPackageRuntimeTestFiles,
   repoRoot,
+  withManagedPackageScripts,
 } from '../entrypoints/entrypoint-turbo.mjs';
 import { assertWorkspaceSourcePathsGenerated } from '../entrypoints/workspace-source-paths.mjs';
 
@@ -28,8 +29,6 @@ const generatedByPackage = new Map(
     createPackageTurboConfig(packageName),
   ])
 );
-const managedScriptPattern =
-  /^(?:lint|test|typecheck)(?::(?:partition|tests):|$)|^typecheck:(?:contracts|tests)$/u;
 
 test('generated entrypoint Turbo state is current', () => {
   for (const packageName of entrypointPackageNames) {
@@ -40,11 +39,6 @@ test('generated entrypoint Turbo state is current', () => {
     const generated = generatedByPackage.get(packageName);
     const manifest = JSON.parse(
       fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf-8')
-    );
-    const actualManagedScripts = Object.fromEntries(
-      Object.entries(manifest.scripts).filter(([scriptName]) =>
-        managedScriptPattern.test(scriptName)
-      )
     );
     const expectedTsconfigPaths = Object.keys(generated.tsconfigs).sort();
     const actualTsconfigPaths = fs
@@ -62,8 +56,8 @@ test('generated entrypoint Turbo state is current', () => {
       generated.config
     );
     assert.deepEqual(
-      actualManagedScripts,
-      createManagedPackageScripts(packageName)
+      manifest.scripts,
+      withManagedPackageScripts(packageName, manifest).scripts
     );
     assert.deepEqual(actualTsconfigPaths, expectedTsconfigPaths);
 

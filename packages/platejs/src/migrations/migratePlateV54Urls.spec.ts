@@ -1,4 +1,4 @@
-import { AuthoredPlugin, projectAuthoredReview } from '../authored';
+import { AuthoredPlugin, projectAuthoredDocument } from '../authored';
 import {
   createEditor,
   type Descendant,
@@ -413,17 +413,20 @@ describe('migratePlateV54 unsafe URLs', () => {
       },
       { migrations: defineV54Migrations(plugins), source: 53 }
     );
-    const review = projectAuthoredReview(
-      createEditor({
-        initialValue: output.document,
-        plugins,
-        schema: MigrationSchema,
-      }).read.value()
-    );
+    const editor = createEditor({
+      initialValue: output.document,
+      plugins,
+      schema: MigrationSchema,
+    });
+    const read = (projection: 'accepted' | 'proposed') =>
+      projectAuthoredDocument(editor.read.value(), { editor, projection })
+        .document.children;
 
-    expect(review.accepted.children).toEqual([paragraph('Open docs')]);
-    expect(review.proposed.children).toEqual([paragraph('Open docs page')]);
-    expect(review.changes).toMatchObject([{ authorId: 'alice', id: 'page' }]);
+    expect(read('accepted')).toEqual([paragraph('Open docs')]);
+    expect(read('proposed')).toEqual([paragraph('Open docs page')]);
+    expect(editor.plugin(AuthoredPlugin).read.changes().items).toMatchObject([
+      { authorId: 'alice', id: 'page' },
+    ]);
     expect(JSON.stringify(output)).not.toContain('javascript:');
   });
 

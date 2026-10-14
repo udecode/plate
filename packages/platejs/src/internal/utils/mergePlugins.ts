@@ -215,6 +215,38 @@ export const isResolvedPluginDescriptor = (value: object) =>
 export const getPluginSchemaFamily = (value: object): object | null =>
   pluginSchemaFamilies.get(value) ?? null;
 
+const isPluginDescriptorSourceOf = (
+  source: RuntimePluginReference,
+  installed: RuntimePluginReference
+) => {
+  if (
+    getPluginSourceReferences(installed).includes(source) ||
+    getPluginSourceReferences(source).includes(installed)
+  ) {
+    return true;
+  }
+
+  const sourceMetadata = getPluginDescriptorMetadata(source);
+  const installedStages = getPluginDescriptorMetadata(installed).stages;
+
+  return (
+    !sourceMetadata.configured &&
+    !sourceMetadata.resolved &&
+    sourceMetadata.stages.length <= installedStages.length &&
+    sourceMetadata.stages.every(
+      (stage, index) => stage === installedStages[index]
+    )
+  );
+};
+
+export const isPluginDescriptorOf = (
+  descriptor: RuntimePluginReference,
+  installed: RuntimePluginReference
+) =>
+  getPluginSchemaFamily(descriptor) === getPluginSchemaFamily(installed) &&
+  (descriptor === installed ||
+    isPluginDescriptorSourceOf(descriptor, installed));
+
 export const registerHtmlMappingSchemaFamilies = <
   T extends (...args: never[]) => unknown,
 >(

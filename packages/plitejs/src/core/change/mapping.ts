@@ -7,6 +7,7 @@ import {
 import { DocumentIndex } from './document-index';
 import type { RootChange } from './root-change';
 import {
+  isElementNode,
   type JsonEditorValue,
   jsonEqual,
   type JsonNode,
@@ -228,6 +229,29 @@ export const hasIndexedPathAncestor = (
   return false;
 };
 
+// A node both documents hold as one object at one path stayed where it was, so
+// a subtree around it that equals one elsewhere was edited, not relocated.
+const keepsNodeInPlace = (
+  before: DocumentIndex,
+  after: DocumentIndex,
+  path: readonly number[]
+) => {
+  const shares = (left: JsonNode, right: JsonNode): boolean =>
+    left === right ||
+    (isElementNode(left) &&
+      isElementNode(right) &&
+      left.children.some(
+        (child, index) =>
+          index < right.children.length && shares(child, right.children[index])
+      ));
+
+  try {
+    return shares(before.node(path), after.node(path));
+  } catch {
+    return false;
+  }
+};
+
 export const deriveRootRelocations = (
   root: string,
   change: RootChange,
@@ -285,6 +309,12 @@ export const deriveRootRelocations = (
       const target = targetGroup.candidates[0];
 
       if (pathKey(source.path) === pathKey(target.path)) continue;
+      if (
+        keepsNodeInPlace(before, after, source.path) ||
+        keepsNodeInPlace(before, after, target.path)
+      ) {
+        continue;
+      }
 
       candidates.push(
         Object.freeze({

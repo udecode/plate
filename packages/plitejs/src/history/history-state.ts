@@ -27,6 +27,28 @@ import type { HistoryBatchGroup } from './history-merge-policy';
 
 type HistoryStack = 'redos' | 'undos';
 
+// Undo and redo never change a retained root, so history stores and replays
+// values without them.
+export const withoutRetainedRoots = <V extends Value>(
+  value: EditorDocumentValue<V>,
+  retained: ReadonlySet<string>
+): EditorDocumentValue<V> => {
+  const { roots } = value;
+
+  if (!roots || !Object.keys(roots).some((root) => retained.has(root))) {
+    return value;
+  }
+
+  return Object.freeze({
+    ...value,
+    roots: Object.freeze(
+      Object.fromEntries(
+        Object.entries(roots).filter(([root]) => !retained.has(root))
+      )
+    ),
+  });
+};
+
 const failInvariant = (message: string): never => {
   throw new Error(message);
 };

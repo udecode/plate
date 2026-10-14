@@ -22,9 +22,9 @@ registry 中的 `export-toolbar-button` 在浏览器中将当前文档下载为 
 
 | 格式 | 实现 | 输出 |
 | ---- | ---- | ---- |
-| HTML | `platejs/static` 的 `renderStaticHtml(model, { component: EditorStatic, presentation: BaseEditorKit, projection })` | `plate.html` |
-| Markdown | `model.api.markdown.serialize({ projection })` | `plate.md` |
-| Word | `platejs/docx/export` 的 `exportDocx(model, { component: EditorStatic, presentation: BaseEditorKit, projection, stylesheet: DOCX_EXPORT_STYLES })` | `plate.docx` |
+| HTML | `platejs/static` 的 `renderStaticHtml(model, { component: EditorStatic, presentation: BaseEditorKit, projection })` | `document.html` |
+| Markdown | `model.api.markdown.serialize({ projection })` | `document.md` |
+| Word | `platejs/docx/export` 的 `exportDocx(model, { component: EditorStatic, presentation: BaseEditorKit, projection, stylesheet: DOCX_EXPORT_STYLES })` | `document.docx` |
 
 所有格式都从 `useModelEditor()` 捕获同一份完整 document 和明确的 authored
 projection。导出读取 model，而不是 DOM，因此 selection、placeholder 和 review
@@ -74,5 +74,5 @@ Plate Plus 提供服务端 PDF 导出流程，支持页面设置。
 
 - [DOCX](/docs/docx) 介绍 DOCX 粘贴、文件导入与导出 API。
 - [Markdown](/docs/markdown) 介绍 Markdown 序列化。
-- [静态渲染](/docs/static) 介绍静态编辑器渲染与 HTML 序列化。
+- [静态渲染](/docs/static) 介绍静态渲染与 HTML 序列化。
 - [Authored Changes](/docs/authored-changes) 介绍 HTML/Markdown 的 visible projection、authored JSON 与 DOCX review。

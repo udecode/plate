@@ -1,28 +1,8 @@
 'use client';
 
-import {
-  BaseCodeBlockPlugin,
-  createTextSubstitutionInputRule,
-  definePlugin,
-  type InputRuleEditor,
-} from 'platejs';
+import { createTextSubstitutionInputRule, definePlugin } from 'platejs';
 
-const isTextSubstitutionBlocked = (editor: InputRuleEditor) =>
-  editor.read.nodes.some({
-    type: BaseCodeBlockPlugin,
-  });
-
-const createAutoformatTextSubstitutionRule = ({
-  patterns,
-}: {
-  patterns: Parameters<typeof createTextSubstitutionInputRule>[0]['patterns'];
-}) =>
-  createTextSubstitutionInputRule({
-    enabled: ({ editor }) => !isTextSubstitutionBlocked(editor),
-    patterns,
-  });
-
-const arrowsRule = createAutoformatTextSubstitutionRule({
+const arrowsRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '→', match: '->' },
     { format: '←', match: '<-' },
@@ -31,7 +11,7 @@ const arrowsRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const comparisonsRule = createAutoformatTextSubstitutionRule({
+const comparisonsRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '≯', match: '!>' },
     { format: '≮', match: '!<' },
@@ -42,7 +22,7 @@ const comparisonsRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const equalityRule = createAutoformatTextSubstitutionRule({
+const equalityRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '≠', match: '!=' },
     { format: '≡', match: '==' },
@@ -52,7 +32,7 @@ const equalityRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const fractionsRule = createAutoformatTextSubstitutionRule({
+const fractionsRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '½', match: '1/2' },
     { format: '⅓', match: '1/3' },
@@ -75,7 +55,7 @@ const fractionsRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const legalRule = createAutoformatTextSubstitutionRule({
+const legalRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '™', match: ['(tm)', '(TM)'] },
     { format: '®', match: ['(r)', '(R)'] },
@@ -83,7 +63,7 @@ const legalRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const legalHtmlRule = createAutoformatTextSubstitutionRule({
+const legalHtmlRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '™', match: '&trade;' },
     { format: '®', match: '&reg;' },
@@ -92,7 +72,7 @@ const legalHtmlRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const operatorsRule = createAutoformatTextSubstitutionRule({
+const operatorsRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '±', match: '+-' },
     { format: '‰', match: '%%' },
@@ -100,21 +80,21 @@ const operatorsRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const punctuationRule = createAutoformatTextSubstitutionRule({
+const punctuationRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '»', match: '>>' },
     { format: '«', match: '<<' },
   ],
 });
 
-const smartQuotesRule = createAutoformatTextSubstitutionRule({
+const smartQuotesRule = createTextSubstitutionInputRule({
   patterns: [
     { format: ['“', '”'], match: '"' },
     { format: ['‘', '’'], match: "'" },
   ],
 });
 
-const subscriptNumbersRule = createAutoformatTextSubstitutionRule({
+const subscriptNumbersRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '₀', match: '~0' },
     { format: '₁', match: '~1' },
@@ -129,14 +109,14 @@ const subscriptNumbersRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const subscriptSymbolsRule = createAutoformatTextSubstitutionRule({
+const subscriptSymbolsRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '₊', match: '~+' },
     { format: '₋', match: '~-' },
   ],
 });
 
-const superscriptNumbersRule = createAutoformatTextSubstitutionRule({
+const superscriptNumbersRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '⁰', match: '^0' },
     { format: '¹', match: '^1' },
@@ -151,7 +131,7 @@ const superscriptNumbersRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const superscriptSymbolsRule = createAutoformatTextSubstitutionRule({
+const superscriptSymbolsRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '°', match: '^o' },
     { format: '⁺', match: '^+' },

@@ -13,7 +13,6 @@ import {
   type AuthoredChangeDetails,
   type AuthoredChangePart,
   type AuthoredResult,
-  type AuthoredSelection,
   type AuthoredView,
 } from 'plitejs/authored';
 import {
@@ -123,10 +122,10 @@ void externalRenderer;
 
 const assertAuthoredInference = () => {
   const editor = createHeadlessEditor({
-    plugins: [authored({ authorId: () => 'alice', retainHistory: true })],
+    plugins: [authored({ authorId: () => 'alice' })],
   });
   const view = createEditorView(editor, {
-    authored: { intent: 'propose', projection: 'markup' },
+    authored: { intent: 'propose' },
   });
   const viewPolicy: AuthoredView = view.read.authored.view();
   const anchor = view.anchor(
@@ -145,32 +144,28 @@ const assertAuthoredInference = () => {
   void resolved;
   const viewChildren: ReturnType<typeof editor.read.children> =
     view.read.children();
-  view.api.authored.setView({ intent: 'edit', projection: 'accepted' });
-  view.api.authored.setView({ intent: 'edit', projection: 'markup' });
-  view.api.authored.setView({ intent: 'edit', projection: 'proposed' });
+  view.api.authored.setView({ preview: 'accepted' });
+  view.api.authored.setView({ intent: 'edit' });
+  view.api.authored.setView({ preview: 'proposed' });
   view.update((tx) => {
     const policy: AuthoredView = tx.authored.view();
     tx.authored.propose({ changeId: 'retained' });
-    tx.text.insert(policy.intent);
+    if ('intent' in policy) tx.text.insert(policy.intent);
   });
   createEditorView(createHeadlessEditor(), {
     // @ts-expect-error native proposal views require the authored capability
-    authored: { intent: 'propose', projection: 'proposed' },
+    authored: { intent: 'propose' },
   });
-  // @ts-expect-error proposal input cannot edit an accepted-only projection
-  view.api.authored.setView({ intent: 'propose', projection: 'accepted' });
-  // @ts-expect-error native view policy is immutable
-  viewPolicy.intent = 'edit';
+  if ('intent' in viewPolicy) {
+    // @ts-expect-error native view policy is immutable
+    viewPolicy.intent = 'edit';
+  }
   void viewChildren;
   editor.update((tx) => {
     const identity: string = tx.authored.propose();
     tx.text.insert(identity);
     // @ts-expect-error authored intent uses a logical change identity
     tx.authored.propose({ changeId: 1 });
-  });
-  const selection: AuthoredSelection = editor.read.authored.select({
-    authorId: 'alice',
-    status: 'pending',
   });
   const changes: readonly AuthoredChange[] = editor.read.authored.changes({
     authorId: 'alice',
@@ -183,36 +178,26 @@ const assertAuthoredInference = () => {
   const details: AuthoredChangeDetails | null = editor.read.authored.details(
     changes[0]?.id ?? ''
   );
-  const parts: readonly AuthoredChangePart[] =
-    details?.parts.status === 'available' ? details.parts.items : [];
+  const parts: readonly AuthoredChangePart[] = details?.parts ?? [];
   // @ts-expect-error range lookup requires native range coordinates
   editor.read.authored.changesAt({ path: [0, 0], offset: 0 });
   // @ts-expect-error details lookup requires a logical change identity
   editor.read.authored.details(1);
   const result: AuthoredResult = editor.update.authored.decide({
     action: 'accept',
-    selection,
+    changes,
   });
   void changesAt;
   void parts;
-  const reverted: AuthoredResult = editor.update.authored.revert({ selection });
-  if (reverted.status === 'applied') {
-    // @ts-expect-error compensation identities are immutable
-    reverted.ids.push('another');
+  if (result.status === 'applied') {
+    // @ts-expect-error decided identities are immutable
+    result.ids.push('another');
   }
-  editor.update((tx) => {
-    const transactionResult: AuthoredResult = tx.authored.decide({
-      action: 'reject',
-      selection,
-    });
-    const transactionRevert: AuthoredResult = tx.authored.revert({ selection });
-    void transactionRevert;
-    return transactionResult;
-  });
-  // @ts-expect-error propose is a transaction-only intent control
-  editor.update.authored.propose();
-  // @ts-expect-error public selections are immutable snapshots
-  selection.changes.push({ id: 'new', heads: [], revision: 1 });
+  editor.update((tx) =>
+    tx.authored.decide({ action: 'reject', changes: changesAt })
+  );
+  // @ts-expect-error read changes are immutable snapshots
+  changes.push(changes[0]);
   // @ts-expect-error authored reads require the installed capability
   createHeadlessEditor().read.authored.changes();
   return { changes, result };

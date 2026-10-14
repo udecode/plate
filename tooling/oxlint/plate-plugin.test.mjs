@@ -15,6 +15,12 @@ const ts = (code) => ({
   code,
   filename: fileURLToPath(new URL('case.ts', import.meta.url)),
 });
+const at = (file, code) => ({
+  code,
+  filename: fileURLToPath(new URL(`../../${file}`, import.meta.url)),
+});
+const plite = (code) => at('packages/plitejs/src/case.tsx', code);
+const plate = (code) => at('packages/platejs/src/case.tsx', code);
 const inDays = (days) =>
   new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
 const exception = (date) =>
@@ -368,6 +374,103 @@ describe('plate oxlint rules', () => {
       valid: [ts("import { history } from 'plitejs/history';")],
     }
   );
+
+  tester.run('no-branded-value', plugin.rules['no-branded-value'], {
+    invalid: [
+      {
+        ...plite(
+          '<style href="plite-element-placement" precedence="plite" />;'
+        ),
+        errors: [{ messageId: 'text' }, { messageId: 'text' }],
+      },
+      {
+        ...plite('element.__pliteBrowserHandle = handle;'),
+        errors: [{ messageId: 'name' }],
+      },
+      {
+        ...plate(
+          'const ms = Number(process.env.PLITE_BROWSER_CLIPBOARD_LOCK_TIMEOUT_MS);'
+        ),
+        errors: [{ messageId: 'name' }],
+      },
+      {
+        ...plate('handle.insertData({ pliteFragment: fragment });'),
+        errors: [{ messageId: 'name' }],
+      },
+      {
+        ...plite('export const PliteVoidShell = () => null;'),
+        errors: [{ messageId: 'name' }],
+      },
+      {
+        ...plite('const Shell = memo(function PliteShell() { return null; });'),
+        errors: [{ messageId: 'name' }],
+      },
+      {
+        ...plite("const key = Symbol.for('plitejs.x');"),
+        errors: [{ messageId: 'text' }],
+      },
+      {
+        ...plite("const scope = '@plite/metadata';"),
+        errors: [{ messageId: 'text' }],
+      },
+      {
+        ...plate(
+          "const id = nextRelationshipId(relationships, 'rIdPlateComments');"
+        ),
+        errors: [{ messageId: 'text' }],
+      },
+      {
+        ...plate("const kind = 'plate-comments';"),
+        errors: [{ messageId: 'text' }],
+      },
+      {
+        ...plate('const name = `plate_${id}`;'),
+        errors: [{ messageId: 'text' }],
+      },
+      {
+        ...plite("throw new DOMResolutionError('plitejs/dom/path');"),
+        errors: [{ messageId: 'text' }],
+      },
+      {
+        ...plite("const root = options.rootName ?? 'plitejs';"),
+        errors: [{ messageId: 'text' }],
+      },
+      {
+        ...plite("throw new Error('Plate plugin is missing');"),
+        errors: [{ messageId: 'text' }],
+      },
+      {
+        ...plite('function PlateInner() { return null; }'),
+        errors: [{ messageId: 'name' }],
+      },
+      {
+        ...plate('class Store { pliteRoot = null; }'),
+        errors: [{ messageId: 'name' }],
+      },
+      {
+        ...plate('const view = <p>Rendered by Plite</p>;'),
+        errors: [{ messageId: 'text' }],
+      },
+    ],
+    valid: [
+      plate("const name = 'platejs';"),
+      plate("import { x } from 'plitejs/react';"),
+      plate("export * from 'plitejs';"),
+      plate("type Editor = import('plitejs').Editor;"),
+      plate("const item = '@plate/ai';"),
+      plate("const word = 'template';"),
+      plate("const href = 'https://platejs.org';"),
+      plite('function usePliteRuntime() {}'),
+      plite('type T = { pliteNode: Node };'),
+      plite('const { pliteFragment } = data;'),
+      plite('class Store { declare pliteRoot: Node; }'),
+      plate('function PlateInner() { return null; }'),
+      plate('export const PlateContent = () => null;'),
+      plate('throw new Error(\'Plate plugin "x" failed\');'),
+      plate("throw new Error('Render the editor inside Plate.');"),
+      plate('const view = <p>Made with Plate</p>;'),
+    ],
+  });
 
   tester.run('exception-format', plugin.rules['exception-format'], {
     invalid: [

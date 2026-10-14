@@ -14,7 +14,6 @@ import {
   type EditorCommandDescriptor,
   type EditorCommandInput,
   type EditorCommit,
-  type Editor,
   type EditorStateView,
   type EditorView,
   type EditorViewOptions,
@@ -27,8 +26,6 @@ import {
   type Value,
   type ValueOf,
 } from '../..';
-import { createAuthoredFragmentView } from '../../core/authored-fragment-view';
-import type { NativeAuthoredFragment } from '../../core/authored-runtime';
 import {
   createEditorCommitPublicationQueue,
   publishEditorCommitInVersionOrder,
@@ -135,18 +132,10 @@ const createReactApi = <V extends Value, TPlugins extends readonly unknown[]>(
 
 type MountedViewEditor = ReactRuntimeEditor<Value, PluginsOf<ReactEditorType>>;
 
-// PliteRuntimeView bounds its editor by ReactEditorType<any, any>, which
-// cannot prove the core state groups, so its registration erases here.
-type RegisteredViewEditor = ReactRuntimeEditor<any>;
-
 type PliteRuntimeContextValue = {
   focusVersion: number;
   focused: boolean;
   getActiveContentRootOwner: (root: RootKey) => PliteContentRootOwner | null;
-  getAuthoredFragmentView: <TEditor extends Editor>(
-    parent: TEditor,
-    fragment: NativeAuthoredFragment
-  ) => ReactRuntimeViewEditor<ValueOf<TEditor>, PluginsOf<TEditor>>;
   getContentRootOwnerViewEditor: (
     owner: PliteContentRootOwner
   ) => MountedViewEditor | null;
@@ -155,26 +144,14 @@ type PliteRuntimeContextValue = {
   getView: (
     options?: EditorViewOptions
   ) => EditorView<Value, PluginsOf<ReactEditorType>>;
-  mountAuthoredFragmentView: (view: object) => () => void;
   registerContentRootOwner: (
     editor: MountedViewEditor,
     owner: PliteContentRootOwner
   ) => () => void;
-  registerViewEditor: (
-    editor: RegisteredViewEditor,
-    root: RootKey
-  ) => () => void;
+  registerViewEditor: (editor: MountedViewEditor, root: RootKey) => () => void;
   runtime: ReactEditorType;
   selectorContext: EditorSelectorContextValue;
   setActiveViewEditor: (editor: MountedViewEditor, root: RootKey) => void;
-};
-
-type PliteRuntimeProviderProps<
-  V extends Value = Value,
-  TPlugins extends readonly unknown[] = readonly [],
-> = {
-  children: ReactNode;
-  editor: ReactEditorType<V, TPlugins>;
 };
 
 /** Selector options for `useRuntimeState` and `useRootState`. */
@@ -310,7 +287,7 @@ export function useRequiredPliteRuntimeContext(): PliteRuntimeContextValue {
   const context = useContext(PliteRuntimeContext);
 
   if (!context) {
-    throw new Error('Plite roots must be rendered inside <EditorRoot>.');
+    throw new Error('Editor roots must be rendered inside <EditorRoot>.');
   }
 
   return context;
@@ -330,14 +307,17 @@ export const useMountedEditorRuntimeOwner = (
   }
 };
 
-export function PliteRuntimeProvider<
-  V extends Value = Value,
-  const TPlugins extends readonly unknown[] = readonly [],
->({ children, editor: runtime }: PliteRuntimeProviderProps<V, TPlugins>) {
+export function EditorRuntimeProvider({
+  children,
+  editor: runtime,
+}: {
+  children: ReactNode;
+  editor: ReactEditorType;
+}) {
   const { selectorContext, onChange: handleSelectorChange } =
     useEditorSelectorContext();
   const [commitPublicationQueue] = useState(() =>
-    createEditorCommitPublicationQueue<V>(
+    createEditorCommitPublicationQueue(
       editorGetLastCommit(runtime)?.version ?? 0
     )
   );
@@ -352,19 +332,6 @@ export function PliteRuntimeProvider<
   const contentRootOwnerViewEditorsRef = useRef(
     new Map<string, typeof reactEditor>()
   );
-  const authoredFragmentViewsRef = useRef(
-    new Map<
-      string,
-      {
-        key: string;
-        mounts: number;
-        view: object;
-      }
-    >()
-  );
-  const authoredFragmentViewEntriesRef = useRef(
-    new WeakMap<object, { key: string; mounts: number; view: object }>()
-  );
   const activeContentRootOwnersRef = useRef(
     new Map<RootKey, PliteContentRootOwner>()
   );
@@ -377,69 +344,6 @@ export function PliteRuntimeProvider<
       createEditorViewRuntime(runtime, options),
     [runtime]
   );
-  const getAuthoredFragmentView = useCallback(
-    <TEditor extends Editor>(
-      parent: TEditor,
-      fragment: NativeAuthoredFragment
-    ) => {
-      const key = JSON.stringify([
-        fragment.changeId,
-        fragment.id,
-        fragment.root,
-      ]);
-      const cached = authoredFragmentViewsRef.current.get(key);
-
-      if (cached) {
-        return cached.view as ReactRuntimeViewEditor<
-          ValueOf<TEditor>,
-          PluginsOf<TEditor>
-        >;
-      }
-
-      const view = createReactRuntimeViewEditor(
-        createAuthoredFragmentView(parent, fragment, {
-          retainWhile: 'document',
-        })
-      );
-      const entry = {
-        key,
-        mounts: 0,
-        view,
-      };
-
-      authoredFragmentViewsRef.current.set(key, entry);
-      authoredFragmentViewEntriesRef.current.set(entry.view, entry);
-      queueMicrotask(() => {
-        if (
-          entry.mounts === 0 &&
-          authoredFragmentViewsRef.current.get(key) === entry
-        ) {
-          authoredFragmentViewsRef.current.delete(key);
-        }
-      });
-      return view;
-    },
-    []
-  );
-  const mountAuthoredFragmentView = useCallback((view: object) => {
-    const entry = authoredFragmentViewEntriesRef.current.get(view);
-
-    if (!entry) return () => {};
-
-    entry.mounts += 1;
-    authoredFragmentViewsRef.current.set(entry.key, entry);
-    return () => {
-      entry.mounts -= 1;
-      queueMicrotask(() => {
-        if (
-          entry.mounts === 0 &&
-          authoredFragmentViewsRef.current.get(entry.key) === entry
-        ) {
-          authoredFragmentViewsRef.current.delete(entry.key);
-        }
-      });
-    };
-  }, []);
   const registerViewEditor = useCallback(
     (editor: typeof reactEditor, root: RootKey) => {
       const viewEditors = mountedViewEditorsRef.current.get(root) ?? new Set();
@@ -451,13 +355,13 @@ export function PliteRuntimeProvider<
       if (!activeViewEditorsRef.current.has(root)) {
         activeViewEditorsRef.current.set(root, editor);
       }
-      rootViewEditors.add(editor as unknown as Editor);
+      rootViewEditors.add(editor);
       EDITOR_TO_ROOT_VIEW_EDITORS.set(runtime, rootViewEditors);
 
       return () => {
         releaseEditorViewLifetime(editor);
         viewEditors.delete(editor);
-        rootViewEditors.delete(editor as unknown as Editor);
+        rootViewEditors.delete(editor);
         const owner = contentRootOwnersRef.current.get(editor);
 
         contentRootOwnersRef.current.delete(editor);
@@ -634,12 +538,10 @@ export function PliteRuntimeProvider<
       focusVersion,
       focused,
       getActiveContentRootOwner,
-      getAuthoredFragmentView,
       getContentRootOwnerViewEditor,
       getLastSelectionForRoot,
       getMountedViewEditor,
       getView,
-      mountAuthoredFragmentView,
       registerContentRootOwner,
       registerViewEditor,
       runtime,
@@ -650,12 +552,10 @@ export function PliteRuntimeProvider<
       focusVersion,
       focused,
       getActiveContentRootOwner,
-      getAuthoredFragmentView,
       getContentRootOwnerViewEditor,
       getLastSelectionForRoot,
       getMountedViewEditor,
       getView,
-      mountAuthoredFragmentView,
       registerContentRootOwner,
       registerViewEditor,
       runtime,
@@ -665,7 +565,7 @@ export function PliteRuntimeProvider<
   );
 
   return (
-    <PliteRuntimeContext value={value as unknown as PliteRuntimeContextValue}>
+    <PliteRuntimeContext value={value}>
       <EditorAnnouncementLiveRegion editor={runtime} />
       {children}
     </PliteRuntimeContext>
@@ -749,9 +649,7 @@ export function useRootState<T, const TRoot extends RootKey = RootKey>(
   }: RuntimeStateSelectorOptions<T> = {}
 ): T {
   if (root === MAIN_ROOT_KEY) {
-    throw new Error(
-      '[Plite] Omit root to read the primary document root state.'
-    );
+    throw new Error('Omit root to read the primary document root state.');
   }
 
   const { getView, selectorContext } = useRequiredPliteRuntimeContext();
@@ -825,9 +723,7 @@ export function useRootEditor<const TRoot extends RootKey = RootKey>(
   options: UseRootEditorOptions = {}
 ): ReactEditorType {
   if (root === MAIN_ROOT_KEY) {
-    throw new Error(
-      '[Plite] Omit root to create an editor for the primary document.'
-    );
+    throw new Error('Omit root to create an editor for the primary document.');
   }
 
   const { getView, runtime } = useRequiredPliteRuntimeContext();
@@ -855,7 +751,7 @@ export type UseCommandOptions<TRoot extends RootKey = RootKey> = {
 
 const usePliteResolvedRoot = (root: NamedRootKey | undefined): RootKey => {
   if (root === MAIN_ROOT_KEY) {
-    throw new Error('[Plite] Omit root to target the primary document.');
+    throw new Error('Omit root to target the primary document.');
   }
 
   const editableRoot = useContext(PliteEditableRootContext);

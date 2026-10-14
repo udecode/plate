@@ -8,7 +8,7 @@ import VNode from 'virtual-dom/vnode/vnode.js';
 import VText from 'virtual-dom/vnode/vtext.js';
 import { create } from 'xmlbuilder2';
 
-import { failInvariant } from '../../internal/failInvariant';
+import { failInvariant } from '../../../../internal/failInvariant';
 import {
   defaultDocumentOptions,
   defaultHTMLString,

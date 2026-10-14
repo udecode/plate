@@ -217,6 +217,12 @@ record 时使用 `review`。Clean projection 在省略 pending change 或把 con
 解析到一侧时返回 diagnostic。每个 helper 都接收或捕获完整 document，包括
 named root 和 metadata。
 
+安装了 authored 插件的 editor 会给每个 document 写入 authored metadata，即使
+还没有人提出 proposal。对这样的 document 执行 HTML、Markdown、plain text 与
+static HTML 导出时，`projection` 必须是 `accepted` 或 `proposed`，否则抛出
+`TypeError`。没有 authored metadata 的 document 不需要 projection。DOCX export
+始终需要 projection。
+
 ### JSON
 
 Detached document 使用纯 authored projection helper：

@@ -83,3 +83,7 @@ Read from local checkouts and vendor docs on 2026-10-08. Every editor that lets 
 | Word (OOXML) | Same tree, `w:del` around `w:delText` runs | Inserts split a deletion in the format | Accept or reject commands | Deleted text has its own element, so a plain text reader skips it |
 | Google Docs (API) | One index space; runs carry suggested deletion IDs | Not documented | Accept or reject by ID | Preview modes for accepted and original content; only the inline mode is valid for writes |
 | CKEditor 5 (commercial, docs only) | Model markers over in-tree content | Not documented | Accept and discard commands | Accepted data is built in a temporary editor |
+
+## Open work
+
+- Six native cases in `apps/plite/tests/plite-browser/authored-changes.spec.ts` fail at `6fa1169c5e`. The proposed surface shows no selected text after a native selection. The cases cover boundary retention, the vertical column with Shift held and released, select-all markup, retained selection through another view edit, and retained text selected with arrows. They fail with the editable files at HEAD, so the blur fix does not cause them (`docs/plans/artifacts/2026-10-12-plite-blur-gate/authored-exclude-base-a1.log` to `-a3.log`). The first five also fail with the focus reconciler from before the onFocus change (`authored-preonfocus-a1.log`). owner: zbeyens. stop: the six cases pass at the head of next, or 2026-11-30.

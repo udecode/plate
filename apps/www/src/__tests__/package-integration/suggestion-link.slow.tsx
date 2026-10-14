@@ -37,20 +37,19 @@ describe('native authored link integration', () => {
     editor.plugin(SuggestionPlugin).api.setMode('suggesting');
     editor.update.text.deleteBackward({ unit: 'character' });
 
-    const change = editor.plugin(AuthoredPlugin).read.changes({
-      status: 'pending',
-    }).items[0];
+    const change = editor.plugin(AuthoredPlugin).read.changes().items[0];
     const link = editor.read.children()[0].children[1] as unknown as {
-      children: Array<{ text: string }>;
+      children: Array<{ authored?: unknown[]; text: string }>;
     };
 
-    expect(editor.read.value().children).toEqual(input.children);
-    expect(link.children.map(({ text }) => text).join('')).toBe('lin');
-    expect(change).toMatchObject({
-      authorId: 'alice',
-      kind: 'delete',
-      status: 'pending',
-    });
+    // The struck "k" stays in the link under a delete mark.
+    expect(
+      link.children.map(({ authored, text }) => [text, Boolean(authored)])
+    ).toEqual([
+      ['lin', false],
+      ['k', true],
+    ]);
+    expect(change).toMatchObject({ authorId: 'alice', kind: 'delete' });
     expect(editor.read.selection()).toEqual({
       anchor: { offset: 3, path: [0, 1, 0] },
       focus: { offset: 3, path: [0, 1, 0] },
@@ -76,13 +75,11 @@ describe('native authored link integration', () => {
     });
     editor.plugin(SuggestionPlugin).api.setMode('suggesting');
     editor.update.text.deleteBackward({ unit: 'character' });
-    const selection = authored.read.select({
-      status: 'pending',
-    });
+    const { items } = authored.read.changes();
 
-    expect(authored.update.decide({ action: 'accept', selection }).status).toBe(
-      'applied'
-    );
+    expect(
+      authored.update.decide({ action: 'accept', changes: items }).status
+    ).toBe('applied');
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'before ' }], type: 'paragraph' },
     ]);
@@ -101,13 +98,11 @@ describe('native authored link integration', () => {
 
     editor.plugin(SuggestionPlugin).api.setMode('suggesting');
     editor.update.nodes.remove({ at: [0, 1] });
-    const selection = authored.read.select({
-      status: 'pending',
-    });
+    const { items } = authored.read.changes();
 
-    expect(authored.update.decide({ action: 'reject', selection }).status).toBe(
-      'applied'
-    );
+    expect(
+      authored.update.decide({ action: 'reject', changes: items }).status
+    ).toBe('applied');
     expect(editor.read.children()).toEqual(input.children);
   });
 });

@@ -329,7 +329,7 @@ Common schema checks include:
 
 - `state.schema.allowsElementType(parentType, childType)`
 - `state.schema.create(type, properties?)`
-- `state.schema.createDefaultRootChild(root?)`
+- `state.schema.createDefaultChild({ at, root? })`
 - `state.schema.delta()`
 - `state.schema.element(type)`
 - `state.schema.findWrapping(parent, child)`
@@ -496,6 +496,13 @@ editor.update((tx) => {
 
 Wrap a transaction-only plugin method with `txOnly(...)`. TypeScript omits
 it from direct update groups, and dynamic direct dispatch rejects it at runtime.
+
+Wrap a method whose arguments hold locations with `txLocate(locate, method)`,
+using `locateAt(index, ...keys)` for an options argument, a method whose
+arguments hold no location with `txLocate(false, method)`, and a method that
+only moves the selection with `txSelection(method)`. [Plugin
+Methods](/docs/plugin-methods#place-locations-under-suggestions) says when
+these declarations apply.
 
 ## Immutable node and location utilities
 

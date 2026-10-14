@@ -11,7 +11,7 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 
-import { authoredTreeProof } from '../src/authored/tree/proof-plugin';
+import { createAuthoredPlugin } from '../src/authored/authored';
 import { getEditorSchema } from '../src/core/editor-runtime';
 import {
   canonicalizeRootChildren,
@@ -436,7 +436,7 @@ describe('content completion laws', () => {
             authored: struck,
           }),
         ] as never,
-        plugins: [authoredTreeProof({ authorId: 'carol', intent: 'edit' })],
+        plugins: [createAuthoredPlugin({ authorId: 'carol', intent: 'edit' })],
       });
 
       editor.update((tx) => {

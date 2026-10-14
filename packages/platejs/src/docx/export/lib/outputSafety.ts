@@ -6,6 +6,7 @@ import {
   readBoundedDocxPackage,
   resolveDocxImportLimits,
 } from '../../internal/docxPackage';
+import { parseDocxHtml } from '../../internal/domParser';
 import {
   describeDocxSourceViolation,
   detectRasterType,
@@ -112,7 +113,7 @@ export const prepareDocxOutput = async (
 ): Promise<
   Readonly<{ diagnostics: readonly DocxDiagnostic[]; html: string }>
 > => {
-  const document = new DOMParser().parseFromString(html, 'text/html');
+  const document = parseDocxHtml(html);
   const diagnostics: DocxDiagnostic[] = [];
   let changed = false;
 

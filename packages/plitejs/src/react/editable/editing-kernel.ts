@@ -15,7 +15,11 @@ import {
   SelectionApi,
 } from '../..';
 import { Hotkeys } from '../../dom';
-import { DOMRootRuntime } from '../../dom/internal';
+import {
+  DOMRootRuntime,
+  isMoveLineEnd,
+  isMoveLineStart,
+} from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
 import { isSelectAllHotkey } from '../viewport-commands';
@@ -186,6 +190,7 @@ export type EditableMovementAxis =
   | 'document'
   | 'horizontal'
   | 'line'
+  | 'line-boundary'
   | 'unknown'
   | 'vertical'
   | 'word';
@@ -194,6 +199,7 @@ export type EditableMovementOwnershipReason =
   | 'model-document-boundary'
   | 'model-horizontal-inline-void'
   | 'model-line-browser'
+  | 'model-line-boundary'
   | 'model-word-boundary'
   | 'native-selection-key'
   | 'native-vertical-layout';
@@ -893,6 +899,12 @@ export const getEditableCommandFromKeyDown = ({
       reverse: documentBoundaryMove.reverse || undefined,
     };
   }
+  if (isMoveLineStart(nativeEvent)) {
+    return { axis: 'line-boundary', kind: 'move-selection', reverse: true };
+  }
+  if (isMoveLineEnd(nativeEvent)) {
+    return { axis: 'line-boundary', kind: 'move-selection' };
+  }
   if (Hotkeys.isMoveLineBackward(nativeEvent)) {
     return { axis: 'line', kind: 'move-selection', reverse: true };
   }
@@ -965,9 +977,11 @@ export const getEditableMovementOwnershipTrace = ({
         ? 'model-document-boundary'
         : command.axis === 'line'
           ? 'model-line-browser'
-          : command.axis === 'word'
-            ? 'model-word-boundary'
-            : 'model-horizontal-inline-void';
+          : command.axis === 'line-boundary'
+            ? 'model-line-boundary'
+            : command.axis === 'word'
+              ? 'model-word-boundary'
+              : 'model-horizontal-inline-void';
 
     return {
       axis: command.axis,

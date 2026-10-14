@@ -17,14 +17,7 @@ import {
   type Range as ModelRange,
   type Text as TextNode,
 } from '../..';
-import {
-  readAuthoredView,
-  readAuthoredViewFragments,
-  readAuthoredViewFragmentSlots,
-  subscribeAuthoredViewFragmentSlots,
-  type NativeAuthoredFragmentSlot,
-  type NativeAuthoredRenderSegment,
-} from '../../core/authored-runtime';
+import { readAuthoredView } from '../../core/authored-runtime';
 import {
   type DOMCoverageBoundary,
   type DOMCoverageCopyPolicy,
@@ -38,10 +31,6 @@ import {
   NODE_TO_PARENT,
 } from '../../dom/internal';
 import {
-  AuthoredFragmentRendererContext,
-  AuthoredFragmentRootsContext,
-} from '../authored-fragment-context';
-import {
   ElementContext,
   PliteContentRootOwnerContext,
   PliteEditableRootContext,
@@ -53,7 +42,6 @@ import {
   useRegisterPliteDecorationSource,
 } from '../decoration-context';
 import { canSkipRendererForRetainedTextFlow } from '../dom-text-sync';
-import { readContentRootRenderSegments } from '../editable/content-root-owners';
 import type {
   EditableHistoryReplayEvent,
   EditableDropResult,
@@ -75,7 +63,6 @@ import {
 import { readRuntimeNode } from '../editable/runtime-live-state';
 import { resolveViewBoundaryDOMPoint } from '../editable/selection-projected-dom';
 import type { ExternalTextOptions } from '../external-text';
-import { useAuthoredFragmentSlots } from '../hooks/use-authored-fragment-slots';
 import {
   useEditableDOMRuntime,
   useClaimEditableDOMCommit,
@@ -84,7 +71,6 @@ import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorFocused } from '../hooks/use-editor-focused';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
 import { useEditorSelection } from '../hooks/use-editor-selection';
-import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
 import { useEditorViewState } from '../hooks/use-editor-view-state';
 import { useHydrated } from '../hooks/use-hydrated';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
@@ -113,7 +99,6 @@ import {
   readPliteViewSelection,
   subscribePliteViewSelection,
 } from '../view-selection';
-import { usePliteViewSelectionFragmentKeys } from '../view-selection-decoration';
 import { EditableViewportBoundary } from '../viewport-boundary';
 import type { EditableViewportPlan } from '../viewport-plan';
 import {
@@ -149,15 +134,10 @@ import {
   type EditableTextFlowEntry,
   ImperativeTextFlowContext,
 } from './editable-text-flow';
-import {
-  EditorRoot,
-  PliteFragment,
-  PlitePlainTextFragment,
-  usePliteRenderContext,
-} from './plite';
+import { EditorRoot } from './plite';
 import { EditorElement } from './plite-element';
-import { PliteSpacer } from './plite-spacer';
-import { PliteInlineVoidShell, PliteVoidShell } from './plite-void-shell';
+import { EditorSpacer } from './plite-spacer';
+import { InlineVoidShell, VoidShell } from './plite-void-shell';
 
 export { isPliteReactDevelopmentEnvironment } from './editable-rendered-element';
 
@@ -331,7 +311,7 @@ const createEditableElementSlots = <TElement extends ElementNode = ElementNode>(
     }: ExternalTextOptions<TConfig>) => {
       assertExternalTextElement(editor, props.element);
       if (!ariaLabel.trim()) {
-        throw new Error('Plite externalText requires a nonempty ariaLabel.');
+        throw new Error('externalText requires a nonempty ariaLabel.');
       }
       return (
         <EditableExternalText
@@ -628,20 +608,18 @@ const EditableRenderedVoid = <TElement extends ElementNode = ElementNode>({
   const content = renderVoid?.({ element }) ?? null;
 
   return isInline ? (
-    <PliteInlineVoidShell content={content}>{children}</PliteInlineVoidShell>
+    <InlineVoidShell content={content}>{children}</InlineVoidShell>
   ) : (
-    <PliteVoidShell content={content}>{children}</PliteVoidShell>
+    <VoidShell content={content}>{children}</VoidShell>
   );
 };
 
 const resolveTextZeroWidth = ({
   editor,
-  isRetainedFragmentRoot,
   node,
   path,
 }: {
   editor: Editor;
-  isRetainedFragmentRoot?: boolean;
   node: TextNode;
   path: Path | null;
 }) => {
@@ -660,10 +638,6 @@ const resolveTextZeroWidth = ({
 
   if (node.text !== '') {
     return { isLineBreak: true };
-  }
-
-  if (isRetainedFragmentRoot) {
-    return { isLineBreak: false };
   }
 
   if (
@@ -748,7 +722,6 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
   renderVoid,
   nodeKey,
   renderChildrenOverride,
-  textRange,
 }: {
   placeholder?: ReactNode;
   placeholderRef?: React.RefCallback<HTMLElement>;
@@ -759,10 +732,8 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
   renderVoid?: RenderVoidRenderer<TElement>;
   nodeKey: NodeKey;
   renderChildrenOverride?: (from?: number, to?: number) => ReactNode;
-  textRange?: Readonly<{ end: number; start: number }>;
 }) => {
   const editor = useEditorContext();
-  const fragment = React.useContext(AuthoredFragmentRootsContext);
   const editableRuntime = useEditableDOMRuntime();
   const coverage = editableRuntime?.domCoverage;
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey);
@@ -789,38 +760,12 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     path,
     renderRevision,
   } = binding;
-  const hasTextChildFragments = React.useSyncExternalStore(
-    React.useCallback(
-      (notify) => {
-        const stops = childNodeKeys.flatMap((key, index) =>
-          directTextChildNodes[index]
-            ? [subscribeAuthoredViewFragmentSlots(editor, key, notify)]
-            : []
-        );
-        return () => stops.forEach((stop) => stop());
-      },
-      [editor, childNodeKeys, directTextChildNodes]
-    ),
-    () =>
-      childNodeKeys.some(
-        (key, index) =>
-          directTextChildNodes[index] &&
-          readAuthoredViewFragmentSlots(editor, key).length > 0
-      ),
-    () =>
-      childNodeKeys.some(
-        (key, index) =>
-          directTextChildNodes[index] &&
-          readAuthoredViewFragmentSlots(editor, key).length > 0
-      )
-  );
   const hasClientDOM = useHydrated();
   const canRenderImperativeTextFlow =
     React.useContext(ImperativeTextFlowContext) &&
     hasClientDOM &&
-    !renderChildrenOverride &&
-    !hasTextChildFragments;
-  const bindNodeRef = usePliteNodeRef(nodeKey, { path, pliteNode: node });
+    !renderChildrenOverride;
+  const bindNodeRef = usePliteNodeRef(nodeKey, { path, editorNode: node });
   const elementRef = useEditableElementPlacementRef(
     bindNodeRef,
     node && !isEditableTextNode(node) ? path : null
@@ -864,15 +809,9 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
         renderPlaceholder={renderPlaceholder}
         renderText={renderText}
         nodeKey={nodeKey}
-        pliteNode={node}
+        editorNode={node}
         text={node.text}
-        textRange={textRange}
-        zeroWidth={resolveTextZeroWidth({
-          editor,
-          isRetainedFragmentRoot: fragment?.roots.has(nodeKey),
-          node,
-          path,
-        })}
+        zeroWidth={resolveTextZeroWidth({ editor, node, path })}
       />
     );
     return (
@@ -930,7 +869,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
         renderPlaceholder={renderPlaceholder}
         renderText={renderText}
         nodeKey={childNodeKey}
-        pliteNode={child}
+        editorNode={child}
         text={child.text}
         zeroWidth={resolveTextZeroWidth({
           editor,
@@ -947,12 +886,12 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
       index
     );
     return directText ? (
-      <EditableDescendantNodeWithFragments
+      <EditableDescendantNodeWithChildren
         nodeKey={childNodeKey}
         key={childNodeKey}
       >
         {directText}
-      </EditableDescendantNodeWithFragments>
+      </EditableDescendantNodeWithChildren>
     ) : (
       <EditableDescendantNode
         key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [
@@ -1085,7 +1024,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
         const children = renderChildren();
 
         return voidNode && !inline ? (
-          <PliteSpacer>{children}</PliteSpacer>
+          <EditorSpacer>{children}</EditorSpacer>
         ) : (
           children
         );
@@ -1145,198 +1084,25 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
   );
 };
 
-const EditableRetainedFragments = ({
-  side,
-  slots,
-}: {
-  side: NativeAuthoredFragmentSlot['side'];
-  slots: readonly NativeAuthoredFragmentSlot[];
-}) => {
-  const editor = useEditorContext();
-  const render = React.useContext(AuthoredFragmentRendererContext);
-  useClaimEditableDOMCommit();
-  return slots
-    .filter((slot) => slot.side === side)
-    .map((slot) => {
-      const fragment = readAuthoredViewFragments(editor, slot.changeId).find(
-        (current) => current.id === slot.id
-      );
-      if (
-        !render ||
-        !fragment ||
-        fragment.kind === 'properties' ||
-        fragment.placement?.kind !== 'children'
-      ) {
-        return null;
-      }
-      return render(fragment);
-    });
-};
-
 const EditableDescendantContent = React.memo(
   EditableDescendantNodeInner
 ) as typeof EditableDescendantNodeInner;
 
-const EditableAuthoredSegmentContent = <TElement extends ElementNode>({
-  segment,
-  ...props
-}: Omit<
-  Parameters<typeof EditableDescendantNodeInner<TElement>>[0],
-  'nodeKey'
-> & {
-  segment: NativeAuthoredRenderSegment;
-}) => {
-  const editor = useEditorContext();
-  const nodeKey = editor.key(segment.path);
-  return nodeKey ? (
-    <EditableDescendantContent {...props} nodeKey={nodeKey} />
-  ) : null;
-};
-
-const EditableAuthoredSegments = <TElement extends ElementNode>({
-  nodeKey,
-  ...props
-}: Omit<
-  Parameters<typeof EditableDescendantNodeInner<TElement>>[0],
-  'nodeKey'
-> & {
-  nodeKey?: NodeKey;
-}) => {
-  const editor = useEditorContext();
-  const { addEventListener } = useRequiredEditorSelectorContext();
-  const renderParent = usePliteRenderContext();
-  const readSegments = React.useCallback(
-    () => readContentRootRenderSegments(editor, nodeKey),
-    [editor, nodeKey]
-  );
-  const segments = React.useSyncExternalStore(
-    React.useCallback(
-      (notify) => {
-        const stopNode = addEventListener(notify, { nodeKey });
-        const stopFragments = subscribeAuthoredViewFragmentSlots(
-          editor,
-          nodeKey,
-          notify
-        );
-        return () => {
-          stopNode();
-          stopFragments();
-        };
-      },
-      [addEventListener, editor, nodeKey]
-    ),
-    readSegments,
-    readSegments
-  );
-  const readOnly = new Map<NativeAuthoredRenderSegment, boolean>();
-  const isReadOnly = (segment: NativeAuthoredRenderSegment): boolean => {
-    const cached = readOnly.get(segment);
-    if (cached !== undefined) return cached;
-    const value =
-      Boolean(segment.fragment) &&
-      (segment.kind === 'text' || segment.children.every(isReadOnly));
-    readOnly.set(segment, value);
-    return value;
-  };
-  const renderSegment = (
-    segment: NativeAuthoredRenderSegment,
-    currentFragmentId: string | null = null
-  ): ReactNode => {
-    const content = (fragmentId: string | null) => (
-      <EditableAuthoredSegmentContent
-        {...props}
-        segment={segment}
-        renderChildrenOverride={
-          segment.kind === 'element'
-            ? (from = 0, to = Number.POSITIVE_INFINITY) =>
-                segment.children
-                  .filter(
-                    (child) =>
-                      child.childIndex >= from && child.childIndex <= to
-                  )
-                  .map((child) => renderSegment(child, fragmentId))
-            : undefined
-        }
-        textRange={
-          segment.kind === 'text'
-            ? { end: segment.end, start: segment.start }
-            : undefined
-        }
-      />
-    );
-    if (segment.fragment && segment.fragment.id !== currentFragmentId) {
-      const { fragment } = segment;
-      return (
-        <React.Fragment key={segment.key}>
-          {renderParent(
-            <PliteFragment
-              fragment={fragment}
-              paths={[segment.path]}
-              readOnlyRoots={isReadOnly(segment)}
-            >
-              {() => content(isReadOnly(segment) ? fragment.id : null)}
-            </PliteFragment>
-          )}
-        </React.Fragment>
-      );
-    }
-    return (
-      <React.Fragment key={segment.key}>
-        {segment.fragment
-          ? content(currentFragmentId)
-          : renderParent(content(null))}
-      </React.Fragment>
-    );
-  };
-  return segments?.map((segment) => renderSegment(segment)) ?? null;
-};
-
-const EditableDescendantNodeWithFragments = <TElement extends ElementNode>({
+const EditableDescendantNodeWithChildren = <TElement extends ElementNode>({
   children,
   nodeKey,
   ...props
 }: Parameters<typeof EditableDescendantNodeInner<TElement>>[0] & {
   children?: ReactNode;
 }) => {
-  const slots = useAuthoredFragmentSlots(nodeKey);
   useClaimEditableDOMCommit();
-  if (slots.some((slot) => slot.side === 'structure')) {
-    return <EditableAuthoredSegments {...props} nodeKey={nodeKey} />;
-  }
-  return (
-    <>
-      {slots.some((slot) => slot.side === 'before') && (
-        <EditableRetainedFragments side="before" slots={slots} />
-      )}
-      {children ?? <EditableDescendantContent {...props} nodeKey={nodeKey} />}
-      {slots.some((slot) => slot.side === 'after') && (
-        <EditableRetainedFragments side="after" slots={slots} />
-      )}
-    </>
-  );
+
+  return children ?? <EditableDescendantContent {...props} nodeKey={nodeKey} />;
 };
 
 export const EditableDescendantNode = React.memo(
-  EditableDescendantNodeWithFragments
-) as typeof EditableDescendantNodeWithFragments;
-
-const EditableAuthoredRoot = <TElement extends ElementNode>({
-  children,
-  ...props
-}: Omit<
-  Parameters<typeof EditableDescendantNodeInner<TElement>>[0],
-  'nodeKey'
-> & { children: ReactNode }) => {
-  const slots = useAuthoredFragmentSlots();
-  return slots.some((slot) => slot.side === 'structure') ? (
-    <EditableAuthoredSegments {...props} />
-  ) : (
-    <>
-      <EditableRetainedFragments side="children" slots={slots} />
-      {children}
-    </>
-  );
-};
+  EditableDescendantNodeWithChildren
+) as typeof EditableDescendantNodeWithChildren;
 
 const EditableCoverageMaterializer = ({
   materialize,
@@ -1388,51 +1154,6 @@ const EditableInner = <TElement extends ElementNode>({
   viewportPlan?: EditableViewportPlan | null;
 }) => {
   const editor = useEditorContext();
-  const viewSelectionFragmentKeys = usePliteViewSelectionFragmentKeys(editor);
-  const renderAuthoredFragment = React.useCallback<
-    NonNullable<React.ContextType<typeof AuthoredFragmentRendererContext>>
-  >(
-    (fragment) => {
-      const children = (keys: readonly NodeKey[]) =>
-        keys.map((key) => (
-          <EditableDescendantNode
-            key={key}
-            nodeKey={key}
-            renderElement={renderElement}
-            renderLeaf={renderLeaf}
-            renderPlaceholder={renderPlaceholder}
-            renderText={renderText}
-            renderVoid={renderVoid}
-          />
-        ));
-
-      return fragment.placement?.kind === 'text' &&
-        !renderLeaf &&
-        !renderText ? (
-        <PlitePlainTextFragment
-          key={fragment.id}
-          fragment={fragment}
-          hasViewSelection={viewSelectionFragmentKeys.includes(
-            JSON.stringify([fragment.changeId, fragment.id])
-          )}
-        >
-          {children}
-        </PlitePlainTextFragment>
-      ) : (
-        <PliteFragment key={fragment.id} fragment={fragment}>
-          {children}
-        </PliteFragment>
-      );
-    },
-    [
-      renderElement,
-      renderLeaf,
-      renderPlaceholder,
-      renderText,
-      renderVoid,
-      viewSelectionFragmentKeys,
-    ]
-  );
   const editableRoot = toInternalRoot(
     editor.read((state) => state.view.root())
   );
@@ -1448,7 +1169,7 @@ const EditableInner = <TElement extends ElementNode>({
       createPliteInactiveSelectionDecorationSource(
         editor,
         inactiveSelectionStore,
-        `plite-inactive-selection:${inactiveSelectionSourceId}`
+        `core:inactive-selection:${inactiveSelectionSourceId}`
       ),
     [editor, inactiveSelectionSourceId, inactiveSelectionStore]
   );
@@ -1674,70 +1395,55 @@ const EditableInner = <TElement extends ElementNode>({
 
   return (
     <EditableElementLayoutsProvider layouts={elementLayouts ?? null}>
-      <AuthoredFragmentRendererContext value={renderAuthoredFragment}>
-        <PliteEditableRootContext value={editableRoot}>
-          <EditableDOMRoot
-            autoFocus={autoFocus}
-            {...attributes}
-            className={className}
-            deferNativeTextInputRepair={viewportPlan != null}
-            disableDefaultStyles={disableDefaultStyles}
-            viewportRuntime={
-              viewportPlan
-                ? {
-                    mountedTopLevelNodeKeys:
-                      viewportPlan.mountedTopLevelNodeKeys,
-                    mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
-                    scrollToPath: scrollViewportPathIntoView,
-                    type: 'virtualized',
-                  }
-                : null
-            }
-            id={id}
-            ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-            onBeforeInput={onBeforeInput}
-            onBlurCapture={handleBlurCapture}
-            onDOMBeforeInput={onDOMBeforeInput}
-            onFocusCapture={handleFocusCapture}
-            onHistoryReplay={onHistoryReplay}
-            onKeyDown={onKeyDown}
-            onPaste={onPaste}
-            onDropResult={onDropResult}
-            onPasteResult={onPasteResult}
-            readOnly={effectiveReadOnly}
-            ref={editableRootRef}
-            scrollSelectionIntoView={scrollSelectionIntoView}
-            spellCheck={spellCheck}
-            style={rootStyle}
-          >
-            {viewportPlan && (
-              <EditableCoverageMaterializer
-                materialize={materializeViewportBoundary}
-              />
-            )}
-            <EditableAuthoredRoot
-              placeholder={placeholderValue}
-              placeholderRef={placeholderRef}
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              renderPlaceholder={renderPlaceholder}
-              renderText={renderText}
-              renderVoid={renderVoid}
-            >
-              {renderedNodes}
-            </EditableAuthoredRoot>
-            <PliteInactiveSelectionCaret
-              editableRef={inactiveSelectionEditableRef}
-              store={inactiveSelectionStore}
+      <PliteEditableRootContext value={editableRoot}>
+        <EditableDOMRoot
+          autoFocus={autoFocus}
+          {...attributes}
+          className={className}
+          deferNativeTextInputRepair={viewportPlan != null}
+          disableDefaultStyles={disableDefaultStyles}
+          viewportRuntime={
+            viewportPlan
+              ? {
+                  mountedTopLevelNodeKeys: viewportPlan.mountedTopLevelNodeKeys,
+                  mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
+                  scrollToPath: scrollViewportPathIntoView,
+                  type: 'virtualized',
+                }
+              : null
+          }
+          id={id}
+          ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+          onBeforeInput={onBeforeInput}
+          onBlurCapture={handleBlurCapture}
+          onDOMBeforeInput={onDOMBeforeInput}
+          onFocusCapture={handleFocusCapture}
+          onHistoryReplay={onHistoryReplay}
+          onKeyDown={onKeyDown}
+          onPaste={onPaste}
+          onDropResult={onDropResult}
+          onPasteResult={onPasteResult}
+          readOnly={effectiveReadOnly}
+          ref={editableRootRef}
+          scrollSelectionIntoView={scrollSelectionIntoView}
+          spellCheck={spellCheck}
+          style={rootStyle}
+        >
+          {viewportPlan && (
+            <EditableCoverageMaterializer
+              materialize={materializeViewportBoundary}
             />
-            {!effectiveReadOnly && (
-              <PliteViewSelectionCaret
-                editableRef={inactiveSelectionEditableRef}
-              />
-            )}
-          </EditableDOMRoot>
-        </PliteEditableRootContext>
-      </AuthoredFragmentRendererContext>
+          )}
+          {renderedNodes}
+          <InactiveSelectionCaret
+            editableRef={inactiveSelectionEditableRef}
+            store={inactiveSelectionStore}
+          />
+          {!effectiveReadOnly && (
+            <ViewSelectionCaret editableRef={inactiveSelectionEditableRef} />
+          )}
+        </EditableDOMRoot>
+      </PliteEditableRootContext>
     </EditableElementLayoutsProvider>
   );
 };
@@ -1769,7 +1475,7 @@ export const EditableViewportSurface = <
     content
   );
 };
-const PliteInactiveSelectionCaret = ({
+const InactiveSelectionCaret = ({
   editableRef,
   store,
 }: {
@@ -1784,10 +1490,10 @@ const PliteInactiveSelectionCaret = ({
 
   if (!visible) return null;
 
-  return <PliteInactiveSelectionCaretSelection editableRef={editableRef} />;
+  return <InactiveSelectionCaretSelection editableRef={editableRef} />;
 };
 
-const PliteViewSelectionCaret = ({
+const ViewSelectionCaret = ({
   editableRef,
 }: {
   editableRef: React.RefObject<HTMLDivElement | null>;
@@ -1805,10 +1511,10 @@ const PliteViewSelectionCaret = ({
   if (!focused || !selection || !isPliteViewSelectionCollapsed(selection)) {
     return null;
   }
-  return <PliteViewSelectionCaretGeometry editableRef={editableRef} />;
+  return <ViewSelectionCaretGeometry editableRef={editableRef} />;
 };
 
-const PliteViewSelectionCaretGeometry = ({
+const ViewSelectionCaretGeometry = ({
   editableRef,
 }: {
   editableRef: React.RefObject<HTMLDivElement | null>;
@@ -1864,7 +1570,7 @@ const PliteViewSelectionCaretGeometry = ({
   );
 };
 
-const PliteInactiveSelectionCaretSelection = ({
+const InactiveSelectionCaretSelection = ({
   editableRef,
 }: {
   editableRef: React.RefObject<HTMLDivElement | null>;
@@ -1873,10 +1579,10 @@ const PliteInactiveSelectionCaretSelection = ({
 
   if (!selection || !RangeApi.isCollapsed(selection)) return null;
 
-  return <PliteInactiveSelectionCaretGeometry editableRef={editableRef} />;
+  return <InactiveSelectionCaretGeometry editableRef={editableRef} />;
 };
 
-const PliteInactiveSelectionCaretGeometry = ({
+const InactiveSelectionCaretGeometry = ({
   editableRef,
 }: {
   editableRef: React.RefObject<HTMLDivElement | null>;
@@ -1924,7 +1630,7 @@ export const Editable = <
   const { root, ...editableProps } = props;
 
   if (root === 'main') {
-    throw new Error('[Plite] Omit root to render the primary editable.');
+    throw new Error('Omit root to render the primary editable.');
   }
   const inheritedReadOnly = useEditorReadOnly();
   const editor = useEditorContext();

@@ -1,20 +1,22 @@
 import type { Node, Path, NodeKey, Value } from '../..';
-import { getEditorRuntime } from '../../core/editor-runtime';
+import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+} from '../../core/editor-runtime';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
   hasPath as editorHasPath,
 } from '../../interfaces/editor';
+import { getNodeKeyForNode } from '../../utils/node-keys';
 import { isDOMElement } from '../utils/dom';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_RUNTIME_ID_TO_ELEMENTS,
   NODE_TO_INDEX,
   NODE_TO_PARENT,
-  NODE_TO_RUNTIME_ID,
 } from '../utils/weak-maps';
 import type { DOMEditor } from './dom-editor';
-import { isDOMFragmentNode, readDOMFragmentParent } from './dom-fragment-view';
 import { getPliteTextHostBounds } from './dom-geometry';
 import { resolveMountedEditorDOMRoot } from './dom-root-runtime';
 
@@ -73,10 +75,7 @@ export const findMountedDOMNodeByPath = <V extends Value>(
   const mountedRoot =
     root === undefined ? resolveMountedEditorDOMRoot(editor) : root;
   const editorEl =
-    mountedRoot === undefined
-      ? (EDITOR_TO_ELEMENT.get(editor) ??
-        readDOMFragmentParent(editor)?.api.dom.editable())
-      : mountedRoot;
+    mountedRoot === undefined ? EDITOR_TO_ELEMENT.get(editor) : mountedRoot;
 
   if (!editorEl) {
     return null;
@@ -99,7 +98,6 @@ export const findMountedDOMNodeByPath = <V extends Value>(
       (element) =>
         element.closest('[data-editor="true"]') === editorEl &&
         element.getAttribute('data-editor-node') &&
-        isDOMFragmentNode(editor, element) !== false &&
         (!nodeKey || element.getAttribute('data-editor-node-key') === nodeKey)
     );
   const candidates = point
@@ -136,7 +134,7 @@ export const resolvePliteNodePath = <V extends Value>(
   editor: DOMEditor<V>,
   node: Node
 ): Path | null => {
-  const nodeKey = NODE_TO_RUNTIME_ID.get(node);
+  const nodeKey = getNodeKeyForNode(node, getEditorRuntimeOwner(editor));
   const runtimePath = nodeKey ? editorGetPathByNodeKey(editor, nodeKey) : null;
 
   if (runtimePath) {

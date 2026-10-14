@@ -240,10 +240,10 @@ const createGeometryCoordinator = (
     cancelScheduled = scheduleEditorDOMPhase(
       view,
       'dom-read',
-      'Plite range geometry',
+      'Range geometry',
       flush,
       {
-        key: 'plite-range-geometry',
+        key: 'range-geometry',
         timing: 'animation-frame',
       }
     );

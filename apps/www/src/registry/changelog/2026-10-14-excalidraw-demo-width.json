@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-14-excalidraw-demo-width",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-14-excalidraw-demo-width.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-14",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Stop storing a width in the Excalidraw demo value",
+  "targets": [
+    {
+      "name": "excalidraw-demo",
+      "files": [
+        "apps/www/src/registry/examples/excalidraw-demo.tsx",
+        "apps/www/src/registry/examples/values/excalidraw-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-14-excalidraw-stop-storing-width-demo-b7129657",
+      "kind": "fix",
+      "summary": "Stop storing a `width` on the demo drawing, which the v54 Excalidraw schema does not declare.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["excalidraw-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-14",
+          "entry": "2026-10-14-excalidraw-demo-width",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

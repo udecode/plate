@@ -68,6 +68,7 @@ import {
 import { deletePathTarget, removeDeleteContents } from './delete-text-removal';
 import {
   getTopLevelCleanupRange,
+  getTouchedTopLevelRange,
   maybeMergeAdjacentTextAt,
   mergeAdjacentTextRuns,
   removeEmptyStructuralArtifacts,
@@ -529,6 +530,7 @@ const reconcileDeleteStructure = (
   removal: ReturnType<typeof removeDeleteContents>
 ) => {
   const topLevelCleanupRange = getTopLevelCleanupRange(plan);
+  const touchedRange = getTouchedTopLevelRange(plan);
   let keptIncompatibleBlockBoundary = false;
 
   if (!plan.isSingleText && plan.isAcrossBlocks) {
@@ -556,7 +558,7 @@ const reconcileDeleteStructure = (
         null,
         topLevelCleanupRange
       );
-      mergeAdjacentTextRuns(editor);
+      mergeAdjacentTextRuns(editor, touchedRange);
     } else if (plan.preserveEndBlock && mergePoint) {
       mergeBlocksAtPoint(editor, mergePoint, plan.voids);
       removeEmptyStructuralArtifacts(
@@ -565,7 +567,7 @@ const reconcileDeleteStructure = (
         null,
         topLevelCleanupRange
       );
-      mergeAdjacentTextRuns(editor);
+      mergeAdjacentTextRuns(editor, touchedRange);
     } else if (plan.voids && mergePoint && plan.effectiveEndBlockPath) {
       mergeNodes(editor, {
         at: plan.effectiveEndBlockPath,
@@ -576,7 +578,7 @@ const reconcileDeleteStructure = (
         null,
         topLevelCleanupRange
       );
-      mergeAdjacentTextRuns(editor);
+      mergeAdjacentTextRuns(editor, touchedRange);
     } else if (shouldRemoveEmptyForwardStartBlock(editor, plan)) {
       removeNodes(editor, {
         at: getDefined(plan.effectiveStartBlockPath),
@@ -588,7 +590,7 @@ const reconcileDeleteStructure = (
         null,
         topLevelCleanupRange
       );
-      mergeAdjacentTextRuns(editor);
+      mergeAdjacentTextRuns(editor, touchedRange);
     } else if (mergePoint) {
       mergeBlocksAtPoint(editor, mergePoint, plan.voids);
       removeEmptyStructuralArtifacts(
@@ -597,7 +599,7 @@ const reconcileDeleteStructure = (
         null,
         topLevelCleanupRange
       );
-      mergeAdjacentTextRuns(editor);
+      mergeAdjacentTextRuns(editor, touchedRange);
     } else {
       removeEmptyStructuralArtifacts(
         editor,
@@ -607,7 +609,7 @@ const reconcileDeleteStructure = (
       );
 
       if (!plan.startNonEditable && !plan.endNonEditable) {
-        mergeAdjacentTextRuns(editor);
+        mergeAdjacentTextRuns(editor, touchedRange);
       }
     }
   } else if (!plan.isSingleText) {
@@ -619,7 +621,7 @@ const reconcileDeleteStructure = (
     );
 
     if (!plan.removedInteriorElementSiblingStructure) {
-      mergeAdjacentTextRuns(editor);
+      mergeAdjacentTextRuns(editor, touchedRange);
     }
   }
 

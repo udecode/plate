@@ -2,11 +2,21 @@ import { act, render, waitFor } from '@testing-library/react';
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai';
 import React from 'react';
 
-import { AuthoredPlugin } from '../../authored';
-import { NodeApi } from '../../core';
+import { AuthoredPlugin, projectAuthoredDocument } from '../../authored';
+import { createEditorView, NodeApi } from '../../core';
 import { createEditor, ParagraphPlugin, EditorRoot } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
 import { useAIChat } from './useAIChat';
+
+const accepted = (editor: Parameters<typeof createEditorView>[0]) =>
+  projectAuthoredDocument(editor.read.value() as never, {
+    projection: 'accepted',
+  }).document.children;
+
+const proposedText = (editor: Parameters<typeof createEditorView>[0]) =>
+  createEditorView(editor, { authored: { preview: 'proposed' } }).read.text.string(
+    []
+  );
 
 function controlledTransport() {
   let stream!: ReadableStreamDefaultController<UIMessageChunk>;
@@ -60,7 +70,7 @@ it('streams edit output into one native suggestion without changing the view', a
       focus: { path: [0, 0], offset: 8 },
     },
   });
-  editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+  editor.api.authored.setView({ intent: 'edit' });
 
   function Binding() {
     const editableRef = React.useRef<HTMLDivElement>(null);
@@ -103,14 +113,11 @@ it('streams edit output into one native suggestion without changing the view', a
     expect(
       editor.read.authored.changes({ status: 'pending' }).items
     ).toHaveLength(1);
-    expect(editor.read.value().children).toEqual([
+    expect(accepted(editor)).toEqual([
       { type: 'paragraph', children: [{ text: 'original' }] },
     ]);
-    expect(editor.read.text.string([])).toBe('rewritten');
-    expect(editor.read.authored.view()).toEqual({
-      intent: 'edit',
-      projection: 'markup',
-    });
+    expect(proposedText(editor)).toBe('rewritten');
+    expect(editor.read.authored.view()).toEqual({ intent: 'edit' });
 
     await act(async () => editor.plugin(AIChatPlugin).api.accept());
     expect(
@@ -119,10 +126,7 @@ it('streams edit output into one native suggestion without changing the view', a
     expect(editor.read.value().children).toEqual([
       { type: 'paragraph', children: [{ text: 'rewritten' }] },
     ]);
-    expect(editor.read.authored.view()).toEqual({
-      intent: 'edit',
-      projection: 'markup',
-    });
+    expect(editor.read.authored.view()).toEqual({ intent: 'edit' });
   } finally {
     view.unmount();
   }
@@ -143,7 +147,7 @@ it('keeps all assistant parts in one cross-block edit suggestion', async () => {
       focus: { path: [1, 0], offset: 6 },
     },
   });
-  editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+  editor.api.authored.setView({ intent: 'edit' });
 
   function Binding() {
     const editableRef = React.useRef<HTMLDivElement>(null);
@@ -184,7 +188,7 @@ it('keeps all assistant parts in one cross-block edit suggestion', async () => {
     if (chat?.error) throw chat.error;
     expect(chat?.status).toBe('ready');
 
-    expect(editor.read.text.string([])).toBe('Generated preview text.');
+    expect(proposedText(editor)).toBe('Generated preview text.');
     expect(
       editor.read.authored.changes({ status: 'pending' }).items
     ).toHaveLength(1);
@@ -205,7 +209,7 @@ it('retries an edit by rejecting the previous request-owned suggestion', async (
       focus: { path: [0, 0], offset: 8 },
     },
   });
-  editor.api.authored.setView({ intent: 'edit', projection: 'markup' });
+  editor.api.authored.setView({ intent: 'edit' });
 
   function Binding() {
     const editableRef = React.useRef<HTMLDivElement>(null);
@@ -252,11 +256,8 @@ it('retries an edit by rejecting the previous request-owned suggestion', async (
     const pending = editor.read.authored.changes({ status: 'pending' }).items;
     expect(pending).toHaveLength(1);
     expect(pending[0].id).not.toBe(firstChange);
-    expect(editor.read.text.string([])).toBe('second');
-    expect(editor.read.authored.view()).toEqual({
-      intent: 'edit',
-      projection: 'markup',
-    });
+    expect(proposedText(editor)).toBe('second');
+    expect(editor.read.authored.view()).toEqual({ intent: 'edit' });
   } finally {
     view.unmount();
   }

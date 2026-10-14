@@ -41,6 +41,7 @@ import type {
   InternalSchemaPluginsForPlugin,
   PluginReadCapability,
   PluginReadState,
+  PluginDirectUpdate,
   PluginTransaction,
   PluginUpdate,
 } from '../editor/pluginRuntimeTypes';
@@ -1798,7 +1799,7 @@ export type BasePluginPortal<
     /** State-bound reads scoped directly to this plugin. */
     read: PluginReadCapability<C>;
     /** One-shot updates scoped directly to this plugin. */
-    update: PluginUpdate<C, S>;
+    update: PluginDirectUpdate<C, S>;
   };
 
 // Author capabilities replace consumer methods; do not build that portal first.

@@ -99,7 +99,7 @@ export const EditableElementLayoutsProvider = ({
 }) => (
   <EditableElementLayoutsContext value={layouts}>
     {layouts && (
-      <style href="plite-element-placement" precedence="plite">
+      <style href="editor-element-placement" precedence="editor">
         {ELEMENT_PLACEMENT_RULE}
       </style>
     )}

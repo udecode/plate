@@ -35,7 +35,10 @@ it('keeps the user fixed for the life of the editor and its views', () => {
     Reflect.defineProperty(target, 'userId', { value: 'bob' }),
     Reflect.deleteProperty(target, 'userId'),
   ]);
-  editor.update.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+  editor.update((tx) => {
+    tx.plugin(AuthoredPlugin).propose();
+    tx.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+  });
 
   expect({
     attempts,
@@ -92,7 +95,10 @@ it('refuses a construction callback that redefines the user, and its views keep 
     plugins: [AuthoredPlugin, BaseCommentsPlugin],
     userId: 'alice',
   });
-  view!.update.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+  view!.update((tx) => {
+    tx.plugin(AuthoredPlugin).propose();
+    tx.text.insert('!', { at: { offset: 4, path: [0, 0] } });
+  });
   await view!.plugin(BaseCommentsPlugin).api.createThread(thread);
 
   expect({

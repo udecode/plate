@@ -491,6 +491,7 @@ const collectSourceTaskDependencies = (
 
 const managedScriptPattern =
   /^(?:lint|test|typecheck)(?::(?:partition|tests):|$)|^typecheck:(?:contracts|tests)$/u;
+const managedCommandPattern = /run-entrypoint-(?:package-)?task\.mjs/u;
 
 const aggregateScript = (packageName, taskName) =>
   `node ../../tooling/scripts/run-entrypoint-package-task.mjs ${packageName} ${taskName}`;
@@ -523,15 +524,13 @@ export const createManagedPackageScripts = (packageName) => {
   for (const partitionName of Object.keys(definition.taskPartitions).sort(
     compareStrings
   )) {
-    const suffix = partitionName;
-
-    scripts[`lint:partition:${suffix}`] = partitionScript(
+    scripts[`lint:partition:${partitionName}`] = partitionScript(
       'lint',
       packageName,
       partitionName
     );
     if (getPackageRuntimeTestFiles(packageName, partitionName).length > 0) {
-      scripts[`test:partition:${suffix}`] = partitionScript(
+      scripts[`test:partition:${partitionName}`] = partitionScript(
         'test',
         packageName,
         partitionName
@@ -554,7 +553,9 @@ export const createManagedPackageScripts = (packageName) => {
 export const withManagedPackageScripts = (packageName, manifest) => {
   const scripts = Object.fromEntries(
     Object.entries(manifest.scripts ?? {}).filter(
-      ([scriptName]) => !managedScriptPattern.test(scriptName)
+      ([scriptName, command]) =>
+        !managedScriptPattern.test(scriptName) &&
+        !managedCommandPattern.test(command)
     )
   );
 
@@ -568,8 +569,6 @@ export const withManagedPackageScripts = (packageName, manifest) => {
     ),
   };
 };
-
-const taskSuffix = (partitionName) => partitionName;
 
 const resolveTaskReference = (packageName, taskReference) => {
   const separatorIndex = taskReference.indexOf('#');
@@ -596,7 +595,7 @@ const partitionTsconfigPath = (packageName, partitionName) =>
   path.join(
     packageRoot(packageName),
     'tsconfig.entrypoints',
-    `${taskSuffix(partitionName)}.json`
+    `${partitionName}.json`
   );
 
 const createPartitionTsconfig = (
@@ -610,20 +609,7 @@ const createPartitionTsconfig = (
     partitionName,
     '../src'
   );
-  const suffix = taskSuffix(partitionName);
   const toTsconfigGlob = (glob) => (glob.endsWith('/**') ? `${glob}/*` : glob);
-  const references = taskDependencies.map((taskReference) => {
-    const dependency = resolveTaskReference(packageName, taskReference);
-
-    return {
-      path:
-        dependency.packageName === packageName
-          ? `./${taskSuffix(dependency.partitionName)}.json`
-          : `../../${dependency.packageName}/tsconfig.entrypoints/${taskSuffix(
-              dependency.partitionName
-            )}.json`,
-    };
-  });
 
   return {
     compilerOptions: {
@@ -633,10 +619,10 @@ const createPartitionTsconfig = (
       emitDeclarationOnly: true,
       incremental: true,
       noEmit: false,
-      outDir: `../.turbo/entrypoint-types/${suffix}`,
+      outDir: `../.turbo/entrypoint-types/${partitionName}`,
       rootDir: '../src',
       sourceMap: false,
-      tsBuildInfoFile: `../.turbo/entrypoint-types/${suffix}.tsbuildinfo`,
+      tsBuildInfoFile: `../.turbo/entrypoint-types/${partitionName}.tsbuildinfo`,
     },
     exclude: [
       ...ownerGlobs
@@ -652,7 +638,7 @@ const createPartitionTsconfig = (
     include: ownerGlobs
       .filter((glob) => !glob.startsWith('!'))
       .map(toTsconfigGlob),
-    references,
+    references: projectReferences(packageName, taskDependencies),
   };
 };
 
@@ -663,10 +649,8 @@ const projectReferences = (packageName, taskDependencies) =>
     return {
       path:
         dependency.packageName === packageName
-          ? `./${taskSuffix(dependency.partitionName)}.json`
-          : `../../${dependency.packageName}/tsconfig.entrypoints/${taskSuffix(
-              dependency.partitionName
-            )}.json`,
+          ? `./${dependency.partitionName}.json`
+          : `../../${dependency.packageName}/tsconfig.entrypoints/${dependency.partitionName}.json`,
     };
   });
 
@@ -771,7 +755,6 @@ export const createPackageTurboConfig = (packageName) => {
   const partitionTaskDependencies = new Map();
 
   for (const partitionName of partitionNames) {
-    const suffix = taskSuffix(partitionName);
     const sourceFiles = getPackagePartitionSourceFiles(
       packageName,
       partitionName
@@ -780,8 +763,8 @@ export const createPackageTurboConfig = (packageName) => {
       packageName,
       partitionName
     );
-    const lintTask = `lint:partition:${suffix}`;
-    const testTask = `test:partition:${suffix}`;
+    const lintTask = `lint:partition:${partitionName}`;
+    const testTask = `test:partition:${partitionName}`;
     const typecheckTask = partitionTypecheckTask(partitionName);
 
     lintTasks.push(lintTask);
@@ -835,12 +818,12 @@ export const createPackageTurboConfig = (packageName) => {
         ...partitionSourceOwnerGlobs(definition, partitionName),
         ...sourceTestInputNegations,
         ...sharedTypecheckInputs,
-        `tsconfig.entrypoints/${suffix}.json`,
+        `tsconfig.entrypoints/${partitionName}.json`,
       ],
       outputLogs: 'errors-only',
       outputs: [
-        `.turbo/entrypoint-types/${suffix}/**`,
-        `.turbo/entrypoint-types/${suffix}.tsbuildinfo`,
+        `.turbo/entrypoint-types/${partitionName}/**`,
+        `.turbo/entrypoint-types/${partitionName}.tsbuildinfo`,
       ],
     };
   }

@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 
-import { createStaticEditor } from './editor/withStatic';
+import { createEditor } from '../core';
 import { renderStaticHtml } from './renderStaticHtml';
 
 describe('static HTML escaping', () => {
@@ -9,7 +9,7 @@ describe('static HTML escaping', () => {
     '&lt;b&gt; &amp; &#34; &#x3C;',
     '5 < 10 & "quoted" > 2',
   ])('preserves document text %s', async (text) => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       initialValue: [{ type: 'paragraph', children: [{ text }] }],
     });
 
@@ -22,7 +22,7 @@ describe('static HTML escaping', () => {
 
   it('preserves quoted attributes from a custom component', async () => {
     const title = 'a" data-injected="yes &lt;b&gt;';
-    const { data: html } = await renderStaticHtml(createStaticEditor(), {
+    const { data: html } = await renderStaticHtml(createEditor(), {
       component: () => createElement('div', { title }, 'label'),
     });
     const document = new DOMParser().parseFromString(html, 'text/html');

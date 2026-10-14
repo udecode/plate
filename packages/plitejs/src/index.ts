@@ -7,6 +7,7 @@ export { defineCommand } from './core/command-registry';
 export { editorCommands } from './core/editor-commands';
 export { editorReads } from './core/editor-reads';
 export { transfer, transferVeto } from './core/transfer';
+export { authoredVeto, type AuthoredVeto } from './core/authored-veto';
 export type {
   TransferApi,
   TransferPlugin,
@@ -96,8 +97,8 @@ export {
   invertEffect,
   mapEffect,
 } from './core/transaction-values';
-export { txOnly, txRead } from './core/tx-only';
-export type { TxOnlyMethod, TxReadMethod } from './core/tx-only';
+export { locateAt, txLocate, txOnly, txSelection } from './core/tx-only';
+export type { TxOnlyMethod } from './core/tx-only';
 export {
   compileEditorSchemaContract,
   createEditor,
@@ -123,6 +124,7 @@ export type {
   EditorCommandDispatch,
   EditorCommandHandler,
   EditorCommandInput,
+  EditorCommandPlace,
   EditorCommandResult,
   EditorCommit,
   EditorCommitChangeKind,
@@ -232,6 +234,7 @@ export type {
   EditorTargetRuntime,
   EditorTextChangeContext,
   EditorTextChangeHandler,
+  EditorBreakExitOptions,
   EditorTransactionBlocksApi,
   EditorTransactionBreakApi,
   EditorTransactionChangesApi,

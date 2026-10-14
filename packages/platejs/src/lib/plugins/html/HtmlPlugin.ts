@@ -11,6 +11,7 @@ import {
   EditorSchemaValidationError,
   ElementApi,
   getCompiledEditorSchemaFromApi,
+  isMetadataRootKey,
   schema as schemaDefinition,
   reportEditorLifecycleError,
   TextApi,
@@ -136,7 +137,7 @@ type CompiledHtmlSerializerIndex = Readonly<{
 }>;
 
 const HTML_FORMAT = 'text/html';
-const HTML_HOST_KEY = 'plate:html';
+const HTML_HOST_KEY = 'core:html';
 const HTML_PLUGIN_NAME = 'html';
 const HTML_CONTENT_TOKEN: HtmlContentToken = Object.freeze({
   __htmlContentToken: true,
@@ -1211,9 +1212,9 @@ const reportDecodeError = (
         { cause }
       ),
       editor,
-      pluginName: 'plate:html',
+      pluginName: 'core:html',
       mimeType: HTML_FORMAT,
-      key: `plate:${rule.owner}:html:decode`,
+      key: `${rule.owner}:html:decode`,
       phase: 'decode' as const,
       source: 'data-transfer-format' as const,
     })
@@ -1312,9 +1313,9 @@ const encodeWithRule = <T>(
           { cause: error }
         ),
         editor,
-        pluginName: 'plate:html',
+        pluginName: 'core:html',
         mimeType: HTML_FORMAT,
-        key: `plate:${rule.owner}:html:encode`,
+        key: `${rule.owner}:html:encode`,
         phase: 'encode' as const,
         source: 'data-transfer-format' as const,
       })
@@ -1530,7 +1531,7 @@ type DecodedHtmlProperty = Readonly<{
 }>;
 
 const getDefaultRootType = (state: EditorCoreStateView) => {
-  const fallback = state.schema.createDefaultRootChild();
+  const fallback = state.schema.createDefaultChild({ at: [0] });
 
   return ElementApi.isElement(fallback) ? fallback.type : null;
 };
@@ -1617,7 +1618,7 @@ const wrapRootInlineRuns = (
   let inlineRun: Descendant[] = [];
   const flush = () => {
     if (inlineRun.length === 0) return;
-    const fallback = state.schema.createDefaultRootChild();
+    const fallback = state.schema.createDefaultChild({ at: [0] });
 
     if (ElementApi.isElement(fallback)) {
       const children = tryFitDecodedChildren(inlineRun, fallback, state);
@@ -1913,7 +1914,7 @@ const decodeCompiledHtml = (
 
     if (element.hasAttribute('data-editor-spacer')) return [];
     if (shouldBrBecomeEmptyParagraph(element)) {
-      const fallback = state.schema.createDefaultRootChild();
+      const fallback = state.schema.createDefaultChild({ at: [0] });
 
       return ElementApi.isElement(fallback) ? [fallback] : [];
     }
@@ -1978,7 +1979,7 @@ const decodeCompiledHtml = (
 
     const defaultRootChild =
       !structural && parentType === null && isHtmlBlockElement(element)
-        ? state.schema.createDefaultRootChild()
+        ? state.schema.createDefaultChild({ at: [0] })
         : null;
     const fallbackRootElement = ElementApi.isElement(defaultRootChild)
       ? defaultRootChild
@@ -2090,7 +2091,7 @@ const decodeCompiledHtml = (
               markedChildren.length === 0
                 ? `Plate HTML decode has no mapping for <${tag}>.`
                 : `Plate HTML decode has no mapping for <${tag}>; kept its fallback content.`,
-            owner: 'plate:html',
+            owner: 'core:html',
             source: source(),
           })
         );
@@ -2306,7 +2307,7 @@ const reportUnclaimedAttributes = (
           action: 'dropped' as const,
           kind: 'attribute' as const,
           message: `No HTML mapping represents attribute "${attribute}" on <${element.tagName.toLowerCase()}>; it was omitted.`,
-          owner: 'plate:html',
+          owner: 'core:html',
           source: Object.freeze({
             ...htmlTreeLocation(root, element),
             attribute,
@@ -2736,7 +2737,7 @@ const reportUnclaimedProperties = (
         kind: 'attribute' as const,
         message,
         model: Object.freeze({ path, property: key, root: 'main' as const }),
-        owner: 'plate:html',
+        owner: 'core:html',
       })
     );
   };
@@ -3061,7 +3062,7 @@ const encodeCompiledHtml = (
           action: 'unwrapped' as const,
           kind: 'element' as const,
           message,
-          owner: 'plate:html',
+          owner: 'core:html',
         })
       );
 
@@ -3330,7 +3331,7 @@ const unsafeMappingLoss = (
         : ('dropped' as const),
     kind: kind === 'url' ? ('attribute' as const) : kind,
     message,
-    owner: 'plate:html',
+    owner: 'core:html',
     source: htmlTreeLocation(root, element),
   });
 
@@ -3412,7 +3413,7 @@ export const compilePlateHtmlFormat = (
     plugins.map((plugin) => [plugin.name, plugin] as const)
   );
   const schemaApi = editor.read((state) => state.schema);
-  const defaultBlock = schemaApi.createDefaultRootChild();
+  const defaultBlock = schemaApi.createDefaultChild({ at: [0] });
   const defaultBlockType = ElementApi.isElement(defaultBlock)
     ? defaultBlock.type
     : null;
@@ -3857,7 +3858,9 @@ export const parseHtmlSliceWithEditor = (
 const htmlDocumentDiagnostics = (
   document: EditorDocumentValue
 ): readonly HtmlWarningDiagnostic[] => {
-  const roots = Object.keys(document.roots ?? {});
+  const roots = Object.keys(document.roots ?? {}).filter(
+    (root) => !isMetadataRootKey(root)
+  );
   const metadata = Object.keys(document.meta ?? {}).filter(
     (key) => key !== 'authored'
   );
@@ -3940,20 +3943,10 @@ export const serializeHtmlWithEditor = (
   editor: Editor,
   options: HtmlEditorSerializeOptions = {}
 ): HtmlSerializeResult => {
-  const document = options.document ?? editor.read.value();
-
-  if (
-    document.meta?.authored !== undefined &&
-    options.projection === undefined
-  ) {
-    throw new TypeError(
-      'HTML serialization requires projection when the document contains authored changes.'
-    );
-  }
   const projected = projectPlateFormatDocument(
     editor,
-    document,
-    options.projection ?? 'proposed'
+    options.document ?? editor.read.value(),
+    options.projection
   );
   const outputDocument = projected.document;
   const view = createEditorView(editor, {

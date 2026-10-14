@@ -19,36 +19,30 @@ export const editorReads = Object.freeze({
     isSelectable: defineRead<
       Readonly<{ element: Node; nodeKey: NodeKey | null }>,
       boolean
-    >('plite:nodes.is-selectable'),
+    >('nodes.is-selectable'),
     shouldMergeNodesRemovePrevNode: defineRead<
       Readonly<{
         current: NodeEntry;
         previous: NodeEntry;
       }>,
       boolean
-    >('plite:nodes.should-merge-nodes-remove-prev-node'),
+    >('nodes.should-merge-nodes-remove-prev-node'),
   }),
   transfer: Object.freeze({
     /** Expand a transfer's selected blocks, such as a list item's family. */
-    source: defineRead<TransferSourceInput, NodeSelection>(
-      'plite:transfer.source'
-    ),
+    source: defineRead<TransferSourceInput, NodeSelection>('transfer.source'),
     /**
      * Redirect one landing edge, such as past a list item's family; the default
      * keeps the edge. A redirected edge must map to itself. The schema admits
      * the final edge and vetoes refuse it.
      */
-    landing: defineRead<TransferLandingInput, TransferEdge>(
-      'plite:transfer.landing'
-    ),
+    landing: defineRead<TransferLandingInput, TransferEdge>('transfer.landing'),
     /**
      * What a drop at a block's side builds, such as a column group; the
      * default, `null`, refuses. The schema must still admit the wrap, and
      * vetoes can still refuse it.
      */
-    side: defineRead<TransferSideInput, TransferWrap | null>(
-      'plite:transfer.side'
-    ),
+    side: defineRead<TransferSideInput, TransferWrap | null>('transfer.side'),
   }),
   slice: Object.freeze({
     export: defineRead<
@@ -58,10 +52,10 @@ export const editorReads = Object.freeze({
         source: 'assembled' | 'selection';
       }>,
       ContentSlice
-    >('plite:slice.export'),
+    >('slice.export'),
     get: defineRead<
       Readonly<{ options: EditorSliceReadOptions; slice: ContentSlice }>,
       ContentSlice
-    >('plite:slice.get'),
+    >('slice.get'),
   }),
 });

@@ -24,6 +24,7 @@ import {
   getEditorSchema,
 } from './editor-runtime';
 import { getContentSlice } from './get-content-slice';
+import { subscribeEditorRefusals } from './refusal';
 import {
   insertionPath,
   type JsonValue,
@@ -38,6 +39,7 @@ import {
 import { definePlugin } from './plugin';
 import { getConfiguredPluginRegistry } from './plugin-registry';
 import {
+  finalizeTransactionRepresentation,
   measureDraftInsertion,
   replaceSliceAtBlockBoundary,
   withDraftMove,
@@ -106,10 +108,12 @@ const targetOf = (landing: Landing): TransferLandingTarget =>
       ? { point: landing.point }
       : landing.side;
 
+// A preview reads another document than the stored one; Editing and
+// Suggesting views read the same.
 const authoredIdentity = (editor: AnyEditor) => {
   const view = readAuthoredView(editor);
 
-  return view ? `${view.intent}:${view.projection}` : 'native';
+  return view && 'preview' in view ? view.preview : 'native';
 };
 
 const relationOf = (from: AnyEditor, to: AnyEditor): TransferRelation => {
@@ -492,9 +496,17 @@ const runTransfer = (
     editor,
     copy,
     draft,
-    (drafted, after) => {
+    (drafted, after, frame) => {
       const children = rootChildren(after, targetRoot);
-      const map = mapDraft(drafted.children, children);
+      const map = mapDraft(
+        drafted.children,
+        children,
+        frame && {
+          change: frame.change,
+          root: targetRoot,
+          stored: rootChildren(frame.stored as JsonValue, targetRoot),
+        }
+      );
 
       if ('range' in drafted.landed) {
         const [start, end] = RangeApi.edges(drafted.landed.range);
@@ -563,6 +575,12 @@ const runTransfer = (
 
   const asMove = <T>(role: 'landing' | 'source', run: () => T): T =>
     copy ? run() : withDraftMove(getEditorRuntimeOwner(editor), { role }, run);
+  // A policy such as Suggesting's can refuse the whole update, which then
+  // reports instead of throwing.
+  let declined = false;
+  const stopRefusals = subscribeEditorRefusals(editor, () => {
+    declined = true;
+  });
 
   try {
     editor.update((tx) => {
@@ -700,6 +718,11 @@ const runTransfer = (
         });
 
         removeSource();
+        // Canonicalize the source's leftovers as their own step. When one
+        // canonical step spans them and the landing, `reconcileChildrenStep` can
+        // diff everything between as one replace, and every landed position
+        // inside it then maps to the replace's ends.
+        finalizeTransactionRepresentation(getEditorRuntimeOwner(editor));
 
         const point = start.resolve();
         const placed = measureDraftInsertion(
@@ -718,8 +741,9 @@ const runTransfer = (
 
         if (!startPoint || !endPoint) refuse('schema');
 
-        // The inserted text bounds the landing: point anchors at a text's
-        // edge miss a slice that lands as leaves of its own.
+        // The inserted content bounds the landing: point anchors at a text's
+        // edge miss a slice that lands as leaves of its own. An edge between
+        // nodes reads outward, so an inline void at the slice's edge stays in.
         const index = DocumentIndex.fromValue(tx.nodes.children());
         const pointAt = (position: number, assoc: -1 | 1, fallback: Point) => {
           const found = index.pointAt(position, assoc);
@@ -728,12 +752,12 @@ const runTransfer = (
             ? { ...fallback, offset: found.offset, path: [...found.path] }
             : fallback;
         };
-        const span = placed.text;
+        const { span } = placed;
 
         landed = span
           ? selectionRange(
-              pointAt(span.from, 1, startPoint as Point),
-              pointAt(span.to, -1, endPoint as Point)
+              pointAt(span.from, -1, startPoint as Point),
+              pointAt(span.to, 1, endPoint as Point)
             )
           : selectionRange(startPoint as Point, endPoint as Point);
         draft.current = {
@@ -790,7 +814,14 @@ const runTransfer = (
     }
     throw error;
   } finally {
+    stopRefusals();
     release();
+  }
+
+  if (declined) {
+    releaseHeld(held);
+
+    return { reason: 'policy', status: 'refused' };
   }
 
   const at = readHeld(held, landed);

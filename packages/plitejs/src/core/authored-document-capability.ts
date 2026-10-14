@@ -1,61 +1,70 @@
 import type { EditorDocumentValue, PluginPoint } from '../interfaces/editor';
-import type { DocumentChange } from './change/document-change';
-import type { InternalEditorSchemaApi } from './editor-schema';
-import { definePluginPoint } from './plugin';
+import { definePluginPoint } from './plugin-point';
+import type { CompiledEditorSchema } from './schema-compiler';
 
-type NativeAuthoredDocumentAdmissionOptions = Readonly<{
-  assertTarget?: (document: EditorDocumentValue) => void;
-  schema?: InternalEditorSchemaApi;
-}>;
+/**
+ * A container whose children a projection removed, merged, unwrapped or
+ * pulled apart. The pure resolver runs no plugin corrections, so values a
+ * correction derives from those children, such as column widths, are not
+ * recomputed.
+ */
+/**
+ * `authored-lossy-projection` reports pending changes a projection decided.
+ * `authored-uncorrected` names a container whose children a decision
+ * removed, merged, unwrapped or pulled apart: the pure resolver runs no
+ * plugin corrections, so values derived from those children, such as column
+ * widths, are not recomputed.
+ */
+export type AuthoredProjectionDiagnostic =
+  | Readonly<{
+      code: 'authored-lossy-projection';
+      message: string;
+      severity: 'warning';
+    }>
+  | Readonly<{
+      code: 'authored-uncorrected';
+      message: string;
+      path: readonly number[];
+      severity: 'warning';
+      type: string | null;
+    }>;
 
-export type NativeAuthoredProjectionDiagnostic = Readonly<{
-  code:
-    | 'authored-conflict'
-    | 'authored-lossy-projection'
-    | 'authored-review-unsupported-node'
-    | 'authored-review-unsupported-property'
-    | 'authored-review-unsupported-revision';
-  message: string;
-  severity: 'warning';
-}>;
-
-export type NativeAuthoredDocumentProjection = Readonly<{
-  diagnostics: readonly NativeAuthoredProjectionDiagnostic[];
+export type AuthoredDocumentProjection = Readonly<{
+  diagnostics: readonly AuthoredProjectionDiagnostic[];
   document: EditorDocumentValue;
-  review: EditorDocumentValue;
+  ok: true;
+  /** Pending changes the projection decided. */
+  pending: number;
 }>;
 
+/**
+ * A projection that built nothing: the schema generates property values, so
+ * deciding pending changes would mint values that differ between the
+ * accepted and proposed documents.
+ */
+export type AuthoredProjectionRefusal = Readonly<{
+  diagnostics: readonly [
+    Readonly<{
+      code: 'authored-generated-values';
+      message: string;
+      severity: 'error';
+    }>,
+  ];
+  ok: false;
+  pending: number;
+}>;
+
+/** How an editor with suggestions exports its document with them decided. */
 export type NativeAuthoredDocumentCapability = Readonly<{
-  createCheckpoint: (
-    input: NativeAuthoredDocumentAdmissionOptions &
-      Readonly<{
-        accepted: EditorDocumentValue;
-        documentId?: string;
-        replica?: string;
-        revisions: ReadonlyArray<
-          Readonly<{
-            authorId: string;
-            change: DocumentChange;
-            createdAt: number;
-            id: string;
-          }>
-        >;
-      }>
-  ) => EditorDocumentValue;
-  normalize: (
-    document: EditorDocumentValue,
-    state: unknown,
-    options?: NativeAuthoredDocumentAdmissionOptions
-  ) => Readonly<{ state: unknown }>;
-  parse: (data: string) => EditorDocumentValue;
   project: (
     document: EditorDocumentValue,
-    projection: 'accepted' | 'proposed' | 'review'
-  ) => NativeAuthoredDocumentProjection;
+    projection: 'accepted' | 'proposed',
+    schema: CompiledEditorSchema
+  ) => AuthoredDocumentProjection | AuthoredProjectionRefusal;
 }>;
 
 export const authoredDocumentCapabilityPoint: PluginPoint<NativeAuthoredDocumentCapability> =
-  definePluginPoint('plite.authored.document');
+  definePluginPoint('authored.document');
 
 export const isAuthorId = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0 && !value.includes('\u0000');

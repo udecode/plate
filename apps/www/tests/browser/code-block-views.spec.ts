@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -6,7 +7,7 @@ import { expect, test } from '@playwright/test';
 import type { Value } from 'platejs';
 
 type BrowserHandleElement = HTMLElement & {
-  __pliteBrowserHandle: {
+  [BROWSER_HANDLE_KEY]: {
     applyValueChange: (
       value: { children: Value },
       policy?: { tags: string[] }
@@ -76,13 +77,13 @@ test('code-block: native and CodeMirror views share edits, neutral paint and lan
     await expect.poll(() => editor.get.modelBlockText(0)).toBe(original);
     await expect(nativeText).toHaveText(original!);
     await input.dispatchEvent('compositionstart', { data: '' });
-    await root.evaluate((element) => {
-      (element as BrowserHandleElement).__pliteBrowserHandle.insertTextAt(
+    await root.evaluate((element, key: typeof BROWSER_HANDLE_KEY) => {
+      (element as BrowserHandleElement)[key].insertTextAt(
         'REMOTE:',
         { path: [0, 0], offset: 0 },
         { tags: ['remote'] }
       );
-    });
+    }, BROWSER_HANDLE_KEY);
     await input.dispatchEvent('compositionend', { data: '' });
     await expect(input).toContainText('REMOTE:');
     await expect(nativeText).toHaveText(`REMOTE:${original}`);
@@ -97,8 +98,8 @@ test('code-block: native and CodeMirror views share edits, neutral paint and lan
       .toBe(`REMOTE:${original}!`);
 
     await input.dispatchEvent('compositionstart', { data: '' });
-    await root.evaluate((element) => {
-      (element as BrowserHandleElement).__pliteBrowserHandle.applyValueChange(
+    await root.evaluate((element, key: typeof BROWSER_HANDLE_KEY) => {
+      (element as BrowserHandleElement)[key].applyValueChange(
         {
           children: [
             {
@@ -110,7 +111,7 @@ test('code-block: native and CodeMirror views share edits, neutral paint and lan
         },
         { tags: ['remote'] }
       );
-    });
+    }, BROWSER_HANDLE_KEY);
     await input.dispatchEvent('compositionend', { data: '' });
     await expect(nativeText).toHaveText('def shared():\n    return 2');
     await expect(
@@ -173,8 +174,8 @@ test('code-block: copied JSON button formats the live model', async ({
     );
 
     await editor.ready({ editor: 'visible', text: 'const shared' });
-    await root.evaluate((element) => {
-      (element as BrowserHandleElement).__pliteBrowserHandle.applyValueChange({
+    await root.evaluate((element, key: typeof BROWSER_HANDLE_KEY) => {
+      (element as BrowserHandleElement)[key].applyValueChange({
         children: [
           {
             type: 'codeBlock',
@@ -183,7 +184,7 @@ test('code-block: copied JSON button formats the live model', async ({
           },
         ],
       });
-    });
+    }, BROWSER_HANDLE_KEY);
     await native.locator('button[title="Format code"]').click();
     await expect
       .poll(() => editor.get.modelBlockText(0))

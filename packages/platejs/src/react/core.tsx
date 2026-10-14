@@ -119,7 +119,6 @@ export {
 } from './components/plate-nodes';
 export type { Editor } from './editor/Editor';
 export { useCreateEditor } from './editor/useCreateEditor';
-export { useStaticEditor } from './editor/useStaticEditor';
 export { createEditor, type CreateEditorOptions } from './editor/withPlate';
 export type { DOMHandler, DOMHandlers } from './plugin/DOMHandlers';
 export type { KeyboardHandler } from './plugin/KeyboardHandler';

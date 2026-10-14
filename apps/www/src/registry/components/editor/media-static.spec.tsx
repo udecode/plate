@@ -1,13 +1,14 @@
 import { expect, it } from 'bun:test';
 
-import { createStaticEditor, EditorStatic } from 'platejs/static';
+import { createEditor } from 'platejs';
+import { EditorStatic } from 'platejs/static';
 import * as React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
 import { BaseMediaKit } from './media-static';
 
 it('renders completed media with the media-only kit', () => {
-  const editor = createStaticEditor({
+  const editor = createEditor({
     plugins: BaseMediaKit,
     initialValue: [
       {

@@ -1,0 +1,14 @@
+---
+id: 2026-10-12-link-shortcut-view
+date: 2026-10-12
+status: draft
+kind: fix
+summary: 'Open the link form with Cmd+K'
+change: { 'type': 'source', 'date': '2026-10-12', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-12-link-open-form-cmd-k-957f4cda","kind":"fix","migrationNotes":[]} -->
+
+- **`link`**: Fix Cmd+K, which did not open the link form. `api.trigger()` reads the editor's focus when `focused` is omitted, and returns `false` when the form stays closed.

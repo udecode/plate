@@ -334,8 +334,11 @@ const assertImport = (fixture: Fixture, imported: SuccessfulImport) => {
     plugins: [BaseParagraphPlugin, AuthoredPlugin],
     initialValue: imported.document,
   });
+  const accepted = createEditorView(restored, {
+    authored: { preview: 'accepted' },
+  });
   const proposed = createEditorView(restored, {
-    authored: { intent: 'propose', projection: 'proposed' },
+    authored: { preview: 'proposed' },
   });
 
   expect(imported.diagnostics).toEqual([
@@ -346,13 +349,13 @@ const assertImport = (fixture: Fixture, imported: SuccessfulImport) => {
       part: HEADER_PART,
     }),
   ]);
-  expect(paragraphText(restored.read.children())).toEqual(fixture.accepted);
+  expect(paragraphText(accepted.read.children())).toEqual(fixture.accepted);
   expect(paragraphText(proposed.read.children())).toEqual(fixture.proposed);
   expect(
     restored.read.authored
       .changes({ limit: fixture.revisionIds.length + 1 })
       .items.map(({ id }) => id)
-  ).toEqual(fixture.revisionIds);
+  ).toEqual(fixture.revisionIds.map((id) => `docx-${id}`));
 };
 
 const percentile = (values: readonly number[], fraction: number) => {

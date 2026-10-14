@@ -34,9 +34,9 @@ const resolvePliteTextPointFromDOMPoint = (
 
     if (flowEntry) {
       const path = [...flowEntry.path] as Path;
-      const pliteNode = readRuntimeText(editor, path);
+      const editorNode = readRuntimeText(editor, path);
 
-      if (!pliteNode) return null;
+      if (!editorNode) return null;
       if (requireCurrentRuntimeBinding) {
         const currentPath = editorGetPathByNodeKey(
           editor,
@@ -48,7 +48,7 @@ const resolvePliteTextPointFromDOMPoint = (
 
       return {
         path,
-        offset: Math.max(0, Math.min(pliteNode.text.length, flowEntry.offset)),
+        offset: Math.max(0, Math.min(editorNode.text.length, flowEntry.offset)),
       };
     }
   }
@@ -67,9 +67,9 @@ const resolvePliteTextPointFromDOMPoint = (
   }
 
   const path = getPliteNodePathFromDOMElement(textHost);
-  const pliteNode = path ? readRuntimeText(editor, path) : null;
+  const editorNode = path ? readRuntimeText(editor, path) : null;
 
-  if (!path || !pliteNode) return null;
+  if (!path || !editorNode) return null;
 
   if (requireCurrentRuntimeBinding) {
     const nodeKey = textHost.getAttribute(
@@ -93,7 +93,7 @@ const resolvePliteTextPointFromDOMPoint = (
   if (textFlowOffset != null) {
     return {
       path,
-      offset: Math.max(0, Math.min(pliteNode.text.length, textFlowOffset)),
+      offset: Math.max(0, Math.min(editorNode.text.length, textFlowOffset)),
     };
   }
 
@@ -108,7 +108,7 @@ const resolvePliteTextPointFromDOMPoint = (
     if (string === stringHost) {
       const nextOffset = Math.max(
         0,
-        Math.min(pliteNode.text.length, offset + anchorOffset)
+        Math.min(editorNode.text.length, offset + anchorOffset)
       );
 
       return { path, offset: nextOffset };

@@ -290,13 +290,13 @@ const resolveEditorFixture = (children: any[]): HyperscriptEditorFixture => {
 
   if (selection.anchor && !selection.focus) {
     throw new Error(
-      'Plite hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<anchor />`. For collapsed selections, use `<cursor />` instead.'
+      'Hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<anchor />`. For collapsed selections, use `<cursor />` instead.'
     );
   }
 
   if (!selection.anchor && selection.focus) {
     throw new Error(
-      'Plite hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<focus />`. For collapsed selections, use `<cursor />` instead.'
+      'Hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<focus />`. For collapsed selections, use `<cursor />` instead.'
     );
   }
 

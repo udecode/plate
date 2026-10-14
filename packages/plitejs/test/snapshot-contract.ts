@@ -1505,6 +1505,126 @@ it('insertSoftBreak from an empty selectable block void creates a trailing block
   });
 });
 
+describe('a break on a selected block void lands its parent default', () => {
+  const textContent = schema.content.text({ default: 'text', min: 1 });
+  const VoidBreakSchema = defineEditorSchema('schema:void-break', {
+    elements: {
+      card: {
+        content: schema.content.prefix(
+          [{ element: 'thematic-break' }, { element: 'title' }],
+          schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+          })
+        ),
+      } as const,
+      paragraph: { content: textContent } as const,
+      quote: {
+        content: schema.content.types(['paragraph', 'thematic-break'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      } as const,
+      solo: {
+        content: schema.content.types(['paragraph', 'thematic-break'], {
+          default: { type: 'paragraph' },
+          max: 1,
+          min: 1,
+        }),
+      } as const,
+      'thematic-break': { void: 'block' } as const,
+      title: { content: textContent } as const,
+    },
+    id: 'void-break',
+    root: schema.content.types(
+      ['card', 'quote', 'solo', 'thematic-break', 'title'],
+      { default: { type: 'title' }, min: 1 }
+    ),
+    version: 1,
+  });
+  const hr = { children: [{ text: '' }], type: 'thematic-break' };
+  const block = (type: string, text = '') => ({ children: [{ text }], type });
+  const press = (
+    children: Element[],
+    at: number[],
+    key: 'insertBreak' | 'insertSoftBreak'
+  ) => {
+    const editor = createPliteEditor({ plugins: [VoidBreakSchema] });
+
+    editorReplace(editor, {
+      children,
+      selection: {
+        kind: 'text' as const,
+        anchor: { offset: 0, path: at },
+        focus: { offset: 0, path: at },
+      },
+    });
+    editor.update(() => {
+      if (key === 'insertBreak') editorInsertBreak(editor);
+      else editorInsertSoftBreak(editor);
+    });
+
+    return {
+      children: editor.read.children(),
+      focus: editor.read.selection()?.focus.path,
+    };
+  };
+
+  for (const key of ['insertBreak', 'insertSoftBreak'] as const) {
+    it(`${key} in a quote lands the quote's paragraph`, () => {
+      assert.deepEqual(
+        press(
+          [
+            block('title', 'T'),
+            { children: [block('paragraph', 'a'), hr], type: 'quote' },
+          ],
+          [1, 1, 0],
+          key
+        ),
+        {
+          children: [
+            block('title', 'T'),
+            {
+              children: [block('paragraph', 'a'), hr, block('paragraph')],
+              type: 'quote',
+            },
+          ],
+          focus: [1, 2, 0],
+        }
+      );
+    });
+
+    it(`${key} at the root lands the root's default`, () => {
+      assert.deepEqual(press([block('title', 'T'), hr], [1, 0], key), {
+        children: [block('title', 'T'), hr, block('title')],
+        focus: [2, 0],
+      });
+    });
+
+    it(`${key} in a full parent changes nothing`, () => {
+      const solo = [block('title', 'T'), { children: [hr], type: 'solo' }];
+
+      assert.deepEqual(press(solo, [1, 0, 0], key), {
+        children: solo,
+        focus: [1, 0, 0],
+      });
+    });
+
+    it(`${key} that would shift a required slot changes nothing`, () => {
+      const card = [
+        {
+          children: [hr, block('title', 'H'), block('paragraph', 'p')],
+          type: 'card',
+        },
+      ];
+
+      assert.deepEqual(press(card, [0, 0, 0], key), {
+        children: card,
+        focus: [0, 0, 0],
+      });
+    });
+  }
+});
+
 it('insertBreak after marked text moves selection into the new block', () => {
   const editor = createEditor();
 

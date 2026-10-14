@@ -160,7 +160,7 @@ export const useRuntimeInputEvents = ({
       }
       const compositionEndPending =
         pendingCompositionEnd?.ownership === 'external' ||
-        pendingCompositionEnd?.ownership === 'plite' ||
+        pendingCompositionEnd?.ownership === 'editor' ||
         settledCompositionInputMatches;
       const { pendingRootDOMInput } = inputController.state;
       const rootDOMInputMatches =

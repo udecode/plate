@@ -1,5 +1,6 @@
 import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
+import { ReactEditor } from '../plugin/react-editor';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableDOMSelectionSyncOptions } from './input-controller';
 import {
@@ -36,7 +37,10 @@ export const useEditableRootSelectionExport = ({
             timing: 'animation-frame',
           }
         ),
-      shouldSkipDOMExport: runtime.isViewportBackedSelection,
+      // Chromium focuses an unfocused editable when a DOM selection is written into it.
+      shouldSkipDOMExport: (selection) =>
+        !ReactEditor.isFocused(editor) ||
+        runtime.isViewportBackedSelection(selection),
       syncDOMSelectionToEditor,
     });
 

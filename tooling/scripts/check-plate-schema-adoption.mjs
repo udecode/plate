@@ -39,7 +39,7 @@ const terminalComponentConversionPattern =
 const staticBaseKitReactAdapterPattern =
   /(?:\b[\w-]+-base-kit\b[^\n]{0,500}\btoReactPlugin\s*\(\s*Base[\w$]*Plugin\b|\btoReactPlugin\s*\(\s*Base[\w$]*Plugin\b[^\n]{0,500}\b[\w-]+-base-kit\b)/i;
 const staticEditorBaseReactAdapterPattern =
-  /(?=[\s\S]*\b(?:createStaticEditor\s*\(|from\s+['"](?:platejs|@platejs\/core)\/static['"]))[\s\S]*\btoReactPlugin\s*\(\s*Base[\w$]*Plugin\b/;
+  /(?=[\s\S]*\bfrom\s+['"](?:(?:platejs|@platejs\/core)\/static|[^'"]*-static)['"])[\s\S]*\btoReactPlugin\s*\(\s*Base[\w$]*Plugin\b/;
 const auditedFilePattern = /\.(?:cjs|cts|js|jsx|md|mdx|mjs|mts|ts|tsx)$/;
 const typescriptFilePattern = /\.(?:cts|mts|ts|tsx)$/;
 const internalModulePattern = /(?:^|\/)internal(?:\/|$)|\.internal(?:\.|$)/;
@@ -134,9 +134,8 @@ const staleCapabilityFactoryContextBindings = new Set([
 ]);
 const plateEditorConstructionOptionIndexes = new Map([
   ['createEditor', 0],
-  ['createStaticEditor', 0],
+  ['useCreateEditor', 0],
   ['useEditor', 0],
-  ['useStaticEditor', 0],
 ]);
 const defaultPlateEditorConstructorNames = new Map(
   [...plateEditorConstructionOptionIndexes.keys()].map((name) => [name, name])
@@ -475,7 +474,7 @@ const intentionalNamedSchemaLineages = new Map([
   ],
   [
     'apps/www/src/registry/examples/collaboration-demo.tsx',
-    new Map([['plate-collaboration-demo@1', 1]]),
+    new Map([['collaboration-demo@1', 1]]),
   ],
   [
     'apps/www/src/registry/examples/document-migration-demo.tsx',
@@ -5577,7 +5576,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       report(node, 'synthetic Plate schema extension identity');
     }
     if (
-      staticString === 'plate:block-content' &&
+      staticString === 'core:block-content' &&
       !privateSchemaGroupOwners.has(file)
     ) {
       report(node, 'private Plate block-content schema group');

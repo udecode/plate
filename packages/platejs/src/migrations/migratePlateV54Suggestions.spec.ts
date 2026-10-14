@@ -8,7 +8,7 @@ import {
   target,
 } from 'platejs';
 
-import { AuthoredPlugin, projectAuthoredReview } from '../authored';
+import { AuthoredPlugin, projectAuthoredDocument } from '../authored';
 import type { EditorDocumentValue } from '../facade';
 import {
   defineDocumentMigrations,
@@ -62,7 +62,15 @@ const reviewSnapshot = (document: EditorDocumentValue) => {
     initialValue: document,
   });
 
-  return projectAuthoredReview(editor.read.value());
+  const value = editor.read.value();
+
+  return {
+    accepted: projectAuthoredDocument(value, { editor, projection: 'accepted' })
+      .document,
+    changes: editor.plugin(AuthoredPlugin).read.changes().items,
+    proposed: projectAuthoredDocument(value, { editor, projection: 'proposed' })
+      .document,
+  };
 };
 
 describe('migratePlateV54 legacy suggestions', () => {

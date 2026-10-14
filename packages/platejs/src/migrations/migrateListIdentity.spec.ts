@@ -1,11 +1,6 @@
-import {
-  BaseParagraphPlugin,
-  createEditor,
-  definePlugin,
-  PLUGINS,
-  schema,
-} from '../core';
+import { BaseParagraphPlugin, createEditor, PLUGINS } from '../core';
 import { BaseBlockquotePlugin } from '../features/basic-nodes/lib/BaseBlockPlugins';
+import { BaseHeadingPlugin } from '../features/basic-nodes/lib/BaseHeadingPlugins';
 import { BaseListPlugin } from '../features/list';
 import {
   defineDocumentMigrations,
@@ -17,16 +12,12 @@ type Block = Record<string, unknown> & {
   children: Block[] | Array<{ text: string }>;
 };
 
-const HeadingPlugin = definePlugin(PLUGINS.heading, {
-  schema: { element: schema.element.textBlock() },
-});
-
 const plugins = [
   BaseParagraphPlugin,
   BaseBlockquotePlugin,
-  HeadingPlugin,
+  BaseHeadingPlugin,
   BaseListPlugin.configure({
-    targetPlugins: [BaseParagraphPlugin, HeadingPlugin],
+    targetPlugins: [BaseParagraphPlugin, BaseHeadingPlugin],
   }),
 ];
 
@@ -173,7 +164,7 @@ const fixtures: Record<string, Block[]> = {
     item('Bullet', { listType: 'bulleted' }),
     item('Two'),
     item('Alpha', { listStyle: 'lower-alpha' }),
-    { ...item('Heading'), type: PLUGINS.heading },
+    { ...item('Heading', { level: 1 }), type: PLUGINS.heading },
     item('Three', { listStyle: 'decimal' }),
   ],
   'starts and restarts': [
@@ -235,7 +226,7 @@ const randomBlock = (next: (bound: number) => number, depth: number): Block => {
 
   return {
     ...item('i', extra),
-    ...(next(12) === 0 ? { type: PLUGINS.heading } : {}),
+    ...(next(12) === 0 ? { level: 1, type: PLUGINS.heading } : {}),
   };
 };
 

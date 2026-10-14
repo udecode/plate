@@ -79,8 +79,7 @@ export const deletePathTarget = (
         {
           association: 'backward',
           deletion: 'nearest',
-        },
-        'transaction'
+        }
       )
     : null;
 
@@ -213,8 +212,7 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
       {
         association: 'forward',
         deletion: 'drop',
-      },
-      'transaction'
+      }
     )
   );
   const startAnchor = createAnchor(
@@ -223,8 +221,7 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
     {
       association: 'backward',
       deletion: 'nearest',
-    },
-    'transaction'
+    }
   );
   const endAnchor = createAnchor(
     editor,
@@ -232,8 +229,7 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
     {
       association: 'forward',
       deletion: 'nearest',
-    },
-    'transaction'
+    }
   );
   let removedText = '';
 

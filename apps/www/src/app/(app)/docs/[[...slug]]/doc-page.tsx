@@ -15,6 +15,7 @@ import { MdxProvider } from '@/components/mdx-provider';
 import { siteConfig } from '@/config/site';
 import { absoluteUrl } from '@/lib/absoluteUrl';
 import { getPagerForDoc } from '@/lib/docs-page-tree';
+import { registryExampleSlug } from '@/lib/docs-routes';
 import { getDocsNavMeta, slugToCategory } from '@/lib/docs-nav-metadata';
 import { getPlateLLMPageMarkdownFromPage } from '@/lib/llm';
 import {
@@ -59,7 +60,6 @@ const registryNames = new Set(registry.items.map((item) => item.name));
 const componentDocs = registry.items.filter(
   (item) => item.type === 'registry:component'
 );
-const DEMO_SUFFIX_REGEX = /-demo$/;
 const packageInfo: PackageInfoType = {
   gzip: '',
   name: '',
@@ -95,7 +95,7 @@ function getRegistryStaticParams() {
       slug: ['components', item.name],
     })),
     ...registryExamples.map((item) => ({
-      slug: ['examples', item.name.replace(DEMO_SUFFIX_REGEX, '')],
+      slug: ['examples', registryExampleSlug(item.name)],
     })),
   ];
 }
@@ -118,7 +118,7 @@ function getRegistryFile({
 
   if (category === 'example' && name) {
     const file = registryExamples.find(
-      (item) => item.name.replace(DEMO_SUFFIX_REGEX, '') === name
+      (item) => registryExampleSlug(item.name) === name
     );
 
     return {

@@ -1,13 +1,7 @@
 import * as Y from 'yjs';
 
-import {
-  bindAuthoredRange,
-  readAuthoredView,
-  type NativeAuthoredRangeBinding,
-} from '../../core/authored-runtime';
 import { registerEditorViewLifetimeCleanup } from '../../core/editor-view-lifetime';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
-import { snapshotEditorJsonValue } from '../../core/value-codec';
 import type { Anchor, Point, Range } from '../../index';
 import { RangeApi } from '../../index';
 import {
@@ -86,17 +80,7 @@ type CachedCursor<TCursorData extends YjsRemoteCursorData> = {
   anchor: Anchor<Point> | null;
   cursor: YjsRemoteCursor<TCursorData>;
   focus: Anchor<Point> | null;
-  rawSelection:
-    | YjsAwarenessRelativeSelection
-    | Readonly<{ authored: unknown; root: string }>
-    | null;
-  views: WeakMap<
-    YjsEditor,
-    {
-      binding: NativeAuthoredRangeBinding | undefined;
-      cursor: YjsRemoteCursor<TCursorData>;
-    }
-  >;
+  rawSelection: YjsAwarenessRelativeSelection | null;
 };
 
 const EMPTY_CLIENT_IDS = Object.freeze([]) as readonly number[];
@@ -135,11 +119,7 @@ const areRelativeSelectionsEqual = (
   (left !== null &&
     right !== null &&
     left.root === right.root &&
-    ('authored' in left || 'authored' in right
-      ? 'authored' in left &&
-        'authored' in right &&
-        areJsonLikeValuesEqual(left.authored, right.authored)
-      : yjsRelativeRangesEqual(left.range, right.range)));
+    yjsRelativeRangesEqual(left.range, right.range));
 
 const areCursorDataEqual = (
   left: YjsRemoteCursorData | undefined,
@@ -184,10 +164,6 @@ export const createYjsAwarenessAdapter = <
   const viewAdapters = new WeakMap<
     YjsEditor,
     YjsAwarenessAdapter<TCursorData>
-  >();
-  const viewLists = new WeakMap<
-    YjsEditor,
-    ReadonlyArray<YjsRemoteCursor<TCursorData>>
   >();
   let cursorIdSet = new Set<number>();
   let cursorIds = EMPTY_CLIENT_IDS;
@@ -265,25 +241,6 @@ export const createYjsAwarenessAdapter = <
     }
 
     metrics.cursorResolutionPassCount += 1;
-    if ('authored' in rawSelection) {
-      try {
-        const binding = bindAuthoredRange(editor, {
-          saved: rawSelection.authored,
-          options: {
-            root: rawSelection.root,
-            deletion: 'drop',
-            association: 'forward',
-          },
-        });
-        return {
-          anchor: null,
-          focus: null,
-          selection: binding?.resolve() ?? null,
-        };
-      } catch {
-        return { anchor: null, focus: null, selection: null };
-      }
-    }
     const root = rootFor(rawSelection.root);
 
     if (!root) return { anchor: null, focus: null, selection: null };
@@ -390,13 +347,7 @@ export const createYjsAwarenessAdapter = <
     const saved = state.selection;
     let rawSelection: CachedCursor<TCursorData>['rawSelection'] = null;
     try {
-      rawSelection =
-        isRecord(saved) && typeof saved.root === 'string' && 'authored' in saved
-          ? snapshotEditorJsonValue(
-              { root: saved.root, authored: saved.authored },
-              'Authored awareness selection'
-            )
-          : readYjsAwarenessRelativeSelection(saved);
+      rawSelection = readYjsAwarenessRelativeSelection(saved);
     } catch {
       rawSelection = null;
     }
@@ -410,7 +361,6 @@ export const createYjsAwarenessAdapter = <
         cursor: createRemoteCursor(remoteClientId, resolved.selection, data),
         focus: resolved.focus,
         rawSelection,
-        views: new WeakMap(),
       });
 
       return true;
@@ -431,7 +381,6 @@ export const createYjsAwarenessAdapter = <
       current.anchor = resolved.anchor;
       current.focus = resolved.focus;
       current.rawSelection = rawSelection;
-      current.views = new WeakMap();
       current.cursor = createRemoteCursor(
         remoteClientId,
         resolved.selection,
@@ -518,16 +467,7 @@ export const createYjsAwarenessAdapter = <
       const rootCursors = [...cursors.values()].filter(
         (cached) => cached.rawSelection?.root === root
       );
-      for (const cached of rootCursors) {
-        if (cached.rawSelection && 'authored' in cached.rawSelection) {
-          cached.cursor =
-            readCursor(cached.cursor.clientId, editor) ?? cached.cursor;
-          changedClientIds.add(cached.cursor.clientId);
-        }
-      }
-      const ordinary = rootCursors.filter(
-        (cached) => !cached.rawSelection || !('authored' in cached.rawSelection)
-      );
+      const ordinary = rootCursors;
       let fallback = options.fallbackRoots?.has(root) ?? false;
       const mapped = new Map<
         CachedCursor<TCursorData>,
@@ -624,25 +564,6 @@ export const createYjsAwarenessAdapter = <
 
   const writeSelection = (view: YjsEditor): void => {
     const selection = view.read.selection();
-    if (readAuthoredView(view)) {
-      let next = null;
-      if (selection) {
-        const root = normalizeRootKey(
-          selection.anchor.root ?? view.read.view.root()
-        );
-        try {
-          const binding = bindAuthoredRange(view, {
-            range: selection,
-            options: { root, deletion: 'drop', association: 'forward' },
-          });
-          if (binding) next = { authored: binding.serialize(), root };
-        } catch {
-          next = null;
-        }
-      }
-      setLocalStateFieldIfChanged('selection', next);
-      return;
-    }
 
     const nextRange =
       selection === null || selection === undefined
@@ -671,66 +592,9 @@ export const createYjsAwarenessAdapter = <
   };
 
   const readCursor = (
-    remoteClientId: number,
-    view: YjsEditor
-  ): YjsRemoteCursor<TCursorData> | null => {
-    const cached = cursors.get(remoteClientId);
-    if (!cached) return null;
-    if (!cached.rawSelection || !('authored' in cached.rawSelection)) {
-      return cached.cursor;
-    }
-    let current = cached.views.get(view);
-    if (!current?.binding) {
-      let binding: NativeAuthoredRangeBinding | undefined;
-      try {
-        binding = bindAuthoredRange(view, {
-          saved: cached.rawSelection.authored,
-          options: {
-            root: cached.rawSelection.root,
-            deletion: 'drop',
-            association: 'forward',
-          },
-        });
-      } catch {
-        binding = undefined;
-      }
-      current = {
-        binding,
-        cursor: createRemoteCursor(remoteClientId, null, cached.cursor.data),
-      };
-      cached.views.set(view, current);
-    }
-    const selection = current.binding?.resolve() ?? null;
-    if (
-      current.cursor.data !== cached.cursor.data ||
-      (current.cursor.selection === null || selection === null
-        ? current.cursor.selection !== selection
-        : !RangeApi.equals(current.cursor.selection, selection))
-    ) {
-      current.cursor = createRemoteCursor(
-        remoteClientId,
-        selection,
-        cached.cursor.data
-      );
-    }
-    return current.cursor;
-  };
-  const readCursors = (view: YjsEditor) => {
-    const current = cursorIds.flatMap((id) => {
-      const cursor = readCursor(id, view);
-      return cursor ? [cursor] : [];
-    });
-    const previous = viewLists.get(view);
-    if (
-      previous?.length === current.length &&
-      current.every((cursor, index) => previous[index] === cursor)
-    ) {
-      return previous;
-    }
-    const next = Object.freeze(current);
-    viewLists.set(view, next);
-    return next;
-  };
+    remoteClientId: number
+  ): YjsRemoteCursor<TCursorData> | null =>
+    cursors.get(remoteClientId)?.cursor ?? null;
 
   rebuild();
 
@@ -777,8 +641,6 @@ export const createYjsAwarenessAdapter = <
         claimSelection: selection.claimSelection,
         clearSelection: selection.clearSelection,
         currentSelection: () => view.read.selection(),
-        remoteCursor: (id) => readCursor(id, view),
-        remoteCursors: () => readCursors(view),
         syncSelection: selection.syncSelection,
       });
       viewAdapters.set(view, scoped);
@@ -806,10 +668,9 @@ export const createYjsAwarenessAdapter = <
       }
     },
     rebuild,
-    remoteCursor: (remoteClientId) => readCursor(remoteClientId, editor),
+    remoteCursor: readCursor,
     remoteCursorIds: () => cursorIds,
     remoteCursors: () => {
-      if (readAuthoredView(editor)) return readCursors(editor);
       if (cursorList === null) {
         cursorList = Object.freeze(
           cursorIds.flatMap((id) => {

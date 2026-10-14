@@ -16,7 +16,10 @@ import type {
   PluginFormatSchemaView,
   PluginReference,
 } from '../../lib/plugin';
-import { freezePluginDescriptorValue } from '../utils/mergePlugins';
+import {
+  freezePluginDescriptorValue,
+  isPluginDescriptorOf,
+} from '../utils/mergePlugins';
 import type { CompiledPlateModel } from './compilePlateModel';
 import { getPluginStore } from './pluginStore';
 
@@ -80,6 +83,37 @@ export const createPluginFormatModelView = <V extends Value>(
   }) as PluginFormatModelView<V>;
 };
 
+export const createPluginFormatRegistry = (
+  pluginNamed: (name: string) => AnyBasePlugin | undefined,
+  elementTypeOf: (name: string) => string | undefined
+): PluginFormatRegistry => {
+  const answers = new WeakMap<PluginReference, AnyBasePlugin | null>();
+  const resolve = (plugin: PluginReference | string) => {
+    if (typeof plugin === 'string') return pluginNamed(plugin);
+
+    let answer = answers.get(plugin);
+
+    if (answer === undefined) {
+      const installed = pluginNamed(plugin.name);
+
+      answer =
+        installed && isPluginDescriptorOf(plugin, installed) ? installed : null;
+      answers.set(plugin, answer);
+    }
+
+    return answer ?? undefined;
+  };
+
+  return Object.freeze({
+    has: (plugin) => resolve(plugin) !== undefined,
+    type: (plugin) => {
+      const installed = resolve(plugin);
+
+      return installed ? elementTypeOf(installed.name) : undefined;
+    },
+  });
+};
+
 type CapturedPluginFormatContext = PluginFormatContext &
   Readonly<{
     pluginState: Readonly<Record<string, unknown>>;
@@ -96,14 +130,11 @@ export const createPluginFormatOperationContext = (
   model: CompiledPlateModel,
   plugins: readonly AnyBasePlugin[]
 ) => {
-  const pluginNames = new Set(plugins.map((plugin) => plugin.name));
-  const registry = Object.freeze({
-    has: (plugin: PluginReference | string) =>
-      pluginNames.has(typeof plugin === 'string' ? plugin : plugin.name),
-    type: (plugin: PluginReference | string) =>
-      model.byName[typeof plugin === 'string' ? plugin : plugin.name]
-        ?.elementType ?? undefined,
-  }) satisfies PluginFormatRegistry;
+  const pluginsByName = new Map(plugins.map((plugin) => [plugin.name, plugin]));
+  const registry = createPluginFormatRegistry(
+    (name) => pluginsByName.get(name),
+    (name) => model.byName[name]?.elementType ?? undefined
+  );
   const operationContexts = new WeakMap<
     object,
     ReadonlyMap<string, CapturedPluginFormatContext>
@@ -141,6 +172,7 @@ export const createPluginFormatOperationContext = (
         getElementBehavior: state.schema.getElementBehavior,
         getProperty: state.schema.getProperty,
         getVocabulary: state.schema.getVocabulary,
+        property: state.schema.property,
       }) satisfies PluginFormatSchemaView;
 
       contexts = new Map(

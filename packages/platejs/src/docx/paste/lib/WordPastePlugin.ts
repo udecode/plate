@@ -14,6 +14,7 @@ import {
 } from '../../../lib/plugins/html/htmlDom';
 import { decodeHtmlDataTransfer } from '../../../lib/plugins/html/HtmlPlugin';
 import { cleanWordHtml, isWordHtml } from '../../html/cleanWordHtml.internal';
+import { parseDocxHtml } from '../../internal/domParser';
 
 const DECIMAL_COMPONENT_PATTERN = /^\d+$/;
 const LEVEL_PATTERN = /level(\d+)/i;
@@ -117,13 +118,12 @@ const getDeclaredListStyles = (html: string) => {
   return styles;
 };
 
-const isWordPayload = (html: string) =>
-  isWordHtml(new DOMParser().parseFromString(html, 'text/html').body);
+const isWordPayload = (html: string) => isWordHtml(parseDocxHtml(html).body);
 
 const prepareWordHtml = (input: string, rtf: string) => {
   // Juice skips the first CSS rule behind Word's opening style comment.
   const data = juice(input.replaceAll(/<style>\s*<!--/g, '<style>'));
-  const document = new DOMParser().parseFromString(data, 'text/html');
+  const document = parseDocxHtml(data);
   const { body } = document;
 
   if (!isWordHtml(body)) return null;
@@ -278,10 +278,7 @@ const prepareWordHtml = (input: string, rtf: string) => {
     }
   });
 
-  const cleanedDocument = new DOMParser().parseFromString(
-    cleanWordHtml(body.innerHTML, rtf),
-    'text/html'
-  );
+  const cleanedDocument = parseDocxHtml(cleanWordHtml(body.innerHTML, rtf));
 
   cleanedDocument.body.querySelectorAll('img').forEach((element) => {
     element.remove();

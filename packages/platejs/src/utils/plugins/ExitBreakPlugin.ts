@@ -1,24 +1,30 @@
-import type { Node, Path } from '../../facade';
-import { insertExitBlock } from '../../internal/plugin/insertExitBlock';
+import { txLocate, type EditorBreakExitOptions } from '../../facade';
 import { definePlugin } from '../../lib/plugin/definePlugin';
 import { PLUGINS } from '../plate-keys';
 
-type ExitBreakNodeMatch = (node: Node, path: Path) => boolean;
-
-type ExitBreakOptions = {
-  match?: ExitBreakNodeMatch;
-  reverse?: boolean;
-};
+type ExitBreakOptions = Omit<EditorBreakExitOptions, 'before'>;
 
 /**
  * Inserts an exit block before or after the current block structure.
  */
 export const ExitBreakPlugin = definePlugin(PLUGINS.exitBreak, {
   editOnly: true,
-  update: ({ tx }) => ({
-    insert: (options: Omit<ExitBreakOptions, 'reverse'> = {}) =>
-      insertExitBlock(tx, options),
-    insertBefore: (options: Omit<ExitBreakOptions, 'reverse'> = {}) =>
-      insertExitBlock(tx, { ...options, reverse: true }),
-  }),
+  update: ({ tx }) => {
+    const exitClaimingKey = (options: EditorBreakExitOptions) => {
+      if (!tx.selection.isCollapsed()) return false;
+
+      tx.break.exit(options);
+
+      return true;
+    };
+
+    return {
+      insert: txLocate(false, (options: ExitBreakOptions = {}) =>
+        exitClaimingKey(options)
+      ),
+      insertBefore: txLocate(false, (options: ExitBreakOptions = {}) =>
+        exitClaimingKey({ ...options, before: true })
+      ),
+    };
+  },
 });

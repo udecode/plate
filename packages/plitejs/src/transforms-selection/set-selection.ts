@@ -83,12 +83,10 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
   if (
     SelectionApi.isText(selection) &&
     selection.marks !== undefined &&
-    SelectionApi.isText(nextSelection) &&
     !Object.hasOwn(newProps, 'marks') &&
-    ((Object.hasOwn(newProps, 'anchor') &&
-      !PointApi.equals(selection.anchor, nextSelection.anchor)) ||
-      (Object.hasOwn(newProps, 'focus') &&
-        !PointApi.equals(selection.focus, nextSelection.focus)))
+    ((newProps.anchor &&
+      !PointApi.equals(selection.anchor, newProps.anchor)) ||
+      (newProps.focus && !PointApi.equals(selection.focus, newProps.focus)))
   ) {
     const { marks: _marks, ...selectionWithoutMarks } = nextSelection;
 

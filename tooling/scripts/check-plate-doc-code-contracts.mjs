@@ -17,10 +17,8 @@ const compareStrings = (left, right) => {
 const repoRoot = resolve(import.meta.dirname, '../..');
 const editorConstructorNames = new Set([
   'createEditor',
-  'createStaticEditor',
   'useCreateEditor',
   'useEditor',
-  'useStaticEditor',
 ]);
 const codeFenceLanguages = new Set([
   'javascript',

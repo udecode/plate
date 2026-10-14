@@ -6,6 +6,10 @@ import {
 import type {
   EditorReadMethodTree,
   EditorStateSchemaApi,
+  EditorToggleBlockOptions,
+  Element,
+  NodeRemoveNodesOptions,
+  NodeSetNodesOptions,
   RuntimePluginDefinitionInput,
   RuntimePluginReference,
 } from '../../facade';
@@ -13,7 +17,8 @@ import {
   getCompiledEditorSchemaFromApi,
   isRuntimePlugin,
   schema as schemaDefinition,
-  txRead,
+  txLocate,
+  locateAt,
 } from '../../facade';
 import type {
   AnyBasePlugin,
@@ -1107,14 +1112,7 @@ const resolvePluginCapability = (
     ])
   );
 
-  return mergePluginCapabilities(
-    {
-      kind,
-      ...(kind === 'read' ? { mapMethod: txRead } : {}),
-      owner,
-    },
-    ...values
-  );
+  return mergePluginCapabilities({ kind, owner }, ...values);
 };
 
 const createPluginLifecycleHandlers = (
@@ -1217,7 +1215,7 @@ export const createPlateRuntimePlugins = (
               } else {
                 for (const contribution of apiContributions) {
                   const value =
-                    contribution.kind === 'plate'
+                    contribution.kind === 'definition'
                       ? context.editor === editor
                         ? contribution.value
                         : Reflect.apply(contribution.factory, undefined, [
@@ -1274,11 +1272,7 @@ export const createPlateRuntimePlugins = (
 
               if (!markKey) {
                 return mergePluginCapabilities(
-                  {
-                    kind: 'read',
-                    mapMethod: txRead,
-                    owner: plugin.name,
-                  },
+                  { kind: 'read', owner: plugin.name },
                   authoredRead
                 ) as EditorReadMethodTree;
               }
@@ -1303,11 +1297,7 @@ export const createPlateRuntimePlugins = (
               };
 
               return mergePluginCapabilities(
-                {
-                  kind: 'read',
-                  mapMethod: txRead,
-                  owner: plugin.name,
-                },
+                { kind: 'read', owner: plugin.name },
                 defaultRead,
                 authoredRead
               ) as EditorReadMethodTree;
@@ -1435,71 +1425,93 @@ export const createPlateRuntimePlugins = (
               const defaultUpdate = {
                 ...(elementType
                   ? {
-                      insert: (
-                        properties: Readonly<Record<string, unknown>> = {},
-                        insertOptions?: Readonly<Record<string, unknown>> &
-                          Pick<
-                            BlockInsertOptions,
-                            'at' | 'after' | 'replaceEmpty'
-                          >
-                      ) =>
-                        applyGeneratedInsert(
-                          'insert',
-                          properties,
-                          insertOptions
-                        ),
+                      insert: txLocate(
+                        locateAt(1, 'at', 'after'),
+                        (
+                          properties: Readonly<Record<string, unknown>> = {},
+                          insertOptions?: Readonly<Record<string, unknown>> &
+                            Pick<
+                              BlockInsertOptions,
+                              'at' | 'after' | 'replaceEmpty'
+                            >
+                        ) =>
+                          applyGeneratedInsert(
+                            'insert',
+                            properties,
+                            insertOptions
+                          )
+                      ),
                       ...(!hasAuthoredInsert && isBlockElement
                         ? {
-                            upsert: (
-                              properties: Readonly<
-                                Record<string, unknown>
-                              > = {},
-                              insertOptions?: BlockUpsertOptions
-                            ) =>
-                              applyGeneratedInsert(
-                                'upsert',
-                                properties,
-                                insertOptions
-                              ),
+                            upsert: txLocate(
+                              locateAt(1, 'after', 'before'),
+                              (
+                                properties: Readonly<
+                                  Record<string, unknown>
+                                > = {},
+                                insertOptions?: BlockUpsertOptions
+                              ) =>
+                                applyGeneratedInsert(
+                                  'upsert',
+                                  properties,
+                                  insertOptions
+                                )
+                            ),
                           }
                         : {}),
-                      remove: (
-                        removeOptions?: Readonly<Record<string, unknown>>
-                      ) => {
-                        context.tx.nodes.remove({
-                          ...removeOptions,
-                          type: elementType,
-                        });
-                      },
-                      set: (
-                        properties: Readonly<Record<string, unknown>>,
-                        setOptions?: Readonly<Record<string, unknown>>
-                      ) => {
-                        context.tx.nodes.set(properties, {
-                          ...setOptions,
-                          type: elementType,
-                        });
-                      },
+                      remove: txLocate(
+                        locateAt(0),
+                        (
+                          removeOptions?: Omit<
+                            NodeRemoveNodesOptions<Element>,
+                            'match' | 'type'
+                          >
+                        ) => {
+                          context.tx.nodes.remove({
+                            ...removeOptions,
+                            type: elementType,
+                          });
+                        }
+                      ),
+                      set: txLocate(
+                        locateAt(1),
+                        (
+                          properties: Readonly<Record<string, unknown>>,
+                          setOptions?: Omit<
+                            NodeSetNodesOptions<Element>,
+                            'match' | 'type'
+                          >
+                        ) => {
+                          context.tx.nodes.set(properties, {
+                            ...setOptions,
+                            type: elementType,
+                          });
+                        }
+                      ),
                       ...(hasGenericToggle && !hasAuthoredToggle
                         ? {
-                            toggle: (
-                              toggleOptions: Readonly<
-                                Record<string, unknown>
-                              > = {}
-                            ) => {
-                              const { collapse, ...blockOptions } =
-                                toggleOptions;
+                            toggle: txLocate(
+                              locateAt(0),
+                              (
+                                toggleOptions: Omit<
+                                  EditorToggleBlockOptions,
+                                  'wrap'
+                                > = {}
+                              ) => {
+                                const { collapse, ...blockOptions } =
+                                  toggleOptions;
 
-                              context.tx.blocks.toggle(
-                                { type: elementType },
-                                blockOptions
-                              );
-                              if (collapse) {
-                                context.tx.selection.collapse(
-                                  collapse === true ? undefined : collapse
+                                context.tx.blocks.toggle(
+                                  { type: elementType },
+                                  blockOptions
                                 );
+                                if (collapse) {
+                                  context.tx.selection.collapse(
+                                    collapse === true ? undefined : collapse
+                                  );
+                                }
                               }
-                            },
+                            ),
                           }
                         : {}),
                     }
@@ -1509,10 +1521,10 @@ export const createPlateRuntimePlugins = (
                       clear: () => {
                         context.tx.marks.remove(markKey);
                       },
-                      set: (value: unknown) => {
+                      set: txLocate(false, (value: unknown) => {
                         context.tx.marks.add(markKey, value);
-                      },
-                      toggle: (value?: unknown) => {
+                      }),
+                      toggle: txLocate(false, (value?: unknown) => {
                         if (!markIsBoolean && value === undefined) {
                           throw new TypeError(
                             `Plate mark plugin "${plugin.name}" requires a value to toggle.`
@@ -1523,7 +1535,7 @@ export const createPlateRuntimePlugins = (
                           markKey,
                           markIsBoolean ? true : value
                         );
-                      },
+                      }),
                     }
                   : {}),
               };

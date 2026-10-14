@@ -1,3554 +1,1937 @@
-import { createAnchor } from '../core/anchor';
+import { authoredDocumentCapabilityPoint } from '../core/authored-document-capability';
 import {
-  authoredDocumentCapabilityPoint,
-  isAuthorId,
-  type NativeAuthoredDocumentCapability,
-} from '../core/authored-document-capability';
-import {
-  getAuthoredViewCommit,
-  EMPTY_AUTHORED_FRAGMENT_SLOTS,
+  getAuthoredUpdateView,
   registerAuthoredRuntime,
-  type NativeAuthoredFragment,
-  type NativeAuthoredRenderSegment,
 } from '../core/authored-runtime';
-import { ChangeDraft } from '../core/change/builder';
+import { type AuthoredVeto, authoredVeto } from '../core/authored-veto';
 import {
-  bindDocumentChangeNodeKeys,
+  createInternalDocumentChange,
   DocumentChange,
+  filterDocumentChangeRoots,
+  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRanges,
+  getInternalDocumentRootChange,
+  valueRoot,
 } from '../core/change/document-change';
 import { DocumentIndex } from '../core/change/document-index';
-import type { JsonEditorValue } from '../core/change/tokens';
-import { createEditorCommit } from '../core/commit';
+import type { RootChange } from '../core/change/root-change';
 import {
-  createEditorCommitPublicationQueue,
-  publishEditorCommitInVersionOrder,
-} from '../core/commit-publication';
-import { isDocumentView } from '../core/document-view-read';
+  deepFreeze,
+  type JsonEditorValue,
+  type JsonNode,
+  jsonEqual,
+} from '../core/change/tokens';
+import {
+  type EditorFrameRecording,
+  registerEditorCommandDocument,
+} from '../core/command-document';
+import { createEditorCommit, getEditorCommitValue } from '../core/commit';
+import { registerEditorContent } from '../core/content';
+import { documentAdmissionPoint } from '../core/document-admission';
+import {
+  registerEditorDocumentRecorder,
+  registerEditorDraftGuard,
+} from '../core/document-recorder';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
   getEditorSchema,
 } from '../core/editor-runtime';
-import {
-  getCompiledEditorSchemaFromApi,
-  type InternalEditorSchemaApi,
-} from '../core/editor-schema';
+import type { InternalEditorSchemaApi } from '../core/editor-schema';
 import { definePlugin } from '../core/plugin';
-import { profileCoreDuration } from '../core/profiling';
 import {
-  getActiveEditorTransaction,
-  getActiveDocumentChangeBuilder,
-  getActiveTransactionDocumentChange,
-  isBuildingTransactionSpec,
-  setTransactionPublicationChange,
-  setTransactionDocumentProjection,
-  withEditorDocumentProjection,
+  getCompiledEditorSchema,
+  getPluginContributions,
+} from '../core/plugin-registry';
+import {
+  getActiveEditorUpdateId,
+  getActiveEditorUpdateTags,
+  getEditorProjectionSnapshotIndex,
+  hasEditorProjectionSnapshotIndex,
+  inheritEditorProjectionIndexes,
   notifyEditorViewState,
   subscribeEditorViewState,
-  getCurrentSelection,
-  getCurrentSelectionRoot,
-  setTransactionViewSelection,
-  restoreTransactionSourceSelection,
-  getEditorStateView,
-  getEditorProjectionSnapshotIndex,
-  inheritEditorProjectionIndexes,
-  getLastCommit,
+  withEditorDocumentProjection,
 } from '../core/public-state';
-import { constructCanonicalDocumentChange } from '../core/representation';
-import { createEditorEffect } from '../core/transaction-values';
-import { txOnly, type TxOnlyMethod } from '../core/tx-only';
-import { snapshotEditorJsonValue } from '../core/value-codec';
+import {
+  EditorRefusalError,
+  publishEditorRefusal,
+  subscribeEditorRefusals,
+} from '../core/refusal';
+import { completeChildrenAt, emptyTextDrops } from '../core/representation';
+import { EditorSchemaValidationError } from '../core/schema-validation';
+import { txOnly, type TxOnlyMethod, txStored } from '../core/tx-only';
 import type {
   AnyEditor as Editor,
-  EditorDocumentValue,
-  Plugin,
-  EditorUpdateTransaction,
   EditorCommit,
+  EditorDocumentValue,
   EditorSnapshot,
-  NodeKey,
+  Plugin,
+  PluginDependencyReferenceFor,
   Selection,
-  Value,
-  ValueOf,
 } from '../interfaces/editor';
+import type { Element } from '../interfaces/element';
 import type { Descendant } from '../interfaces/node';
-import { RangeApi, type Range } from '../interfaces/range';
+import { type Path, PathApi } from '../interfaces/path';
+import { type Point, PointApi } from '../interfaces/point';
+import { type Range, RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
-import { seedNodeKeys } from '../utils/node-keys';
+import { isMetadataRootKey } from '../internal/root-location';
 import {
-  bindAuthoredDocumentRange,
-  bindAuthoredDocumentPath,
-  type AuthoredRangeProjection,
-} from './anchors';
+  type AuthoredChangeIndex,
+  groupAuthoredChanges,
+  indexAuthoredChanges,
+  readAuthoredDetails,
+} from './changes';
 import {
-  createAuthoredReviewCheckpoint,
-  normalizeAuthoredReviewDocument,
-} from './checkpoint';
+  authoredAdmission,
+  createDocumentMarksValidator,
+} from './facts/admission';
+import { carriedIn } from './facts/compact';
+import { createDependencies, type Dependencies } from './facts/dependencies';
+import { editingChangeOf, isEditingChange } from './facts/editing';
 import {
-  previewAuthoredDecision,
-  prepareAuthoredDecision,
-  inspectAuthoredSelection,
-  prepareAuthoredRevert,
-  projectAuthoredOperation,
-  projectAuthoredSteps,
-  projectAuthoredReviewUndo,
-  type AuthoredProjection,
-} from './decisions';
+  claimsOf,
+  factsOf,
+  isSettledDeletion,
+  marksOf,
+  primeInsertions,
+  type ReviewFacts,
+} from './facts/facts';
 import {
-  parseAuthoredDocument,
+  appendRecords,
+  authoredRecords,
+  carryRecords,
+  CONTEXTS_ROOT,
+  type ContextRecord,
+  contextElementOf,
+  incarnationOf,
+  verdictElementOf,
+  VERDICTS_ROOT,
+} from './facts/records';
+import {
+  type AuthoredLocationMap,
+  authoredLocationMap,
   projectAuthoredDocument,
-  projectAuthoredReview,
+  projectionRefusal,
 } from './format';
 import {
-  authoredFragmentIndexNodeKeys,
-  authoredFragmentBucket,
-  createAuthoredFragmentIndex,
-  updateAuthoredFragmentIndex,
-  type AuthoredFragmentIndex,
-} from './fragment-index';
+  type AuthoredRefusal,
+  constructsValues,
+  GENERATED_VALUES_REFUSAL,
+  proposalRefusal,
+  unrepresentable,
+} from './refusal';
+import { authoredResolveSchemaOf } from './resolve-schema';
 import {
-  authoredHistoryEffect,
-  captureAuthoredHistoryNodeKeys,
-  restoreAuthoredHistoryNodeKeys,
-  type AuthoredHistoryNodeKeys,
-} from './history';
+  characterAlignedChange,
+  createCommandProjector,
+  structuralAcceptedChange,
+} from './tree/command-projection';
+import { relinkCuts } from './tree/cuts';
+import { acceptedValues, type FormatTag } from './tree/layers';
 import {
-  readAuthoredFragmentProjection,
-  inheritAuthoredFragmentProjection,
-  readAuthoredMarkupFragments,
-} from './markup';
-import { createEditorAuthoredProjectionContext } from './projection-context';
+  type AuthoredMark,
+  AuthoredMarkError,
+  authoredMarksSchema,
+  isAuthoredSetValued,
+  readAuthoredMarks,
+  readMembers,
+} from './tree/marks';
+import { recordAuthoredSteps } from './tree/record';
+import { completeProposed } from './tree/record-completion';
 import {
-  readAuthoredChange,
-  readAuthoredChangeDetails,
-  hasAuthoredReviewContent,
-  validateAuthoredQuery,
-} from './read';
-import { readRecord, records } from './record-tree';
-import { composeAuthoredRenderSegments } from './render';
-import { protectAuthoredRetainedContent } from './retained';
-import {
-  captureAuthoredSelection,
-  resolveAuthoredSelection,
-  type AuthoredViewSelection,
-} from './selection';
-import {
-  authoredOperationEffect,
-  authoredState,
-  compactAuthoredContent,
-  emptyAuthoredState,
-  equalAuthoredOperations,
-  indexAuthoredState,
-  hasAuthoredContent,
-  materializeAuthoredEdit,
-  readAuthoredOperationBatch,
-  matchingAuthoredChanges,
-  rememberLegacyAuthoredProjection,
-  retainAuthoredContent,
-  reduceAuthoredOperation,
-  snapshotAuthoredOperationBatch,
-  type AuthoredRecord,
-  type AuthoredOperation,
-  type AuthoredEdit,
-  type AuthoredEditIdentity,
-  type AuthoredReview,
-  type AuthoredState,
-} from './state';
-import {
-  captureAuthoredChange,
-  authoredRootNodes,
-  type AuthoredInsertion,
-  AuthoredMappingConflictError,
-  createAuthoredPositionRoots,
-  mapAuthoredChange,
-  type AuthoredPositionRoots,
-  authoredEditTarget,
-  partitionAuthoredTextEdit,
-  partitionAuthoredStructuralEdit,
-} from './steps';
+  type AuthoredResolveSchema,
+  projectAuthoredValue,
+  isTextBlock,
+  resolveAuthoredChildren,
+  resolveAuthoredValue,
+} from './tree/resolve';
 import type {
   AuthoredChange,
   AuthoredChangeDetails,
-  AuthoredChangePublication,
+  AuthoredChangeGroup,
   AuthoredDecision,
   AuthoredOptions,
   AuthoredPage,
   AuthoredQuery,
   AuthoredResult,
-  AuthoredSelection,
-  AuthoredStatus,
+  AuthoredReview,
   AuthoredView,
 } from './types';
 
 type AuthoredRead = {
-  /** Whether the current editor identity can author proposals. */
-  canPropose: () => boolean;
   view: () => AuthoredView;
   change: (id: string) => AuthoredChange | null;
   changes: (query?: AuthoredQuery) => AuthoredPage;
   changesAt: (range: Range) => readonly AuthoredChange[];
-  /** Demand-read one immutable semantic and review snapshot without expanding change pages. */
   details: (id: string) => AuthoredChangeDetails | null;
-  preview: (input: AuthoredDecision) => AuthoredResult;
-  select: (query: {
-    ids?: readonly string[];
-    authorId?: string;
-    status?: AuthoredStatus;
-  }) => AuthoredSelection;
+  /** Pending changes as cards show them, each with its palette rank. */
+  groups: () => readonly AuthoredChangeGroup[];
+  preview: (
+    decisions: AuthoredDecision | readonly AuthoredDecision[]
+  ) => AuthoredResult;
+  /** What review reads on a node of the stored document. */
+  reviewOf: (node: unknown) => AuthoredReview;
 };
 
 type AuthoredUpdate = {
-  decide: (input: AuthoredDecision) => AuthoredResult;
+  /**
+   * Accept or reject changes in this update, which records nothing. Several
+   * decisions decide together, so changes that wait on each other can be
+   * accepted and rejected in one call. A blocked result names the changes to
+   * decide with them.
+   */
+  decide: (
+    decisions: AuthoredDecision | readonly AuthoredDecision[]
+  ) => AuthoredResult;
+  /** Record this update's writes under one change, whatever the intent. */
   propose: TxOnlyMethod<(options?: { changeId?: string }) => string>;
-  resolve: (input: AuthoredDecision) => AuthoredResult;
-  /** Compensate retained accepted content. Applied ids identify the new contribution. */
-  revert: (input: { selection: AuthoredSelection }) => AuthoredResult;
 };
 
 export type AuthoredPlugin = Plugin<{
   activate: true;
   api: {
     setView: (view: AuthoredView) => void;
+    /** Calls the listener with the ids of changes a commit added, changed or removed. */
     subscribeChanges: (
-      listener: (publication: AuthoredChangePublication) => void
+      listener: (changeIds: readonly string[]) => void
+    ) => () => void;
+    /**
+     * Calls the listener with each Suggesting change the editor refused
+     * whole, after it rolled back, and with each view switch it refused.
+     */
+    subscribeRefusals: (
+      listener: (refusal: AuthoredRefusal) => void
     ) => () => void;
   };
   contributions: true;
-  effectTypes: true;
+  dependencies: readonly [PluginDependencyReferenceFor<typeof authoredRecords>];
   name: 'authored';
-  on: true;
   read: AuthoredRead;
-  stateFields: true;
+  schema: typeof authoredMarksSchema;
   update: AuthoredUpdate;
 }>;
 
-export type AuthoredEditor<V extends Value = Value> = Editor<
-  V,
-  readonly [AuthoredPlugin]
->;
-
-type AuthoredTransaction = {
-  finishing: boolean;
-  preparedProjection?: AuthoredProjection;
-  revertPositions?: AuthoredPositionRoots;
-  hydratedChanges: Set<string>;
-  receiving: AuthoredState | null;
-  insertions: Map<DocumentChange, AuthoredInsertion>;
-  rangeLifetime: { aborted: boolean };
-  ranges: Array<{ release: () => void; settle: () => void }>;
-  rangeProjection?: { change: DocumentChange; projection: AuthoredProjection };
-  historyInverseSelection?: AuthoredViewSelection;
-  historySelection?: AuthoredViewSelection;
-  view: Editor | null;
-  viewSelection: AuthoredViewSelection;
-  viewSelectionBefore: Selection;
-  viewSelectionRoot: string;
-  automatic: boolean;
-  actor: string | null;
-  before: EditorDocumentValue;
-  applyingDecision: boolean;
-  changed: boolean;
-  decisionSuffix: DocumentChange | null;
-  replacement:
-    | { phase: 'loading' }
-    | {
-        phase: 'loaded' | 'settling';
-        projection?: AuthoredProjection;
-        state: AuthoredState;
-        value: EditorDocumentValue;
-      }
-    | null;
-  changeId: string | null;
-  inputProjection: 'accepted' | 'proposed';
-  intent: 'edit' | 'propose';
-  publication: 'accepted' | 'proposed' | 'unresolved';
-  decision: Readonly<{
-    acceptedChange: DocumentChange;
-    projectedChange: DocumentChange;
-    projection: AuthoredProjection;
-  }> | null;
-};
-
-type AuthoredRuntime = {
-  accepted: EditorDocumentValue;
-  acceptedPositions: AuthoredPositionRoots;
-  active: AuthoredTransaction | null;
-  fragments: Map<string, Map<string, NativeAuthoredFragment>>;
-  fragmentIndex: AuthoredFragmentIndex | null;
-  options: AuthoredOptions;
-  projected: EditorDocumentValue;
-  projectedPositions: AuthoredPositionRoots;
-  replica: string;
-  source: Editor;
-  subscribeChanges: (
-    view: Editor,
-    listener: (publication: AuthoredChangePublication) => void
-  ) => () => void;
-};
-
-type DirectAuthoredMappingInput = Omit<
-  Parameters<typeof mapAuthoredChange>[0],
-  'acceptedEdit' | 'direction'
-> & {
-  target: 'accepted' | 'proposed';
-};
-
-const mapDirectAuthoredChange = (input: DirectAuthoredMappingInput) => {
-  const { target: _target, ...mapping } = input;
-
-  return mapAuthoredChange({
-    ...mapping,
-    acceptedEdit: true,
-    direction: 'forward',
-  });
-};
-
-const RUNTIMES = new WeakMap<Editor, AuthoredRuntime>();
-
-/** Narrow an editor only when the native authored capability is active. */
-export const isAuthoredEditor = <TEditor extends Editor>(
-  editor: TEditor
-): editor is TEditor & AuthoredEditor<ValueOf<TEditor>> =>
-  RUNTIMES.has(getEditorRuntimeOwner(editor));
-const VIEWS = new WeakMap<
-  ReturnType<typeof getEditorRuntime>,
-  { composition: { changeId: string | null } | null; policy: AuthoredView }
->();
-const PENDING_VIEWS = new WeakMap<
-  ReturnType<typeof getEditorRuntime>,
-  AuthoredView
->();
-const VIEW_SELECTIONS = new WeakMap<
-  ReturnType<typeof getEditorRuntime>,
-  AuthoredViewSelection
->();
-const RESOLVED_VIEW_SELECTIONS = new WeakMap<
-  ReturnType<typeof getEditorRuntime>,
-  {
-    captured: AuthoredViewSelection;
-    positions: AuthoredPositionRoots;
-    value: EditorDocumentValue;
-    state: AuthoredState;
-    result: { selection: Selection; root: string };
-  }
->();
-const FRAGMENT_VIEWS = new WeakMap<
-  object,
+/** Deterministic ids, clock and starting intent for tests. */
+export type AuthoredTestOptions = AuthoredOptions &
   Readonly<{
-    documentId: string;
-    fragment: NativeAuthoredFragment;
-    parent: Editor;
-    requireMarkupParent: boolean;
-  }>
->();
-const EMPTY_FRAGMENT_VALUE: EditorDocumentValue = Object.freeze({
-  children: Object.freeze([]),
-});
-const DEFAULT_VIEW: AuthoredView = Object.freeze({
-  intent: 'edit',
-  projection: 'accepted',
-});
-const authoredViewState = (editor: Editor) => {
-  const runtime = getEditorRuntime(editor);
-  const existing = VIEWS.get(runtime);
-  if (existing) return existing;
-  const view = {
-    composition: null,
-    policy: Object.freeze({ ...DEFAULT_VIEW }),
-  };
-  VIEWS.set(runtime, view);
-  return view;
-};
-const authoredView = (editor: Editor) => authoredViewState(editor).policy;
+    createChangeId?: () => string;
+    /** Ids for a change proposed again after its decision. */
+    createIncarnationId?: () => string;
+    createTagId?: () => string;
+    intent?: 'edit' | 'propose';
+    now?: () => number;
+    /**
+     * Record what Suggesting refuses, such as a change in a table, as content
+     * loaded from elsewhere can hold it.
+     */
+    vetoes?: false;
+  }>;
 
-const receiveAuthoredProjection = (
-  live: AuthoredRuntime,
-  tx: EditorUpdateTransaction
-): NonNullable<AuthoredTransaction['decision']> => {
-  const active = getDefined(live.active);
-  if (!active.receiving) {
-    throw new Error('Missing authored receive transaction.');
+type Forced = Readonly<{ at: number; changeId: string; inc?: string }>;
+
+type AuthoredState = {
+  /** Updates whose writes record under one change, by update id. */
+  forced: WeakMap<object, Forced>;
+  marks: ReturnType<typeof createDocumentMarksValidator>;
+  /** Updates that decide changes and record nothing, by update id. */
+  passThrough: WeakSet<object>;
+  /** A view switch asked for mid-composition, by view runtime. */
+  pending: WeakMap<object, AuthoredView>;
+  /** Updates refused, by update id, so a refusal caught inside one holds. */
+  refused: WeakMap<object, AuthoredRefusal>;
+  views: WeakMap<object, AuthoredView>;
+};
+
+const STATES = new WeakMap<object, AuthoredState>();
+
+const elementOf = (props: Readonly<Record<string, unknown>>): Element => ({
+  ...props,
+  children: [],
+  type: String(props.type),
+});
+
+const isRefusal = (error: unknown) =>
+  error instanceof EditorSchemaValidationError ||
+  error instanceof AuthoredMarkError;
+
+const isReplay = (tags: readonly string[]) =>
+  tags.includes('historic') || tags.includes('collaboration');
+
+const isStruck = (editor: Editor, node: unknown) => {
+  if (!readAuthoredMarks(node).some((mark) => mark.kind === 'delete')) {
+    return false;
   }
-  if (active.decision) return active.decision;
-  const schema: InternalEditorSchemaApi = getEditorSchema(live.source);
-  let nextAccepted = live.accepted;
-  let nextAcceptedPositions = live.acceptedPositions;
-  let nextProjected = live.projected;
-  let nextProjectedPositions = live.projectedPositions;
-  let nextProjectedChange = DocumentChange.empty;
-  const batches = tx.effects.all().flatMap((effect) => {
-    const batch = readAuthoredOperationBatch(effect);
-    return batch ? [batch] : [];
-  });
-  const nextState = tx.getField(authoredState);
-  let replayState = active.receiving;
-  let replayFrom = 0;
-  let receivedAcceptedChange = DocumentChange.empty;
-  const baseIndex = batches.findLastIndex((batch) => batch.checkpoint);
-  const base = batches[baseIndex];
-  if (base?.checkpoint) {
-    if (
-      base.documentId !== active.receiving.documentId &&
-      active.receiving.operations
-    ) {
-      throw new Error('Authored operations belong to another document.');
-    }
-    replayState = base.checkpoint.state ?? emptyAuthoredState(base.documentId);
-    for (const operation of base.operations) {
-      replayState = reduceAuthoredOperation(replayState, operation);
-    }
-    if (!base.checkpoint.state) {
-      replayState = snapshotEditorJsonValue(
-        {
-          ...replayState,
-          acceptedPositions: base.checkpoint.positions,
-        },
-        'Authored checkpoint'
-      );
-    }
-    const restored = restoreProjection(
-      replayState,
-      base.checkpoint.accepted as EditorDocumentValue,
-      schema,
-      live.source
-    );
-    schema.assertDocument(base.checkpoint.accepted);
-    schema.assertDocument(restored.projected);
-    nextAccepted = base.checkpoint.accepted;
-    nextProjected = restored.projected;
-    nextAcceptedPositions = restored.acceptedPositions;
-    nextProjectedPositions = restored.projectedPositions;
-    nextProjectedChange = DocumentChange.between(live.projected, nextProjected);
-    receivedAcceptedChange = DocumentChange.between(
-      live.accepted,
-      nextAccepted
-    );
-    replayFrom = baseIndex + 1;
-  } else if (nextState.documentId !== active.receiving.documentId) {
-    throw new Error('Missing authored document checkpoint.');
-  }
-  for (const batch of batches.slice(replayFrom)) {
-    const incoming = batch.operations.filter(
-      (operation) => !readRecord(replayState.operations, operation.id)
-    );
-    if (incoming.length) {
-      replayState = retainAuthoredContent(replayState, batch.retained);
-    }
-    for (const operation of incoming) {
-      const reduced = reduceAuthoredOperation(replayState, operation);
-      if (reduced === replayState) continue;
-      const next = projectAuthoredOperation({
-        editor: live.source,
-        operation,
-        previous: replayState,
-        projection: {
-          accepted: nextAccepted,
-          acceptedPositions: nextAcceptedPositions,
-          projected: nextProjected,
-          projectedPositions: nextProjectedPositions,
-        },
-        schema,
-        state: reduced,
-      });
-      receivedAcceptedChange = receivedAcceptedChange.compose(
-        next.acceptedChange,
-        live.accepted
-      );
-      nextProjectedChange = nextProjectedChange.compose(
-        next.projectedChange,
-        live.projected
-      );
-      ({
-        accepted: nextAccepted,
-        acceptedPositions: nextAcceptedPositions,
-        projected: nextProjected,
-        projectedPositions: nextProjectedPositions,
-      } = next.projection);
-      replayState = reduced;
-    }
-  }
-  compactAuthoredTransaction(
-    live,
-    tx,
-    batches.flatMap((batch) => [
-      ...batch.operations.flatMap(authoredOperationChangeIds),
-      ...batch.retained.map((operation) => operation.changeId),
-    ])
+
+  const facts = factsOf(storedValue(editor));
+
+  return (
+    isSettledDeletion(node, facts) ||
+    marksOf(node, facts).some((mark) => mark.kind === 'delete')
   );
-  active.decision = {
-    acceptedChange: receivedAcceptedChange,
-    projectedChange: nextProjectedChange,
-    projection: {
-      accepted: nextAccepted,
-      acceptedPositions: nextAcceptedPositions,
-      projected: nextProjected,
-      projectedPositions: nextProjectedPositions,
-    },
-  };
-  return active.decision;
 };
 
-const readAuthoredViewProjection = (
-  live: AuthoredRuntime,
-  view: Editor,
-  coordinates: 'accepted' | 'input' | 'proposed' | 'view' = 'view'
-): AuthoredRangeProjection => {
-  const tx = getActiveEditorTransaction(live.source);
-  const state = tx
-    ? tx.getField(authoredState)
-    : live.source.read.getField(authoredState);
-  const fragment = FRAGMENT_VIEWS.get(getEditorRuntime(view));
-  if (fragment && coordinates === 'view') {
-    const unavailable =
-      fragment.requireMarkupParent &&
-      authoredView(fragment.parent).projection !== 'markup';
-    const projection = readBoundFragmentProjection(
-      fragment,
-      readAuthoredViewProjection(live, view, 'accepted'),
-      readAuthoredViewProjection(live, view, 'proposed'),
-      tx ? undefined : live
-    ) ?? { positions: null, state, value: EMPTY_FRAGMENT_VALUE };
+const claimOf = (value: EditorDocumentValue, change: string) => {
+  const facts = factsOf(value);
+  const find = (nodes: readonly unknown[]): AuthoredMark | null => {
+    for (const node of nodes) {
+      const mark = claimsOf(node, facts).find((item) => item.change === change);
 
+      if (mark) return mark;
+
+      const nested = find(
+        (node as { children?: readonly unknown[] }).children ?? []
+      );
+
+      if (nested) return nested;
+    }
+
+    return null;
+  };
+
+  return find([
+    ...value.children,
+    ...Object.entries(value.roots ?? {}).flatMap(([root, children]) =>
+      isMetadataRootKey(root) ? [] : children
+    ),
+  ]);
+};
+
+const positionOf = (value: JsonEditorValue, root: string, point: Point) =>
+  DocumentIndex.fromValue(valueRoot(value, root)).positionAt(point);
+
+type WrittenMap = Readonly<{
+  after: JsonEditorValue;
+  indexes: ReadonlyMap<string, DocumentIndex>;
+  map: (
+    root: string,
+    position: number,
+    assoc: -1 | 1
+  ) => number | null | undefined;
+  root: string;
+}>;
+
+const mapPoint = (point: Point, input: WrittenMap, assoc: -1 | 1): Point => {
+  const index = input.indexes.get(input.root);
+
+  if (!index) return point;
+
+  const position = input.map(
+    input.root,
+    positionOf(input.after, input.root, point),
+    assoc
+  );
+  const recorded =
+    position === null || position === undefined
+      ? null
+      : index.pointAt(position, assoc);
+
+  return recorded
+    ? { ...point, offset: recorded.offset, path: [...recorded.path] }
+    : point;
+};
+
+/** Map a selection on the written draft onto the document recorded from it. */
+const mapSelection = (
+  selection: Selection,
+  input: WrittenMap,
+  assoc: -1 | 1 = -1
+): Selection => {
+  if (selection?.kind === 'text') {
     return {
-      ...projection,
-      mode: 'fragment',
-      ...(unavailable ? { unavailable: 'projection' as const } : {}),
+      ...selection,
+      anchor: mapPoint(selection.anchor, input, assoc),
+      focus: mapPoint(selection.focus, input, assoc),
     };
   }
-  let projection: AuthoredProjection = live;
-  const { active } = live;
-  if (tx && active) {
-    if (active.preparedProjection) {
-      projection = active.preparedProjection;
-    } else if (active.replacement) {
-      const { replacement } = active;
-      if (replacement.phase !== 'loaded') {
-        throw new Error('Authored reads require a completed document load.');
+
+  const index = input.indexes.get(input.root);
+
+  if (selection?.kind !== 'node' || !index) return selection;
+
+  const draft = DocumentIndex.fromValue(valueRoot(input.after, input.root));
+  const mapPath = (path: Path) => {
+    const position = input.map(input.root, draft.nodeRange(path).from, 1);
+    const entry =
+      position === null || position === undefined
+        ? null
+        : index.nodeStartingAt(position);
+
+    return entry ? [...entry.path] : null;
+  };
+  const [first, ...rest] = selection.paths.flatMap((path) => {
+    const mapped = mapPath(path);
+
+    return mapped ? [mapped] : [];
+  });
+
+  if (!first) return null;
+
+  const { paths } = SelectionApi.nodes([first, ...rest]);
+  const endpoint = (path: Path, fallback: Path) => {
+    const mapped = mapPath(path);
+
+    return mapped && paths.some((kept) => PathApi.equals(kept, mapped))
+      ? mapped
+      : fallback;
+  };
+
+  return SelectionApi.nodes(paths, {
+    anchorPath: endpoint(selection.anchorPath, paths[0]),
+    focusPath: endpoint(selection.focusPath, paths.at(-1) ?? paths[0]),
+    ...(selection.root === undefined ? {} : { root: selection.root }),
+  });
+};
+
+// Tests that count work turn the check off with PLITE_LAW_CHECK=0, because its
+// projection reads every mark again.
+const checksFramedLaw = () => {
+  const env = (
+    globalThis as { process?: { env?: Record<string, string | undefined> } }
+  ).process?.env;
+
+  return env?.NODE_ENV === 'test' && env.PLITE_LAW_CHECK !== '0';
+};
+
+const assertFramedLaw = (
+  input: EditorFrameRecording,
+  schema: AuthoredResolveSchema
+) => {
+  const { frame, root, stored } = input;
+  const written = contentOf(stored.value as JsonEditorValue);
+  const accepted = contentOf(
+    projectAuthoredValue(stored.value as JsonEditorValue, 'proposed', schema)
+      .value
+  );
+
+  if (!jsonEqual(accepted, contentOf(frame.value as JsonEditorValue))) {
+    throw new Error(
+      `A framed recording does not accept to what its commands wrote: ${JSON.stringify(
+        { accepted: accepted.children, wrote: frame.value.children }
+      )}`
+    );
+  }
+  if (frame.selection?.kind !== 'text' || stored.selection?.kind !== 'text') {
+    return;
+  }
+
+  const change = structuralAcceptedChange(written, accepted);
+
+  if (!change) return;
+
+  const rootChange = getInternalDocumentRootChange(change, root);
+  const index = DocumentIndex.fromValue(valueRoot(accepted, root));
+
+  for (const edge of ['anchor', 'focus'] as const) {
+    const position = positionOf(written, root, stored.selection[edge]);
+    const mapped = rootChange?.mapPos(position, -1) ?? position;
+    const expected = frame.selection[edge];
+
+    // A caret at a struck leaf's edge maps between leaves, where it reads as
+    // the end of one or the start of the next.
+    if (
+      !([-1, 1] as const).some((assoc) => {
+        const point = index.pointAt(mapped, assoc);
+
+        return point !== null && PointApi.equals(point, expected);
+      })
+    ) {
+      throw new Error(
+        `A framed recording does not accept to its commands' ${edge}.`
+      );
+    }
+  }
+};
+
+// Every read of one stored document shares its index and projections. A
+// read builds a new document envelope each time, so they key on its root
+// arrays, which stay the same until the document changes.
+const DOCUMENT_KEYS = new WeakMap<
+  object,
+  Readonly<{ key: object; roots: ReadonlyArray<[string, unknown]> }>
+>();
+const INDEXES = new WeakMap<object, AuthoredChangeIndex>();
+const PROJECTIONS = new WeakMap<
+  object,
+  Partial<Record<'accepted' | 'proposed', JsonEditorValue>>
+>();
+
+const documentKeyOf = (value: JsonEditorValue) => {
+  const roots = Object.entries(value.roots ?? {});
+  const cached = DOCUMENT_KEYS.get(value.children);
+
+  if (
+    cached &&
+    cached.roots.length === roots.length &&
+    cached.roots.every(
+      ([root, children], index) =>
+        roots[index][0] === root && roots[index][1] === children
+    )
+  ) {
+    return cached.key;
+  }
+
+  const key = {};
+
+  DOCUMENT_KEYS.set(value.children, { key, roots });
+  return key;
+};
+
+// Owners reading their stored document, which their own preview would
+// otherwise project the review marks out of.
+const STORED_READS = new WeakSet<Editor>();
+
+const storedValue = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (STORED_READS.has(owner)) return owner.read.value() as JsonEditorValue;
+  STORED_READS.add(owner);
+  try {
+    return owner.read.value() as JsonEditorValue;
+  } finally {
+    STORED_READS.delete(owner);
+  }
+};
+
+const changeIndexOf = (value: JsonEditorValue) => {
+  const key = documentKeyOf(value);
+  let index = INDEXES.get(key);
+
+  if (!index) {
+    index = indexAuthoredChanges(value);
+    INDEXES.set(key, index);
+  }
+
+  return index;
+};
+
+const projectionOf = (
+  editor: Editor,
+  value: JsonEditorValue,
+  projection: 'accepted' | 'proposed'
+) => {
+  const key = documentKeyOf(value);
+  const cached = PROJECTIONS.get(key) ?? {};
+  const projected =
+    cached[projection] ??
+    deepFreeze(
+      projectAuthoredValue(value, projection, authoredResolveSchemaOf(editor))
+        .value
+    );
+
+  cached[projection] = projected;
+  PROJECTIONS.set(key, cached);
+
+  return projected;
+};
+
+type Outcome = 'accept' | 'reject';
+
+/**
+ * The change from a stored document to `decided`, the same document with each
+ * pending change taken by `outcomeOf`. Accepting maps a position through the
+ * merges, so a caret after a letter typed at a pending join stays after it,
+ * and every kept letter keeps its place for anchors and the selection.
+ */
+const decidedChange = (
+  value: JsonEditorValue,
+  decided: JsonEditorValue,
+  outcomeOf: (mark: AuthoredMark) => Outcome | undefined
+) => {
+  const facts = factsOf(value);
+  const stored = contentOf(value);
+  const target = contentOf(decided);
+  const content =
+    structuralAcceptedChange(stored, target) ??
+    characterAlignedChange(stored, target, {
+      joins: (node) =>
+        marksOf(node, facts).some(
+          (mark) =>
+            (mark.kind === 'join' && outcomeOf(mark) === 'accept') ||
+            (mark.kind === 'split' && outcomeOf(mark) === 'reject')
+        ),
+      removes: (node) =>
+        marksOf(node, facts).some(
+          (mark) =>
+            (mark.kind === 'insert' && outcomeOf(mark) === 'reject') ||
+            (mark.kind === 'delete' && outcomeOf(mark) === 'accept')
+        ),
+    }) ??
+    DocumentChange.between(stored, target, {
+      isSetValued: isAuthoredSetValued,
+    });
+
+  return [CONTEXTS_ROOT, VERDICTS_ROOT].reduce((change, root) => {
+    const appended = appendRecords(
+      value,
+      root,
+      (decided.roots?.[root] ?? []).slice(value.roots?.[root]?.length ?? 0)
+    );
+
+    return appended ? change.compose(appended) : change;
+  }, content);
+};
+
+/** `value` without its metadata roots, which a decision only appends to. */
+const contentOf = (value: JsonEditorValue): JsonEditorValue => {
+  if (!value.roots) return value;
+
+  const { roots, ...plain } = value;
+  const content = Object.entries(roots).filter(
+    ([root]) => !isMetadataRootKey(root)
+  );
+
+  return content.length === 0
+    ? plain
+    : { ...plain, roots: Object.fromEntries(content) };
+};
+
+const contentChangeOf = (change: DocumentChange) =>
+  [
+    ...change.createRoots,
+    ...change.deleteRoots,
+    ...[...getInternalDocumentChangeEntries(change)].map(([root]) => root),
+  ].some(isMetadataRootKey)
+    ? filterDocumentChangeRoots(change, (root) => !isMetadataRootKey(root))
+    : change;
+
+type OwnRun = Readonly<{ from: number; path: readonly number[]; to: number }>;
+
+const nodePropsOf = ({
+  children: _children,
+  text: _text,
+  ...props
+}: JsonNode) => props;
+
+/**
+ * The deepest element whose children hold the range as whole blocks, so a
+ * join or split in the range lands among the blocks beside it.
+ */
+const siteOf = (index: DocumentIndex, from: number, to: number) => {
+  let site: readonly number[] = [];
+
+  for (const range of index.openContextAt(from)) {
+    if (
+      range.kind !== 'element' ||
+      range.contentFrom > from ||
+      range.contentTo < to ||
+      isTextBlock(index.node(range.path))
+    ) {
+      break;
+    }
+    site = range.path;
+  }
+
+  return site;
+};
+
+const childrenOf = (index: DocumentIndex, path: readonly number[]) =>
+  (path.length === 0
+    ? index.value
+    : index.node(path).children) as readonly JsonNode[];
+
+const holdsOwnStructure = (node: JsonNode, facts: ReviewFacts): boolean =>
+  claimsOf(node, facts).some(
+    (mark) =>
+      (mark.kind === 'join' || mark.kind === 'split') &&
+      isEditingChange(mark.change)
+  ) || (node.children ?? []).some((child) => holdsOwnStructure(child, facts));
+
+/**
+ * The run around blocks `from` to `to` of the element at `path`: a
+ * line on either side, where a join in the run or a pending join after it
+ * lands, and before it whatever block a join or split in it lands on.
+ */
+const runAround = (
+  index: DocumentIndex,
+  path: readonly number[],
+  from: number,
+  to: number,
+  facts: ReviewFacts
+): OwnRun => {
+  const siblings = childrenOf(index, path);
+  const structural = siblings
+    .slice(from, to)
+    .some((node) => holdsOwnStructure(node, facts));
+  let start =
+    from > 0 && (structural || isTextBlock(siblings[from - 1]))
+      ? from - 1
+      : from;
+
+  // A kept join or split on the run's first block lands on the one before it,
+  // and one in the run lands past blocks whose deletion is settled.
+  while (
+    start > 0 &&
+    (holdsOwnStructure(getDefined(siblings[start]), facts) ||
+      (structural && isSettledDeletion(getDefined(siblings[start]), facts)))
+  ) {
+    start -= 1;
+  }
+
+  return {
+    from: start,
+    path,
+    to: to < siblings.length && isTextBlock(siblings[to]) ? to + 1 : to,
+  };
+};
+
+const ownRuns = (
+  index: DocumentIndex,
+  change: RootChange,
+  facts: ReviewFacts
+) => {
+  const sites = new Map<string, { path: readonly number[]; at: Set<number> }>();
+
+  change.iterChangedRanges((_fromA, _toA, from, to) => {
+    const path = siteOf(index, from, to);
+    const key = path.join(',');
+    const site = sites.get(key) ?? { at: new Set<number>(), path };
+
+    for (const range of index.nodeRangesTouching(from, to)) {
+      if (
+        (to === from || (range.from < to && range.to > from)) &&
+        range.path.length === path.length + 1 &&
+        path.every((step, depth) => range.path[depth] === step)
+      ) {
+        site.at.add(range.path[path.length]);
       }
-      const loaded =
-        replacement.projection ??
-        loadAuthoredProjection(
-          live.source,
-          replacement.state,
-          replacement.value
-        );
-      replacement.projection = loaded;
-      projection = loaded;
-    } else if (active.receiving) {
-      ({ projection } = receiveAuthoredProjection(live, tx));
-    } else if (active.decision) ({ projection } = active.decision);
-    else {
-      const change = getActiveTransactionDocumentChange(live.source);
-      if (!change.empty) {
-        if (active.rangeProjection?.change === change) {
-          ({ projection } = active.rangeProjection);
-        } else {
-          const operationId = `${live.replica}:${
-            (readRecord(state.vector, live.replica) ?? 0) + 1
-          }`;
-          const changeId = active.changeId ?? operationId;
-          const captured = captureAuthoredChange({
-            schema: getCompiledEditorSchemaFromApi(
-              getEditorSchema(live.source)
-            ),
-            insertions: active.insertions,
-            change,
-            steps: getActiveDocumentChangeBuilder(live.source).steps,
-            changeId,
-            operationId,
-            positions:
-              active.inputProjection === 'proposed'
-                ? live.projectedPositions
-                : live.acceptedPositions,
-            value:
-              active.inputProjection === 'proposed'
-                ? live.projected
-                : live.accepted,
-          });
-          const { value } = getActiveDocumentChangeBuilder(live.source);
-          if (active.inputProjection === 'proposed') {
-            projection = {
-              accepted: live.accepted,
-              acceptedPositions: live.acceptedPositions,
-              projected: value as EditorDocumentValue,
-              projectedPositions: captured.positions,
-            };
-          } else if (live.acceptedPositions === live.projectedPositions) {
-            projection = {
-              accepted: value as EditorDocumentValue,
-              acceptedPositions: captured.positions,
-              projected: value as EditorDocumentValue,
-              projectedPositions: captured.positions,
-            };
-          } else {
-            const mapped = mapDirectAuthoredChange({
-              state,
-              changeId,
-              operationId,
-              positions: live.projectedPositions,
-              steps: captured.steps,
-              target: 'proposed',
-              value: live.projected,
-            });
-            projection = {
-              accepted: value as EditorDocumentValue,
-              acceptedPositions: captured.positions,
-              projected: new ChangeDraft(live.projected).apply(mapped.change)
-                .after as EditorDocumentValue,
-              projectedPositions: mapped.positions,
-            };
-          }
-          active.rangeProjection = { change, projection };
+    }
+    sites.set(key, site);
+  });
+
+  const runs: OwnRun[] = [];
+
+  for (const { at, path } of sites.values()) {
+    for (const child of [...at].toSorted((left, right) => left - right)) {
+      const run = runAround(index, path, child, child + 1, facts);
+      const last = runs.at(-1);
+
+      if (last && last.path === path && run.from <= last.to) {
+        runs[runs.length - 1] = {
+          from: Math.min(last.from, run.from),
+          path,
+          to: Math.max(last.to, run.to),
+        };
+      } else {
+        runs.push(run);
+      }
+    }
+  }
+
+  return runs;
+};
+
+/**
+ * The contexts a recording minted that its written content rests on, directly
+ * or through a kept context's base. Accepting one's own claims can leave a
+ * minted context named by nothing, and only content the write changed can name
+ * one it minted.
+ */
+const restedOn = (
+  minted: readonly ContextRecord[],
+  change: DocumentChange,
+  indexes: ReadonlyMap<string, DocumentIndex>
+) => {
+  if (minted.length === 0) return minted;
+
+  const named = new Set<string>();
+
+  for (const [root, index] of indexes) {
+    for (const [, , from, to] of getInternalDocumentChangeRanges(
+      change,
+      root
+    )) {
+      for (const { path } of index.nodeRangesTouching(from, to)) {
+        for (const member of readMembers(index.node(path))) {
+          if (member.kind === 'in') named.add(member.ctx);
         }
       }
     }
   }
-  const accepted =
-    coordinates === 'accepted'
-      ? true
-      : coordinates === 'proposed'
-        ? false
-        : coordinates === 'input' && active
-          ? active.inputProjection === 'accepted'
-          : authoredView(view).projection === 'accepted';
-  return {
-    mode: accepted ? 'accepted' : 'proposed',
-    positions: accepted
-      ? projection.acceptedPositions
-      : projection.projectedPositions,
-    state,
-    value: accepted ? projection.accepted : projection.projected,
-  };
+  const bases = new Map(minted.map(({ base, ctx }) => [ctx, base]));
+
+  for (const ctx of named) {
+    const base = bases.get(ctx);
+
+    if (base) named.add(base);
+  }
+
+  return minted.filter(({ ctx }) => named.has(ctx));
 };
 
-const ensureViewSelection = (view: Editor) => {
-  if (VIEW_SELECTIONS.has(getEditorRuntime(view))) return;
-  const live = runtime(view);
-  const captured = withEditorDocumentProjection(live.source, undefined, () =>
-    captureAuthoredSelection(
-      getCurrentSelection(live.source),
-      getCurrentSelectionRoot(live.source),
-      live.acceptedPositions,
-      live.accepted as JsonEditorValue
-    )
-  );
-  VIEW_SELECTIONS.set(getEditorRuntime(view), captured);
-};
-
-const readBoundFragmentProjection = (
-  binding: NonNullable<ReturnType<typeof FRAGMENT_VIEWS.get>>,
-  accepted: AuthoredRangeProjection,
-  proposed: AuthoredRangeProjection,
-  live?: AuthoredRuntime
+/**
+ * Accept an Editing write's own claims in its commit, over runs of the
+ * blocks the write touched. A join or split whose landing waits on another
+ * pending change keeps its claim. Completion is left to the commit's
+ * canonical pass, which fills in place as Editing does.
+ */
+const acceptOwn = (
+  change: DocumentChange,
+  indexes: ReadonlyMap<string, DocumentIndex>,
+  dependencies: Dependencies,
+  base: ReviewFacts
 ) => {
-  if (binding.documentId !== proposed.state.documentId) {
-    return null;
-  }
-  if (
-    binding.requireMarkupParent &&
-    authoredView(binding.parent).projection !== 'markup'
-  ) {
-    return null;
-  }
-  const current = readAuthoredMarkupFragments(
-    binding.fragment.changeId,
-    accepted,
-    proposed
-  ).find(
-    (fragment) =>
-      fragment.id === binding.fragment.id &&
-      fragment.root === binding.fragment.root
-  );
-  if (current && live) {
-    let fragments = live.fragments.get(current.changeId);
-    if (!fragments) {
-      fragments = new Map();
-      live.fragments.set(current.changeId, fragments);
-    }
-    const previous = fragments.get(current.id);
-    if (previous && previous !== current) {
-      inheritAuthoredFragmentProjection(live.source, previous, current);
-    }
-    fragments.set(current.id, current);
-  }
-  return current
-    ? readAuthoredFragmentProjection(current, proposed.state)
-    : null;
-};
-
-const readViewSelection = (view: Editor, live: AuthoredRuntime) => {
-  const runtime = getEditorRuntime(view);
-  const captured = VIEW_SELECTIONS.get(runtime) ?? null;
-  const accepted = authoredView(view).projection === 'accepted';
-  const positions = accepted ? live.acceptedPositions : live.projectedPositions;
-  const value = accepted ? live.accepted : live.projected;
-  const state = getEditorStateView(live.source).getField(authoredState);
-  const cached = RESOLVED_VIEW_SELECTIONS.get(runtime);
-  if (
-    cached &&
-    cached.captured === captured &&
-    cached.positions === positions &&
-    cached.value === value &&
-    cached.state === state
-  ) {
-    return cached.result;
-  }
-  const selection = resolveAuthoredSelection(captured, positions, value, state);
-  const result = {
-    selection,
-    root: selection
-      ? (SelectionApi.root(selection) ?? 'main')
-      : (captured?.root ?? 'main'),
-  };
-  RESOLVED_VIEW_SELECTIONS.set(runtime, {
-    captured,
-    positions,
-    value,
-    state,
-    result,
-  });
-  return result;
-};
-
-const currentAuthorId = (state: AuthoredRuntime): string | null => {
-  const identity =
-    typeof state.options.authorId === 'function'
-      ? state.options.authorId(state.source)
-      : state.options.authorId;
-
-  return isAuthorId(identity) ? identity : null;
-};
-
-const setAuthoredView = (editor: Editor, value: AuthoredView) => {
-  if (FRAGMENT_VIEWS.has(getEditorRuntime(editor))) {
-    throw new Error('Retained content follows its parent markup view.');
-  }
-  const live = runtime(editor);
-  const candidate = value as Readonly<{
-    intent?: unknown;
-    projection?: unknown;
-  }>;
-  if (
-    !value ||
-    (candidate.intent !== 'edit' && candidate.intent !== 'propose') ||
-    !['accepted', 'proposed', 'markup'].includes(
-      candidate.projection as string
-    ) ||
-    (candidate.intent === 'propose' && candidate.projection === 'accepted')
-  ) {
-    throw new Error(
-      'Authored input requires edit/accepted/proposed/markup or propose/proposed/markup.'
+  const minted = dependencies.minted();
+  const facts =
+    minted.length === 0
+      ? base
+      : {
+          ...base,
+          contexts: new Map([
+            ...base.contexts,
+            ...minted.map((record) => [record.ctx, record] as const),
+          ]),
+        };
+  const outcome = (id: string) => (isEditingChange(id) ? 'accept' : 'keep');
+  const own = (kind: AuthoredMark['kind']) => (node: unknown) =>
+    claimsOf(node, facts).some(
+      (mark) => mark.kind === kind && isEditingChange(mark.change)
     );
+  const settledBy = { joins: own('join'), removes: own('delete') };
+  const changes = new Map<string, RootChange>();
+  const accepted = new Map(indexes);
+
+  for (const [root, index] of indexes) {
+    const rootChange = getInternalDocumentRootChange(change, root);
+
+    if (!rootChange) continue;
+
+    // A run whose element the resolution would change resolves one level up.
+    const resolveRun = (first: OwnRun) => {
+      for (let run = first; ;) {
+        const nodes = childrenOf(index, run.path).slice(run.from, run.to);
+
+        if (run.path.length === 0) {
+          return {
+            nodes,
+            result: resolveAuthoredChildren(nodes, outcome, null, root, {
+              dependencies,
+              facts,
+            }).children,
+            run,
+          };
+        }
+
+        const shell: JsonNode = {
+          ...nodePropsOf(index.node(run.path)),
+          children: [...nodes],
+        };
+        const [only, ...rest] = resolveAuthoredChildren(
+          [shell],
+          outcome,
+          null,
+          root,
+          { dependencies, facts }
+        ).children;
+
+        // A join or split on the element's first remaining block can land
+        // outside it.
+        const leading = nodes.find((node) => !isSettledDeletion(node, facts));
+
+        if (
+          only &&
+          rest.length === 0 &&
+          jsonEqual(nodePropsOf(only), nodePropsOf(shell)) &&
+          !(run.from === 0 && leading && holdsOwnStructure(leading, facts))
+        ) {
+          return { nodes, result: only.children ?? [], run };
+        }
+
+        const at = getDefined(run.path.at(-1));
+
+        run = runAround(index, run.path.slice(0, -1), at, at + 1, facts);
+      }
+    };
+    let runs = ownRuns(index, rootChange, facts);
+    let spans: Array<
+      ReturnType<typeof resolveRun> & Readonly<{ from: number; to: number }>
+    > = [];
+
+    // Runs that overlap once resolved, such as one a resolution moved up a
+    // level, merge and resolve again. Runs at different levels only nest.
+    for (let merged = true; merged; runs = spans.map((span) => span.run)) {
+      merged = false;
+      spans = [];
+      for (const span of runs
+        .map(resolveRun)
+        .map((entry) => ({
+          ...entry,
+          from: index.childPosition(entry.run.path, entry.run.from),
+          to: index.childPosition(entry.run.path, entry.run.to),
+        }))
+        .toSorted(
+          (left, right) => left.from - right.from || right.to - left.to
+        )) {
+        const last = spans.at(-1);
+
+        if (!last || span.from >= last.to) {
+          spans.push(span);
+        } else if (span.to > last.to) {
+          spans[spans.length - 1] = {
+            ...last,
+            run: { ...last.run, to: span.run.to },
+            to: span.to,
+          };
+          merged = true;
+        }
+      }
+    }
+
+    let current = index;
+    let composed: RootChange | null = null;
+
+    for (const { from, nodes, result } of spans.toReversed()) {
+      if (jsonEqual(result, nodes)) continue;
+
+      const stored = { children: nodes } as JsonEditorValue;
+      const settled = { children: result } as JsonEditorValue;
+      const aligned =
+        characterAlignedChange(stored, settled, settledBy) ??
+        DocumentChange.between(stored, settled, {
+          isSetValued: isAuthoredSetValued,
+        });
+      const step = getDefined(
+        getInternalDocumentRootChange(aligned, 'main')
+      ).embed(current.length, from);
+
+      current = step.apply(current);
+      composed = composed ? composed.compose(step) : step;
+    }
+
+    if (composed) {
+      changes.set(root, composed);
+      accepted.set(root, current);
+    }
   }
-  if (live.active) {
-    throw new Error('Change authored view policy outside an editor update.');
+
+  return changes.size === 0
+    ? null
+    : {
+        change: createInternalDocumentChange(changes),
+        indexes: accepted,
+      };
+};
+
+const incarnationsOf = (index: AuthoredChangeIndex, id: string) =>
+  new Map(
+    (index.occurrences.get(id) ?? []).map(({ mark }) => [
+      incarnationOf(mark),
+      mark,
+    ])
+  ).values();
+
+const withVerdicts = (
+  value: JsonEditorValue,
+  verdicts: readonly JsonNode[]
+): JsonEditorValue =>
+  verdicts.length === 0
+    ? value
+    : ({
+        ...value,
+        roots: {
+          ...value.roots,
+          [VERDICTS_ROOT]: [
+            ...(value.roots?.[VERDICTS_ROOT] ?? []),
+            ...verdicts,
+          ],
+        },
+      } as JsonEditorValue);
+
+const PREVIEW_MAPS = new WeakMap<object, Map<string, AuthoredLocationMap>>();
+
+const previewMapOf = (
+  editor: Editor,
+  value: JsonEditorValue,
+  preview: 'accepted' | 'proposed',
+  root: string
+) => {
+  const key = documentKeyOf(value);
+  const maps = PREVIEW_MAPS.get(key) ?? new Map<string, AuthoredLocationMap>();
+  let map = maps.get(`${preview}:${root}`);
+
+  if (!map) {
+    const projected = projectionOf(editor, value, preview);
+    const outcome: Outcome = preview === 'proposed' ? 'accept' : 'reject';
+
+    map = authoredLocationMap(
+      value,
+      projected,
+      decidedChange(value, projected, () => outcome),
+      root
+    );
+    maps.set(`${preview}:${root}`, map);
+    PREVIEW_MAPS.set(key, maps);
   }
-  if (editor.read.view.isComposing()) {
-    PENDING_VIEWS.set(getEditorRuntime(editor), Object.freeze({ ...value }));
-    return;
-  }
-  PENDING_VIEWS.delete(getEditorRuntime(editor));
-  ensureViewSelection(editor);
-  const previous = authoredView(editor);
-  if (
-    previous.intent === value.intent &&
-    previous.projection === value.projection
-  ) {
-    return;
-  }
-  authoredViewState(editor).policy = Object.freeze({ ...value });
-  notifyEditorViewState(editor, 'authored');
+
+  return map;
 };
 
 const projectionSnapshot = (
-  source: Editor,
+  owner: Editor,
   value: EditorDocumentValue,
-  version: number,
-  selection: Selection
+  version: number
 ): EditorSnapshot => {
   let index: EditorSnapshot['index'] | undefined;
+
   return Object.freeze({
     children: value.children,
-    selection,
+    selection: null,
     version,
     get index() {
       return (index ??= getEditorProjectionSnapshotIndex(
-        source,
+        owner,
         value.children
       ));
     },
   });
 };
 
-const runtime = (editor: Editor): AuthoredRuntime => {
-  const installed = RUNTIMES.get(getEditorRuntimeOwner(editor));
-  if (!installed) throw new Error('Authored changes are not installed.');
-  return installed;
+const PREVIEW_COMMITS = new WeakMap<
+  EditorCommit,
+  Partial<Record<'accepted' | 'proposed', EditorCommit>>
+>();
+
+const carryProjection = (
+  owner: Editor,
+  before: JsonEditorValue,
+  stored: JsonEditorValue,
+  preview: 'accepted' | 'proposed'
+) => {
+  const key = documentKeyOf(stored);
+  const changes = DocumentChange.between(
+    before,
+    projectionOf(owner, stored, preview)
+  );
+  const after = changes.empty ? before : changes.apply(before);
+
+  PROJECTIONS.set(key, { ...PROJECTIONS.get(key), [preview]: after });
+  if (!changes.empty) {
+    inheritEditorProjectionIndexes(
+      owner,
+      before as EditorDocumentValue,
+      after as EditorDocumentValue,
+      changes
+    );
+  }
+
+  return { after, changes };
 };
 
-const currentAuthoredFragmentIndex = (live: AuthoredRuntime) => {
-  const state = live.source.read.getField(authoredState);
-  return (live.fragmentIndex ??= createAuthoredFragmentIndex(
-    live.source,
+const previewCommit = (
+  owner: Editor,
+  commit: EditorCommit,
+  preview: 'accepted' | 'proposed'
+) => {
+  const cached = PREVIEW_COMMITS.get(commit) ?? {};
+
+  if (cached[preview]) return cached[preview];
+
+  const before = projectionOf(
+    owner,
+    getEditorCommitValue(commit, 'before'),
+    preview
+  );
+  const { after, changes } = carryProjection(
+    owner,
+    before,
+    getEditorCommitValue(commit),
+    preview
+  );
+
+  const projected = createEditorCommit(
     {
-      positions: live.acceptedPositions,
-      state,
-      value: live.accepted,
+      after: projectionSnapshot(
+        owner,
+        after as EditorDocumentValue,
+        commit.version
+      ),
+      afterValue: after,
+      annotations: commit.annotations,
+      before: projectionSnapshot(
+        owner,
+        before as EditorDocumentValue,
+        commit.previousVersion
+      ),
+      beforeValue: before,
+      changes,
+      dirtyStateKeys: commit.dirtyStateKeys,
+      editor: owner,
+      effects: commit.effects,
+      replace: commit.changed.hasAny('replace'),
+      selectionAfter: null,
+      selectionAfterRoot: 'main',
+      selectionBefore: null,
+      selectionBeforeRoot: 'main',
+      selectionChanged: false,
+      tags: commit.tags,
     },
-    {
-      positions: live.projectedPositions,
-      state,
-      value: live.projected,
-    }
-  ));
+    { previousVersion: commit.previousVersion, version: commit.version }
+  );
+
+  cached[preview] = projected;
+  PREVIEW_COMMITS.set(commit, cached);
+
+  return projected;
 };
 
-const actor = (state: AuthoredRuntime): string => {
-  if (!state.active) {
-    throw new Error('Authored writes require an active editor update.');
-  }
-  if (state.active.replacement) {
-    throw new Error('Document replacement cannot mix with authored writes.');
-  }
-  if (state.active.actor) return state.active.actor;
-  const identity = currentAuthorId(state);
-  if (identity === null) {
-    throw new Error('An author ID is required for authored writes.');
-  }
-  state.active.actor = identity;
-  return identity;
-};
+/**
+ * The `authored` plugin with deterministic ids, clock and starting intent,
+ * for tests.
+ */
+export const createAuthoredPlugin = (
+  options: AuthoredTestOptions
+): AuthoredPlugin => {
+  const createChangeId = options.createChangeId ?? (() => crypto.randomUUID());
+  // Every saved tag, cut and `over` link carries an id, so ids stay short: a
+  // format tag's only has to differ from the other tags on its key, and a
+  // cut's from the other cuts in the document.
+  const createTagId =
+    options.createTagId ??
+    (() => crypto.randomUUID().replaceAll('-', '').slice(0, 12));
+  const now = options.now ?? Date.now;
+  const incarnationToken = crypto.randomUUID().slice(0, 8);
+  let incarnations = 0;
+  // Two peers can propose one decided id again in the same millisecond, so a
+  // new incarnation names the runtime that minted it.
+  const createIncarnationId =
+    options.createIncarnationId ??
+    (() => {
+      incarnations += 1;
 
-const content = (value: EditorDocumentValue): EditorDocumentValue =>
-  Object.freeze({
-    children: value.children,
-    ...(value.roots ? { roots: value.roots } : {}),
-  });
+      return `${incarnationToken}:${incarnations}`;
+    });
+  const authorOf = (editor: Editor) =>
+    (typeof options.authorId === 'function'
+      ? options.authorId(editor)
+      : options.authorId) ?? null;
+  const stateOf = (editor: Editor) => {
+    const state = STATES.get(getEditorRuntimeOwner(editor));
 
-const seedAuthoredProjectionNodeKeys = (
-  editor: Editor,
-  value: EditorDocumentValue
-) => {
-  seedNodeKeys(value.children, editor);
-  for (const children of Object.values(value.roots ?? {})) {
-    seedNodeKeys(children, editor);
-  }
-};
+    if (!state) throw new Error('Authored changes are not installed.');
 
-const restoreInitialProjection = (
-  state: AuthoredState,
-  value: EditorDocumentValue,
-  schema: InternalEditorSchemaApi,
-  editor: Editor
-) => {
-  if (
-    !state.operations &&
-    !state.acceptedPositions &&
-    !state.projected &&
-    !state.projectedPositions
-  ) {
-    const accepted = content(value);
-    const positions = createAuthoredPositionRoots(accepted, state.documentId);
+    return state;
+  };
+  // A view that never chose one follows its editor's.
+  const viewOf = (editor: Editor): AuthoredView => {
+    const { views } = stateOf(editor);
 
-    return {
-      acceptedPositions: positions,
-      projected: accepted,
-      projectedPositions: positions,
-    };
-  }
-
-  return restoreProjection(state, value, schema, editor);
-};
-
-const restoreProjection = (
-  state: AuthoredState,
-  value: EditorDocumentValue,
-  schema: InternalEditorSchemaApi,
-  editor: Editor
-) =>
-  profileCoreDuration('authored-restore', () => {
-    const accepted = content(value) as JsonEditorValue;
-    if (!state.acceptedPositions && state.operations) {
-      throw new Error('Missing authored accepted-position checkpoint.');
-    }
-    const acceptedPositions =
-      state.acceptedPositions ??
-      createAuthoredPositionRoots(accepted, state.documentId);
-    const assertPositions = (
-      positions: AuthoredPositionRoots,
-      document: JsonEditorValue,
-      label: string
-    ) => {
-      const present = new Set(['main', ...Object.keys(document.roots ?? {})]);
-      for (const [root, current] of records(positions)) {
-        if (current.present !== present.has(root)) {
-          throw new Error(
-            `Authored checkpoint does not match the ${label} document roots.`
-          );
-        }
-        if (
-          current.present &&
-          (current.positions.root?.length ?? 0) !==
-            DocumentIndex.fromValue(authoredRootNodes(document, root)).length
-        ) {
-          throw new Error(
-            `Authored checkpoint does not match the ${label} content.`
-          );
-        }
-        present.delete(root);
+    return (
+      views.get(getEditorRuntime(editor)) ??
+      views.get(getEditorRuntime(getEditorRuntimeOwner(editor))) ?? {
+        intent: 'edit',
       }
-      if (present.size) throw new Error(`Missing authored ${label} positions.`);
-    };
-    assertPositions(acceptedPositions, accepted, 'accepted');
-    if (state.projectedPositions) {
-      if (!state.projected) {
-        throw new Error('Missing authored proposed checkpoint.');
+    );
+  };
+  const decideOn = (
+    editor: Editor,
+    value: JsonEditorValue,
+    decisions: AuthoredDecision | readonly AuthoredDecision[]
+  ):
+    | Readonly<{ result: AuthoredResult }>
+    | Readonly<{
+        change: DocumentChange;
+        result: AuthoredResult;
+      }> => {
+    const index = changeIndexOf(value);
+    const actions = new Map<string, 'accept' | 'reject'>();
+    let conflicting = false;
+
+    for (const decision of [decisions].flat()) {
+      for (const { id } of decision.changes) {
+        conflicting ||=
+          (actions.get(id) ?? decision.action) !== decision.action;
+        actions.set(id, decision.action);
       }
-      const { projected } = state;
-      schema.assertDocument(projected);
-      assertPositions(state.projectedPositions, projected, 'projected');
+    }
+
+    const ids = [...actions.keys()];
+
+    if (conflicting) return { result: { ids, status: 'invalid' } };
+
+    const stale = [decisions]
+      .flat()
+      .flatMap((decision) => decision.changes)
+      .filter(
+        (change) => index.changes.get(change.id)?.revision !== change.revision
+      );
+
+    if (stale.length > 0) {
       return {
-        acceptedPositions,
-        projected,
-        projectedPositions: state.projectedPositions,
+        result: {
+          ids: [...new Set(stale.map((change) => change.id))],
+          status: 'stale',
+        },
       };
     }
-    const { projection } = projectAuthoredSteps({
-      editor,
-      projection: {
-        accepted: accepted as EditorDocumentValue,
-        acceptedPositions,
-        projected: accepted as EditorDocumentValue,
-        projectedPositions: acceptedPositions,
-      },
-      schema,
-      state,
-      projectionOnly: true,
-      steps: [...records(state.operations)]
-        .map(([, operation]) => operation)
-        .filter(
-          (operation): operation is AuthoredEdit =>
-            operation.kind === 'edit' &&
-            operation.proposal &&
-            ['pending', 'conflicted'].includes(
-              readRecord(state.changes, operation.changeId)?.status ?? ''
-            )
-        )
-        .sort(
-          (left, right) =>
-            left.clock - right.clock || left.id.localeCompare(right.id)
-        )
-        .map((operation) => ({
-          operation,
-          direction: 'forward',
-          target: 'projected',
-        })),
-    });
-    const restored = {
-      acceptedPositions,
-      projected: projection.projected,
-      projectedPositions: projection.projectedPositions,
-    };
-    schema.assertDocument(projection.projected);
-    rememberLegacyAuthoredProjection(state, {
-      projected: projection.projected,
-      projectedPositions: projection.projectedPositions,
-    });
-    return restored;
-  });
 
-const loadAuthoredProjection = (
-  editor: Editor,
-  state: AuthoredState,
-  value: EditorDocumentValue
-): AuthoredProjection => {
-  const schema: InternalEditorSchemaApi = getEditorSchema(editor);
-  const projection = {
-    accepted: content(value),
-    ...restoreProjection(state, value, schema, editor),
-  };
-  schema.assertDocument(projection.projected);
-  return projection;
-};
+    let resolution: ReturnType<typeof resolveAuthoredValue>;
 
-const emitAuthoredOperation = (
-  live: AuthoredRuntime,
-  tx: EditorUpdateTransaction,
-  operation: AuthoredOperation
-) => {
-  const state = tx.getField(authoredState);
-  const changeIds = authoredOperationChangeIds(operation);
-  const retained = new Map<string, AuthoredEdit>();
-  for (const changeId of changeIds) {
-    const change = readRecord(state.changes, changeId);
-    for (const [, id] of records(change?.operations ?? null)) {
-      const selected = readRecord(state.operations, id);
-      if (selected && hasAuthoredContent(selected)) {
-        retained.set(id, materializeAuthoredEdit(selected));
-      }
+    try {
+      resolution = resolveAuthoredValue(
+        value,
+        (change) => actions.get(change) ?? 'keep',
+        authoredResolveSchemaOf(editor),
+        { holdsRejectedDeletions: true }
+      );
+    } catch (error) {
+      if (isRefusal(error)) return { result: { ids, status: 'invalid' } };
+      throw error;
     }
-  }
-  if (operation.kind === 'edit' && operation.inverseOf) {
-    const original = readRecord(state.operations, operation.inverseOf);
-    if (original && hasAuthoredContent(original)) {
-      retained.set(original.id, materializeAuthoredEdit(original));
+
+    const blockers = resolution.blockers.filter(
+      (change) => !actions.has(change)
+    );
+
+    if (blockers.length > 0) {
+      return { result: { ids, status: 'blocked', with: blockers } };
     }
-  }
-  tx.effects.emit(
-    authoredOperationEffect,
-    snapshotAuthoredOperationBatch(
-      {
-        checkpoint: null,
-        documentId: state.documentId,
-        operations: [operation],
-        retained: [...retained.values()],
-      },
-      'Authored operations'
-    )
-  );
-  compactAuthoredTransaction(live, tx, [
-    ...changeIds,
-    ...(live.active?.hydratedChanges ?? []),
-    ...[...retained.values()].map((entry) => entry.changeId),
-  ]);
-};
+    if (resolution.unplaceable) return { result: { ids, status: 'invalid' } };
 
-const authoredOperationChangeIds = (operation: AuthoredOperation) =>
-  operation.kind === 'edit'
-    ? [operation.changeId]
-    : operation.selection.changes.map((change) => change.id);
-
-const compactAuthoredTransaction = (
-  live: AuthoredRuntime,
-  tx: EditorUpdateTransaction,
-  changeIds: Iterable<string>
-) => {
-  if (live.options.retainHistory) return;
-  const previous = tx.getField(authoredState);
-  const value = compactAuthoredContent(previous, new Set(changeIds));
-  if (value === previous) return;
-  tx.effects.emit(
-    authoredState.effect,
-    snapshotEditorJsonValue(
-      { previousValue: previous, value },
-      'Authored content retention'
-    )
-  );
-};
-
-const stageAuthoredProjection = (
-  live: AuthoredRuntime,
-  next: NonNullable<AuthoredTransaction['decision']>
-) => {
-  const { active } = live;
-  if (!active) throw new Error('Missing authored transaction.');
-  const prior = active.decision;
-  active.decision = {
-    acceptedChange: prior
-      ? prior.acceptedChange.compose(next.acceptedChange, active.before)
-      : next.acceptedChange,
-    projectedChange: prior
-      ? prior.projectedChange.compose(next.projectedChange, live.projected)
-      : next.projectedChange,
-    projection: next.projection,
-  };
-};
-
-const prepareAuthoredReview = (live: AuthoredRuntime) => {
-  const active = getDefined(live.active);
-  if (active.automatic && !active.changed) {
-    setTransactionPublicationChange(live.source, DocumentChange.empty);
-    active.inputProjection = 'accepted';
-    active.intent = 'edit';
-    active.publication = 'accepted';
-    active.automatic = false;
-  }
-};
-
-const undoAuthoredEdit = (
-  live: AuthoredRuntime,
-  tx: EditorUpdateTransaction,
-  operation: AuthoredEdit,
-  nodeKeys?: AuthoredHistoryNodeKeys
-) => {
-  const authorId = actor(live);
-  const active = getDefined(live.active);
-  prepareAuthoredReview(live);
-  const state = tx.getField(authoredState);
-  const record = readRecord(state.changes, operation.changeId);
-  if (
-    authorId !== operation.authorId ||
-    !record ||
-    (operation.proposal && record.status !== 'pending')
-  ) {
-    throw new AuthoredMappingConflictError([operation.changeId]);
-  }
-  if (
-    active.publication === 'proposed' ||
-    (active.changed && !active.decision)
-  ) {
-    throw new Error('Authored history must precede ordinary document writes.');
-  }
-  const before = active.decision?.projection ?? {
-    accepted: live.accepted,
-    acceptedPositions: live.acceptedPositions,
-    projected: live.projected,
-    projectedPositions: live.projectedPositions,
-  };
-  const value = operation.proposal ? before.projected : before.accepted;
-  const positions = operation.proposal
-    ? before.projectedPositions
-    : before.acceptedPositions;
-  const sequence = (readRecord(state.vector, live.replica) ?? 0) + 1;
-  const id = `${live.replica}:${sequence}`;
-  const changeId = operation.proposal
-    ? operation.changeId
-    : crypto.randomUUID();
-  const schema = getEditorSchema(live.source);
-  if (operation.retained) {
-    const fragment = readAuthoredMarkupFragments(
-      operation.changeId,
-      {
-        positions: before.acceptedPositions,
-        state,
-        value: before.accepted,
-      },
-      {
-        positions: before.projectedPositions,
-        state,
-        value: before.projected,
-      }
-    ).find((item) => item.id === operation.retained);
-    const projection =
-      fragment && readAuthoredFragmentProjection(fragment, state);
-    if (!projection) {
-      throw new AuthoredMappingConflictError([operation.changeId]);
-    }
-    const captured = mapAuthoredChange({
-      state,
-      captureAs: { changeId, operationId: id },
-      changeId,
-      direction: 'inverse',
-      operationId: operation.id,
-      positions: projection.positions,
-      steps: operation.steps,
-      value: projection.value,
-    });
-    stageAuthoredProjection(live, {
-      acceptedChange: DocumentChange.empty,
-      projectedChange: DocumentChange.empty,
-      projection: before,
-    });
-    emitAuthoredOperation(
-      live,
-      tx,
-      snapshotEditorJsonValue(
-        {
-          authorId,
-          changeId,
-          clock: state.clock + 1,
-          dependencies: captured.dependencies,
-          id,
-          inverseOf: operation.id,
-          kind: 'edit',
-          parents: state.frontier,
-          proposal: true,
-          retained: operation.retained,
-          steps: captured.steps,
-          replica: live.replica,
-          seen: state.vector,
-          sequence,
-          time: Date.now(),
-        },
-        'Retained authored history compensation'
+    const verdicts = [...actions].flatMap(([id, verdict]) =>
+      [...incarnationsOf(index, id)].map(({ at, change, inc }) =>
+        verdictElementOf({
+          member: inc === undefined ? { at, change } : { at, change, inc },
+          verdict,
+        })
       )
     );
-    return;
-  }
-  const mapped = mapAuthoredChange({
-    state,
-    captureAs: { changeId, operationId: id },
-    properties: {
-      editor: live.source,
-      state,
-      schema: getCompiledEditorSchemaFromApi(schema),
-      isVisible: (edit) =>
-        edit.id !== operation.id &&
-        (operation.proposal
-          ? readRecord(state.changes, edit.changeId)?.status !== 'rejected'
-          : readRecord(state.changes, edit.changeId)?.status === 'accepted'),
-    },
-    accepted: operation.proposal
-      ? {
-          isAccepted: (identity) =>
-            readRecord(state.changes, identity)?.status === 'accepted',
-          positions: before.acceptedPositions,
-          value: before.accepted,
-        }
-      : undefined,
-    changeId: operation.changeId,
-    direction: 'inverse',
-    operationId: operation.id,
-    positions,
-    steps: operation.steps,
-    value,
-  });
-  const captured = mapped;
-  const apply = (change: DocumentChange, document: EditorDocumentValue) => {
-    const step = new ChangeDraft(document).apply(change);
-    schema.validateDocumentChange({
-      before: document,
-      after: step.after as EditorDocumentValue,
-      change,
-      indexedBefore: step.indexedBefore,
-      indexedAfter: step.indexedAfter,
-    });
-    return step.after as EditorDocumentValue;
-  };
-  let acceptedChange = DocumentChange.empty;
-  let projectedChange = mapped.change;
-  let { accepted } = before;
-  let { acceptedPositions } = before;
-  let projectedPositions = captured.positions;
-  if (!operation.proposal) {
-    acceptedChange = mapped.change;
-    accepted = apply(acceptedChange, accepted);
-    acceptedPositions = captured.positions;
-    acceptedChange = restoreAuthoredHistoryNodeKeys(
-      acceptedChange,
-      accepted,
-      acceptedPositions,
-      nodeKeys?.accepted
+    const decidedValue = withVerdicts(resolution.value, verdicts);
+    // A change whose inserted text the decision removes, such as text typed
+    // inside a rejected insertion, goes only when it is decided too. An empty
+    // block completion built holds nothing to lose.
+    const remaining = changeIndexOf(decidedValue).changes;
+    const taken = [...index.changes.keys()].filter(
+      (id) =>
+        !actions.has(id) &&
+        !remaining.has(id) &&
+        index.occurrences
+          .get(id)
+          ?.some(
+            ({ mark, node }) =>
+              mark.kind === 'insert' &&
+              typeof node.text === 'string' &&
+              node.text !== ''
+          )
     );
-    if (before.acceptedPositions !== before.projectedPositions) {
-      const projected = mapDirectAuthoredChange({
-        state,
-        changeId,
-        operationId: id,
-        positions: before.projectedPositions,
-        steps: captured.steps,
-        target: 'proposed',
-        value: before.projected,
-      });
-      projectedChange = projected.change;
-      projectedPositions = projected.positions;
+
+    if (taken.length > 0) {
+      return { result: { ids, status: 'blocked', with: taken } };
     }
-  }
-  const projected = apply(projectedChange, before.projected);
-  projectedChange = restoreAuthoredHistoryNodeKeys(
-    projectedChange,
-    projected,
-    projectedPositions,
-    nodeKeys?.proposed
-  );
-  const next: AuthoredEdit = snapshotEditorJsonValue(
-    {
-      authorId,
-      changeId,
-      clock: state.clock + 1,
-      dependencies: captured.dependencies,
-      id,
-      inverseOf: operation.id,
-      kind: 'edit',
-      parents: state.frontier,
-      proposal: operation.proposal,
-      steps: captured.steps,
-      replica: live.replica,
-      seen: state.vector,
-      sequence,
-      time: Date.now(),
-    },
-    'Authored history compensation'
-  );
-  stageAuthoredProjection(live, {
-    acceptedChange,
-    projectedChange,
-    projection: { accepted, acceptedPositions, projected, projectedPositions },
-  });
-  active.applyingDecision = true;
-  try {
-    tx.changes.apply(acceptedChange);
-    emitAuthoredOperation(live, tx, next);
-  } finally {
-    active.applyingDecision = false;
-  }
-};
+    const schema: InternalEditorSchemaApi = getEditorSchema(editor);
 
-const undoAuthoredReview = (
-  live: AuthoredRuntime,
-  tx: EditorUpdateTransaction,
-  operation: AuthoredReview
-) => {
-  const authorId = actor(live);
-  const active = getDefined(live.active);
-  prepareAuthoredReview(live);
-  if (authorId !== operation.authorId) {
-    throw new AuthoredMappingConflictError(
-      operation.selection.changes.map((change) => change.id)
-    );
-  }
-  if (
-    active.publication === 'proposed' ||
-    (active.changed && !active.decision)
-  ) {
-    throw new Error('Authored history must precede ordinary document writes.');
-  }
-  const state = tx.getField(authoredState);
-  const before = active.decision?.projection ?? {
-    accepted: live.accepted,
-    acceptedPositions: live.acceptedPositions,
-    projected: live.projected,
-    projectedPositions: live.projectedPositions,
-  };
-  const prepared = projectAuthoredReviewUndo({
-    editor: live.source,
-    operation,
-    projection: before,
-    schema: getEditorSchema(live.source),
-    state,
-  });
-  const sequence = (readRecord(state.vector, live.replica) ?? 0) + 1;
-  const next: AuthoredReview = snapshotEditorJsonValue(
-    {
-      action: operation.action,
-      authorId,
-      clock: state.clock + 1,
-      id: `${live.replica}:${sequence}`,
-      kind: 'undo',
-      parents: state.frontier,
-      replica: live.replica,
-      seen: state.vector,
-      sequence,
-      time: Date.now(),
-      undoOf: operation.id,
-      selection: {
-        documentId: state.documentId,
-        changes: operation.selection.changes.map(({ id }) => {
-          const change = getDefined(readRecord(state.changes, id));
-          // Compensation selects the review even after neutral content replay.
-          return { id, revision: change.revision, heads: [operation.id] };
-        }),
-      },
-    },
-    'Authored review compensation'
-  );
-  stageAuthoredProjection(live, prepared);
-  active.applyingDecision = true;
-  try {
-    tx.changes.apply(prepared.acceptedChange);
-    emitAuthoredOperation(live, tx, next);
-  } finally {
-    active.applyingDecision = false;
-  }
-};
-
-/** Install native attribution and retained proposals on one editor. */
-const AUTHORED_DOCUMENT_CAPABILITY = Object.freeze({
-  createCheckpoint: createAuthoredReviewCheckpoint,
-  normalize(document, state, options) {
-    return normalizeAuthoredReviewDocument(
-      document,
-      state as AuthoredState,
-      options
-    );
-  },
-  parse: parseAuthoredDocument,
-  project(document, projection) {
-    if (projection === 'review') {
-      const result = projectAuthoredReview(document);
-
-      return Object.freeze({
-        diagnostics: result.diagnostics,
-        document: result.proposed,
-        review: result.review,
-      });
+    try {
+      schema.assertDocument(decidedValue);
+    } catch (error) {
+      if (isRefusal(error)) return { result: { ids, status: 'invalid' } };
+      throw error;
     }
-    const result = projectAuthoredDocument(document, { projection });
 
-    return Object.freeze({
-      diagnostics: result.diagnostics,
-      document: result.document,
-      review: result.review,
-    });
-  },
-}) satisfies NativeAuthoredDocumentCapability;
+    const change = decidedChange(value, decidedValue, (mark) =>
+      actions.get(mark.change)
+    );
 
-export const authored = (options: AuthoredOptions): AuthoredPlugin =>
-  definePlugin('authored', {
-    api: ({ editor }) => ({
-      setView: (value: AuthoredView) => setAuthoredView(editor, value),
-      subscribeChanges: (
-        listener: (publication: AuthoredChangePublication) => void
-      ) => runtime(editor).subscribeChanges(editor, listener),
-    }),
-    contributions: [
-      authoredDocumentCapabilityPoint.of(AUTHORED_DOCUMENT_CAPABILITY),
-    ],
-    stateFields: [authoredState],
-    effectTypes: [authoredOperationEffect, authoredHistoryEffect],
-    activate({ editor, onCleanup }) {
-      const source = getEditorRuntimeOwner(editor);
-      const existing = RUNTIMES.get(source);
-      const initialState = editor.read.getField(authoredState);
-      const initialValue = editor.read.value();
-      const schema: InternalEditorSchemaApi = getEditorSchema(source);
-      const changeListeners = new Map<
-        Editor,
-        Set<(publication: AuthoredChangePublication) => void>
-      >();
-      const live: AuthoredRuntime = {
-        accepted: content(initialValue),
-        active: null,
-        fragmentIndex: null,
-        fragments: new Map(),
-        ...restoreInitialProjection(initialState, initialValue, schema, source),
-        options,
-        replica: crypto.randomUUID(),
-        source,
-        subscribeChanges(view, listener) {
-          if (getEditorRuntimeOwner(view) !== source) {
-            throw new Error(
-              'Authored change subscriptions require this editor.'
-            );
-          }
-          const listeners = changeListeners.get(view) ?? new Set();
-          listeners.add(listener);
-          changeListeners.set(view, listeners);
-          fragmentIndex();
-          observeFragments();
-          return () => {
-            if (!listeners.delete(listener)) return;
-            if (!listeners.size) changeListeners.delete(view);
-            releaseFragmentObservation();
-          };
-        },
-      };
-      seedAuthoredProjectionNodeKeys(source, live.projected);
-      indexAuthoredState(editor.read.getField(authoredState));
-      RUNTIMES.set(source, live);
-      const renderScopes = new Map<
-        string,
-        {
-          accepted: AuthoredRangeProjection;
-          proposed: AuthoredRangeProjection;
-          children: readonly Descendant[];
-          segments: readonly NativeAuthoredRenderSegment[];
-        }
-      >();
-      const fragmentListeners = new Map<string, Set<() => void>>();
-      const fragmentViewListeners = new Map<
-        string,
-        Set<(commit: EditorCommit) => void>
-      >();
-      const fragmentPublications = new WeakMap<
-        EditorCommit,
-        {
-          affected: ReadonlySet<string>;
-          changed: ReadonlySet<string>;
-          nodeKeys: ReadonlySet<NodeKey>;
-        }
-      >();
-      let stopFragmentListener: (() => void) | undefined;
-      const observeFragments = () => {
-        if (stopFragmentListener) return;
-        const queue = createEditorCommitPublicationQueue(
-          getLastCommit(source)?.version ?? 0
-        );
-        stopFragmentListener = source.subscribeCommit((commit, snapshot) => {
-          publishEditorCommitInVersionOrder(
-            queue,
-            commit,
-            snapshot,
-            (published) => {
-              const publication = fragmentPublications.get(published);
-              for (const id of publication?.affected ?? []) {
-                for (const listener of [
-                  ...(fragmentViewListeners.get(id) ?? []),
-                ]) {
-                  listener(published);
-                }
-              }
-              for (const bucket of publication?.changed ?? []) {
-                for (const listener of [
-                  ...(fragmentListeners.get(bucket) ?? []),
-                ]) {
-                  listener();
-                }
-              }
-              if (publication) {
-                const changePublication = Object.freeze({
-                  changeIds: Object.freeze([...publication.affected]),
-                  documentChanged: published.changed.hasAny('document'),
-                  nodeKeys: Object.freeze([...publication.nodeKeys]),
-                });
-                for (const listeners of [...changeListeners.values()]) {
-                  for (const listener of [...listeners]) {
-                    listener(changePublication);
-                  }
-                }
-              }
-            }
-          );
-        });
-      };
-      const releaseFragmentObservation = () => {
-        if (
-          fragmentListeners.size ||
-          fragmentViewListeners.size ||
-          changeListeners.size
-        ) {
-          return;
-        }
-        stopFragmentListener?.();
-        stopFragmentListener = undefined;
-        renderScopes.clear();
-      };
-      const fragmentIndex = () => currentAuthoredFragmentIndex(live);
-      const projections = new WeakMap<
-        EditorCommit,
-        {
-          acceptedBefore: EditorDocumentValue;
-          acceptedAfter: EditorDocumentValue;
-          acceptedPositionsBefore: AuthoredPositionRoots;
-          acceptedPositionsAfter: AuthoredPositionRoots;
-          projectedPositionsBefore: AuthoredPositionRoots;
-          projectedPositionsAfter: AuthoredPositionRoots;
-          state: AuthoredState;
-          stateBefore: AuthoredState;
-          inputProjection: 'accepted' | 'proposed';
-          historySelectionBefore: AuthoredViewSelection;
-          view: Editor | null;
-          viewSelectionBefore: AuthoredViewSelection;
-          viewSelectionAfter: AuthoredViewSelection;
-          before: EditorDocumentValue;
-          after: EditorDocumentValue;
-          change: DocumentChange;
-          commits: WeakMap<Editor, EditorCommit>;
-        }
-      >();
-      const cleanup = registerAuthoredRuntime(source, {
-        subscribeFragment(view, listener) {
-          const binding = FRAGMENT_VIEWS.get(getEditorRuntime(view));
-          if (!binding) return undefined;
-          const { changeId } = binding.fragment;
-          const listeners = fragmentViewListeners.get(changeId) ?? new Set();
-          const notify: typeof listener = (commit) => listener(commit);
-          listeners.add(notify);
-          fragmentViewListeners.set(changeId, listeners);
-          fragmentIndex();
-          observeFragments();
-          return () => {
-            if (!listeners.delete(notify)) return;
-            if (!listeners.size) fragmentViewListeners.delete(changeId);
-            releaseFragmentObservation();
-          };
-        },
-        view: authoredView,
-        fragmentVersion(view) {
-          return !FRAGMENT_VIEWS.has(getEditorRuntime(view)) &&
-            authoredView(view).projection === 'markup' &&
-            fragmentIndex().buckets
-            ? source.read.getField(authoredState)
-            : null;
-        },
-        fragmentSlots(view, nodeKey, root) {
-          if (
-            FRAGMENT_VIEWS.has(getEditorRuntime(view)) ||
-            authoredView(view).projection !== 'markup'
-          ) {
-            return EMPTY_AUTHORED_FRAGMENT_SLOTS;
-          }
-          return (
-            readRecord(
-              fragmentIndex().buckets,
-              authoredFragmentBucket(
-                root ?? view.read.view.root() ?? 'main',
-                nodeKey
-              )
-            )?.slots ?? EMPTY_AUTHORED_FRAGMENT_SLOTS
-          );
-        },
-        renderSegments(view, children, root, scope) {
-          const accepted = readAuthoredViewProjection(live, view, 'accepted');
-          const proposed = readAuthoredViewProjection(live, view, 'proposed');
-          const key = JSON.stringify([root, scope]);
-          const previous = renderScopes.get(key);
-          if (
-            previous?.children === children &&
-            previous.accepted.positions === accepted.positions &&
-            previous.proposed.positions === proposed.positions &&
-            previous.proposed.state === proposed.state
-          ) {
-            return previous.segments;
-          }
-          const segments = profileCoreDuration('authored-render-scope', () =>
-            composeAuthoredRenderSegments(
-              createEditorAuthoredProjectionContext(view),
-              children,
-              root,
-              scope,
-              accepted,
-              proposed
-            )
-          );
-          renderScopes.set(key, { accepted, proposed, children, segments });
-          return segments;
-        },
-        subscribeFragmentSlots(view, nodeKey, listener) {
-          if (FRAGMENT_VIEWS.has(getEditorRuntime(view))) return () => {};
-          const bucket = authoredFragmentBucket(
-            view.read.view.root() ?? 'main',
-            nodeKey
-          );
-          const notify = () => listener();
-          let listeners: Set<() => void> | null = null;
-          const detach = () => {
-            if (!listeners) return;
-            listeners.delete(notify);
-            if (!listeners.size) fragmentListeners.delete(bucket);
-            listeners = null;
-            releaseFragmentObservation();
-          };
-          const bind = () => {
-            if (authoredView(view).projection !== 'markup') {
-              detach();
-            } else if (!listeners) {
-              listeners = fragmentListeners.get(bucket) ?? new Set();
-              listeners.add(notify);
-              fragmentListeners.set(bucket, listeners);
-              fragmentIndex();
-              observeFragments();
-            }
-          };
-          bind();
-          const stopView = subscribeEditorViewState(view, (change) => {
-            if (change !== 'authored') return;
-            bind();
-            notify();
-          });
-          return () => {
-            stopView();
-            detach();
-          };
-        },
-        fragmentView(view) {
-          return FRAGMENT_VIEWS.get(getEditorRuntime(view)) ?? null;
-        },
-        updateFragment(view, update, updateOptions) {
-          const binding = FRAGMENT_VIEWS.get(getEditorRuntime(view));
-          if (
-            !binding ||
-            binding.fragment.kind !== 'delete' ||
-            binding.parent.read.view.isReadOnly()
-          ) {
-            return null;
-          }
-          const state = source.read.getField(authoredState);
-          const change = readRecord(state.changes, binding.fragment.changeId);
-          const projection = readBoundFragmentProjection(
-            binding,
-            readAuthoredViewProjection(live, binding.parent, 'accepted'),
-            readAuthoredViewProjection(live, binding.parent, 'proposed'),
-            live
-          );
-          if (!projection || change?.status !== 'pending') return null;
-          const authorId = currentAuthorId(live);
-          if (!authorId || authorId !== change.authorId) return null;
-          schema.assertDocument(projection.value as EditorDocumentValue);
-          const spec = view.read((current) => current.transaction(update));
-          const changes = protectAuthoredRetainedContent(
-            spec.changes,
-            projection,
-            change.id
-          );
-          const result = {
-            changed: !changes.empty,
-            fragmentId: binding.fragment.id,
-            selection: spec.selection?.value ?? null,
-          };
-          if (changes.empty) return result;
-          source.update(
-            { tags: [...(updateOptions?.tags ?? []), ...spec.tags] },
-            (tx) => {
-              prepareAuthoredReview(live);
-              const active = getDefined(live.active);
-              const current = tx.getField(authoredState);
-              const sequence =
-                (readRecord(current.vector, live.replica) ?? 0) + 1;
-              const id = `${live.replica}:${sequence}`;
-              const captured = captureAuthoredChange({
-                schema: getCompiledEditorSchemaFromApi(schema),
-                state: current,
-                change: changes,
-                changeId: change.id,
-                operationId: id,
-                positions: projection.positions,
-                value: projection.value,
-              });
-              active.view = binding.parent;
-              stageAuthoredProjection(live, {
-                acceptedChange: DocumentChange.empty,
-                projectedChange: DocumentChange.empty,
-                projection: {
-                  accepted: live.accepted,
-                  acceptedPositions: live.acceptedPositions,
-                  projected: live.projected,
-                  projectedPositions: live.projectedPositions,
-                },
-              });
-              emitAuthoredOperation(
-                live,
-                tx,
-                snapshotEditorJsonValue(
-                  {
-                    authorId,
-                    changeId: change.id,
-                    clock: current.clock + 1,
-                    dependencies: captured.dependencies,
-                    id,
-                    inverseOf: null,
-                    kind: 'edit',
-                    parents: current.frontier,
-                    proposal: true,
-                    retained: binding.fragment.id,
-                    steps: captured.steps,
-                    replica: live.replica,
-                    seen: current.vector,
-                    sequence,
-                    time: Date.now(),
-                  },
-                  'Retained authored edit'
-                )
-              );
-            }
-          );
-          return result;
-        },
-        bindFragment(view, parent, fragment, requireMarkupParent) {
-          const projected = readAuthoredViewProjection(
-            live,
-            parent,
-            'proposed'
-          );
-          if (
-            getEditorRuntimeOwner(parent) !== source ||
-            getEditorRuntimeOwner(view) !== source ||
-            !view.read.view.isReadOnly() ||
-            FRAGMENT_VIEWS.has(getEditorRuntime(parent)) ||
-            authoredView(parent).projection !== 'markup' ||
-            fragment.kind === 'properties' ||
-            !readAuthoredMarkupFragments(
-              fragment.changeId,
-              readAuthoredViewProjection(live, parent, 'accepted'),
-              projected
-            ).includes(fragment)
-          ) {
-            throw new Error(
-              'Retained content requires a current markup fragment.'
-            );
-          }
-          FRAGMENT_VIEWS.set(getEditorRuntime(view), {
-            documentId: projected.state.documentId,
-            fragment,
-            parent,
-            requireMarkupParent,
-          });
-          VIEW_SELECTIONS.delete(getEditorRuntime(view));
-          authoredViewState(view).policy = Object.freeze({
-            intent: 'propose',
-            projection: 'markup',
-          });
-        },
-        path(view, path, anchorOptions) {
-          if (
-            isBuildingTransactionSpec(source) ||
-            (live.active?.replacement && !live.active.preparedProjection)
-          ) {
-            return undefined;
-          }
-          const active = getActiveEditorTransaction(source)
-            ? live.active
-            : null;
-          const lifetime = active?.rangeLifetime;
-          const tracked =
-            active &&
-            !active.preparedProjection &&
-            !FRAGMENT_VIEWS.has(getEditorRuntime(view))
-              ? createAnchor(view, path, anchorOptions, 'transaction')
-              : null;
-          let settled = false;
-          const binding = bindAuthoredDocumentPath(
-            view,
-            path,
-            anchorOptions,
-            (target) => {
-              const current = RUNTIMES.get(source);
-              return current
-                ? readAuthoredViewProjection(
-                    current,
-                    target ?? view,
-                    !target && tracked && !settled && view === source
-                      ? 'input'
-                      : 'view'
-                  )
-                : null;
-            },
-            () => lifetime?.aborted ?? false,
-            tracked
-              ? () => (settled ? undefined : tracked.resolve())
-              : undefined
-          );
-          if (active && tracked) {
-            active.ranges.push({
-              release: () => tracked.release(),
-              settle() {
-                binding.settle();
-                settled = true;
-              },
-            });
-          }
-          return binding;
-        },
-        range(view, input) {
-          if (
-            isBuildingTransactionSpec(source) ||
-            (live.active?.replacement && !live.active.preparedProjection)
-          ) {
-            return undefined;
-          }
-          const active = getActiveEditorTransaction(source)
-            ? live.active
-            : null;
-          const lifetime = active?.rangeLifetime;
-          const tracked =
-            active &&
-            !active.preparedProjection &&
-            'range' in input &&
-            !FRAGMENT_VIEWS.has(getEditorRuntime(view))
-              ? createAnchor(view, input.range, input.options, 'transaction')
-              : null;
-          let settled = false;
-          const binding = bindAuthoredDocumentRange(
-            view,
-            input,
-            input.options,
-            (target) => {
-              const current = RUNTIMES.get(source);
-              return current
-                ? readAuthoredViewProjection(
-                    current,
-                    target ?? view,
-                    target
-                      ? 'view'
-                      : (input.projection ??
-                          (tracked && !settled && view === source
-                            ? 'input'
-                            : 'view'))
-                  )
-                : null;
-            },
-            () => lifetime?.aborted ?? false,
-            tracked
-              ? () => (settled ? undefined : tracked.resolve())
-              : undefined
-          );
-          if (active && tracked) {
-            active.ranges.push({
-              release: () => tracked.release(),
-              settle() {
-                binding.serialize();
-                settled = true;
-              },
-            });
-          }
-          return binding;
-        },
-        compositionChanged(view, composing) {
-          if (!composing && view.read.view.isComposing()) return;
-          const viewRuntime = getEditorRuntime(view);
-          const pending = PENDING_VIEWS.get(viewRuntime);
-          if (!composing && pending) setAuthoredView(view, pending);
-          const state = authoredViewState(view);
-          state.composition = composing ? { changeId: null } : null;
-          state.policy = Object.freeze({ ...state.policy });
-          notifyEditorViewState(view, 'authored');
-        },
-        fragments(view, changeId) {
-          if (
-            FRAGMENT_VIEWS.has(getEditorRuntime(view)) ||
-            authoredView(view).projection !== 'markup'
-          ) {
-            return [];
-          }
-          return readAuthoredMarkupFragments(
-            changeId,
-            readAuthoredViewProjection(live, view, 'accepted'),
-            readAuthoredViewProjection(live, view, 'proposed')
-          );
-        },
-        historyEffect: authoredHistoryEffect,
-        operationEffect: authoredOperationEffect,
-        inputView: (commit) => projections.get(commit)?.view ?? null,
-        inputProjection: (commit) =>
-          projections.get(commit)?.inputProjection ?? 'accepted',
-        projectedChange: (commit) =>
-          projections.get(commit)?.change ?? commit.changes,
-        beforeValue(commit) {
-          const projection = projections.get(commit);
-          if (
-            !projection ||
-            editor.read.getField(authoredState) !== projection.state
-          ) {
-            return undefined;
-          }
-          return {
-            ...projection.acceptedBefore,
-            meta: {
-              ...editor.read.value().meta,
-              [authoredState.key]: authoredState.serialize(
-                projection.stateBefore
-              ),
-            },
-          };
-        },
-        readView(view, read) {
-          const fragment = FRAGMENT_VIEWS.get(getEditorRuntime(view));
-          if (fragment) {
-            const projection = readAuthoredViewProjection(live, view);
-            return withEditorDocumentProjection(
-              source,
-              projection.value as EditorDocumentValue,
-              read,
-              { root: fragment.fragment.root, selection: null }
-            );
-          }
-          const scopedSelection = VIEW_SELECTIONS.has(getEditorRuntime(view))
-            ? readViewSelection(view, live)
-            : undefined;
-          const projection = getActiveEditorTransaction(source)
-            ? (live.active?.preparedProjection ?? live)
-            : live;
-          return withEditorDocumentProjection(
-            source,
-            authoredView(view).projection === 'accepted'
-              ? projection.accepted
-              : projection.projected,
-            read,
-            scopedSelection
-          );
-        },
-        setView: setAuthoredView,
-        replace(apply) {
-          const active = getDefined(live.active);
-          if (active.changed || active.decision || active.replacement) {
-            throw new Error(
-              'Document replacement requires its own editor update.'
-            );
-          }
-          active.replacement = { phase: 'loading' };
-          const result = apply();
-          active.replacement = {
-            phase: 'loaded',
-            state: getDefined(getActiveEditorTransaction(source)).getField(
-              authoredState
-            ),
-            value: getActiveDocumentChangeBuilder(source)
-              .value as EditorDocumentValue,
-          };
-          return result;
-        },
-        updateView(view) {
-          if (FRAGMENT_VIEWS.has(getEditorRuntime(view))) {
-            throw new Error('Cannot update retained content.');
-          }
-          const active = getDefined(live.active);
-          if (VIEW_SELECTIONS.has(getEditorRuntime(view))) {
-            active.view = view;
-            active.viewSelection =
-              VIEW_SELECTIONS.get(getEditorRuntime(view)) ?? null;
-            const selection = readViewSelection(view, live);
-            active.viewSelectionBefore = selection.selection;
-            active.viewSelectionRoot = selection.root;
-          }
-          const policy = authoredView(view);
-          active.intent = policy.intent;
-          active.publication =
-            policy.intent === 'propose' ? 'proposed' : 'unresolved';
-          active.automatic = policy.projection !== 'accepted';
-          if (policy.projection !== 'accepted') {
-            setTransactionDocumentProjection(source, live.projected);
-            active.inputProjection = 'proposed';
-          } else {
-            active.inputProjection = 'accepted';
-            active.publication = 'accepted';
-          }
-          if (active.view) {
-            setTransactionViewSelection(
-              source,
-              active.viewSelectionBefore,
-              active.viewSelectionRoot
-            );
-          }
-        },
-        viewCommit(view, commit) {
-          if (view === source && !VIEW_SELECTIONS.has(getEditorRuntime(view))) {
-            return commit;
-          }
-          const projection = projections.get(commit);
-          if (!projection) return commit;
-          const cached = projection.commits.get(view);
-          if (cached) return cached;
-          const accepted = authoredView(view).projection === 'accepted';
-          const fragment = FRAGMENT_VIEWS.get(getEditorRuntime(view));
-          const fragmentValue = (phase: 'before' | 'after') => {
-            if (!fragment) return null;
-            const isBefore = phase === 'before';
-            const state = isBefore ? projection.stateBefore : projection.state;
-            return (
-              (readBoundFragmentProjection(
-                fragment,
-                {
-                  positions: isBefore
-                    ? projection.acceptedPositionsBefore
-                    : projection.acceptedPositionsAfter,
-                  state,
-                  value: isBefore
-                    ? projection.acceptedBefore
-                    : projection.acceptedAfter,
-                },
-                {
-                  positions: isBefore
-                    ? projection.projectedPositionsBefore
-                    : projection.projectedPositionsAfter,
-                  state,
-                  value: isBefore ? projection.before : projection.after,
-                },
-                isBefore || live.projected !== projection.after
-                  ? undefined
-                  : live
-              )?.value as EditorDocumentValue | undefined) ??
-              EMPTY_FRAGMENT_VALUE
-            );
-          };
-          const before =
-            fragmentValue('before') ??
-            (accepted ? projection.acceptedBefore : projection.before);
-          const after =
-            fragmentValue('after') ??
-            (accepted ? projection.acceptedAfter : projection.after);
-          const isOriginatingView =
-            projection.view !== null &&
-            getEditorRuntime(projection.view) === getEditorRuntime(view);
-          const capturedBefore = fragment
-            ? null
-            : isOriginatingView
-              ? projection.viewSelectionBefore
-              : (VIEW_SELECTIONS.get(getEditorRuntime(view)) ?? null);
-          const capturedAfter = isOriginatingView
-            ? projection.viewSelectionAfter
-            : capturedBefore;
-          const selectionBefore = resolveAuthoredSelection(
-            capturedBefore,
-            accepted
-              ? projection.acceptedPositionsBefore
-              : projection.projectedPositionsBefore,
-            before as JsonEditorValue,
-            projection.state
-          );
-          const selectionAfter = resolveAuthoredSelection(
-            capturedAfter,
-            accepted
-              ? projection.acceptedPositionsAfter
-              : projection.projectedPositionsAfter,
-            after as JsonEditorValue,
-            projection.state
-          );
-          const projectedCommit = createEditorCommit(
-            {
-              annotations: commit.annotations,
-              after: projectionSnapshot(
-                source,
-                after,
-                commit.version,
-                selectionAfter
-              ),
-              afterValue: after,
-              before: projectionSnapshot(
-                source,
-                before,
-                commit.previousVersion,
-                selectionBefore
-              ),
-              beforeValue: before,
-              changes: fragment
-                ? DocumentChange.between(
-                    before as JsonEditorValue,
-                    after as JsonEditorValue
-                  )
-                : accepted
-                  ? commit.changes
-                  : projection.change,
-              dirtyStateKeys: commit.dirtyStateKeys,
-              editor: source,
-              effects: commit.effects,
-              replace: commit.changed.hasAny('replace'),
-              selectionAfter,
-              selectionAfterRoot: selectionAfter
-                ? (SelectionApi.root(selectionAfter) ?? 'main')
-                : (capturedAfter?.root ?? 'main'),
-              selectionBefore,
-              selectionBeforeRoot: selectionBefore
-                ? (SelectionApi.root(selectionBefore) ?? 'main')
-                : (capturedBefore?.root ?? 'main'),
-              selectionChanged:
-                !SelectionApi.equals(selectionBefore, selectionAfter) ||
-                capturedBefore?.root !== capturedAfter?.root,
-              tags: commit.tags,
-            },
-            { version: commit.version, previousVersion: commit.previousVersion }
-          );
-          projection.commits.set(view, projectedCommit);
-          return projectedCommit;
-        },
-        mergeHistory(current, previous) {
-          let scope: AuthoredEditIdentity | undefined;
-          if (!current.length || !previous.length) return false;
-          return [...current, ...previous].every((effect) => {
-            if (effect.type !== authoredHistoryEffect) return false;
-            const operation = (effect.value.retained as AuthoredEdit[]).find(
-              (entry) => entry.id === effect.value.id
-            );
-            if (!operation || operation.kind !== 'edit') return false;
-            const currentScope = scope ?? operation;
-
-            scope = currentScope;
-            return (
-              operation.authorId === currentScope.authorId &&
-              operation.proposal === currentScope.proposal &&
-              operation.retained === currentScope.retained &&
-              (!operation.proposal ||
-                operation.changeId === currentScope.changeId)
-            );
-          });
-        },
-        history(commit) {
-          if (
-            !commit.effects.some(
-              (effect) => effect.type === authoredOperationEffect
-            )
-          ) {
-            return undefined;
-          }
-          const projection = projections.get(commit);
-          const nodeKeys = projection
-            ? {
-                accepted: captureAuthoredHistoryNodeKeys(
-                  commit.inverseChanges,
-                  projection.acceptedPositionsBefore
-                ),
-                proposed: captureAuthoredHistoryNodeKeys(
-                  bindDocumentChangeNodeKeys(
-                    projection.change.invert(
-                      projection.before as JsonEditorValue
-                    ),
-                    projection.before as JsonEditorValue,
-                    (root, path) =>
-                      getEditorProjectionSnapshotIndex(
-                        source,
-                        authoredRootNodes(
-                          projection.before as JsonEditorValue,
-                          root
-                        ) as Value
-                      ).keyAt([...path])
-                  ),
-                  projection.projectedPositionsBefore
-                ),
-              }
-            : undefined;
-          const effects = commit.effects.flatMap((effect) => {
-            const batch = readAuthoredOperationBatch(effect);
-            return batch
-              ? batch.operations.map((operation) => {
-                  const retained =
-                    operation.kind === 'edit'
-                      ? hasAuthoredContent(operation)
-                        ? [materializeAuthoredEdit(operation)]
-                        : batch.retained.filter(
-                            (entry) => entry.id === operation.id
-                          )
-                      : batch.retained;
-                  return createEditorEffect(authoredHistoryEffect, {
-                    id: operation.id,
-                    retained,
-                    nodeKeys,
-                    ...(projection
-                      ? {
-                          selection: projection.historySelectionBefore,
-                          inverseSelection: projection.viewSelectionAfter,
-                        }
-                      : {}),
-                  });
-                })
-              : effect.type.history === 'push'
-                ? [effect]
-                : [];
-          });
-          const view = projection?.view ?? source;
-          return {
-            effects,
-            grouping: {
-              commit: getAuthoredViewCommit(view, commit),
-              scope: authoredView(view),
-            },
-          };
-        },
-        historyConflict(error) {
-          return error instanceof AuthoredMappingConflictError
-            ? error.identities
-            : null;
-        },
-        initialize() {
-          const state = editor.read.getField(authoredState);
-          const value = editor.read.value();
-          if (
-            state === initialState &&
-            value.children === initialValue.children &&
-            value.roots === initialValue.roots
-          ) {
-            return;
-          }
-          const next = restoreInitialProjection(state, value, schema, source);
-          Object.assign(live, next);
-          live.accepted = content(value);
-          seedAuthoredProjectionNodeKeys(source, live.projected);
-          indexAuthoredState(state);
-        },
-        beforeEffect(effect) {
-          if (effect.type === authoredHistoryEffect) {
-            if (isBuildingTransactionSpec(source)) return true;
-            const tx = getActiveEditorTransaction(source);
-            const before = tx?.getField(authoredState);
-            const active = getDefined(live.active);
-            if (before) {
-              for (const retained of effect.value.retained) {
-                const previous = readRecord(before.operations, retained.id);
-                if (previous && !hasAuthoredContent(previous)) {
-                  active.hydratedChanges.add(retained.changeId);
-                }
-              }
-            }
-            const hydrated =
-              before && retainAuthoredContent(before, effect.value.retained);
-            if (tx && before && hydrated && hydrated !== before) {
-              tx.effects.emit(
-                authoredState.effect,
-                snapshotEditorJsonValue(
-                  {
-                    previousValue: before,
-                    value: hydrated,
-                  },
-                  'Authored History content'
-                )
-              );
-            }
-            const operation =
-              tx &&
-              readRecord(
-                tx.getField(authoredState).operations,
-                effect.value.id
-              );
-            if (!tx || !operation) {
-              throw new Error(
-                'Authored history requires a retained operation.'
-              );
-            }
-            if (operation.kind === 'edit' && !hasAuthoredContent(operation)) {
-              throw new Error(
-                'Authored history requires retained edit content.'
-              );
-            }
-            if (operation.kind === 'edit') {
-              undoAuthoredEdit(
-                live,
-                tx,
-                materializeAuthoredEdit(operation),
-                effect.value.nodeKeys
-              );
-            } else undoAuthoredReview(live, tx, operation);
-            if (Object.hasOwn(effect.value, 'selection')) {
-              getDefined(live.active).historySelection = effect.value.selection;
-              if (
-                !active.view &&
-                operation.kind === 'edit' &&
-                !operation.proposal
-              ) {
-                const { projection } = getDefined(active.decision);
-                tx.selection.set(
-                  resolveAuthoredSelection(
-                    effect.value.selection,
-                    projection.acceptedPositions,
-                    projection.accepted as JsonEditorValue,
-                    tx.getField(authoredState)
-                  )
-                );
-              }
-            }
-            if (
-              active.historyInverseSelection === undefined &&
-              Object.hasOwn(effect.value, 'inverseSelection')
-            ) {
-              active.historyInverseSelection = effect.value.inverseSelection;
-            }
-            return false;
-          }
-          if (effect.type !== authoredOperationEffect) return true;
-          if (live.active?.replacement) {
-            throw new Error(
-              'Document replacement cannot mix with authored operations.'
-            );
-          }
-          const value: unknown = effect.value;
-          if (
-            !value ||
-            typeof value !== 'object' ||
-            !('checkpoint' in value) ||
-            !('documentId' in value) ||
-            !('operations' in value) ||
-            !Array.isArray(value.operations)
-          ) {
-            return true;
-          }
-          const current =
-            getActiveEditorTransaction(source)?.getField(authoredState) ??
-            editor.read.getField(authoredState);
-          let changed =
-            value.documentId !== current.documentId ||
-            value.checkpoint !== null;
-          for (const operation of value.operations) {
-            if (
-              !operation ||
-              typeof operation !== 'object' ||
-              typeof operation.id !== 'string'
-            ) {
-              return true;
-            }
-            const previous = readRecord(current.operations, operation.id);
-            if (!previous) changed = true;
-            else if (
-              !equalAuthoredOperations(previous, operation as AuthoredOperation)
-            ) {
-              throw new Error('Authored operation identity collision.');
-            } else if (
-              hasAuthoredContent(previous) &&
-              'kind' in operation &&
-              operation.kind === 'edit' &&
-              'content' in operation
-            ) {
-              changed = true;
-            } else if (
-              live.options.retainHistory &&
-              'checkpoint' in value &&
-              value.checkpoint &&
-              !hasAuthoredContent(previous) &&
-              'kind' in operation &&
-              operation.kind === 'edit' &&
-              'steps' in operation
-            ) {
-              changed = true;
-            }
-          }
-          const { active } = live;
-          if (
-            changed &&
-            active &&
-            !active.finishing &&
-            (!active.decision || active.receiving) &&
-            !isBuildingTransactionSpec(source)
-          ) {
-            if (
-              active.changed ||
-              active.publication === 'proposed' ||
-              active.inputProjection === 'proposed'
-            ) {
-              throw new Error(
-                'Received authored operations cannot mix with ordinary writes.'
-              );
-            }
-            if (!active.receiving) {
-              setTransactionDocumentProjection(source, live.accepted);
-              active.receiving = current;
-            }
-            active.decision = null;
-          }
-          return changed;
-        },
-        begin() {
-          const acceptedBefore = content(editor.read.value());
-          const stateBefore = editor.read.getField(authoredState);
-          const active: AuthoredTransaction = {
-            finishing: false,
-            hydratedChanges: new Set(),
-            receiving: null,
-            insertions: new Map(),
-            rangeLifetime: { aborted: false },
-            ranges: [],
-            view: null,
-            viewSelection: null,
-            viewSelectionBefore: null,
-            viewSelectionRoot: 'main',
-            automatic: false,
-            actor: null,
-            before: acceptedBefore,
-            applyingDecision: false,
-            changed: false,
-            decisionSuffix: null,
-            replacement: null,
-            decision: null,
-            changeId: null,
-            inputProjection: 'accepted',
-            intent: 'edit',
-            publication: 'accepted',
-          };
-          let preparedCommit: EditorCommit | undefined;
-          const removedFragments = new Set<string>();
-          let nextProjected = live.projected;
-          let nextState = stateBefore;
-          let nextAccepted = live.accepted;
-          let nextViewSelection = active.viewSelection;
-          let nextProjectedChange = DocumentChange.empty;
-          let nextAcceptedPositions = live.acceptedPositions;
-          let nextProjectedPositions = live.projectedPositions;
-          let compositionCapture: {
-            composition: { changeId: string | null };
-            changeId: string;
-          } | null = null;
-          let nextFragments: {
-            affected: ReadonlySet<string>;
-            index: AuthoredFragmentIndex;
-            changed: ReadonlySet<string>;
-            nodeKeys: ReadonlySet<NodeKey>;
-          } | null = null;
-          live.active = active;
-          return {
-            finish(input) {
-              active.finishing = true;
-              const { after, tx } = input;
-              let { before, change } = input;
-              const viewSelection = getCurrentSelection(source);
-              const viewSelectionRoot = getCurrentSelectionRoot(source);
-              let acceptedChange =
-                active.decision?.acceptedChange ??
-                (active.inputProjection === 'proposed'
-                  ? DocumentChange.empty
-                  : change);
-              let acceptedBase = live.accepted;
-              let acceptedPositionsBase = live.acceptedPositions;
-              let projectedBase = live.projected;
-              let projectedPositionsBase = live.projectedPositions;
-              const finishContent = () => {
-                if (active.replacement) {
-                  const { replacement } = active;
-                  if (
-                    replacement.phase !== 'settling' ||
-                    tx.getField(authoredState) !== replacement.state
-                  ) {
-                    throw new Error(
-                      'Document replacement cannot mix with ordinary writes.'
-                    );
-                  }
-                  nextState = replacement.state;
-                  const corrected =
-                    after.children !== replacement.value.children ||
-                    after.roots !== replacement.value.roots;
-                  // Saved authored positions describe the uncorrected content,
-                  // and no operation exists to map them through corrections.
-                  if (corrected && nextState.operations) {
-                    throw new Error(
-                      'Corrections cannot change a loaded document with authored changes.'
-                    );
-                  }
-                  const next =
-                    !corrected && replacement.projection
-                      ? replacement.projection
-                      : loadAuthoredProjection(source, nextState, after);
-                  nextAccepted = next.accepted;
-                  nextProjected = next.projected;
-                  nextAcceptedPositions = next.acceptedPositions;
-                  nextProjectedPositions = next.projectedPositions;
-                  nextProjectedChange = DocumentChange.between(
-                    live.projected,
-                    nextProjected
-                  );
-                  acceptedChange = DocumentChange.between(
-                    live.accepted,
-                    nextAccepted
-                  );
-                  if (active.inputProjection === 'proposed') {
-                    setTransactionPublicationChange(source, acceptedChange);
-                    setTransactionViewSelection(
-                      source,
-                      viewSelection,
-                      viewSelectionRoot
-                    );
-                  }
-                  indexAuthoredState(nextState);
-                  return;
-                }
-                if (active.receiving) {
-                  if (!change.empty) {
-                    throw new Error(
-                      'Received authored operations cannot mix with ordinary writes.'
-                    );
-                  }
-                  const next = receiveAuthoredProjection(live, tx);
-                  ({ acceptedChange } = next);
-                  setTransactionPublicationChange(source, acceptedChange);
-                }
-                if (active.decision) {
-                  nextState = tx.getField(authoredState);
-                  const next = active.decision;
-                  nextProjected = next.projection.projected;
-                  nextAcceptedPositions = next.projection.acceptedPositions;
-                  nextProjectedPositions = next.projection.projectedPositions;
-                  nextProjectedChange = next.projectedChange;
-                  nextAccepted = next.projection.accepted;
-                  if (!active.decisionSuffix) return;
-
-                  acceptedBase = nextAccepted;
-                  acceptedPositionsBase = nextAcceptedPositions;
-                  projectedBase = nextProjected;
-                  projectedPositionsBase = nextProjectedPositions;
-                  before = acceptedBase;
-                  change = active.decisionSuffix;
-                  if (change.empty) return;
-                }
-                if (change.empty) {
-                  if (active.inputProjection === 'proposed') {
-                    setTransactionPublicationChange(
-                      source,
-                      DocumentChange.empty
-                    );
-                  }
-                  return;
-                }
-                const authorId = actor(live);
-                const state = tx.getField(authoredState);
-                const sequence =
-                  (readRecord(state.vector, live.replica) ?? 0) + 1;
-                const operationId = `${live.replica}:${sequence}`;
-                const editingTarget =
-                  active.automatic && active.inputProjection === 'proposed'
-                    ? authoredEditTarget(
-                        change,
-                        projectedPositionsBase,
-                        state,
-                        {
-                          adjacentDeletions: active.intent === 'propose',
-                          amendDeletions: active.insertions.size === 0,
-                          authorId,
-                        }
-                      )
-                    : null;
-                const targeted = editingTarget
-                  ? readRecord(state.changes, editingTarget)
-                  : null;
-                const owned = targeted?.authorId === authorId ? targeted : null;
-                const editingOwner = owned?.id ?? null;
-                const composition = active.automatic
-                  ? authoredViewState(active.view ?? source).composition
-                  : null;
-                const compositionChange = composition?.changeId
-                  ? readRecord(state.changes, composition.changeId)
-                  : null;
-                const classificationId = active.changeId ?? crypto.randomUUID();
-                const classificationCaptured = captureAuthoredChange({
-                  afterPositions: active.revertPositions,
-                  restoreIdentity: active.revertPositions !== undefined,
-                  schema: getCompiledEditorSchemaFromApi(schema),
-                  state,
-                  insertions: active.insertions,
-                  change,
-                  steps: active.decision ? [change] : input.steps,
-                  changeId: classificationId,
-                  operationId,
-                  positions:
-                    active.inputProjection === 'proposed'
-                      ? projectedPositionsBase
-                      : acceptedPositionsBase,
-                  value: before,
-                });
-                const pendingDependencies =
-                  classificationCaptured.publicationDependencies.filter(
-                    (identity) => {
-                      const status = readRecord(
-                        state.changes,
-                        identity
-                      )?.status;
-                      return status === 'pending' || status === 'conflicted';
-                    }
-                  );
-                const changeId =
-                  active.changeId ??
-                  (compositionChange?.authorId === authorId &&
-                  compositionChange.status === 'pending'
-                    ? compositionChange.id
-                    : editingOwner &&
-                        (active.intent === 'propose' ||
-                          pendingDependencies.includes(editingOwner)) &&
-                        owned?.authorId === authorId &&
-                        owned.status === 'pending'
-                      ? owned.id
-                      : classificationId);
-                const initialCaptured =
-                  changeId === classificationId
-                    ? classificationCaptured
-                    : captureAuthoredChange({
-                        schema: getCompiledEditorSchemaFromApi(schema),
-                        state,
-                        insertions: active.insertions,
-                        change,
-                        steps: active.decision ? [change] : input.steps,
-                        changeId,
-                        operationId,
-                        positions:
-                          active.inputProjection === 'proposed'
-                            ? projectedPositionsBase
-                            : acceptedPositionsBase,
-                        value: before,
-                      });
-                if (active.publication === 'unresolved') {
-                  active.publication =
-                    editingTarget || compositionChange?.status === 'pending'
-                      ? 'proposed'
-                      : 'accepted';
-                }
-                const proposedPublication = active.publication === 'proposed';
-                if (composition && proposedPublication) {
-                  compositionCapture = { composition, changeId };
-                }
-                const partitions =
-                  active.automatic &&
-                  proposedPublication &&
-                  !active.changeId &&
-                  !composition
-                    ? (partitionAuthoredTextEdit(
-                        change,
-                        live.projectedPositions,
-                        state,
-                        authorId,
-                        before
-                      ) ??
-                      partitionAuthoredStructuralEdit(
-                        change,
-                        live.projectedPositions,
-                        state,
-                        authorId,
-                        before
-                      ))
-                    : null;
-                const publish = (
-                  id: string,
-                  captured: ReturnType<typeof captureAuthoredChange>
-                ) => {
-                  const publicationState = tx.getField(authoredState);
-                  const publicationSequence =
-                    (readRecord(publicationState.vector, live.replica) ?? 0) +
-                    1;
-                  emitAuthoredOperation(
-                    live,
-                    tx,
-                    snapshotEditorJsonValue(
-                      {
-                        authorId,
-                        changeId: id,
-                        clock: publicationState.clock + 1,
-                        dependencies: captured.dependencies,
-                        id: `${live.replica}:${publicationSequence}`,
-                        inverseOf: null,
-                        kind: 'edit',
-                        parents: publicationState.frontier,
-                        proposal: proposedPublication,
-                        steps: captured.steps,
-                        replica: live.replica,
-                        seen: publicationState.vector,
-                        sequence: publicationSequence,
-                        time: Date.now(),
-                      },
-                      'Authored operation'
-                    )
-                  );
-                };
-                let operationChange = change;
-                let operationAfter = after;
-                let captured = partitions
-                  ? (() => {
-                      const draft = new ChangeDraft(before);
-                      let positions = live.projectedPositions;
-                      let result:
-                        | ReturnType<typeof captureAuthoredChange>
-                        | undefined;
-                      for (const partition of partitions) {
-                        const current = tx.getField(authoredState);
-                        const partSequence =
-                          (readRecord(current.vector, live.replica) ?? 0) + 1;
-                        const id = partition.changeId ?? changeId;
-                        result = captureAuthoredChange({
-                          schema: getCompiledEditorSchemaFromApi(schema),
-                          state: current,
-                          change: partition.change,
-                          changeId: id,
-                          operationId: `${live.replica}:${partSequence}`,
-                          positions,
-                          value: draft.value,
-                        });
-                        publish(id, result);
-                        ({ positions } = result);
-                        draft.apply(partition.change, { classify: false });
-                      }
-                      return getDefined(result);
-                    })()
-                  : initialCaptured;
-                if (
-                  !proposedPublication &&
-                  active.inputProjection === 'proposed'
-                ) {
-                  // Keep transaction boundaries so compound structural edits
-                  // remain invertible after mapping into accepted coordinates.
-                  const mapped = mapDirectAuthoredChange({
-                    state,
-                    captureAs: { changeId, operationId },
-                    changeId,
-                    operationId,
-                    positions: acceptedPositionsBase,
-                    steps: initialCaptured.steps,
-                    target: 'accepted',
-                    value: acceptedBase,
-                  });
-                  const mappedDraft = new ChangeDraft(acceptedBase).apply(
-                    mapped.change,
-                    { classify: false }
-                  );
-                  const correction = constructCanonicalDocumentChange(
-                    source,
-                    mappedDraft.after,
-                    mapped.change,
-                    {
-                      before: acceptedBase,
-                      indexedAfter: mappedDraft.indexedAfter,
-                      indexedBefore: mappedDraft.indexedBefore,
-                    }
-                  );
-                  operationChange = correction.empty
-                    ? mapped.change
-                    : mapped.change.compose(correction, acceptedBase);
-                  const applied = new ChangeDraft(acceptedBase).apply(
-                    operationChange
-                  );
-                  operationAfter = applied.after as EditorDocumentValue;
-                  schema.validateDocumentChange({
-                    before: acceptedBase,
-                    after: operationAfter,
-                    change: operationChange,
-                    indexedAfter: applied.indexedAfter,
-                    indexedBefore: applied.indexedBefore,
-                  });
-                  captured = captureAuthoredChange({
-                    schema: getCompiledEditorSchemaFromApi(schema),
-                    state,
-                    change: operationChange,
-                    steps: [
-                      ...mapped.steps.map((step) =>
-                        DocumentChange.fromJSON(step.forward)
-                      ),
-                      ...(correction.empty ? [] : [correction]),
-                    ],
-                    changeId,
-                    operationId,
-                    positions: acceptedPositionsBase,
-                    value: acceptedBase,
-                  });
-                }
-                if (!partitions) publish(changeId, captured);
-                nextState = tx.getField(authoredState);
-                let projectedChange = change;
-                const sharedPositions =
-                  acceptedPositionsBase === projectedPositionsBase;
-                if (proposedPublication) {
-                  nextProjectedPositions = captured.positions;
-                  nextProjected = after;
-                } else {
-                  nextAccepted = operationAfter;
-                  nextAcceptedPositions = captured.positions;
-                  acceptedChange = active.decision
-                    ? active.decision.acceptedChange.compose(
-                        operationChange,
-                        live.accepted
-                      )
-                    : operationChange;
-                  if (active.inputProjection === 'proposed') {
-                    projectedChange = change;
-                    nextProjectedPositions = initialCaptured.positions;
-                    nextProjected = after;
-                  } else if (sharedPositions) {
-                    nextProjectedPositions = captured.positions;
-                    nextProjected = operationAfter;
-                    projectedChange = operationChange;
-                  } else {
-                    const projection = mapDirectAuthoredChange({
-                      state,
-                      properties: {
-                        editor: source,
-                        state: nextState,
-                        schema: getCompiledEditorSchemaFromApi(schema),
-                        isVisible: (edit) =>
-                          readRecord(nextState.changes, edit.changeId)
-                            ?.status !== 'rejected',
-                      },
-                      changeId,
-                      operationId,
-                      positions: projectedPositionsBase,
-                      steps: captured.steps,
-                      target: 'proposed',
-                      value: projectedBase,
-                    });
-                    projectedChange = projection.change;
-                    nextProjectedPositions = projection.positions;
-                    const step = new ChangeDraft(projectedBase).apply(
-                      projectedChange
-                    );
-                    nextProjected = step.after as EditorDocumentValue;
-                    schema.validateDocumentChange({
-                      before: projectedBase,
-                      after: nextProjected,
-                      change: projectedChange,
-                      indexedAfter: step.indexedAfter,
-                      indexedBefore: step.indexedBefore,
-                    });
-                  }
-                }
-                nextProjectedChange = active.decision
-                  ? active.decision.projectedChange.compose(
-                      projectedChange,
-                      live.projected
-                    )
-                  : projectedChange;
-                nextState = tx.getField(authoredState);
-                if (active.inputProjection === 'proposed') {
-                  setTransactionPublicationChange(
-                    source,
-                    proposedPublication ? DocumentChange.empty : acceptedChange
-                  );
-                }
-              };
-              for (const range of active.ranges) range.settle();
-              finishContent();
-              if (
-                nextState !== stateBefore ||
-                nextAccepted !== live.accepted ||
-                nextProjected !== live.projected
-              ) {
-                nextState = snapshotEditorJsonValue(
-                  {
-                    ...nextState,
-                    acceptedPositions: nextState.operations
-                      ? nextAcceptedPositions
-                      : null,
-                    projected: nextState.operations
-                      ? (nextProjected as JsonEditorValue)
-                      : null,
-                    projectedPositions: nextState.operations
-                      ? nextProjectedPositions
-                      : null,
-                  },
-                  'Authored checkpoint'
-                );
-                tx.effects.emit(
-                  authoredState.effect,
-                  snapshotEditorJsonValue(
-                    {
-                      previousValue: tx.getField(authoredState),
-                      value: nextState,
-                    },
-                    'Authored checkpoint publication'
-                  )
-                );
-              }
-              inheritEditorProjectionIndexes(
-                source,
-                live.projected,
-                nextProjected,
-                nextProjectedChange,
-                input.discardedNodeKeys
-              );
-              if (
-                live.accepted !== live.projected ||
-                nextAccepted !== nextProjected
-              ) {
-                inheritEditorProjectionIndexes(
-                  source,
-                  live.accepted,
-                  nextAccepted,
-                  acceptedChange
-                );
-              }
-              if (active.view) {
-                nextViewSelection = active.replacement
-                  ? captureAuthoredSelection(
-                      viewSelection,
-                      viewSelectionRoot,
-                      nextAcceptedPositions,
-                      nextAccepted as JsonEditorValue
-                    )
-                  : active.historySelection !== undefined
-                    ? active.historySelection
-                    : (active.decision && !active.decisionSuffix) ||
-                        !input.selectionWritten
-                      ? active.viewSelection
-                      : captureAuthoredSelection(
-                          viewSelection,
-                          viewSelectionRoot,
-                          active.inputProjection === 'proposed'
-                            ? nextProjectedPositions
-                            : nextAcceptedPositions,
-                          (active.inputProjection === 'proposed'
-                            ? nextProjected
-                            : nextAccepted) as JsonEditorValue
-                        );
-                const selectionAfter = resolveAuthoredSelection(
-                  nextViewSelection,
-                  authoredView(active.view).projection === 'accepted'
-                    ? nextAcceptedPositions
-                    : nextProjectedPositions,
-                  (authoredView(active.view).projection === 'accepted'
-                    ? nextAccepted
-                    : nextProjected) as JsonEditorValue,
-                  nextState
-                );
-                if (!active.replacement) {
-                  restoreTransactionSourceSelection(
-                    source,
-                    !SelectionApi.equals(
-                      active.viewSelectionBefore,
-                      selectionAfter
-                    ) ||
-                      active.viewSelectionRoot !==
-                        (selectionAfter
-                          ? (SelectionApi.root(selectionAfter) ?? 'main')
-                          : (nextViewSelection?.root ?? 'main'))
-                  );
-                }
-              }
-              if (live.fragmentIndex) {
-                const accepted = {
-                  positions: nextAcceptedPositions,
-                  state: nextState,
-                  value: nextAccepted as JsonEditorValue,
-                };
-                const proposed = {
-                  positions: nextProjectedPositions,
-                  state: nextState,
-                  value: nextProjected as JsonEditorValue,
-                };
-                if (active.replacement) {
-                  const index = createAuthoredFragmentIndex(
-                    source,
-                    accepted,
-                    proposed
-                  );
-                  nextFragments = {
-                    affected: new Set(
-                      [
-                        ...records(live.fragmentIndex.changes),
-                        ...records(index.changes),
-                      ].map(([key]) => key)
-                    ),
-                    index,
-                    changed: new Set(
-                      [
-                        ...records(live.fragmentIndex.buckets),
-                        ...records(index.buckets),
-                      ].map(([key]) => key)
-                    ),
-                    nodeKeys: new Set([
-                      ...authoredFragmentIndexNodeKeys(live.fragmentIndex),
-                      ...authoredFragmentIndexNodeKeys(index),
-                    ]),
-                  };
-                } else {
-                  nextFragments = updateAuthoredFragmentIndex(
-                    source,
-                    live.fragmentIndex,
-                    stateBefore,
-                    accepted,
-                    proposed,
-                    tx.effects
-                      .all()
-                      .flatMap(
-                        (effect) =>
-                          readAuthoredOperationBatch(effect)?.operations ?? []
-                      )
-                  );
-                }
-              }
-            },
-            settle() {
-              if (active.replacement?.phase === 'loaded') {
-                active.replacement.phase = 'settling';
-              }
-            },
-            prepare(commit) {
-              if (preparedCommit) {
-                throw new Error('Authored commit already prepared.');
-              }
-              preparedCommit = commit;
-              active.preparedProjection = {
-                accepted: nextAccepted,
-                acceptedPositions: nextAcceptedPositions,
-                projected: nextProjected,
-                projectedPositions: nextProjectedPositions,
-              };
-              for (const operation of commit.effects.flatMap(
-                (effect) => readAuthoredOperationBatch(effect)?.operations ?? []
-              )) {
-                if (operation.kind === 'edit') continue;
-                for (const { id } of operation.selection.changes) {
-                  const status = readRecord(nextState.changes, id)?.status;
-                  if (status !== 'pending' && status !== 'conflicted') {
-                    removedFragments.add(id);
-                  }
-                }
-              }
-              projections.set(commit, {
-                before: live.projected,
-                after: nextProjected,
-                change: nextProjectedChange,
-                acceptedBefore: live.accepted,
-                acceptedAfter: nextAccepted,
-                acceptedPositionsBefore: live.acceptedPositions,
-                acceptedPositionsAfter: nextAcceptedPositions,
-                projectedPositionsBefore: live.projectedPositions,
-                projectedPositionsAfter: nextProjectedPositions,
-                state: nextState,
-                stateBefore,
-                inputProjection: active.inputProjection,
-                historySelectionBefore:
-                  active.historyInverseSelection !== undefined
-                    ? active.historyInverseSelection
-                    : active.view
-                      ? active.viewSelection
-                      : captureAuthoredSelection(
-                          commit.selectionBefore,
-                          commit.selectionBeforeRoot ?? 'main',
-                          live.acceptedPositions,
-                          live.accepted as JsonEditorValue
-                        ),
-                view: active.view,
-                viewSelectionBefore: active.viewSelection,
-                viewSelectionAfter: active.view
-                  ? nextViewSelection
-                  : captureAuthoredSelection(
-                      commit.selectionAfter,
-                      commit.selectionAfterRoot ?? 'main',
-                      nextAcceptedPositions,
-                      nextAccepted as JsonEditorValue
-                    ),
-                commits: new WeakMap(),
-              });
-            },
-            publish(commit) {
-              if (
-                nextState !== stateBefore ||
-                nextAccepted !== live.accepted ||
-                nextProjected !== live.projected
-              ) {
-                renderScopes.clear();
-              }
-              if (compositionCapture) {
-                compositionCapture.composition.changeId =
-                  compositionCapture.changeId;
-              }
-              if (nextFragments) {
-                live.fragmentIndex = nextFragments.index;
-                fragmentPublications.set(commit, nextFragments);
-              }
-              if (active.replacement) live.fragments.clear();
-              for (const id of removedFragments) live.fragments.delete(id);
-              if (active.view) {
-                VIEW_SELECTIONS.set(
-                  getEditorRuntime(active.view),
-                  nextViewSelection
-                );
-              }
-              live.accepted = nextAccepted;
-              live.acceptedPositions = nextAcceptedPositions;
-              live.projectedPositions = nextProjectedPositions;
-              live.projected = nextProjected;
-            },
-            close(_commit, failed) {
-              if (failed && preparedCommit) {
-                projections.delete(preparedCommit);
-              }
-              active.rangeLifetime.aborted = failed;
-              for (const range of active.ranges) range.release();
-              live.active = null;
-            },
-          };
-        },
-      });
-      onCleanup(({ reason }) => {
-        stopFragmentListener?.();
-        changeListeners.clear();
-        renderScopes.clear();
-        cleanup(reason === 'rollback');
-        if (RUNTIMES.get(source) !== live) return;
-        if (reason === 'rollback' && existing) RUNTIMES.set(source, existing);
-        else RUNTIMES.delete(source);
-      });
-    },
-    on: {
-      transactionChange({
-        editor,
-        before,
-        change,
-        selectionBefore,
-        selectionBeforeRoot,
-      }) {
-        const live = runtime(editor);
-        if (live.active?.replacement) {
-          if (live.active.replacement.phase === 'loaded') {
-            throw new Error(
-              'Document replacement cannot mix with ordinary writes.'
-            );
-          }
-          return;
-        }
-        if (live.active?.receiving) {
-          throw new Error(
-            'Received authored operations cannot mix with ordinary writes.'
-          );
-        }
-        actor(live);
-        if (live.active) {
-          if (
-            live.active.view &&
-            authoredView(live.active.view).projection === 'markup' &&
-            SelectionApi.isText(selectionBefore) &&
-            selectionBefore.affinity &&
-            RangeApi.isCollapsed(selectionBefore)
-          ) {
-            const root = selectionBeforeRoot ?? 'main';
-            live.active.insertions.set(change, {
-              association:
-                selectionBefore.affinity === 'backward' ? 'left' : 'right',
-              position: DocumentIndex.fromValue(
-                authoredRootNodes(before as JsonEditorValue, root)
-              ).positionAt(selectionBefore.anchor),
-              root,
-            });
-          }
-          if (live.active.decision && !live.active.applyingDecision) {
-            live.active.decisionSuffix = live.active.decisionSuffix
-              ? live.active.decisionSuffix.compose(
-                  change,
-                  live.active.decision.projection.accepted
-                )
-              : change;
-          }
-          live.active.changed = true;
-        }
-      },
-    },
-    read({ editor, state }) {
-      const publicChange = (change: AuthoredRecord) => {
-        const current = readAuthoredViewProjection(runtime(editor), editor);
-        return readAuthoredChange(
+    return change.empty
+      ? { result: { ids: [], status: 'unchanged' } }
+      : {
           change,
-          current.state,
-          current.positions,
-          current.value
-        );
-      };
-      return {
-        canPropose: () => currentAuthorId(runtime(editor)) !== null,
-        view: () => authoredView(editor),
-        // A document view renders an already projected document with no
-        // authored session, so it has no changes to report.
-        change(identity) {
-          if (isDocumentView(editor)) return null;
-          const value = readRecord(
-            state.getField(authoredState).changes,
-            identity
-          );
-          return value ? publicChange(value) : null;
-        },
-        changes(query = {}) {
-          validateAuthoredQuery(query);
-          if (isDocumentView(editor)) {
-            return Object.freeze({ items: Object.freeze([]), cursor: null });
-          }
-          const limit = query.limit ?? 50;
-          if (!Number.isSafeInteger(limit) || limit < 1 || limit > 200) {
-            throw new Error('Authored page limit must be between 1 and 200.');
-          }
-          const snapshot = state.getField(authoredState);
-          const prefix = `${snapshot.documentId}:${snapshot.clock}:`;
-          if (query.cursor && !query.cursor.startsWith(prefix)) {
-            throw new Error('Stale authored page cursor.');
-          }
-          const items: AuthoredChange[] = [];
-          let lastKey: string | null = null;
-          for (const { key, change } of matchingAuthoredChanges(
-            snapshot,
-            query,
-            query.cursor?.slice(prefix.length)
-          )) {
-            if (items.length === limit) {
-              return Object.freeze({
-                items: Object.freeze(items),
-                cursor: prefix + lastKey,
-              });
-            }
-            items.push(publicChange(change));
-            lastKey = key;
-          }
-          return Object.freeze({ items: Object.freeze(items), cursor: null });
-        },
-        changesAt(range) {
-          if (!RangeApi.isRange(range)) {
-            throw new Error('Authored range query requires a range.');
-          }
-          const [start, end] = RangeApi.edges(range);
-          const root = start.root ?? 'main';
-          if ((end.root ?? 'main') !== root || isDocumentView(editor)) {
-            return Object.freeze([]);
-          }
-          const live = runtime(editor);
-          const current = readAuthoredViewProjection(live, editor);
-          const identities = new Set<string>();
-          if (
-            getActiveEditorTransaction(live.source) ||
-            FRAGMENT_VIEWS.has(getEditorRuntime(editor))
-          ) {
-            for (const status of ['pending', 'conflicted'] as const) {
-              for (const { change } of matchingAuthoredChanges(current.state, {
-                status,
-              })) {
-                identities.add(change.id);
-              }
-            }
-          } else {
-            const children = authoredRootNodes(current.value, root) as Value;
-            const index = getEditorProjectionSnapshotIndex(editor, children);
-            const { locations } = currentAuthoredFragmentIndex(live);
-            const [firstChild = 0] = start.path;
-            const [lastChild = firstChild] = end.path;
-            for (let child = firstChild; child <= lastChild; child++) {
-              const key = index.keyAt([child]);
-              if (!key) continue;
-              for (const [identity] of records(
-                readRecord(locations, authoredFragmentBucket(root, key))
-              )) {
-                identities.add(identity);
-              }
-            }
-          }
-          const candidates = [...identities]
-            .flatMap((identity) => {
-              const change = readRecord(current.state.changes, identity);
-              return change ? [change] : [];
-            })
-            .sort(
-              (left, right) =>
-                (left.status === right.status
-                  ? 0
-                  : left.status === 'pending'
-                    ? -1
-                    : 1) ||
-                left.createdAt - right.createdAt ||
-                (left.id < right.id ? -1 : left.id > right.id ? 1 : 0)
-            );
-          const items: AuthoredChange[] = [];
-          for (const change of candidates) {
-            if (
-              !hasAuthoredReviewContent(
-                change,
-                readAuthoredViewProjection(live, editor, 'accepted'),
-                readAuthoredViewProjection(live, editor, 'proposed')
-              )
-            ) {
-              continue;
-            }
-            const item = readAuthoredChange(
-              change,
-              current.state,
-              current.positions,
-              current.value
-            );
-            if (
-              item.ranges.some(
-                (candidate) => RangeApi.intersection(candidate, range) !== null
-              )
-            ) {
-              items.push(item);
-            }
-          }
-          return Object.freeze(items);
-        },
-        details(identity) {
-          const live = runtime(editor);
-          const current = readAuthoredViewProjection(live, editor);
-          const proposed = readAuthoredViewProjection(live, editor, 'proposed');
-          const value = readRecord(current.state.changes, identity);
-          if (!value) return null;
-
-          return readAuthoredChangeDetails(
-            value,
-            current,
-            proposed,
-            readAuthoredViewProjection(live, editor, 'accepted')
-          );
-        },
-        preview(input) {
-          const snapshot = state.getField(authoredState);
-          const result = previewAuthoredDecision(snapshot, input);
-          if (result.status === 'applied') {
-            const live = runtime(editor);
-            const prepared = prepareAuthoredDecision({
-              editor: live.source,
-              decision: input,
-              projection: {
-                accepted: content(state.value()),
-                acceptedPositions: live.acceptedPositions,
-                projected: live.projected,
-                projectedPositions: live.projectedPositions,
-              },
-              schema: getEditorSchema(live.source),
-              state: snapshot,
-            });
-            if (prepared.status !== 'ready') return prepared;
-          }
-          return result;
-        },
-        select(query) {
-          validateAuthoredQuery(query);
-          if (
-            query.ids !== undefined &&
-            (!Array.isArray(query.ids as unknown) ||
-              query.ids.some((id) => typeof id !== 'string' || !id) ||
-              query.authorId !== undefined)
-          ) {
-            throw new Error(
-              'Authored selection requires change IDs or an author filter.'
-            );
-          }
-          const snapshot = state.getField(authoredState);
-          const selected = query.ids
-            ? [...new Set(query.ids)].map((identity) => {
-                const change = readRecord(snapshot.changes, identity);
-                if (!change) {
-                  throw new Error(`Unknown authored change ${identity}.`);
-                }
-                return change;
-              })
-            : [...matchingAuthoredChanges(snapshot, query)].map(
-                ({ change }) => change
-              );
-          return Object.freeze({
-            changes: Object.freeze(
-              selected.map((change) =>
-                Object.freeze({
-                  heads: change.heads,
-                  id: change.id,
-                  revision: change.revision,
-                })
-              )
-            ),
-            documentId: snapshot.documentId,
-          });
-        },
-      } satisfies AuthoredRead;
-    },
-    update({ editor, tx }) {
-      const decide = (
-        input: AuthoredDecision,
-        resolve: boolean
-      ): AuthoredResult => {
-        const state = tx.getField(authoredState);
-        const result = previewAuthoredDecision(state, input, resolve);
-        if (result.status !== 'applied') return result;
-        const live = runtime(editor);
-        const authorId = actor(live);
-        const { active } = live;
-        if (!active) {
-          throw new Error('Authored decisions require an active transaction.');
-        }
-        prepareAuthoredReview(live);
-        if (
-          active.publication === 'proposed' ||
-          (active.changed && !active.decision)
-        ) {
-          throw new Error(
-            'Review decisions must precede ordinary document writes.'
-          );
-        }
-        if (active.decisionSuffix) {
-          throw new Error(
-            'Review decisions cannot follow ordinary document writes.'
-          );
-        }
-        const before = active.decision?.projection ?? {
-          accepted: live.accepted,
-          acceptedPositions: live.acceptedPositions,
-          projected: live.projected,
-          projectedPositions: live.projectedPositions,
+          result: {
+            ids: [
+              ...new Set([
+                ...resolution.decided,
+                ...ids.filter((id) => !remaining.has(id)),
+              ]),
+            ],
+            status: 'applied',
+          },
         };
-        const prepared = prepareAuthoredDecision({
-          editor: live.source,
-          decision: input,
-          projection: before,
-          schema: getEditorSchema(live.source),
-          state,
-        });
-        if (prepared.status !== 'ready') return prepared;
-        const sequence = (readRecord(state.vector, live.replica) ?? 0) + 1;
-        stageAuthoredProjection(live, prepared);
-        active.applyingDecision = true;
-        try {
-          tx.changes.apply(prepared.acceptedChange);
-          emitAuthoredOperation(
-            live,
-            tx,
-            snapshotEditorJsonValue(
-              {
-                action: input.action,
-                authorId,
-                clock: state.clock + 1,
-                id: `${live.replica}:${sequence}`,
-                kind: resolve ? 'resolve' : 'decide',
-                undoOf: null,
-                parents: state.frontier,
-                replica: live.replica,
-                seen: state.vector,
-                selection: input.selection,
-                sequence,
-                time: Date.now(),
-              },
-              'Authored decision'
-            )
-          );
-        } finally {
-          active.applyingDecision = false;
+  };
+
+  return definePlugin('authored', {
+    dependencies: [authoredRecords],
+    schema: authoredMarksSchema,
+    contributions: [
+      documentAdmissionPoint.of(authoredAdmission),
+      authoredDocumentCapabilityPoint.of({
+        project: (document, projection, schema) =>
+          projectionRefusal(document, schema) ??
+          projectAuthoredDocument(document, { projection }),
+      }),
+    ],
+    api: ({ editor }) => ({
+      setView: (view: AuthoredView) => {
+        const runtime = getEditorRuntime(editor);
+        const state = stateOf(editor);
+        const apply = (next: AuthoredView) => {
+          state.pending.delete(runtime);
+          state.views.set(runtime, next);
+          notifyEditorViewState(editor, 'authored');
+        };
+
+        // Suggesting, and previews that decide changes, would mint values a
+        // generating schema makes differently each time.
+        if (
+          ('preview' in view || view.intent === 'propose') &&
+          constructsValues(getCompiledEditorSchema(editor))
+        ) {
+          publishEditorRefusal(editor, GENERATED_VALUES_REFUSAL);
+          return;
         }
-        return result;
-      };
-      return {
-        decide: (input) => decide(input, false),
-        resolve: (input) => decide(input, true),
-        revert(input) {
-          const snapshot = tx.getField(authoredState);
-          const inspected = inspectAuthoredSelection(
-            snapshot,
-            input?.selection
+        if (!editor.read.view.isComposing()) {
+          apply(view);
+          return;
+        }
+
+        // Composed text records under the intent its composition began in.
+        const waiting = state.pending.has(runtime);
+
+        state.pending.set(runtime, view);
+        if (waiting) return;
+
+        const stop = subscribeEditorViewState(editor, () => {
+          const next = state.pending.get(runtime);
+
+          if (editor.read.view.isComposing()) return;
+          stop();
+          if (next) apply(next);
+        });
+      },
+      subscribeRefusals: (listener: (refusal: AuthoredRefusal) => void) =>
+        subscribeEditorRefusals(editor, (refusal) =>
+          listener(refusal as AuthoredRefusal)
+        ),
+      subscribeChanges: (listener: (changeIds: readonly string[]) => void) => {
+        let previous = changeIndexOf(storedValue(editor));
+
+        return getEditorRuntime(editor).subscribe(() => {
+          const next = changeIndexOf(storedValue(editor));
+
+          if (next === previous) return;
+
+          const changed = [
+            ...new Set([...previous.changes.keys(), ...next.changes.keys()]),
+          ].filter(
+            (id) =>
+              previous.changes.get(id)?.revision !==
+              next.changes.get(id)?.revision
           );
-          if (inspected.status !== 'ready') return inspected;
-          if (!inspected.ids.length) return { status: 'unchanged', ids: [] };
-          const live = runtime(editor);
-          if (!live.options.retainHistory) {
-            return snapshotEditorJsonValue(
-              {
-                status: 'unavailable',
-                reason: 'retention',
-                ids: inspected.ids,
-              },
-              'Authored revert result'
-            );
+
+          previous = next;
+          if (changed.length > 0) listener(changed);
+        });
+      },
+    }),
+    read: ({ editor }) => ({
+      view: () => viewOf(editor),
+      change: (id: string) =>
+        changeIndexOf(storedValue(editor)).changes.get(id) ?? null,
+      changes: (query: AuthoredQuery = {}): AuthoredPage => {
+        const limit = query.limit ?? 50;
+
+        if (!Number.isSafeInteger(limit) || limit < 1 || limit > 200) {
+          throw new Error('Authored page limit must be between 1 and 200.');
+        }
+
+        const matching = changeIndexOf(storedValue(editor)).ordered.filter(
+          (change) =>
+            (query.authorId === undefined ||
+              change.authorId === query.authorId) &&
+            (query.from === undefined || change.createdAt >= query.from) &&
+            (query.to === undefined || change.createdAt <= query.to)
+        );
+        const start = query.cursor
+          ? matching.findIndex((change) => change.id === query.cursor) + 1
+          : 0;
+
+        if (query.cursor && start === 0) {
+          throw new Error('Stale authored page cursor.');
+        }
+
+        const items = matching.slice(start, start + limit);
+
+        return Object.freeze({
+          cursor:
+            start + limit < matching.length ? (items.at(-1)?.id ?? null) : null,
+          items: Object.freeze(items),
+        });
+      },
+      changesAt: (range: Range) =>
+        Object.freeze(
+          changeIndexOf(storedValue(editor)).ordered.filter((change) =>
+            change.ranges.some(
+              (candidate) => RangeApi.intersection(candidate, range) !== null
+            )
+          )
+        ),
+      details: (id: string) =>
+        readAuthoredDetails(changeIndexOf(storedValue(editor)), id),
+      groups: () => groupAuthoredChanges(changeIndexOf(storedValue(editor))),
+      preview: (decisions: AuthoredDecision | readonly AuthoredDecision[]) =>
+        decideOn(editor, storedValue(editor), decisions).result,
+      reviewOf: (node: unknown): AuthoredReview => {
+        const facts = factsOf(storedValue(editor));
+        const marks = marksOf(node, facts);
+
+        return Object.freeze({
+          accepted: Object.freeze(
+            acceptedValues(
+              marks.filter((mark): mark is FormatTag => mark.kind === 'format')
+            )
+          ),
+          hidden: isSettledDeletion(node, facts),
+          marks,
+        });
+      },
+    }),
+    update: ({ editor, tx }) => ({
+      decide: txStored(
+        (
+          decisions: AuthoredDecision | readonly AuthoredDecision[]
+        ): AuthoredResult => {
+          const decided = decideOn(editor, tx.value(), decisions);
+
+          if (!('change' in decided)) return decided.result;
+
+          const update = getActiveEditorUpdateId(editor);
+
+          if (update) stateOf(editor).passThrough.add(update);
+          try {
+            tx.changes.apply(decided.change);
+          } catch (error) {
+            if (isRefusal(error)) {
+              return { ids: decided.result.ids, status: 'invalid' };
+            }
+            throw error;
           }
+
+          return decided.result;
+        }
+      ),
+      propose: txOnly((input: { changeId?: string } = {}) => {
+        const state = stateOf(editor);
+        const update = getActiveEditorUpdateId(editor);
+
+        if (!update) {
+          throw new Error('Authored proposals require an active update.');
+        }
+
+        if (input.changeId !== undefined && isEditingChange(input.changeId)) {
+          throw new Error(
+            `Authored change ids starting with ${editingChangeOf('')} are reserved for Editing.`
+          );
+        }
+
+        const changeId = input.changeId ?? createChangeId();
+        const value = tx.value();
+        const claim = claimOf(value, changeId);
+        const decided =
+          !claim &&
+          (state.marks.authorOf(changeId) !== null ||
+            factsOf(value).decidedChangeIds.has(changeId));
+
+        // A pending change takes more writes; an id decided before starts a
+        // new incarnation, so its old claims and verdicts never touch it.
+        state.forced.set(
+          update,
+          claim
+            ? { at: claim.at, changeId, inc: claim.inc }
+            : {
+                at: now(),
+                changeId,
+                inc: decided ? createIncarnationId() : undefined,
+              }
+        );
+
+        return changeId;
+      }),
+    }),
+    activate: ({ beforePublish, editor, onCleanup }) => {
+      const owner = getEditorRuntimeOwner(editor);
+      const state: AuthoredState = {
+        forced: new WeakMap(),
+        marks: createDocumentMarksValidator(),
+        passThrough: new WeakSet(),
+        pending: new WeakMap(),
+        refused: new WeakMap(),
+        views: new WeakMap(),
+      };
+
+      if (options.intent) {
+        state.views.set(getEditorRuntime(owner), { intent: options.intent });
+      }
+      STATES.set(owner, state);
+      onCleanup(() => STATES.delete(owner));
+      const carryReadPreviewKeys = (commit: EditorCommit) => {
+        if (commit.before.children === commit.after.children) return;
+
+        const projected = PROJECTIONS.get(
+          documentKeyOf(getEditorCommitValue(commit, 'before'))
+        );
+
+        for (const preview of ['accepted', 'proposed'] as const) {
+          const before = projected?.[preview];
+
           if (
-            inspected.changes.some((change) =>
-              [...records(change.operations)].some(([, id]) => {
-                const operation = readRecord(snapshot.operations, id);
-                return !operation || !hasAuthoredContent(operation);
-              })
+            before &&
+            hasEditorProjectionSnapshotIndex(
+              owner,
+              (before as EditorDocumentValue).children
             )
           ) {
-            return snapshotEditorJsonValue(
-              {
-                status: 'unavailable',
-                reason: 'retention',
-                ids: inspected.ids,
-              },
-              'Authored revert result'
-            );
+            previewCommit(owner, commit, preview);
           }
-          const active = getDefined(live.active);
-          if (active.changed || active.decision) {
-            throw new Error(
-              'Authored revert must precede ordinary document writes.'
+        }
+      };
+
+      onCleanup(getEditorRuntime(owner).subscribeCommit(carryReadPreviewKeys));
+
+      onCleanup(
+        registerAuthoredRuntime(owner, {
+          mapToView: (view, root, value) => {
+            const current = viewOf(view);
+
+            if (!('preview' in current)) return value;
+
+            const map = previewMapOf(
+              owner,
+              storedValue(owner),
+              current.preview,
+              root
             );
-          }
-          const prepared = prepareAuthoredRevert({
-            editor: live.source,
-            selection: input.selection,
-            projection: {
-              accepted: active.before,
-              acceptedPositions: live.acceptedPositions,
-              projected: live.projected,
-              projectedPositions: live.projectedPositions,
-            },
-            schema: getEditorSchema(live.source),
-            state: snapshot,
-            target:
-              active.inputProjection === 'proposed' ? 'projected' : 'accepted',
-          });
-          if (prepared.status !== 'ready') return prepared;
-          if (prepared.change.empty) {
-            return snapshotEditorJsonValue(
-              { status: 'unchanged', ids: inspected.ids },
-              'Authored revert result'
-            );
-          }
-          actor(live);
-          active.changeId ??= crypto.randomUUID();
-          active.revertPositions = prepared.positions;
-          tx.changes.apply(prepared.change);
-          return snapshotEditorJsonValue(
-            { status: 'applied', ids: [active.changeId] },
-            'Authored revert result'
-          );
-        },
-        propose: txOnly((input = {}) => {
-          const live = runtime(editor);
-          const authorId = actor(live);
-          if (!live.active) {
-            throw new Error(
-              'Authored proposals require an active transaction.'
-            );
-          }
-          const identity = input.changeId ?? crypto.randomUUID();
-          if (input.changeId) {
-            const change = readRecord(
-              tx.getField(authoredState).changes,
-              identity
-            );
+
+            try {
+              if (PathApi.isPath(value)) return map.path(value) as typeof value;
+              if (PointApi.isPoint(value)) {
+                return map.point(value, -1) as typeof value;
+              }
+
+              return map.range(value) as typeof value;
+            } catch {
+              // A location the stored document no longer holds reads nothing.
+              return null;
+            }
+          },
+          readView: (view, read) => {
+            const current = viewOf(view);
+
+            return 'preview' in current && !STORED_READS.has(owner)
+              ? withEditorDocumentProjection(
+                  owner,
+                  projectionOf(
+                    owner,
+                    storedValue(owner),
+                    current.preview
+                  ) as EditorDocumentValue,
+                  read,
+                  { root: 'main', selection: null }
+                )
+              : read();
+          },
+          setView: (view, value) => {
+            state.views.set(getEditorRuntime(view), value);
+          },
+          view: viewOf,
+          viewCommit: (view, commit) => {
+            const current = viewOf(view);
+
+            return 'preview' in current
+              ? previewCommit(owner, commit, current.preview)
+              : commit;
+          },
+        })
+      );
+
+      const assertDocumentMarks = state.marks.validate;
+      const passesThrough = () => {
+        const update = getActiveEditorUpdateId(editor);
+
+        return update !== null && state.passThrough.has(update);
+      };
+
+      beforePublish(() => {
+        const value = editor.read.value();
+
+        assertDocumentMarks(value);
+        primeInsertions(value);
+      });
+      onCleanup(registerEditorDraftGuard(editor, assertDocumentMarks));
+      // A node's own marks decide, so live text inside a struck block reads.
+      onCleanup(
+        registerEditorContent(editor, (reader, node) => !isStruck(reader, node))
+      );
+      // Commands decide on the document with every pending change accepted.
+      const project = createCommandProjector(
+        () => authoredResolveSchemaOf(editor),
+        { isSetValued: isAuthoredSetValued }
+      );
+      onCleanup(
+        registerEditorCommandDocument(editor, {
+          checkRecorded: (input) => {
+            if (checksFramedLaw()) {
+              assertFramedLaw(input, authoredResolveSchemaOf(editor));
+            }
+          },
+          project: (value) => {
+            // A decision and a replay write the stored document as given, so
+            // their corrections decide on it too.
             if (
-              change &&
-              (change.status !== 'pending' || change.authorId !== authorId)
+              passesThrough() ||
+              isReplay(getActiveEditorUpdateTags(editor))
             ) {
-              throw new Error(
-                'Only the original author may amend a pending change.'
-              );
+              return null;
+            }
+
+            const projected = project(value);
+
+            return (
+              projected && {
+                carried: projected.carried && {
+                  change: projected.carried.change,
+                  from: projected.carried
+                    .from as EditorDocumentValue['children'],
+                },
+                change: projected.change,
+                value: projected.value as EditorDocumentValue,
+              }
+            );
+          },
+        })
+      );
+      // Every frame of one update records under the same change.
+      const minted = new WeakMap<object, { at: number; changeId: string }>();
+      onCleanup(
+        registerEditorDocumentRecorder(editor, (input) => {
+          if (isReplay(input.tags)) return null;
+          // A decision records nothing, but a fragment it or its corrections
+          // remove hands its cuts to its neighbours.
+          if (passesThrough()) {
+            const relink = relinkCuts(
+              input.change,
+              input.before,
+              input.after,
+              (root) => DocumentIndex.fromValue(valueRoot(input.after, root))
+            );
+
+            return relink
+              ? {
+                  change: input.change.compose(relink.change),
+                  selection: input.selection,
+                }
+              : null;
+          }
+
+          const update = getActiveEditorUpdateId(editor);
+          const forced = update ? (state.forced.get(update) ?? null) : null;
+          const updateView = viewOf(getAuthoredUpdateView(editor));
+          const before = input.before as JsonEditorValue;
+          const after = input.after as JsonEditorValue;
+          const contentChange = contentChangeOf(input.change);
+          const steps = input.steps.map((step) => {
+            const change = contentChangeOf(step.change);
+
+            return change === step.change ? step : { ...step, change };
+          });
+          const carried = carryRecords(before, after);
+          const known = factsOf(carried.committed);
+
+          if ('preview' in updateView) {
+            throw new Error('A preview view takes no writes.');
+          }
+
+          // Editing records what Suggesting records, under the writer's
+          // reserved change, and accepts it in the same commit.
+          const editing = !forced && updateView.intent === 'edit';
+          const writer = authorOf(editor);
+
+          if (writer === null) {
+            throw new Error('An author ID is required for authored writes.');
+          }
+          if (!editing && contentChange.deleteRoots.size > 0) {
+            throw unrepresentable(
+              'Suggesting cannot delete a named root; suggest deleting its content.'
+            );
+          }
+          if (!editing) {
+            // Vetoes keep a person's Suggesting out of blocks review marks
+            // cannot hold yet; a proposal forced from Editing, such as an AI
+            // preview, records as before.
+            const vetoes =
+              options.vetoes === false || updateView.intent !== 'propose'
+                ? []
+                : (getPluginContributions(
+                    editor,
+                    authoredVeto
+                  ) as readonly AuthoredVeto[]);
+            const refusal =
+              (update && state.refused.get(update)) ??
+              (constructsValues(getCompiledEditorSchema(editor))
+                ? GENERATED_VALUES_REFUSAL
+                : vetoes.length > 0
+                  ? proposalRefusal(steps, input.before, vetoes)
+                  : null);
+
+            if (refusal) {
+              if (update) state.refused.set(update, refusal);
+              throw new EditorRefusalError(refusal, refusal.message);
             }
           }
-          if (!live.active.automatic || live.active.changed) {
-            setTransactionDocumentProjection(live.source, live.projected);
-          }
-          live.active.changeId = identity;
-          live.active.inputProjection = 'proposed';
-          live.active.intent = 'propose';
-          live.active.publication = 'proposed';
-          live.active.automatic = false;
-          return identity;
-        }),
-      } satisfies AuthoredUpdate;
+
+          const focusBefore =
+            input.selectionBefore?.kind === 'text' &&
+            PointApi.equals(
+              input.selectionBefore.anchor,
+              input.selectionBefore.focus
+            )
+              ? input.selectionBefore.focus
+              : null;
+          const selectionPosition = focusBefore
+            ? positionOf(before, input.selectionBeforeRoot, focusBefore)
+            : null;
+          const minting = minted.get(input.update) ?? {
+            at: forced?.at ?? now(),
+            changeId: editing ? editingChangeOf(writer) : createChangeId(),
+          };
+
+          minted.set(input.update, minting);
+          const { at, changeId } = minting;
+          const dependencies = createDependencies(known, carriedIn(after));
+          const recorded = recordAuthoredSteps({
+            before,
+            changeId,
+            createRoots: contentChange.createRoots,
+            createTagId,
+            deleteRoots: contentChange.deleteRoots,
+            dependencies,
+            fill: (site, root) =>
+              completeChildrenAt(editor, site.map(elementOf), [], root)
+                .children,
+            forcedChangeId: forced?.changeId ?? (editing ? changeId : null),
+            framed: input.framed === true,
+            inc: forced?.inc ?? null,
+            isInline: (props) =>
+              getEditorSchema(editor).isInline(elementOf(props)),
+            emptyTextKeeps: (key, value, parents, root) => {
+              const [parent, ...ancestors] = parents.map(elementOf);
+
+              return !emptyTextDrops(getEditorSchema(editor), {
+                ancestors,
+                parent,
+                root,
+              })?.(key, value);
+            },
+            keepsOnSplit: (props, path, root, key, draftRoot) =>
+              Object.hasOwn(
+                getEditorSchema(editor).elementPropertiesForSplitAt(
+                  // Only the key's lifecycle matters, so an absent value
+                  // stands in as `true`.
+                  elementOf({ ...props, [key]: props[key] ?? true }),
+                  [...path],
+                  root,
+                  draftRoot as readonly Descendant[]
+                ),
+                key
+              ),
+            now: at,
+            oneText: (type) => {
+              const content = getEditorSchema(editor).getElementContent(type);
+
+              return content?.max === 1 && content.allowsText;
+            },
+            selectionBefore:
+              selectionPosition === null
+                ? null
+                : {
+                    position: selectionPosition,
+                    root: input.selectionBeforeRoot,
+                  },
+            steps,
+            writer,
+          });
+          // Map only through the recorded change: the recorder slot's finalize
+          // then applies the canonical pass and maps the selection through it.
+          const map = {
+            after,
+            indexes: recorded.indexedAfter,
+            map: recorded.mapPosition,
+            root: input.selectionRoot,
+          };
+          const selection = mapSelection(input.selection, map);
+
+          // Withdrawing one's own insertion removes fragments outright, and
+          // they can hold another author's cuts, which move to the fragments
+          // that stay.
+          const roots = [
+            ...new Set([
+              ...Object.keys(before.roots ?? {}),
+              ...recorded.indexedAfter.keys(),
+            ]),
+          ].filter(
+            (root) => root !== 'main' && !contentChange.deleteRoots.has(root)
+          );
+          const { roots: _beforeRoots, ...plain } = before;
+          const valueOf = (indexes: ReadonlyMap<string, DocumentIndex>) =>
+            ({
+              ...plain,
+              children: indexes.get('main')?.value ?? before.children,
+              ...(roots.length > 0
+                ? {
+                    roots: Object.fromEntries(
+                      roots.map((root) => [
+                        root,
+                        indexes.get(root)?.value ?? valueRoot(before, root),
+                      ])
+                    ),
+                  }
+                : {}),
+            }) as JsonEditorValue;
+          const written = valueOf(recorded.indexedAfter);
+          const relink = relinkCuts(
+            recorded.change,
+            before,
+            written,
+            (root) =>
+              recorded.indexedAfter.get(root) ??
+              DocumentIndex.fromValue(valueRoot(written, root))
+          );
+          const change = relink
+            ? recorded.change.compose(relink.change)
+            : recorded.change;
+          const indexes = relink
+            ? new Map([...recorded.indexedAfter, ...relink.indexes])
+            : recorded.indexedAfter;
+          const writtenPlain = editing && recorded.writtenPlain;
+          const filled = writtenPlain
+            ? null
+            : completeProposed({
+                after: valueOf(indexes),
+                before,
+                change,
+                createTagId,
+                dependencies,
+                editor,
+                indexes,
+                mark: {
+                  at,
+                  author: writer,
+                  change: forced?.changeId ?? changeId,
+                  ...(forced?.inc === undefined ? {} : { inc: forced.inc }),
+                },
+              });
+          const content = filled ? change.compose(filled.change) : change;
+          const writtenIndexes = filled?.indexes ?? indexes;
+          const accepted =
+            editing && !writtenPlain
+              ? acceptOwn(content, writtenIndexes, dependencies, known)
+              : null;
+          // Accepting removes fragments outright, whose cuts move to the
+          // fragments that stay.
+          const relinkedOwn =
+            accepted &&
+            relinkCuts(
+              accepted.change,
+              valueOf(writtenIndexes),
+              valueOf(accepted.indexes),
+              (root) =>
+                accepted.indexes.get(root) ??
+                DocumentIndex.fromValue(
+                  valueRoot(valueOf(accepted.indexes), root)
+                ),
+              (root) =>
+                writtenIndexes.get(root) ??
+                DocumentIndex.fromValue(valueRoot(before, root))
+            );
+          const owned =
+            accepted && relinkedOwn
+              ? {
+                  change: accepted.change.compose(relinkedOwn.change),
+                  indexes: new Map([
+                    ...accepted.indexes,
+                    ...relinkedOwn.indexes,
+                  ]),
+                }
+              : accepted;
+          const through =
+            (changes: ReadonlyArray<DocumentChange | undefined>) =>
+            (root: string, position: number, assoc: -1 | 1) =>
+              changes.reduce(
+                (mapped, later) =>
+                  (later &&
+                    getInternalDocumentRootChange(later, root)?.mapPos(
+                      mapped,
+                      assoc
+                    )) ??
+                  mapped,
+                position
+              );
+          const mapPosition = (root: string, position: number, assoc: -1 | 1) =>
+            through([relink?.change, filled?.change, owned?.change])(
+              root,
+              recorded.mapPosition(root, position, assoc, false),
+              assoc
+            );
+          const filledSelection = filled
+            ? mapSelection(selection, {
+                after: valueOf(indexes),
+                indexes: filled.indexes,
+                map: through([filled.change]),
+                root: input.selectionRoot,
+              })
+            : selection;
+
+          const later = owned ? content.compose(owned.change) : content;
+          const indexedAfter = owned?.indexes ?? writtenIndexes;
+          // The context records the writes rest on go with them, so no
+          // node ever points at a record its document lacks.
+          const records = [
+            appendRecords(before, CONTEXTS_ROOT, [
+              ...(carried.records.get(CONTEXTS_ROOT) ?? []),
+              ...restedOn(dependencies.minted(), later, indexedAfter).map(
+                contextElementOf
+              ),
+            ]),
+            appendRecords(
+              before,
+              VERDICTS_ROOT,
+              carried.records.get(VERDICTS_ROOT) ?? []
+            ),
+          ];
+
+          return {
+            anchorChange: (plainAfter) =>
+              [filled?.change, owned?.change].reduce(
+                (anchor: DocumentChange, next) =>
+                  next ? anchor.compose(next) : anchor,
+                recorded.anchorChange(plainAfter)
+              ),
+            change: records.reduce(
+              (change: DocumentChange, appended) =>
+                appended ? change.compose(appended) : change,
+              later
+            ),
+            indexedAfter,
+            mapPosition,
+            // A caret where accepting removes the writer's struck run stays on
+            // the line after it, as in the frame.
+            selection: owned
+              ? mapSelection(
+                  filledSelection,
+                  {
+                    after: valueOf(writtenIndexes),
+                    indexes: owned.indexes,
+                    map: through([owned.change]),
+                    root: input.selectionRoot,
+                  },
+                  1
+                )
+              : filledSelection,
+          };
+        })
+      );
     },
   });
+};
+
+/** Suggestions recorded as review marks in the document. */
+export const authored = (options: AuthoredOptions): AuthoredPlugin =>
+  createAuthoredPlugin({ authorId: options.authorId });

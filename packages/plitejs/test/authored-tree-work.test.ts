@@ -1,20 +1,28 @@
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { describe, it } from 'node:test';
+import { after, before as beforeAll, describe, it } from 'node:test';
 
+import * as commandProjection from '../src/authored/tree/command-projection';
 import * as marks from '../src/authored/tree/marks';
 import * as recordCompletion from '../src/authored/tree/record-completion';
+import * as resolve from '../src/authored/tree/resolve';
 import { DocumentIndex } from '../src/core/change/document-index';
 import * as tokens from '../src/core/change/tokens';
 import * as representation from '../src/core/representation';
 
 const real = { ...marks };
+const realProjection = { ...commandProjection };
 const realTokens = { ...tokens };
 const realCompletion = { ...recordCompletion };
 const realRepresentation = { ...representation };
+const realResolve = { ...resolve };
 let markReads = 0;
+let memberReads = 0;
+let resolvedNodes = 0;
 let encodedTokens = 0;
 let recorderReads = 0;
+let recorderMemberReads = 0;
+let projectorReads = 0;
 let built = 0;
 
 mock.module(join(import.meta.dir, '../src/authored/tree/marks.ts'), () => ({
@@ -23,6 +31,11 @@ mock.module(join(import.meta.dir, '../src/authored/tree/marks.ts'), () => ({
     markReads += 1;
 
     return real.readAuthoredMarks(node);
+  },
+  readMembers: (node: unknown) => {
+    memberReads += 1;
+
+    return real.readMembers(node);
   },
 }));
 mock.module(
@@ -33,15 +46,61 @@ mock.module(
       input: Parameters<typeof recordCompletion.completeProposed>[0]
     ) => {
       const before = markReads;
+      const members = memberReads;
 
       try {
         return realCompletion.completeProposed(input);
       } finally {
         recorderReads += markReads - before;
+        recorderMemberReads += memberReads - members;
       }
     },
   })
 );
+const nodeCount = (
+  nodes: ReadonlyArray<{ children?: readonly unknown[] }>
+): number =>
+  nodes.reduce(
+    (total, node) =>
+      total +
+      1 +
+      nodeCount(
+        (node.children ?? []) as ReadonlyArray<{ children?: unknown[] }>
+      ),
+    0
+  );
+
+mock.module(
+  join(import.meta.dir, '../src/authored/tree/command-projection.ts'),
+  () => ({
+    ...realProjection,
+    createCommandProjector: (
+      ...args: Parameters<typeof commandProjection.createCommandProjector>
+    ) => {
+      const project = realProjection.createCommandProjector(...args);
+
+      return (...input: Parameters<typeof project>) => {
+        const before = markReads + memberReads;
+
+        try {
+          return project(...input);
+        } finally {
+          projectorReads += markReads + memberReads - before;
+        }
+      };
+    },
+  })
+);
+mock.module(join(import.meta.dir, '../src/authored/tree/resolve.ts'), () => ({
+  ...realResolve,
+  resolveAuthoredChildren: (
+    ...args: Parameters<typeof resolve.resolveAuthoredChildren>
+  ) => {
+    resolvedNodes += nodeCount(args[0]);
+
+    return realResolve.resolveAuthoredChildren(...args);
+  },
+}));
 mock.module(join(import.meta.dir, '../src/core/representation.ts'), () => ({
   ...realRepresentation,
   completeChildrenAt: (
@@ -63,13 +122,29 @@ mock.module(join(import.meta.dir, '../src/core/change/tokens.ts'), () => ({
 
     return encoded;
   },
+  encodeTrustedNodes: (
+    ...args: Parameters<typeof tokens.encodeTrustedNodes>
+  ) => {
+    const encoded = realTokens.encodeTrustedNodes(...args);
+
+    encodedTokens += encoded.length;
+
+    return encoded;
+  },
 }));
 
-const { createEditor, defineEditorSchema, property, schema, target } =
-  await import('plitejs');
-const { authoredTreeProof } = await import('../src/authored/tree/proof-plugin');
+const {
+  createEditor,
+  defineEditorSchema,
+  editorCommands,
+  property,
+  schema,
+  target,
+} = await import('plitejs');
+const { createAuthoredPlugin } = await import('../src/authored/authored');
 const { proposedChildren, proposedHost } =
   await import('../src/authored/tree/proposed');
+const { expandContexts } = await import('../src/authored/facts/compact');
 
 const Inline = defineEditorSchema('work-inline', {
   elements: {
@@ -130,7 +205,7 @@ const editorFor = (
     initialValue: value as never,
     plugins: [
       content,
-      authoredTreeProof({
+      createAuthoredPlugin({
         authorId: author,
         createChangeId: () => `${author}:${(count += 1)}`,
         createTagId: () => `${author}-tag:${(count += 1)}`,
@@ -192,15 +267,36 @@ const splitLinks = [
 
 const workPerEdit = (editor: Editor, edit: (run: number) => void) => {
   const counts = [0, 1, 2].map((run) => {
-    const before = { built, encodedTokens, markReads, recorderReads };
+    const before = {
+      built,
+      encodedTokens,
+      markReads,
+      memberReads,
+      projectorReads,
+      recorderMemberReads,
+      recorderReads,
+      resolvedNodes,
+    };
 
     edit(run);
+
+    const recorded = recorderReads - before.recorderReads;
+    const projected = projectorReads - before.projectorReads;
 
     return {
       built: built - before.built,
       encodedTokens: encodedTokens - before.encodedTokens,
       markReads: markReads - before.markReads,
-      recorderReads: recorderReads - before.recorderReads,
+      otherReads:
+        markReads -
+        before.markReads +
+        memberReads -
+        before.memberReads -
+        recorded -
+        (recorderMemberReads - before.recorderMemberReads) -
+        projected,
+      recorderReads: recorded,
+      resolvedNodes: resolvedNodes - before.resolvedNodes,
     };
   });
 
@@ -242,6 +338,18 @@ const typeAtEnd = (editor: Editor, size: number) =>
   );
 
 describe('authored review tree work per edit', () => {
+  // The test build's law check projects each framed recording again, and
+  // these counters would count its reads.
+  const lawCheck = process.env.PLITE_LAW_CHECK;
+
+  beforeAll(() => {
+    process.env.PLITE_LAW_CHECK = '0';
+  });
+  after(() => {
+    if (lawCheck === undefined) delete process.env.PLITE_LAW_CHECK;
+    else process.env.PLITE_LAW_CHECK = lawCheck;
+  });
+
   it('does as much work for Editing typing at 2,000 blocks as at 100', () => {
     const [small, large] = atBothSizes(
       (size) => editorFor(blocks(size, []), 'edit'),
@@ -250,6 +358,174 @@ describe('authored review tree work per edit', () => {
 
     assert.deepEqual(large, small);
   });
+
+  it('resolves as many nodes for an Editing letter and Backspace in another author’s pending line at 5,000 blocks as at 100', () => {
+    const pending = [
+      {
+        children: [
+          {
+            authored: [
+              { at: 1, author: 'bob', change: 'bob:pending', kind: 'insert' },
+            ],
+            text: 'tail',
+          },
+        ],
+        type: 'paragraph',
+      },
+    ];
+    const [small, large] = atBothSizes(
+      (size) => editorFor(blocks(size, pending), 'edit'),
+      (editor, size, run) =>
+        run === 2
+          ? editor.update((tx) => {
+              const path = [size, 0];
+
+              tx.selection.set({
+                anchor: { offset: 0, path },
+                focus: { offset: 0, path },
+              });
+              tx.command(editorCommands.delete, {
+                direction: 'backward',
+                unit: 'character',
+              });
+            })
+          : editor.update((tx) =>
+              tx.text.insert('k', { at: { offset: 2, path: [size, 0] } })
+            ),
+      [100, 5000]
+    );
+
+    const resolved = (counts: typeof small) =>
+      counts.map((work) => work.resolvedNodes);
+
+    // The command projector still reads the whole document on a Backspace
+    // that joins lines, which line W1 of the review-tree pivot owns.
+    assert.ok(resolved(small).every((nodes) => nodes > 0));
+    assert.deepEqual(resolved(large), resolved(small));
+  });
+
+  it('writes an Editing letter, Backspace, Enter and select-all delete on plain lines as a plain editor does, resolving and completing nothing', () => {
+    const edits = [
+      (editor: Editor, size: number) => typeAtEnd(editor, size),
+      (editor: Editor, size: number) =>
+        editor.update((tx) => {
+          const path = [size - 1, 0];
+
+          tx.selection.set({
+            anchor: { offset: 0, path },
+            focus: { offset: 0, path },
+          });
+          tx.command(editorCommands.delete, {
+            direction: 'backward',
+            unit: 'character',
+          });
+        }),
+      (editor: Editor, size: number) => enter(editor, [size - 3, 0], 2),
+    ];
+    const work = atBothSizes(
+      (size) => editorFor(blocks(size, []), 'edit'),
+      (editor, size, run) => edits[run](editor, size),
+      [100, 1000]
+    );
+    const selectAll = atBothSizes(
+      (size) => editorFor(blocks(size, []), 'edit'),
+      (editor, size, run) =>
+        run === 0
+          ? editor.update((tx) => {
+              tx.selection.set({
+                anchor: { offset: 0, path: [0, 0] },
+                focus: { offset: 7, path: [size - 1, 0] },
+              });
+              tx.command(editorCommands.delete, {
+                direction: 'backward',
+                unit: 'character',
+              });
+            })
+          : typeAtEnd(editor, 1),
+      [100, 1000]
+    );
+
+    assert.deepEqual(
+      [...work, ...selectAll]
+        .flat()
+        .map((counts) => [counts.resolvedNodes, counts.recorderReads]),
+      Array.from({ length: 12 }, () => [0, 0])
+    );
+  });
+
+  for (const intent of ['propose', 'edit'] as const) {
+    it(`settles as much for ${intent === 'edit' ? 'an Editing' : 'a Suggesting'} letter, Backspace and Enter at 5,000 blocks holding 50 suggestions and a verdict as at 100, from the first key`, () => {
+      const verdict = (change: string, result: 'accept' | 'reject') => ({
+        at: 1,
+        change,
+        children: [{ text: '' }],
+        type: 'authored-verdict',
+        verdict: result,
+      });
+      const [small, large] = atBothSizes(
+        (size) => {
+          const step = Math.floor((size - 10) / 50);
+          const struck = new Set(
+            Array.from({ length: 50 }, (_, index) => index * step)
+          );
+
+          return createEditor({
+            initialValue: {
+              children: Array.from({ length: size }, (_, index) =>
+                struck.has(index)
+                  ? struckParagraph(`struck ${index}`, `bob:s${index}`)
+                  : paragraph({ text: `plain ${index}` })
+              ),
+              roots: {
+                '$authored-verdicts': [
+                  verdict('carol:0', 'accept'),
+                  verdict('dave:0', 'reject'),
+                ],
+              },
+            } as never,
+            plugins: [
+              Inline,
+              createAuthoredPlugin({
+                authorId: 'alice',
+                createChangeId: () => `alice:${(count += 1)}`,
+                createTagId: () => `alice-tag:${(count += 1)}`,
+                intent,
+                now: () => 1,
+              }),
+            ],
+          });
+        },
+        (editor, size, run) => {
+          if (run === 0) {
+            typeAtEnd(editor, size);
+            return;
+          }
+          editor.update((tx) => {
+            const path = [editor.read.children().length - 1, 0];
+
+            tx.selection.set({
+              anchor: { offset: run === 1 ? 0 : 1, path },
+              focus: { offset: run === 1 ? 0 : 1, path },
+            });
+            if (run === 1) {
+              tx.command(editorCommands.delete, {
+                direction: 'backward',
+                unit: 'character',
+              });
+            } else {
+              tx.break.insert();
+            }
+          });
+        },
+        [100, 5000]
+      );
+      const other = (counts: typeof small) =>
+        counts.map((work) => work.otherReads);
+
+      assert.ok(other(small).every((reads) => reads >= 0));
+      assert.deepEqual(other(large), other(small));
+    });
+  }
 
   it('does as much work for Suggesting typing at 2,000 blocks as at 100', () => {
     const [small, large] = atBothSizes(
@@ -410,7 +686,7 @@ describe('authored review tree work per edit', () => {
     );
   });
 
-  it('reads through a struck run before a Suggesting Backspace join as far as the run goes, at 20,000 blocks as at 100', () => {
+  it('reads through a struck run as far as it goes on the first Suggesting Backspace join, and not again on the next, at 20,000 blocks as at 100', () => {
     const reads = (run: number, sizes: number[]) =>
       atBothSizes(
         (size) =>
@@ -435,9 +711,110 @@ describe('authored review tree work per edit', () => {
     const [long] = reads(1000, [100]);
 
     assert.deepEqual(shortInLarge, short);
-    for (const [index, longReads] of (long ?? []).entries()) {
-      assert.ok(longReads - (short?.[index] ?? 0) >= 900);
-    }
+    assert.ok((long?.[0] ?? 0) - (short?.[0] ?? 0) >= 900);
+    assert.deepEqual(long?.slice(1), short?.slice(1));
+  });
+
+  it('copies as many tokens for an Editing letter typed beside 1,000 struck lines as beside 100, reading each added line once per key', () => {
+    const [small, large] = atBothSizes(
+      (size) =>
+        editorFor(
+          [
+            paragraph({ text: 'live' }),
+            ...Array.from({ length: size }, (_, index) =>
+              struckParagraph(`struck ${index}`, 'bob:struck')
+            ),
+            paragraph({ text: 'tail' }),
+          ],
+          'edit',
+          'alice',
+          Blocks
+        ),
+      (editor, _size, run) =>
+        editor.update((tx) => {
+          const caret = { offset: 4 + run, path: [0, 0] };
+
+          tx.selection.set({ anchor: caret, focus: caret });
+          tx.command(editorCommands.insertText, { text: 'k' });
+        }),
+      [100, 1000]
+    );
+    const without = ({ markReads: _reads, ...work }: Record<string, number>) =>
+      work;
+
+    assert.deepEqual(large?.map(without), small?.map(without));
+    // The first key projects the whole document; each later key reads only
+    // the struck top-level lines after the edit, looking past them for a join.
+    assert.deepEqual(
+      large?.map((work, index) => work.markReads - small[index].markReads),
+      [7200, 900, 900]
+    );
+  });
+
+  it('copies as many tokens for each Suggesting letter after the first, which projects the whole document, typed above 1,000 lines that each hold a struck letter as above 100', () => {
+    const [small, large] = atBothSizes(
+      (size) =>
+        editorFor(
+          Array.from({ length: size }, () =>
+            paragraph(
+              { text: 'S' },
+              { authored: deletedBy('bob:struck'), text: 'e' },
+              { text: 'ed.' }
+            )
+          ),
+          'propose',
+          'alice',
+          Blocks
+        ),
+      (editor, _size, run) =>
+        editor.update((tx) => {
+          const caret = { offset: run, path: [0, 0] };
+
+          tx.selection.set({ anchor: caret, focus: caret });
+          tx.command(editorCommands.insertText, { text: 'k' });
+        }),
+      [100, 1000]
+    );
+
+    assert.deepEqual(
+      large?.slice(1).map((work) => work.encodedTokens),
+      small?.slice(1).map((work) => work.encodedTokens)
+    );
+  });
+
+  it('copies as many tokens for an Editing Backspace that joins lines across 1,000 struck lines as across 100', () => {
+    const [small, large] = atBothSizes(
+      (size) =>
+        editorFor(
+          [
+            paragraph({ text: 'live' }),
+            ...Array.from({ length: size }, (_, index) =>
+              struckParagraph(`struck ${index}`, 'bob:struck')
+            ),
+            ...blocks(3, []),
+          ],
+          'edit',
+          'alice',
+          Blocks
+        ),
+      (editor, size) =>
+        editor.update((tx) => {
+          const caret = { offset: 0, path: [size + 1, 0] };
+
+          tx.selection.set({ anchor: caret, focus: caret });
+          tx.command(editorCommands.delete, {
+            direction: 'backward',
+            unit: 'character',
+          });
+        }),
+      [100, 1000]
+    );
+
+    assert.ok(small?.every((work) => work.encodedTokens > 0));
+    assert.deepEqual(
+      large?.map((work) => work.encodedTokens),
+      small?.map((work) => work.encodedTokens)
+    );
   });
 
   it('reads only an element’s level and its ancestors for its proposed children under a pending unwrap, at 2,000 blocks as at 100', () => {
@@ -464,5 +841,101 @@ describe('authored review tree work per edit', () => {
     };
 
     assert.equal(reads(2000), reads(100));
+  });
+});
+
+describe('authored review tree storage', () => {
+  const lawCheck = process.env.PLITE_LAW_CHECK;
+
+  beforeAll(() => {
+    process.env.PLITE_LAW_CHECK = '0';
+  });
+  after(() => {
+    if (lawCheck === undefined) delete process.env.PLITE_LAW_CHECK;
+    else process.env.PLITE_LAW_CHECK = lawCheck;
+  });
+
+  const texts = function* (nodes: readonly Node[]): Generator<Node> {
+    for (const node of nodes) {
+      if (typeof node.text === 'string') yield node;
+      yield* texts(node.children ?? []);
+    }
+  };
+  const members = (nodes: readonly Node[]): number =>
+    nodes.reduce(
+      (sum, node) =>
+        sum +
+        ((node.authored as readonly unknown[] | undefined)?.length ?? 0) +
+        members(node.children ?? []),
+      0
+    );
+  const storedAt = (value: {
+    children: readonly Node[];
+    roots?: Record<string, readonly unknown[]>;
+  }) => ({
+    bytes: JSON.stringify(value).length,
+    changes: new Set(
+      [...texts(expandContexts(value as never).children as readonly Node[])]
+        .flatMap(
+          (leaf) =>
+            (leaf.authored as Array<{ change: string }> | undefined) ?? []
+        )
+        .map(({ change }) => change)
+    ).size,
+    members: members(value.children),
+    records: value.roots?.['$authored-contexts']?.length ?? 0,
+  });
+
+  it('stores k nested proposals by alternating authors in at most 4k + 1 members and k context records, in bytes linear in k', () => {
+    const sizes = [1, 10, 50, 100, 200];
+    let author = 'alice';
+    const editor = createEditor({
+      initialValue: [paragraph({ text: 'seed' })] as never,
+      plugins: [
+        Inline,
+        createAuthoredPlugin({
+          authorId: () => author,
+          intent: 'propose',
+          now: () => 1,
+        }),
+      ],
+    });
+    const stored: Array<ReturnType<typeof storedAt>> = [];
+
+    // Each proposal types two letters between the two the previous one
+    // typed, so it sits inside every earlier proposal.
+    for (let step = 0; step < 200; step += 1) {
+      const leaves = (editor.read.children()[0] as Node).children ?? [];
+      let leaf = 0;
+      let offset = 2 + step;
+
+      while (offset > (leaves[leaf]?.text ?? '').length) {
+        offset -= (leaves[leaf]?.text ?? '').length;
+        leaf += 1;
+      }
+      author = step % 2 === 0 ? 'alice' : 'bob';
+      editor.update((tx) => {
+        tx.authored.propose();
+        tx.text.insert('xy', { at: { offset, path: [0, leaf] } });
+      });
+      if (sizes.includes(step + 1)) {
+        stored.push(storedAt(editor.read.value() as never));
+      }
+    }
+
+    for (const [index, k] of sizes.entries()) {
+      const { changes, members: count, records } = stored[index];
+
+      assert.equal(changes, k);
+      assert.ok(count <= 4 * k + 1, `${count} members for k = ${k}`);
+      assert.ok(records <= k, `${records} records for k = ${k}`);
+    }
+
+    const [, , fifty, hundred, twoHundred] = stored.map(({ bytes }) => bytes);
+
+    assert.ok(
+      (twoHundred - hundred) / 100 <= ((hundred - fifty) / 50) * 1.1,
+      `bytes grow faster than k: ${JSON.stringify(stored)}`
+    );
   });
 });

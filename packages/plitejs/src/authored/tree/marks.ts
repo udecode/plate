@@ -3,9 +3,13 @@ import { normalizeSetValues } from '../../core/change/transform';
 import { property, schema, target } from '../../core/schema-definition';
 import type { EditorJsonValue } from '../../interfaces/json';
 import type { Path } from '../../interfaces/path';
+import { isEditingChange } from '../facts/editing';
 import type { FormatTag } from './layers';
 
 export const AUTHORED_MARKS_KEY = 'authored';
+
+export const isAuthoredSetValued = (_node: unknown, key: string) =>
+  key === AUTHORED_MARKS_KEY;
 
 type ContentMarkKind = 'delete' | 'insert';
 type BoundaryMarkKind = 'join' | 'split';
@@ -17,7 +21,23 @@ export type AuthoredMarkKind =
   | EnclosureMarkKind
   | 'format';
 
-type MarkBase = Readonly<{ author: string; at: number; change: string }>;
+export type MarkBase = Readonly<{
+  author: string;
+  at: number;
+  change: string;
+  /**
+   * The incarnation this claim belongs to. A claim without one belongs to
+   * `<change>@<at>`; a change id proposed again after its decision gets one.
+   */
+  inc?: string;
+}>;
+
+/** The context a node rests on: the pending insertions it sits inside. */
+export type RestsOn = Readonly<{ ctx: string; kind: 'in' }>;
+
+export type HeldDeletion = MarkBase & Readonly<{ kind: 'held' }>;
+
+export type AuthoredMember = AuthoredMark | HeldDeletion | RestsOn;
 
 /**
  * One half of a pending split of an inline element: `end` on the left half,
@@ -36,7 +56,19 @@ export type AuthoredMark =
   | (MarkBase &
       Readonly<{
         cut?: undefined;
-        kind: Exclude<AuthoredMarkKind, 'format'>;
+        follows?: undefined;
+        kind: Exclude<AuthoredMarkKind, 'format' | 'split'>;
+      }>)
+  | (MarkBase &
+      Readonly<{
+        cut?: undefined;
+        /**
+         * The incarnation of the pending join the source line carried, or
+         * followed, when this split cut it. Where that join takes the source,
+         * such as into a quote, the piece lands right after it.
+         */
+        follows?: string;
+        kind: 'split';
       }>)
   | CutTag
   | FormatTag;
@@ -55,13 +87,18 @@ const ELEMENT_KINDS: ReadonlySet<AuthoredMarkKind> = new Set([
   'unwrap',
   'wrap',
 ]);
+const STORED_EDITING_KINDS: ReadonlySet<AuthoredMember['kind']> = new Set([
+  'delete',
+  'join',
+  'split',
+]);
 
 export class AuthoredMarkError extends Error {
   override name = 'AuthoredMarkError';
   readonly path: Path;
 
-  constructor(message: string, path: Path) {
-    super(message);
+  constructor(message: string, path: Path, options?: ErrorOptions) {
+    super(message, options);
     this.path = path;
   }
 }
@@ -75,6 +112,7 @@ const FORMAT_FIELDS: ReadonlySet<string> = new Set([
   'before',
   'change',
   'id',
+  'inc',
   'key',
   'kind',
   'over',
@@ -85,10 +123,32 @@ const CUT_FIELDS: ReadonlySet<string> = new Set([
   'author',
   'change',
   'cut',
+  'inc',
   'kept',
   'kind',
   'side',
 ]);
+
+export const heldOf = ({ at, author, change, inc }: MarkBase): HeldDeletion =>
+  inc === undefined
+    ? { at, author, change, kind: 'held' }
+    : { at, author, change, inc, kind: 'held' };
+
+export const deletionOf = ({
+  at,
+  author,
+  change,
+  inc,
+}: HeldDeletion): AuthoredMark =>
+  inc === undefined
+    ? { at, author, change, kind: 'delete' }
+    : { at, author, change, inc, kind: 'delete' };
+
+const isRestsOn = (value: unknown): value is RestsOn =>
+  isRecord(value) && value.kind === 'in';
+
+export const isClaim = (member: AuthoredMember): member is AuthoredMark =>
+  member.kind !== 'in' && member.kind !== 'held';
 
 const isCutTag = (value: Readonly<Record<string, unknown>>) =>
   typeof value.cut === 'string' &&
@@ -114,10 +174,17 @@ const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
   );
 };
 
-const parseMark = (value: unknown): AuthoredMark | null => {
+const parseMember = (value: unknown): AuthoredMember | null => {
   if (!isRecord(value)) return null;
+  if (isRestsOn(value)) {
+    return typeof value.ctx === 'string' &&
+      value.ctx.length > 0 &&
+      Object.keys(value).length === 2
+      ? value
+      : null;
+  }
 
-  const { at, author, change, kind } = value;
+  const { at, author, change, inc, kind } = value;
 
   if (
     typeof change !== 'string' ||
@@ -126,8 +193,9 @@ const parseMark = (value: unknown): AuthoredMark | null => {
     author.length === 0 ||
     typeof at !== 'number' ||
     !Number.isFinite(at) ||
+    (inc !== undefined && (typeof inc !== 'string' || inc.length === 0)) ||
     typeof kind !== 'string' ||
-    !ELEMENT_KINDS.has(kind as AuthoredMarkKind)
+    (kind !== 'held' && !ELEMENT_KINDS.has(kind as AuthoredMarkKind))
   ) {
     return null;
   }
@@ -138,77 +206,90 @@ const parseMark = (value: unknown): AuthoredMark | null => {
     return isCutTag(value) ? (value as AuthoredMark) : null;
   }
 
-  return Object.keys(value).length === 4 ? (value as AuthoredMark) : null;
+  const follows = kind === 'split' ? value.follows : undefined;
+
+  if (
+    follows !== undefined &&
+    (typeof follows !== 'string' || follows.length === 0)
+  ) {
+    return null;
+  }
+
+  return Object.keys(value).length ===
+    4 + (inc === undefined ? 0 : 1) + (follows === undefined ? 0 : 1)
+    ? (value as AuthoredMark | HeldDeletion)
+    : null;
 };
 
-export const withMarksThroughout = (
-  node: JsonNode,
-  marks: readonly AuthoredMark[]
-): JsonNode => {
-  if (marks.length === 0) return node;
+export const readMembers = (node: unknown): readonly AuthoredMember[] => {
+  if (!isRecord(node)) return [];
 
-  return {
-    ...withAuthoredMarks(node, [...readAuthoredMarks(node), ...marks]),
-    ...(node.children
-      ? {
-          children: node.children.map((child) =>
-            withMarksThroughout(child, marks)
-          ),
-        }
-      : {}),
-  } as JsonNode;
+  const members = node[AUTHORED_MARKS_KEY];
+
+  return Array.isArray(members) ? (members as readonly AuthoredMember[]) : [];
 };
 
-/** `node` with exactly `marks`, stored in their canonical set order. */
+export const withMembers = <T extends Readonly<Record<string, unknown>>>(
+  node: T,
+  members: readonly AuthoredMember[]
+) => {
+  const { [AUTHORED_MARKS_KEY]: _members, ...rest } = node;
+
+  return members.length > 0
+    ? { ...rest, [AUTHORED_MARKS_KEY]: normalizeSetValues(members) }
+    : rest;
+};
+
 export const withAuthoredMarks = <T extends Readonly<Record<string, unknown>>>(
   node: T,
   marks: readonly AuthoredMark[]
 ) => {
-  const { [AUTHORED_MARKS_KEY]: _marks, ...rest } = node;
+  const members = readMembers(node);
 
-  return marks.length > 0
-    ? { ...rest, [AUTHORED_MARKS_KEY]: normalizeSetValues(marks) }
-    : rest;
+  return withMembers(
+    node,
+    members.every(isClaim)
+      ? marks
+      : [...marks, ...members.filter((member) => !isClaim(member))]
+  );
 };
+
+const NO_CONTEXTS: readonly RestsOn[] = Object.freeze([]);
 
 export const readAuthoredMarks = (node: unknown): readonly AuthoredMark[] => {
-  if (!isRecord(node)) return [];
+  const members = readMembers(node);
 
-  const marks = node[AUTHORED_MARKS_KEY];
-
-  return Array.isArray(marks) ? (marks as readonly AuthoredMark[]) : [];
+  return members.every(isClaim) ? members : members.filter(isClaim);
 };
 
-export const findAuthoredMark = (
-  nodes: readonly unknown[],
-  change: string
-): AuthoredMark | null => {
-  for (const node of nodes) {
-    const mark = readAuthoredMarks(node).find((item) => item.change === change);
+export const readRestsOn = (node: unknown): readonly RestsOn[] => {
+  const members = readMembers(node);
 
-    if (mark) return mark;
-    if (isRecord(node) && Array.isArray(node.children)) {
-      const nested = findAuthoredMark(node.children, change);
-
-      if (nested) return nested;
-    }
-  }
-
-  return null;
+  return members.some(isRestsOn) ? members.filter(isRestsOn) : NO_CONTEXTS;
 };
 
-type MarkOwners = Map<string, Readonly<{ at: number; author: string }>>;
+export const withRestsOn = <T extends Readonly<Record<string, unknown>>>(
+  node: T,
+  ctx: string | null
+) =>
+  withMembers(node, [
+    ...readMembers(node).filter((member) => !isRestsOn(member)),
+    ...(ctx === null ? [] : [{ ctx, kind: 'in' } as const]),
+  ]);
+
+type MarkOwners = Map<string, string>;
 
 const visitMarks = (
   nodes: readonly unknown[],
   parent: Path,
   owners: MarkOwners,
-  checked: WeakSet<object>
+  checked: WeakSet<object>,
+  restsOn: (ctx: string, path: Path) => void
 ) => {
   nodes.forEach((node, index) => {
-    const at = [...parent, index];
-
     if (!isRecord(node) || checked.has(node)) return;
+
+    const at = [...parent, index];
 
     const raw = node[AUTHORED_MARKS_KEY];
     const isText = typeof node.text === 'string';
@@ -218,48 +299,69 @@ const visitMarks = (
         throw new AuthoredMarkError('Review marks must be a list.', at);
       }
       for (const value of raw) {
-        const mark = parseMark(value);
+        const member = parseMember(value);
 
-        if (!mark) {
+        if (!member) {
           throw new AuthoredMarkError('A review mark is malformed.', at);
         }
-        if (!(isText ? TEXT_KINDS : ELEMENT_KINDS).has(mark.kind)) {
+        if (member.kind === 'in') {
+          restsOn(member.ctx, at);
+          continue;
+        }
+        if (
+          isEditingChange(member.change) &&
+          !STORED_EDITING_KINDS.has(member.kind)
+        ) {
           throw new AuthoredMarkError(
-            `A ${mark.kind} mark cannot mark ${isText ? 'text' : 'an element'}.`,
+            `An Editing mark of kind "${member.kind}" never stays stored; only a join, a split or a deletion does.`,
+            at
+          );
+        }
+        const kind = member.kind === 'held' ? 'delete' : member.kind;
+
+        if (!(isText ? TEXT_KINDS : ELEMENT_KINDS).has(kind)) {
+          throw new AuthoredMarkError(
+            `A ${member.kind} mark cannot mark ${isText ? 'text' : 'an element'}.`,
             at
           );
         }
 
-        const owner = owners.get(mark.change);
+        const owner = owners.get(member.change);
 
-        if (!owner) {
-          owners.set(mark.change, { at: mark.at, author: mark.author });
-        } else if (owner.author !== mark.author || owner.at !== mark.at) {
+        if (owner === undefined) {
+          owners.set(member.change, member.author);
+        } else if (owner !== member.author) {
           throw new AuthoredMarkError(
-            `Change ${mark.change} has marks with different authors or times.`,
+            `Change ${member.change} has marks with different authors.`,
             at
           );
         }
       }
     }
     if (Array.isArray(node.children)) {
-      visitMarks(node.children, at, owners, checked);
+      visitMarks(node.children, at, owners, checked, restsOn);
     }
     checked.add(node);
   });
 };
 
 /**
- * One change has one author and one creation time, so the leaves it marks can
- * merge. Unchanged nodes keep their identity, so each call visits only nodes
- * it has not seen, and change owners carry across calls.
+ * One change has one author, so the leaves it marks can merge. Unchanged
+ * nodes keep their identity, so each call visits only nodes it has not seen,
+ * and change owners carry across calls, even after the document stops holding
+ * the change. `restsOn` sees each context a newly visited node rests on.
  */
 export const createAuthoredMarksValidator = () => {
   const owners: MarkOwners = new Map();
   const checked = new WeakSet<object>();
 
-  return (children: readonly unknown[]) =>
-    visitMarks(children, [], owners, checked);
+  return {
+    authorOf: (change: string) => owners.get(change) ?? null,
+    validate: (
+      children: readonly unknown[],
+      restsOn: (ctx: string, path: Path) => void
+    ) => visitMarks(children, [], owners, checked, restsOn),
+  };
 };
 
 const markValue = property.set(property.json());

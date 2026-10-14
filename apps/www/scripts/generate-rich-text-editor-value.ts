@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import { createEditor } from 'platejs';
-import { AuthoredPlugin } from 'platejs/authored';
+import { AuthoredPlugin, projectAuthoredDocument } from 'platejs/authored';
 import type { CommentsJSON } from 'platejs/comments';
 
 import {
@@ -14,10 +14,16 @@ import { BaseEditorKit } from '../src/registry/components/editor/plugins-static'
 
 const plugins = [...BaseEditorKit, AuthoredPlugin];
 
+// The saved document holds its suggestions, so the authors start from what
+// rejecting all of them leaves.
+const base = projectAuthoredDocument(richTextEditorValue, {
+  projection: 'accepted',
+}).document.children;
+
 // Keep existing-text edits independent of the later suggested link insertion.
 const bob = createEditor({
   plugins,
-  initialValue: { children: richTextEditorValue.children },
+  initialValue: { children: base },
   userId: 'bob',
 });
 
@@ -43,7 +49,8 @@ charlie.update((tx) => {
   tx.text.insert('overlapping ', {
     at: {
       offset: ' on many text segments. You can even have '.length,
-      path: [3, 2],
+      // Bob's deleted text stays in the document as its own node.
+      path: [3, 4],
     },
   });
 });
@@ -82,12 +89,13 @@ const threads = richTextEditorComments.threads.map((thread) =>
 const anchor = editor.anchor(
   {
     anchor: { path: [3, 1, 0], offset: 0 },
-    focus: { path: [3, 2], offset: 22 },
+    // An empty text follows the inline link, so the added text is fourth.
+    focus: { path: [3, 3], offset: ' like this added text'.length },
   },
   { association: 'inward', deletion: 'nearest' }
 );
 const comments: CommentsJSON = {
-  kind: 'plate-comments',
+  kind: 'comments',
   version: 1,
   threads,
   ranges: [{ threadId: 'discussion1', range: editor.anchor.save(anchor) }],

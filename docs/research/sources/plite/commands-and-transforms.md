@@ -6,7 +6,7 @@
 
 ## Insert break
 
-- `applyInsertBreak` does nothing for a node selection, because a node selection can be disjoint and has no truthful break target (`packages/plitejs/src/editor/insert-break.ts:39-55`). Only a collapsed text selection inside a non-inline void inserts the root's default block after the highest void and selects it (`insertDefaultBlockAfterSelectedBlockVoid`, `packages/plitejs/src/editor/block-void-break.ts:16-60`). So the void path says nothing about Enter on a selected object; Plate's caption Enter policy owns that case. Read 2026-10-08; the correction first appeared in `docs/plite/research/2026-09-21-media-object-editable-content/README.md:166-169`.
+- `applyInsertBreak` does nothing for a node selection, because a node selection can be disjoint and has no truthful break target (`packages/plitejs/src/editor/insert-break.ts:39-55`). Only a collapsed text selection inside a non-inline void inserts a block after the highest void and selects it: the void's parent's declared default for the next index, and nothing when the parent cannot take it (`breakAtSelectedBlockVoid`, `packages/plitejs/src/editor/block-void-break.ts`; updated 2026-10-13). So the void path says nothing about Enter on a selected object; Plate's caption Enter policy owns that case. Read 2026-10-08; the correction first appeared in `docs/plite/research/2026-09-21-media-object-editable-content/README.md:166-169`.
 
 ## Public mutation surface
 

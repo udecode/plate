@@ -228,11 +228,11 @@ export class ExternalTextRuntime {
   }) {
     const binding = readExternalTextBinding(this.runtime.editor, elementKey);
     if (!binding) {
-      throw new Error('Plite externalText cannot mount a detached element.');
+      throw new Error('externalText cannot mount a detached element.');
     }
     if (this.entries.has(elementKey)) {
       throw new Error(
-        'Plite permits only one external text projection per element in each Editable.'
+        'Each Editable permits only one external text projection per element.'
       );
     }
     const root = host.closest('[data-editor="true"]');
@@ -318,7 +318,7 @@ export class ExternalTextRuntime {
         )
       ) {
         throw new Error(
-          'Plite external text adapter must return destroy, focus, and update.'
+          'An external text adapter must return destroy, focus, and update.'
         );
       }
     });

@@ -1,6 +1,14 @@
 import type { Html, Paragraph, Text as MdText } from 'mdast';
 
-import { type Descendant, type Element, TextApi, PLUGINS } from '../../../core';
+import {
+  type Descendant,
+  type EditorCoreStateView,
+  type Element,
+  ElementApi,
+  TextApi,
+  PLUGINS,
+} from '../../../core';
+import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import type { MdRootContent } from '../mdast';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
@@ -125,9 +133,8 @@ export const markdownIntrinsicDecoders = {
     marks: MdMarks,
     options: DeserializeMdContext
   ) => {
-    const paragraphType =
-      options.registry.type(PLUGINS.paragraph) ?? 'paragraph';
-    const imageType = options.registry.type(PLUGINS.image) ?? 'image';
+    const paragraphType = getMarkdownParagraphType(options.registry);
+    const imageType = options.registry.type(PLUGINS.image);
     const children = convertChildrenDeserialize(
       withoutTrailingBreakMarkup(node.children),
       marks,
@@ -143,7 +150,10 @@ export const markdownIntrinsicDecoders = {
     };
 
     children.forEach((child) => {
-      if ((child as { type?: string }).type === imageType) {
+      if (
+        imageType !== undefined &&
+        (child as { type?: string }).type === imageType
+      ) {
         flushInlineNodes();
         elements.push(child);
       } else {
@@ -159,6 +169,19 @@ export const markdownIntrinsicDecoders = {
     ...marks,
     text: node.value.replace(LEADING_NEWLINE_REGEX, ''),
   }),
+};
+
+export const getMarkdownParagraphLanding = (
+  schema: EditorCoreStateView['schema'],
+  index: number
+): Element | null => {
+  const block = schema.createDefaultChild({ at: [index] });
+
+  if (!ElementApi.isElement(block)) return null;
+
+  const facts = schema.element(block.type);
+
+  return facts?.content?.allowsText && !facts.behavior.void ? block : null;
 };
 
 /** The `<br />` that keeps a paragraph's trailing line break, after its line ending. */

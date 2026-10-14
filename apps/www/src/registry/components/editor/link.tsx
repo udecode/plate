@@ -91,11 +91,9 @@ const linkFloatingOptions = {
 export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
   .extend(({ store }) => {
     const hide = () => {
-      console.log('CMDK-DEBUG hide', new Error().stack?.split('\n').slice(2, 6).join(' | '));
       store.set({ ...transientState });
     };
     const show = (mode: FloatingLinkMode, editorId: string) => {
-      console.log('CMDK-DEBUG show', mode);
       store.set({ isEditing: false, mode, openEditorId: editorId });
     };
 
@@ -186,44 +184,29 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
         return true;
       },
       triggerInsert: ({ focused }: { focused?: boolean } = {}) => {
-        console.log('CMDK-DEBUG insert guards', {
-          acrossBlocks: editor.read.selection.isAcrossBlocks(),
-          focused,
-          hasLink: editor.read.nodes.some({
-            at: editor.read.selection() ?? undefined,
-            type: linkPlugin,
-          }),
-          mode: store.get().mode,
-        });
-        if (store.get().mode || !focused) {
-          console.log('CMDK-DEBUG return mode-or-focus');
-          return undefined;
-        }
-        if (editor.read.selection.isAcrossBlocks()) {
-          console.log('CMDK-DEBUG return across-blocks');
-          return undefined;
-        }
+        if (store.get().mode || !focused) return undefined;
+        if (editor.read.selection.isAcrossBlocks()) return undefined;
 
         const selection = editor.read.selection();
 
-        if (!selection) {
-          console.log('CMDK-DEBUG return no-selection');
-          return undefined;
-        }
+        if (!selection) return undefined;
         if (editor.read.nodes.some({ at: selection, type: linkPlugin })) {
-          console.log('CMDK-DEBUG return has-link');
           return undefined;
         }
 
-        console.log('CMDK-DEBUG before text read');
-        try {
-          const debugText = editor.read.text.string();
-          console.log('CMDK-DEBUG text', JSON.stringify(debugText));
-        } catch (error) {
-          console.log('CMDK-DEBUG text threw', String(error));
+        const block = editor.read.nodes.block({ at: selection });
+
+        if (
+          block &&
+          !editor.read.schema.allowsElementType(
+            block[0].type,
+            editor.plugin(LinkPlugin).schema.type
+          )
+        ) {
+          return undefined;
         }
+
         store.set({ text: editor.read.text.string() });
-        console.log('CMDK-DEBUG after store.set');
         api.show('insert', editor.id);
 
         return true;
@@ -231,15 +214,16 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
     }),
   })
   .extend({
-    api: ({ api }) => ({
-      trigger: (options: { focused?: boolean } = {}) => {
-        if (!options.focused) return undefined;
-
-        return api.triggerEdit() ?? api.triggerInsert(options);
-      },
+    api: ({ api, editor }) => ({
+      trigger: ({
+        focused = editor.read.view.isFocused(),
+      }: { focused?: boolean } = {}) =>
+        !editor.read.view.isReadOnly() &&
+        focused &&
+        (api.triggerEdit() ?? api.triggerInsert({ focused })) === true,
     }),
   })
-  .extend(({ api, editor: pluginEditor, store }) => ({
+  .extend(({ api, store }) => ({
     shortcuts: {
       dismiss: {
         keys: 'escape',
@@ -249,31 +233,7 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
           return true;
         },
       },
-      trigger: {
-        keys: 'mod+k',
-        handler: ({ editor }) => {
-          console.log('CMDK-DEBUG handler', JSON.stringify({
-            sameEditor: pluginEditor === editor,
-            ids: [pluginEditor.id, editor.id],
-            texts: [
-              pluginEditor.read.text.string([]),
-              editor.read.text.string([]),
-            ],
-            pluginSelection: JSON.stringify(pluginEditor.read.selection()),
-            focused: editor.read.view.isFocused(),
-            mode: store.get().mode,
-            readOnly: editor.read.view.isReadOnly(),
-            selection: JSON.stringify(editor.read.selection()),
-          }));
-          const result =
-            !editor.read.view.isReadOnly() &&
-            api.trigger({
-              focused: editor.read.view.isFocused(),
-            }) === true;
-          console.log('CMDK-DEBUG handler result', result);
-          return result;
-        },
-      },
+      trigger: { keys: 'mod+k' },
     },
   }));
 

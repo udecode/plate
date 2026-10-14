@@ -47,7 +47,6 @@ import {
   subscribeAnchorState,
   registerBoundAnchor,
 } from './anchor-state';
-import { bindAuthoredRange, bindAuthoredPath } from './authored-runtime';
 import {
   DocumentChange,
   getInternalDocumentRootChange,
@@ -56,6 +55,7 @@ import {
 import { DocumentIndex, nodeAtPath } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import type { JsonEditorValue, JsonNode } from './change/tokens';
+import { mapToAuthoredView } from './authored-runtime';
 import { isDocumentView } from './document-view-read';
 import {
   getEditorRuntime,
@@ -89,7 +89,6 @@ export type EditorDocumentRange = Readonly<{
 
 type SavedRange = Readonly<{
   association: RangeAnchorAssociation;
-  authored?: unknown;
   deletion: AnchorDeletionPolicy;
   range: Range | null;
   root: string;
@@ -116,12 +115,11 @@ const assertAnchorView = (editor: Editor, root: string, view?: Editor) => {
 
 const createBoundAnchor = <TValue extends AnchorValue>(
   editor: Editor,
-  saved: Omit<SavedRange, 'range' | 'authored'>,
+  saved: Omit<SavedRange, 'range'>,
   binding:
     | {
         deleted?: () => boolean;
         resolve: (view?: Editor) => TValue | null;
-        serialize?: () => unknown;
       }
     | undefined,
   kind: 'path' | 'point' | 'range'
@@ -190,13 +188,7 @@ const createBoundAnchor = <TValue extends AnchorValue>(
       editor: getEditorRuntimeOwner(editor),
       save() {
         if (released) throw new Error('Cannot save a released range anchor.');
-        const authored = activeBinding?.serialize?.();
-        return {
-          ...saved,
-          range:
-            authored === undefined ? (anchor.resolve() as Range | null) : null,
-          ...(authored === undefined ? {} : { authored }),
-        };
+        return { ...saved, range: anchor.resolve() as Range | null };
       },
     });
   }
@@ -223,8 +215,7 @@ const decodeSavedRange = (input: unknown): SavedRange => {
   const data = record(envelope.value);
   if (
     Object.keys(data).some(
-      (key) =>
-        !['association', 'authored', 'deletion', 'range', 'root'].includes(key)
+      (key) => !['association', 'deletion', 'range', 'root'].includes(key)
     ) ||
     !['backward', 'forward', 'inward', 'outward'].includes(
       String(data.association)
@@ -239,12 +230,10 @@ const decodeSavedRange = (input: unknown): SavedRange => {
   }
   const { range } = data;
   if (range) assertPublicLocationRoot(range);
-  const rangeRoot = Object.hasOwn(data, 'authored') ? 'main' : data.root;
   if (
     range &&
-    ((range.anchor.root ?? rangeRoot) !== (range.focus.root ?? rangeRoot) ||
-      (!Object.hasOwn(data, 'authored') &&
-        (range.anchor.root ?? data.root) !== data.root))
+    ((range.anchor.root ?? data.root) !== (range.focus.root ?? data.root) ||
+      (range.anchor.root ?? data.root) !== data.root)
   ) {
     throw new Error('Saved range endpoints must address the same root.');
   }
@@ -273,18 +262,10 @@ export const createEditorAnchorApi = (
         if (!saved || saved.editor !== getEditorRuntimeOwner(getEditor())) {
           throw new Error('Save a range anchor owned by this editor.');
         }
-        const value = saved.save();
-        // Authored bindings own immutable JSON; restore uses no resolved fallback.
-        return Object.hasOwn(value, 'authored')
-          ? Object.freeze({
-              kind: 'range' as const,
-              version: 1 as const,
-              value: Object.freeze(value),
-            })
-          : snapshotEditorJsonValue(
-              { kind: 'range', version: 1, value },
-              'Saved editor range'
-            );
+        return snapshotEditorJsonValue(
+          { kind: 'range', version: 1, value: saved.save() },
+          'Saved editor range'
+        );
       },
       restore(input: unknown): Anchor<Range> {
         const editor = getEditor();
@@ -294,18 +275,6 @@ export const createEditorAnchorApi = (
           deletion: saved.deletion,
           ...(saved.root === 'main' ? {} : { root: saved.root }),
         };
-        if (Object.hasOwn(saved, 'authored')) {
-          const binding = bindAuthoredRange(editor, {
-            saved: saved.authored,
-            options,
-          });
-          if (!binding) {
-            throw new Error(
-              'An authored range cannot be restored in a detached transaction.'
-            );
-          }
-          return createBoundAnchor<Range>(editor, saved, binding, 'range');
-        }
         return saved.range
           ? createAnchor(editor, saved.range, options)
           : createBoundAnchor<Range>(editor, saved, undefined, 'range');
@@ -381,7 +350,9 @@ const toViewValue = (
   view: Editor | undefined,
   value: AnchorValue | null
 ): AnchorValue | null => {
-  if (!view || value === null || !isDocumentView(view)) return value;
+  if (!view || value === null) return value;
+  // A preview reads the stored document with its pending changes decided.
+  if (!isDocumentView(view)) return mapToAuthoredView(view, root, value);
 
   const sourceNodes = rootNodes(
     withEditorDocumentProjection(editor, undefined, () => readValue(editor)),
@@ -543,8 +514,7 @@ const createPointState = (
 export function createAnchor<TValue extends AnchorValue>(
   editor: BaseEditor<any, any>,
   value: TValue,
-  options: Omit<AnchorOptions<TValue>, 'root'> & Readonly<{ root?: RootKey }>,
-  scope: 'document' | 'transaction' = 'document'
+  options: Omit<AnchorOptions<TValue>, 'root'> & Readonly<{ root?: RootKey }>
 ): Anchor<TValue> {
   const viewEditor = editor as Editor;
   const runtimeEditor = getEditorRuntimeOwner(viewEditor);
@@ -572,47 +542,6 @@ export function createAnchor<TValue extends AnchorValue>(
 
   const association =
     options.association ?? (kind === 'range' ? 'inward' : 'forward');
-  if (pathValue && scope === 'document') {
-    const binding = bindAuthoredPath(viewEditor, pathValue, {
-      association: association as AnchorAssociation,
-      deletion: options.deletion,
-      ...(root === 'main' ? {} : { root }),
-    });
-    if (binding) {
-      return createBoundAnchor<Path>(
-        viewEditor,
-        { association, deletion: options.deletion, root },
-        binding,
-        'path'
-      ) as Anchor<TValue>;
-    }
-  }
-  if ((rangeValue || pointValue) && scope === 'document') {
-    const binding = bindAuthoredRange(viewEditor, {
-      range: rangeValue ?? {
-        anchor: getDefined(pointValue),
-        focus: getDefined(pointValue),
-      },
-      options: {
-        association,
-        deletion: options.deletion,
-        ...(root === 'main' ? {} : { root }),
-      },
-    });
-    if (binding) {
-      return createBoundAnchor<Range | Point>(
-        viewEditor,
-        { association, deletion: options.deletion, root },
-        pointValue
-          ? {
-              deleted: binding.deleted,
-              resolve: (view) => binding.resolve(view)?.anchor ?? null,
-            }
-          : binding,
-        pointValue ? 'point' : 'range'
-      ) as Anchor<TValue>;
-    }
-  }
   let sourceValue =
     (getAnchorStateValue(runtimeEditor) as JsonEditorValue | undefined) ??
     readValue(runtimeEditor);

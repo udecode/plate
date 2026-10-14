@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import {
+import { BROWSER_HANDLE_KEY,
   attachBrowserJsonArtifact,
   attachBrowserSelectionScreenshot,
   openExample,
@@ -14,7 +14,7 @@ type PliteBrowserHandleSelection = {
 };
 
 type PliteBrowserHandleElement = HTMLElement & {
-  __pliteBrowserHandle?: {
+  [BROWSER_HANDLE_KEY]?: {
     getSelection?: () => PliteBrowserHandleSelection | null;
     getViewSelection?: () => {
       anchor: { point: { offset: number; path: number[] } };
@@ -1844,12 +1844,12 @@ test.describe('huge document example', {
     for (let index = 0; index < 30; index++) {
       await page.waitForTimeout(16);
       samples.push(
-        await editor.root.evaluate((element: HTMLElement) => {
+        await editor.root.evaluate((element: HTMLElement, key) => {
           const selection = element.ownerDocument.getSelection();
           const modelSelection =
             (
               element as PliteBrowserHandleElement
-            ).__pliteBrowserHandle?.getSelection?.() ?? null;
+            )[key]?.getSelection?.() ?? null;
           const modelExpanded = modelSelection
             ? modelSelection.anchor.offset !== modelSelection.focus.offset ||
               modelSelection.anchor.path.join(',') !==
@@ -1866,7 +1866,7 @@ test.describe('huge document example', {
               '[data-editor-view-selection="true"]'
             ).length,
           };
-        })
+        }, BROWSER_HANDLE_KEY)
       );
     }
 
@@ -2028,7 +2028,7 @@ test.describe('huge document example', {
         await editor.root.evaluate(
           (
             element: HTMLElement,
-            headingText: string
+            [headingText, key]: readonly [string, typeof BROWSER_HANDLE_KEY]
           ): {
             focusPath: number[] | null;
             minSelectedBlockIndex: number | null;
@@ -2038,9 +2038,8 @@ test.describe('huge document example', {
           } => {
             const selection = element.ownerDocument.getSelection();
             const modelSelection =
-              (
-                element as PliteBrowserHandleElement
-              ).__pliteBrowserHandle?.getSelection?.() ?? null;
+              (element as PliteBrowserHandleElement)[key]?.getSelection?.() ??
+              null;
             const selectedBlockIndexes = modelSelection
               ? [
                   modelSelection.anchor.path[0],
@@ -2063,7 +2062,7 @@ test.describe('huge document example', {
               ).length,
             };
           },
-          target.headingText
+          [target.headingText, BROWSER_HANDLE_KEY] as const
         )
       );
     }

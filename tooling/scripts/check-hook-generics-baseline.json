@@ -10,10 +10,6 @@
       "V extends Value = Value,",
       "V extends Value = Value,"
     ],
-    "packages/platejs/src/react/editor/useStaticEditor.ts": [
-      "const P extends readonly BasePluginInput[] = readonly [],",
-      "TEnabled extends boolean | undefined = undefined,"
-    ],
     "packages/platejs/src/react/editor/withPlate.ts": [
       "const TSchema extends EditorApplicationSchema | undefined = undefined,",
       "const TSchema extends EditorApplicationSchema | undefined = undefined,",

@@ -649,7 +649,7 @@ describe('PlateStatic Memoization', () => {
       },
     });
     const proposed = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
 
     createEditorView(proposed, { root: 'caption:1' }).update.text.insert(
@@ -661,7 +661,7 @@ describe('PlateStatic Memoization', () => {
 
     expect(view.container.textContent).toBe('Foot draft');
 
-    proposed.api.authored.setView({ intent: 'edit', projection: 'accepted' });
+    proposed.api.authored.setView({ preview: 'accepted' });
     view.rerender(<EditorStatic editor={proposed} />);
 
     expect(view.container.textContent).toBe('Foot');

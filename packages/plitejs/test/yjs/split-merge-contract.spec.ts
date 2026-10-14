@@ -114,7 +114,7 @@ const assertNoLeakedVirtualPlaceholder = (
       continue;
     }
 
-    assert.notEqual(node.type, 'plite-yjs-virtual-placeholder');
+    assert.notEqual(node.type, 'element');
     assertNoLeakedVirtualPlaceholder(node.children);
   }
 };

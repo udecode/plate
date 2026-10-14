@@ -16,7 +16,7 @@ description: Plate 共享工具、类型、标识和插件的 API 参考。
 | `UnknownObject` | 值必须先收窄的字符串键对象。 |
 | `Nullable<T>` | 为 `T` 的每个属性添加 `null`。 |
 
-`isUrl` 不决定编辑器接受哪些链接。链接地址遵循 `LinkPlugin` 的 `allowedSchemes`，见[链接](/cn/docs/link)。
+`isUrl` 不决定编辑器接受哪些链接。由 [`getLinkHref`](/cn/docs/link#getlinkhref) 决定。编辑器安装了 `LinkPlugin` 时，把它的 `allowedSchemes` 传给 `getLinkHref`。
 
 ## React Hooks
 

@@ -13,7 +13,8 @@ import type {
   Text,
   Value,
 } from '../../../core';
-import { ElementApi, PLUGINS, TextApi } from '../../../core';
+import { ElementApi, TextApi } from '../../../core';
+import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import type { MarkdownConversionContext } from '../types';
 
 export type MarkdownSerializeDocumentValue = EditorDocumentValue;
@@ -101,7 +102,7 @@ export const toMarkdownBlockContent = (
   children: readonly Descendant[]
 ): Value => {
   const content: Element[] = [];
-  const paragraphType = context.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const paragraphType = getMarkdownParagraphType(context.registry);
   let inline: Descendant[] = [];
   const flush = () => {
     if (inline.length === 0) return;
@@ -144,7 +145,7 @@ export const toMarkdownCaptionContent = (
   children: readonly Descendant[]
 ): readonly Descendant[] | null => {
   const blocks = toMarkdownBlockContent(context, children);
-  const paragraphType = context.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const paragraphType = getMarkdownParagraphType(context.registry);
 
   return blocks.length === 1 && blocks[0].type === paragraphType
     ? blocks[0].children

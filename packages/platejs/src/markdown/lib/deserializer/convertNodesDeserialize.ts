@@ -2,7 +2,7 @@ import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
 
 import type { Descendant } from '../../../core';
-import { PLUGINS } from '../../../core';
+import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import { serializeUnknownMdxNode } from '../internal/markdownDocument';
 import {
   getMarkdownDecoders,
@@ -98,7 +98,7 @@ export const buildSlateNode = (
     : [
         {
           children: [text],
-          type: options.registry.type(PLUGINS.paragraph) ?? 'paragraph',
+          type: getMarkdownParagraphType(options.registry),
         },
       ];
 };

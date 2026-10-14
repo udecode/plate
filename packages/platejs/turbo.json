@@ -58,6 +58,7 @@
         "lint:partition:html-server",
         "lint:partition:layout",
         "lint:partition:layout-react",
+        "lint:partition:lint",
         "lint:partition:markdown",
         "lint:partition:math",
         "lint:partition:math-react",
@@ -369,6 +370,7 @@
         "!src/features/find/**",
         "!src/features/footnote/**",
         "!src/features/layout/**",
+        "!src/features/lint/**",
         "!src/features/media/**",
         "!src/features/mention/**",
         "!src/features/slash-command/**",
@@ -450,6 +452,7 @@
         "!test/features/find/**",
         "!test/features/footnote/**",
         "!test/features/layout/**",
+        "!test/features/lint/**",
         "!test/features/media/**",
         "!test/features/mention/**",
         "!test/features/slash-command/**",
@@ -764,6 +767,21 @@
       "inputs": [
         "src/react/features/layout/**",
         "test/react/features/layout/**",
+        "$TURBO_ROOT$/oxlint.config.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "lint:partition:lint": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/features/lint/**",
+        "test/features/lint/**",
         "$TURBO_ROOT$/oxlint.config.ts",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
@@ -1513,6 +1531,7 @@
         "test:partition:html",
         "test:partition:html-server",
         "test:partition:layout",
+        "test:partition:lint",
         "test:partition:markdown",
         "test:partition:math",
         "test:partition:media",
@@ -1812,6 +1831,7 @@
         "typecheck:partition:compiler",
         "typecheck:partition:core",
         "typecheck:partition:details",
+        "typecheck:partition:docx-export",
         "typecheck:partition:html",
         "typecheck:partition:layout",
         "typecheck:partition:markdown",
@@ -1826,6 +1846,7 @@
         "typecheck:partition:standard-basic-styles",
         "typecheck:partition:standard-link",
         "typecheck:partition:standard-list",
+        "typecheck:partition:static",
         "typecheck:partition:table",
         "typecheck:partition:testing",
         "typecheck:partition:toc",
@@ -1888,6 +1909,7 @@
         "!src/features/find/**",
         "!src/features/footnote/**",
         "!src/features/layout/**",
+        "!src/features/lint/**",
         "!src/features/media/**",
         "!src/features/mention/**",
         "!src/features/slash-command/**",
@@ -1969,6 +1991,7 @@
         "!test/features/find/**",
         "!test/features/footnote/**",
         "!test/features/layout/**",
+        "!test/features/lint/**",
         "!test/features/media/**",
         "!test/features/mention/**",
         "!test/features/slash-command/**",
@@ -2126,7 +2149,8 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
-        "typecheck:partition:docx-html"
+        "typecheck:partition:docx-html",
+        "typecheck:partition:docx-internal"
       ],
       "inputs": [
         "src/docx/html/**",
@@ -2172,6 +2196,7 @@
       "dependsOn": [
         "typecheck:partition:core",
         "typecheck:partition:docx-html",
+        "typecheck:partition:docx-internal",
         "typecheck:partition:docx-paste",
         "typecheck:partition:media",
         "typecheck:partition:standard-basic-nodes",
@@ -2243,6 +2268,7 @@
     "test:partition:find": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:find",
         "typecheck:partition:standard-link"
@@ -2265,6 +2291,7 @@
     "test:partition:footnote": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:authored",
         "typecheck:partition:combobox",
         "typecheck:partition:core",
         "typecheck:partition:footnote",
@@ -2388,6 +2415,31 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "test:partition:lint": {
+      "cache": true,
+      "dependsOn": [
+        "typecheck:partition:authored",
+        "typecheck:partition:core",
+        "typecheck:partition:lint",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-link",
+        "typecheck:partition:yjs-react"
+      ],
+      "inputs": [
+        "src/features/lint/**",
+        "test/features/lint/**",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "bunfig.toml"
+      ],
+      "env": ["CI"],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "test:partition:markdown": {
       "cache": true,
       "dependsOn": [
@@ -2420,7 +2472,12 @@
     },
     "test:partition:math": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:math"],
+      "dependsOn": [
+        "plitejs#typecheck:partition:authored",
+        "typecheck:partition:core",
+        "typecheck:partition:math",
+        "typecheck:partition:standard-code-block"
+      ],
       "inputs": [
         "src/math/**",
         "!src/math/react/**",
@@ -2613,6 +2670,8 @@
     "test:partition:standard-basic-nodes": {
       "cache": true,
       "dependsOn": [
+        "plitejs#typecheck:partition:authored",
+        "plitejs#typecheck:partition:core",
         "typecheck:partition:core",
         "typecheck:partition:standard-basic-nodes"
       ],
@@ -2680,9 +2739,14 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:markdown",
+        "typecheck:partition:math",
         "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
-        "typecheck:partition:standard-code-block"
+        "typecheck:partition:standard-code-block",
+        "typecheck:partition:standard-link",
+        "typecheck:partition:standard-list",
+        "typecheck:partition:testing"
       ],
       "inputs": [
         "src/features/code-block/**",
@@ -2728,7 +2792,9 @@
         "typecheck:partition:core",
         "typecheck:partition:proxies",
         "typecheck:partition:react-core",
-        "typecheck:partition:standard-indent"
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-indent",
+        "typecheck:partition:standard-list"
       ],
       "inputs": [
         "src/features/indent/**",
@@ -2751,6 +2817,7 @@
         "typecheck:partition:core",
         "typecheck:partition:markdown",
         "typecheck:partition:mention",
+        "typecheck:partition:standard-code-block",
         "typecheck:partition:standard-link",
         "typecheck:partition:standard-link-react"
       ],
@@ -2774,8 +2841,11 @@
       "dependsOn": [
         "plitejs#typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:markdown",
         "typecheck:partition:media",
+        "typecheck:partition:react-core",
         "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-code-block",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list",
         "typecheck:partition:table"
@@ -2974,7 +3044,11 @@
     },
     "test:partition:toc": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:toc"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:toc"
+      ],
       "inputs": [
         "src/features/toc/**",
         "test/features/toc/**",
@@ -3127,6 +3201,7 @@
         "typecheck:partition:html-server",
         "typecheck:partition:layout",
         "typecheck:partition:layout-react",
+        "typecheck:partition:lint",
         "typecheck:partition:markdown",
         "typecheck:partition:math",
         "typecheck:partition:math-react",
@@ -3660,6 +3735,7 @@
         "!src/features/find/**",
         "!src/features/footnote/**",
         "!src/features/layout/**",
+        "!src/features/lint/**",
         "!src/features/media/**",
         "!src/features/mention/**",
         "!src/features/slash-command/**",
@@ -3882,7 +3958,10 @@
     },
     "typecheck:partition:docx-html": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:docx-internal"
+      ],
       "inputs": [
         "src/docx/html/**",
         "!src/**/*.spec.*",
@@ -3967,7 +4046,8 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
-        "typecheck:partition:docx-html"
+        "typecheck:partition:docx-html",
+        "typecheck:partition:docx-internal"
       ],
       "inputs": [
         "src/docx/paste/**",
@@ -4237,6 +4317,32 @@
         ".turbo/entrypoint-types/layout-react.tsbuildinfo"
       ]
     },
+    "typecheck:partition:lint": {
+      "cache": true,
+      "dependsOn": ["typecheck:partition:core"],
+      "inputs": [
+        "src/features/lint/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*.slow.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/tooling/config/global.d.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "tsconfig.json",
+        "tsconfig.entrypoints/lint.json"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": [
+        ".turbo/entrypoint-types/lint/**",
+        ".turbo/entrypoint-types/lint.tsbuildinfo"
+      ]
+    },
     "typecheck:partition:markdown": {
       "cache": true,
       "dependsOn": [
@@ -4434,7 +4540,7 @@
     },
     "typecheck:partition:migrations": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
+      "dependsOn": ["typecheck:partition:authored", "typecheck:partition:core"],
       "inputs": [
         "src/migrations/**",
         "!src/**/*.spec.*",
@@ -4925,7 +5031,10 @@
     },
     "typecheck:partition:standard-indent": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-basic-nodes"
+      ],
       "inputs": [
         "src/features/indent/**",
         "!src/**/*.spec.*",
@@ -5038,6 +5147,7 @@
       "cache": true,
       "dependsOn": [
         "typecheck:partition:core",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-indent"
       ],
       "inputs": [
@@ -5324,7 +5434,10 @@
     },
     "typecheck:partition:toc": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
+      "dependsOn": [
+        "typecheck:partition:core",
+        "typecheck:partition:standard-basic-nodes"
+      ],
       "inputs": [
         "src/features/toc/**",
         "!src/**/*.spec.*",

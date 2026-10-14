@@ -6,13 +6,13 @@ import { performance } from 'node:perf_hooks';
 
 import * as Y from 'yjs';
 
+import { failInvariant } from '../../src/internal/fail-invariant';
 import { setYjsAttribute } from '../../src/yjs/core/attributes';
 import { createYjsNode, getYjsNode } from '../../src/yjs/core/document';
 import {
   type CapturedYjsEventBatch,
   YjsEventChangeBridge,
 } from '../../src/yjs/core/event-change-bridge';
-import { failInvariant } from '../../src/yjs/internal/failInvariant';
 import {
   clearYjsTrace,
   createSeededYjsPeers,

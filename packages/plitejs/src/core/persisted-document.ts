@@ -5,16 +5,10 @@ import type {
 import { resolveStateFieldInitial } from './state-fields';
 import { snapshotEditorJsonValue } from './value-codec';
 
-export type PersistedDocumentFieldValues = Readonly<Record<string, unknown>>;
-
 /** Decode, complete and eagerly encode all installed persistent fields. @internal */
 export const completePersistedDocumentFields = (
   document: EditorDocumentValue,
-  fields: ReadonlyArray<EditorStateField<any>>,
-  normalize?: (
-    values: PersistedDocumentFieldValues,
-    document: EditorDocumentValue
-  ) => PersistedDocumentFieldValues
+  fields: ReadonlyArray<EditorStateField<any>>
 ): EditorDocumentValue => {
   const installed = new Map<string, EditorStateField<any>>();
 
@@ -51,17 +45,9 @@ export const completePersistedDocumentFields = (
     if (initial !== undefined) decoded[field.key] = initial;
   }
 
-  const values = normalize
-    ? normalize(Object.freeze(decoded), document)
-    : decoded;
   const meta = Object.fromEntries(
-    Object.entries(values).map(([key, input]) => {
+    Object.entries(decoded).map(([key, input]) => {
       const field = installed.get(key);
-      if (field && !field.persist) {
-        throw new Error(
-          `State field "${key}" cannot persist metadata without persistence.`
-        );
-      }
 
       return [
         key,

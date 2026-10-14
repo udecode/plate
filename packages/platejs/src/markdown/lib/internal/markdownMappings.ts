@@ -8,8 +8,8 @@ import {
   type MarkdownEncodeContext,
   type MarkdownMarkWrapper,
   type MarkdownRefusal,
-  PLUGINS,
 } from '../../../core';
+import { failInvariant } from '../../../internal/failInvariant';
 import {
   getPlateNodeMappingContributions,
   type NodeMappingContribution,
@@ -18,13 +18,13 @@ import {
   getCompiledPlateModel,
   getCompiledPlatePluginList,
 } from '../../../internal/plugin/compilePlateModel';
+import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 import {
   createPluginFormatModelView,
   createPluginFormatOperationContext,
 } from '../../../internal/plugin/pluginFormatOperation';
 import { isScriptUrl } from '../../../internal/utils/urlPolicy';
 import type { AnyBasePlugin } from '../../../lib/plugin';
-import { failInvariant } from '../../internal/failInvariant';
 import { convertChildrenDeserialize } from '../deserializer/convertChildrenDeserialize';
 import {
   buildSlateNode,
@@ -228,9 +228,7 @@ const compiledMarkdownMappingsCache = new WeakMap<
   object,
   CompiledMarkdownMappings
 >();
-export const markdownMappingsRegistryKey = Symbol(
-  'plate.markdownMappingsRegistry'
-);
+export const markdownMappingsRegistryKey = Symbol('markdownMappingsRegistry');
 
 export const getMarkdownMappingsRegistryKey = (state: object) => {
   const key = Reflect.get(state, markdownMappingsRegistryKey);
@@ -876,7 +874,7 @@ const decodeDerivedTagContent = (
     ? [
         {
           children: [...text],
-          type: options.registry.type(PLUGINS.paragraph) ?? 'paragraph',
+          type: getMarkdownParagraphType(options.registry),
         },
       ]
     : [];
@@ -1363,7 +1361,7 @@ const refusedTagText = (
     : [
         {
           children: [text],
-          type: options.registry.type(PLUGINS.paragraph) ?? 'paragraph',
+          type: getMarkdownParagraphType(options.registry),
         },
       ];
 };

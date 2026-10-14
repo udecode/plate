@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-14-excalidraw-demo-width",
+      "href": "/registry/changelog/2026-10-14-excalidraw-demo-width.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Stop storing a width in the Excalidraw demo value",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["excalidraw-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-14-exit-break-demo-copy",
+      "href": "/registry/changelog/2026-10-14-exit-break-demo-copy.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Align the Chinese exit break demo with the English one and mention columns in its copy",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["exit-break-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-13-details-heading-titles",
       "href": "/registry/changelog/2026-10-13-details-heading-titles.json",
       "status": "draft",
@@ -26,6 +62,103 @@
         "font-size-toolbar-button"
       ],
       "entries": 4,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-13-editor-width-padding",
+      "href": "/registry/changelog/2026-10-13-editor-width-padding.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Size editor side padding to the editor's own width",
+      "change": {
+        "type": "source",
+        "date": "2026-10-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "editor",
+        "editor-static",
+        "comment-demo",
+        "comment-overlap-demo",
+        "comment-persistence-demo",
+        "comment-review-demo",
+        "suggestion-demo",
+        "suggestion-format-demo",
+        "suggestion-persistence-demo",
+        "suggestion-view-demo"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-13-lint",
+      "href": "/registry/changelog/2026-10-13-lint.json",
+      "status": "draft",
+      "kind": "new",
+      "summary": "Lint text blocks with your own rules and fix findings from a caret popover",
+      "change": {
+        "type": "source",
+        "date": "2026-10-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["lint", "lint-demo"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-13-static-editor-previews",
+      "href": "/registry/changelog/2026-10-13-static-editor-previews.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Read-only previews and HTML export create their editor with createEditor or useCreateEditor",
+      "change": {
+        "type": "source",
+        "date": "2026-10-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "comment",
+        "comment-review-demo",
+        "markdown-streaming-demo",
+        "html-export"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-13-suggestions-review-tree",
+      "href": "/registry/changelog/2026-10-13-suggestions-review-tree.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Suggestions paint each change in its own color and mark whole-block changes",
+      "change": {
+        "type": "source",
+        "date": "2026-10-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "suggestion",
+        "mode-toolbar-button",
+        "discussion",
+        "suggestion-demo",
+        "suggestion-format-demo",
+        "suggestion-view-demo",
+        "suggestion-persistence-demo",
+        "version-history-demo"
+      ],
+      "entries": 6,
       "diagnostics": []
     },
     {
@@ -65,6 +198,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-12-link-code-block-form",
+      "href": "/registry/changelog/2026-10-12-link-code-block-form.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the link form closed where a link cannot go",
+      "change": {
+        "type": "source",
+        "date": "2026-10-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["link"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-12-link-draft-addresses",
       "href": "/registry/changelog/2026-10-12-link-draft-addresses.json",
       "status": "draft",
@@ -83,6 +234,49 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-12-link-shortcut-view",
+      "href": "/registry/changelog/2026-10-12-link-shortcut-view.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Open the link form with Cmd+K",
+      "change": {
+        "type": "source",
+        "date": "2026-10-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["link"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-12-neutral-stored-names",
+      "href": "/registry/changelog/2026-10-12-neutral-stored-names.json",
+      "status": "draft",
+      "kind": "rename",
+      "summary": "Use neutral names for stored keys, exported files and comments data",
+      "change": {
+        "type": "source",
+        "date": "2026-10-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "emoji-picker",
+        "emoji-data",
+        "export-toolbar-button",
+        "import-toolbar-button",
+        "comment-demo",
+        "collaboration-demo"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-12-select-editor-field",
       "href": "/registry/changelog/2026-10-12-select-editor-field.json",
       "status": "draft",
@@ -98,6 +292,38 @@
       },
       "targets": ["select-editor"],
       "entries": 3,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-12-toolbar-button-names",
+      "href": "/registry/changelog/2026-10-12-toolbar-button-names.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Name icon-only toolbar buttons for assistive tech",
+      "change": {
+        "type": "source",
+        "date": "2026-10-12",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "toolbar",
+        "turn-into-toolbar-button",
+        "mode-toolbar-button",
+        "list-toolbar-button",
+        "media-toolbar-button",
+        "history-toolbar-button",
+        "import-toolbar-button",
+        "export-toolbar-button",
+        "table-toolbar-button",
+        "comment-toolbar-button",
+        "more-toolbar-button",
+        "emoji-toolbar-button",
+        "table"
+      ],
+      "entries": 4,
       "diagnostics": []
     },
     {

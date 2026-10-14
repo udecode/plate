@@ -24,7 +24,6 @@ import type {
   PluginReconfigureOptions,
   EditorStateField,
   EditorUpdatePolicy,
-  EditorUpdateTransaction,
   EditorValueFromPlugins,
   RegisteredPlugin,
   ValueOf,
@@ -39,6 +38,10 @@ import { DocumentChange } from './change/document-change';
 import { createCommandRegistration } from './command-definition';
 import { registerCommandInRegistry } from './command-registry';
 import { getEditorCommitSnapshot } from './commit';
+import {
+  documentAdmissionPoint,
+  onlyDocumentAdmission,
+} from './document-admission';
 import {
   EDITOR_STRUCTURE_FIELDS,
   type EditorRecordIssue,
@@ -56,11 +59,15 @@ import {
   type InternalEditorSchemaApi,
 } from './editor-schema';
 import { reportEditorLifecycleError } from './lifecycle-error';
+import { callPluginUpdateMethod, resolvePluginMethod } from './plugin-dispatch';
+import { getPluginContributionValue } from './plugin-point';
 import {
   createPluginRegistry,
   finalizePluginRegistry,
   getConfiguredPluginRegistry,
+  getPluginContributions,
   getPluginRegistry,
+  getRegistryContributions,
   type PluginRegistry,
   type PublishedConfiguredPluginRegistry,
   publishConfiguredPluginRegistry,
@@ -109,6 +116,8 @@ import {
 } from './schema-definition';
 import { EditorSchemaValidationError } from './schema-validation';
 
+export { definePluginPoint } from './plugin-point';
+
 const rejectMigratedDocument = (issue: EditorRecordIssue): never => {
   if (issue.kind === 'field' && issue.field === 'meta') {
     throw new Error(
@@ -118,7 +127,6 @@ const rejectMigratedDocument = (issue: EditorRecordIssue): never => {
   return rejectEditorRecord('Schema migration result')(issue);
 };
 
-const PLUGIN_CONTRIBUTION_VALUES = new WeakMap<object, unknown>();
 type PluginPortalFactory = NonNullable<
   InternalCompiledPluginPublicationEntry['createPortal']
 >;
@@ -192,78 +200,32 @@ export const createPluginUpdatePortal = (
       );
     }
   };
-  const resolveCapability = () => {
-    assertCapabilityOwner();
-    const capability = Reflect.get(editor.update, pluginName);
-
-    if (capability === undefined) {
-      throw new Error(
-        `Editor plugin "${pluginName}" does not expose update methods.`
-      );
-    }
-
-    return capability;
-  };
-  const resolveCapabilityPath = (
-    source: unknown,
-    path: readonly PropertyKey[]
-  ) => {
-    let owner: unknown = source;
-    let value = source;
-
-    for (const key of path) {
-      owner = value;
-      value = Reflect.get(value as object, key);
-    }
-
-    return { owner, value };
-  };
   const createScopedUpdatePath = (
     path: readonly PropertyKey[],
     policy?: EditorUpdatePolicy
-  ): unknown =>
-    new Proxy(
+  ): unknown => {
+    const label = `Editor plugin "${pluginName}" update method "${path
+      .map(String)
+      .join('.')}"`;
+
+    return new Proxy(
       (...args: unknown[]) => {
         assertCapabilityOwner();
-        if (policy === undefined) {
-          const { owner, value } = resolveCapabilityPath(
-            resolveCapability(),
-            path
-          );
-
-          if (typeof value !== 'function') {
-            throw new TypeError(
-              `Editor plugin "${pluginName}" update method "${path
-                .map(String)
-                .join('.')}" is not callable.`
-            );
-          }
-
-          return Reflect.apply(value, owner, args);
-        }
 
         let result: unknown;
-        const update = editor.update as unknown as (
-          policy: EditorUpdatePolicy,
-          fn: (tx: EditorUpdateTransaction<any, any>) => void
-        ) => void;
-
-        update(policy, (tx) => {
-          const { owner, value } = resolveCapabilityPath(
-            Reflect.get(tx, pluginName),
-            path
+        const run = (tx: Record<PropertyKey, unknown>) => {
+          result = callPluginUpdateMethod(
+            label,
+            resolvePluginMethod(tx[pluginName], path),
+            args
           );
+        };
 
-          if (typeof value !== 'function') {
-            throw new TypeError(
-              `Editor plugin "${pluginName}" update method "${path
-                .map(String)
-                .join('.')}" is not callable.`
-            );
-          }
-
-          result = Reflect.apply(value, owner, args);
-        });
+        Reflect.apply(
+          editor.update,
+          editor,
+          policy === undefined ? [run] : [policy, run]
+        );
 
         return result;
       },
@@ -276,6 +238,7 @@ export const createPluginUpdatePortal = (
         },
       }
     );
+  };
   const createScopedUpdate = (policy?: EditorUpdatePolicy): unknown =>
     new Proxy(
       (nextPolicy: EditorUpdatePolicy) => createScopedUpdate(nextPolicy),
@@ -291,40 +254,6 @@ export const createPluginUpdatePortal = (
     );
 
   return createScopedUpdate();
-};
-
-/** Define a typed plugin point for ordered cross-plugin contributions. */
-export const definePluginPoint = <TValue>(id: string): PluginPoint<TValue> => {
-  if (!id) {
-    throw new Error('Editor plugin point id cannot be empty.');
-  }
-
-  const point = Object.freeze({
-    id,
-    of(value: TValue) {
-      const contribution = Object.freeze({
-        point,
-      }) as PluginContribution<TValue>;
-
-      PLUGIN_CONTRIBUTION_VALUES.set(contribution, value);
-
-      return contribution;
-    },
-  });
-
-  return point;
-};
-
-const getPluginContributionValue = (
-  contribution: PluginContributionInput<any>
-) => {
-  if (!PLUGIN_CONTRIBUTION_VALUES.has(contribution)) {
-    throw new Error(
-      `Editor plugin contribution "${contribution.point.id}" was not created by its point.`
-    );
-  }
-
-  return PLUGIN_CONTRIBUTION_VALUES.get(contribution);
 };
 
 type PluginRecord = {
@@ -1174,21 +1103,6 @@ export const getCandidateEditorApiValue = (
 
   return undefined;
 };
-
-/**
- * Read ordered values from one published plugin point.
- *
- * @internal
- */
-export const getPluginContributions = <TValue>(
-  editor: Editor,
-  point: PluginPoint<TValue>
-) =>
-  Object.freeze(
-    (getPluginRegistry(editor).contributions.get(point) ?? []).map(
-      ({ value }) => value as Readonly<TValue>
-    )
-  );
 
 /**
  * Read the exact descriptor installed for one plugin name.
@@ -2255,13 +2169,19 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
 
   if (options.validateDocument !== false) {
     if (loadsInitialValue(options)) {
+      const loaded = getEditorDocumentValue(editor);
+      const repair =
+        onlyDocumentAdmission(
+          getRegistryContributions(mergedCandidate, documentAdmissionPoint)
+        )?.load(loaded) ?? null;
+
       return Object.freeze({
         configured: candidate,
-        documentChange: constructLoadedDocumentChange(
-          editor,
-          getEditorDocumentValue(editor),
-          schema
-        ),
+        documentChange: repair
+          ? repair.change.compose(
+              constructLoadedDocumentChange(editor, repair.value, schema)
+            )
+          : constructLoadedDocumentChange(editor, loaded, schema),
         merged: mergedCandidate,
         schema,
       });
@@ -2339,11 +2259,7 @@ const createPluginApiFactoryContext = <TEditor extends Editor>(
   Object.freeze({
     editor: editor as PluginApiFactoryContext<TEditor>['editor'],
     getContributions: <TValue>(point: PluginPoint<TValue>) =>
-      Object.freeze(
-        (registry.contributions.get(point) ?? []).map(
-          ({ value }) => value as Readonly<TValue>
-        )
-      ),
+      getRegistryContributions(registry, point),
     root: toPublicRoot(getEditorRuntimeRoot(editor)),
   }) satisfies PluginApiFactoryContext<TEditor>;
 
@@ -2443,11 +2359,7 @@ const createNoopPublication = (
     schemaCompilation: () =>
       Object.freeze({
         contributions: <TValue>(point: PluginPoint<TValue>) =>
-          Object.freeze(
-            (getPluginRegistry(editor).contributions.get(point) ?? []).map(
-              ({ value }) => value as Readonly<TValue>
-            )
-          ),
+          getPluginContributions(editor, point),
         fields: Object.freeze(
           [...getPluginRegistry(editor).stateFields.values()].map(
             ({ field }) => field
@@ -2881,11 +2793,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
       }
       return Object.freeze({
         contributions: <TValue>(point: PluginPoint<TValue>) =>
-          Object.freeze(
-            (mergedCandidate.contributions.get(point) ?? []).map(
-              ({ value }) => value as Readonly<TValue>
-            )
-          ),
+          getRegistryContributions(mergedCandidate, point),
         fields: Object.freeze(
           [...mergedCandidate.stateFields.values()].map(({ field }) => field)
         ),

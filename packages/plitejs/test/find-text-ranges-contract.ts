@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 
 import {
   createEditor,
@@ -8,6 +9,8 @@ import {
   type NodeTextRangeRoot,
   schema,
 } from 'plitejs';
+
+import { registerEditorContent } from '../src/core/content';
 
 const root = (children: Element['children']): Element => ({
   type: 'root',
@@ -189,4 +192,109 @@ it('ignores empty string and zero-width regular expression matches', () => {
 
   assert.deepEqual(NodeApi.findTextRanges(value, ''), []);
   assert.deepEqual(NodeApi.findTextRanges(value, /(?=a)/g), []);
+});
+
+it('limits the search to the node at `at` and keeps document paths', () => {
+  const entries: unknown[] = [];
+
+  assert.deepEqual(
+    NodeApi.findTextRanges(
+      root([
+        { type: 'paragraph', children: [{ text: 'foo' }] },
+        { type: 'paragraph', children: [{ text: 'a foo' }] },
+      ]),
+      (text, entry) => {
+        entries.push(entry[1]);
+
+        return Array.from(text.matchAll(/foo/g), (match) => ({
+          start: match.index,
+          end: match.index + match[0].length,
+        }));
+      },
+      { at: [1] }
+    ),
+    [
+      {
+        anchor: { path: [1, 0], offset: 2 },
+        focus: { path: [1, 0], offset: 5 },
+      },
+    ]
+  );
+  assert.deepEqual(entries, [[1]]);
+});
+
+describe('read and transaction view roots', () => {
+  const create = () => {
+    const editor = createEditor({
+      plugins: [
+        definePlugin('links', {
+          schema: {
+            elements: {
+              link: {
+                content: schema.content.text({ default: 'text', min: 1 }),
+                inline: true,
+              },
+            },
+          },
+        }),
+      ],
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'skip keep' }] },
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'keep ' },
+            { text: 'gone ', struck: true },
+            { type: 'link', children: [{ text: 'NEW' }] },
+            { text: ' tail' },
+          ],
+        },
+      ],
+    });
+
+    registerEditorContent(
+      editor,
+      (_owner, node) => !(node as { struck?: boolean }).struck
+    );
+
+    return editor;
+  };
+  const expected = [
+    {
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [1, 2, 0], offset: 3 },
+    },
+  ];
+
+  it('joins inline runs and skips non-content text in a read view', () => {
+    const editor = create();
+
+    assert.deepEqual(
+      editor.read((state) =>
+        NodeApi.findTextRanges(state, 'keep NEW', { at: [1], content: true })
+      ),
+      expected
+    );
+    assert.deepEqual(
+      editor.read((state) =>
+        NodeApi.findTextRanges(state, 'gone', { content: true })
+      ),
+      []
+    );
+  });
+
+  it('reads the transaction draft with the same rules', () => {
+    const editor = create();
+    let found: unknown;
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [1, 3], offset: 5 } });
+      found = [
+        NodeApi.findTextRanges(tx, 'keep NEW', { at: [1], content: true }),
+        NodeApi.findTextRanges(tx, 'tail!', { content: true }).length,
+      ];
+    });
+
+    assert.deepEqual(found, [expected, 1]);
+  });
 });

@@ -30,7 +30,6 @@
     "apps/www/src/registry/examples/values/preview-md-value.tsx",
     "packages/platejs/package.json",
     "packages/platejs/src/markdown/index.ts",
-    "packages/platejs/src/markdown/internal/",
     "packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts",
     "packages/platejs/src/markdown/lib/MarkdownPlugin.ts",
     "packages/platejs/src/markdown/lib/__snapshots__/",

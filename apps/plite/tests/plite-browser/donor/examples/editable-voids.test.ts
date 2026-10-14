@@ -1,5 +1,5 @@
 import { expect, type Locator, test } from '@playwright/test';
-import {
+import { BROWSER_HANDLE_KEY,
   assertNoIllegalKernelTransitions,
   createBrowserDropDataGauntlet,
   createBrowserEditorHarness,
@@ -45,33 +45,29 @@ test.describe('editable voids', () => {
     expect(Math.abs(after!.left - before!.left)).toBeLessThanOrEqual(24);
   };
   const getViewSelection = (root: Locator) =>
-    root.evaluate((element: HTMLElement) => {
+    root.evaluate((element: HTMLElement, key) => {
       const handle = (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: {
+        element as HTMLElement & Record<string, {
             getViewSelection?: () => unknown;
-          };
-        }
-      ).__pliteBrowserHandle;
+          } | undefined>
+      )[key];
 
       return handle?.getViewSelection?.() ?? null;
-    });
+    }, BROWSER_HANDLE_KEY);
   const setViewSelection = (root: Locator, selection: unknown) =>
-    root.evaluate((element: HTMLElement, nextSelection) => {
+    root.evaluate((element: HTMLElement, [nextSelection, key]) => {
       const handle = (
-        element as HTMLElement & {
-          __pliteBrowserHandle?: {
+        element as HTMLElement & Record<string, {
             setViewSelection?: (selection: unknown) => void;
-          };
-        }
-      ).__pliteBrowserHandle;
+          } | undefined>
+      )[key];
 
       if (!handle?.setViewSelection) {
         throw new Error('This editor surface does not expose setViewSelection');
       }
 
       handle.setViewSelection(nextSelection);
-    }, selection);
+    }, [selection, BROWSER_HANDLE_KEY] as const);
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/plite/editable-voids', {
