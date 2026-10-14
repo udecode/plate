@@ -757,6 +757,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     isInline: inline,
     isVoid: voidNode,
     node,
+    ownRenderRevision,
     path,
     renderRevision,
   } = binding;
@@ -894,9 +895,7 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
       </EditableDescendantNodeWithChildren>
     ) : (
       <EditableDescendantNode
-        key={`${childNodeKey}:${getDOMTextRenderRevision(editor, [
-          childNodeKey,
-        ])}`}
+        key={childNodeKey}
         placeholder={placeholder}
         placeholderRef={placeholderRef}
         renderElement={renderElement}
@@ -992,7 +991,10 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     const children = renderChildren();
 
     return (
-      <ElementContext key={nodeKey} value={{ element: node, nodeKey, path }}>
+      <ElementContext
+        key={`${nodeKey}:${ownRenderRevision}`}
+        value={{ element: node, nodeKey, path }}
+      >
         <EditableRenderedVoid
           element={node as TElement}
           isInline={inline}
@@ -1046,7 +1048,10 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     } as unknown as RenderElementProps<TElement>;
 
     return (
-      <ElementContext key={nodeKey} value={{ element: node, nodeKey, path }}>
+      <ElementContext
+        key={`${nodeKey}:${ownRenderRevision}`}
+        value={{ element: node, nodeKey, path }}
+      >
         {React.createElement(RenderedElement, {
           path,
           props: renderElementProps,
@@ -1063,7 +1068,10 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
     const children = renderChildren();
 
     return (
-      <ElementContext key={nodeKey} value={{ element: node, nodeKey, path }}>
+      <ElementContext
+        key={`${nodeKey}:${ownRenderRevision}`}
+        value={{ element: node, nodeKey, path }}
+      >
         <EditableRenderedVoid element={node as TElement} isInline={inline}>
           {children}
         </EditableRenderedVoid>
@@ -1072,7 +1080,10 @@ const EditableDescendantNodeInner = <TElement extends ElementNode>({
   }
 
   return (
-    <ElementContext key={nodeKey} value={{ element: node, nodeKey, path }}>
+    <ElementContext
+      key={`${nodeKey}:${ownRenderRevision}`}
+      value={{ element: node, nodeKey, path }}
+    >
       <EditorElement
         style={{ position: 'relative' }}
         as={inline ? 'span' : 'div'}

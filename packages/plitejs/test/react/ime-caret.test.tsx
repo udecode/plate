@@ -1,4 +1,6 @@
 import { act, fireEvent, render } from '@testing-library/react';
+import { useLayoutEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import { defineEditorSchema, schema } from '../../src';
 import { createEditor, Editable, EditorRoot } from '../../src/react';
@@ -277,8 +279,16 @@ describe.each([
   }
 );
 
-test.each(['empty', 'inline-void', 'block-void', 'noneditable'] as const)(
-  'preserves composition ownership at a %s text boundary',
+test.each([
+  'empty',
+  'empty-host',
+  'empty-leaf',
+  'spacer-before-inline',
+  'inline-void',
+  'block-void',
+  'noneditable',
+] as const)(
+  'picks composition ownership at a %s text boundary',
   async (kind) => {
     const editor = createEditor();
     editor.install(inlineSchema);
@@ -288,9 +298,9 @@ test.each(['empty', 'inline-void', 'block-void', 'noneditable'] as const)(
         {
           type: kind === 'block-void' ? 'image' : 'paragraph',
           children:
-            kind === 'inline-void'
+            kind === 'inline-void' || kind === 'spacer-before-inline'
               ? [
-                  { text: 'before' },
+                  { text: kind === 'inline-void' ? 'before' : '' },
                   { type: 'mention', children: [{ text: '' }] },
                   { text: 'after' },
                 ]
@@ -325,8 +335,13 @@ test.each(['empty', 'inline-void', 'block-void', 'noneditable'] as const)(
         `[data-editor-node="text"][data-editor-path="${path.join(',')}"]`
       )!;
       const text =
-        document.createTreeWalker(host, NodeFilter.SHOW_TEXT).nextNode() ??
-        host.querySelector('[data-editor-zero-width]');
+        kind === 'empty-host'
+          ? host
+          : kind === 'empty-leaf'
+            ? host.firstElementChild
+            : (document
+                .createTreeWalker(host, NodeFilter.SHOW_TEXT)
+                .nextNode() ?? host.querySelector('[data-editor-zero-width]'));
       if (!text) throw new Error('Expected a native text boundary');
       if (kind === 'noneditable') host.setAttribute('contenteditable', 'false');
       const selection = document.getSelection()!;
@@ -336,12 +351,10 @@ test.each(['empty', 'inline-void', 'block-void', 'noneditable'] as const)(
       await act(async () => {
         fireEvent.compositionStart(root);
       });
-      expect(
-        runtime.inputController.domInputRuntime.compositionEpoch
-      ).toMatchObject({
-        anchor: null,
-        owner: 'model',
-      });
+      const epoch = runtime.inputController.domInputRuntime.compositionEpoch;
+      const emptyLine = kind.startsWith('empty');
+      expect(epoch?.owner).toBe(emptyLine ? 'native' : 'model');
+      expect(epoch?.anchor).toBe(emptyLine ? host : null);
       await act(async () => {
         fireEvent.compositionEnd(root);
       });
@@ -481,3 +494,321 @@ test.each([
     }
   }
 );
+
+test.each(['top-level', 'nested'] as const)(
+  'rebuilds a %s empty line once when a cancelled composition took its text host',
+  async (placement) => {
+    const editor = createEditor();
+    editor.install(inlineSchema);
+    const path = placement === 'nested' ? [0, 0, 0] : [0, 0];
+    const paragraph = { type: 'paragraph', children: [{ text: '' }] };
+    editorReplace(editor, {
+      children:
+        placement === 'nested'
+          ? [{ type: 'quote', children: [paragraph] }]
+          : [paragraph],
+      selection: null,
+    });
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable scrollSelectionIntoView={() => {}} />
+      </EditorRoot>
+    );
+    const root =
+      rendered.container.querySelector<HTMLElement>('[data-editor]')!;
+    Object.defineProperty(root, 'isContentEditable', { value: true });
+    const textHostSelector = `[data-editor-node="text"][data-editor-path="${path.join(',')}"]`;
+    const readBlock = () =>
+      root.querySelector(
+        `[data-editor-node="element"][data-editor-path="${path.slice(0, -1).join(',')}"]`
+      )!;
+    try {
+      await act(async () => {
+        root.focus();
+        editor.update((tx) =>
+          tx.selection.set({
+            anchor: { path, offset: 0 },
+            focus: { path, offset: 0 },
+          })
+        );
+        await new Promise((resolve) => {
+          setTimeout(resolve, 100);
+        });
+      });
+      const host = root.querySelector(textHostSelector)!;
+      const block = readBlock();
+      const placeholder = host.querySelector('[data-editor-zero-width="n"]')!;
+      document.getSelection()!.setBaseAndExtent(placeholder, 0, placeholder, 0);
+      await act(async () => {
+        fireEvent.compositionStart(root);
+      });
+
+      host.remove();
+      block.append(document.createElement('br'));
+      await act(async () => {
+        fireEvent.compositionEnd(root, { data: '' });
+      });
+
+      const rebuilt = readBlock();
+      expect(rebuilt).not.toBe(block);
+      expect(block.isConnected).toBe(false);
+      expect(
+        rebuilt.querySelector(
+          `${textHostSelector} [data-editor-zero-width="n"] br`
+        )
+      ).not.toBeNull();
+      expect(
+        [...rebuilt.children].some((child) => child.tagName === 'BR')
+      ).toBe(false);
+
+      await act(async () => {
+        editor.update((tx) =>
+          placement === 'nested'
+            ? tx.nodes.set({ tone: 'note' } as never, { at: [0] })
+            : tx.nodes.insert(
+                { type: 'paragraph', children: [{ text: 'next' }] },
+                { at: [1] }
+              )
+        );
+      });
+      expect(readBlock()).toBe(rebuilt);
+    } finally {
+      rendered.unmount();
+    }
+  }
+);
+
+test('rebuilds the empty line when its cancel arrives inside a React commit', async () => {
+  const editor = createEditor();
+  editor.install(inlineSchema);
+  const path = [0, 0];
+  editorReplace(editor, {
+    children: [{ type: 'paragraph', children: [{ text: '' }] }],
+    selection: null,
+  });
+  let cancelInsideCommit = () => {};
+  const CancelInsideCommit = () => {
+    const [cancel, setCancel] = useState(false);
+
+    cancelInsideCommit = () => setCancel(true);
+    useLayoutEffect(() => {
+      if (!cancel) return;
+
+      document
+        .querySelector('[data-editor]')!
+        .dispatchEvent(
+          new CompositionEvent('compositionend', { bubbles: true, data: '' })
+        );
+    }, [cancel]);
+
+    return null;
+  };
+  const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+  const rendered = render(
+    <EditorRoot editor={editor}>
+      <Editable scrollSelectionIntoView={() => {}} />
+      <CancelInsideCommit />
+    </EditorRoot>
+  );
+  const root = rendered.container.querySelector<HTMLElement>('[data-editor]')!;
+  Object.defineProperty(root, 'isContentEditable', { value: true });
+  const readBlock = () =>
+    root.querySelector('[data-editor-node="element"][data-editor-path="0"]')!;
+  try {
+    await act(async () => {
+      root.focus();
+      editor.update((tx) =>
+        tx.selection.set({
+          anchor: { path, offset: 0 },
+          focus: { path, offset: 0 },
+        })
+      );
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+    });
+    const host = root.querySelector('[data-editor-node="text"]')!;
+    const block = readBlock();
+    const placeholder = host.querySelector('[data-editor-zero-width="n"]')!;
+    document.getSelection()!.setBaseAndExtent(placeholder, 0, placeholder, 0);
+    await act(async () => {
+      fireEvent.compositionStart(root);
+    });
+
+    host.remove();
+    block.append(document.createElement('br'));
+    await act(async () => {
+      cancelInsideCommit();
+    });
+
+    const rebuilt = readBlock();
+    expect(rebuilt).not.toBe(block);
+    expect(
+      rebuilt.querySelector(
+        '[data-editor-node="text"] [data-editor-zero-width="n"] br'
+      )
+    ).not.toBeNull();
+    expect(errors.mock.calls.map(([message]) => String(message))).toEqual([]);
+  } finally {
+    errors.mockRestore();
+    rendered.unmount();
+  }
+});
+
+test.each([
+  {
+    name: 'replaces its text',
+    onCompositionEnd: (editor: ReturnType<typeof createEditor>) => {
+      editor.update((tx) => tx.nodes.remove({ at: [1, 0] }));
+    },
+  },
+  {
+    name: 'replaces its text in a sync commit',
+    onCompositionEnd: (editor: ReturnType<typeof createEditor>) => {
+      flushSync(() => {
+        editor.update((tx) => tx.nodes.remove({ at: [1, 0] }));
+      });
+    },
+  },
+  { name: 'claims the event', onCompositionEnd: () => true },
+])(
+  'rebuilds the cancelled line when the end handler $name',
+  async ({ onCompositionEnd }) => {
+    const editor = createEditor();
+    editor.install(inlineSchema);
+    editorReplace(editor, {
+      children: [
+        { type: 'paragraph', children: [{ text: 'above' }] },
+        { type: 'paragraph', children: [{ text: '' }] },
+      ],
+      selection: null,
+    });
+    const rendered = render(
+      <EditorRoot editor={editor}>
+        <Editable
+          onCompositionEnd={() => onCompositionEnd(editor)}
+          scrollSelectionIntoView={() => {}}
+        />
+      </EditorRoot>
+    );
+    const root =
+      rendered.container.querySelector<HTMLElement>('[data-editor]')!;
+    Object.defineProperty(root, 'isContentEditable', { value: true });
+    const readBlock = (path: string) =>
+      root.querySelector(
+        `[data-editor-node="element"][data-editor-path="${path}"]`
+      )!;
+    try {
+      await act(async () => {
+        root.focus();
+        editor.update((tx) =>
+          tx.selection.set({
+            anchor: { path: [1, 0], offset: 0 },
+            focus: { path: [1, 0], offset: 0 },
+          })
+        );
+        await new Promise((resolve) => {
+          setTimeout(resolve, 100);
+        });
+      });
+      const block = readBlock('1');
+      const above = readBlock('0');
+      const host = block.querySelector('[data-editor-node="text"]')!;
+      const placeholder = host.querySelector('[data-editor-zero-width="n"]')!;
+      document.getSelection()!.setBaseAndExtent(placeholder, 0, placeholder, 0);
+      await act(async () => {
+        fireEvent.compositionStart(root);
+      });
+
+      host.remove();
+      block.append(document.createElement('br'));
+      await act(async () => {
+        fireEvent.compositionEnd(root, { data: '' });
+      });
+
+      expect(root.isConnected).toBe(true);
+      const rebuilt = readBlock('1');
+      expect(rebuilt).not.toBe(block);
+      expect(
+        rebuilt.querySelector(
+          '[data-editor-node="text"] [data-editor-zero-width="n"] br'
+        )
+      ).not.toBeNull();
+      expect(readBlock('0')).toBe(above);
+    } finally {
+      rendered.unmount();
+    }
+  }
+);
+
+test('rebuilds the cancelled line after the end handler moves it', async () => {
+  const editor = createEditor();
+  editor.install(inlineSchema);
+  editorReplace(editor, {
+    children: [
+      { type: 'paragraph', children: [{ text: 'above' }] },
+      { type: 'paragraph', children: [{ text: '' }] },
+    ],
+    selection: null,
+  });
+  const rendered = render(
+    <EditorRoot editor={editor}>
+      <Editable
+        onCompositionEnd={() => {
+          editor.update((tx) =>
+            tx.nodes.insert(
+              { type: 'paragraph', children: [{ text: 'inserted' }] },
+              { at: [0] }
+            )
+          );
+        }}
+        scrollSelectionIntoView={() => {}}
+      />
+    </EditorRoot>
+  );
+  const root = rendered.container.querySelector<HTMLElement>('[data-editor]')!;
+  Object.defineProperty(root, 'isContentEditable', { value: true });
+  const readBlock = (path: string) =>
+    root.querySelector(
+      `[data-editor-node="element"][data-editor-path="${path}"]`
+    )!;
+  try {
+    await act(async () => {
+      root.focus();
+      editor.update((tx) =>
+        tx.selection.set({
+          anchor: { path: [1, 0], offset: 0 },
+          focus: { path: [1, 0], offset: 0 },
+        })
+      );
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+    });
+    const block = readBlock('1');
+    const above = readBlock('0');
+    const host = block.querySelector('[data-editor-node="text"]')!;
+    const placeholder = host.querySelector('[data-editor-zero-width="n"]')!;
+    document.getSelection()!.setBaseAndExtent(placeholder, 0, placeholder, 0);
+    await act(async () => {
+      fireEvent.compositionStart(root);
+    });
+
+    host.remove();
+    block.append(document.createElement('br'));
+    await act(async () => {
+      fireEvent.compositionEnd(root, { data: '' });
+    });
+
+    const rebuilt = readBlock('2');
+    expect(rebuilt).not.toBe(block);
+    expect(
+      rebuilt.querySelector(
+        '[data-editor-node="text"] [data-editor-zero-width="n"] br'
+      )
+    ).not.toBeNull();
+    expect(readBlock('1')).toBe(above);
+  } finally {
+    rendered.unmount();
+  }
+});

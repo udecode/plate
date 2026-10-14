@@ -1,5 +1,7 @@
 import { type CompositionEvent, useCallback } from 'react';
 
+import { useRequiredEditorSelectorContext } from '../hooks/use-editor-selector';
+import { bumpDOMTextRenderRevision } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   applyEditableCompositionEnd,
@@ -44,6 +46,8 @@ export const useRuntimeCompositionEvents = ({
   setComposing: EditableEventRuntime['composition']['setComposing'];
   trace: EditableEventRuntime['trace'];
 }) => {
+  const { invalidate: invalidateNodeRenders } =
+    useRequiredEditorSelectorContext();
   const handleCompositionEnd = useCallback(
     (event: CompositionEvent<HTMLDivElement>) => {
       const decision = prepareEditableCompositionKernel({
@@ -66,6 +70,10 @@ export const useRuntimeCompositionEvents = ({
           inputController,
           onCompositionEnd,
           readOnly,
+          rebuildCancelledLine: (lineKey) => {
+            bumpDOMTextRenderRevision(editor, lineKey);
+            invalidateNodeRenders([lineKey]);
+          },
           requestModelSelectionExportAfterRender,
           runOwnedDOMMutation: (callback) => {
             runtime.runOwnedDOMMutation('composition', callback);
@@ -79,6 +87,7 @@ export const useRuntimeCompositionEvents = ({
       androidInputManagerRef,
       editor,
       inputController,
+      invalidateNodeRenders,
       onCompositionEnd,
       readOnly,
       requestModelSelectionExportAfterRender,

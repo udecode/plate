@@ -27,6 +27,7 @@ export type EditorSelectorContextValue = {
     options?: EditorSelectorOptions
   ) => () => void;
   flushDeferred: () => void;
+  invalidate: (nodeKeys: readonly NodeKey[]) => void;
 };
 
 /** Commit-subscription options for selectors that read from the editor. */
@@ -225,6 +226,34 @@ export function useEditorSelectorContext() {
     scheduleMicrotask(flushDeferred);
   }, [flushDeferred]);
 
+  const collectInvalidated = useCallback((nodeKeys: readonly NodeKey[]) => {
+    const listeners = new Set<Callback>();
+
+    for (const nodeKey of nodeKeys) {
+      runtimeEventListeners.current.get(nodeKey)?.forEach((listener) => {
+        listeners.add(listener);
+      });
+      runtimeRenderEventListeners.current.get(nodeKey)?.forEach((listener) => {
+        listeners.add(listener);
+      });
+    }
+
+    return listeners;
+  }, []);
+
+  const invalidate = useCallback(
+    (nodeKeys: readonly NodeKey[]) => {
+      collectInvalidated(nodeKeys).forEach((listener) => {
+        listener();
+      });
+
+      if (deferredEventListeners.current.size > 0) {
+        scheduleDeferredFlush();
+      }
+    },
+    [collectInvalidated, scheduleDeferredFlush]
+  );
+
   const onChange = useCallback(
     (change?: EditorCommit, invalidatedNodeKeys: readonly NodeKey[] = []) => {
       eventListeners.current.forEach((listener) => {
@@ -236,7 +265,8 @@ export function useEditorSelectorContext() {
         change?.changed.hasAny('root-order')
       );
       const runtimeCallbacks = new Set<Callback>();
-      const invalidatedRuntimeCallbacks = new Set<Callback>();
+      const invalidatedRuntimeCallbacks =
+        collectInvalidated(invalidatedNodeKeys);
       const collect = (
         listeners: Map<NodeKey, Set<Callback>>,
         keys: readonly NodeKey[]
@@ -291,18 +321,9 @@ export function useEditorSelectorContext() {
           }
         }
       }
-      for (const nodeKey of invalidatedNodeKeys) {
-        runtimeEventListeners.current.get(nodeKey)?.forEach((listener) => {
-          runtimeCallbacks.add(listener);
-          invalidatedRuntimeCallbacks.add(listener);
-        });
-        runtimeRenderEventListeners.current
-          .get(nodeKey)
-          ?.forEach((listener) => {
-            runtimeCallbacks.add(listener);
-            invalidatedRuntimeCallbacks.add(listener);
-          });
-      }
+      invalidatedRuntimeCallbacks.forEach((listener) => {
+        runtimeCallbacks.add(listener);
+      });
       if (shouldRouteRootOrderRuntimeListeners) {
         rootOrderRuntimeEventListeners.current.forEach((listener) => {
           runtimeCallbacks.add(listener);
@@ -319,7 +340,7 @@ export function useEditorSelectorContext() {
         scheduleDeferredFlush();
       }
     },
-    [scheduleDeferredFlush]
+    [collectInvalidated, scheduleDeferredFlush]
   );
 
   const addEventListener = useCallback(
@@ -453,8 +474,9 @@ export function useEditorSelectorContext() {
     () => ({
       addEventListener,
       flushDeferred,
+      invalidate,
     }),
-    [addEventListener, flushDeferred]
+    [addEventListener, flushDeferred, invalidate]
   );
 
   return { selectorContext, onChange };
