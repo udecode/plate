@@ -455,6 +455,112 @@ describe('importDocx', () => {
     expect(convertToHtmlMock).not.toHaveBeenCalled();
   });
 
+  const notesPart = (family: 'endnote' | 'footnote', notes: string) =>
+    `<w:${family}s xmlns:w="${WORD_NAMESPACE}"><w:${family} w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:${family}><w:${family} w:type="continuationSeparator" w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:${family}>${notes}</w:${family}s>`;
+
+  it('imports a package whose note parts hold only Word separators', async () => {
+    const { importDocx } = await loadModule();
+    const emptyNotice = (family: string) =>
+      `<w:${family} w:type="continuationNotice" w:id="1"><w:p/></w:${family}>`;
+
+    convertToHtmlMock.mockImplementation(async () => ({
+      messages: [],
+      value: '<p>Hello</p>',
+    }));
+
+    const result = await importDocx(
+      await createDocx(undefined, {
+        'word/endnotes.xml': notesPart('endnote', emptyNotice('endnote')),
+        'word/footnotes.xml': notesPart('footnote', emptyNotice('footnote')),
+      }),
+      { plugins: [] }
+    );
+
+    expect(result.ok).toBe(true);
+  });
+
+  it.each([
+    [
+      'an untyped note',
+      'word/footnotes.xml',
+      notesPart(
+        'footnote',
+        '<w:footnote w:id="1"><w:p><w:r><w:t>Real</w:t></w:r></w:p></w:footnote>'
+      ),
+      'footnote',
+    ],
+    [
+      'a note typed normal',
+      'word/footnotes.xml',
+      notesPart(
+        'footnote',
+        '<w:footnote w:type="normal" w:id="1"><w:p><w:r><w:t>Real</w:t></w:r></w:p></w:footnote>'
+      ),
+      'footnote',
+    ],
+    [
+      'a continuation notice with text',
+      'word/footnotes.xml',
+      notesPart(
+        'footnote',
+        '<w:footnote w:type="continuationNotice" w:id="1"><w:p><w:r><w:t>Continued</w:t></w:r></w:p></w:footnote>'
+      ),
+      'footnote',
+    ],
+    [
+      'a continuation notice holding only a field',
+      'word/footnotes.xml',
+      notesPart(
+        'footnote',
+        '<w:footnote w:type="continuationNotice" w:id="1"><w:p><w:fldSimple w:instr="PAGE"/></w:p></w:footnote>'
+      ),
+      'footnote',
+    ],
+    [
+      'a continuation notice drawing a bordered line',
+      'word/footnotes.xml',
+      notesPart(
+        'footnote',
+        '<w:footnote w:type="continuationNotice" w:id="1"><w:p><w:pPr><w:pBdr><w:top w:val="single"/></w:pBdr></w:pPr></w:p></w:footnote>'
+      ),
+      'footnote',
+    ],
+    [
+      'a continuation notice drawn through a paragraph style',
+      'word/footnotes.xml',
+      notesPart(
+        'footnote',
+        '<w:footnote w:type="continuationNotice" w:id="1"><w:p><w:pPr><w:pStyle w:val="Notice"/></w:pPr></w:p></w:footnote>'
+      ),
+      'footnote',
+    ],
+    [
+      'a footer holding only a page number field',
+      'word/footer1.xml',
+      `<w:ftr xmlns:w="${WORD_NAMESPACE}"><w:p><w:fldSimple w:instr="PAGE"><w:r/></w:fldSimple></w:p></w:ftr>`,
+      'footer',
+    ],
+  ])('still refuses a package with %s', async (_, part, xml, feature) => {
+    const { importDocx } = await loadModule();
+
+    convertToHtmlMock.mockImplementation(async () => ({
+      messages: [],
+      value: '<p>Hello</p>',
+    }));
+
+    const result = await importDocx(
+      await createDocx(undefined, { [part]: xml }),
+      {
+        plugins: [],
+      }
+    );
+
+    expect(result).toMatchObject({
+      diagnostics: [{ action: 'dropped', feature, part, severity: 'error' }],
+      ok: false,
+    });
+  });
+
   it('throws for invalid programmer options', async () => {
     const { importDocx } = await loadModule();
 

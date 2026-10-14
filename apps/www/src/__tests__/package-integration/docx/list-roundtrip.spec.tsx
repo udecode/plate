@@ -1,8 +1,10 @@
 import { BaseListPlugin, createEditor, NodeApi, type Value } from 'platejs';
 import { exportDocx } from 'platejs/docx/export';
 import { importDocx } from 'platejs/docx/import';
+import { MarkdownPlugin } from 'platejs/markdown';
 
 import { BaseListKit } from '@/registry/components/editor/list-static';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 const item = (text: string, listId: string, props: object = {}) => ({
   children: [{ text }],
@@ -157,23 +159,153 @@ describe('DOCX list round trip', () => {
     expect(rejected.ok).toBe(false);
   });
 
-  it('reports no list structure for numbered items after bullets', async () => {
+  const structure = async (value: Value) => {
+    const result = await exportDocx(
+      createEditor({ initialValue: value, plugins: BaseListKit }),
+      { lossPolicy: 'allow', projection: 'proposed' }
+    );
+
+    return result.diagnostics.flatMap((diagnostic) =>
+      'feature' in diagnostic && diagnostic.feature === 'list-structure'
+        ? [diagnostic.path]
+        : []
+    );
+  };
+
+  it.each([
+    [
+      'a number after a bullet',
+      [item('Bullet', 'm', { listType: 'bulleted' }), item('One', 'm')],
+    ],
+    [
+      'a bullet after a number',
+      [item('One', 'm'), item('Bullet', 'm', { listType: 'bulleted' })],
+    ],
+  ])('reports %s at one level as split from its list', async (_, value) => {
+    expect(await structure(value as Value)).toEqual([[1]]);
+  });
+
+  it.each([
+    [
+      'a to-do after a bullet',
+      [
+        item('Bullet', 'm', { listType: 'bulleted' }),
+        item('Task', 'm', { checked: false, listType: 'task' }),
+      ],
+    ],
+    [
+      'a bullet after a to-do',
+      [
+        item('Task', 'm', { checked: false, listType: 'task' }),
+        item('Bullet', 'm', { listType: 'bulleted' }),
+      ],
+    ],
+  ])(
+    'reports no split for %s, which share an unordered Word level',
+    async (_, value) => {
+      expect(await structure(value as Value)).toEqual([]);
+    }
+  );
+
+  it('reports no start for a bullet, which shows no number', async () => {
     const exported = await exportDocx(
       createEditor({
         initialValue: [
-          item('Bullet', 'm', { listType: 'bulleted' }),
-          item('One', 'm'),
-          item('Two', 'm'),
+          item('Bullet', 'm', { listStart: 3, listType: 'bulleted' }),
         ],
         plugins: BaseListKit,
       }),
-      { lossPolicy: 'reject', projection: 'proposed' }
+      { lossPolicy: 'allow', projection: 'proposed' }
     );
 
-    expect(exported.ok).toBe(true);
     expect(
-      exported.diagnostics.filter(({ feature }) => feature === 'list-structure')
+      exported.diagnostics.filter(({ feature }) => feature === 'list-start')
     ).toEqual([]);
+  });
+
+  const parseMarkdown = (markdown: string) => {
+    const editor = createEditor({ plugins: BaseEditorKit });
+    const parsed = editor.plugin(MarkdownPlugin).api.parse(markdown);
+
+    if (!parsed.ok) throw new Error(parsed.diagnostics[0]?.message);
+
+    return parsed.document.children;
+  };
+
+  it('reports no split between a Markdown bullet list and the numbered list after it', async () => {
+    expect(await structure(parseMarkdown('- a\n\n1. b\n'))).toEqual([]);
+  });
+
+  it('reports no split between the to-dos and bullets of one Markdown list', async () => {
+    expect(
+      await structure(parseMarkdown('- [x] Done\n- [ ] Open\n\n- Bullet\n'))
+    ).toEqual([]);
+  });
+
+  it('still reports a to-do inside one Markdown numbered list', async () => {
+    expect(await structure(parseMarkdown('1. a\n2. [ ] t\n'))).toEqual([[1]]);
+  });
+
+  const starts = async (value: unknown[]) => {
+    const result = await exportDocx(
+      createEditor({ initialValue: value, plugins: BaseListKit }),
+      { lossPolicy: 'allow', projection: 'proposed' }
+    );
+
+    return result.diagnostics.flatMap((diagnostic) =>
+      'feature' in diagnostic && diagnostic.feature === 'list-start'
+        ? [diagnostic.path]
+        : []
+    );
+  };
+  const firstLevel = { '1': { start: 3 } };
+  const secondLevel = { '2': { start: 3 } };
+
+  it.each([
+    ['the default level start', [item('One', 's', { listStart: 1 })]],
+    [
+      'a nested level start its first item gives',
+      [
+        item('One', 's', { listLevels: secondLevel }),
+        item('Nested', 's', {
+          indent: 2,
+          listLevels: secondLevel,
+          listStart: 3,
+        }),
+      ],
+    ],
+    [
+      'the first item level start when its own rules differ',
+      [
+        item('One', 's', { listLevels: firstLevel }),
+        item('Two', 's', { listLevels: { '1': { start: 1 } }, listStart: 3 }),
+      ],
+    ],
+  ])('reports no start equal to %s', async (_, value) => {
+    expect(await starts(value)).toEqual([]);
+  });
+
+  it.each([
+    ['a default level', [item('One', 's', { listStart: 3 })], [[0]]],
+    [
+      'a level whose first item starts at 3',
+      [item('One', 's', { listLevels: firstLevel, listStart: 1 })],
+      [[0]],
+    ],
+    [
+      'a nested level whose first item starts at 3',
+      [
+        item('One', 's', { listLevels: secondLevel }),
+        item('Nested', 's', {
+          indent: 2,
+          listLevels: secondLevel,
+          listStart: 1,
+        }),
+      ],
+      [[1]],
+    ],
+  ])('reports a start Word cannot show at %s', async (_, value, paths) => {
+    expect(await starts(value)).toEqual(paths);
   });
 
   it('reports a start that applies only when its item opens the level', async () => {

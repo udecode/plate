@@ -6,6 +6,7 @@ import { BaseCodeBlockPlugin } from '../../../features/code-block/lib/BaseCodeBl
 import { BaseIndentPlugin } from '../../../features/indent';
 import { BaseListPlugin } from '../../../features/list';
 import { BaseParagraphPlugin } from '../../../lib';
+import { importDocx } from '../../import';
 import { exportDocx } from './exportDocx';
 
 const exportListPackage = async (initialValue: Value) => {
@@ -54,6 +55,7 @@ const exportListPackage = async (initialValue: Value) => {
   const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
 
   return {
+    buffer: await result.blob.arrayBuffer(),
     documentXml: await zip.file('word/document.xml')!.async('string'),
     numberingXml: (await zip.file('word/numbering.xml')?.async('string')) ?? '',
   };
@@ -133,6 +135,28 @@ describe('exportDocx lists', () => {
     expect(paragraphs.map(marker)).toEqual([
       { font: 'Segoe UI Symbol', level: '0', text: '☑' },
       { font: 'Segoe UI Symbol', level: '1', text: '☐' },
+    ]);
+  });
+
+  it('brings task items back from Word as tasks with their checked states', async () => {
+    const { buffer } = await exportListPackage([
+      task(1, 'Done task', true),
+      task(1, 'Open task', false),
+    ] as Value);
+    const imported = await importDocx(buffer, {
+      lossPolicy: 'allow',
+      plugins: [BaseParagraphPlugin, BaseIndentPlugin, BaseListPlugin],
+    });
+
+    if (!imported.ok) throw new Error(JSON.stringify(imported.diagnostics));
+    expect(
+      imported.document.children.map(({ checked, listType }) => ({
+        checked,
+        listType,
+      }))
+    ).toEqual([
+      { checked: true, listType: 'task' },
+      { checked: false, listType: 'task' },
     ]);
   });
 

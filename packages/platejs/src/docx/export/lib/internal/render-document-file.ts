@@ -14,10 +14,14 @@ import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 import namespaces from './namespaces';
 import { vNodeHasChildren } from './vnode';
 import {
+  type BlockScope,
   buildImage,
   buildList,
   buildParagraph,
   buildTable,
+  itemNumberingId,
+  type RenderBlocks,
+  withItemRestart,
 } from './xml-builder';
 
 type XMLBuilderType = XMLBuilder;
@@ -177,6 +181,35 @@ function getHeadingBookmark(vNode: VNodeType) {
   return firstChild.properties?.id || firstChild.properties?.attributes?.id;
 }
 
+// The registry's static list kit draws a listed block's list inside the block,
+// as h2 > ol > li. A div holding one keeps the generic path into buildList.
+const readPlateListItem = (block: VNodeType) => {
+  if (block.tagName === 'div') return undefined;
+
+  const children = (block.children ?? []).filter(
+    (child) => isVNode(child) || (child as VTextType).text.trim() !== ''
+  );
+  const [list, ...rest] = getHeadingBookmark(block)
+    ? children.slice(1)
+    : children;
+
+  if (
+    rest.length > 0 ||
+    !isVNode(list) ||
+    !['ol', 'ul'].includes((list as VNodeType).tagName ?? '') ||
+    (list as VNodeType).properties?.attributes?.['data-list-id'] === undefined
+  ) {
+    return undefined;
+  }
+  const items = ((list as VNodeType).children ?? []).filter((child) =>
+    isVNode(child)
+  ) as VNodeType[];
+
+  return items.length === 1 && items[0].tagName === 'li'
+    ? { item: items[0], list: list as VNodeType }
+    : undefined;
+};
+
 type ContentGroup = {
   children?: Array<VNodeType | VTextType>;
   node?: VNodeType | VTextType;
@@ -192,13 +225,32 @@ const isIndented = (vNode: VNodeType) =>
     INDENT_CLASS_REGEX.test(vNode.properties?.attributes?.class ?? '')
   );
 
+// A cell's blocks take no indented host from outside the table.
+const renderCellBlocks =
+  (docxDocumentInstance: DocxDocumentInstance): RenderBlocks =>
+  (children, xmlFragment, scope) =>
+    findXMLEquivalent(
+      docxDocumentInstance,
+      new VNode('div', {}, children),
+      xmlFragment,
+      undefined,
+      scope
+    );
+
 async function findXMLEquivalent(
   docxDocumentInstance: DocxDocumentInstance,
   vNode: VNodeType,
   xmlFragment: XMLBuilderType,
-  indentedAncestor: VNodeType | undefined
+  indentedAncestor: VNodeType | undefined,
+  scope: BlockScope
 ): Promise<void> {
   const childIndentedAncestor = isIndented(vNode) ? vNode : indentedAncestor;
+  // A block's own keys come first, so its w:pStyle leads w:pPr, and still win.
+  const paragraph = (
+    node: VNodeType | VTextType | null,
+    own: BlockScope = {}
+  ) => buildParagraph(node, { ...own, ...scope, ...own }, docxDocumentInstance);
+  const maximumWidth = scope.maximumWidth ?? null;
 
   if (
     vNode.tagName === 'div' &&
@@ -215,6 +267,41 @@ async function findXMLEquivalent(
       .up();
 
     xmlFragment.import(paragraphFragment);
+    return;
+  }
+
+  const listed = readPlateListItem(vNode);
+
+  if (listed) {
+    const { item, list } = listed;
+    const attributes = item.properties?.attributes;
+    const levelId = Math.max(0, Number(attributes?.['data-indent'] ?? 1) - 1);
+    const instance = docxDocumentInstance.openList(
+      list.tagName as 'ol' | 'ul',
+      withItemRestart(list.properties ?? {}, item),
+      levelId
+    );
+    const numberingId = itemNumberingId(
+      docxDocumentInstance,
+      item,
+      instance.numberingId
+    );
+    // The list level owns the indent, as for a buildList item.
+    const { 'margin-left': _margin, ...style } = vNode.properties?.style ?? {};
+
+    await findXMLEquivalent(
+      docxDocumentInstance,
+      new VNode(vNode.tagName, { ...vNode.properties, style }, [
+        ...(getHeadingBookmark(vNode)
+          ? (vNode.children ?? []).slice(0, 1)
+          : []),
+        ...(item.children ?? []),
+      ]),
+      xmlFragment,
+      indentedAncestor,
+      { numbering: { levelId, numberingId }, ...scope }
+    );
+    instance.next += 1;
     return;
   }
 
@@ -237,11 +324,7 @@ async function findXMLEquivalent(
       if (allInline && (vNode.children || []).length > 0) {
         // Wrap all inline children in a single paragraph
         const paragraphVNode = new VNode('p', vNode.properties, vNode.children);
-        const paragraphFragment = await buildParagraph(
-          paragraphVNode,
-          {},
-          docxDocumentInstance
-        );
+        const paragraphFragment = await paragraph(paragraphVNode);
         xmlFragment.import(paragraphFragment);
         return;
       }
@@ -272,18 +355,15 @@ async function findXMLEquivalent(
       for (const group of groups) {
         if (group.type === 'inline' && group.children) {
           const paragraphVNode = new VNode('p', null, group.children);
-          const paragraphFragment = await buildParagraph(
-            paragraphVNode,
-            {},
-            docxDocumentInstance
-          );
+          const paragraphFragment = await paragraph(paragraphVNode);
           xmlFragment.import(paragraphFragment);
         } else if (group.node) {
           await convertVTreeToXML(
             docxDocumentInstance,
             group.node,
             xmlFragment,
-            childIndentedAncestor
+            childIndentedAncestor,
+            scope
           );
         }
       }
@@ -303,14 +383,10 @@ async function findXMLEquivalent(
         ? new VNode(vNode.tagName, vNode.properties, vNode.children?.slice(1))
         : vNode;
 
-      const headingFragment = await buildParagraph(
-        headingVNode,
-        {
-          paragraphStyle: `Heading${vNode.tagName[1]}`,
-          bookmarkId,
-        },
-        docxDocumentInstance
-      );
+      const headingFragment = await paragraph(headingVNode, {
+        paragraphStyle: `Heading${vNode.tagName[1]}`,
+        bookmarkId,
+      });
       xmlFragment.import(headingFragment);
       return;
     }
@@ -367,11 +443,7 @@ async function findXMLEquivalent(
               vNode.properties,
               nonListChildren
             );
-            const paragraphFragment = await buildParagraph(
-              modifiedVNode,
-              {},
-              docxDocumentInstance
-            );
+            const paragraphFragment = await paragraph(modifiedVNode);
             xmlFragment.import(paragraphFragment);
           }
           for (const listChild of listChildren) {
@@ -385,11 +457,7 @@ async function findXMLEquivalent(
           return;
         }
       }
-      const paragraphFragment = await buildParagraph(
-        vNode,
-        {},
-        docxDocumentInstance
-      );
+      const paragraphFragment = await paragraph(vNode);
       xmlFragment.import(paragraphFragment);
       return;
     }
@@ -397,11 +465,7 @@ async function findXMLEquivalent(
     case 'blockquote':
     case 'code':
     case 'pre': {
-      const paragraphFragment = await buildParagraph(
-        vNode,
-        {},
-        docxDocumentInstance
-      );
+      const paragraphFragment = await paragraph(vNode);
       xmlFragment.import(paragraphFragment);
       return;
     }
@@ -414,7 +478,11 @@ async function findXMLEquivalent(
           if (!isVNode(node)) return;
           const vn = node as VNodeType;
           if (vn.tagName === 'img') {
-            const imageFragment = await buildImage(docxDocumentInstance, vn);
+            const imageFragment = await buildImage(
+              docxDocumentInstance,
+              vn,
+              maximumWidth
+            );
             if (imageFragment) {
               xmlFragment.import(imageFragment);
             }
@@ -433,10 +501,12 @@ async function findXMLEquivalent(
             const tableFragment = await buildTable(
               childVNode,
               {
-                maximumWidth: docxDocumentInstance.availableDocumentSpace,
+                maximumWidth:
+                  maximumWidth ?? docxDocumentInstance.availableDocumentSpace,
                 rowCantSplit: docxDocumentInstance.tableRowCantSplit,
               },
-              docxDocumentInstance
+              docxDocumentInstance,
+              renderCellBlocks(docxDocumentInstance)
             );
             xmlFragment.import(tableFragment);
             // Adding empty paragraph for space after table
@@ -445,18 +515,15 @@ async function findXMLEquivalent(
           } else if (childVNode.tagName === 'img') {
             const imageFragment = await buildImage(
               docxDocumentInstance,
-              childVNode
+              childVNode,
+              maximumWidth
             );
             if (imageFragment) {
               xmlFragment.import(imageFragment);
             }
           } else if (childVNode.tagName === 'figcaption') {
             // Handle image caption
-            const captionFragment = await buildParagraph(
-              childVNode,
-              {},
-              docxDocumentInstance
-            );
+            const captionFragment = await paragraph(childVNode);
             xmlFragment.import(captionFragment);
           } else if (childVNode.tagName === 'div') {
             // Look for img and figcaption inside div (static component pattern)
@@ -468,11 +535,7 @@ async function findXMLEquivalent(
                   isVNode(divChild) &&
                   (divChild as VNodeType).tagName === 'figcaption'
                 ) {
-                  const captionFragment = await buildParagraph(
-                    divChild,
-                    {},
-                    docxDocumentInstance
-                  );
+                  const captionFragment = await paragraph(divChild);
                   xmlFragment.import(captionFragment);
                 }
               }
@@ -486,10 +549,12 @@ async function findXMLEquivalent(
       const tableFragment = await buildTable(
         vNode,
         {
-          maximumWidth: docxDocumentInstance.availableDocumentSpace,
+          maximumWidth:
+            maximumWidth ?? docxDocumentInstance.availableDocumentSpace,
           rowCantSplit: docxDocumentInstance.tableRowCantSplit,
         },
-        docxDocumentInstance
+        docxDocumentInstance,
+        renderCellBlocks(docxDocumentInstance)
       );
       xmlFragment.import(tableFragment);
       // Adding empty paragraph for space after table
@@ -509,7 +574,11 @@ async function findXMLEquivalent(
       return;
     }
     case 'img': {
-      const imageFragment = await buildImage(docxDocumentInstance, vNode);
+      const imageFragment = await buildImage(
+        docxDocumentInstance,
+        vNode,
+        maximumWidth
+      );
       if (imageFragment) {
         xmlFragment.import(imageFragment);
       }
@@ -546,7 +615,8 @@ async function findXMLEquivalent(
           docxDocumentInstance,
           childVNode,
           xmlFragment,
-          childIndentedAncestor
+          childIndentedAncestor,
+          scope
         );
       }
     }
@@ -557,7 +627,8 @@ export async function convertVTreeToXML(
   docxDocumentInstance: DocxDocumentInstance,
   vTree: VTree | null,
   xmlFragment: XMLBuilderType,
-  indentedAncestor?: VNodeType
+  indentedAncestor?: VNodeType,
+  scope: BlockScope = {}
 ): Promise<XMLBuilderType | string> {
   if (!vTree) {
     return '';
@@ -568,7 +639,8 @@ export async function convertVTreeToXML(
         docxDocumentInstance,
         vNode,
         xmlFragment,
-        indentedAncestor
+        indentedAncestor,
+        scope
       );
     }
   } else if (isVNode(vTree)) {
@@ -576,12 +648,13 @@ export async function convertVTreeToXML(
       docxDocumentInstance,
       vTree as VNodeType,
       xmlFragment,
-      indentedAncestor
+      indentedAncestor,
+      scope
     );
   } else if (isVText(vTree)) {
     const paragraphFragment = await buildParagraph(
       vTree as VTextType,
-      {},
+      { ...scope },
       docxDocumentInstance
     );
     xmlFragment.import(paragraphFragment);

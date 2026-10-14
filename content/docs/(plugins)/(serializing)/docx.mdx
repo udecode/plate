@@ -224,7 +224,9 @@ Named roots, document metadata, removed link destinations, and other properties 
 
 ### Lists
 
-Each Plate list becomes one Word list. Its `listLevels` give the list's level starts, `lvlRestart` rules and level text. An item with `listRestart`, or one whose number Word would not reach, gets a numbering instance of its own that overrides that level's start, as Word's Restart Numbering writes it. The items after it count on from it in the list's own instance. Word and a re-import then show the numbers the editor shows, and the restart stays on that item. Word draws one marker style per list level, so an item whose `listStyle` differs from the first item at its level keeps that first style and reports a `list-marker` warning under both policies. A Word list level is numbered or bulleted, as its first item is, and the exporter writes one set of level rules per list. An item of the other kind at its level is therefore not part of its list in Word, and an item whose `listLevels` differ from its list's first item takes that item's rules. Each reports a `list-structure` warning, and `lossPolicy: 'reject'` fails the export. Word has no start that applies only when an item opens its level, so an item with `listStart` exports its shown number and reports a `list-start` warning under both policies.
+Each Plate list becomes one Word list. Its `listLevels` give the list's level starts, `lvlRestart` rules and level text. An item with `listRestart`, or one whose number Word would not reach, gets a numbering instance of its own that overrides that level's start, as Word's Restart Numbering writes it. The items after it count on from it in the list's own instance. Word and a re-import then show the numbers the editor shows, and the restart stays on that item. Word draws one marker style per list level, so an item whose `listStyle` differs from the first item at its level keeps that first style and reports a `list-marker` warning under both policies. A Word list level is numbered or unordered, as its first item is, and the exporter writes one set of level rules per list. Bullets and to-dos share unordered levels, and every to-do takes the document's shared to-do numbering. A numbered item at an unordered level, or the reverse, is therefore not part of its list in Word, and an item whose `listLevels` differ from its list's first item takes that item's rules. A kind split reports a `list-structure` warning, and so does a numbered or task item whose `listLevels` differ from its list's first numbered or task item; `lossPolicy: 'reject'` fails the export. A bullet without `listId`, as Markdown and AI output write it, stays out of the kind check, because a Markdown bullet list never shares a list with a numbered one. Word has no start that applies only when an item opens its level, and it takes each level's start from the list's first item, 1 by default. A numbered or task item whose `listStart` differs from the start its list's first numbered or task item gives that level exports its shown number and reports a `list-start` warning under both policies. Bullets take no part in the level-rule and start checks, so a bullet that leads its list gives Word its level rules and starts without a warning.
+
+A heading or blockquote that is a list item keeps its heading style and bookmark or its quote border, and takes its number and indent from its list level. A table cell exports its blocks as the body does, and a nested table and its images fit the cell that holds them.
 
 ### Links and images
 
@@ -283,7 +285,8 @@ The app may pass a custom root `component` when it needs a different wrapper.
 Equations export as Word math built from KaTeX's MathML. An equation that uses
 notation the converter does not cover, such as a matrix, exports its TeX as
 text inside a Word equation. A task list item, an `li` with `data-checked`, exports with a ☑ or ☐
-list marker.
+list marker, and import reads a bullet level drawn as ☐, ☑ or ☒ as a task item with
+its checked state.
 
 A live editor's components are editing UI. Pass the app's static kit as
 `presentation` so the body and every comment body draw with static components
@@ -304,11 +307,11 @@ diagnostic, which counts as lost content under `lossPolicy`.
 | Embedded images during import                                      | Omit the resource and return a `resource-omitted` diagnostic                                                |
 | Links and images during export                                     | Write absolute navigation-safe links and PNG, JPEG, GIF, or BMP images; report removed destinations and omitted images |
 | Single-section headers and footers                                | Keep safe closed source subgraphs during source-aware export; do not map them into the editor document      |
-| Multiple-section headers and footers, footnotes, and endnotes     | Inspect and bound their package parts; omit them from edited source-aware output with diagnostics           |
+| Multiple-section headers and footers, footnotes, and endnotes     | Inspect and bound their package parts; omit them from edited source-aware output with diagnostics. Import reports them as dropped content, except a footnote or endnote part that holds only Word's separator notes |
 | Fields, text boxes, shapes, charts, SmartArt, and embedded objects | Keep reachable plain text when conversion exposes it; report unsupported or omitted content                 |
 | Plate named roots and metadata                                     | Omit from Word output with a `lossy-content` warning; keep them in authored JSON                            |
 | Equations                                                          | Export as Word math, or as TeX inside a Word equation when the converter does not cover the notation. Import reads Word math into `equation` and `inlineEquation` nodes, with TeX rebuilt from the equation's structure, or into TeX text when those plugins are not installed. A display equation that shares its paragraph with a comment, tracked change or text, or sits in a list item or an indented paragraph, imports inline |
-| Task lists                                                         | Give an item drawn as an `li` with `data-checked` a ☑ or ☐ list marker                                      |
+| Task lists                                                         | Give an item drawn as an `li` with `data-checked` a ☑ or ☐ list marker; import a bullet level drawn as ☐, ☑ or ☒ as a task item with its checked state |
 | Custom Plate, emoji, and media nodes                               | Use their configured static serializers; unsupported output produces diagnostics                            |
 
 ## API reference

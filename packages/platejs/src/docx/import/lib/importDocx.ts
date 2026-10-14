@@ -581,6 +581,7 @@ const applyListMarkers = (
     dataset.indent = String(item.indent);
     dataset.listId = item.listId;
     dataset.listType = item.listType;
+    if (item.checked !== undefined) dataset.checked = String(item.checked);
     if (item.listLevels) dataset.listLevels = JSON.stringify(item.listLevels);
     if (item.listRestart !== undefined) {
       dataset.listRestart = String(item.listRestart);
@@ -1537,8 +1538,47 @@ const importProjection = async (
   };
 };
 
+// Word writes its separator lines, and the continuation notice it leaves empty
+// by default, as notes that hold nothing a reader sees.
+const NOTE_SEPARATORS = new Set(['continuationSeparator', 'separator']);
+// A paragraph style can draw a border, shading or a number of its own.
+const VISIBLE_PARAGRAPH_PROPERTIES = new Set([
+  'numPr',
+  'pBdr',
+  'pStyle',
+  'shd',
+]);
+
+const isEmptyNote = (note: Element) =>
+  Array.from(note.children).every(
+    (paragraph) =>
+      paragraph.localName === 'p' &&
+      Array.from(paragraph.children).every(
+        (properties) =>
+          properties.localName === 'pPr' &&
+          Array.from(properties.children).every(
+            (property) => !VISIBLE_PARAGRAPH_PROPERTIES.has(property.localName)
+          )
+      )
+  );
+
+const holdsNotes = (dom: DocxDomRealm, source: Uint8Array, part: string) =>
+  documentElements(dom.parseXml(dom.decodeUtf8(source), part)).some(
+    (element) => {
+      if (element.localName !== 'footnote' && element.localName !== 'endnote') {
+        return false;
+      }
+      const type = wordAttribute(element, 'type');
+
+      if (type && NOTE_SEPARATORS.has(type)) return false;
+
+      return type !== 'continuationNotice' || !isEmptyNote(element);
+    }
+  );
+
 const unsupportedPackageDiagnostics = (
-  pkg: BoundedDocxPackage
+  pkg: BoundedDocxPackage,
+  dom: DocxDomRealm
 ): readonly DocxDiagnostic[] => {
   const diagnostics: DocxDiagnostic[] = pkg.xmlInventory.map(
     ({ action, feature, location }) => ({
@@ -1564,6 +1604,15 @@ const unsupportedPackageDiagnostics = (
     );
 
     if (!part) continue;
+    const source = pkg.entries.get(part);
+
+    if (
+      (feature === 'footnote' || feature === 'endnote') &&
+      source &&
+      !holdsNotes(dom, source, part)
+    ) {
+      continue;
+    }
     diagnostics.push({
       action: 'dropped',
       code: 'unsupported-content',
@@ -1657,7 +1706,9 @@ const importBoundedDocx = async <V extends Value>(
       severity: 'error',
     });
   }
-  const diagnostics: DocxDiagnostic[] = [...unsupportedPackageDiagnostics(pkg)];
+  const diagnostics: DocxDiagnostic[] = [
+    ...unsupportedPackageDiagnostics(pkg, target.dom),
+  ];
   const documentXml = target.dom.decodeUtf8(source);
   const codec = createMarkerCodec(documentXml, target.markerNonce);
   const document = target.dom.parseXml(documentXml, 'word/document.xml');

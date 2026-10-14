@@ -627,6 +627,50 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
             if (!body.querySelector('ul, ol, li, [data-list-id]')) return;
 
+            // The registry static kit draws an item's list inside its block,
+            // as h2 > ol > li or pre > code > ol > li.
+            const moveOut = (list: globalThis.Element) => {
+              const host = list.parentElement;
+              const item = list.firstElementChild;
+
+              if (
+                !host ||
+                !item ||
+                !(host.tagName === 'CODE'
+                  ? host.parentElement?.tagName === 'PRE'
+                  : /^(BLOCKQUOTE|H[1-6]|PRE)$/u.test(host.tagName)) ||
+                Array.from(host.childNodes).some(
+                  (node) =>
+                    node !== list &&
+                    (node.nodeName !== '#text' || node.textContent?.trim())
+                )
+              ) {
+                return undefined;
+              }
+              host.replaceWith(list);
+              host.replaceChildren(...Array.from(item.childNodes));
+              item.append(host);
+
+              return host;
+            };
+
+            for (const list of Array.from(
+              body.querySelectorAll('ul[data-list-id], ol[data-list-id]')
+            )) {
+              if (
+                list.children.length !== 1 ||
+                list.firstElementChild?.tagName !== 'LI'
+              ) {
+                continue;
+              }
+              if (
+                moveOut(list)?.tagName === 'CODE' &&
+                list.parentElement?.tagName === 'PRE'
+              ) {
+                moveOut(list);
+              }
+            }
+
             const imagesAreBlocks = registry.has(PLUGINS.image);
             const listItems: HTMLElement[] = [];
             traverseHtmlElements(body, (element) => {
@@ -642,6 +686,8 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
             traverseHtmlElements(body, (element) => {
               if (element.tagName === 'LI') {
                 const htmlElement = element as HTMLElement;
+
+                if (htmlElement.dataset.listStyle) return false;
 
                 // Set list style type from inline style or parent list type
                 const listStyle = htmlElement.style.listStyleType;

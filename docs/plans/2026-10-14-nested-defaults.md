@@ -82,6 +82,8 @@ const inserted = PathApi.next(media[1]);
 | Builder call shape | The slot's path and root, like the schema's copy read | A parent element, a slot index and a root | parent element | detail |
 | Details body | Keep relying on the details repair that turns a stray summary into a paragraph | Change the details grammar in this run | details grammar | small |
 | Speed check on big pastes | Keep the change: three noisy runs put a 5,000-line paste at about 1.2 times the old time, under the 1.25 limit, but none settles it (look) | Run the check again on a quiet machine before this ships | rerun bench | small |
+| How paste reaches the landing owner | Paste and typing use the owner's own block builder and room check, with no copy of either (look) | One landing verb that Enter, paste and typing all call, built now | land paste | small |
+| Generated API list | Leave the generated API list naming the old builder until another session's build error is fixed (look) | Fix that build error in this run and regenerate the list | regen manifest | detail |
 | HTML import's root defaults | Left to the HTML import owner as open work; its five calls keep slot zero, as before (look) | Fix HTML import in this run | fix html | small |
 
 ## Steps
