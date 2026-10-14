@@ -5,7 +5,7 @@ import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwr
 
 const readDetails = (root: Locator, title: string) =>
   root.evaluate((element: PliteBrowserHandleElement, targetTitle) => {
-    const handle = element.__pliteBrowserHandle!;
+    const handle = element.__EDITOR_BROWSER_HANDLE__!;
     const find = (
       nodes: ReturnType<typeof handle.getValue>['children']
     ): (typeof nodes)[number] | undefined => {
@@ -35,7 +35,7 @@ const waitForHandle = (root: Locator) =>
   expect
     .poll(() =>
       root.evaluate((element: PliteBrowserHandleElement) =>
-        Boolean(element.__pliteBrowserHandle)
+        Boolean(element.__EDITOR_BROWSER_HANDLE__)
       )
     )
     .toBe(true);
@@ -71,10 +71,10 @@ for (const route of ['details-demo', 'playground']) {
       await summary.click({ clickCount: 3 });
       const selectionBefore = await root.evaluate(
         (element: PliteBrowserHandleElement) =>
-          element.__pliteBrowserHandle!.getSelection()
+          element.__EDITOR_BROWSER_HANDLE__!.getSelection()
       );
       await page
-        .getByRole('button', { name: 'Text', exact: true })
+        .getByRole('button', { name: 'Turn into: Text', exact: true })
         .last()
         .click();
       await page
@@ -93,14 +93,14 @@ for (const route of ['details-demo', 'playground']) {
       await expect
         .poll(() =>
           root.evaluate((element: PliteBrowserHandleElement) =>
-            element.__pliteBrowserHandle!.getSelection()
+            element.__EDITOR_BROWSER_HANDLE__!.getSelection()
           )
         )
         .toEqual(selectionBefore);
       await expect
         .poll(() =>
           root.evaluate((element: PliteBrowserHandleElement) =>
-            element.__pliteBrowserHandle!.getDOMSelection()
+            element.__EDITOR_BROWSER_HANDLE__!.getDOMSelection()
           )
         )
         .toEqual(selectionBefore);
@@ -132,7 +132,7 @@ for (const route of ['details-demo', 'playground']) {
         })
       ).toBeVisible();
       await page
-        .getByRole('button', { name: 'Heading 2', exact: true })
+        .getByRole('button', { name: 'Turn into: Heading 2', exact: true })
         .first()
         .click();
       await page
@@ -177,7 +177,7 @@ for (const route of ['details-demo', 'playground']) {
       );
       await expect(body).toBeVisible();
       await page
-        .getByRole('button', { name: 'Heading 2', exact: true })
+        .getByRole('button', { name: 'Turn into: Heading 2', exact: true })
         .first()
         .click();
       await page

@@ -1594,12 +1594,12 @@ for (const direction of ['up', 'down'] as const) {
         .first();
       const modelSelection = () =>
         root.evaluate((element: PliteBrowserHandleElement) =>
-          element.__pliteBrowserHandle?.getModelSelection()
+          element.__EDITOR_BROWSER_HANDLE__?.getModelSelection()
         );
       const documentChildren = () =>
         root.evaluate(
           (element: PliteBrowserHandleElement) =>
-            element.__pliteBrowserHandle?.getValue().children
+            element.__EDITOR_BROWSER_HANDLE__?.getValue().children
         );
       const original = await documentChildren();
       const cells = table.locator(

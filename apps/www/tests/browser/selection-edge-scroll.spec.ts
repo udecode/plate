@@ -16,7 +16,7 @@ const readSelection = (root: Locator) =>
     maxScrollTop:
       el.closest('.overflow-y-auto')!.scrollHeight -
       el.closest('.overflow-y-auto')!.clientHeight,
-    selection: el.__pliteBrowserHandle?.getModelSelection(),
+    selection: el.__EDITOR_BROWSER_HANDLE__?.getModelSelection(),
     native: window.getSelection()?.toString(),
   }));
 

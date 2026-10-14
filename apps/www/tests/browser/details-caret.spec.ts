@@ -9,15 +9,15 @@ import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwr
 
 const selection = (root: Locator) =>
   root.evaluate((element: PliteBrowserHandleElement) => ({
-    model: element.__pliteBrowserHandle?.getSelection(),
-    dom: element.__pliteBrowserHandle?.getDOMSelection(),
+    model: element.__EDITOR_BROWSER_HANDLE__?.getSelection(),
+    dom: element.__EDITOR_BROWSER_HANDLE__?.getDOMSelection(),
     focused: document.activeElement === element,
     text: window.getSelection()?.toString(),
   }));
 const value = (root: Locator) =>
   root.evaluate(
     (element: PliteBrowserHandleElement) =>
-      element.__pliteBrowserHandle?.getValue().children
+      element.__EDITOR_BROWSER_HANDLE__?.getValue().children
   );
 const caret = (path: number[], offset: number) => ({
   anchor: { path, offset },
@@ -106,16 +106,19 @@ for (const route of ['details-demo', 'playground']) {
           if (action !== 'NestedBackspace') before = await value(root);
         }
         if (action === 'DeleteParagraph') {
-          await page.keyboard.press('Shift+End');
+          const followingText =
+            route === 'details-demo'
+              ? 'Content after Details remains an ordinary sibling block.'
+              : 'Multi-column Layout';
+          for (const _ of followingText) {
+            await page.keyboard.press('Shift+ArrowRight');
+          }
           await expect
             .poll(() => selection(root))
             .toMatchObject({
               model: { anchor: { path: following, offset: 0 } },
               dom: { focus: { path: following } },
-              text:
-                route === 'details-demo'
-                  ? 'Content after Details remains an ordinary sibling block.'
-                  : 'Multi-column Layout',
+              text: followingText,
             });
         }
         await page.keyboard.press(
