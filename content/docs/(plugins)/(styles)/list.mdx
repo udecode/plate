@@ -138,6 +138,7 @@ bypass this command policy.
 At a text caret, an admitted whole-item paste into an empty paragraph or heading
 keeps the copied text properties allowed by the schema. Permitted target properties,
 such as an id or alignment, survive unless the copied item supplies them.
+Object and void items do not inherit those target properties.
 The empty target's explicit start and restart take precedence over copied
 values. The replacement gets its own runtime node key.
 

@@ -16,6 +16,7 @@ import {
   getListIndent,
   isListItem,
   isListLevels,
+  type ListLevel,
   type ListLevels,
 } from './listIndex.internal';
 
@@ -324,6 +325,30 @@ export const landListContent = <N extends Descendant>(
       joined && source === joinedSource
         ? joined
         : { listId: fresh.get(source), listLevels };
+    const levelOffset =
+      depth.indent === undefined ? 0 : depth.indent - getListIndent(node);
+    let landedLevels = levels;
+
+    if (
+      !(joined && source === joinedSource) &&
+      levelOffset !== 0 &&
+      isListLevels(levels)
+    ) {
+      const rebased: Record<string, ListLevel> = {};
+
+      for (const [level, rule] of Object.entries(levels)) {
+        const landed = Number(level) + levelOffset;
+
+        if (landed < 1) continue;
+        rebased[landed] = {
+          ...rule,
+          ...(rule.restartAfter
+            ? { restartAfter: Math.max(0, rule.restartAfter + levelOffset) }
+            : {}),
+        };
+      }
+      landedLevels = rebased;
+    }
     const style =
       paste &&
       joined &&
@@ -348,7 +373,7 @@ export const landListContent = <N extends Descendant>(
       children,
       ...(listId === undefined ? {} : { listId }),
       ...(style === undefined ? {} : { listStyle: style }),
-      ...(levels === undefined ? {} : { listLevels: levels }),
+      ...(landedLevels === undefined ? {} : { listLevels: landedLevels }),
       ...(starts.listRestart === undefined
         ? {}
         : { listRestart: starts.listRestart }),

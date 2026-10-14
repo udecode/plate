@@ -30,12 +30,14 @@ describe('editor.api.markdown.parse', () => {
             {
               children: [{ text: 'aaa' }],
               indent: 1,
+              listId: expect.any(String),
               listType: 'bulleted',
               type: 'paragraph',
             },
             {
               children: [{ text: 'bbb' }],
               indent: 1,
+              listId: expect.any(String),
               listType: 'bulleted',
               type: 'paragraph',
             },

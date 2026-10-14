@@ -2986,6 +2986,67 @@ describe('BaseListPlugin list identity', () => {
       listItem(text, { checked, listType: ListType.Task });
     const emptyHeading = () => ({ ...note(''), level: 1, type: 'heading' });
 
+    it.each(['slice', 'fragment'] as const)(
+      'preserves copied level starts when %s rebases a list',
+      (method) => {
+        const before = [note('')];
+        const editor = createEditor({
+          initialValue: before,
+          selection: caretAt([0, 0]),
+        });
+        const copied = ['A', 'B'].map((text) =>
+          listItem(text, {
+            indent: 3,
+            listId: 'copy',
+            listLevels: { '3': { start: 7 } },
+          })
+        );
+
+        if (method === 'slice') {
+          editor.update.slice.replace(
+            ContentSlice.fromJSON({
+              content: copied,
+              openStart: 0,
+              openEnd: 0,
+            })
+          );
+        } else editor.update.fragment.replace(copied);
+
+        expect({
+          depths: editor.read.children().map((node) => node.indent),
+          numbers: numbersOf(editor),
+        }).toEqual({ depths: [1, 1], numbers: [7, 8] });
+        editor.api.history.undo();
+        expect(editor.read.children()).toEqual(before);
+      }
+    );
+
+    it('preserves copied restart rules below the copied forest', () => {
+      const before = [note('')];
+      const levels = {
+        '3': { start: 7 },
+        '4': { restartAfter: 2, start: 4 },
+      };
+      const editor = paste(
+        before,
+        caretAt([0, 0]),
+        [3, 4, 3, 4].map((indent, index) =>
+          listItem(String(index), {
+            indent,
+            listId: 'copy',
+            listLevels: levels,
+          })
+        )
+      );
+
+      expect({
+        depths: editor.read.children().map((node) => node.indent),
+        numbers: numbersOf(editor),
+      }).toEqual({ depths: [1, 2, 1, 2], numbers: [7, 4, 8, 5] });
+      editor.api.history.undo();
+      expect(editor.read.children()).toEqual(before);
+    });
+
     it('preserves copy-permitted marks when the first item replaces a heading', () => {
       const EphemeralMark = definePlugin('ephemeral', {
         schema: {
