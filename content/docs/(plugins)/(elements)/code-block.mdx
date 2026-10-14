@@ -18,6 +18,7 @@ docs:
 - Customizable language selection
 - Proper indentation handling
 - Markdown code fence shortcuts through `CodeBlockRules.markdown({ on })`
+- Typed shortcuts stay literal inside code blocks, and Markdown does not convert pasted plain text
 
 </PackageInfo>
 
@@ -248,6 +249,8 @@ const editor = createEditor({
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
 
 Each `codeBlock` contains one text child. Newline characters define physical lines; editing and highlighting derive their line behavior from text offsets.
+
+Inside a code block no [input rule](/docs/plugin-input-rules#where-rules-run) runs, so `# `, `**x**`, `->` and URLs stay as typed. Neither Markdown nor an input rule converts pasted plain text.
 
 For plain code blocks, omit `CodeHighlightPlugin`:
 

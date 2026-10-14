@@ -84,7 +84,7 @@ export const WindowedEditable = <
   ...props
 }: WindowedEditableProps<TElement, TRoot>) => {
   if (root === 'main') {
-    throw new Error('[Plite] Omit root to render the primary editable.');
+    throw new Error('Omit root to render the primary editable.');
   }
   const inheritedReadOnly = useEditorReadOnly();
   const editor = useEditorContext();

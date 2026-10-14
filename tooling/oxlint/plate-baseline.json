@@ -136,6 +136,7 @@
       "authored={ownerAuthored as never}"
     ]
   },
+  "plate/no-branded-value": {},
   "plate/no-one-off-editor-type": {
     "packages/cli/src/generate.ts": ["type CompiledEditor = Readonly<{"],
     "packages/platejs/src/features/combobox/lib/combobox.ts": [
@@ -294,9 +295,6 @@
     ],
     "packages/platejs/src/docx/export/lib/internal/docx-document.ts": [
       "export type NumberingOptions = ListStyleDefaults;"
-    ],
-    "packages/platejs/src/excalidraw/lib/BaseExcalidrawPlugin.ts": [
-      "export type ExcalidrawDataState = ImportedDataState;"
     ],
     "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts": [
       "export type FootnotePluginState = ComboboxState;"

@@ -54,7 +54,7 @@ export function RichTextEditor() {
     <TooltipProvider>
       <EditorRoot
         editor={editor}
-        authored={{ intent: 'edit', projection: 'markup' }}
+        authored={{ intent: 'edit' }}
       >
         <EditorFrame>
           <EditorContainer>

@@ -13,6 +13,8 @@ import {
   defineEffect,
   defineStateField,
   editorCommands,
+  txLocate,
+  locateAt,
 } from '../../core';
 import {
   type MarkdownEditor,
@@ -232,22 +234,25 @@ export const CopilotPlugin = definePlugin(PLUGINS.copilot, {
         setSuggestion({ nodeKey: null, text: null });
         return undefined;
       },
-      setBlockSuggestion: ({
-        key = store.get().suggestionNodeKey,
-        text,
-      }: {
-        text: string;
-        key?: NodeKey | null;
-      }) => {
-        tx.tags.add('history-skip');
-        const block = tx.nodes.block();
-        const blockKey = key ?? (block ? tx.key(block[1]) : null);
+      setBlockSuggestion: txLocate(
+        locateAt(0, 'key'),
+        ({
+          key = store.get().suggestionNodeKey,
+          text,
+        }: {
+          text: string;
+          key?: NodeKey | null;
+        }) => {
+          tx.tags.add('history-skip');
+          const block = tx.nodes.block();
+          const blockKey = key ?? (block ? tx.key(block[1]) : null);
 
-        if (!blockKey) return;
+          if (!blockKey) return;
 
-        setSuggestion({ nodeKey: blockKey, text });
-      },
-      setSuggestion,
+          setSuggestion({ nodeKey: blockKey, text });
+        }
+      ),
+      setSuggestion: txLocate(locateAt(0, 'nodeKey'), setSuggestion),
     };
   },
 })

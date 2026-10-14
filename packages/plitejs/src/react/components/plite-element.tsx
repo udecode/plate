@@ -61,10 +61,10 @@ export const EditorElement = ({
   const Component = as as ElementType<PliteElementComponentProps>;
   const element = useContext(ElementContext);
   const path = element?.path ?? null;
-  const pliteNode = element?.element ?? null;
+  const editorNode = element?.element ?? null;
   const nodeKey = element?.nodeKey ?? null;
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey);
-  const boundRef = usePliteNodeRef(nodeKey, { path, pliteNode });
+  const boundRef = usePliteNodeRef(nodeKey, { path, editorNode });
 
   recordPliteReactRender({ id, kind: 'element', nodeKey });
 

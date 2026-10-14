@@ -24,6 +24,7 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import type { Editor, RenderElementSlots } from '../../lib';
+import type { RenderElementProps } from '../../lib/types/RenderElementProps';
 import type {
   Decoration,
   DecorationAttributes,
@@ -36,7 +37,6 @@ import {
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic.internal';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic.internal';
 import { pipeRenderTextStatic } from '../pluginRenderTextStatic.internal';
-import type { RenderElementProps } from '../types';
 
 const EMPTY_DECORATIONS: readonly Decoration[] = [];
 const EMPTY_PATH: Path = [];

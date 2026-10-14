@@ -1,4 +1,6 @@
-import { authoredTreeProof } from 'plitejs/authored';
+import { createAuthoredPlugin } from 'plitejs/authored';
+
+import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
 
 import { createEditor } from '../../../core';
 import { BaseListPlugin } from './BaseListPlugin';
@@ -8,11 +10,14 @@ import { BaseListPlugin } from './BaseListPlugin';
 describe('list items an Enter splits after a pending property write', () => {
   it('leaves the continued item without a listStart the split drops', () => {
     const editor = (value: unknown, author: string) => {
-      const proof = authoredTreeProof({
+      const proof = createAuthoredPlugin({
         authorId: author,
         createChangeId: () => `${author}:1`,
         intent: 'propose',
         now: () => 1,
+        // Pending list changes arrive as loaded content while Suggesting
+        // refuses lists.
+        vetoes: false,
       });
 
       return createEditor({
@@ -45,7 +50,7 @@ describe('list items an Enter splits after a pending property write', () => {
     });
     const judge = editor(bob.read.value().children, 'zed');
 
-    judge.api.authoredTree.decide({ action: 'reject', changes: ['alice:1'] });
+    authoredTestApi(judge).decide({ action: 'reject', changes: ['alice:1'] });
 
     expect(
       (judge.read.children() as ReadonlyArray<{ listStart?: number }>).map(

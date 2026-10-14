@@ -1,4 +1,7 @@
-import { createBrowserEditorHarness } from '@platejs/test/playwright';
+import {
+  BROWSER_HANDLE_KEY,
+  createBrowserEditorHarness,
+} from '@platejs/test/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
@@ -77,12 +80,13 @@ test('Shift+Arrow extends and contracts a block range through an image [EDIT-SEL
       path: [image - 1, previous.length - 1],
     };
     const modelSelection = () =>
-      root.evaluate((element) =>
-        (
-          element as HTMLElement & {
-            __pliteBrowserHandle?: { getModelSelection: () => unknown };
-          }
-        ).__pliteBrowserHandle?.getModelSelection()
+      root.evaluate(
+        (element, key) =>
+          (
+            element as HTMLElement &
+              Record<string, { getModelSelection: () => unknown } | undefined>
+          )[key]?.getModelSelection(),
+        BROWSER_HANDLE_KEY
       );
     await editor.selection.selectDOM({ anchor: end, focus: end });
     await page.keyboard.press('ArrowDown');

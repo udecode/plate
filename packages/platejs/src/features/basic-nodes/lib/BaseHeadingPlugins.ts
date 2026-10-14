@@ -8,6 +8,7 @@ import {
   property,
   schema,
   PLUGINS,
+  txLocate,
 } from '../../../core';
 import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
 
@@ -100,7 +101,7 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
       editor,
       PLUGINS.detailsSummary
     )?.elementType;
-    const setLevel = (level: HeadingLevel) => {
+    const setLevel = txLocate(false, (level: HeadingLevel) => {
       const blocks = tx.nodes.blocks();
 
       if (blocks.length === 0) return false;
@@ -113,14 +114,15 @@ export const BaseHeadingPlugin = definePlugin(PLUGINS.heading, {
             : { level, type }
         )
       );
-    };
+    });
 
     return {
       setLevel,
-      toggle: ({ level }: ToggleHeadingOptions) =>
+      toggle: txLocate(false, ({ level }: ToggleHeadingOptions) =>
         tx.nodes.blocks().some(([node]) => read.level(node) === level)
           ? tx.blocks.reset({ unset: 'level' })
-          : setLevel(level),
+          : setLevel(level)
+      ),
     };
   },
 }));

@@ -1,3 +1,4 @@
+import type { AuthoredMark } from '../authored';
 import type {
   Descendant,
   EditorDocumentValue,
@@ -15,16 +16,11 @@ type LegacySuggestionData = Readonly<{
   userId: string;
 }>;
 
-export type PlateV54LegacySuggestionRevision = Readonly<{
-  authorId: string;
-  createdAt: number;
-  id: string;
-  proposed: EditorDocumentValue;
-}>;
-
 export type PlateV54LegacySuggestionMigration = Readonly<{
-  accepted: EditorDocumentValue;
-  revisions: readonly PlateV54LegacySuggestionRevision[];
+  /** Pending changes the review document holds, one per legacy suggestion. */
+  changes: number;
+  /** The document with each legacy suggestion as review marks. */
+  review: EditorDocumentValue;
 }>;
 
 type MutableSuggestionRecord = {
@@ -223,7 +219,7 @@ const validateProposedProperties = (
   }
 };
 
-/** Decode the frozen Plate v53 Suggestion metadata into native authored revisions. */
+/** Decode the frozen Plate v53 Suggestion metadata into review marks. */
 export const migratePlateV54Suggestions = (
   document: EditorDocumentValue
 ): PlateV54LegacySuggestionMigration | null => {
@@ -378,124 +374,94 @@ export const migratePlateV54Suggestions = (
     );
   }
 
-  const transformNode = (
+  const markOf = (
+    data: LegacySuggestionData,
+    kind: 'delete' | 'insert' | 'join' | 'split'
+  ): AuthoredMark => ({
+    at: data.createdAt,
+    author: data.userId,
+    change: data.id,
+    kind,
+  });
+  // Inserted and removed content marks everything inside it, as recording
+  // does; property updates mark only their own node.
+  const reviewNode = (
     node: Descendant,
-    applied: ReadonlySet<string>
-  ): Descendant | null => {
+    inherited: readonly AuthoredMark[]
+  ): Record<string, unknown> => {
     const data = annotations.get(node);
-    const isApplied = data ? applied.has(data.id) : false;
-
-    if (
-      data &&
-      !data.isLineBreak &&
-      ((data.type === 'insert' && !isApplied) ||
-        (data.type === 'remove' && isApplied))
-    ) {
-      return null;
-    }
     const result = stripLegacyMetadata(node);
+    const marks = [...inherited];
+    let carried = inherited;
 
+    if (data && !data.isLineBreak && data.type !== 'update') {
+      const mark = markOf(data, data.type === 'insert' ? 'insert' : 'delete');
+
+      if (!marks.some((own) => own.change === mark.change)) marks.push(mark);
+      carried = marks;
+    }
+    if (data?.type === 'update') {
+      const before = data.properties ?? {};
+      const keys = new Set([
+        ...Object.keys(before),
+        ...Object.keys(data.newProperties ?? {}),
+      ]);
+
+      for (const key of [...keys].toSorted()) {
+        marks.push({
+          at: data.createdAt,
+          author: data.userId,
+          ...(Object.hasOwn(before, key) ? { before: before[key] } : {}),
+          change: data.id,
+          id: `${data.id}:${key}`,
+          key,
+          kind: 'format',
+        });
+      }
+    }
     if (ElementApi.isElement(node)) {
-      const children = transformChildren(node.children, applied);
-
-      result.children =
-        children.length === 0 && node.children.length > 0
-          ? [{ text: '' }]
-          : children;
-    }
-    if (data?.type === 'update' && !isApplied) {
-      for (const key of Object.keys(data.newProperties ?? {})) {
-        if (!Object.hasOwn(data.properties ?? {}, key)) delete result[key];
-      }
-      Object.assign(result, data.properties ?? {});
+      result.children = reviewChildren(node.children, carried);
     }
 
-    return result as Descendant;
+    return marks.length > 0 ? { ...result, authored: marks } : result;
   };
+  // A legacy line break belongs to the boundary after its block, which the
+  // next block carries: a split it would undo or a join it would make.
+  const reviewChildren = (
+    children: readonly Descendant[],
+    inherited: readonly AuthoredMark[] = []
+  ) => {
+    const reviewed = children.map((node) => reviewNode(node, inherited));
 
-  const transformChildren = <T extends readonly Descendant[]>(
-    children: T,
-    applied: ReadonlySet<string>
-  ): T => {
-    const transformed = children.map((node) => transformNode(node, applied));
+    children.forEach((node, index) => {
+      const data = annotations.get(node);
+      const next = reviewed[index + 1];
 
-    for (let index = children.length - 2; index >= 0; index--) {
-      const child = children[index];
-
-      if (!child) continue;
-      const data = annotations.get(child);
-      const merge =
-        data?.isLineBreak === true &&
-        ((data.type === 'insert' && !applied.has(data.id)) ||
-          (data.type === 'remove' && applied.has(data.id)));
-
-      if (!merge) continue;
-      const before = transformed[index];
-      const after = transformed[index + 1];
-
-      if (
-        !before ||
-        !after ||
-        !ElementApi.isElement(before) ||
-        !ElementApi.isElement(after)
-      ) {
-        throw new Error(
-          `Plate v54 migration cannot materialize line-break suggestion "${data.id}".`
-        );
-      }
-      transformed[index] = {
-        ...before,
-        children: [...before.children, ...after.children],
-      };
-      transformed[index + 1] = null;
-    }
-
-    return transformed.filter(
-      (node): node is Descendant => node !== null
-    ) as unknown as T;
-  };
-
-  const documentFor = (applied: ReadonlySet<string>): EditorDocumentValue => ({
-    ...document,
-    children: transformChildren(document.children, applied),
-    ...(document.meta
-      ? {
-          meta: Object.fromEntries(
-            Object.entries(document.meta).filter(([key]) => key !== 'authored')
-          ),
-        }
-      : {}),
-    ...(document.roots
-      ? {
-          roots: Object.fromEntries(
-            Object.entries(document.roots).map(([root, children]) => [
-              root,
-              transformChildren(children, applied),
-            ])
-          ),
-        }
-      : {}),
-  });
-  const ordered = [...records.values()].toSorted(
-    (left, right) =>
-      left.createdAt - right.createdAt ||
-      left.firstLocation.localeCompare(right.firstLocation) ||
-      left.id.localeCompare(right.id)
-  );
-  const applied = new Set<string>();
-  const revisions = ordered.map((entry) => {
-    applied.add(entry.id);
-
-    return Object.freeze({
-      authorId: entry.authorId,
-      createdAt: entry.createdAt,
-      id: entry.id,
-      proposed: documentFor(applied),
+      if (!data?.isLineBreak || !next) return;
+      next.authored = [
+        ...((next.authored as AuthoredMark[] | undefined) ?? []),
+        markOf(data, data.type === 'insert' ? 'split' : 'join'),
+      ];
     });
-  });
+
+    return reviewed as unknown as Descendant[];
+  };
 
   return Object.freeze({
-    accepted: documentFor(new Set()),
-    revisions: Object.freeze(revisions),
+    changes: records.size,
+    review: {
+      ...document,
+      children: reviewChildren(document.children),
+      ...(document.roots
+        ? {
+            roots: Object.fromEntries(
+              Object.entries(document.roots).map(([root, children]) => [
+                root,
+                reviewChildren(children),
+              ])
+            ),
+          }
+        : {}),
+    } as EditorDocumentValue,
   });
 };

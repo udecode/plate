@@ -1,6 +1,7 @@
 import { writeFileSync } from 'node:fs';
 
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -31,23 +32,28 @@ for (const [lines, width] of [
         .slice(0, lines)
         .join('\n');
       const prefix = `${initial}\nconst __continuous = `;
-      await root.evaluate((element, text) => {
-        const handle = (
-          element as HTMLElement & {
-            __pliteBrowserHandle: {
-              getValue: () => { children: Value };
-              applyValueChange: (value: { children: Value }) => void;
-            };
-          }
-        ).__pliteBrowserHandle;
-        const value = handle.getValue();
-        handle.applyValueChange({
-          ...value,
-          children: value.children.map((block, index) =>
-            index === 2 ? { ...block, children: [{ text }] } : block
-          ),
-        });
-      }, prefix);
+      await root.evaluate(
+        (element, [text, key]) => {
+          const handle = (
+            element as HTMLElement &
+              Record<
+                string,
+                {
+                  getValue: () => { children: Value };
+                  applyValueChange: (value: { children: Value }) => void;
+                }
+              >
+          )[key];
+          const value = handle.getValue();
+          handle.applyValueChange({
+            ...value,
+            children: value.children.map((block, index) =>
+              index === 2 ? { ...block, children: [{ text }] } : block
+            ),
+          });
+        },
+        [prefix, BROWSER_HANDLE_KEY] as const
+      );
       const code = root.locator('pre code');
       await expect(code).toHaveText(prefix);
       await editor.selection.collapse({ path: [2, 0], offset: prefix.length });

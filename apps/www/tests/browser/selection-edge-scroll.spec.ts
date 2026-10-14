@@ -16,7 +16,7 @@ const readSelection = (root: Locator) =>
     maxScrollTop:
       el.closest('.overflow-y-auto')!.scrollHeight -
       el.closest('.overflow-y-auto')!.clientHeight,
-    selection: el.__pliteBrowserHandle?.getModelSelection(),
+    selection: el.__EDITOR_BROWSER_HANDLE__?.getModelSelection(),
     native: window.getSelection()?.toString(),
   }));
 
@@ -393,7 +393,7 @@ for (const scale of [1, 0.75]) {
       const root = editorRoot(page);
       await expect(page.getByText('sample.pdf', { exact: true })).toBeVisible();
       await root.evaluate((el: PliteBrowserHandleElement, zoom) => {
-        const handle = el.__pliteBrowserHandle!;
+        const handle = el.__EDITOR_BROWSER_HANDLE__!;
         const file = handle
           .getValue()
           .children.find((node) => 'type' in node && node.type === 'file');

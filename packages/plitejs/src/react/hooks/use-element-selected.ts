@@ -8,7 +8,6 @@ import {
   RangeApi,
   SelectionApi,
 } from '../..';
-import { readAuthoredFragmentView } from '../../core/authored-runtime';
 import { ElementContext, PliteContentRootOwnerContext } from '../context';
 import {
   getPathByNodeKey as editorGetPathByNodeKey,
@@ -102,15 +101,10 @@ export const useElementSelected = ({
       return false;
     }
     const root = editor.read.view.root() ?? 'main';
-    const fragmentId = readAuthoredFragmentView(editor)?.fragment.id ?? null;
     const ownerKey = owner ? getPliteViewBoundaryOwnerKey(owner) : null;
     const roots = { [root]: editor.read.children() };
     return selection.segments.parts.some((segment) => {
-      if (
-        segment.root !== root ||
-        segment.ownerKey !== ownerKey ||
-        (segment.fragment?.id ?? null) !== fragmentId
-      ) {
+      if (segment.root !== root || segment.ownerKey !== ownerKey) {
         return false;
       }
       const anchor = resolvePliteViewBoundarySegmentEndpoint(

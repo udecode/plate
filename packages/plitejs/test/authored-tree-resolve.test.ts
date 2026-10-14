@@ -10,8 +10,9 @@ import {
 } from 'plitejs';
 import { history } from 'plitejs/history';
 
-import { authoredTreeProof } from '../src/authored/tree/proof-plugin';
+import { createAuthoredPlugin } from '../src/authored/authored';
 import { resolveAuthoredChildren } from '../src/authored/tree/resolve';
+import { authoredTestApi, reviewedValue } from './support/authored';
 
 const AT = 1000;
 const mark = (
@@ -97,6 +98,163 @@ describe('authored review tree decisions', () => {
     assert.deepEqual(resolveAuthoredChildren(split, reject('bob:1')).children, [
       paragraph({ text: 'abcd' }),
     ]);
+  });
+
+  it('rejoins a rejected split with the emptied piece it cut from Alice’s inserted line, not with the line above', () => {
+    const rotated = [
+      whole(paragraph({ text: 'ab' }), mark('delete', 'alice')),
+      whole(paragraph({ text: 'cd' }), mark('delete', 'alice')),
+      whole(paragraph({ text: '' }), mark('insert', 'alice')),
+      {
+        ...paragraph(
+          { text: 'N' },
+          { text: 'cd', authored: [mark('insert', 'alice')] }
+        ),
+        authored: [mark('insert', 'alice'), mark('split')],
+      },
+      whole(paragraph({ text: 'ab' }), mark('insert', 'alice')),
+    ];
+
+    assert.deepEqual(
+      resolveAuthoredChildren(rotated, () => 'reject').children,
+      [
+        paragraph({ text: 'ab' }),
+        paragraph({ text: 'cd' }),
+        paragraph({ text: 'N' }),
+      ]
+    );
+  });
+
+  it('rejoins a rejected split with the piece it cut, past a line Bob inserted between them', () => {
+    const moved = [
+      paragraph({ text: 'ab' }),
+      {
+        type: 'quote',
+        children: [
+          paragraph({ text: 'c' }, { text: 'd', authored: [mark('delete')] }),
+          whole(paragraph({ text: '' }), mark('delete')),
+          {
+            ...whole(paragraph({ text: 'gh' }), mark('insert')),
+            authored: [mark('insert'), mark('join')],
+          },
+          {
+            ...paragraph({ text: 'ef', authored: [mark('delete')] }),
+            authored: [mark('split', 'alice'), mark('delete')],
+          },
+        ],
+      },
+      whole(paragraph({ text: 'gh' }), mark('delete')),
+    ];
+
+    assert.deepEqual(resolveAuthoredChildren(moved, () => 'reject').children, [
+      paragraph({ text: 'ab' }),
+      {
+        type: 'quote',
+        children: [paragraph({ text: 'cd' }), paragraph({ text: 'ef' })],
+      },
+      paragraph({ text: 'gh' }),
+    ]);
+  });
+
+  describe('a join Bob wrote in Editing across lines Alice struck', () => {
+    const struck = [
+      paragraph({ text: 'ab' }),
+      whole(paragraph({ text: 'cd' }), mark('delete', 'alice')),
+      whole(paragraph({ text: 'ef' }), mark('delete', 'alice')),
+      {
+        ...paragraph({ text: 'gh' }),
+        authored: [{ at: 0, author: 'bob', change: '~edit:bob', kind: 'join' }],
+      },
+    ];
+
+    it('stays stored, waiting on nothing, while Alice’s deletion is pending', () => {
+      const resolution = resolveAuthoredChildren(struck, () => 'keep');
+
+      assert.deepEqual(
+        { blockers: resolution.blockers, children: resolution.children },
+        { blockers: [], children: struck }
+      );
+    });
+
+    it('joins the line before the struck lines when Alice’s deletion is accepted', () => {
+      assert.deepEqual(
+        resolveAuthoredChildren(struck, accept('alice:1')).children,
+        [paragraph({ text: 'abgh' })]
+      );
+    });
+
+    it('joins the last struck line when Alice’s deletion is rejected', () => {
+      assert.deepEqual(
+        resolveAuthoredChildren(struck, reject('alice:1')).children,
+        [
+          paragraph({ text: 'ab' }),
+          paragraph({ text: 'cd' }),
+          paragraph({ text: 'efgh' }),
+        ]
+      );
+    });
+  });
+
+  describe('a line Bob split off a line Alice’s pending join pulls into a quote', () => {
+    const piece = {
+      ...paragraph({ text: 'd' }),
+      authored: [{ ...mark('split'), follows: `alice:1@${AT}` }],
+    };
+    const split = [
+      { type: 'quote', children: [paragraph({ text: 'ab' })] },
+      { ...paragraph({ text: 'c' }), authored: [mark('join', 'alice')] },
+      piece,
+    ];
+
+    it('follows the line into the quote, still pending, when only the join is accepted', () => {
+      assert.deepEqual(
+        resolveAuthoredChildren(split, accept('alice:1')).children,
+        [
+          {
+            type: 'quote',
+            children: [paragraph({ text: 'abc' }), piece],
+          },
+        ]
+      );
+    });
+
+    it('waits on the join when only the split is accepted', () => {
+      assert.deepEqual(
+        resolveAuthoredChildren(split, accept('bob:1')).blockers,
+        ['alice:1']
+      );
+    });
+
+    it('follows the line into the quote past a block Carol moved between them', () => {
+      const moved = whole(paragraph({ text: 'x' }), mark('insert', 'carol'));
+
+      assert.deepEqual(
+        resolveAuthoredChildren(
+          [...split.slice(0, 2), moved, piece],
+          () => 'accept'
+        ).children,
+        [
+          {
+            type: 'quote',
+            children: [paragraph({ text: 'abc' }), paragraph({ text: 'd' })],
+          },
+          paragraph({ text: 'x' }),
+        ]
+      );
+    });
+
+    it('stays outside the quote when the split is accepted and the join rejected', () => {
+      assert.deepEqual(
+        resolveAuthoredChildren(split, (change) =>
+          change === 'bob:1' ? 'accept' : 'reject'
+        ).children,
+        [
+          { type: 'quote', children: [paragraph({ text: 'ab' })] },
+          paragraph({ text: 'c' }),
+          paragraph({ text: 'd' }),
+        ]
+      );
+    });
   });
 
   it('merges an accepted join into the previous block', () => {
@@ -189,12 +347,12 @@ describe('authored review tree decisions', () => {
     const editor = createEditor({
       plugins: [
         history(),
-        authoredTreeProof({ authorId: 'bob', now: () => AT }),
+        createAuthoredPlugin({ authorId: 'bob', now: () => AT }),
       ],
       initialValue: replacement,
     });
 
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['bob:1'] });
     assert.deepEqual(editor.read.children(), [
       paragraph({ text: 'keep NEW tail' }),
     ]);
@@ -212,7 +370,7 @@ describe('authored review tree decisions', () => {
     ];
     const editor = createEditor({
       plugins: [
-        authoredTreeProof({
+        createAuthoredPlugin({
           authorId: 'bob',
           intent: 'propose',
           now: () => AT,
@@ -221,15 +379,14 @@ describe('authored review tree decisions', () => {
       initialValue: initial,
     });
 
-    editor.api.authoredTree.propose('ai:1', () => {
-      editor.update((tx) => {
-        tx.selection.set({ anchor: point(0, [0, 1]), focus: point(5, [0, 1]) });
-        tx.text.insert('better');
-      });
+    editor.update((tx) => {
+      tx.authored.propose({ changeId: 'ai:1' });
+      tx.selection.set({ anchor: point(0, [0, 1]), focus: point(5, [0, 1]) });
+      tx.text.insert('better');
     });
-    editor.api.authoredTree.decide({ action: 'reject', changes: ['ai:1'] });
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['ai:1'] });
 
-    assert.deepEqual(editor.read.children(), initial);
+    assert.deepEqual(reviewedValue(editor).children, initial);
   });
 
   const group = (
@@ -247,7 +404,10 @@ describe('authored review tree decisions', () => {
   });
   const columnsEditor = (initialValue: Array<Record<string, unknown>>) =>
     createEditor({
-      plugins: [Columns, authoredTreeProof({ authorId: 'bob', now: () => AT })],
+      plugins: [
+        Columns,
+        createAuthoredPlugin({ authorId: 'bob', now: () => AT }),
+      ],
       initialValue,
     });
 
@@ -255,9 +415,9 @@ describe('authored review tree decisions', () => {
     const editor = columnsEditor([
       group([column('left'), whole(column('right'), mark('delete'))]),
     ]);
-    const proposed = editor.api.authoredTree.project('proposed').value.children;
+    const proposed = authoredTestApi(editor).project('proposed').value.children;
 
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['bob:1'] });
     assert.deepEqual(proposed, [group([column('left'), column('')])]);
     assert.deepEqual(editor.read.children(), proposed);
   });
@@ -281,10 +441,10 @@ describe('authored review tree decisions', () => {
     const first = columnsEditor(initial);
     const second = columnsEditor(initial);
 
-    first.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
-    first.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
-    second.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
-    second.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
+    authoredTestApi(first).decide({ action: 'accept', changes: ['alice:1'] });
+    authoredTestApi(first).decide({ action: 'accept', changes: ['bob:1'] });
+    authoredTestApi(second).decide({ action: 'accept', changes: ['bob:1'] });
+    authoredTestApi(second).decide({ action: 'accept', changes: ['alice:1'] });
 
     assert.deepEqual(second.read.children(), first.read.children());
     assert.deepEqual(first.read.children(), [
@@ -306,7 +466,7 @@ describe('authored review tree decisions', () => {
     ]);
     const plain = columnsEditor(initial);
 
-    editor.api.authoredTree.decide({
+    authoredTestApi(editor).decide({
       action: 'accept',
       changes: ['bob:1', 'alice:1'],
     });
@@ -321,8 +481,8 @@ describe('authored review tree decisions', () => {
     const editor = columnsEditor([
       whole(paragraph({ text: 'x' }), mark('delete')),
     ]);
-    const proposed = editor.api.authoredTree.project('proposed').value.children;
-    const result = editor.api.authoredTree.decide({
+    const proposed = authoredTestApi(editor).project('proposed').value.children;
+    const result = authoredTestApi(editor).decide({
       action: 'accept',
       changes: ['bob:1'],
     });
@@ -349,7 +509,7 @@ describe('authored review tree decisions', () => {
       version: 1,
     });
     const editor = createEditor({
-      plugins: [Inline, authoredTreeProof({ authorId: 'carol' })],
+      plugins: [Inline, createAuthoredPlugin({ authorId: 'carol' })],
       initialValue: [
         paragraph(
           { text: '' },
@@ -359,7 +519,7 @@ describe('authored review tree decisions', () => {
       ],
     });
 
-    const result = editor.api.authoredTree.decide({
+    const result = authoredTestApi(editor).decide({
       action: 'reject',
       changes: ['bob:1'],
     });
@@ -388,7 +548,7 @@ describe('authored review tree decisions', () => {
     ]);
 
     assert.deepEqual(
-      editor.api.authoredTree.decide({ action: 'reject', changes: ['bob:1'] }),
+      authoredTestApi(editor).decide({ action: 'reject', changes: ['bob:1'] }),
       { ids: ['bob:1'], status: 'blocked', with: ['alice:1'] }
     );
   });
@@ -398,10 +558,10 @@ describe('authored review tree decisions', () => {
       whole(paragraph({ text: 'x' }), mark('delete')),
     ]);
 
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['bob:1'] });
 
     assert.deepEqual(
-      editor.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] }),
+      authoredTestApi(editor).decide({ action: 'accept', changes: [] }),
       { ids: [], status: 'unchanged' }
     );
   });
@@ -418,7 +578,7 @@ describe('authored review tree decisions', () => {
 
     plain.update((tx) => tx.text.insert('x', { at: point(0, [1, 0]) }));
     plain.api.history.undo();
-    editor.api.authoredTree.decide({ action: 'reject', changes: ['bob:1'] });
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['bob:1'] });
 
     assert.deepEqual(editor.read.children(), plain.read.children());
   });

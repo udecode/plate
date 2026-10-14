@@ -5,7 +5,8 @@ import { type Path, PathApi } from '../interfaces/path';
 import { SelectionApi } from '../interfaces/selection';
 import { editorReads } from './editor-reads';
 import { getEditorRuntimeRoot, getEditorSchema } from './editor-runtime';
-import { definePluginPoint, getPluginContributions } from './plugin';
+import { getPluginContributions } from './plugin-registry';
+import { definePluginPoint } from './plugin-point';
 import { executeEditorRead } from './read-registry';
 import type {
   TransferEdge,
@@ -20,9 +21,7 @@ import type {
 } from './transfer-types';
 
 /** Contribute a veto that refuses a landing on its final edge. */
-export const transferVeto = definePluginPoint<TransferVeto>(
-  'plite.transfer.veto'
-);
+export const transferVeto = definePluginPoint<TransferVeto>('transfer.veto');
 
 export class TransferRefusalError extends Error {
   readonly reason: TransferRefusalReason;

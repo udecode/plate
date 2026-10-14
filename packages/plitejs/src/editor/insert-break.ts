@@ -1,9 +1,11 @@
 import { dispatchCommand } from '../core/command-registry';
 import { textPropertiesEqual } from '../core/content-completion';
+import { landTextWrite } from '../core/content-landing';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
   getActiveUpdateRoot,
+  getChildren,
   runEditorTransaction,
 } from '../core/public-state';
 import type { EditorStaticApi } from '../interfaces/editor';
@@ -16,7 +18,7 @@ import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { splitNodes } from '../transforms-node/split-nodes';
 import { deleteText } from '../transforms-text/delete-text';
-import { insertDefaultBlockAfterSelectedBlockVoid } from './block-void-break';
+import { breakAtSelectedBlockVoid } from './block-void-break';
 
 const getNextSoftBreakRange = (
   editor: Parameters<EditorStaticApi['insertBreak']>[0]
@@ -51,11 +53,20 @@ export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
   // Node selections may be disjoint, so they have no truthful break target.
   if (selection && !RangeApi.isRange(selection)) return;
 
+  const landed =
+    selection && landTextWrite(editor, selection, getChildren(editor));
+
+  if (landed && landed !== selection) {
+    runEditorTransaction(editor, (tx) => {
+      tx.setSelection(SelectionApi.text(landed));
+    });
+  }
+
   if (softBreakRange) {
     deleteText(editor, { at: softBreakRange, hanging: true });
   }
 
-  if (selection && insertDefaultBlockAfterSelectedBlockVoid(editor)) {
+  if (selection && breakAtSelectedBlockVoid(editor)) {
     return;
   }
 

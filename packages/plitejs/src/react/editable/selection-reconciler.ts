@@ -182,7 +182,17 @@ export const applyEditableBlur = ({
   state: EditableSelectionReconcilerState;
 }) => {
   if (
-    state.isUpdatingSelection ||
+    // isUpdatingSelection outlives the DOM selection write on a timer, so a
+    // blur in that window is the write's own only while focus stays inside.
+    (state.isUpdatingSelection &&
+      [
+        event.relatedTarget,
+        (event.currentTarget.getRootNode() as Document | ShadowRoot)
+          .activeElement,
+      ].some(
+        (target) =>
+          isDOMNode(target) && containsShadowAware(event.currentTarget, target)
+      )) ||
     !ReactEditor.hasSelectableTarget(editor, event.target) ||
     isReactEventHandled({ event, handler: onBlur })
   ) {
@@ -523,16 +533,6 @@ export const syncSelectionForBeforeInput = ({
   nativeBlocker?: string;
   selection: Range | null;
 } => {
-  if (
-    readPliteViewSelection(editor)?.segments.parts.some((part) => part.fragment)
-  ) {
-    return {
-      native: false,
-      nativeBlocker: 'projected-view-selection',
-      selection,
-    };
-  }
-
   let nextNative = native;
   let nativeBlocker: string | undefined;
   let nextSelection = selection;

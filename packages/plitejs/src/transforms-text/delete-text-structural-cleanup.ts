@@ -1,7 +1,7 @@
 import { getEditorSchema } from '../core/editor-runtime';
 import { node as getNode } from '../editor/node';
-import { nodes as getNodes } from '../editor/nodes';
 import {
+  type Descendant,
   type Node,
   NodeApi,
   type Path,
@@ -13,7 +13,6 @@ import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
   getChildren as editorGetChildren,
   hasPath as editorHasPath,
-  isBlock as editorIsBlock,
 } from '../interfaces/editor';
 import { insertNodes, mergeNodes, removeNodes } from '../transforms-node';
 
@@ -118,43 +117,111 @@ const hasSingleChildNest = (
   );
 };
 
-export const mergeAdjacentTextRuns = (editor: Editor) => {
-  if (editorGetChildren(editor).length === 0) {
+// Merging a later pair never changes whether an earlier pair can merge, so one
+// pass finds every pair, last first, before any merge runs.
+const collectMergeableTextPaths = (
+  children: readonly Descendant[],
+  parentPath: Path,
+  paths: Path[],
+  first = 0,
+  last = children.length - 1
+) => {
+  for (let index = last; index >= first; index--) {
+    const child = children[index];
+
+    if (!NodeApi.isText(child)) {
+      collectMergeableTextPaths(child.children, [...parentPath, index], paths);
+      continue;
+    }
+
+    if (index > 0 && canMergeAdjacentTextNodes(children[index - 1], child)) {
+      paths.push([...parentPath, index]);
+    }
+  }
+
+  return paths;
+};
+
+// A delete leaves mergeable neighbors only inside the top-level blocks it
+// touched; elsewhere the text is as the last commit's canonical form left it.
+export const mergeAdjacentTextRuns = (
+  editor: Editor,
+  touchedRange?: { end: number; start: number } | null
+) => {
+  const children = editorGetChildren(editor);
+
+  if (children.length === 0) {
     return;
   }
 
-  const textPaths = Array.from(
-    getNodes(editor, {
-      at: [],
-      reverse: true,
-      match: (node): node is Text => NodeApi.isText(node),
-      voids: true,
-    }),
-    ([, path]) => path
+  collectMergeableTextPaths(
+    children,
+    [],
+    [],
+    touchedRange?.start ?? 0,
+    Math.min(children.length - 1, touchedRange?.end ?? Infinity)
+  ).forEach((path) => {
+    mergeNodes(editor, { at: path });
+  });
+};
+
+const collectElementPathsBelow = (node: Node, path: Path, paths: Path[]) => {
+  if (!NodeApi.isElement(node)) {
+    return;
+  }
+
+  for (let index = node.children.length - 1; index >= 0; index--) {
+    const childPath = [...path, index];
+
+    collectElementPathsBelow(node.children[index], childPath, paths);
+
+    if (NodeApi.isElement(node.children[index])) {
+      paths.push(childPath);
+    }
+  }
+};
+
+// Only an interior top-level block of the range or a block below the prune
+// path can be removed, so only those are visited. They come last first and
+// each after its children, so no removal shifts a path still to visit.
+const getRemovableElementPaths = (
+  editor: Editor,
+  pruneNestedUnderPath: Path | null | undefined,
+  pruneTopLevelRange: { end: number; start: number } | null | undefined
+) => {
+  const paths: Path[] = [];
+  const pruneIndex =
+    pruneNestedUnderPath && editorHasPath(editor, pruneNestedUnderPath)
+      ? pruneNestedUnderPath[0]
+      : undefined;
+  const last = Math.min(
+    editorGetChildren(editor).length - 1,
+    Math.max(pruneTopLevelRange?.end ?? -1, pruneIndex ?? -1)
+  );
+  const first = Math.min(
+    pruneTopLevelRange ? pruneTopLevelRange.start + 1 : Infinity,
+    pruneIndex ?? Infinity
   );
 
-  textPaths.forEach((path) => {
+  for (let index = last; index >= first; index--) {
+    if (pruneNestedUnderPath && index === pruneIndex) {
+      collectElementPathsBelow(
+        getCurrentNode(editor, pruneNestedUnderPath),
+        pruneNestedUnderPath,
+        paths
+      );
+    }
+
     if (
-      !editorHasPath(editor, path) ||
-      path.length === 0 ||
-      path.at(-1) === 0
+      pruneTopLevelRange &&
+      index > pruneTopLevelRange.start &&
+      index <= pruneTopLevelRange.end
     ) {
-      return;
+      paths.push([index]);
     }
+  }
 
-    const previousPath = PathApi.previous(path);
-
-    if (!editorHasPath(editor, previousPath)) {
-      return;
-    }
-
-    const node = getCurrentNode(editor, path);
-    const previous = getCurrentNode(editor, previousPath);
-
-    if (canMergeAdjacentTextNodes(previous, node)) {
-      mergeNodes(editor, { at: path });
-    }
-  });
+  return paths;
 };
 
 export const removeEmptyStructuralArtifacts = (
@@ -163,18 +230,12 @@ export const removeEmptyStructuralArtifacts = (
   pruneNestedUnderPath?: Path | null,
   pruneTopLevelRange?: { end: number; start: number } | null
 ) => {
-  const elementPaths = Array.from(
-    getNodes(editor, {
-      at: [],
-      reverse: true,
-      match: (node) => NodeApi.isElement(node),
-      voids: true,
-    }),
-    ([, path]) => path
-  );
-
-  elementPaths.forEach((path) => {
-    if (!editorHasPath(editor, path) || path.length === 0) {
+  getRemovableElementPaths(
+    editor,
+    pruneNestedUnderPath,
+    pruneTopLevelRange
+  ).forEach((path) => {
+    if (!editorHasPath(editor, path)) {
       return;
     }
 
@@ -200,30 +261,10 @@ export const removeEmptyStructuralArtifacts = (
       return;
     }
 
-    const isTopLevelBlock =
-      NodeApi.isElement(node) &&
-      path.length === 1 &&
-      editorIsBlock(editor, node);
-    const isNestedBlock =
-      NodeApi.isElement(node) && path.length > 1 && editorIsBlock(editor, node);
-    const isInteriorTopLevelBlock =
-      isTopLevelBlock &&
-      !!pruneTopLevelRange &&
-      path[0] > pruneTopLevelRange.start &&
-      path[0] <= pruneTopLevelRange.end;
-
-    if (
-      isNestedBlock &&
-      (!pruneNestedUnderPath || !PathApi.isAncestor(pruneNestedUnderPath, path))
-    ) {
-      return;
-    }
-
     if (
       NodeApi.isElement(node) &&
       NodeApi.string(node) === '' &&
-      hasSingleChildNest(editor, node) &&
-      (!isTopLevelBlock || isInteriorTopLevelBlock)
+      hasSingleChildNest(editor, node)
     ) {
       const parentPath = path.slice(0, -1) as Path;
       const parent =
@@ -236,6 +277,17 @@ export const removeEmptyStructuralArtifacts = (
       removeNodes(editor, { at: path });
     }
   });
+};
+
+export const getTouchedTopLevelRange = (
+  plan: DeleteStructuralCleanupPlan
+): { end: number; start: number } | null => {
+  const start = plan.effectiveStartBlockPath?.[0];
+  const end = plan.effectiveEndBlockPath?.[0] ?? start;
+
+  return start == null || end == null
+    ? null
+    : { end: Math.max(start, end), start: Math.min(start, end) };
 };
 
 export const getTopLevelCleanupRange = (

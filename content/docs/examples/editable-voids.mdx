@@ -43,7 +43,14 @@ Render `{children}` after the non-editable UI. Plate still needs the hidden void
 child mounted even when your visible element is fully custom React.
 
 The nested editor is a separate Plate editor. It does not share the outer
-editor's value, selection, plugins, or undo history.
+editor's value, selection, plugins, or undo history. Its own history is not
+reachable from the keyboard. Undo and Redo shortcuts pressed inside it run the
+outer editor's history, as
+[Embedded widgets](/docs/plugin-components#embedded-widgets) describes.
+
+Native controls and a nested editor need no extra marker. A widget built from
+other elements, such as a canvas, needs the `data-editor-root-chrome-ignore`
+wrapper from that section.
 
 ## Related
 

@@ -206,15 +206,15 @@ export const applyEditableInput = ({
     const path =
       runtimePoint?.path ??
       (textHost ? getPliteNodePathFromDOMElement(textHost) : null);
-    const pliteNode = path ? readRuntimeText(editor, path) : null;
+    const editorNode = path ? readRuntimeText(editor, path) : null;
 
-    if (pliteNode && path && (runtimePoint || anchorOffset != null)) {
+    if (editorNode && path && (runtimePoint || anchorOffset != null)) {
       const offset = runtimePoint
         ? runtimePoint.offset
         : Math.max(
             0,
             Math.min(
-              pliteNode.text.length,
+              editorNode.text.length,
               (anchorOffset ?? failInvariant('Expected value to be defined')) -
                 nativeInput.data.length
             )

@@ -305,23 +305,21 @@ export const compilePlateFormats = (
     .reverse();
   const plainTextFormat = Object.freeze({
     mimeType: 'text/plain',
-    key: 'plate:structural-plain-text',
+    key: 'core:structural-plain-text',
     encode: (context: DataTransferEncodeContext) =>
       serializePlatePlainTextSlice(editor, context.slice, context.state),
   }) satisfies DataTransferFormat;
 
   return Object.freeze([
-    dataTransferFormats('plate:structural-plain-text-format', [
-      plainTextFormat,
-    ]),
-    dataTransferFormats('plate:html-format', [
+    dataTransferFormats('core:structural-plain-text-format', [plainTextFormat]),
+    dataTransferFormats('core:html-format', [
       compilePlateHtmlFormat(editor, model, plugins),
     ]),
     ...orderedDeclarations.map((declaration, index) =>
-      dataTransferFormats(`plate:format:${declaration.owner}:${index}`, [
+      dataTransferFormats(`${declaration.owner}:format:${index}`, [
         Object.freeze({
           mimeType: declaration.mimeType,
-          key: `plate:${declaration.owner}:${declaration.mimeType}`,
+          key: `${declaration.owner}:${declaration.mimeType}`,
           ...(declaration.accept ? { accept: declaration.accept } : {}),
           ...(declaration.decode ? { decode: declaration.decode } : {}),
           ...(declaration.encode ? { encode: declaration.encode } : {}),

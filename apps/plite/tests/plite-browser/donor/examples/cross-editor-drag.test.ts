@@ -1,4 +1,4 @@
-import {
+import { BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -72,7 +72,7 @@ const dispatchSelectedTextDrag = async (
   sourceRoot.evaluate(
     (
       sourceElement: HTMLElement,
-      options: Required<DragOptions> & { targetLabel: string }
+      options: Required<DragOptions> & { key: string; targetLabel: string }
     ) => {
       const targetElement = sourceElement.ownerDocument.querySelector(
         `[aria-label="${options.targetLabel}"]`
@@ -136,15 +136,18 @@ const dispatchSelectedTextDrag = async (
 
       if (options.editSource) {
         const handle = (
-          sourceElement as HTMLElement & {
-            __pliteBrowserHandle?: {
-              insertTextAt: (
-                text: string,
-                at: { offset: number; path: number[] }
-              ) => void;
-            };
-          }
-        ).__pliteBrowserHandle;
+          sourceElement as HTMLElement &
+            Record<
+              string,
+              | {
+                  insertTextAt: (
+                    text: string,
+                    at: { offset: number; path: number[] }
+                  ) => void;
+                }
+              | undefined
+            >
+        )[options.key];
 
         if (!handle) {
           throw new Error('Missing source browser handle');
@@ -208,6 +211,7 @@ const dispatchSelectedTextDrag = async (
       cancelBeforeDrop,
       dropPayload,
       editSource,
+      key: BROWSER_HANDLE_KEY,
       targetLabel: 'Drag target editor',
     }
   );

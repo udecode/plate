@@ -1,0 +1,18 @@
+---
+id: 2026-10-13-editor-width-padding
+date: 2026-10-13
+status: draft
+kind: fix
+summary: "Size editor side padding to the editor's own width"
+change: { 'type': 'source', 'date': '2026-10-13', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-13-editor-width-padding-variants","kind":"fix","migrationNotes":[]} -->
+
+- **`editor`**, **`editor-static`**: Size the side padding of the `default`, `demo` and `fullWidth` variants to the editor's own width instead of the viewport. Padding shrinks to 24 px in a narrow editor, so a 180 px editor gets a 132 px text column instead of 52 px. Editors at least 512 px wide, or 640 px for `fullWidth`, keep their current padding.
+
+<!-- entry: {"id":"2026-10-13-editor-width-padding-demos","kind":"fix","migrationNotes":[]} -->
+
+- **`comment-demo`**, **`comment-overlap-demo`**, **`comment-persistence-demo`**, **`comment-review-demo`**, **`suggestion-demo`**, **`suggestion-format-demo`**, **`suggestion-persistence-demo`**, **`suggestion-view-demo`**: Size the editor's side padding to its own width instead of the viewport. Padding shrinks to 24 px in a narrow editor, and editors at least 600 px wide keep 48 px.

@@ -128,7 +128,7 @@ describe('BaseTablePlugin prepared paste', () => {
       kind: 'text',
     });
     const editor = createEditorView(model, {
-      authored: { intent: 'edit', projection: 'markup' },
+      authored: { intent: 'edit' },
     });
     const source = (
       <fragment>

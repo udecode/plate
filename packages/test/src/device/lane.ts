@@ -617,7 +617,7 @@ export const createDeviceLane = ({
       openEditor(`${state.appURL}/examples/plite/${example}`, example),
     openWww: (path) => {
       if (!state.wwwURL) {
-        throw new Error('Set PLATE_DEVICE_WWW_URL to run www cases.');
+        throw new Error('Set PLATE_DEVICE_WWW_PORT to run www cases.');
       }
       return openEditor(`${state.wwwURL}${path}`, path);
     },

@@ -74,11 +74,12 @@ Base kits use base plugins and static components. They are the right starting
 point for [Static Rendering](/docs/static), [Node.js](/docs/installation/node),
 and other non-editable pipelines.
 
-```ts title="static-editor.ts"
-import { BaseEditorKit } from '@/components/editor/plugins-static';
-import { createStaticEditor } from 'platejs/static';
+```ts title="editor.ts"
+import { createEditor } from 'platejs';
 
-const editor = createStaticEditor({
+import { BaseEditorKit } from '@/components/editor/plugins-static';
+
+const editor = createEditor({
   plugins: BaseEditorKit,
 });
 ```

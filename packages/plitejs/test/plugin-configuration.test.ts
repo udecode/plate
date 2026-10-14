@@ -28,10 +28,8 @@ import { authored } from 'plitejs/authored';
 import { history } from 'plitejs/history';
 
 import { hasActiveAnchors } from '../src/core/anchor-state';
-import {
-  getPluginContributions,
-  preparePluginPublication,
-} from '../src/core/plugin';
+import { preparePluginPublication } from '../src/core/plugin';
+import { getPluginContributions } from '../src/core/plugin-registry';
 import { applyTransactionSpec } from '../src/core/public-state';
 import {
   compilePlugin,
@@ -565,7 +563,7 @@ describe('transactional plugin configuration', () => {
 
     editor.install(articleSchema, {
       migrate({ document, next }) {
-        const child = next.createDefaultRootChild();
+        const child = next.createDefaultChild({ at: [0] });
 
         assert.ok(child && ElementApi.isElement(child));
 
@@ -2614,12 +2612,7 @@ describe('transactional plugin configuration', () => {
       };
       const original = editor.anchor(range, { deletion: 'drop' });
       const saved = editor.anchor.save(original);
-      const expected = useAuthored
-        ? {
-            anchor: { path: [0, 0], offset: 2 },
-            focus: { path: [0, 0], offset: 4 },
-          }
-        : range;
+      const expected = range;
       const events: string[] = [];
       let restored: Anchor<Range> | undefined;
       let created: Anchor<Range> | undefined;
@@ -2815,15 +2808,19 @@ describe('transactional plugin configuration', () => {
     });
   }
 
-  it('binds final proposed coordinates without publishing proposal text into the accepted document', () => {
+  it('binds final proposed coordinates while the accepted document keeps the old text', () => {
     const slot = definePluginSlot('proposed-final-range');
     const editor = createEditor({
       initialValue: [paragraph('text')],
       plugins: [authored({ authorId: 'alice' }), history(), slot.of([])],
     });
     const proposed = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
+    const acceptedText = () =>
+      createEditorView(editor, {
+        authored: { preview: 'accepted' },
+      }).read.text.string([]);
     const expected = {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 2 },
@@ -2839,7 +2836,7 @@ describe('transactional plugin configuration', () => {
               range?.release();
             });
             beforePublish(() => {
-              assert.equal(editor.read.text.string([]), 'text');
+              assert.equal(acceptedText(), 'text');
               assert.equal(proposed.read.text.string([]), '!?text');
               range = proposed.anchor(expected, { deletion: 'drop' });
             });
@@ -2848,7 +2845,7 @@ describe('transactional plugin configuration', () => {
       );
     });
     assert.deepEqual(range?.resolve(), expected);
-    assert.equal(editor.read.text.string([]), 'text');
+    assert.equal(acceptedText(), 'text');
     proposed.update((tx) => {
       tx.history.newBatch();
       tx.text.insert('X', { at: { path: [0, 0], offset: 0 } });
@@ -2938,10 +2935,7 @@ describe('transactional plugin configuration', () => {
         });
         beforePublish(() => {
           restored = editor.anchor.restore(saved);
-          assert.deepEqual(restored.resolve(), {
-            anchor: { path: [0, 0], offset: 2 },
-            focus: { path: [0, 0], offset: 4 },
-          });
+          assert.deepEqual(restored.resolve(), range);
           assert.throws(writeDraft, /finalized editor transaction/);
           assert.throws(
             () => editor.update.text.insert('?'),

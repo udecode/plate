@@ -33,9 +33,7 @@ export function useRootChrome<const TRoot extends RootKey = RootKey>(
   { disabled = false, selection = 'restore' }: UseRootChromeOptions = {}
 ): RootChromeController {
   if (root === MAIN_ROOT_KEY) {
-    throw new Error(
-      '[Plite] Omit root to create chrome for the primary document.'
-    );
+    throw new Error('Omit root to create chrome for the primary document.');
   }
 
   const internalRoot = root ?? MAIN_ROOT_KEY;

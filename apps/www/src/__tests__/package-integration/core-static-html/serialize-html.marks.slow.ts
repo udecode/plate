@@ -1,17 +1,24 @@
-import { createStaticEditor, renderStaticMarkup } from './create-static-editor';
+import { createEditor } from 'platejs';
+
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
+
+import { renderStaticMarkup } from './render-static-markup';
 
 describe('core static renderStaticHtml mark rendering', () => {
   it('renders bold text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          { text: 'Some paragraph of text with ' },
-          { bold: true, text: 'bold' },
-          { text: ' part.' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            { text: 'Some paragraph of text with ' },
+            { bold: true, text: 'bold' },
+            { text: ' part.' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 
@@ -19,16 +26,19 @@ describe('core static renderStaticHtml mark rendering', () => {
   });
 
   it('renders italic text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          { text: 'Some paragraph of text with ' },
-          { italic: true, text: 'italic' },
-          { text: ' part.' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            { text: 'Some paragraph of text with ' },
+            { italic: true, text: 'italic' },
+            { text: ' part.' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 
@@ -36,16 +46,19 @@ describe('core static renderStaticHtml mark rendering', () => {
   });
 
   it('renders underlined text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          { text: 'Some paragraph of text with ' },
-          { text: 'underlined', underline: true },
-          { text: ' part.' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            { text: 'Some paragraph of text with ' },
+            { text: 'underlined', underline: true },
+            { text: ' part.' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 
@@ -53,16 +66,19 @@ describe('core static renderStaticHtml mark rendering', () => {
   });
 
   it('renders strikethrough text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          { text: 'Some paragraph of text with ' },
-          { strikethrough: true, text: 'strikethrough' },
-          { text: ' part.' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            { text: 'Some paragraph of text with ' },
+            { strikethrough: true, text: 'strikethrough' },
+            { text: ' part.' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 
@@ -70,16 +86,19 @@ describe('core static renderStaticHtml mark rendering', () => {
   });
 
   it('renders code text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          { text: 'Some paragraph of text with ' },
-          { code: true, text: 'some code' },
-          { text: ' part.' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            { text: 'Some paragraph of text with ' },
+            { code: true, text: 'some code' },
+            { text: ' part.' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 
@@ -87,16 +106,19 @@ describe('core static renderStaticHtml mark rendering', () => {
   });
 
   it('renders subscript text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          { text: 'Some paragraph of text with ' },
-          { script: 'sub', text: 'subscripted' },
-          { text: ' part.' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            { text: 'Some paragraph of text with ' },
+            { script: 'sub', text: 'subscripted' },
+            { text: ' part.' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 
@@ -104,16 +126,19 @@ describe('core static renderStaticHtml mark rendering', () => {
   });
 
   it('renders superscript text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          { text: 'Some paragraph of text with ' },
-          { script: 'sup', text: 'superscripted' },
-          { text: ' part.' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            { text: 'Some paragraph of text with ' },
+            { script: 'sup', text: 'superscripted' },
+            { text: ' part.' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 
@@ -123,16 +148,19 @@ describe('core static renderStaticHtml mark rendering', () => {
   });
 
   it('renders keyboard text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          { text: 'Some paragraph of text with ' },
-          { kbd: true, text: 'keyboard shortcut' },
-          { text: ' part.' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            { text: 'Some paragraph of text with ' },
+            { kbd: true, text: 'keyboard shortcut' },
+            { text: ' part.' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 
@@ -142,16 +170,19 @@ describe('core static renderStaticHtml mark rendering', () => {
   });
 
   it('renders multiple marks on the same leaf', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          { text: 'Some paragraph of text with ' },
-          { bold: true, italic: true, text: 'bold and italic' },
-          { text: ' part.' },
-        ],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            { text: 'Some paragraph of text with ' },
+            { bold: true, italic: true, text: 'bold and italic' },
+            { text: ' part.' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const html = await renderStaticMarkup(editor);
 

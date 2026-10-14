@@ -4,7 +4,7 @@ import { AuthoredPlugin, type AuthoredChange } from '../../../authored';
 import { RangeApi, TextApi, type EditorCommit, type Path } from '../../../core';
 import { useEditorViewState } from '../../plite-react';
 import { useEditor, useEditorSelector } from '../../stores';
-import { useSuggestionViewStore } from './suggestion-view.internal';
+import { useSuggestionViewStore, viewKey } from './suggestion-view.internal';
 import { SuggestionPlugin } from './SuggestionPlugin';
 
 const sameChanges = (
@@ -16,7 +16,6 @@ const sameChanges = (
     (change, index) =>
       change.id === right[index]?.id &&
       change.revision === right[index].revision &&
-      change.status === right[index].status &&
       change.ranges.length === right[index].ranges.length &&
       change.ranges.every((range, rangeIndex) =>
         RangeApi.equals(range, right[index].ranges[rangeIndex] ?? null)
@@ -43,21 +42,16 @@ export const useActiveSuggestion = () => {
   );
 };
 
-/** Read pending or conflicted authored changes intersecting one node path. */
+/** Read pending authored changes intersecting one node path. */
 export const useSuggestionChanges = (path: Path) => {
   const editor = useEditor();
-  const authoredView = useEditorViewState(
-    editor,
-    () => editor.plugin(AuthoredPlugin).read.view(),
-    {
-      equalityFn: (left, right) =>
-        left?.intent === right.intent && left.projection === right.projection,
-    }
+  const view = useEditorViewState(editor, () =>
+    viewKey(editor.plugin(AuthoredPlugin).read.view())
   );
 
   return useEditorSelector(
     (current) => {
-      void authoredView;
+      void view;
       const entries = [
         ...current.read.nodes.entries({ at: path, match: TextApi.isText }),
       ];
@@ -81,6 +75,15 @@ export const useSuggestionChanges = (path: Path) => {
     { equalityFn: sameChanges, shouldUpdate: authoredChanged }
   );
 };
+
+/**
+ * Read pending changes as review cards show them: adjacent changes by one
+ * author form a group, ranked by creation for palette slots.
+ */
+export const useSuggestionGroups = () =>
+  useEditorSelector((editor) => editor.plugin(AuthoredPlugin).read.groups(), {
+    shouldUpdate: authoredChanged,
+  });
 
 /** Read whether the exact mounted editor view is editing or suggesting. */
 export const useSuggestionMode = () => {

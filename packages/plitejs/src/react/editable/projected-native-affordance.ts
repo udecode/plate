@@ -21,7 +21,7 @@ export const PROJECTED_NATIVE_AFFORDANCE_MATRIX =
   Object.freeze<ProjectedNativeAffordanceMatrix>({
     clipboard: {
       proof:
-        'Model-owned projected selection writes text/plain, text/html, and Plite fragment payloads.',
+        'Model-owned projected selection writes text/plain, text/html, and editor fragment payloads.',
       status: 'supported',
     },
     find: {

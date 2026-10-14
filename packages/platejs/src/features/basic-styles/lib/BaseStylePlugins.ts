@@ -9,8 +9,10 @@ import {
   type DefinitionOf,
   type Element,
   type NodeSetNodesOptions,
+  txLocate,
+  locateAt,
 } from '../../../core';
-import { failInvariant } from '../internal/failInvariant';
+import { failInvariant } from '../../../internal/failInvariant';
 
 const digitRegex = /\d+/;
 
@@ -197,28 +199,31 @@ export const BaseLineHeightPlugin = definePlugin(PLUGINS.lineHeight, {
     },
   },
   update: ({ editor, plugin, tx }) => ({
-    set: (value: number, options?: NodeSetNodesOptions<Element>) => {
-      const { defaultNodeValue } =
-        editor.plugin(plugin).inject.nodeProps ??
-        failInvariant('Expected value to be defined');
-      const match = getInjectMatch(editor, plugin);
+    set: txLocate(
+      locateAt(1),
+      (value: number, options?: NodeSetNodesOptions<Element>) => {
+        const { defaultNodeValue } =
+          editor.plugin(plugin).inject.nodeProps ??
+          failInvariant('Expected value to be defined');
+        const match = getInjectMatch(editor, plugin);
 
-      if (value === defaultNodeValue) {
-        tx.nodes.unset('lineHeight', {
-          match,
-          ...options,
-        });
-        return;
-      }
-
-      tx.nodes.set(
-        { lineHeight: value },
-        {
-          match,
-          ...options,
+        if (value === defaultNodeValue) {
+          tx.nodes.unset('lineHeight', {
+            match,
+            ...options,
+          });
+          return;
         }
-      );
-    },
+
+        tx.nodes.set(
+          { lineHeight: value },
+          {
+            match,
+            ...options,
+          }
+        );
+      }
+    ),
   }),
 });
 
@@ -259,28 +264,31 @@ export const BaseTextAlignPlugin = definePlugin(PLUGINS.textAlign, {
     },
   },
   update: ({ editor, plugin, tx }) => ({
-    set: (value: Alignment, options?: NodeSetNodesOptions<Element>) => {
-      const { defaultNodeValue } =
-        editor.plugin(plugin).inject.nodeProps ??
-        failInvariant('Expected value to be defined');
-      const match = getInjectMatch(editor, plugin);
+    set: txLocate(
+      locateAt(1),
+      (value: Alignment, options?: NodeSetNodesOptions<Element>) => {
+        const { defaultNodeValue } =
+          editor.plugin(plugin).inject.nodeProps ??
+          failInvariant('Expected value to be defined');
+        const match = getInjectMatch(editor, plugin);
 
-      if (value === defaultNodeValue) {
-        tx.nodes.unset('textAlign', {
-          match,
-          ...options,
-        });
-        return;
-      }
-
-      tx.nodes.set(
-        { textAlign: value },
-        {
-          match,
-          ...options,
+        if (value === defaultNodeValue) {
+          tx.nodes.unset('textAlign', {
+            match,
+            ...options,
+          });
+          return;
         }
-      );
-    },
+
+        tx.nodes.set(
+          { textAlign: value },
+          {
+            match,
+            ...options,
+          }
+        );
+      }
+    ),
   }),
 });
 

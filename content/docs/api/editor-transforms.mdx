@@ -99,13 +99,13 @@ Options: `at`, `type`, `match`, `mode`, `always`, `height`, `position`, `voids`.
 
 #### `tx.nodes.wrap(element: Element, options?)`
 
-Wrap matching nodes in `element`.
+Wrap matching nodes in `element`. Returns whether the document changed. With no `match` or `type`, an inline `element` over a range wraps only where the element that would hold the wrapper accepts it and the wrapper accepts the nodes it would move. It returns `false` when it can wrap nowhere in the range. With `split`, it runs from the first character or inline void the range holds to the last. It leaves out an inline element the range only touches at its edge and every block whose part of the range holds none. It also stops short of a read-only inline at either end, though an inline element around one can still move into the wrapper whole. That wrap ignores `voids`, so it never wraps anything inside a void or read-only element. In that wrap, an inline element the range crosses into or out of moves into the wrapper whole, and a range inside one inline element wraps inside it. With `split`, a wrap with `match` or `type` splits at the range's edges. When one match holds another, as `mode: 'all'` allows, the wrapper goes around the outer one, even when it holds text outside the range.
 
 Options: `at`, `type`, `match`, `mode`, `split`, `voids`.
 
 #### `tx.nodes.unwrap(options?)`
 
-Unwrap matching nodes.
+Unwrap matching nodes. Returns whether the document changed. With `split`, it cuts an inline element that holds text, such as a link, at the range's edges and unwraps only the selected part; at a caret or a point it unwraps the whole element.
 
 Options: `at`, `type`, `match`, `mode`, `split`, `voids`.
 
@@ -263,6 +263,37 @@ Pass `{ wrap: true }` to wrap or unwrap the targeted blocks instead.
 ## Break methods
 
 Use break methods from `tx.break`.
+
+#### `tx.break.exit(options?)`
+
+Leave the structure around the selected block and insert the default block
+that the structure's parent declares at that position.
+
+The walk starts at the selected block's parent. It stops at the first ancestor
+that sits directly in a root, or whose parent can directly hold the root's
+default block, such as a paragraph. That default is the block the root adds
+after any blocks it requires first, whatever the ancestor's position. The walk
+checks only its type, so a default that requires a property such as `id` does
+not stop it. With a paragraph default, a table row holds
+no paragraph, so the walk passes a cell and its row and stops at the table.
+With no such ancestor, the selected block is the structure.
+
+The method inserts the new block after the structure, or before it with
+`before: true`, and selects it.
+
+```typescript
+editor.update.break.exit();
+```
+
+Returns `false` without changing the document when the selection is not a
+collapsed caret, or when the structure's parent declares no default block or
+has no room for it.
+
+Options:
+
+- `before?: boolean`: Insert before the structure instead of after it.
+- `match?: (node, path) => boolean`: Limit which ancestors can be the
+  structure. The selected block is the fallback.
 
 #### `tx.break.insert()`
 

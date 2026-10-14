@@ -19,6 +19,8 @@ import {
   RangeApi,
   schema,
   transferVeto,
+  txLocate,
+  locateAt,
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 
@@ -63,40 +65,52 @@ export const BaseColumnItemPlugin = definePlugin(PLUGINS.column, {
 })
   .extend(({ plugin }) => ({
     update: ({ tx }) => ({
-      moveMiddle: (
-        [node, path]: NodeEntry<Element>,
-        { direction = 'left' }: Partial<MoveMiddleColumnOptions> = {}
-      ) => {
-        if (direction !== 'left') return undefined;
+      moveMiddle: txLocate(
+        ([[node, path], options], place) => {
+          const at = place.location(path);
 
-        const middleChildNode = NodeApi.get(node, [1]);
+          return at && [[node, at], options];
+        },
+        (
+          [, path]: NodeEntry<Element>,
+          { direction = 'left' }: Partial<MoveMiddleColumnOptions> = {}
+        ) => {
+          if (direction !== 'left') return undefined;
 
-        if (!NodeApi.isElement(middleChildNode)) return false;
+          const entry = tx.nodes.get(path, { match: ElementApi.isElement });
 
-        const middleChildPath = path.concat([1]);
+          if (!entry) return false;
 
-        if (NodeApi.string(middleChildNode) === '') {
+          const [node] = entry;
+          const middleChildNode = NodeApi.get(node, [1]);
+
+          if (!NodeApi.isElement(middleChildNode)) return false;
+
+          const middleChildPath = path.concat([1]);
+
+          if (NodeApi.string(middleChildNode) === '') {
+            tx.nodes.remove({ at: middleChildPath });
+
+            return false;
+          }
+
+          const firstNode = NodeApi.descendant(node, [0]);
+
+          if (!NodeApi.isElement(firstNode)) return false;
+
+          const appendOffset = firstNode.children.length;
+
+          middleChildNode.children.forEach((_, childIndex) => {
+            tx.nodes.move({
+              at: middleChildPath.concat([0]),
+              to: path.concat([0, appendOffset + childIndex]),
+            });
+          });
           tx.nodes.remove({ at: middleChildPath });
 
-          return false;
+          return undefined;
         }
-
-        const firstNode = NodeApi.descendant(node, [0]);
-
-        if (!NodeApi.isElement(firstNode)) return false;
-
-        const appendOffset = firstNode.children.length;
-
-        middleChildNode.children.forEach((_, childIndex) => {
-          tx.nodes.move({
-            at: middleChildPath.concat([0]),
-            to: path.concat([0, appendOffset + childIndex]),
-          });
-        });
-        tx.nodes.remove({ at: middleChildPath });
-
-        return undefined;
-      },
+      ),
       selectAll: () => {
         const selection = tx.selection();
 
@@ -439,62 +453,67 @@ export const BaseColumnPlugin = definePlugin(PLUGINS.columnGroup, {
       });
 
     return {
-      insert: (
-        input: { columns?: number } = {},
-        options: BlockInsertOptions = {}
-      ) => applyColumnInsertion('insert', input, options),
-      setColumns,
-      toggle: ({ at, columns = 2, widths }: ToggleColumnGroupOptions = {}) => {
-        const entry = tx.nodes.block({ at });
-        const columnGroupEntry = tx.nodes.above({
-          at,
-          type: plugin,
-        });
+      insert: txLocate(
+        locateAt(1, 'at', 'after', 'before'),
+        (input: { columns?: number } = {}, options: BlockInsertOptions = {}) =>
+          applyColumnInsertion('insert', input, options)
+      ),
+      setColumns: txLocate(locateAt(0), setColumns),
+      toggle: txLocate(
+        locateAt(0),
+        ({ at, columns = 2, widths }: ToggleColumnGroupOptions = {}) => {
+          const entry = tx.nodes.block({ at });
+          const columnGroupEntry = tx.nodes.above({
+            at,
+            type: plugin,
+          });
 
-        if (!entry) return;
+          if (!entry) return;
 
-        if (columnGroupEntry) {
-          setColumns({ at: columnGroupEntry[1], columns, widths });
+          if (columnGroupEntry) {
+            setColumns({ at: columnGroupEntry[1], columns, widths });
 
-          return;
+            return;
+          }
+
+          const [node, path] = entry;
+          const columnWidths = widths ?? columnsToWidths(columns);
+          const columnGroup = {
+            children: Array.from({ length: columns }, (_, index) => ({
+              children: [
+                index === 0
+                  ? node
+                  : {
+                      children: [{ text: '' }],
+                      type: paragraphType,
+                    },
+              ],
+              type: columnType,
+              width: columnWidths[index],
+            })),
+            type,
+          };
+          const parentPath = PathApi.parent(path);
+          const index = path.at(-1);
+
+          if (index === undefined) return;
+
+          tx.nodes.replaceChildren([columnGroup], {
+            at: parentPath,
+            count: 1,
+            index,
+          });
+
+          const point = tx.points.start(path.concat([0]));
+
+          if (point) tx.selection.set(point);
         }
-
-        const [node, path] = entry;
-        const columnWidths = widths ?? columnsToWidths(columns);
-        const columnGroup = {
-          children: Array.from({ length: columns }, (_, index) => ({
-            children: [
-              index === 0
-                ? node
-                : {
-                    children: [{ text: '' }],
-                    type: paragraphType,
-                  },
-            ],
-            type: columnType,
-            width: columnWidths[index],
-          })),
-          type,
-        };
-        const parentPath = PathApi.parent(path);
-        const index = path.at(-1);
-
-        if (index === undefined) return;
-
-        tx.nodes.replaceChildren([columnGroup], {
-          at: parentPath,
-          count: 1,
-          index,
-        });
-
-        const point = tx.points.start(path.concat([0]));
-
-        if (point) tx.selection.set(point);
-      },
-      upsert: (
-        input: { columns?: number } = {},
-        options: BlockUpsertOptions = {}
-      ) => applyColumnInsertion('upsert', input, options),
+      ),
+      upsert: txLocate(
+        locateAt(1, 'after', 'before'),
+        (input: { columns?: number } = {}, options: BlockUpsertOptions = {}) =>
+          applyColumnInsertion('upsert', input, options)
+      ),
     };
   },
 }));

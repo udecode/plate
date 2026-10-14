@@ -1,4 +1,4 @@
-import { failInvariant } from '../../internal/failInvariant';
+import { failInvariant } from '../../../../internal/failInvariant';
 
 export type ListStyleType =
   | 'decimal'

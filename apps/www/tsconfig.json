@@ -100,6 +100,7 @@
       "platejs/layout/react": [
         "../../packages/platejs/src/react/features/layout/index.ts"
       ],
+      "platejs/lint": ["../../packages/platejs/src/features/lint/index.ts"],
       "platejs/markdown": ["../../packages/platejs/src/markdown/index.ts"],
       "platejs/math": ["../../packages/platejs/src/math/index.ts"],
       "platejs/math/react": ["../../packages/platejs/src/math/react/index.ts"],

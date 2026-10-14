@@ -18,6 +18,7 @@ import {
   setActiveYjsController,
 } from './controller-registry';
 import type { YjsEditor } from './editor-types';
+import { DEFAULT_YJS_ROOT_NAME } from './keys';
 import type {
   YjsAwarenessLike,
   YjsBaseApi,
@@ -86,7 +87,7 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
   const activationErrors = new WeakMap<YjsEditor, unknown>();
   const controllers = new WeakMap<YjsEditor, YjsController<TCursorData>>();
   const factoryToken = {};
-  const rootName = options.rootName ?? 'plitejs';
+  const rootName = options.rootName ?? DEFAULT_YJS_ROOT_NAME;
   const getController = (editor: YjsEditor) => {
     const owner = getEditorRuntimeOwner(editor);
     const controller = controllers.get(owner);
@@ -140,10 +141,10 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
             const children: Descendant[] = [];
 
             while (children.length < rootContent.min) {
-              const child = context.schema.createDefaultRootChild(
-                root === 'main' ? undefined : root,
-                children.length
-              );
+              const child = context.schema.createDefaultChild({
+                at: [children.length],
+                root: root === 'main' ? undefined : root,
+              });
 
               if (!child) {
                 throw new Error(

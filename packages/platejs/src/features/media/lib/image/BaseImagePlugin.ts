@@ -10,6 +10,7 @@ import {
   TextApi,
 } from '../../../../core';
 import { domCommands } from '../../../../dom/plite-dom.internal';
+import { getMarkdownParagraphType } from '../../../../internal/plugin/markdownParagraph';
 import { isScriptUrl, isStoredUrl } from '../../../../internal/utils/urlPolicy';
 import {
   defineMediaPlugin,
@@ -283,7 +284,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
               return markdownImageFallback(
                 { alt: properties.alt, src: attributes.src },
                 captionChildren,
-                registry.type(PLUGINS.paragraph) ?? 'paragraph',
+                getMarkdownParagraphType(registry),
                 report,
                 'img'
               );
@@ -405,7 +406,7 @@ export const BaseImagePlugin = definePlugin(PLUGINS.image, {
               return markdownImageFallback(
                 { alt: properties.alt, src: attributes.src },
                 captionChildren,
-                registry.type(PLUGINS.paragraph) ?? 'paragraph',
+                getMarkdownParagraphType(registry),
                 report,
                 'figure'
               );

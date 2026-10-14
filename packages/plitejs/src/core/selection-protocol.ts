@@ -145,7 +145,7 @@ const getLegacyNodeSelectionOptions = (range: Range) => {
   const root = anchorRoot ?? focusRoot;
 
   if (root === 'main') {
-    throw new Error('[Plite] Omit root to target the primary document.');
+    throw new Error('Omit root to target the primary document.');
   }
 
   return root ? { root } : {};

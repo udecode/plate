@@ -601,6 +601,12 @@ describe('selection protocol', () => {
     });
     assert.equal('marks' in getSnapshot(editor), false);
 
+    editor.update((tx) => tx.selection.set(range([0, 0], 0, [0, 0], 1)));
+    assert.deepEqual(
+      getEditorLiveSelection(editor),
+      SelectionApi.text(range([0, 0], 0, [0, 0], 1))
+    );
+
     editor.update((tx) =>
       tx.selection.set(SelectionApi.text(range([0, 0], 0, [0, 0], 0)))
     );

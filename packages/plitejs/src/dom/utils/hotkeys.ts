@@ -26,6 +26,8 @@ const HOTKEYS = {
   extendWordForward: 'ctrl+shift+right',
   moveLineBackward: 'home',
   moveLineForward: 'end',
+  moveLineStart: 'home',
+  moveLineEnd: 'end',
   insertSoftBreak: 'shift+enter',
   splitBlock: 'enter',
   undo: 'mod+z',
@@ -34,6 +36,8 @@ const HOTKEYS = {
 const APPLE_HOTKEYS = {
   moveLineBackward: ['opt+up', 'ctrl+a'],
   moveLineForward: ['opt+down', 'ctrl+e'],
+  moveLineStart: 'ctrl+a',
+  moveLineEnd: 'ctrl+e',
   moveWordBackward: 'opt+left',
   moveWordForward: 'opt+right',
   deleteBackward: ['ctrl+backspace', 'ctrl+h'],
@@ -118,3 +122,8 @@ export const Hotkeys = {
   isTransposeCharacter: create('transposeCharacter'),
   isUndo: create('undo'),
 };
+
+// Kept off `Hotkeys`: its published move-line predicates match these keys too,
+// together with Option+Up and Option+Down, which step past the line's edge.
+export const isMoveLineStart = create('moveLineStart');
+export const isMoveLineEnd = create('moveLineEnd');

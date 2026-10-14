@@ -23,7 +23,6 @@ export type Action = { at?: Point | Range; run: () => void };
 export const IS_NODE_MAP_DIRTY = new WeakMap<AnyPluginEditor, boolean>();
 export const NODE_TO_INDEX = new WeakMap<Node, number>();
 export const NODE_TO_PARENT = new WeakMap<Node, Ancestor>();
-export const NODE_TO_RUNTIME_ID = new WeakMap<Node, NodeKey>();
 
 /**
  * Weak maps that allow us to go between Plite nodes and DOM nodes. These

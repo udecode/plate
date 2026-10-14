@@ -1,13 +1,10 @@
 import { dequal } from 'dequal';
 
-import type {
-  AuthoredDocumentProjection,
-  AuthoredReviewProjection,
-} from '../../../authored';
+import type { AuthoredProjectionDiagnostic } from '../../../authored';
 import {
+  AuthoredPlugin,
   projectAuthoredDocument,
   projectAuthoredRange,
-  projectAuthoredReview,
 } from '../../../authored';
 import {
   type BasePluginInput,
@@ -20,6 +17,7 @@ import {
   type Path,
   type Range,
 } from '../../../core';
+import { isMetadataRootKey } from '../../../facade';
 import type { EditorStaticProps } from '../../../static/components/PlateStatic';
 import { renderStaticHtmlWithOverrides } from '../../../static/internal/renderStaticHtmlWithOverrides';
 import type { StaticHtmlResult } from '../../../static/renderStaticHtml';
@@ -37,10 +35,10 @@ import { exportHtmlToDocx } from './exportHtmlToDocx.internal';
 import { toWordLevelRules } from './internal/docx-document';
 import type { Margins, PageSize } from './internal/types';
 import { checkDocxOutput, prepareDocxOutput } from './outputSafety';
+import { addDocxReview } from './reviewPart';
 import {
   applyReviewProjection,
   createReviewProjection,
-  projectReviewRange,
 } from './reviewProjection';
 import { preserveDocxSource } from './sourcePreservation';
 
@@ -51,7 +49,7 @@ export type { Margins, PageSize } from './internal/types';
 export type DocxExportOptions = Readonly<{
   /** Fetch remote HTTP(S) images during export. @default false */
   allowRemoteImages?: boolean;
-  /** Word comments whose ranges address the proposed editor projection. */
+  /** Word comments whose ranges address the editor's stored document. */
   comments?: readonly DocxComment[];
   /**
    * React component used for static HTML rendering. It does not stop an
@@ -126,28 +124,35 @@ export type DocxExportResult =
       ok: true;
     }>;
 
-type CapturedExportSnapshot = AuthoredDocumentProjection &
-  Readonly<{ format?: AuthoredReviewProjection }>;
+type CapturedExportSnapshot = Readonly<{
+  diagnostics: readonly AuthoredProjectionDiagnostic[];
+  /** The document the export renders. */
+  document: EditorDocumentValue;
+  /** The editor's document, review marks included. */
+  stored: EditorDocumentValue;
+}>;
 
 const captureExportSnapshot = (
   editor: Editor,
   projection: DocxExportOptions['projection']
 ): CapturedExportSnapshot => {
-  const review = editor.read.value();
+  const stored = editor.read.value();
 
   if (projection === 'review') {
-    const format = projectAuthoredReview(review);
-
     return Object.freeze({
-      diagnostics: format.diagnostics,
-      document: format.proposed,
-      format,
-      review: format.review,
-      unresolved: format.unresolved,
+      diagnostics: Object.freeze([]),
+      document: stored,
+      stored,
     });
   }
 
-  return projectAuthoredDocument(review, { projection });
+  const projected = projectAuthoredDocument(stored, { projection });
+
+  return Object.freeze({
+    diagnostics: projected.diagnostics,
+    document: projected.document,
+    stored,
+  });
 };
 
 type ExportCapture = Readonly<{
@@ -181,29 +186,17 @@ const captureExport = (
 ): ExportCapture => {
   const snapshot = captureExportSnapshot(editor, options.projection);
 
-  if (
-    options.projection === 'review' &&
-    snapshot.format &&
-    snapshot.format.changes.length > 0
-  ) {
-    const review = createReviewProjection(snapshot.format);
+  if (options.projection === 'review') {
+    const review = createReviewProjection(
+      snapshot.stored,
+      (node) => editor.plugin(AuthoredPlugin).read.reviewOf(node)
+    );
 
-    return Object.freeze({
-      comments: mapCommentRanges(comments, (range) =>
-        projectReviewRange(review, range)
-      ),
-      diagnostics: Object.freeze([]),
-      document: review.document,
-      review,
-      snapshot,
-    });
-  }
-  if (options.projection !== 'accepted') {
     return Object.freeze({
       comments,
       diagnostics: Object.freeze([]),
-      document: snapshot.document,
-      review: undefined,
+      document: review.document,
+      review,
       snapshot,
     });
   }
@@ -211,14 +204,14 @@ const captureExport = (
   const diagnostics: DocxDiagnostic[] = [];
 
   mapCommentRanges(comments, (range) =>
-    projectAuthoredRange(snapshot, range)
+    projectAuthoredRange(snapshot.stored, snapshot.document, range)
   ).forEach((comment, index) => {
-    // Like rejecting a suggestion in Word, the accepted projection drops a
-    // comment when none of the content it annotates survives.
+    // Like deciding a suggestion in Word, a projection drops a comment when
+    // none of the content it annotates survives.
     if (comment.target === null && comments[index]?.target) {
       diagnostics.push({
         code: 'authored-lossy-projection',
-        message: `The accepted projection omits comment ${comment.id} because it excludes all of the annotated content.`,
+        message: `The ${options.projection} projection omits comment ${comment.id} because it excludes all of the annotated content.`,
         severity: 'warning',
       });
     } else {
@@ -241,6 +234,7 @@ const nativeOnlyDiagnostics = (
   const diagnostics: DocxDiagnostic[] = [];
 
   for (const root of Object.keys(document.roots ?? {})) {
+    if (isMetadataRootKey(root)) continue;
     diagnostics.push({
       code: 'lossy-content',
       feature: 'named-root',
@@ -477,7 +471,7 @@ const resolveSourceExport = (
   > = [];
 
   if (options.projection !== 'review') reasons.push('projection-changed');
-  if (!DocumentChange.between(lease.document, capture.snapshot.review).empty) {
+  if (!DocumentChange.between(lease.document, capture.snapshot.stored).empty) {
     reasons.push('document-changed');
   }
   if (options.comments !== undefined && !dequal(comments, lease.comments)) {
@@ -570,24 +564,6 @@ export async function exportDocx(
   }
   const capture = captureExport(editor, options, comments);
 
-  if (
-    options.projection === 'review' &&
-    capture.snapshot.unresolved.conflicted > 0
-  ) {
-    const count = capture.snapshot.unresolved.conflicted;
-
-    return Object.freeze({
-      diagnostics: Object.freeze([
-        {
-          code: 'authored-conflict' as const,
-          count,
-          message: `Review DOCX cannot represent ${count} conflicted authored change${count === 1 ? '' : 's'} faithfully. Resolve conflicts before export.`,
-          severity: 'error' as const,
-        },
-      ]),
-      ok: false,
-    });
-  }
   const sourceResolution = resolveSourceExport(
     editor,
     capture,
@@ -596,7 +572,7 @@ export async function exportDocx(
   );
 
   const { snapshot } = capture;
-  const nativeOnly = nativeOnlyDiagnostics(snapshot.review);
+  const nativeOnly = nativeOnlyDiagnostics(snapshot.stored);
 
   if (sourceResolution.kind === 'exact') {
     throwIfDocxAborted(options.signal);
@@ -627,16 +603,16 @@ export async function exportDocx(
     ]);
 
     throwIfDocxAborted(options.signal);
-    const rendered = capture.review
+    const review = capture.review
       ? applyReviewProjection(main.data, capture.review)
-      : { diagnostics: [], html: main.data };
+      : undefined;
 
     diagnostics.push(
-      ...rendered.diagnostics,
+      ...(review?.diagnostics ?? []),
       ...missingDrawings([main, ...commentRenders])
     );
     const preparedComments = prepareDocxComments(
-      rendered.html,
+      review?.html ?? main.data,
       capture.comments,
       new Map(commentRenders.map(({ data, id }) => [id, data]))
     );
@@ -652,6 +628,13 @@ export async function exportDocx(
     throwIfDocxAborted(signal);
     blob = await addDocxComments(blob, preparedComments, signal);
     throwIfDocxAborted(signal);
+    if (review) {
+      const written = await addDocxReview(blob, review, signal);
+
+      throwIfDocxAborted(signal);
+      blob = written.blob;
+      diagnostics.push(...written.diagnostics);
+    }
     if (sourceResolution.lease) {
       const { blob: preservedBlob, diagnostics: preservationDiagnostics } =
         await preserveDocxSource(blob, sourceResolution.lease, signal);

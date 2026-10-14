@@ -135,7 +135,8 @@ const inline = () =>
 
         if (!text || !isUrl(text) || !selection) return next();
 
-        return state.transaction((tx) => {
+        let wrapped = true;
+        const transaction = state.transaction((tx) => {
           if (
             tx.nodes.some({
               match: (node) => NodeApi.isElement(node) && node.type === 'link',
@@ -161,20 +162,18 @@ const inline = () =>
             tx.nodes.insert(link);
             tx.selection.move({ unit: 'offset' });
           } else {
-            tx.nodes.wrap(link, { split: true });
+            wrapped = tx.nodes.wrap(link, { split: true });
           }
         });
+
+        return wrapped ? transaction : next();
       }),
       handle(editorCommands.insertText, ({ input, state }) => {
-        if (isUrl(input.text)) {
-          return state.transaction((tx) => {
-            insertLinkText(tx, input.text);
-          });
-        }
-
         let handled = false;
         const transaction = state.transaction((tx) => {
-          handled = insertLinkedTextSegments(tx, input.text);
+          handled = isUrl(input.text)
+            ? insertLinkText(tx, input.text)
+            : insertLinkedTextSegments(tx, input.text);
         });
 
         return handled ? transaction : false;
@@ -256,7 +255,7 @@ const splitLinkedTextSegments = (text: string) => {
 const insertLinkText = (tx: EditorTransactionSpecBuilder, url: string) => {
   const selection = tx.selection();
 
-  if (!selection) return;
+  if (!selection) return false;
 
   if (
     tx.nodes.some({
@@ -277,11 +276,14 @@ const insertLinkText = (tx: EditorTransactionSpecBuilder, url: string) => {
 
   if (isCollapsed) {
     tx.nodes.insert(link);
-  } else {
-    tx.nodes.wrap(link, { split: true });
+  } else if (tx.nodes.wrap(link, { split: true })) {
     tx.selection.collapse({ edge: 'end' });
+  } else {
+    return false;
   }
   tx.selection.move({ unit: 'offset' });
+
+  return true;
 };
 
 const insertLinkedTextSegments = (

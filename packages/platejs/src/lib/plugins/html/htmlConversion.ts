@@ -43,20 +43,17 @@ export const serializeHtml = (
       plugins: [HtmlPlugin, ...options.plugins],
       ...(options.schema ? { schema: options.schema } : {}),
     },
-    ({ editor, projectDocument, readDocument }) => {
-      const projected = projectDocument(
+    ({ editor, readDocument }) =>
+      readDocument(
         document,
-        options.projection ?? 'proposed'
-      );
-
-      return readDocument(projected.document, (state, ownedDocument) =>
-        serializeHtmlDocumentWithState(
-          editor,
-          state,
-          ownedDocument,
-          projected.diagnostics as readonly HtmlWarningDiagnostic[],
-          options.lossPolicy ?? 'reject'
-        )
-      );
-    }
+        options.projection,
+        (state, ownedDocument, diagnostics) =>
+          serializeHtmlDocumentWithState(
+            editor,
+            state,
+            ownedDocument,
+            diagnostics as readonly HtmlWarningDiagnostic[],
+            options.lossPolicy ?? 'reject'
+          )
+      )
   );

@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 
 import { chromium } from '@playwright/test';
 
+import { BROWSER_HANDLE_KEY } from '../../plitejs/src/internal/browser-protocol.ts';
+
 const runnerPath = fileURLToPath(import.meta.url);
 const repo = resolve(dirname(runnerPath), '../../..');
 const artifactPath = resolve(
@@ -147,7 +149,7 @@ const clear = () => {
 
 const getHandle = () => {
   const root = app.querySelector('[data-editor="true"]')
-  const handle = root?.__pliteBrowserHandle
+  const handle = root?.${BROWSER_HANDLE_KEY}
 
   if (!root || !handle) throw new Error('browser handle not installed')
 
@@ -159,7 +161,7 @@ const waitForMount = async () => {
 
   for (let attempt = 0; attempt < 300; attempt += 1) {
     const root = app.querySelector('[data-editor="true"]')
-    const handle = root?.__pliteBrowserHandle
+    const handle = root?.${BROWSER_HANDLE_KEY}
 
     if (root && handle && state.highlightCalls.length > 0 && paintedFrames >= 2) {
       return { handle, root }

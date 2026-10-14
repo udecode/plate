@@ -1,3 +1,4 @@
+import { getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
   getCurrentSelection,
@@ -9,7 +10,9 @@ import {
   type Ancestor,
   type Descendant,
   LocationApi,
+  type Node,
   NodeApi,
+  type Range,
   RangeApi,
   SelectionApi,
 } from '../interfaces';
@@ -18,6 +21,8 @@ import {
   getChildren as editorGetChildren,
   hasPath as editorHasPath,
   isBlock as editorIsBlock,
+  isEnd as editorIsEnd,
+  isStart as editorIsStart,
   range as editorRange,
 } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
@@ -30,6 +35,7 @@ import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { liftNodes } from './lift-nodes';
 import { mergeNodes } from './merge-nodes';
+import { splitNodes } from './split-nodes';
 
 const getChildren = (editor: Editor, node: Ancestor): readonly Descendant[] =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
@@ -95,13 +101,55 @@ export const unwrapNodes = ((
   const unwrapNodeAtPath = (path: Path) => {
     const [node] = getNode(editor, path);
 
-    if (NodeApi.isText(node) || path.length === 0) {
+    if (NodeApi.isText(node)) {
       return;
     }
 
-    applyBuiltDocumentChange(editor, (builder, root) =>
-      builder.unwrapNode(root, path)
+    const parentPath = path.slice(0, -1);
+    const index = path.at(-1);
+
+    if (index == null) {
+      return;
+    }
+
+    const children = getChildren(editor, node);
+
+    applyBuiltDocumentChange(
+      editor,
+      (builder, root) =>
+        builder.withOrigin('unwrap', () =>
+          builder.replaceChildren(root, parentPath, index, 1, children)
+        ),
+      {
+        nodeKeyTransfers: children.map((child, offset) => ({
+          path: [...parentPath, index + offset],
+          source: child,
+        })),
+      }
     );
+  };
+
+  const unwrapSelectedText = (path: Path, selected: Range) => {
+    const overlap = RangeApi.intersection(selected, editorRange(editor, path));
+
+    if (!overlap || RangeApi.isCollapsed(overlap)) return false;
+
+    const [start, end] = RangeApi.edges(overlap);
+    const match = (_node: Node, nodePath: Path) =>
+      PathApi.equals(nodePath, path);
+    let selectedPath = path;
+
+    if (!editorIsEnd(editor, end, path)) {
+      splitNodes(editor, { always: true, at: end, match });
+    }
+    if (!editorIsStart(editor, start, path)) {
+      splitNodes(editor, { always: true, at: start, match });
+      selectedPath = PathApi.next(path);
+    }
+
+    unwrapNodeAtPath(selectedPath);
+
+    return true;
   };
 
   runEditorTransaction(editor, (tx) => {
@@ -161,6 +209,7 @@ export const unwrapNodes = ((
             deletion: 'drop',
           })
       ).reverse();
+      let changed = false;
 
       for (const pathAnchor of pathAnchors) {
         const path = pathAnchor.release();
@@ -171,17 +220,31 @@ export const unwrapNodes = ((
 
         const [node] = getNode(editor, path);
         let range = editorRange(editor, path);
-
-        if (
-          !split &&
+        const holdsText =
           !NodeApi.isText(node) &&
-          getChildren(editor, node).some(NodeApi.isText)
-        ) {
+          getChildren(editor, node).some(NodeApi.isText);
+
+        if (!split && holdsText) {
           unwrapNodeAtPath(path);
+          changed = true;
           continue;
         }
 
         const anchoredRange = rangeAnchor?.resolve();
+
+        if (
+          holdsText &&
+          NodeApi.isElement(node) &&
+          getEditorSchema(editor).isInline(node)
+        ) {
+          if (anchoredRange && RangeApi.isExpanded(anchoredRange)) {
+            changed = unwrapSelectedText(path, anchoredRange) || changed;
+          } else {
+            unwrapNodeAtPath(path);
+            changed = true;
+          }
+          continue;
+        }
 
         if (split && anchoredRange) {
           const currentSelection = getCurrentSelection(editor);
@@ -197,6 +260,7 @@ export const unwrapNodes = ((
           range = intersection;
         }
 
+        changed = true;
         liftNodes(editor, {
           at: range,
           match: (candidate, candidatePath) =>
@@ -208,7 +272,7 @@ export const unwrapNodes = ((
         });
       }
 
-      mergeAdjacentTextRuns(editor);
+      if (changed) mergeAdjacentTextRuns(editor);
       rangeAnchor?.release();
       return;
     }

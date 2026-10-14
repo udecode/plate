@@ -9,9 +9,7 @@ import type { ClipboardPayloadSnapshot } from './types';
 
 const CLIPBOARD_LOCK_PATH = `${process.cwd()}/.editor-browser-clipboard.lock`;
 const CLIPBOARD_LOCK_RETRY_MS = 50;
-const CLIPBOARD_LOCK_TIMEOUT_MS = Number(
-  process.env.PLITE_BROWSER_CLIPBOARD_LOCK_TIMEOUT_MS ?? 30_000
-);
+const CLIPBOARD_LOCK_TIMEOUT_MS = 30_000;
 const clipboardLockContext = new AsyncLocalStorage<boolean>();
 
 const sleep = (ms: number) =>
@@ -194,7 +192,7 @@ const captureNativeClipboardPayload = async (
   root: Locator,
   eventName: 'copy' | 'cut'
 ): Promise<ClipboardPayloadSnapshot> => {
-  const snapshotKey = `__pliteNativeClipboardPayload_${eventName}_${Date.now()}_${Math.random()}`;
+  const snapshotKey = `__EDITOR_NATIVE_CLIPBOARD_PAYLOAD_${eventName}_${Date.now()}_${Math.random()}`;
 
   await root.evaluate(
     (
@@ -378,7 +376,7 @@ export const insertDataThroughHandle = async (
 
       handle.insertData({
         html: nextPayload.html ?? undefined,
-        pliteFragment: nextPayload.fragment ?? undefined,
+        fragment: nextPayload.fragment ?? undefined,
         text: nextPayload.text,
       });
     },

@@ -21,7 +21,7 @@ Horizontal Rule adds a void `horizontalRule` block for separating sections. The 
 - Void block `horizontalRule` element.
 - HTML deserialization from `<hr>`.
 - Default render tag of `<hr>`.
-- `---` and `___ ` input rules through `HorizontalRuleRules.markdown()`.
+- `---` and `___ ` input rules through `HorizontalRuleRules.markdown()`, on a line of their own.
 - Editable and static registry divider components.
 - Insert toolbar item labeled `Divider`.
 
@@ -113,12 +113,11 @@ export const editor = createEditor({
 Use the base plugin with the static component in static rendering paths.
 
 ```tsx
-import { BaseHorizontalRulePlugin } from 'platejs';
-import { createStaticEditor } from 'platejs/static';
+import { BaseHorizontalRulePlugin, createEditor } from 'platejs';
 
 import { HrElementStatic } from '@/components/editor/horizontal-rule-static';
 
-export const staticEditor = createStaticEditor({
+export const editor = createEditor({
   plugins: [
     BaseHorizontalRulePlugin.configure({
       component: HrElementStatic,
@@ -157,14 +156,16 @@ const value = [
 
 ## Input rules
 
-`HorizontalRuleRules.markdown()` converts a paragraph into a `horizontalRule` block and inserts an empty paragraph after it.
+`HorizontalRuleRules.markdown()` turns a block that holds only its marker into a `horizontalRule` block, then puts the caret in a new block after it.
 
 | Rule | Trigger | Behavior |
 |------|---------|----------|
-| `HorizontalRuleRules.markdown({ variant: '-' })` | type the third `-` after `--` | Converts `---` to `horizontalRule`, then inserts a paragraph. |
-| `HorizontalRuleRules.markdown({ variant: '_' })` | type a space after `___` | Converts `___ ` to `horizontalRule`, then inserts a paragraph. |
+| `HorizontalRuleRules.markdown({ variant: '-' })` | type the third `-` after `--` | Converts `---` to `horizontalRule`, then adds the block after it. |
+| `HorizontalRuleRules.markdown({ variant: '_' })` | type a space after `___` | Converts `___ ` to `horizontalRule`, then adds the block after it. |
 
-The rule resolves `BaseHorizontalRulePlugin` through the editor and passes its `schema.type` to `tx.nodes.set`, so configured element types keep working.
+The marker must be the block's only content. Typed beside existing text, as in `---abc`, or beside an inline element such as a mention, it stays as typed. The block after the divider is the one its container declares as default, the same block Enter adds with the caret on a divider: a paragraph in most editors, a `title` in an app whose root defaults to `title`, the quote's default block inside a blockquote. Where the schema refuses a divider, or no block can follow it, the marker stays as typed.
+
+The rule resolves `BaseHorizontalRulePlugin` through the editor and passes its `schema.type` to `tx.blocks.set`, so configured element types keep working.
 
 ## Registry UI
 

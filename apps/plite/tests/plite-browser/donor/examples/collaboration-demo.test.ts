@@ -1,12 +1,12 @@
 import { expect, type Locator, test } from "@playwright/test";
-import { recordBrowserRuntimeErrors } from "@platejs/test/playwright";
+import { BROWSER_HANDLE_KEY, recordBrowserRuntimeErrors } from "@platejs/test/playwright";
 
 const INITIAL_TEXT =
   "Ada and Lin edit independent documents through a local Yjs room.";
 
 const selectEditorPoint = (editor: Locator, offset: number) =>
-  editor.evaluate((element: HTMLElement, nextOffset) => {
-    const handle = (element as Record<string, any>).__pliteBrowserHandle;
+  editor.evaluate((element: HTMLElement, [nextOffset, key]) => {
+    const handle = (element as Record<string, any>)[key];
     const point = { offset: nextOffset, path: [0, 0] };
 
     if (!handle?.selectRange) {
@@ -14,7 +14,7 @@ const selectEditorPoint = (editor: Locator, offset: number) =>
     }
 
     handle.selectRange({ anchor: point, focus: point });
-  }, offset);
+  }, [offset, BROWSER_HANDLE_KEY] as const);
 
 test.describe("Plate collaboration registry example", () => {
   test("proves independent peers, cursors, reconnect, history, schema, and teardown", async ({

@@ -19,7 +19,7 @@ export const useEditorContext = (): EditorContextValue<any> => {
 
   if (!editor) {
     throw new Error(
-      `The \`useEditorContext\` hook must be used inside the <Plite> component's context.`
+      `The \`useEditorContext\` hook must be used inside <EditorRoot>.`
     );
   }
 

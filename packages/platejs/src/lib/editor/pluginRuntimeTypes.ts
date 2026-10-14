@@ -69,6 +69,7 @@ import type {
   SchemaTypesTarget,
   TransactionSpec,
   Value,
+  EditorDirectUpdate,
   EditorGenericMethod,
   EditorSchemaSourceProvider,
   RuntimePluginDependencyReferenceFor,
@@ -1277,7 +1278,10 @@ type SchemaDefinition<D> = EditorSchemaDerivedDefinition<
   NonNullable<RawSchemaDeclaration<D>['contentRoots']>
 >;
 
-type SchemaPlugin<D> = EditorSchemaPlugin<SchemaDefinition<D>, 'plate'>;
+type SchemaPlugin<D> = EditorSchemaPlugin<
+  SchemaDefinition<D>,
+  'installed-plugins'
+>;
 
 type DependencySchemaProviders<TDependencies extends readonly unknown[]> = {
   readonly [
@@ -2023,11 +2027,11 @@ type PluginEditorApi<V extends Value, D> = Readonly<
 >;
 
 type InstalledPlateSchemaPlugin<D> = {
-  name: 'plate';
+  name: 'installed-plugins';
 } & EditorSchemaPluginProvider<() => SchemaPlugin<D>>;
 
 type InstalledPlatePlugin<V extends Value, D, S = D> = Readonly<{
-  name: 'plate';
+  name: 'installed-plugins';
 }> &
   RuntimePluginTypeProvider<
     RuntimePluginCapabilities<{
@@ -2105,7 +2109,7 @@ type TransactionPluginPortalSurface<
     : {});
 
 type PlateTransactionPlugin<D, S = D> = {
-  name: 'plate-transaction';
+  name: 'installed-plugins-transaction';
 } & RuntimePluginTypeProvider<
   RuntimePluginCapabilities<{
     update: MergeCapabilityGroups<
@@ -2414,7 +2418,7 @@ type PluginTransactionNodes<D, S = D> = Omit<
       ElementForSelector<S, TSelector>,
       TSelector
     >
-  ) => void) &
+  ) => boolean) &
     EditorUpdateTransaction['nodes']['unwrap'];
   wrap: (<const TSelector extends PluginNodeTypeSelector>(
     element: Element,
@@ -2423,7 +2427,7 @@ type PluginTransactionNodes<D, S = D> = Omit<
       ElementForSelector<S, TSelector>,
       TSelector
     >
-  ) => void) &
+  ) => boolean) &
     EditorUpdateTransaction['nodes']['wrap'];
 } & PluginEditorStateNodes<Value, S>;
 
@@ -2781,7 +2785,7 @@ export type PluginReadState<P extends AnyBasePluginDefinition> =
   PluginReadStateForInstalledDefinitions<InstalledRuntimePluginDefinitions<P>>;
 
 type OwnInstalledPlatePlugin<P> = {
-  name: 'plate';
+  name: 'installed-plugins';
 } & RuntimePluginTypeProvider<
   RuntimePluginCapabilities<{
     update: Materialize<
@@ -2813,12 +2817,21 @@ type PluginUpdateMethods<
   >
 >;
 
-/** One-shot update methods exposed directly by one plugin portal. */
+/** One plugin's update methods and their policy form, transaction-only controls included. */
 export type PluginUpdate<
   P extends AnyBasePluginDefinition,
   S = P,
 > = PluginUpdateMethods<P, S> &
   ((policy: EditorUpdatePolicy) => PluginUpdateMethods<P, S>);
+
+/**
+ * Update methods a plugin portal calls directly, without its top-level
+ * transaction-only controls.
+ */
+export type PluginDirectUpdate<
+  P extends AnyBasePluginDefinition,
+  S = P,
+> = EditorDirectUpdate<PluginUpdateMethods<P, S>>;
 
 export type PluginOwnUpdate<P extends AnyBasePluginDefinition> =
   RuntimeBaseEditor<

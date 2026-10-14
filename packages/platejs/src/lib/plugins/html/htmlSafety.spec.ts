@@ -337,7 +337,7 @@ describe('compiled element decoder safety', () => {
           action: 'unwrapped',
           kind: 'attribute',
           message: 'Removed unsafe HTML attribute "href" from <a>.',
-          owner: 'plate:html',
+          owner: 'core:html',
           source: { kind: 'tree', path: [0, 1], tag: 'a' },
         },
       ],
@@ -359,7 +359,7 @@ describe('compiled element decoder safety', () => {
         action: 'dropped',
         kind: 'element',
         message: 'Removed unsafe HTML element <svg>.',
-        owner: 'plate:html',
+        owner: 'core:html',
         source: { kind: 'tree', path: [1], tag: 'svg' },
       },
     ]);

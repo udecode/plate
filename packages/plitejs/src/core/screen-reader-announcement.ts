@@ -2,7 +2,7 @@ import type { EditorEffect } from '../interfaces/editor';
 import { defineEffect } from './transaction-values';
 
 export const SCREEN_READER_ANNOUNCEMENT_EFFECT_KEY =
-  'plite.screen-reader-announcement';
+  'screen-reader-announcement';
 
 /**
  * Local, ephemeral screen-reader text emitted by an application command.

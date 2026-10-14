@@ -22,6 +22,7 @@ import {
   relative,
   resolve,
 } from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 
 const USAGE =
   'Usage: node tooling/scripts/proof-worktree.mjs <path> [<sha>] [--install] [--with <file>]... [--dir <run-dir> --name <name> [--expect-fail <text>]... -- <command> [arg...]]';
@@ -273,7 +274,12 @@ if (exitStatus === 0) {
   );
   process.exit(1);
 }
-const missing = args.expectFail.filter((text) => !proof.output.includes(text));
+const failLine =
+  /^\s*(?:✘|✖|\(fail\)|not ok\b|\d+\) |\S+\(\d+,\d+\): error TS\d+:)/u;
+const lines = stripVTControlCharacters(proof.output).split('\n');
+const missing = args.expectFail.filter(
+  (text) => !lines.some((line) => line.includes(text) && failLine.test(line))
+);
 if (missing.length > 0) {
   console.error(
     `the command failed, but its output does not show: ${missing.join(', ')}`

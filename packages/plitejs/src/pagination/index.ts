@@ -249,7 +249,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 
 const decodePageMargins = (value: unknown): PageMargins => {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (!isRecord(value)) throw new Error('Invalid Plite page margins.');
+  if (!isRecord(value)) throw new Error('Invalid page margins.');
 
   const { bottom, left, right, top } = value;
 
@@ -258,7 +258,7 @@ const decodePageMargins = (value: unknown): PageMargins => {
       (margin) => typeof margin === 'number' && Number.isFinite(margin)
     )
   ) {
-    throw new Error('Invalid Plite page margins.');
+    throw new Error('Invalid page margins.');
   }
 
   return {
@@ -274,7 +274,7 @@ const decodePageSettings = (value: unknown): PageSettings => {
     !isRecord(value) ||
     (value.preset !== 'a4' && value.preset !== 'letter')
   ) {
-    throw new Error('Invalid Plite page settings.');
+    throw new Error('Invalid page settings.');
   }
 
   return {
@@ -1670,7 +1670,7 @@ export const measurePages = <
   >
 ): PageLayoutSnapshot => {
   if (options.root === 'main') {
-    throw new Error('[Plite] Omit root to target the primary document.');
+    throw new Error('Omit root to target the primary document.');
   }
 
   const source = editor.read((state) => {

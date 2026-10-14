@@ -9,9 +9,9 @@ import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwr
 
 const read = (root: Locator) =>
   root.evaluate((element: PliteBrowserHandleElement) => ({
-    model: element.__pliteBrowserHandle?.getSelection(),
-    dom: element.__pliteBrowserHandle?.getDOMSelection(),
-    value: element.__pliteBrowserHandle?.getValue().children,
+    model: element.__EDITOR_BROWSER_HANDLE__?.getSelection(),
+    dom: element.__EDITOR_BROWSER_HANDLE__?.getDOMSelection(),
+    value: element.__EDITOR_BROWSER_HANDLE__?.getValue().children,
     focused: document.activeElement === element,
   }));
 const caret = (path: number[], offset: number) => ({

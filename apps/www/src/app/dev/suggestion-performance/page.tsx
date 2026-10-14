@@ -16,7 +16,6 @@ import * as React from 'react';
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { SuggestionKit } from '@/registry/components/editor/suggestion';
 
-import { getSuggestionViewStore } from '../../../../../../packages/platejs/src/react/features/suggestion/suggestion-view.internal';
 import { DecorationContext } from '../../../../../../packages/plitejs/src/react/decoration-context';
 import {
   SUGGESTION_PERFORMANCE_CASES,
@@ -45,14 +44,9 @@ type Fixture = Readonly<{
   editor: Editor;
 }>;
 
-type SuggestionRefreshStore = NonNullable<
-  ReturnType<typeof getSuggestionViewStore>
->;
-
 type MountedView = Readonly<{
   editor: Editor;
   manager: MeasuredDecorationStore;
-  refreshStore: SuggestionRefreshStore;
   root: HTMLElement;
 }>;
 
@@ -115,30 +109,11 @@ const assertCounterDelta = (
   }
 };
 
-const assertBoundedCounterDelta = (
-  actual: SuggestionPerformanceCounterDelta,
-  maximum: number,
-  label: string
-) => {
-  if (
-    actual.changedBucketCount < 0 ||
-    actual.changedBucketCount > maximum ||
-    actual.sourceReadCount < 0 ||
-    actual.sourceReadCount > maximum ||
-    actual.wakeCount < 0 ||
-    actual.wakeCount > maximum
-  ) {
-    throw new Error(
-      `${label}: expected counters between 0 and ${maximum}, received ${JSON.stringify(actual)}`
-    );
-  }
-};
-
 const authoredFingerprint = (editor: Editor) =>
   editor
     .plugin(AuthoredPlugin)
     .read.changes()
-    .items.map(({ id, revision, status }) => `${id}:${revision}:${status}`)
+    .items.map(({ id, revision }) => `${id}:${revision}`)
     .join('|');
 
 const changeBlockIndexes = (nodeCount: number, changeCount: number) =>
@@ -199,14 +174,15 @@ const createFixture = (cohort: SuggestionPerformanceCohort): Fixture => {
   };
 };
 
+// The color style names the active change; no painted node re-renders.
 const activeMarker = (view: MountedView, changeId: string) =>
   view.root.querySelector<HTMLElement>(
-    `[data-editor-authored-change="${CSS.escape(changeId)}"][${ACTIVE_ATTRIBUTE}]`
+    `[${ACTIVE_ATTRIBUTE}="${CSS.escape(changeId)}"]`
   );
 
 const marker = (view: MountedView, changeId: string) => {
   const element = view.root.querySelector<HTMLElement>(
-    `[data-editor-authored-change="${CSS.escape(changeId)}"]`
+    `[data-editor-authored-change~="${CSS.escape(changeId)}"]`
   );
 
   if (!element) {
@@ -243,35 +219,6 @@ const waitForActiveMarker = (
       attributeFilter: [ACTIVE_ATTRIBUTE],
       attributes: true,
       subtree: true,
-    });
-  });
-
-const waitForSemanticInvalidation = (
-  store: SuggestionRefreshStore,
-  expectedNodeKeys: number,
-  startedAt: { value: number }
-) =>
-  new Promise<number>((resolve, reject) => {
-    let stop = () => {};
-    const timeout = globalThis.setTimeout(() => {
-      stop();
-      reject(
-        new Error('Suggestion activation did not invalidate semantic keys')
-      );
-    }, 5000);
-
-    stop = store.subscribeRefresh((nodeKeys) => {
-      globalThis.clearTimeout(timeout);
-      stop();
-      if (nodeKeys.length !== expectedNodeKeys) {
-        reject(
-          new Error(
-            `Expected ${expectedNodeKeys} semantic node keys, received ${nodeKeys.length}`
-          )
-        );
-        return;
-      }
-      resolve(performance.now() - startedAt.value);
     });
   });
 
@@ -326,11 +273,6 @@ const clearActiveMarkers = async (
 const assertViewHealth = (view: MountedView, label: string) => {
   const metrics = view.manager.getMetrics();
 
-  if (metrics.sourceObserverCount !== 1) {
-    throw new Error(
-      `${label}: expected one suggestion source observer, received ${metrics.sourceObserverCount}`
-    );
-  }
   if (metrics.failureCount !== 0 || metrics.invalidRangeDropCount !== 0) {
     throw new Error(
       `${label}: decoration manager reported ${JSON.stringify(metrics)}`
@@ -341,12 +283,10 @@ const assertViewHealth = (view: MountedView, label: string) => {
 const measureClick = async ({
   activeView,
   changeId,
-  expectedActiveDelta = 2,
   siblingView,
 }: {
   activeView: MountedView;
   changeId: string;
-  expectedActiveDelta?: 1 | 2;
   siblingView: MountedView;
 }) => {
   const activeBefore = activeView.manager.getMetrics();
@@ -354,26 +294,18 @@ const measureClick = async ({
   const startedAt = { value: 0 };
   const target = marker(activeView, changeId);
   const activeReady = waitForActiveMarker(activeView, changeId, startedAt);
-  const semanticReady = waitForSemanticInvalidation(
-    activeView.refreshStore,
-    expectedActiveDelta,
-    startedAt
-  );
 
   startedAt.value = performance.now();
   target.click();
-  const [semanticLatency, domLatency] = await Promise.all([
-    semanticReady,
-    activeReady,
-  ]);
+  const domLatency = await activeReady;
   const activeAfter = activeView.manager.getMetrics();
   const siblingAfter = siblingView.manager.getMetrics();
   const activeDelta = counterDelta(activeBefore, activeAfter);
   const siblingDelta = counterDelta(siblingBefore, siblingAfter);
 
-  assertBoundedCounterDelta(
+  assertCounterDelta(
     activeDelta,
-    expectedActiveDelta,
+    { changedBucketCount: 0, sourceReadCount: 0, wakeCount: 0 },
     'active view click fanout'
   );
   assertCounterDelta(
@@ -395,7 +327,7 @@ const measureClick = async ({
     );
   }
 
-  return { activeDelta, domLatency, semanticLatency, siblingDelta };
+  return { activeDelta, domLatency, siblingDelta };
 };
 
 const runPass = async (
@@ -411,12 +343,10 @@ const runPass = async (
     await measureClick({
       activeView,
       changeId: changeIds[index % changeIds.length],
-      expectedActiveDelta: index === 0 ? 1 : 2,
       siblingView,
     });
   }
 
-  const semanticSamples: number[] = [];
   const domSamples: number[] = [];
   let maxActiveDelta: SuggestionPerformanceCounterDelta = {
     changedBucketCount: 0,
@@ -432,7 +362,6 @@ const runPass = async (
       siblingView,
     });
 
-    semanticSamples.push(sample.semanticLatency);
     domSamples.push(sample.domLatency);
     maxActiveDelta = maxCounterDelta(maxActiveDelta, sample.activeDelta);
     maxSiblingDelta = maxCounterDelta(maxSiblingDelta, sample.siblingDelta);
@@ -444,7 +373,6 @@ const runPass = async (
     dom: summarize(domSamples),
     maxActiveDelta,
     maxSiblingDelta,
-    semantic: summarize(semanticSamples),
   };
 };
 
@@ -470,7 +398,6 @@ const createHarness = ({
       await measureClick({
         activeView: views[activeViewIndex],
         changeId: fixture.changeIds[index % fixture.changeIds.length],
-        expectedActiveDelta: 1,
         siblingView: views[activeViewIndex === 0 ? 1 : 0],
       });
     }
@@ -612,21 +539,15 @@ export default function SuggestionPerformancePage() {
     ) {
       return undefined;
     }
-    const firstRefreshStore = getSuggestionViewStore(firstEditor);
-    const secondRefreshStore = getSuggestionViewStore(secondEditor);
-
-    if (!firstRefreshStore || !secondRefreshStore) return undefined;
     const views = [
       {
         editor: firstEditor,
         manager: firstManager,
-        refreshStore: firstRefreshStore,
         root: firstRoot,
       },
       {
         editor: secondEditor,
         manager: secondManager,
-        refreshStore: secondRefreshStore,
         root: secondRoot,
       },
     ] as const;

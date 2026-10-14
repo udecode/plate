@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -20,69 +21,46 @@ type SuggestionPaintSnapshot = {
   text: string;
 };
 
-const afterPaint = (page: Page) =>
-  page.evaluate(
-    () =>
-      new Promise<void>((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-      })
+// A review mark paints its attributes on both the text node and the leaf
+// inside it; the text node is the one painted, so locators target it.
+const authoredText = (scope: Locator, attributes: string) =>
+  scope.locator(`[data-editor-node="text"]${attributes}`);
+
+type ReviewNode = {
+  authored?: Array<{ author: string; kind: string }>;
+  children?: ReviewNode[];
+  text?: string;
+};
+
+const leavesOf = (node: ReviewNode): ReviewNode[] =>
+  node.children ? node.children.flatMap(leavesOf) : [node];
+
+/** Each block as `[block marks] leaf|leaf[kind:author]`, inline elements flattened to their leaves. */
+const reviewTree = async (editor: {
+  get: { modelValue: () => Promise<unknown> };
+}) =>
+  ((await editor.get.modelValue()) as { children: ReviewNode[] }).children.map(
+    (block) =>
+      `${block.authored?.length ? `[${block.authored.map((mark) => mark.kind).join(',')}] ` : ''}${leavesOf(
+        block
+      )
+        .map((leaf) =>
+          leaf.authored?.length
+            ? `${leaf.text}[${leaf.authored.map((mark) => `${mark.kind}:${mark.author}`).join(',')}]`
+            : leaf.text
+        )
+        .join('|')}`
   );
 
-const capturePixels = async (
-  page: Page,
-  clip: { height: number; width: number; x: number; y: number }
-) => {
-  const png = await page.screenshot({
-    animations: 'disabled',
-    caret: 'hide',
-    clip,
-  });
-  const pixels = await page.evaluate(async (base64) => {
-    const bytes = Uint8Array.from(atob(base64), (value) => value.charCodeAt(0));
-    const bitmap = await createImageBitmap(
-      new Blob([bytes], { type: 'image/png' })
-    );
-    const canvas = document.createElement('canvas');
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
-    const context = canvas.getContext('2d');
-
-    if (!context) throw new Error('Unable to decode screenshot pixels.');
-    context.drawImage(bitmap, 0, 0);
-    return Array.from(
-      context.getImageData(0, 0, bitmap.width, bitmap.height).data
-    );
-  }, png.toString('base64'));
-
-  return { pixels, png };
-};
-
-const pixelDifference = (left: number[], right: number[]) => {
-  expect(left.length).toBe(right.length);
-  let changed = 0;
-
-  for (let index = 0; index < left.length; index += 4) {
-    if (
-      Math.max(
-        ...[0, 1, 2].map((channel) =>
-          Math.abs(left[index + channel] - right[index + channel])
-        )
-      ) > 12
-    ) {
-      changed += 1;
-    }
-  }
-
-  return changed;
-};
-
 const enterSuggestionMode = async (page: Page) => {
-  await page.getByRole('button', { name: 'Editing', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Editing mode: Editing', exact: true })
+    .click();
   await page
     .getByRole('menuitemradio', { name: 'Suggestion', exact: true })
     .click();
   await expect(
-    page.getByRole('button', { name: 'Suggestion', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Suggestion', exact: true })
   ).toBeVisible();
 };
 
@@ -100,17 +78,17 @@ for (const [name, route] of [
 
     await expect(root).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Editing', exact: true })
+      page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
     ).toBeVisible();
     await expect(
-      root
-        .locator('[data-editor-authored-author="alice"]')
+      authoredText(root, '[data-editor-authored-author="alice"]')
         .filter({ hasText: 'suggestions' })
         .first()
     ).toBeVisible();
     await expect(
-      root.locator(
-        '[data-editor-authored-author="bob"][data-editor-retained="delete"]'
+      authoredText(
+        root,
+        '[data-editor-authored-author="bob"][data-editor-authored-kind~="delete"]'
       )
     ).toContainText('mark text for removal');
     runtimeErrors.assertNone();
@@ -128,7 +106,7 @@ test('playground types and pastes direct edits without changing pending suggesti
   const editor = createBrowserEditorHarness(page, 'playground editing', root);
   const headingText = 'Welcome to the Plate Playground!';
   const heading = root.locator('[data-editor-node="element"]').first();
-  const pending = root.locator('[data-editor-authored-status="pending"]');
+  const pending = root.locator('[data-editor-authored-change]');
 
   await editor.ready({ editor: 'visible', text: headingText });
   const pendingIds = await pending.evaluateAll((elements) =>
@@ -150,7 +128,7 @@ test('playground types and pastes direct edits without changing pending suggesti
   await root.press('ControlOrMeta+V');
   await editor.assert.modelBlockText(0, `${headingText}?Pasted`);
   await expect(
-    heading.locator('[data-editor-authored-kind="insert"]')
+    authoredText(heading, '[data-editor-authored-kind~="insert"]')
   ).toHaveCount(0);
   expect(
     await pending.evaluateAll((elements) =>
@@ -256,7 +234,7 @@ test('playground deletes commented text directly in editing mode', async ({
     text: 'Welcome to the Plate Playground!',
   });
   await expect(
-    page.getByRole('button', { name: 'Editing', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
   ).toBeVisible();
   await expect(
     root.locator('[data-discussion-block-trigger]')
@@ -271,9 +249,11 @@ test('playground deletes commented text directly in editing mode', async ({
   ]);
 
   expect(before).toContain('comments on many text segments.');
+  // Review coordinates: the pending insertion and deletion keep their own
+  // text nodes, so the "comments" link sits at [3, 6].
   await editor.selection.select({
-    anchor: { path: [3, 3, 0], offset: 0 },
-    focus: { path: [3, 4], offset: 23 },
+    anchor: { path: [3, 6, 0], offset: 0 },
+    focus: { path: [3, 7], offset: 23 },
   });
   await editor.focus();
   await page.keyboard.press('Backspace');
@@ -318,7 +298,11 @@ test('homepage select-all deletion stays editable', async ({ page }) => {
   await editor.focus();
   await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.press('Backspace');
-  await editor.assert.modelBlockTexts(['']);
+  // Editing removes the live text and keeps Bob's pending deletion as its own
+  // struck line, so accepting it leaves the plain editor's one empty line.
+  await expect
+    .poll(() => reviewTree(editor))
+    .toEqual(['[delete] mark text for removal[delete:bob]', '']);
   await editor.assert.selection({
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 0 },
@@ -326,9 +310,11 @@ test('homepage select-all deletion stays editable', async ({ page }) => {
 
   await page.keyboard.type('x');
 
-  await editor.assert.modelBlockTexts(['x']);
+  await expect
+    .poll(() => reviewTree(editor))
+    .toEqual(['[delete] mark text for removal[delete:bob]', 'x']);
   await editor.assert.collapsedModelDOMSelection({
-    path: [0, 0],
+    path: [1, 0],
     offset: 1,
     text: 'x',
   });
@@ -352,27 +338,31 @@ test('homepage preserves consecutive empty paragraphs before follow-up typing', 
     editor: 'visible',
     text: PLAYGROUND_TITLE,
   });
+  // Bob's pending deletion stays as a struck first line, so every live line
+  // below sits one index later than in a plain editor.
+  const struck = 'mark text for removal';
+
   await editor.selectAll();
   await editor.deleteFragment();
-  await editor.assert.modelBlockTexts(['']);
+  await editor.assert.modelBlockTexts([struck, '']);
   await editor.focus();
 
   await page.keyboard.press('Enter');
-  await editor.assert.modelBlockTexts(['', '']);
-  await editor.assert.selection({
-    anchor: { path: [1, 0], offset: 0 },
-    focus: { path: [1, 0], offset: 0 },
-  });
-  await page.keyboard.press('Enter');
-  await editor.assert.modelBlockTexts(['', '', '']);
+  await editor.assert.modelBlockTexts([struck, '', '']);
   await editor.assert.selection({
     anchor: { path: [2, 0], offset: 0 },
     focus: { path: [2, 0], offset: 0 },
   });
+  await page.keyboard.press('Enter');
+  await editor.assert.modelBlockTexts([struck, '', '', '']);
+  await editor.assert.selection({
+    anchor: { path: [3, 0], offset: 0 },
+    focus: { path: [3, 0], offset: 0 },
+  });
   await page.keyboard.type('x');
-  await editor.assert.modelBlockTexts(['', '', 'x']);
+  await editor.assert.modelBlockTexts([struck, '', '', 'x']);
   await editor.assert.collapsedModelDOMSelection({
-    path: [2, 0],
+    path: [3, 0],
     offset: 1,
     text: 'x',
   });
@@ -396,7 +386,7 @@ test('playground deletes mixed accepted and pending text directly in editing mod
     text: 'Welcome to the Plate Playground!',
   });
   await expect(
-    page.getByRole('button', { name: 'Editing', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
   ).toBeVisible();
   const paragraph = root.locator('.editor-paragraph').filter({
     hasText: 'Review and refine content seamlessly.',
@@ -442,12 +432,14 @@ test('playground deletes mixed accepted and pending text directly in editing mod
       )
     ),
   ]);
-  expect(remainingIds).toHaveLength(pendingIds.length - 1);
-  expect(remainingIds.every((id) => pendingIds.includes(id))).toBe(true);
+  // Alice's insertion also holds " like this added text", so it stays
+  // pending; the direct edit records no change of its own.
+  expect(remainingIds).toEqual(pendingIds);
+  await expect(root.locator('a[href="/docs/suggestion"]')).toHaveCount(0);
   await expect(
-    paragraph
-      .locator('[data-editor-retained="delete"]')
-      .filter({ hasText: 'Use' })
+    authoredText(paragraph, '[data-editor-authored-kind~="delete"]').filter({
+      hasText: 'Use',
+    })
   ).toHaveCount(0);
   await paragraph.scrollIntoViewIfNeeded();
   await testInfo.attach('mixed-pending-direct-edit.png', {
@@ -460,7 +452,7 @@ test('playground deletes mixed accepted and pending text directly in editing mod
   runtimeErrors.assertNone();
 });
 
-test('homepage protects a retained selection whose dependency stays outside', async ({
+test("homepage Editing deletes the live text around another author's struck text and keeps their deletion", async ({
   page,
 }) => {
   const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
@@ -468,7 +460,7 @@ test('homepage protects a retained selection whose dependency stays outside', as
   const root = page.locator('[data-editor="true"]').first();
   const editor = createBrowserEditorHarness(
     page,
-    'homepage retained suggestion deletion',
+    'homepage struck text inside a direct deletion',
     root
   );
 
@@ -478,14 +470,6 @@ test('homepage protects a retained selection whose dependency stays outside', as
   });
   const before = await editor.get.modelBlockText(3);
   if (!before) throw new Error('Missing paragraph text.');
-  const liveStart = 'or to ';
-  const liveEnd = '. Discuss';
-  const start = before.indexOf(liveStart);
-  const endStart = before.indexOf(liveEnd);
-  if (start === -1 || endStart === -1) {
-    throw new Error('Missing retained-suggestion boundary text.');
-  }
-  const end = endStart + liveEnd.length;
 
   const selectedText = await root.evaluate((element: HTMLElement) => {
     const walker = element.ownerDocument.createTreeWalker(
@@ -502,7 +486,7 @@ test('homepage protects a retained selection whose dependency stays outside', as
     );
     const selection = element.ownerDocument.getSelection();
     if (!startNode || !endNode || !selection) {
-      throw new Error('Missing retained-suggestion DOM boundary.');
+      throw new Error('Missing struck-text DOM boundary.');
     }
 
     element.focus();
@@ -519,23 +503,20 @@ test('homepage protects a retained selection whose dependency stays outside', as
   await page.waitForTimeout(100);
 
   await page.keyboard.press('Backspace');
-  await editor.assert.modelBlockText(3, before);
-  expect(await editor.selection.displayed()).toMatchObject({
-    source: 'view',
-    view: { active: true },
-  });
+  await editor.assert.modelBlockText(
+    3,
+    before.replace('or to ', '').replace('. Discuss', '')
+  );
   await expect(
-    root
-      .locator(
-        '[data-editor-retained="delete"] [data-editor-view-selection="true"]'
-      )
-      .first()
-  ).toBeVisible();
-  expect(before.slice(start, end)).toBe(`${liveStart}${liveEnd}`);
+    authoredText(
+      root,
+      '[data-editor-authored-author="bob"][data-editor-authored-kind~="delete"]'
+    )
+  ).toHaveText('mark text for removal');
   runtimeErrors.assertNone();
 });
 
-test('homepage removes a mixed-suggestion multi-block selection from editing view', async ({
+test('homepage removes a multi-block selection over struck text in Editing and keeps the struck line', async ({
   page,
 }, testInfo) => {
   const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
@@ -554,9 +535,14 @@ test('homepage removes a mixed-suggestion multi-block selection from editing vie
   const richContent = root.getByRole('heading', {
     name: 'Rich Content Editing',
   });
+  const bobDeletion = authoredText(
+    root,
+    '[data-editor-authored-author="bob"][data-editor-authored-kind~="delete"]'
+  );
   const finalLine = 'Edit existing text (improve, fix grammar, change tone)';
 
   await editor.ready({ editor: 'visible', text: PLAYGROUND_TITLE });
+  const [intro, linkLine] = await editor.get.modelBlockTexts();
   await editor.selection.dragTextRange({
     direction: 'backward',
     endAffinity: 'after',
@@ -565,27 +551,16 @@ test('homepage removes a mixed-suggestion multi-block selection from editing vie
     startOffset: 0,
     text: 'Collaborative Editing',
   });
-  await expect(
-    root
-      .locator(
-        '[data-editor-retained="delete"] [data-editor-view-selection="true"]'
-      )
-      .first()
-  ).toBeVisible();
+  await expect
+    .poll(() => editor.get.displayedSelection())
+    .toMatchObject({ doubleHighlighted: false, source: 'native' });
   const handle = collaborative
     .locator('xpath=ancestor::div[contains(@class, "relative")][1]')
     .getByRole('button', { name: 'Drag block', exact: true });
   await handle.hover();
-  const before = await editor.selection.displayed();
 
   await page.keyboard.press('Backspace');
 
-  const after = {
-    blocks: await editor.get.modelBlockTexts(),
-    displayed: await editor.selection.displayed(),
-    kernel: await editor.get.kernelTrace(),
-    lastCommit: await editor.get.lastCommit(),
-  };
   await testInfo.attach('mixed-suggestion-block-delete.png', {
     body: await root.screenshot({
       caret: 'initial',
@@ -594,45 +569,35 @@ test('homepage removes a mixed-suggestion multi-block selection from editing vie
     contentType: 'image/png',
   });
 
-  expect(before).toMatchObject({ source: 'view', view: { active: true } });
-  expect(after.displayed).toMatchObject({
-    hasVisibleSelection: false,
-    view: { active: false },
-  });
-  expect(after.kernel).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        command: expect.objectContaining({ kind: 'delete' }),
-        ownership: 'model-owned',
-        targetOwner: 'editor',
-      }),
-    ])
-  );
-  expect(after.lastCommit).toEqual(
-    expect.objectContaining({
-      classifications: expect.arrayContaining([
-        expect.objectContaining({ document: true }),
-      ]),
-    })
-  );
+  // Whole blocks go, as without struck text; Bob's struck text stays as its
+  // own struck line, and the caret lands at the end of the line before.
   await expect(collaborative).toHaveCount(0);
   await expect(ai).toHaveCount(0);
-  await expect(root.locator('[data-editor-retained="delete"]')).toHaveCount(0);
   await expect(richContent).toBeVisible();
-  await editor.assert.modelBlockText(2, 'Co');
+  expect((await editor.get.modelBlockTexts()).slice(0, 4)).toEqual([
+    intro,
+    linkLine,
+    'mark text for removal',
+    'Rich Content Editing',
+  ]);
+  expect((await reviewTree(editor))[2]).toBe(
+    '[delete] mark text for removal[delete:bob]'
+  );
+  await editor.assert.collapsedModelDOMSelection({
+    path: [1, 4],
+    offset: ' to discover more.'.length,
+    text: ' to discover more.',
+  });
   await editor.undo();
   await expect(collaborative).toBeVisible();
   await expect(ai).toBeVisible();
-  await expect(
-    root.locator('[data-editor-retained="delete"]').filter({
-      hasText: 'mark text for removal',
-    })
-  ).toBeVisible();
+  await expect(bobDeletion).toHaveText('mark text for removal');
   await editor.redo();
   await expect(collaborative).toHaveCount(0);
   await expect(ai).toHaveCount(0);
   await page.keyboard.type('x');
-  await editor.assert.modelBlockText(2, 'Cox');
+  await editor.assert.modelBlockText(1, `${linkLine}x`);
+  await expect(bobDeletion).toHaveText('mark text for removal');
   runtimeErrors.assertNone();
 });
 
@@ -644,10 +609,78 @@ test('suggestion demo opens in suggesting mode', async ({ page }) => {
 
   await expect(root).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Suggestion', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Suggestion', exact: true })
   ).toBeVisible();
   runtimeErrors.assertNone();
 });
+
+for (const { keys, kind, marker } of [
+  {
+    keys: ['End', ...Array(16).fill('ArrowLeft'), 'Enter'],
+    kind: 'split',
+    marker: { content: '"¶"', line: 'none' },
+  },
+  {
+    keys: ['Home', 'Backspace'],
+    kind: 'join',
+    marker: { content: '"¶"', line: 'line-through' },
+  },
+  {
+    keys: ['Home', 'Shift+End', 'Backspace'],
+    kind: 'delete',
+    marker: { content: '""', line: 'none' },
+  },
+]) {
+  test(`marks a suggested ${kind} in the gutter in its change's color`, async ({
+    page,
+  }) => {
+    const runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
+
+    await page.goto(ROUTE, { waitUntil: 'commit' });
+    const root = page.locator('[data-editor="true"]').first();
+
+    await expect(
+      page.getByRole('button', {
+        name: 'Editing mode: Suggestion',
+        exact: true,
+      })
+    ).toBeVisible();
+    await root.getByText(THIRD_PARAGRAPH).click();
+    for (const key of keys) await page.keyboard.press(key);
+
+    const block = root.locator(
+      `[data-editor-node="element"][data-editor-authored-kind~="${kind}"]`
+    );
+
+    await expect(block).toHaveCount(1);
+    const paint = await block.evaluate((node) => {
+      const after = getComputedStyle(node, '::after');
+      const probe = document.createElement('span');
+
+      probe.style.color = getComputedStyle(node)
+        .getPropertyValue('--suggestion-fg')
+        .trim();
+      document.body.append(probe);
+      const change = getComputedStyle(probe).color;
+      probe.remove();
+
+      return {
+        change,
+        content: after.content,
+        line: after.textDecorationLine,
+        marker: after.content === '""' ? after.backgroundColor : after.color,
+      };
+    });
+
+    expect(paint).toEqual({
+      ...marker,
+      change: paint.change,
+      marker: paint.change,
+    });
+    expect(paint.change).toMatch(/^(rgb|oklch|color)\(/);
+    runtimeErrors.assertNone();
+  });
+}
 
 test('loads the saved editor-ai suggestions with linked replies and empty initial history', async ({
   page,
@@ -658,7 +691,7 @@ test('loads the saved editor-ai suggestions with linked replies and empty initia
   const harness = createBrowserEditorHarness(page, 'saved editor-ai', root);
   await harness.ready({ editor: 'visible', text: 'Collaborative Editing' });
   await expect(
-    page.getByRole('button', { name: 'Editing', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
   ).toBeVisible();
 
   for (const [author, text] of [
@@ -674,8 +707,7 @@ test('loads the saved editor-ai suggestions with linked replies and empty initia
     ).toBeVisible();
   }
   await expect(
-    root
-      .locator('[data-editor-authored-author="alice"]')
+    authoredText(root, '[data-editor-authored-author="alice"]')
       .filter({ hasText: 'like this added text' })
       .first()
   ).toHaveCSS('text-decoration-line', 'underline');
@@ -705,14 +737,15 @@ test('loads the saved editor-ai suggestions with linked replies and empty initia
   await page.reload({ waitUntil: 'commit' });
   await harness.ready({ editor: 'visible', text: 'Collaborative Editing' });
   await expect(
-    page.getByRole('button', { name: 'Editing', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
   ).toBeVisible();
   expect(
     ((await harness.get.history()) as { undos: unknown[] }).undos
   ).toHaveLength(0);
   await expect(
-    root.locator(
-      '[data-editor-authored-author="bob"][data-editor-retained="delete"]'
+    authoredText(
+      root,
+      '[data-editor-authored-author="bob"][data-editor-authored-kind~="delete"]'
     )
   ).toContainText('mark text for removal');
   runtimeErrors.assertNone();
@@ -727,10 +760,11 @@ test("restores another author's suggestion after canceling text typed inside it"
   const editor = createBrowserEditorHarness(page, 'saved editor-ai', root);
   await editor.ready({ editor: 'visible', text: 'Collaborative Editing' });
   await enterSuggestionMode(page);
-  const charlie = root.locator(
-    '[data-editor-authored-author="charlie"][data-editor-authored-kind="insert"]'
+  const charlie = authoredText(
+    root,
+    '[data-editor-authored-author="charlie"][data-editor-authored-kind~="insert"]'
   );
-  const alice = root.locator('[data-editor-authored-author="alice"]');
+  const alice = authoredText(root, '[data-editor-authored-author="alice"]');
   const paragraph = root.locator('.editor-paragraph').filter({
     hasText: 'Review and refine content seamlessly.',
   });
@@ -741,19 +775,20 @@ test("restores another author's suggestion after canceling text typed inside it"
   await expect(charlie).toHaveText('overlapping ');
   expect(paragraphText).toContain('overlapping');
   const aliceCount = await alice.count();
-  const text =
-    ' on many text segments. You can even have overlapping annotations!';
-  const offset = text.indexOf('overlapping') + 4;
-  await editor.selection.collapse({ path: [3, 4], offset });
+  // Review coordinates: Charlie's insertion is its own text node.
+  const charliePath = [3, 9];
+  const typedPath = [3, 10];
+  const offset = 'over'.length;
+  await editor.selection.collapse({ path: charliePath, offset });
   await page.keyboard.type('xyz');
   await editor.assert.modelBlockText(
     3,
     paragraphText.replace('overlapping', 'overxyzlapping')
   );
   await editor.assert.collapsedModelDOMSelection({
-    path: [3, 4],
-    offset: offset + 3,
-    text: 'z',
+    path: typedPath,
+    offset: 3,
+    text: 'xyz',
   });
   await expect(charlie).toHaveCount(2);
   await page.keyboard.press('Backspace');
@@ -762,9 +797,9 @@ test("restores another author's suggestion after canceling text typed inside it"
     paragraphText.replace('overlapping', 'overxylapping')
   );
   await editor.assert.collapsedModelDOMSelection({
-    path: [3, 4],
-    offset: offset + 2,
-    text: 'y',
+    path: typedPath,
+    offset: 2,
+    text: 'xy',
   });
   await page.keyboard.press('Backspace');
   await editor.assert.modelBlockText(
@@ -772,14 +807,14 @@ test("restores another author's suggestion after canceling text typed inside it"
     paragraphText.replace('overlapping', 'overxlapping')
   );
   await editor.assert.collapsedModelDOMSelection({
-    path: [3, 4],
-    offset: offset + 1,
+    path: typedPath,
+    offset: 1,
     text: 'x',
   });
   await page.keyboard.press('Backspace');
   await editor.assert.modelBlockText(3, paragraphText);
   await editor.assert.collapsedModelDOMSelection({
-    path: [3, 4],
+    path: charliePath,
     offset,
     text: 'overlapping ',
   });
@@ -802,27 +837,29 @@ test('keeps markup visible when changing mode and restores the initial mode when
     name: 'Saved suggestions document',
   });
   await expect(root).toContainText('the update');
-  await page.getByRole('button', { name: 'Suggestion', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Editing mode: Suggestion', exact: true })
+    .click();
   await page
     .getByRole('menuitemradio', { name: 'Editing', exact: true })
     .click();
   await expect(root).toContainText('the update');
-  await expect(root.locator('[data-editor-retained="delete"]')).toContainText(
-    'extra'
-  );
+  await expect(
+    authoredText(root, '[data-editor-authored-kind~="delete"]')
+  ).toContainText('extra');
   await page.getByRole('button', { name: 'Save snapshot' }).click();
   await expect(
-    page.getByRole('button', { name: 'Editing', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
   ).toBeVisible();
   await expect(root).toContainText('the update');
   await page.getByRole('button', { name: 'Reload snapshot' }).click();
   await expect(
-    page.getByRole('button', { name: 'Suggestion', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Suggestion', exact: true })
   ).toBeVisible();
   await expect(root).toContainText('the update');
-  await expect(root.locator('[data-editor-retained="delete"]')).toContainText(
-    'extra'
-  );
+  await expect(
+    authoredText(root, '[data-editor-authored-kind~="delete"]')
+  ).toContainText('extra');
   runtimeErrors.assertNone();
 });
 
@@ -842,40 +879,42 @@ test('loads the homepage playground with its original suggestion set', async ({
     })
   ).toBeVisible({ timeout: 20_000 });
   await expect(
-    editor
-      .locator('[data-editor-authored-author="alice"]')
-      .filter({ hasText: 'suggestions' })
+    authoredText(editor, '[data-editor-authored-author="alice"]').filter({
+      hasText: 'suggestions',
+    })
   ).toBeVisible();
   await enterSuggestionMode(page);
   await expect(
-    editor
-      .locator('[data-editor-authored-author="alice"]')
-      .filter({ hasText: 'suggestions' })
+    authoredText(editor, '[data-editor-authored-author="alice"]').filter({
+      hasText: 'suggestions',
+    })
   ).toBeVisible();
   await expect(
-    editor
-      .locator('[data-editor-authored-author="alice"]')
-      .filter({ hasText: 'like this added text' })
+    authoredText(editor, '[data-editor-authored-author="alice"]').filter({
+      hasText: 'like this added text',
+    })
   ).toBeVisible();
-  await expect(editor.locator('[data-editor-retained="delete"]')).toContainText(
-    'mark text for removal'
-  );
-  const aliceInsertion = editor
-    .locator('[data-editor-authored-author="alice"]')
-    .filter({ hasText: 'suggestions' });
-  const bobDeletion = editor
-    .locator(
-      '[data-editor-authored-author="bob"][data-editor-retained="delete"]'
-    )
-    .filter({ hasText: 'mark text for removal' });
-  const charlieInsertion = editor
-    .locator('[data-editor-authored-author="charlie"]')
-    .filter({ hasText: 'overlapping' });
+  await expect(
+    authoredText(editor, '[data-editor-authored-kind~="delete"]')
+  ).toContainText('mark text for removal');
+  const aliceInsertion = authoredText(
+    editor,
+    '[data-editor-authored-author="alice"]'
+  ).filter({ hasText: 'suggestions' });
+  const bobDeletion = authoredText(
+    editor,
+    '[data-editor-authored-author="bob"][data-editor-authored-kind~="delete"]'
+  ).filter({ hasText: 'mark text for removal' });
+  const charlieInsertion = authoredText(
+    editor,
+    '[data-editor-authored-author="charlie"]'
+  ).filter({ hasText: 'overlapping' });
 
   await expect(aliceInsertion).toHaveCSS('text-decoration-line', 'underline');
   await expect(bobDeletion).toHaveCSS('text-decoration-line', 'line-through');
   await expect(charlieInsertion).toHaveCSS('text-decoration-line', 'underline');
-  const authorBackgrounds = await Promise.all(
+  // Each change paints its own color.
+  const changeBackgrounds = await Promise.all(
     [aliceInsertion, bobDeletion, charlieInsertion].map((suggestion) =>
       suggestion.evaluate(
         (element) => getComputedStyle(element).backgroundColor
@@ -883,11 +922,11 @@ test('loads the homepage playground with its original suggestion set', async ({
     )
   );
 
-  expect(new Set(authorBackgrounds).size).toBe(3);
+  expect(new Set(changeBackgrounds).size).toBe(3);
   await expect(
-    editor
-      .locator('[data-editor-authored-kind="insert"]')
-      .filter({ hasText: 'overlapping' })
+    authoredText(editor, '[data-editor-authored-kind~="insert"]').filter({
+      hasText: 'overlapping',
+    })
   ).toContainText('overlapping');
   await expect(
     editor.locator('[data-discussion-block-trigger]')
@@ -921,25 +960,30 @@ test('paints the first typed homepage suggestion with the inserted character', a
 
   const capturePaint = (paintIndex: number) =>
     page.evaluate(
-      async ({ captureIndex, currentBlockIndex }) => {
+      async ([{ captureIndex, currentBlockIndex }, key]) => {
         await new Promise<void>((resolve) => {
           requestAnimationFrame(() => {
             resolve();
           });
         });
         const editorRoot = document.querySelector('[data-editor="true"]') as
-          | (HTMLElement & {
-              __pliteBrowserHandle?: {
-                getBlockText: (index: number) => string | null;
-              };
-            })
+          | (HTMLElement &
+              Record<
+                string,
+                | {
+                    getBlockText: (index: number) => string | null;
+                  }
+                | undefined
+              >)
           | null;
         const element = editorRoot
           ?.querySelectorAll<HTMLElement>('[data-editor-node="element"]')
           .item(currentBlockIndex);
         if (!element) throw new Error('Missing playground paragraph.');
         const spans = [
-          ...element.querySelectorAll('[data-editor-authored-kind="insert"]'),
+          ...element.querySelectorAll(
+            '[data-editor-node="text"][data-editor-authored-kind~="insert"]'
+          ),
         ].map((node, index) => {
           const range = document.createRange();
 
@@ -953,14 +997,15 @@ test('paints the first typed homepage suggestion with the inserted character', a
 
         return {
           input: captureIndex,
-          model:
-            editorRoot?.__pliteBrowserHandle?.getBlockText(currentBlockIndex) ??
-            null,
+          model: editorRoot?.[key]?.getBlockText(currentBlockIndex) ?? null,
           spans,
           text: element.textContent ?? '',
         } satisfies SuggestionPaintSnapshot;
       },
-      { captureIndex: paintIndex, currentBlockIndex: blockIndex }
+      [
+        { captureIndex: paintIndex, currentBlockIndex: blockIndex },
+        BROWSER_HANDLE_KEY,
+      ] as const
     );
 
   await editor.selection.collapse({ path: [blockIndex, 2], offset: at });
@@ -978,15 +1023,19 @@ test('paints the first typed homepage suggestion with the inserted character', a
     spans: [{ index: 0, text: 'w' }],
   });
   expect(firstPaint.text).toContain("Plate's wcapabilities.");
+  // The second letter extends the same insertion, painted as one run.
   expect(secondPaint).toMatchObject({
     input: 1,
     model: second,
     spans: [
-      { index: 0, text: 'w' },
-      { index: 1, text: 'w' },
+      {
+        end: firstPaint.spans[0].start + 2,
+        index: 0,
+        start: firstPaint.spans[0].start,
+        text: 'ww',
+      },
     ],
   });
-  expect(secondPaint.spans[0].end).toBe(secondPaint.spans[1].start);
   expect(secondPaint.text).toContain("Plate's wwcapabilities.");
   runtimeErrors.assertNone();
 });
@@ -1008,7 +1057,7 @@ test('keeps pending suggestions visible through both homepage mode controls', as
   });
 
   await expect(
-    page.getByRole('button', { name: 'Editing', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
   ).toBeVisible();
   const heading = root.getByRole('heading', { level: 1 });
   const authoredCount = await root
@@ -1027,12 +1076,14 @@ test('keeps pending suggestions visible through both homepage mode controls', as
   await page.keyboard.press('ControlOrMeta+z');
   await expect(heading).toHaveText(PLAYGROUND_TITLE);
 
-  await page.getByRole('button', { name: 'Editing', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Editing mode: Editing', exact: true })
+    .click();
   await page
     .getByRole('menuitemradio', { name: 'Suggestion', exact: true })
     .click();
   await expect(
-    page.getByRole('button', { name: 'Suggestion', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Suggestion', exact: true })
   ).toBeVisible();
 
   await editor.selection.select({
@@ -1048,12 +1099,14 @@ test('keeps pending suggestions visible through both homepage mode controls', as
     .locator('span')
     .filter({ hasText: 'Welcom' })
     .last();
-  const seededInsert = root
-    .locator('[data-editor-authored-author="alice"]')
-    .filter({ hasText: 'suggestions' });
-  const seededDelete = root
-    .locator('[data-editor-retained="delete"]')
-    .filter({ hasText: 'mark text for removal' });
+  const seededInsert = authoredText(
+    root,
+    '[data-editor-authored-author="alice"]'
+  ).filter({ hasText: 'suggestions' });
+  const seededDelete = authoredText(
+    root,
+    '[data-editor-authored-kind~="delete"]'
+  ).filter({ hasText: 'mark text for removal' });
   await expect(replacementInsert).toBeVisible();
   await expect(replacementDelete).toBeVisible();
   const replacementDeleteIsMarked = () =>
@@ -1071,12 +1124,14 @@ test('keeps pending suggestions visible through both homepage mode controls', as
 
   const valueBefore = await editor.get.modelValue();
   const historyBefore = await editor.get.history();
-  await page.getByRole('button', { name: 'Suggestion', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Editing mode: Suggestion', exact: true })
+    .click();
   await page
     .getByRole('menuitemradio', { name: 'Editing', exact: true })
     .click();
   await expect(
-    page.getByRole('button', { name: 'Editing', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
   ).toBeVisible();
   for (const suggestion of [
     replacementInsert,
@@ -1105,7 +1160,7 @@ test('keeps pending suggestions visible through both homepage mode controls', as
   await expect(floatingToggle).toBeVisible();
   await floatingToggle.click();
   await expect(
-    page.getByRole('button', { name: 'Suggestion', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Suggestion', exact: true })
   ).toBeVisible();
   await expect(replacementInsert).toBeVisible();
   await expect(replacementDelete).toBeVisible();
@@ -1114,7 +1169,7 @@ test('keeps pending suggestions visible through both homepage mode controls', as
   await expect(floatingToggle).toBeVisible();
   await floatingToggle.click();
   await expect(
-    page.getByRole('button', { name: 'Editing', exact: true })
+    page.getByRole('button', { name: 'Editing mode: Editing', exact: true })
   ).toBeVisible();
   expect(await editor.get.modelValue()).toEqual(valueBefore);
   expect(await editor.get.history()).toEqual(historyBefore);
@@ -1145,7 +1200,10 @@ test('undoes accepting the contiguous homepage insertion', async ({ page }) => {
   await page.goto('/', { waitUntil: 'commit' });
   const root = page.locator('[data-editor="true"]').first();
   const editor = createBrowserEditorHarness(page, 'homepage suggestions', root);
-  const aliceSuggestion = root.locator('[data-editor-authored-author="alice"]');
+  const aliceSuggestion = authoredText(
+    root,
+    '[data-editor-authored-author="alice"]'
+  );
 
   await expect(
     root.getByRole('heading', {
@@ -1213,16 +1271,14 @@ test('stops undo before seeded homepage suggestions', async ({ page }) => {
   const card = page
     .locator('[data-suggestion-review]')
     .filter({ hasText: 'Delete “mark text for removal”' });
-  const retained = root.locator('[data-editor-retained="delete"]');
+  const struck = authoredText(root, '[data-editor-authored-kind~="delete"]');
 
-  await card.hover();
-  await card.getByRole('button', { name: 'Accept suggestion' }).click();
-  await card.getByRole('button', { name: 'Accept related' }).click();
-  await expect(retained).toHaveCount(0);
+  await decideSuggestion(page, card, 'Accept');
+  await expect(struck).toHaveCount(0);
   await editor.undo();
-  await expect(retained).toContainText('mark text for removal');
+  await expect(struck).toHaveText('mark text for removal');
   await editor.undo();
-  await expect(retained).toContainText('mark text for removal');
+  await expect(struck).toHaveText('mark text for removal');
   runtimeErrors.assertNone();
 });
 
@@ -1262,7 +1318,7 @@ for (const action of ['Accept', 'Reject'] as const) {
       await image.click();
       await expect(root).toBeFocused();
       await expect(
-        root.locator('.editor-image[data-editor-retained]')
+        root.locator('.editor-image[data-editor-authored-kind="delete"]')
       ).toHaveCount(0);
       await page.keyboard.press(action === 'Accept' ? 'Backspace' : 'Delete');
     };
@@ -1270,12 +1326,12 @@ for (const action of ['Accept', 'Reject'] as const) {
     await deleteImage();
     runtimeErrors.assertNone();
     const retained = root.locator(
-      '.editor-image[data-editor-retained="delete"]'
+      '.editor-image[data-editor-authored-kind="delete"]'
     );
 
     await expect(root.locator('.editor-file')).toHaveCount(1);
     await expect(
-      root.locator('.editor-file[data-editor-retained]')
+      root.locator('.editor-file[data-editor-authored-kind="delete"]')
     ).toHaveCount(0);
     await expect(retained.locator('img')).toHaveAttribute('src', source!);
     await expect(retained.locator('img')).toBeVisible();
@@ -1328,35 +1384,37 @@ test('uses the editor content root as the suggestion surface', async ({
       element.parentElement?.classList.contains('contents')
     )
   ).toBe(false);
-  const retained = root.locator('[data-editor-retained="delete"]').first();
-  const inserted = root.locator('[data-editor-authored-kind="insert"]').first();
+  const struck = authoredText(
+    root,
+    '[data-editor-authored-kind~="delete"]'
+  ).first();
+  const inserted = authoredText(
+    root,
+    '[data-editor-authored-kind~="insert"]'
+  ).first();
 
-  await expect(retained).toHaveCSS('text-decoration-line', 'line-through');
-  const deletionBackground = await retained.evaluate(
+  await expect(struck).toHaveCSS('text-decoration-line', 'line-through');
+  await expect(inserted).toHaveCSS('text-decoration-line', 'underline');
+  const deletionBackground = await struck.evaluate(
     (element) => getComputedStyle(element).backgroundColor
   );
   const insertionBackground = await inserted.evaluate(
     (element) => getComputedStyle(element).backgroundColor
   );
 
+  // One author, two changes: each change paints its own color.
   expect(deletionBackground).not.toBe('rgba(0, 0, 0, 0)');
   expect(insertionBackground).not.toBe('rgba(0, 0, 0, 0)');
-  expect(deletionBackground).toBe(insertionBackground);
-  await expect(inserted).toHaveCSS('text-decoration-line', 'underline');
-  const authorHighlight = await root.evaluate((element) => {
-    const sample = document.createElement('span');
-    sample.style.backgroundColor =
-      'color-mix(in oklab, var(--color-emerald-200) 80%, transparent)';
-    element.ownerDocument.body.append(sample);
-    const color = getComputedStyle(sample).backgroundColor;
-    sample.remove();
-    return color;
-  });
+  expect(deletionBackground).not.toBe(insertionBackground);
 
-  await retained.hover();
-  await expect(retained).toHaveCSS('background-color', authorHighlight);
+  await struck.hover();
+  await expect
+    .poll(() =>
+      struck.evaluate((element) => getComputedStyle(element).backgroundColor)
+    )
+    .not.toBe(deletionBackground);
   await page.mouse.move(0, 0);
-  await expect(retained).toHaveCSS('background-color', deletionBackground);
+  await expect(struck).toHaveCSS('background-color', deletionBackground);
   runtimeErrors.assertNone();
 });
 
@@ -1364,15 +1422,20 @@ for (const action of ['Accept', 'Reject'] as const) {
   test(`types inside a deleted word and resolves it with ${action}`, async ({
     page,
   }) => {
-    const { root, runtimeErrors } = await openSuggestions(page);
-    const retained = root.locator('[data-editor-retained="delete"]');
+    const { editor, root, runtimeErrors } = await openSuggestions(page);
+    const struck = authoredText(root, '[data-editor-authored-kind~="delete"]');
+    const struckTree = (typed: string) => [
+      'Review |collaboratively [insert:alice]|and refine this sentence.',
+      `Keep this |redundant phrase [delete:alice]|${typed}[insert:alice]|out of the final draft.`,
+      THIRD_PARAGRAPH,
+    ];
 
-    await expect(retained).toHaveText('redundant phrase ');
-    const target = await retained.evaluate((element) => {
+    await expect(struck).toHaveText('redundant phrase ');
+    const target = await struck.evaluate((element) => {
       const text = document
         .createTreeWalker(element, NodeFilter.SHOW_TEXT)
         .nextNode();
-      if (!text) throw new Error('Missing retained text');
+      if (!text) throw new Error('Missing struck text');
       const range = document.createRange();
       range.setStart(text, 6);
       range.collapse(true);
@@ -1380,392 +1443,41 @@ for (const action of ['Accept', 'Reject'] as const) {
       return { x: rect.left, y: rect.top + rect.height / 2 };
     });
 
+    // A click inside struck letters puts the caret there, and typing lands
+    // after them, so accepting the deletion keeps what was typed.
     await page.mouse.click(target.x, target.y);
     await page.keyboard.type('XY');
-    await expect(retained).toHaveText('redundXYant phrase ');
+    await expect.poll(() => reviewTree(editor)).toEqual(struckTree('XY'));
+    await editor.assert.collapsedModelDOMSelection({
+      path: [1, 2],
+      offset: 2,
+      text: 'XY',
+    });
     await page.keyboard.press('Backspace');
-    await expect(retained).toHaveText('redundXant phrase ');
+    await expect.poll(() => reviewTree(editor)).toEqual(struckTree('X'));
     await page.keyboard.press('ControlOrMeta+z');
-    await expect(retained).toHaveText('redundXYant phrase ');
+    await expect.poll(() => reviewTree(editor)).toEqual(struckTree('XY'));
     await page.keyboard.press('ControlOrMeta+Shift+z');
     await page.keyboard.type('Z');
-    await expect(retained).toHaveText('redundXZant phrase ');
-    await page.keyboard.press('Enter');
-    await page.keyboard.type('Q');
-    await expect
-      .poll(async () => {
-        const texts = await retained.allTextContents();
-        return texts.join('');
-      })
-      .toBe('redundXZQant phrase ');
-    await expect(
-      root
-        .locator('[data-editor-node="element"]')
-        .filter({ hasText: 'Keep this' })
-    ).toHaveText('Keep this redundXZ');
-    await expect(
-      root
-        .locator('[data-editor-node="element"]')
-        .filter({ hasText: 'out of the final draft.' })
-    ).toHaveText('Qant phrase out of the final draft.');
+    await expect.poll(() => reviewTree(editor)).toEqual(struckTree('XZ'));
     const card = page.locator('[data-suggestion-review]');
 
     await expect(card).toHaveCount(1);
-    await expect(card).toContainText('Delete');
-    await expect(card).toContainText('Qant phrase');
+    await expect(card).toContainText('Replace “redundant phrase” with “XZ”');
     await decideSuggestion(page, card, action);
-    await expect(retained).toHaveCount(0);
-    await expect(root).toContainText(
+    await expect(struck).toHaveCount(0);
+    await editor.assert.modelBlockText(
+      1,
       action === 'Reject'
         ? 'Keep this redundant phrase out of the final draft.'
-        : 'Keep this out of the final draft.'
+        : 'Keep this XZout of the final draft.'
     );
     await root.focus();
     await page.keyboard.press('ControlOrMeta+z');
-    await expect
-      .poll(async () => {
-        const contents = await retained.allTextContents();
-
-        return contents.join('');
-      })
-      .toBe('redundXZQant phrase ');
+    await expect.poll(() => reviewTree(editor)).toEqual(struckTree('XZ'));
     runtimeErrors.assertNone();
   });
 }
-
-test('paints one caret inside redlined text during pointer and arrow navigation', async ({
-  page,
-}, testInfo) => {
-  type CaretFrame = {
-    expectedOffset: number;
-    key: string;
-    dx: number;
-    dy: number;
-    height: number;
-    viewFragment: boolean;
-    viewOffset: number | null;
-  };
-  const { editor, root, runtimeErrors } = await openSuggestions(page);
-  const retained = root.locator('[data-editor-retained="delete"]');
-  const caret = root.locator('[data-editor-view-selection-caret]');
-  const target = await retained.evaluate((element) => {
-    const text = document
-      .createTreeWalker(element, NodeFilter.SHOW_TEXT)
-      .nextNode();
-    if (!text) throw new Error('Missing retained text');
-    const range = document.createRange();
-    range.setStart(text, 6);
-    range.collapse(true);
-    const rect = range.getBoundingClientRect();
-    return { x: rect.left, y: rect.top + rect.height / 2 };
-  });
-  await page.evaluate(() => {
-    const trace: Array<{ type: string; buttons: number; retained: boolean }> =
-      [];
-    Object.assign(window, {
-      __retainedCaretExpectedOffset: 6,
-      __retainedCaretInputTrace: trace,
-    });
-    for (const type of [
-      'pointerdown',
-      'mousedown',
-      'pointerup',
-      'mouseup',
-      'click',
-      'keydown',
-    ]) {
-      document.addEventListener(
-        type,
-        (event) => {
-          trace.push({
-            type: event.type,
-            buttons: 'buttons' in event ? Number(event.buttons) : 0,
-            retained:
-              event.target instanceof Element &&
-              !!event.target.closest('[data-editor-retained="delete"]'),
-          });
-        },
-        { capture: true }
-      );
-    }
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-      const state = window as typeof window & {
-        __retainedCaretExpectedOffset: number;
-      };
-      state.__retainedCaretExpectedOffset += event.key === 'ArrowLeft' ? -1 : 1;
-      const expectedOffset = state.__retainedCaretExpectedOffset;
-      const frame = new Promise<CaretFrame | null>((resolve) => {
-        // Sample the first frame after the key handler schedules its DOM reads.
-        queueMicrotask(() =>
-          requestAnimationFrame(() => {
-            const selection = window.getSelection();
-            const caretElement = document.querySelector(
-              '[data-editor-view-selection-caret]'
-            );
-            const retainedElement = document.querySelector(
-              '[data-editor-retained="delete"]'
-            );
-            const retainedText = retainedElement
-              ? document
-                  .createTreeWalker(retainedElement, NodeFilter.SHOW_TEXT)
-                  .nextNode()
-              : null;
-            const editorRoot = document.querySelector(
-              '[data-editor="true"]'
-            ) as
-              | (HTMLElement & {
-                  __pliteBrowserHandle?: {
-                    getViewSelection: () => {
-                      focus?: {
-                        fragmentId?: string;
-                        point?: { offset?: number };
-                      };
-                    } | null;
-                  };
-                })
-              | null;
-            if (!selection?.rangeCount || !caretElement || !retainedText) {
-              resolve(null);
-              return;
-            }
-            const expected = document.createRange();
-            expected.setStart(retainedText, expectedOffset);
-            expected.collapse(true);
-            const expectedRect = expected.getBoundingClientRect();
-            const painted = caretElement.getBoundingClientRect();
-            const viewSelection =
-              editorRoot?.__pliteBrowserHandle?.getViewSelection();
-            resolve({
-              expectedOffset,
-              key: event.key,
-              dx: Math.abs(painted.left - expectedRect.left),
-              dy: Math.abs(painted.top - expectedRect.top),
-              height: painted.height,
-              viewFragment: Boolean(viewSelection?.focus?.fragmentId),
-              viewOffset: viewSelection?.focus?.point?.offset ?? null,
-            });
-          })
-        );
-      });
-      Object.assign(window, { __retainedCaretArrowFrame: frame });
-    });
-  });
-  await page.mouse.click(target.x, target.y);
-  const assertCaret = async (offset: number, arrowKey?: string) => {
-    const arrowFrame = arrowKey
-      ? await page.evaluate(
-          () =>
-            (
-              window as typeof window & {
-                __retainedCaretArrowFrame?: Promise<CaretFrame | null>;
-              }
-            ).__retainedCaretArrowFrame
-        )
-      : null;
-    if (arrowKey) {
-      expect(arrowFrame).toMatchObject({
-        expectedOffset: offset,
-        key: arrowKey,
-        viewFragment: true,
-        viewOffset: offset,
-      });
-    }
-    await expect
-      .poll(() =>
-        retained.evaluate((element) => {
-          const selection = window.getSelection();
-          return {
-            inside:
-              !!selection?.anchorNode && element.contains(selection.anchorNode),
-            collapsed: selection?.isCollapsed,
-            offset: selection?.anchorOffset,
-          };
-        })
-      )
-      .toEqual({ inside: true, collapsed: true, offset });
-    await expect(caret).toHaveCount(1);
-    await expect(caret).toBeVisible();
-    const geometry =
-      arrowFrame ??
-      (await caret.evaluate((element) => {
-        const selection = window.getSelection();
-        if (!selection?.rangeCount) throw new Error('Missing native selection');
-        const native = selection.getRangeAt(0).getBoundingClientRect();
-        const painted = element.getBoundingClientRect();
-        return {
-          dx: Math.abs(painted.left - native.left),
-          dy: Math.abs(painted.top - native.top),
-          height: painted.height,
-        };
-      }));
-    expect(geometry.dx).toBeLessThanOrEqual(1);
-    expect(geometry.dy).toBeLessThanOrEqual(1);
-    expect(geometry.height).toBeGreaterThan(10);
-  };
-  await assertCaret(6);
-  const focusRect = await retained.evaluate(() => {
-    const selection = window.getSelection();
-    if (!selection?.rangeCount) throw new Error('Missing native caret');
-    const rect = selection.getRangeAt(0).getBoundingClientRect();
-    return { x: rect.left, y: rect.top, height: rect.height };
-  });
-  const clip = {
-    x: Math.floor(focusRect.x) - 3,
-    y: Math.floor(focusRect.y),
-    width: 14,
-    height: Math.ceil(focusRect.height),
-  };
-  const captures = new Map<
-    string,
-    { data: number[]; width: number; height: number }
-  >();
-  for (const control of ['actual', 'absent', 'single', 'duplicate']) {
-    await page.evaluate(
-      ({ control: mode, focusRect: pointRect }) => {
-        document.querySelector('[data-test-caret-controls]')?.remove();
-        if (mode === 'actual') return;
-        const container = document.createElement('div');
-        container.setAttribute('data-test-caret-controls', '');
-        container.style.pointerEvents = 'none';
-        const style = document.createElement('style');
-        style.textContent =
-          '[data-editor-view-selection-caret] { visibility: hidden !important; } [data-editor] { caret-color: transparent !important; }';
-        container.append(style);
-        const count = mode === 'absent' ? 0 : mode === 'single' ? 1 : 2;
-        for (let index = 0; index < count; index++) {
-          const line = document.createElement('span');
-          Object.assign(line.style, {
-            backgroundColor: getComputedStyle(
-              document.querySelector('[aria-label="Suggestions document"]')!
-            ).color,
-            height: `${pointRect.height}px`,
-            left: `${pointRect.x + index * 5}px`,
-            position: 'fixed',
-            top: `${pointRect.y}px`,
-            width: '1px',
-            zIndex: '2147483647',
-          });
-          container.append(line);
-        }
-        document.body.append(container);
-      },
-      { control, focusRect }
-    );
-    const png = await page.screenshot({
-      caret: 'initial',
-      clip,
-      path: testInfo.outputPath(`retained-caret-${control}.png`),
-    });
-    if (control === 'actual') {
-      const inputTrace = await page.evaluate(
-        () =>
-          (
-            window as typeof window & {
-              __retainedCaretInputTrace: Array<{
-                type: string;
-                buttons: number;
-                retained: boolean;
-              }>;
-            }
-          ).__retainedCaretInputTrace
-      );
-      expect(inputTrace).toEqual([
-        { type: 'pointerdown', buttons: 1, retained: true },
-        { type: 'mousedown', buttons: 1, retained: true },
-        { type: 'pointerup', buttons: 0, retained: true },
-        { type: 'mouseup', buttons: 0, retained: true },
-        { type: 'click', buttons: 0, retained: true },
-      ]);
-    }
-    captures.set(
-      control,
-      await page.evaluate(async (base64) => {
-        const bytes = Uint8Array.from(atob(base64), (value) =>
-          value.charCodeAt(0)
-        );
-        const image = await createImageBitmap(
-          new Blob([bytes], { type: 'image/png' })
-        );
-        const canvas = document.createElement('canvas');
-        canvas.width = image.width;
-        canvas.height = image.height;
-        const context = canvas.getContext('2d');
-        if (!context) throw new Error('Missing pixel decoder');
-        context.drawImage(image, 0, 0);
-        return {
-          data: Array.from(
-            context.getImageData(0, 0, image.width, image.height).data
-          ),
-          width: image.width,
-          height: image.height,
-        };
-      }, png.toString('base64'))
-    );
-  }
-  const absent = captures.get('absent')!;
-  const strokes = (name: string) => {
-    const image = captures.get(name)!;
-    let count = 0;
-    let previous = false;
-    for (let x = 0; x < image.width; x++) {
-      let changed = 0;
-      for (let y = 0; y < image.height; y++) {
-        const index = (y * image.width + x) * 4;
-        if (
-          [0, 1, 2].some(
-            (channel) =>
-              Math.abs(
-                image.data[index + channel] - absent.data[index + channel]
-              ) > 24
-          )
-        ) {
-          changed += 1;
-        }
-      }
-      const stroke = changed >= image.height * 0.7;
-      if (stroke && !previous) count += 1;
-      previous = stroke;
-    }
-    return count;
-  };
-  expect(strokes('absent')).toBe(0);
-  expect(strokes('single')).toBe(1);
-  expect(strokes('duplicate')).toBe(2);
-  expect(strokes('actual')).toBe(1);
-  await page.evaluate(() => {
-    document.querySelector('[data-test-caret-controls]')?.remove();
-  });
-  await testInfo.attach('retained-caret', {
-    body: await page.screenshot({
-      caret: 'initial',
-      path: testInfo.outputPath('retained-caret.png'),
-    }),
-    contentType: 'image/png',
-  });
-  await assertCaret(6);
-  await page.keyboard.press('ArrowLeft');
-  await assertCaret(5, 'ArrowLeft');
-  await page.keyboard.press('ArrowRight');
-  await assertCaret(6, 'ArrowRight');
-  const original = await editor.get.modelBlockTexts();
-  await page.keyboard.type('!');
-  await editor.assert.modelBlockTexts(original);
-  await page.getByRole('textbox', { name: 'Comment on suggestion' }).click();
-  await expect(caret).toHaveCount(0);
-  await page.mouse.click(target.x, target.y);
-  await assertCaret(6);
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('End');
-  await page.keyboard.type('!');
-  await editor.assert.modelBlockTexts([
-    original[0],
-    `${original[1]}!`,
-    original[2],
-  ]);
-  await expect(caret).toHaveCount(0);
-  runtimeErrors.assertNone();
-});
 
 test('keeps ordinary and inserted-only pointer selections native', async ({
   page,
@@ -1849,7 +1561,7 @@ test('keeps ordinary and inserted-only pointer selections native', async ({
 test('expands a pointer selection across deleted text boundaries', async ({
   context,
   page,
-}, testInfo) => {
+}) => {
   const { editor, root, runtimeErrors } = await openSuggestions(page);
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const authoredIdentities = await root
@@ -1888,199 +1600,20 @@ test('expands a pointer selection across deleted text boundaries', async ({
     };
   });
 
-  const displayedTextLength = (
-    selection: Awaited<ReturnType<typeof editor.get.displayedSelection>>
-  ) =>
-    selection.source === 'native'
-      ? selection.native.textLength
-      : selection.view.textLength;
-
-  await page.mouse.move(points.prefix.x, points.prefix.y);
-  await page.mouse.down();
-  try {
-    await page.mouse.move(points.suffixNear.x, points.suffixNear.y, {
-      steps: 8,
-    });
-    await expect
-      .poll(() => editor.get.displayedSelection())
-      .toMatchObject({
-        doubleHighlighted: false,
-        hasVisibleSelection: true,
-      });
-    await expect
-      .poll(async () =>
-        displayedTextLength(await editor.get.displayedSelection())
-      )
-      .toBe(24);
-
-    await page.mouse.move(points.suffixFar.x, points.suffixFar.y, {
-      steps: 8,
-    });
-    await expect
-      .poll(async () =>
-        displayedTextLength(await editor.get.displayedSelection())
-      )
-      .toBe(34);
-
-    expect(await editor.get.displayedSelection()).toMatchObject({
-      doubleHighlighted: false,
-      hasVisibleSelection: true,
-      source: 'view',
-    });
-
-    const selectedBounds = await root
-      .locator('[data-editor-view-selection="true"]')
-      .evaluateAll((elements) => {
-        const rects = elements.map((element) =>
-          element.getBoundingClientRect()
-        );
-        return {
-          bottom: Math.max(...rects.map((rect) => rect.bottom)),
-          left: Math.min(...rects.map((rect) => rect.left)),
-          right: Math.max(...rects.map((rect) => rect.right)),
-          top: Math.min(...rects.map((rect) => rect.top)),
-        };
-      });
-    const clip = {
-      height: Math.ceil(selectedBounds.bottom) - Math.floor(selectedBounds.top),
-      width: Math.ceil(selectedBounds.right) - Math.floor(selectedBounds.left),
-      x: Math.floor(selectedBounds.left),
-      y: Math.floor(selectedBounds.top),
-    };
-    const setPaintControl = async (
-      state: 'absent' | 'duplicate' | 'single' | null
-    ) => {
-      await page.evaluate((nextState) => {
-        document.querySelector('[data-selection-paint-control]')?.remove();
-        if (!nextState) return;
-        const style = document.createElement('style');
-        style.setAttribute('data-selection-paint-control', '');
-        style.textContent =
-          nextState === 'absent'
-            ? '[data-editor-view-selection="true"] { background: transparent !important; color: inherit !important; }'
-            : nextState === 'duplicate'
-              ? '[data-editor-view-selection="true"] { background: color-mix(in srgb, Highlight 55%, black) !important; }'
-              : '';
-        document.head.append(style);
-      }, state);
-      await afterPaint(page);
-    };
-
-    await afterPaint(page);
-    const actual = await capturePixels(page, clip);
-    await setPaintControl('single');
-    const single = await capturePixels(page, clip);
-    await setPaintControl('absent');
-    const absent = await capturePixels(page, clip);
-    const absentAgain = await capturePixels(page, clip);
-    await setPaintControl('duplicate');
-    const duplicate = await capturePixels(page, clip);
-    await setPaintControl(null);
-
-    for (const [name, capture] of Object.entries({
-      absent,
-      actual,
-      duplicate,
-      single,
-    })) {
-      await testInfo.attach(`deleted-selection-${name}`, {
-        body: capture.png,
-        contentType: 'image/png',
-      });
-    }
-
-    const classification = {
-      actual: pixelDifference(actual.pixels, single.pixels),
-      duplicate: pixelDifference(duplicate.pixels, single.pixels),
-      negative: pixelDifference(absent.pixels, absentAgain.pixels),
-      positive: pixelDifference(single.pixels, absent.pixels),
-    };
-    await testInfo.attach('deleted-selection-pixel-classification', {
-      body: JSON.stringify(classification),
-      contentType: 'application/json',
-    });
-    expect(classification.positive, 'positive-control: pass').toBeGreaterThan(
-      20
-    );
-    expect(
-      classification.negative,
-      'negative-control: pass'
-    ).toBeLessThanOrEqual(2);
-    expect(classification.duplicate, 'duplicate-control: pass').toBeGreaterThan(
-      20
-    );
-    expect(
-      classification.actual,
-      'one visible projected selection layer remains unobscured'
-    ).toBeLessThanOrEqual(2);
-
-    await testInfo.attach('ordinary-endpoints-retained-crossing-held.png', {
-      body: await page.screenshot({
-        caret: 'initial',
-        path: testInfo.outputPath(
-          'ordinary-endpoints-retained-crossing-held.png'
-        ),
-      }),
-      contentType: 'image/png',
-    });
-
-    await page.mouse.move(points.suffixNear.x, points.suffixNear.y, {
-      steps: 8,
-    });
-    await expect
-      .poll(async () =>
-        displayedTextLength(await editor.get.displayedSelection())
-      )
-      .toBe(24);
-    expect(await editor.get.displayedSelection()).toMatchObject({
-      doubleHighlighted: false,
-      hasVisibleSelection: true,
-    });
-
-    await page.mouse.move(points.suffixFar.x, points.suffixFar.y, {
-      steps: 8,
-    });
-    await expect
-      .poll(async () =>
-        displayedTextLength(await editor.get.displayedSelection())
-      )
-      .toBe(34);
-  } finally {
-    await page.mouse.up();
-  }
-
-  await expect
-    .poll(async () =>
-      displayedTextLength(await editor.get.displayedSelection())
-    )
-    .toBe(34);
-  await page.keyboard.press('ControlOrMeta+C');
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
-    'this redundant phrase out of the f'
-  );
-  expect(
-    await root
-      .locator('[data-editor-authored-change]')
-      .evaluateAll((elements) =>
-        elements.map((element) =>
-          element.getAttribute('data-editor-authored-change')
-        )
-      )
-  ).toEqual(authoredIdentities);
-
+  // Struck text is ordinary document text now, so a drag across its edges is
+  // one native selection, highlighted once, that keeps a model range.
   const dragAndAssert = async ({
-    anchor,
     from,
     selectedTextLength,
-    retainedText,
     to,
   }: {
-    anchor: 'live' | 'retained';
     from: { x: number; y: number };
     selectedTextLength: number;
-    retainedText: string;
     to: { x: number; y: number };
   }) => {
+    // A press inside the previous native selection would start a drag and
+    // drop of it, so each drag starts from a collapsed caret.
+    await editor.selection.collapse({ path: [2, 0], offset: 0 });
     await page.mouse.move(from.x, from.y);
     await page.mouse.down();
     try {
@@ -2090,80 +1623,62 @@ test('expands a pointer selection across deleted text boundaries', async ({
         .toMatchObject({
           doubleHighlighted: false,
           hasVisibleSelection: true,
-          source: 'view',
-          view: {
-            active: true,
-            textLength: selectedTextLength,
-          },
+          native: { textLength: selectedTextLength },
+          source: 'native',
         });
-      await expect(
-        root.locator(
-          '[data-editor-retained="delete"] [data-editor-view-selection]'
-        )
-      ).toHaveText(retainedText);
-      const displayed = await editor.get.displayedSelection();
-      if (anchor === 'retained') {
-        expect(displayed.model).toBeNull();
-      } else {
-        expect(displayed.model?.anchor).toEqual(displayed.model?.focus);
-      }
     } finally {
       await page.mouse.up();
     }
 
-    await expect
-      .poll(() => editor.get.displayedSelection())
-      .toMatchObject({
-        doubleHighlighted: false,
-        hasVisibleSelection: true,
-        source: 'view',
-        view: {
-          active: true,
-          textLength: selectedTextLength,
-        },
-      });
+    const displayed = await editor.get.displayedSelection();
+
+    expect(displayed.model).not.toBeNull();
+    expect(displayed.model?.anchor).not.toEqual(displayed.model?.focus);
   };
 
   await dragAndAssert({
-    anchor: 'live',
+    from: points.prefix,
+    selectedTextLength: 24,
+    to: points.suffixNear,
+  });
+  await dragAndAssert({
+    from: points.prefix,
+    selectedTextLength: 34,
+    to: points.suffixFar,
+  });
+  await page.keyboard.press('ControlOrMeta+C');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    'this redundant phrase out of the f'
+  );
+  await dragAndAssert({
     from: points.prefix,
     selectedTextLength: 20,
-    retainedText: 'redundant phras',
     to: points.deletedEnd,
   });
   await dragAndAssert({
-    anchor: 'live',
     from: points.suffix,
     selectedTextLength: 16,
-    retainedText: 'ndant phrase',
     to: points.deletedStart,
   });
   await dragAndAssert({
-    anchor: 'retained',
     from: points.deletedStart,
     selectedTextLength: 16,
-    retainedText: 'ndant phrase',
     to: points.suffix,
   });
   await dragAndAssert({
-    anchor: 'retained',
     from: points.deletedEnd,
     selectedTextLength: 20,
-    retainedText: 'redundant phras',
     to: points.prefix,
   });
-
-  await testInfo.attach('deleted-pointer-selection.json', {
-    body: JSON.stringify(await editor.get.displayedSelection(), null, 2),
-    contentType: 'application/json',
-  });
-  await testInfo.attach('deleted-pointer-selection.png', {
-    body: await page.screenshot({
-      caret: 'initial',
-      path: testInfo.outputPath('deleted-pointer-selection.png'),
-    }),
-    contentType: 'image/png',
-  });
+  expect(
+    await root
+      .locator('[data-editor-authored-change]')
+      .evaluateAll((elements) =>
+        elements.map((element) =>
+          element.getAttribute('data-editor-authored-change')
+        )
+      )
+  ).toEqual(authoredIdentities);
 
   const original = await editor.get.modelBlockTexts();
   await root.getByText(THIRD_PARAGRAPH, { exact: true }).click();
@@ -2221,62 +1736,71 @@ test('paints each typed suggestion at the first frame', async ({ page }) => {
 
   const block = blocks.nth(blockIndex);
 
-  await block.evaluate((element, currentBlockIndex) => {
-    const target = element as HTMLElement & {
-      __suggestionFirstPaints?: SuggestionPaintSnapshot[];
-    };
-    const editorRoot = element.closest('[data-editor="true"]') as
-      | (HTMLElement & {
-          __pliteBrowserHandle?: {
-            getBlockText: (index: number) => string | null;
+  await block.evaluate(
+    (element, [currentBlockIndex, key]) => {
+      const target = element as HTMLElement & {
+        __suggestionFirstPaints?: SuggestionPaintSnapshot[];
+      };
+      const editorRoot = element.closest('[data-editor="true"]') as
+        | (HTMLElement &
+            Record<
+              string,
+              | {
+                  getBlockText: (index: number) => string | null;
+                }
+              | undefined
+            >)
+        | null;
+      let input = 0;
+      const capture = (inputIndex: number) => {
+        const spans = [
+          ...element.querySelectorAll(
+            '[data-editor-node="text"][data-editor-authored-kind~="insert"]'
+          ),
+        ].map((node, index) => {
+          const before = document.createRange();
+
+          before.setStart(element, 0);
+          before.setEndBefore(node);
+
+          const start = before.toString().length;
+          const text = node.textContent ?? '';
+
+          return {
+            end: start + text.length,
+            index,
+            start,
+            text,
           };
-        })
-      | null;
-    let input = 0;
-    const capture = (inputIndex: number) => {
-      const spans = [
-        ...element.querySelectorAll('[data-editor-authored-kind="insert"]'),
-      ].map((node, index) => {
-        const before = document.createRange();
-
-        before.setStart(element, 0);
-        before.setEndBefore(node);
-
-        const start = before.toString().length;
-        const text = node.textContent ?? '';
-
-        return {
-          end: start + text.length,
-          index,
-          start,
-          text,
-        };
-      });
-
-      target.__suggestionFirstPaints?.push({
-        input: inputIndex,
-        model:
-          editorRoot?.__pliteBrowserHandle?.getBlockText(currentBlockIndex) ??
-          null,
-        spans,
-        text: element.textContent ?? '',
-      });
-    };
-
-    target.__suggestionFirstPaints = [];
-    editorRoot?.addEventListener(
-      'input',
-      () => {
-        const inputIndex = input;
-        input += 1;
-
-        requestAnimationFrame(() => {
-          capture(inputIndex);
         });
-      },
-      { capture: true }
-    );
-  }, blockIndex);
+
+        target.__suggestionFirstPaints?.push({
+          input: inputIndex,
+          model: editorRoot?.[key]?.getBlockText(currentBlockIndex) ?? null,
+          spans,
+          text: element.textContent ?? '',
+        });
+      };
+
+      target.__suggestionFirstPaints = [];
+      // The editor handles typed text from beforeinput and cancels it, so no
+      // input event follows; the first frame after beforeinput is the one
+      // that must already paint the insertion.
+      editorRoot?.addEventListener(
+        'beforeinput',
+        () => {
+          const inputIndex = input;
+          input += 1;
+
+          requestAnimationFrame(() => {
+            capture(inputIndex);
+          });
+        },
+        { capture: true }
+      );
+    },
+    [blockIndex, BROWSER_HANDLE_KEY] as const
+  );
 
   const at = 4;
   await editor.selection.collapse({ path: [blockIndex, 0], offset: at });
@@ -2312,14 +1836,12 @@ test('paints each typed suggestion at the first frame', async ({ page }) => {
 
   const characters = ['X', 'Y', 'Z'];
   const expected = characters.flatMap((_, input) => {
-    const inserted = characters.slice(0, input + 1);
-    const text = `Try ${inserted.join('')}typing your own suggestion here.`;
-    const spans = inserted.map((character, index) => ({
-      end: 5 + index,
-      index,
-      start: 4 + index,
-      text: character,
-    }));
+    const inserted = characters.slice(0, input + 1).join('');
+    const text = `Try ${inserted}typing your own suggestion here.`;
+    // Each letter extends the one insertion, painted as one run.
+    const spans = [
+      { end: 4 + inserted.length, index: 0, start: 4, text: inserted },
+    ];
 
     return [
       {
@@ -2358,7 +1880,7 @@ test('removes a canceled own insertion from its open discussion and restores it 
   await page.keyboard.type('p');
   await editor.assert.modelBlockText(blockIndex, inserted);
   await expect(
-    block.locator('[data-editor-authored-kind="insert"]')
+    authoredText(block, '[data-editor-authored-kind~="insert"]')
   ).toHaveText('p');
   await expect(trigger).toHaveAccessibleName(
     'Open 1 discussion item for this block'
@@ -2382,19 +1904,22 @@ test('removes a canceled own insertion from its open discussion and restores it 
   await expect(cards).toHaveCount(0);
   await expect(trigger).toHaveCount(0);
   await expect(
-    block.locator('[data-editor-authored-kind="insert"]')
+    authoredText(block, '[data-editor-authored-kind~="insert"]')
   ).toHaveCount(0);
-  await expect(block.locator('[data-editor-retained="delete"]')).toHaveCount(0);
+  await expect(
+    authoredText(block, '[data-editor-authored-kind~="delete"]')
+  ).toHaveCount(0);
 
   await page.keyboard.press('ControlOrMeta+z');
   await editor.assert.modelBlockText(blockIndex, inserted);
+  // Review coordinates: the restored insertion is its own text node.
   await editor.assert.selection({
-    anchor: { path, offset: at + 1 },
-    focus: { path, offset: at + 1 },
+    anchor: { path: [blockIndex, 1], offset: 1 },
+    focus: { path: [blockIndex, 1], offset: 1 },
   });
   await expect.poll(() => editor.get.selectedText()).toBe('');
   await expect(
-    block.locator(`[data-editor-authored-change="${id}"]`)
+    authoredText(block, `[data-editor-authored-change~="${id}"]`)
   ).toHaveText('p');
   await expect(trigger).toHaveCount(1);
 
@@ -2415,9 +1940,11 @@ test('removes a canceled own insertion from its open discussion and restores it 
   await expect(cards).toHaveCount(0);
   await expect(trigger).toHaveCount(0);
   await expect(
-    block.locator('[data-editor-authored-kind="insert"]')
+    authoredText(block, '[data-editor-authored-kind~="insert"]')
   ).toHaveCount(0);
-  await expect(block.locator('[data-editor-retained="delete"]')).toHaveCount(0);
+  await expect(
+    authoredText(block, '[data-editor-authored-kind~="delete"]')
+  ).toHaveCount(0);
   runtimeErrors.assertNone();
 });
 
@@ -2452,7 +1979,7 @@ test('undoes accepting an own insertion without replaying the older edit', async
   await expect(card).toHaveCount(1);
   await expect(card).toContainText('Add “p”');
   await expect(
-    block.locator('[data-editor-authored-kind="insert"]')
+    authoredText(block, '[data-editor-authored-kind~="insert"]')
   ).toHaveText('p');
   runtimeErrors.assertNone();
 });
@@ -2512,43 +2039,20 @@ test('clears an inserted paragraph break when Backspace immediately rejoins it',
 
   await expect(cards).toHaveCount(0);
   await expect(getBlockDiscussionTrigger(mergedBlock)).toHaveCount(0);
-  await expect(mergedBlock.locator('[data-editor-retained]')).toHaveCount(0);
+  await expect(
+    authoredText(mergedBlock, '[data-editor-authored-kind~="delete"]')
+  ).toHaveCount(0);
   await page.keyboard.type('x');
   await editor.assert.modelBlockText(
     blockIndex,
     'Try xtyping your own suggestion here.'
   );
+  // Review coordinates: the typed insertion is its own text node.
   await editor.assert.collapsedModelDOMSelection({
-    path,
-    offset: at + 1,
+    path: [blockIndex, 1],
+    offset: 1,
     text: 'x',
   });
-  runtimeErrors.assertNone();
-});
-
-test('cancels a proposed deletion when its author types the removed character again', async ({
-  page,
-}) => {
-  const { editor, root, runtimeErrors } = await openSuggestions(page);
-  const blockTexts = await editor.get.modelBlockTexts();
-  const blockIndex = blockTexts.indexOf(THIRD_PARAGRAPH);
-  const block = root.locator('[data-editor-node="element"]').nth(blockIndex);
-  const trigger = getBlockDiscussionTrigger(block);
-  await editor.selection.collapse({ path: [blockIndex, 0], offset: 5 });
-  await editor.focus();
-  await page.keyboard.press('Backspace');
-  await editor.assert.modelBlockText(
-    blockIndex,
-    'Try yping your own suggestion here.'
-  );
-  await expect(block.locator('[data-editor-retained="delete"]')).toHaveText(
-    't'
-  );
-  await page.keyboard.type('t');
-  await editor.assert.modelBlockText(blockIndex, THIRD_PARAGRAPH);
-  await expect(trigger).toHaveCount(0);
-  await expect(block.locator('[data-editor-authored-change]')).toHaveCount(0);
-  await expect(block.locator('[data-editor-retained]')).toHaveCount(0);
   runtimeErrors.assertNone();
 });
 
@@ -2561,14 +2065,14 @@ test('keeps rapid arrow navigation inside a typed suggestion', async ({
 
   expect(blockIndex).toBeGreaterThanOrEqual(0);
 
-  const path = [blockIndex, 0];
-  const at = 4;
-
-  await editor.selection.collapse({ path, offset: at });
+  await editor.selection.collapse({ path: [blockIndex, 0], offset: 4 });
   await editor.focus();
   await page.keyboard.type('XYZ');
 
-  for (const offset of [at + 2, at + 1, at]) {
+  // Review coordinates: "XYZ" is one inserted text node after "Try ".
+  const path = [blockIndex, 1];
+
+  for (const offset of [2, 1, 0]) {
     await page.keyboard.press('ArrowLeft');
     await expect
       .poll(() => editor.get.selection())
@@ -2576,17 +2080,14 @@ test('keeps rapid arrow navigation inside a typed suggestion', async ({
         anchor: { path, offset },
         focus: { path, offset },
       });
-
-    if (offset > at) {
-      await editor.assert.collapsedModelDOMSelection({
-        path,
-        offset,
-        text: offset === at + 1 ? 'X' : 'Y',
-      });
-    }
+    await editor.assert.collapsedModelDOMSelection({
+      path,
+      offset,
+      text: 'XYZ',
+    });
   }
 
-  for (const offset of [at + 1, at + 2, at + 3]) {
+  for (const offset of [1, 2, 3]) {
     await page.keyboard.press('ArrowRight');
     await expect
       .poll(() => editor.get.selection())
@@ -2594,14 +2095,11 @@ test('keeps rapid arrow navigation inside a typed suggestion', async ({
         anchor: { path, offset },
         focus: { path, offset },
       });
-
-    if (offset < at + 3) {
-      await editor.assert.collapsedModelDOMSelection({
-        path,
-        offset,
-        text: offset === at + 1 ? 'X' : 'Y',
-      });
-    }
+    await editor.assert.collapsedModelDOMSelection({
+      path,
+      offset,
+      text: 'XYZ',
+    });
   }
 
   await page.keyboard.press('ArrowLeft');
@@ -2613,8 +2111,8 @@ test('keeps rapid arrow navigation inside a typed suggestion', async ({
   );
   await editor.assert.collapsedModelDOMSelection({
     path,
-    offset: at + 2,
-    text: '!',
+    offset: 2,
+    text: 'X!YZ',
   });
   runtimeErrors.assertNone();
 });
@@ -2639,10 +2137,11 @@ test('accepts a paragraph break inside a typed suggestion and keeps typing', asy
   await page.evaluate(() => new Promise(requestAnimationFrame));
   await page.keyboard.press('Enter');
 
+  // The new line starts with the rest of the insertion, one text node.
   await editor.assert.collapsedModelDOMSelection({
     path: [blockIndex + 1, 0],
     offset: 0,
-    text: 'Y',
+    text: 'YZ',
   });
 
   const expected = [
@@ -2665,10 +2164,12 @@ test('accepts a paragraph break inside a typed suggestion and keeps typing', asy
   const popover = page.locator('[data-discussion-popover]');
   const cards = popover.locator('[data-suggestion-review]');
 
+  // The block shows the typed insertion's card and the break's own card.
+  const breakCard = cards.filter({ hasText: 'Add paragraph break' });
+
   await expect(popover).toBeVisible();
-  await expect(cards).toHaveCount(1);
-  await expect(cards.first()).toContainText('Add paragraph break');
-  await decideSuggestion(page, cards.first(), 'Accept');
+  await expect(breakCard).toHaveCount(1);
+  await decideSuggestion(page, breakCard, 'Accept');
   await editor.assert.modelBlockTexts(expected);
   await editor.selection.collapse({ path: [blockIndex + 1, 0], offset: 0 });
   await editor.focus();
@@ -2679,9 +2180,9 @@ test('accepts a paragraph break inside a typed suggestion and keeps typing', asy
     '!YZtyping your own suggestion here.'
   );
   await expect(
-    root
-      .locator('[data-editor-authored-kind="insert"]')
-      .filter({ hasText: '!' })
+    authoredText(root, '[data-editor-authored-kind~="insert"]').filter({
+      hasText: '!',
+    })
   ).toBeVisible();
   runtimeErrors.assertNone();
 });
@@ -2693,8 +2194,7 @@ test('rejects a backward paragraph merge and keeps typing', async ({
 
   const popover = page.locator('[data-discussion-popover]');
 
-  await root
-    .locator('[data-editor-authored-kind="insert"]')
+  await authoredText(root, '[data-editor-authored-kind~="insert"]')
     .filter({ hasText: 'collaboratively' })
     .click();
   await expect(popover).toBeVisible();
@@ -2705,7 +2205,7 @@ test('rejects a backward paragraph merge and keeps typing', async ({
     'Accept'
   );
 
-  await root.locator('[data-editor-retained="delete"]').click();
+  await authoredText(root, '[data-editor-authored-kind~="delete"]').click();
   await expect(popover).toBeVisible();
   await expect(popover.locator('[data-suggestion-review]')).toHaveCount(1);
   await decideSuggestion(
@@ -2720,13 +2220,23 @@ test('rejects a backward paragraph merge and keeps typing', async ({
   await editor.focus();
   await page.keyboard.press('Backspace');
 
-  await editor.assert.modelBlockTexts([
-    `${blockTexts[0]}${blockTexts[1]}`,
-    ...blockTexts.slice(2),
-  ]);
+  // The review tree keeps both lines and marks the second as joined; the
+  // caret moves to the end of the first, where a plain editor puts it.
+  await expect
+    .poll(() => reviewTree(editor))
+    .toEqual([
+      blockTexts[0],
+      `[join] ${blockTexts[1]}`,
+      ...blockTexts.slice(2),
+    ]);
+  await editor.assert.collapsedModelDOMSelection({
+    path: [0, 0],
+    offset: blockTexts[0].length,
+    text: blockTexts[0],
+  });
 
-  const mergedBlock = root.locator('[data-editor-node="element"]').first();
-  const trigger = getBlockDiscussionTrigger(mergedBlock);
+  const joinedBlock = root.locator('[data-editor-node="element"]').nth(1);
+  const trigger = getBlockDiscussionTrigger(joinedBlock);
 
   await expect(trigger).toHaveAccessibleName(
     'Open 1 discussion item for this block'
@@ -2743,15 +2253,15 @@ test('rejects a backward paragraph merge and keeps typing', async ({
     'Reject'
   );
 
-  await editor.assert.modelBlockTexts(blockTexts);
+  await expect.poll(() => reviewTree(editor)).toEqual(blockTexts);
   await editor.selection.collapse({ path: [1, 0], offset: 0 });
   await editor.focus();
   await page.keyboard.type('!');
   await editor.assert.modelBlockText(1, `!${blockTexts[1]}`);
   await expect(
-    root
-      .locator('[data-editor-authored-kind="insert"]')
-      .filter({ hasText: '!' })
+    authoredText(root, '[data-editor-authored-kind~="insert"]').filter({
+      hasText: '!',
+    })
   ).toBeVisible();
   runtimeErrors.assertNone();
 });

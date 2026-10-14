@@ -15,7 +15,7 @@ import {
   NodeApi,
   type Text,
 } from '../../index';
-import { failInvariant } from '../internal/failInvariant';
+import { failInvariant } from '../../internal/fail-invariant';
 import type { YjsNode } from './attributes';
 import { getYjsAttributes } from './attributes';
 import {
@@ -47,6 +47,7 @@ import {
   type YjsSetPropertyResolver,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
+import { YJS_CHILD_VISIBILITY_KEYS } from './keys';
 import { lastPathIndex, parentPath, pathsEqual } from './path';
 import {
   canReplaceCompatibleYjsChildren,
@@ -806,12 +807,6 @@ export type YjsEventLowerResult =
       tokenLengthNodes: number;
     }>;
 
-const PROJECTION_ATTRIBUTES = new Set([
-  'plite:yjs-hidden',
-  'plite:yjs-virtual-child-id',
-  'plite:yjs-virtual-placeholder',
-]);
-
 const isYjsNode = (value: unknown): value is YjsNode =>
   value instanceof Y.XmlElement || value instanceof Y.XmlText;
 
@@ -1421,7 +1416,7 @@ const rawYjsChildren = (node: Y.XmlElement): YjsNode[] =>
 const hasProjectionAttributes = (node: YjsNode): boolean => {
   const attributes = getYjsAttributes(node);
 
-  for (const key of PROJECTION_ATTRIBUTES) {
+  for (const key of YJS_CHILD_VISIBILITY_KEYS) {
     if (Object.hasOwn(attributes, key)) return true;
   }
 
@@ -3089,7 +3084,7 @@ export class YjsEventChangeBridge {
     }
 
     for (const event of batch.events) {
-      if (event.keys.some((key) => PROJECTION_ATTRIBUTES.has(key))) {
+      if (event.keys.some((key) => YJS_CHILD_VISIBILITY_KEYS.has(key))) {
         return {
           fallback: 'remote-event-projected-content',
           kind: 'fallback',

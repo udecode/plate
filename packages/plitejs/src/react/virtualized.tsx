@@ -112,7 +112,7 @@ export const VirtualizedEditable = <
   ...props
 }: VirtualizedEditableProps<TElement, TRoot>) => {
   if (root === 'main') {
-    throw new Error('[Plite] Omit root to render the primary editable.');
+    throw new Error('Omit root to render the primary editable.');
   }
   const inheritedReadOnly = useEditorReadOnly();
   const editor = useEditorContext();

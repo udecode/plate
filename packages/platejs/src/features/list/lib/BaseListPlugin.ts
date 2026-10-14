@@ -1,4 +1,5 @@
 import {
+  authoredVeto,
   BaseParagraphPlugin,
   ContentSlice,
   defineInputRule,
@@ -31,6 +32,8 @@ import {
   type Path,
   type BlockInsertOptions,
   type BlockUpsertOptions,
+  txLocate,
+  locateAt,
 } from '../../../core';
 import { failInvariant } from '../../../internal/failInvariant';
 import {
@@ -43,14 +46,14 @@ import {
 } from '../../../internal/listFamily';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import {
-  getCompiledPlateModelBinding,
   getCompiledPlatePlugin,
+  getCompiledPlateModelBinding,
 } from '../../../internal/plugin/compilePlateModel';
-import {
-  isHtmlBlockElement,
-  traverseHtmlElements,
-} from '../../../lib/plugins/html/htmlDom';
+import type { MarkdownMappingDiagnosticInput } from '../../../lib/plugin/PluginFormatContext';
+import { traverseHtmlElements } from '../../../lib/plugins/html/htmlDom';
+import { BaseBlockquotePlugin } from '../../basic-nodes';
 import { BaseIndentPlugin } from '../../indent';
+import { flattenHtmlListItem, isHtmlList } from './listHtml.internal';
 import {
   createListId,
   findContinuedItem,
@@ -223,7 +226,8 @@ const handleListUntab = (
     return false;
   }
 
-  const quoteType = getPluginType(editor, PLUGINS.blockquote);
+  const quote = editor.plugin(BaseBlockquotePlugin);
+  const quoteType = quote.installed ? quote.schema.type : undefined;
   const isQuoted = ([, path]: NodeEntry<Element>) =>
     quoteType !== undefined &&
     !!editor.read.nodes.above({
@@ -524,9 +528,15 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
 
         if (items.length === 0) continue;
 
-        const owner = list.parentElement?.closest('ol, ul')
+        let owner = list.parentElement?.closest('ol, ul')
           ? list.previousElementSibling
           : null;
+
+        // The item's later blocks sit between it and its nested list.
+        while (owner && owner.tagName !== 'LI' && !isHtmlList(owner)) {
+          owner = owner.previousElementSibling;
+        }
+
         const start = Number(list.getAttribute('start') ?? 1);
         const indent = items[0].dataset.indent ?? '1';
         const previous = previousByIndent.get(indent);
@@ -566,7 +576,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       html: [
         {
           createsElement: true,
-          prepareDocument: ({ document }) => {
+          prepareDocument: ({ document, registry, report }) => {
             const { body } = document;
 
             if (!body.querySelector('ul, ol, li, [data-list-id]')) return;
@@ -615,97 +625,21 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               }
             }
 
-            // First pass: flatten nested UL/OL that are inside LI elements
-            // We need to move them to be siblings of their parent LI
-            const lisWithNestedLists: Array<{
-              li: globalThis.Element;
-              nestedLists: globalThis.Element[];
-            }> = [];
+            const imagesAreBlocks = registry.has(PLUGINS.image);
+            const listItems: HTMLElement[] = [];
             traverseHtmlElements(body, (element) => {
               if (element.tagName === 'LI') {
-                const nestedLists: globalThis.Element[] = [];
-                // Find nested UL/OL elements
-                Array.from(element.children).forEach((child) => {
-                  if (child.tagName === 'UL' || child.tagName === 'OL') {
-                    nestedLists.push(child);
-                  }
-                });
-                if (nestedLists.length > 0) {
-                  lisWithNestedLists.push({
-                    li: element,
-                    nestedLists,
-                  });
-                }
+                listItems.push(element as HTMLElement);
               }
               return true;
             });
+            listItems.forEach((listItem) =>
+              flattenHtmlListItem(listItem, imagesAreBlocks, report)
+            );
 
-            // Move nested lists to be after their parent LI
-            lisWithNestedLists.forEach(({ li, nestedLists }) => {
-              li.after(...nestedLists);
-            });
-
-            // Second pass: process LI elements (now without nested lists inside them)
             traverseHtmlElements(body, (element) => {
               if (element.tagName === 'LI') {
                 const htmlElement = element as HTMLElement;
-                const { childNodes } = element;
-                const blocks = Array.from(element.children).filter(
-                  isHtmlBlockElement
-                );
-                // An item's paragraphs are its text, so they flatten. Another
-                // block the item holds alone, such as a heading or an image
-                // figure, stays: decoding lists that block when its type can be.
-                const holdsBlock =
-                  blocks.length === 1 &&
-                  blocks[0].tagName !== 'P' &&
-                  Array.from(childNodes).every(
-                    (child) =>
-                      child === blocks[0] ||
-                      child.nodeType === 8 ||
-                      (child.nodeType === 3 && !child.textContent?.trim())
-                  );
-
-                if (!holdsBlock) {
-                  // Process li children and flatten block elements
-                  const liChildren: globalThis.Node[] = [];
-                  childNodes.forEach((child) => {
-                    if (child.nodeType === 1) {
-                      const childElement = child as globalThis.Element;
-                      if (isHtmlBlockElement(childElement)) {
-                        // Replace block elements (e.g. p) with their children
-                        liChildren.push(...childElement.childNodes);
-                        return;
-                      }
-                    }
-                    liChildren.push(child);
-                  });
-                  element.replaceChildren(...liChildren);
-                }
-
-                // Keep explicit mapping metadata, then honor Google Docs.
-                const dataIndent = htmlElement.dataset.indent;
-                const ariaLevel = element.getAttribute('aria-level');
-                if (dataIndent) {
-                  htmlElement.dataset.indent = dataIndent;
-                } else if (ariaLevel) {
-                  htmlElement.dataset.indent = ariaLevel;
-                } else if (!htmlElement.style.marginLeft) {
-                  // Calculate indent level based on nested UL/OL parents
-                  let indent = 0;
-                  let parent = element.parentElement;
-                  while (parent && parent !== body) {
-                    if (parent.tagName === 'UL' || parent.tagName === 'OL') {
-                      indent += 1;
-                    }
-                    parent = parent.parentElement;
-                  }
-
-                  // Set indent level as data attribute
-                  if (indent > 0) {
-                    htmlElement.dataset.indent = String(indent);
-                  }
-                }
 
                 if (htmlElement.dataset.listStyle) return false;
 
@@ -841,13 +775,122 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
       markdown: {
         node: 'list',
         priority: 40,
-        decode: ({ build, node, registry }) => {
-          const imageType = registry.type(PLUGINS.image);
+        decode: ({
+          build,
+          isInline,
+          node,
+          registry,
+          report,
+          schema: schemaView,
+        }) => {
           const type = registry.type(BaseParagraphPlugin);
 
           if (!type) {
             throw new Error('List Markdown decoding requires paragraphs.');
           }
+          // One report per lost property and block type in a list: every
+          // report carries the whole list's source.
+          const reported = new Set<string>();
+          const reportOnce = (
+            loss: string,
+            diagnostic: MarkdownMappingDiagnosticInput
+          ) => {
+            if (reported.has(loss)) return;
+            reported.add(loss);
+            report(diagnostic);
+          };
+          const fits = (key: string, blockType: string) =>
+            schemaView.property({
+              key,
+              placement: 'element',
+              type: blockType,
+            }) !== null;
+          const toBlocks = (nodes: readonly Descendant[]) => {
+            const blocks: Element[] = [];
+            let run: Descendant[] = [];
+            const flushRun = () => {
+              if (run.length > 0) blocks.push({ children: run, type });
+              run = [];
+            };
+
+            nodes.forEach((child) => {
+              if (TextApi.isText(child) || isInline(child)) {
+                run.push(child);
+                return;
+              }
+              flushRun();
+              blocks.push(child);
+            });
+            flushRun();
+
+            return blocks;
+          };
+          const withAllowedProperties = (
+            block: Element,
+            properties: Readonly<Record<string, unknown>>
+          ): Element => ({
+            ...block,
+            ...Object.fromEntries(
+              Object.entries(properties).filter(([key]) => {
+                if (fits(key, block.type)) return true;
+                reportOnce(`${key}:${block.type}`, {
+                  action: 'dropped',
+                  kind: 'property',
+                  message: `List Markdown omitted property "${key}" on "${block.type}": the schema does not allow it.`,
+                  nodeType: node.type,
+                });
+
+                return false;
+              })
+            ),
+          });
+          // A text block the list cannot hold becomes the item's paragraph, as
+          // HTML reads it, so the item keeps its place and number. Any other
+          // block leaves the list and stays among its parent item's blocks.
+          const toItem = (
+            block: Element,
+            indent: number,
+            listProperties: Readonly<Record<string, unknown>>
+          ): Element => {
+            const properties = { indent, ...listProperties };
+
+            if (block.type === type || fits('listType', block.type)) {
+              return withAllowedProperties(block, properties);
+            }
+
+            const behavior = schemaView.element(block.type)?.behavior;
+            const textBlock =
+              behavior !== undefined &&
+              !behavior.object &&
+              !behavior.void &&
+              block.children.every(
+                (child) => TextApi.isText(child) || isInline(child)
+              );
+
+            if (textBlock) {
+              reportOnce(`item:${block.type}`, {
+                action: 'replaced',
+                kind: 'element',
+                message: `List Markdown replaced "${block.type}" with "${type}": the list cannot hold it.`,
+                nodeType: node.type,
+              });
+
+              return withAllowedProperties(
+                { children: block.children, type },
+                properties
+              );
+            }
+            reportOnce(`item:${block.type}`, {
+              action: 'unwrapped',
+              kind: 'element',
+              message: `List Markdown unwrapped "${block.type}" from its list item: the list cannot hold it.`,
+              nodeType: node.type,
+            });
+
+            return indent > 1
+              ? withAllowedProperties(block, { indent })
+              : block;
+          };
           const parseList = (
             list: typeof node,
             indent: number,
@@ -866,37 +909,28 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                   ? ListType.Numbered
                   : ListType.Bulleted;
 
-              const [paragraph, ...nested] = listItem.children;
-              const nodes: Descendant[] = paragraph
-                ? build(paragraph)
-                : [
-                    {
-                      children: [{ text: '' }],
-                      type,
-                    },
-                  ];
+              const [first, ...rest] = listItem.children;
+              const opensWithList = first?.type === 'list';
+              const nested = opensWithList ? listItem.children : rest;
+              const [
+                head = { children: [{ text: '' }], type },
+                ...continuation
+              ] = first && !opensWithList ? toBlocks(build(first)) : [];
 
-              nodes.forEach((child, childIndex) => {
-                const element = TextApi.isText(child)
-                  ? {
-                      children: [child],
-                      type,
-                    }
-                  : child;
-                items.push({
-                  ...element,
+              items.push(
+                toItem(head, indent, {
                   ...(task ? { checked } : {}),
-                  indent,
                   listId,
                   listType,
-                  ...(ordered && start !== 1 && index === 0 && childIndex === 0
+                  ...(ordered && start !== 1 && index === 0
                     ? { listStart: start }
                     : {}),
-                  type:
-                    imageType && element.type === imageType
-                      ? element.type
-                      : type,
-                });
+                })
+              );
+              continuation.forEach((block) => {
+                items.push(
+                  withAllowedProperties(block, { indent: indent + 1 })
+                );
               });
 
               let sublists = 0;
@@ -914,11 +948,11 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
                   return;
                 }
 
-                items.push(
-                  ...build(child)
-                    .filter((item): item is Element => !TextApi.isText(item))
-                    .map((item) => ({ ...item, indent: indent + 1 }))
-                );
+                toBlocks(build(child)).forEach((block) => {
+                  items.push(
+                    withAllowedProperties(block, { indent: indent + 1 })
+                  );
+                });
               });
             });
 
@@ -1037,7 +1071,7 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
         });
 
       return {
-        outdent: ({ at }: OutdentListOptions = {}) => {
+        outdent: txLocate(locateAt(0), ({ at }: OutdentListOptions = {}) => {
           tx.indent.decrease({ nodes: { at } });
 
           for (const [node, path] of tx.nodes.blocks({ at, mode: 'lowest' })) {
@@ -1045,356 +1079,384 @@ export const BaseListPlugin = definePlugin(PLUGINS.list, {
               tx.nodes.unset([...LIST_FIELDS], { at: path });
             }
           }
-        },
-        clear: ({ at }: { at?: Location | NodeSelection } = {}) => {
-          for (const [node, path] of tx.nodes.blocks({
-            at,
-            match: getInjectMatch(editor, plugin),
-            mode: 'lowest',
-          })) {
-            if (!isListItem(node)) continue;
-            tx.nodes.unset([...LIST_FIELDS, 'indent'], { at: path });
+        }),
+        clear: txLocate(
+          locateAt(0),
+          ({ at }: { at?: Location | NodeSelection } = {}) => {
+            for (const [node, path] of tx.nodes.blocks({
+              at,
+              match: getInjectMatch(editor, plugin),
+              mode: 'lowest',
+            })) {
+              if (!isListItem(node)) continue;
+              tx.nodes.unset([...LIST_FIELDS, 'indent'], { at: path });
+            }
           }
-        },
-        insert: (input: { type: ListType }, options: BlockInsertOptions = {}) =>
-          applyListInsertion('insert', input, options),
-        toggle: ({ at, listStart, listStyle, type }: ToggleListOptions) => {
-          if (
-            (at === undefined && !tx.selection()) ||
-            (PathApi.isPath(at) && at.length === 0)
-          ) {
-            return false;
-          }
+        ),
+        insert: txLocate(
+          locateAt(1, 'at', 'after', 'before'),
+          (input: { type: ListType }, options: BlockInsertOptions = {}) =>
+            applyListInsertion('insert', input, options)
+        ),
+        toggle: txLocate(
+          locateAt(0),
+          ({ at, listStart, listStyle, type }: ToggleListOptions) => {
+            if (
+              (at === undefined && !tx.selection()) ||
+              (PathApi.isPath(at) && at.length === 0)
+            ) {
+              return false;
+            }
 
-          const root =
-            at === undefined
-              ? SelectionApi.root(tx.selection())
-              : PathApi.isPath(at)
-                ? undefined
-                : 'anchor' in at
-                  ? at.anchor.root
-                  : at.root;
-          const inRoot = (path: Path): Location =>
-            root === undefined ? path : { path, offset: 0, root };
-          const keyAt = (path: Path) =>
-            tx.key(inRoot(path)) ??
-            failInvariant('Selected list block has no node key.');
-          const match = getInjectMatch(editor, plugin);
-          const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
-          const detailsType = getCompiledPlateModelBinding(
-            editor,
-            PLUGINS.details
-          )?.elementType;
-          const summaryType = getCompiledPlateModelBinding(
-            editor,
-            PLUGINS.detailsSummary
-          )?.elementType;
-          const sections =
-            detailsType && summaryType
-              ? tx.nodes
-                  .blocks({ at, type: summaryType, mode: 'lowest' })
-                  .flatMap(([title, path]) => {
-                    const parent = tx.nodes.parent(inRoot(path));
+            const root =
+              at === undefined
+                ? SelectionApi.root(tx.selection())
+                : PathApi.isPath(at)
+                  ? undefined
+                  : 'anchor' in at
+                    ? at.anchor.root
+                    : at.root;
+            const inRoot = (path: Path): Location =>
+              root === undefined ? path : { path, offset: 0, root };
+            const keyAt = (path: Path) =>
+              tx.key(inRoot(path)) ??
+              failInvariant('Selected list block has no node key.');
+            const match = getInjectMatch(editor, plugin);
+            const paragraphType =
+              editor.plugin(BaseParagraphPlugin).schema.type;
+            const detailsType = getCompiledPlateModelBinding(
+              editor,
+              PLUGINS.details
+            )?.elementType;
+            const summaryType = getCompiledPlateModelBinding(
+              editor,
+              PLUGINS.detailsSummary
+            )?.elementType;
+            const sections =
+              detailsType && summaryType
+                ? tx.nodes
+                    .blocks({ at, type: summaryType, mode: 'lowest' })
+                    .flatMap(([title, path]) => {
+                      const parent = tx.nodes.parent(inRoot(path));
 
-                    if (
-                      !parent ||
-                      !ElementApi.isElement(parent[0]) ||
-                      parent[0].type !== detailsType ||
-                      !match({ ...title, type: paragraphType }, path)
-                    ) {
-                      return [];
-                    }
+                      if (
+                        !parent ||
+                        !ElementApi.isElement(parent[0]) ||
+                        parent[0].type !== detailsType ||
+                        !match({ ...title, type: paragraphType }, path)
+                      ) {
+                        return [];
+                      }
 
-                    const { children } = parent[0];
-                    const first = tx.nodes
-                      .children(keyAt(parent[1]))
-                      .find(
-                        (node) =>
-                          tx.nodes.isContent(node) && node.type === title.type
-                      );
-                    if (first !== title) return [];
+                      const { children } = parent[0];
+                      const first = tx.nodes
+                        .children(keyAt(parent[1]))
+                        .find(
+                          (node) =>
+                            tx.nodes.isContent(node) && node.type === title.type
+                        );
+                      if (first !== title) return [];
 
-                    return [
-                      {
-                        key: keyAt(parent[1]),
-                        title: keyAt(path),
-                        path,
-                        indent: Math.max(1, getListIndent(parent[0])),
-                        body: children.flatMap((node, index) =>
-                          node !== title && tx.nodes.isContent(node)
-                            ? [keyAt([...parent[1], index])]
-                            : []
-                        ),
-                      },
-                    ];
-                  })
-                  .toSorted(
-                    (left, right) => left.path.length - right.path.length
-                  )
-              : [];
-          const bySection = new Map(
-            sections.map((section) => [section.key, section])
-          );
-          const byTitle = new Map(
-            sections.map((section) => [section.title, section])
-          );
-          const bodyIndents = new Map<NodeKey, number>();
+                      return [
+                        {
+                          key: keyAt(parent[1]),
+                          title: keyAt(path),
+                          path,
+                          indent: Math.max(1, getListIndent(parent[0])),
+                          body: children.flatMap((node, index) =>
+                            node !== title && tx.nodes.isContent(node)
+                              ? [keyAt([...parent[1], index])]
+                              : []
+                          ),
+                        },
+                      ];
+                    })
+                    .toSorted(
+                      (left, right) => left.path.length - right.path.length
+                    )
+                : [];
+            const bySection = new Map(
+              sections.map((section) => [section.key, section])
+            );
+            const byTitle = new Map(
+              sections.map((section) => [section.title, section])
+            );
+            const bodyIndents = new Map<NodeKey, number>();
 
-          if (
-            sections.some((section) =>
-              section.body.some((key) => {
-                const entry = tx.nodes.get(key, {
-                  match: ElementApi.isElement,
-                });
-                return (
-                  entry &&
-                  !bySection.has(key) &&
-                  !tx.schema.property({
-                    key: 'indent',
-                    placement: 'element',
-                    type: entry[0].type,
-                  })
-                );
-              })
-            )
-          ) {
-            return false;
-          }
-
-          for (const section of sections) {
-            for (const key of section.body) {
-              const nested = bySection.get(key);
-              if (nested) {
-                nested.indent += section.indent;
-              } else {
-                const body = tx.nodes.get(key, { match: ElementApi.isElement });
-                if (body) {
-                  bodyIndents.set(
-                    key,
-                    section.indent + Math.max(1, getListIndent(body[0]))
+            if (
+              sections.some((section) =>
+                section.body.some((key) => {
+                  const entry = tx.nodes.get(key, {
+                    match: ElementApi.isElement,
+                  });
+                  return (
+                    entry &&
+                    !bySection.has(key) &&
+                    !tx.schema.property({
+                      key: 'indent',
+                      placement: 'element',
+                      type: entry[0].type,
+                    })
                   );
+                })
+              )
+            ) {
+              return false;
+            }
+
+            for (const section of sections) {
+              for (const key of section.body) {
+                const nested = bySection.get(key);
+                if (nested) {
+                  nested.indent += section.indent;
+                } else {
+                  const body = tx.nodes.get(key, {
+                    match: ElementApi.isElement,
+                  });
+                  if (body) {
+                    bodyIndents.set(
+                      key,
+                      section.indent + Math.max(1, getListIndent(body[0]))
+                    );
+                  }
                 }
               }
             }
-          }
-          const [firstSection, ...otherSections] = sections;
-          if (firstSection) {
-            const titles = SelectionApi.nodes(
-              [
-                firstSection.path,
-                ...otherSections.map((section) => section.path),
-              ],
-              root ? { root } : {}
-            );
-            if (!tx.blocks.set({ type: paragraphType }, { at: titles })) {
-              return false;
-            }
-            tx.nodes.unset('level', { at: titles });
-          }
-          const entries = tx.nodes
-            .blocks({
-              at,
-              match,
-              mode: 'lowest',
-            })
-            .map(([node, path]) => ({ node, path, key: keyAt(path) }));
-
-          if (entries.length === 0) return false;
-
-          const changed = (candidates: typeof entries) =>
-            candidates.some(({ node: before, key }) => {
-              const after = tx.nodes.get(key)?.[0];
-
-              return (
-                ElementApi.isElement(after) &&
-                (before.indent !== after.indent ||
-                  LIST_FIELDS.some((field) => before[field] !== after[field]))
+            const [firstSection, ...otherSections] = sections;
+            if (firstSection) {
+              const titles = SelectionApi.nodes(
+                [
+                  firstSection.path,
+                  ...otherSections.map((section) => section.path),
+                ],
+                root ? { root } : {}
               );
-            });
+              if (!tx.blocks.set({ type: paragraphType }, { at: titles })) {
+                return false;
+              }
+              tx.nodes.unset('level', { at: titles });
+            }
+            const entries = tx.nodes
+              .blocks({
+                at,
+                match,
+                mode: 'lowest',
+              })
+              .map(([node, path]) => ({ node, path, key: keyAt(path) }));
 
-          const normalizedListStyle = normalizeListStyle(type, listStyle);
-          const isSameList = ({ node }: (typeof entries)[number]) =>
-            node.listType === type &&
-            (listStyle === undefined ||
-              getElementListStyle(node) === normalizedListStyle);
-          const unsetList =
-            sections.length === 0 &&
-            listStart === undefined &&
-            entries.every(isSameList);
+            if (entries.length === 0) return false;
 
-          if (unsetList) {
-            entries.forEach(({ node, key }) => {
-              const indent = Number(node.indent ?? 0);
+            const changed = (candidates: typeof entries) =>
+              candidates.some(({ node: before, key }) => {
+                const after = tx.nodes.get(key)?.[0];
 
-              tx.nodes.unset([...LIST_FIELDS], { at: key });
+                return (
+                  ElementApi.isElement(after) &&
+                  (before.indent !== after.indent ||
+                    LIST_FIELDS.some((field) => before[field] !== after[field]))
+                );
+              });
 
-              if (indent > 1) {
-                tx.nodes.set({ indent: indent - 1 }, { at: key });
-              } else {
-                tx.nodes.unset('indent', { at: key });
+            const normalizedListStyle = normalizeListStyle(type, listStyle);
+            const isSameList = ({ node }: (typeof entries)[number]) =>
+              node.listType === type &&
+              (listStyle === undefined ||
+                getElementListStyle(node) === normalizedListStyle);
+            const unsetList =
+              sections.length === 0 &&
+              listStart === undefined &&
+              entries.every(isSameList);
+
+            if (unsetList) {
+              entries.forEach(({ node, key }) => {
+                const indent = Number(node.indent ?? 0);
+
+                tx.nodes.unset([...LIST_FIELDS], { at: key });
+
+                if (indent > 1) {
+                  tx.nodes.set({ indent: indent - 1 }, { at: key });
+                } else {
+                  tx.nodes.unset('indent', { at: key });
+                }
+              });
+              return changed(entries);
+            }
+
+            const targets =
+              entries.length === 1 && isListItem(entries[0].node)
+                ? [
+                    entries[0],
+                    ...getListRunSiblings(
+                      tx,
+                      [entries[0].node, entries[0].path],
+                      getHeadingType(editor),
+                      root
+                    ).map(([node, path]) => ({ node, path, key: keyAt(path) })),
+                  ]
+                : [...entries];
+            const boundaryKey = entries[0].key;
+            const headingType = getHeadingType(editor);
+            // Blocks that become list items join one list: the one the first
+            // of them joins, or a fresh one.
+            let identity: ReturnType<typeof resolveListIdentity> | undefined;
+
+            targets.forEach(({ node, path, key }) => {
+              const currentIndent = Number(node.indent ?? 0);
+              const indent =
+                byTitle.get(key)?.indent ??
+                (isListItem(node)
+                  ? Math.max(1, currentIndent || 1)
+                  : currentIndent + 1);
+              const isBoundary = key === boundaryKey;
+
+              if (!isListItem(node)) {
+                identity ??= resolveListIdentity(
+                  tx,
+                  path,
+                  {
+                    depth: indent,
+                    heading:
+                      headingType !== undefined && node.type === headingType,
+                    headingType,
+                    listType: type,
+                    style: normalizedListStyle,
+                  },
+                  root
+                );
+              }
+
+              tx.nodes.set(
+                {
+                  indent,
+                  listType: type,
+                  ...(type === ListType.Task
+                    ? {
+                        checked:
+                          typeof node.checked === 'boolean'
+                            ? node.checked
+                            : false,
+                      }
+                    : {}),
+                  ...(normalizedListStyle === undefined
+                    ? {}
+                    : { listStyle: normalizedListStyle }),
+                  ...(type === ListType.Numbered &&
+                  listStart !== undefined &&
+                  isBoundary
+                    ? { listStart }
+                    : {}),
+                  ...(!isListItem(node) && identity?.listId !== undefined
+                    ? { listId: identity.listId }
+                    : {}),
+                  ...(!isListItem(node) && identity?.listLevels !== undefined
+                    ? { listLevels: identity.listLevels }
+                    : {}),
+                },
+                { at: key }
+              );
+
+              if (type !== ListType.Task && Object.hasOwn(node, 'checked')) {
+                tx.nodes.unset('checked', { at: key });
+              }
+              if (
+                normalizedListStyle === undefined &&
+                Object.hasOwn(node, 'listStyle')
+              ) {
+                tx.nodes.unset('listStyle', { at: key });
+              }
+              // `listRestart` would outrank the given start, so it goes.
+              if (isBoundary && listStart !== undefined) {
+                tx.nodes.unset('listRestart', { at: key });
               }
             });
-            return changed(entries);
+            const didChange = changed(targets);
+            for (const [key, indent] of bodyIndents) {
+              tx.nodes.set({ indent }, { at: key });
+            }
+            for (const section of sections) {
+              tx.nodes.unwrap({ at: section.key });
+            }
+            return didChange || sections.length > 0;
           }
-
-          const targets =
-            entries.length === 1 && isListItem(entries[0].node)
-              ? [
-                  entries[0],
-                  ...getListRunSiblings(
-                    tx,
-                    [entries[0].node, entries[0].path],
-                    getHeadingType(editor),
-                    root
-                  ).map(([node, path]) => ({ node, path, key: keyAt(path) })),
-                ]
-              : [...entries];
-          const boundaryKey = entries[0].key;
-          const headingType = getHeadingType(editor);
-          // Blocks that become list items join one list: the one the first
-          // of them joins, or a fresh one.
-          let identity: ReturnType<typeof resolveListIdentity> | undefined;
-
-          targets.forEach(({ node, path, key }) => {
-            const currentIndent = Number(node.indent ?? 0);
-            const indent =
-              byTitle.get(key)?.indent ??
-              (isListItem(node)
-                ? Math.max(1, currentIndent || 1)
-                : currentIndent + 1);
-            const isBoundary = key === boundaryKey;
-
-            if (!isListItem(node)) {
-              identity ??= resolveListIdentity(
-                tx,
-                path,
-                {
-                  depth: indent,
-                  heading:
-                    headingType !== undefined && node.type === headingType,
-                  headingType,
-                  listType: type,
-                  style: normalizedListStyle,
-                },
-                root
-              );
-            }
-
-            tx.nodes.set(
-              {
-                indent,
-                listType: type,
-                ...(type === ListType.Task
-                  ? {
-                      checked:
-                        typeof node.checked === 'boolean'
-                          ? node.checked
-                          : false,
-                    }
-                  : {}),
-                ...(normalizedListStyle === undefined
-                  ? {}
-                  : { listStyle: normalizedListStyle }),
-                ...(type === ListType.Numbered &&
-                listStart !== undefined &&
-                isBoundary
-                  ? { listStart }
-                  : {}),
-                ...(!isListItem(node) && identity?.listId !== undefined
-                  ? { listId: identity.listId }
-                  : {}),
-                ...(!isListItem(node) && identity?.listLevels !== undefined
-                  ? { listLevels: identity.listLevels }
-                  : {}),
-              },
-              { at: key }
-            );
-
-            if (type !== ListType.Task && Object.hasOwn(node, 'checked')) {
-              tx.nodes.unset('checked', { at: key });
-            }
-            if (
-              normalizedListStyle === undefined &&
-              Object.hasOwn(node, 'listStyle')
-            ) {
-              tx.nodes.unset('listStyle', { at: key });
-            }
-            // `listRestart` would outrank the given start, so it goes.
-            if (isBoundary && listStart !== undefined) {
-              tx.nodes.unset('listRestart', { at: key });
-            }
-          });
-          const didChange = changed(targets);
-          for (const [key, indent] of bodyIndents) {
-            tx.nodes.set({ indent }, { at: key });
-          }
-          for (const section of sections) {
-            tx.nodes.unwrap({ at: section.key });
-          }
-          return didChange || sections.length > 0;
-        },
-        restart: ({
-          at,
-          start = 1,
-        }: { at?: Location | NodeSelection; start?: number } = {}) => {
-          const [entry] = tx.nodes.blocks({
+        ),
+        restart: txLocate(
+          locateAt(0),
+          ({
             at,
-            match: (node) =>
-              ElementApi.isElement(node) && node.listType === ListType.Numbered,
-            mode: 'lowest',
-          });
+            start = 1,
+          }: { at?: Location | NodeSelection; start?: number } = {}) => {
+            const [entry] = tx.nodes.blocks({
+              at,
+              match: (node) =>
+                ElementApi.isElement(node) &&
+                node.listType === ListType.Numbered,
+              mode: 'lowest',
+            });
 
-          if (!entry || entry[0].listRestart === start) return false;
-          tx.nodes.set({ listRestart: start }, { at: entry[1] });
-
-          return true;
-        },
-        continue: ({ at }: { at?: Location | NodeSelection } = {}) => {
-          const [entry] = tx.nodes.blocks({
-            at,
-            match: (node) =>
-              ElementApi.isElement(node) && node.listType === ListType.Numbered,
-            mode: 'lowest',
-          });
-
-          if (!entry) return false;
-          if (Object.hasOwn(entry[0], 'listRestart')) {
-            tx.nodes.unset('listRestart', { at: entry[1] });
+            if (!entry || entry[0].listRestart === start) return false;
+            tx.nodes.set({ listRestart: start }, { at: entry[1] });
 
             return true;
           }
+        ),
+        continue: txLocate(
+          locateAt(0),
+          ({ at }: { at?: Location | NodeSelection } = {}) => {
+            const [entry] = tx.nodes.blocks({
+              at,
+              match: (node) =>
+                ElementApi.isElement(node) &&
+                node.listType === ListType.Numbered,
+              mode: 'lowest',
+            });
 
-          const root = tx.view.root();
-          const position = readListPosition(
-            root ? tx.root(root) : tx.children(),
-            entry[0],
-            getHeadingType(editor)
-          );
-          const previous = position?.previousCompatible?.[0];
+            if (!entry) return false;
+            if (Object.hasOwn(entry[0], 'listRestart')) {
+              tx.nodes.unset('listRestart', { at: entry[1] });
 
-          if (!position || position.index !== 0 || !previous) return false;
-
-          for (const [, path] of position.items) {
-            if (typeof previous.listId === 'string') {
-              tx.nodes.set({ listId: previous.listId }, { at: path });
-            } else {
-              tx.nodes.unset('listId', { at: path });
+              return true;
             }
-            if (isListLevels(previous.listLevels)) {
-              tx.nodes.set({ listLevels: previous.listLevels }, { at: path });
-            } else {
-              tx.nodes.unset('listLevels', { at: path });
+
+            const root = tx.view.root();
+            const position = readListPosition(
+              root ? tx.root(root) : tx.children(),
+              entry[0],
+              getHeadingType(editor)
+            );
+            const previous = position?.previousCompatible?.[0];
+
+            if (!position || position.index !== 0 || !previous) return false;
+
+            for (const [, path] of position.items) {
+              if (typeof previous.listId === 'string') {
+                tx.nodes.set({ listId: previous.listId }, { at: path });
+              } else {
+                tx.nodes.unset('listId', { at: path });
+              }
+              if (isListLevels(previous.listLevels)) {
+                tx.nodes.set({ listLevels: previous.listLevels }, { at: path });
+              } else {
+                tx.nodes.unset('listLevels', { at: path });
+              }
             }
+
+            return true;
           }
-
-          return true;
-        },
-        upsert: (input: { type: ListType }, options: BlockUpsertOptions = {}) =>
-          applyListInsertion('upsert', input, options),
+        ),
+        upsert: txLocate(
+          locateAt(1, 'after', 'before'),
+          (input: { type: ListType }, options: BlockUpsertOptions = {}) =>
+            applyListInsertion('upsert', input, options)
+        ),
       };
     },
   }))
   .extend((context) => ({
+    // Review marks cannot hold list numbering yet, so a list item, or a
+    // block turning into one, refuses Suggesting.
+    contributions: [
+      authoredVeto.of((element) => (element.listType ? 'list' : null)),
+    ],
     commands: ({ around, handle }) => [
       around(editorCommands.replaceSlice, ({ input, next, state }) => {
         const { options, slice } = input;
@@ -1578,21 +1640,6 @@ type MarkdownListRuleOptions = {
   priority?: number;
 };
 
-const isMarkdownListRuleEnabled = (
-  context: InsertTextInputRuleReadContext,
-  enabled: MarkdownListRuleOptions['enabled']
-) => {
-  if (enabled && !enabled(context)) return false;
-
-  const codeBlock = context.editor.plugin(PLUGINS.codeBlock);
-
-  if (!codeBlock.installed) return true;
-
-  return !context.editor.read.nodes.some({
-    type: [codeBlock.schema.type],
-  });
-};
-
 export const BulletedListRules = {
   markdown: ({
     enabled,
@@ -1603,7 +1650,7 @@ export const BulletedListRules = {
       target: 'insertText',
       trigger: ' ',
       priority,
-      enabled: (context) => isMarkdownListRuleEnabled(context, enabled),
+      enabled,
       resolve: (context) => matchBlockStart(context, { match: variant }),
       apply: ({ decline, tx }, match) => {
         tx.text.delete({ at: match.range });
@@ -1657,7 +1704,7 @@ export const OrderedListRules = {
       target: 'insertText',
       trigger: ' ',
       priority,
-      enabled: (context) => isMarkdownListRuleEnabled(context, enabled),
+      enabled,
       resolve: (context) => {
         const match = matchBlockStart(context, {
           match: new RegExp(`^(\\d+)${variant === ')' ? '\\)' : '\\.'}$`),
@@ -1725,7 +1772,7 @@ export const TaskListRules = {
       target: 'insertText',
       trigger: ' ',
       priority,
-      enabled: (context) => isMarkdownListRuleEnabled(context, enabled),
+      enabled,
       resolve: (context) =>
         matchBlockStart(context, { match: checked ? '[x]' : '[]' }),
       apply: ({ decline, tx }, match) => {

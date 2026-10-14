@@ -3,11 +3,12 @@ import { expect, it } from 'bun:test';
 import * as React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { createStaticEditor, EditorStatic } from '../../../static';
+import { createEditor } from '../../../core';
+import { EditorStatic } from '../../../static';
 import { BaseUploadPlugin } from './BaseUploadPlugin';
 
 it('omits unresolved upload drafts from static output', () => {
-  const editor = createStaticEditor({
+  const editor = createEditor({
     plugins: [BaseUploadPlugin],
     initialValue: [
       { children: [{ text: 'before' }], type: 'paragraph' },

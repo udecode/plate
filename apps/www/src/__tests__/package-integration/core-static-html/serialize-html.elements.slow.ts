@@ -1,16 +1,20 @@
 import { decode } from 'html-entities';
+import { createEditor } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 
-import { createStaticEditor } from './create-static-editor';
+import { BaseEditorKit } from '@/registry/components/editor/plugins-static';
 
 describe('core static renderStaticHtml element rendering', () => {
   it('renders paragraph text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [{ text: 'Some random paragraph here...' }],
-        type: 'paragraph',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [{ text: 'Some random paragraph here...' }],
+          type: 'paragraph',
+        },
+      ],
+    });
 
     const { data: html } = await renderStaticHtml(editor);
 
@@ -18,23 +22,26 @@ describe('core static renderStaticHtml element rendering', () => {
   });
 
   it('renders heading nodes', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [{ text: 'Heading 1' }],
-        level: 1,
-        type: 'heading',
-      },
-      {
-        children: [{ text: 'Heading 2' }],
-        level: 2,
-        type: 'heading',
-      },
-      {
-        children: [{ text: 'Heading 3' }],
-        level: 3,
-        type: 'heading',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [{ text: 'Heading 1' }],
+          level: 1,
+          type: 'heading',
+        },
+        {
+          children: [{ text: 'Heading 2' }],
+          level: 2,
+          type: 'heading',
+        },
+        {
+          children: [{ text: 'Heading 3' }],
+          level: 3,
+          type: 'heading',
+        },
+      ],
+    });
 
     const { data: html } = await renderStaticHtml(editor);
 
@@ -44,12 +51,15 @@ describe('core static renderStaticHtml element rendering', () => {
   });
 
   it('renders blockquote text', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [{ text: 'Blockquoted text here...' }],
-        type: 'blockquote',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [{ text: 'Blockquoted text here...' }],
+          type: 'blockquote',
+        },
+      ],
+    });
 
     const { data: html } = await renderStaticHtml(editor);
 
@@ -57,18 +67,21 @@ describe('core static renderStaticHtml element rendering', () => {
   });
 
   it('renders link hrefs', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [{ text: 'Some paragraph of text with ' }],
-        type: 'paragraph',
-      },
-      {
-        children: [{ text: 'link' }],
-        type: 'link',
-        url: 'https://example.com/',
-      },
-      { children: [{ text: ' part.' }], type: 'paragraph' },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [{ text: 'Some paragraph of text with ' }],
+          type: 'paragraph',
+        },
+        {
+          children: [{ text: 'link' }],
+          type: 'link',
+          url: 'https://example.com/',
+        },
+        { children: [{ text: ' part.' }], type: 'paragraph' },
+      ],
+    });
 
     const { data: html } = await renderStaticHtml(editor);
 
@@ -76,13 +89,16 @@ describe('core static renderStaticHtml element rendering', () => {
   });
 
   it('renders image src attributes', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [{ text: '' }],
-        type: 'image',
-        url: 'https://example.com/image.jpg',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          type: 'image',
+          url: 'https://example.com/image.jpg',
+        },
+      ],
+    });
 
     const { data: html } = await renderStaticHtml(editor);
 
@@ -90,20 +106,23 @@ describe('core static renderStaticHtml element rendering', () => {
   });
 
   it('renders table cell content', async () => {
-    const editor = createStaticEditor([
-      {
-        children: [
-          {
-            children: [
-              { children: [{ text: 'Cell 1' }], type: 'tableCell' },
-              { children: [{ text: 'Cell 2' }], type: 'tableCell' },
-            ],
-            type: 'tableRow',
-          },
-        ],
-        type: 'table',
-      },
-    ]);
+    const editor = createEditor({
+      plugins: BaseEditorKit,
+      initialValue: [
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: 'Cell 1' }], type: 'tableCell' },
+                { children: [{ text: 'Cell 2' }], type: 'tableCell' },
+              ],
+              type: 'tableRow',
+            },
+          ],
+          type: 'table',
+        },
+      ],
+    });
 
     const { data: html } = await renderStaticHtml(editor);
 

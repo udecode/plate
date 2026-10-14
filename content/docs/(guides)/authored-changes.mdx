@@ -267,6 +267,12 @@ format can preserve review records. Clean projections report diagnostics when
 they omit pending work or resolve a conflict to one side. Every helper accepts
 or captures a complete document, including named roots and metadata.
 
+An editor with an authored plugin writes authored metadata into every document,
+even before anyone proposes a change. HTML, Markdown, plain-text and static HTML
+exports of such a document throw a `TypeError` unless `projection` is `accepted`
+or `proposed`. A document without authored metadata needs no projection. DOCX
+export always takes one.
+
 ### JSON
 
 Use the pure authored projection helpers for detached documents:

@@ -2,7 +2,7 @@
 
 import { BaseCommentsPlugin } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
-import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BaseBasicBlocksKit } from '@/registry/components/editor/basic-blocks-static';
@@ -38,7 +38,7 @@ export default function CommentReviewDemo() {
     initialValue: snapshot.document,
     userId: 'alice',
   });
-  const staticEditor = useStaticEditor({
+  const staticEditor = useCreateEditor({
     plugins: [
       ...BaseBasicBlocksKit,
       ...BaseLinkKit,
@@ -65,7 +65,7 @@ export default function CommentReviewDemo() {
             </Toolbar>
             <Editor
               aria-label="Read-only comments document"
-              className="h-auto px-8 pb-6 sm:px-12"
+              className="h-auto px-[clamp(24px,8%,48px)] pb-6"
               readOnly
               variant="demo"
             />

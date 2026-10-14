@@ -148,6 +148,26 @@ membership only for items with a listId. Serialize reports each loss as a
 `<ul>`, `<ol start>`, and `<li>` HTML, which keeps any start, and read back as lists; see
 [Markdown](/docs/markdown#table-cells).
 
+An item's later blocks, such as a second paragraph, a code block or an image,
+parse in both formats as blocks one level under the item, with no listType:
+`{ type: 'codeBlock', indent: 2 }` after an item at indent 1. Plate HTML writes
+them after the list. When HTML nests them inside the `li`, an item's
+`margin-left` counts as its level. A style that the `li` or a wrapper sets,
+such as bold, does not reach the content that moves out of that element, and
+the parse warns once with an `html-unsupported-content` diagnostic that names
+the first such style. That includes `white-space`, so a line break that
+`pre-wrap` kept becomes a space. An image inside the item's paragraph stays
+where the HTML runtime puts it, after the item's text and outside the list,
+and the text after it becomes another list item.
+When the editor cannot place a list property on a block, such as `indent` on a
+code block that IndentPlugin does not target, the block keeps its type and
+drops that property. HTML reports it as `html-unsupported-content` and Markdown
+as `markdown-unsupported-node`, a warning under every `lossPolicy`. A Markdown
+item whose first block the list cannot hold, such as a heading when ListPlugin
+targets only paragraphs, reads as a list paragraph. A first block that is not
+a line of text, such as a rule or a quote, keeps its type and leaves the list instead.
+The parse reports either change, so `lossPolicy: 'reject'` refuses it.
+
 ## API Reference
 
 | API | Purpose |

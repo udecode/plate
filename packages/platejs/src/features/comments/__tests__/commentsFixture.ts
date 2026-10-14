@@ -43,7 +43,7 @@ export const commentsFixture = (
 ): CommentsJSON => {
   const editor = createEditor({ initialValue });
   const initialComments: CommentsJSON = {
-    kind: 'plate-comments',
+    kind: 'comments',
     version: 1,
     threads: entries.map(({ thread }) => thread),
     ranges: entries.map(({ thread, range }) => {

@@ -70,7 +70,7 @@ export const insertBlockMap = {
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `platejs/excalidraw` | Package | Exports `BaseExcalidrawPlugin`, `ExcalidrawElement`, and `ExcalidrawDataState`. |
+| `platejs/excalidraw` | Package | Exports `BaseExcalidrawPlugin` and `ExcalidrawElement`. |
 | `platejs/excalidraw/react` | Package | Exports `ExcalidrawPlugin` and the `useExcalidrawSync` lifecycle hook. |
 | `excalidraw` | Registry | Adds `ExcalidrawPlugin.configure({ component: ExcalidrawElement })`. |
 | `excalidraw` | Registry UI | Dynamically renders `@excalidraw/excalidraw` inside a Plate element. |
@@ -159,7 +159,9 @@ const value = [
 | `children` | `[{ text: '' }]` | Required Plate child for the void element. |
 | `data.elements` | Excalidraw elements | Stored as partial Excalidraw elements. |
 | `data.state` | Exported Excalidraw app state | Persistent drawing settings; excludes viewport, selection, and open menus. |
-| `data.files` | Optional Excalidraw binary-file map | Embedded image assets referenced by the drawing. |
+| `data.files` | Optional object keyed by file id | Embedded image assets referenced by the drawing. Any other value fails validation. |
+
+Type a stored drawing as `NonNullable<ExcalidrawElement['data']>`. Excalidraw's own input, such as `initialData`, uses Excalidraw's `ImportedDataState` type, which names the settings `appState` instead of `state`.
 
 Markdown serialization is not owned by `platejs/excalidraw`. Persist the Plate value when you need to keep drawings.
 
@@ -178,11 +180,19 @@ Excalidraw element context and returns `void`.
 | Editing | Uses Excalidraw's local export serializer to save drawing elements, persistent state, and referenced files. |
 | Deduplication | Skips unchanged serialized drawings, including pan, zoom, and selection-only events. |
 | External data and document undo | Restores the current node into the canvas without a save echo and clears incompatible canvas history. |
-| Canvas undo | Excalidraw owns local drawing undo; resulting scene changes are saved to the node. |
+| Undo and Redo shortcuts | Run the document's history, also while the canvas has focus; the hook redraws the result into the canvas. They do nothing in read-only mode. |
+| Open text label | A document undo leaves an open label editor's text unchanged. Closing the editor writes that text back to its label when the label still exists. Close the label before you undo. |
+| Canvas undo buttons | Undo Excalidraw's local steps; the hook saves the resulting scene to the node. |
 | Read-only mode | Enables Excalidraw `viewModeEnabled` and rejects writes at the editor boundary. |
 | Canvas frame | Registry UI renders a bordered `aspect-video` frame capped at `600px`. |
 
-The registry element imports `@excalidraw/excalidraw/index.css`, so custom copies need the same stylesheet.
+### Custom component
+
+A custom canvas component keeps three parts of the registry element:
+
+- The `contentEditable={false}` wrapper with `data-editor-root-chrome-ignore="true"`, so the canvas handles its own input. See [Embedded widgets](/docs/plugin-components#embedded-widgets).
+- `viewModeEnabled={readOnly}`, with `readOnly` from `useEditorReadOnly()`, so a read-only document stays in Excalidraw's view mode.
+- The `@excalidraw/excalidraw/index.css` import.
 
 ## API Reference
 
@@ -192,5 +202,4 @@ The registry element imports `@excalidraw/excalidraw/index.css`, so custom copie
 | `ExcalidrawPlugin` | `platejs/excalidraw/react` | React Excalidraw plugin. |
 | `useExcalidrawSync({ api, excalidraw })` | `platejs/excalidraw/react` | Synchronizes a mounted canvas with its current element. |
 | `editor.plugin(BaseExcalidrawPlugin).update.insert(props?, options?)` | `BaseExcalidrawPlugin` | Inserts a void Excalidraw node at `options.at` or after the selected block. |
-| `ExcalidrawElement` | `platejs/excalidraw` | Element shape with optional `data`. |
-| `ExcalidrawDataState` | `platejs/excalidraw` | Data shape for stored Excalidraw elements and app state. |
+| `ExcalidrawElement` | `platejs/excalidraw` | Element shape with optional `data`; `NonNullable<ExcalidrawElement['data']>` types a stored drawing. |

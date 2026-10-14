@@ -1,7 +1,7 @@
 'use client';
 
-import { DocumentChange, NodeApi, TextApi } from 'platejs';
-import { createAuthoredReviewDocument } from 'platejs/authored';
+import { type Descendant, ElementApi, NodeApi, TextApi } from 'platejs';
+import type { AuthoredMark } from 'platejs/authored';
 import type { CommentsJSON } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor, EditorRoot } from 'platejs/react';
@@ -20,6 +20,17 @@ import {
 import { ExcalidrawKit } from '@/registry/components/editor/excalidraw';
 import { EditorKit } from '@/registry/components/editor/plugins';
 import { createBrowserUploadKit } from '@/registry/components/editor/upload/browser';
+
+// A suggestion's review mark on a node and everything inside it, as the
+// authored plugin records an insertion or deletion.
+const marked = <T extends Descendant>(node: T, mark: AuthoredMark): T =>
+  ({
+    ...node,
+    authored: [mark],
+    ...(ElementApi.isElement(node)
+      ? { children: node.children.map((child) => marked(child, mark)) }
+      : {}),
+  }) as T;
 
 export default function PlaygroundDemo({ className }: { className?: string }) {
   const locale = useLocale();
@@ -54,23 +65,63 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
     const overlapOffset = discussionTail.text.indexOf(overlapText);
     const suggestionOffset = leadingText.text.length;
 
-    const sentenceText = sentence.text.replace(addedText, '');
-    const discussionText = discussionTail.text.replace(overlapText, '');
-    const baseline = {
+    const mark = (
+      change: string,
+      author: string,
+      age: number,
+      kind: 'delete' | 'insert'
+    ): AuthoredMark => ({ at: createdAt - age, author, change, kind });
+    const added = mark('playground1', 'alice', 900_000, 'insert');
+    const removed = mark('playground2', 'bob', 800_000, 'delete');
+    const overlapChangeId = 'playground3';
+    const overlapped = mark(overlapChangeId, 'charlie', 700_000, 'insert');
+    const addedStart = sentence.text.indexOf(addedText);
+    const addedEnd = addedStart + addedText.length;
+    const removedStart = sentence.text.indexOf(deletedText);
+    const removedEnd = removedStart + deletedText.length;
+    const pieces = (
+      text: typeof sentence,
+      cuts: ReadonlyArray<
+        readonly [start: number, end: number, mark: AuthoredMark | null]
+      >
+    ) =>
+      cuts.flatMap(([start, end, pieceMark]) => {
+        const piece = { ...text, text: text.text.slice(start, end) };
+
+        if (!piece.text) return [];
+        return [pieceMark ? marked(piece, pieceMark) : piece];
+      });
+    const review = {
       ...initialValue,
       children: initialValue.children.map((node, index) =>
         index === 3
           ? {
               ...paragraph,
               children: [
-                { ...leadingText, text: leadingText.text + sentenceText },
-                ...paragraph.children
-                  .slice(3)
-                  .map((child, childIndex) =>
-                    childIndex === 1
-                      ? { ...discussionTail, text: discussionText }
-                      : child
-                  ),
+                leadingText,
+                marked(suggestion, added),
+                ...pieces(sentence, [
+                  [0, addedStart, null],
+                  [addedStart, addedEnd, added],
+                  [addedEnd, removedStart, null],
+                  [removedStart, removedEnd, removed],
+                  [removedEnd, sentence.text.length, null],
+                ]),
+                ...paragraph.children.slice(3, 4),
+                ...pieces(discussionTail, [
+                  [0, overlapOffset, null],
+                  [
+                    overlapOffset,
+                    overlapOffset + overlapText.length,
+                    overlapped,
+                  ],
+                  [
+                    overlapOffset + overlapText.length,
+                    discussionTail.text.length,
+                    null,
+                  ],
+                ]),
+                ...paragraph.children.slice(5),
               ],
             }
           : node
@@ -105,50 +156,10 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
       ...ExcalidrawKit,
       ...(browserUploads?.plugins ?? []),
     ];
-    const revision = createEditor({ plugins, initialValue: baseline });
-    const capture = () => ({ ...baseline, children: revision.read.children() });
-    revision.update.nodes.insert([suggestion, { text: addedText }], {
-      at: { offset: suggestionOffset, path: [3, 0] },
-    });
-    const inserted = capture();
-    const deletedOffset = addedText.length + sentenceText.indexOf(deletedText);
-    revision.update.text.delete({
-      at: {
-        anchor: { offset: deletedOffset, path: [3, 2] },
-        focus: { offset: deletedOffset + deletedText.length, path: [3, 2] },
-      },
-    });
-    const deleted = capture();
-    revision.update.text.insert(overlapText, {
-      at: { offset: overlapOffset, path: [3, 4] },
-    });
-    const overlapChangeId = 'playground3';
     const current = createEditor({
       plugins,
       userId: 'alice',
-      initialValue: createAuthoredReviewDocument({
-        accepted: baseline,
-        revisions: [
-          {
-            id: 'playground1',
-            authorId: 'alice',
-            createdAt: createdAt - 900_000,
-            change: DocumentChange.between(baseline, inserted),
-          },
-          {
-            id: 'playground2',
-            authorId: 'bob',
-            createdAt: createdAt - 800_000,
-            change: DocumentChange.between(inserted, deleted),
-          },
-          {
-            id: overlapChangeId,
-            authorId: 'charlie',
-            createdAt: createdAt - 700_000,
-            change: DocumentChange.between(deleted, capture()),
-          },
-        ],
-      }),
+      initialValue: review,
     });
     const threads: CommentsJSON['threads'] = [
       {
@@ -208,18 +219,21 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
         ],
       },
     ];
+    const commented = review.children[3]!.children.indexOf(
+      paragraph.children[3]!
+    );
     const anchor = current.anchor(
       {
-        anchor: { path: [3, 1, 0], offset: 0 },
+        anchor: { path: [3, commented, 0], offset: 0 },
         focus: {
-          path: [3, 2],
-          offset: discussionText.indexOf(locale === 'cn' ? '。' : '.'),
+          path: [3, commented + 1],
+          offset: discussionTail.text.indexOf(locale === 'cn' ? '。' : '.'),
         },
       },
       { association: 'inward', deletion: 'nearest' }
     );
     const comments: CommentsJSON = {
-      kind: 'plate-comments',
+      kind: 'comments',
       version: 1,
       threads,
       ranges: [{ threadId: 'discussion1', range: current.anchor.save(anchor) }],
@@ -243,11 +257,7 @@ export default function PlaygroundDemo({ className }: { className?: string }) {
   const { editor } = session;
 
   return (
-    <EditorRoot
-      editor={editor}
-      key={editor.id}
-      authored={{ intent: 'edit', projection: 'markup' }}
-    >
+    <EditorRoot editor={editor} key={editor.id} authored={{ intent: 'edit' }}>
       <PlaygroundDemoContent className={className} />
     </EditorRoot>
   );

@@ -1,5 +1,3 @@
-import type { ImportedDataState } from '@excalidraw/excalidraw/data/types';
-
 import {
   definePlugin,
   type ElementOf,
@@ -8,13 +6,14 @@ import {
   PLUGINS,
 } from '../../core';
 
-export type ExcalidrawDataState = ImportedDataState;
-
 type ExcalidrawElementData = {
   elements: readonly EditorJsonValue[];
   files?: Readonly<Record<string, EditorJsonValue>>;
   state: Readonly<Record<string, EditorJsonValue>>;
 } | null;
+
+const isJsonRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /** Stores an Excalidraw scene in a void block. */
 export const BaseExcalidrawPlugin = definePlugin(PLUGINS.excalidraw, {
@@ -24,18 +23,12 @@ export const BaseExcalidrawPlugin = definePlugin(PLUGINS.excalidraw, {
         data: property.json({
           validate: (value): value is ExcalidrawElementData =>
             value === null ||
-            (typeof value === 'object' &&
-              !Array.isArray(value) &&
-              value !== null &&
-              'elements' in value &&
+            (isJsonRecord(value) &&
               Array.isArray(value.elements) &&
-              'state' in value &&
-              typeof value.state === 'object' &&
-              !Array.isArray(value.state) &&
-              value.state !== null),
-          validationVersion: 1,
+              isJsonRecord(value.state) &&
+              (!('files' in value) || isJsonRecord(value.files))),
+          validationVersion: 2,
         }),
-        width: property.string(),
       },
       void: 'block',
     },

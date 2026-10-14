@@ -67,6 +67,7 @@
     "../src/features/find/**/*",
     "../src/features/footnote/**/*",
     "../src/features/layout/**/*",
+    "../src/features/lint/**/*",
     "../src/features/media/**/*",
     "../src/features/mention/**/*",
     "../src/features/slash-command/**/*",

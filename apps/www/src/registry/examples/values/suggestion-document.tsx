@@ -19,12 +19,13 @@ export function createSuggestionDocument() {
     ],
   });
 
+  // Fixed IDs render the same on the server and the client.
   editor.update((tx) => {
-    tx.authored.propose();
+    tx.authored.propose({ changeId: 'added-words' });
     tx.text.insert('the update ', { at: { path: [0, 0], offset: 8 } });
   });
   editor.update((tx) => {
-    tx.authored.propose();
+    tx.authored.propose({ changeId: 'removed-word' });
     tx.text.delete({
       at: {
         anchor: { path: [1, 0], offset: 5 },

@@ -55,7 +55,6 @@ test.describe('suggestion activation performance', () => {
         expect(result.changeCount).toBe(config.changeCount);
         expect(result.mountedViewCount).toBe(2);
         expect(result.distinctViewManagers).toBe(true);
-        expect(result.sourceObserverCounts).toEqual([1, 1]);
         expect(result.stabilityPasses).toBe(5);
         expect(result.authoredStateUnchanged).toBe(true);
         expect(result.modelUnchanged).toBe(true);
@@ -64,15 +63,16 @@ test.describe('suggestion activation performance', () => {
 
         for (const pass of result.passes) {
           expect(pass.clickCount).toBe(50);
-          expect(pass.maxActiveDelta.changedBucketCount).toBeLessThanOrEqual(2);
-          expect(pass.maxActiveDelta.sourceReadCount).toBeLessThanOrEqual(2);
-          expect(pass.maxActiveDelta.wakeCount).toBeLessThanOrEqual(2);
+          expect(pass.maxActiveDelta).toEqual({
+            changedBucketCount: 0,
+            sourceReadCount: 0,
+            wakeCount: 0,
+          });
           expect(pass.maxSiblingDelta).toEqual({
             changedBucketCount: 0,
             sourceReadCount: 0,
             wakeCount: 0,
           });
-          expect(pass.semantic.p95).toBeLessThanOrEqual(config.semanticP95Ms);
           expect(pass.dom.p95).toBeLessThanOrEqual(DOM_P95_BUDGET_MS);
           expect(pass.dom.p99).toBeLessThanOrEqual(DOM_P99_BUDGET_MS);
         }
@@ -83,7 +83,6 @@ test.describe('suggestion activation performance', () => {
             cohort,
             domP95: result.passes.map((pass) => pass.dom.p95),
             domP99: result.passes.map((pass) => pass.dom.p99),
-            semanticP95: result.passes.map((pass) => pass.semantic.p95),
             siblingMax: result.passes.map((pass) => pass.maxSiblingDelta),
             sourceObserverCounts: result.sourceObserverCounts,
           })

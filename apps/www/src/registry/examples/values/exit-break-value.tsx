@@ -32,7 +32,7 @@ export const exitBreakValue: Value = (
       Automatic – Finds the nearest ancestor that allows paragraph siblings
     </hp>
 
-    <hp>Exit breaks work intelligently in nested structures like tables:</hp>
+    <hp>Exit breaks work in nested structures like tables and columns:</hp>
     <hcolumngroup>
       <hcolumn width="50%">{createTable()}</hcolumn>
       <hcolumn width="50%">

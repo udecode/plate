@@ -13,6 +13,7 @@ const INLINE_TAG_NAMES = new Set([
   'CODE',
   'CONTENT',
   'DATA',
+  'DATALIST',
   'DEL',
   'DFN',
   'EM',
@@ -32,16 +33,21 @@ const INLINE_TAG_NAMES = new Set([
   'MENUITEM',
   'METER',
   'NOBR',
+  'NOSCRIPT',
   'OBJECT',
   'OUTPUT',
   'PICTURE',
   'PORTAL',
   'PROGRESS',
   'Q',
+  'RP',
+  'RT',
+  'RUBY',
   'S',
   'SAMP',
   'SELECT',
   'SHADOW',
+  'SLOT',
   'SMALL',
   'SOURCE',
   'SPAN',
@@ -71,14 +77,17 @@ export const isHtmlText = (node: Node): node is Text => node.nodeType === 3;
 /**
  * Return whether a DOM node participates in an inline formatting context.
  *
- * The fallback tag list mirrors browser defaults. An explicit `display` style
- * wins, including inherited and special CSS values.
+ * The fallback tag list mirrors browser defaults, except that it leaves out
+ * `audio`. An explicit `display` style wins, including inherited and special
+ * CSS values.
  */
 export const isHtmlInlineElement = (node: Node): boolean => {
   if (!isHtmlElement(node)) return false;
 
   const element = node as HTMLElement;
-  const tagNameIsInline = INLINE_TAG_NAMES.has(element.tagName);
+  // Browsers lay out custom and namespaced elements inline by default.
+  const tagNameIsInline =
+    INLINE_TAG_NAMES.has(element.tagName) || /[-:]/.test(element.tagName);
   const display = element.style.display.split(' ')[0];
 
   if (display === '') return tagNameIsInline;

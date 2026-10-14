@@ -6,6 +6,7 @@ import {
   type RenderStaticNodeWrapper,
   createEditor,
   definePlugin,
+  txOnly,
 } from 'platejs';
 
 import {
@@ -20,6 +21,10 @@ import { type History, history } from '../src/history';
 import { toReactPlugin } from '../src/react/plugin/toReactPlugin';
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
+type Equal<TLeft, TRight> =
+  (<T>() => T extends TLeft ? 1 : 2) extends <T>() => T extends TRight ? 1 : 2
+    ? true
+    : false;
 
 const baseFactoryPlugin = defineRuntimePlugin('factoryPlugin', {});
 const baseReadPlugin = defineRuntimePlugin('baseReadPluginOwner', {
@@ -51,6 +56,43 @@ toReactPlugin(ScopedUpdatePolicyPlugin).extend(({ update }) => ({
     writeMerged: (text: string) => update({ history: 'merge' }).write(text),
   }),
 }));
+const DirectUpdatePlugin = definePlugin('directUpdate', {
+  update: ({ tx }) => ({
+    callable: Object.assign(() => {}, { child: () => {} }),
+    control: txOnly(() => {}),
+    echo: <TValue>(value: TValue) => value,
+    write: (text: string) => tx.text.insert(text),
+  }),
+}).extend(({ update }) => ({
+  api: () => ({
+    write: (text: string) => {
+      update.write(text);
+      update({ tags: 'paste' }).callable.child();
+      // @ts-expect-error ctx.update opens its own update, so it has no transaction-only methods.
+      update.control();
+      // @ts-expect-error The policy form opens its own update too.
+      update({ tags: 'paste' }).control();
+    },
+  }),
+}));
+const directUpdateEditor = createEditor({ plugins: [DirectUpdatePlugin] });
+const directUpdatePortal = directUpdateEditor.plugin(DirectUpdatePlugin).update;
+const directEcho = directUpdatePortal.echo({ count: 1 });
+const directEchoIsInferred: Equal<typeof directEcho, { count: number }> = true;
+
+directUpdatePortal.callable.child();
+// @ts-expect-error A portal call opens its own update, so it has no transaction-only methods.
+directUpdatePortal.control();
+// @ts-expect-error The policy form opens its own update too.
+directUpdatePortal({ tags: 'paste' }).control();
+directUpdateEditor.update((tx) => {
+  tx.directUpdate.control();
+  tx.plugin(DirectUpdatePlugin).control();
+  tx.plugin('directUpdate').control();
+});
+
+void directEchoIsInferred;
+
 type MinimalDefinition = DefinitionOf<typeof MinimalDefinitionPlugin>;
 declare const minimalDefinition: MinimalDefinition;
 const minimalDefinitionName: 'minimalDefinition' = minimalDefinition.name;

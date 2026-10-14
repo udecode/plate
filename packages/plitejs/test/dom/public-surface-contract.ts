@@ -279,7 +279,6 @@ describe('DOM public surface contract', () => {
       'NODE_TO_INDEX',
       'NODE_TO_KEY',
       'NODE_TO_PARENT',
-      'NODE_TO_RUNTIME_ID',
       'PLACEHOLDER_SYMBOL',
     ]) {
       assert.equal(name in DOMModule, false, `${name} must stay internal`);

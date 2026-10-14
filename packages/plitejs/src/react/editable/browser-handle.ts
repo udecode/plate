@@ -12,6 +12,7 @@ import {
 } from '../..';
 import { getSelection } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
+import { BROWSER_HANDLE_KEY } from '../../internal/browser-protocol';
 import type { EditableViewportScrollAlign } from '../components/editable';
 import {
   didSyncTextPathToDOM,
@@ -122,7 +123,7 @@ export type PliteBrowserHandle = {
   insertBreak: () => void;
   insertData: (payload: {
     html?: string | null;
-    pliteFragment?: string | null;
+    fragment?: string | null;
     text?: string | null;
   }) => void;
   insertText: (text: string) => void;
@@ -152,7 +153,7 @@ export type PliteBrowserHandle = {
 };
 
 export type PliteBrowserHandleElement = HTMLDivElement & {
-  __pliteBrowserHandle?: PliteBrowserHandle;
+  [BROWSER_HANDLE_KEY]?: PliteBrowserHandle;
 };
 
 type RefBox<T> = {
@@ -177,11 +178,11 @@ const getPublicDocumentChangeRoots = (change: DocumentChange) => [
 
 const createBrowserHandleDataTransfer = ({
   html,
-  pliteFragment,
+  fragment,
   text,
 }: {
   html?: string | null;
-  pliteFragment?: string | null;
+  fragment?: string | null;
   text?: string | null;
 }): DataTransfer => {
   const records = new Map<string, string>();
@@ -192,8 +193,8 @@ const createBrowserHandleDataTransfer = ({
   if (text) {
     records.set('text/plain', text);
   }
-  if (pliteFragment) {
-    records.set('application/x-editor-fragment', pliteFragment);
+  if (fragment) {
+    records.set('application/x-editor-fragment', fragment);
   }
 
   return {
@@ -477,14 +478,14 @@ export const attachPliteBrowserHandle = ({
             ? anchorNode
             : null;
       const textHost = anchorElement?.closest('[data-editor-node="text"]');
-      const pliteText = readRuntimeText(editor, domRange.anchor.path)?.text;
+      const editorText = readRuntimeText(editor, domRange.anchor.path)?.text;
       const domText = textHost?.textContent?.replace(/\uFEFF/g, '') ?? null;
 
       if (
         !textHost ||
         textHost.getAttribute('data-editor-path') !== pathKey ||
-        pliteText == null ||
-        domText !== pliteText
+        editorText == null ||
+        domText !== editorText
       ) {
         return false;
       }
@@ -716,10 +717,10 @@ export const attachPliteBrowserHandle = ({
     insertBreak: () => {
       runCommand({ kind: 'insert-break', variant: 'paragraph' });
     },
-    insertData: ({ html, pliteFragment, text }) => {
+    insertData: ({ html, fragment, text }) => {
       const data = createBrowserHandleDataTransfer({
         html,
-        pliteFragment,
+        fragment,
         text,
       });
       runCommand({ data, kind: 'insert-data' });
@@ -924,11 +925,11 @@ export const attachPliteBrowserHandle = ({
     },
   };
 
-  element.__pliteBrowserHandle = handle;
+  element[BROWSER_HANDLE_KEY] = handle;
 
   return () => {
-    if (element.__pliteBrowserHandle === handle) {
-      element.__pliteBrowserHandle = undefined;
+    if (element[BROWSER_HANDLE_KEY] === handle) {
+      element[BROWSER_HANDLE_KEY] = undefined;
     }
   };
 };

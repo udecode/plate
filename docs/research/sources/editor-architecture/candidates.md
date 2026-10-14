@@ -1,424 +1,87 @@
 ---
-title: Editor architecture candidates for Plate
+title: Editor comparison candidates for Plate and Plite
 type: source
 status: partial
 source_refs:
-  - ../prosemirror
-  - ../lexical
-  - ../tiptap
-  - ../pretext
-  - ../premirror
-  - ../portabletext
-  - ../slate
-  - ../edix
-  - ../use-editable
-  - ../rich-textarea
-  - ../markdown-editor
-  - ../urql
-  - ../db
-  - ../vscode
-  - ../language-server-protocol
-updated: 2026-07-23
+  - ../../../plite/research/2026-10-13-editor-comparison/README.md
+  - current-comparison.md
+updated: 2026-10-13
 ---
 
-# Editor Architecture Candidates for Plate
+# Editor comparison candidates for Plate and Plite
 
-This is the opinionated shortlist. Not a market map. Not a graveyard of every editor repo on GitHub. Just the candidates and inspirations actually worth keeping in Plate's future architectural comparison set.
+Choose comparison editors by the question. There is no source-backed global winner across engines, ready-made editors, document processors and layout libraries.
 
-It is intentionally not a prescription for exact features Plate should copy. The current analysis is strong enough to rank and frame the field, not to lock Plate into a shopping list.
+The [current comparison](current-comparison.md) and [research run](../../../plite/research/2026-10-13-editor-comparison/README.md) record current repository discovery, pinned local source reads, test inspection, exclusions and freshness limits. These are source findings. No comparative speed, native-input or release-readiness result follows from them.
 
-## Repos
+## What other editors do
 
-- [ProseMirror](https://github.com/ProseMirror/prosemirror)
-- [Lexical](https://github.com/facebook/lexical)
-- [Tiptap](https://github.com/ueberdosis/tiptap)
-- [Pretext](https://github.com/chenglou/pretext)
-- [Premirror](https://github.com/samwillis/premirror)
-- [Portable Text](https://github.com/portabletext/portabletext)
-- [Slate](https://github.com/ianstormtaylor/slate)
-- [edix](https://github.com/inokawa/edix)
-- [use-editable](https://github.com/FormidableLabs/use-editable)
-- [rich-textarea](https://github.com/inokawa/rich-textarea)
-- [@react-libraries/markdown-editor](https://github.com/ReactLibraries/markdown-editor)
-- [urql](https://github.com/urql-graphql/urql)
-- [TanStack DB](https://github.com/TanStack/db)
-- [VS Code](https://github.com/microsoft/vscode)
-- [Language Server Protocol](https://github.com/microsoft/language-server-protocol)
-- [EditContext API docs](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API)
-- [Open UI Richer Text Fields](https://open-ui.org/components/richer-text-fields.explainer/)
+| Decision | First comparison sources | What to examine |
+| --- | --- | --- |
+| Canonical changes, transactions, mapping and DOM ownership | ProseMirror, Lexical, Wordgard, Slate, CKEditor 5 | State authority, change application, selection mapping, reconciliation and composition |
+| Extension composition and type inference | Current Lexical Extensions, ProseKit, Tiptap | Dependency identity, typed grouping, configuration, commands and disposal |
+| Block storage and collaboration | BlockSuite, Blok, BlockNote, Portable Text | Shared identity, placement, schema admission, local undo and serialization |
+| React block-framework ergonomics | BlockNote, Yoopta, ProseKit | Product policy, typed schema, adapters and component lifecycle |
+| Structured content and behavior contracts | Portable Text, ProseMirror, CKEditor 5 | Schema applicability, annotations, explicit scenarios and conversion |
+| Markdown and hidden syntax | Meowdown, MDXEditor, Milkdown, Vditor | Caret affinity, selected export, syntax deletion and nested code-editor lifecycle |
+| Pagination and document fidelity | OpenDoc, SuperDoc's public painter, canvas-editor | Full/windowed equivalence, hydration, fields, fallback behavior and public-source boundaries |
+| Preparation versus repeated layout | Pretext, CodeMirror, Premirror as a qualified experiment | Measurement counts, prepared handles, line cursors, mapping and invalidation |
+| Input, focus and undo | CodeMirror, Lexical, Wordgard, TinyMCE, RoosterJS, Lexxy | Composition identity, nested transactions, unfocused formatting and typeahead focus |
+| Collaboration adapters | Loro ProseMirror, BlockSuite, Blok and Wordgard | Origin, initialization, stable cursors, local undo and concurrent structural edits. Existing y-prosemirror and Lexical Yjs research is historical context until refreshed. |
+| Agent edits and provenance | Proof SDK, current editor suggestion/collaboration owners | Stale results, canonical edits, persistence, reconnect and authored-change identity |
+| Cross-platform model/view ownership | AppFlowy Editor | Stable identity, transaction selection and Flutter materialization. This is not browser-native proof. |
 
-## Clone Or Update
+These are starting sets, not a requirement to read every editor for a small decision. Select the sources that challenge the actual owner or behavior.
 
-Run this from the repository root if you want the comparison repos checked out in `..`:
+## Additions that change the comparison
 
-```bash
-for repo in \
-  ProseMirror/prosemirror \
-  facebook/lexical \
-  ueberdosis/tiptap \
-  chenglou/pretext \
-  samwillis/premirror \
-  portabletext/portabletext \
-  ianstormtaylor/slate \
-  inokawa/edix \
-  FormidableLabs/use-editable \
-  inokawa/rich-textarea \
-  ReactLibraries/markdown-editor \
-  urql-graphql/urql \
-  TanStack/db \
-  microsoft/vscode \
-  microsoft/language-server-protocol
-do
-  name="${repo##*/}"
-  if [ -d "../$name/.git" ]; then
-    git -C "../$name" pull --ff-only
-  else
-    git clone "https://github.com/$repo.git" "../$name"
-  fi
-done
-```
+- **Wordgard adds another independent engine.** Its change sets, mapped effects, central-authority collaboration and composition tests provide a direct runtime comparison outside ProseMirror wrappers.
+- **ProseKit and current Lexical expand framework evidence.** Compare their typed composition and dependency lifecycle with Plate's existing owners before inventing another plugin abstraction.
+- **BlockSuite and Blok expand collaborative-block evidence.** Compare CRDT storage, placement, origin-filtered undo and convergence tests. AFFiNE is an application of BlockSuite, not another engine.
+- **Portable Text is a schema and behavior reference.** Its current tree contains an in-tree editor engine, schema packages and executable behavior specifications. It does not justify replacing Plite's data model or adopting its behavior DSL.
+- **Meowdown, MDXEditor and Milkdown add distinct Markdown contracts.** Their value is more precise than a generic claim that they support Markdown.
+- **OpenDoc, canvas-editor and public SuperDoc packages expand document-layout evidence.** Each has different correctness, maturity, rendering and source-availability limits.
+- **Lexxy and Proof SDK add product evidence.** Lexxy contributes focus and extension lifecycle scenarios over Lexical. Proof SDK contributes agent, provenance and provider/persistence scenarios over Milkdown and ProseMirror.
 
-## Ranking
+Exact source pins and test paths are in the current comparison and the run's read log.
 
-1. ProseMirror
-2. Lexical
-3. Tiptap
-4. Pretext + Premirror
-5. Portable Text
-6. Slate
-7. edix
-8. use-editable
-9. rich-textarea
-10. @react-libraries/markdown-editor
-11. urql
-12. TanStack DB
-13. VS Code + Language Server Protocol
-14. EditContext API
-15. Open UI Richer Text Fields
+## Freshness corrections
 
-## Tier 1: Direct Comparison Targets
+- BlockNote is active. Its default branch had October 13 activity, and v0.55.0 shipped September 22, 2026. Keep its product and schema evidence. Its Tiptap/ProseMirror lineage is still explicit.
+- ProseMirror's archived GitHub repositories moved to its canonical host. The current view source was read at an October 6 commit. Archived mirrors do not establish an inactive engine.
+- Current Lexical has framework-independent Extensions with dependencies, typed outputs and disposal. A comparison limited to the older React plugin scheme is stale.
+- SuperDoc v2's public package depends on proprietary DOCX Engine. Public pagination and painter code is inspectable. The complete current document engine cannot receive a public-source implementation grade.
+- Premirror uses an older Pretext signature and contains fallback width calculations. This is a source-level freshness concern against current Pretext, not a reproduced integration failure or a proven leading pagination solution.
+- The old edix URL redirects to editate.
+- Toast UI Editor and Draft.js are archived in the current GitHub screen. Retain specific historical lessons without treating them as active comparison defaults.
+- Meowdown's browser engines with touch emulation do not prove iOS. Vditor's Android user-agent tests and rich-textarea's Chromium CDP tests do not prove native device IME behavior.
 
-### ProseMirror
+## Candidates that remain narrower
 
-Still the center of gravity.
+Remirror, Umo, wangEditor, Doist Typist, React ProseMirror and other wrappers can answer specific framework or integration questions. They do not provide independent confirmation of an engine they inherit.
 
-Why it matters:
+Quill remains useful for Delta and local-undo intent. Editor.js remains useful for tool validation and exported block JSON. Neither repository's age settles its value.
 
-- Best substrate for schema, transforms, plugins, and serious document structure.
-- Still the cleanest answer to "what does a disciplined rich-text engine look like?"
-- If Plate wants to absorb the best ideas in the space instead of inventing weird local alternatives, this is still the first stop.
+ONLYOFFICE, Collabora, LibreOffice, Monaco, Zed, Gutenberg, Trix, Squire, newer DOCX projects and the remaining discovered editors are explicitly screened or discovery-only in the registry. This run does not claim current implementation coverage for those projects.
 
-Take:
+Keep urql, TanStack DB, VS Code/LSP, EditContext and Open UI as specialist service, projection or platform references when the question requires them. Their older evidence does not make them rich-text editor contenders.
 
-If Plate ever compares itself against one core editor architecture, this is the one. Everything else is either reacting to it, productizing it, or trying to escape its complexity.
+## Evidence retained from earlier research
 
-### Lexical
-
-The strongest non-ProseMirror engine to study hard.
-
-Why it matters:
-
-- Strong modern runtime posture: immutable editor state, command system, own reconciliation strategy.
-- Serious performance intent instead of accidental performance.
-- Backed by Meta, which matters when evaluating whether ideas survived real product abuse.
-
-Take:
-
-If Plate ever questions its underlying runtime model, Lexical is the real challenger, not a side-show wrapper.
-
-### Tiptap
-
-Not the engine winner. The productization winner.
-
-Why it matters:
-
-- Massive extension surface and polished packaging around ProseMirror.
-- Strong docs, onboarding, examples, and "this actually ships in products" energy.
-- Useful benchmark for DX, extension ergonomics, collaboration packaging, and ecosystem capture.
-
-Take:
-
-Do not compare Plate to Tiptap as a better engine. Compare Plate to Tiptap as a better developer product.
-
-### Pretext + Premirror
-
-This is the most important future-facing lane.
-
-Why Pretext matters:
-
-- It tackles multiline text measurement and layout without relying on DOM reflow.
-- That is a huge missing primitive in web editors, especially for pagination, composition, and layout-aware editing.
-
-Why Premirror matters:
-
-- It treats ProseMirror as document truth and `@chenglou/pretext` as the measurement/layout primitive.
-- The local `../premirror` direction is exactly the kind of synthesis worth watching: document engine plus deterministic page composition instead of pretending pagination is a CSS afterthought.
-
-Take:
-
-This is not "another editor." It is the strongest path toward solving the unsolved page-layout problem on the web.
-
-### Portable Text
-
-Not the engine winner. The strongest spec, schema-applicability, and
-behavior-contract benchmark in this set.
-
-Why it matters:
-
-- It treats structured block content as a portable JSON format with a real specification, not as an editor's private runtime shape.
-- Its editor is headless and schema-driven: styles, lists, decorators, annotations, block objects, inline objects, and nested editable containers all flow from declared schema.
-- Its Behavior API has a clear event/guard/action vocabulary that is useful for
-  scenario law, tests, and internal dispatch review.
-- Its official testing story uses real-browser behavior specs and compact Portable Text snapshots, which is the right level for editor regression proof.
-
-Take:
-
-Steal the spec discipline, schema-applicability selectors, guard/action
-vocabulary for law and tests, and scenario-test posture. Do not copy the public
-Behavior API or runtime DSL, Portable Text value format, CMS-shaped schema
-categories, or XState actor engine into Plite.
-
-## Tier 2: Important, But Not the Main Bet
-
-### Slate
-
-Important because Plate comes from this world.
-
-Why it matters:
-
-- It shaped a lot of Plate's current mental model and ergonomics.
-- It stays attractive because it is flexible and React-friendly.
-
-Why it is not the north star:
-
-- Even its own repo still describes it as beta.
-- Historically great for flexibility, less convincing as the long-term answer for strict structure, heavy composition, and platform-grade editor architecture.
-
-Take:
-
-Study Slate to understand your inheritance and its limits, not because it is the future benchmark.
-
-For a view layer other than React, `plitejs/dom` already exposes `DOMCoverage` and `DOMEditor` to framework adapters; the Slate bindings `worktile/slate-angular` and `Guan-Erjia/slate-vue3` are useful prior art. Retired sources: `52625e8502:docs/plite/reference/public-docs/general/resources.mdx` and `c70bacbd4a:docs/plite/reference/public-docs/libraries/plite-dom.mdx` at commit `52625e8502`.
-
-### edix
-
-Very good inspiration repo. Not a core replacement candidate.
-
-Why it matters:
-
-- It is explicitly an experimental, framework-agnostic, small `contenteditable` state manager.
-- Its motivation is sharp: full editor frameworks are too much for small editing surfaces, but raw `contenteditable` is a mess.
-
-Take:
-
-`edix` is a scalpel, not the next spine. Worth studying for lightweight surfaces, not for replacing Plate's serious document architecture.
+The following source-pinned findings remain historical specialist evidence. Their current behavior was not replayed in this pass. Reopen them when their source or the consuming requirement changes.
 
 - **edix: an explicit internal clipboard and a DOM-selection adapter.** edix's `internalTransferPlugin` writes the selected fragment as JSON under one app-specific MIME type (default `application/x-editate-editor`) on copy and reads it back on paste, so two editors exchange structure only when they share a schema (`inokawa/edix@528ec15113790a977e35614c3a5f56395d46819e:src/plugins/transfer/internalTransfer.ts:5-31`). `takeSelectionSnapshot` serializes the DOM selection into document positions and keeps its direction (`inokawa/edix@528ec15113790a977e35614c3a5f56395d46819e:src/dom/index.ts:268-306`). Its history plugin starts a new undo entry only after 500 ms without a document change, so it groups edits by time, not by transaction (`inokawa/edix@528ec15113790a977e35614c3a5f56395d46819e:src/plugins/history.ts:9`, `:94-113`). Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:74-171`, a 2026-04-03 read that cited older unpinned paths (`src/extensions/copy/internal.ts`, `src/history.ts`); checked at the local clone on 2026-10-08. Limit: source read only, nothing run.
 
-### use-editable
-
-Still one of the cleanest small-surface inspirations.
-
-Why it matters:
-
-- It is a tiny React hook for turning elements into editable, fully renderable content surfaces.
-- Great example of "I want a custom editable surface without dragging in a cathedral."
-
-Take:
-
-This is not a full editor framework. It is a strong reminder that not every editable surface deserves the full Plate stack.
-
 - **use-editable keeps the DOM, not a model, as the source of truth.** It lets the browser mutate the `contenteditable` element and records the mutations with a `MutationObserver` (`FormidableLabs/use-editable@008a0b51a9bc7c9812fe74633b4117bd74477627:src/useEditable.ts:192-194`). On flush it reads the element's text and caret, reverts every queued mutation (restoring old text, reinserting removed nodes, removing added ones) and passes the text and caret position to `onChange`, so React renders the new value (`:345-369`). Undo is a local stack of `[position, text]` snapshots that records a new entry only after 500 ms without one and keeps about 500 entries (`:314-337`), and paste inserts only `text/plain` (`:468-474`). That shape fits small plain-text surfaces only. Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:778-885` (2026-04-03, unpinned), checked at the local clone on 2026-10-08. Limit: source read only, nothing run.
-
-### rich-textarea
-
-A very relevant companion to the `edix` line of thinking.
-
-Why it matters:
-
-- It aims to keep native textarea behavior while adding highlighting, decoration, autocomplete, and caret-aware interactions.
-- Strong example of going "smaller than a full editor" without falling back to dumb plain text.
-
-Take:
-
-Good inspiration for lightweight, high-polish text surfaces. Not a contender for Plate's core document model.
-
-### @react-libraries/markdown-editor
-
-Narrower, but still useful.
-
-Why it matters:
-
-- Markdown-first editing surface with SSR support and externally controllable editing events.
-- Useful example of a focused editing package that is trying to stay controllable instead of becoming an everything-framework.
-
-Take:
-
-Relevant as a markdown-surface inspiration, not as a major architecture benchmark.
-
-## Tier 3: Cross-Domain Architecture Inspirations
-
-### urql
-
-Not an editor. Still extremely relevant.
-
-Why it matters:
-
-- Highly customizable pipeline architecture through exchanges.
-- Clear stance on normalized caching and composable behavior layers.
-
-Take:
-
-This is useful when thinking about editor infrastructure, not text rendering.
 
 - **urql's exchange-authoring rules.** These are the part of urql's pipeline worth carrying into a future Plate service pipeline. Exchanges run in the order they are passed: operations flow from the start to the end, and results return through the chain in reverse (`urql-graphql/urql@1eb11fcd68cc13d413f42e34a49c798dd97a7506:docs/advanced/authoring-exchanges.md:47-59`). An exchange that filters for the operations it handles must still forward every other kind, because new operation kinds can appear and a filtered-out operation never reaches the exchanges after it (`:150-189`). Exchanges are ordered synchronous first and asynchronous last, so components can receive cached data on their first mount without rerendering (`:191-211`). Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:1289-1343`, a 2026-04-03 read that cited these files unpinned, with urql's core package paths renamed to `platejs` by the slate-to-plite rename; checked at the local clone on 2026-10-08. Limit: no Plate or Plite pipeline uses exchanges; this is pressure for a service layer, not current law.
 
-### TanStack DB
-
-One of the best non-editor inspirations on the list.
-
-Why it matters:
-
-- Normalized collections.
-- Sub-millisecond live queries.
-- Instant optimistic writes.
-
-Take:
-
-If Plate wants better projections, indexes, or derived editor state, TanStack DB is a smarter inspiration than another random editor repo.
-
 - **TanStack DB makes derived views incremental.** Live queries compile to a differential-dataflow graph in `@tanstack/db-ivm`, a simplified fork of ElectricSQL's d2ts (`TanStack/db@68366ecaeef6c12a13402b558bd4a68d7519442f:packages/db-ivm/README.md:1-5`, `TanStack/db@68366ecaeef6c12a13402b558bd4a68d7519442f:packages/db/src/query/compiler/index.ts:310`); each collection manages its own indexes (`TanStack/db@68366ecaeef6c12a13402b558bd4a68d7519442f:packages/db/src/collection/indexes.ts:209`); and the React binding subscribes through `useSyncExternalStore` (`TanStack/db@68366ecaeef6c12a13402b558bd4a68d7519442f:packages/react-db/src/useLiveQuery.ts:3`). The 2026-04-03 read judged its optimistic transactions no substitute for editor undo history and placed it as a projection and index layer over editor truth, such as comment or semantic views. Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:1119-1228` (unpinned), checked at the local clone on 2026-10-08. Limit: source read only; no Plate code uses it.
-
-### VS Code + Language Server Protocol
-
-This is the service architecture model worth studying closely.
-
-Why it matters:
-
-- Stable core editor plus protocolized external intelligence.
-- Analyzers, completions, diagnostics, and actions can live outside the core UI process.
-
-Take:
-
-If Plate ever grows semantic services, AI analyzers, structural linting, or document reasoning, this is the right mental model. Semantic services should speak documents, positions, edits, diagnostics and capabilities, never the editor's internal node model; that shapes future Plate semantic features, not the Plite core.
-
-The mechanisms to copy handle latency and stale results. VS Code keeps one provider registry per feature, ranks providers by selector score, exclusivity and registration order, and sets each feature's debounce from its measured latency (`src/vs/editor/common/languageFeatureRegistry.ts`, `services/languageFeatureDebounce.ts`). LSP negotiates capabilities at `initialize`, syncs versioned documents, lets the client cancel requests, lets a server fail a request with `ContentModified` when an internal state change invalidates it, supports client-pulled diagnostics, and loads expensive completion details later through `completionItem/resolve`. None of this belongs on browser-local editing primitives. Retired sources: `52625e8502:docs/analysis/plite-plate-v2-architecture-research.md`, `52625e8502:docs/analysis/plite-gap-matrix.md` and `52625e8502:docs/analysis/editor-global-systems-objective.md`.
-
-### EditContext API
-
-Important future platform primitive.
-
-Why it matters:
-
-- The web platform is finally acknowledging that serious custom text editing needs more direct control than classic `contenteditable`.
-- This is the kind of primitive that could eventually let editors escape a lot of legacy DOM pain.
-
-Take:
-
-Do not bet Plate on it yet. Track it aggressively. EditContext can decouple text input from DOM mutation, but it does not replace selection mapping, spellcheck, clipboard and drop, accessibility work or undo history, so it is a later DOM-layer candidate and a custom-surface tool, not an answer to today's structural seams.
-
-An experiment would move all composition handling off DOM events. With an active EditContext the browser does not change the editing host's DOM or fire `input` or composition events on it; composition events fire on the EditContext object. `keydown` and `beforeinput` still reach the host, so the editor applies spellcheck replacement (`insertReplacementText`) and drag and drop (`deleteByDrag`, `insertFromDrop`) itself, native spellcheck stops working, and the editor owns undo and the mapping from DOM selection to plain-text offsets (`../edit-context/explainer.md`). Retired source: `52625e8502:docs/analysis/plite-plate-v2-architecture-research.md`.
-
-### Open UI Richer Text Fields
-
-More important than it looks.
-
-Why it matters:
-
-- It is standards work aimed at text controls that need more than plain `<input>` and `<textarea>` behavior.
-- That matters for mentions, autocomplete, highlighting, structured inline chips, and similar rich text-entry surfaces.
-
-Take:
-
-This is not a framework. It is a signal about where the platform should go next.
 
 - **The four proposals.** The Open UI Richer Text Fields explainer bundles four proposals for native `<input>` and `<textarea>`: an `InputRange()` over a live field value, CSS highlights on those ranges, suggestion or ghost-text APIs on `HTMLInputElement` and `HTMLTextAreaElement`, and a presentational `mask` attribute. As the 2026-04-03 read summarized it, the explainer argues that today's workarounds, such as overlays, injected characters and multiple inputs, break undo and redo, copy and paste and deletion, which native primitives would keep; if they land, many rich-textarea-style surfaces need neither contenteditable nor Plite. Source: `831f5e5da6a37f7d9095c1a81acc6b3de10bd3ba:docs/analysis/plite-plate-v2-architecture-research.md:1666-1773`, which read `site/src/pages/components/richer-text-fields.explainer.mdx` in an unpinned local open-ui clone. Limit: not rechecked since, no `../open-ui` clone remains, and these were proposals, not shipped platform features, when read.
 
-## How To Use This List
+## Selection limits
 
-### Core comparison set
+Star counts and activity route investigation. They do not establish architecture quality, measured speed or correctness. Test source shows a scenario and its oracle, not a passing result in this run.
 
-For future architecture work, the real comparison set should be:
-
-- ProseMirror
-- Lexical
-- Tiptap
-- Pretext + Premirror
-- Portable Text, when the question touches schema applicability, behavior law,
-  portability, or behavior-test standards
-
-That is the serious shortlist.
-
-### Secondary influence set
-
-Use these for tactical ideas, not for "should we rebuild Plate around this?":
-
-- Slate
-- edix
-- use-editable
-- rich-textarea
-- @react-libraries/markdown-editor
-
-### Cross-domain influence set
-
-Keep these in the room when designing next-gen Plate architecture:
-
-- urql
-- TanStack DB
-- VS Code
-- Language Server Protocol
-- EditContext API
-- Open UI Richer Text Fields
-
-This is not a mandate to copy them. It is a lens for what deserves deeper research when the question is architecture, layout, services, or future platform bets.
-
-## What Not To Cargo-Cult
-
-- Do not copy ProseMirror's whole plugin world just because its decoration discipline is excellent.
-- Do not copy Lexical's exact node model just because its lane split is sharper.
-- Do not mistake Tiptap's packaging win for a reason to inherit its whole stack.
-- Do not turn Premirror/Pretext into an immediate blocker for the overlay lane.
-- Do not use EditContext as an excuse to defer hard current-browser design.
-
-- Do not make TanStack DB the document's source of truth or put urql exchanges inside Plite: both are imports for layers above document truth, such as projections and service pipelines. The April 2026 systems objective listed both among its category errors. Source: `52625e85025313eebd4eeb9be2254249ded58676:docs/analysis/editor-global-systems-objective.md:304-317`. Limit: a design judgment, not a measured result.
-
-## Bottom Line
-
-ProseMirror is still the architectural benchmark.
-
-Lexical is the strongest engine challenger.
-
-Tiptap is the best productization benchmark.
-
-Pretext, especially combined with the `../premirror` direction, is the most important future-facing bet because it attacks the layout and pagination problem that web editors still mostly fake.
-
-Portable Text is the strongest reminder that editor architecture is not only
-runtime mechanics. A serious editor needs a content specification,
-schema-derived applicability, explicit behavior contracts, and replayable
-behavior tests. Plite should steal those standards without copying its public
-Behavior API or becoming a Portable Text-only editor.
-
-The smartest non-editor inspirations are TanStack DB and the VS Code/LSP model.
-
-`edix`, `use-editable`, `rich-textarea`, and `@react-libraries/markdown-editor` matter because they show how to build lighter editing surfaces without dragging a whole cathedral into every text field.
-
-For lightweight surfaces, prefer a native text control with an overlay, as rich-textarea does, over a contenteditable projection that depends on manual DOM-position accounting or character-count invariants, as markdown-editor does.
-
-## Sources
-
-- [ProseMirror](https://prosemirror.net/)
-- [ProseMirror GitHub](https://github.com/ProseMirror/prosemirror)
-- [Lexical](https://lexical.dev/docs/intro)
-- [Tiptap](https://tiptap.dev/docs/editor/getting-started/overview)
-- [Portable Text](https://github.com/portabletext/portabletext)
-- [Slate](https://github.com/ianstormtaylor/slate)
-- [edix](https://github.com/inokawa/edix)
-- [use-editable](https://github.com/FormidableLabs/use-editable)
-- [rich-textarea](https://github.com/inokawa/rich-textarea)
-- [@react-libraries/markdown-editor](https://github.com/ReactLibraries/markdown-editor)
-- [urql](https://github.com/urql-graphql/urql)
-- [TanStack DB](https://github.com/TanStack/db)
-- [VS Code Language Server Extension Guide](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide)
-- [Language Server Protocol](https://microsoft.github.io/language-server-protocol/)
-- [MDN: EditContext API](https://developer.mozilla.org/en-US/docs/Web/API/EditContext_API)
-- [Open UI: Richer Text Fields](https://open-ui.org/components/richer-text-fields.explainer/)
+Before adoption, choose the native Plate or Plite owner and use its actual proof. A runtime change needs the owning design and verification workflow. A scale claim also needs a measured Benchmark packet. The [comparison decision](../../decisions/editor-comparison-set.md) records what this research accepts and rejects.

@@ -11,7 +11,6 @@ import {
   TextApi,
 } from '../../../core';
 import { getSelection } from '../../../dom/plite-dom.internal';
-import { failInvariant } from '../../../features/table/internal/failInvariant';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
@@ -25,6 +24,7 @@ import {
   readTableSelection,
   type TableSelectionView,
 } from '../../../features/table/lib/internal/selection';
+import { failInvariant } from '../../../internal/failInvariant';
 import {
   type Editor,
   toReactPlugin,

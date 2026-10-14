@@ -2,25 +2,21 @@ export const SUGGESTION_PERFORMANCE_CASES = {
   normal: {
     changeCount: 10,
     nodeCount: 100,
-    semanticP95Ms: 1,
     timeoutMs: 120_000,
   },
   large: {
     changeCount: 100,
     nodeCount: 1000,
-    semanticP95Ms: 1,
     timeoutMs: 180_000,
   },
   stress: {
     changeCount: 1000,
     nodeCount: 10_000,
-    semanticP95Ms: 5,
     timeoutMs: 600_000,
   },
   pathological: {
     changeCount: 5000,
     nodeCount: 50_000,
-    semanticP95Ms: 20,
     timeoutMs: 1_200_000,
   },
 } as const;
@@ -61,7 +57,6 @@ export type SuggestionPerformancePass = Readonly<{
   dom: SuggestionPerformanceLatency;
   maxActiveDelta: SuggestionPerformanceCounterDelta;
   maxSiblingDelta: SuggestionPerformanceCounterDelta;
-  semantic: SuggestionPerformanceLatency;
 }>;
 
 export type SuggestionPerformanceResult = Readonly<{

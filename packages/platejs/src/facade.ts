@@ -1,4 +1,5 @@
 export {
+  authoredVeto,
   ContentSlice,
   createEditor,
   createEditorView,
@@ -12,6 +13,7 @@ export {
   ElementApi,
   EditorSchemaValidationError,
   getEditorRuntimeOwner,
+  locateAt,
   NodeApi,
   PathApi,
   property,
@@ -24,7 +26,8 @@ export {
   TextApi,
   transfer,
   transferVeto,
-  txRead,
+  txLocate,
+  txSelection,
 } from 'plitejs';
 
 export type {
@@ -54,6 +57,7 @@ export type {
   PluginSlotValue as RuntimePluginSlotValue,
   PluginsFromOptions as RuntimePluginsFromOptions,
   PluginTypeProvider as RuntimePluginTypeProvider,
+  EditorBreakExitOptions,
   EditorInstalledUpdateGroups,
   EditorLevelsOptions,
   EditorLifecycleErrorSink,
@@ -175,7 +179,9 @@ export type {
 } from 'plitejs/internal';
 
 export type { AnyEditor as RuntimeAnyEditor } from 'plitejs/internal';
+export { isMetadataRootKey, normalizeSetValues } from 'plitejs/internal';
 export type {
+  EditorDirectUpdate,
   EditorGenericMethod,
   EditorNodeTypeProvider,
   EditorSchemaSourceProvider,
@@ -187,9 +193,9 @@ export type {
   EditorSchemaPluginProvider,
 } from 'plitejs/internal';
 export type {
+  AuthoredDocumentProjection,
+  AuthoredProjectionDiagnostic,
   NativeAuthoredDocumentCapability,
-  NativeAuthoredDocumentProjection,
-  NativeAuthoredProjectionDiagnostic,
   StructuralPlainTextDiagnostic,
 } from 'plitejs/internal';
 export {

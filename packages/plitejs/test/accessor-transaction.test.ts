@@ -345,7 +345,7 @@ describe('plite public accessor + transaction boundary', () => {
       editor.update((tx) => {
         tx.text.insert('?', { at: { path: [1, 0], offset: 3 } });
       });
-    }, /A document root array changed outside Plite/);
+    }, /A document root array changed outside the editor/);
   });
 
   it('publishes one canonical document change that replays to the committed snapshot', () => {

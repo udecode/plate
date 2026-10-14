@@ -1,8 +1,7 @@
 import React from 'react';
 
-import { property } from '../core';
+import { createEditor, property } from '../core';
 import { type RenderLeafProps, definePlugin } from '../lib';
-import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderLeafStatic,
   pluginRenderLeafStatic,
@@ -22,7 +21,7 @@ describe('pluginRenderLeafStatic', () => {
   });
 
   it('returns children when the leaf does not match the plugin', () => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       plugins: [HighlightPlugin],
     });
 
@@ -45,7 +44,7 @@ describe('pluginRenderLeafStatic', () => {
         <mark data-kind="custom-leaf">{children}</mark>
       ),
     });
-    const editor = createStaticEditor({
+    const editor = createEditor({
       plugins: [CustomLeafPlugin],
     });
     const result = pluginRenderLeafStatic(
@@ -78,7 +77,7 @@ describe('pluginRenderLeafStatic', () => {
         <mark data-kind="persisted-mark">{children}</mark>
       ),
     });
-    const editor = createStaticEditor({ plugins: [MarkPlugin] });
+    const editor = createEditor({ plugins: [MarkPlugin] });
     const result = pluginRenderLeafStatic(
       editor,
       editor.plugin(MarkPlugin)
@@ -100,7 +99,7 @@ describe('pluginRenderLeafStatic', () => {
   });
 
   it('merges plugin leaf props before delegating to renderLeaf', () => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       plugins: [HighlightPlugin],
     });
     let renderLeafCalled = false;

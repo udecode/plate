@@ -20,8 +20,6 @@ describe('EditorTest', () => {
       rendered = render(<EditorTest editor={editor} suppressInstanceWarning />);
     });
 
-    expect(rendered.getByTestId('plite-content-editable')).toHaveTextContent(
-      'one'
-    );
+    expect(rendered.getByRole('textbox')).toHaveTextContent('one');
   });
 });

@@ -67,7 +67,12 @@ function ModeToolbarButtonContent({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger>
-        <ToolbarButton pressed={open} tooltip="Editing mode" isDropdown>
+        <ToolbarButton
+          aria-label={`Editing mode: ${MODE_ITEMS[value].label}`}
+          pressed={open}
+          tooltip="Editing mode"
+          isDropdown
+        >
           {MODE_ITEMS[value].icon}
           <span className="hidden lg:inline">{MODE_ITEMS[value].label}</span>
         </ToolbarButton>
@@ -81,13 +86,19 @@ function ModeToolbarButtonContent({
 
               return;
             }
-            setEditorReadOnly(editor, false);
-
             if (newValue === 'suggestion') {
-              editor.plugin(SuggestionPlugin).api.setMode('suggesting');
+              const suggestions = editor.plugin(SuggestionPlugin);
+
+              suggestions.api.setMode('suggesting');
+              // A refused switch keeps the mode, and Viewing stays read-only
+              // rather than becoming Editing.
+              if (suggestions.read.mode() === 'suggesting') {
+                setEditorReadOnly(editor, false);
+              }
 
               return;
             }
+            setEditorReadOnly(editor, false);
             if (suggestionsInstalled) {
               editor.plugin(SuggestionPlugin).api.setMode('editing');
             }

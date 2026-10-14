@@ -4,7 +4,6 @@
   "title": "Insert Toolbar Button",
   "description": "A menu for inserting different types of blocks.",
   "dependencies": [
-    "@excalidraw/excalidraw@0.18.0",
     "diff-match-patch-ts@^0.6.0",
     "flowchart.js@^1.15.0",
     "katex@0.16.22",

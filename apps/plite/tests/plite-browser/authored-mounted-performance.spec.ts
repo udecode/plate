@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import {
+  BROWSER_HANDLE_KEY,
   measureTrustedTyping,
   openExample,
   recordBrowserRuntimeErrors,
@@ -43,7 +44,7 @@ const cohortId =
 const cohort = contract.cohorts.find((item) => item.id === cohortId);
 if (!cohort) throw new Error(`Unknown authored mounted cohort: ${cohortId}`);
 
-type Arm = 'matched' | 'retained' | 'zero';
+type Arm = 'matched' | 'struck' | 'zero';
 
 const percentile = (samples: readonly number[], quantile: number) =>
   [...samples].sort((left, right) => left - right)[
@@ -56,38 +57,23 @@ const summarize = (samples: number[]) => ({
   p99: percentile(samples, 0.99),
 });
 
-type SavedAuthoredOperation = {
-  changeId: string;
-  kind: string;
-  proposal?: boolean;
+type ReviewNode = {
+  authored?: readonly { change: string; kind: string }[];
+  children?: ReviewNode[];
+  text?: string;
 };
 
-const readSavedAuthoredOperations = (
-  value: unknown
-): SavedAuthoredOperation[] => {
-  if (!Array.isArray(value)) return [];
-
-  return value.flatMap((entry) => {
-    if (!Array.isArray(entry)) return [];
-    if (entry[0] === 0) {
-      return typeof entry[2] === 'string' && typeof entry[8] === 'boolean'
-        ? [{ changeId: entry[2], kind: 'edit', proposal: entry[8] }]
-        : [];
+/** Pending change ids by kind, read from the review marks in the document. */
+const readPendingIds = (value: unknown, kind: 'delete' | 'insert') => {
+  const ids = new Set<string>();
+  const visit = (node: ReviewNode) => {
+    for (const mark of node.authored ?? []) {
+      if (mark.kind === kind) ids.add(mark.change);
     }
-    if (entry[0] === 1 && entry[1] && typeof entry[1] === 'object') {
-      const operation = entry[1] as SavedAuthoredOperation;
-      return typeof operation.changeId === 'string' ? [operation] : [];
-    }
-    return [];
-  });
-};
-
-const nodeText = (node: unknown): string => {
-  if (!node || typeof node !== 'object') return '';
-  if ('text' in node && typeof node.text === 'string') return node.text;
-  if (!('children' in node) || !Array.isArray(node.children)) return '';
-
-  return node.children.map(nodeText).join('');
+    node.children?.forEach(visit);
+  };
+  visit(value as ReviewNode);
+  return ids;
 };
 
 const readHeapMetricSample = async (page: Page) => {
@@ -147,37 +133,24 @@ const readMountedDOM = (page: Page) =>
   page.locator('[data-authored-shared-view]').evaluateAll((sections) => {
     const views = sections.map((section) => {
       const root = section.querySelector<HTMLElement>('[data-editor="true"]');
-      if (!root) {
-        return {
-          blocks: 0,
-          label: null,
-          placeholders: 0,
-          retained: 0,
-          retainedText: [],
-        };
-      }
+      if (!root) return { blocks: 0, label: null, placeholders: 0 };
       const blocks = [...root.querySelectorAll('[data-editor-path]')].filter(
         (element) =>
           element.getAttribute('data-editor-node') === 'element' &&
-          /^\d+$/.test(element.getAttribute('data-editor-path') ?? '') &&
-          !element.closest('[data-editor-retained]')
+          /^\d+$/.test(element.getAttribute('data-editor-path') ?? '')
       );
-      const retained = [...root.querySelectorAll('[data-editor-retained]')];
 
       return {
         blocks: blocks.length,
         label: root.getAttribute('aria-label'),
         placeholders: root.querySelectorAll('[data-editor-viewport-boundary]')
           .length,
-        retained: retained.length,
-        retainedText: retained.map((element) => element.textContent),
       };
     });
 
     return {
       blocks: views.reduce((sum, view) => sum + view.blocks, 0),
       placeholders: views.reduce((sum, view) => sum + view.placeholders, 0),
-      retained: views.reduce((sum, view) => sum + view.retained, 0),
       views,
     };
   });
@@ -196,9 +169,11 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
     });
     const accepted = proposed.rootAt('[aria-label="Accepted document"]');
     const independent = proposed.rootAt('[aria-label="Independent document"]');
+    const controls = page.getByLabel('Proposed document controls');
     const seedText =
-      arm === 'matched' ? 'Sd.' : arm === 'retained' ? 'Seed.' : 'Sed.';
-    await accepted.scenario.run('seed authored mounted cohort', [
+      arm === 'matched' ? 'Sd.' : arm === 'struck' ? 'Seed.' : 'Sed.';
+    await controls.getByRole('button', { name: 'Edit', exact: true }).click();
+    await proposed.scenario.run('seed authored mounted cohort', [
       {
         kind: 'applyValueChange',
         value: {
@@ -209,89 +184,70 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
         },
       },
     ]);
-    if (arm === 'retained') {
-      await proposed.root.evaluate((element, count) => {
-        const handle = (
-          element as HTMLElement & { __pliteBrowserHandle: PliteBrowserHandle }
-        ).__pliteBrowserHandle;
-        for (let index = 0; index < count; index++) {
-          handle.deleteTextAt({
-            anchor: { path: [index, 0], offset: 1 },
-            focus: { path: [index, 0], offset: 2 },
-          });
-        }
-      }, cohort.pendingDeletions);
+    await controls.getByRole('button', { name: 'Suggest', exact: true }).click();
+    if (arm === 'struck') {
+      await proposed.root.evaluate(
+        (element, [count, key]) => {
+          const handle = (
+            element as HTMLElement & Record<string, PliteBrowserHandle>
+          )[key];
+          for (let index = 0; index < count; index++) {
+            handle.deleteTextAt({
+              anchor: { path: [index, 0], offset: 1 },
+              focus: { path: [index, 0], offset: 2 },
+            });
+          }
+        },
+        [cohort.pendingDeletions, BROWSER_HANDLE_KEY] as const
+      );
     } else if (arm === 'matched') {
-      await proposed.root.evaluate((element, count) => {
-        const handle = (
-          element as HTMLElement & { __pliteBrowserHandle: PliteBrowserHandle }
-        ).__pliteBrowserHandle;
-        for (let index = 0; index < count; index++) {
-          handle.insertTextAt('e', { path: [index, 0], offset: 1 });
-        }
-      }, cohort.pendingDeletions);
+      await proposed.root.evaluate(
+        (element, [count, key]) => {
+          const handle = (
+            element as HTMLElement & Record<string, PliteBrowserHandle>
+          )[key];
+          for (let index = 0; index < count; index++) {
+            handle.insertTextAt('e', { path: [index, 0], offset: 1 });
+          }
+        },
+        [cohort.pendingDeletions, BROWSER_HANDLE_KEY] as const
+      );
     }
-    const initialValue = (await accepted.get.modelValue()) as {
-      children: unknown[];
-      meta?: {
-        authored?: {
-          value?: {
-            operations?: unknown;
-          };
-        };
-      };
-    };
-    const initialOperations = readSavedAuthoredOperations(
-      initialValue.meta?.authored?.value?.operations
-    );
+    const pendingKind = arm === 'matched' ? 'insert' : 'delete';
     const initialPendingIds = [
-      ...new Set(
-        initialOperations
-          .filter(
-            (operation) =>
-              operation.kind === 'edit' && operation.proposal === true
-          )
-          .map((operation) => operation.changeId)
-      ),
+      ...readPendingIds(await proposed.get.modelValue(), pendingKind),
     ];
     await page
       .getByLabel('Shared document views', { exact: true })
       .selectOption(String(cohort.mountedSharedViews));
-    if (arm !== 'zero') {
-      await page
-        .getByLabel('Proposed document controls')
-        .getByRole('button', { name: 'Show changes', exact: true })
-        .click();
-    }
-    const markupViews =
-      cohort.mountedSharedViews === 1 ? 1 : cohort.mountedSharedViews - 1;
-    const expectedRetained =
-      arm === 'retained' ? cohort.pendingDeletions * markupViews : 0;
     await expect
       .poll(async () => {
         const mounted = await readMountedDOM(page);
         return {
           blocks: mounted.blocks,
           placeholders: mounted.placeholders,
-          retained: mounted.retained,
           views: mounted.views.length,
         };
       })
       .toEqual({
         blocks: cohort.blocks * cohort.mountedSharedViews,
         placeholders: 0,
-        retained: expectedRetained,
         views: cohort.mountedSharedViews,
       });
     const initialDOM = await readMountedDOM(page);
+    // The accepted preview hides pending insertions and keeps struck text.
     const acceptedText = seedText.repeat(cohort.blocks);
-    const proposedText = 'Sed.'.repeat(cohort.blocks);
+    const reviewText = (arm === 'struck' ? 'Seed.' : 'Sed.').repeat(
+      cohort.blocks
+    );
+    const initialAccepted =
+      cohort.mountedSharedViews === 1 ? null : await accepted.get.modelText();
     await proposed.selection.collapse({ path: [0, 0], offset: 0 });
     const warmup = 'w'.repeat(contract.sampling.warmupsPerPass);
     await proposed.type(warmup);
-    await proposed.assert.domCaret({
-      offset: warmup.length,
-      text: `${warmup}${arm === 'retained' ? 'S' : 'Sed.'}`,
+    await expect.poll(() => proposed.get.selection()).toEqual({
+      anchor: { path: [0, 0], offset: warmup.length },
+      focus: { path: [0, 0], offset: warmup.length },
     });
     const measured = 'q'.repeat(contract.sampling.samplesPerPass);
     const result = await measureTrustedTyping({
@@ -306,7 +262,7 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
     const keyToDOM = result.rows.flatMap((row) =>
       row.domReady === undefined ? [] : [row.domReady - row.keydown]
     );
-    const finalProposedText = warmup + measured + proposedText;
+    const finalReviewText = warmup + measured + reviewText;
     const projectedLabels = [
       'Proposed document',
       ...Array.from(
@@ -326,17 +282,10 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
         .selectOption('2');
       await expect(accepted.root).toBeVisible();
     }
-    const finalValue = (await accepted.get.modelValue()) as typeof initialValue;
-    const finalOperations = readSavedAuthoredOperations(
-      finalValue.meta?.authored?.value?.operations
-    );
-    const finalPendingIds = new Set(
-      finalOperations
-        .filter(
-          (operation) =>
-            operation.kind === 'edit' && operation.proposal === true
-        )
-        .map((operation) => operation.changeId)
+    const finalAccepted = await accepted.get.modelText();
+    const finalPendingIds = readPendingIds(
+      await proposed.get.modelValue(),
+      pendingKind
     );
     return {
       arm,
@@ -352,15 +301,11 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
       },
       checks: {
         acceptedValue:
-          initialValue.children.map(nodeText).join('') === acceptedText &&
-          finalValue.children.map(nodeText).join('') === acceptedText,
+          (initialAccepted === null || initialAccepted === acceptedText) &&
+          finalAccepted === acceptedText,
         finalDOM:
           finalDOM.blocks === cohort.blocks * cohort.mountedSharedViews &&
-          finalDOM.placeholders === 0 &&
-          finalDOM.retained === expectedRetained &&
-          finalDOM.views.every((view) =>
-            view.retainedText.every((text) => text === 'e')
-          ),
+          finalDOM.placeholders === 0,
         independent:
           (await independent.get.modelText()) === 'A separate document.',
         originalPendingPreserved:
@@ -368,7 +313,7 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
             (arm === 'zero' ? 0 : cohort.pendingDeletions) &&
           initialPendingIds.every((id) => finalPendingIds.has(id)),
         projectedTexts: projectedTexts.every(
-          (text) => text === finalProposedText
+          (text) => text === finalReviewText
         ),
         runtimeErrors: errors.length === 0,
         trustedRows:
@@ -407,8 +352,8 @@ test.describe('native authored mounted performance', () => {
       test.setTimeout(300_000);
       const arms: Arm[] =
         pass % 2 === 0
-          ? ['zero', 'matched', 'retained']
-          : ['retained', 'matched', 'zero'];
+          ? ['zero', 'matched', 'struck']
+          : ['struck', 'matched', 'zero'];
       const rows = {} as Record<Arm, Awaited<ReturnType<typeof runArm>>>;
       for (const arm of arms) rows[arm] = await runArm({ arm, browser });
       const retainedP95Limit =
@@ -419,7 +364,7 @@ test.describe('native authored mounted performance', () => {
             contract.budget.retainedP95RelativeTolerance
         );
       const heapRatio =
-        (rows.retained.heap.jsHeapUsedSize ?? Number.POSITIVE_INFINITY) /
+        (rows.struck.heap.jsHeapUsedSize ?? Number.POSITIVE_INFINITY) /
         (rows.matched.heap.jsHeapUsedSize ?? 0);
       const checks = {
         armCorrectness: Object.values(rows).every((row) =>
@@ -433,7 +378,7 @@ test.describe('native authored mounted performance', () => {
               contract.budget.keydownToPaintBoundaryP99Ms
         ),
         retainedLatency:
-          rows.retained.summary.paintBoundary.p95 <= retainedP95Limit,
+          rows.struck.summary.paintBoundary.p95 <= retainedP95Limit,
         retainedHeap:
           Number.isFinite(heapRatio) &&
           heapRatio <= contract.budget.retainedHeapToControlMaximum,

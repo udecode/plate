@@ -63,7 +63,6 @@ export function CommentToolbarButton() {
 
   return (
     <ToolbarButton
-      aria-label="Comment"
       disabled={readOnly || !hasSelection}
       onClick={() => comments.api.begin()}
       data-editor-prevent-overlay

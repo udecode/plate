@@ -12,6 +12,7 @@ import {
 } from '../../src/react';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
+import { BROWSER_HANDLE_KEY } from '../../src/testing';
 
 describe('plite-react DOM capability contract', () => {
   const createInsertTextBeforeInput = (data: string) => {
@@ -279,12 +280,19 @@ describe('plite-react DOM capability contract', () => {
         <Editable />
       </EditorRoot>
     );
-    const editable = mounted.container.querySelector('[data-editor]')!;
+    const editable =
+      mounted.container.querySelector<HTMLElement>('[data-editor]')!;
     const assertDOMRange = vi.spyOn(ReactEditor, 'assertDOMRange');
     const [alphaText, bravoText] = Array.from(
       editable.querySelectorAll('[data-editor-string="true"]')
     ).map((node) => node.firstChild);
 
+    await act(async () => {
+      editable.focus();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
+    });
     await act(async () => {
       editor.update((tx) => {
         tx.selection.set({
@@ -364,7 +372,7 @@ describe('plite-react DOM capability contract', () => {
     );
     const editable = mounted.container.querySelector('[data-editor]') as
       | (HTMLDivElement & {
-          __pliteBrowserHandle?: {
+          [BROWSER_HANDLE_KEY]?: {
             selectRange: (selection: {
               anchor: { offset: number; path: number[] };
               focus: { offset: number; path: number[] };
@@ -378,7 +386,7 @@ describe('plite-react DOM capability contract', () => {
     });
 
     await act(async () => {
-      editable?.__pliteBrowserHandle?.selectRange({
+      editable?.[BROWSER_HANDLE_KEY]?.selectRange({
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 0 },
       });
@@ -412,12 +420,12 @@ describe('plite-react DOM capability contract', () => {
     );
     const editable = mounted.container.querySelector('[data-editor]') as
       | (HTMLDivElement & {
-          __pliteBrowserHandle?: {
+          [BROWSER_HANDLE_KEY]?: {
             getElementByPath: (path: number[]) => HTMLElement | null;
           };
         })
       | null;
-    const textElement = editable?.__pliteBrowserHandle?.getElementByPath([
+    const textElement = editable?.[BROWSER_HANDLE_KEY]?.getElementByPath([
       0, 0,
     ]);
 

@@ -82,7 +82,7 @@ export function useRequiredEditorSelectorContext() {
   const context = useContext(EditorSelectorContext);
   if (!context) {
     throw new Error(
-      `The \`useEditorSelector\` hook must be used inside the <Plite> component's context.`
+      `The \`useEditorSelector\` hook must be used inside <EditorRoot>.`
     );
   }
 

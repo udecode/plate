@@ -1,9 +1,7 @@
 import { renderHook } from '@testing-library/react';
 
 import { createEditor as createRuntimeEditor } from '../../facade';
-import { createStaticEditor } from '../../static/editor/withStatic';
 import { useCreateEditor } from './useCreateEditor';
-import { useStaticEditor } from './useStaticEditor';
 
 describe('useCreateEditor', () => {
   it('creates a derived-schema editor without options', () => {
@@ -18,13 +16,75 @@ describe('useCreateEditor', () => {
 
     expect(disabled).toBeNull();
   });
+});
 
-  it('creates static editors and view editors without options', () => {
-    const staticEditor = createStaticEditor();
-    const { result } = renderHook(() => useStaticEditor());
+describe('useCreateEditor identity', () => {
+  const initialValue = [{ type: 'paragraph', children: [{ text: 'Base' }] }];
 
-    expect(staticEditor.read.schema.identity()?.kind).toBe('derived');
-    expect(result.current.read.schema.identity()?.kind).toBe('derived');
+  it('creates a new editor when the id changes', () => {
+    const { rerender, result } = renderHook(
+      ({ id }: { id: string }) => useCreateEditor({ id, initialValue }),
+      { initialProps: { id: 'first' } }
+    );
+    const first = result.current;
+
+    rerender({ id: 'second' });
+
+    expect({ same: result.current === first, id: result.current.id }).toEqual({
+      same: false,
+      id: 'second',
+    });
+  });
+
+  it('creates a new editor when a caller dependency changes', () => {
+    const { rerender, result } = renderHook(
+      ({ version }: { version: number }) =>
+        useCreateEditor({ initialValue }, [version]),
+      { initialProps: { version: 1 } }
+    );
+    const first = result.current;
+
+    rerender({ version: 2 });
+
+    expect(result.current).not.toBe(first);
+  });
+
+  it('keeps the editor and its text when only the initial value changes', () => {
+    const { rerender, result } = renderHook(
+      ({ text }: { text: string }) =>
+        useCreateEditor({
+          initialValue: [{ type: 'paragraph', children: [{ text }] }],
+        }),
+      { initialProps: { text: 'Base' } }
+    );
+    const editor = result.current;
+
+    rerender({ text: 'Changed' });
+
+    expect({
+      same: result.current === editor,
+      text: result.current.read.value().children[0]?.children[0]?.text,
+    }).toEqual({ same: true, text: 'Base' });
+  });
+
+  it('creates the editor when enabled turns on and drops it when enabled turns off', () => {
+    const { rerender, result } = renderHook(
+      ({ enabled }: { enabled: boolean }) =>
+        useCreateEditor({ enabled, initialValue }),
+      { initialProps: { enabled: false } }
+    );
+    const disabled = result.current;
+
+    rerender({ enabled: true });
+    const created = result.current;
+
+    rerender({ enabled: false });
+
+    expect({
+      disabled,
+      created: created !== null,
+      dropped: result.current,
+    }).toEqual({ disabled: null, created: true, dropped: null });
   });
 });
 
@@ -44,17 +104,6 @@ describe('removed editor option', () => {
   it('refuses an existing editor added to useCreateEditor options on a later render', () => {
     const withEditor = { editor: createRuntimeEditor(), initialValue };
     const { rerender } = renderHook(({ options }) => useCreateEditor(options), {
-      initialProps: { options: { initialValue } },
-    });
-
-    expect(() => rerender({ options: withEditor })).toThrow(
-      'Plate editor constructors always create a new editor'
-    );
-  });
-
-  it('refuses an existing editor added to useStaticEditor options on a later render', () => {
-    const withEditor = { editor: createRuntimeEditor(), initialValue };
-    const { rerender } = renderHook(({ options }) => useStaticEditor(options), {
       initialProps: { options: { initialValue } },
     });
 

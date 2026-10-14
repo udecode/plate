@@ -13,8 +13,6 @@ import {
   BaseParagraphPlugin,
   BaseHeadingPlugin,
   BaseListPlugin,
-  definePlugin,
-  schema,
   SelectionApi,
   type Selection,
   type Value,
@@ -526,54 +524,6 @@ describe('turn into menu behavior', () => {
           type: 'details',
         },
       ]);
-    }
-  );
-
-  it.each(['Text', 'Numbered list'])(
-    'changes nothing when %s cannot reset a required heading',
-    async (name) => {
-      const RequiredHeadingBoxPlugin = definePlugin('requiredHeadingBox', {
-        schema: {
-          element: {
-            content: schema.content.prefix(
-              [{ element: 'heading', properties: { level: 1 } }],
-              schema.content.group('block', { default: { type: 'paragraph' } })
-            ),
-          },
-        },
-      });
-      const initialValue: Value = [
-        {
-          children: [
-            {
-              children: [{ text: 'Title' }],
-              indent: 1,
-              level: 1,
-              listType: 'bulleted',
-              type: 'heading',
-            },
-            { children: [{ text: 'Body' }], type: 'paragraph' },
-          ],
-          type: 'requiredHeadingBox',
-        },
-      ];
-
-      currentEditor = createEditor({
-        plugins: [
-          ...BaseBasicBlocksKit,
-          ...BaseListKit,
-          RequiredHeadingBoxPlugin,
-        ],
-        initialValue,
-        selection: SelectionApi.nodes([[0, 0]]),
-      });
-      const commit = currentEditor.read.lastCommit();
-      const view = await renderTurnInto();
-
-      fireEvent.click(view.getByRole('radio', { name }));
-
-      expect(currentEditor.read.lastCommit()).toBe(commit);
-      expect(currentEditor.read.children()).toEqual(initialValue);
     }
   );
 

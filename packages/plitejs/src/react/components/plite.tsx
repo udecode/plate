@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 
 import {
-  type Descendant,
   type EditorCommit,
   type EditorCommitContext,
   type EditorViewOptions,
@@ -18,29 +17,19 @@ import {
   type RootKey,
   type Selection,
   SelectionApi,
-  type Text as TextNode,
   type Value,
-  type Path,
-  type NodeKey,
-  NodeApi,
   type ValueOf,
 } from '../..';
-import { readAuthoredFragmentRoots } from '../../core/authored-fragment-view';
 import {
   configureAuthoredView,
   readAuthoredView,
-  readAuthoredFragmentView,
-  readAuthoredViewFragments,
-  type NativeAuthoredFragment,
 } from '../../core/authored-runtime';
 import {
   createEditorCommitPublicationQueue,
   resetEditorCommitPublicationQueue,
   publishEditorCommitInVersionOrder,
 } from '../../core/commit-publication';
-import { getDefined } from '../../internal/get-defined';
-import { AuthoredFragmentRootsContext } from '../authored-fragment-context';
-import { ElementContext, PliteContentRootOwnerContext } from '../context';
+import { PliteContentRootOwnerContext } from '../context';
 import {
   DecorationContext,
   DecorationRegistrationContext,
@@ -63,7 +52,6 @@ import {
 import { getSchemaInvalidatedNodeKeys } from '../editable/schema-runtime-invalidation';
 import {
   EditorContext,
-  useEditorContext,
   useOptionalEditorContext,
 } from '../hooks/use-editor-context';
 import { FocusedContext } from '../hooks/use-editor-focused';
@@ -76,11 +64,10 @@ import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect
 import {
   syncChangedTextToDOM,
   syncPliteNodePathBindingsToDOM,
-  usePliteLazyFragmentNodeRef,
 } from '../hooks/use-plite-node-ref';
 import {
   createReactRuntimeViewEditor,
-  PliteRuntimeProvider,
+  EditorRuntimeProvider,
   useRequiredPliteRuntimeContext,
   useMountedEditorRuntimeOwner,
   useOptionalPliteRuntimeContext,
@@ -94,7 +81,6 @@ import { profilePliteReactDuration } from '../render-profiler';
 import { toPublicRootOption } from '../root-key';
 import {
   mountPliteViewSelection,
-  reconcilePliteViewSelection,
   setPliteViewSelectionStoreKey,
 } from '../view-selection';
 import {
@@ -190,7 +176,7 @@ export type EditorRootProps<
     ) => void;
   };
 
-type PliteRuntimeViewProps<E extends ReactEditorType<any, any>> = {
+type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
   authored?: EditorViewOptions['authored'];
   children: React.ReactNode;
   decorations?: ReadonlyArray<DecorationSource<E>> | null;
@@ -206,7 +192,6 @@ type PliteRuntimeViewProps<E extends ReactEditorType<any, any>> = {
     context: EditorCommitContext<E> & { value: ValueOf<E> }
   ) => void;
   readOnly?: boolean;
-  retained?: boolean;
   root?: NamedRootKey;
 };
 
@@ -229,12 +214,12 @@ export const EditorRoot = <
   useMountedEditorRuntimeOwner('EditorRoot', editor);
 
   if (props.root === 'main') {
-    throw new Error('[Plite] Omit root to render the primary document.');
+    throw new Error('Omit root to render the primary document.');
   }
 
   // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- [P0 typecheck-boundary] Widening before the guard avoids recursively comparing the plugin graph.
   if (!isEditor(editor as unknown)) {
-    throw new Error('[Plite] editor is invalid!');
+    throw new Error('editor is invalid!');
   }
 
   const owner = getEditorRuntimeOwner(editor);
@@ -248,7 +233,7 @@ export const EditorRoot = <
     };
   }, [editor]);
   const content = (
-    <PliteRuntimeView
+    <EditorRuntimeView
       {...viewProps}
       authored={props.authored ?? defaults.authored}
       lifetime={editor}
@@ -261,11 +246,11 @@ export const EditorRoot = <
     getEditorRuntimeOwner(runtimeContext.runtime) === owner ? (
     content
   ) : (
-    <PliteRuntimeProvider editor={owner as E}>{content}</PliteRuntimeProvider>
+    <EditorRuntimeProvider editor={owner as E}>{content}</EditorRuntimeProvider>
   );
 };
 
-export const PliteRuntimeView = <
+export const EditorRuntimeView = <
   E extends ReactEditorType<any, any> = ReactEditorType<any, any>,
 >({
   authored,
@@ -278,8 +263,7 @@ export const PliteRuntimeView = <
   root,
   directEditor,
   lifetime,
-  retained = false,
-}: PliteRuntimeViewProps<E>) => {
+}: EditorRuntimeViewProps<E>) => {
   const runtimeContext = useRequiredPliteRuntimeContext();
   const { getView, registerViewEditor } = runtimeContext;
   const parentEditor = useOptionalEditorContext();
@@ -311,13 +295,16 @@ export const PliteRuntimeView = <
   }, [directEditor, getView, lifetime, root, selectionOwner]);
   const reactEditor = editor;
   useIsomorphicLayoutEffect(
-    () => (retained ? undefined : mountPliteViewSelection(reactEditor)),
-    [reactEditor, retained]
+    () => mountPliteViewSelection(reactEditor),
+    [reactEditor]
   );
   useIsomorphicLayoutEffect(() => {
     if (authored) configureAuthoredView(reactEditor, authored);
     // Equivalent inline props must preserve a mode changed by view commands.
-  }, [authored?.intent, authored?.projection, reactEditor]);
+  }, [
+    authored && ('intent' in authored ? authored.intent : authored.preview),
+    reactEditor,
+  ]);
   useInsertionEffect(() => {
     if (directEditor) return undefined;
     setEditorReadOnly(reactEditor, readOnly);
@@ -326,8 +313,8 @@ export const PliteRuntimeView = <
   const viewRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const { focused: isFocused } = useRuntimeFocusState(reactEditor);
   useIsomorphicLayoutEffect(
-    () => (retained ? undefined : registerViewEditor(reactEditor, viewRoot)),
-    [reactEditor, registerViewEditor, retained, viewRoot]
+    () => registerViewEditor(reactEditor, viewRoot),
+    [reactEditor, registerViewEditor, viewRoot]
   );
   usePliteChangeCallbacks({
     editor: reactEditor,
@@ -388,231 +375,6 @@ export const PliteRuntimeView = <
   );
 };
 
-/** Mount native retained coordinates without registering another editable root. */
-export const usePliteRenderContext = () => {
-  const selector = useContext(EditorSelectorContext);
-  const decorations = useContext(DecorationContext);
-  const registerDecoration = useContext(DecorationRegistrationContext);
-  const decorationSources = useContext(DecorationSourcesContext);
-  const editor = useContext(EditorContext);
-  const readOnly = useContext(ReadOnlyContext);
-  const focused = useContext(FocusedContext);
-  const fragment = useContext(AuthoredFragmentRootsContext);
-  return useCallback(
-    (children: React.ReactNode) => (
-      <EditorSelectorContext value={selector}>
-        <DecorationContext value={decorations}>
-          <DecorationRegistrationContext value={registerDecoration}>
-            <DecorationSourcesContext value={decorationSources}>
-              <EditorContext value={editor}>
-                <ReadOnlyContext value={readOnly}>
-                  <FocusedContext value={focused}>
-                    <AuthoredFragmentRootsContext value={fragment}>
-                      {children}
-                    </AuthoredFragmentRootsContext>
-                  </FocusedContext>
-                </ReadOnlyContext>
-              </EditorContext>
-            </DecorationSourcesContext>
-          </DecorationRegistrationContext>
-        </DecorationContext>
-      </EditorSelectorContext>
-    ),
-    [
-      selector,
-      decorations,
-      registerDecoration,
-      decorationSources,
-      editor,
-      readOnly,
-      focused,
-      fragment,
-    ]
-  );
-};
-
-type PliteFragmentProps = {
-  children: (nodeKeys: readonly NodeKey[]) => React.ReactNode;
-  fragment: NativeAuthoredFragment;
-  paths?: readonly Path[];
-  readOnlyRoots?: boolean;
-};
-
-const usePliteFragmentMount = (fragment: NativeAuthoredFragment) => {
-  const parent = useEditorContext();
-  const { getAuthoredFragmentView, mountAuthoredFragmentView } =
-    useRequiredPliteRuntimeContext();
-  const { changeId, id, root } = fragment;
-  const sharedView = useMemo(
-    () =>
-      getAuthoredFragmentView(
-        parent,
-        getDefined(
-          readAuthoredViewFragments(parent, changeId).find(
-            (current) => current.id === id && current.root === root
-          )
-        )
-      ),
-    [changeId, getAuthoredFragmentView, id, parent, root]
-  );
-  const editor = useMemo(() => {
-    const view = createReactRuntimeViewEditor(sharedView, sharedView);
-
-    setPliteViewSelectionStoreKey(view, parent);
-    return view as unknown as EditorContextValue<any>;
-  }, [parent, sharedView]);
-  useIsomorphicLayoutEffect(
-    () => mountAuthoredFragmentView(sharedView),
-    [mountAuthoredFragmentView, sharedView]
-  );
-
-  return { editor, parent };
-};
-
-const usePliteFragmentEditor = (fragment: NativeAuthoredFragment) => {
-  const fragmentMount = usePliteFragmentMount(fragment);
-  const { editor } = fragmentMount;
-  const value = React.useSyncExternalStore(
-    useCallback((notify) => editor.subscribeCommit(() => notify()), [editor]),
-    useCallback(() => editor.read.children(), [editor]),
-    useCallback(() => editor.read.children(), [editor])
-  );
-
-  return { ...fragmentMount, value };
-};
-
-const PliteFragmentView = ({
-  children,
-  editor,
-  fragment,
-  parent,
-  paths,
-  readOnlyRoots = true,
-  value,
-}: PliteFragmentProps & {
-  editor: EditorContextValue<any>;
-  parent: EditorContextValue<any>;
-  value: readonly Descendant[];
-}) => {
-  const keys = (
-    paths ?? readAuthoredFragmentRoots(fragment, value).map(([, path]) => path)
-  ).flatMap((path) => {
-    const first = path.length ? value[path[0]] : undefined;
-    const node = first ? NodeApi.getIf(first, path.slice(1)) : undefined;
-    const key = node && NodeApi.isDescendant(node) ? editor.key(node) : null;
-    return key ? [key] : [];
-  });
-  const roots = new Map(keys.map((key) => [key, readOnlyRoots]));
-  return (
-    <AuthoredFragmentRootsContext value={{ parent, roots }}>
-      <ElementContext value={null}>
-        <PliteRuntimeView directEditor={editor} readOnly retained>
-          {children(keys)}
-        </PliteRuntimeView>
-      </ElementContext>
-    </AuthoredFragmentRootsContext>
-  );
-};
-
-export const PliteFragment = (props: PliteFragmentProps) => {
-  const fragmentView = usePliteFragmentEditor(props.fragment);
-
-  return <PliteFragmentView {...props} {...fragmentView} />;
-};
-
-const PliteLazyPlainRetainedText = ({
-  fragment,
-  node,
-  parent,
-  path,
-  readOnly,
-}: {
-  fragment: NativeAuthoredFragment;
-  node: TextNode;
-  parent: EditorContextValue<any>;
-  path: Path;
-  readOnly: boolean;
-}) => {
-  const { getAuthoredFragmentView, mountAuthoredFragmentView } =
-    useRequiredPliteRuntimeContext();
-  const { changeId, id, root } = fragment;
-  const materialize = useCallback(() => {
-    const current = getDefined(
-      readAuthoredViewFragments(parent, changeId).find(
-        (candidate) => candidate.id === id && candidate.root === root
-      )
-    );
-    const sharedView = getAuthoredFragmentView(parent, current);
-    const release = mountAuthoredFragmentView(sharedView);
-
-    try {
-      const editor = createReactRuntimeViewEditor(sharedView, sharedView);
-      const [pliteNode, livePath] = getDefined(
-        readAuthoredFragmentRoots(current, editor.read.children())[0]
-      );
-      const nodeKey = getDefined(editor.key(pliteNode));
-
-      setPliteViewSelectionStoreKey(editor, parent);
-      return { editor, nodeKey, path: livePath, pliteNode, release };
-    } catch (error) {
-      release();
-      throw error;
-    }
-  }, [
-    changeId,
-    getAuthoredFragmentView,
-    id,
-    mountAuthoredFragmentView,
-    parent,
-    root,
-  ]);
-  const ref = usePliteLazyFragmentNodeRef(parent, fragment, materialize, {
-    readOnly,
-  });
-
-  return (
-    <span
-      data-editor-dom-sync
-      data-editor-node="text"
-      data-editor-path={path.join(',')}
-      ref={ref}
-    >
-      <span data-editor-leaf data-editor-string>
-        {node.text}
-      </span>
-    </span>
-  );
-};
-
-export const PlitePlainTextFragment = (
-  props: PliteFragmentProps & { hasViewSelection: boolean }
-) => {
-  const parent = useEditorContext();
-  const entries = readAuthoredFragmentRoots(props.fragment);
-  const [node, path] = entries[0] ?? [];
-  const plain =
-    entries.length === 1 &&
-    node &&
-    NodeApi.isText(node) &&
-    Object.keys(node).length === 1 &&
-    node.text.length > 0 &&
-    !node.text.endsWith('\n');
-
-  if (!plain || props.hasViewSelection) {
-    return <PliteFragment {...props} />;
-  }
-
-  return (
-    <PliteLazyPlainRetainedText
-      fragment={props.fragment}
-      node={node}
-      parent={parent}
-      path={path}
-      readOnly={props.readOnlyRoots ?? true}
-    />
-  );
-};
-
 const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
   editor,
   onChange,
@@ -664,7 +426,6 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
       commit: EditorCommit,
       snapshot: EditorSnapshot<ValueOf<E>>
     ) => {
-      reconcilePliteViewSelection(editor);
       const textSync = profilePliteReactDuration('dom-text-sync', () =>
         syncChangedTextToDOM(
           editor,
@@ -720,12 +481,11 @@ const usePliteChangeCallbacks = <E extends ReactEditorType<any, any>>({
         commit,
         snapshot,
         publishContextChange,
-        { allowVersionGap: readAuthoredFragmentView(editor) !== null }
+        { allowVersionGap: false }
       )
     );
     const unsubscribeView = subscribeEditorViewState(editor, (change) => {
       if (change !== 'authored') return;
-      reconcilePliteViewSelection(editor);
       const snapshot = editorGetSnapshot(editor);
       if (snapshot.children !== lastSnapshotRef.current.children) {
         syncChangedTextToDOM(editor, []);

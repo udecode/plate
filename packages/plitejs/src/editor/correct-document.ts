@@ -172,11 +172,23 @@ const indexCorrections = (editor: Editor) => {
 
 export const correctDocument = (
   editor: Editor,
-  options: { force?: boolean; root?: string } = {}
+  options: {
+    force?: boolean;
+    root?: string;
+    /**
+     * Start from this change's paths, each placed by `place`, instead of the
+     * active change's: a pass in a command frame starts from the update's
+     * changes, placed in the frame's document.
+     */
+    seed?: Readonly<{
+      change: DocumentChange;
+      place: (path: Path) => Path | null;
+    }>;
+  } = {}
 ) => {
   if (getPluginRegistry(editor).corrections.size === 0) return;
 
-  const { force = true, root = getEditorUpdateRoot(editor) } = options;
+  const { force = true, root = getEditorUpdateRoot(editor), seed } = options;
 
   const runCorrectionWorklist = () => {
     const corrections = indexCorrections(editor);
@@ -225,7 +237,8 @@ export const correctDocument = (
     };
     const enqueueChangedDocument = (
       change: DocumentChange,
-      changed?: EditorTransactionChanged
+      changed?: EditorTransactionChanged,
+      place: (path: Path) => Path | null = (path) => path
     ) => {
       const rootChange = getInternalDocumentRootChange(change, root);
       const classification = getInternalDocumentChangeClassification(
@@ -246,10 +259,10 @@ export const correctDocument = (
       for (const path of changed?.paths(publicRoot) ??
         classification?.paths ??
         []) {
-        for (let depth = 0; depth <= path.length; depth++) {
-          const ancestor = path.slice(0, depth) as Path;
+        for (let depth = 1; depth <= path.length; depth++) {
+          const ancestor = place(path.slice(0, depth));
 
-          paths.set(ancestor.join(','), ancestor);
+          if (ancestor) paths.set(ancestor.join(','), ancestor);
         }
       }
 
@@ -391,6 +404,8 @@ export const correctDocument = (
         ],
         CORRECTION_EVENTS
       );
+    } else if (seed) {
+      enqueueChangedDocument(seed.change, undefined, seed.place);
     } else {
       enqueueChangedDocument(activeChange);
     }

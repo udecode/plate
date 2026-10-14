@@ -135,6 +135,11 @@ replacement 或 unwrap 时，才使用 `lossPolicy: 'allow'`。
 Semantic HTML 只支持可见的 `accepted` 与 `proposed` projection。它不会嵌入隐藏
 Plate document，也不会从 HTML 恢复 review state。
 
+安装了 authored changes 的 editor 中的 document 即使还没有 proposal 也带有
+authored metadata。对这样的 document，`editor.api.html.serialize` 与
+`serializeHtml` 都要求 `projection` 为 `'accepted'` 或 `'proposed'`，否则抛出
+`TypeError`。没有 authored metadata 的 document 会忽略 `projection`。
+
 完整 proposal、decision、root 与 metadata 使用 authored JSON 持久化。需要 Word
 revision 时使用 DOCX review export。参阅
 [Authored Changes](/docs/authored-changes)。

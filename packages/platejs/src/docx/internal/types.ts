@@ -50,11 +50,6 @@ type DocxPolicyDiagnostic<T extends object> =
 
 export type DocxDiagnostic =
   | AuthoredProjectionDiagnostic
-  | DocxPolicyDiagnostic<{
-      code: 'authored-conflict';
-      count: number;
-      message: string;
-    }>
   | Readonly<{
       actual: number;
       code: 'limit-exceeded';

@@ -1,7 +1,7 @@
 'use client';
 
-import { DocumentChange, type EditorDocumentValue } from 'platejs';
-import { createAuthoredReviewDocument } from 'platejs/authored';
+import type { EditorDocumentValue } from 'platejs';
+import type { AuthoredMark } from 'platejs/authored';
 import type { CommentsJSON, CommentThread } from 'platejs/comments';
 import { CommentsPlugin } from 'platejs/comments/react';
 import { createEditor, EditorRoot, useCreateEditor } from 'platejs/react';
@@ -48,10 +48,7 @@ export default function DiscussionDemo() {
     initialValue: fixture.read.value(),
   });
   return (
-    <EditorRoot
-      authored={{ intent: 'edit', projection: 'markup' }}
-      editor={editor}
-    >
+    <EditorRoot editor={editor}>
       <EditorFrame className="h-[650px]">
         <EditorContainer>
           <Editor className="min-w-0" variant="demo" />
@@ -119,94 +116,82 @@ const threads: CommentThread[] = [
     ],
   },
 ];
-const createDiscussionValue = ({
-  inserted = false,
-  removed = false,
-  overlapping = false,
-}: {
-  inserted?: boolean;
-  removed?: boolean;
-  overlapping?: boolean;
-}): EditorDocumentValue => {
-  const leadingText = 'Review and refine content together. Use ';
-  const reviewText = ` or to ${removed ? '' : 'mark text for removal'}. Discuss changes using `;
-
-  return {
-    children: [
-      { type: 'heading', level: 2, children: [{ text: 'Discussions' }] },
-      {
-        type: 'paragraph',
-        children: [
-          ...(inserted
-            ? [
-                { text: leadingText },
-                {
-                  type: 'link',
-                  url: '/docs/suggestion',
-                  children: [{ text: 'suggestions' }],
-                },
-                { text: ` like this added text${reviewText}` },
-              ]
-            : [{ text: leadingText + reviewText }]),
-          {
-            type: 'link',
-            url: '/docs/comment',
-            children: [{ text: 'comments' }],
-          },
-          {
-            text: `${discussionTrailingText}${overlapping ? 'overlapping ' : ''}annotations!`,
-          },
-        ],
-      },
-    ],
-  };
-};
-
-const accepted = createDiscussionValue({});
-const deleted = createDiscussionValue({ removed: true });
-const overlapped = createDiscussionValue({ removed: true, overlapping: true });
-const proposed = createDiscussionValue({
-  inserted: true,
-  removed: true,
-  overlapping: true,
+// Review marks as the authored plugin stores them on suggested nodes.
+const suggested = (
+  change: string,
+  author: string,
+  at: string,
+  kind: 'delete' | 'insert'
+): { authored: AuthoredMark[] } => ({
+  authored: [{ at: Date.parse(at), author, change, kind }],
 });
+const added = suggested(
+  'playground1',
+  'alice',
+  '2026-09-09T12:02:00.000Z',
+  'insert'
+);
+
+const review: EditorDocumentValue = {
+  children: [
+    { type: 'heading', level: 2, children: [{ text: 'Discussions' }] },
+    {
+      type: 'paragraph',
+      children: [
+        { text: 'Review and refine content together. Use ' },
+        {
+          type: 'link',
+          url: '/docs/suggestion',
+          children: [{ text: 'suggestions', ...added }],
+          ...added,
+        },
+        { text: ' like this added text', ...added },
+        { text: ' or to ' },
+        {
+          text: 'mark text for removal',
+          ...suggested(
+            'playground2',
+            'bob',
+            '2026-09-09T12:00:00.000Z',
+            'delete'
+          ),
+        },
+        { text: '. Discuss changes using ' },
+        {
+          type: 'link',
+          url: '/docs/comment',
+          children: [{ text: 'comments' }],
+        },
+        { text: discussionTrailingText },
+        {
+          text: 'overlapping ',
+          ...suggested(
+            'playground3',
+            'charlie',
+            '2026-09-09T12:01:00.000Z',
+            'insert'
+          ),
+        },
+        { text: 'annotations!' },
+      ],
+    },
+  ],
+};
 
 const fixture = createEditor({
   plugins: EditorKit,
-  initialValue: createAuthoredReviewDocument({
-    accepted,
-    revisions: [
-      {
-        id: 'playground2',
-        authorId: 'bob',
-        createdAt: Date.parse('2026-09-09T12:00:00.000Z'),
-        change: DocumentChange.between(accepted, deleted),
-      },
-      {
-        id: 'playground3',
-        authorId: 'charlie',
-        createdAt: Date.parse('2026-09-09T12:01:00.000Z'),
-        change: DocumentChange.between(deleted, overlapped),
-      },
-      {
-        id: 'playground1',
-        authorId: 'alice',
-        createdAt: Date.parse('2026-09-09T12:02:00.000Z'),
-        change: DocumentChange.between(overlapped, proposed),
-      },
-    ],
-  }),
+  initialValue: review,
   userId: 'alice',
 });
 const anchor = fixture.anchor(
   {
-    anchor: { path: [1, 1, 0], offset: 0 },
-    focus: { path: [1, 2], offset: discussionTrailingText.indexOf('.') },
+    anchor: { path: [1, 6, 0], offset: 0 },
+    focus: { path: [1, 7], offset: ' on many text segments'.length },
   },
   { association: 'inward', deletion: 'nearest' }
 );
 const initialComments: CommentsJSON = {
-  kind: 'plate-comments',
+  kind: 'comments',
   version: 1,
   threads,
   ranges: [{ threadId: 'discussion1', range: fixture.anchor.save(anchor) }],

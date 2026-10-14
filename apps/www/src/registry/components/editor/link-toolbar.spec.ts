@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
-import { createEditor } from 'platejs/react';
+import { definePlugin, schema } from 'platejs';
+import { CodeBlockPlugin, createEditor } from 'platejs/react';
 
 import { linkPlugin } from './link';
 
@@ -102,7 +103,7 @@ describe('LinkPlugin floating API', () => {
     });
     const link = innerEditor3.plugin(linkPlugin);
 
-    expect(link.api.trigger({ focused: false })).toBeUndefined();
+    expect(link.api.trigger({ focused: false })).toBe(false);
     expect(link.store.get().mode).toBe('');
   });
 
@@ -129,6 +130,41 @@ describe('LinkPlugin floating API', () => {
       openEditorId: innerEditor4.id,
       text: 'selected text',
     });
+  });
+
+  it('does not open the form where a link cannot land', () => {
+    const codeEditor = createEditor({
+      plugins: [CodeBlockPlugin, linkPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'code here' }], type: 'codeBlock' }],
+    });
+    const link = codeEditor.plugin(linkPlugin);
+
+    expect(link.api.trigger({ focused: true })).toBe(false);
+    expect(link.store.get().mode).toBe('');
+  });
+
+  it('opens the form in a block with open content', () => {
+    const NotePlugin = definePlugin('note', {
+      schema: { element: { content: schema.content.open() } },
+    });
+    const noteEditor = createEditor({
+      plugins: [NotePlugin, linkPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'note text' }], type: 'note' }],
+    });
+    const link = noteEditor.plugin(linkPlugin);
+
+    expect(link.api.trigger({ focused: true })).toBe(true);
+    expect(link.store.get().mode).toBe('insert');
   });
 
   it('loads link state into edit mode and strips duplicate URL text', () => {

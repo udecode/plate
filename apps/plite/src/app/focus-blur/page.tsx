@@ -9,6 +9,7 @@ import {
   EditorElement,
   type EditorElementProps,
   useEditor,
+  useEditorFocused,
 } from 'platejs/react';
 import { StrictMode, useState } from 'react';
 
@@ -85,6 +86,59 @@ function FocusFixture({
   );
 }
 
+function DraftField() {
+  const editor = useEditor();
+  const focused = useEditorFocused();
+  const [blurCount, setBlurCount] = useState(0);
+
+  return (
+    <>
+      <EditorContent
+        aria-label="draft editor"
+        onBlur={() => {
+          setBlurCount((count) => count + 1);
+          editor.update((tx) => {
+            const draft = tx.ranges.get([0]);
+
+            if (draft) tx.text.delete({ at: draft });
+          });
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== 'Escape') return false;
+
+          event.preventDefault();
+          editor.api.dom.blur();
+          return { kind: 'none' };
+        }}
+      />
+      <output
+        aria-label="Draft focus"
+        data-blur-count={blurCount}
+        data-focused={focused}
+      />
+      <input aria-label="Outside field" />
+    </>
+  );
+}
+
+function DraftFixture() {
+  const [editor] = useState(() =>
+    createEditor({
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+      plugins: [BaseParagraphPlugin],
+    })
+  );
+
+  return (
+    <section aria-label="draft">
+      <h2>draft</h2>
+      <EditorRoot editor={editor}>
+        <DraftField />
+      </EditorRoot>
+    </section>
+  );
+}
+
 export default function FocusBlurPage() {
   return (
     <StrictMode>
@@ -93,6 +147,7 @@ export default function FocusBlurPage() {
         <FocusFixture variant="default" />
         <FocusFixture variant="intrinsic" />
         <FocusFixture variant="custom" />
+        <DraftFixture />
       </main>
     </StrictMode>
   );

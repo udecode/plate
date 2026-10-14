@@ -95,6 +95,8 @@ const plan = ({
 - slate-identity: ${source.slateIdentity ?? 'commit: slate-test'}
 - named-symptom: test action
 - final-artifacts: ${source.finalArtifacts ?? 'artifact: tmp/test-result.json'}
+- inherited-budget: ${source.inheritedBudget ?? 'N/A: no earlier plan gates this run'}
+- inherited-budget-result: ${source.inheritedBudgetResult ?? 'N/A: no inherited budget'}
 
 ## Interaction Coverage
 
@@ -911,3 +913,252 @@ test('plan validator CLI is fail-closed and accepts the Benchmark template', () 
   assert.equal(template.status, 0);
   assert.match(template.stdout, /structurally valid/);
 });
+
+const completeRows = Object.fromEntries(
+  DEFAULT_BENCHMARK_LANES.map((lane) => [
+    lane,
+    { evidence: 'verified artifact', next: 'complete', status: 'complete' },
+  ])
+);
+const failingCause = {
+  benchmarkCommand: 'harness/interleave.sh overlap200',
+  benchmarkResult: 'fail: p95 23.2 against 1.5 ms',
+  causalEvidence: 'one mark per enclosing insertion, profiled',
+  causeId: 'stacked-marks',
+  correctnessGuardResult: provenCause.correctnessGuardResult,
+  correctnessCommand: provenCause.correctnessCommand,
+  correctnessResult: 'pass: authored suites',
+  decision: 'deferred',
+  evidence: 'overlap200 aggregate',
+  lane: provenCause.lane,
+};
+const architectureRow = {
+  compatibilityVerdict: architectureCause.compatibilityVerdict,
+  decisionOwner: architectureCause.decisionOwner,
+  fixClass: architectureCause.fixClass,
+  fixOwner: architectureCause.fixOwner,
+  layerPlan: architectureCause.layerPlan,
+  longTermTarget: 'store one mark per change',
+};
+const pivotedCause = {
+  ...failingCause,
+  ...architectureRow,
+  decision: 'pivoted',
+  evidence: 'pivot-plan: marks-pivot.md',
+};
+const keptCause = (overrides = {}) => ({
+  ...failingCause,
+  benchmarkResult: 'pass: p95 1.4 ms',
+  causeId: 'marks-retry',
+  decision: 'kept',
+  ...overrides,
+});
+const ownerKept = 'owner-kept: below the stress budget; expires 2026-12-01; approved zbeyens';
+const step = '- [ ] Rerun stacked-marks with `harness/interleave.sh overlap200` against the frozen budget.';
+const pivotPlans = {
+  'brief.md': '# brief\n\nstacked-marks `harness/interleave.sh overlap200`\n',
+  'cost-benchmark.md': '# cost\n',
+  'keys-plan.md': '# keys\n\n- [x] M2 frozen budget\n',
+  'marks-commented.md': `# pivot\n\n<!--\n${step}\n-->\n`,
+  'marks-done.md': `# pivot\n\n${step.replace('- [ ]', '- [x]')}\n`,
+  'marks-fenced.md': `# pivot\n\n\`\`\`md\n${step}\n\`\`\`\n`,
+  'marks-near.md': `# pivot\n\n${step.replace('overlap200`', 'overlap2000`')}\n`,
+  'marks-pivot.md': `# pivot\n\n${step}\n`,
+  'marks-split.md': `# pivot\n\n${step.replace('overlap200`', 'overlap<!--example only-->200`')}\n`,
+  'marks-ticks.md':
+    '# pivot\n\n- [ ] Rerun stacked-marks with ``node -e "console.log(`value`)"`` against the frozen budget.\n',
+  'marks-wrapped.md':
+    '# pivot\n\n- [ ] Rerun stacked-marks against the frozen budget with\n  `harness/interleave.sh overlap200`.\n',
+};
+
+const withPlans = (run) => {
+  const dir = mkdtempSync(join(tmpdir(), 'benchmark-pivot-'));
+
+  try {
+    for (const [name, text] of Object.entries(pivotPlans)) {
+      writeFileSync(join(dir, name), text);
+    }
+    run(join(dir, 'cost-benchmark.md'));
+  } finally {
+    rmSync(dir, { force: true, recursive: true });
+  }
+};
+
+const closeWith = (history, planPath, source = {}, rows = completeRows) =>
+  validateBenchmarkPlan(plan({ history, rows, source }), {
+    complete: true,
+    planPath,
+    today: '2026-10-13',
+  }).join('\n');
+
+test('a parked cause needs the owner dated keep whatever its result says', () =>
+  withPlans((planPath) => {
+    assert.match(
+      closeWith([failingCause], planPath),
+      /deferred cause stacked-marks parks its cost/
+    );
+    assert.match(
+      closeWith(
+        [{ ...failingCause, benchmarkResult: 'pass: absolute met; relative line fails' }],
+        planPath
+      ),
+      /deferred cause stacked-marks parks its cost/
+    );
+    assert.equal(closeWith([{ ...failingCause, evidence: ownerKept }], planPath), '');
+    for (const expires of ['2026-10-01', '2027-06-01', '2026-11-31']) {
+      assert.match(
+        closeWith(
+          [{ ...failingCause, evidence: ownerKept.replace('2026-12-01', expires) }],
+          planPath
+        ),
+        /owner-kept needs a reason, a real expiry date/
+      );
+    }
+    assert.equal(
+      closeWith(
+        [
+          {
+            ...failingCause,
+            correctnessResult: 'fail: broke suites',
+            decision: 'reverted',
+            evidence: ownerKept.replace('2026-12-01', '2026-10-01'),
+          },
+          keptCause(),
+        ],
+        planPath
+      ),
+      ''
+    );
+  }));
+
+test('a pivoted cause names a step in another plan that reruns its exact command', () =>
+  withPlans((planPath) => {
+    const pivoted = (evidence, row = {}) =>
+      closeWith([{ ...pivotedCause, ...row, evidence }], planPath);
+
+    assert.equal(pivoted('pivot-plan: `marks-pivot.md`'), '');
+    assert.equal(pivoted('pivot-plan: marks-done.md'), '');
+    assert.equal(pivoted('pivot-plan: marks-wrapped.md'), '');
+    assert.equal(pivoted('pivot-plan: [the pivot](marks-pivot.md); adopts one mark per change'), '');
+    assert.match(
+      pivoted('pivot-plan: marks-pivot.md', { fixClass: 'internal-implementation' }),
+      /pivoted cause stacked-marks needs fix-class/
+    );
+    assert.equal(
+      pivoted('pivot-plan: marks-ticks.md', {
+        benchmarkCommand: '``node -e "console.log(`value`)"``',
+      }),
+      ''
+    );
+    for (const name of ['marks-commented.md', 'marks-fenced.md', 'marks-near.md', 'marks-split.md', 'brief.md']) {
+      assert.match(pivoted(`pivot-plan: ${name}`), /needs a step \(- \[ \] or - \[x\]\) that names stacked-marks/);
+    }
+    assert.match(pivoted('pivot-plan: cost-benchmark.md'), /naming another plan beside this one/);
+    assert.match(pivoted('pivot-plan: missing.md'), /naming another plan beside this one/);
+    for (const reference of [
+      'marks-pivot.mdx',
+      'marks-pivot.md.backup',
+      '[the pivot](docs/plans/absent-folder/marks-pivot.md)',
+    ]) {
+      assert.match(pivoted(`pivot-plan: ${reference}`), /naming another plan beside this one/);
+    }
+    assert.match(
+      validateBenchmarkPlan(plan({ history: [pivotedCause], rows: completeRows }), {
+        complete: true,
+        today: '2026-10-13',
+      }).join('\n'),
+      /naming another plan beside this one/
+    );
+  }));
+
+test('a failing inherited budget names the pivoted or owner-kept causes that hold it', () =>
+  withPlans((planPath) => {
+    const inherited = { inheritedBudget: 'keys-plan.md M2 lines A to D' };
+    const failing = (result, history) =>
+      closeWith(history, planPath, { ...inherited, inheritedBudgetResult: result });
+
+    assert.match(
+      closeWith([keptCause()], planPath, inherited),
+      /requires inherited-budget-result: pass/
+    );
+    assert.match(
+      failing('fail: 45 of 110 lines', [pivotedCause]),
+      /must end with "; causes <id>, <id>"/
+    );
+    assert.match(
+      failing('fail: 45 of 110 lines; causes stacked-marks', [
+        keptCause({ causeId: 'stacked-marks', evidence: ownerKept.replace('below the stress budget', 'mount-only heap') }),
+      ]),
+      /inherited-budget-result names stacked-marks, which must be a cause decided pivoted or owner-kept/
+    );
+    assert.match(
+      failing('fail: 45 of 110 lines; causes heap-cost', [pivotedCause]),
+      /names heap-cost, which must be a cause decided pivoted or owner-kept/
+    );
+    assert.equal(failing('fail: 4 count lines; causes stacked-marks', [pivotedCause]), '');
+    assert.equal(
+      failing('fail: 4 count lines; cause stacked-marks', [{ ...failingCause, evidence: ownerKept }]),
+      ''
+    );
+    const budget = (inheritedBudget, path = planPath) =>
+      closeWith([keptCause()], path, {
+        inheritedBudget,
+        inheritedBudgetResult: 'pass: M2 lines',
+      });
+
+    assert.equal(budget('[keys](keys-plan.md) M2 lines A to D'), '');
+    for (const [value, path] of [
+      ['keys plan M2 lines A to D'],
+      ['keys-plan.md'],
+      ['cost-benchmark.md M2 lines A to D'],
+      ['keys-plan.md M2 lines A to D', null],
+    ]) {
+      assert.match(budget(value, path), /inherited-budget must name another plan beside this one/);
+    }
+    assert.match(
+      closeWith([keptCause()], planPath, { inheritedBudget: 'pending' }),
+      /requires inherited-budget: <file>.md <step/
+    );
+  }));
+
+test('a pivoted checkpoint leaves its lane the way a green one does', () =>
+  withPlans((planPath) => {
+    const checkpoint = {
+      ...provenCause,
+      ...architectureRow,
+      benchmarkCommand: failingCause.benchmarkCommand,
+      benchmarkRerun: failingCause.benchmarkCommand,
+      benchmarkRerunResult: failingCause.benchmarkResult,
+      causeId: failingCause.causeId,
+      correctnessRerunResult: failingCause.correctnessResult,
+      state: 'pivoted',
+    };
+    const rows = {
+      'source-and-host-readiness': { status: 'complete' },
+      'current-vs-main-product-smoke': { status: 'complete' },
+      'plate-vs-plite-decomposition': { status: 'complete' },
+    };
+    const check = (history) =>
+      validateBenchmarkPlan(plan({ cause: checkpoint, history, rows }), {
+        planPath,
+        today: '2026-10-13',
+      }).join('\n');
+
+    assert.equal(check([pivotedCause]), '');
+    assert.match(
+      check([{ ...pivotedCause, decision: 'kept', benchmarkResult: 'pass: p95 1.4 ms' }]),
+      /pivoted cause stacked-marks requires a matching pivoted Cause History row/
+    );
+  }));
+
+test('an escaped pipe stays inside its cell and a malformed history row is refused', () =>
+  withPlans((planPath) => {
+    assert.match(
+      closeWith([{ ...failingCause, evidence: 'trace \\| profile' }], planPath),
+      /deferred cause stacked-marks parks its cost/
+    );
+    assert.match(
+      closeWith([{ ...failingCause, evidence: 'trace | profile' }], planPath),
+      /Cause History row 1 has 17 cells, not 16/
+    );
+  }));

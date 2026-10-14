@@ -7,22 +7,12 @@ import {
   type RootKey,
   TextApi,
 } from '../..';
-import {
-  readAuthoredFragmentView,
-  readAuthoredView,
-} from '../../core/authored-runtime';
 import { isDOMElement, isDOMText } from '../../dom';
 import { ELEMENT_TO_NODE } from '../../dom/internal';
 import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
-import {
-  getMountedDOMFragmentEditors,
-  readDOMFragmentEditor,
-  readDOMFragmentParent,
-} from '../../dom/plugin/dom-fragment-view';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
 import {
-  PliteViewBoundaryGraph,
   type PliteViewBoundaryPoint,
 } from '../view-boundary-graph';
 import {
@@ -40,11 +30,10 @@ import {
   findContentRootOwners,
 } from './content-root-owners';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
-import { getEditorRuntime, toInternalRoot } from './runtime-editor-api';
+import { toInternalRoot } from './runtime-editor-api';
 
 type ProjectedDOMSelectionEndpoint = {
   affinity?: 'backward' | 'forward';
-  fragmentId?: string;
   owner?: ContentRootOwner;
   point: Point;
   root: RootKey;
@@ -61,28 +50,20 @@ export const resolveViewBoundaryDOMPoint = (
   ) {
     return null;
   }
-  for (const view of boundary.fragmentId
-    ? getMountedDOMFragmentEditors(editor, boundary.fragmentId)
-    : [editor]) {
-    const point = resolveDOMPointInRoot(
-      view,
-      boundary.point,
-      editorElement,
-      boundary.affinity
-    );
-    if (point) return point;
-  }
-  return null;
+  return resolveDOMPointInRoot(
+    editor,
+    boundary.point,
+    editorElement,
+    boundary.affinity
+  );
 };
 
 export const canUseNativeViewSelection = (
   editor: ReactRuntimeEditor<any>,
   selection: PliteViewSelection
 ) => {
-  const parent = (readDOMFragmentParent(editor) ??
-    editor) as ReactRuntimeEditor<any>;
-  const runtime = getMountedEditableDOMRuntime(parent);
-  const root = parent.read.view.root() ?? MAIN_ROOT_KEY;
+  const runtime = getMountedEditableDOMRuntime(editor);
+  const root = editor.read.view.root() ?? MAIN_ROOT_KEY;
 
   return (
     !!runtime &&
@@ -228,20 +209,11 @@ export const resolveProjectedDOMSelectionEndpoint = ({
   owners: readonly ContentRootOwner[];
 }): ProjectedDOMSelectionEndpoint | null => {
   const editorElement = getDOMEditorElementForNode(node);
-  const parent = editorElement
+  const editor = editorElement
     ? getEditorFromDOMEditorElement(editorElement)
     : null;
-  const retained = node && readDOMFragmentEditor(node);
-  const fragment = retained && readAuthoredFragmentView(retained);
-  const editor = retained ?? parent;
 
-  if (
-    !editorElement ||
-    !editor ||
-    !node ||
-    !parent ||
-    (fragment && getEditorRuntime(fragment.parent) !== getEditorRuntime(parent))
-  ) {
+  if (!editorElement || !editor || !node) {
     return null;
   }
 
@@ -269,7 +241,7 @@ export const resolveProjectedDOMSelectionEndpoint = ({
     target: node,
   });
   const shellOwner =
-    !fragment && root === MAIN_ROOT_KEY
+    root === MAIN_ROOT_KEY
       ? owners.find(
           (candidate) =>
             candidate.ownerRoot === root &&
@@ -279,7 +251,7 @@ export const resolveProjectedDOMSelectionEndpoint = ({
       : null;
 
   if (shellOwner) {
-    const point = getRootEdgePoint(parent, shellOwner.childRoot, {
+    const point = getRootEdgePoint(editor, shellOwner.childRoot, {
       edge: pliteRange.anchor.offset === 0 ? 'start' : 'end',
     });
 
@@ -299,13 +271,11 @@ export const resolveProjectedDOMSelectionEndpoint = ({
     end !== null &&
     end !== undefined &&
     Number(end) === pliteRange.anchor.offset &&
-    (start !== end ||
-      leaf?.nextElementSibling?.hasAttribute('data-editor-retained'))
+    start !== end
       ? ('backward' as const)
       : ('forward' as const);
   return {
     affinity,
-    ...(fragment ? { fragmentId: fragment.fragment.id } : {}),
     ...(owner ? { owner } : {}),
     point: {
       ...pliteRange.anchor,
@@ -324,24 +294,7 @@ export const resolveProjectedDOMSelection = ({
   editor: ReactRuntimeEditor<any>;
   editorElement: HTMLElement;
 }) => {
-  const leaf = getDOMElementForNode(domSelection.anchorNode)?.closest(
-    '[data-editor-leaf]'
-  );
-  const possibleDock =
-    !!leaf &&
-    (leaf.previousElementSibling?.hasAttribute('data-editor-retained') ||
-      leaf.nextElementSibling?.hasAttribute('data-editor-retained')) &&
-    (domSelection.anchorOffset === 0 ||
-      domSelection.anchorOffset ===
-        domSelection.anchorNode?.textContent?.length);
-  if (
-    domSelection.isCollapsed &&
-    !possibleDock &&
-    (!domSelection.anchorNode ||
-      !readDOMFragmentEditor(domSelection.anchorNode))
-  ) {
-    return null;
-  }
+  if (domSelection.isCollapsed) return null;
 
   const anchorEditorElement = getDOMEditorElementForNode(
     domSelection.anchorNode
@@ -375,14 +328,7 @@ export const resolveProjectedDOMSelection = ({
   const sameOwner =
     anchor.root === focus.root &&
     isSameContentRootOwner(anchor.owner, focus.owner);
-  if (
-    sameOwner &&
-    !anchor.fragmentId &&
-    !focus.fragmentId &&
-    readAuthoredView(editor)?.projection !== 'markup'
-  ) {
-    return null;
-  }
+  if (sameOwner) return null;
 
   const anchorOwner = anchor.owner
     ? owners.find((owner) => isSameContentRootOwner(owner, anchor.owner))
@@ -404,28 +350,14 @@ export const resolveProjectedDOMSelection = ({
   const selection = createPliteViewSelection(graph, {
     anchor: {
       affinity: anchor.affinity,
-      ...(anchor.fragmentId ? { fragmentId: anchor.fragmentId } : {}),
       ...(anchorOwner ? { owner: anchorOwner } : {}),
       point: anchor.point,
     },
     focus: {
       affinity: focus.affinity,
-      ...(focus.fragmentId ? { fragmentId: focus.fragmentId } : {}),
       ...(focusOwner ? { owner: focusOwner } : {}),
       point: focus.point,
     },
   });
-  const docked =
-    domSelection.isCollapsed &&
-    PliteViewBoundaryGraph.resolvePointNode(graph, selection.focus)?.key !==
-      PliteViewBoundaryGraph.resolvePointNode(graph, {
-        ...selection.focus,
-        affinity:
-          selection.focus.affinity === 'forward' ? 'backward' : 'forward',
-      })?.key;
-  return !docked &&
-    sameOwner &&
-    !selection.segments.parts.some((segment) => segment.fragment)
-    ? null
-    : selection;
+  return selection;
 };

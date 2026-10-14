@@ -40,7 +40,6 @@
     "apps/www/tests/browser/editor-ai-layout.spec.ts",
     "packages/platejs/package.json",
     "packages/platejs/src/ai/index.ts",
-    "packages/platejs/src/ai/internal/",
     "packages/platejs/src/ai/lib/",
     "packages/platejs/src/ai/react/AIChatPlugin.actions.slow.ts",
     "packages/platejs/src/ai/react/AIChatPlugin.focus.spec.tsx",

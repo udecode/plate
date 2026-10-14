@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
-import { createBrowserEditorHarness, recordBrowserRuntimeErrors } from '@platejs/test/playwright';
-import { createEditor, type DocumentChange, type JsonEditorValue } from 'plitejs';
+import { BROWSER_HANDLE_KEY, createBrowserEditorHarness, recordBrowserRuntimeErrors } from '@platejs/test/playwright';
+import type { createEditor, DocumentChange, JsonEditorValue, Path } from 'plitejs';
 
 const original = 'One canonical text.\nEdit either view.\nUndo is shared.';
 const primary = (page: Page) => page.locator('#external-text-primary');
@@ -10,8 +10,9 @@ type Metrics = { callbackFailures: number; destroyedViews: number; mountedViews:
 type Handle = {
   applyChange: (change: ReturnType<DocumentChange['toJSON']>, policy: { tags: string[] }) => void;
   getExternalTextMetrics: () => Metrics;
+  getValue: () => JsonEditorValue;
 };
-const metrics = (page: Page) => primary(page).evaluate((element) => (element as HTMLElement & { __pliteBrowserHandle: Handle }).__pliteBrowserHandle.getExternalTextMetrics());
+const metrics = (page: Page) => primary(page).evaluate((element, key) => (element as HTMLElement & Record<string, Handle>)[key].getExternalTextMetrics(), BROWSER_HANDLE_KEY);
 const select = async (target: Locator, anchor: number, focus = anchor) => {
   await target.evaluate((element: HTMLTextAreaElement, range) => {
     element.focus();
@@ -24,14 +25,20 @@ const expectText = async (page: Page, text: string) => {
   await expect.poll(() => harness(page).get.modelBlockText(1)).toBe(text);
   await expect(page.locator('#external-text-native [data-editor-path="1"]')).toHaveText(text);
 };
-const applyPeerUpdate = async (page: Page, update: (peer: ReturnType<typeof createEditor>) => void) => {
-  const value = await harness(page).get.modelValue() as JsonEditorValue;
-  const peer = createEditor({ initialValue: value });
-  update(peer);
-  const change = peer.read.lastCommit()!.changes.toJSON();
-  await primary(page).evaluate((element, payload) => (element as HTMLElement & { __pliteBrowserHandle: Handle }).__pliteBrowserHandle.applyChange(payload, { tags: ['remote'] }), change);
-};
-const applyRemote = (page: Page, offset: number, text: string) => applyPeerUpdate(page, (peer) => peer.update.text.insert(text, { at: { path: [1, 0], offset } }));
+type PeerUpdate = { at: { path: Path; offset: number }; insert: string } | { move: Path; to: Path } | { remove: Path } | { replace: Path; text: string };
+const applyPeerUpdate = (page: Page, update: PeerUpdate) => primary(page).evaluate((element, [key, update]) => {
+  const handle = (element as HTMLElement & Record<string, Handle>)[key];
+  const peer = (globalThis as typeof globalThis & { createPeerEditor: typeof createEditor }).createPeerEditor({ initialValue: structuredClone(handle.getValue()) });
+  if ('insert' in update) peer.update.text.insert(update.insert, { at: update.at });
+  else if ('move' in update) peer.update.nodes.move({ at: update.move, to: update.to });
+  else if ('remove' in update) peer.update.nodes.remove({ at: update.remove });
+  else peer.update((tx) => {
+    tx.nodes.remove({ at: update.replace });
+    tx.nodes.insert({ text: update.text }, { at: update.replace });
+  });
+  handle.applyChange(peer.read.lastCommit()!.changes.toJSON(), { tags: ['remote'] });
+}, [BROWSER_HANDLE_KEY, update] as const);
+const applyRemote = (page: Page, offset: number, text: string) => applyPeerUpdate(page, { at: { path: [1, 0], offset }, insert: text });
 const compose = (target: Locator, phase: 'start' | 'update' | 'end', text = '') => target.evaluate((element: HTMLTextAreaElement, payload) => {
   if (payload.phase === 'start') element.dispatchEvent(new CompositionEvent('compositionstart', { bubbles: true }));
   else if (payload.phase === 'update') {
@@ -287,7 +294,7 @@ test.describe('external text', () => {
   test('external-text-lifecycle: moving, replacing, and removing content preserves host ownership', async ({ page }) => {
     await select(input(page), 4);
     const initial = await metrics(page);
-    await applyPeerUpdate(page, (peer) => peer.update.nodes.move({ at: [1], to: [0] }));
+    await applyPeerUpdate(page, { move: [1], to: [0] });
     await expect(input(page)).toHaveValue(original);
     await expect(input(page)).toBeFocused();
     await expect.poll(() => harness(page).selection.get()).toEqual({ anchor: { path: [0, 0], offset: 4 }, focus: { path: [0, 0], offset: 4 } });
@@ -295,13 +302,10 @@ test.describe('external text', () => {
     expect((await metrics(page)).destroyedViews).toBe(initial.destroyedViews);
     await input(page).press('!');
     await expect.poll(() => harness(page).get.modelBlockText(0)).toBe(original.slice(0, 4) + '!' + original.slice(4));
-    await applyPeerUpdate(page, (peer) => peer.update((tx) => {
-      tx.nodes.remove({ at: [0, 0] });
-      tx.nodes.insert({ text: 'Replacement' }, { at: [0, 0] });
-    }));
+    await applyPeerUpdate(page, { replace: [0, 0], text: 'Replacement' });
     await expect(input(page)).toHaveValue('Replacement');
     expect((await metrics(page)).resets).toBe(initial.resets + 1);
-    await applyPeerUpdate(page, (peer) => peer.update.nodes.remove({ at: [0] }));
+    await applyPeerUpdate(page, { remove: [0] });
     await expect(input(page)).toHaveCount(0);
     expect((await metrics(page)).viewCount).toBe(0);
     expect((await metrics(page)).destroyedViews).toBe(initial.destroyedViews + 1);

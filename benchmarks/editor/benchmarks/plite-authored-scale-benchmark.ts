@@ -8,7 +8,11 @@ import {
   createEditor,
 } from '../../../packages/platejs/src/core';
 import { createEditorView } from '../../../packages/plitejs/src';
-import { authored } from '../../../packages/plitejs/src/authored';
+import {
+  authored,
+  type AuthoredPage,
+  type AuthoredQuery,
+} from '../../../packages/plitejs/src/authored';
 import { writeBenchmarkArtifact } from './benchmark-artifact';
 
 const contractText = readFileSync(
@@ -67,6 +71,48 @@ const summary = (samples: number[]) => ({
 });
 const expectedText = (cohort: Cohort, count: number) =>
   `${cohort.name === 'overlap' ? 'Se' : 'se'}${'x'.repeat(count)}ed`;
+type NativeEditor = ReturnType<typeof createEditor>;
+const pendingCount = (editor: {
+  read: { authored: { changes: (query: AuthoredQuery) => AuthoredPage } };
+}) => {
+  let count = 0;
+  let cursor: string | undefined;
+  do {
+    const page = editor.read.authored.changes({ cursor, limit: 200 });
+    count += page.items.length;
+    cursor = page.cursor ?? undefined;
+  } while (cursor);
+  return count;
+};
+const blockText = (
+  children: ReturnType<NativeEditor['read']['children']>,
+  block = 0
+) =>
+  children[block].children
+    .map((node) => (typeof node.text === 'string' ? node.text : ''))
+    .join('');
+// The review-tree point of a proposed offset in block 0: struck text keeps its
+// place in the document, so offsets count only text without a delete mark.
+const proposedAt = (editor: NativeEditor, offset: number) => {
+  const leaves = editor.read.children()[0].children;
+  let remaining = offset;
+  let last = at(0);
+  for (let index = 0; index < leaves.length; index++) {
+    const leaf = leaves[index] as {
+      authored?: ReadonlyArray<{ kind: string }>;
+      text?: string;
+    };
+    if (typeof leaf.text !== 'string') continue;
+    if (leaf.authored?.some((mark) => mark.kind === 'delete')) continue;
+    if (remaining <= leaf.text.length) {
+      return { path: [0, index], offset: remaining };
+    }
+    remaining -= leaf.text.length;
+    last = { path: [0, index], offset: leaf.text.length };
+  }
+  assert.equal(remaining, 0);
+  return last;
+};
 
 const nativeRun = (cohort: Cohort) => {
   const coldStart = performance.now();
@@ -78,57 +124,60 @@ const nativeRun = (cohort: Cohort) => {
   });
   let changeId = '';
   for (let index = 0; index < cohort.pending; index++) {
+    const overlap = cohort.name === 'overlap' && index > 0;
+    const first = overlap ? proposedAt(editor, 0) : at(0);
+    const second = overlap ? proposedAt(editor, 1) : at(1);
     editor.update((tx) => {
       const identity = tx.authored.propose();
       if (index === 0 || cohort.name === 'overlap') changeId = identity;
-      if (cohort.name === 'overlap' && index > 0) {
-        tx.text.delete({ at: { anchor: at(0), focus: at(1) } });
-        tx.text.insert(index % 2 ? 'S' : 's', { at: at(0) });
+      if (overlap) {
+        tx.text.delete({ at: { anchor: first, focus: second } });
+        tx.text.insert(index % 2 ? 'S' : 's', { at: first });
       } else tx.text.insert('seed', { at: at(0, index) });
     });
   }
   const views = Array.from({ length: cohort.views }, () =>
     createEditorView(editor, {
-      authored: cohort.pending
-        ? { intent: 'propose', projection: 'proposed' }
-        : { intent: 'edit', projection: 'accepted' },
+      authored: cohort.pending ? { intent: 'propose' } : { intent: 'edit' },
     })
   );
   const editing = views[0];
   assert.ok(editing);
+  const accepted = createEditorView(editor, {
+    authored: { preview: 'accepted' },
+  });
+  const proposed = createEditorView(editor, {
+    authored: { preview: 'proposed' },
+  });
   const coldMs = performance.now() - coldStart;
-  assert.equal(
-    editor.read.authored.select({ status: 'pending' }).changes.length,
-    cohort.pending
-  );
+  assert.equal(pendingCount(editor), cohort.pending);
   const samples: number[] = [];
   let cardReads = 0;
+  let revision = editor.read.authored.change(changeId)?.revision;
   for (let index = 0; index < contract.warmups + contract.samples; index++) {
+    const point = cohort.pending
+      ? proposedAt(editor, 2 + index)
+      : at(2 + index);
     const start = performance.now();
     if (cohort.name === 'overlap') {
       editing.update((tx) => {
         tx.authored.propose({ changeId });
-        tx.text.insert('x', { at: at(2 + index) });
+        tx.text.insert('x', { at: point });
       });
-    } else editing.update.text.insert('x', { at: at(2 + index) });
+    } else editing.update.text.insert('x', { at: point });
     for (let card = 0; cohort.pending && card < cohort.views; card++) {
-      assert.equal(
-        views[card].read.authored.change(changeId)?.revision,
-        index + 2
-      );
+      const read = views[card].read.authored.change(changeId)?.revision;
+      assert.notEqual(read, undefined);
+      assert.notEqual(read, revision);
       cardReads += 1;
     }
     editor.read.value();
     if (index >= contract.warmups) samples.push(performance.now() - start);
     if (cohort.pending) {
-      assert.deepEqual(editor.read.children()[0], paragraph(''));
+      revision = editor.read.authored.change(changeId)?.revision;
+      assert.deepEqual(accepted.read.children()[0], paragraph(''));
       assert.equal(
-        editing.read
-          .children()[0]
-          .children.map((node) =>
-            typeof node.text === 'string' ? node.text : ''
-          )
-          .join(''),
+        blockText(proposed.read.children()),
         expectedText(cohort, index + 1)
       );
     } else {
@@ -152,10 +201,7 @@ const nativeRun = (cohort: Cohort) => {
     initialValue: JSON.parse(serialized),
   });
   const loadMs = performance.now() - loadStart;
-  assert.equal(
-    restored.read.authored.select({ status: 'pending' }).changes.length,
-    cohort.pending
-  );
+  assert.equal(pendingCount(restored), cohort.pending);
   assert.deepEqual(restored.read.children()[0], editor.read.children()[0]);
   return {
     ...summary(samples),

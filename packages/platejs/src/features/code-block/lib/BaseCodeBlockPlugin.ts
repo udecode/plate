@@ -1,4 +1,5 @@
 import {
+  authoredVeto,
   BaseParagraphPlugin,
   ContentSlice,
   DebugPlugin,
@@ -8,6 +9,7 @@ import {
   type Element,
   ElementApi,
   type ElementOf,
+  inputRuleVeto,
   type Location,
   NodeApi,
   type NodeEntry,
@@ -20,6 +22,8 @@ import {
   type Range,
   RangeApi,
   schema,
+  txLocate,
+  locateAt,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
 import { isDocumentView } from '../../../facade';
@@ -141,32 +145,6 @@ const offsetToLinePoint = (text: string, offset: number) => {
 };
 
 export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
-  dataTransferFormats: [
-    {
-      accept: ({ registry, state }) => {
-        const selection = state.selection();
-        const type = registry.type(PLUGINS.codeBlock);
-
-        return (
-          !!selection && !!type && state.nodes.some({ at: selection, type })
-        );
-      },
-      decode: ({ data, snapshot }) => {
-        const plainText = snapshot.getData('text/plain');
-        const parsed = parseHtmlAst(data, 'slice');
-
-        if (!parsed.ok) return null;
-        const htmlText =
-          materializeHtmlAst(parsed.ast, createBrowserHtmlDocument())
-            .textContent || '';
-        const text = plainText && plainText !== data ? plainText : htmlText;
-
-        return ContentSlice.closed([{ text }]);
-      },
-      mimeType: 'text/html',
-      priority: 200,
-    },
-  ],
   read: ({ plugin, state }) => {
     const entry = ({
       at,
@@ -490,10 +468,13 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         };
 
         return {
-          insert: (
-            input: CodeBlockInsertInput = {},
-            options: BlockInsertOptions = {}
-          ) => applyCodeBlockInsertion('insert', input, options),
+          insert: txLocate(
+            locateAt(1, 'at', 'after', 'before'),
+            (
+              input: CodeBlockInsertInput = {},
+              options: BlockInsertOptions = {}
+            ) => applyCodeBlockInsertion('insert', input, options)
+          ),
           resetBlock: () => {
             if (!tx.nodes.block({ type: plugin })) return false;
 
@@ -523,7 +504,10 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
 
             return true;
           },
-          tab: ({ reverse = false } = {}) => tab(reverse),
+          tab: txLocate(
+            false,
+            ({ reverse = false }: { reverse?: boolean } = {}) => tab(reverse)
+          ),
           toggle: () => {
             const selection = tx.selection();
 
@@ -640,15 +624,50 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
             }
           },
           untab: () => tab(true),
-          upsert: (
-            input: CodeBlockInsertInput = {},
-            options: BlockUpsertOptions = {}
-          ) => applyCodeBlockInsertion('upsert', input, options),
+          upsert: txLocate(
+            locateAt(1, 'after', 'before'),
+            (
+              input: CodeBlockInsertInput = {},
+              options: BlockUpsertOptions = {}
+            ) => applyCodeBlockInsertion('upsert', input, options)
+          ),
         };
       },
     };
   })
   .extend((context) => ({
+    contributions: [
+      authoredVeto.of((element) =>
+        element.type === context.schema.type ? 'code-block' : null
+      ),
+      inputRuleVeto.of(context.schema.type),
+    ],
+    dataTransferFormats: [
+      {
+        accept: ({ state }) => {
+          const selection = state.selection();
+
+          return (
+            !!selection &&
+            state.nodes.some({ at: selection, type: context.schema.type })
+          );
+        },
+        decode: ({ data, snapshot }) => {
+          const plainText = snapshot.getData('text/plain');
+          const parsed = parseHtmlAst(data, 'slice');
+
+          if (!parsed.ok) return null;
+          const htmlText =
+            materializeHtmlAst(parsed.ast, createBrowserHtmlDocument())
+              .textContent || '';
+          const text = plainText && plainText !== data ? plainText : htmlText;
+
+          return ContentSlice.closed([{ text }]);
+        },
+        mimeType: 'text/html',
+        priority: 200,
+      },
+    ],
     commands: ({ around, handle }) => [
       around(domCommands.insertData, ({ input, next, state }) => {
         const text = input.getData('text/plain');
@@ -693,7 +712,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
           }
         }
 
-        if (isInCodeBlock && text?.includes('\n')) {
+        if (isInCodeBlock && text) {
           return state.transaction((tx) => {
             tx.text.insert(text);
           });

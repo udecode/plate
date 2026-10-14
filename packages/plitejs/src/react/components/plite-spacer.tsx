@@ -3,7 +3,7 @@ import React, { type CSSProperties, type ReactNode } from 'react';
 import { recordPliteReactRender } from '../render-profiler';
 import { getPliteSpacerShellAttributes } from '../shell-runtime';
 
-export const PliteSpacer = ({
+export const EditorSpacer = ({
   children,
   style,
 }: {

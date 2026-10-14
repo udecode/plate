@@ -177,7 +177,7 @@ Only the mounted page resolves targets. **Show in document** reads the attachmen
 
 ### Save and load
 
-Call `toJSON()` during an explicit save. It synchronously returns `CommentsJSON`: `{ kind: 'plate-comments', version: 1, threads, ranges }`. `threads` contains published semantic records; each `ranges` entry contains `{ threadId, range: EditorDocumentRange | null }` for a range-targeted thread. Local drafts are excluded. Treat `EditorDocumentRange` as opaque.
+Call `toJSON()` during an explicit save. It synchronously returns `CommentsJSON`: `{ kind: 'comments', version: 1, threads, ranges }`. `threads` contains published semantic records; each `ranges` entry contains `{ threadId, range: EditorDocumentRange | null }` for a range-targeted thread. Local drafts are excluded. Treat `EditorDocumentRange` as opaque.
 
 Store the envelope and document atomically. In this example, `repository` is your application's storage adapter; it checks the expected revision before committing:
 
@@ -285,7 +285,7 @@ const savedRanges = new Map(
   revision.comments.ranges.map(({ threadId, range }) => [threadId, range])
 );
 const initialComments: CommentsJSON = {
-  kind: "plate-comments",
+  kind: "comments",
   version: 1,
   threads: currentComments.threads,
   ranges: currentComments.threads.flatMap((thread) =>

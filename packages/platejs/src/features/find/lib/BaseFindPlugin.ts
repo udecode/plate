@@ -5,6 +5,7 @@ import {
   type Descendant,
   type NodeKey,
   type Range,
+  txSelection,
 } from '../../../core';
 
 export type FindMatch = Readonly<{ id: string; range: Range }>;
@@ -90,13 +91,13 @@ export const BaseFindPlugin = definePlugin('find', {
     },
     update: ({ tx }) => ({
       /** Select the current result; focus remains owned by the caller's view. */
-      select: () => {
+      select: txSelection(() => {
         const { matches, activeIndex } = store.get();
         const match = matches[activeIndex];
         if (!match) return false;
         tx.selection.set(match.range);
         return true;
-      },
+      }),
     }),
     decorate: {
       observe: ({ refresh }) =>

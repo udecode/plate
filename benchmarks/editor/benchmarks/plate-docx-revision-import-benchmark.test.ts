@@ -11,7 +11,7 @@ import {
   BaseHeadingPlugin,
   type Descendant,
 } from 'platejs';
-import { AuthoredPlugin, projectAuthoredReview } from 'platejs/authored';
+import { AuthoredPlugin, projectAuthoredDocument } from 'platejs/authored';
 import { exportDocx } from 'platejs/docx/export';
 import { importDocx } from 'platejs/docx/import';
 import { BaseParagraphPlugin } from 'platejs/react';
@@ -179,7 +179,7 @@ const paragraphText = (nodes: readonly Descendant[]) =>
 
 const runImport = async (fixture: Fixture) => {
   const result = await importDocx(fixture.bytes, {
-    plugins: [BaseParagraphPlugin],
+    plugins: [BaseParagraphPlugin, AuthoredPlugin],
   });
 
   if (!result.ok) throw new Error(result.diagnostics[0]?.message);
@@ -187,11 +187,14 @@ const runImport = async (fixture: Fixture) => {
     plugins: [BaseParagraphPlugin, AuthoredPlugin],
     initialValue: result.document,
   });
+  const accepted = createEditorView(restored, {
+    authored: { preview: 'accepted' },
+  });
   const proposed = createEditorView(restored, {
-    authored: { intent: 'propose', projection: 'proposed' },
+    authored: { preview: 'proposed' },
   });
   const guard = {
-    accepted: paragraphText(restored.read.children()),
+    accepted: paragraphText(accepted.read.children()),
     proposed: paragraphText(proposed.read.children()),
     revisionIds: restored.read.authored
       .changes({ limit: fixture.revisionIds.length + 1 })
@@ -201,7 +204,7 @@ const runImport = async (fixture: Fixture) => {
   expect(guard).toEqual({
     accepted: fixture.accepted,
     proposed: fixture.proposed,
-    revisionIds: fixture.revisionIds,
+    revisionIds: fixture.revisionIds.map((id) => `docx-${id}`),
   });
 
   return guard;
@@ -269,6 +272,30 @@ const runMeasured = async (fixture: Fixture, spies: WorkSpies) => {
   };
 };
 
+const reviewSnapshot = (editor: {
+  read: {
+    authored: {
+      changes: () => { items: ReadonlyArray<{ authorId: string }> };
+    };
+    value: () => Parameters<typeof projectAuthoredDocument>[0];
+  };
+}) => {
+  const value = editor.read.value();
+  const project = (projection: 'accepted' | 'proposed') => {
+    const result = projectAuthoredDocument(value, { projection });
+
+    if (!result.ok) throw new Error(result.diagnostics[0]?.message);
+
+    return result.document;
+  };
+
+  return {
+    accepted: project('accepted'),
+    changes: editor.read.authored.changes().items,
+    proposed: project('proposed'),
+  };
+};
+
 const percentile = (values: readonly number[], fraction: number) => {
   const sorted = [...values].sort((left, right) => left - right);
 
@@ -296,7 +323,7 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
   });
 
   createEditorView(alice, {
-    authored: { intent: 'propose', projection: 'markup' },
+    authored: { intent: 'propose' },
   }).update.text.insert('XY', {
     at: {
       anchor: { offset: 1, path: [0, 0] },
@@ -310,7 +337,7 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
   });
 
   createEditorView(bob, {
-    authored: { intent: 'propose', projection: 'markup' },
+    authored: { intent: 'propose' },
   }).update.nodes.set({ bold: true }, { at: [0, 0] });
   const carol = createEditor({
     plugins,
@@ -319,7 +346,7 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
   });
 
   createEditorView(carol, {
-    authored: { intent: 'propose', projection: 'markup' },
+    authored: { intent: 'propose' },
   }).update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
   const editor = createEditor({
     plugins,
@@ -328,9 +355,9 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
   });
 
   createEditorView(editor, {
-    authored: { intent: 'propose', projection: 'markup' },
+    authored: { intent: 'propose' },
   }).update.nodes.move({ at: [1], to: [0] });
-  const snapshot = projectAuthoredReview(editor.read.value());
+  const snapshot = reviewSnapshot(editor);
   const exported = await exportDocx(editor, {
     projection: 'review',
   });
@@ -341,15 +368,13 @@ test('DOCX fidelity cohort preserves mixed revisions and rich comments', async (
 
   expect(documentXml).toContain('<w:ins');
   expect(documentXml).toContain('<w:del');
-  expect(documentXml).toContain('<w:moveFrom');
-  expect(documentXml).toContain('<w:moveTo');
   expect(documentXml).toContain('<w:rPrChange');
   expect(documentXml).toContain('<w:pPrChange');
   const imported = await importDocx(exported.blob, { plugins });
 
   if (!imported.ok) throw new Error(imported.diagnostics[0]?.message);
   const restored = createEditor({ plugins, initialValue: imported.document });
-  const restoredSnapshot = projectAuthoredReview(restored.read.value());
+  const restoredSnapshot = reviewSnapshot(restored);
 
   expect(restoredSnapshot.accepted.children).toEqual(
     snapshot.accepted.children

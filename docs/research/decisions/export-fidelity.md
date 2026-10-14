@@ -2,7 +2,7 @@
 title: Export fidelity
 type: decision
 status: accepted
-updated: 2026-10-04
+updated: 2026-10-12
 source_refs:
   - ../../plite/research/2026-09-24-export-architecture/README.md
   - ../../plite/research/2026-09-24-export-architecture/shards/001-direction.md
@@ -21,7 +21,9 @@ related:
 
 # Export fidelity
 
-**Audit of 2026-10-04.** Pursue. The adopted export contract says an authored document without an explicit projection throws, yet standalone serializeHtml defaults it to the proposed projection, because each export path keeps its own copy of the guard instead of the shared projection helper owning it. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-exports-audit` and `2026-10-04-exports-audit-2` hold the evidence.
+**Review of 2026-10-12.** Pursue, built. Every HTML, Markdown, plain-text and static HTML export of a document with authored metadata throws one `TypeError` unless `projection` is `accepted` or `proposed`. The shared projection step in `packages/platejs/src/lib/editor/withPlite.ts` owns that refusal for those formats, so none keeps its own check or proposed default. Every document from an editor with the authored plugin carries authored metadata, even before any proposal. DOCX keeps its own required projection, because its `review` choice also decides whether a retained source returns unchanged. The [review page](../../plans/2026-10-12-exports-review.md) holds the evidence.
+
+**Audit of 2026-10-04.** Pursue. The adopted export contract said an authored document without an explicit projection throws, yet standalone serializeHtml defaulted it to the proposed projection, because each export path kept its own copy of the guard instead of the shared projection helper owning it. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-exports-audit` and `2026-10-04-exports-audit-2` hold the evidence.
 
 The September 27 adversarial audit feedback, which rejects blanket closure and distinguishes existing HTML projection checks from DOCX cancellation gaps,
 retains document-first format ownership but reopens the blanket conversion

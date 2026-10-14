@@ -1,5 +1,7 @@
 import type { Frame, Page } from '@playwright/test';
 
+import { BROWSER_HANDLE_KEY } from './constants';
+
 type CompositionSurface = Page | Frame;
 type SyntheticCompositionEventType =
   | 'compositionend'
@@ -77,7 +79,7 @@ export const commitSyntheticCompositionText = async (
   committedText: string
 ) => {
   await surface.evaluate(
-    async ({ finalText }) => {
+    async ({ finalText, key }) => {
       const active = document.activeElement as HTMLElement | null;
 
       if (!active) {
@@ -87,16 +89,19 @@ export const commitSyntheticCompositionText = async (
       const root =
         active.closest<HTMLElement>('[data-editor="true"]') ?? active;
       const handle = (
-        root as HTMLElement & {
-          __pliteBrowserHandle?: {
-            deleteFragment?: () => void;
-            getSelection?: () => unknown;
-            getText?: () => string;
-            insertText?: (text: string) => void;
-            setNativeDOMSelection?: (selection: unknown) => boolean;
-          };
-        }
-      ).__pliteBrowserHandle;
+        root as HTMLElement &
+          Record<
+            string,
+            | {
+                deleteFragment?: () => void;
+                getSelection?: () => unknown;
+                getText?: () => string;
+                insertText?: (text: string) => void;
+                setNativeDOMSelection?: (selection: unknown) => boolean;
+              }
+            | undefined
+          >
+      )[key];
 
       const modelSelection = handle?.getSelection?.();
       const isExpandedModelSelection = (selection: unknown) => {
@@ -277,7 +282,7 @@ export const commitSyntheticCompositionText = async (
         })
       );
     },
-    { finalText: committedText }
+    { finalText: committedText, key: BROWSER_HANDLE_KEY }
   );
 };
 

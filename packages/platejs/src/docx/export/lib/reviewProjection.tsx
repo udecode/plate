@@ -1,377 +1,280 @@
-import type {
-  AuthoredChange,
-  AuthoredFormatSegment,
-  AuthoredReviewProjection,
-} from '../../../authored';
+import type { AuthoredMark, AuthoredReview } from '../../../authored';
 import {
   ElementApi,
-  TextApi,
   type Descendant,
   type EditorDocumentValue,
   type Path,
-  type Point,
-  type Range,
-  RangeApi,
   type Value,
 } from '../../../core';
+import { isMetadataRootKey } from '../../../facade';
+import { parseDocxHtml } from '../../internal/domParser';
 import type { DocxDiagnostic } from '../../internal/types';
 
-type RevisionMarkup = Readonly<{
-  authorId: string;
-  changeId: string;
-  createdAt: number;
-  kind: 'delete' | 'format' | 'insert' | 'move-from' | 'move-to' | 'structure';
-  revisionId: number;
-  tag: 'del' | 'ins' | 'span';
+/** A change as Word stores it; `id` numbers the change across the file. */
+export type DocxRevision = Readonly<{ at: number; author: string; id: number }>;
+
+/**
+ * What a text leaf's run writes as Word revisions: its pending insertions,
+ * outer to inner, one deletion inside them, and its formatting suggestion
+ * with each formatted key's accepted value.
+ */
+export type ReviewRun = Readonly<{
+  deletion: DocxRevision | null;
+  format:
+    | (DocxRevision & Readonly<{ previous: AuthoredReview['accepted'] }>)
+    | null;
+  insertions: readonly DocxRevision[];
 }>;
 
 export type ReviewProjection = Readonly<{
+  /** Top-level blocks of the main root that hold review marks. */
+  bound: readonly number[];
   diagnostics: readonly DocxDiagnostic[];
   document: EditorDocumentValue;
-  structures: ReadonlyMap<string, RevisionMarkup>;
-  textSegments: readonly ReviewTextSegment[];
-  wrappers: ReadonlyMap<string, readonly RevisionMarkup[]>;
+  runs: ReadonlyMap<string, ReviewRun>;
+  stored: EditorDocumentValue;
+  structures: ReadonlyMap<string, DocxRevision>;
 }>;
 
-type ReviewTextSegment = Readonly<{
-  outputPath: Path;
-  root: string;
-  sourceEnd: number;
-  sourcePath: Path;
-  sourceStart: number;
+/** A review export's Word revisions and the stored blocks its part keeps. */
+export type PreparedDocxReview = Readonly<{
+  bindings: readonly Readonly<{ end: string; nodes: Value; start: string }>[];
+  diagnostics: readonly DocxDiagnostic[];
+  html: string;
+  roots: Readonly<Record<string, Value>>;
+  runs: readonly ReviewRun[];
 }>;
 
-const renderKey = (root: string, path: Path) => `${root}:${path.join(',')}`;
+/** Prefix of the tokens that mark where a bound block starts and ends. */
+export const REVIEW_TOKEN = '\uE000PDXR_';
 
-const rootValue = (nodes: Descendant[]): Value => {
-  if (!nodes.every((node) => ElementApi.isElement(node))) {
-    throw new Error('DOCX review projection must contain root elements.');
-  }
+const renderKey = (node: string, root: string, path: string) =>
+  `${node}:${root}:${path}`;
 
-  return nodes;
-};
+const holdsMarks = (node: Descendant): boolean =>
+  'authored' in node ||
+  (ElementApi.isElement(node) && node.children.some(holdsMarks));
 
-const markupFor = (
-  change: AuthoredChange,
-  revisionId: number,
-  kind: RevisionMarkup['kind'],
-  tag: RevisionMarkup['tag']
-): RevisionMarkup => ({
-  authorId: change.authorId,
-  changeId: change.id,
-  createdAt: change.createdAt,
-  kind,
-  revisionId,
-  tag,
-});
-
+/**
+ * Read the review marks of a stored document as Word revisions. Paths are the
+ * stored document's, so ranges into it need no mapping.
+ */
 export const createReviewProjection = (
-  snapshot: AuthoredReviewProjection
+  stored: EditorDocumentValue,
+  reviewOf: (node: Descendant) => AuthoredReview
 ): ReviewProjection => {
-  const changes = new Map(
-    snapshot.changes.map((change) => [change.id, change])
-  );
-  const revisionIds = new Map(
-    snapshot.changes.map((change, index) => [change.id, index + 1])
-  );
-  const propertyChanges = new Map<string, string[]>();
+  const revisionIds = new Map<string, number>();
+  const runs = new Map<string, ReviewRun>();
+  const structures = new Map<string, DocxRevision>();
+  const revisionOf = ({ at, author, change }: AuthoredMark): DocxRevision => {
+    let id = revisionIds.get(change);
 
-  for (const change of snapshot.properties) {
-    const key = renderKey(change.root, change.path);
-    const ids = propertyChanges.get(key) ?? [];
-
-    if (!ids.includes(change.changeId)) ids.push(change.changeId);
-    propertyChanges.set(key, ids);
-  }
-  const structuralProperties = new Map(
-    snapshot.properties.flatMap((change) =>
-      change.nodeKind === 'element'
-        ? [[renderKey(change.root, change.path), change.changeId] as const]
-        : []
-    )
-  );
-  const moved = new Set<string>();
-  const moveTargets = new Map<string, string[]>();
-  const findMoves = (segment: AuthoredFormatSegment) => {
-    if (segment.retained?.kind === 'move') {
-      moved.add(segment.retained.changeId);
-      const key = renderKey(segment.root, segment.path);
-      const targets = moveTargets.get(key) ?? [];
-
-      if (!targets.includes(segment.retained.changeId)) {
-        targets.push(segment.retained.changeId);
-      }
-      moveTargets.set(key, targets);
+    if (id === undefined) {
+      id = revisionIds.size + 1;
+      revisionIds.set(change, id);
     }
-    segment.children?.forEach(findMoves);
-  };
 
-  Object.values(snapshot.markup).flat().forEach(findMoves);
-  const wrappers = new Map<string, readonly RevisionMarkup[]>();
-  const structures = new Map<string, RevisionMarkup>();
-  const textSegments: ReviewTextSegment[] = [];
-  const diagnostics: DocxDiagnostic[] = [];
+    return { at, author, id };
+  };
   const build = (
-    segments: readonly AuthoredFormatSegment[],
+    nodes: readonly Descendant[],
     root: string,
     parentPath: Path
   ): Descendant[] =>
-    segments.map((segment, index) => {
+    nodes.map((node, index) => {
       const path = [...parentPath, index];
-      const sourceKey = renderKey(segment.root, segment.path);
-      const key = renderKey(root, path);
+      const key = path.join(',');
+      const { authored, ...plain } = node as Descendant & {
+        authored?: readonly AuthoredMark[];
+      };
+      const review = authored ? reviewOf(node) : null;
+      const marks = review?.marks ?? [];
 
-      if (TextApi.isText(segment.node)) {
-        const textWrappers: RevisionMarkup[] = [];
+      if (!ElementApi.isElement(node)) {
+        const insertions = marks.filter(({ kind }) => kind === 'insert');
+        const deletion = marks.find(({ kind }) => kind === 'delete');
+        const format = marks.find(({ kind }) => kind === 'format');
 
-        if (!segment.retained && segment.textRange) {
-          textSegments.push(
-            Object.freeze({
-              outputPath: path,
-              root,
-              sourceEnd: segment.textRange.end,
-              sourcePath: segment.path,
-              sourceStart: segment.textRange.start,
-            })
-          );
+        if (insertions.length > 0 || deletion || format) {
+          runs.set(renderKey('text', root, key), {
+            deletion: deletion ? revisionOf(deletion) : null,
+            format:
+              format && review
+                ? { ...revisionOf(format), previous: review.accepted }
+                : null,
+            insertions: insertions.map(revisionOf),
+          });
         }
 
-        if (segment.retained) {
-          const change = changes.get(segment.retained.changeId);
-
-          if (change) {
-            textWrappers.push(
-              markupFor(
-                change,
-                revisionIds.get(change.id) ?? 0,
-                segment.retained.kind === 'move' ? 'move-from' : 'delete',
-                'del'
-              )
-            );
-          }
-        } else {
-          const changeIds = [
-            ...new Set([
-              ...segment.changeIds,
-              ...(propertyChanges.get(sourceKey) ?? []),
-              ...(moveTargets.get(sourceKey) ?? []),
-            ]),
-          ];
-
-          for (const id of changeIds) {
-            const change = changes.get(id);
-
-            if (!change) continue;
-            if (change.kind === 'format') {
-              textWrappers.push(
-                markupFor(change, revisionIds.get(id) ?? 0, 'format', 'span')
-              );
-            } else if (moved.has(id)) {
-              textWrappers.push(
-                markupFor(change, revisionIds.get(id) ?? 0, 'move-to', 'ins')
-              );
-            } else if (change.kind === 'insert' || change.kind === 'mixed') {
-              textWrappers.push(
-                markupFor(change, revisionIds.get(id) ?? 0, 'insert', 'ins')
-              );
-            }
-          }
-        }
-        if (textWrappers.length > 0) wrappers.set(key, textWrappers);
-
-        return segment.node;
+        return plain as Descendant;
       }
-      const structureId =
-        structuralProperties.get(sourceKey) ??
-        segment.changeIds.find((id) => {
-          const change = changes.get(id);
+      const structure = marks.find(
+        (mark) => mark.kind !== 'insert' && mark.kind !== 'delete'
+      );
 
-          return change?.kind === 'structure' && !moved.has(change.id);
-        });
-
-      if (structureId) {
-        const change = changes.get(structureId);
-
-        if (change) {
-          structures.set(
-            key,
-            markupFor(
-              change,
-              revisionIds.get(change.id) ?? 0,
-              'structure',
-              'span'
-            )
-          );
-        }
+      if (structure) {
+        structures.set(renderKey('element', root, key), revisionOf(structure));
       }
 
       return {
-        ...segment.node,
-        children: build(segment.children ?? [], root, path),
-      };
+        ...(plain as Descendant),
+        children: build(node.children, root, path),
+      } as Descendant;
     });
-  const children = rootValue(build(snapshot.markup.main ?? [], 'main', []));
+  const rootValue = (nodes: Descendant[]): Value =>
+    nodes.filter((node) => ElementApi.isElement(node));
   const roots = Object.fromEntries(
-    Object.entries(snapshot.markup)
-      .filter(([root]) => root !== 'main')
-      .map(([root, segments]) => [root, rootValue(build(segments, root, []))])
+    Object.entries(stored.roots ?? {})
+      .filter(([root]) => !isMetadataRootKey(root))
+      .map(([root, nodes]) => [root, rootValue(build(nodes, root, []))])
   );
 
   return Object.freeze({
-    diagnostics: Object.freeze(diagnostics),
+    bound: stored.children.flatMap((node, index) =>
+      holdsMarks(node) ? [index] : []
+    ),
+    diagnostics: Object.freeze([]),
     document: Object.freeze({
-      children,
+      children: rootValue(build(stored.children, 'main', [])),
       ...(Object.keys(roots).length > 0 ? { roots } : {}),
     }),
+    runs,
+    stored,
     structures,
-    textSegments: Object.freeze(textSegments),
-    wrappers,
   });
 };
 
-const samePath = (left: Path, right: Path) =>
-  left.length === right.length &&
-  left.every((part, index) => part === right[index]);
-
-const projectReviewPoint = (
-  projection: ReviewProjection,
-  point: Point,
-  association: 'backward' | 'forward'
-): Point | null => {
-  const root = point.root ?? 'main';
-  const candidates = projection.textSegments.filter(
-    (segment) =>
-      segment.root === root &&
-      samePath(segment.sourcePath, point.path) &&
-      segment.sourceStart <= point.offset &&
-      point.offset <= segment.sourceEnd
-  );
-  const exact =
-    association === 'forward'
-      ? (candidates.find((segment) => point.offset < segment.sourceEnd) ??
-        candidates.at(-1))
-      : (candidates.findLast((segment) => segment.sourceStart < point.offset) ??
-        candidates[0]);
-
-  if (!exact) return null;
-
-  return Object.freeze({
-    offset: point.offset - exact.sourceStart,
-    path: exact.outputPath,
-    ...(root === 'main' ? {} : { root }),
-  });
-};
-
-export const projectReviewRange = (
-  projection: ReviewProjection,
-  range: Range
-): Range | null => {
-  const backward = RangeApi.isBackward(range);
-  const anchor = projectReviewPoint(
-    projection,
-    range.anchor,
-    backward ? 'backward' : 'forward'
-  );
-  const focus = projectReviewPoint(
-    projection,
-    range.focus,
-    backward ? 'forward' : 'backward'
-  );
-
-  return anchor && focus ? Object.freeze({ anchor, focus }) : null;
-};
-
-const setRevisionAttributes = (element: Element, markup: RevisionMarkup) => {
-  element.setAttribute('data-editor-change-id', markup.changeId);
-  element.setAttribute('data-editor-change-kind', markup.kind);
-  element.setAttribute('data-editor-revision-id', String(markup.revisionId));
-  element.setAttribute('data-editor-author-id', markup.authorId);
-  if (markup.createdAt > 0) {
+const setStructureAttributes = (element: Element, revision: DocxRevision) => {
+  element.setAttribute('data-editor-change-kind', 'structure');
+  element.setAttribute('data-editor-revision-id', String(revision.id));
+  element.setAttribute('data-editor-author-id', revision.author);
+  if (revision.at > 0) {
     element.setAttribute(
       'data-editor-created-at',
-      new Date(markup.createdAt).toISOString()
+      new Date(revision.at).toISOString()
     );
   }
 };
 
-const findRenderedHost = (
-  document: Document,
-  node: 'element' | 'text',
-  root: string,
-  path: string
-) =>
-  Array.from(
-    document.querySelectorAll<HTMLElement>(`[data-editor-node="${node}"]`)
-  ).find(
-    (element) =>
-      (element.dataset.editorRoot ?? 'main') === root &&
-      element.dataset.editorPath === path
-  );
+const missingHost = (
+  feature: string,
+  key: string,
+  message: string
+): DocxDiagnostic => {
+  const [, root, path] = key.split(':');
 
-/** Add private Word revision wrappers after configured feature components render. */
+  return {
+    action: 'replaced',
+    code: 'unsupported-content',
+    feature,
+    message,
+    path: path ? path.split(',').map(Number) : [],
+    root,
+    severity: 'warning',
+  };
+};
+
+/**
+ * Mark each reviewed run and structural revision after configured feature
+ * components render, and put tokens around each block the part binds.
+ */
 export const applyReviewProjection = (
   html: string,
   projection: ReviewProjection
-) => {
-  const document = new DOMParser().parseFromString(html, 'text/html');
+): PreparedDocxReview => {
+  const document = parseDocxHtml(html);
   const diagnostics: DocxDiagnostic[] = [...projection.diagnostics];
+  const hosts = new Map<string, HTMLElement>();
+  const texts = new Map<number, HTMLElement[]>();
 
-  for (const [key, wrappers] of projection.wrappers) {
-    const separator = key.indexOf(':');
-    const root = key.slice(0, separator);
-    const path = key.slice(separator + 1);
-    const host = findRenderedHost(document, 'text', root, path);
+  for (const host of document.querySelectorAll<HTMLElement>(
+    '[data-editor-node]'
+  )) {
+    const { editorNode = '', editorPath = '', editorRoot = 'main' } =
+      host.dataset;
+
+    hosts.set(renderKey(editorNode, editorRoot, editorPath), host);
+    if (editorNode === 'text' && editorRoot === 'main') {
+      const block = Number(editorPath.split(',')[0]);
+
+      texts.set(block, [...(texts.get(block) ?? []), host]);
+    }
+  }
+  const runs: ReviewRun[] = [];
+
+  for (const [key, run] of projection.runs) {
+    const host = hosts.get(key);
 
     if (!host) {
-      diagnostics.push({
-        action: 'replaced',
-        code: 'unsupported-content',
-        feature: 'review-text-wrapper',
-        message:
-          'A configured static text renderer omitted its Plate path attributes.',
-        path: path ? path.split(',').map(Number) : [],
-        root,
-        severity: 'warning',
-      });
+      diagnostics.push(
+        missingHost(
+          'review-text-wrapper',
+          key,
+          'A configured static text renderer omitted its Plate path attributes.'
+        )
+      );
       continue;
     }
-    let content: Node = host.ownerDocument.createDocumentFragment();
+    const wrapper = document.createElement('span');
 
-    while (host.firstChild) content.appendChild(host.firstChild);
-    for (const markup of wrappers) {
-      const wrapper = host.ownerDocument.createElement(markup.tag);
-
-      setRevisionAttributes(wrapper, markup);
-      wrapper.append(content);
-      content = wrapper;
-    }
-    host.append(content);
+    wrapper.dataset.docxReviewRun = String(runs.length);
+    wrapper.append(...host.childNodes);
+    host.append(wrapper);
+    runs.push(run);
   }
-
   for (const [key, structure] of projection.structures) {
-    const separator = key.indexOf(':');
-    const root = key.slice(0, separator);
-    const path = key.slice(separator + 1);
-    const host = findRenderedHost(document, 'element', root, path);
+    const host = hosts.get(key);
 
     if (!host) {
-      diagnostics.push({
-        action: 'replaced',
-        code: 'unsupported-content',
-        feature: 'review-structure-wrapper',
-        message:
-          'A configured static element renderer omitted its Plate path attributes.',
-        path: path ? path.split(',').map(Number) : [],
-        root,
-        severity: 'warning',
-      });
+      diagnostics.push(
+        missingHost(
+          'review-structure-wrapper',
+          key,
+          'A configured static element renderer omitted its Plate path attributes.'
+        )
+      );
       continue;
     }
-    setRevisionAttributes(host, structure);
+    setStructureAttributes(host, structure);
   }
+  const nonce =
+    globalThis.crypto?.randomUUID?.().replaceAll('-', '') ??
+    `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
+  const bindings = projection.bound.flatMap((index) => {
+    const blockTexts = texts.get(index) ?? [];
+    const first = blockTexts[0] ?? hosts.get(renderKey('element', 'main', `${index}`));
+    const last = blockTexts.at(-1) ?? first;
+
+    if (!first || !last) {
+      diagnostics.push({
+        code: 'lossy-content',
+        feature: 'authored-review',
+        message: `The review marks of block ${index} have no rendered host to bind them to.`,
+        path: [index],
+        severity: 'warning',
+      });
+
+      return [];
+    }
+    const token = `${REVIEW_TOKEN}${nonce}_${index}_`;
+    const start = `${token}start\uE001`;
+    const end = `${token}end\uE001`;
+
+    first.prepend(document.createTextNode(start));
+    last.append(document.createTextNode(end));
+
+    return [{ end, nodes: [projection.stored.children[index]], start }];
+  });
 
   return Object.freeze({
+    bindings: Object.freeze(bindings),
     diagnostics: Object.freeze(diagnostics),
     html: document.body.innerHTML,
+    roots: Object.fromEntries(
+      Object.entries(projection.stored.roots ?? {}).filter(([root]) =>
+        isMetadataRootKey(root)
+      )
+    ),
+    runs: Object.freeze(runs),
   });
 };

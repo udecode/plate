@@ -5,12 +5,11 @@ import { describe, expect, it } from 'bun:test';
 
 import { jsxt, type TestEditor } from '#platejs-test-internal';
 
-import { createAuthoredReviewDocument, AuthoredPlugin } from '../../authored';
+import { AuthoredPlugin } from '../../authored';
 import {
   BaseParagraphPlugin,
   definePlugin,
   createEditorView,
-  DocumentChange,
   schema,
   SelectionApi,
 } from '../../core';
@@ -44,32 +43,81 @@ const createTestEditor = async (input: TestEditor) => {
 };
 
 describe('AIChatPlugin read.markdown', () => {
+  it('reads a block whose text rests on a review context', async () => {
+    const { AIChatPlugin } = await import('./AIChatPlugin');
+    const ctx = 'c:72aa276b81fc0419';
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        AuthoredPlugin,
+        MarkdownPlugin,
+        AIChatPlugin,
+      ],
+      initialValue: {
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              { text: 'a' },
+              {
+                authored: [
+                  { at: 1, author: 'bob', change: 'B', kind: 'insert' },
+                  { ctx, kind: 'in' },
+                ],
+                text: 'X',
+              },
+            ],
+          },
+        ],
+        roots: {
+          '$authored-contexts': [
+            {
+              at: 2,
+              author: 'alice',
+              change: 'A',
+              children: [{ text: '' }],
+              ctx,
+              type: 'authored-context',
+            },
+          ],
+        },
+      },
+    });
+
+    editor.update.selection.set({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 1 },
+    });
+
+    expect(
+      editor.plugin(AIChatPlugin).read.markdown({ type: 'block' }).trim()
+    ).toBe('aX');
+  });
+
   it('maps a comment back into the exact authored view that submitted the selected heading', async () => {
     const { AIChatPlugin } = await import('./AIChatPlugin');
-    const document = (text: string) => ({
-      children: [
-        { type: 'paragraph', children: [{ text: 'Heading' }] },
-        { type: 'paragraph', children: [{ text }] },
-      ],
+    const mark = (kind: 'delete' | 'insert') => ({
+      at: 1,
+      author: 'alice',
+      change: 'proposal',
+      kind,
     });
-    const accepted = document('Text');
     const model = createEditor({
       plugins: [AuthoredPlugin, AIChatPlugin],
       userId: 'alice',
-      initialValue: createAuthoredReviewDocument({
-        accepted,
-        revisions: [
-          {
-            id: 'proposal',
-            authorId: 'alice',
-            createdAt: 1,
-            change: DocumentChange.between(accepted, document('Proposed text')),
-          },
-        ],
-      }),
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'Heading' }] },
+        {
+          type: 'paragraph',
+          children: [
+            { authored: [mark('delete')], text: 'Text' },
+            { authored: [mark('insert')], text: 'Proposed text' },
+          ],
+        },
+      ],
     });
     const editor = createEditorView(model, {
-      authored: { intent: 'edit', projection: 'markup' },
+      authored: { intent: 'edit' },
     });
     const selection = {
       anchor: { path: [0, 0], offset: 0 },

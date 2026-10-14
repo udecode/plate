@@ -2,7 +2,7 @@
 
 import { useTheme } from 'next-themes';
 import type { InitialValue } from 'platejs';
-import { EditorRoot, useCreateEditor, useStaticEditor } from 'platejs/react';
+import { EditorRoot, useCreateEditor } from 'platejs/react';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -101,7 +101,7 @@ export function EditorClient({ value }: { value: InitialValue }) {
 }
 
 export const EditorViewClient = ({ value }: { value: InitialValue }) => {
-  const editor = useStaticEditor({
+  const editor = useCreateEditor({
     plugins: HtmlExportKit,
     initialValue: value,
   });

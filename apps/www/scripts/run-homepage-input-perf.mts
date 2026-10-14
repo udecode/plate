@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import puppeteer from 'puppeteer';
 
+import { BROWSER_HANDLE_KEY } from '../../../packages/plitejs/src/internal/browser-protocol';
 import { failInvariant } from '../src/lib/failInvariant';
 
 type ProbeRow = {
@@ -139,11 +140,12 @@ try {
   if (requireBrowserHandle) {
     try {
       await page.waitForFunction(
-        () =>
-          !!document.querySelector<
-            HTMLElement & { __pliteBrowserHandle?: unknown }
-          >('[contenteditable="true"][role="textbox"]')?.__pliteBrowserHandle,
-        { timeout: 30_000 }
+        (key) =>
+          !!document.querySelector<HTMLElement & Record<string, unknown>>(
+            '[contenteditable="true"][role="textbox"]'
+          )?.[key],
+        { timeout: 30_000 },
+        BROWSER_HANDLE_KEY
       );
     } catch (error) {
       if (out) {
@@ -260,11 +262,14 @@ try {
     { targetIdentity }
   );
   await page.evaluate(
-    ({
-      action: innerAction2,
-      diagnose: innerDiagnose,
-      targetIdentity: innerTargetIdentity2,
-    }) => {
+    ([
+      {
+        action: innerAction2,
+        diagnose: innerDiagnose,
+        targetIdentity: innerTargetIdentity2,
+      },
+      handleKey,
+    ]) => {
       const probeWindow = window as ProbeWindow;
       const root = document.querySelector(
         '[contenteditable="true"][role="textbox"]'
@@ -383,12 +388,15 @@ try {
           const target = root.querySelector(targetSelector);
           const textHost = target?.querySelector('[data-editor-node="text"]');
           const handle = (
-            root as HTMLElement & {
-              __pliteBrowserHandle?: {
-                getLastCommit: () => { version?: number } | null;
-              };
-            }
-          ).__pliteBrowserHandle;
+            root as HTMLElement &
+              Record<
+                string,
+                | {
+                    getLastCommit: () => { version?: number } | null;
+                  }
+                | undefined
+              >
+          )[handleKey];
           const row: ProbeRow = {
             blockCountBefore: root.childElementCount,
             commitBefore: handle?.getLastCommit()?.version ?? null,
@@ -467,7 +475,7 @@ try {
         subtree: true,
       });
     },
-    { action, diagnose, targetIdentity }
+    [{ action, diagnose, targetIdentity }, BROWSER_HANDLE_KEY] as const
   );
 
   let measuredInput = '';
@@ -477,13 +485,13 @@ try {
     modelText: string | null;
   } | null = null;
 
-  const browserHandleAvailable = await page.evaluate(() => {
+  const browserHandleAvailable = await page.evaluate((key) => {
     const root = document.querySelector(
       '[contenteditable="true"][role="textbox"]'
-    ) as (HTMLElement & { __pliteBrowserHandle?: unknown }) | null;
+    ) as (HTMLElement & Record<string, unknown>) | null;
 
-    return !!root?.__pliteBrowserHandle;
-  });
+    return !!root?.[key];
+  }, BROWSER_HANDLE_KEY);
 
   if (requireBrowserHandle && !browserHandleAvailable) {
     throw new Error(
@@ -497,30 +505,36 @@ try {
     sampleIndex++
   ) {
     if (sampleIndex === warmupSamples) {
-      measuredStartState = await page.evaluate((targetPath) => {
-        const root = document.querySelector(
-          '[contenteditable="true"][role="textbox"]'
-        ) as
-          | (HTMLElement & {
-              __pliteBrowserHandle?: {
-                getBlockText: (index: number) => string | null;
-                getLastCommit: () => { version?: number } | null;
-                getSelection: () => unknown;
-              };
-            })
-          | null;
+      measuredStartState = await page.evaluate(
+        ([targetPath, key]) => {
+          const root = document.querySelector(
+            '[contenteditable="true"][role="textbox"]'
+          ) as
+            | (HTMLElement &
+                Record<
+                  string,
+                  | {
+                      getBlockText: (index: number) => string | null;
+                      getLastCommit: () => { version?: number } | null;
+                      getSelection: () => unknown;
+                    }
+                  | undefined
+                >)
+            | null;
 
-        const handle = root?.__pliteBrowserHandle;
-        const targetIndex = Number.parseInt(targetPath ?? '', 10);
+          const handle = root?.[key];
+          const targetIndex = Number.parseInt(targetPath ?? '', 10);
 
-        return {
-          commitVersion: handle?.getLastCommit()?.version ?? null,
-          modelSelection: handle?.getSelection() ?? null,
-          modelText: Number.isFinite(targetIndex)
-            ? (handle?.getBlockText(targetIndex) ?? null)
-            : null,
-        };
-      }, targetIdentity.path);
+          return {
+            commitVersion: handle?.getLastCommit()?.version ?? null,
+            modelSelection: handle?.getSelection() ?? null,
+            modelText: Number.isFinite(targetIndex)
+              ? (handle?.getBlockText(targetIndex) ?? null)
+              : null,
+          };
+        },
+        [targetIdentity.path, BROWSER_HANDLE_KEY] as const
+      );
       await page.evaluate(() => {
         const probe =
           (window as ProbeWindow).__homepageInputProbe ??
@@ -607,33 +621,39 @@ try {
     }
 
     if (action === 'enter') {
-      await page.evaluate((targetSelector) => {
-        const root = document.querySelector(
-          '[contenteditable="true"][role="textbox"]'
-        ) as
-          | (HTMLElement & {
-              __pliteBrowserHandle?: {
-                getDOMSelection: () => unknown;
-                getLastCommit: () => { version?: number } | null;
-                getSelection: () => unknown;
-              };
-            })
-          | null;
-        const row = (window as ProbeWindow).__homepageInputProbe?.rows.at(-1);
-        const handle = root?.__pliteBrowserHandle;
+      await page.evaluate(
+        ([targetSelector, key]) => {
+          const root = document.querySelector(
+            '[contenteditable="true"][role="textbox"]'
+          ) as
+            | (HTMLElement &
+                Record<
+                  string,
+                  | {
+                      getDOMSelection: () => unknown;
+                      getLastCommit: () => { version?: number } | null;
+                      getSelection: () => unknown;
+                    }
+                  | undefined
+                >)
+            | null;
+          const row = (window as ProbeWindow).__homepageInputProbe?.rows.at(-1);
+          const handle = root?.[key];
 
-        if (!root || !row) return;
+          if (!root || !row) return;
 
-        row.blockCountAfter = root.childElementCount;
-        row.commitAfter = handle?.getLastCommit()?.version ?? null;
-        row.domSelectionAfter = handle?.getDOMSelection() ?? null;
-        row.focusPreservedAfter = root.contains(document.activeElement);
-        row.headingTextAfter =
-          root.querySelector(targetSelector)?.textContent ?? null;
-        row.modelSelectionAfter = handle?.getSelection() ?? null;
-        row.nativeSelectedTextAfter = window.getSelection()?.toString() ?? '';
-        row.tableCountAfter = root.querySelectorAll('table').length;
-      }, targetIdentity.selector ?? 'h1');
+          row.blockCountAfter = root.childElementCount;
+          row.commitAfter = handle?.getLastCommit()?.version ?? null;
+          row.domSelectionAfter = handle?.getDOMSelection() ?? null;
+          row.focusPreservedAfter = root.contains(document.activeElement);
+          row.headingTextAfter =
+            root.querySelector(targetSelector)?.textContent ?? null;
+          row.modelSelectionAfter = handle?.getSelection() ?? null;
+          row.nativeSelectedTextAfter = window.getSelection()?.toString() ?? '';
+          row.tableCountAfter = root.querySelectorAll('table').length;
+        },
+        [targetIdentity.selector ?? 'h1', BROWSER_HANDLE_KEY] as const
+      );
 
       const undoModifier = process.platform === 'darwin' ? 'Meta' : 'Control';
 
@@ -713,22 +733,25 @@ try {
   }
 
   const probe = await page.evaluate(
-    ({ targetIdentity: innerTargetIdentity4 }) => {
+    ([{ targetIdentity: innerTargetIdentity4 }, key]) => {
       const probeWindow = window as ProbeWindow;
       const root = document.querySelector(
         '[contenteditable="true"][role="textbox"]'
       ) as
-        | (HTMLElement & {
-            __pliteBrowserHandle?: {
-              getBlockText: (index: number) => string | null;
-              getDOMSelection: () => unknown;
-              getInputState: () => unknown;
-              getLastCommit: () => { version?: number } | null;
-              getSelection: () => unknown;
-            };
-          })
+        | (HTMLElement &
+            Record<
+              string,
+              | {
+                  getBlockText: (index: number) => string | null;
+                  getDOMSelection: () => unknown;
+                  getInputState: () => unknown;
+                  getLastCommit: () => { version?: number } | null;
+                  getSelection: () => unknown;
+                }
+              | undefined
+            >)
         | null;
-      const handle = root?.__pliteBrowserHandle;
+      const handle = root?.[key];
       const targetIndex = Number.parseInt(innerTargetIdentity4.path ?? '', 10);
       const liveProbe =
         probeWindow.__homepageInputProbe ??
@@ -776,7 +799,7 @@ try {
         nativeSelectedText: window.getSelection()?.toString() ?? '',
       };
     },
-    { targetIdentity }
+    [{ targetIdentity }, BROWSER_HANDLE_KEY] as const
   );
   const { rows } = probe;
   const measuredRows = rows.slice(warmupSamples);

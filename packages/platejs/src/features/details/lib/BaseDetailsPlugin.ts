@@ -17,6 +17,8 @@ import {
   schema,
   SelectionApi,
   transferVeto,
+  txLocate,
+  locateAt,
 } from '../../../core';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { getCompiledPlateModelBinding } from '../../../internal/plugin/compilePlateModel';
@@ -302,167 +304,186 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         });
 
       return {
-        insert: (
-          data: Record<string, never> = {},
-          options: BlockInsertOptions = {}
-        ) => applyDetailsInsertion('insert', data, options),
-        unwrap: ({ at }: { at?: Location | NodeSelection } = {}) => {
-          const selected = at === undefined ? tx.selection.nodes() : [];
-          const target = at ?? tx.selection();
-          let sources: ReturnType<typeof tx.nodes.toArray>;
+        insert: txLocate(
+          locateAt(1, 'at', 'after', 'before'),
+          (
+            data: Record<string, never> = {},
+            options: BlockInsertOptions = {}
+          ) => applyDetailsInsertion('insert', data, options)
+        ),
+        unwrap: txLocate(
+          locateAt(0),
+          ({ at }: { at?: Location | NodeSelection } = {}) => {
+            const selected = at === undefined ? tx.selection.nodes() : [];
+            const target = at ?? tx.selection();
+            let sources: ReturnType<typeof tx.nodes.toArray>;
 
-          if (SelectionApi.isNode(at) || selected.length > 0) {
-            sources = SelectionApi.isNode(at)
-              ? tx.nodes.toArray({ at })
-              : [...selected];
-          } else if (PathApi.isPath(target)) {
-            const entry = tx.nodes.get(target);
-            sources = entry ? [entry] : [];
-          } else {
-            sources = target
-              ? tx.nodes.blocks({ at: target, mode: 'lowest' })
-              : [];
-          }
-          const detailsEntries = [
-            ...new Map(
-              sources.flatMap(([node]) => {
-                if (!ElementApi.isElement(node)) return [];
-
-                const key = tx.key(node);
-                const entry = ElementApi.isElementType(node, type)
-                  ? tx.nodes.get(key, { type: plugin })
-                  : tx.nodes.above({ at: key, type });
-
-                return entry ? [[tx.key(entry[0]), entry] as const] : [];
-              })
-            ).values(),
-          ].toSorted(
-            ([, left], [, right]) =>
-              PathApi.compare(left, right) || left.length - right.length
-          );
-          const targets: NodeKey[] = [];
-          let previous: (typeof detailsEntries)[number] | undefined;
-
-          for (const entry of detailsEntries) {
-            if (previous && PathApi.isAncestor(previous[1], entry[1])) continue;
-
-            targets.push(tx.key(entry[0]));
-            previous = entry;
-          }
-          const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
-          const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema
-            .type;
-          const headingType = getCompiledPlateModelBinding(
-            editor,
-            PLUGINS.heading
-          )?.elementType;
-
-          for (const key of targets.toReversed()) {
-            const summaryNode = tx.nodes
-              .children(key)
-              .find(
-                (child) =>
-                  tx.nodes.isContent(child) &&
-                  ElementApi.isElementType(child, summaryType)
-              );
-            const summary =
-              summaryNode &&
-              tx.nodes.get(tx.key(summaryNode), {
-                type: BaseDetailsSummaryPlugin,
-              })?.[0];
-
-            if (summary) {
-              tx.nodes.set(
-                summary.level && headingType
-                  ? { type: headingType, level: summary.level }
-                  : { type: paragraphType },
-                { at: tx.key(summary) }
-              );
+            if (SelectionApi.isNode(at) || selected.length > 0) {
+              sources = SelectionApi.isNode(at)
+                ? tx.nodes.toArray({ at })
+                : [...selected];
+            } else if (PathApi.isPath(target)) {
+              const entry = tx.nodes.get(target);
+              sources = entry ? [entry] : [];
+            } else {
+              sources = target
+                ? tx.nodes.blocks({ at: target, mode: 'lowest' })
+                : [];
             }
-            tx.nodes.unwrap({ at: key });
-          }
-        },
-        wrap: ({ at }: { at?: Location | NodeSelection } = {}) => {
-          const blocks = tx.nodes.blocks({ at, mode: 'highest' });
-          const first = blocks[0];
+            const detailsEntries = [
+              ...new Map(
+                sources.flatMap(([node]) => {
+                  if (!ElementApi.isElement(node)) return [];
 
-          if (!first) return;
+                  const key = tx.key(node);
+                  const entry = ElementApi.isElementType(node, type)
+                    ? tx.nodes.get(key, { type: plugin })
+                    : tx.nodes.above({ at: key, type });
 
-          const parentPath = PathApi.parent(first[1]);
+                  return entry ? [[tx.key(entry[0]), entry] as const] : [];
+                })
+              ).values(),
+            ].toSorted(
+              ([, left], [, right]) =>
+                PathApi.compare(left, right) || left.length - right.length
+            );
+            const targets: NodeKey[] = [];
+            let previous: (typeof detailsEntries)[number] | undefined;
 
-          if (
-            blocks.some(
-              ([, path]) => !PathApi.equals(PathApi.parent(path), parentPath)
-            )
-          ) {
-            return;
-          }
+            for (const entry of detailsEntries) {
+              if (previous && PathApi.isAncestor(previous[1], entry[1])) {
+                continue;
+              }
 
-          const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
-          const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema
-            .type;
-          const firstIsTextBlock = editor.read.schema.isElementTypeInGroup(
-            first[0].type,
-            'textBlock'
-          );
-          let paths = blocks.map(([, path]) => path);
-
-          if (firstIsTextBlock) {
+              targets.push(tx.key(entry[0]));
+              previous = entry;
+            }
+            const paragraphType =
+              editor.plugin(BaseParagraphPlugin).schema.type;
+            const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema
+              .type;
             const headingType = getCompiledPlateModelBinding(
               editor,
               PLUGINS.heading
             )?.elementType;
-            tx.nodes.set(
-              {
-                type: summaryType,
-                ...(first[0].type === headingType &&
-                isSummaryHeadingLevel(first[0].level)
-                  ? { level: first[0].level }
-                  : {}),
-              },
-              { at: first[1] }
-            );
 
-            if (blocks.length === 1) {
-              tx.nodes.insert(
-                { children: [{ text: '' }], type: paragraphType },
-                { at: PathApi.next(first[1]) }
-              );
-              paths = [first[1], PathApi.next(first[1])];
+            for (const key of targets.toReversed()) {
+              const summaryNode = tx.nodes
+                .children(key)
+                .find(
+                  (child) =>
+                    tx.nodes.isContent(child) &&
+                    ElementApi.isElementType(child, summaryType)
+                );
+              const summary =
+                summaryNode &&
+                tx.nodes.get(tx.key(summaryNode), {
+                  type: BaseDetailsSummaryPlugin,
+                })?.[0];
+
+              if (summary) {
+                tx.nodes.set(
+                  summary.level && headingType
+                    ? { type: headingType, level: summary.level }
+                    : { type: paragraphType },
+                  { at: tx.key(summary) }
+                );
+              }
+              tx.nodes.unwrap({ at: key });
             }
-          } else {
-            tx.nodes.insert(
-              { children: [{ text: '' }], type: summaryType },
-              { at: first[1] }
-            );
-            paths = [first[1], ...paths.map((path) => PathApi.next(path))];
           }
+        ),
+        wrap: txLocate(
+          locateAt(0),
+          ({ at }: { at?: Location | NodeSelection } = {}) => {
+            const blocks = tx.nodes.blocks({ at, mode: 'highest' });
+            const first = blocks[0];
 
-          const entries = paths.flatMap((path) => {
-            const entry = tx.nodes.get(path);
+            if (!first) return;
 
-            return entry ? [entry] : [];
-          });
-          const range = tx.ranges.fromEntries(entries);
+            const parentPath = PathApi.parent(first[1]);
 
-          if (!range) return;
+            if (
+              blocks.some(
+                ([, path]) => !PathApi.equals(PathApi.parent(path), parentPath)
+              )
+            ) {
+              return;
+            }
 
-          tx.nodes.wrap({ children: [], type }, { at: range, mode: 'highest' });
+            const paragraphType =
+              editor.plugin(BaseParagraphPlugin).schema.type;
+            const summaryType = editor.plugin(BaseDetailsSummaryPlugin).schema
+              .type;
+            const firstIsTextBlock = editor.read.schema.isElementTypeInGroup(
+              first[0].type,
+              'textBlock'
+            );
+            let paths = blocks.map(([, path]) => path);
 
-          const detailsEntry = tx.nodes.get(first[1], { type: plugin });
+            if (firstIsTextBlock) {
+              const headingType = getCompiledPlateModelBinding(
+                editor,
+                PLUGINS.heading
+              )?.elementType;
+              tx.nodes.set(
+                {
+                  type: summaryType,
+                  ...(first[0].type === headingType &&
+                  isSummaryHeadingLevel(first[0].level)
+                    ? { level: first[0].level }
+                    : {}),
+                },
+                { at: first[1] }
+              );
 
-          if (!detailsEntry) return;
+              if (blocks.length === 1) {
+                tx.nodes.insert(
+                  { children: [{ text: '' }], type: paragraphType },
+                  { at: PathApi.next(first[1]) }
+                );
+                paths = [first[1], PathApi.next(first[1])];
+              }
+            } else {
+              tx.nodes.insert(
+                { children: [{ text: '' }], type: summaryType },
+                { at: first[1] }
+              );
+              paths = [first[1], ...paths.map((path) => PathApi.next(path))];
+            }
 
-          const key = tx.key(detailsEntry[0]);
+            const entries = paths.flatMap((path) => {
+              const entry = tx.nodes.get(path);
 
-          store.set((draft) => {
-            draft.openKeys = new Set(draft.openKeys).add(key);
-          });
-        },
-        upsert: (
-          data: Record<string, never> = {},
-          options: BlockUpsertOptions = {}
-        ) => applyDetailsInsertion('upsert', data, options),
+              return entry ? [entry] : [];
+            });
+            const range = tx.ranges.fromEntries(entries);
+
+            if (!range) return;
+
+            tx.nodes.wrap(
+              { children: [], type },
+              { at: range, mode: 'highest' }
+            );
+
+            const detailsEntry = tx.nodes.get(first[1], { type: plugin });
+
+            if (!detailsEntry) return;
+
+            const key = tx.key(detailsEntry[0]);
+
+            store.set((draft) => {
+              draft.openKeys = new Set(draft.openKeys).add(key);
+            });
+          }
+        ),
+        upsert: txLocate(
+          locateAt(1, 'after', 'before'),
+          (
+            data: Record<string, never> = {},
+            options: BlockUpsertOptions = {}
+          ) => applyDetailsInsertion('upsert', data, options)
+        ),
       };
     },
   }))

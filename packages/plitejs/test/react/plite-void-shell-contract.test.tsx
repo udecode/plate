@@ -3,7 +3,7 @@ import React from 'react';
 import { hydrateRoot, type Root } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 
-import { PliteInlineVoidShell } from '../../src/react/components/plite-void-shell';
+import { InlineVoidShell } from '../../src/react/components/plite-void-shell';
 import { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { EditableDOMRuntimeContext } from '../../src/react/hooks/use-claim-editable-dom-commit';
 import { createEditor } from '../../src/react/plugin/with-react';
@@ -12,9 +12,9 @@ const MAC_OS_USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15';
 
 const InlineVoidFixture = () => (
-  <PliteInlineVoidShell content={<span data-testid="void-content">void</span>}>
+  <InlineVoidShell content={<span data-testid="void-content">void</span>}>
     <span data-testid="void-anchor">anchor</span>
-  </PliteInlineVoidShell>
+  </InlineVoidShell>
 );
 
 const setNavigator = (value: { userAgent: string } | undefined) => {
@@ -33,7 +33,7 @@ const restoreNavigator = (descriptor: PropertyDescriptor | undefined) => {
   Reflect.deleteProperty(globalThis, 'navigator');
 };
 
-test('PliteInlineVoidShell hydrates with the same initial order on Mac clients', async () => {
+test('InlineVoidShell hydrates with the same initial order on Mac clients', async () => {
   const originalNavigator = Object.getOwnPropertyDescriptor(
     globalThis,
     'navigator'
@@ -72,7 +72,7 @@ test('PliteInlineVoidShell hydrates with the same initial order on Mac clients',
   }
 });
 
-test('PliteInlineVoidShell uses the mounted root platform', () => {
+test('InlineVoidShell uses the mounted root platform', () => {
   const root = document.createElement('div');
   const runtime = new EditableDOMRuntime({
     editor: createEditor(),

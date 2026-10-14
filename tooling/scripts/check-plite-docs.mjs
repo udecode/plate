@@ -68,7 +68,7 @@ const terminalComponentConversionPattern =
 const staticBaseKitReactAdapterPattern =
   /(?:\b[\w-]+-base-kit\b[^\n]{0,500}\btoReactPlugin\s*\(\s*Base[\w$]*Plugin\b|\btoReactPlugin\s*\(\s*Base[\w$]*Plugin\b[^\n]{0,500}\b[\w-]+-base-kit\b)/i;
 const staticEditorBaseReactAdapterPattern =
-  /(?=[\s\S]*\b(?:createStaticEditor\s*\(|from\s+['"](?:platejs|@platejs\/core)\/static['"]))[\s\S]*\btoReactPlugin\s*\(\s*Base[\w$]*Plugin\b/;
+  /(?=[\s\S]*\bfrom\s+['"](?:(?:platejs|@platejs\/core)\/static|[^'"]*-static)['"])[\s\S]*\btoReactPlugin\s*\(\s*Base[\w$]*Plugin\b/;
 const invalidBaseRendererDocPatterns = [
   {
     pattern: terminalComponentConversionPattern,

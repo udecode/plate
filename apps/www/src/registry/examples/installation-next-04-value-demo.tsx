@@ -51,7 +51,7 @@ const initialValue: Value = [
 export default function MyEditorPage() {
   const value = React.useMemo(() => {
     const savedValue = localStorage.getItem(
-      `nextjs-plate-value-demo-${new Date().toISOString().split('T')[0]}`
+      `nextjs-value-demo-${new Date().toISOString().split('T')[0]}`
     );
 
     return savedValue ? JSON.parse(savedValue) : initialValue;
@@ -72,7 +72,7 @@ export default function MyEditorPage() {
     <EditorRoot
       onValueChange={({ value: innerValue }) => {
         localStorage.setItem(
-          `nextjs-plate-value-demo-${new Date().toISOString().split('T')[0]}`,
+          `nextjs-value-demo-${new Date().toISOString().split('T')[0]}`,
           JSON.stringify(innerValue)
         );
       }}

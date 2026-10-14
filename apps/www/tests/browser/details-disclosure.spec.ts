@@ -9,9 +9,9 @@ import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwr
 
 const read = (root: Locator) =>
   root.evaluate((element: PliteBrowserHandleElement) => ({
-    model: element.__pliteBrowserHandle?.getSelection(),
-    dom: element.__pliteBrowserHandle?.getDOMSelection(),
-    value: element.__pliteBrowserHandle?.getValue().children,
+    model: element.__EDITOR_BROWSER_HANDLE__?.getSelection(),
+    dom: element.__EDITOR_BROWSER_HANDLE__?.getDOMSelection(),
+    value: element.__EDITOR_BROWSER_HANDLE__?.getValue().children,
     focused: document.activeElement === element,
   }));
 const caret = (path: number[], offset: number) => ({
@@ -85,7 +85,7 @@ for (const route of ['details-demo', 'playground']) {
           await expect
             .poll(() =>
               root.evaluate((element: PliteBrowserHandleElement) =>
-                element.__pliteBrowserHandle!.getModelSelection()
+                element.__EDITOR_BROWSER_HANDLE__!.getModelSelection()
               )
             )
             .toMatchObject({ kind: 'node', paths: [bodyPath] });
@@ -212,7 +212,7 @@ for (const route of ['details-demo', 'playground']) {
             await page.mouse.click(bodyBox.x + 60, bodyBox.y + 10);
             if (action === 'collapse after import') {
               await root.evaluate((element: PliteBrowserHandleElement) =>
-                element.__pliteBrowserHandle?.importDOMSelection()
+                element.__EDITOR_BROWSER_HANDLE__?.importDOMSelection()
               );
             }
             await page.mouse.click(

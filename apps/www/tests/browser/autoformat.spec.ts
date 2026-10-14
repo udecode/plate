@@ -136,6 +136,107 @@ for (const { name, prefix, expected } of [
   });
 }
 
+const openEmptyCodeBlock = async (page: Page, caseId: string) => {
+  const opened = await openEmptyParagraph(page, caseId);
+
+  await page.keyboard.type('```');
+  await expect
+    .poll(async () => {
+      const value = (await opened.editor.get.modelValue()) as {
+        children: Array<{ type: string }>;
+      };
+
+      return value.children[2]?.type;
+    })
+    .toBe('codeBlock');
+
+  return opened;
+};
+
+test('autoformat:native-code-block-keeps-shortcuts', async ({
+  page,
+}, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const { editor } = await openEmptyCodeBlock(page, 'autoformat:code-keys');
+
+    await page.keyboard.type('# **x**');
+
+    await editor.assert.modelBlockText(2, '# **x**');
+    await expect
+      .poll(async () => {
+        const value = (await editor.get.modelValue()) as {
+          children: Array<{ children: unknown[]; type: string }>;
+        };
+
+        return value.children[2];
+      })
+      .toEqual({ children: [{ text: '# **x**' }], type: 'codeBlock' });
+    await editor.assert.focusOwner('editor');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('autoformat:native-code-block-plain-paste', async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const { editor } = await openEmptyCodeBlock(page, 'autoformat:code-paste');
+
+    await editor.clipboard.pasteText('a **b** c');
+
+    await expect
+      .poll(async () => {
+        const value = (await editor.get.modelValue()) as {
+          children: Array<{ children: unknown[]; type: string }>;
+        };
+
+        return value.children[2];
+      })
+      .toEqual({ children: [{ text: 'a **b** c' }], type: 'codeBlock' });
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
+test('autoformat:native-divider', async ({ page }, testInfo) => {
+  expect(testInfo.retry).toBe(0);
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    const { editor } = await openEmptyParagraph(page, 'autoformat:divider');
+
+    await page.keyboard.type('---');
+
+    await expect
+      .poll(async () => {
+        const value = (await editor.get.modelValue()) as {
+          children: Array<{ children: unknown[]; type: string }>;
+        };
+
+        return value.children.slice(2, 4);
+      })
+      .toEqual([
+        { children: [{ text: '' }], type: 'horizontalRule' },
+        { children: [{ text: '' }], type: 'paragraph' },
+      ]);
+
+    await page.keyboard.type('x');
+
+    await editor.assert.modelBlockText(3, 'x');
+    await editor.assert.focusOwner('editor');
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
 test('autoformat:native-inline-and-block-math', async ({ page }, testInfo) => {
   expect(testInfo.retry).toBe(0);
   const runtimeErrors = recordBrowserRuntimeErrors(page);

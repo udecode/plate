@@ -30,7 +30,6 @@ import {
   setNodeChange,
   setNodesChange,
   splitNodeChange,
-  unwrapNodeChange,
 } from './root-change';
 import {
   type PreparedTokenSlice,
@@ -108,6 +107,8 @@ export type DraftStepMove = Readonly<{
 
 /** @internal */
 export type DraftStep = Readonly<{
+  indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+  indexedBefore?: ReadonlyMap<string, DocumentIndex>;
   change: DocumentChange;
   move: DraftStepMove | null;
   origin: DraftStepOrigin;
@@ -611,6 +612,7 @@ export class ChangeDraft {
         : this.accumulated.compose(classifiedChange, this.source);
       if (!classifiedChange.empty) {
         this.appliedSteps.push({
+          indexedBefore,
           change: classifiedChange,
           move: this.stepMove,
           origin: this.originOf(options.origin),
@@ -875,6 +877,7 @@ export class ChangeDraft {
       : this.accumulated.compose(canonicalChange, this.source);
     if (!canonicalChange.empty) {
       this.appliedSteps.push({
+        indexedBefore,
         change: canonicalChange,
         move: this.stepMove,
         origin: this.originOf(options.origin),
@@ -1139,23 +1142,6 @@ export class ChangeDraft {
     );
   }
 
-  unwrapNode(root: string, path: readonly number[]) {
-    const document = this.getIndex(root);
-    const node = document.node(path);
-    const index = getDefined(path.at(-1));
-
-    if (isTextNode(node)) {
-      throw new Error('Cannot unwrap a text node.');
-    }
-
-    return this.applyRoot(
-      root,
-      'unwrap',
-      unwrapNodeChange(document, path),
-      document.withSplicedNodes(path.slice(0, -1), index, 1, node.children)
-    );
-  }
-
   removeText(
     root: string,
     path: readonly number[],
@@ -1314,7 +1300,7 @@ export class ChangeDraft {
     return this.apply(change, { indexedAfter, origin });
   }
 
-  private getIndex(root: string) {
+  getIndex(root: string) {
     let document = this.indexes.get(root);
 
     if (!document) {

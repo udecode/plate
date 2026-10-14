@@ -1,8 +1,7 @@
 import React from 'react';
 
-import { property } from '../core';
+import { createEditor, property } from '../core';
 import { type RenderTextProps, definePlugin } from '../lib';
-import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderTextStatic,
   pluginRenderTextStatic,
@@ -23,7 +22,7 @@ describe('pluginRenderTextStatic', () => {
   });
 
   it('returns children when the text does not match the plugin', () => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       plugins: [TonePlugin],
     });
 
@@ -46,7 +45,7 @@ describe('pluginRenderTextStatic', () => {
     const ConfiguredTonePlugin = TonePlugin.configure({
       component: CustomText,
     });
-    const editor = createStaticEditor({ plugins: [ConfiguredTonePlugin] });
+    const editor = createEditor({ plugins: [ConfiguredTonePlugin] });
     const result = pluginRenderTextStatic(
       editor,
       editor.plugin(ConfiguredTonePlugin)
@@ -65,7 +64,7 @@ describe('pluginRenderTextStatic', () => {
   });
 
   it('merges plugin text props before delegating to renderText', () => {
-    const editor = createStaticEditor({
+    const editor = createEditor({
       plugins: [TonePlugin],
     });
     let renderTextCalled = false;

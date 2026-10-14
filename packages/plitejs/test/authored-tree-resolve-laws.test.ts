@@ -11,20 +11,20 @@ import {
   target,
 } from 'plitejs';
 
+import { createAuthoredPlugin } from '../src/authored/authored';
+import { expandContexts } from '../src/authored/facts/compact';
+import { authoredResolveSchemaOf } from '../src/authored/resolve-schema';
 import type { AuthoredMark } from '../src/authored/tree/marks';
-import {
-  authoredResolveSchemaOf,
-  authoredTreeProof,
-} from '../src/authored/tree/proof-plugin';
 import {
   type AuthoredOutcome,
   resolveAuthoredChildren,
 } from '../src/authored/tree/resolve';
 import type { JsonNode } from '../src/core/change/tokens';
+import { authoredTestApi } from './support/authored';
 
 // The laws hold for the editor's canonical form, which decisions produce.
 const schema = authoredResolveSchemaOf(
-  createEditor({ plugins: [authoredTreeProof({ authorId: 'laws' })] })
+  createEditor({ plugins: [createAuthoredPlugin({ authorId: 'laws' })] })
 );
 const resolve = (children: readonly JsonNode[], outcome: AuthoredOutcome) =>
   resolveAuthoredChildren(children, outcome, schema);
@@ -384,7 +384,7 @@ const Quotes = defineEditorSchema('laws-quotes', {
 });
 const quotesEditor = (initialValue: readonly unknown[]) =>
   createEditor({
-    plugins: [Quotes, authoredTreeProof({ authorId: 'laws' })],
+    plugins: [Quotes, createAuthoredPlugin({ authorId: 'laws' })],
     initialValue: initialValue as Array<Record<string, unknown>>,
   });
 const quotesSchema = authoredResolveSchemaOf(
@@ -590,7 +590,11 @@ describe('authored review tree structural decision laws', () => {
           let document: readonly JsonNode[];
 
           try {
-            document = quotesEditor(generated).read.children();
+            // resolveAuthoredChildren runs without review facts here, so the
+            // insertions a load folded into contexts go back to explicit claims.
+            document = expandContexts(
+              quotesEditor(generated).read.value()
+            ).children;
           } catch {
             return;
           }
@@ -726,7 +730,7 @@ const sizesEditor = (value: unknown) =>
     plugins: [
       Sizes,
       SumTo100,
-      authoredTreeProof({ authorId: 'x', intent: 'edit', now: () => 1 }),
+      createAuthoredPlugin({ authorId: 'x', intent: 'edit', now: () => 1 }),
     ],
   });
 
@@ -762,7 +766,7 @@ const sizeHistory = (ops: readonly SizeOp[]) => {
   const editor = sizesEditor([
     { children: [cell('a', 30), cell('b', 70)], type: 'group' },
   ]);
-  const proof = editor.api.authoredTree;
+  const proof = authoredTestApi(editor);
   const live = () =>
     (editor.read.value().children[0] as { children: Cell[] }).children.flatMap(
       (item, index) =>
@@ -782,25 +786,23 @@ const sizeHistory = (ops: readonly SizeOp[]) => {
         tx.nodes.insert(cell('e', 50) as never, { at: [0, 0] })
       );
     } else {
-      proof.propose(change, () =>
-        editor.update((tx) => {
-          if (op.kind === 'insert') {
-            tx.nodes.insert(cell('n', 50) as never, {
-              at: [0, Math.min(op.at, indexes.length)],
-            });
-          } else if (op.kind === 'remove') {
-            if (indexes.length > 1) {
-              tx.nodes.remove({ at: [0, indexes[op.at % indexes.length]] });
-            }
-          } else {
-            indexes.forEach((index, at) => {
-              tx.nodes.set({ size: op.sizes[at % op.sizes.length] } as never, {
-                at: [0, index],
-              });
-            });
+      proof.propose(change, (tx) => {
+        if (op.kind === 'insert') {
+          tx.nodes.insert(cell('n', 50) as never, {
+            at: [0, Math.min(op.at, indexes.length)],
+          });
+        } else if (op.kind === 'remove') {
+          if (indexes.length > 1) {
+            tx.nodes.remove({ at: [0, indexes[op.at % indexes.length]] });
           }
-        })
-      );
+        } else {
+          indexes.forEach((index, at) => {
+            tx.nodes.set({ size: op.sizes[at % op.sizes.length] } as never, {
+              at: [0, index],
+            });
+          });
+        }
+      });
     }
   });
 
@@ -883,7 +885,7 @@ describe('authored review tree decision laws with corrections', () => {
               return of.length > 0 ? [{ action, changes: of }] : [];
             });
           const batchEditor = sizesEditor(value);
-          const batchResult = batchEditor.api.authoredTree.decide(
+          const batchResult = authoredTestApi(batchEditor).decide(
             decisionsOf(changes)
           );
 
@@ -895,7 +897,7 @@ describe('authored review tree decision laws with corrections', () => {
 
           for (const change of order) {
             waiting = waiting.concat(change);
-            const result = stepped.api.authoredTree.decide(
+            const result = authoredTestApi(stepped).decide(
               decisionsOf(waiting)
             );
 

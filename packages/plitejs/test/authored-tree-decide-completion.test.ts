@@ -1,3 +1,4 @@
+import { authoredTestApi, expandedChildren } from './support/authored';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
@@ -10,9 +11,9 @@ import {
 } from 'plitejs';
 
 import {
-  authoredResolveSchemaOf,
-  authoredTreeProof,
-} from '../src/authored/tree/proof-plugin';
+  createAuthoredPlugin,
+} from '../src/authored/authored';
+import { authoredResolveSchemaOf } from '../src/authored/resolve-schema';
 import { projectAuthoredFragment } from '../src/authored/tree/resolve';
 
 type Node = Readonly<{
@@ -67,7 +68,7 @@ const plain = (nodes: readonly Node[]): Node[] =>
 const reviewing = (plugin: unknown, value: readonly Node[]) =>
   createEditor({
     initialValue: structuredClone(value) as never,
-    plugins: [plugin, authoredTreeProof({ authorId: 'zed' })] as never,
+    plugins: [plugin, createAuthoredPlugin({ authorId: 'zed' })] as never,
   });
 const editing = (
   plugin: unknown,
@@ -93,11 +94,11 @@ const decided = (
 ) => {
   const editor = reviewing(plugin, value);
   const results = decisions.map((decision) =>
-    editor.api.authoredTree.decide(decision)
+    authoredTestApi(editor).decide(decision)
   );
 
   return {
-    children: editor.read.children() as readonly Node[],
+    children: expandedChildren(editor) as readonly Node[],
     results,
   };
 };
@@ -112,15 +113,15 @@ const suggesting = (
     initialValue: structuredClone(value) as never,
     plugins: [
       plugin,
-      authoredTreeProof({ authorId: 'ann', intent: 'propose', now: () => 1 }),
+      createAuthoredPlugin({ authorId: 'ann', intent: 'propose', now: () => 1 }),
     ] as never,
   });
 
   for (const [change, step] of steps) {
-    editor.api.authoredTree.propose(change, () => editor.update(step));
+    authoredTestApi(editor).propose(change, step as never);
   }
 
-  return editor.read.children() as readonly Node[];
+  return expandedChildren(editor) as readonly Node[];
 };
 
 const Titled = define('decide-titled', {
@@ -617,7 +618,7 @@ describe('authored review tree decisions that complete', () => {
       ],
     };
     const editor = reviewing(Grid, value.children);
-    const projected = editor.api.authoredTree.project('proposed').value
+    const projected = authoredTestApi(editor).project('proposed').value
       .children as readonly Node[];
 
     assert.deepEqual(

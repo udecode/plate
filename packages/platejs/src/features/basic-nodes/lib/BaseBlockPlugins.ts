@@ -6,12 +6,17 @@ import {
   type InsertTextInputRuleReadContext,
   type MarkdownDecodeContext,
   ElementApi,
+  NodeApi,
   PathApi,
   PLUGINS,
   type Location,
   type NodeSelection,
   type StructuralRuleContext,
+  TextApi,
+  txLocate,
+  locateAt,
 } from '../../../core';
+import { getMarkdownParagraphType } from '../../../internal/plugin/markdownParagraph';
 
 const thematicBreakDashRe = /^(--|—)$/;
 
@@ -29,18 +34,7 @@ export const BlockquoteRules = {
       target: 'insertText',
       trigger: ' ',
       priority,
-      enabled: (context) => {
-        if (enabled && !enabled(context)) return false;
-
-        const { editor } = context;
-        const codeBlock = editor.plugin(PLUGINS.codeBlock);
-
-        if (!codeBlock.installed) return true;
-
-        return !editor.read.nodes.some({
-          type: codeBlock.schema.type,
-        });
-      },
+      enabled,
       resolve: (context) => {
         const match = matchBlockStart(context, { match: marker });
         const blockEntry = context.getBlockEntry();
@@ -79,14 +73,21 @@ export const HorizontalRuleRules = {
       trigger: variant === '_' ? ' ' : '-',
       enabled,
       priority,
-      resolve: (context) =>
-        matchBlockStart(context, {
+      resolve: (context) => {
+        const block = context.getBlockEntry();
+        const match = matchBlockStart(context, {
           match: variant === '_' ? '___' : thematicBreakDashRe,
-        }),
-      apply: ({ decline, editor, tx }) => {
-        if (variant === '_') {
-          tx.text.deleteBackward({ unit: 'character' });
-        }
+        });
+
+        return block &&
+          match &&
+          block[0].children.every((child) => TextApi.isText(child)) &&
+          NodeApi.string(block[0]) === context.getBlockStartText()
+          ? { ...match, path: block[1] }
+          : undefined;
+      },
+      apply: ({ decline, editor, tx }, match) => {
+        tx.text.delete({ at: match.range });
 
         if (
           !tx.blocks.set({
@@ -95,11 +96,17 @@ export const HorizontalRuleRules = {
         ) {
           return decline();
         }
-        tx.nodes.insert({
-          children: [{ text: '' }],
-          type: editor.plugin(BaseParagraphPlugin).schema.type,
-        });
-        return undefined;
+
+        tx.break.insert();
+
+        const selection = tx.selection();
+        const next = selection && tx.nodes.block({ at: selection.focus });
+
+        return next &&
+          !tx.schema.isVoid(next[0]) &&
+          PathApi.isCommon(PathApi.next(match.path), next[1])
+          ? undefined
+          : decline();
       },
     }),
 };
@@ -191,14 +198,20 @@ export const BaseBlockquotePlugin = definePlugin(PLUGINS.blockquote, {
     untab: { keys: 'shift+tab' },
   },
   update: ({ editor, plugin, tx, schema: { type } }) => ({
-    wrap: ({ at }: { at?: Location | NodeSelection } = {}) => {
-      for (const [node, path] of tx.nodes.blocks({ at }).toReversed()) {
-        if (node.type === type || tx.nodes.above({ at: path, type: plugin })) {
-          continue;
+    wrap: txLocate(
+      locateAt(0),
+      ({ at }: { at?: Location | NodeSelection } = {}) => {
+        for (const [node, path] of tx.nodes.blocks({ at }).toReversed()) {
+          if (
+            node.type === type ||
+            tx.nodes.above({ at: path, type: plugin })
+          ) {
+            continue;
+          }
+          tx.nodes.wrap({ children: [], type }, { at: path });
         }
-        tx.nodes.wrap({ children: [], type }, { at: path });
       }
-    },
+    ),
     toggle: () => {
       tx.blocks.toggle({ type }, { wrap: true });
     },
@@ -281,7 +294,7 @@ const groupInlineChildrenIntoParagraphs = (
   children: ReadonlyArray<import('../../../core').Descendant>,
   context: Pick<MarkdownDecodeContext, 'isBlock' | 'isInline' | 'registry'>
 ) => {
-  const paragraphType = context.registry.type(PLUGINS.paragraph) ?? 'paragraph';
+  const paragraphType = getMarkdownParagraphType(context.registry);
   const elements: Array<import('../../../core').Descendant> = [];
   let inlineNodes: Array<import('../../../core').Descendant> = [];
 

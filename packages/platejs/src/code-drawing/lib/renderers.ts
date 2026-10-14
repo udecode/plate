@@ -49,18 +49,9 @@ async function renderGraphviz(content: string): Promise<string> {
   try {
     const vizModule = await import('viz.js');
     const Viz = vizModule.default;
-    let fullRender: typeof import('viz.js/full.render.js');
-
-    try {
-      fullRender = await import('viz.js/full.render.js');
-    } catch {
-      fullRender = await import('viz.js/full.render');
-    }
-
+    const fullRender = await import('viz.js/full.render.js');
     const viz = new Viz(
-      'default' in fullRender
-        ? (fullRender.default as typeof fullRender)
-        : fullRender
+      'default' in fullRender ? fullRender.default : fullRender
     );
     const svg = await viz.renderString(content, {
       format: 'svg',

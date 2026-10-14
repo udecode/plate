@@ -9,7 +9,6 @@ import {
   definePlugin,
   defineStateField,
   txOnly,
-  txRead,
 } from 'plitejs';
 
 import { getEditorRuntime } from '../src/core/editor-runtime';
@@ -226,10 +225,13 @@ describe('synchronous transaction authors', () => {
     const result = Promise.resolve('read');
     const shared = () => result;
     const plugin = definePlugin('mixed', {
-      read: () => ({ read: shared, nested: { read: shared } }),
+      read: () => ({
+        read: shared,
+        nested: { read: shared },
+        markedRead: () => result,
+      }),
       update: ({ tx }) => ({
         writeAlias: shared,
-        markedRead: txRead(() => result),
         append() {
           tx.text.insert('!', { at: point });
 

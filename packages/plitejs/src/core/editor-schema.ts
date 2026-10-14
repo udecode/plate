@@ -105,7 +105,7 @@ import {
  */
 export type InternalEditorSchemaApi<V extends Value = Value> =
   EditorStateSchemaApi<V> & {
-    canContain: (parent: Element, child: Descendant) => boolean;
+    canContain: (parent: Element, child: Descendant | string) => boolean;
     canContainAt: (
       parent: Element | null,
       child: Descendant,
@@ -113,6 +113,12 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root?: RootKey
     ) => boolean;
     canContainAtRoot: (child: Descendant, root?: RootKey) => boolean;
+    canWrap: (
+      parent: Element | null,
+      wrapper: Element,
+      index?: number,
+      root?: RootKey
+    ) => boolean;
     emptyTextKeeps: (
       key: string,
       value: unknown,
@@ -150,6 +156,15 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
         root?: RootKey;
         strict?: boolean;
       }>
+    ) => boolean;
+    /**
+     * `canPlaceAt` at a slot path of `root`'s current document. A missing
+     * parent refuses.
+     */
+    canPlaceAtPath: (
+      at: Path,
+      fit: readonly Descendant[],
+      options?: Readonly<{ removing?: readonly number[]; root?: RootKey }>
     ) => boolean;
     /** Register one trusted immutable document installed by the runtime owner. */
     adoptDocumentBaseline: (value: EditorDocumentValue) => void;
@@ -602,7 +617,22 @@ const COMPILED_SCHEMA_BY_API = new WeakMap<
   EditorStateSchemaApi<any>,
   () => CompiledEditorSchema | null
 >();
-const VALIDATED_DOCUMENT_ROOTS = new WeakMap<object, string>();
+const PLACEMENT_BY_API = new WeakMap<
+  object,
+  InternalEditorSchemaApi['canPlaceAtPath']
+>();
+const VALIDATED_DOCUMENT_ROOTS = new Map<string, WeakSet<object>>();
+const isRootValidatedBy = (children: object, authority: string) =>
+  VALIDATED_DOCUMENT_ROOTS.get(authority)?.has(children) === true;
+const markRootValidatedBy = (children: object, authority: string) => {
+  let roots = VALIDATED_DOCUMENT_ROOTS.get(authority);
+
+  if (!roots) {
+    roots = new WeakSet();
+    VALIDATED_DOCUMENT_ROOTS.set(authority, roots);
+  }
+  roots.add(children);
+};
 const DEEP_FROZEN_NODES = new WeakSet<object>();
 const isDeepFrozenNode = (node: Descendant): boolean => {
   if (DEEP_FROZEN_NODES.has(node)) return true;
@@ -634,6 +664,10 @@ const EMPTY_INDEXED_DOCUMENT = DocumentIndex.fromValue(Object.freeze([]));
 export const getCompiledEditorSchemaFromApi = (
   schemaApi: EditorStateSchemaApi<any>
 ) => COMPILED_SCHEMA_BY_API.get(schemaApi)?.() ?? null;
+
+/** @internal */
+export const getCanPlaceAtPathFromApi = (schemaApi: EditorStateSchemaApi) =>
+  getDefined(PLACEMENT_BY_API.get(schemaApi));
 
 export const createEditorSchema = <V extends Value = Value>(
   getEditor: () => Editor<V>,
@@ -1049,7 +1083,9 @@ export const createEditorSchema = <V extends Value = Value>(
       }
     };
 
-  const getElementBehavior = (element: Element): EditorElementBehavior =>
+  const getElementBehavior = (element: {
+    type?: unknown;
+  }): EditorElementBehavior =>
     getCompiledElement(element)?.behavior ?? DEFAULT_ELEMENT_BEHAVIOR;
 
   const getElementContentRoots = (
@@ -1339,14 +1375,20 @@ export const createEditorSchema = <V extends Value = Value>(
   const contentAllows = (
     schema: CompiledEditorSchema,
     content: CompiledSchemaContentProgram,
-    child: Descendant
-  ) =>
-    NodeApi.isText(child)
-      ? content.allowsText
-      : content.allowedElementTypes.has(getElementType(child) ?? '') ||
-        (content.allowsUnknownElements &&
-          schema.unknown === 'preserve' &&
-          !getCompiledElement(child));
+    child: Descendant | string
+  ) => {
+    if (typeof child !== 'string' && NodeApi.isText(child)) {
+      return content.allowsText;
+    }
+    const element = typeof child === 'string' ? { type: child } : child;
+
+    return (
+      content.allowedElementTypes.has(getElementType(element) ?? '') ||
+      (content.allowsUnknownElements &&
+        schema.unknown === 'preserve' &&
+        !getCompiledElement(element))
+    );
+  };
 
   const validationContentAllows = (
     schema: CompiledEditorSchema,
@@ -1397,11 +1439,17 @@ export const createEditorSchema = <V extends Value = Value>(
         );
   };
 
-  const canContain = (parent: Element, child: Descendant) => {
+  const canContain = (parent: Element, child: Descendant | string) => {
     const schema = getDeclarativeSchema();
     const content = getCompiledElement(parent)?.content;
 
     if (schema && content) return contentAllows(schema, content, child);
+    if (typeof child === 'string') {
+      return (
+        elementUsesInlineContent(parent) ===
+        getElementBehavior({ type: child }).inline
+      );
+    }
 
     return elementUsesInlineContent(parent)
       ? NodeApi.isText(child) ||
@@ -1439,13 +1487,29 @@ export const createEditorSchema = <V extends Value = Value>(
     return parent ? canContain(parent, child) : canContainAtRoot(child, root);
   };
 
-  const canPlaceAt: InternalEditorSchemaApi<V>['canPlaceAt'] = (
+  const canWrap: InternalEditorSchemaApi<V>['canWrap'] = (
     parent,
-    children,
-    fit,
-    at,
-    { removing = [], root = 'main', strict = false } = {}
+    wrapper,
+    index,
+    root
+  ) =>
+    (index === undefined
+      ? !!parent && canContain(parent, wrapper)
+      : canContainAt(parent, wrapper, index, root)) &&
+    wrapper.children.every((child) => canContain(wrapper, child));
+
+  const canPlaceIn = (
+    ancestors: readonly Element[],
+    children: readonly Descendant[],
+    fit: readonly Descendant[],
+    at: number,
+    {
+      removing = [],
+      root = 'main',
+      strict = false,
+    }: Parameters<InternalEditorSchemaApi<V>['canPlaceAt']>[4] = {}
   ) => {
+    const [parent = null] = ancestors;
     const schema = getDeclarativeSchema();
     const content = parent
       ? getCompiledElement(parent)?.content
@@ -1476,7 +1540,7 @@ export const createEditorSchema = <V extends Value = Value>(
         : position < index + fit.length
           ? fit[position - index]
           : remaining(position - fit.length);
-    const options = { ancestors: parent ? [parent] : [], root };
+    const options = { ancestors, root };
     const prefixLength = content.prefix?.length ?? 0;
     // Nodes that shift across the prefix boundary change slot, so the window
     // runs past the prefix by as many positions as the transfer adds or removes.
@@ -1501,6 +1565,33 @@ export const createEditorSchema = <V extends Value = Value>(
         ? contentAllowsAt(schema, content, child, position, options)
         : contentAllows(schema, content.remainder ?? content, child);
     });
+  };
+
+  const canPlaceAt: InternalEditorSchemaApi<V>['canPlaceAt'] = (
+    parent,
+    children,
+    fit,
+    at,
+    options
+  ) => canPlaceIn(parent ? [parent] : [], children, fit, at, options);
+
+  const canPlaceAtPath: InternalEditorSchemaApi<V>['canPlaceAtPath'] = (
+    at,
+    fit,
+    { removing, root = 'main' } = {}
+  ) => {
+    const index = at.at(-1);
+    const ancestors = getSlotAncestors(at, root);
+
+    if (index === undefined || !ancestors) return false;
+
+    return canPlaceIn(
+      ancestors,
+      ancestors[0]?.children ?? getDocumentRoot(getDocument(), root),
+      fit,
+      index,
+      { removing, root }
+    );
   };
 
   const createDeclarativeAndFill = (
@@ -1719,15 +1810,15 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   };
 
-  const createDefaultRootChild = (
-    root = 'main',
-    index = 0
+  const createDefaultChildIn = (
+    content: CompiledSchemaContentProgram | null | undefined,
+    index: number,
+    site: Readonly<{ ancestors: readonly Element[]; root: RootKey }>
   ): Descendant | null => {
     const declarative = getDeclarativeSchema();
 
-    if (!declarative) return null;
-    const content = getRootContent(root);
-    const slot = content?.prefix?.[index];
+    if (!declarative || !content) return null;
+    const slot = content.prefix?.[index];
 
     if (slot) {
       return createDeclarativeAndFill(
@@ -1735,10 +1826,10 @@ export const createEditorSchema = <V extends Value = Value>(
         slot.type,
         slot.properties,
         new Set(),
-        { root }
+        site
       );
     }
-    const plan = content?.defaultPlan;
+    const plan = content.defaultPlan;
 
     if (plan?.kind === 'text') return { text: '' };
     if (!plan) return null;
@@ -1748,8 +1839,39 @@ export const createEditorSchema = <V extends Value = Value>(
       plan.type,
       undefined,
       new Set(),
-      { root }
+      site
     );
+  };
+
+  const getSlotAncestors = (at: Path, root: RootKey) => {
+    const ancestors =
+      at.length > 1
+        ? getElementAncestors(getDocumentRoot(getDocument(), root), at)
+        : [];
+
+    return ancestors.length === at.length - 1 ? ancestors : null;
+  };
+
+  const createDefaultChild: EditorStateSchemaApi<V>['createDefaultChild'] = ({
+    at,
+    root = 'main',
+  }) => {
+    const index = at.at(-1);
+    const ancestors = getSlotAncestors(at, root);
+
+    if (index === undefined || !ancestors) return null;
+
+    const [parent] = ancestors;
+    const content = parent
+      ? getCompiledElement(parent)?.content
+      : getRootContent(root);
+
+    return parent && !content
+      ? createDefaultChildIn(getRootContent(root), getDefined(at[0]), {
+          ancestors: [],
+          root,
+        })
+      : createDefaultChildIn(content, index, { ancestors, root });
   };
 
   type CanonicalizationObserver = {
@@ -2337,8 +2459,7 @@ export const createEditorSchema = <V extends Value = Value>(
       let previous =
         baseline &&
         baseline.path.length === ancestors.length &&
-        VALIDATED_DOCUMENT_ROOTS.get(baseline.children) ===
-          getValidationAuthority()
+        isRootValidatedBy(baseline.children, getValidationAuthority())
           ? baseline.children
           : undefined;
 
@@ -3794,11 +3915,11 @@ export const createEditorSchema = <V extends Value = Value>(
 
     for (const [root, children] of Object.entries(documentRoots(value))) {
       if (
-        VALIDATED_DOCUMENT_ROOTS.get(children) === authority ||
+        isRootValidatedBy(children, authority) ||
         (isImmutable(children) &&
           children.every((node) => isDeepFrozenNode(node)))
       ) {
-        VALIDATED_DOCUMENT_ROOTS.set(children, authority);
+        markRootValidatedBy(children, authority);
         if (schema && hasContentRoots()) {
           sealElementOwnedRootIndex(
             schema,
@@ -3875,7 +3996,7 @@ export const createEditorSchema = <V extends Value = Value>(
     const authority = getValidationAuthority();
 
     const unvalidatedRoot = Object.entries(beforeRoots).find(
-      ([, children]) => VALIDATED_DOCUMENT_ROOTS.get(children) !== authority
+      ([, children]) => !isRootValidatedBy(children, authority)
     )?.[0];
 
     if (unvalidatedRoot) {
@@ -4361,14 +4482,11 @@ export const createEditorSchema = <V extends Value = Value>(
         );
       }
 
-      VALIDATED_DOCUMENT_ROOTS.set(children, authority);
+      markRootValidatedBy(children, authority);
     }
 
     for (const [root, children] of Object.entries(afterRoots)) {
-      if (
-        VALIDATED_DOCUMENT_ROOTS.get(children) !== authority &&
-        !touchedRoots.has(root)
-      ) {
+      if (!isRootValidatedBy(children, authority) && !touchedRoots.has(root)) {
         throw new EditorSchemaValidationError(
           `Unchanged editor root "${root}" lost validation authority.`
         );
@@ -4394,6 +4512,8 @@ export const createEditorSchema = <V extends Value = Value>(
     canContainAt,
     canContainAtRoot,
     canPlaceAt,
+    canPlaceAtPath,
+    canWrap,
     canonicalizeTextPropertiesAt,
     canonicalizeChildren,
     copyChildren,
@@ -4407,7 +4527,7 @@ export const createEditorSchema = <V extends Value = Value>(
     copy: (node, options) =>
       copyNodeAt(node, options.at, options.root ?? 'main') as typeof node,
     createAt,
-    createDefaultRootChild,
+    createDefaultChild,
     emptyTextKeeps,
     fitReportSink,
     delta: () => getRegistry().schemaContributions.delta,
@@ -4462,6 +4582,7 @@ export const createEditorSchema = <V extends Value = Value>(
   });
 
   COMPILED_SCHEMA_BY_API.set(api, getDeclarativeSchema);
+  PLACEMENT_BY_API.set(api, canPlaceAtPath);
 
   return api;
 };

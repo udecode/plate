@@ -1,16 +1,18 @@
 import JSZip from 'jszip';
 import React from 'react';
 
-import { AuthoredPlugin } from '../../../authored';
+import { AuthoredPlugin, projectAuthoredDocument } from '../../../authored';
 import {
   createEditor,
   createEditorView,
   definePlugin,
+  type Editor,
   type EditorCommit,
   property,
   schema,
 } from '../../../core';
 import {
+  BaseBlockquotePlugin,
   BaseBoldPlugin,
   BaseHeadingPlugin,
 } from '../../../features/basic-nodes';
@@ -20,6 +22,42 @@ import { importDocx } from '../../import/lib/importDocx';
 import { exportDocx } from './exportDocx';
 
 describe('authored DOCX', () => {
+  it('writes no revision for a block a rejected replacement gives back', async () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
+      initialValue: [
+        { children: [{ text: 'Old' }], type: 'paragraph' },
+        { children: [{ text: 'Kept' }], type: 'paragraph' },
+      ],
+      userId: 'alice',
+    });
+
+    createEditorView(editor, { authored: { intent: 'propose' } }).update(
+      (tx) => {
+        tx.nodes.remove({ at: [0] });
+        tx.nodes.insert(
+          { children: [{ text: 'New' }], type: 'paragraph' },
+          { at: [0] }
+        );
+      }
+    );
+    editor.update.authored.decide({
+      action: 'reject',
+      changes: editor.read.authored.changes().items,
+    });
+    expect(JSON.stringify(editor.read.children())).toContain('"kind":"held"');
+
+    const result = await exportDocx(editor, { projection: 'review' });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
+
+    expect(documentXml).not.toMatch(/<w:(ins|del|pPrChange|rPrChange)\b/);
+    expect(documentXml).toContain('Old');
+  });
+
   it('writes one tracked insertion for contiguous native typing', async () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, AuthoredPlugin],
@@ -27,7 +65,7 @@ describe('authored DOCX', () => {
       userId: 'alice',
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     });
 
     view.update.selection.set({ offset: 4, path: [0, 0] });
@@ -49,6 +87,48 @@ describe('authored DOCX', () => {
     expect(documentXml).toContain(' draft');
   });
 
+  it('exports the accepted and the proposed text of one mixed suggestion', async () => {
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
+      initialValue: [{ children: [{ text: 'Base old' }], type: 'paragraph' }],
+      userId: 'alice',
+    });
+
+    createEditorView(editor, { authored: { intent: 'propose' } }).update(
+      (tx) => {
+        tx.text.delete({
+          at: {
+            anchor: { offset: 4, path: [0, 0] },
+            focus: { offset: 8, path: [0, 0] },
+          },
+        });
+        tx.text.insert(' draft', { at: { offset: 4, path: [0, 0] } });
+      }
+    );
+    const exported = async (projection: 'accepted' | 'proposed') => {
+      const result = await exportDocx(editor, { projection });
+      if (!result.ok) throw new Error(`DOCX ${projection} export failed`);
+      const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+      const xml = await zip.file('word/document.xml')!.async('string');
+
+      return {
+        revisions: /<w:(ins|del)\b/.test(xml),
+        text: [...xml.matchAll(/<w:t(?: [^>]*)?>([^<]*)<\/w:t>/g)]
+          .map(([, text]) => text)
+          .join(''),
+      };
+    };
+
+    expect(await exported('accepted')).toEqual({
+      revisions: false,
+      text: 'Base old',
+    });
+    expect(await exported('proposed')).toEqual({
+      revisions: false,
+      text: 'Base draft',
+    });
+  });
+
   it('writes Word revisions that reimport with their authors', async () => {
     const HeadingPlugin = BaseHeadingPlugin.configure({
       component: ({ attributes, children, element }) =>
@@ -67,7 +147,7 @@ describe('authored DOCX', () => {
     });
 
     createEditorView(alice, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     }).update.text.insert('XY', {
       at: {
         anchor: { offset: 1, path: [0, 0] },
@@ -81,7 +161,7 @@ describe('authored DOCX', () => {
     });
 
     createEditorView(bob, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     }).update.nodes.set({ bold: true }, { at: [0, 0] });
     const editor = createEditor({
       plugins,
@@ -90,7 +170,7 @@ describe('authored DOCX', () => {
     });
 
     createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     }).update.nodes.set({ level: 1, type: 'heading' }, { at: [0] });
 
     const result = await exportDocx(editor, {
@@ -125,26 +205,24 @@ describe('authored DOCX', () => {
       userId: 'reader',
     });
     const restoredChanges = restored.read.authored.changes().items;
+    const restoredAs = (projection: 'accepted' | 'proposed') =>
+      projectAuthoredDocument(restored.read.value(), { projection }).document
+        .children;
 
-    expect(restored.read.children()).toEqual([
+    expect(restoredAs('accepted')).toEqual([
       { children: [{ text: 'ABCDE' }], type: 'paragraph' },
     ]);
-    expect(
-      restoredChanges.map(({ authorId: changeAuthorId, id }) => ({
-        authorId: changeAuthorId,
-        id,
-      }))
-    ).toEqual([
-      { authorId: 'alice', id: '1' },
-      { authorId: 'bob', id: '2' },
-      { authorId: 'carol', id: '3' },
+    expect(restoredChanges.map(({ authorId }) => authorId)).toEqual([
+      'alice',
+      'bob',
+      'carol',
     ]);
-    expect(
-      createEditorView(restored, {
-        authored: { intent: 'propose', projection: 'proposed' },
-      }).read.children()
-    ).toEqual([
-      { children: [{ bold: true, text: 'AXYDE' }], level: 1, type: 'heading' },
+    expect(restoredAs('proposed')).toEqual([
+      {
+        children: [{ bold: true, text: 'A' }, { text: 'XYDE' }],
+        level: 1,
+        type: 'heading',
+      },
     ]);
     expect(reimported.diagnostics).toEqual([]);
 
@@ -176,7 +254,7 @@ describe('authored DOCX', () => {
       userId: 'alice',
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
 
     view.update.text.insert(' draft', { at: { offset: 4, path: [0, 0] } });
@@ -186,7 +264,7 @@ describe('authored DOCX', () => {
       if (!mutated) {
         mutated = true;
         view.update.text.insert(' late', {
-          at: { offset: 10, path: [0, 0] },
+          at: { offset: 6, path: [0, 1] },
         });
       }
 
@@ -214,7 +292,7 @@ describe('authored DOCX', () => {
       userId: 'alice',
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
 
     view.update.text.insert(' draft', {
@@ -228,81 +306,6 @@ describe('authored DOCX', () => {
     expect(result.diagnostics[0]?.code).toBe('authored-lossy-projection');
   });
 
-  it('refuses review output when authored conflicts cannot become Word revisions', async () => {
-    const plugins = [BaseParagraphPlugin, AuthoredPlugin];
-    const original = createEditor({
-      plugins,
-      initialValue: [{ children: [{ text: 'First' }], type: 'paragraph' }],
-      userId: 'alice',
-    });
-    let id = '';
-
-    original.update((tx) => {
-      id = tx.authored.propose();
-      tx.text.insert('!', { at: { offset: 5, path: [0, 0] } });
-    });
-    const saved = structuredClone(original.read.value());
-    const author = createEditor({
-      plugins,
-      initialValue: saved,
-      userId: 'alice',
-    });
-    const reviewer = createEditor({
-      plugins,
-      initialValue: saved,
-      userId: 'alice',
-    });
-    const effects: Array<EditorCommit['effects'][number]> = [];
-
-    for (const peer of [author, reviewer]) {
-      peer.subscribeCommit((commit) => {
-        effects.push(
-          ...commit.effects.filter(
-            ({ type }) => type.key === 'authored.operation'
-          )
-        );
-      });
-    }
-    author.update((tx) => {
-      tx.authored.propose({ changeId: id });
-      tx.text.insert('x', { at: { offset: 6, path: [0, 0] } });
-    });
-    reviewer.update.authored.decide({
-      action: 'accept',
-      selection: reviewer.read.authored.select({ ids: [id] }),
-    });
-    const merged = createEditor({
-      plugins,
-      initialValue: saved,
-      userId: 'alice',
-    });
-
-    merged.update((tx) => {
-      for (const effect of effects) tx.effects.emit(effect.type, effect.value);
-    });
-
-    const review = await exportDocx(merged, { projection: 'review' });
-    const accepted = await exportDocx(merged, { projection: 'accepted' });
-
-    expect(review).toEqual({
-      diagnostics: [
-        expect.objectContaining({
-          code: 'authored-conflict',
-          count: 1,
-          severity: 'error',
-        }),
-      ],
-      ok: false,
-    });
-    expect(accepted.ok).toBe(true);
-    expect(accepted.diagnostics).toContainEqual(
-      expect.objectContaining({
-        code: 'authored-conflict',
-        severity: 'warning',
-      })
-    );
-  });
-
   it('projects proposed comment ranges into accepted and review output', async () => {
     const plugins = [BaseParagraphPlugin, AuthoredPlugin] as const;
     const editor = createEditor({
@@ -311,7 +314,7 @@ describe('authored DOCX', () => {
       userId: 'alice',
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
 
     view.update.text.insert('XYZ', {
@@ -320,7 +323,12 @@ describe('authored DOCX', () => {
         focus: { offset: 3, path: [0, 0] },
       },
     });
-    const comment = (id: string, anchor: number, focus: number) => ({
+    const comment = (
+      id: string,
+      path: number[],
+      anchor: number,
+      focus: number
+    ) => ({
       author: { name: 'Alice' },
       body: [{ children: [{ text: id }], type: 'paragraph' }],
       createdAt: null,
@@ -330,13 +338,13 @@ describe('authored DOCX', () => {
       resolved: null,
       target: {
         range: {
-          anchor: { offset: anchor, path: [0, 0] },
-          focus: { offset: focus, path: [0, 0] },
+          anchor: { offset: anchor, path },
+          focus: { offset: focus, path },
         },
       },
     });
     const review = await exportDocx(editor, {
-      comments: [comment('inserted', 1, 4)],
+      comments: [comment('inserted', [0, 2], 0, 3)],
       projection: 'review',
     });
 
@@ -351,13 +359,13 @@ describe('authored DOCX', () => {
     if (!reviewImport.ok) return;
     expect(reviewImport.comments[0]?.target).toEqual({
       range: {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 4, path: [0, 0] },
+        anchor: { offset: 0, path: [0, 2] },
+        focus: { offset: 3, path: [0, 2] },
       },
     });
 
     const accepted = await exportDocx(editor, {
-      comments: [comment('unchanged', 4, 6)],
+      comments: [comment('unchanged', [0, 3], 0, 2)],
       projection: 'accepted',
     });
 
@@ -385,7 +393,7 @@ describe('authored DOCX', () => {
       userId: 'alice',
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
 
     view.update.text.insert('XYZ', { at: { offset: 1, path: [0, 0] } });
@@ -403,8 +411,8 @@ describe('authored DOCX', () => {
           resolved: null,
           target: {
             range: {
-              anchor: { offset: 1, path: [0, 0] },
-              focus: { offset: 4, path: [0, 0] },
+              anchor: { offset: 0, path: [0, 1] },
+              focus: { offset: 3, path: [0, 1] },
             },
           },
         },
@@ -451,7 +459,7 @@ describe('authored DOCX', () => {
       ],
     });
     const view = createEditorView(editor, {
-      authored: { intent: 'propose', projection: 'proposed' },
+      authored: { intent: 'propose' },
     });
 
     view.update.text.insert(' draft', {
@@ -470,5 +478,464 @@ describe('authored DOCX', () => {
     expect(documentXml).toMatch(
       /<w:ins\b[^>]*w:author="alice"[^>]*>(?:(?!<\/w:ins>)[\s\S])* draft/
     );
+  });
+});
+
+describe('review DOCX round trip', () => {
+  const plugins = [
+    BaseParagraphPlugin,
+    BaseBlockquotePlugin,
+    BaseBoldPlugin,
+    AuthoredPlugin,
+  ] as const;
+  const reimport = async (
+    editor: Editor,
+    rewrite: (documentXml: string) => string = (documentXml) => documentXml,
+    lossPolicy: 'allow' | 'reject' = 'reject'
+  ) => {
+    const result = await exportDocx(editor, { projection: 'review' });
+
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+
+    zip.file(
+      'word/document.xml',
+      rewrite(await zip.file('word/document.xml')!.async('string'))
+    );
+
+    return importDocx(await zip.generateAsync({ type: 'arraybuffer' }), {
+      lossPolicy,
+      plugins,
+    });
+  };
+  const splitFirstRun = (documentXml: string) =>
+    documentXml.replace(
+      /<w:r>(\s*<w:rPr>(?:(?!<\/w:r>)[\s\S])*?<\/w:rPr>\s*)<w:t xml:space="preserve">([^<])([^<]+)<\/w:t>\s*<\/w:r>/,
+      '<w:r>$1<w:t xml:space="preserve">$2</w:t></w:r><w:r>$1<w:t xml:space="preserve">$3</w:t></w:r>'
+    );
+  const renumberIds = (documentXml: string) => {
+    const bookmarks = new Map<string, number>();
+    let next = 40;
+
+    return documentXml.replaceAll(
+      /<w:(\w+) ([^>]*?)w:id="(\d+)"/g,
+      (_, tag: string, rest: string, id: string) => {
+        if (tag.startsWith('bookmark') && !bookmarks.has(id)) {
+          bookmarks.set(id, next++);
+        }
+
+        return `<w:${tag} ${rest}w:id="${tag.startsWith('bookmark') ? bookmarks.get(id) : next++}"`;
+      }
+    );
+  };
+  const dropDateMilliseconds = (documentXml: string) =>
+    documentXml.replaceAll(/(w:date="[^"]+?)\.\d{3}Z"/g, '$1Z"');
+  const addRsids = (documentXml: string) =>
+    documentXml.replaceAll(/<w:(p|r)>/g, '<w:$1 w:rsidR="00A1B2C3">');
+  const addGoBackAndProofing = (documentXml: string) =>
+    documentXml.replace(
+      /(<w:p\b[^>]*>\s*<w:pPr>(?:(?!<\/w:pPr>)[\s\S])*<\/w:pPr>)/,
+      '$1<w:bookmarkStart w:id="0" w:name="_GoBack"/><w:bookmarkEnd w:id="0"/><w:proofErr w:type="spellStart"/>'
+    );
+  const asWordSaves = (documentXml: string) =>
+    [
+      splitFirstRun,
+      renumberIds,
+      dropDateMilliseconds,
+      addRsids,
+      addGoBackAndProofing,
+    ].reduce((xml, step) => step(xml), documentXml);
+
+  it.each([
+    {
+      build: () => {
+        const editor = createEditor({
+          plugins,
+          initialValue: [
+            { children: [{ bold: true, text: 'Base' }], type: 'paragraph' },
+          ],
+          userId: 'bob',
+        });
+
+        createEditorView(editor, {
+          authored: { intent: 'propose' },
+        }).update.nodes.unset('bold', { at: [0, 0] });
+
+        return editor;
+      },
+      decisions: [],
+      title: 'a suggested bold removal',
+    },
+    {
+      build: () => {
+        const alice = createEditor({
+          plugins,
+          initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+          userId: 'alice',
+        });
+
+        createEditorView(alice, {
+          authored: { intent: 'propose' },
+        }).update.text.insert(' draft', { at: { offset: 4, path: [0, 0] } });
+        const bob = createEditor({
+          plugins,
+          initialValue: alice.read.value(),
+          userId: 'bob',
+        });
+
+        createEditorView(bob, {
+          authored: { intent: 'propose' },
+        }).update.text.delete({
+          at: {
+            anchor: { offset: 2, path: [0, 1] },
+            focus: { offset: 5, path: [0, 1] },
+          },
+        });
+
+        return bob;
+      },
+      decisions: [],
+      title: 'an insertion with a deletion inside',
+    },
+    {
+      build: () => {
+        const bob = createEditor({
+          plugins,
+          initialValue: [
+            { children: [{ text: 'Base word' }], type: 'paragraph' },
+          ],
+          userId: 'bob',
+        });
+
+        createEditorView(bob, {
+          authored: { intent: 'propose' },
+        }).update.text.delete({
+          at: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 6, path: [0, 0] },
+          },
+        });
+        const carol = createEditor({
+          plugins,
+          initialValue: bob.read.value(),
+          userId: 'carol',
+        });
+
+        createEditorView(carol, {
+          authored: { intent: 'propose' },
+        }).update.text.delete({
+          at: {
+            anchor: { offset: 3, path: [0, 0] },
+            focus: { offset: 2, path: [0, 1] },
+          },
+        });
+
+        return carol;
+      },
+      decisions: [['reject', 'bob'] as const],
+      title: 'two deletions decided independently',
+    },
+    {
+      build: () => {
+        const alice = createEditor({
+          plugins,
+          initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+          userId: 'alice',
+        });
+
+        createEditorView(alice, {
+          authored: { intent: 'propose' },
+        }).update.text.insert(' hers', { at: { offset: 4, path: [0, 0] } });
+        const bob = createEditor({
+          plugins,
+          initialValue: alice.read.value(),
+          userId: 'bob',
+        });
+
+        createEditorView(bob, {
+          authored: { intent: 'propose' },
+        }).update.text.insert('X', { at: { offset: 3, path: [0, 1] } });
+        const carol = createEditor({
+          plugins,
+          initialValue: bob.read.value(),
+          userId: 'carol',
+        });
+
+        createEditorView(carol, {
+          authored: { intent: 'propose' },
+        }).update.text.delete({
+          at: {
+            anchor: { offset: 1, path: [0, 0] },
+            focus: { offset: 3, path: [0, 0] },
+          },
+        });
+
+        return carol;
+      },
+      decisions: [['accept', 'alice'] as const, ['reject', 'bob'] as const],
+      title: 'nested suggestions decided differently',
+    },
+    {
+      build: () => {
+        const alice = createEditor({
+          plugins,
+          initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+          userId: 'alice',
+        });
+        const view = createEditorView(alice, {
+          authored: { intent: 'propose' },
+        });
+
+        view.update.nodes.insert(
+          {
+            children: [{ children: [{ text: 'xy' }], type: 'paragraph' }],
+            type: 'blockquote',
+          },
+          { at: [1] }
+        );
+        view.update.nodes.remove({ at: [1, 0] });
+        const bob = createEditor({
+          plugins,
+          initialValue: alice.read.value(),
+          userId: 'bob',
+        });
+
+        createEditorView(bob, {
+          authored: { intent: 'propose' },
+        }).update.text.insert('Z', { at: { offset: 0, path: [1, 0, 0] } });
+
+        return bob;
+      },
+      decisions: [],
+      title: 'a fill with text typed into it',
+    },
+    {
+      build: () => {
+        const alice = createEditor({
+          plugins,
+          initialValue: [
+            { children: [{ text: 'a' }], type: 'paragraph' },
+            { children: [{ text: 'b' }], type: 'paragraph' },
+          ],
+          userId: 'alice',
+        });
+
+        createEditorView(alice, {
+          authored: { intent: 'propose' },
+        }).update.nodes.insert(
+          { children: [{ text: 'new' }], type: 'paragraph' },
+          { at: [2] }
+        );
+        const bob = createEditor({
+          plugins,
+          initialValue: alice.read.value(),
+          userId: 'bob',
+        });
+
+        bob.update.nodes.move({ at: [2], to: [0] });
+
+        return bob;
+      },
+      decisions: [],
+      title: 'an accepted move whose insertion is pending',
+    },
+  ])('keeps $title through a review DOCX', async ({ build, decisions }) => {
+    const original = build();
+    const imported = await reimport(original);
+    const restored = createEditor({
+      plugins,
+      initialValue: imported.ok ? imported.document : original.read.value(),
+      userId: 'reader',
+    });
+
+    for (const [action, author] of decisions) {
+      for (const editor of [original, restored]) {
+        editor.update.authored.decide({
+          action,
+          changes: editor.read.authored
+            .changes()
+            .items.filter(({ authorId }) => authorId === author),
+        });
+      }
+    }
+
+    expect(imported.ok && restored.read.value()).toEqual(
+      original.read.value()
+    );
+  });
+
+  it('writes the Word revisions of each run: insertions outer to inner, one deletion inside, and the formatting a suggestion replaced', async () => {
+    const alice = createEditor({
+      plugins,
+      initialValue: [
+        { children: [{ bold: true, text: 'Base' }], type: 'paragraph' },
+      ],
+      userId: 'alice',
+    });
+
+    createEditorView(alice, {
+      authored: { intent: 'propose' },
+    }).update.text.insert(' hers', { at: { offset: 4, path: [0, 0] } });
+    const bob = createEditor({
+      plugins,
+      initialValue: alice.read.value(),
+      userId: 'bob',
+    });
+    const view = createEditorView(bob, { authored: { intent: 'propose' } });
+
+    view.update.text.insert('X', { at: { offset: 3, path: [0, 1] } });
+    view.update.nodes.unset('bold', { at: [0, 0] });
+    const carol = createEditor({
+      plugins,
+      initialValue: bob.read.value(),
+      userId: 'carol',
+    });
+
+    createEditorView(carol, {
+      authored: { intent: 'propose' },
+    }).update.text.delete({
+      at: {
+        anchor: { offset: 0, path: [0, 2] },
+        focus: { offset: 1, path: [0, 2] },
+      },
+    });
+    const result = await exportDocx(carol, { projection: 'review' });
+
+    if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const documentXml = (await zip.file('word/document.xml')!.async('string'))
+      .replaceAll(/>\s+</g, '><')
+      .replaceAll(/ (w:date|w:id|xml:space)="[^"]*"/g, '');
+
+    expect([
+      documentXml.includes(
+        '<w:ins w:author="alice"><w:ins w:author="bob"><w:del w:author="carol"><w:r><w:rPr><w:b/></w:rPr><w:delText>X</w:delText>'
+      ),
+      documentXml.includes(
+        '<w:rPrChange w:author="bob"><w:rPr><w:b/></w:rPr></w:rPrChange>'
+      ),
+    ]).toEqual([true, true]);
+  });
+
+  it('binds the stored blocks after Word renumbers ids, drops date milliseconds and splits runs', async () => {
+    const alice = createEditor({
+      plugins,
+      initialValue: [
+        { children: [{ bold: true, text: 'Base' }], type: 'paragraph' },
+        { children: [{ text: 'plain' }], type: 'paragraph' },
+      ],
+      userId: 'alice',
+    });
+
+    createEditorView(alice, {
+      authored: { intent: 'propose' },
+    }).update.text.insert(' hers', { at: { offset: 4, path: [0, 0] } });
+    const bob = createEditor({
+      plugins,
+      initialValue: alice.read.value(),
+      userId: 'bob',
+    });
+    const view = createEditorView(bob, { authored: { intent: 'propose' } });
+
+    view.update.text.insert('X', { at: { offset: 3, path: [0, 1] } });
+    view.update.nodes.unset('bold', { at: [0, 0] });
+    const imported = await reimport(bob, asWordSaves);
+
+    expect(
+      imported.ok &&
+        createEditor({
+          plugins,
+          initialValue: imported.document,
+          userId: 'reader',
+        }).read.value()
+    ).toEqual(bob.read.value());
+  });
+
+  it('refuses a reviewed block Word changed, and keeps the Word revisions when loss is allowed', async () => {
+    const alice = createEditor({
+      plugins,
+      initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
+    });
+
+    createEditorView(alice, {
+      authored: { intent: 'propose' },
+    }).update.text.insert(' draft', { at: { offset: 4, path: [0, 0] } });
+    const edited = (documentXml: string) =>
+      documentXml.replace('>Base<', '>Bass<');
+    const [rejected, allowed] = await Promise.all([
+      reimport(alice, edited),
+      reimport(alice, edited, 'allow'),
+    ]);
+
+    expect({
+      allowed: allowed.ok
+        ? projectAuthoredDocument(allowed.document, { projection: 'proposed' })
+            .document.children
+        : allowed.diagnostics,
+      rejected: rejected.ok ? rejected.document : rejected.diagnostics[0],
+    }).toEqual({
+      allowed: [{ children: [{ text: 'Bass draft' }], type: 'paragraph' }],
+      rejected: expect.objectContaining({
+        code: 'lossy-content',
+        feature: 'authored-review',
+        severity: 'error',
+      }),
+    });
+  });
+
+  it('replaces the review part of a retained source without reporting it omitted', async () => {
+    const alice = createEditor({
+      plugins,
+      initialValue: [{ children: [{ text: 'Base' }], type: 'paragraph' }],
+      userId: 'alice',
+    });
+
+    createEditorView(alice, {
+      authored: { intent: 'propose' },
+    }).update.text.insert(' draft', { at: { offset: 4, path: [0, 0] } });
+    const first = await exportDocx(alice, { projection: 'review' });
+
+    if (!first.ok) throw new Error(JSON.stringify(first.diagnostics));
+    const imported = await importDocx(await first.blob.arrayBuffer(), {
+      plugins,
+      retainSource: true,
+    });
+
+    if (!imported.ok) throw new Error(JSON.stringify(imported.diagnostics));
+    const bob = createEditor({
+      plugins,
+      initialValue: imported.document,
+      userId: 'bob',
+    });
+
+    createEditorView(bob, {
+      authored: { intent: 'propose' },
+    }).update.text.insert('!', { at: { offset: 0, path: [0, 0] } });
+    const again = await exportDocx(bob, {
+      projection: 'review',
+      source: imported.source,
+    });
+
+    if (!again.ok) throw new Error(JSON.stringify(again.diagnostics));
+    const reimported = await importDocx(await again.blob.arrayBuffer(), {
+      plugins,
+    });
+
+    expect({
+      omitted: again.diagnostics.flatMap((diagnostic) =>
+        diagnostic.code === 'source-part-omitted' &&
+        diagnostic.part.startsWith('customXml/')
+          ? [diagnostic.part]
+          : []
+      ),
+      value:
+        reimported.ok &&
+        createEditor({
+          plugins,
+          initialValue: reimported.document,
+          userId: 'reader',
+        }).read.value(),
+    }).toEqual({ omitted: [], value: bob.read.value() });
   });
 });

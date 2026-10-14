@@ -27,7 +27,6 @@ import {
   useCreateEditor,
   useEditor,
   usePluginStore,
-  useStaticEditor,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -344,11 +343,8 @@ function CommentInput({
 
 function CommentBody({ body }: { body: Value }) {
   const initialValue = React.useMemo(() => cloneCommentValue(body), [body]);
-  const commentEditor = useStaticEditor(
-    {
-      plugins: BaseBasicMarksKit,
-      initialValue,
-    },
+  const commentEditor = useCreateEditor(
+    { plugins: BaseBasicMarksKit, initialValue },
     [initialValue]
   );
 

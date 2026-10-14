@@ -1,48 +1,35 @@
 export {
   authored,
-  isAuthoredEditor,
-  type AuthoredEditor,
+  createAuthoredPlugin,
   type AuthoredPlugin,
+  type AuthoredTestOptions,
 } from './authored';
+export { authoredRecords } from './facts/records';
 export {
   proposeAuthoredComparison,
   type AuthoredComparisonImportResult,
 } from './comparison';
 export {
-  authoredProjectionDiagnostics,
-  createAuthoredImportedRevisionChange,
-  createAuthoredReviewDocument,
-  parseAuthoredDocument,
   projectAuthoredDocument,
   projectAuthoredRange,
-  projectAuthoredReview,
-  type AuthoredDocumentProjection,
   type AuthoredFormatProjection,
-  type AuthoredFormatPropertyChange,
-  type AuthoredFormatSegment,
-  type AuthoredImportedRevision,
-  type AuthoredImportedRevisionSection,
-  type AuthoredProjectionDiagnostic,
-  type AuthoredReviewProjection,
-  type AuthoredUnresolvedChangeCounts,
 } from './format';
+export type { AuthoredMark } from './tree/marks';
+export type { AuthoredRefusal } from './refusal';
 export type {
   AuthoredChange,
-  AuthoredChangePublication,
-  AuthoredChangeContent,
   AuthoredChangeDetails,
+  AuthoredChangeGroup,
   AuthoredChangeKind,
-  AuthoredChangeLocation,
   AuthoredChangePart,
-  AuthoredChangeReview,
   AuthoredDecision,
+  AuthoredDocumentProjection,
   AuthoredOptions,
   AuthoredPage,
+  AuthoredProjectionDiagnostic,
+  AuthoredProjectionRefusal,
   AuthoredQuery,
   AuthoredResult,
-  AuthoredSelection,
-  AuthoredStatus,
+  AuthoredReview,
   AuthoredView,
 } from './types';
-
-export { authoredTreeProof } from './tree/proof-plugin';

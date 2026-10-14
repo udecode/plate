@@ -19,7 +19,7 @@ import {
 import { resolveEmojiData, useEmojiSearch } from '@/registry/lib/emoji-data';
 
 const COLUMNS = 9;
-const FREQUENT_KEY = 'plate:emoji-frequent:v1';
+const FREQUENT_KEY = 'emoji-frequent:v1';
 
 type EmojiPick = { emoji: string; label: string };
 type FrequentEmoji = EmojiPick & { count: number };

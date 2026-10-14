@@ -2,7 +2,7 @@
 title: Conversion boundary ownership and incremental Markdown
 type: decision
 status: accepted
-updated: 2026-10-04
+updated: 2026-10-13
 related:
   - format-mapping-authoring.md
   - markdown-conversion.md
@@ -12,7 +12,7 @@ related:
 
 # Conversion boundary ownership and incremental Markdown
 
-**Audit of 2026-10-04.** Pursue. The adopted laws and Markdown reuse contract hold, but HTML list import still merges an item's several blocks into one item's inline content before any decoder runs, with no diagnostic, while Markdown keeps the same structure as continuation blocks; that is silent content loss against the shared loss law despite a matched representation. The [triage audit](../../plans/2026-10-04-ledger-triage-audit.md) and records `2026-10-04-conversion-boundary-audit` and `2026-10-04-conversion-boundary-audit-2` hold the evidence.
+**Audit of 2026-10-12.** Pursue, built. HTML list import and paste joined a list item's blocks into one line of text with no diagnostic, and Markdown failed the whole parse when the editor could not indent an item's later block or hold its first block. The List plugin now rewrites a foreign `li`'s later blocks into Plate's own list shape before decoding, one level under the item, and reports an item style that no longer reaches a block it moved. Its Markdown decoder checks each list property with the format context's `schema.property` read and reports each one it drops. A newline that an item's `white-space` kept still collapses with only a warning, a line break alone between an item's blocks drops with no warning, and an image inside an item's paragraph still leaves the list; the plan leaves all three open. The [review plan](../../plans/2026-10-12-conversion-boundary-review.md) holds the evidence, the proof and the open work; it supersedes the 2026-10-04 audit and keeps its direction.
 
 **Adopted: coherent immutable document reads, explicit HTML loss accounting
 and dependency-correct static reuse.** Retain the rest of the design:

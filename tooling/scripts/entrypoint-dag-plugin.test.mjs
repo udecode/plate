@@ -145,10 +145,15 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts',
     'apps/www/src/app/dev/editor-perf/page.tsx',
     'apps/www/src/app/dev/authored-review/page.tsx',
+    'packages/platejs/src/authored/__tests__/authoredTestApi.ts',
+    'packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.authored-tree.spec.ts',
     'packages/platejs/src/features/table/lib/BaseTablePlugin.authored-tree.spec.ts',
     'packages/platejs/src/features/details/lib/BaseDetailsPlugin.authored-tree.spec.ts',
+    'packages/platejs/src/features/find/lib/BaseFindPlugin.authored-tree.spec.ts',
+    'packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.authored-tree.spec.ts',
     'packages/platejs/src/features/layout/lib/BaseColumnPlugin.authored-tree.spec.ts',
     'packages/platejs/src/features/list/lib/BaseListPlugin.authored-tree.spec.ts',
+    'packages/platejs/src/math/lib/BaseEquationPlugin.authored-tree.spec.ts',
   ]);
 });
 
@@ -317,6 +322,7 @@ test('platejs exposes exactly the accepted root and feature owners', () => {
     'find',
     'footnote',
     'layout',
+    'lint',
     'media',
     'mention',
     'slash-command',
@@ -448,7 +454,7 @@ test('every public entrypoint has one canonical runtime', () => {
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin').length,
-    14
+    15
   );
   assert.equal(
     rows.filter(({ runtimeProof }) => runtimeProof === 'plate-plugin-client')

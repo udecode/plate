@@ -115,9 +115,10 @@ test('keeps static/base owners free of Plate React adapters', () => {
   );
   assert.match(
     [
-      "import { createStaticEditor } from 'platejs/static';",
+      "import { createEditor } from 'platejs';",
       "import { toReactPlugin } from 'platejs/react';",
-      'createStaticEditor({',
+      "import { EditorStatic } from 'platejs/static';",
+      'createEditor({',
       '  plugins: [toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })],',
       '});',
     ].join('\n'),
@@ -126,6 +127,32 @@ test('keeps static/base owners free of Plate React adapters', () => {
   assert.doesNotMatch(
     'For live React, use toReactPlugin(BaseParagraphPlugin).configure({ component: ParagraphElement }).',
     staticBaseKitReactAdapterPattern
+  );
+});
+
+test('flags a React adapter in a static example that imports a static component', () => {
+  assert.match(
+    [
+      "import { BaseHorizontalRulePlugin, createEditor } from 'platejs';",
+      "import { toReactPlugin } from 'platejs/react';",
+      "import { HrElementStatic } from '@/components/editor/horizontal-rule-static';",
+      'createEditor({',
+      '  plugins: [toReactPlugin(BaseHorizontalRulePlugin, { component: HrElementStatic })],',
+      '});',
+    ].join('\n'),
+    staticEditorBaseReactAdapterPattern
+  );
+});
+
+test('accepts a React adapter in a live example', () => {
+  assert.doesNotMatch(
+    [
+      "import { BaseHorizontalRulePlugin } from 'platejs';",
+      "import { toReactPlugin } from 'platejs/react';",
+      "import { HrElement } from '@/components/editor/horizontal-rule-node';",
+      'const plugins = [toReactPlugin(BaseHorizontalRulePlugin, { component: HrElement })];',
+    ].join('\n'),
+    staticEditorBaseReactAdapterPattern
   );
 });
 

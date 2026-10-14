@@ -6,13 +6,7 @@ import React, {
   useRef,
 } from 'react';
 
-import { NodeApi, type Path, type NodeKey, type Text as TextNode } from '../..';
-import { readAuthoredFragmentRoots } from '../../core/authored-fragment-view';
-import {
-  readAuthoredViewFragments,
-  type NativeAuthoredFragment,
-} from '../../core/authored-runtime';
-import { AuthoredFragmentRendererContext } from '../authored-fragment-context';
+import type { Path, NodeKey, Text as TextNode } from '../..';
 import { usePliteDecorationEntries } from '../decoration-context';
 import {
   getDecorationSliceIdentity,
@@ -23,12 +17,8 @@ import {
   getDOMTextSyncCapability,
 } from '../dom-text-sync';
 import type { EditableDOMRuntime } from '../editable/editable-dom-runtime';
-import {
-  getNodeKey as editorGetNodeKey,
-  isInline as editorIsInline,
-} from '../editable/runtime-editor-api';
+import { getNodeKey as editorGetNodeKey } from '../editable/runtime-editor-api';
 import { readTextByKey } from '../editable/runtime-live-state';
-import { useAuthoredFragmentSlots } from '../hooks/use-authored-fragment-slots';
 import {
   useClaimEditableDOMCommit,
   useEditableDOMRuntime,
@@ -47,7 +37,6 @@ import {
 } from '../hooks/use-plite-node-ref';
 import {
   type EditableTextPart,
-  type EditableTextRenderPart,
   partitionTextContainers,
   wrapDecorationContainers,
 } from './editable-text-containers';
@@ -74,14 +63,14 @@ const EMPTY_BOUND_TEXT = Object.freeze({
   marks: EMPTY_MARKS,
   path: null,
   nodeKey: null,
-  pliteNode: null,
+  editorNode: null,
   renderRevision: 0,
   text: '',
 }) as {
   marks: Omit<TextNode, 'text'>;
   path: Path | null;
   nodeKey: NodeKey | null;
-  pliteNode: TextNode | null;
+  editorNode: TextNode | null;
   renderRevision: number;
   text: string;
 };
@@ -114,23 +103,23 @@ const samePath = (left: Path | null, right: Path | null) =>
 const samePathOrRuntimeStable = ({
   leftPath,
   leftNodeKey,
-  leftPliteNode,
+  leftEditorNode,
   rightPath,
   rightNodeKey,
-  rightPliteNode,
+  rightEditorNode,
 }: {
   leftPath: Path | null;
   leftNodeKey: NodeKey | null | undefined;
-  leftPliteNode: TextNode | null | undefined;
+  leftEditorNode: TextNode | null | undefined;
   rightPath: Path | null;
   rightNodeKey: NodeKey | null | undefined;
-  rightPliteNode: TextNode | null | undefined;
+  rightEditorNode: TextNode | null | undefined;
 }) =>
   samePath(leftPath, rightPath) ||
   (leftNodeKey != null &&
     leftNodeKey === rightNodeKey &&
-    leftPliteNode != null &&
-    leftPliteNode === rightPliteNode);
+    leftEditorNode != null &&
+    leftEditorNode === rightEditorNode);
 
 type ZeroWidthOptions = {
   includeSentinel?: boolean;
@@ -156,7 +145,7 @@ const sameBoundText = (
     marks: Omit<TextNode, 'text'>;
     path: Path | null;
     nodeKey: NodeKey | null;
-    pliteNode: TextNode | null;
+    editorNode: TextNode | null;
     renderRevision: number;
     text: string;
   } | null,
@@ -164,23 +153,23 @@ const sameBoundText = (
     marks: Omit<TextNode, 'text'>;
     path: Path | null;
     nodeKey: NodeKey | null;
-    pliteNode: TextNode | null;
+    editorNode: TextNode | null;
     renderRevision: number;
     text: string;
   }
 ) =>
   left != null &&
-  left.pliteNode === right.pliteNode &&
+  left.editorNode === right.editorNode &&
   left.nodeKey === right.nodeKey &&
   left.renderRevision === right.renderRevision &&
   left.text === right.text &&
   samePathOrRuntimeStable({
     leftPath: left.path,
     leftNodeKey: left.nodeKey,
-    leftPliteNode: left.pliteNode,
+    leftEditorNode: left.editorNode,
     rightPath: right.path,
     rightNodeKey: right.nodeKey,
-    rightPliteNode: right.pliteNode,
+    rightEditorNode: right.editorNode,
   }) &&
   sameMarks(left.marks, right.marks);
 
@@ -244,79 +233,6 @@ const splitTextByDecorations = (
     ...segment,
     marks,
   }));
-
-const interleaveAuthoredText = (
-  segments: readonly EditableTextPart[],
-  fragments: ReadonlyArray<
-    Readonly<{
-      fragment: NativeAuthoredFragment;
-      offset: number;
-    }>
-  >,
-  text: string,
-  marks: Omit<TextNode, 'text'>
-) => {
-  const parts: EditableTextRenderPart[] = [];
-  if (!fragments.length) {
-    return segments.map((segment) => ({ kind: 'text' as const, segment }));
-  }
-  let segmentIndex = 0;
-  let from = 0;
-  let before = 'start';
-  const appendText = (to: number, after: string) => {
-    if (from === to) {
-      parts.push({
-        kind: 'text',
-        segment: {
-          decorations: [],
-          end: to,
-          identity: JSON.stringify(['authored-gap', before, after]),
-          marks,
-          start: from,
-          text: '',
-        },
-      });
-      return;
-    }
-    while (segmentIndex < segments.length) {
-      const segment = segments[segmentIndex];
-      if (segment.start >= to) break;
-      const start = Math.max(from, segment.start);
-      const end = Math.min(to, segment.end);
-      if (start < end) {
-        parts.push({
-          kind: 'text',
-          segment: {
-            ...segment,
-            start,
-            end,
-            text: text.slice(start, end),
-            identity:
-              start === segment.start && end === segment.end
-                ? segment.identity
-                : JSON.stringify([segment.identity, before, after]),
-          },
-        });
-      }
-      if (segment.end > to) break;
-      segmentIndex += 1;
-    }
-  };
-  let index = 0;
-  while (index < fragments.length) {
-    const { offset } = fragments[index];
-    appendText(offset, fragments[index].fragment.id);
-    while (index < fragments.length && fragments[index].offset === offset) {
-      const { fragment } = fragments[index];
-      parts.push({ kind: 'retained', fragment });
-      before = fragment.id;
-      index += 1;
-    }
-    from = offset;
-  }
-  appendText(text.length, 'end');
-  return parts;
-};
 
 const getTextMarks = (node: TextNode | null): Omit<TextNode, 'text'> => {
   if (!node) {
@@ -414,7 +330,6 @@ const RenderEditableText = ({
   renderText,
   resolvedMarks,
   resolvedText,
-  textRange,
   nodeKey,
   zeroWidth,
 }: {
@@ -434,7 +349,6 @@ const RenderEditableText = ({
   renderText?: (props: RenderTextProps) => ReactNode;
   resolvedMarks: Omit<TextNode, 'text'>;
   resolvedText: string;
-  textRange?: Readonly<{ end: number; start: number }>;
   zeroWidth?: ZeroWidthOptions;
 }) => {
   useClaimEditableDOMCommit();
@@ -443,74 +357,20 @@ const RenderEditableText = ({
   useIsomorphicLayoutEffect(() => {
     contentRef.current?.defer();
   });
-  const editor = useEditorContext();
-  const renderFragment = React.useContext(AuthoredFragmentRendererContext);
-  const slots = useAuthoredFragmentSlots(nodeKey ?? null);
-  const fragments = slots.flatMap((slot) => {
-    if (textRange || !renderFragment || slot.side !== 'text') return [];
-    const fragment = readAuthoredViewFragments(editor, slot.changeId).find(
-      (current) => current.id === slot.id
-    );
-    if (
-      !fragment ||
-      fragment.kind === 'properties' ||
-      fragment.placement?.kind !== 'text'
-    ) {
-      return [];
-    }
-    const roots = readAuthoredFragmentRoots(fragment);
-    if (
-      !roots.length ||
-      roots.some(
-        ([node]) => NodeApi.isElement(node) && !editorIsInline(editor, node)
-      )
-    ) {
-      return [];
-    }
-    return [{ fragment, offset: fragment.placement.point.offset }];
-  });
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey ?? null);
   const hasText = resolvedText.length > 0;
-  const domTextSync =
-    fragments.length || textRange
-      ? { enabled: false, reason: 'retained-content' as const }
-      : getDOMTextSyncCapability({
-          hasText,
-          marks: resolvedMarks,
-          decorations,
-          renderLeaf,
-          renderText,
-        });
-  const fullSegments = hasText
-    ? splitTextByDecorations(resolvedText, decorations, resolvedMarks)
-    : [];
-  const segments = textRange
-    ? textRange.start === textRange.end
-      ? [
-          {
-            decorations: [],
-            end: textRange.end,
-            identity: 'retained-boundary',
-            marks: resolvedMarks,
-            start: textRange.start,
-            text: '',
-          },
-        ]
-      : fullSegments.flatMap((segment) => {
-          const start = Math.max(segment.start, textRange.start);
-          const end = Math.min(segment.end, textRange.end);
-          return start < end
-            ? [{ ...segment, end, start, text: resolvedText.slice(start, end) }]
-            : [];
-        })
-    : fullSegments;
-  const parts = interleaveAuthoredText(
-    segments,
-    fragments,
-    resolvedText,
-    resolvedMarks
-  );
-
+  const domTextSync = getDOMTextSyncCapability({
+    hasText,
+    marks: resolvedMarks,
+    decorations,
+    renderLeaf,
+    renderText,
+  });
+  const parts = (
+    hasText
+      ? splitTextByDecorations(resolvedText, decorations, resolvedMarks)
+      : []
+  ).map((segment) => ({ kind: 'text' as const, segment }));
   const textNode = {
     text: resolvedText,
     ...resolvedMarks,
@@ -540,16 +400,13 @@ const RenderEditableText = ({
   const content = parts.length
     ? wrapDecorationContainers(
         segmentParts.map((part, index) => {
-          if (part.kind === 'retained') return renderFragment?.(part.fragment);
           const { segment } = part;
           const innermostDecoration = segment.decorations.at(-1);
           const isTrailing =
             isLast && index === parts.length - 1 && segment.text.endsWith('\n');
           const baseContent =
             segment.text.length === 0 ? (
-              <ZeroWidthString
-                isMarkPlaceholder={fragments.length === 0 && !textRange}
-              />
+              <ZeroWidthString isMarkPlaceholder />
             ) : innermostDecoration ? (
               <DecoratedTextString
                 attributes={innermostDecoration.attributes}
@@ -581,7 +438,7 @@ const RenderEditableText = ({
           }
           const leafNode = segment.marks;
           const leafPosition =
-            parts.length > 1 || textRange
+            parts.length > 1
               ? {
                   end: segment.end,
                   isFirst: index === 0 ? (true as const) : undefined,
@@ -778,13 +635,12 @@ const BoundEditableText = ({
   placeholderDir?: 'rtl';
   placeholderRef?: React.RefCallback<HTMLElement>;
   placeholderStyle?: CSSProperties;
-  pliteNode?: TextNode | null;
+  editorNode?: TextNode | null;
   ref?: Ref<HTMLSpanElement>;
   renderLeaf?: (props: RenderLeafProps) => ReactNode;
   renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
   renderText?: (props: RenderTextProps) => ReactNode;
   text?: string;
-  textRange?: Readonly<{ end: number; start: number }>;
   zeroWidth?: ZeroWidthOptions;
 }) => {
   const editor = useEditorContext();
@@ -805,7 +661,7 @@ const BoundEditableText = ({
         marks: marks ?? getTextMarks(node),
         path: resolvedPath,
         nodeKey: resolvedNodeKey,
-        pliteNode: node,
+        editorNode: node,
         renderRevision: resolvedNodeKey
           ? getDOMTextRenderRevision(editor, [resolvedNodeKey])
           : 0,
@@ -824,7 +680,7 @@ const BoundEditableText = ({
   const resolvedNodeKey = boundText.nodeKey;
   const boundRef = usePliteNodeRef(resolvedNodeKey, {
     path: boundText.path,
-    pliteNode: boundText.pliteNode,
+    editorNode: boundText.editorNode,
   });
   const decorations = usePliteDecorationEntries(resolvedNodeKey);
 
@@ -855,7 +711,7 @@ const DecoratedEditableText = ({
   path,
   ref,
   nodeKey = null,
-  pliteNode = null,
+  editorNode = null,
   text = '',
   ...props
 }: {
@@ -868,17 +724,16 @@ const DecoratedEditableText = ({
   placeholderDir?: 'rtl';
   placeholderRef?: React.RefCallback<HTMLElement>;
   placeholderStyle?: CSSProperties;
-  pliteNode?: TextNode | null;
+  editorNode?: TextNode | null;
   ref?: Ref<HTMLSpanElement>;
   renderLeaf?: (props: RenderLeafProps) => ReactNode;
   renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
   renderText?: (props: RenderTextProps) => ReactNode;
   text?: string;
-  textRange?: Readonly<{ end: number; start: number }>;
   zeroWidth?: ZeroWidthOptions;
 }) => {
   const editor = useEditorContext();
-  const boundRef = usePliteNodeRef(nodeKey, { path, pliteNode });
+  const boundRef = usePliteNodeRef(nodeKey, { path, editorNode });
   const decorations = usePliteDecorationEntries(nodeKey);
   const { text: currentText } = readTextByKey(editor, nodeKey);
   const resolvedMarks = currentText ? getTextMarks(currentText) : marks;
@@ -919,13 +774,12 @@ const EditableTextInner = ({
   placeholderDir?: 'rtl';
   placeholderRef?: React.RefCallback<HTMLElement>;
   placeholderStyle?: CSSProperties;
-  pliteNode?: TextNode | null;
+  editorNode?: TextNode | null;
   ref?: Ref<HTMLSpanElement>;
   renderLeaf?: (props: RenderLeafProps) => ReactNode;
   renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
   renderText?: (props: RenderTextProps) => ReactNode;
   text?: string;
-  textRange?: Readonly<{ end: number; start: number }>;
   zeroWidth?: ZeroWidthOptions;
 }) => {
   if (nodeKey && props.text !== undefined && props.marks !== undefined) {
@@ -978,18 +832,16 @@ const sameEditableTextProps = (
   left.renderPlaceholder === right.renderPlaceholder &&
   left.renderText === right.renderText &&
   left.nodeKey === right.nodeKey &&
-  left.pliteNode === right.pliteNode &&
+  left.editorNode === right.editorNode &&
   left.text === right.text &&
-  left.textRange?.start === right.textRange?.start &&
-  left.textRange?.end === right.textRange?.end &&
   sameMarks(left.marks ?? EMPTY_MARKS, right.marks ?? EMPTY_MARKS) &&
   samePathOrRuntimeStable({
     leftPath: left.path ?? null,
     leftNodeKey: left.nodeKey,
-    leftPliteNode: left.pliteNode,
+    leftEditorNode: left.editorNode,
     rightPath: right.path ?? null,
     rightNodeKey: right.nodeKey,
-    rightPliteNode: right.pliteNode,
+    rightEditorNode: right.editorNode,
   }) &&
   sameZeroWidth(left.zeroWidth, right.zeroWidth);
 

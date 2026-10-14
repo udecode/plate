@@ -38,12 +38,12 @@ for (const route of ['details-demo', 'playground']) {
       const value = () =>
         root.evaluate(
           (element: PliteBrowserHandleElement) =>
-            element.__pliteBrowserHandle!.getValue().children
+            element.__EDITOR_BROWSER_HANDLE__!.getValue().children
         );
       const before = await value();
       const beforeSelection = await root.evaluate(
         (element: PliteBrowserHandleElement) =>
-          element.__pliteBrowserHandle!.getSelection()
+          element.__EDITOR_BROWSER_HANDLE__!.getSelection()
       );
       const innerKey = await inner.getAttribute('data-editor-node-key');
       await page.keyboard.press('Backspace');
@@ -62,14 +62,14 @@ for (const route of ['details-demo', 'playground']) {
         await expect
           .poll(() =>
             root.evaluate((element: PliteBrowserHandleElement) =>
-              element.__pliteBrowserHandle!.getSelection()
+              element.__EDITOR_BROWSER_HANDLE__!.getSelection()
             )
           )
           .toEqual(beforeSelection);
         await expect
           .poll(() =>
             root.evaluate((element: PliteBrowserHandleElement) =>
-              element.__pliteBrowserHandle!.getDOMSelection()
+              element.__EDITOR_BROWSER_HANDLE__!.getDOMSelection()
             )
           )
           .toEqual(beforeSelection);

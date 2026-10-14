@@ -703,6 +703,12 @@ const changedNodes = (
   return Object.freeze(selected);
 };
 
+const innermostPathContaining = (document: DocumentIndex, position: number) =>
+  document
+    .openContextAt(position)
+    .findLast((entry) => entry.from < position && position < entry.to)?.path ??
+  [];
+
 /**
  * Inspect changed-owner selection and its prefix-index work.
  *
@@ -818,8 +824,38 @@ const transferChangedOwnerIdentities = (
   const visited = new Set<string>();
   const continuedBefore = new WeakSet<object>();
   const continuedAfter = new WeakSet<object>();
+  const transferIdsAlongPath = (nodePath: readonly number[]) => {
+    for (let depth = 1; depth <= nodePath.length; depth += 1) {
+      const path = nodePath.slice(0, depth);
+      const key = path.join('.');
+
+      if (visited.has(key)) continue;
+      visited.add(key);
+      const beforeNode = before.node(path);
+      const id =
+        typeof beforeNode === 'object' && beforeNode !== null
+          ? ownerIds.get(beforeNode)
+          : undefined;
+
+      if (!id || !ElementApi.isElement(beforeNode)) continue;
+      const targetPath = mapCanonicalDocumentPath(mapping, path);
+
+      if (!targetPath) continue;
+      const afterNode = after.node(targetPath);
+
+      if (
+        ElementApi.isElement(afterNode) &&
+        ownerDeclarationIdentityEqual(schema, beforeNode, afterNode)
+      ) {
+        ownerIds.set(afterNode, id);
+        continuedBefore.add(beforeNode);
+        continuedAfter.add(afterNode);
+      }
+    }
+  };
 
   for (const { fromBefore, toBefore } of ranges) {
+    transferIdsAlongPath(innermostPathContaining(before, fromBefore));
     for (const candidate of changedNodes(before, fromBefore, toBefore)) {
       const candidateTargetPath = mapCanonicalDocumentPath(
         mapping,
@@ -833,33 +869,7 @@ const transferChangedOwnerIdentities = (
         continuedBefore.add(before.node(candidate.path));
         continuedAfter.add(after.node(candidateTargetPath));
       }
-      for (let depth = 1; depth <= candidate.path.length; depth += 1) {
-        const path = candidate.path.slice(0, depth);
-        const key = path.join('.');
-
-        if (visited.has(key)) continue;
-        visited.add(key);
-        const beforeNode = before.node(path);
-        const id =
-          typeof beforeNode === 'object' && beforeNode !== null
-            ? ownerIds.get(beforeNode)
-            : undefined;
-
-        if (!id || !ElementApi.isElement(beforeNode)) continue;
-        const targetPath = mapCanonicalDocumentPath(mapping, path);
-
-        if (!targetPath) continue;
-        const afterNode = after.node(targetPath);
-
-        if (
-          ElementApi.isElement(afterNode) &&
-          ownerDeclarationIdentityEqual(schema, beforeNode, afterNode)
-        ) {
-          ownerIds.set(afterNode, id);
-          continuedBefore.add(beforeNode);
-          continuedAfter.add(afterNode);
-        }
-      }
+      transferIdsAlongPath(candidate.path);
     }
   }
 

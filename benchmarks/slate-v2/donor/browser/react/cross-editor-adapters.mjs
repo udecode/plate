@@ -1,3 +1,5 @@
+import { BROWSER_HANDLE_KEY } from '../../../../../packages/plitejs/src/internal/browser-protocol.ts';
+
 export const surfaces = [
   'plite',
   'plate',
@@ -90,7 +92,7 @@ export async function mount(host, lines, options) {
       : 'React.createElement(EditorRoot,{editor,suppressInstanceWarning:true},React.createElement(EditorContent,{...props,disableDefaultStyles:true}))'
   });
   const dom = await until(() => host.querySelector('[contenteditable="true"]'));
-  const handle = dom.__pliteBrowserHandle;
+  const handle = dom.${BROWSER_HANDLE_KEY};
   if (!handle) throw new Error('browser handle not installed');
   return {
     dom,

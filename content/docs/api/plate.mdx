@@ -23,7 +23,7 @@ the React and static paths need React.
 | `platejs` | Headless editor creation, Plate plugins, editor APIs, core types, and utilities. | None |
 | `platejs/react` | React editor creation, components, hooks, stores, and React plugins. | React and React DOM |
 | `platejs/react/virtualized` | `VirtualizedEditorContent`, which omits offscreen top-level blocks from the DOM. | `@tanstack/react-virtual`, React, and React DOM |
-| `platejs/static` | Static editor creation, HTML rendering, and static node renderers. | React and React DOM |
+| `platejs/static` | `EditorStatic`, HTML rendering, and static node renderers. | React and React DOM |
 | `platejs/dom`, `platejs/history`, `platejs/hyperscript` | DOM and clipboard integration, history persistence, and JSX fixtures. | None |
 | `@platejs/test` | Node-safe editor fixtures and environment-specific test harnesses. | React and Testing Library for `/react`; Playwright for `/playwright` |
 | `platejs/pagination` | Pagination geometry and measurement. | `@chenglou/pretext` |
@@ -74,16 +74,16 @@ export function BasicEditor() {
 
 ## Static runtime
 
-Use `platejs/static` for rendering or serialization paths that do not mount an editable React editor.
+To render or serialize without mounting an editable React editor, create the editor with `createEditor` and render it with `EditorStatic` or `renderStaticHtml` from `platejs/static`.
 
-```tsx title="lib/create-static-editor.ts"
-import { createStaticEditor } from 'platejs/static';
+```tsx title="lib/editor.ts"
+import { createEditor } from 'platejs';
 
-export const staticEditor = createStaticEditor({
+export const editor = createEditor({
   initialValue: [
     {
       type: 'paragraph',
-      children: [{ text: 'Static editor.' }],
+      children: [{ text: 'Hello from Plate.' }],
     },
   ],
 });

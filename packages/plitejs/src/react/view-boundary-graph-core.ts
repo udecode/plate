@@ -1,5 +1,4 @@
 import { type Path, PathApi, type Point, type RootKey } from '..';
-import type { NativeAuthoredFragment } from '../core/authored-runtime';
 import { failInvariant } from './editable/runtime-editor-api';
 import { MAIN_ROOT_KEY } from './root-key';
 
@@ -11,7 +10,6 @@ export type PliteViewBoundaryOwner = Readonly<{
 
 export type PliteViewBoundaryGraphNodeInput = Readonly<{
   blockKey?: string;
-  fragment?: Pick<NativeAuthoredFragment, 'changeId' | 'id'>;
   key?: string;
   owner?: PliteViewBoundaryOwner | null;
   path: Path;
@@ -20,7 +18,6 @@ export type PliteViewBoundaryGraphNodeInput = Readonly<{
 }>;
 
 export type PliteViewBoundaryGraphNode = Readonly<{
-  fragment: Pick<NativeAuthoredFragment, 'changeId' | 'id'> | null;
   index: number;
   key: string;
   owner: PliteViewBoundaryOwner | null;
@@ -32,7 +29,6 @@ export type PliteViewBoundaryGraphNode = Readonly<{
 
 export type PliteViewBoundaryPoint = Readonly<{
   affinity?: 'backward' | 'forward';
-  fragmentId?: string;
   owner?: PliteViewBoundaryOwner | null;
   point: Point;
 }>;
@@ -50,7 +46,6 @@ export type PliteViewBoundaryRangeEndpoint =
 
 export type PliteViewBoundaryRangeSegment = Readonly<{
   end: PliteViewBoundaryRangeEndpoint;
-  fragment: Pick<NativeAuthoredFragment, 'changeId' | 'id'> | null;
   nodes: readonly PliteViewBoundaryGraphNode[];
   owner: PliteViewBoundaryOwner | null;
   ownerKey: string | null;
@@ -80,7 +75,6 @@ export type PliteViewBoundaryGraphModel = Readonly<{
 }>;
 
 type PliteViewBoundaryGraphNodeGroup = {
-  fragment: Pick<NativeAuthoredFragment, 'changeId' | 'id'> | null;
   nodes: PliteViewBoundaryGraphNode[];
   owner: PliteViewBoundaryOwner | null;
   ownerKey: string | null;
@@ -133,12 +127,6 @@ const createNode = (
   const path = Object.freeze(clonePath(input.path));
 
   return Object.freeze({
-    fragment: input.fragment
-      ? Object.freeze({
-          id: input.fragment.id,
-          changeId: input.fragment.changeId,
-        })
-      : null,
     index,
     key: getGraphNodeKey({
       ownerKey,
@@ -146,11 +134,10 @@ const createNode = (
       root: input.root,
       userKey:
         input.key ??
-        (input.fragment || input.text
+        (input.text
           ? JSON.stringify([
               ownerKey,
               input.root,
-              input.fragment?.id ?? null,
               path,
               input.text ? [input.text.start, input.text.end] : null,
               input.text ? index : null,
@@ -178,16 +165,11 @@ export const createPliteViewBoundaryGraph = (
     const node = createNode(nodeInput, index);
 
     if (nodeByKey.has(node.key)) {
-      throw new Error(`Duplicate Plite view-boundary node key: ${node.key}`);
+      throw new Error(`Duplicate view-boundary node key: ${node.key}`);
     }
 
     nodeByKey.set(node.key, node);
-    const address = pointAddress(
-      node.root,
-      node.ownerKey,
-      node.fragment?.id ?? null,
-      node.path
-    );
+    const address = pointAddress(node.root, node.ownerKey, node.path);
     const entries = nodesByAddress.get(address) ?? [];
     entries.push(node);
     nodesByAddress.set(address, entries);
@@ -255,12 +237,8 @@ const getNode = (
 
 const getPointRoot = (point: Point): RootKey => point.root ?? MAIN_ROOT_KEY;
 
-const pointAddress = (
-  root: RootKey,
-  ownerKey: string | null,
-  fragmentId: string | null,
-  path: Path
-) => JSON.stringify([root, ownerKey, fragmentId, path]);
+const pointAddress = (root: RootKey, ownerKey: string | null, path: Path) =>
+  JSON.stringify([root, ownerKey, path]);
 
 const isPointInsideNode = (point: Point, node: PliteViewBoundaryGraphNode) =>
   (PathApi.equals(point.path, node.path) ||
@@ -295,12 +273,7 @@ const resolvePointNode = (
   const ownerKey = getViewBoundaryPointOwnerKey(boundaryPoint);
   for (let { length } = boundaryPoint.point.path; length >= 0; length--) {
     const nodes = graph.nodesByAddress.get(
-      pointAddress(
-        root,
-        ownerKey,
-        boundaryPoint.fragmentId ?? null,
-        boundaryPoint.point.path.slice(0, length)
-      )
+      pointAddress(root, ownerKey, boundaryPoint.point.path.slice(0, length))
     );
     if (!nodes) continue;
     let bestNode: PliteViewBoundaryGraphNode | null = null;
@@ -362,7 +335,6 @@ const pushNodeGroup = (
   if (
     lastGroup &&
     lastGroup.root === node.root &&
-    lastGroup.fragment?.id === node.fragment?.id &&
     lastGroup.ownerKey === node.ownerKey
   ) {
     lastGroup.nodes.push(node);
@@ -370,7 +342,6 @@ const pushNodeGroup = (
   }
 
   groups.push({
-    fragment: node.fragment,
     nodes: [node],
     owner: node.owner,
     ownerKey: node.ownerKey,
@@ -399,7 +370,6 @@ const createSegments = ({
         end: isLast
           ? createPointEndpoint(endPoint.point)
           : createBoundaryEndpoint(lastNode, 'end'),
-        fragment: group.fragment,
         nodes: Object.freeze([...group.nodes]),
         owner: group.owner,
         ownerKey: group.ownerKey,

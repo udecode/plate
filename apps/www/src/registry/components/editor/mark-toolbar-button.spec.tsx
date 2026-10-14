@@ -3,12 +3,7 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import { act, fireEvent, render, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as actualPlate from 'platejs';
-import {
-  BaseAudioPlugin,
-  BaseFilePlugin,
-  BaseImagePlugin,
-  BaseVideoPlugin,
-} from 'platejs/media';
+import { BaseFilePlugin } from 'platejs/media';
 import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
 
@@ -57,10 +52,6 @@ mock.module('platejs/react', () => ({
 
 mock.module('platejs', () => ({
   ...actualPlate,
-  BaseAudioPlugin,
-  BaseFilePlugin,
-  BaseImagePlugin,
-  BaseVideoPlugin,
   isUrl: isUrlMock,
   TextApi: { isText: () => true },
   toUnitLess: (value: string) => value.replace('px', ''),

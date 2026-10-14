@@ -48,16 +48,17 @@ export default function SuggestionDemo() {
       ],
     });
 
+    // Fixed IDs render the same on the server and the client.
     current.update((tx) => {
       tx.history.skip();
-      tx.authored.propose();
+      tx.authored.propose({ changeId: 'added-word' });
       tx.text.insert('collaboratively ', {
         at: { offset: 7, path: [0, 0] },
       });
     });
     current.update((tx) => {
       tx.history.skip();
-      tx.authored.propose();
+      tx.authored.propose({ changeId: 'removed-phrase' });
       tx.text.delete({
         at: {
           anchor: { offset: 10, path: [1, 0] },
@@ -69,10 +70,7 @@ export default function SuggestionDemo() {
   });
 
   return (
-    <EditorRoot
-      editor={editor}
-      authored={{ intent: 'propose', projection: 'markup' }}
-    >
+    <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
       <SuggestionDemoContent />
     </EditorRoot>
   );
@@ -91,7 +89,7 @@ function SuggestionDemoContent() {
       </Toolbar>
       <Editor
         aria-label="Suggestions document"
-        className="h-auto min-h-[280px] px-8 pb-16 sm:px-12"
+        className="h-auto min-h-[280px] px-[clamp(24px,8%,48px)] pb-16"
         variant="demo"
       />
     </EditorContainer>

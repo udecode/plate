@@ -994,7 +994,7 @@ export class EditableDOMRuntime {
     if (!this.connected || !root) return false;
     if (this.state.isComposing && !pendingCompositionEnd) return false;
 
-    if (pendingCompositionEnd?.ownership === 'plite') {
+    if (pendingCompositionEnd?.ownership === 'editor') {
       pendingCompositionEnd.flush();
     } else {
       pendingCompositionEnd?.cancel();
@@ -1308,7 +1308,7 @@ export class EditableDOMRuntime {
         cancelFrame?.();
       },
       () => {
-        if (pendingCompositionEnd?.ownership === 'plite') {
+        if (pendingCompositionEnd?.ownership === 'editor') {
           pendingCompositionEnd.flush({ publish: false });
         } else {
           pendingCompositionEnd?.cancel();

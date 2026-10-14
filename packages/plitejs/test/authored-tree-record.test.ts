@@ -3,19 +3,28 @@ import { describe, it } from 'node:test';
 
 import fc from 'fast-check';
 import {
+  ContentSlice,
   createEditor,
+  createEditorView,
   defineEditorSchema,
+  editorCommands,
   property,
   schema,
   target,
+  transfer,
 } from 'plitejs';
 import { history } from 'plitejs/history';
 
-import { authoredTreeProof } from '../src/authored/tree/proof-plugin';
+import { createAuthoredPlugin } from '../src/authored/authored';
+import {
+  authoredTestApi,
+  expandedChildren,
+  reviewedValue,
+} from './support/authored';
 
 const AT = 1000;
 const mark = (
-  kind: 'delete' | 'insert' | 'join' | 'split' | 'wrap',
+  kind: 'delete' | 'insert' | 'join' | 'split' | 'unwrap' | 'wrap',
   author = 'bob',
   change = `${author}:1`
 ) => ({ at: AT, author, change, kind });
@@ -53,6 +62,16 @@ const Quotes = defineEditorSchema('record-quotes', {
   unknown: 'reject',
   version: 1,
 });
+const Links = defineEditorSchema('record-links', {
+  elements: {
+    link: { content: schema.content.text(), inline: true },
+    paragraph: schema.element.textBlock(),
+  },
+  id: 'record-links',
+  root: schema.content.type('paragraph', { min: 1 }),
+  unknown: 'reject',
+  version: 1,
+});
 const counter = (author: string) => {
   let count = 0;
 
@@ -72,7 +91,7 @@ const editorFor = (
   createEditor({
     plugins: [
       ...(plugins as []),
-      authoredTreeProof({
+      createAuthoredPlugin({
         authorId: author,
         createChangeId: counter(author),
         createTagId: counter(`${author}-tag`),
@@ -198,7 +217,7 @@ describe('authored review tree recording', () => {
       tx.text.insert('X', { at: point(2, [0, 1]) });
     });
 
-    assert.deepEqual(editor.read.children(), [
+    assert.deepEqual(expandedChildren(editor), [
       paragraph(
         { text: 'a' },
         { text: 'miXne', authored: [mark('insert')] },
@@ -242,7 +261,7 @@ describe('authored review tree recording', () => {
       tx.text.insert('X', { at: point(2, [0, 1]) });
     });
 
-    assert.deepEqual(editor.read.children(), [
+    assert.deepEqual(expandedChildren(editor), [
       paragraph(
         { text: 'a' },
         { text: 'he', authored: [mark('insert', 'alice')] },
@@ -251,6 +270,147 @@ describe('authored review tree recording', () => {
         { text: 'b' }
       ),
     ]);
+  });
+
+  it('rests Suggesting text typed between insertions by A and B and by B and C on B alone, with its own claim', () => {
+    const editor = suggesting(
+      [
+        paragraph(
+          {
+            text: 'ab',
+            authored: [mark('insert', 'alice'), mark('insert', 'bob')],
+          },
+          {
+            text: 'cd',
+            authored: [mark('insert', 'bob'), mark('insert', 'carol')],
+          }
+        ),
+      ],
+      'dan'
+    );
+
+    editor.update((tx) => {
+      tx.text.insert('X', { at: point(2, [0, 0]) });
+    });
+
+    const value = editor.read.value() as {
+      children: ReadonlyArray<{
+        children: ReadonlyArray<Record<string, unknown>>;
+      }>;
+      roots?: Record<string, ReadonlyArray<Record<string, unknown>>>;
+    };
+    const typed = value.children[0].children[1];
+    const restsOn = new Set(
+      (typed.authored as ReadonlyArray<Record<string, unknown>>)
+        .filter((member) => member.kind === 'in')
+        .map(({ ctx }) => ctx)
+    );
+
+    assert.equal(typed.text, 'X');
+    assert.deepEqual(
+      (typed.authored as ReadonlyArray<Record<string, unknown>>).filter(
+        (member) => member.kind !== 'in'
+      ),
+      [mark('insert', 'dan')]
+    );
+    assert.deepEqual(
+      value.roots?.['$authored-contexts']
+        ?.filter(({ ctx }) => restsOn.has(ctx))
+        .map(({ author, base, change }) => ({ author, base, change })),
+      [{ author: 'bob', base: undefined, change: 'bob:1' }]
+    );
+    assert.deepEqual(editor.read.authored.reviewOf(typed).marks, [
+      mark('insert', 'bob'),
+      mark('insert', 'dan'),
+    ]);
+  });
+
+  it('reads the accepted value of a key two suggestions formatted at once from the tag with the smallest id', () => {
+    const tag = (id: string, author: string, before: string) => ({
+      at: AT,
+      author,
+      before,
+      change: `${author}:1`,
+      id,
+      key: 'color',
+      kind: 'format',
+    });
+    const editor = suggesting([
+      paragraph({
+        authored: [tag('t2', 'ann', 'red'), tag('t1', 'cal', 'blue')],
+        color: 'green',
+        text: 'word',
+      }),
+    ]);
+    const [text] = (
+      editor.read.children()[0] as { children: Array<Record<string, unknown>> }
+    ).children;
+
+    assert.deepEqual(editor.read.authored.reviewOf(text).accepted, {
+      color: 'blue',
+    });
+  });
+
+  it('stores no context record for an Editing keystroke inside text that rests on one', () => {
+    const editor = editing(
+      [
+        paragraph(
+          { text: 'a' },
+          {
+            text: 'xyz',
+            authored: [mark('insert', 'ann'), mark('insert', 'bob')],
+          }
+        ),
+      ],
+      'dan'
+    );
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: point(1, [0, 1]) });
+    });
+
+    const value = editor.read.value() as {
+      roots?: Record<string, ReadonlyArray<Record<string, unknown>>>;
+    };
+
+    assert.deepEqual(
+      value.roots?.['$authored-contexts']?.map(({ author, base, change }) => ({
+        author,
+        base,
+        change,
+      })),
+      [{ author: 'bob', base: undefined, change: 'bob:1' }]
+    );
+  });
+
+  it('stores the context a Suggesting insert mints under another, for content carrying two stacked insertions', () => {
+    const editor = suggesting([paragraph({ text: 'a' })], 'dan');
+
+    editor.update((tx) => {
+      tx.nodes.insert(
+        paragraph({
+          text: 'xy',
+          authored: [mark('insert', 'ann'), mark('insert', 'bob')],
+        }) as never,
+        { at: [1] }
+      );
+    });
+
+    const contexts =
+      (
+        editor.read.value() as {
+          roots?: Record<string, ReadonlyArray<Record<string, unknown>>>;
+        }
+      ).roots?.['$authored-contexts'] ?? [];
+    const authorOf = new Map(contexts.map(({ author, ctx }) => [ctx, author]));
+
+    assert.deepEqual(
+      contexts.map(({ author, base }) => ({ author, on: authorOf.get(base) })),
+      [
+        { author: 'bob', on: undefined },
+        { author: 'ann', on: 'bob' },
+      ]
+    );
   });
 
   it('keeps Suggesting text at either edge of another author’s insertion out of it', () => {
@@ -289,7 +449,7 @@ describe('authored review tree recording', () => {
       tx.text.insert('X', { at: point(2, [0, 1]) });
     });
 
-    assert.deepEqual(editor.read.children(), [
+    assert.deepEqual(expandedChildren(editor), [
       paragraph(
         { text: 'a' },
         { text: 'heXrs', authored: [mark('insert', 'alice')] },
@@ -356,14 +516,15 @@ describe('authored review tree recording', () => {
     }
   });
 
-  it('removes struck text for real when Editing deletes it', () => {
-    const editor = editing([
+  it('leaves struck text to its deletion when Editing deletes it', () => {
+    const start = [
       paragraph(
         { text: 'a' },
         { text: 'gone', authored: [mark('delete', 'alice')] },
         { text: 'b' }
       ),
-    ]);
+    ];
+    const editor = editing(start);
 
     editor.update((tx) => {
       tx.text.delete({
@@ -371,7 +532,7 @@ describe('authored review tree recording', () => {
       });
     });
 
-    assert.deepEqual(editor.read.children(), [paragraph({ text: 'ab' })]);
+    assert.deepEqual(editor.read.children(), start);
   });
 
   it('records Enter in Suggesting as a split mark on the new block', () => {
@@ -419,6 +580,113 @@ describe('authored review tree recording', () => {
     assert.deepEqual(editor.read.children(), [paragraph({ text: 'abcd' })]);
   });
 
+  it('moves the caret into the new block on Enter at a block’s end, in both modes', () => {
+    for (const editor of [
+      editing([paragraph({ text: 'ab' })]),
+      suggesting([paragraph({ text: 'ab' })]),
+    ]) {
+      editor.update((tx) => {
+        tx.selection.set({ anchor: point(2), focus: point(2) });
+      });
+      editor.update((tx) => tx.break.insert());
+
+      assert.deepEqual(editor.read.selection()?.anchor, point(0, [1, 0]));
+    }
+  });
+
+  it('keeps two letters typed right before struck text in one insertion', () => {
+    const gone = { text: 'gone', authored: [mark('delete', 'ann', 'ann:1')] };
+    const editor = suggesting([paragraph(gone)]);
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(0), focus: point(0) });
+    });
+    editor.update((tx) => tx.text.insert('x'));
+    editor.update((tx) => tx.text.insert('y'));
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'xy', authored: [mark('insert')] }, gone),
+    ]);
+  });
+
+  it('withdraws one’s own empty split block when Backspace removes it', () => {
+    const editor = suggesting([
+      paragraph({ text: 'ab' }),
+      { ...paragraph({ text: '' }), authored: [mark('split')] },
+      { ...paragraph({ text: 'cd' }), authored: [mark('split')] },
+    ]);
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(0, [2, 0]), focus: point(0, [2, 0]) });
+    });
+    editor.update((tx) => tx.text.deleteBackward());
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'ab' }),
+      { ...paragraph({ text: 'cd' }), authored: [mark('split')] },
+    ]);
+  });
+
+  it('strikes the joined block’s first letter on a second Delete', () => {
+    const editor = suggesting([
+      paragraph({ text: 'ab' }),
+      paragraph({ text: 'cd' }),
+    ]);
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(2), focus: point(2) });
+    });
+    editor.update((tx) => tx.text.deleteForward());
+    editor.update((tx) => tx.text.deleteForward());
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'ab' }),
+      {
+        ...paragraph(
+          { text: 'c', authored: [mark('delete', 'bob', 'bob:2')] },
+          { text: 'd' }
+        ),
+        authored: [mark('join')],
+      },
+    ]);
+    assert.deepEqual(editor.read.selection()?.anchor, point(0, [1, 1]));
+  });
+
+  it('leaves the caret before a block’s first letter when Backspace strikes it', () => {
+    const editor = suggesting([
+      paragraph({ text: 'ab' }),
+      paragraph({ text: 'cd' }),
+    ]);
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(0, [1, 0]), focus: point(0, [1, 0]) });
+    });
+    for (let press = 0; press < 3; press += 1) {
+      editor.update((tx) => tx.text.deleteBackward());
+    }
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'ab', authored: [mark('delete', 'bob', 'bob:2')] }),
+      { ...paragraph({ text: 'cd' }), authored: [mark('join')] },
+    ]);
+    assert.deepEqual(editor.read.selection()?.anchor, point(0));
+  });
+
+  it('keeps the caret in the first block after an Editing range delete back across blocks', () => {
+    const editor = editing([
+      paragraph({ text: 'ab' }),
+      paragraph({ text: 'ab' }),
+      paragraph({ text: 'ab' }, { bold: true, text: 'ab' }, { text: 'ab' }),
+    ]);
+
+    editor.update((tx) => {
+      tx.text.delete({ at: { anchor: point(0, [2, 2]), focus: point(0) } });
+    });
+
+    assert.deepEqual(editor.read.children(), [paragraph({ text: 'ab' })]);
+    assert.deepEqual(editor.read.selection()?.anchor, point(0));
+  });
+
   it('records a Suggesting format change as one tag with the value it replaced', () => {
     const Bold = defineEditorSchema('bold-schema', {
       elements: { paragraph: { content: schema.content.text() } },
@@ -450,6 +718,135 @@ describe('authored review tree recording', () => {
           },
         ],
         bold: true,
+        text: 'word',
+      }),
+    ]);
+  });
+
+  it('records nothing for a format an empty line cannot hold', () => {
+    const Bold = defineEditorSchema('bold-schema', {
+      elements: { paragraph: { content: schema.content.text() } },
+      id: 'bold-schema',
+      properties: [schema.textProperty('bold', property.boolean())],
+      root: schema.content.type('paragraph'),
+      unknown: 'reject',
+      version: 1,
+    });
+    const before = [paragraph({ text: 'a' }), paragraph({ text: '' })];
+    const editor = editorFor(before, 'propose', 'bob', [Bold]);
+
+    editor.update((tx) => tx.nodes.set({ bold: true }, { at: [1, 0] }));
+
+    assert.deepEqual(editor.read.children(), before);
+  });
+
+  it('records a format on a mention, whose empty text keeps its marks', () => {
+    const Mentions = defineEditorSchema('mention-schema', {
+      elements: {
+        mention: { void: 'markable-inline' },
+        paragraph: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.type('mention')],
+            { default: 'text', min: 1 }
+          ),
+        },
+      },
+      id: 'mention-schema',
+      properties: [schema.textProperty('bold', property.boolean())],
+      root: schema.content.type('paragraph'),
+      unknown: 'reject',
+      version: 1,
+    });
+    const before = [
+      paragraph(
+        { text: 'a' },
+        { type: 'mention', children: [{ text: '' }] },
+        { text: '' }
+      ),
+    ];
+    const plain = createEditor({ initialValue: before, plugins: [Mentions] });
+    const edited = editorFor(before, 'edit', 'bob', [Mentions]);
+    const suggested = editorFor(before, 'propose', 'bob', [Mentions]);
+
+    for (const editor of [plain, edited, suggested]) {
+      editor.update((tx) =>
+        tx.nodes.set({ bold: true }, { at: [0, 1, 0], voids: true })
+      );
+    }
+    assert.deepEqual(plain.read.children(), [
+      paragraph(
+        { text: 'a' },
+        { type: 'mention', children: [{ bold: true, text: '' }] },
+        { text: '' }
+      ),
+    ]);
+    assert.deepEqual(edited.read.children(), plain.read.children());
+    authoredTestApi(suggested).decide({ action: 'accept', changes: ['bob:1'] });
+    assert.deepEqual(expandedChildren(suggested), plain.read.children());
+  });
+
+  it('moves text out of a struck line in Editing without copying it', () => {
+    const editor = editorFor(
+      [
+        whole(paragraph({ text: 'ab' }), mark('delete', 'alice')),
+        paragraph({ text: 'cd' }),
+      ],
+      'edit',
+      'bob',
+      [transfer()]
+    );
+
+    editor.api.transfer.move({
+      range: { anchor: point(0), focus: point(1) },
+      to: { point: point(1, [1, 0]) },
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      whole(paragraph({ text: 'b' }), mark('delete', 'alice')),
+      paragraph(
+        { text: 'c' },
+        { authored: [mark('delete', 'alice')], text: 'a' },
+        { text: 'd' }
+      ),
+    ]);
+  });
+
+  it('keeps one tag when a writer changes a value they already suggested', () => {
+    const Color = defineEditorSchema('color-schema', {
+      elements: { paragraph: { content: schema.content.text() } },
+      id: 'color-schema',
+      properties: [schema.textProperty('color', property.string())],
+      root: schema.content.type('paragraph'),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = editorFor(
+      [paragraph({ color: 'green', text: 'word' })],
+      'propose',
+      'bob',
+      [Color]
+    );
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(0), focus: point(4) });
+      tx.marks.add('color', 'red');
+    });
+    editor.update((tx) => tx.marks.add('color', 'blue'));
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({
+        authored: [
+          {
+            at: AT,
+            author: 'bob',
+            before: 'green',
+            change: 'bob:2',
+            id: 'bob-tag:2',
+            key: 'color',
+            kind: 'format',
+          },
+        ],
+        color: 'blue',
         text: 'word',
       }),
     ]);
@@ -504,7 +901,29 @@ describe('authored review tree recording', () => {
     assert.deepEqual(editor.read.children(), initial);
   });
 
-  it('keeps Editing text typed inside a struck block through accepting the deletion', () => {
+  for (const [where, offset] of [
+    ['after', 4],
+    ['inside', 2],
+  ] as const) {
+    it(`undoes a word typed as a suggestion ${where} a word in one step`, () => {
+      const initial = [paragraph({ text: 'Base' })];
+      const editor = editorFor(initial, 'propose', 'bob', [history()]);
+
+      editor.update((tx) => {
+        tx.selection.set({ anchor: point(offset), focus: point(offset) });
+      });
+      for (const letter of 'new') {
+        editor.update((tx) => {
+          tx.text.insert(letter);
+        });
+      }
+      editor.api.history.undo();
+
+      assert.deepEqual(editor.read.children(), initial);
+    });
+  }
+
+  it('lands Editing text typed inside a struck block at the end of the kept text before it', () => {
     const editor = editing([
       paragraph({ text: 'keep' }),
       whole(paragraph({ text: 'gone' }), mark('delete', 'alice')),
@@ -513,12 +932,9 @@ describe('authored review tree recording', () => {
     editor.update((tx) => {
       tx.text.insert('X', { at: point(2, [1, 0]) });
     });
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
 
-    assert.deepEqual(editor.read.children(), [
-      paragraph({ text: 'keep' }),
-      paragraph({ text: 'X' }),
-    ]);
+    assert.deepEqual(editor.read.children(), [paragraph({ text: 'keepX' })]);
   });
 
   it('records Suggesting text typed inside a struck block outside the deletion', () => {
@@ -728,7 +1144,7 @@ describe('authored review tree recording', () => {
   it('gives each session of one author its own change ids', () => {
     const first = createEditor({
       plugins: [
-        authoredTreeProof({
+        createAuthoredPlugin({
           authorId: 'alice',
           intent: 'propose',
           now: () => 1,
@@ -741,7 +1157,7 @@ describe('authored review tree recording', () => {
 
     const second = createEditor({
       plugins: [
-        authoredTreeProof({
+        createAuthoredPlugin({
           authorId: 'alice',
           intent: 'propose',
           now: () => 2,
@@ -765,15 +1181,17 @@ describe('authored review tree recording', () => {
   it('keeps one forced change’s time across its transactions', () => {
     let clock = 1;
     const editor = createEditor({
-      plugins: [authoredTreeProof({ authorId: 'bob', now: () => clock })],
+      plugins: [createAuthoredPlugin({ authorId: 'bob', now: () => clock })],
       initialValue: [paragraph({ text: 'ab' }), paragraph({ text: 'cd' })],
     });
 
-    editor.api.authoredTree.propose('ai:1', () => {
-      editor.update((tx) => tx.text.insert('X', { at: point(1) }));
-      clock = 2;
-      editor.update((tx) => tx.text.insert('Y', { at: point(1, [1, 0]) }));
-    });
+    authoredTestApi(editor).propose('ai:1', (tx) =>
+      tx.text.insert('X', { at: point(1) })
+    );
+    clock = 2;
+    authoredTestApi(editor).propose('ai:1', (tx) =>
+      tx.text.insert('Y', { at: point(1, [1, 0]) })
+    );
 
     const forced = { at: 1, author: 'bob', change: 'ai:1', kind: 'insert' };
 
@@ -793,7 +1211,7 @@ describe('authored review tree recording', () => {
 
   it('keeps a named root selected by the transaction that edits it', () => {
     const editor = createEditor({
-      plugins: [authoredTreeProof({ authorId: 'bob', now: () => AT })],
+      plugins: [createAuthoredPlugin({ authorId: 'bob', now: () => AT })],
       initialValue: {
         children: [paragraph({ text: 'body' })],
         roots: { header: [paragraph({ text: 'head' })] },
@@ -864,8 +1282,8 @@ describe('authored review tree recording', () => {
       paragraph({ text: 'c' }),
       alices,
     ]);
-    suggested.api.authoredTree.decide({ action: 'accept', changes: ['bob:1'] });
-    assert.deepEqual(suggested.read.children(), plain.read.children());
+    authoredTestApi(suggested).decide({ action: 'accept', changes: ['bob:1'] });
+    assert.deepEqual(expandedChildren(suggested), plain.read.children());
   });
 
   it('keeps another author’s marks on content one transaction moves and types into, in Editing', () => {
@@ -919,7 +1337,305 @@ describe('authored review tree recording', () => {
     ]);
   });
 
-  it('keeps Editing text typed in two children of a struck block through accepting the deletion', () => {
+  it('keeps Editing ranges, anchors and node keys on surviving text after unwrap', () => {
+    const initialValue = [
+      {
+        type: 'quote',
+        children: [paragraph({ text: 'Inner' }), paragraph({ text: 'Body' })],
+      },
+      paragraph({ text: 'After' }),
+    ];
+    const source = editorFor(initialValue, 'edit', 'alice', [
+      Quotes,
+      history(),
+    ]);
+    const view = createEditorView(source, { authored: { intent: 'edit' } });
+    const before = {
+      anchor: { path: [0, 0, 0], offset: 0 },
+      focus: { path: [0, 0, 0], offset: 2 },
+    };
+    view.update.selection.set(before);
+    const anchor = view.anchor(before, { deletion: 'drop' });
+    const after = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 2 },
+    };
+    const keys = [view.key([0, 0, 0]), view.key([0, 1])];
+    const wrapperKey = view.key([0]);
+
+    try {
+      view.update.nodes.unwrap({ at: view.key([0]) });
+
+      assert.deepEqual(
+        {
+          active: view.read.selection(),
+          anchor: anchor.resolve(),
+          keys: [view.key([0, 0]), view.key([1])],
+        },
+        {
+          active: after,
+          anchor: after,
+          keys,
+        },
+        'unwrap preserves the selected characters and retained anchors'
+      );
+      view.api.history.undo();
+      assert.deepEqual(view.read.children(), initialValue);
+      assert.deepEqual(view.read.selection(), before);
+      assert.equal(view.key([0]), wrapperKey);
+      view.api.history.redo();
+      assert.deepEqual(view.read.selection(), after);
+      view.update.text.insert('Z');
+      assert.deepEqual(source.read.children(), [
+        paragraph({ text: 'Zner' }),
+        paragraph({ text: 'Body' }),
+        paragraph({ text: 'After' }),
+      ]);
+    } finally {
+      anchor.release();
+    }
+  });
+
+  it('keeps one copy of struck content an Editing reorder moves when its deletion is rejected', () => {
+    const struckQuote = whole(
+      { type: 'quote', children: [paragraph({ text: 'x' })] },
+      mark('delete', 'alice')
+    );
+    const editor = editorFor(
+      [paragraph({ text: 'ab' }), struckQuote],
+      'edit',
+      'bob',
+      [Quotes]
+    );
+
+    editor.update((tx) =>
+      tx.nodes.replaceChildren(
+        [struckQuote, paragraph({ text: 'ab' })] as never,
+        { at: [], count: 2 }
+      )
+    );
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['alice:1'] });
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'quote', children: [paragraph({ text: 'x' })] },
+      paragraph({ text: 'ab' }),
+    ]);
+  });
+
+  it('keeps a quote line another author struck when an Editing unwrap lifts its text into the quote', () => {
+    const value = [
+      {
+        type: 'quote',
+        children: [
+          paragraph({ text: 'ef' }),
+          whole(paragraph({ text: 'gh' }), mark('delete', 'alice')),
+        ],
+      },
+    ];
+    const editor = editorFor(value, 'edit');
+
+    editor.update((tx) => tx.nodes.unwrap({ at: [0, 1] }));
+
+    assert.deepEqual(editor.read.children(), value);
+  });
+
+  it('joins a line an Editing Backspace pulls across struck lines to the line before them, or to the last of them when their deletion is rejected', () => {
+    const editor = editing([
+      paragraph({ text: 'ab' }),
+      whole(paragraph({ text: 'cd' }), mark('delete', 'alice')),
+      whole(paragraph({ text: 'ef' }), mark('delete', 'alice')),
+      paragraph({ text: 'gh' }),
+    ]);
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(0, [3, 0]), focus: point(0, [3, 0]) });
+      tx.command(editorCommands.delete, {
+        direction: 'backward',
+        unit: 'character',
+      });
+    });
+    const decided = (action: 'accept' | 'reject') => {
+      const reviewer = editing(editor.read.children() as never, 'carol');
+
+      authoredTestApi(reviewer).decide({ action, changes: ['alice:1'] });
+
+      return reviewer.read.children();
+    };
+
+    assert.deepEqual(decided('accept'), [paragraph({ text: 'abgh' })]);
+    assert.deepEqual(decided('reject'), [
+      paragraph({ text: 'ab' }),
+      paragraph({ text: 'cd' }),
+      paragraph({ text: 'efgh' }),
+    ]);
+  });
+
+  it('keeps its own deleted pending text for another author’s pending insertion that also holds it', () => {
+    const moved = {
+      text: 'N',
+      authored: [mark('insert', 'bob', 'bob:9'), mark('insert', 'alice')],
+    };
+    const editor = suggesting([paragraph({ text: 'a' }, moved, { text: 'b' })]);
+
+    editor.update((tx) =>
+      tx.text.delete({
+        at: { anchor: point(0, [0, 1]), focus: point(1, [0, 1]) },
+      })
+    );
+
+    authoredTestApi(editor).decide([
+      { action: 'reject', changes: ['bob:1'] },
+      { action: 'accept', changes: ['alice:1', 'bob:9'] },
+    ]);
+
+    assert.deepEqual(editor.read.children(), [paragraph({ text: 'aNb' })]);
+  });
+
+  it('keeps an Editing join into a quote another author’s pending unwrap dissolves until that unwrap is decided', () => {
+    const editor = editorFor(
+      [
+        paragraph({ text: 'ab' }),
+        {
+          type: 'quote',
+          authored: [mark('unwrap', 'alice')],
+          children: [paragraph({ text: 'cd' }), paragraph({ text: 'ef' })],
+        },
+      ],
+      'edit',
+      'bob',
+      [Quotes]
+    );
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(1), focus: point(1, [1, 1, 0]) });
+      tx.command(editorCommands.deleteFragment, { direction: 'forward' });
+    });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
+
+    assert.deepEqual(editor.read.children(), [paragraph({ text: 'af' })]);
+  });
+
+  it('joins a line holding another author’s pending insertion at once on an Editing Backspace', () => {
+    const inserted = { text: 'X', authored: [mark('insert', 'alice')] };
+    const editor = editing([
+      paragraph({ text: 'ab' }),
+      paragraph({ text: 'c' }, inserted, { text: 'd' }),
+    ]);
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(0, [1, 0]), focus: point(0, [1, 0]) });
+      tx.command(editorCommands.delete, {
+        direction: 'backward',
+        unit: 'character',
+      });
+    });
+
+    assert.deepEqual(expandedChildren(editor), [
+      paragraph({ text: 'abc' }, inserted, { text: 'd' }),
+    ]);
+  });
+
+  it('joins at once the line an Editing write types into across the break, beside text another author struck', () => {
+    const struck = { text: 'ab', authored: [mark('delete', 'alice')] };
+    const editor = editing([paragraph(struck), paragraph({ text: 'cd' })]);
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(0, [1, 0]), focus: point(1) });
+      tx.text.insert('N');
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph(struck, { text: 'Ncd' }),
+    ]);
+  });
+
+  it('records an Editing delete across two lines that each keep another author’s pending insertion', () => {
+    const pending = { text: 'ab', authored: [mark('insert', 'alice')] };
+    const editor = editing([
+      paragraph({ text: 'ab' }, pending, { text: 'ab' }),
+      paragraph({ text: 'ab' }, pending),
+    ]);
+
+    editor.update((tx) => {
+      tx.text.delete({
+        at: { anchor: point(2, [1, 0]), focus: point(0, [0, 2]) },
+      });
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'ab' }, pending),
+      { ...paragraph(pending), authored: [mark('join', 'bob', '~edit:bob')] },
+    ]);
+  });
+
+  it('keeps an Editing join waiting on a struck quote before the line the write removes', () => {
+    const quote = whole(
+      { type: 'quote', children: [paragraph({ text: 'cd' })] },
+      mark('delete', 'alice')
+    );
+    const editor = editorFor(
+      [
+        paragraph({ text: 'ab' }),
+        quote,
+        paragraph({ text: 'ef' }),
+        paragraph({ text: 'gh' }),
+      ],
+      'edit',
+      'bob',
+      [Quotes]
+    );
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(2), focus: point(0, [3, 0]) });
+      tx.command(editorCommands.deleteFragment, { direction: 'forward' });
+    });
+    const recorded = editor.read.children();
+
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
+
+    assert.deepEqual(
+      { accepted: editor.read.children(), recorded },
+      {
+        accepted: [paragraph({ text: 'abgh' })],
+        recorded: [
+          paragraph({ text: 'ab' }),
+          quote,
+          {
+            ...paragraph({ text: 'gh' }),
+            authored: [mark('join', 'bob', '~edit:bob')],
+          },
+        ],
+      }
+    );
+  });
+
+  it('keeps an Editing join waiting on struck lines when another Editing write touches the line after it', () => {
+    const editor = editing(
+      [
+        paragraph({ text: 'ab' }),
+        whole(paragraph({ text: 'cd' }), mark('delete', 'alice')),
+        whole(paragraph({ text: 'ef' }), mark('delete', 'alice')),
+        {
+          ...paragraph({ text: 'gh' }),
+          authored: [
+            { at: 0, author: 'bob', change: '~edit:bob', kind: 'join' },
+          ],
+        },
+        paragraph({ text: 'ij' }),
+      ],
+      'carol'
+    );
+
+    editor.update((tx) => tx.text.insert('X', { at: point(0, [4, 0]) }));
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'abgh' }),
+      paragraph({ text: 'Xij' }),
+    ]);
+  });
+
+  it('lands Editing text typed in two children of a struck block on the kept text after it, with nothing kept before', () => {
     const editor = editorFor(
       [
         whole(
@@ -940,15 +1656,9 @@ describe('authored review tree recording', () => {
       tx.text.insert('X', { at: point(1, [0, 0, 0]) });
       tx.text.insert('Y', { at: point(1, [0, 1, 0]) });
     });
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
 
-    assert.deepEqual(editor.read.children(), [
-      {
-        type: 'quote',
-        children: [paragraph({ text: 'X' }), paragraph({ text: 'Y' })],
-      },
-      paragraph({ text: 'tail' }),
-    ]);
+    assert.deepEqual(editor.read.children(), [paragraph({ text: 'YXtail' })]);
   });
 
   it('records Editing that removes one child of a struck block and types in another', () => {
@@ -971,7 +1681,7 @@ describe('authored review tree recording', () => {
       tx.nodes.remove({ at: [0, 0] });
       tx.text.insert('X', { at: point(1, [0, 0, 0]) });
     });
-    editor.api.authoredTree.decide({ action: 'accept', changes: ['alice:1'] });
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
 
     assert.deepEqual(editor.read.children(), [
       { type: 'quote', children: [paragraph({ text: 'X' })] },
@@ -992,7 +1702,7 @@ describe('authored review tree recording', () => {
     assert.deepEqual(editor.read.children(), [
       { type: 'quote', authored: [mark('wrap')], children: [alices] },
     ]);
-    editor.api.authoredTree.decide({ action: 'reject', changes: ['bob:1'] });
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['bob:1'] });
     assert.deepEqual(editor.read.children(), [alices]);
   });
 });
@@ -1166,10 +1876,8 @@ describe('authored review tree recording laws', () => {
       Quotes,
     ]);
 
-    judge.api.authoredTree.decide({
-      action: 'accept',
-      changes: ['bob:0', 'bob:1'],
-    });
+    // Removing the quote withdrew Bob's own pending paragraph inside it.
+    authoredTestApi(judge).decide({ action: 'accept', changes: ['bob:1'] });
 
     assert.deepEqual(judge.read.children(), [paragraph({ text: 'ab' })]);
   });
@@ -1332,11 +2040,106 @@ describe('authored review tree recording laws', () => {
       [Quotes]
     );
 
-    judge.api.authoredTree.decide({
+    // Each author's removal withdrew their own pending paragraph.
+    authoredTestApi(judge).decide({
       action: 'reject',
-      changes: ['carol:0', 'alice:0', 'alice:1'],
+      changes: ['carol:0', 'alice:1'],
     });
 
     assert.deepEqual(judge.read.children(), [paragraph({ text: 'ab' })]);
+  });
+  it('records a paragraph pasted over a link edge in Suggesting, accepting to the Editing result', () => {
+    const before = [
+      paragraph(
+        { text: 'using ' },
+        { type: 'link', children: [{ text: 'comments' }] },
+        { text: ' on many.' }
+      ),
+    ];
+    const pasted = () =>
+      ContentSlice.fromJSON({
+        content: [paragraph({ text: 'Improved' })],
+        openEnd: 0,
+        openStart: 0,
+      });
+    const at = { anchor: point(0, [0, 1, 0]), focus: point(5, [0, 2]) };
+    const edited = editorFor(before, 'edit', 'bob', [Links]);
+    const accepted = editorFor(before, 'propose', 'bob', [Links]);
+    const rejected = editorFor(before, 'propose', 'bob', [Links]);
+
+    for (const editor of [edited, accepted, rejected]) {
+      editor.update((tx) => tx.slice.replace(pasted(), { at }));
+    }
+
+    assert.deepEqual(accepted.read.children(), [
+      paragraph(
+        { text: 'using ' },
+        {
+          type: 'link',
+          children: [{ text: 'comments', authored: [mark('delete')] }],
+        },
+        { text: ' on m', authored: [mark('delete')] }
+      ),
+      whole(paragraph({ text: 'Improved' }), mark('insert')),
+      { ...paragraph({ text: 'any.' }), authored: [mark('split')] },
+    ]);
+    authoredTestApi(accepted).decide({ action: 'accept', changes: ['bob:1'] });
+    authoredTestApi(rejected).decide({ action: 'reject', changes: ['bob:1'] });
+    assert.deepEqual(accepted.read.children(), edited.read.children());
+    assert.deepEqual(reviewedValue(rejected).children, before);
+  });
+
+  it('records text pasted from before a link into it in Suggesting, accepting to the Editing result', () => {
+    const before = [
+      paragraph(
+        { text: 'using ' },
+        { type: 'link', children: [{ text: 'comments' }] },
+        { text: ' on many.' }
+      ),
+    ];
+    const pasted = () =>
+      ContentSlice.fromJSON({
+        content: [paragraph({ text: 'Improved' })],
+        openEnd: 1,
+        openStart: 1,
+      });
+    const at = { anchor: point(2, [0, 0]), focus: point(4, [0, 1, 0]) };
+    const edited = editorFor(before, 'edit', 'bob', [Links]);
+    const accepted = editorFor(before, 'propose', 'bob', [Links]);
+    const rejected = editorFor(before, 'propose', 'bob', [Links]);
+
+    for (const editor of [edited, accepted, rejected]) {
+      editor.update((tx) => tx.slice.replace(pasted(), { at }));
+    }
+
+    authoredTestApi(accepted).decide({ action: 'accept', changes: ['bob:1'] });
+    authoredTestApi(rejected).decide({ action: 'reject', changes: ['bob:1'] });
+    assert.deepEqual(accepted.read.children(), edited.read.children());
+    assert.deepEqual(reviewedValue(rejected).children, before);
+  });
+
+  it('keeps the claims of a leaf a replacement writes over a whole leaf, under the writer’s insertion in Suggesting', () => {
+    const before = [paragraph({ text: 'x' })];
+    const replacing = [
+      paragraph({ authored: [mark('insert', 'ann')], text: 'he' }),
+    ];
+    const edited = editing(before);
+    const accepted = suggesting(before);
+    const rejected = suggesting(before);
+
+    for (const editor of [edited, accepted, rejected]) {
+      editor.update((tx) => tx.value.replace({ children: replacing } as never));
+    }
+
+    authoredTestApi(accepted).decide({ action: 'accept', changes: ['bob:1'] });
+    assert.deepEqual(edited.read.children(), replacing);
+    assert.deepEqual(accepted.read.children(), replacing);
+    assert.deepEqual(
+      authoredTestApi(rejected).decide({
+        action: 'reject',
+        changes: ['bob:1'],
+      }),
+      { ids: ['bob:1'], status: 'blocked', with: ['ann:1'] }
+    );
   });
 });

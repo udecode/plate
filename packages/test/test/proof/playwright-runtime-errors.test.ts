@@ -1,4 +1,8 @@
-import { describe, expect, test } from 'bun:test';
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
+
+import { GlobalRegistrator } from '@happy-dom/global-registrator';
+import { DOMResolutionError } from 'platejs/dom';
+import { createEditor } from 'platejs/react';
 
 import { recordBrowserRuntimeErrors } from '../../src/playwright/runtime-errors';
 
@@ -19,22 +23,47 @@ const createPage = () => {
 };
 
 describe('Playwright runtime errors', () => {
-  test.each([
-    'DOMResolutionError: Cannot resolve a DOM node from Plite node: {"children":[{"text":"One canonical text."}]}',
-    'DOMResolutionError: Cannot resolve a DOM point from Plite point: {"path":[0,0],"offset":0}',
-    'DOMResolutionError: Cannot resolve a DOM range from Plite range',
-  ])(
-    'rejects a caught DOM resolution error logged to the console: %s',
-    (text) => {
-      const { emit, page } = createPage();
-      const recorder = recordBrowserRuntimeErrors(page);
-
-      emit('console', { text: () => text, type: () => 'error' });
-
-      expect(recorder.errors).toEqual([text]);
-      expect(() => recorder.assertNone()).toThrow();
+  beforeAll(() => {
+    if (!GlobalRegistrator.isRegistered) {
+      GlobalRegistrator.register();
     }
-  );
+  });
+
+  afterAll(async () => {
+    if (GlobalRegistrator.isRegistered) {
+      await GlobalRegistrator.unregister();
+    }
+  });
+
+  test('records the editor DOM resolution errors logged to the console', () => {
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'one' }], type: 'paragraph' }],
+    });
+    const detached = { children: [{ text: 'detached' }], type: 'paragraph' };
+    const logged = [
+      () => editor.api.dom.assertPath(detached),
+      () => editor.api.dom.assertDOMNode(detached),
+      () => editor.api.dom.assertNode(document.createElement('span')),
+    ].map((resolve) => {
+      try {
+        resolve();
+      } catch (error) {
+        if (!(error instanceof DOMResolutionError)) throw error;
+
+        return String(error);
+      }
+
+      throw new Error('Expected the editor to refuse a detached node');
+    });
+    const { emit, page } = createPage();
+    const recorder = recordBrowserRuntimeErrors(page);
+
+    for (const text of [...logged, 'An unrelated console error']) {
+      emit('console', { text: () => text, type: () => 'error' });
+    }
+
+    expect(recorder.errors).toEqual(logged);
+  });
 
   test('uses custom console patterns instead of the defaults', () => {
     const { emit, page } = createPage();
@@ -43,7 +72,7 @@ describe('Playwright runtime errors', () => {
     });
 
     emit('console', {
-      text: () => 'Cannot resolve a DOM node from Plite node',
+      text: () => 'Cannot resolve a DOM node from an editor node',
       type: () => 'error',
     });
     recorder.assertNone();
@@ -57,16 +86,12 @@ describe('Playwright runtime errors', () => {
     expect(() => recorder.assertNone()).toThrow();
   });
 
-  test('ignores unrelated console errors and non-error DOM messages', () => {
+  test('ignores DOM resolution messages logged below error level', () => {
     const { emit, page } = createPage();
     const recorder = recordBrowserRuntimeErrors(page);
 
     emit('console', {
-      text: () => 'An unrelated console error',
-      type: () => 'error',
-    });
-    emit('console', {
-      text: () => 'Cannot resolve a DOM node from Plite node',
+      text: () => 'Cannot resolve a DOM node from an editor node',
       type: () => 'warning',
     });
 

@@ -1,0 +1,15 @@
+---
+id: 2026-10-13-lint
+date: 2026-10-13
+status: draft
+kind: new
+summary: 'Lint text blocks with your own rules and fix findings from a caret popover'
+change: { 'type': 'source', 'date': '2026-10-13', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-13-lint-text-blocks-your-own-49a35ea8","kind":"new","migrationNotes":[]} -->
+
+- **`lint`**: Add `LintKit`, which configures `BaseLintPlugin` with two example rules that skip code blocks, wavy underlines by severity, and `F8` and `Shift+F8` to select the next and previous finding. `LintPopover` shows the finding under the caret with its fixes and Fix and next. `useLintFindings` and `useLintFindingAt` read the findings for your own UI.
+- **`lint-demo`**: Add a lint example with a findings panel that runs, clears and applies the first fix, and a Check with server button backed by a stand-in rule that answers after 600 ms.

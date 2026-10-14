@@ -1,73 +1,58 @@
 import { AuthoredPlugin } from '../../authored';
-import { definePlugin, RangeApi, TextApi } from '../../core';
+import { definePlugin } from '../../core';
 import { PLUGINS } from '../../utils';
-import { observeSuggestionChanges } from './suggestion.internal';
 
 const suggestionModes = {
   editing: 'editing',
   suggesting: 'suggesting',
 } as const;
 
-/** Native authored-change interaction and semantic text decorations. */
+const joinUnique = (values: readonly string[]) =>
+  [...new Set(values)].join(' ');
+
+/** Native authored-change interaction and the marks each node paints. */
 export const BaseSuggestionPlugin = definePlugin(PLUGINS.suggestion, {
   dependencies: [AuthoredPlugin],
   api: ({ editor }) => ({
     setMode: (mode: keyof typeof suggestionModes) => {
-      const authored = editor.plugin(AuthoredPlugin);
-      const current = authored.read.view();
-      authored.api.setView(
-        mode === suggestionModes.editing
-          ? { intent: 'edit', projection: current.projection }
-          : {
-              intent: 'propose',
-              projection:
-                current.projection === 'accepted'
-                  ? 'markup'
-                  : current.projection,
-            }
-      );
+      editor.plugin(AuthoredPlugin).api.setView({
+        intent: mode === suggestionModes.editing ? 'edit' : 'propose',
+      });
     },
   }),
   read: ({ editor }) => ({
-    mode: () =>
-      editor.plugin(AuthoredPlugin).read.view().intent === 'propose'
+    mode: () => {
+      const view = editor.plugin(AuthoredPlugin).read.view();
+
+      return 'intent' in view && view.intent === 'propose'
         ? suggestionModes.suggesting
-        : suggestionModes.editing,
+        : suggestionModes.editing;
+    },
   }),
-  decorate: {
-    observe: ({ editor, refresh }) => observeSuggestionChanges(editor, refresh),
-    read: ({ editor, entry: [node, path] }) => {
-      if (!TextApi.isText(node)) return [];
-      const nodeKey = editor.key(path);
-      if (!nodeKey) return [];
-      const root = editor.read.view.root();
-      const textRange = {
-        anchor: { offset: 0, path, ...(root ? { root } : {}) },
-        focus: { offset: node.text.length, path, ...(root ? { root } : {}) },
-      };
+  inject: {
+    nodeProps: {
+      nodeKey: 'authored',
+      transformProps: ({ editor, element, nodeValue, text }) => {
+        if (!nodeValue) return {};
 
-      return editor
-        .plugin(AuthoredPlugin)
-        .read.changesAt(textRange)
-        .flatMap((change) =>
-          change.ranges.flatMap((range, index) => {
-            const intersection = RangeApi.intersection(range, textRange);
-            if (!intersection || RangeApi.isCollapsed(intersection)) return [];
+        const { marks } = editor
+          .plugin(AuthoredPlugin)
+          .read.reviewOf(element ?? text);
 
-            return [
-              {
-                attributes: {
-                  'data-editor-authored-author': change.authorId,
-                  'data-editor-authored-change': change.id,
-                  'data-editor-authored-kind': change.kind,
-                  'data-editor-authored-status': change.status,
-                },
-                key: `authored:${change.id}:${index}:${nodeKey}`,
-                range: intersection,
-              },
-            ];
-          })
-        );
+        if (marks.length === 0) return {};
+
+        return {
+          'data-editor-authored-author': joinUnique(
+            marks.map((mark) => mark.author)
+          ),
+          'data-editor-authored-change': joinUnique(
+            marks.map((mark) => mark.change)
+          ),
+          'data-editor-authored-kind': joinUnique(
+            marks.map((mark) => mark.kind)
+          ),
+        };
+      },
     },
   },
 });

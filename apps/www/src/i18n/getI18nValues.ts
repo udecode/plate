@@ -35,6 +35,7 @@ import { iframeValue as iframeValueCn } from '@/registry/examples/values/cn/ifra
 import { indentValue as indentValueCn } from '@/registry/examples/values/cn/indent-value';
 import { lineHeightValue as lineHeightValueCn } from '@/registry/examples/values/cn/line-height-value';
 import { linkValue as linkValueCn } from '@/registry/examples/values/cn/link-value';
+import { lintValue as lintValueCn } from '@/registry/examples/values/cn/lint-value';
 import { listValue as listValueCn } from '@/registry/examples/values/cn/list-value';
 import { mediaValue as mediaValueCn } from '@/registry/examples/values/cn/media-value';
 import { mentionValue as mentionValueCn } from '@/registry/examples/values/cn/mention-value';
@@ -69,6 +70,7 @@ import { iframeValue as iframeValueEn } from '@/registry/examples/values/iframe-
 import { indentValue as indentValueEn } from '@/registry/examples/values/indent-value';
 import { lineHeightValue as lineHeightValueEn } from '@/registry/examples/values/line-height-value';
 import { linkValue as linkValueEn } from '@/registry/examples/values/link-value';
+import { lintValue as lintValueEn } from '@/registry/examples/values/lint-value';
 import { listValue as listValueEn } from '@/registry/examples/values/list-value';
 import { mediaValue as mediaValueEn } from '@/registry/examples/values/media-value';
 import { mentionValue as mentionValueEn } from '@/registry/examples/values/mention-value';
@@ -103,6 +105,7 @@ const i18n = {
     emoji: emojiValueCn,
     equation: equationValueCn,
     excalidraw: excalidrawValueCn,
+    lint: lintValueCn,
     exitBreak: exitBreakValueCn,
     floatingToolbar: floatingToolbarValueCn,
     font: fontValueCn,
@@ -144,6 +147,7 @@ const i18n = {
     emoji: emojiValueEn,
     equation: equationValueEn,
     excalidraw: excalidrawValueEn,
+    lint: lintValueEn,
     exitBreak: exitBreakValueEn,
     floatingToolbar: floatingToolbarValueEn,
     font: fontValueEn,

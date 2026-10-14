@@ -152,7 +152,7 @@ const assertRenderedElementChildrenHaveDOMOrCoverage = (
 
     if (!editor.api.dom.resolveDOMPoint(point)) {
       console.error(
-        `Plite renderElement for "${String(element.type)}" at ${path.join(
+        `renderElement for "${String(element.type)}" at ${path.join(
           '.'
         )} omitted editable child ${childPath.join(
           '.'

@@ -1997,6 +1997,22 @@ function linksOf(path, text) {
     .filter((target) => target && target !== '.');
 }
 
+function inlinedFrames(path, text) {
+  const demo = sectionOf(text, 'Demo');
+  const firstStep = demo.search(/^\d+[.)]\s/m);
+  const images = [
+    firstStep === -1 ? '' : demo.slice(firstStep),
+    sectionOf(text, 'Teach'),
+  ].flatMap(
+    (section) =>
+      section.match(/!\[[^\]]*\]\([^)\s]+\.(?:gif|jpe?g|png|svg|webp)\)/gi) ??
+      []
+  );
+  return linksOf(path, images.join('\n')).filter((target) =>
+    target.startsWith('docs/plans/artifacts/')
+  );
+}
+
 function reconciliationOf(evidence, id) {
   const named = new RegExp(
     `(?:^|[^\\w-])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w-])`
@@ -2129,10 +2145,14 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
   for (const [, link] of text.matchAll(/\]\((\/[^)\s]*)/g)) {
     problems.push(`link ${link} is absolute, not a repository path`);
   }
+  const inlined = inlinedFrames(plan.path, text);
   for (const target of linksOf(plan.path, text)) {
     if (target.startsWith('..')) {
       problems.push(`link ${target} leaves the repository`);
-    } else if (!inTreeOrHistory(root, unignored, target)) {
+    } else if (
+      !inlined.includes(target) &&
+      !inTreeOrHistory(root, unignored, target)
+    ) {
       problems.push(`link ${target} ${absence(root, target)}`);
     }
   }

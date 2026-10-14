@@ -14,6 +14,7 @@ export const plateAdditionalEntries = [
   'src/features/find/index.ts',
   'src/features/footnote/index.ts',
   'src/features/layout/index.ts',
+  'src/features/lint/index.ts',
   'src/features/media/index.ts',
   'src/features/mention/index.ts',
   'src/features/slash-command/index.ts',

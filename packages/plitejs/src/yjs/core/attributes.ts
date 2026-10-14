@@ -1,6 +1,4 @@
-import * as Y from 'yjs';
-
-export const PLITE_TYPE_ATTRIBUTE = 'plite:type';
+import type * as Y from 'yjs';
 
 export type YjsNode = Y.XmlElement | Y.XmlText;
 export type YjsAttributeRecord = Record<string, unknown>;
@@ -71,42 +69,5 @@ export const setYjsAttributes = (
   }
 };
 
-export const getPliteYjsElementType = (element: Y.XmlElement): string =>
-  String(element.getAttribute(PLITE_TYPE_ATTRIBUTE) ?? element.nodeName);
-
-export const setPliteYjsAttribute = (
-  node: YjsNode,
-  key: string,
-  value: unknown
-): void => {
-  if (key === 'type' && node instanceof Y.XmlElement) {
-    setYjsAttribute(node, PLITE_TYPE_ATTRIBUTE, String(value));
-
-    return;
-  }
-
-  setYjsAttribute(node, key, value);
-};
-
-export const removePliteYjsAttribute = (node: YjsNode, key: string): void => {
-  if (key === 'type' && node instanceof Y.XmlElement) {
-    node.removeAttribute(PLITE_TYPE_ATTRIBUTE);
-
-    return;
-  }
-
-  node.removeAttribute(key);
-};
-
-export const setPliteYjsAttributes = (
-  node: YjsNode,
-  attributes: YjsAttributeRecord
-): void => {
-  for (const key in attributes) {
-    if (!Object.hasOwn(attributes, key)) {
-      continue;
-    }
-
-    setPliteYjsAttribute(node, key, attributes[key]);
-  }
-};
+export const getYjsElementType = (element: Y.XmlElement): string =>
+  String(element.getAttribute('type') ?? 'element');

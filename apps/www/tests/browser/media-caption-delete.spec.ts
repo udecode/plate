@@ -1,4 +1,5 @@
 import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
@@ -57,12 +58,13 @@ test('Delete clears a fully selected caption without deleting its image [EDIT-CA
       .toBe('Images with captions provide context.');
     await expect
       .poll(() =>
-        root.evaluate((element) =>
-          (
-            element as HTMLElement & {
-              __pliteBrowserHandle?: { getModelSelection: () => unknown };
-            }
-          ).__pliteBrowserHandle?.getModelSelection()
+        root.evaluate(
+          (element, key) =>
+            (
+              element as HTMLElement &
+                Record<string, { getModelSelection: () => unknown } | undefined>
+            )[key]?.getModelSelection(),
+          BROWSER_HANDLE_KEY
         )
       )
       .toMatchObject({
@@ -85,12 +87,13 @@ test('Delete clears a fully selected caption without deleting its image [EDIT-CA
       });
     await expect
       .poll(() =>
-        root.evaluate((element) =>
-          (
-            element as HTMLElement & {
-              __pliteBrowserHandle?: { getModelSelection: () => unknown };
-            }
-          ).__pliteBrowserHandle?.getModelSelection()
+        root.evaluate(
+          (element, key) =>
+            (
+              element as HTMLElement &
+                Record<string, { getModelSelection: () => unknown } | undefined>
+            )[key]?.getModelSelection(),
+          BROWSER_HANDLE_KEY
         )
       )
       .toMatchObject({
@@ -242,12 +245,13 @@ test('an initially empty centered caption keeps its caret beside the placeholder
       .toBe('Video caption');
     await expect
       .poll(() =>
-        root.evaluate((element) =>
-          (
-            element as HTMLElement & {
-              __pliteBrowserHandle?: { getModelSelection: () => unknown };
-            }
-          ).__pliteBrowserHandle?.getModelSelection()
+        root.evaluate(
+          (element, key) =>
+            (
+              element as HTMLElement &
+                Record<string, { getModelSelection: () => unknown } | undefined>
+            )[key]?.getModelSelection(),
+          BROWSER_HANDLE_KEY
         )
       )
       .toMatchObject({

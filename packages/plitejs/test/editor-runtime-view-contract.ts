@@ -2414,6 +2414,18 @@ describe('editor runtime/view contract', () => {
       assert.deepEqual(view.read.nodes.path(two.children[0]), [1, 0]);
     });
 
+    it('keeps node keys per editor when two editors view one document', () => {
+      const source = createEditor({ initialValue: [paragraph('one')] });
+      const document = source.read.value();
+      const other = createEditor({ initialValue: document });
+      const sourceView = createEditorView(source, { document });
+      const otherView = createEditorView(other, { document });
+
+      sourceView.read.runtime.snapshot();
+
+      assert.equal(otherView.key([0]), other.key([0]));
+    });
+
     it('refuses a source read made while the view reads', () => {
       let source:
         | {
@@ -2527,7 +2539,7 @@ describe('editor runtime/view contract', () => {
       assert.throws(
         () =>
           createEditorView(documentView, {
-            authored: { intent: 'edit', projection: 'accepted' },
+            authored: { preview: 'accepted' },
           } as never),
         /cannot take an authored projection/
       );

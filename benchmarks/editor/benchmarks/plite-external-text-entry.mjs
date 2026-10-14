@@ -14,6 +14,7 @@ import {
   EditorRoot,
   installBrowserHandle,
 } from '../../../packages/plitejs/dist/react/index.js';
+import { BROWSER_HANDLE_KEY } from '../../../packages/plitejs/src/internal/browser-protocol.ts';
 
 installBrowserHandle();
 
@@ -155,7 +156,7 @@ const createBoundedAdapter = (records, viewIndex) => ({
 const readMetrics = () => {
   const editables = [...app.querySelectorAll('[data-editor="true"]')];
   const external = editables.map((element) =>
-    element.__pliteBrowserHandle.getExternalTextMetrics()
+    element[BROWSER_HANDLE_KEY].getExternalTextMetrics()
   );
   const totals = {};
   for (const row of external) {
@@ -387,14 +388,14 @@ const install = async ({
   for (let attempt = 0; attempt < 600; attempt++) {
     if (
       records.length === blockCount * viewCount + Number(independent) &&
-      app.querySelector('[data-editor]')?.__pliteBrowserHandle
+      app.querySelector('[data-editor]')?.[BROWSER_HANDLE_KEY]
     ) {
       break;
     }
     await frame();
   }
   assert(
-    app.querySelector('[data-editor]')?.__pliteBrowserHandle,
+    app.querySelector('[data-editor]')?.[BROWSER_HANDLE_KEY],
     'browser handle not installed'
   );
   await paint();

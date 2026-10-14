@@ -1020,6 +1020,46 @@ test('check accepts a review_inputs file the author has not committed yet', (t) 
   assert.equal(check(root).ok, true);
 });
 
+test('check accepts Demo and Teach frames in an ignored run directory and refuses its other links', (t) => {
+  const { root, put, git, commit } = fixture(t);
+  put('.gitignore', 'docs/plans/artifacts/\n');
+  commit();
+  for (const file of [
+    'teach-before.svg',
+    'teach-after.svg',
+    'intro.png',
+    'after.png',
+    'probe-a1.log',
+    'shot.png',
+  ]) {
+    put(`docs/plans/artifacts/run/${file}`, 'local\n');
+  }
+  const path = 'docs/plans/2026-09-01-comments.md';
+  plan(put, path, {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'stop',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
+  put(
+    path,
+    readFileSync(join(root, path), 'utf-8')
+      .replace(
+        '## Public API',
+        '## Teach\n\n![before](artifacts/run/teach-before.svg) ![after](artifacts/run/teach-after.svg)\n\n## Demo\n\nOne edit. ![intro](artifacts/run/intro.png)\n\n1. Open the editor and type. ![after](artifacts/run/after.png) [log](artifacts/run/probe-a1.log)\n\n## Public API'
+      )
+      .replace(
+        'Read [the evidence](../evidence.md).',
+        'Read [the evidence](../evidence.md) and ![the shot](artifacts/run/shot.png).'
+      )
+  );
+
+  assert.throws(() => check(root), {
+    message: `${path}: link docs/plans/artifacts/run/intro.png is git-ignored, so a fresh checkout lacks it; commit it or cite a tracked file, link docs/plans/artifacts/run/probe-a1.log is git-ignored, so a fresh checkout lacks it; commit it or cite a tracked file, link docs/plans/artifacts/run/shot.png is git-ignored, so a fresh checkout lacks it; commit it or cite a tracked file`,
+  });
+});
+
 test('check fails on a misspelled review front-matter key', (t) => {
   const { root, put } = fixture(t);
   put(

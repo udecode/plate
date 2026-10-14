@@ -14,7 +14,6 @@ import { EditorState } from 'prosemirror-state';
 
 import { createEditor, createEditorView } from '../../../packages/plitejs/src';
 import { authored } from '../../../packages/plitejs/src/authored';
-import { authoredState } from '../../../packages/plitejs/src/authored/state';
 import { snapshotEditorJsonValue } from '../../../packages/plitejs/src/core/value-codec';
 
 const option = (key: string) =>
@@ -168,30 +167,41 @@ if (arm === 'plite-snapshot') {
   });
   constructed = performance.now();
   checked = constructed;
-  const view =
+  const previews =
     arm === 'plite-authored'
-      ? createEditorView(editor, {
-          authored: { intent: 'propose', projection: 'proposed' },
-        })
+      ? {
+          accepted: createEditorView(editor, {
+            authored: { preview: 'accepted' },
+          }),
+          proposed: createEditorView(editor, {
+            authored: { preview: 'proposed' },
+          }),
+        }
       : undefined;
-  const accepted = editor.read.children();
-  const projected = view?.read.children();
+  const accepted = (previews?.accepted ?? editor).read.children();
+  const projected = previews?.proposed.read.children();
   read = performance.now();
   correctness = () => {
     assert.deepEqual(accepted, base);
-    if (view) {
+    if (previews) {
       assert.deepEqual(projected, proposed);
-      assert.equal(
-        editor.read.getField(authoredState).operations?.count,
-        size + 55
+      let pending = 0;
+      let cursor: string | undefined;
+      do {
+        const page = editor.read.authored.changes({ cursor, limit: 200 });
+        pending += page.items.length;
+        cursor = page.cursor ?? undefined;
+      } while (cursor);
+      assert.equal(pending, size + 55);
+      // The last block holds Base, then its pending q.
+      createEditorView(editor, {
+        authored: { intent: 'propose' },
+      }).update.text.insert('!', { at: { path: [size - 1, 1], offset: 1 } });
+      assert.deepEqual(
+        previews.proposed.read.children()[size - 1],
+        paragraph('Baseq!')
       );
-      assert.equal(
-        editor.read.authored.select({ status: 'pending' }).changes.length,
-        size + 55
-      );
-      view.update.text.insert('!', { at: { path: [size - 1, 0], offset: 5 } });
-      assert.deepEqual(view.read.children()[size - 1], paragraph('Baseq!'));
-      assert.deepEqual(editor.read.children(), accepted);
+      assert.deepEqual(previews.accepted.read.children(), accepted);
     } else {
       editor.update.text.insert('!', {
         at: { path: [size - 1, 0], offset: 4 },

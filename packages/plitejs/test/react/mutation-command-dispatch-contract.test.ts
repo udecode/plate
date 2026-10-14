@@ -143,7 +143,7 @@ test('model-owned paste evaluates against the authored mutation projection', () 
   isPasteUpdateActive = () => isInTransaction(source);
   const view = createReactRuntimeViewEditor(
     createEditorView(source, {
-      authored: { intent: 'propose', projection: 'markup' },
+      authored: { intent: 'propose' },
     })
   );
 
@@ -160,7 +160,7 @@ test('model-owned paste evaluates against the authored mutation projection', () 
   ).toBe(true);
   expect(evaluatedInsideUpdate).toBe(true);
 
-  view.api.authored.setView({ intent: 'propose', projection: 'proposed' });
+  view.api.authored.setView({ preview: 'proposed' });
   expect(view.read.children().map((node) => node.children)).toEqual([
     [{ text: 'Base' }],
     [{ text: 'Pasted' }],

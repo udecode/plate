@@ -49,14 +49,15 @@ export default function SuggestionFormatDemo() {
       ],
     });
 
+    // Fixed IDs render the same on the server and the client.
     current.update((tx) => {
       tx.history.skip();
-      tx.authored.propose();
+      tx.authored.propose({ changeId: 'bold-sentence' });
       tx.nodes.set({ bold: true }, { at: [0, 0] });
     });
     current.update((tx) => {
       tx.history.skip();
-      tx.authored.propose();
+      tx.authored.propose({ changeId: 'added-paragraph' });
       tx.nodes.insert(
         {
           type: 'paragraph',
@@ -69,10 +70,7 @@ export default function SuggestionFormatDemo() {
   });
 
   return (
-    <EditorRoot
-      editor={editor}
-      authored={{ intent: 'propose', projection: 'markup' }}
-    >
+    <EditorRoot editor={editor} authored={{ intent: 'propose' }}>
       <SuggestionFormatContent />
     </EditorRoot>
   );
@@ -94,7 +92,7 @@ function SuggestionFormatContent() {
       </Toolbar>
       <Editor
         aria-label="Formatting suggestions document"
-        className="h-auto min-h-[280px] px-8 pb-16 sm:px-12"
+        className="h-auto min-h-[280px] px-[clamp(24px,8%,48px)] pb-16"
         variant="demo"
       />
     </EditorContainer>

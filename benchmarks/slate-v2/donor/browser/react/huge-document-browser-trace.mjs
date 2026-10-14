@@ -10,6 +10,7 @@ import {
   summarize,
   writeBenchmarkArtifact,
 } from '../../shared/stats.mjs';
+import { BROWSER_HANDLE_KEY } from '../../../../../packages/plitejs/src/internal/browser-protocol.ts';
 
 const siteOutRoot = fileURLToPath(
   new URL('../../../../../apps/plite/out', import.meta.url),
@@ -218,7 +219,7 @@ const buildSite = async () => {
 };
 
 const installTraceObserver = async (page) => {
-  await page.evaluate(() => {
+  await page.evaluate((key) => {
     const target = globalThis;
 
     if (target.__EDITOR_BROWSER_TRACE_OBSERVER__) {
@@ -326,7 +327,7 @@ const installTraceObserver = async (page) => {
       const anchorTextHost =
         anchorElement?.closest?.('[data-editor-node="text"]') ?? null;
       const root = targetElement?.closest?.('[data-editor="true"]');
-      const handle = root?.__pliteBrowserHandle ?? null;
+      const handle = root?.[key] ?? null;
 
       return {
         anchorOffset: selection?.anchorOffset ?? null,
@@ -484,16 +485,16 @@ const installTraceObserver = async (page) => {
         });
       } catch {}
     }
-  });
+  }, BROWSER_HANDLE_KEY);
 };
 
 const waitForEditorReady = async (page) => {
   await page.waitForFunction(
-    () => {
+    (key) => {
       const root = document.querySelector('[data-editor="true"]');
-      return !!root?.__pliteBrowserHandle?.selectRange;
+      return !!root?.[key]?.selectRange;
     },
-    undefined,
+    BROWSER_HANDLE_KEY,
     { timeout: 30_000 },
   );
 };
@@ -626,7 +627,7 @@ const getTraceSnapshot = async (page) =>
 
 const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
   page.evaluate(
-    ({ beforeTypeState, index }) => {
+    ([{ beforeTypeState, index }, key]) => {
       const root = document.querySelector('[data-editor="true"]');
       const activeElement = document.activeElement;
       const domSelection = document.getSelection();
@@ -687,28 +688,28 @@ const getLaneDiagnostics = async (page, lane, beforeTypeState) =>
         domAnchorText: domSelection?.anchorNode?.textContent ?? null,
         domSelectionText: selectedText?.replace(/\uFEFF/g, '') ?? null,
         beforeInputTrace:
-          root?.__pliteBrowserHandle
+          root?.[key]
             ?.getKernelTrace?.()
             .filter?.((entry) => entry.eventFamily === 'beforeinput')
             .slice(-8)
             .map(compactKernelTraceEntry) ?? null,
         beforeTypeState,
-        handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
-        inputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
+        handleSelection: root?.[key]?.getSelection?.() ?? null,
+        inputState: root?.[key]?.getInputState?.() ?? null,
         beforeInputEvents:
           traceSnapshot?.beforeInputEvents?.slice(-12).map(compactDOMEvent) ??
           null,
         inputEvents:
           traceSnapshot?.inputEvents?.slice(-12).map(compactDOMEvent) ?? null,
         kernelTrace:
-          root?.__pliteBrowserHandle
+          root?.[key]
             ?.getKernelTrace?.()
             .slice(-12)
             .map(compactKernelTraceEntry) ?? null,
         profilerEvents: traceSnapshot?.profilerEvents?.slice(-20) ?? null,
       };
     },
-    { beforeTypeState, index: lane.blockIndex },
+    [{ beforeTypeState, index: lane.blockIndex }, BROWSER_HANDLE_KEY],
   );
 
 const summarizeProfilerEvents = (events = []) => {
@@ -1005,12 +1006,12 @@ const readBlockText = async (page, blockIndex) =>
   }, blockIndex);
 
 const readModelBlockText = async (page, blockIndex) =>
-  page.evaluate((index) => {
+  page.evaluate(([index, key]) => {
     const root = document.querySelector('[data-editor="true"]');
-    const getBlockText = root?.__pliteBrowserHandle?.getBlockText;
+    const getBlockText = root?.[key]?.getBlockText;
 
     return typeof getBlockText === 'function' ? getBlockText(index) : null;
-  }, blockIndex);
+  }, [blockIndex, BROWSER_HANDLE_KEY]);
 
 const waitForModelBlockText = async (
   page,
@@ -1020,16 +1021,16 @@ const waitForModelBlockText = async (
 ) => {
   await page
     .waitForFunction(
-      ({ expectedText, index }) => {
+      ([{ expectedText, index }, key]) => {
         const root = document.querySelector('[data-editor="true"]');
-        const getBlockText = root?.__pliteBrowserHandle?.getBlockText;
+        const getBlockText = root?.[key]?.getBlockText;
 
         return (
           typeof getBlockText === 'function' &&
           getBlockText(index) === expectedText
         );
       },
-      { expectedText, index: blockIndex },
+      [{ expectedText, index: blockIndex }, BROWSER_HANDLE_KEY],
       { timeout: 10_000 },
     )
     .catch(async (error) => {
@@ -1061,7 +1062,7 @@ const getBrowserShortcut = async (page, shortcut) =>
 const waitForSelection = async (page, expected, context, timeout = 10_000) => {
   await page
     .waitForFunction(
-      ({ expected }) => {
+      ([{ expected }, key]) => {
         const pointsEqual = (left, right) =>
           !!left &&
           !!right &&
@@ -1069,7 +1070,7 @@ const waitForSelection = async (page, expected, context, timeout = 10_000) => {
           left.path.length === right.path.length &&
           left.path.every((part, index) => part === right.path[index]);
         const root = document.querySelector('[data-editor="true"]');
-        const selection = root?.__pliteBrowserHandle?.getSelection?.() ?? null;
+        const selection = root?.[key]?.getSelection?.() ?? null;
 
         return (
           !!selection &&
@@ -1077,15 +1078,15 @@ const waitForSelection = async (page, expected, context, timeout = 10_000) => {
           pointsEqual(selection.focus, expected.focus)
         );
       },
-      { expected },
+      [{ expected }, BROWSER_HANDLE_KEY],
       { timeout },
     )
     .catch(async (error) => {
-      const selection = await page.evaluate(() => {
+      const selection = await page.evaluate((key) => {
         const root = document.querySelector('[data-editor="true"]');
 
-        return root?.__pliteBrowserHandle?.getSelection?.() ?? null;
-      });
+        return root?.[key]?.getSelection?.() ?? null;
+      }, BROWSER_HANDLE_KEY);
 
       throw new Error(
         `Selection assertion timed out for ${context}: expected=${JSON.stringify(expected)} actual=${JSON.stringify(selection)}; ${error.message}`,
@@ -1100,9 +1101,9 @@ const waitForCollapsedEmptyDocument = async (
 ) => {
   await page
     .waitForFunction(
-      () => {
+      (key) => {
         const root = document.querySelector('[data-editor="true"]');
-        const handle = root?.__pliteBrowserHandle;
+        const handle = root?.[key];
         const selection = handle?.getSelection?.() ?? null;
 
         return (
@@ -1116,20 +1117,20 @@ const waitForCollapsedEmptyDocument = async (
           selection?.focus.offset === 0
         );
       },
-      undefined,
+      BROWSER_HANDLE_KEY,
       { timeout },
     )
     .catch(async (error) => {
-      const diagnostics = await page.evaluate(() => {
+      const diagnostics = await page.evaluate((key) => {
         const root = document.querySelector('[data-editor="true"]');
-        const handle = root?.__pliteBrowserHandle;
+        const handle = root?.[key];
 
         return {
           first: handle?.getBlockText?.(0) ?? null,
           second: handle?.getBlockText?.(1) ?? null,
           selection: handle?.getSelection?.() ?? null,
         };
-      });
+      }, BROWSER_HANDLE_KEY);
 
       throw new Error(
         `Collapsed empty document assertion timed out for ${context}: diagnostics=${JSON.stringify(diagnostics)}; ${error.message}`,
@@ -1145,9 +1146,9 @@ const waitForDocumentBoundaryRestore = async (
 ) => {
   await page
     .waitForFunction(
-      ({ expected }) => {
+      ([{ expected }, key]) => {
         const root = document.querySelector('[data-editor="true"]');
-        const handle = root?.__pliteBrowserHandle;
+        const handle = root?.[key];
         const selection = handle?.getSelection?.() ?? null;
 
         return (
@@ -1161,20 +1162,20 @@ const waitForDocumentBoundaryRestore = async (
           selection?.focus.offset === expected.lastText.length
         );
       },
-      { expected },
+      [{ expected }, BROWSER_HANDLE_KEY],
       { timeout },
     )
     .catch(async (error) => {
-      const diagnostics = await page.evaluate((lastIndex) => {
+      const diagnostics = await page.evaluate(([lastIndex, key]) => {
         const root = document.querySelector('[data-editor="true"]');
-        const handle = root?.__pliteBrowserHandle;
+        const handle = root?.[key];
 
         return {
           first: handle?.getBlockText?.(0) ?? null,
           last: handle?.getBlockText?.(lastIndex) ?? null,
           selection: handle?.getSelection?.() ?? null,
         };
-      }, expected.lastIndex);
+      }, [expected.lastIndex, BROWSER_HANDLE_KEY]);
 
       throw new Error(
         `Document boundary restore timed out for ${context}: diagnostics=${JSON.stringify(diagnostics)}; ${error.message}`,
@@ -1183,9 +1184,9 @@ const waitForDocumentBoundaryRestore = async (
 };
 
 const readDocumentBoundaryDiagnostics = async (page, lastIndex) =>
-  page.evaluate((lastIndex) => {
+  page.evaluate(([lastIndex, key]) => {
     const root = document.querySelector('[data-editor="true"]');
-    const handle = root?.__pliteBrowserHandle;
+    const handle = root?.[key];
     const truncateText = (value) =>
       typeof value === 'string' && value.length > 160
         ? `${value.slice(0, 157)}...`
@@ -1256,7 +1257,7 @@ const readDocumentBoundaryDiagnostics = async (page, lastIndex) =>
       second: handle?.getBlockText?.(1) ?? null,
       selection: handle?.getSelection?.() ?? null,
     };
-  }, lastIndex);
+  }, [lastIndex, BROWSER_HANDLE_KEY]);
 
 const measureKeyboardPress = async (page, key) => {
   const startedAt = await page.evaluate(() => performance.now());
@@ -1275,16 +1276,16 @@ const measureKeyboardPress = async (page, key) => {
 const measureHandleUndoRestore = async (page, expected, context) => {
   const startedAt = await page.evaluate(() => performance.now());
 
-  await page.evaluate(() => {
+  await page.evaluate((key) => {
     const root = document.querySelector('[data-editor="true"]');
-    const handle = root?.__pliteBrowserHandle;
+    const handle = root?.[key];
 
     if (!handle?.undo) {
       throw new Error('Missing Plite browser undo handle');
     }
 
     handle.undo();
-  });
+  }, BROWSER_HANDLE_KEY);
 
   let restored = 1;
   let diagnostics = null;
@@ -1579,14 +1580,14 @@ const getScrollParentSnapshot = async (page) =>
 
 const requestCollapsedSelection = async (page, blockIndex, offset) =>
   page.evaluate(
-    ({ index, offset }) => {
+    ([{ index, offset }, key]) => {
       const root = document.querySelector('[data-editor="true"]');
 
       if (!(root instanceof HTMLElement)) {
         throw new Error('Missing Plite editor root');
       }
 
-      const handle = root.__pliteBrowserHandle;
+      const handle = root[key];
       const selection = {
         anchor: { path: [index, 0], offset },
         focus: { path: [index, 0], offset },
@@ -1599,11 +1600,11 @@ const requestCollapsedSelection = async (page, blockIndex, offset) =>
       handle.selectRange(selection);
       root.focus();
     },
-    { index: blockIndex, offset },
+    [{ index: blockIndex, offset }, BROWSER_HANDLE_KEY],
   );
 
 const getMaterializationDiagnostics = async (page, blockIndex) =>
-  page.evaluate((index) => {
+  page.evaluate(([index, key]) => {
     const root = document.querySelector('[data-editor="true"]');
     const virtualizer = root?.querySelector(
       '[data-editor-virtualized-viewport="true"]',
@@ -1624,11 +1625,11 @@ const getMaterializationDiagnostics = async (page, blockIndex) =>
       exactPathExists: !!root?.querySelector(
         `[data-editor-node="text"][data-editor-path="${index},0"]`,
       ),
-      handleInputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
-      handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
-      hasHandle: !!root?.__pliteBrowserHandle,
+      handleInputState: root?.[key]?.getInputState?.() ?? null,
+      handleSelection: root?.[key]?.getSelection?.() ?? null,
+      hasHandle: !!root?.[key],
       hasScrollPathIntoView:
-        typeof root?.__pliteBrowserHandle?.scrollPathIntoView === 'function',
+        typeof root?.[key]?.scrollPathIntoView === 'function',
       mountedTextPaths: textElements
         .slice(0, 20)
         .map((element) => element.getAttribute('data-editor-path')),
@@ -1646,7 +1647,7 @@ const getMaterializationDiagnostics = async (page, blockIndex) =>
       virtualizerHeight:
         virtualizer instanceof HTMLElement ? virtualizer.offsetHeight : null,
     };
-  }, blockIndex);
+  }, [blockIndex, BROWSER_HANDLE_KEY]);
 
 const waitForMaterializedText = async (page, blockIndex, context) => {
   const start = Date.now();
@@ -1655,18 +1656,18 @@ const waitForMaterializedText = async (page, blockIndex, context) => {
   let frameCount = 0;
 
   while (Date.now() - start <= materializationTimeoutMs) {
-    const materialized = await page.evaluate((index) => {
+    const materialized = await page.evaluate(([index, key]) => {
       const root = document.querySelector('[data-editor="true"]');
       const isMaterialized = !!root?.querySelector(
         `[data-editor-node="text"][data-editor-path="${index},0"]`,
       );
 
       if (!isMaterialized) {
-        root?.__pliteBrowserHandle?.scrollPathIntoView?.([index, 0], 'center');
+        root?.[key]?.scrollPathIntoView?.([index, 0], 'center');
       }
 
       return isMaterialized;
-    }, blockIndex);
+    }, [blockIndex, BROWSER_HANDLE_KEY]);
 
     if (materialized) {
       const endTime = await page.evaluate(() => performance.now());
@@ -1698,7 +1699,7 @@ const waitForMaterializedText = async (page, blockIndex, context) => {
 
 const syncDOMSelection = async (page, blockIndex, offset) =>
   page.evaluate(
-    ({ index, offset }) => {
+    ([{ index, offset }, key]) => {
       const root = document.querySelector('[data-editor="true"]');
 
       if (!(root instanceof HTMLElement)) {
@@ -1732,14 +1733,14 @@ const syncDOMSelection = async (page, blockIndex, offset) =>
       domSelection?.removeAllRanges();
       domSelection?.addRange(range);
       document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-      root.__pliteBrowserHandle?.importDOMSelection?.();
+      root[key]?.importDOMSelection?.();
     },
-    { index: blockIndex, offset },
+    [{ index: blockIndex, offset }, BROWSER_HANDLE_KEY],
   );
 
 const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
   page.evaluate(
-    ({ index, offset }) => {
+    ([{ index, offset }, key]) => {
       const root = document.querySelector('[data-editor="true"]');
       const selection = document.getSelection();
       const textElements = Array.from(
@@ -1782,8 +1783,8 @@ const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
         focusOffset: selection?.focusOffset ?? null,
         focusTextPath:
           focusTextElement?.getAttribute('data-editor-path') ?? null,
-        handleInputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
-        handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
+        handleInputState: root?.[key]?.getInputState?.() ?? null,
+        handleSelection: root?.[key]?.getSelection?.() ?? null,
         mountedTextPaths: textElements
           .slice(0, 30)
           .map((element) => element.getAttribute('data-editor-path')),
@@ -1810,7 +1811,7 @@ const getDOMSelectionPathDiagnostics = async (page, blockIndex, offset) =>
             : null,
       };
     },
-    { index: blockIndex, offset },
+    [{ index: blockIndex, offset }, BROWSER_HANDLE_KEY],
   );
 
 const waitForDOMSelectionPath = async (
@@ -1822,16 +1823,16 @@ const waitForDOMSelectionPath = async (
 ) => {
   await page
     .waitForFunction(
-      ({ index, offset }) => {
+      ([{ index, offset }, key]) => {
         const root = document.querySelector('[data-editor="true"]');
         const selection = document.getSelection();
         const textElement = selection?.anchorNode?.parentElement?.closest(
           '[data-editor-node="text"]',
         );
         const handleSelection =
-          root?.__pliteBrowserHandle?.getSelection?.() ?? null;
+          root?.[key]?.getSelection?.() ?? null;
         const inputState =
-          root?.__pliteBrowserHandle?.getInputState?.() ?? null;
+          root?.[key]?.getInputState?.() ?? null;
         const anchorPath = handleSelection?.anchor?.path ?? null;
         const focusPath = handleSelection?.focus?.path ?? null;
         const pathMatches = (path) =>
@@ -1858,7 +1859,7 @@ const waitForDOMSelectionPath = async (
           (acceptsNativeSelection || acceptsRepairBackedModelSelection)
         );
       },
-      { index: blockIndex, offset },
+      [{ index: blockIndex, offset }, BROWSER_HANDLE_KEY],
       { timeout: nativeSurfaceTimeoutMs },
     )
     .catch(async (error) => {
@@ -1941,11 +1942,11 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
       y: rect.top + rect.height / 2,
     };
   }, blockIndex);
-  const beforeSelection = await page.evaluate(() => {
+  const beforeSelection = await page.evaluate((key) => {
     const root = document.querySelector('[data-editor="true"]');
 
-    return root?.__pliteBrowserHandle?.getSelection?.() ?? null;
-  });
+    return root?.[key]?.getSelection?.() ?? null;
+  }, BROWSER_HANDLE_KEY);
   const clickStart = await page.evaluate(() => performance.now());
 
   await page.mouse.move(point.x, point.y);
@@ -1972,7 +1973,7 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
   const clickDispatchTime = await page.evaluate(() => performance.now());
   await page
     .waitForFunction(
-      ({ beforeSelection, index }) => {
+      ([{ beforeSelection, index }, key]) => {
         const pointsEqual = (left, right) =>
           !!left &&
           !!right &&
@@ -1985,7 +1986,7 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
           pointsEqual(left.anchor, right.anchor) &&
           pointsEqual(left.focus, right.focus);
         const root = document.querySelector('[data-editor="true"]');
-        const selection = root?.__pliteBrowserHandle?.getSelection?.() ?? null;
+        const selection = root?.[key]?.getSelection?.() ?? null;
 
         return (
           selection?.anchor.path[0] === index &&
@@ -1993,7 +1994,7 @@ const clickMaterializedBlock = async (page, blockIndex, context) => {
           !selectionsEqual(selection, beforeSelection)
         );
       },
-      { beforeSelection, index: blockIndex },
+      [{ beforeSelection, index: blockIndex }, BROWSER_HANDLE_KEY],
       { timeout: 5000 },
     )
     .catch(async (error) => {
@@ -2070,7 +2071,7 @@ const measureInteraction = async (page, lane, context) => {
     laneKey: lane.key,
   });
   const beforeText = await readBlockText(page, lane.blockIndex);
-  const beforeTypeState = await page.evaluate((index) => {
+  const beforeTypeState = await page.evaluate(([index, key]) => {
     const root = document.querySelector('[data-editor="true"]');
     const textHost = root?.querySelector(
       `[data-editor-node="text"][data-editor-path="${index},0"]`,
@@ -2087,15 +2088,15 @@ const measureInteraction = async (page, lane, context) => {
     return {
       anchorOffset: selection?.anchorOffset ?? null,
       anchorPath: anchorTextHost?.getAttribute('data-editor-path') ?? null,
-      handleSelection: root?.__pliteBrowserHandle?.getSelection?.() ?? null,
-      inputState: root?.__pliteBrowserHandle?.getInputState?.() ?? null,
+      handleSelection: root?.[key]?.getSelection?.() ?? null,
+      inputState: root?.[key]?.getInputState?.() ?? null,
       textHostPath: textHost?.getAttribute('data-editor-path') ?? null,
       textHostSync: textHost?.getAttribute('data-editor-dom-sync') ?? null,
       textHostSyncReason:
         textHost?.getAttribute('data-editor-dom-sync-reason') ?? null,
       textHostText: textHost?.textContent?.replace(/\uFEFF/g, '') ?? null,
     };
-  }, lane.blockIndex);
+  }, [lane.blockIndex, BROWSER_HANDLE_KEY]);
 
   if (beforeText == null) {
     throw new Error(`Missing initial block text for ${lane.key}`);
@@ -2222,9 +2223,9 @@ const measureInteraction = async (page, lane, context) => {
 };
 
 const measureNativeStructural = async (page, lane, context) => {
-  const setup = await page.evaluate((startIndex) => {
+  const setup = await page.evaluate(([startIndex, key]) => {
     const root = document.querySelector('[data-editor="true"]');
-    const handle = root?.__pliteBrowserHandle;
+    const handle = root?.[key];
     const value = handle?.getValue().children;
     const index = value?.findIndex(
       (node, index) => index >= startIndex && node.type === 'paragraph',
@@ -2240,7 +2241,7 @@ const measureNativeStructural = async (page, lane, context) => {
     );
     window.__pliteStructuralProof = { root, untouched };
     return { before, index };
-  }, lane.blockIndex);
+  }, [lane.blockIndex, BROWSER_HANDLE_KEY]);
   const { before, index } = setup;
   const offset = 2;
   const split = [...before];
@@ -2249,10 +2250,10 @@ const measureNativeStructural = async (page, lane, context) => {
     ...context,
     laneKey: lane.key,
   });
-  const check = async (expected, point) => page.evaluate(({ expected, point }) => {
+  const check = async (expected, point) => page.evaluate(([{ expected, point }, handleKey]) => {
     const proof = window.__pliteStructuralProof;
     const root = document.querySelector('[data-editor="true"]');
-    const handle = root?.__pliteBrowserHandle;
+    const handle = root?.[handleKey];
     const texts = handle?.getBlockTexts();
     if (root !== proof.root || JSON.stringify(texts) !== JSON.stringify(expected)) {
       throw new Error('Native structural model or root mismatch');
@@ -2279,7 +2280,7 @@ const measureNativeStructural = async (page, lane, context) => {
     if (document.activeElement !== root && !root.contains(document.activeElement)) {
       throw new Error('Native structural lost focus');
     }
-  }, { expected, point });
+  }, [{ expected, point }, BROWSER_HANDLE_KEY]);
   const measureKey = async (key) => {
     await resetTrace(page);
     const session = nativeCPUProfile ? await page.context().newCDPSession(page) : null;

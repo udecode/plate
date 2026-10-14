@@ -515,6 +515,32 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
+      dependencies: ['platejs', '@platejs/test'],
+      description:
+        'Lint rules with a findings panel, caret fixes, F8 navigation and a delayed server rule.',
+      files: [
+        {
+          path: 'examples/lint-demo.tsx',
+          type: 'registry:example',
+        },
+        {
+          path: 'examples/values/lint-value.tsx',
+          type: 'registry:example',
+        },
+      ],
+      meta: { iframeHeight: 900 },
+      name: 'lint-demo',
+      registryDependencies: [
+        'button',
+        '@plate/editor',
+        '@plate/editor-plugins',
+        '@plate/lint',
+        '@plate/ai',
+        '@plate/dnd',
+      ],
+      type: 'registry:example',
+    },
+    {
       dependencies: ['platejs'],
       description:
         'Shows the live editor selection while an owned control has focus.',

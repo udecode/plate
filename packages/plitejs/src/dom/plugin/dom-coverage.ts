@@ -103,7 +103,7 @@ export type DOMCoverageDOMRangeResult =
 
 /** DOM-to-Plite point conversion result for native boundary DOM. */
 export type DOMCoveragePointResult =
-  | { point: Point; type: 'plite-point' }
+  | { point: Point; type: 'point' }
   | {
       boundary: DOMCoverageBoundary;
       domPoint: DOMPoint;

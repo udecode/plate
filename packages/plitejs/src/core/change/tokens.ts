@@ -42,7 +42,7 @@ export type JsonTextNode = JsonRecord & {
 
 export type NodeKind = 'element' | 'text';
 
-export const PREPARED_SOURCE_TOKEN = Symbol('plite.prepared-source-token');
+export const PREPARED_SOURCE_TOKEN = Symbol('prepared-source-token');
 export const CLAIMED_PREPARED_SOURCES = new WeakSet<object>();
 export const PREPARED_TOKEN_NEXT = new WeakMap<JsonToken, JsonToken | null>();
 

@@ -11,8 +11,6 @@ import {
 } from '@hocuspocus/server';
 import * as Y from 'yjs';
 
-import { readPliteValueFromYjs } from '../../../../packages/plitejs/src/yjs/core/document';
-
 type CollabContext = {
   documentName?: string;
   readOnly?: boolean;
@@ -42,7 +40,6 @@ const YJS_PATH = process.env.PLITE_YJS_PATH ?? '/yjs';
 const YJS_TIMEOUT = toNumber(process.env.PLITE_YJS_TIMEOUT, 10_000);
 const YJS_DEBOUNCE = toNumber(process.env.PLITE_YJS_DEBOUNCE, 2000);
 const YJS_MAX_DEBOUNCE = toNumber(process.env.PLITE_YJS_MAX_DEBOUNCE, 10_000);
-const YJS_ROOT_NAME = process.env.PLITE_YJS_ROOT_NAME ?? 'plitejs';
 const YJS_STORAGE_DIR = path.resolve(
   process.cwd(),
   process.env.PLITE_YJS_STORAGE_DIR ?? '.tmp/yjs-documents'
@@ -55,10 +52,6 @@ const YJS_ALLOW_ANONYMOUS_READ = toBoolean(
 const YJS_MAX_SNAPSHOT_BYTES = toNumber(
   process.env.PLITE_YJS_MAX_SNAPSHOT_BYTES,
   10 * 1024 * 1024
-);
-const YJS_WRITE_JSON_DEBUG = toBoolean(
-  process.env.PLITE_YJS_WRITE_JSON_DEBUG,
-  true
 );
 const REDIS_ENABLED = toBoolean(process.env.PLITE_YJS_REDIS_ENABLED);
 const REDIS_HOST = process.env.PLITE_YJS_REDIS_HOST ?? '127.0.0.1';
@@ -112,10 +105,7 @@ const sanitizeDocumentName = (documentName: string) =>
 const snapshotPath = (documentName: string) =>
   path.join(YJS_STORAGE_DIR, `${sanitizeDocumentName(documentName)}.bin`);
 
-const jsonDebugPath = (documentName: string) =>
-  path.join(YJS_STORAGE_DIR, `${sanitizeDocumentName(documentName)}.json`);
-
-const writeAtomic = async (targetPath: string, data: Uint8Array | string) => {
+const writeAtomic = async (targetPath: string, data: Uint8Array) => {
   const tempPath = `${targetPath}.${process.pid}.${Date.now()}.tmp`;
 
   await writeFile(tempPath, data);
@@ -151,25 +141,6 @@ const storeSnapshot = async (
 
   await mkdir(YJS_STORAGE_DIR, { recursive: true });
   await writeAtomic(snapshotPath(documentName), update);
-
-  if (YJS_WRITE_JSON_DEBUG) {
-    const root = document.get(YJS_ROOT_NAME, Y.XmlElement);
-    const value = readPliteValueFromYjs(root);
-
-    await writeAtomic(
-      jsonDebugPath(documentName),
-      `${JSON.stringify(
-        {
-          documentName,
-          rootName: YJS_ROOT_NAME,
-          updatedAt: new Date().toISOString(),
-          value,
-        },
-        null,
-        2
-      )}\n`
-    );
-  }
 };
 
 const extensions = [
