@@ -8,20 +8,22 @@ import {
   DocumentIndex,
 } from './document-index';
 import {
-  claimPreparedNodeSlice,
-  closeToken,
   cloneFrozen,
   cloneJson,
+  isRecord,
+  jsonEqual,
+  type JsonRecord,
+} from './json';
+import {
+  claimPreparedNodeSlice,
+  closeToken,
   commonPrefixLength,
   commonSuffixLength,
   DOCUMENT_SLICE_PREPARED_NODES,
   PreparedTokenSlice,
   isElementNode,
-  isRecord,
   isTextNode,
-  jsonEqual,
   type JsonNode,
-  type JsonRecord,
   type JsonToken,
   type JsonTokenData,
   nodeProps,

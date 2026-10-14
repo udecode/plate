@@ -1,10 +1,7 @@
 import type { AuthoredProjectionDiagnostic } from '../../core/authored-document-capability';
-import type {
-  JsonEditorValue,
-  JsonNode,
-  JsonRecord,
-} from '../../core/change/tokens';
-import { jsonEqual } from '../../core/change/tokens';
+import type { JsonRecord } from '../../core/change/json';
+import { jsonEqual } from '../../core/change/json';
+import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import { survivalUnder } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
 import { isMetadataRootKey } from '../../internal/root-location';

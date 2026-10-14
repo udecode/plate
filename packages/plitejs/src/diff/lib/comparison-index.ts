@@ -3,12 +3,12 @@ import type {
   EditorStateSchemaApi,
   Value,
 } from '../..';
+import type { JsonRecord } from '../../core/change/json';
 import {
   isElementNode,
   isTextNode,
   nodeProps,
   type JsonNode,
-  type JsonRecord,
 } from '../../core/change/tokens';
 import { isMetadataRootKey } from '../../internal/root-location';
 import type { ComparisonDocument } from './comparison-internal';

@@ -2,24 +2,9 @@
 'platejs': major
 ---
 
-Export `CsvPluginState` as the complete mutable state contract for `CsvPlugin`.
+Remove `CsvPlugin`, `editor.api.csv` and the `PLUGINS.csv` key; `@platejs/csv` has no `platejs/csv` replacement, and `papaparse` is no longer a peer dependency.
 
-- Move `CsvPlugin` to the Plite plugin runtime with typed CSV deserialization through `editor.api.csv.deserialize`
-- Seed CSV codec behavior through `CsvPlugin.initialState`
-- Use the plugin API as the sole CSV deserialization surface
-- Represent CSV header fields as `tableCell` nodes with `header: true`
+- Spreadsheet copies from Google Sheets and Excel still paste as tables through their HTML.
+- Comma-separated plain text now pastes as text instead of a table.
 
-**Migration:** Configure CSV state through `initialState` and use the inferred editor API:
-
-```tsx
-CsvPlugin.configure({
-  initialState: {
-    errorTolerance: 0.1,
-    parseOptions: { header: true },
-  },
-});
-
-editor.api.csv.deserialize({ data });
-```
-
-Replace direct `deserializeCsv(editor, { data })` calls with `editor.api.csv.deserialize({ data })` or `editor.plugin(CsvPlugin).api.deserialize({ data })`.
+**Migration:** Remove `CsvPlugin` from your plugin list and uninstall `@platejs/csv` and `papaparse`. To convert a CSV string into a table, parse it with your own CSV library and insert table nodes.

@@ -2,7 +2,7 @@
 title: Clipboard interchange and content fitting
 type: decision
 status: proposed
-updated: 2026-10-04
+updated: 2026-10-14
 ---
 
 # Clipboard interchange and content fitting
@@ -160,7 +160,7 @@ These are source-grounded consumer risks; root-bearing table and static-browser
 reproductions remain future proof.
 
 Rectangular table fill and placement still belong to the table feature. HTML,
-Word, Markdown and CSV parsing into freshly produced closed content is not
+Word, Markdown and tab-separated text parsing into freshly produced closed content is not
 itself a defect. The repair must distinguish that operation from rewriting an
 existing slice that already owns additional content.
 

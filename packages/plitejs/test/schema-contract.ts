@@ -1918,6 +1918,22 @@ describe('editor schema', () => {
     );
   });
 
+  it('rejects an element property named text, which would read as a text node', () => {
+    const editor = createEditor();
+
+    assert.throws(
+      () =>
+        editor.install(
+          defineContractSchema('text-property', {
+            body: {
+              properties: { text: property.string() },
+            } as const,
+          })
+        ),
+      /property.*reserved key "text"/i
+    );
+  });
+
   it('exposes schema through read and update views', () => {
     const editor = createEditor();
     editor.install(

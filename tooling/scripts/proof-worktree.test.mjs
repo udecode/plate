@@ -381,6 +381,36 @@ test('accepts an --expect-fail run that fails with a named TypeScript diagnostic
   assert.equal(result.status, 0, result.stderr);
 });
 
+test('accepts an --expect-fail run that fails with named oxlint errors in each output format', (t) => {
+  const result = runExpectingFailure(
+    t,
+    [
+      'echo "  × entrypoint-dag(no-forbidden-imports): platejs/excalidraw cannot import @excalidraw/excalidraw."',
+      'echo "  x plate(no-second-name): Second name for ImportedDataState."',
+      'echo "src/a.ts:1:40: error eslint(no-debugger): debugger statement is not allowed"',
+      'exit 1',
+    ].join('; '),
+    [
+      'entrypoint-dag(no-forbidden-imports)',
+      'plate(no-second-name)',
+      'eslint(no-debugger)',
+    ]
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('refuses an --expect-fail run whose named lint rule shows only as a warning', (t) => {
+  const result = runExpectingFailure(
+    t,
+    'echo "  ! plate(no-second-name): Second name."; echo "src/a.ts:3:13: warning plate(no-second-name): Second name."; exit 1',
+    ['plate(no-second-name)']
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /does not show: plate\(no-second-name\)/u);
+});
+
 test('refuses an --expect-fail run whose named failure appears only in its command line', (t) => {
   const result = runExpectingFailure(t, 'exit 1 # (fail) named case', [
     '(fail) named case',

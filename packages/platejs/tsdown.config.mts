@@ -40,7 +40,6 @@ export const plateAdditionalEntries = [
   'src/code-drawing/index.ts',
   'src/code-drawing/react/index.ts',
   'src/compiler/index.tsx',
-  'src/csv/index.ts',
   'src/diff/index.ts',
   'src/docx/paste/index.ts',
   'src/docx/import/index.ts',

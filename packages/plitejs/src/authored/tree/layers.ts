@@ -1,4 +1,4 @@
-import { jsonEqual } from '../../core/change/tokens';
+import { jsonEqual } from '../../core/change/json';
 import type { EditorJsonValue } from '../../interfaces/json';
 import { getDefined } from '../../internal/get-defined';
 

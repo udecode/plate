@@ -274,11 +274,26 @@ if (exitStatus === 0) {
   );
   process.exit(1);
 }
-const failLine =
-  /^\s*(?:✘|✖|\(fail\)|not ok\b|\d+\) |\S+\(\d+,\d+\): error TS\d+:)/u;
+const lintRule = String.raw`[\w@/-]+\([\w/-]+\): `;
+const failLines = {
+  playwright: /^\s*(?:✘|\d+\) )/u,
+  nodeTest: /^\s*(?:✖|not ok\b)/u,
+  bun: /^\s*\(fail\)/u,
+  // oxlint prints × under CI, a plain x otherwise, and file:line:col when it
+  // detects an agent variable such as CLAUDECODE, AI_AGENT or CODEX_THREAD_ID.
+  vitestOrCiOxlint: /^\s*× /u,
+  pipedOxlint: new RegExp(String.raw`^\s*x ${lintRule}`, 'u'),
+  agentOxlint: new RegExp(String.raw`^\s*\S+:\d+:\d+: error ${lintRule}`, 'u'),
+  tsc: /^\s*\S+\(\d+,\d+\): error TS\d+:/u,
+};
 const lines = stripVTControlCharacters(proof.output).split('\n');
 const missing = args.expectFail.filter(
-  (text) => !lines.some((line) => line.includes(text) && failLine.test(line))
+  (text) =>
+    !lines.some(
+      (line) =>
+        line.includes(text) &&
+        Object.values(failLines).some((failLine) => failLine.test(line))
+    )
 );
 if (missing.length > 0) {
   console.error(

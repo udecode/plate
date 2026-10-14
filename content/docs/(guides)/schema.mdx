@@ -13,7 +13,7 @@ import { createEditor, definePlugin, property, schema } from 'platejs';
 const NoticePlugin = definePlugin('notice', {
   schema: {
     element: {
-      ...schema.element.textBlock(),
+      ...schema.element.textBlock({ ownsExit: true }),
       properties: {
         tone: property.enum(['info', 'warning'], { default: 'info' }),
       },
@@ -26,7 +26,7 @@ const editor = createEditor({
 });
 ```
 
-`schema.element.textBlock()` declares an ordinary editable block. Element properties stay flat on the element. Marks and cross-cutting properties belong to their owning feature plugin; see [Plugin Configuration](/docs/plugin#schema-plugins).
+`schema.element.textBlock()` declares an ordinary editable block. `ownsExit: true` makes [exit break](/docs/exit-break) leave the notice itself and stay in any container around it, as it does for a code block or a callout. Element properties stay flat on the element. Marks and cross-cutting properties belong to their owning feature plugin; see [Plugin Configuration](/docs/plugin#schema-plugins).
 
 ## Application grammar
 

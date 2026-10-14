@@ -193,6 +193,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1, max: 1 }),
+      ownsExit: true,
       properties: { language: property.string() },
       slice: { preserveContext: true },
     },

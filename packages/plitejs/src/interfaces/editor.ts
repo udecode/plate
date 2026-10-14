@@ -1408,18 +1408,27 @@ export type EditorTransactionSliceApi<V extends Value = Value> = Pick<
 export type EditorBreakExitOptions = {
   /** Land before the exited structure instead of after it. */
   before?: boolean;
-  /** Which ancestors may be exited; the selected block stays the last resort. */
+  /**
+   * Which levels may be exited: the selected block when it owns its exit, then
+   * its ancestors. The selected block stays the last resort.
+   */
   match?: (node: Element, path: Path) => boolean;
 };
 
 export type EditorTransactionBreakApi = {
   /**
-   * Leave the nearest structure around the collapsed selection. The structure
-   * is the nearest ancestor of the selected block that is a root child, or
-   * whose parent can directly hold the type of the root's default block after
-   * its required leading blocks; with none, it is the selected block. Inserts
-   * and selects the default that the structure's parent declares at the
-   * landing position. Returns whether a block landed; false changes nothing.
+   * Leave the nearest structure around the collapsed selection. The selected
+   * block is that structure when it owns its exit, as a void, an object or an
+   * `ownsExit` text block does, and its parent can build a default beside it
+   * that does not put the caret in another block that owns its exit. Otherwise
+   * it is the nearest ancestor that is a root child or sits in a parent that
+   * declares no content or whose content after any leading prefix admits a text
+   * block, skipping one that is not a root child when its landing would put the
+   * caret back in its own type; with none, it is the selected block. Inserts
+   * and selects the default that the structure's parent declares at the landing
+   * position. Returns whether a block landed; false changes nothing, as when
+   * that parent declares no content, its default needs a property nobody
+   * supplies, or that default ends without text.
    */
   exit: (options?: EditorBreakExitOptions) => boolean;
   insert: () => void;
@@ -1602,6 +1611,8 @@ export type EditorElementBehavior = Readonly<{
   isolating: boolean;
   markableVoid: boolean;
   object: boolean;
+  /** Whether the text block declares `ownsExit`; false for voids and objects. */
+  ownsExit: boolean;
   readOnly: boolean;
   selectable: boolean;
   void: boolean;

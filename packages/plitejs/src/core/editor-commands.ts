@@ -44,7 +44,7 @@ import { getDefined } from '../internal/get-defined';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
 import { ContentSlice as ContentSliceValue } from './content-slice';
-import { getCanPlaceAtPathFromApi } from './editor-schema';
+import { getInternalEditorSchemaFromApi } from './editor-schema';
 import { limitTextInsert } from './insert-limit';
 import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
 import { areEditorJsonValuesEqual } from './value-codec';
@@ -401,7 +401,9 @@ const getFullBlockTextReplacement = (
   if (
     !force &&
     blocks.length === 1 &&
-    state.schema.findWrapping(firstBlock, { text })?.length === 0
+    getInternalEditorSchemaFromApi(state.schema).canContain(firstBlock, {
+      text,
+    })
   ) {
     return null;
   }
@@ -488,14 +490,18 @@ const getNodeSelectionReplacement = (
 
   if (
     !contentless &&
-    !getCanPlaceAtPathFromApi(state.schema)(firstPath, planned.replacements, {
-      removing: blocks.flatMap(([, path]) =>
-        PathApi.equals(PathApi.parent(path), parentPath)
-          ? [getDefined(path.at(-1))]
-          : []
-      ),
-      root,
-    })
+    !getInternalEditorSchemaFromApi(state.schema).canPlaceAtPath(
+      firstPath,
+      planned.replacements,
+      {
+        removing: blocks.flatMap(([, path]) =>
+          PathApi.equals(PathApi.parent(path), parentPath)
+            ? [getDefined(path.at(-1))]
+            : []
+        ),
+        root,
+      }
+    )
   ) {
     return 'refused' as const;
   }
@@ -966,6 +972,7 @@ export const editorCommands: EditorCommands = Object.freeze({
               return null;
             }
 
+            const schema = getInternalEditorSchemaFromApi(state.schema);
             const content =
               slice.openStart === 1 &&
               slice.openEnd === 1 &&
@@ -978,10 +985,7 @@ export const editorCommands: EditorCommands = Object.freeze({
 
             if (
               !content ||
-              content.some(
-                (node) =>
-                  state.schema.findWrapping(defaultChild, node)?.length !== 0
-              )
+              content.some((node) => !schema.canContain(defaultChild, node))
             ) {
               return null;
             }

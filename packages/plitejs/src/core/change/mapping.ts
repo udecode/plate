@@ -5,13 +5,12 @@ import {
   valueRoot,
 } from './document-change';
 import { DocumentIndex } from './document-index';
+import { jsonEqual, type JsonRecord } from './json';
 import type { RootChange } from './root-change';
 import {
   isElementNode,
   type JsonEditorValue,
-  jsonEqual,
   type JsonNode,
-  type JsonRecord,
   pathKey,
 } from './tokens';
 

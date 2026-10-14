@@ -5,6 +5,7 @@ import {
   type DocumentChangeRootClassification,
 } from './classification';
 import { DocumentIndex } from './document-index';
+import { deepFreeze, isRecord, jsonEqual } from './json';
 import {
   RootChange,
   type RootChangeJson,
@@ -12,14 +13,7 @@ import {
   type SectionData,
   type TrackMode,
 } from './root-change';
-import {
-  deepFreeze,
-  isRecord,
-  type JsonEditorValue,
-  jsonEqual,
-  type JsonNode,
-  type JsonPoint,
-} from './tokens';
+import type { JsonEditorValue, JsonNode, JsonPoint } from './tokens';
 
 export type DocumentChangedRange = Readonly<{
   fromAfter: number;

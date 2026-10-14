@@ -278,11 +278,6 @@ export const entrypointDags = {
       'code-drawing/react': client(
         directory('code-drawing/react', ['code-drawing', 'core', 'react-core'])
       ),
-      csv: headless(
-        directory('csv', ['core'], [], {
-          peerDependencies: ['@types/papaparse', 'papaparse'],
-        })
-      ),
       diff: headless(
         directory('diff', [], ['plitejs/diff'], {
           peerDependencies: ['diff-match-patch-ts'],
@@ -498,7 +493,6 @@ export const entrypointDags = {
         'code-drawing',
         'code-drawing/react',
         'compiler',
-        'csv',
         'docx/export',
         'docx/import',
         'docx/paste',

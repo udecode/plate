@@ -181,7 +181,6 @@ Excalidraw element context and returns `void`.
 | Deduplication | Skips unchanged serialized drawings, including pan, zoom, and selection-only events. |
 | External data and document undo | Restores the current node into the canvas without a save echo and clears incompatible canvas history. |
 | Undo and Redo shortcuts | Run the document's history, also while the canvas has focus; the hook redraws the result into the canvas. They do nothing in read-only mode. |
-| Open text label | A document undo leaves an open label editor's text unchanged. Closing the editor writes that text back to its label when the label still exists. Close the label before you undo. |
 | Canvas undo buttons | Undo Excalidraw's local steps; the hook saves the resulting scene to the node. |
 | Read-only mode | Enables Excalidraw `viewModeEnabled` and rejects writes at the editor boundary. |
 | Canvas frame | Registry UI renders a bordered `aspect-video` frame capped at `600px`. |

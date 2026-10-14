@@ -1,0 +1,14 @@
+---
+id: 2026-10-14-remove-csv-plugin
+date: 2026-10-14
+status: draft
+kind: remove
+summary: 'Remove CsvPlugin from the editor kit'
+change: { 'type': 'source', 'date': '2026-10-14', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-14-editor-plugins-remove-csvplugin-from-kit-1bdb7fc5","kind":"remove","migrationNotes":[]} -->
+
+- **`editor-plugins`**: Remove `CsvPlugin` and its `platejs/csv` import from the editor kit, and remove the `csv-demo` example. Spreadsheet copies still paste as tables through HTML, and tab-separated text pasted onto selected table cells fills them field by field.

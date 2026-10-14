@@ -41,6 +41,12 @@
             "if": "Bash(node .agents/pstack/freeze.mjs *)",
             "command": "node \"$CLAUDE_PROJECT_DIR/tooling/scripts/stale-claims.mjs\" --hook",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "if": "Bash(node .agents/pstack/freeze.mjs *)",
+            "command": "node \"$CLAUDE_PROJECT_DIR/tooling/scripts/stale-mutations.mjs\" --hook",
+            "timeout": 60
           }
         ]
       }
@@ -54,7 +60,7 @@
       "source": {
         "source": "github",
         "repo": "michael-denyer/pstack-claude",
-        "ref": "v0.9.82"
+        "ref": "v0.9.84"
       }
     }
   }

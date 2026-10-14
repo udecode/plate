@@ -44,14 +44,7 @@ const COMPLETE_SCHEMA_FIELDS = [
   ...COMPLETE_SCHEMA_LINEAGE_FIELDS,
 ] as const;
 const RESERVED_PRIMARY_ROOT = 'main';
-const RESERVED_ELEMENT_KEYS = new Set([
-  '__proto__',
-  'children',
-  'constructor',
-  'prototype',
-  'type',
-]);
-const RESERVED_TEXT_KEYS = new Set([
+const RESERVED_PROPERTY_KEYS = new Set([
   '__proto__',
   'children',
   'constructor',
@@ -320,6 +313,7 @@ export type CompiledSchemaElementBehavior = Readonly<{
   isolating: boolean;
   markableVoid: boolean;
   object: boolean;
+  ownsExit: boolean;
   readOnly: boolean;
   selectable: boolean;
   void: boolean;
@@ -1036,6 +1030,7 @@ const collectSchemaKeyDiagnostics = (
           'isolating',
           'markableVoid',
           'object',
+          'ownsExit',
           'properties',
           'readOnly',
           'selectable',
@@ -1366,11 +1361,19 @@ const canonicalJson = (
 const stableStringify = (value: unknown): string =>
   JSON.stringify(canonicalJson(value));
 
+const omitFalseOwnsExit = ({
+  ownsExit,
+  ...behavior
+}:
+  | CompiledSchemaElementBehavior
+  | EditorSchemaContractElementBehavior): EditorSchemaContractElementBehavior =>
+  Object.freeze(ownsExit ? { ...behavior, ownsExit } : behavior);
+
 // Keep the reserved false bit in persisted fingerprints after removing the
 // editable-island feature; ordinary element semantics did not change.
 const canonicalSchemaElementBehavior = (
-  behavior: CompiledSchemaElementBehavior
-) => ({ ...behavior, editableIsland: false });
+  behavior: CompiledSchemaElementBehavior | EditorSchemaContractElementBehavior
+) => ({ ...omitFalseOwnsExit(behavior), editableIsland: false });
 
 /**
  * Exact 64-bit FNV-1a over JavaScript UTF-16 code units.
@@ -2035,6 +2038,16 @@ const compileElementBehavior = (
   const selectable = input.selectable ?? true;
   const atom = input.atom ?? isSchemaVoidKind(voidKind);
   const object = input.object ?? false;
+  const ownsExit = input.ownsExit ?? false;
+
+  if (ownsExit && (inline || voidKind !== null || object)) {
+    compileFailure(
+      'invalid-element-behavior',
+      `Schema element at ${source.path} declares ownsExit, which only a block text element can declare; voids and objects always own their exit.`,
+      [source],
+      `${source.path}.ownsExit`
+    );
+  }
 
   if (
     object &&
@@ -2059,6 +2072,7 @@ const compileElementBehavior = (
     isolating: object || (input.isolating ?? false),
     markableVoid: input.markableVoid ?? voidKind === 'markable-inline',
     object,
+    ownsExit,
     readOnly: input.readOnly ?? false,
     selectable,
     void: isSchemaVoidKind(voidKind),
@@ -3248,12 +3262,9 @@ const validatePropertyKey = (
   placement: 'element' | 'text',
   source: Source<unknown>
 ) => {
-  const reserved =
-    placement === 'element' ? RESERVED_ELEMENT_KEYS : RESERVED_TEXT_KEYS;
-
   if (typeof key === 'string') {
     assertName(key, 'Schema property key', source);
-    if (reserved.has(key)) {
+    if (RESERVED_PROPERTY_KEYS.has(key)) {
       compileFailure(
         'reserved-property-key',
         `Schema ${placement} property at ${source.path} cannot claim reserved key "${key}".`,
@@ -3266,7 +3277,7 @@ const validatePropertyKey = (
   }
 
   assertName(key.prefix, 'Schema property key prefix', source);
-  const conflict = [...reserved].find((reservedKey) =>
+  const conflict = [...RESERVED_PROPERTY_KEYS].find((reservedKey) =>
     reservedKey.startsWith(key.prefix)
   );
 
@@ -3750,6 +3761,13 @@ const compileEditorSchemaInternal = (
         !recordTypes.has(element.type)
       ) {
         element.directGroups.add('textBlock');
+      } else if (element.behavior.ownsExit) {
+        compileFailure(
+          'invalid-element-behavior',
+          `Schema element "${element.type}" declares ownsExit but is not a text block.`,
+          [element.source],
+          `${element.source.path}.ownsExit`
+        );
       }
     }
   }
@@ -5326,8 +5344,12 @@ export type EditorSchemaContractContentRoot = Readonly<{
   ownership: SchemaContentRootOwnership;
 }>;
 
+export type EditorSchemaContractElementBehavior = Readonly<
+  Omit<CompiledSchemaElementBehavior, 'ownsExit'> & { ownsExit?: true }
+>;
+
 export type EditorSchemaContractElement = Readonly<{
-  behavior: CompiledSchemaElementBehavior;
+  behavior: EditorSchemaContractElementBehavior;
   content: EditorSchemaContractContentProgram | null;
   contentRoots: ReadonlyArray<
     EditorSchemaContractEntry<EditorSchemaContractContentRoot>
@@ -5486,7 +5508,7 @@ const contractElement = (
   element: CompiledSchemaElement
 ): EditorSchemaContractElement =>
   Object.freeze({
-    behavior: element.behavior,
+    behavior: omitFalseOwnsExit(element.behavior),
     content: element.content ? contractContentProgram(element.content) : null,
     contentRoots: mapEntries(element.contentRoots, contractContentRoot),
     construction: Object.freeze({
@@ -5663,6 +5685,7 @@ const isContractElementBehavior = (value: unknown) =>
     'selectable',
     'void',
   ].every((key) => typeof value[key] === 'boolean') &&
+  (value.ownsExit === undefined || value.ownsExit === true) &&
   (value.voidKind === null || isSchemaVoidKind(value.voidKind));
 
 const isContractStructureProperty = (value: unknown) =>
@@ -6457,6 +6480,10 @@ const restoreElement = (
 ): CompiledSchemaElement =>
   Object.freeze({
     ...element,
+    behavior: Object.freeze({
+      ...element.behavior,
+      ownsExit: element.behavior.ownsExit === true,
+    }),
     content: element.content ? restoreContentProgram(element.content) : null,
     contentRoots: restoreEntries(element.contentRoots, restoreContentRoot),
     construction: Object.freeze({

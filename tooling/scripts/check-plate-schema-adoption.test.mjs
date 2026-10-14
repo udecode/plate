@@ -1780,12 +1780,6 @@ test('allows only exact audited production extend stages at their owner path', (
 
   for (const [file, source] of [
     [
-      'packages/platejs/src/csv/lib/CsvPlugin.ts',
-      `definePlugin('csv', { })
-        .extend(() => ({ api: () => ({}) }))
-        .extend(() => ({ dataTransferFormats: [rule] }))`,
-    ],
-    [
       'packages/platejs/src/features/link/lib/BaseLinkPlugin.ts',
       `definePlugin('link', { })
         .extend(() => ({ update: () => ({}) }))
@@ -1806,17 +1800,11 @@ test('allows only exact audited production extend stages at their owner path', (
       'packages/platejs/src/features/table/lib/BaseTablePlugin.ts',
       `definePlugin('table', { })
         .extend(() => ({ api: () => ({}) }))
-        .extend(() => ({ api: () => ({}) }))
-        .extend(() => ({ api: () => ({}), read: () => ({}) }))
-        .extend(() => ({ api: () => ({}) }))
-        .extend(() => ({ read: () => ({}) }))
-        .extend(() => ({ api: () => ({}), read: () => ({}) }))
+        .extend(() => ({ contributions: [], read: () => ({}) }))
         .extend(() => ({ update: () => ({}) }))
-        .extend(() => ({ update: () => ({}) }))
-        .extend(() => ({ contributions: [] }))
         .extend(() => ({ corrections: [] }))
         .extend(() => ({ readMiddleware: () => [] }))
-        .extend(() => ({ commands: () => [] }))`,
+        .extend(() => ({ commands: () => [], dataTransferFormats: [] }))`,
     ],
     [
       'packages/platejs/src/features/toc/lib/BaseTocPlugin.ts',

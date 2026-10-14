@@ -10,7 +10,6 @@ const visit = (rendered: number) => ({
   errors: [],
   frame: false,
   path: '/docs/widget',
-  previews: [],
   rendered,
   sent: Date.now(),
   theme: 'light',

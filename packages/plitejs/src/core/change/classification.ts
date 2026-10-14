@@ -3,14 +3,9 @@ import type {
   TopLevelRuntimeRange,
 } from '../../interfaces/editor';
 import type { DocumentIndex } from './document-index';
+import { jsonEqual } from './json';
 import type { RootChange } from './root-change';
-import {
-  isTextNode,
-  jsonEqual,
-  type JsonNode,
-  nodeProps,
-  pathKey,
-} from './tokens';
+import { isTextNode, type JsonNode, nodeProps, pathKey } from './tokens';
 
 export type DocumentChangeRootClassification = Readonly<{
   paths: ReadonlyArray<readonly number[]>;
