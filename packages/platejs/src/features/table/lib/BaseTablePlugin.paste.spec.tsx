@@ -534,3 +534,157 @@ describe('BaseTablePlugin prepared paste', () => {
     expect(tableText(source)).toEqual([['x', 'y']]);
   });
 });
+
+describe('BaseTablePlugin tab-separated paste', () => {
+  const paste = (editor: Editor, formats: Record<string, string>) => {
+    const data = new DataTransfer();
+
+    for (const [mimeType, value] of Object.entries(formats)) {
+      data.setData(mimeType, value);
+    }
+
+    expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
+  };
+
+  it('fills selected cells field by field', () => {
+    const editor = createTarget();
+
+    paste(editor, { 'text/plain': 'w\tx\ny\tz\n' });
+
+    expect(tableText(editor)).toEqual([
+      ['w', 'x'],
+      ['y', 'z'],
+    ]);
+  });
+
+  it.each([
+    ['comma text', { 'text/plain': 'w,x\ny,z' }, 'w,xy,z'],
+    [
+      'HTML beside the text',
+      { 'text/html': '<p>h</p>', 'text/plain': 'w\tx' },
+      'h',
+    ],
+    [
+      'Markdown beside the text',
+      { 'text/markdown': 'w\tx', 'text/plain': 'w\tx' },
+      'w\tx',
+    ],
+  ])('leaves %s to the other formats', (_name, formats, cellText) => {
+    const editor = createTarget();
+
+    paste(editor, formats);
+
+    expect(tableText(editor)).toEqual([
+      [cellText, cellText],
+      [cellText, cellText],
+    ]);
+  });
+
+  it('keeps the rows and columns that fit, padding short rows', () => {
+    const editor = createTarget();
+
+    paste(editor, { 'text/plain': 'a\nb\nc\td\n' });
+
+    expect(tableText(editor)).toEqual([
+      ['a', ''],
+      ['b', ''],
+    ]);
+  });
+
+  it('reads a quoted multi-line field as one cell of paragraphs', () => {
+    const editor = createTarget();
+
+    paste(editor, { 'text/plain': 'n\tm\nAda\t"one\ntwo"\n' });
+
+    const cell = compileTableGrid(editor.read.children()[0] as TableElement)
+      .slots[1][1]?.cell;
+
+    expect(cell?.children.map((block) => NodeApi.string(block))).toEqual([
+      'one',
+      'two',
+    ]);
+  });
+
+  it('fills a selection whose top row is one merged cell', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd colSpan={2}>
+              <hp>
+                <anchor />a
+              </hp>
+            </htd>
+          </htr>
+          <htr>
+            <htd>
+              <hp>c</hp>
+            </htd>
+            <htd>
+              <hp>
+                d<focus />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTestTableEditor({
+      plugins: getTestTablePlugins(),
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    paste(editor, { 'text/plain': 'w\tx\ny\tz\n' });
+
+    expect(tableText(editor)).toEqual([
+      ['w', 'x'],
+      ['y', 'z'],
+    ]);
+  });
+
+  it('fills a node selection of every cell field by field', () => {
+    const editor = createTarget();
+
+    editor.update.selection.setNodes([
+      [0, 0, 0],
+      [0, 0, 1],
+      [0, 1, 0],
+      [0, 1, 1],
+    ]);
+    paste(editor, { 'text/plain': 'w\tx\ny\tz\n' });
+
+    expect(tableText(editor)).toEqual([
+      ['w', 'x'],
+      ['y', 'z'],
+    ]);
+  });
+
+  it('inserts tab-separated text as text at a caret in one cell', () => {
+    const input = (
+      <editor>
+        <htable>
+          <htr>
+            <htd>
+              <hp>
+                <cursor />a
+              </hp>
+            </htd>
+            <htd>
+              <hp>b</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor;
+    const editor = createTestTableEditor({
+      plugins: getTestTablePlugins(),
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    paste(editor, { 'text/plain': 'w\tx' });
+
+    expect(tableText(editor)).toEqual([['w\txa', 'b']]);
+  });
+});

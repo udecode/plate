@@ -92,7 +92,7 @@
 
 ## Formats without an exporter
 
-- CSV and RTF have no document exporter. `CsvPlugin` turns CSV text into a table through `api.deserialize` and a `text/plain` paste format (`packages/platejs/src/csv/lib/CsvPlugin.ts:42`, `:161-172`), and `text/rtf` is read only by `WordPastePlugin` while it prepares pasted Word HTML (`packages/platejs/src/docx/paste/lib/WordPastePlugin.ts:386`). The 2026-09-24 export audit found no evidence for adding either exporter (`docs/plite/research/2026-09-24-export-architecture/shards/001-direction.md:124-126`; code read 2026-10-08).
+- CSV and RTF have no document exporter. CSV has no reader either: the 2026-10-14 csv review deleted `platejs/csv` (`docs/plans/2026-10-14-csv-review.md`), and Table reads only tab-separated `text/plain` onto a rectangular multi-cell selection (`packages/platejs/src/features/table/lib/BaseTablePlugin.ts:2311`, grammar in `packages/platejs/src/features/table/lib/internal/tabularText.ts`). `text/rtf` is read only by `WordPastePlugin` while it prepares pasted Word HTML (`packages/platejs/src/docx/paste/lib/WordPastePlugin.ts:386`). The 2026-09-24 export audit found no evidence for adding either exporter (`docs/plite/research/2026-09-24-export-architecture/shards/001-direction.md:124-126`; code read 2026-10-08).
 
 ## Former names
 

@@ -3,6 +3,7 @@
 import React, { type ReactNode, createContext, useState } from 'react';
 
 import { Separator } from '@/components/ui/separator';
+import { apiItemAnchor, apiListAnchor } from '@/lib/docs-anchors';
 import { cn } from '@/lib/utils';
 
 import { Icons } from './icons';
@@ -15,18 +16,6 @@ import {
 import { Card, CardContent } from './ui/card';
 
 const APIContext = createContext<{ listType?: string; name?: string }>({});
-
-const listTypeToId: any = {
-  api: 'api',
-  attributes: 'attrs',
-  methods: 'methods',
-  options: 'opt',
-  parameters: 'params',
-  props: 'props',
-  returns: 'returns',
-  state: 'state',
-  transforms: 'tf',
-};
 
 const listTypeToBadgeStyles: Record<string, string> = {
   api: 'bg-pink-50 text-pink-700 dark:bg-pink-950 dark:text-pink-300',
@@ -73,10 +62,7 @@ export function APIItem({
   const { listType, name: contextName } = React.useContext(APIContext);
 
   const id = contextName
-    ? `${contextName}-${listType ? `${listTypeToId[listType]}-` : ''}${name}`
-        .toLowerCase()
-        .replace(/[^\da-z]+/g, '-')
-        .replace(/^-|-$/g, '')
+    ? apiItemAnchor(contextName, listType, name)
     : undefined;
 
   return (
@@ -290,7 +276,7 @@ export function APIList({
 
   if (listType === 'returns' && !childCount) return null;
 
-  const id = name ? `${name}-${listTypeToId[listType]}` : undefined;
+  const id = name ? apiListAnchor(name, listType) : undefined;
 
   return (
     <APIContext.Provider value={contextValue}>
@@ -413,10 +399,7 @@ export function APISubListItem({
   const { listType, name: contextName } = React.useContext(APIContext);
 
   const id = contextName
-    ? `${contextName}-${listType ? `${listTypeToId[listType]}-` : ''}${parent}-${name}`
-        .toLowerCase()
-        .replace(/[^\da-z]+/g, '-')
-        .replace(/^-|-$/g, '')
+    ? apiItemAnchor(contextName, listType, parent, name)
     : undefined;
 
   return (

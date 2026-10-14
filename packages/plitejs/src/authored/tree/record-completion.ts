@@ -5,6 +5,7 @@ import {
   valueRoot,
 } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
+import { type JsonRecord, jsonEqual } from '../../core/change/json';
 import {
   RootChange,
   type RootChangeSection,
@@ -13,8 +14,6 @@ import {
   encodeNodes,
   type JsonEditorValue,
   type JsonNode,
-  type JsonRecord,
-  jsonEqual,
 } from '../../core/change/tokens';
 import { getEditorSchema } from '../../core/editor-runtime';
 import { completeChildrenAt } from '../../core/representation';
@@ -389,9 +388,7 @@ export const completeProposed = (
         isOwn
       );
       const ancestorMarks = site.flatMap((node) =>
-        input.dependencies
-          .marks(node)
-          .filter((mark) => mark.kind === 'insert')
+        input.dependencies.marks(node).filter((mark) => mark.kind === 'insert')
       );
       const proposedWith = (placed: readonly ProposedChild[]) => {
         const nodes = [...inputs];

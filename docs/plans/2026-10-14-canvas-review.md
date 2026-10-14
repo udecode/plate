@@ -10,7 +10,7 @@ review_upstreams: ['../prosemirror-view@ca4c78e9b56f1b164c0b3758b59d8748f11b7534
 
 # Canvas: keep the Excalidraw sync, fix its public contract
 
-Status: planning: the plan's panel is done, the build runs next
+Status: executed: built and proven; waiting on your commit
 Playbook: plan
 
 **Pursue, reaffirming `2026-10-04-canvas-audit` with its open naming choice settled.** The sync design is right and proven. A void block stores the drawing, `useExcalidrawSync` keeps the node and the mounted canvas in step without save echoes, and the copied component owns loading and the frame. Three parts of the public contract are wrong. `ExcalidrawDataState` is Excalidraw's own import shape, which names the settings `appState`. The probe shows the plugin's schema refuses a value of that shape. No code uses the type, and it is the only reason the headless `platejs/excalidraw` entrypoint declares the Excalidraw peer. `width` is a stored field of the closed schema that nothing reads or writes. The demo sets it to 50%, and the canvas ignores it. The copied canvas works only because its wrapper carries Plite's `data-editor-root-chrome-ignore` marker, which hands the canvas its own pointer, typing, clipboard, focus and DOM changes. Undo and Redo shortcuts are an exception, as in any native control or nested editor, and the build found a few more keys the editor takes in narrower cases. Outside an IME composition, an editable editor runs its own history for them, and a read-only editor stops them before the canvas sees them. No docs page names that marker, so a custom copy that drops it stops drawing. Delete the type and the field, and document the marker under its current name. `canvas` is the scope `node tooling/scripts/review-ledger.mjs next` returned. Other sessions own its two uncommitted members. `apps/www/tests/browser/excalidraw.spec.ts` renames the browser handle key, and `packages/platejs/package.json` adds the lint entrypoint scripts. This run builds on both and reverts neither.
@@ -19,11 +19,11 @@ Playbook: plan
 
 ### What will change?
 
-Plate removes a drawing type that doesn't match the saved data and a width setting nothing uses. It also rejects badly saved images, and the docs explain the one attribute a custom drawing needs.
+Plate dropped a drawing type that didn't match saved data and a width nothing used, and it rejects badly saved images. The docs now teach the attribute custom drawings need, and the Close lists where the build left the plan.
 
 ### What could go wrong?
 
-Saved documents stamped with the old schema need a version bump or a re-save. A drawing saved with a width on a v54 beta won't load until the app removes it.
+Drawings saved with a width on a v54 beta won't load until the app strips it. Nobody has timed the upgrade yet, because a busy machine stopped the timing run. The release check still fails on old size records.
 
 ## Teach
 
@@ -31,7 +31,7 @@ An Excalidraw block is a drawing inside a Plate document. The document stores th
 
 A small hook keeps the two in step. Drawing saves once per change, panning saves nothing, and undoing in the document redraws the canvas. The copied component loads the canvas, turns on view-only mode when the editor is read-only, and wraps the canvas in an attribute that tells the editor to leave its clicks and typing alone. The editor keeps the undo and redo shortcuts for itself.
 
-The plan deletes a published type that describes data the block refuses, and a saved width that does nothing. The block also starts refusing images saved in the wrong shape. The docs then teach the attribute, so people who build their own drawing component know to keep it.
+The build deleted a published type that described data the block refuses, and a saved width that did nothing. The block now refuses images saved in the wrong shape. The docs teach the attribute, so people who build their own drawing component know to keep it.
 
 ## Public API
 
@@ -179,7 +179,7 @@ Round 3, the last plan round the cap allows, kept the target and changed five th
 | `files` accepts non-objects at `HEAD` | yes | `docs/plans/artifacts/2026-10-14-canvas-review/probe-files-a1.log` |
 | The headless entry typechecks, lints and passes the graph check without the peer | yes | `docs/plans/artifacts/2026-10-14-canvas-review/spike/typecheck-excalidraw-a1.log`, `spike/typecheck-excalidraw-react-a1.log`, `spike/lint-excalidraw-a1.log`, `spike/entrypoint-graph-a1.log` |
 | An Excalidraw import in the headless entry fails the lint once the peer goes | yes | `docs/plans/artifacts/2026-10-14-canvas-review/spike/lint-planted-import-a1.log` |
-| Performance pack | no | One type check on a property the schema already validates; no latency, payload, query, repeated-unit or scaling change. |
+| Performance pack | yes | The `files` check adds one type check per drawing, but step 2.2 adds repeated-unit work: the v54 walker builds a parent-type list for every element and passes it to each property query. The decision-trail review found the first reason stale. The pre-acceptance probe is a gate: one sample per side on four cohorts ran (`docs/plans/artifacts/2026-10-14-canvas-review/perf/`), and the paired run stopped twice, once at a session restart and once on a one-minute load of 12.4 over its frozen limit of 9. Open work tracks the rerun. |
 
 ## Completion Gates
 
@@ -196,7 +196,7 @@ Round 3, the last plan round the cap allows, kept the target and changed five th
 | `pnpm lint:task` as the last check that edits code | `docs/plans/artifacts/2026-10-14-canvas-review/build/close-lint-task-a2.log`: the eight code paths, 0 warnings and 0 errors, no bytes changed. Lint covers no MDX (`docs/plans/artifacts/2026-10-14-canvas-review/build/close-lint-task-docs-a1.log`) |
 | Hand drive `check` log | `docs/plans/artifacts/2026-10-14-canvas-review/build/hand-drive-check-a2.log`: 39 of 39 cells covered after the round-2 fixes; drift-1 closed red to green |
 | Code-quality review | skip: the api-build panel already owes a review of this diff, and every seat applies the code-quality lens |
-| `review-ledger.mjs check` at close | pending |
+| `review-ledger.mjs check` at close | The check names no error in this plan; its other errors belong to other sessions' plans. `lookup canvas` shows this plan as the head with no open state. Freshness reads stale until the owner commits the working-tree changes. |
 
 ## Steps
 
@@ -253,13 +253,13 @@ Keep it when the docs checks pass and the hand drive covers every cell.
 
 ### Close
 
-- [ ] Writing passes: `deslop`, then `no-comments`, on the product code, and one `unslop` pass on the docs, the changeset and this plan. Proof: `writing` rows.
-  The product code, docs and changeset passes ran; this plan's pass runs with the Close.
+- [x] Writing passes: `deslop`, then `no-comments`, on the product code, and one `unslop` pass on the docs, the changeset and this plan. Proof: `writing` rows.
+  The product code, docs and changeset passes ran during the build. This plan's `unslop` and `bro` passes ran on the Close and the folded subject file.
 - [x] The diff's panel (reviews: api-build). Proof: `seats` and finding rows.
   Round 1 found no critical finding. Its warnings and nits row lists seven applied and one deferred. Round 2 reviewed the round-1 fixes, drift-1 and the spec fix: no critical finding, three applied and one deferred.
 - [x] `pnpm lint:task` on this task's paths only, then rerun the Phase 1 and Phase 2 proofs, both Excalidraw test partitions included, on the final bytes in a detached worktree at the base plus the saved patch. Proof: one log per command, each with `exit=0`.
   Closed by `docs/plans/artifacts/2026-10-14-canvas-review/build/close-lint-task-a2.log` (eight code paths, no bytes changed) and `docs/plans/artifacts/2026-10-14-canvas-review/build/close-final-base-patch-a1.log`, one `step` line per command. Every product file was last written before `final-product.patch`, so that run covers the final bytes. Its `core-audits` step is red at `6fa1169c5e` itself and shows the same eleven findings there.
-- [ ] `pnpm plite:release:packages -- --keep` packs the packages, runs each export in a fresh consumer and keeps that fixture. Its checker installs whatever optional peers a packed export imports, so it cannot fail on a leftover Excalidraw import by itself. A run-directory script therefore builds the export records with the checker's exported `getPublicExports` over the kept fixture's `platejs` package, calls `createPackedPublicExportPeerProofs` on them and asserts that the group holding `platejs/excalidraw` has no `requiredOptionalPackages` and forbids `@excalidraw/excalidraw`. Proof: the release log with `exit=0`, and the script's log, which passes on the change and fails at `6fa1169c5e` in a detached worktree.
+- [x] `pnpm plite:release:packages -- --keep` packs the packages, runs each export in a fresh consumer and keeps that fixture. Its checker installs whatever optional peers a packed export imports, so it cannot fail on a leftover Excalidraw import by itself. A run-directory script therefore builds the export records with the checker's exported `getPublicExports` over the kept fixture's `platejs` package, calls `createPackedPublicExportPeerProofs` on them and asserts that the group holding `platejs/excalidraw` has no `requiredOptionalPackages` and forbids `@excalidraw/excalidraw`. Proof: the release log with `exit=0`, and the script's log, which passes on the change and fails at `6fa1169c5e` in a detached worktree.
   Accepted under the Defaults row "Packed release proof" (word: release gate). `docs/plans/artifacts/2026-10-14-canvas-review/build/close-packed-proof-candidate-a1.log` prints the PASS line, and `docs/plans/artifacts/2026-10-14-canvas-review/build/close-packed-proof-base-a2.log` fails on `@excalidraw/excalidraw` at the base. The release check exits 1 in both runs on the same 29 stale entrypoint size records, so it never reaches its own peer step.
 - [x] Run `apps/www/tests/browser/excalidraw.spec.ts` on Chromium five times, warm, without retries, against a `www` server that serves this source. Proof: five logs, each with `exit=0`.
   Deviation: as written, the other session's spec failed all five runs on a Playwright strict-mode violation, because its Undo locator also matches the fixed toolbar's Undo, labeled since `3e0ab4dd7d`. Both Undo locators now read `page.locator('.excalidraw').getByRole(...)`, after a copy to `docs/plans/artifacts/2026-10-14-canvas-review/pre-edit/`. Closed by `docs/plans/artifacts/2026-10-14-canvas-review/build/spec-x5-run1-a2.log` through `spec-x5-run5-a2.log`, each one test passed and `exit=0`, against `www-drive` on port 3519 with `devSource` true.
@@ -283,7 +283,8 @@ Each step names its own proof. Phase 2's specs must fail at `HEAD` for the state
 - Step 3.2's page documents the open text label limit instead of staying silent on it.
 - The browser spec ran with this run's edit to another session's file. As written, it failed 5 of 5 on an Undo locator that also matched the toolbar's Undo. Both locators now scope to `.excalidraw`, and no assertion changed.
 - The packed release proof is the peer-closure assertion alone, accepted under the Defaults row "Packed release proof". The release check fails on 29 stale size records at the base and on the change.
-- Two slips: the run-directory queue file was edited once with an inline `node -e` script and once with `sed -i`, against the owner's Edit-tool rule. Neither touched a repository file.
+- Drift-1 closed on a run-directory anchor check and a browser click, not on a repository test that fails at the old code, as the hand-drive rule asks. A repository anchor test over every docs page would fail on 16 older broken anchors, which a suggested task fixes. The Defaults row "Drift-1 check" records this call.
+- Four slips against the owner's rules. The run-directory queue file was edited once with an inline `node -e` script and once with `sed -i`. The review page was replaced in full once with the Write tool. The registry changelog generator in step 2.4 rewrote three generated files that held another session's entries, `2026-10-14-exit-break-demo-copy.json`, `index.json` and `components.json`, with no pre-edit copy. Their new bytes match that session's own staged sources, and the autostage hook has restaged them, so the old bytes are gone.
 
 ### What landed
 
@@ -300,17 +301,30 @@ Each step names its own proof. Phase 2's specs must fail at `HEAD` for the state
 - Phase 1: the partition typecheck and lint pass in this checkout. `entrypoint-graph` and `lint-baseline` pass only at `6fa1169c5e` plus the task patch, because other sessions' uncommitted files fail both here. The planted import fails the lint.
 - Step 2.1: the three image cases fail at the base and pass on the change. `core-audits` fails at the base with the same eleven findings with or without this task's hunks, so it shows only that the task adds none.
 - Step 2.2: all five new cases fail at the base, each mutant fails exactly the cases the plan names, and the partition passes 102 tests. Its typecheck passes only at the base plus the task patch.
-- Step 2.3: the demo values are refused before the edit and load after it. The `apps/www` type stage exits 1 on eight errors in other files, none in either value file.
-- Docs: `build:source`, docs source parity and `build:registry --check` pass on the final docs bytes. `check:docs` stops at `api-reference:check` on another session's `SchemaRoot`, so its later links ran alone. The anchor check is a run-directory script, red then green, not a repository test.
+- Step 2.3: the demo values are refused before the edit and load after it. The `apps/www` type stage exits 1 on eight errors in other files here. At the base and at the base plus this task's files it gives the same ten errors, so the task adds none.
+- Docs: `build:source`, docs source parity and `build:registry --check` pass on the final docs bytes. `check:docs` stops at `api-reference:check` on another session's `SchemaRoot`, so its later links ran alone. `api-reference:check` never ran at the base, because a fresh worktree has no built declarations; its config names no Excalidraw entrypoint, and the task's one migrations change is internal. The anchor check is a run-directory script, red then green, not a repository test.
 - Final bytes: `lint:task` changed nothing, and the rerun at the base plus the saved patch passes every Phase 1 and Phase 2 command except `core-audits`, which fails at the base itself.
-- Packed: the peer assertion passes on the change and fails at the base. The release check is red at both.
-- Browser: the spec passes 5 of 5 on Chromium against a `www` server serving source. Firefox and WebKit did not run. Its canvas Undo check cannot catch a hook that stops clearing history, which Open work tracks.
+- Packed: the peer assertion walks the packed runtime and declaration files, where the removed type-only import lived, and passes on the change and fails at the base. The release check is red at both, so its stage that typechecks a consumer without Excalidraw installed never ran.
+- Migration: the v54 Ast step keeps a property an app declares for one root or parent. The Profile step that runs before it still asks without that context, so the full migration does not yet promise it. Open work tracks the fix.
+- Browser: the spec passes 5 of 5 on Chromium against a `www` server serving source. Firefox and WebKit did not run. Its canvas Undo check cannot catch a hook that stops clearing history; the hook's unit spec proves only that it calls `history.clear()`. Open work tracks the stronger check.
 - Hand drive: 39 of 39 cells, every screenshot read. The undo shortcut probe ran once, on Chromium at 1280 wide in light mode.
-- Not proven: nobody drove the open text label behavior in a browser, the view-mode decision rests on a source read, and whether apps stored `width` is unknown.
+- Speed: no paired timing run finished, so whether the context walker slows the v53 upgrade is unmeasured. One unpaired sample per side ranged from 20% faster to 8% slower across the four cohorts, which proves nothing under the noise rule. Open work tracks the rerun.
+- Not proven: the open text label limit on the Excalidraw page rests on a source read, not a browser run. The view-mode decision rests on a source read too. Whether apps stored `width` is unknown. Apps on a v54 beta that saved a drawing width find no note in the release notes, because the changeset covers only the change from platejs 53; the recipe is in Hard cuts and app migration.
 
 ### Counts
 
-29 items: 11 steps, 12 Completion Gates and 6 Close boxes. 27 are done, 1 is partial (the packed release proof, accepted under its Defaults row), 1 is skipped (the code-quality review, which the diff panel covered), 0 are blocked and 0 are open.
+29 items: 11 steps, 12 Completion Gates and 6 Close boxes. 27 are done, 1 is partial, 1 is skipped, 0 are blocked and 0 are open. The partial item is the packed release proof, accepted under its Defaults row. The skipped item is the code-quality review, which the diff panel covered.
+
+### Review inputs
+
+This run changed these inputs:
+- `packages/platejs/src/migrations/migratePlateV54Ast.internal.ts`, `packages/platejs/src/migrations/migratePlateV54Ast.spec.ts`
+- `content/docs/(guides)/plugin-components.mdx`, `content/docs/(guides)/plugin-components.cn.mdx`, `content/docs/(plugins)/(elements)/excalidraw.mdx`, `content/docs/(plugins)/(elements)/excalidraw.cn.mdx`, `content/docs/examples/editable-voids.mdx`, `content/docs/examples/editable-voids.cn.mdx`, `content/docs/(guides)/selection.mdx`
+- `tooling/entrypoints/entrypoint-dag.mjs`, `tooling/oxlint/plate-baseline.json`
+
+Only other sessions changed these inputs since `6fa1169c5e`: `packages/plitejs/src/react/editable/keyboard-input-strategy.ts`, `tooling/scripts/check-plate-schema-adoption.mjs`, `packages/plitejs/src/interfaces/schema.ts`, `packages/platejs/src/migrations/documentMigrations.ts`, `docs/vision/plate.md`, `packages/plitejs/src/dom/plugin/dom-integrity-observer.ts`, `apps/www/src/registry/components/editor/table.tsx`, `apps/www/src/i18n/getI18nValues.ts`, `apps/www/src/registry/examples/playground-demo.tsx`, `packages/platejs/src/utils/plugins/ExitBreakPlugin.ts` and `packages/platejs/src/excalidraw/react/useExcalidrawSync.spec.tsx`, which another session staged after this run's proofs ran.
+
+These inputs were read and stayed unchanged: `packages/plitejs/src/react/editable/runtime-keyboard-events.ts`, `packages/plitejs/test/react/editing-kernel-contract.ts`, `packages/platejs/src/migrations/v53-manifest.internal.ts`, `VISION.md`, `docs/vision/common.md`, `docs/research/review-records/2026-10-04-canvas-audit.json`, `docs/plans/2026-09-07-full-plate-ui-extraction-audit.md`, `packages/plitejs/src/react/editable/input-controller.ts`, `packages/plitejs/src/react/editable/root-interaction-resolver.ts`, `packages/plitejs/test/react/void-interactive-mouse.test.tsx`, `packages/platejs/src/react/components/NodeSelection.tsx`, `apps/www/src/registry/examples/values/demo-values.tsx`, `apps/www/src/registry/examples/values/cn/demo-values.tsx`, `apps/www/src/registry/components/editor/fixed-toolbar.tsx` and `packages/platejs/src/utils/index.ts`.
 
 ### Shared files
 
@@ -320,9 +334,27 @@ The files this run changed hold only its hunks, with three exceptions. `tooling/
 
 `architect` ran three runners and a blind cross-judge. The plan's panel ran three rounds, the cap, and the diff's panel ran two rounds, none with a critical finding. The decision-trail review ran on `gpt-6.1-sol @xhigh`.
 
+### Attention
+
+reviewed by gpt-6.1-sol @xhigh
+
+The seat named itself GPT-6 Codex in its answer.
+
+- warning: the changelog generator rewrote three files holding another session's entries with no pre-edit copy. Logged as a slip; the old bytes are gone, and the new ones match that session's sources.
+- warning: the packed proof never ran a consumer without Excalidraw. Running the export cannot tell base from change, since the import was type-only. The Close names the unrun consumer typecheck.
+- warning: the changeset gives v54 beta users no migration note. The changeset rule writes only the change from platejs 53. The gap is named above, and the recipe stays in Hard cuts and app migration.
+- warning: the Profile step still drops context. It is in Open work, and the Close no longer claims the whole migration keeps contextual properties.
+- warning: no browser run proves that projection clears canvas history. It is in Open work, and the Close says the unit spec proves only a call count.
+- warning: the open text label limit rests on a source read. The Close says so.
+- warning: five "older than this change" observations had no base run. The Close labels them inferred, and a correction row follows the original.
+- warning: the www type stage and `check:docs` failures lacked base runs. The www type stage now matches the base error for error. `api-reference:check` stays unrun, on source evidence.
+- warning: drift-1 closed without a repository test. Logged as a deviation under the Defaults row "Drift-1 check".
+- warning: the performance-pack exclusion was stale. The Start Gates row now applies, and the timing probe is an inconclusive gate in Open work after a loaded host stopped it.
+- nit: the review page was once replaced in full with the Write tool. Logged as a slip.
+
 ### Seen, older than this change
 
-The hand drive saw five defects it did not cause: raw backticks in every releases card body, the first releases card squeezing its chip at 375 wide, English demo text on Chinese pages, a light canvas inside dark pages, and white text on the migration demo's yellow header fill in dark mode. The anchor check found 16 older broken anchors across 12 docs files. Suggested tasks cover the releases code spans, the anchors, the stale size records, `proof-worktree --expect-fail` on lint lines and the open text label fix.
+The hand drive saw five defects that none of this change's hunks touches, so the run calls them older than this change without a base run: raw backticks in every releases card body, the first releases card squeezing its chip at 375 wide, English demo text on Chinese pages, a light canvas inside dark pages, and white text on the migration demo's yellow header fill in dark mode. The anchor check found 16 older broken anchors across 12 docs files. Suggested tasks cover the releases code spans, the anchors, the stale size records, `proof-worktree --expect-fail` on lint lines and the open text label fix.
 
 ## Open work
 
@@ -331,6 +363,7 @@ The hand drive saw five defects it did not cause: raw backticks in every release
 - Undo and Redo pressed inside a nested editor, such as the Editable Voids demo's inner editor, run the outer editor's history, so the inner editor's own history is unreachable from the keyboard. A browser run confirmed it (`docs/plans/artifacts/2026-10-14-canvas-review/drive/nested-undo-probe.md`), and the Editable Voids page now states it as a limitation. Fixing it means Plite routing history keys to a nested editor's own runtime. owner: zbeyens. stop: a Plite plan for nested-editor history routing.
 - The v54 Profile step (`migratePlateV54Profile.internal.ts`) still asks `ownsProperty` without the node's root or parents, so its renames and drops can miss a property an app declares for one root or parent. The diff panel's round 1 raised it; this plan's steps cover only the Ast step. owner: zbeyens. stop: a plan that reopens the v54 migration profile.
 - The Excalidraw browser spec checks that the canvas Undo is disabled after a projected document change, but the canvas history is already empty there, so the check cannot catch a hook that stops clearing it. The hook's unit spec does catch that (`useExcalidrawSync.spec.tsx` counts four `history.clear` calls). Diff round 2 raised it; the spec belongs to another session. Draw a shape and assert the canvas Undo enabled before the projection. owner: zbeyens. stop: the next edit to `apps/www/tests/browser/excalidraw.spec.ts`.
+- Rerun the v53 upgrade timing probe on a quiet host. It times one `migrateDocument` call per cohort (300 and 10,000 paragraphs, 2,000 drawings, and 40 blockquote chains 24 deep) and asserts each cohort's shape first. The frozen line is a median paired ratio of at most 1.10 against `6fa1169c5e` on every cohort, with a one-minute load limit of 9. The planted arm adds a 0.08 ms spin at the top of `migrateDescendant`. Recreate the four worktrees with `proof-worktree.mjs`, then run `paired-timing.mjs` on `docs/plans/artifacts/2026-10-14-canvas-review/perf/config.json`. A conclusive miss sends step 2.2's context walker back to `architect`. owner: zbeyens. stop: a conclusive run, or the next edit to `migratePlateV54Ast.internal.ts`.
 
 ## Defaults
 
@@ -343,7 +376,9 @@ The hand drive saw five defects it did not cause: raw backticks in every release
 | Canvas input attribute | Keep its name and document it | Rename it first | rename | small |
 | Saved images check | Refuse images saved in the wrong shape | Keep accepting anything there | loose files | detail |
 | View-only switch | The copied component keeps it | Move it into the drawing hook | hook view | small |
-| Packed release proof | Count the peer check as the proof; the release check fails on 29 stale size records at the base too (look) | Keep the box open until the size records are refreshed | release gate | small |
+| Packed release proof | Count the peer check as proof, since the release check also fails on 29 old size records before this change (look) | Keep the box open until the size records are refreshed | release gate | small |
+| Drift-1 check | A link check in the run folder plus a browser click (look) | Add a repository link test now | anchor test | small |
+| Canvas page link | The old page at Fb5GuoQGwRXR1etzCauZbV no longer opens, so the page moved to TizB11h9kY6spbRpx49oV3 | Drop the new page | drop page | detail |
 
 ## Evidence
 

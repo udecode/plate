@@ -1411,21 +1411,6 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      dependencies: ['@platejs/test'],
-      description: 'Copy paste from CSV to Plate.',
-      files: [
-        { path: 'examples/demo.tsx', type: 'registry:example' },
-        {
-          path: 'examples/values/deserialize-csv-value.tsx',
-          type: 'registry:example',
-        },
-      ],
-      name: 'csv-demo',
-      registryDependencies: ['@plate/editor', '@plate/ai', '@plate/dnd'],
-      title: 'Serializing CSV',
-      type: 'registry:example',
-    },
-    {
       dependencies: ['@platejs/test', 'lucide-react'],
       description: 'Copy paste from DOCX to Plate.',
       files: [

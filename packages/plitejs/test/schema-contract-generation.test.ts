@@ -110,6 +110,85 @@ describe('generated editor schema contract', () => {
     { contribution: Article.schema, pluginName: Article.name },
   ];
 
+  it('carries ownsExit in the contract only where a schema declares it', () => {
+    const compile = (ownsExit: boolean) => {
+      const notes = defineEditorSchema('schema:notes-contract', {
+        elements: {
+          code: schema.element.textBlock(ownsExit ? { ownsExit } : {}),
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'notes-contract',
+        root: schema.content.types(['paragraph', 'code'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+      const contributions = [
+        { contribution: notes.schema, pluginName: notes.name },
+      ];
+
+      return {
+        compiled: compileEditorSchemaContributions(contributions),
+        contributions,
+      };
+    };
+    const declared = compile(true);
+    const plain = compile(false);
+    const declaredContract = createEditorSchemaContract(declared.compiled);
+    const plainContract = createEditorSchemaContract(plain.compiled);
+    const roundTrip = (
+      contract: typeof declaredContract,
+      contributions: typeof declared.contributions
+    ) =>
+      restoreEditorSchemaContract(
+        JSON.parse(JSON.stringify(contract)),
+        contributions
+      ).elements.byType.get('code')?.behavior.ownsExit;
+
+    assert.deepEqual(
+      [
+        'ownsExit' in
+          (plainContract.elements.byType.find(({ type }) => type === 'code')
+            ?.behavior ?? {}),
+        roundTrip(declaredContract, declared.contributions),
+        roundTrip(plainContract, plain.contributions),
+      ],
+      [false, true, false]
+    );
+  });
+
+  it('classifies a newly declared ownsExit as a migration-required element change', () => {
+    const compile = (ownsExit: boolean) =>
+      createEditorSchemaContract(
+        compileEditorSchemaContributions([
+          {
+            contribution: defineEditorSchema('schema:notes-diff', {
+              elements: {
+                code: schema.element.textBlock(ownsExit ? { ownsExit } : {}),
+                paragraph: { content: schema.content.text() },
+              },
+              id: 'notes-diff',
+              root: schema.content.types(['paragraph', 'code'], {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              unknown: 'reject',
+              version: 1,
+            }).schema,
+            pluginName: 'schema:notes-diff',
+          },
+        ])
+      );
+    const diff = diffEditorSchemaContracts(compile(false), compile(true));
+
+    assert.deepEqual(
+      [diff.requiresMigration, diff.changes.map(({ kind }) => kind)],
+      [true, ['element-changed']]
+    );
+  });
+
   it('round-trips deterministic structural data and rebinds validators', () => {
     const compiled = compileEditorSchemaContributions(records);
     const contract = createEditorSchemaContract(compiled);

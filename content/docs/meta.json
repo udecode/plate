@@ -109,7 +109,6 @@
     "[Toolbar](/docs/toolbar)",
     "[Yjs](/docs/yjs)",
     "[Multi Select](/docs/multi-select)",
-    "[CSV](/docs/csv)",
     "[DOCX](/docs/docx)",
     "---Components---",
     "[Components](/docs/components)",
@@ -229,7 +228,6 @@
     "[Media Demo](/docs/examples/media)",
     "[Mention Demo](/docs/examples/mention)",
     "[Block Placeholder Demo](/docs/examples/block-placeholder)",
-    "[Serializing CSV Demo](/docs/examples/csv)",
     "[Serializing Docx Demo](/docs/examples/docx)",
     "[Serializing HTML Demo](/docs/examples/html)",
     "[Serializing Markdown Demo](/docs/examples/markdown)",
@@ -1099,12 +1097,6 @@
               "titleCn": "Block Placeholder"
             },
             {
-              "description": "Copy paste from CSV to Plate.",
-              "href": "/docs/examples/csv",
-              "title": "Serializing CSV Demo",
-              "titleCn": "Serializing CSV"
-            },
-            {
               "description": "Copy paste from DOCX to Plate.",
               "href": "/docs/examples/docx",
               "title": "Serializing Docx Demo",
@@ -1895,12 +1887,6 @@
             {
               "items": [
                 {
-                  "description": "Copy paste from CSV to Plate.",
-                  "href": "/docs/csv",
-                  "title": "CSV",
-                  "titleCn": "CSV"
-                },
-                {
                   "description": "Paste from Word, import DOCX files, and export to Word.",
                   "href": "/docs/docx",
                   "title": "DOCX",
@@ -2470,11 +2456,6 @@
         "label": "Editor",
         "title": "Multi Select",
         "titleCn": "Multi Select"
-      },
-      "/docs/csv": {
-        "description": "Copy paste from CSV to Plate.",
-        "title": "CSV",
-        "titleCn": "CSV"
       },
       "/docs/docx": {
         "description": "Paste from Word, import DOCX files, and export to Word.",
@@ -3057,11 +3038,6 @@
       "/docs/examples/block-placeholder": {
         "title": "Block Placeholder Demo",
         "titleCn": "Block Placeholder"
-      },
-      "/docs/examples/csv": {
-        "description": "Copy paste from CSV to Plate.",
-        "title": "Serializing CSV Demo",
-        "titleCn": "Serializing CSV"
       },
       "/docs/examples/docx": {
         "description": "Copy paste from DOCX to Plate.",

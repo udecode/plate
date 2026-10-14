@@ -41,7 +41,6 @@
     "packages/platejs/src/markdown/lib/serializer/convertNodesSerialize.ts",
     "packages/platejs/src/docx/import/lib/importDocx.ts",
     "packages/platejs/src/docx/export/lib/exportDocx.tsx",
-    "packages/platejs/src/csv/lib/CsvPlugin.ts",
     "packages/plitejs/src/dom/plugin/data-transfer-format.ts",
     "packages/plitejs/src/core/persisted-document.ts",
     "packages/platejs/src/migrations/documentMigrations.ts",

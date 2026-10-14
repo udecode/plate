@@ -1239,6 +1239,7 @@ function textBlock(
       'isolating',
       'markableVoid',
       'object',
+      'ownsExit',
       'properties',
       'readOnly',
       'selectable',

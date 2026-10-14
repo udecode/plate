@@ -16,6 +16,7 @@ import {
   valueRoot,
 } from './document-change';
 import { DocumentIndex } from './document-index';
+import type { JsonRecord } from './json';
 import {
   RootChange,
   type DocumentSetPropertyResolver,
@@ -37,7 +38,6 @@ import {
   type JsonEditorValue,
   type JsonNode,
   type JsonPoint,
-  type JsonRecord,
 } from './tokens';
 
 export type DocumentChangeStep = Readonly<{

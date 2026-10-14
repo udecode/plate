@@ -1,4 +1,5 @@
-import type { JsonNode, JsonRecord } from '../../core/change/tokens';
+import type { JsonRecord } from '../../core/change/json';
+import type { JsonNode } from '../../core/change/tokens';
 import {
   type AuthoredMark,
   type AuthoredMember,

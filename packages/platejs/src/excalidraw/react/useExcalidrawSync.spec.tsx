@@ -4,6 +4,10 @@ import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import { act, render } from '@testing-library/react';
 import * as React from 'react';
 
+import {
+  type EditorElementProps,
+  EditorElement,
+} from '../../react/components/plate-nodes';
 import { createEditor, EditorRoot, EditorContent } from '../../react/core';
 import { ExcalidrawPlugin } from './ExcalidrawPlugin';
 import { useExcalidrawSync } from './useExcalidrawSync';
@@ -14,12 +18,16 @@ const canvas = spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
 const excalidraw = await import('@excalidraw/excalidraw');
 canvas.mockRestore();
 
-function setup({ loading = false, strict = false } = {}) {
+function setup({
+  loading = false,
+  strict = false,
+  initial = [
+    { id: 'one', type: 'rectangle', x: 10, y: 20, width: 100, height: 100 },
+  ] as object[],
+} = {}) {
   const scene = excalidraw.restore(
     {
-      elements: [
-        { id: 'one', type: 'rectangle', x: 10, y: 20, width: 100, height: 100 },
-      ],
+      elements: initial,
       appState: { viewBackgroundColor: '#ffffff' },
     } as never,
     null,
@@ -72,9 +80,14 @@ function setup({ loading = false, strict = false } = {}) {
       fire();
     },
   } as ExcalidrawImperativeAPI;
-  const Renderer = () => {
+  const Renderer = (props: EditorElementProps<typeof ExcalidrawPlugin>) => {
     useExcalidrawSync({ api, excalidraw });
-    return <div contentEditable={false}>Drawing</div>;
+    return (
+      <EditorElement {...props}>
+        <div contentEditable={false}>Drawing</div>
+        {props.children}
+      </EditorElement>
+    );
   };
   const editor = createEditor({
     plugins: [ExcalidrawPlugin.configure({ component: Renderer })],
@@ -103,6 +116,27 @@ function setup({ loading = false, strict = false } = {}) {
   const view = render(
     strict ? <React.StrictMode>{content()}</React.StrictMode> : content()
   );
+  const label = document.createElement('textarea');
+  label.className = 'excalidraw-wysiwyg';
+  const writeLabel = () => {
+    elements = elements.map((e) =>
+      e.id === state.editingTextElement?.id
+        ? {
+            ...e,
+            text: label.value,
+            originalText: label.value,
+            version: e.version + 1,
+          }
+        : e
+    );
+  };
+  label.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !label.isConnected) return;
+    writeLabel();
+    state = { ...state, editingTextElement: null };
+    label.remove();
+    fire();
+  });
   return {
     api,
     callbacks,
@@ -146,6 +180,24 @@ function setup({ loading = false, strict = false } = {}) {
         version: e.version + 1,
       }));
       fire();
+    },
+    label: {
+      open: () => {
+        const [text] = elements;
+        label.value = 'text' in text ? text.text : '';
+        state = { ...state, editingTextElement: text };
+        view.container
+          .querySelector('[contenteditable="false"]')!
+          .append(label);
+      },
+      type: (text: string) => {
+        label.value = text;
+        writeLabel();
+        fire();
+      },
+      close: () => {
+        label.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      },
     },
     readOnly: (value = true) => view.rerender(content(value)),
     dispose: () => {
@@ -201,6 +253,50 @@ it('projects external changes and document undo/redo without an echo', async () 
   expect(target.api.getAppState().viewBackgroundColor).toBe('#ff0000');
   expect(target.commits).toBe(3);
   expect(target.cleared).toBe(4);
+  target.dispose();
+});
+
+it('keeps a document undo made while a text label is open', async () => {
+  const target = setup({
+    initial: [
+      {
+        id: 'label',
+        type: 'text',
+        text: 'hello',
+        x: 0,
+        y: 0,
+        width: 50,
+        height: 25,
+      },
+    ],
+  });
+  act(() => target.label.open());
+  act(() => target.label.type('world'));
+  await act(() => {
+    target.editor.api.history.undo();
+  });
+  act(() => target.label.close());
+  expect(target.data()?.elements[0]).toMatchObject({ text: 'hello' });
+  target.dispose();
+});
+
+it('keeps a text label open while its typing saves', () => {
+  const target = setup({
+    initial: [
+      {
+        id: 'label',
+        type: 'text',
+        text: 'hello',
+        x: 0,
+        y: 0,
+        width: 50,
+        height: 25,
+      },
+    ],
+  });
+  act(() => target.label.open());
+  act(() => target.label.type('world'));
+  expect(target.api.getAppState().editingTextElement?.id).toBe('label');
   target.dispose();
 });
 

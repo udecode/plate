@@ -26,7 +26,7 @@ export const exitBreakValue: Value = (
       ⌘⇧⏎ – 退出并在当前结构之前插入新块
     </hp>
     <hp indent={1} listType="bulleted">
-      自动 – 找到最近的允许段落同级的祖先
+      最近结构 – 代码块、提示框、图片或分割线留在所在容器中，其他块退出容器
     </hp>
 
     <hp>退出块结构在表格和分栏等嵌套结构中同样适用：</hp>

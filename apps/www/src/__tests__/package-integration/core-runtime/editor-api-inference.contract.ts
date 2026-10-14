@@ -8,7 +8,6 @@ type ExpectedEditorApiKeys =
   | 'aiChat'
   | 'audio'
   | 'authored'
-  | 'csv'
   | 'debug'
   | 'details'
   | 'dom'
@@ -53,9 +52,6 @@ type _LinkApiKeepsItsMethods = Assert<
 >;
 type _HistoryApiKeepsItsMethods = Assert<
   'redo' | 'undo' extends keyof Editor['api']['history'] ? true : false
->;
-type _CsvApiKeepsItsMethods = Assert<
-  'deserialize' extends keyof Editor['api']['csv'] ? true : false
 >;
 type _MediaApiKeepsItsMethods = Assert<
   'normalizeUrl' extends keyof Editor['api']['image'] ? true : false

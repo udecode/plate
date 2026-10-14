@@ -16,7 +16,6 @@ import { codeBlockValue } from './code-block-value';
 import { columnValue } from './column-value';
 import { copilotValue } from './copilot-value';
 import { dateValue } from './date-value';
-import { deserializeCsvValue } from './deserialize-csv-value';
 import { deserializeDocxValue } from './deserialize-docx-value';
 import { deserializeHtmlValue } from './deserialize-html-value';
 import { deserializeMdValue } from './deserialize-md-value';
@@ -67,7 +66,6 @@ const values = {
   'code-block-preview': codeBlockPreviewValue,
   column: columnValue,
   copilot: copilotValue,
-  csv: deserializeCsvValue,
   date: dateValue,
   dnd: dndValue,
   docx: deserializeDocxValue,

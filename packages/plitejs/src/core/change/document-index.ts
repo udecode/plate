@@ -9,11 +9,10 @@ import {
   type TreeIndexChildren,
   type TreeIndexNode,
 } from '../resolved-token-cursor';
+import { cloneFrozen, cloneJson, type JsonRecord } from './json';
 import {
   assertNode,
   CLAIMED_PREPARED_SOURCES,
-  cloneFrozen,
-  cloneJson,
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
   encodeNodes,
@@ -22,7 +21,6 @@ import {
   isTextNode,
   type JsonNode,
   type JsonPoint,
-  type JsonRecord,
   type JsonToken,
   type NodeKind,
   nodeProps,

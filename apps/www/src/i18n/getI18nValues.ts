@@ -15,7 +15,6 @@ import { blockMenuValue as blockMenuValueCn } from '@/registry/examples/values/c
 import { columnValue as columnValueCn } from '@/registry/examples/values/cn/column-value';
 import { copilotValue as copilotValueCn } from '@/registry/examples/values/cn/copilot-value';
 import { dateValue as dateValueCn } from '@/registry/examples/values/cn/date-value';
-import { deserializeCsvValue as deserializeCsvValueCn } from '@/registry/examples/values/cn/deserialize-csv-value';
 import { deserializeDocxValue as deserializeDocxValueCn } from '@/registry/examples/values/cn/deserialize-docx-value';
 import { deserializeHtmlValue as deserializeHtmlValueCn } from '@/registry/examples/values/cn/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueCn } from '@/registry/examples/values/cn/deserialize-md-value';
@@ -50,7 +49,6 @@ import { tocValue as tocValueCn } from '@/registry/examples/values/cn/toc-value'
 import { columnValue as columnValueEn } from '@/registry/examples/values/column-value';
 import { copilotValue as copilotValueEn } from '@/registry/examples/values/copilot-value';
 import { dateValue as dateValueEn } from '@/registry/examples/values/date-value';
-import { deserializeCsvValue as deserializeCsvValueEn } from '@/registry/examples/values/deserialize-csv-value';
 import { deserializeDocxValue as deserializeDocxValueEn } from '@/registry/examples/values/deserialize-docx-value';
 import { deserializeHtmlValue as deserializeHtmlValueEn } from '@/registry/examples/values/deserialize-html-value';
 import { deserializeMdValue as deserializeMdValueEn } from '@/registry/examples/values/deserialize-md-value';
@@ -96,7 +94,6 @@ const i18n = {
     column: columnValueCn,
     copilot: copilotValueCn,
     date: dateValueCn,
-    deserializeCsv: deserializeCsvValueCn,
     deserializeDocx: deserializeDocxValueCn,
     deserializeHtml: deserializeHtmlValueCn,
     deserializeMd: deserializeMdValueCn,
@@ -138,7 +135,6 @@ const i18n = {
     column: columnValueEn,
     copilot: copilotValueEn,
     date: dateValueEn,
-    deserializeCsv: deserializeCsvValueEn,
     deserializeDocx: deserializeDocxValueEn,
     deserializeHtml: deserializeHtmlValueEn,
     deserializeMd: deserializeMdValueEn,

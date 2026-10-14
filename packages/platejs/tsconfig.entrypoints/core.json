@@ -19,7 +19,6 @@
     "../src/code-block/codemirror/**/*",
     "../src/code-drawing/**/*",
     "../src/code-drawing/react/**/*",
-    "../src/csv/**/*",
     "../src/diff/**/*",
     "../src/dom/**/*",
     "../src/docx/paste/**/*",

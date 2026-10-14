@@ -18,8 +18,9 @@ import {
 
 import { ChangeDraft } from '../src/core/change/builder';
 import { DocumentIndex } from '../src/core/change/document-index';
+import { deepFreeze } from '../src/core/change/json';
 import { RootChange } from '../src/core/change/root-change';
-import { deepFreeze, type JsonEditorValue } from '../src/core/change/tokens';
+import type { JsonEditorValue } from '../src/core/change/tokens';
 import { getEditorSchema } from '../src/core/editor-runtime';
 import {
   getCompiledEditorSchemaFromApi,

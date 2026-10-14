@@ -4,6 +4,7 @@ import {
   getInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
+import { deepFreeze, jsonEqual, type JsonRecord } from '../../core/change/json';
 import {
   addSection,
   type DocumentSetPropertyResolver,
@@ -12,11 +13,8 @@ import {
   type SectionData,
 } from '../../core/change/root-change';
 import {
-  deepFreeze,
-  jsonEqual,
   type JsonEditorValue,
   type JsonNode,
-  type JsonRecord,
   type JsonToken,
   type OpenToken,
   PreparedTokenSlice,

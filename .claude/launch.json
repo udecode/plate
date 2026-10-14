@@ -5,6 +5,7 @@
       "name": "www-drive",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DRIVE_DIR=docs/plans/artifacts/drive",
         "PLATE_WWW_DYNAMIC_DOCS=1",
         "PLATE_WWW_DEV_SOURCE=1",
@@ -24,6 +25,7 @@
       "name": "www-dev-frozen",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DYNAMIC_DOCS=1",
         "PLATE_WWW_DEV_SOURCE=1",
         "PLATE_WWW_DIST_DIR=.next-proof",
@@ -42,6 +44,7 @@
       "name": "www-authored-proof",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DEV_SOURCE=1",
         "PLATE_WWW_DIST_DIR=.next-authored",
         "pnpm",
@@ -59,6 +62,7 @@
       "name": "www-onfocus",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DYNAMIC_DOCS=1",
         "PLATE_WWW_DEV_SOURCE=1",
         "PLATE_WWW_DIST_DIR=.next-onfocus",
@@ -77,6 +81,7 @@
       "name": "www-link-href",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DYNAMIC_DOCS=1",
         "PLATE_WWW_DEV_SOURCE=1",
         "PLATE_WWW_DIST_DIR=.next-link-href",
@@ -95,6 +100,7 @@
       "name": "www-media",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DYNAMIC_DOCS=1",
         "PLATE_WWW_DEV_SOURCE=1",
         "PLATE_WWW_DIST_DIR=.next-media",
@@ -113,6 +119,7 @@
       "name": "www-basic-review",
       "runtimeExecutable": "env",
       "runtimeArgs": [
+        "NEXT_PUBLIC_PLATE_WWW_NO_SYSTEM_THEME=1",
         "PLATE_WWW_DYNAMIC_DOCS=1",
         "PLATE_WWW_DEV_SOURCE=1",
         "PLATE_WWW_DIST_DIR=.next-basic-review",

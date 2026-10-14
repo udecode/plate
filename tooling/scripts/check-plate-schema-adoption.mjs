@@ -321,10 +321,6 @@ const intentionalProductionExtendStageChains = new Map([
     'packages/platejs/src/features/link/lib/BaseLinkPlugin.ts',
     [[['update'], ['commands']]],
   ],
-  [
-    'packages/platejs/src/csv/lib/CsvPlugin.ts',
-    [[['api'], ['dataTransferFormats']]],
-  ],
   ['packages/platejs/src/markdown/lib/MarkdownPlugin.ts', [[['api']]]],
   ['packages/platejs/src/features/toc/lib/BaseTocPlugin.ts', [[['read']]]],
   [
@@ -349,17 +345,11 @@ const intentionalProductionExtendStageChains = new Map([
     [
       [
         ['api'],
-        ['api'],
-        ['api', 'read'],
-        ['api'],
-        ['read'],
-        ['api', 'read'],
+        ['contributions', 'read'],
         ['update'],
-        ['update'],
-        ['contributions'],
         ['corrections'],
         ['readMiddleware'],
-        ['commands'],
+        ['commands', 'dataTransferFormats'],
       ],
     ],
   ],

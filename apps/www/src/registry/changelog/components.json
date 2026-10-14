@@ -6,7 +6,23 @@
       "2026-08-14-author-editor-runtime",
       "2026-07-29-preserve-feature-example-wiring"
     ],
-    "exit-break-demo": ["2026-10-14-exit-break-demo-copy"],
+    "exit-break-demo": [
+      "2026-10-14-exit-break-demo-copy",
+      "2026-10-14-exit-break-demo-nearest-structure"
+    ],
+    "editor-plugins": [
+      "2026-10-14-remove-csv-plugin",
+      "2026-09-19-files-sdk-upload-kit",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-24-keep-editor-contracts-app-owned",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-18-isolate-docx-file-io",
+      "2026-08-18-separate-document-migrations",
+      "2026-08-17-automatic-document-migrations",
+      "2026-08-17-finalize-v54-ast-profile",
+      "2026-08-17-flat-editor-registry"
+    ],
     "details": [
       "2026-10-13-details-heading-titles",
       "2026-10-10-details-selection",
@@ -786,18 +802,6 @@
     "files-api": [
       "2026-09-21-upload-provider-items",
       "2026-09-19-files-sdk-upload-kit"
-    ],
-    "editor-plugins": [
-      "2026-09-19-files-sdk-upload-kit",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-24-keep-editor-contracts-app-owned",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-18-isolate-docx-file-io",
-      "2026-08-18-separate-document-migrations",
-      "2026-08-17-automatic-document-migrations",
-      "2026-08-17-finalize-v54-ast-profile",
-      "2026-08-17-flat-editor-registry"
     ],
     "media": [
       "2026-09-19-files-sdk-upload-kit",

@@ -1,7 +1,7 @@
 # Blocks added inside a container use the container's default
 
 Status: executed: waiting on your commit
-Page: https://claude.ai/artifact/JEtuY8KB5bovsZNTbyY8aD
+Page: https://claude.ai/artifact/6keQrCgr4VcXxTXxsQ424v
 Playbook: bug-fix
 
 ## Brief
@@ -12,7 +12,7 @@ Enter in a caption, and typing or pasting over a picked block, add the block the
 
 ### What could go wrong?
 
-Apps calling the old builder must switch. Typing still crashes when a container's default needs a setting the editor cannot fill, as before. Big pastes got about 18% slower, and a busy machine kept the speed check from settling.
+Paste reuses the insert helper's pieces instead of calling the helper, and the final review flags that. Typing can still crash when a default needs a setting, as before. Big pastes run about 18% slower, unproven against the limit.
 
 ## Teach
 
@@ -81,9 +81,10 @@ const inserted = PathApi.next(media[1]);
 | Pasted lines that cross slots | Over a picked block, and after a block that needs properties, each new line gets its own slot's block | Every line copies one block | one type | detail |
 | Builder call shape | The slot's path and root, like the schema's copy read | A parent element, a slot index and a root | parent element | detail |
 | Details body | Keep relying on the details repair that turns a stray summary into a paragraph | Change the details grammar in this run | details grammar | small |
-| Speed check on big pastes | Keep the change: three noisy runs put a 5,000-line paste at about 1.2 times the old time, under the 1.25 limit, but none settles it (look) | Run the check again on a quiet machine before this ships | rerun bench | small |
-| How paste reaches the landing owner | Paste and typing use the owner's own block builder and room check, with no copy of either (look) | One landing verb that Enter, paste and typing all call, built now | land paste | small |
+| Speed check on big pastes | Keep the change. Three noisy runs put a 5,000-line paste at about 1.2 times the old time, under the 1.25 limit, but none settles it (look) | Run the check again on a quiet machine before this ships | rerun bench | small |
+| How paste uses the insert helper | Paste and typing reuse the helper's block builder and room check, with no copy of either (look) | One shared insert step that Enter, paste and typing all call, built now | land paste | small |
 | Generated API list | Leave the generated API list naming the old builder until another session's build error is fixed (look) | Fix that build error in this run and regenerate the list | regen manifest | detail |
+| Plan page link | The old page no longer opens, so this plan moved to a new page (look) | Drop the new page and keep the plan only in the repo | drop page | detail |
 | HTML import's root defaults | Left to the HTML import owner as open work; its five calls keep slot zero, as before (look) | Fix HTML import in this run | fix html | small |
 
 ## Steps
@@ -101,7 +102,7 @@ const inserted = PathApi.next(media[1]);
 - [x] 6. Root callers move to `createDefaultChild({ at: [index], root })`: `HtmlPlugin.ts` (five, at slot zero as before), `markdownIntrinsics.ts`, the yjs plugin and the tests that name the old read. Proof: the plitejs and platejs typechecks.
   Done: `docs/plans/artifacts/2026-10-14-nested-defaults/typecheck-plitejs-a1.log`, `docs/plans/artifacts/2026-10-14-nested-defaults/typecheck-plitejs-tests-a1.log`, `docs/plans/artifacts/2026-10-14-nested-defaults/typecheck-platejs-core-a1.log`, `docs/plans/artifacts/2026-10-14-nested-defaults/typecheck-platejs-media-a1.log` and `docs/plans/artifacts/2026-10-14-nested-defaults/typecheck-platejs-markdown-a1.log`.
 - [x] 7. Docs and `best-api repair`. `content/docs/api/editor-api.mdx` teaches `createDefaultChild`, and `teaching-sweep.mjs createDefaultRootChild` finds no live hit. `pnpm --filter www build:registry` regenerates the docs JSON that embeds the old name. A `proof-worktree.mjs --install` worktree runs `pnpm --filter plitejs build && pnpm --filter platejs build && pnpm --filter www api-reference`, and its manifest is copied back. Proof: the sweep log and the regenerated manifest.
-  Done: the Vision owner `docs/vision/plite.md` names the one builder and the paste and typing rule; `content/docs/api/editor-api.mdx` and the media page with its Chinese twin teach the final behavior; `docs/plans/artifacts/2026-10-14-nested-defaults/teaching-sweep-a1.log` leaves only this plan's before fences and a completed August plan; `docs/plans/artifacts/2026-10-14-nested-defaults/build-registry-a1.log` regenerated the registry JSON. The manifest did not regenerate, because the plitejs build fails in that worktree on another session's authored types; Open work tracks it.
+  Done: the Vision owner `docs/vision/plite.md` names the one builder and the paste and typing rule; `content/docs/api/editor-api.mdx` and the media page with its Chinese twin teach the final behavior; `docs/plans/artifacts/2026-10-14-nested-defaults/teaching-sweep-a1.log` leaves only this plan's before fences and a completed August plan; `docs/plans/artifacts/2026-10-14-nested-defaults/build-registry-a1.log` regenerated the registry JSON. The manifest did not regenerate, because the plitejs build fails in that worktree on another session's authored types (`docs/plans/artifacts/2026-10-14-nested-defaults/api-manifest-a1.log`). Step 7 closes on the Defaults row "Generated API list", and Open work tracks the manifest.
 - [x] 8. Changesets for `plitejs` (the builder rename; paste and typing over a picked block) and `platejs` (caption Enter). Proof: the changeset files.
   Done: `.changeset/plite-default-child.md` adds the builder and states the paste and typing behavior, with no rename note, because no published plitejs or platejs version has the old builder. Caption Enter amends the unreleased `.changeset/media-v54-runtime.md` instead of a new platejs file.
 - [x] 9. Proof on the final bytes:
@@ -140,7 +141,19 @@ Proof, from each row's `scope:` in the decision log:
 
 Limits. The probes cover the derived schema and test schemas, not every app schema. A container whose default holds a wrapper that needs a property still throws on typing and refuses a paste, as the base did; Open work tracks it. The API reference manifest still names the old builder.
 
-Counts. 9 steps: 8 done and 1, Step 9, closed on a look default for its speed check; none partial, skipped, blocked or open. Open work holds 13 items, each with its owner and stop.
+Counts. 9 steps: 7 done, and 2 closed on look defaults, Step 7 without the regenerated API list and Step 9 without a conclusive speed run; none partial, skipped, blocked or open. Open work holds 13 items, each with its owner and stop.
+
+Attention
+
+reviewed by gpt-6.1-sol @xhigh, against frozen copies of this plan, the decision log and the task diff (`docs/plans/artifacts/2026-10-14-nested-defaults/trail-review/sol/answer.md`).
+
+1. Critical. Paste and typing over a picked block do not call `insertDefaultChild` or a public verb over it, which the ask named. They call the same builder and room check it calls, with no copy of either. The owner itself inserts one empty block and cannot replace picked blocks with text. The lead kept that design as the Defaults row "How paste uses the insert helper", and "land paste" builds the one shared insert step now.
+2. Critical. In a declared container whose default holds a wrapper that needs a property, typing throws and paste changes nothing. The base fails the same inputs, but for another reason: it builds a paragraph the container cannot hold. Open work describes the patch. The lead did not apply it, because the diff panel had used its three rounds.
+3. Warning. The lead edited three files that held other sessions' staged work, the media page, its Chinese twin and the Vision file, before saving their copies. It took the copies from the index afterwards, so it missed the ask's "before your first edit" for them.
+4. Warning. The document-view default read was dismissed as rare from a count of source callers only, not library consumers. Open work tracks it.
+5. Warning. The ancestor-admission fix has no working reproducer, because no test document with that schema shape loads. Open work tracks the validation limit.
+6. Warning. Step 9 closed on a speed waiver, not a passing run, and big pastes are about 18% slower.
+7. Warning. Step 7 counted as done though its proof named the regenerated API list. It now closes on the Defaults row "Generated API list".
 
 ## Open work
 

@@ -1,6 +1,6 @@
 import { DiffMatchPatch, DiffOp } from 'diff-match-patch-ts';
 
-import { jsonEqual } from '../../core/change/tokens';
+import { jsonEqual } from '../../core/change/json';
 import {
   comparisonTextPoint,
   comparisonTextRuns,

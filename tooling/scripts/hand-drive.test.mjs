@@ -113,7 +113,6 @@ const visit = (overrides) => ({
   errors: [],
   frame: false,
   path: '/docs/widget',
-  previews: [],
   rendered: EDITED + 60_000,
   theme: 'light',
   webdriver: false,
@@ -129,30 +128,20 @@ const writeJsonl = (file, records) => {
   );
 };
 
-test('scope asks for every page that shows an example, in both locales, and its own preview at its narrowest', () => {
+test('scope asks for every English page that shows an example, at desktop width', () => {
   const { run } = widgetCheckout();
   const result = run(['scope', DEMO]);
 
   assert.equal(result.status, 0, result.stderr);
   assert.deepEqual(cellsOf(result.stdout), [
-    '/blocks/widget-demo 1280 dark',
-    '/blocks/widget-demo 1280 light',
-    '/blocks/widget-demo 375 dark',
-    '/blocks/widget-demo 375 light',
-    '/cn/docs/components/widget 1280 light',
-    '/cn/docs/examples/widget 1280 light',
-    '/cn/docs/widget 1280 light',
-    '/docs/components/widget 1280 light',
-    '/docs/components/widget 375 light',
-    '/docs/examples/widget 1280 light',
-    '/docs/examples/widget 375 light',
-    '/docs/widget 1280 light',
-    '/docs/widget 375 light',
-    '/docs/widget preview-min widget-demo',
+    '/blocks/widget-demo desktop',
+    '/docs/components/widget desktop',
+    '/docs/examples/widget desktop',
+    '/docs/widget desktop',
   ]);
 });
 
-test("scope gives a component its own demo page and that demo's narrowest preview, however many pages show it", () => {
+test('scope gives a component its own demo page, however many pages show it', () => {
   const { run } = checkout(
     [
       item('widget', 'registry:component', 'components/editor/widget.tsx', {
@@ -168,24 +157,7 @@ test("scope gives a component its own demo page and that demo's narrowest previe
   );
   const cells = cellsOf(run(['scope', WIDGET]).stdout);
 
-  assert.ok(cells.includes('/blocks/widget-demo 375 light'), cells.join('\n'));
-  assert.ok(
-    cells.some((cell) => cell.startsWith('/docs/widget preview-min')),
-    cells.join('\n')
-  );
-});
-
-test("scope asks for an example's narrowest preview on its generated docs page when no docs page embeds it", () => {
-  const { run } = checkout(
-    [item('solo-demo', 'registry:example', 'examples/solo-demo.tsx')],
-    {}
-  );
-
-  assert.ok(
-    cellsOf(
-      run(['scope', 'apps/www/src/registry/examples/solo-demo.tsx']).stdout
-    ).includes('/docs/examples/solo preview-min solo-demo')
-  );
+  assert.ok(cells.includes('/blocks/widget-demo desktop'), cells.join('\n'));
 });
 
 const sharedCheckout = (shared) =>
@@ -220,11 +192,7 @@ test('scope asks a file shared by more than six pages for screenshots on its own
     '/blocks/e-demo load',
     '/blocks/f-demo load',
     '/blocks/g-demo load',
-    '/cn/docs/shared 1280 light',
-    '/docs/shared 1280 dark',
-    '/docs/shared 1280 light',
-    '/docs/shared 375 dark',
-    '/docs/shared 375 light',
+    '/docs/shared desktop',
   ]);
 });
 
@@ -269,7 +237,7 @@ test('scope asks a file with no page of its own for screenshots of one page that
     run(['scope', 'apps/www/src/registry/hooks/use-shared.ts']).stdout
   );
 
-  assert.ok(cells.includes('/blocks/a-demo 375 light'), cells.join('\n'));
+  assert.ok(cells.includes('/blocks/a-demo desktop'), cells.join('\n'));
 });
 
 const pliteLoader = (name) => ({
@@ -281,7 +249,7 @@ test('scope adds the Plite example page of a registry demo the Plite loaders imp
 
   assert.ok(
     cellsOf(run(['scope', DEMO]).stdout).includes(
-      '/examples/plite/widget-demo 375 light'
+      '/examples/plite/widget-demo desktop'
     )
   );
 });
@@ -291,18 +259,47 @@ test('scope adds the Plite example page of a demo when the component it shows ch
 
   assert.ok(
     cellsOf(run(['scope', WIDGET]).stdout).includes(
-      '/examples/plite/widget-demo 375 light'
+      '/examples/plite/widget-demo desktop'
     )
   );
 });
 
-test('scope adds the Chinese page an English docs page serves when it has no Chinese twin', () => {
-  const { run } = widgetCheckout();
+test('scope asks for Chinese pages only when the changed file is Chinese', () => {
+  const { run } = checkout(
+    [
+      item('widget-demo', 'registry:example', 'examples/widget-demo.tsx', {
+        files: [
+          { path: 'examples/widget-demo.tsx', type: 'registry:example' },
+          {
+            path: 'examples/values/widget-value.tsx',
+            type: 'registry:example',
+          },
+          {
+            path: 'examples/values/cn/widget-value.tsx',
+            type: 'registry:example',
+          },
+        ],
+        meta: { docs: [{ route: '/docs/widget' }] },
+      }),
+    ],
+    {
+      [DOC]: '# Widget\n',
+      'content/docs/(guides)/install.mdx': '# Install\n',
+      'content/docs/widget.cn.mdx': '# Widget\n',
+    }
+  );
 
-  assert.ok(
-    cellsOf(
-      run(['scope', 'content/docs/(guides)/install.mdx']).stdout
-    ).includes('/cn/docs/install 1280 light')
+  assert.deepEqual(
+    [
+      'content/docs/(guides)/install.mdx',
+      'content/docs/widget.cn.mdx',
+      'apps/www/src/registry/examples/values/cn/widget-value.tsx',
+    ].map((file) => cellsOf(run(['scope', file]).stdout)),
+    [
+      ['/docs/install desktop'],
+      ['/cn/docs/widget desktop'],
+      ['/cn/docs/examples/widget desktop', '/cn/docs/widget desktop'],
+    ]
   );
 });
 
@@ -351,28 +348,6 @@ test('scope leaves out files that render nothing, and keeps registry build scrip
   ]);
 });
 
-test("scope keeps a component's narrowest preview on the docs page that embeds one of its demos, before any generated page", () => {
-  const { run } = checkout(
-    [
-      item('widget', 'registry:component', 'components/editor/widget.tsx', {
-        meta: {
-          docs: [{ route: '/docs/widget' }],
-          examples: ['bare-demo', 'widget-demo'],
-        },
-      }),
-      item('bare-demo', 'registry:example', 'examples/bare-demo.tsx'),
-      item('widget-demo', 'registry:example', 'examples/widget-demo.tsx'),
-    ],
-    { [DOC]: '# Widget\n\n<ComponentPreview name="widget-demo" />\n' }
-  );
-
-  assert.ok(
-    cellsOf(run(['scope', WIDGET]).stdout).includes(
-      '/docs/widget preview-min widget-demo'
-    )
-  );
-});
-
 test('a route record stops applying once its file changes', () => {
   const { run, write } = widgetCheckout({
     'apps/www/src/app/layout.tsx': 'export {};\n',
@@ -396,7 +371,7 @@ test('a route record stops applying once its file changes', () => {
 function visitedWidget(...visits) {
   const fixture = widgetCheckout();
   writeJsonl(path.join(fixture.dir, 'visits.jsonl'), visits.map(visit));
-  const cell = (stdout, key = '/docs/widget 1280 light') =>
+  const cell = (stdout, key = '/docs/widget desktop') =>
     stdout
       .split('\n')
       .find((line) => line.replace(/^\S+\s+/, '').startsWith(key));
@@ -480,20 +455,28 @@ test('check does not count a webdriver visit as a hand drive', () => {
   );
 });
 
-test('check does not count a page shown inside a frame, such as a block preview, as a visit at that width', () => {
+test('check does not count a page shown inside a frame, such as a block preview, as a visit to that page', () => {
   const { cell, run } = visitedWidget({
     frame: true,
     path: '/blocks/widget-demo',
-    width: 375,
   });
 
   assert.match(
-    cell(run(['check', DEMO]).stdout, '/blocks/widget-demo 375 light'),
+    cell(run(['check', DEMO]).stdout, '/blocks/widget-demo desktop'),
     /^open /
   );
 });
 
-test('check reports the error the page showed at that width and theme', () => {
+test('check covers a page only from a light visit at desktop width', () => {
+  const states = [{ theme: 'dark' }, { width: 375 }, {}].map((overrides) => {
+    const { cell, run } = visitedWidget(overrides);
+    return cell(run(['check', DOC]).stdout).split(' ')[0];
+  });
+
+  assert.deepEqual(states, ['open', 'open', 'covered']);
+});
+
+test('check reports the error the page showed', () => {
   const { cell, run } = visitedWidget({}, { errors: ['page not found'] });
 
   assert.match(cell(run(['check', DOC]).stdout), /^error .*page not found/);
@@ -515,43 +498,6 @@ test('check lets an error visit win a tie with a clean visit sent the same milli
   );
 
   assert.match(cell(run(['check', DOC]).stdout), /^error .*boom/);
-});
-
-test('check covers the narrowest preview once the changed demo is narrowed', () => {
-  const { cell, run } = visitedWidget({
-    previews: [{ group: 688, name: 'widget-demo', width: 200 }],
-  });
-
-  assert.match(
-    cell(run(['check', DEMO]).stdout, '/docs/widget preview-min'),
-    /^covered /
-  );
-});
-
-test('check fails a preview cell on a later error visit that carries no previews', () => {
-  const { cell, run } = visitedWidget(
-    { previews: [{ group: 688, name: 'widget-demo', width: 200 }], sent: 1000 },
-    { errors: ['boom'], sent: 2000 }
-  );
-
-  assert.match(
-    cell(run(['check', DEMO]).stdout, '/docs/widget preview-min'),
-    /^error .*boom/
-  );
-});
-
-test('check covers the narrowest preview only with the changed demo narrowed, not another preview on the page', () => {
-  const { cell, run } = visitedWidget({
-    previews: [
-      { group: 688, name: 'other-demo', width: 200 },
-      { group: 688, name: 'widget-demo', width: 676 },
-    ],
-  });
-
-  assert.match(
-    cell(run(['check', DEMO]).stdout, '/docs/widget preview-min'),
-    /^open /
-  );
 });
 
 const stop = (fixture, transcript, input = {}) => {

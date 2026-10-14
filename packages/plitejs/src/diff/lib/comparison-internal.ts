@@ -3,8 +3,8 @@ import {
   DocumentChange,
   type DocumentChangeJson,
 } from '../../core/change/document-change';
+import { jsonEqual } from '../../core/change/json';
 import { RootChange, type RootChangeJson } from '../../core/change/root-change';
-import { jsonEqual } from '../../core/change/tokens';
 import { fingerprintEditorJson } from '../../core/json-fingerprint';
 import { snapshotEditorJsonValue } from '../../core/value-codec';
 import type { ComparisonSnapshot, TwoWayComparison } from './comparison-types';

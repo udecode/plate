@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,6 +9,10 @@ import { parse } from '@babel/parser';
 import { assertNoPrivatePlateDeclarationBrands } from './check-package-declaration-brands.mjs';
 
 const runtimeExtensionPattern = /\.(?:c|m)?js$/;
+const rolldownRuntimeImportPattern =
+  /import\s*\{([^}]*)\}\s*from\s*["'][^"']*\/_rolldown\/runtime\.js["']/gu;
+const namespaceHelpers = new Set(['__exportAll', '__reExport']);
+const namespaceMemberPattern = /\b\w+_exports\.(\w+)/gu;
 const anyPluginDeclarationPattern =
   /\bdeclare\s+const\s+[A-Za-z_$][\w$]*Plugin\s*:\s*any\s*;/gu;
 const incompleteReadonlyAliasPattern =
@@ -118,6 +122,7 @@ export function assertPackageBuildArtifacts(
     packageJson,
     runtimeImportBoundaries
   );
+  assertNoSynthesizedNamespaces(packageRoot);
 
   assertNoPrivatePlateDeclarationBrands(packageRoot);
 }
@@ -134,6 +139,37 @@ export function assertPackageRuntimeImportBoundaries(
     packageRoot,
     packageJson,
     runtimeImportBoundaries
+  );
+  assertNoSynthesizedNamespaces(packageRoot);
+}
+
+function assertNoSynthesizedNamespaces(packageRoot) {
+  const distRoot = join(packageRoot, 'dist');
+  if (!existsSync(distRoot)) return;
+
+  const sources = readdirSync(distRoot, { recursive: true })
+    .map((file) => file.split(sep).join('/'))
+    .filter((file) => runtimeExtensionPattern.test(file))
+    .map((file) => [file, readFileSync(join(distRoot, file), 'utf-8')]);
+  const builders = sources.filter(([, source]) =>
+    [...source.matchAll(rolldownRuntimeImportPattern)].some((match) =>
+      match[1].split(',').some((name) => namespaceHelpers.has(name.trim()))
+    )
+  );
+
+  if (builders.length === 0) return;
+
+  const files = builders.map(([file]) => `dist/${file}`).join(', ');
+  const reached = [
+    ...new Set(
+      sources.flatMap(([, source]) =>
+        [...source.matchAll(namespaceMemberPattern)].map((match) => match[1])
+      )
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+
+  throw new Error(
+    `Runtime modules build namespace objects that defeat consumer tree shaking: ${files}.\nRe-export by name each value an importer reaches through \`export * from\` an external package: ${reached.join(', ')}`
   );
 }
 

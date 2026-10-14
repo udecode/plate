@@ -1,4 +1,5 @@
 import manifest from '@/generated/api-reference-manifest.json';
+import { apiReferenceAnchor } from '@/lib/docs-anchors';
 import { cn } from '@/lib/utils';
 
 type ApiReferenceFact = {
@@ -32,9 +33,7 @@ export function APIReference({
     );
   }
 
-  const anchor = `api-${packageName}-${symbol}`
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-');
+  const anchor = apiReferenceAnchor(packageName, symbol);
 
   return (
     <section className="my-6 scroll-mt-20 rounded-lg border p-4" id={anchor}>

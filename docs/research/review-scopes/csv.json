@@ -9,26 +9,24 @@
   "last": false,
   "opportunity": {
     "score": 6,
-    "reason": "CSV has a bounded tabular conversion contract that should be judged independently of document-format export."
+    "reason": "Tabular text has a bounded paste and copy contract that should be judged independently of document-format export."
   },
   "owners": [
-    "packages/platejs/src/csv/"
+    "packages/platejs/src/features/table/lib/internal/tabularText.ts"
   ],
   "members": [
-    "apps/www/src/registry/examples/values/cn/deserialize-csv-value.tsx",
-    "apps/www/src/registry/examples/values/deserialize-csv-value.tsx",
-    "packages/platejs/package.json",
-    "packages/platejs/src/csv/index.ts",
-    "packages/platejs/src/csv/lib/CsvPlugin.spec.ts",
-    "packages/platejs/src/csv/lib/CsvPlugin.ts",
-    "packages/platejs/src/csv/lib/index.ts",
-    "packages/platejs/src/utils/plate-keys.ts"
+    "packages/platejs/src/features/table/lib/internal/tabularText.spec.ts",
+    "packages/platejs/src/features/table/lib/internal/tabularText.ts",
+    "packages/platejs/src/react/features/table/TablePlugin.clipboard.spec.tsx"
   ],
   "consumers": [
-    "apps/www/src/registry/components/editor/plugins.ts"
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.ts",
+    "packages/platejs/src/react/features/table/TablePlugin.tsx"
   ],
   "proof": [
-    "packages/platejs/src/csv/lib/CsvPlugin.spec.ts"
+    "packages/platejs/src/features/table/lib/BaseTablePlugin.paste.spec.tsx",
+    "packages/platejs/src/features/table/lib/internal/tabularText.spec.ts",
+    "packages/platejs/src/react/features/table/TablePlugin.clipboard.spec.tsx"
   ],
   "evidenceInputs": [],
   "relatedScopes": [

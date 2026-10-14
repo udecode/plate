@@ -4,8 +4,9 @@ import {
   valueRoot,
 } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
+import type { JsonRecord } from '../../core/change/json';
 import { RootChange } from '../../core/change/root-change';
-import type { JsonEditorValue, JsonRecord } from '../../core/change/tokens';
+import type { JsonEditorValue } from '../../core/change/tokens';
 import { getDefined } from '../../internal/get-defined';
 import { isMetadataRootKey } from '../../internal/root-location';
 import type { Dependencies } from '../facts/dependencies';

@@ -105,7 +105,7 @@ import {
  */
 export type InternalEditorSchemaApi<V extends Value = Value> =
   EditorStateSchemaApi<V> & {
-    canContain: (parent: Element, child: Descendant | string) => boolean;
+    canContain: (parent: Element, child: Descendant) => boolean;
     canContainAt: (
       parent: Element | null,
       child: Descendant,
@@ -617,10 +617,7 @@ const COMPILED_SCHEMA_BY_API = new WeakMap<
   EditorStateSchemaApi<any>,
   () => CompiledEditorSchema | null
 >();
-const PLACEMENT_BY_API = new WeakMap<
-  object,
-  InternalEditorSchemaApi['canPlaceAtPath']
->();
+const INTERNAL_BY_API = new WeakMap<object, InternalEditorSchemaApi>();
 const VALIDATED_DOCUMENT_ROOTS = new Map<string, WeakSet<object>>();
 const isRootValidatedBy = (children: object, authority: string) =>
   VALIDATED_DOCUMENT_ROOTS.get(authority)?.has(children) === true;
@@ -666,8 +663,9 @@ export const getCompiledEditorSchemaFromApi = (
 ) => COMPILED_SCHEMA_BY_API.get(schemaApi)?.() ?? null;
 
 /** @internal */
-export const getCanPlaceAtPathFromApi = (schemaApi: EditorStateSchemaApi) =>
-  getDefined(PLACEMENT_BY_API.get(schemaApi));
+export const getInternalEditorSchemaFromApi = (
+  schemaApi: EditorStateSchemaApi
+) => getDefined(INTERNAL_BY_API.get(schemaApi));
 
 export const createEditorSchema = <V extends Value = Value>(
   getEditor: () => Editor<V>,
@@ -1047,6 +1045,7 @@ export const createEditorSchema = <V extends Value = Value>(
     isolating: false,
     markableVoid: false,
     object: false,
+    ownsExit: false,
     readOnly: false,
     selectable: true,
     void: false,
@@ -1083,9 +1082,7 @@ export const createEditorSchema = <V extends Value = Value>(
       }
     };
 
-  const getElementBehavior = (element: {
-    type?: unknown;
-  }): EditorElementBehavior =>
+  const getElementBehavior = (element: Element): EditorElementBehavior =>
     getCompiledElement(element)?.behavior ?? DEFAULT_ELEMENT_BEHAVIOR;
 
   const getElementContentRoots = (
@@ -1375,20 +1372,14 @@ export const createEditorSchema = <V extends Value = Value>(
   const contentAllows = (
     schema: CompiledEditorSchema,
     content: CompiledSchemaContentProgram,
-    child: Descendant | string
-  ) => {
-    if (typeof child !== 'string' && NodeApi.isText(child)) {
-      return content.allowsText;
-    }
-    const element = typeof child === 'string' ? { type: child } : child;
-
-    return (
-      content.allowedElementTypes.has(getElementType(element) ?? '') ||
-      (content.allowsUnknownElements &&
-        schema.unknown === 'preserve' &&
-        !getCompiledElement(element))
-    );
-  };
+    child: Descendant
+  ) =>
+    NodeApi.isText(child)
+      ? content.allowsText
+      : content.allowedElementTypes.has(getElementType(child) ?? '') ||
+        (content.allowsUnknownElements &&
+          schema.unknown === 'preserve' &&
+          !getCompiledElement(child));
 
   const validationContentAllows = (
     schema: CompiledEditorSchema,
@@ -1439,17 +1430,11 @@ export const createEditorSchema = <V extends Value = Value>(
         );
   };
 
-  const canContain = (parent: Element, child: Descendant | string) => {
+  const canContain = (parent: Element, child: Descendant) => {
     const schema = getDeclarativeSchema();
     const content = getCompiledElement(parent)?.content;
 
     if (schema && content) return contentAllows(schema, content, child);
-    if (typeof child === 'string') {
-      return (
-        elementUsesInlineContent(parent) ===
-        getElementBehavior({ type: child }).inline
-      );
-    }
 
     return elementUsesInlineContent(parent)
       ? NodeApi.isText(child) ||
@@ -1652,8 +1637,21 @@ export const createEditorSchema = <V extends Value = Value>(
         matchesCompiledSchemaTarget(schema, property.target, context) &&
         !Object.hasOwn(properties ?? {}, property.key)
       ) {
-        throw new EditorSchemaValidationError(
-          `Editor element "${type}" requires property "${property.key}".`
+        throw createEditorSchemaValidationError(
+          'missing-property',
+          `Editor element "${type}" requires property "${property.key}".`,
+          {
+            nodeType: type,
+            path: options.path ?? [],
+            root: options.root ?? null,
+          },
+          {
+            property: {
+              candidates: [property],
+              key: property.key,
+              placement: 'element',
+            },
+          }
         );
       }
     }
@@ -2340,7 +2338,12 @@ export const createEditorSchema = <V extends Value = Value>(
               },
             }
           )
-        : new EditorSchemaValidationError(message);
+        : new EditorSchemaValidationError({
+            code: 'missing-property',
+            message,
+            path: [],
+            root: null,
+          });
     }
 
     const sourceKeys = Object.keys(source);
@@ -4582,7 +4585,7 @@ export const createEditorSchema = <V extends Value = Value>(
   });
 
   COMPILED_SCHEMA_BY_API.set(api, getDeclarativeSchema);
-  PLACEMENT_BY_API.set(api, canPlaceAtPath);
+  INTERNAL_BY_API.set(api, api);
 
   return api;
 };

@@ -1,6 +1,60 @@
 /** @platejs-curated-entrypoint */
 
 export * from 'plitejs';
+// Runtime values are re-exported by name so modules importing them from this
+// file compile to direct `plitejs` imports. Through the star export alone, the
+// build wraps them in one namespace object that keeps all of core.
+export {
+  ContentSlice,
+  DocumentChange,
+  EditorSchemaValidationError,
+  ElementApi,
+  LocationApi,
+  NodeApi,
+  PathApi,
+  PluginPublicationError,
+  PointApi,
+  RangeApi,
+  SelectionApi,
+  SpanApi,
+  TextApi,
+  authoredVeto,
+  compileEditorSchemaContract,
+  createEditorView,
+  decodeEditorEffect,
+  defineCommand,
+  defineEditorSchema,
+  defineEffect,
+  definePluginPoint,
+  definePluginSlot,
+  defineStateField,
+  defineUpdateAnnotation,
+  diffEditorSchemaContracts,
+  documentReplacement,
+  editorCommands,
+  editorReads,
+  encodeEditorEffect,
+  getEditorRuntimeOwner,
+  invertEffect,
+  isEditor,
+  locateAt,
+  mapEffect,
+  property,
+  readEditorSchemaContract,
+  readEditorSelection,
+  restoreEditorSchemaContract,
+  schema,
+  screenReaderAnnouncementEffect,
+  setDebugValueScrubber,
+  setEditorReadOnly,
+  target,
+  transfer,
+  transferVeto,
+  txLocate,
+  txOnly,
+  txSelection,
+  valueCodecs,
+} from 'plitejs';
 
 export type { Editor } from './lib/editor/Editor';
 export type { EditorApplicationSchema } from './lib/editor/editorApplicationSchema';

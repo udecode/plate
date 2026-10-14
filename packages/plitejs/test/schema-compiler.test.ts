@@ -1999,6 +1999,95 @@ describe('schema compiler', () => {
     }
   });
 
+  it('compiles a text block that owns its exit', () => {
+    const Notes = defineEditorSchema('schema:notes-owns-exit', {
+      elements: {
+        code: schema.element.textBlock({ ownsExit: true }),
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'notes-owns-exit',
+      root: schema.content.types(['paragraph', 'code'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const compiled = compileEditorSchemaContributions([
+      record(Notes.name, Notes.schema),
+    ]);
+
+    assert.deepEqual(
+      [
+        compiled.elements.byType.get('code')?.behavior.ownsExit,
+        compiled.elements.byType.get('paragraph')?.behavior.ownsExit,
+      ],
+      [true, false]
+    );
+  });
+
+  it('refuses ownsExit on an element that is not a text block', () => {
+    for (const [name, element] of [
+      ['inline', { content: schema.content.text(), inline: true }],
+      ['void', { void: 'block' }],
+      ['object', { content: schema.content.text(), object: true }],
+      ['container', { content: schema.content.type('paragraph', { min: 1 }) }],
+    ] as const) {
+      const Invalid = defineEditorSchema(`schema:invalid-owns-exit-${name}`, {
+        elements: {
+          paragraph: { content: schema.content.text() },
+          target: { ...element, ownsExit: true },
+        },
+        id: `invalid-owns-exit-${name}`,
+        root: schema.content.types(['paragraph', 'target'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+
+      assert.throws(
+        () =>
+          compileEditorSchemaContributions([
+            record(Invalid.name, Invalid.schema),
+          ]),
+        (error: unknown) =>
+          error instanceof EditorSchemaCompileError &&
+          error.diagnostics.some(
+            (diagnostic) => diagnostic.code === 'invalid-element-behavior'
+          ),
+        name
+      );
+    }
+  });
+
+  it('fingerprints ownsExit only where a schema declares it', () => {
+    const notes = (ownsExit: boolean) =>
+      defineEditorSchema('schema:notes', {
+        elements: {
+          code: schema.element.textBlock(ownsExit ? { ownsExit } : {}),
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'notes',
+        root: schema.content.types(['paragraph', 'code'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+    const fingerprint = (ownsExit: boolean) =>
+      compileEditorSchemaContributions([
+        record('schema:notes', notes(ownsExit).schema),
+      ]).identity.fingerprint;
+
+    assert.deepEqual(
+      [fingerprint(false), fingerprint(true) === fingerprint(false)],
+      ['fnv1a64:4cd768b24451a531', false]
+    );
+  });
+
   it('reuses compiled schema while publishing a new descriptor identity', () => {
     const slot = definePluginSlot('article-schema');
     const create = () =>

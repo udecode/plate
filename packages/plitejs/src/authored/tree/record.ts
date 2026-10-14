@@ -13,6 +13,7 @@ import {
   DocumentIndex,
   type IndexedNodeRange,
 } from '../../core/change/document-index';
+import { type JsonRecord, jsonEqual } from '../../core/change/json';
 import {
   applyPropertyModifications,
   RootChange,
@@ -25,9 +26,7 @@ import {
   encodeNodes,
   type JsonEditorValue,
   type JsonNode,
-  type JsonRecord,
   type JsonToken,
-  jsonEqual,
   openToken,
   PreparedTokenSlice,
   textToken,

@@ -267,9 +267,9 @@ describe('OverridePlugin', () => {
     ]);
   });
 
-  it('exits a structural application root with one undoable root sibling', () => {
+  it('exits only the callout inside a structural application root, in one undo step [EDIT-GLOBAL-003]', () => {
     const CalloutPlugin = definePlugin('structuralExitCallout', {
-      schema: { element: schema.element.textBlock() },
+      schema: { element: schema.element.textBlock({ ownsExit: true }) },
       rules: { break: { emptyLineEnd: 'deleteExit' } },
     });
     const SectionPlugin = definePlugin('structuralExitSection', {
@@ -309,17 +309,14 @@ describe('OverridePlugin', () => {
       {
         children: [
           { children: [{ text: 'foo' }], type: 'structuralExitCallout' },
+          { children: [{ text: '' }], type: 'paragraph' },
         ],
-        type: 'structuralExitSection',
-      },
-      {
-        children: [{ children: [{ text: '' }], type: 'paragraph' }],
         type: 'structuralExitSection',
       },
     ]);
     expect(editor.read.selection()).toEqual({
-      anchor: { offset: 0, path: [1, 0, 0] },
-      focus: { offset: 0, path: [1, 0, 0] },
+      anchor: { offset: 0, path: [0, 1, 0] },
+      focus: { offset: 0, path: [0, 1, 0] },
     });
 
     editor.api.history.undo();
