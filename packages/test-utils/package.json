@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@platejs/slate": "workspace:*",
-    "slate": "0.138.2",
+    "slate": "0.139.0",
     "slate-hyperscript": "0.138.3"
   },
   "publishConfig": {
