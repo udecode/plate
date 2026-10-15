@@ -21,10 +21,24 @@
 //        rows are exempt.
 //        node .agents/pstack/decisions-check.mjs rounds <log>
 //        (exits 1 when the log is at the cap of panel rounds before a build)
+//        node .agents/pstack/decisions-check.mjs chips [--fetch] [--session <id>] [<ledger>]
+//        (prints every open suggested task as ready, started, waiting or unmigrated,
+//        its topic and a Do list of one pass, withdrawals, then ledger rows, then cards,
+//        and exits 1 when any pass holds a problem: a card on a task that cannot start,
+//        a wait that can never clear or two open design questions in one topic;
+//        <ledger> defaults to <plans>/suggested-tasks.decisions.tsv,
+//        --fetch refreshes the remote branches that PR waits read, and --session names
+//        this session, so each card it does not hold gets a check item instead of a
+//        withdraw problem)
+//        node .agents/pstack/decisions-check.mjs chips id
+//        (prints a fresh id for a new task)
+//        node .agents/pstack/decisions-check.mjs chips brief <id> [<ledger>]
+//        (prints the prompt a card for that task carries)
 
 import { appendFileSync, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { currentLead, leadLabel } from './lead.mjs';
+import { board, briefOf, CHIP_STATES, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, readTasks, recordRow, renderBoard, SESSION, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -43,9 +57,22 @@ const restartsRoundCount = (line) => {
 };
 const roundsSince = (lines) => lines.slice(lines.findLastIndex(restartsRoundCount) + 1).filter(opens).length;
 
-function plansDir() {
+const git = gitMerges({ branch: projectConfig().branch });
+
+let ledgerTasks = null;
+const currentLedger = () => {
+  const path = join(plansDir(), LEDGER);
+  ledgerTasks ??= readTasks(existsSync(path) ? readFileSync(path, 'utf8').split('\n').slice(1) : []);
+  return ledgerTasks;
+};
+
+function projectConfig() {
   const config = '.agents/pstack.json';
-  return (existsSync(config) && JSON.parse(readFileSync(config, 'utf8')).plans) || 'docs/plans';
+  return existsSync(config) ? JSON.parse(readFileSync(config, 'utf8')) : {};
+}
+
+function plansDir() {
+  return projectConfig().plans || 'docs/plans';
 }
 
 function missingPlan(path, line, where) {
@@ -63,7 +90,7 @@ function missingPaths(evidence, where) {
     .map((path) => `${where}: evidence cites ${path}, which does not exist; write it first or cite the path it was saved to`);
 }
 
-function rowProblems(line, where, opened) {
+function rowProblems(line, where, opened, chips) {
   const cells = line.split('\t');
   if (cells.length !== 6) return [`${where}: ${cells.length} cells, expected 6`];
   const found = [];
@@ -92,8 +119,14 @@ function rowProblems(line, where, opened) {
       found.push(`${where}: an open panel finding names its patch: and owner:`);
     }
   }
+  if (rest[0] !== 'chip' && CHIP_STATES.includes(status)) found.push(`${where}: an ${status} result belongs only in a chip row`);
+  if (rest[0] === 'chip' && chips) found.push(...chipRowProblems(rest, chips, where));
   const reviewerRow = rest[0].startsWith('review');
   return reviewerRow ? found : [...found, ...missingPaths(rest[3], where)];
+}
+
+function newRowProblems(cells, where, chips) {
+  return [...(cells[0] === 'chip' && chips ? newChipRowProblems(cells, chips, where, git) : []), ...baseRedProblems(cells[3], chips ?? currentLedger(), where)];
 }
 
 function appendOnlyLabelProblems(log, row, earlier, where) {
@@ -128,12 +161,14 @@ function problems(path) {
   if (lines[0] !== HEADER) return [`${path}:1: header must be "${HEADER.replaceAll('\t', ' ')}"`];
   const committed = committedLines(path);
   let opened = false;
+  const chips = resolve(path) === resolve(join(plansDir(), LEDGER)) ? new Map() : null;
   return lines.flatMap((line, index) => {
     if (index === 0 || line === '') return [];
     const where = `${path}:${index + 1}`;
-    const found = committed.has(line) ? [] : [...rowProblems(line, where, opened), ...missingPlan(path, line, where)];
+    const rowFound = committed.has(line) ? [] : [...rowProblems(line, where, opened, chips), ...missingPlan(path, line, where)];
     opened ||= opens(line);
-    return found;
+    if (chips) recordRow(chips, line.split('\t').slice(1));
+    return rowFound;
   });
 }
 
@@ -156,6 +191,8 @@ function append(path, batch, run) {
   const isWriting = (line) => line.split('\t')[1] === 'writing';
   let written = isWriting(existing.findLast((line) => opens(line) || isWriting(line)) ?? '');
   let rounds = roundsSince(existing);
+  const chips = readTasks(existing.slice(1));
+  const ledger = resolve(path) === resolve(join(plansDir(), LEDGER));
   const rows = [];
   const found = [];
   for (const [index, cells] of batch.entries()) {
@@ -170,7 +207,8 @@ function append(path, batch, run) {
       continue;
     }
     const row = [stamp, ...cells].join('\t');
-    found.push(...rowProblems(row, where, opened), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
+    if (cells[0] === 'chip' && !ledger) found.push(`${where}: chip rows go in the project's ledger ${join(plansDir(), LEDGER)}, because a suggested task outlives the run that offered it`);
+    found.push(...rowProblems(row, where, opened, ledger ? chips : null), ...newRowProblems(cells, where, ledger ? chips : null), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
     if (opens(row) && opened && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
@@ -183,6 +221,7 @@ function append(path, batch, run) {
       rounds += 1;
     } else if (isWriting(row)) written = true;
     opened ||= opens(row);
+    recordRow(chips, cells);
     rows.push(row);
   }
   if (found.length > 0) return found;
@@ -212,6 +251,42 @@ if (args[0] === 'rounds') {
   const rounds = roundsSince(lines);
   console.info(`${rounds} panel round(s) since the last restart; the cap is ${MAX_ROUNDS}`);
   process.exit(rounds >= MAX_ROUNDS ? 1 : 0);
+}
+if (args[0] === 'chips') {
+  const fetch = args.includes('--fetch');
+  const at = args.indexOf('--session');
+  const here = at === -1 ? null : (args[at + 1] ?? null);
+  if (at !== -1 && !SESSION.test(here ?? '')) {
+    console.error("--session takes this session's id, the one the runtime's session tool gives it");
+    process.exit(2);
+  }
+  const rest = args.filter((arg, index) => index > 0 && arg !== '--fetch' && index !== at && index !== at + 1);
+  if (rest[0] === 'id') {
+    console.info(newId());
+    process.exit(0);
+  }
+  const id = rest[0] === 'brief' ? rest[1] : null;
+  const named = rest[0] === 'brief' ? rest[2] : rest[0];
+  const ledger = named ?? join(plansDir(), LEDGER);
+  if (!existsSync(ledger)) {
+    console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
+    process.exit(named ? 2 : 0);
+  }
+  const tasks = readTasks(readFileSync(ledger, 'utf8').split('\n').slice(1));
+  if (rest[0] === 'brief') {
+    const task = tasks.get(id ?? '');
+    if (!task) {
+      console.error(`${id ?? '(no id)'} is not a task in ${ledger}`);
+      process.exit(2);
+    }
+    const { ok, text } = briefOf(tasks, id, ledger);
+    (ok ? console.info : console.error)(text);
+    process.exit(ok ? 0 : 1);
+  }
+  const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here);
+  console.info(renderBoard(view, ledger));
+  for (const note of startedOverlaps(tasks)) console.error(note);
+  process.exit(view.problem ? 1 : 0);
 }
 if (args[0] === 'append') {
   const batch =
