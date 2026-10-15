@@ -19,10 +19,10 @@ import {
   TextApi,
 } from '../..';
 import { getSelection } from '../../dom';
-import {
-  type DOMPhase,
-  type DOMPhaseScheduler,
-  type DOMPhaseTiming,
+import type {
+  DOMPhase,
+  DOMPhaseScheduler,
+  DOMPhaseTiming,
 } from '../../dom/internal';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
 import {
@@ -92,9 +92,7 @@ import {
   getSelectionDOMRange,
   toInternalRoot,
 } from './runtime-editor-api';
-import {
-  canUseNativeViewSelection,
-} from './selection-projected-dom';
+import { canUseNativeViewSelection } from './selection-projected-dom';
 
 export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selection-replay';
 
@@ -995,33 +993,74 @@ const applyModelDragSelection = ({
   selectionBridge?.syncDOMSelectionToEditor({ preserveScroll: true });
 };
 
-const stopDragAutoScroll = (ref: PendingDragAutoScrollRef) => {
+const pauseDragAutoScroll = (ref: PendingDragAutoScrollRef) => {
   const state = ref.current;
 
   state?.cancelScheduledFrame?.();
+  if (state) state.cancelScheduledFrame = null;
+};
 
-  state?.releaseCleanup?.();
+const stopDragAutoScroll = (ref: PendingDragAutoScrollRef) => {
+  pauseDragAutoScroll(ref);
+
+  ref.current?.releaseCleanup?.();
   ref.current = null;
 };
 
-const attachDragAutoScrollReleaseListeners = (
+const attachDragAutoScrollListeners = (
   ref: PendingDragAutoScrollRef,
-  rootElement: HTMLElement
+  rootElement: HTMLElement,
+  domPhaseScheduler: DOMPhaseScheduler,
+  releaseInteraction: () => void
 ) => {
   const document = rootElement.ownerDocument;
   const window = document.defaultView;
-  const stop = () => {
+  const origin = ref.current;
+  const stop = (event: Event) => {
     stopDragAutoScroll(ref);
+    if (
+      (event.type !== 'mouseup' && event.type !== 'pointerup') ||
+      !event.composedPath().includes(rootElement)
+    ) {
+      releaseInteraction();
+    }
+  };
+  const move = (event: globalThis.MouseEvent) => {
+    if ((event.buttons & 1) === 0) {
+      stopDragAutoScroll(ref);
+      releaseInteraction();
+      return;
+    }
+    const state = ref.current;
+    if (
+      !state ||
+      !origin ||
+      event.composedPath().includes(rootElement) ||
+      (Math.abs(event.clientX - origin.clientX) <= 4 &&
+        Math.abs(event.clientY - origin.clientY) <= 4)
+    ) {
+      return;
+    }
+    updateDragAutoScroll(
+      ref,
+      { ...state, clientX: event.clientX, clientY: event.clientY },
+      domPhaseScheduler,
+      releaseInteraction
+    );
   };
 
+  document.addEventListener('mousemove', move, true);
   document.addEventListener('mouseup', stop, true);
   document.addEventListener('pointerup', stop, true);
+  document.addEventListener('pointercancel', stop, true);
   document.addEventListener('dragend', stop, true);
   window?.addEventListener('blur', stop, true);
 
   return () => {
+    document.removeEventListener('mousemove', move, true);
     document.removeEventListener('mouseup', stop, true);
     document.removeEventListener('pointerup', stop, true);
+    document.removeEventListener('pointercancel', stop, true);
     document.removeEventListener('dragend', stop, true);
     window?.removeEventListener('blur', stop, true);
   };
@@ -1080,7 +1119,7 @@ export const applyDragAutoScrollFrame = (state: PendingDragAutoScroll) => {
   });
 
   if (!eventRange) {
-    return false;
+    return true;
   }
 
   const nextRange = createDragSelectionRange({
@@ -1134,8 +1173,6 @@ const scheduleDragAutoScroll = (
 
       if (applyDragAutoScrollFrame(latest)) {
         scheduleDragAutoScroll(ref, domPhaseScheduler);
-      } else {
-        stopDragAutoScroll(ref);
       }
     },
     { timing: 'animation-frame' }
@@ -1145,28 +1182,16 @@ const scheduleDragAutoScroll = (
 const updateDragAutoScroll = (
   ref: PendingDragAutoScrollRef,
   state: Omit<PendingDragAutoScroll, 'cancelScheduledFrame' | 'releaseCleanup'>,
-  domPhaseScheduler: DOMPhaseScheduler
+  domPhaseScheduler: DOMPhaseScheduler,
+  releaseInteraction: () => void,
+  schedule = true
 ) => {
-  if (
-    !getDragAutoScrollTarget({
-      clientX: state.clientX,
-      clientY: state.clientY,
-      rootElement: state.rootElement,
-    })
-  ) {
-    stopDragAutoScroll(ref);
-    return;
-  }
-
   const cancelScheduledFrame = ref.current?.cancelScheduledFrame ?? null;
   let releaseCleanup = ref.current?.releaseCleanup ?? null;
 
   if (ref.current?.rootElement !== state.rootElement) {
     releaseCleanup?.();
-    releaseCleanup = attachDragAutoScrollReleaseListeners(
-      ref,
-      state.rootElement
-    );
+    releaseCleanup = null;
   }
 
   ref.current = {
@@ -1174,6 +1199,23 @@ const updateDragAutoScroll = (
     cancelScheduledFrame,
     releaseCleanup,
   };
+  ref.current.releaseCleanup ??= attachDragAutoScrollListeners(
+    ref,
+    state.rootElement,
+    domPhaseScheduler,
+    releaseInteraction
+  );
+  if (
+    !schedule ||
+    !getDragAutoScrollTarget({
+      clientX: state.clientX,
+      clientY: state.clientY,
+      rootElement: state.rootElement,
+    })
+  ) {
+    pauseDragAutoScroll(ref);
+    return;
+  }
   scheduleDragAutoScroll(ref, domPhaseScheduler);
 };
 
@@ -1196,8 +1238,9 @@ export const useRootInteractionController = ({
   useEffect(
     () => () => {
       stopDragAutoScroll(pendingDragAutoScrollRef);
+      pendingInteractionRef.current = ignoreInteraction();
     },
-    []
+    [disabled, pendingInteractionRef]
   );
   const scheduleInteractionFrame = useCallback(
     (
@@ -1434,25 +1477,14 @@ export const useRootInteractionController = ({
         const nativeEditableModifiedClick =
           nativeEditableTextTarget &&
           (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey);
-        const modelOwnsExpandedSelectionReplacementClick =
-          nativeEditableTextTarget &&
-          !nativeEditableMultiClick &&
-          !nativeEditableSelectedTextTarget &&
-          !nativeEditableModifiedClick &&
-          hasExpandedDOMSelectionInTarget(event.currentTarget);
-        const nativeEditableTableCellTarget =
-          nativeEditableTextTarget && Boolean(target.target.closest('td, th'));
         const nativeSelectionOwnsInteraction =
           nativeEditableTextTarget &&
-          !modelOwnsExpandedSelectionReplacementClick &&
-          (!nativeEditableTableCellTarget ||
+          (event.button !== 0 ||
             nativeEditableMultiClick ||
             nativeEditableSelectedTextTarget ||
             nativeEditableModifiedClick);
 
-        if (modelOwnsExpandedSelectionReplacementClick) {
-          action = { type: 'place-native-editable' };
-        } else if (nativeSelectionOwnsInteraction) {
+        if (nativeSelectionOwnsInteraction) {
           action = { type: 'ignore' };
         }
 
@@ -1660,6 +1692,37 @@ export const useRootInteractionController = ({
           startRange,
         };
 
+        if (
+          event.button === 0 &&
+          startRange &&
+          canApplyCoordinateDragSelection(pendingInteractionRef.current)
+        ) {
+          const runtime =
+            rootRuntime ??
+            findMountedEditableDOMRuntime(event.currentTarget) ??
+            getMountedEditableDOMRuntime(focusEditor);
+          if (runtime?.domPhaseScheduler) {
+            updateDragAutoScroll(
+              pendingDragAutoScrollRef,
+              {
+                clientX: event.clientX,
+                clientY: event.clientY,
+                currentRange: startRange,
+                editor: focusEditor,
+                root,
+                rootElement: event.currentTarget,
+                selectionBridge,
+                startRange,
+              },
+              runtime.domPhaseScheduler,
+              () => {
+                pendingInteractionRef.current = ignoreInteraction();
+              },
+              false
+            );
+          }
+        }
+
         if (action.type === 'ignore') {
           if (preventNativeSelection) {
             event.preventDefault();
@@ -1753,7 +1816,7 @@ export const useRootInteractionController = ({
         shouldIgnoreDragTarget(event)
       ) {
         event.preventDefault();
-        stopDragAutoScroll(pendingDragAutoScrollRef);
+        pauseDragAutoScroll(pendingDragAutoScrollRef);
         return;
       }
 
@@ -1823,13 +1886,16 @@ export const useRootInteractionController = ({
               selectionBridge,
               startRange: pendingInteraction.startRange,
             },
-            phaseScheduler
+            phaseScheduler,
+            () => {
+              pendingInteractionRef.current = ignoreInteraction();
+            }
           );
         } else {
           stopDragAutoScroll(pendingDragAutoScrollRef);
         }
       } else {
-        stopDragAutoScroll(pendingDragAutoScrollRef);
+        pauseDragAutoScroll(pendingDragAutoScrollRef);
       }
     },
     [

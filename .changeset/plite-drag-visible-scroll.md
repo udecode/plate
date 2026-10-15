@@ -6,4 +6,4 @@ Scroll a custom pointer drag one step with `editor.api.dom.drag.autoScroll({ x, 
 
 Text selection and block drags near an edge scroll the innermost scroller whose visible edge is under the pointer, including a scroller taller than the window or cut off by an outer scroller, and scroll down near the bottom of a short visible strip.
 
-Keep block selection scrolling at the maximum step while the held pointer stays above or below the visible scroll area.
+Use the same scrolling speed for ordinary text dragging and block selection. Keep scrolling at the maximum step while the held pointer stays above or below the visible scroll area, and stop on release.

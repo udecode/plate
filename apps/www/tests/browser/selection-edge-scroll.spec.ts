@@ -75,7 +75,12 @@ test('block selection scrolls by the text drag step, larger nearer the edge', as
   const errors = recordBrowserRuntimeErrors(page);
   try {
     await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
-    await page.goto('/blocks/playground');
+    await page.goto('/blocks/playground', { waitUntil: 'domcontentloaded' });
+    await createBrowserEditorHarness(
+      page,
+      'selection-scroll-speed',
+      editorRoot(page)
+    ).ready({ editor: 'visible', text: 'AI-Powered Editing' });
     const heading = page.getByRole('heading', {
       name: 'AI-Powered Editing',
       exact: true,
@@ -85,17 +90,19 @@ test('block selection scrolls by the text drag step, larger nearer the edge', as
     const { bottom } = await visibleBounds(page, scroller);
     const steps = { blocks: [] as number[], text: [] as number[] };
     for (const kind of ['text', 'blocks'] as const) {
-      for (const distance of [60, 30, 4]) {
+      for (const distance of [60, 30, 4, -100]) {
         await scroller.evaluate((el) => {
           el.scrollTop = 0;
         });
         const box = await heading.boundingBox();
         if (!box) throw new Error('Missing drag geometry');
+        await heading.click();
+        await expect
+          .poll(() => page.evaluate(() => window.getSelection()?.isCollapsed))
+          .toBe(true);
         const stop = await recordSteps(scroller);
-        // A text drag that starts past the heading's text runs Plite's drag
-        // loop; one that starts on the text is the browser's own.
         await page.mouse.move(
-          kind === 'blocks' ? box.x - 75 : box.x + box.width - 20,
+          kind === 'blocks' ? box.x - 75 : box.x + 60,
           box.y + box.height / 2
         );
         await page.mouse.down();
@@ -107,7 +114,7 @@ test('block selection scrolls by the text drag step, larger nearer the edge', as
       }
     }
     console.info(JSON.stringify(steps));
-    const [outside, middle, near] = steps.blocks;
+    const [outside, middle, near, beyond] = steps.blocks;
     expect(outside, 'outside the edge zone').toBe(0);
     expect(middle, 'block drag mid-zone').toBeGreaterThan(0);
     expect(steps.text[1], 'text drag mid-zone').toBeGreaterThan(0);
@@ -118,6 +125,12 @@ test('block selection scrolls by the text drag step, larger nearer the edge', as
       Math.abs(middle - steps.text[1]),
       'text and block drags step alike mid-zone'
     ).toBeLessThanOrEqual(1);
+    expect(steps.text[2], 'text and block drags step alike near the edge').toBe(
+      near
+    );
+    expect(steps.text[3], 'text and block drags step alike outside').toBe(
+      beyond
+    );
     errors.assertNone();
   } finally {
     await page.mouse.up();
@@ -127,13 +140,17 @@ test('block selection scrolls by the text drag step, larger nearer the edge', as
 
 for (const kind of ['text', 'blocks'] as const) {
   for (const direction of ['down', 'up'] as const) {
-    test(`${kind} selection keeps scrolling with a stationary pointer ${direction}${kind === 'blocks' ? ' outside the viewport' : ''}`, async ({
+    test(`${kind} selection keeps scrolling with a stationary pointer ${direction} outside the viewport`, async ({
       page,
     }, testInfo) => {
       const errors = recordBrowserRuntimeErrors(page);
       await page.addInitScript(() => localStorage.setItem('theme', 'dark'));
-      await page.goto('/blocks/playground');
+      await page.goto('/blocks/playground', { waitUntil: 'domcontentloaded' });
       const root = editorRoot(page);
+      await createBrowserEditorHarness(page, testInfo.testId, root).ready({
+        editor: 'visible',
+        text: 'AI-Powered Editing',
+      });
       const heading = page.getByRole('heading', {
         name: direction === 'up' ? 'Dates and Equations' : 'AI-Powered Editing',
         exact: true,
@@ -152,19 +169,17 @@ for (const kind of ['text', 'blocks'] as const) {
       };
       const end = {
         x: box.x + 120,
-        y:
-          kind === 'blocks'
-            ? direction === 'down'
-              ? page.viewportSize()!.height + 100
-              : -100
-            : direction === 'down'
-              ? bounds.bottom - 2
-              : bounds.top + 2,
+        y: direction === 'down' ? page.viewportSize()!.height + 100 : -100,
       };
       try {
         await page.mouse.move(start.x, start.y);
         await page.mouse.down();
-        await page.mouse.move(end.x, end.y, { steps: 16 });
+        if (kind === 'text') {
+          await page.mouse.move(start.x + 1, start.y);
+        }
+        await page.mouse.move(end.x, end.y, {
+          steps: kind === 'text' ? 1 : 16,
+        });
         const initial = await readSelection(root);
         const samples = [];
         for (let i = 0; i < 5; i++) {
@@ -254,8 +269,7 @@ for (const kind of ['text', 'blocks'] as const) {
         }
         await page.mouse.move(
           end.x,
-          direction === 'down' ? bounds.top + 2 : bounds.bottom - 2,
-          { steps: 8 }
+          direction === 'down' ? -100 : page.viewportSize()!.height + 100
         );
         await expect
           .poll(async () => {
@@ -266,12 +280,12 @@ for (const kind of ['text', 'blocks'] as const) {
               : current - atEdge.scrollTop;
           })
           .toBeGreaterThan(50);
-        if (kind === 'blocks') {
-          await page.mouse.move(
-            end.x,
-            direction === 'down' ? -100 : page.viewportSize()!.height + 100
-          );
-        }
+        await page.mouse.move(end.x, (bounds.top + bounds.bottom) / 2);
+        await page.waitForTimeout(100);
+        const centered = await readSelection(root);
+        await page.waitForTimeout(200);
+        expect(await readSelection(root)).toEqual(centered);
+        await page.mouse.move(end.x, end.y);
         await page.mouse.up();
         await page.waitForTimeout(100);
         const released = await readSelection(root);
@@ -281,15 +295,15 @@ for (const kind of ['text', 'blocks'] as const) {
           await expect(
             page.locator('[data-slot="node-selection-drag"]')
           ).toHaveCount(0);
-          await heading.scrollIntoViewIfNeeded();
-          const headingKey = await heading.getAttribute('data-editor-node-key');
-          await heading.click();
-          await page.keyboard.press('End');
-          await page.keyboard.type('!');
-          await expect(
-            root.locator(`[data-editor-node-key="${headingKey}"]`)
-          ).toContainText('!');
         }
+        await heading.scrollIntoViewIfNeeded();
+        const headingKey = await heading.getAttribute('data-editor-node-key');
+        await heading.click();
+        await page.keyboard.press('End');
+        await page.keyboard.type('!');
+        await expect(
+          root.locator(`[data-editor-node-key="${headingKey}"]`)
+        ).toContainText('!');
         errors.assertNone();
       } finally {
         await page.mouse.up();
@@ -298,6 +312,52 @@ for (const kind of ['text', 'blocks'] as const) {
     });
   }
 }
+
+test('text drag ownership preserves native word and modified selection', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/blocks/playground', { waitUntil: 'domcontentloaded' });
+    await createBrowserEditorHarness(
+      page,
+      'native-text-clicks',
+      editorRoot(page)
+    ).ready({ editor: 'visible', text: 'Collaborative Editing' });
+    const heading = page.getByRole('heading', {
+      name: 'Collaborative Editing',
+      exact: true,
+    });
+    const text = heading.locator('[data-editor-string]');
+    await expect(text).toBeVisible();
+    const box = await text.boundingBox();
+    if (!box) throw new Error('Missing text geometry');
+    const y = box.y + box.height / 2;
+    await page.mouse.dblclick(box.x + 20, y);
+    await expect
+      .poll(() => page.evaluate(() => window.getSelection()?.toString().trim()))
+      .toBe('Collaborative');
+    await page.keyboard.down('Shift');
+    await page.mouse.click(box.x + box.width - 2, y);
+    await page.keyboard.up('Shift');
+    await expect
+      .poll(() => page.evaluate(() => window.getSelection()?.toString().trim()))
+      .toBe('Collaborative Editing');
+    await page.mouse.click(box.x + 20, y);
+    await expect
+      .poll(() => page.evaluate(() => window.getSelection()?.isCollapsed))
+      .toBe(true);
+    const headingKey = await heading.getAttribute('data-editor-node-key');
+    await page.keyboard.type('x');
+    await expect(
+      page.locator(`[data-editor-node-key="${headingKey}"]`)
+    ).toContainText('x');
+    errors.assertNone();
+  } finally {
+    await page.keyboard.up('Shift');
+    errors.stop();
+  }
+});
 
 test('block marquee stays inside the editor viewport', async ({
   page,
