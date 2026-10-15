@@ -20,6 +20,7 @@ export type {
   EditorUpdateTransactionProvider,
 } from '../interfaces/editor';
 
+export { assertEditorOptions } from './editor-options';
 export { failInvariant } from './fail-invariant';
 
 export { getEditorCommitSnapshot } from '../core/commit';
@@ -184,6 +185,7 @@ export {
   toPublicRoot,
 } from '../core/public-root';
 export {
+  canPlaceBlocksAtPath,
   createDetachedEditorSchema,
   getCompiledEditorSchemaFromApi,
 } from '../core/editor-schema';
@@ -309,6 +311,5 @@ export { isObject } from '../utils/is-object';
 export {
   getRangeRoot,
   getReaderRange,
-  isMetadataRootKey,
   MAIN_ROOT_KEY,
 } from './root-location';

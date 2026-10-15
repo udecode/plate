@@ -248,6 +248,23 @@ const fixture = (count = 3, container?: HTMLElement) => {
 };
 
 describe('node selection gesture lifetime', () => {
+  it('discards pending movement when pointer capture is lost', () => {
+    const f = fixture();
+    try {
+      f.pointer('pointerDown', f.editable);
+      f.pointer('pointerMove', f.ownerDocument, 80);
+      f.flush();
+      f.pointer('pointerMove', f.ownerDocument, 280);
+      fireEvent.lostPointerCapture(f.editable, { pointerId: 41 });
+      f.flush();
+      expect(f.selected()).toEqual(['block 0']);
+      expect(f.rectangle()).toBe(false);
+      expect(f.editable.hasPointerCapture(41)).toBe(false);
+    } finally {
+      f.close();
+    }
+  });
+
   it('cancels pending movement without publishing or replaying a selection', () => {
     const f = fixture();
     try {
@@ -258,6 +275,7 @@ describe('node selection gesture lifetime', () => {
       f.flush();
       expect(f.selected()).toEqual(['block 1']);
       expect(f.rectangle()).toBe(false);
+      expect(f.editable.hasPointerCapture(41)).toBe(false);
     } finally {
       f.close();
     }
@@ -275,6 +293,7 @@ describe('node selection gesture lifetime', () => {
         f.flush();
         expect(f.selected()).toEqual(['block 1']);
         expect(f.rectangle()).toBe(false);
+        expect(f.editable.hasPointerCapture(41)).toBe(false);
       } finally {
         f.close();
       }
@@ -362,6 +381,7 @@ describe('node selection gesture lifetime', () => {
       f.flush();
       expect(f.rectangle()).toBe(false);
       expect(f.selected()).toEqual([]);
+      expect(f.editable.hasPointerCapture(41)).toBe(false);
     } finally {
       f.close();
     }
@@ -398,6 +418,7 @@ describe('node selection gesture lifetime', () => {
       f.flush();
       expect(f.editor.read.lastCommit()).toBe(change);
       expect(f.rectangle()).toBe(false);
+      expect(f.editable.hasPointerCapture(41)).toBe(false);
     } finally {
       f.close();
     }
@@ -556,6 +577,24 @@ describe('node selection scroll frames', () => {
       f.pointer('pointerMove', f.ownerDocument, 760);
       f.flush();
       expect(f.selected()).toEqual(['block 5', 'block 6']);
+    } finally {
+      f.close();
+    }
+  });
+
+  it('updates hits when a block grows inside a fixed-size editable', () => {
+    const f = fixture();
+    try {
+      f.pointer('pointerDown', f.editable);
+      f.pointer('pointerMove', f.ownerDocument, 150);
+      f.flush();
+      f.flush();
+      expect(f.selected()).toEqual(['block 0', 'block 1']);
+
+      f.grow(0, 160);
+      f.flush();
+      f.flush();
+      expect(f.selected()).toEqual(['block 0']);
     } finally {
       f.close();
     }

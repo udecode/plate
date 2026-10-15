@@ -138,22 +138,20 @@ export const mapDraft = (
   draft: readonly Descendant[],
   after: readonly Descendant[],
   frame?: Readonly<{
-    change: DocumentChange;
-    root: RootKey;
+    mapPosition: (
+      position: number,
+      association: 'backward' | 'forward'
+    ) => number | null;
     stored: readonly Descendant[];
   }>
 ): DraftMap => {
   // A command frame wrote another document than the draft's, so the landing
-  // maps to the stored document and then through the frame's own change.
+  // maps to the stored document and then to what the frame wrote.
   if (frame) {
     const toStored = mapDraft(draft, frame.stored);
     const stored = DocumentIndex.fromValue(frame.stored);
     const next = DocumentIndex.fromValue(after);
-    const through = (position: number, association: 'backward' | 'forward') =>
-      frame.change.mapPosition(position, {
-        association,
-        ...(frame.root === 'main' ? {} : { root: frame.root }),
-      });
+    const through = frame.mapPosition;
 
     return {
       path: (path) => {

@@ -328,7 +328,7 @@ export function defineMediaPlugin(
           return delegate ? next.after(result) : result;
         }),
       ],
-      update: ({ tx }) => {
+      update: ({ editor, tx }) => {
         const applyMediaInsertion = (
           mode: 'insert' | 'upsert',
           input: MediaInsertInput,
@@ -375,6 +375,7 @@ export function defineMediaPlugin(
 
           return (
             applyBlockInsertion({
+              editor,
               insert,
               matches: (block) =>
                 block.type === type &&

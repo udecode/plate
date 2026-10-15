@@ -63,7 +63,6 @@ test('beforeinput probes semantic text commands on the mounted owner at the DOM 
     initialValue: [
       { children: [{ text: '' }], type: 'paragraph' },
     ] satisfies InitialValue,
-    selection: null,
   });
   const mountedEditor = createEditorView(
     editor

@@ -1,28 +1,31 @@
-import { createInternalDocumentChange } from '../../core/change/document-change';
-import { DocumentIndex } from '../../core/change/document-index';
-import { RootChange } from '../../core/change/root-change';
-import {
-  encodeNodes,
-  type JsonEditorValue,
-  type JsonNode,
-} from '../../core/change/tokens';
+import { copyFields } from '../../core/change/lazy-root';
 import { canonicalJsonKey } from '../../core/change/transform';
 import { definePlugin } from '../../core/plugin';
+import {
+  canonicalRecordJson,
+  getValueRecords,
+  NO_RECORD_OPS,
+  type RecordOps,
+  type RecordStore,
+  withValueRecords,
+} from '../../core/record-store';
 import { hashSchemaIdentityString } from '../../core/schema-compiler';
-import { property, schema } from '../../core/schema-definition';
 import type { MarkBase } from '../tree/marks';
 
-export const CONTEXTS_ROOT = '$authored-contexts';
-export const VERDICTS_ROOT = '$authored-verdicts';
+export const CONTEXTS = 'authored-contexts';
+export const VERDICTS = 'authored-verdicts';
 
-const CONTEXT_TYPE = 'authored-context';
-const VERDICT_TYPE = 'authored-verdict';
-
+/**
+ * One incarnation's key, the JSON text of its change and its `inc`, or of its
+ * change and its time when it has no `inc`. JSON keeps an `inc` apart from a
+ * time and one change's key from another's.
+ */
 export const incarnationOf = ({
   at,
   change,
   inc,
-}: Pick<MarkBase, 'at' | 'change' | 'inc'>) => inc ?? `${change}@${at}`;
+}: Pick<MarkBase, 'at' | 'change' | 'inc'>) =>
+  JSON.stringify(inc === undefined ? [change, at] : [change, inc]);
 
 /** Immutable: rests on the members of `base`, then on `member`. */
 export type ContextRecord = Readonly<{
@@ -34,6 +37,8 @@ export type ContextRecord = Readonly<{
 export type Verdict = 'accept' | 'reject';
 
 export type VerdictRecord = Readonly<{
+  /** A token minted per decision, so two peers' decisions get two keys. */
+  decision: string;
   member: Pick<MarkBase, 'at' | 'change' | 'inc'>;
   verdict: Verdict;
 }>;
@@ -57,22 +62,39 @@ export const contextRecordOf = (
     member: memberOf(member),
   });
 
-export const contextElementOf = ({ base, ctx, member }: ContextRecord) => ({
-  ...member,
-  ...(base === null ? {} : { base }),
-  children: [{ text: '' }],
-  ctx,
-  type: CONTEXT_TYPE,
-});
+// A verdict's id is the JSON text of `["v", change, inc, at, verdict,
+// decision]`, with `at` null when `inc` names the incarnation, so the text
+// before its verdict names its incarnation and a prefix probe finds every
+// verdict on one incarnation or one change.
+const verdictPrefixOf = (
+  change: string,
+  inc: string | null,
+  at: number | null
+) => `${JSON.stringify(['v', change, inc, at]).slice(0, -1)},`;
 
-export const verdictElementOf = ({ member, verdict }: VerdictRecord) => ({
-  at: member.at,
-  change: member.change,
-  ...(member.inc === undefined ? {} : { inc: member.inc }),
-  children: [{ text: '' }],
-  type: VERDICT_TYPE,
-  verdict,
-});
+export const verdictIdOf = ({ decision, member, verdict }: VerdictRecord) =>
+  `${verdictPrefixOf(
+    member.change,
+    member.inc ?? null,
+    member.inc === undefined ? member.at : null
+  )}${JSON.stringify(verdict)},${JSON.stringify(decision)}]`;
+
+/** The id prefix of the verdicts on `incarnation`, or of one verdict on it. */
+export const verdictProbeOf = (incarnation: string, verdict?: Verdict) => {
+  const [change, which] = JSON.parse(incarnation) as [string, number | string];
+  const prefix =
+    typeof which === 'string'
+      ? verdictPrefixOf(change, which, null)
+      : verdictPrefixOf(change, null, which);
+
+  return verdict === undefined
+    ? prefix
+    : `${prefix}${JSON.stringify(verdict)},`;
+};
+
+/** The id prefix of every verdict on any incarnation of `change`. */
+export const changeVerdictProbeOf = (change: string) =>
+  `["v",${JSON.stringify(change)},`;
 
 const isRecordNode = (
   value: unknown
@@ -82,9 +104,9 @@ const isRecordNode = (
 const isText = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0;
 
-const parseMember = (
-  node: Readonly<Record<string, unknown>>
-): MarkBase | null => {
+const parseMember = (node: unknown): MarkBase | null => {
+  if (!isRecordNode(node)) return null;
+
   const { at, author, change, inc } = node;
 
   return typeof at === 'number' &&
@@ -96,127 +118,104 @@ const parseMember = (
     : null;
 };
 
-export const parseContextElement = (node: unknown): ContextRecord | null => {
-  if (!isRecordNode(node) || node.type !== CONTEXT_TYPE) return null;
+/** A stored context, whose id is its content hash. */
+export const parseContext = (
+  ctx: string,
+  json: string
+): ContextRecord | null => {
+  const node: unknown = JSON.parse(json);
 
-  const member = parseMember(node);
-  const { base, ctx } = node;
+  if (!isRecordNode(node)) return null;
 
-  return member && isText(ctx) && (base === undefined || isText(base))
+  const member = parseMember(node.member);
+  const { base } = node;
+
+  return member && (base === undefined || isText(base))
     ? Object.freeze({ base: base ?? null, ctx, member })
     : null;
 };
 
-export const parseVerdictElement = (node: unknown): VerdictRecord | null => {
-  if (!isRecordNode(node) || node.type !== VERDICT_TYPE) return null;
+/** A stored verdict, refused unless its id names its content. */
+export const parseVerdict = (
+  id: string,
+  json: string
+): VerdictRecord | null => {
+  const node: unknown = JSON.parse(json);
 
-  const { at, change, inc, verdict } = node;
+  if (!isRecordNode(node)) return null;
 
-  return typeof at === 'number' &&
-    Number.isFinite(at) &&
-    isText(change) &&
-    (inc === undefined || isText(inc)) &&
-    (verdict === 'accept' || verdict === 'reject')
-    ? Object.freeze({
-        member: Object.freeze({
-          at,
-          change,
-          ...(inc === undefined ? {} : { inc }),
-        }),
-        verdict,
-      })
-    : null;
+  const { at, change, decision, inc, verdict } = node;
+
+  if (
+    typeof at !== 'number' ||
+    !Number.isFinite(at) ||
+    !isText(change) ||
+    !isText(decision) ||
+    (inc !== undefined && !isText(inc)) ||
+    (verdict !== 'accept' && verdict !== 'reject')
+  ) {
+    return null;
+  }
+
+  const record: VerdictRecord = Object.freeze({
+    decision,
+    member: Object.freeze({
+      at,
+      change,
+      ...(inc === undefined ? {} : { inc }),
+    }),
+    verdict,
+  });
+
+  return verdictIdOf(record) === id ? record : null;
 };
 
-const record = schema.content.text({ default: 'text', min: 1 });
+/** The puts that store `records` in the contexts set. */
+export const putContexts = (records: Iterable<ContextRecord>): RecordOps => {
+  const writes = new Map<string, string>();
+
+  for (const { base, ctx, member } of records) {
+    writes.set(
+      ctx,
+      canonicalRecordJson(base === null ? { member } : { base, member })
+    );
+  }
+
+  return writes.size === 0 ? NO_RECORD_OPS : new Map([[CONTEXTS, writes]]);
+};
+
+/** The puts that store `records` in the verdicts set. */
+export const putVerdicts = (records: Iterable<VerdictRecord>): RecordOps => {
+  const writes = new Map<string, string>();
+
+  for (const record of records) {
+    const { decision, member, verdict } = record;
+
+    writes.set(
+      verdictIdOf(record),
+      canonicalRecordJson({ ...member, decision, verdict })
+    );
+  }
+
+  return writes.size === 0 ? NO_RECORD_OPS : new Map([[VERDICTS, writes]]);
+};
+
+/** `value` with its records replaced by `store`. */
+export const withStore = <V extends object>(value: V, store: RecordStore): V =>
+  withValueRecords(
+    copyFields({}, value as Readonly<Record<string, unknown>>, [
+      'records',
+    ]) as V,
+    store
+  );
 
 /**
- * The roots that hold review contexts and verdicts. `authored()` depends on
- * it, so a host that mirrors plugin dependencies, such as Plate, names it.
+ * The record sets that hold review contexts and verdicts. `authored()`
+ * depends on it, so a host that mirrors plugin dependencies, such as Plate,
+ * names it.
  */
 export const authoredRecords = definePlugin('authored-records', {
   schema: {
-    elements: {
-      'authored-context': {
-        content: record,
-        properties: {
-          at: property.number({ required: true }),
-          author: property.string({ required: true }),
-          base: property.string(),
-          change: property.string({ required: true }),
-          ctx: property.string({ required: true }),
-          inc: property.string(),
-        },
-      },
-      'authored-verdict': {
-        content: record,
-        properties: {
-          at: property.number({ required: true }),
-          change: property.string({ required: true }),
-          inc: property.string(),
-          verdict: property.enum(['accept', 'reject'], { required: true }),
-        },
-      },
-    },
-    roots: {
-      [CONTEXTS_ROOT]: {
-        content: schema.content.type(CONTEXT_TYPE),
-        history: 'retain',
-      },
-      [VERDICTS_ROOT]: schema.content.type(VERDICT_TYPE),
-    },
+    records: { [CONTEXTS]: { history: 'retain' }, [VERDICTS]: {} },
   },
 });
-
-export const appendRecords = (
-  value: JsonEditorValue,
-  root: string,
-  records: readonly JsonNode[]
-) => {
-  if (records.length === 0) return null;
-
-  const existing = value.roots?.[root];
-  const index = DocumentIndex.fromValue(existing ?? []);
-
-  return createInternalDocumentChange(
-    new Map([
-      [
-        root,
-        RootChange.create(index, {
-          from: index.childPosition([], existing?.length ?? 0),
-          insert: encodeNodes(records).slice,
-        }),
-      ],
-    ]),
-    existing ? {} : { createRoots: [root] }
-  );
-};
-
-export const carryRecords = (
-  before: JsonEditorValue,
-  after: JsonEditorValue
-) => {
-  const records = new Map<string, readonly JsonNode[]>();
-  let committed = before;
-
-  for (const root of [CONTEXTS_ROOT, VERDICTS_ROOT]) {
-    const stored = before.roots?.[root] ?? [];
-    const held = after.roots?.[root] ?? [];
-
-    if (held === stored) continue;
-
-    const keys = new Set(stored.map(canonicalJsonKey));
-    const carried = held.filter(
-      (record) => !keys.has(canonicalJsonKey(record))
-    );
-
-    if (carried.length === 0) continue;
-    records.set(root, carried);
-    committed = {
-      ...committed,
-      roots: { ...committed.roots, [root]: [...stored, ...carried] },
-    };
-  }
-
-  return { committed, records };
-};

@@ -30,7 +30,7 @@ import {
   mergeAnchorHistoryRecovery,
   stageAnchorHistoryRecovery,
 } from '../core/anchor-state';
-import { filterDocumentChangeRoots } from '../core/change/document-change';
+import { filterDocumentChangeRecordSets } from '../core/change/document-change';
 import { getEditorCommitStartedAt } from '../core/commit';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
@@ -46,7 +46,6 @@ import {
   registerEditorHistoryRuntime,
   registerEditorTransactionGuard,
 } from '../core/public-state';
-import { getCompiledSchemaRootSets } from '../core/schema-compiler';
 import { createEditorEffect } from '../core/transaction-values';
 import { type Batch, History, type HistoryJSON } from './history';
 import { decodeHistoryValue, encodeHistoryValue } from './history-codec';
@@ -85,7 +84,6 @@ import {
   restoreHistoryState,
   settlePendingHistoryReplay,
   withHistoryStateDraft,
-  withoutRetainedRoots,
   withPublishedHistoryState,
   writeHistory,
 } from './history-state';
@@ -464,13 +462,12 @@ const canMergeNativeHistory = (
 const prepareHistoryBatch = <V extends Value>(
   action: DocumentChange,
   commit: EditorCommit<V>,
-  effects: readonly EditorEffect[],
-  retained: ReadonlySet<string>
+  effects: readonly EditorEffect[]
 ): Readonly<{
   batch: Batch<V>;
   group: HistoryBatchGroup | null;
 }> | null => {
-  const baseGroup = createHistoryBatchGroup(commit, retained);
+  const baseGroup = createHistoryBatchGroup(commit);
   const native = readNativeHistoryGrouping(commit);
   const group: HistoryBatchGroup | null = baseGroup
     ? Object.freeze({ ...baseGroup, ...(native ? { native } : {}) })
@@ -544,7 +541,7 @@ const createHistoryPlugin = <
   options: HistoryOptions<TEnabled> = {}
 ): HistoryPlugin<TEnabled> => {
   const reduceHistory = ({
-    after: committed,
+    after,
     commit,
     editor,
     schema,
@@ -564,14 +561,13 @@ const createHistoryPlugin = <
       return undefined;
     }
 
-    const { retained } = getCompiledSchemaRootSets(
-      getCompiledEditorSchema(editor)
-    );
+    // Undo and redo never touch a retained record set.
+    const { recordSets } = getCompiledEditorSchema(editor);
     const kept = (change: DocumentChange) =>
-      retained.size === 0
-        ? change
-        : filterDocumentChangeRoots(change, (root) => !retained.has(root));
-    const after = withoutRetainedRoots(committed, retained);
+      filterDocumentChangeRecordSets(
+        change,
+        (set) => recordSets.get(set)?.history !== 'retain'
+      );
     const changes = kept(commit.changes);
     const inverse = kept(commit.inverseChanges);
 
@@ -716,7 +712,7 @@ const createHistoryPlugin = <
       );
     }
 
-    const prepared = prepareHistoryBatch(inverse, commit, effects, retained);
+    const prepared = prepareHistoryBatch(inverse, commit, effects);
 
     if (!prepared) return undefined;
 

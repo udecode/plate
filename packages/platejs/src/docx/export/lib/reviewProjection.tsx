@@ -2,11 +2,11 @@ import type { AuthoredMark, AuthoredReview } from '../../../authored';
 import {
   ElementApi,
   type Descendant,
+  type EditorDocumentRecords,
   type EditorDocumentValue,
   type Path,
   type Value,
 } from '../../../core';
-import { isMetadataRootKey } from '../../../facade';
 import { parseDocxHtml } from '../../internal/domParser';
 import type { DocxDiagnostic } from '../../internal/types';
 
@@ -41,7 +41,7 @@ export type PreparedDocxReview = Readonly<{
   bindings: readonly Readonly<{ end: string; nodes: Value; start: string }>[];
   diagnostics: readonly DocxDiagnostic[];
   html: string;
-  roots: Readonly<Record<string, Value>>;
+  records: EditorDocumentRecords | undefined;
   runs: readonly ReviewRun[];
 }>;
 
@@ -124,9 +124,10 @@ export const createReviewProjection = (
   const rootValue = (nodes: Descendant[]): Value =>
     nodes.filter((node) => ElementApi.isElement(node));
   const roots = Object.fromEntries(
-    Object.entries(stored.roots ?? {})
-      .filter(([root]) => !isMetadataRootKey(root))
-      .map(([root, nodes]) => [root, rootValue(build(nodes, root, []))])
+    Object.entries(stored.roots ?? {}).map(([root, nodes]) => [
+      root,
+      rootValue(build(nodes, root, [])),
+    ])
   );
 
   return Object.freeze({
@@ -270,11 +271,7 @@ export const applyReviewProjection = (
     bindings: Object.freeze(bindings),
     diagnostics: Object.freeze(diagnostics),
     html: document.body.innerHTML,
-    roots: Object.fromEntries(
-      Object.entries(projection.stored.roots ?? {}).filter(([root]) =>
-        isMetadataRootKey(root)
-      )
-    ),
+    records: projection.stored.records,
     runs: Object.freeze(runs),
   });
 };

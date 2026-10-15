@@ -12,13 +12,13 @@ description: \platejs 的 API 参考文档。
 
 - `at`：明确的插入位置。
 - `before`：当前文档中的块 key；使用此选项时省略 `at` 和 `after`。
-- `after`：当前文档中的源块目标；使用此选项时省略 `at`。
-- `replaceEmpty`：在源块之后插入时，替换空的、可编辑的文本块。结构块和原子块保持不变。
+- `after`：当前文档中的源块目标；使用此选项时省略 `at`。省略 `at` 和 `after` 时，插入位置在光标所在块之后；如果某个容器隐藏了该块之后的内容，例如标题所在的折叠 Details，则插入到该容器之后。
+- `replaceEmpty`：在源块之后插入时，替换空的、可编辑的文本块。结构块、原子块，以及不属于块内容的空块（例如 Details 标题）保持不变。
 - `select`：选择插入的内容。
 
 ### `createEditor`
 
-生成一个新的 `Editor` 实例，使用一组插件及其配置进行初始化。要渲染已有的编辑器，请将其传给 `EditorRoot`。
+生成一个新的 `Editor` 实例，使用一组插件及其配置进行初始化。要渲染已有的编辑器，请将其传给 `EditorRoot`。传入此表未列出的选项会抛出错误。
 
 <API name="createEditor">
 <APIOptions type="CreateEditorOptions">
@@ -30,7 +30,7 @@ description: \platejs 的 API 参考文档。
   </APIItem>
   <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: Editor }) => EditorValueInput)" optional>
     同步初始文档、持久化的 `{ document, schema, selection? }` envelope 或主 root
-    数组。文档只包含 `children`、`roots` 和 `meta`；selection 请通过 `selection`
+    数组。文档只包含 `children`、`roots`、`meta` 和 `records`；selection 请通过 `selection`
     传入。
   </APIItem>
   <APIItem name="autoSelect" type="'end' | 'start' | boolean" optional>
@@ -40,11 +40,27 @@ description: \platejs 的 API 参考文档。
     - `false`: 不选中任何内容
     - `'start'`: 选中编辑器开头
   </APIItem>
+  <APIItem name="affinity" type="boolean" optional>
+    启用 mark 和元素的 affinity。
+    - **默认值:** `true`
+  </APIItem>
   <APIItem name="maxLength" type="number" optional>
     限制用户输入、片段插入和节点插入的最大字符数。
   </APIItem>
+  <APIItem name="navigationFeedback" type="object | boolean" optional>
+    内置导航反馈插件的配置。
+    <APISubList>
+      <APISubListItem parent="navigationFeedback" name="duration" type="number" optional>
+        默认闪烁时长，单位为毫秒。
+        - **默认值:** `1600`
+      </APISubListItem>
+    </APISubList>
+  </APIItem>
   <APIItem name="selection" type="TSelection" optional>
     编辑器的初始选区。
+  </APIItem>
+  <APIItem name="initialSelection" type="TSelection" optional>
+    初始模型选区，未设置 `selection` 时使用。
   </APIItem>
   <APIItem name="schema" type="EditorApplicationSchema" optional>
     应用 schema policy 和可选的命名持久化谱系。省略 `root` 时使用标准段落 root。
@@ -53,6 +69,13 @@ description: \platejs 的 API 参考文档。
   <APIItem name="shouldNormalizeEditor" type="boolean" optional>
     当 `true` 时，将规范化传递给 `editor` 的初始 `value`。
     - **默认值:** `false`
+  </APIItem>
+  <APIItem name="skipInitialization" type="boolean" optional>
+    当 `true` 时，跳过 `initialValue`、选区和规范化，例如文档由 Yjs 协作管理时。
+    - **默认值:** `false`
+  </APIItem>
+  <APIItem name="lifecycleErrorSink" type="(error: EditorLifecycleError) => void" optional>
+    接收插件 lifecycle 观察者抛出的错误。
   </APIItem>
   <APIItem name="api" type="object" optional>
     编辑器的 API 方法。
@@ -67,8 +90,8 @@ description: \platejs 的 API 参考文档。
   <APIItem name="inject" type="object" optional>
     编辑器的注入配置。
   </APIItem>
-  <APIItem name="options" type="object" optional>
-    编辑器的附加选项。
+  <APIItem name="initialState" type="object" optional>
+    编辑器根插件的初始状态。
   </APIItem>
   <APIItem name="override" type="object" optional>
     编辑器的覆盖配置。
@@ -81,9 +104,6 @@ description: \platejs 的 API 参考文档。
   </APIItem>
   <APIItem name="shortcuts" type="object" optional>
     编辑器的键盘快捷键。
-  </APIItem>
-  <APIItem name="transforms" type="object" optional>
-    编辑器的转换函数。
   </APIItem>
   <APIItem name="userId" type="string" optional>
     编辑器写入和评论时使用的用户，会记录为 authored changes 的作者，并可通过 `editor.userId` 读取。
@@ -142,8 +162,8 @@ definition 会把 `plugins` 和 `schema` 编译一次，生成供所有步骤使
 target。缺失中间步骤或历史身份漂移都会报错。
 
 每个步骤接收 `{ document, legacy, from, to, target }`，返回
-`{ document, legacy?, mapSelection? }`。`document` 只包含 `children`、`meta` 和
-`roots`，其类型会拒绝其他 key。`legacy` 保存已存储文档的其他顶层字段，直到某个步骤
+`{ document, legacy?, mapSelection? }`。`document` 只包含 `children`、`meta`、`roots` 和
+`records`，其类型会拒绝其他 key。`legacy` 保存已存储文档的其他顶层字段，直到某个步骤
 提升它们；省略 `legacy` 的步骤会原样传递它。
 
 ### `migrateDocument`

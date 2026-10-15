@@ -7,7 +7,7 @@ import {
   createInternalDocumentChange,
   type DocumentChange,
   getInternalDocumentChangeEntries,
-  valueRoot,
+  valueRootIndex,
 } from '../../core/change/document-change';
 import {
   DocumentIndex,
@@ -16,6 +16,7 @@ import {
 import { type JsonRecord, jsonEqual } from '../../core/change/json';
 import {
   applyPropertyModifications,
+  mapRootChangePositionBackward,
   RootChange,
   type RootChangeSection,
   type SectionData,
@@ -35,6 +36,7 @@ import {
   normalizeSetValues,
   type PropertyModification,
 } from '../../core/change/transform';
+import type { CommandProjection } from '../../core/command-document';
 import type { EditorJsonValue } from '../../interfaces/json';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
@@ -50,7 +52,7 @@ import {
   readMembers,
   withMembers,
 } from './marks';
-import { isTextBlock } from './resolve';
+import { followsOf, isTextBlock } from './resolve';
 
 export type AuthoredRecordInput = Readonly<{
   before: JsonEditorValue;
@@ -87,8 +89,11 @@ export type AuthoredRecordInput = Readonly<{
   forcedChangeId?: string | null;
   /** The forced change's incarnation, when it is not `<change>@<now>`. */
   inc?: string | null;
-  /** The steps start with a command frame's seed. */
-  framed?: boolean;
+  /**
+   * The projection of `before` a command frame's commands wrote the steps on,
+   * which hides content they never saw.
+   */
+  projection?: CommandProjection;
   /** Whether an element with `props` is inline, so a split of it records a cut. */
   isInline: (props: Readonly<JsonRecord>) => boolean;
   /** Whether a split's continued element keeps property `key` of `props`. */
@@ -247,60 +252,20 @@ const bareContextAt = (index: DocumentIndex, position: number) =>
 
 const identity: PosMap = (position) => position;
 
-const mapBack = (change: RootChange, position: number, assoc: -1 | 1) => {
-  let after = 0;
-  let before = 0;
-
-  for (let index = 0; index < change.sections.length; index += 2) {
-    const length = change.sections[index];
-    const inserted = change.sections[index + 1];
-
-    if (inserted < 0) {
-      if (after + length > position) return before + position - after;
-      after += length;
-      before += length;
-      continue;
-    }
-
-    const end = after + inserted;
-
-    if (end > position || (end === position && assoc < 0 && inserted === 0)) {
-      return position === after || assoc < 0 ? before : before + length;
-    }
-    after = end;
-    before += length;
-  }
-
-  return before + position - after;
-};
-
-const mapForward = (change: RootChange, position: number) => {
-  let after = 0;
-  let before = 0;
-
-  for (let index = 0; index < change.sections.length; index += 2) {
-    const length = change.sections[index];
-    const inserted = change.sections[index + 1];
-
-    if (before + length > position) {
-      return inserted < 0 ? after + position - before : after;
-    }
-    before += length;
-    after += inserted < 0 ? length : inserted;
-  }
-
-  return after + position - before;
-};
-
 /**
  * The accepted position at the far side of an empty accepted leaf whose
- * stored letters `change` hid, with the stored edge of that leaf on the side
- * of `caret`, which sits at one end of those letters.
+ * stored letters the projection hid, with the stored edge of that leaf on the
+ * side of `caret`, which sits at one end of those letters.
  */
-const farEdge = (change: RootChange, index: DocumentIndex, caret: number) => {
-  const at = mapForward(change, caret);
-  const from = mapBack(change, at, -1);
-  const to = mapBack(change, at, 1);
+const farEdge = (
+  toProjected: (position: number) => number,
+  toStored: (position: number, assoc: -1 | 1) => number,
+  index: DocumentIndex,
+  caret: number
+) => {
+  const at = toProjected(caret);
+  const from = toStored(at, -1);
+  const to = toStored(at, 1);
 
   if (from === to || (caret !== from && caret !== to)) return null;
 
@@ -311,8 +276,8 @@ const farEdge = (change: RootChange, index: DocumentIndex, caret: number) => {
     open?.kind !== 'open' ||
     open.nodeKind !== 'text' ||
     close?.kind !== 'close' ||
-    mapBack(change, at - 1, 1) !== from - 1 ||
-    mapBack(change, at + 1, -1) !== to + 1
+    toStored(at - 1, 1) !== from - 1 ||
+    toStored(at + 1, -1) !== to + 1
   ) {
     return null;
   }
@@ -626,9 +591,9 @@ export const recordAuthoredSteps = (
       fold = {
         composed: null,
         frameIndex: null,
-        index: DocumentIndex.fromValue(
-          created ? [] : valueRoot(input.before, root)
-        ),
+        index: created
+          ? DocumentIndex.fromValue([])
+          : valueRootIndex(input.before, root),
         leftward: true,
         map: identity,
         created,
@@ -639,6 +604,60 @@ export const recordAuthoredSteps = (
 
     return fold;
   };
+
+  if (input.projection) {
+    const { indexes, map } = input.projection;
+
+    for (const root of map.roots) {
+      const fold = foldOf(root);
+      const toStored = (position: number, assoc: -1 | 1) =>
+        map.toStored(root, position, assoc);
+      const caretAt =
+        input.selectionBefore?.root === root
+          ? input.selectionBefore.position
+          : null;
+      // Where the projection hid every letter of a leaf, the accepted leaf is
+      // empty and both its edges sit at the caret, so in Suggesting a write at
+      // its far edge, such as Enter's split, takes the stored edge on the
+      // caret's side.
+      const far =
+        caretAt === null
+          ? null
+          : farEdge(
+              (position) => map.toProjected(root, position, 'forward'),
+              toStored,
+              fold.index,
+              caretAt
+            );
+
+      fold.frameIndex = getDefined(indexes.get(root));
+      fold.map = (position, assoc, caret) => {
+        if (far && caret !== false && position === far.position) {
+          return far.stored;
+        }
+
+        const before = toStored(position, assoc);
+
+        if (caret === false) return before;
+
+        const other = toStored(position, assoc < 0 ? 1 : -1);
+
+        // A caret inside content the projection put in place of stored content,
+        // such as the line completion gives a container whose lines are all
+        // struck, takes the opposite stored edge, from which its association
+        // reads into the content it replaced, so the next letter lands there
+        // again.
+        if (map.added(root, position)) return other;
+
+        // The projection hides content, so where it removed some, a position has
+        // a stored edge on each side; a caret at one edge picks it, so the next
+        // letter lands on the line the caret shows.
+        return caretAt !== null && before !== caretAt && other === caretAt
+          ? caretAt
+          : before;
+      };
+    }
+  }
 
   for (const step of input.steps) {
     for (const [root, written] of getInternalDocumentChangeEntries(
@@ -656,44 +675,18 @@ export const recordAuthoredSteps = (
       // construction only moves the plain draft away from it.
       if (step.origin === 'canonical') {
         const previous = fold.map;
-        const seed = input.framed && step === input.steps[0];
-        // A frame's seed hides content, so where it removed some, a position
-        // has a stored edge on each side; a caret at one edge picks it, so the
-        // next letter lands on the line the caret shows.
-        const caretAt =
-          seed && input.selectionBefore?.root === root
-            ? input.selectionBefore.position
-            : null;
 
-        // Where the seed hid every letter of a leaf, the accepted leaf is
-        // empty and both its edges sit at the caret, so in Suggesting a write
-        // at its far edge, such as Enter's split, takes the stored edge on the
-        // caret's side.
-        const far =
-          caretAt === null ? null : farEdge(rootChange, fold.index, caretAt);
-
-        if (seed) {
-          fold.frameIndex =
-            step.indexedAfter?.get(root) ?? rootChange.apply(fold.index);
-        } else if (fold.frameIndex) {
+        if (fold.frameIndex) {
           fold.frameIndex = rootChange.apply(fold.frameIndex);
         }
-
-        fold.map = (position, assoc, caret) => {
-          if (far && position === far.position) {
-            return previous(far.stored, assoc, caret);
-          }
-
-          const before = mapBack(rootChange, position, assoc);
-
-          if (caret !== false && caretAt !== null && before !== caretAt) {
-            const other = mapBack(rootChange, position, assoc < 0 ? 1 : -1);
-
-            if (other === caretAt) return previous(caretAt, assoc, caret);
-          }
-
-          return previous(before, assoc, caret);
-        };
+        fold.map = (position, assoc, caret) =>
+          previous(
+            getDefined(
+              mapRootChangePositionBackward(rootChange, position, assoc)
+            ),
+            assoc,
+            caret
+          );
         continue;
       }
 
@@ -718,7 +711,7 @@ export const recordAuthoredSteps = (
           createTagId: input.createTagId,
           emptyTextKeeps: (key, value, parents) =>
             input.emptyTextKeeps(key, value, parents, root),
-          framed: input.framed === true,
+          framed: input.projection !== undefined,
           fill: (site) => input.fill(site, root),
           frameIndex: fold.frameIndex,
           isInline: input.isInline,
@@ -875,8 +868,11 @@ class RootRecorder {
     if (this.options.origin !== 'move' || !this.recordNodeMove(groups)) {
       for (const group of groups) {
         if (group.kind === 'replace') {
+          const start = this.ops.length;
+
           if (plain.has(group)) this.writePlain(group);
           else this.recordGroup(group);
+          this.followJoin(group, start);
           continue;
         }
         if (group.data) {
@@ -925,7 +921,9 @@ class RootRecorder {
       origin === 'move' ||
       origin === 'wrap' ||
       origin === 'unwrap' ||
-      removed !== plainRemoved
+      removed !== plainRemoved ||
+      // Only a claim says that a written block goes with a pending join.
+      (removed === 0 && this.followedAt(before, plainFrom) !== null)
     ) {
       return false;
     }
@@ -1345,6 +1343,7 @@ class RootRecorder {
           kind: 'insert',
           tokens: this.movedCopy(copy),
         });
+        this.followJoin(landing, this.ops.length - 1);
         this.pieces.push({
           afterFrom: landing.after,
           afterTo: landing.after + landing.slice.length,
@@ -1355,13 +1354,117 @@ class RootRecorder {
             (_, offset) =>
               offset === 0
                 ? 0
-                : plainToReview(source.plainFrom + offset, -1) - copyFrom
+                : plainToReview(source.plainFrom + offset, -1, false) - copyFrom
           ),
         });
       }
     }
 
     return true;
+  }
+
+  /**
+   * The pending join a block written at `at`, which is `frameAt` in the
+   * frame, goes with: the one the block before it carries or goes with, when
+   * the frame's block before it ends there too or, outside a frame, when the
+   * block after it goes with that join too; or else the one the line after it
+   * carries, past only the ends of elements, which would otherwise merge into
+   * it.
+   */
+  private followedAt(at: number, frameAt: number): string | null {
+    const boundary = this.index.childBoundaryAt(at);
+
+    if (!boundary) return null;
+
+    const childrenAt = (path: readonly number[]) =>
+      path.length === 0
+        ? this.index.value
+        : (this.index.node(path).children ?? []);
+    let { index, parentPath } = boundary;
+    let siblings = childrenAt(parentPath);
+    const before = index > 0 ? siblings[index - 1] : undefined;
+    const carried = before && this.followedBy(propsOf(before));
+    const after = siblings[index];
+
+    // In a frame, where the frame shows the block after the end of an element
+    // that the join's landing closes at `at`, the frame's block before it ends
+    // later. Outside one, only a block after it that goes with the same join
+    // says which side of that end it is on.
+    if (
+      carried &&
+      (this.options.frameIndex
+        ? frameAt > 0 &&
+          this.options.plainToReview(frameAt - 1, -1, false) === at - 1
+        : after !== undefined &&
+          this.marks(propsOf(after)).some(
+            (mark) => followsOf(mark) === carried
+          ))
+    ) {
+      return carried;
+    }
+    while (index === siblings.length && parentPath.length > 0) {
+      index = getDefined(parentPath.at(-1)) + 1;
+      parentPath = parentPath.slice(0, -1);
+      siblings = childrenAt(parentPath);
+    }
+
+    const next = siblings[index];
+    const join =
+      next && isTextBlock(next)
+        ? this.marks(propsOf(next)).find((mark) => mark.kind === 'join')
+        : undefined;
+
+    return join ? incarnationOf(join) : null;
+  }
+
+  /**
+   * Has the blocks a group inserts go with the pending join they are written
+   * after or before, so the join lands where the frame shows them.
+   */
+  private followJoin(
+    group: Extract<Group, { kind: 'replace' }>,
+    start: number
+  ) {
+    if (group.removed > 0) return;
+
+    const key = this.followedAt(group.before, group.plainFrom);
+
+    if (!key) return;
+
+    const own = incarnationOf(this.options.markOf('insert'));
+
+    for (let index = start; index < this.ops.length; index += 1) {
+      const op = getDefined(this.ops[index]);
+
+      if (op.kind !== 'insert' || op.at !== group.before) continue;
+
+      let depth = 0;
+
+      this.ops[index] = {
+        ...op,
+        tokens: op.tokens.map((token) => {
+          if (token.kind === 'text') return token;
+          if (token.kind === 'close') {
+            depth -= 1;
+            return token;
+          }
+          depth += 1;
+          if (depth !== 1 || token.nodeKind !== 'element') return token;
+
+          return openToken(
+            'element',
+            this.withMarks(
+              token.props,
+              this.marks(token.props).map((mark) =>
+                mark.kind === 'insert' && incarnationOf(mark) === own
+                  ? { ...mark, follows: key }
+                  : mark
+              )
+            )
+          );
+        }),
+      };
+    }
   }
 
   private withoutStruckEdges(from: number, to: number): [number, number] {
@@ -2727,17 +2830,17 @@ class RootRecorder {
     return left.filter((mark) => keys.has(incarnationOf(mark)));
   }
 
+  /** The pending join a block with these marks carries or goes with. */
+  private followedBy(props: Props) {
+    const marks = this.marks(props);
+    const join = marks.find((mark) => mark.kind === 'join');
+
+    return join ? incarnationOf(join) : marks.map(followsOf).find(Boolean);
+  }
+
   private splitOf(source: Context | undefined): AuthoredMark {
     const { at, author, change, inc } = this.options.markOf('split');
-    const marks = source ? this.marks(source.props) : [];
-    const join = marks.find((mark) => mark.kind === 'join');
-    const follows = join
-      ? incarnationOf(join)
-      : marks.flatMap((mark) =>
-          mark.kind === 'split' && mark.cut === undefined && mark.follows
-            ? [mark.follows]
-            : []
-        )[0];
+    const follows = source ? this.followedBy(source.props) : undefined;
 
     return {
       at,

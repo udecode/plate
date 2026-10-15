@@ -34,6 +34,11 @@ export type {
   TransferWrap,
 } from './core/transfer-types';
 export type {
+  SliceLanding,
+  SliceLandingInput,
+  SliceLandingTarget,
+} from './core/slice-landing-types';
+export type {
   AddMarkCommand,
   CollapseSelectionCommand,
   DeleteCommand,
@@ -137,7 +142,9 @@ export type {
   EditorCoreStateView,
   EditorCoreUpdateMethods,
   EditorCoreUpdateTransaction,
+  EditorTransactionRecordsApi,
   EditorTransactionSliceApi,
+  EditorDocumentRecords,
   EditorDocumentValue,
   EditorLevelsOptions,
   EditorNextOptions,

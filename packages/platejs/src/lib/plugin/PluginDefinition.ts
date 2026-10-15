@@ -573,6 +573,12 @@ export type BreakRules<
    *     |
    *     </blockquote>
    * ```
+   *
+   * Plugin resolution refuses a static `'exit'` or `'deleteExit'` on a text
+   * block that is not an object and whose schema element does not declare
+   * `ownsExit: true`, because exit from a nested block would land after its
+   * container instead of after the block. A rule written as a function is not
+   * checked.
    */
   emptyLineEnd?: RuleDecision<'default' | 'deleteExit' | 'exit', C>;
   /**

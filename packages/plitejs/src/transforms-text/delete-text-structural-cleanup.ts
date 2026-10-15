@@ -1,4 +1,6 @@
+import type { NodeList } from '../core/change/document-index';
 import { getEditorSchema } from '../core/editor-runtime';
+import { getChildList } from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import {
   type Descendant,
@@ -10,10 +12,8 @@ import {
   type Text,
 } from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
-import {
-  getChildren as editorGetChildren,
-  hasPath as editorHasPath,
-} from '../interfaces/editor';
+import { hasPath as editorHasPath } from '../interfaces/editor';
+import { getDefined } from '../internal/get-defined';
 import { insertNodes, mergeNodes, removeNodes } from '../transforms-node';
 
 export type DeleteStructuralCleanupPlan = {
@@ -120,21 +120,24 @@ const hasSingleChildNest = (
 // Merging a later pair never changes whether an earlier pair can merge, so one
 // pass finds every pair, last first, before any merge runs.
 const collectMergeableTextPaths = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   parentPath: Path,
   paths: Path[],
   first = 0,
   last = children.length - 1
 ) => {
   for (let index = last; index >= first; index--) {
-    const child = children[index];
+    const child = getDefined(children.at(index));
 
     if (!NodeApi.isText(child)) {
       collectMergeableTextPaths(child.children, [...parentPath, index], paths);
       continue;
     }
 
-    if (index > 0 && canMergeAdjacentTextNodes(children[index - 1], child)) {
+    if (
+      index > 0 &&
+      canMergeAdjacentTextNodes(getDefined(children.at(index - 1)), child)
+    ) {
       paths.push([...parentPath, index]);
     }
   }
@@ -148,7 +151,7 @@ export const mergeAdjacentTextRuns = (
   editor: Editor,
   touchedRange?: { end: number; start: number } | null
 ) => {
-  const children = editorGetChildren(editor);
+  const children = getChildList(editor);
 
   if (children.length === 0) {
     return;
@@ -195,7 +198,7 @@ const getRemovableElementPaths = (
       ? pruneNestedUnderPath[0]
       : undefined;
   const last = Math.min(
-    editorGetChildren(editor).length - 1,
+    getChildList(editor).length - 1,
     Math.max(pruneTopLevelRange?.end ?? -1, pruneIndex ?? -1)
   );
   const first = Math.min(
@@ -317,9 +320,10 @@ export const restorePreservedEmptyStartBlock = (
     return;
   }
 
+  const children = getChildList(editor);
   const shouldRestore =
-    (editorGetChildren(editor).length === 1 &&
-      NodeApi.string(editorGetChildren(editor)[0]) !== '') ||
+    (children.length === 1 &&
+      NodeApi.string(getDefined(children.at(0))) !== '') ||
     !editorHasPath(editor, preservePath) ||
     NodeApi.string(getCurrentNode(editor, preservePath)) !== '';
 

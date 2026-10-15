@@ -58,6 +58,14 @@ editor.update.blocks.reset({ unset: ['level'] });
 
 ## Kit usage
 
+### Convert a title to another block
+
+Heading and Text choices keep the Details structure. List choices turn the selected title into a list item and put its body one level deeper under it. Tab, Shift+Tab, drag and Cut move that item together with its body. The Code Block command turns the title into a code block and leaves the body as the blocks after it. Both conversions remove only the selected Details layer and keep an enclosing Details.
+
+With the Code Block kit installed, use `mod+alt+8` for the code conversion. Turn into disables Code when the selection holds the title and more blocks. Undo restores the Details and its disclosure state. A list conversion changes nothing when a body block cannot take an indent. Other selected blocks stay unchanged too. `IndentKit` lists the block types that can, so a custom setup adds its body block types to Indent's `targetPlugins`.
+
+A block inserted from a closed Details title lands after the whole Details, whether it comes from the slash menu, an insert command, a pasted file or AI. From an open title it lands at the start of the body. Heading and Text slash choices format the existing title instead.
+
 <Steps>
 
 ### Installation

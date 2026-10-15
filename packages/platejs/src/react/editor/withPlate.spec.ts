@@ -12,6 +12,15 @@ describe('createEditor', () => {
     );
   });
 
+  it('refuses an option it does not take', () => {
+    const initialValue = [{ children: [{ text: 'One' }], type: 'paragraph' }];
+    const options = { initialValue, value: initialValue };
+
+    expect(() => createEditor(options)).toThrow(
+      'Unknown editor option "value". Use "initialValue" to set the document.'
+    );
+  });
+
   it('allocates with the options that the options object inherits', () => {
     const reports: unknown[] = [];
     const viewOnly = createEditor(

@@ -14,7 +14,7 @@ Add Plite React integration with strict editor and element hooks, typed `usePlit
 - Refresh expanded Blink selections after document changes so formatting updates cannot retain stale painted highlight geometry
 - Keep `NodeSelection` model-only with no native browser range, and expose exact node selection through `useElementSelected({ mode: 'node' })`
 - Let selectable object owners receive node focus from non-editable chrome, enter editable children with ArrowDown while the page draws them, and regain owner focus with ArrowUp at the leading boundary
-- Skip object children the page hides during arrow-key movement, keeping one backward stop in an empty child
+- Skip object children the page hides during arrow-key movement in both directions
 - Isolate optional decoration, annotation, widget, and render-callback failures
 - Preserve inline decorated-range data in projection slices
 - Infer React editor values from complete installed schemas and expose typed interactive content-root slots

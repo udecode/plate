@@ -533,25 +533,19 @@ test('arrow keys traverse the image owner before its caption', async ({
     });
     await page.keyboard.press('ArrowRight');
     await expect.poll(modelSelection).toMatchObject({
-      anchor: { offset: 0, path: [imageIndex + 1, 0] },
-      focus: { offset: 0, path: [imageIndex + 1, 0] },
-      kind: 'text',
-    });
-    await page.keyboard.press('ArrowRight');
-    await expect.poll(modelSelection).toMatchObject({
       kind: 'node',
       paths: [[imageIndex + 2]],
     });
     await page.keyboard.press('ArrowLeft');
     await expect.poll(modelSelection).toMatchObject({
-      anchor: { offset: 0, path: [imageIndex + 1, 0] },
-      focus: { offset: 0, path: [imageIndex + 1, 0] },
-      kind: 'text',
+      kind: 'node',
+      paths: [[imageIndex + 1]],
     });
     await page.keyboard.press('ArrowLeft');
     await expect.poll(modelSelection).toMatchObject({
-      kind: 'node',
-      paths: [[imageIndex + 1]],
+      anchor: captionEnd,
+      focus: captionEnd,
+      kind: 'text',
     });
     runtimeErrors.assertNone();
   } finally {
@@ -737,9 +731,7 @@ test('ArrowUp from below a populated image visits its caption before the owner',
 });
 
 for (const mediaType of ['file', 'audio', 'video']) {
-  test(`ArrowUp from below an empty ${mediaType} caption selects its owner`, async ({
-    page,
-  }) => {
+  test(`arrow keys skip an empty ${mediaType} caption`, async ({ page }) => {
     await page.goto('/blocks/media-demo', { waitUntil: 'commit' });
     const root = page.locator(EDITOR).first();
     const editor = createBrowserEditorHarness(
@@ -779,11 +771,26 @@ for (const mediaType of ['file', 'audio', 'video']) {
     });
     await page.keyboard.press('ArrowDown');
     await expect.poll(modelSelection).toMatchObject({
-      anchor: { offset: 0, path: [mediaIndex, 0] },
-      focus: { offset: 0, path: [mediaIndex, 0] },
+      anchor: belowStart,
+      focus: belowStart,
+      kind: 'text',
+    });
+    await page.keyboard.press('ArrowLeft');
+    await expect.poll(modelSelection).toMatchObject({
+      kind: 'node',
+      paths: [[mediaIndex]],
+    });
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(modelSelection).toMatchObject({
+      anchor: belowStart,
+      focus: belowStart,
       kind: 'text',
     });
     if (mediaType === 'file') {
+      await editor.selection.select({
+        anchor: { offset: 0, path: [mediaIndex, 0] },
+        focus: { offset: 0, path: [mediaIndex, 0] },
+      });
       await page.keyboard.type('Report caption');
       await expect
         .poll(async () => {

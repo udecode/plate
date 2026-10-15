@@ -1,11 +1,33 @@
 import type { NamedRootKey, NodeKey } from '../../interfaces/editor';
+import {
+  applyRecordOps,
+  composeRecordOps,
+  filterRecordOps,
+  getValueRecords,
+  hasValueRecords,
+  invertRecordOps,
+  NO_RECORD_OPS,
+  type RecordOps,
+  type RecordOpsJson,
+  recordOpsBetween,
+  recordOpsFromJson,
+  recordOpsToJson,
+  showValueRecords,
+  withValueRecords,
+} from '../record-store';
 import { assertEditorJsonValue } from '../value-codec';
 import {
   classifyRootChange,
   type DocumentChangeRootClassification,
 } from './classification';
-import { DocumentIndex } from './document-index';
+import {
+  DocumentIndex,
+  NO_NODES,
+  rootIndexOf,
+  rootNodesOf,
+} from './document-index';
 import { deepFreeze, isRecord, jsonEqual } from './json';
+import { lazyRootOf, setLazyRoot } from './lazy-root';
 import {
   RootChange,
   type RootChangeJson,
@@ -33,6 +55,7 @@ export type DocumentChangeJson = {
   createRoots?: readonly string[];
   deleteRoots?: readonly string[];
   primary?: RootChangeJson;
+  records?: RecordOpsJson;
   roots?: Readonly<Record<string, RootChangeJson>>;
   version: 3;
 };
@@ -311,6 +334,29 @@ export const valueRoot = <T>(
 ): readonly T[] =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
 
+/** @internal */
+export const valueRootIndex = (value: JsonEditorValue, root: string) =>
+  root === 'main'
+    ? rootIndexOf(value, 'children')
+    : DocumentIndex.fromValue(value.roots?.[root] ?? []);
+
+/** @internal */
+export const valueRootNodes = (value: JsonEditorValue, root: string) =>
+  root === 'main'
+    ? rootNodesOf(value, 'children')
+    : (value.roots?.[root] ?? NO_NODES);
+
+const setChildren = (
+  target: Record<string, unknown>,
+  children: DocumentIndex | readonly JsonNode[]
+) => {
+  if (children instanceof DocumentIndex) {
+    setLazyRoot(target, 'children', children);
+  } else {
+    target.children = children;
+  }
+};
+
 export const readCanonicalChangeSetJson = (
   value: unknown
 ): RootChangeJson | null => {
@@ -373,6 +419,8 @@ type DocumentChangeInput = Readonly<{
   primary?: RootChange | null;
   /** Derived classification for the primary change. */
   primaryClassification?: DocumentChangeRootClassification | null;
+  /** Record puts and drops, by record set. */
+  records?: RecordOps;
   /** Derived classifications keyed only by named roots. */
   rootClassifications?: ReadonlyMap<string, DocumentChangeRootClassification>;
   /** Changes keyed only by named secondary roots. */
@@ -381,6 +429,7 @@ type DocumentChangeInput = Readonly<{
 
 type DocumentChangeRootState = Readonly<{
   primary: RootChange | null;
+  records: RecordOps;
   roots: ReadonlyMap<string, RootChange>;
 }>;
 
@@ -420,6 +469,15 @@ export const getInternalDocumentRootChange = (
 
   return root === 'main' ? (state.primary ?? undefined) : state.roots.get(root);
 };
+
+/**
+ * Read a change's record puts and drops.
+ *
+ * @internal
+ */
+export const getInternalDocumentChangeRecords = (
+  change: DocumentChange
+): RecordOps => getDocumentChangeRootState(change).records;
 
 type DocumentReplacementRun = Readonly<{
   from: number;
@@ -667,6 +725,7 @@ export const createInternalDocumentChange = (
     classifications?: ReadonlyMap<string, DocumentChangeRootClassification>;
     createRoots?: Iterable<string>;
     deleteRoots?: Iterable<string>;
+    records?: RecordOps;
   }> = {}
 ) => {
   const roots = new Map(changes);
@@ -682,10 +741,44 @@ export const createInternalDocumentChange = (
     deleteRoots: options.deleteRoots,
     primary,
     primaryClassification,
+    records: options.records,
     rootClassifications: classifications,
     roots,
   });
 };
+
+/**
+ * The same change with other record puts and drops.
+ *
+ * @internal
+ */
+export const withDocumentChangeRecords = (
+  change: DocumentChange,
+  records: RecordOps
+) =>
+  getInternalDocumentChangeRecords(change) === records
+    ? change
+    : createInternalDocumentChange(
+        new Map(getInternalDocumentChangeEntries(change)),
+        {
+          classifications: new Map(
+            getInternalDocumentChangeClassificationEntries(change)
+          ),
+          createRoots: change.createRoots,
+          deleteRoots: change.deleteRoots,
+          records,
+        }
+      );
+
+/** @internal */
+export const filterDocumentChangeRecordSets = (
+  change: DocumentChange,
+  keep: (set: string) => boolean
+) =>
+  withDocumentChangeRecords(
+    change,
+    filterRecordOps(getInternalDocumentChangeRecords(change), keep)
+  );
 
 /** @internal */
 export const filterDocumentChangeRoots = (
@@ -706,6 +799,7 @@ export const filterDocumentChangeRoots = (
       ),
       createRoots: [...change.createRoots].filter(keep),
       deleteRoots: [...change.deleteRoots].filter(keep),
+      records: getInternalDocumentChangeRecords(change),
     }
   );
 
@@ -738,6 +832,7 @@ export const bindDocumentChangeNodeKeys = (
       ),
       createRoots: change.createRoots,
       deleteRoots: change.deleteRoots,
+      records: getInternalDocumentChangeRecords(change),
     }
   );
 
@@ -933,7 +1028,24 @@ export class DocumentChange {
       }
     }
 
-    DOCUMENT_CHANGE_ROOTS.set(this, Object.freeze({ primary, roots }));
+    const records = freezeReadonlyMap(
+      [...(input.records ?? NO_RECORD_OPS)]
+        .filter(([, writes]) => writes.size > 0)
+        .map(([set, writes]) => {
+          assertDocumentRootKey(set);
+
+          return [set, freezeReadonlyMap(writes)] as const;
+        })
+    );
+
+    DOCUMENT_CHANGE_ROOTS.set(
+      this,
+      Object.freeze({
+        primary,
+        records: records.size === 0 ? NO_RECORD_OPS : records,
+        roots,
+      })
+    );
     Object.freeze(this);
   }
 
@@ -995,6 +1107,11 @@ export class DocumentChange {
       classifications,
       createRoots,
       deleteRoots,
+      // A value without records says nothing about them, so records are never
+      // removed by a value that leaves them out.
+      records: hasValueRecords(after)
+        ? recordOpsBetween(getValueRecords(before), getValueRecords(after))
+        : NO_RECORD_OPS,
     });
   }
 
@@ -1004,6 +1121,7 @@ export class DocumentChange {
     return (
       state.primary === null &&
       state.roots.size === 0 &&
+      state.records.size === 0 &&
       this.createRoots.size === 0 &&
       this.deleteRoots.size === 0
     );
@@ -1019,6 +1137,7 @@ export class DocumentChange {
         Object.hasOwn(value, 'classifications') ||
         Object.hasOwn(value, 'primary') ||
         Object.hasOwn(value, 'preserveEmptyRoots') ||
+        Object.hasOwn(value, 'records') ||
         Object.hasOwn(value, 'roots') ||
         !hasFunctions(value, [
           'apply',
@@ -1111,9 +1230,14 @@ export class DocumentChange {
       !isRecord(json) ||
       json.version !== 3 ||
       !Object.keys(json).every((key) =>
-        ['createRoots', 'deleteRoots', 'primary', 'roots', 'version'].includes(
-          key
-        )
+        [
+          'createRoots',
+          'deleteRoots',
+          'primary',
+          'records',
+          'roots',
+          'version',
+        ].includes(key)
       ) ||
       (json.roots !== undefined && !isRecord(json.roots))
     ) {
@@ -1136,6 +1260,10 @@ export class DocumentChange {
       deleteRoots: json.deleteRoots,
       primary:
         json.primary === undefined ? null : RootChange.fromJSON(json.primary),
+      records:
+        json.records === undefined
+          ? NO_RECORD_OPS
+          : recordOpsFromJson(json.records),
       roots: new Map(
         Object.entries(json.roots ?? {}).map(([root, change]) => {
           assertNamedDocumentRootKey(root);
@@ -1207,14 +1335,17 @@ export class DocumentChange {
       }
     }
 
+    // Record ids name their content, so puts and drops commute.
     return {
       a: createInternalDocumentChange(aChanges, {
         createRoots: a.createRoots,
         deleteRoots: a.deleteRoots,
+        records: getInternalDocumentChangeRecords(a),
       }),
       b: createInternalDocumentChange(bChanges, {
         createRoots: b.createRoots,
         deleteRoots: b.deleteRoots,
+        records: getInternalDocumentChangeRecords(b),
       }),
     };
   }
@@ -1244,6 +1375,11 @@ export class DocumentChange {
           other.deleteRoots.has(root))
     );
 
+    const records = composeRecordOps(
+      getInternalDocumentChangeRecords(this),
+      getInternalDocumentChangeRecords(other)
+    );
+
     if (overlappingLifecycleRoot) {
       if (!value) {
         throw new Error(
@@ -1251,7 +1387,13 @@ export class DocumentChange {
         );
       }
 
-      return DocumentChange.between(value, other.apply(this.apply(value)));
+      return withDocumentChangeRecords(
+        DocumentChange.between(
+          value,
+          applyDocumentChangeValue(other, applyDocumentChangeValue(this, value))
+        ),
+        records
+      );
     }
 
     const roots = new Set([
@@ -1290,12 +1432,13 @@ export class DocumentChange {
       classifications,
       createRoots,
       deleteRoots,
+      records,
     });
   }
 
   /** Compose one transaction-wide structural correction into this change. */
   correct(value: JsonEditorValue, correction: DocumentCorrection) {
-    const applied = this.apply(value);
+    const applied = deepFreeze(applyDocumentChangeValue(this, value));
     const changedRanges: DocumentChangedRange[] = [];
 
     this.iterChangedRanges((root, fromBefore, toBefore, fromAfter, toAfter) => {
@@ -1352,7 +1495,28 @@ export class DocumentChange {
   }
 
   apply<T extends JsonEditorValue>(value: T): T {
-    return deepFreeze(applyDocumentChangeValue(this, value));
+    const applied: Record<string, unknown> = applyDocumentChangeValue(
+      this,
+      value
+    );
+
+    for (const key of Object.keys(applied)) deepFreeze(applied[key]);
+    // A value that showed its records, or plain JSON that gains some, shows
+    // them; a value whose store core carries keeps carrying it.
+    if (Object.hasOwn(value, 'records') || !hasValueRecords(value)) {
+      const records = getValueRecords(applied);
+
+      // A change that writes no record keeps the JSON it was given, so a key
+      // never serializes every record again.
+      if (value.records !== undefined && records === getValueRecords(value)) {
+        applied.records = value.records;
+        withValueRecords(applied, records);
+      } else {
+        showValueRecords(applied, records);
+      }
+    }
+
+    return Object.freeze(applied) as T;
   }
 
   invert(value: JsonEditorValue) {
@@ -1398,6 +1562,10 @@ export class DocumentChange {
       ),
       createRoots,
       deleteRoots,
+      records: invertRecordOps(
+        getValueRecords(value),
+        getInternalDocumentChangeRecords(this)
+      ),
     });
   }
 
@@ -1406,6 +1574,9 @@ export class DocumentChange {
 
     return {
       ...(state.primary ? { primary: state.primary.toJSON() } : {}),
+      ...(state.records.size > 0
+        ? { records: recordOpsToJson(state.records) }
+        : {}),
       ...(state.roots.size > 0
         ? {
             roots: Object.fromEntries(
@@ -1429,19 +1600,19 @@ export const applyDocumentChangeValue = <T extends JsonEditorValue>(
   value: T,
   indexedAfter: ReadonlyMap<string, DocumentIndex> = new Map()
 ) => {
-  let { children } = value;
+  let children: DocumentIndex | readonly JsonNode[] =
+    lazyRootOf(value, 'children') ?? value.children;
   let roots = value.roots ? { ...value.roots } : undefined;
 
   for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
     const next =
-      indexedAfter.get(root)?.value ??
-      rootChange.apply(DocumentIndex.fromValue(valueRoot(value, root))).value;
+      indexedAfter.get(root) ?? rootChange.apply(valueRootIndex(value, root));
 
     if (root === 'main') {
       children = next;
     } else {
       roots ??= {};
-      roots[root] = next;
+      roots[root] = next.value;
     }
   }
 
@@ -1458,11 +1629,25 @@ export const applyDocumentChangeValue = <T extends JsonEditorValue>(
     roots = undefined;
   }
 
-  const { roots: _roots, ...valueWithoutRoots } = value;
-  const nextValue =
-    roots === undefined
-      ? { ...valueWithoutRoots, children }
-      : { ...value, children, roots };
+  const records = getInternalDocumentChangeRecords(change);
+  const nextValue: Record<string, unknown> = {};
+
+  // Every field but records, whose read may serialize them: the store beside
+  // the value carries them.
+  for (const key of Object.keys(value)) {
+    if (key === 'children') setChildren(nextValue, children);
+    else if (key === 'roots') {
+      if (roots !== undefined) nextValue.roots = roots;
+    } else if (key !== 'records') nextValue[key] = value[key];
+  }
+  if (!Object.hasOwn(nextValue, 'children')) setChildren(nextValue, children);
+  if (roots !== undefined) nextValue.roots = roots;
+  if (records.size > 0 || hasValueRecords(value)) {
+    withValueRecords(
+      nextValue,
+      applyRecordOps(getValueRecords(value), records)
+    );
+  }
 
   return nextValue as T;
 };

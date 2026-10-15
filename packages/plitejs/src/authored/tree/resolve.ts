@@ -2,9 +2,9 @@ import type { AuthoredProjectionDiagnostic } from '../../core/authored-document-
 import type { JsonRecord } from '../../core/change/json';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
+import { deriveValue } from '../../core/record-store';
 import { survivalUnder } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
-import { isMetadataRootKey } from '../../internal/root-location';
 import { createDependencies, type Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
 import {
@@ -14,11 +14,7 @@ import {
   type ReviewFacts,
   standingClaimsOf,
 } from '../facts/facts';
-import {
-  CONTEXTS_ROOT,
-  contextElementOf,
-  incarnationOf,
-} from '../facts/records';
+import { incarnationOf, putContexts } from '../facts/records';
 import { cutsOf, joinRejectedCuts } from './cuts';
 import { decideKey, type FormatTag, type LayerValue } from './layers';
 import {
@@ -132,6 +128,32 @@ export const hasBoundaryMark = (node: unknown) =>
     (mark) => mark.kind === 'join' || mark.kind === 'split'
   );
 
+type JoinMoment = Readonly<{ at: number; ownChanges: ReadonlySet<string> }>;
+
+const deletesBeforeJoin = (mark: AuthoredMark, join: JoinMoment) =>
+  mark.at <= join.at && !join.ownChanges.has(mark.change);
+
+/** @internal */
+export const proposedKeepsContentAtJoin = (
+  blocks: readonly Node[],
+  joining: Node
+) => {
+  const joins = readAuthoredMarks(joining).filter(
+    (mark) => mark.kind === 'join'
+  );
+  const join = {
+    at: Math.min(...joins.map((mark) => mark.at)),
+    ownChanges: new Set(joins.map((mark) => mark.change)),
+  };
+  const { liveContent } = survivalUnder<Node>((node) =>
+    readAuthoredMarks(node).some(
+      (mark) => mark.kind === 'delete' && deletesBeforeJoin(mark, join)
+    )
+  );
+
+  return blocks.some((block) => (block.children ?? []).some(liveContent));
+};
+
 /** The review children of a level that hold its prefix slots at the start. */
 const startOccupants = <N>(
   level: readonly N[],
@@ -188,6 +210,12 @@ const removes = (mark: AuthoredMark, result: 'accept' | 'keep' | 'reject') =>
   (mark.kind === 'insert' && result === 'reject') ||
   (mark.kind === 'delete' && result === 'accept');
 
+/** The pending join a block's claim says the block goes with. */
+export const followsOf = (mark: AuthoredMark) =>
+  (mark.kind === 'split' && mark.cut === undefined) || mark.kind === 'insert'
+    ? mark.follows
+    : undefined;
+
 type TextBlock = Readonly<{ ancestors: readonly Node[]; node: Node }>;
 
 const textBlocksOf = (children: readonly Node[]) => {
@@ -205,38 +233,50 @@ const textBlocksOf = (children: readonly Node[]) => {
   return blocks;
 };
 
+type Pending = (node: Node) => readonly AuthoredMark[];
+type DecisionOf = (mark: AuthoredMark) => 'accept' | 'keep' | 'reject';
+
+const survivalAfter = (pending: Pending, decisionOf: DecisionOf) =>
+  survivalUnder<Node>((node) =>
+    pending(node).some((mark) => removes(mark, decisionOf(mark)))
+  );
+
+const subtreesOf = (roots: readonly Node[]) => {
+  const nodes = new WeakSet<Node>();
+  const add = (node: Node) => {
+    nodes.add(node);
+    for (const child of node.children ?? []) add(child);
+  };
+
+  roots.forEach(add);
+
+  return nodes;
+};
+
 /**
- * The lines, with everything in them, whose Editing deletions a pending join
- * holds. An Editing deletion that empties the line a pending join merges into
- * keeps its claim until that join is decided, so the join still finds the
- * line's content, which it held when the join was made. A line Editing
- * removes whole, as a move's source, is no longer there to merge into.
+ * The lines whose Editing deletions a pending join holds. An Editing deletion
+ * that empties the line a pending join merges into keeps its claim until that
+ * join is decided, so the join still finds the line's content, which it held
+ * when the join was made. A line Editing removes whole, as a move's source, is
+ * no longer there to merge into.
  */
 const joinHeldLines = (
   blocks: readonly TextBlock[],
-  pending: (node: Node) => readonly AuthoredMark[],
-  decisionOf: (mark: AuthoredMark) => 'accept' | 'keep' | 'reject'
+  pending: Pending,
+  decisionOf: DecisionOf
 ) => {
-  const held = new WeakSet<Node>();
   const { liveContent: liveWithoutEditing } = survivalUnder<Node>((node) =>
     pending(node).some(
       (mark) => !isEditingChange(mark.change) && removes(mark, decisionOf(mark))
     )
   );
-  const { liveContent: liveWithEditing } = survivalUnder<Node>((node) =>
-    pending(node).some((mark) => removes(mark, decisionOf(mark)))
-  );
-  const hold = (node: Node) => {
-    held.add(node);
-    for (const child of node.children ?? []) hold(child);
-  };
+  const { liveContent: liveWithEditing } = survivalAfter(pending, decisionOf);
 
-  blocks.forEach(({ ancestors, node }, index) => {
+  return blocks.flatMap(({ ancestors, node }, index) => {
     const container = ancestors.at(-1);
     const target = blocks[index - 1];
 
-    if (
-      target &&
+    return target &&
       (!container || target.ancestors.includes(container)) &&
       pending(node).some(
         (mark) => mark.kind === 'join' && decisionOf(mark) === 'keep'
@@ -246,13 +286,27 @@ const joinHeldLines = (
       ) &&
       !(target.node.children ?? []).some(liveWithEditing) &&
       (target.node.children ?? []).some(liveWithoutEditing)
-    ) {
-      hold(target.node);
-    }
+      ? [target.node]
+      : [];
   });
-
-  return held;
 };
+
+const lapsedHeldLines = (
+  held: readonly Node[],
+  mergedInto: ReadonlyMap<Node, Node>,
+  mergedBlocks: ReadonlyMap<Node, readonly Node[]>,
+  liveAfterDecision: (node: Node) => boolean
+) =>
+  held.filter((line) => {
+    const into = mergedInto.get(line);
+
+    return (
+      into !== undefined &&
+      [into, ...(mergedBlocks.get(into) ?? [])].some((block) =>
+        (block.children ?? []).some(liveAfterDecision)
+      )
+    );
+  });
 
 /**
  * Throws when a stored Editing deletion has no pending join holding it, which
@@ -262,8 +316,10 @@ export const assertEditingDeletionsHeld = (
   children: readonly Node[],
   pending: (node: Node) => readonly AuthoredMark[]
 ) => {
-  const held = joinHeldLines(textBlocksOf(children), pending, (mark) =>
-    isEditingChange(mark.change) ? 'accept' : 'keep'
+  const held = subtreesOf(
+    joinHeldLines(textBlocksOf(children), pending, (mark) =>
+      isEditingChange(mark.change) ? 'accept' : 'keep'
+    )
   );
   const visit = (nodes: readonly Node[], parent: readonly number[]) => {
     nodes.forEach((node, index) => {
@@ -418,11 +474,12 @@ export const resolveAuthoredChildren = (
     ...pending(node),
     ...(node.children ?? []).flatMap(subtreeMarks),
   ];
-  // An Editing join or split whose landing waits on a pending change keeps
-  // its claim, to land once that change is decided. A proposed one holds the
-  // decision instead, since only a verdict would remember its acceptance.
+  // An Editing join, or a claim of a block that goes with a join, whose
+  // landing waits on a pending change keeps its claim, to land once that
+  // change is decided. A proposed one holds the decision instead, since only a
+  // verdict would remember its acceptance.
   const retainedJoins = new Set<Node>();
-  const retainedSplits = new Set<Node>();
+  const retainedFollowers = new Set<Node>();
   const track = <T extends Node>(node: T, original: object | undefined) => {
     if (original) origins.set(node, original);
 
@@ -482,7 +539,8 @@ export const resolveAuthoredChildren = (
   };
 
   const blocks = textBlocksOf(children);
-  const heldByJoin = joinHeldLines(blocks, pending, decisionOf);
+  const heldLines = joinHeldLines(blocks, pending, decisionOf);
+  const heldByJoin = subtreesOf(heldLines);
 
   // Phase one: where each decided join lands.
   const mergedInto = new Map<Node, Node>();
@@ -501,21 +559,12 @@ export const resolveAuthoredChildren = (
 
     return current;
   };
-  // Whether the target holds content when the join happens: a deletion made
-  // after the join does not decide which block survives, as in a plain
-  // editor, where the join came first. A deletion by the join's own change
-  // came from the same write, which kept the target's start, as a pasted
-  // block that replaces its target's text does.
-  const keepsContent = (
-    target: Node,
-    join: Readonly<{ at: number; changes: ReadonlySet<string> }>
-  ) => {
+  const keepsContent = (target: Node, join: JoinMoment) => {
     const { liveContent: liveAt } = survivalUnder<Node>((node) =>
       pending(node).some(
         (mark) =>
           removes(mark, resultOf(mark)) &&
-          (mark.kind !== 'delete' ||
-            (mark.at <= join.at && !join.changes.has(mark.change)))
+          (mark.kind !== 'delete' || deletesBeforeJoin(mark, join))
       )
     );
 
@@ -546,9 +595,74 @@ export const resolveAuthoredChildren = (
 
     return {
       at: Math.min(...marks.map((mark) => mark.at)),
-      changes: new Set(marks.map((mark) => mark.change)),
+      ownChanges: new Set(marks.map((mark) => mark.change)),
     };
   };
+  type JoinBlock = Readonly<{ index: number; mark: AuthoredMark; node: Node }>;
+  let joinBlocks: Map<string, JoinBlock[]> | undefined;
+  const joinBlocksOf = (incarnation: string) => {
+    if (!joinBlocks) {
+      const found = new Map<string, JoinBlock[]>();
+
+      blocks.forEach(({ node }, index) => {
+        for (const mark of pending(node)) {
+          if (mark.kind !== 'join') continue;
+          const key = incarnationOf(mark);
+
+          found.set(key, [...(found.get(key) ?? []), { index, mark, node }]);
+        }
+      });
+      joinBlocks = found;
+    }
+
+    return joinBlocks.get(incarnation) ?? [];
+  };
+  // Blocks that go with a pending join, in document order, each with the
+  // number of lines before it, which orders it among the join's blocks.
+  const followers: Array<
+    Readonly<{
+      follows: ReadonlySet<string>;
+      node: Node;
+      order: number;
+    }>
+  > = [];
+  let lines = 0;
+  const collectFollowers = (nodes: readonly Node[]) => {
+    for (const node of nodes) {
+      if (isText(node)) continue;
+
+      const follows = new Set(
+        pending(node).flatMap((mark) => {
+          const key = followsOf(mark);
+
+          return key ? [key] : [];
+        })
+      );
+
+      if (follows.size > 0) followers.push({ follows, node, order: lines });
+      if (isTextBlock(node)) lines += 1;
+      else collectFollowers(node.children ?? []);
+    }
+  };
+
+  collectFollowers(children);
+
+  const followed = new Map(
+    followers.map(({ follows, node }) => [node, follows])
+  );
+  // A block written between a join's target and its line goes with the join,
+  // so the join passes over it to the target it was made against.
+  const precedesJoin = (
+    { ancestors, node }: TextBlock,
+    index: number,
+    keys: ReadonlySet<string>
+  ) =>
+    followed.size > 0 &&
+    [node, ...ancestors].some((block) =>
+      [...(followed.get(block) ?? [])].some(
+        (key) => keys.has(key) && index < (joinBlocksOf(key)[0]?.index ?? 0)
+      )
+    );
 
   blocks.forEach(({ ancestors, node }, index) => {
     if (!structureOf(node).join) return;
@@ -611,6 +725,12 @@ export const resolveAuthoredChildren = (
       );
     };
 
+    const keys = new Set(
+      pending(node).flatMap((mark) =>
+        mark.kind === 'join' ? [incarnationOf(mark)] : []
+      )
+    );
+
     for (let previous = index - 1; previous >= 0; previous -= 1) {
       const candidate = blocks[previous];
 
@@ -626,7 +746,8 @@ export const resolveAuthoredChildren = (
       }
       if (
         emptiedTargets.has(candidate.node) ||
-        (!survives(candidate.node) && !rejoins(candidate.node))
+        (!survives(candidate.node) && !rejoins(candidate.node)) ||
+        precedesJoin(candidate, previous, keys)
       ) {
         continue;
       }
@@ -669,71 +790,58 @@ export const resolveAuthoredChildren = (
     });
   });
 
-  // A split piece that follows an accepted join lands right after the joined
+  const afterDecision = survivalAfter(pending, decisionOf);
+  const lapsed = subtreesOf(
+    lapsedHeldLines(
+      heldLines,
+      mergedInto,
+      mergedBlocks,
+      afterDecision.liveContent
+    )
+  );
+
+  // A block that goes with an accepted join lands right after the joined
   // line, wherever the join takes it.
   const placedAfter = new Map<Node, Node[]>();
   const placed = new Set<Node>();
-  type JoinBlock = Readonly<{ index: number; mark: AuthoredMark; node: Node }>;
-  let joinBlocks: Map<string, JoinBlock[]> | undefined;
-  const joinBlocksOf = (incarnation: string) => {
-    if (!joinBlocks) {
-      const found = new Map<string, JoinBlock[]>();
 
-      blocks.forEach(({ node }, index) => {
-        for (const mark of pending(node)) {
-          if (mark.kind !== 'join') continue;
-          const key = incarnationOf(mark);
-
-          found.set(key, [...(found.get(key) ?? []), { index, mark, node }]);
-        }
-      });
-      joinBlocks = found;
-    }
-
-    return joinBlocks.get(incarnation) ?? [];
-  };
-
-  blocks.forEach(({ node }, index) => {
-    const splits = pending(node).filter((mark) => mark.kind === 'split');
-    const follows = new Set(
-      splits.flatMap((mark) =>
-        mark.kind === 'split' && mark.cut === undefined && mark.follows
-          ? [mark.follows]
-          : []
-      )
-    );
+  for (const { follows, node, order } of followers) {
+    const claims = pending(node).filter((mark) => followsOf(mark));
 
     if (
-      follows.size === 0 ||
-      splits.some((mark) => resultOf(mark) === 'reject') ||
+      pending(node).some(
+        (mark) => mark.kind === 'split' && resultOf(mark) === 'reject'
+      ) ||
       mergedInto.has(node) ||
       emptiedTargets.has(node) ||
       !survives(node)
     ) {
-      return;
+      continue;
     }
 
-    const source = [...follows]
+    // The join's block it follows, or the first one after it when it was
+    // written between the join's target and line.
+    const joins = [...follows]
       .flatMap(joinBlocksOf)
-      .filter((joinBlock) => joinBlock.index < index)
-      .toSorted((left, right) => left.index - right.index)
-      .at(-1);
+      .toSorted((left, right) => left.index - right.index);
+    const source =
+      joins.findLast((joinBlock) => joinBlock.index < order) ?? joins[0];
 
-    if (!source || !survives(source.node)) return;
+    if (!source || !survives(source.node)) continue;
     if (mergedInto.has(source.node) && resultOf(source.mark) === 'accept') {
       const anchor = finalOf(source.node);
 
       placed.add(node);
       placedAfter.set(anchor, [...(placedAfter.get(anchor) ?? []), node]);
-      return;
+      continue;
     }
-    if (!splits.some((mark) => resultOf(mark) === 'accept')) return;
-    if (splits.some((mark) => isEditingChange(mark.change))) {
-      if (decisionOf(source.mark) === 'keep') retainedSplits.add(node);
+    if (!claims.some((mark) => resultOf(mark) === 'accept')) continue;
+    if (claims.some((mark) => isEditingChange(mark.change))) {
+      if (decisionOf(source.mark) === 'keep') retainedFollowers.add(node);
     } else {
       wait([source.mark]);
     }
-  });
+  }
 
   // A pending join waits on a decision that removes the block it would join.
   blocks.forEach(({ ancestors, node }, index) => {
@@ -745,7 +853,17 @@ export const resolveAuthoredChildren = (
     if (joins.length === 0 || !survives(node)) return;
 
     const container = ancestors.at(-1);
-    const candidate = blocks[index - 1];
+    const keys = new Set(joins.map(incarnationOf));
+    let before = index - 1;
+
+    while (
+      before >= 0 &&
+      precedesJoin(getDefined(blocks[before]), before, keys)
+    ) {
+      before -= 1;
+    }
+
+    const candidate = blocks[before];
     const previous =
       candidate && (!container || candidate.ancestors.includes(container))
         ? candidate.node
@@ -854,6 +972,11 @@ export const resolveAuthoredChildren = (
         restructured = true;
         continue;
       }
+      if (lapsed.has(node) && !afterDecision.survives(node)) {
+        if (isText(node)) changed = true;
+        else restructured = true;
+        continue;
+      }
       // An Editing unwrap of a line removes a wrapper that stands for the
       // content pending inside it, as a removal does.
       const unwrapsLine =
@@ -894,7 +1017,8 @@ export const resolveAuthoredChildren = (
           : result === 'keep' ||
               heldDeletion(node, mark) ||
               (mark.kind === 'join' && retainedJoins.has(node)) ||
-              (mark.kind === 'split' && retainedSplits.has(node));
+              ((mark.kind === 'split' || followsOf(mark) !== undefined) &&
+                retainedFollowers.has(node));
       });
       // A block whose removal is decided stands only for the pending content
       // inside it, so it takes that content's deletions and goes with it.
@@ -1287,37 +1411,20 @@ export const resolveAuthoredValue = (
     'main',
     resolveOptions
   );
-  const roots = Object.entries(value.roots ?? {})
-    .filter(([root]) => !isMetadataRootKey(root))
-    .map(
-      ([root, children]) =>
-        [
+  const roots = Object.entries(value.roots ?? {}).map(
+    ([root, children]) =>
+      [
+        root,
+        resolveAuthoredChildren(
+          children,
+          outcome,
+          schema,
           root,
-          resolveAuthoredChildren(
-            children,
-            outcome,
-            schema,
-            root,
-            resolveOptions
-          ),
-        ] as const
-    );
+          resolveOptions
+        ),
+      ] as const
+  );
   const all = [main, ...roots.map(([, resolution]) => resolution)];
-  const contexts = dependencies.minted().map(contextElementOf);
-  const resolvedRoots = {
-    ...value.roots,
-    ...Object.fromEntries(
-      roots.map(([root, resolution]) => [root, resolution.children])
-    ),
-    ...(contexts.length > 0
-      ? {
-          [CONTEXTS_ROOT]: [
-            ...(value.roots?.[CONTEXTS_ROOT] ?? []),
-            ...contexts,
-          ],
-        }
-      : {}),
-  };
 
   return {
     blockers: [...new Set(all.flatMap((resolution) => resolution.blockers))],
@@ -1329,11 +1436,20 @@ export const resolveAuthoredValue = (
         null
       ),
     unplaceable: all.some((resolution) => resolution.unplaceable),
-    value: {
-      ...value,
-      children: main.children,
-      ...(value.roots || contexts.length > 0 ? { roots: resolvedRoots } : {}),
-    } as JsonEditorValue,
+    value: deriveValue(
+      value,
+      {
+        children: main.children,
+        ...(value.roots
+          ? {
+              roots: Object.fromEntries(
+                roots.map(([root, resolution]) => [root, resolution.children])
+              ),
+            }
+          : {}),
+      },
+      putContexts(dependencies.minted())
+    ),
   };
 };
 

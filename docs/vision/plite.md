@@ -133,13 +133,24 @@ donor checkout as proof after the transplant.
   an explicit "preserve". `schema.element.textBlock()` is the standard editable
   text-plus-inline element, and every other non-void element spells its content
   grammar explicitly.
-- A document's top level is `children`, `meta` and `roots`. Every load path
+- A document's top level is `children`, `meta`, `roots` and `records`. Every load path
   reads the caller's raw object and refuses any other top-level field instead
   of dropping it; a direct snapshot adds `selection`, and a persisted envelope
   is `document`, `schema` and an optional `selection`. Application data belongs in `meta`,
   and a stored top-level field moves there through a migration step. Because
   readers refuse unknown keys, a new top-level document field breaks every
   older reader, so Plite adds one only with a doctrine change and a migration.
+- `records` holds keyed data beside the tree. Each record set a plugin's
+  schema declares under `records` maps an id to a JSON object, has no node
+  keys, positions or views, and changes only through `tx.records.put` and
+  `tx.records.drop` or the records part of a `DocumentChange`. A put that
+  would change the record stored under its id throws. A set declared with
+  `history: 'retain'` is never undone. Records are never removed while a room
+  is live, so a value change without `records` leaves them as they are and a
+  replacement's records add to them. A set no plugin declares is refused, and
+  declaring one never changes the schema identity. The Yjs binding keeps each
+  set in one top-level `Y.Map` and applies a transaction's records before its
+  content.
 - An unvalidated `property.json()` value is `EditorJsonValue`, and a narrower
   value type requires a runtime type predicate and a `validationVersion` on the
   property. Property meaning belongs to placement: `role: "metadata"` goes on
@@ -168,6 +179,11 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   hook-generics` rejects a type parameter that only the caller chooses on a
   hook or `createEditor` exported from a client entrypoint, in the forms its
   tests run.
+- Each editor constructor, `createEditor` and `useEditor`, takes a closed
+  option set. An unknown option written in the call fails to compile and names
+  the key, though the options type is inferred. At runtime the constructor
+  throws a `TypeError` that names the first string key outside the set, own or
+  inherited, without reading a value. `useEditor` checks on every render.
 - A DOM-scope hook accepts only the DOM capabilities it reads, and an
   identity-only registry uses object keys. Neither requires an erased mutable
   `Editor`, whose unrelated write variance can reject a correctly inferred
@@ -309,9 +325,9 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   and each node carries its own claims. Text written inside another pending
   change carries one `in` member that names an immutable context record
   listing the changes it depends on. Context records live in the
-  `$authored-contexts` metadata root, and one verdict per decided incarnation
-  lives in `$authored-verdicts`. Every collaborator shares both roots, and
-  `read.value()` holds them beside the content. Code outside the authored
+  `authored-contexts` record set, and one verdict per decided incarnation
+  lives in `authored-verdicts`. Every collaborator shares both sets, and
+  `read.value()` holds them in `records` beside the content. Code outside the authored
   owner reads a node's pending claims through `reviewOf` instead of parsing
   `authored`.
   A view either writes, with intent `edit` or `propose`, or previews the
@@ -335,7 +351,7 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   only moves the selection. An undeclared one throws on the review tree. Point
   stepping has no option that skips hidden content, because commands on the
   review tree never see it.
-  Persistence saves the whole `read.value()`, metadata roots included. Every
+  Persistence saves the whole `read.value()`, records included. Every
   document passes one admission owner before anyone reads it. Admission
   validates claims and context references, compacts stacked legacy insertions
   into contexts and settles claims against verdicts. Loading never replays
@@ -418,9 +434,10 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   slot that holds it, built as a root child.
   `tx.break.exit` leaves the nearest structure. The selected block is that
   structure when it owns its exit: a void, an object, or a text block whose
-  schema declares `ownsExit`. Only a block text element may declare that
-  compiled behavior fact, and the contract and fingerprint carry it only when
-  true. The block stays the structure while its parent builds a default beside
+  schema declares `ownsExit`. Only a block text element may declare it. The
+  compiled `ownsExit` behavior is true for every void and object too, while
+  the contract and fingerprint carry only a text block's declaration. The
+  block stays the structure while its parent builds a default beside
   it whose caret path, the landing and each last child, holds no block that
   owns its exit. Otherwise exit takes the nearest strict ancestor that is a
   root child, sits in a parent with no declared content, or sits in a parent
@@ -519,6 +536,21 @@ deps?)` owns one editor for a component lifetime. `useEditorContext()` and
   only consumer is that handler is deleted rather than published for the handler
   to call. Semantic commands derive ordinary values through the existing read
   owner before adding a generic dependency or cache graph.
+- A paste's landing composes through `editorReads.slice.landing`. The default
+  replacement command resolves the target, limits the slice to `maxLength` once
+  and runs the read once on the command's current draft after handlers
+  delegate. A terminal handler bypasses it. Raw transaction replacement and
+  detached fitting do not run command policy. One-shot view slice and fragment
+  replacement keep semantic command dispatch.
+- Plite owns whole-block replacement of an empty target. A landing read can
+  propose blocks for an `empty` target and never names another block. Plite
+  honors the proposal only on its own resolution and refuses one the budget
+  would cut. The head keeps every target property for the same type, what the
+  type change allows for another text type, and none as an object or void.
+  Plite admits the whole sequence at the parent, fits it at the block's bounds
+  and discards the block's key. Otherwise it fits the landing slice under the
+  same budget. Slice and fragment replacement take a location, and a selected
+  node is replaced through the current selection.
 - Command `handle` interceptors are conditional fallbacks: returning `false`
   continues to the next handler or descriptor default. Command `around`
   interceptors own the invocation unless they explicitly call `next()` or

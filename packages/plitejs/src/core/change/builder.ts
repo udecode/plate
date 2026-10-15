@@ -13,7 +13,8 @@ import {
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeEntries,
-  valueRoot,
+  getInternalDocumentChangeRecords,
+  valueRootIndex,
 } from './document-change';
 import { DocumentIndex } from './document-index';
 import type { JsonRecord } from './json';
@@ -502,6 +503,7 @@ export class ChangeDraft {
         classifications,
         createRoots: change.createRoots,
         deleteRoots: change.deleteRoots,
+        records: getInternalDocumentChangeRecords(change),
       }
     );
 
@@ -570,6 +572,7 @@ export class ChangeDraft {
         classifications,
         createRoots: change.createRoots,
         deleteRoots: change.deleteRoots,
+        records: getInternalDocumentChangeRecords(change),
       }
     );
     const frozenRuntimeCandidates = freezeReadonlyMap(runtimeCandidates);
@@ -593,7 +596,7 @@ export class ChangeDraft {
 
     for (const root of change.createRoots) {
       if (!this.indexes.has(root)) {
-        const after = DocumentIndex.fromValue(valueRoot(current, root));
+        const after = valueRootIndex(current, root);
         const beforeRoot = this.getSourceIndex(root);
 
         this.indexes.set(root, after);
@@ -857,6 +860,7 @@ export class ChangeDraft {
       classifications,
       createRoots: change.createRoots,
       deleteRoots: change.deleteRoots,
+      records: getInternalDocumentChangeRecords(change),
     });
     const frozenRuntimeCandidates = freezeReadonlyMap(runtimeCandidates);
     const current = applyDocumentChangeWithIndexes(
@@ -1304,7 +1308,7 @@ export class ChangeDraft {
     let document = this.indexes.get(root);
 
     if (!document) {
-      document = DocumentIndex.fromValue(valueRoot(this.current, root));
+      document = valueRootIndex(this.current, root);
       this.indexes.set(root, document);
     }
 
@@ -1315,7 +1319,7 @@ export class ChangeDraft {
     let document = this.sourceIndexes.get(root);
 
     if (!document) {
-      document = DocumentIndex.fromValue(valueRoot(this.source, root));
+      document = valueRootIndex(this.source, root);
       this.sourceIndexes.set(root, document);
     }
 
@@ -1337,8 +1341,8 @@ export const classifyDocumentChange = (
       root,
       classifyRootChange(
         rootChange,
-        DocumentIndex.fromValue(valueRoot(before, root)),
-        DocumentIndex.fromValue(valueRoot(after, root))
+        valueRootIndex(before, root),
+        valueRootIndex(after, root)
       )
     );
   }
@@ -1349,6 +1353,7 @@ export const classifyDocumentChange = (
       classifications,
       createRoots: change.createRoots,
       deleteRoots: change.deleteRoots,
+      records: getInternalDocumentChangeRecords(change),
     }
   );
 };

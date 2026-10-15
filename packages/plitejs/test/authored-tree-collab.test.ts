@@ -1958,13 +1958,9 @@ describe('review contexts on two clients', () => {
       ),
     ]);
     const contextsOf = (peer: Peer) =>
-      (
-        (
-          peer.editor.read.value() as {
-            roots?: Record<string, ReadonlyArray<{ ctx: string }>>;
-          }
-        ).roots?.['$authored-contexts'] ?? []
-      ).map(({ ctx }) => ctx);
+      Object.keys(
+        peer.editor.read.value().records?.['authored-contexts'] ?? {}
+      );
 
     alice.editor.update((tx) => tx.text.insert('X', { at: point(2, [0, 1]) }));
     deliver(alice, bob);

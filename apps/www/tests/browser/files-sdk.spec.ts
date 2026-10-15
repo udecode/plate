@@ -186,6 +186,8 @@ test('local playground completes and deletes an R2-backed image from a physical 
   };
   const imagePath = [value.children.findIndex((node) => node.type === 'image')];
   const imageBox = await image.boundingBox();
+  const figure = image.locator('xpath=ancestor::figure[1]');
+  const figureBox = await figure.boundingBox();
 
   expect(imagePath[0]).toBeGreaterThanOrEqual(0);
   expect(imageBox).not.toBeNull();
@@ -247,10 +249,14 @@ test('local playground completes and deletes an R2-backed image from a physical 
   ]);
   await expect(image).toHaveClass(/ring-2/);
 
-  const caption = image.locator('xpath=ancestor::figure[1]/figcaption');
+  const caption = figure.locator('figcaption');
 
+  await expect(caption).toBeHidden();
+  const selectedFigureBox = await figure.boundingBox();
+
+  expect(selectedFigureBox?.height).toBe(figureBox?.height);
+  await page.getByRole('button', { name: 'Caption', exact: true }).click();
   await expect(caption).toBeVisible();
-  await caption.click();
   expect(await modelSelection()).toMatchObject({
     anchor: { path: [...imagePath, 0] },
     focus: { path: [...imagePath, 0] },
@@ -297,6 +303,58 @@ test('local playground completes and deletes an R2-backed image from a physical 
 
   await page.keyboard.press('Backspace');
   await expect(image).toHaveCount(0);
+});
+
+test('the image picker replaces the empty paragraph at the caret', async ({
+  page,
+}) => {
+  const bytes = readFileSync('public/favicon-48x48.png');
+  await mockFilesGateway(page, { bytes });
+
+  await page.goto('/blocks/playground', { waitUntil: 'commit' });
+  const root = page.locator('[data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(
+    page,
+    'playground empty paragraph upload',
+    root
+  );
+  await editor.ready({
+    editor: 'visible',
+    text: 'Welcome to the Plate Playground!',
+  });
+  await editor.selection.collapse({ path: [0, 0], offset: 32 });
+  await editor.press('Enter');
+
+  const before = (await editor.get.modelValue()) as {
+    children: Array<{ children?: Array<{ text?: string }>; type?: string }>;
+  };
+
+  expect(before.children[1]?.children).toEqual([{ text: '' }]);
+
+  const chooserPromise = page.waitForEvent('filechooser');
+  await page.locator('button:has(svg.lucide-image)').first().click();
+  const chooser = await chooserPromise;
+  await chooser.setFiles({
+    buffer: bytes,
+    mimeType: 'image/png',
+    name: 'empty-paragraph.png',
+  });
+
+  await expect
+    .poll(async () => {
+      const value = (await editor.get.modelValue()) as typeof before;
+
+      return {
+        count: value.children.length,
+        next: value.children[2]?.type,
+        type: value.children[1]?.type,
+      };
+    })
+    .toEqual({
+      count: before.children.length,
+      next: before.children[2]?.type,
+      type: 'image',
+    });
 });
 
 test('dropping three filesystem images completes without DOM ownership errors', async ({

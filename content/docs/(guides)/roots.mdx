@@ -107,7 +107,7 @@ in the element's `children`.
 ```tsx
 import { definePlugin, schema } from 'platejs/react';
 
-const SyncedBlockPlugin = definePlugin('synced-block', {
+const SyncedBlockPlugin = definePlugin('syncedBlock', {
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -138,7 +138,7 @@ editor.update((tx) => {
     { type: "paragraph", children: [{ text: "Synced body" }] },
   ]);
   tx.nodes.insert({
-    type: "synced-block",
+    type: "syncedBlock",
     childRoots: { body: bodyRoot },
     children: [{ text: "" }],
   });

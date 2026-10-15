@@ -101,6 +101,14 @@ describe('removed editor option', () => {
     );
   });
 
+  it('refuses an option it does not take while disabled', () => {
+    const options = { enabled: false, initialValue, value: initialValue };
+
+    expect(() => renderHook(() => useCreateEditor(options))).toThrow(
+      'Unknown editor option "value". Use "initialValue" to set the document.'
+    );
+  });
+
   it('refuses an existing editor added to useCreateEditor options on a later render', () => {
     const withEditor = { editor: createRuntimeEditor(), initialValue };
     const { rerender } = renderHook(({ options }) => useCreateEditor(options), {

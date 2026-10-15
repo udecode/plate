@@ -52,17 +52,10 @@ it('loads text that rests on a review context', () => {
         ],
       },
     ],
-    roots: {
-      '$authored-contexts': [
-        {
-          at: 2,
-          author: 'alice',
-          change: 'A',
-          children: [{ text: '' }],
-          ctx,
-          type: 'authored-context',
-        },
-      ],
+    records: {
+      'authored-contexts': {
+        [ctx]: { member: { at: 2, author: 'alice', change: 'A' } },
+      },
     },
   };
   const editor = createEditor({
@@ -80,15 +73,14 @@ it('loads a document with stacked insertions compacted and decisions settled', (
     authored: [{ at: 3, author: 'bob', change: 'bob:1', kind }],
     text: 'b',
   });
-  const verdicts = [
-    {
+  const verdicts = {
+    '["v","bob:1",null,3,"reject","d:1"]': {
       at: 3,
       change: 'bob:1',
-      children: [{ text: '' }],
-      type: 'authored-verdict',
+      decision: 'd:1',
       verdict: 'reject',
     },
-  ];
+  };
   const editor = createEditor({
     plugins: [BaseParagraphPlugin, AuthoredPlugin],
     initialValue: {
@@ -103,7 +95,7 @@ it('loads a document with stacked insertions compacted and decisions settled', (
           ],
         },
       ],
-      roots: { '$authored-verdicts': verdicts },
+      records: { 'authored-verdicts': verdicts },
     },
   });
   const ctx = 'c:72aa276b81fc0419';
@@ -120,18 +112,11 @@ it('loads a document with stacked insertions compacted and decisions settled', (
         ],
       },
     ],
-    roots: {
-      '$authored-contexts': [
-        {
-          at: 2,
-          author: 'alice',
-          change: 'A',
-          children: [{ text: '' }],
-          ctx,
-          type: 'authored-context',
-        },
-      ],
-      '$authored-verdicts': verdicts,
+    records: {
+      'authored-contexts': {
+        [ctx]: { member: { at: 2, author: 'alice', change: 'A' } },
+      },
+      'authored-verdicts': verdicts,
     },
   });
 });

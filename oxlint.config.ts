@@ -530,6 +530,7 @@ export default defineConfig({
       ],
       rules: {
         'plate/no-schema-placement-copy': 'error',
+        'plate/no-selection-root-copy': 'error',
       },
     },
     {

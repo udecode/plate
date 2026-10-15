@@ -730,6 +730,8 @@ Ownership:
 - list is the strongest current structural owner
 - list owns `↵`, `⌫`, `⇥`, and `⇤` before blockquote or generic paragraph
 - nested list items change one list depth per keypress
+- an item's family is the item and the blocks after it that sit deeper, up to the next block at its depth or shallower, such as its nested items and continuation paragraphs
+- `⇥`, `⇤`, outdent, drag and cut move the family together, and `↵` or `⌫` that takes a root item out of its list lifts its family one level
 
 Plugin surface:
 
@@ -835,6 +837,52 @@ Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx:825` "kee
 =>
 - |Item
 ```
+
+- `EDIT-LIST-TAB-002` `proposed` `⇥`: an item moves one level deeper with its family, and a selected item inside a selected item's family moves once
+
+```text
+- A
+- |B
+  Continuation
+  - C
+=>
+- A
+  - |B
+    Continuation
+    - C
+```
+
+Proof: `packages/platejs/src/react/features/list/ListPlugin.spec.tsx` "nests an item with its continuation blocks on Tab" and "moves a selected child of a selected item once".
+
+- `EDIT-LIST-STAB-002` `proposed` `⇤`: an item moves one level out with its family
+
+```text
+- A
+  - |B
+    Continuation
+=>
+- A
+- |B
+  Continuation
+```
+
+Proof: `packages/platejs/src/react/features/list/ListPlugin.spec.tsx` "outdents an item with its continuation blocks on Shift+Tab".
+
+- `EDIT-LIST-FAMILY-LIFT-001` `proposed` `↵` and `⌫`: when `↵` in an empty root item or `⌫` at a root item's start takes the item out of its list, its family moves up one level with it
+
+```text
+- |Item
+  Body
+=>
+|Item
+Body
+```
+
+Proof: `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx` "takes a root item out of the list with its body on %s".
+
+- `EDIT-LIST-MOVE-001` `proposed` drag, copy and cut: moving, copying or cutting an item takes its family, and a moved item lands after the blocks deeper than itself that follow the drop point, so it never takes another item's nested blocks as its own
+
+Proof: `packages/platejs/src/react/features/list/ListPlugin.spec.tsx` "moves an item with its continuation blocks" moves the blocks `editor.read.transfer.nodes()` returns, which the registry's drag handle and block-menu Cut read.
 
 - `EDIT-LIST-START-MD-401` `proposed` `Markdown parse and serialize`: an ordered list keeps its explicit start number, including `0` and the start of a list that follows an interrupting paragraph, through parse, value replacement and serialize. Parse gives each list its own new `listId` and a start other than 1 as `listStart`, so separate Markdown lists never count as one, even after `⌫` or a move at a list's first item, a raw insert, a paste or a move into another editor. Serialize writes a Markdown list from 1 and reports it when its numbers would go negative or pass the nine digits CommonMark reads. A list in a table cell, which serialize writes as HTML, keeps its start. Serialize also reports a forced restart or list membership that Markdown cannot carry
 
@@ -1724,6 +1772,9 @@ Ownership:
 - `EDIT-DETAILS-DEL-CLOSED-001` `locked` `⌦`: at the Summary end with a closed body, the caret skips the hidden body without changing content
 - `EDIT-DETAILS-BS-AFTER-CLOSED-001` `locked` `⌫`: in an empty block after a closed Details, the block goes and the caret moves to the end of the Summary; deleting a whole block after a closed Details, as a text range or a selected block, also leaves the caret at the Summary end, never in the hidden body
 - `EDIT-DETAILS-TITLE-LEVEL-001` `locked`: a heading shortcut or a Markdown heading prefix in the Summary gives it that `level` and keeps it the first child with its node key; the same shortcut again removes the level, and a heading prefix typed into a Summary that already has the level stays text
+- `EDIT-DETAILS-TITLE-LIST-001` `proposed`: a list command, Turn into or a list marker typed at the Summary start turns the Summary into a list item at the Details' depth and each body block into a block one level deeper, so the body is the item's family; only that Details goes and an enclosing Details stays. When a body block cannot take an indent or the result does not fit the parent, the command changes nothing and a typed marker stays text. Other selected blocks stay unchanged too. Proof: `packages/platejs/src/features/details/lib/BaseDetailsConversion.spec.ts` "converts a title when its list marker is typed", "keeps a typed list marker when the body cannot be indented", "refuses a selection around a section that cannot convert" and the cases under "a Details title conversion that cannot finish".
+- `EDIT-DETAILS-TITLE-CODE-001` `proposed`: Code from the Summary alone turns it into a code block and leaves the body as the blocks after it, and only that Details goes; Code is refused when the selection holds the Summary and more blocks, a code block included. Code also refuses a block selection whose span holds a Summary, even when that Summary is not selected. Proof: `packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx` "converts a nested Details title to code and preserves its body and parent", and `packages/platejs/src/features/details/lib/BaseDetailsCodeConversion.spec.ts` "refuses a selection that holds the title and its body", "refuses a selection that holds the title and a code block" and "refuses two selected blocks around a Details left unselected".
+- `EDIT-DETAILS-INSERT-CLOSED-001` `proposed`: a block inserted from a closed Summary, by an insert command, the slash menu, a file pasted or submitted there or AI, lands after the whole Details; from an open Summary it lands at the start of the body. An explicit target stays where it points, and an empty Summary keeps its place and key. Proof: `packages/platejs/src/features/details/lib/BaseDetailsLanding.spec.ts`, `packages/platejs/src/ai/react/AIChatPlugin.details.spec.ts`, `packages/platejs/src/react/features/upload/UploadPlugin.spec.ts` "submits a file from a closed details title after the section" and `apps/www/src/registry/components/editor/slash.spec.tsx` "inserts ${option} after a closed Details with title %j".
 
 ## Drawing Blocks
 
@@ -2097,7 +2148,8 @@ Plugin surface:
   plugin, node type, key, or content root exists
 - renderers keep only the asset chrome non-editable and render the ordinary
   media child slot as the caption
-- renderers may hide `[{ text: '' }]` until the asset has `NodeSelection`;
+- renderers keep an empty `[{ text: '' }]` caption hidden until a
+  `TextSelection` enters it, so selecting the asset does not shift the layout;
   placeholder visibility does not change the document
 - current markdown/MDX contract keeps supported MDX attributes on round-trip
 - current media embed contract persists one canonical render `url` plus current
@@ -2191,9 +2243,10 @@ nothing follows
 ```
 
 note: `ArrowDown` moves from asset focus into the media element's direct inline
-children while the page draws them. The stock caption shows while its media is
-selected, so `ArrowDown` from stock media always enters the caption. Whether the
-page draws the caption comes from the mounted DOM, not from its text.
+children while the page draws them. The stock caption hides an empty caption
+even while its media is selected, so `ArrowDown` from stock media enters only a
+populated caption. Whether the page draws the caption comes from the mounted
+DOM, not from its text.
 
 - `EDIT-CAPTION-NAV-002` `locked`
 
@@ -2218,10 +2271,9 @@ TextSelection at caption start
 note: horizontal movement treats the owner as a separate keyboard stop before
 its editable children. Forward movement from the owner enters caption text the
 page draws and otherwise moves on to the next stop. Reverse movement visits
-caption end, then the owner, then the preceding text. A mounted empty caption
-still has one reverse text-caret stop while the page hides it, because entering
-it reveals the stock caption. Populated caption text the page does not draw has
-no stop, so reverse movement stops on the owner. The physical arrow keys follow
+caption end, then the owner, then the preceding text. Caption text the page
+does not draw, empty or populated, has no stop, so reverse movement stops on the
+owner. The physical arrow keys follow
 the computed direction of the block that holds the caret, or of the selected
 media. They reverse in an RTL block inside an LTR editable, and this logical
 order stays the same.
@@ -2230,6 +2282,7 @@ order stays the same.
 
 ```text
 ↓ from the final visual line of text immediately before media
+with a populated caption
 =>
 media NodeSelection + ↓
 =>
@@ -2267,9 +2320,10 @@ media NodeSelection + ↓
 the caption entry of EDIT-CAPTION-NAV-001
 ```
 
-note: the stock caption hides an empty caption while its media is neither
-selected nor holding the caret, so reverse vertical entry stops on the
-selectable asset, and selecting the asset reveals the caption. Captions an app
+note: the stock caption hides an empty caption until it holds the caret, so
+reverse vertical entry stops on the selectable asset and the next `ArrowDown`
+moves past the hidden caption. The media toolbar's Caption button puts the
+caret in an empty caption. Captions an app
 hides with CSS follow the same rule. Whether the page draws the caption comes
 from the mounted DOM, not from its text.
 
@@ -2483,7 +2537,16 @@ paste into an empty paragraph |
 Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-first paste, with Google Docs where document fidelity is stronger; secondary ref: ProseMirror (#231, #570, #788)
 Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-0219-0271.md:22
-Proof: Plite core proves it for closed slices: `packages/plitejs/test/clipboard-contract.ts:1373` "slice replacement preserves a copied text-block type over an empty target block", `:1554` "slice replacement preserves a copied text-block type over a single empty document block", `:1648` "slice replacement preserves copied block void attributes over an empty target block" and `:2034` "preserves the target block type when replacing its selected text with a single text-block fragment", run by `packages/plitejs/test/architecture-contracts.test.ts`; `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:6048` "pastes a copied heading into an empty paragraph as a heading" passes only because that example's schema sets `slice.preserveContext` on headings. Drift: a model probe on 2026-10-08 (Bun, package source, happy-dom) copied a heading's text with Plate's own clipboard writer and pasted it into an empty paragraph, and into a document whose only block is empty, and both landed as paragraphs, because Plate's headings do not set `slice.preserveContext`, so the copied slice stays open; a node-selection copy, a closed `fragment.replace` and external `<h1>` HTML keep the heading, an image's attributes survive, and text pasted over a heading's selected text keeps the heading. No Plate test pastes into an empty block. Checked 2026-10-08.
+Proof: Plite core proves it for closed slices: `packages/plitejs/test/clipboard-contract.ts:1373` "slice replacement preserves a copied text-block type over an empty target block", `:1554` "slice replacement preserves a copied text-block type over a single empty document block", `:1648` "slice replacement preserves copied block void attributes over an empty target block" and `:2034` "preserves the target block type when replacing its selected text with a single text-block fragment", run by `packages/plitejs/test/architecture-contracts.test.ts`; `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:6048` "pastes a copied heading into an empty paragraph as a heading" passes only because that example's schema sets `slice.preserveContext` on headings. Drift: a model probe on 2026-10-08 (Bun, package source, happy-dom) copied a heading's text with Plate's own clipboard writer and pasted it into an empty paragraph, and into a document whose only block is empty, and both landed as paragraphs, because Plate's headings do not set `slice.preserveContext`, so the copied slice stays open; a node-selection copy, a closed `fragment.replace` and external `<h1>` HTML keep the heading, an image's attributes survive, and text pasted over a heading's selected text keeps the heading. The tagged Plate list-paste cases now prove the list-led multi-block and closed-slice exception in empty paragraphs and headings at any depth, as EDIT-CLIPBOARD-LIST-LANDING-001 defines. The tagged closed-object cases in `packages/plitejs/test/slice-fit-contract.test.ts` prove replacement of a semantically empty block inside a container or content root, whole-sequence schema admission, copied roots, metadata controls and history. They exclude a target that itself owns content roots. The single open heading example remains unproved and this broader rule stays proposed. Checked 2026-10-14.
+
+- `EDIT-CLIPBOARD-LIST-LANDING-001` `locked` `paste or copied text drop of list items`: copied items whose parent was not copied land at the caret item's depth, or level one in a plain paragraph. A child keeps its depth offset from its nearest earlier copied parent. A plain block ends that ancestry and keeps its own indent. Only the first copied list may join a target of the same kind and heading role; joined roots take its marker style and continue its numbering. Copied starts remain unless an empty target supplies its own start or restart.
+
+A list-led paste of two or more top-level blocks, or a closed slice, keeps its first item's type and properties in an empty paragraph or heading at any depth in the main document, when that position's schema admits the copied type. An empty plain line immediately below a compatible list continues it. A single open item's text, plain text and a selected block retain ordinary paste behavior. Open List promotion does not apply to callouts, toggles or targets in a content root. Generic closed-object placement can still replace an ordinary empty text block inside a container or content root when the complete copied sequence fits. It does not replace a block that itself owns content roots. Copies that omit an object's required roots stay on the open paste path and do not guarantee object type or list numbering. Text joins at an occupied caret, and one undo restores the pre-paste document. Under `maxLength`, the paste lands what fits. When the limit cuts the first copied item, the items left land at the caret's depth, and a wrapped list whose text no longer fits pastes nothing. A text drag that copies lands at its drop point as this paste would. Such a drag comes from another editor or a read-only view, or uses the copy modifier.
+
+Classification: invariant, by the tests in docs/vision/plate.md:129-137
+Authority: syntax: Plate's flat list model; primary UX ref: Notion for copied nesting and occupied text joins; secondary ref: ProseMirror and Lexical for sibling landing; empty-line type and restart precedence are the owner's accepted product policy
+Source: docs/plans/2026-10-13-list-paste.md Design and Defaults, with the landing and length-limit Defaults of docs/plans/2026-10-14-pr-5168-redo.md
+Proof: tagged cases in `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx` cover the six comparison fixtures and empty targets in paragraphs, headings, quotes, table cells and columns. `apps/www/tests/browser/list-keys.spec.ts` covers native Chromium copy/paste of depth-three siblings into an empty Roman item, rendered IV and V, caret, typing, source preservation and history. The same native suite covers an image-led list pasted into a nested empty paragraph or heading, with rendered image, caret, typing, unchanged source and one-step history. Tagged raw Plite cases cover empty lines inside named and element-owned roots. `packages/plitejs/test/slice-landing-contract.test.ts` covers the landing read: an admitted proposal with its discarded key and undo, a refused proposal with copied roots, proposals on forged targets, `maxLength`, kept target properties and a named-root view. Two tagged List cases cover the length limit at a list-item caret and over a wrapped list. Cross-quote-edge slices remain outside List promotion; partial rooted-object copies can omit the body or lose list numbering. For copied text drops, the tagged cross-editor drop in that List spec covers caret depth, child offset and a fresh list. The "list drop" case in `apps/www/tests/browser/list-keys.spec.ts` dispatches drag events for a Chromium copy drop on `/blocks/list-demo` and compares the result with a native paste at the same caret.
 
 - `EDIT-CLIPBOARD-HTML-BLANK-001` `proposed` `HTML paste with blank lines`: pasting HTML keeps its blank lines: a `<br>` that stands alone as a line, such as `<div><br></div>` or the leading and trailing `<br>`s in `<div><br><br><div>CCC</div><div>DDD</div><br><br></div>`, becomes an empty paragraph, so `<div>a</div><div><br></div><div>b</div>` pastes as three paragraphs, `a`, an empty one and `b`
 
@@ -2587,6 +2650,7 @@ note: a drag from another editor, a read-only view or a document view copies and
 keeps the source; Alt on Apple platforms and Ctrl elsewhere copy inside one
 editor
 note: a copy carries owned content roots with the copied blocks; a copy that does not fit lands what fits and reports the loss
+note: a text drag that copies lands at its drop point as a paste there, so copied list items follow `EDIT-CLIPBOARD-LIST-LANDING-001`; a block drag keeps its blocks' depths
 note: a drag into another application never deletes the source
 note: a block lands wherever the target's schema accepts it, at any depth, such
 as inside a blockquote, a details body, a column or a table cell; within 8px of

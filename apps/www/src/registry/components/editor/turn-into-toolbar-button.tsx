@@ -21,13 +21,15 @@ import {
   BaseCodeBlockPlugin,
   BaseHeadingPlugin,
   BaseListPlugin,
+  BaseParagraphPlugin,
+  defineCommand,
   ElementApi,
   PathApi,
   SelectionApi,
   type Element,
-  type Path,
+  type NodeEntry,
 } from 'platejs';
-import { BaseDetailsPlugin } from 'platejs/details';
+import { BaseDetailsPlugin, BaseDetailsSummaryPlugin } from 'platejs/details';
 import { BaseColumnPlugin } from 'platejs/layout';
 import {
   type Editor,
@@ -96,6 +98,63 @@ const structuralStateEqual = (
   previous.quote.active === next.quote.active &&
   previous.quote.eligible === next.quote.eligible;
 
+// A block directly inside a Details body becomes a paragraph instead of
+// resetting, because the Details' only content default is its title.
+const turnIntoList = defineCommand<
+  Readonly<{
+    detailsType: string | undefined;
+    paragraphType: string;
+    summaryType: string | undefined;
+    type: 'bulleted' | 'numbered' | 'task';
+  }>,
+  Editor
+>('turn-into:list', {
+  build: ({
+    input: { detailsType, paragraphType, summaryType, type },
+    state,
+  }) => {
+    let applied = false;
+    const result = state.transaction((tx) => {
+      const selection = tx.selection();
+
+      if (!selection) return;
+
+      const root = SelectionApi.root(selection);
+      const at = ([first, ...rest]: ReadonlyArray<NodeEntry<Element>>) =>
+        first &&
+        SelectionApi.nodes(
+          [first[1], ...rest.map(([, path]) => path)],
+          root ? { root } : {}
+        );
+      const blocks = tx.nodes.blocks({ mode: 'lowest' });
+      const body = blocks.filter(([node]) => {
+        const parent = tx.nodes.parent(state.key(node));
+
+        return (
+          detailsType !== undefined &&
+          node.type !== summaryType &&
+          !!parent &&
+          ElementApi.isElementType(parent[0], detailsType)
+        );
+      });
+      const reset = at(blocks.filter((entry) => !body.includes(entry)));
+      const retyped = at(body.filter(([node]) => node.type !== paragraphType));
+      const bodyAt = at(body);
+
+      if (reset && !tx.blocks.reset({ at: reset, unset: ['level'] })) return;
+      if (retyped && !tx.blocks.set({ type: paragraphType }, { at: retyped })) {
+        return;
+      }
+      if (bodyAt) tx.nodes.unset('level', { at: bodyAt });
+      tx.plugin(BaseListPlugin).clear();
+      applied = tx.plugin(BaseListPlugin).toggle({ type });
+    });
+
+    return applied ? result : false;
+  },
+  locate: false,
+});
+
 const readBlocks = (
   editor: Editor,
   mode: 'highest' | 'lowest'
@@ -142,7 +201,10 @@ const hasWrapper = (
   return (
     portal.installed &&
     (entry[0].type === portal.schema.type ||
-      !!editor.read.nodes.above({ at: entry[1], type: plugin }))
+      !!editor.read.nodes.above({
+        at: editor.key(entry[0]),
+        type: portal.schema.type,
+      }))
   );
 };
 
@@ -172,6 +234,12 @@ const getStructuralState = (editor: Editor): StructuralState => {
     : [];
   const codeActive = hasSelection && codeMembership.every(Boolean);
   const codeMixed = codeMembership.some(Boolean) && !codeActive;
+  const summary = editor.plugin(BaseDetailsSummaryPlugin);
+  // codeBlock.toggle converts a Details title only on its own.
+  const holdsTitleAndMore =
+    summary.installed &&
+    leafEntries.length > 1 &&
+    leafEntries.some(([node]) => node.type === summary.schema.type);
   const columnActive =
     columns.installed &&
     entries.length === 1 &&
@@ -184,7 +252,11 @@ const getStructuralState = (editor: Editor): StructuralState => {
   return {
     code: {
       active: codeActive,
-      eligible: code.installed && !codeMixed && isContiguousSiblingRun(entries),
+      eligible:
+        code.installed &&
+        !codeMixed &&
+        !holdsTitleAndMore &&
+        isContiguousSiblingRun(entries),
     },
     columns: {
       active: columnActive,
@@ -205,30 +277,6 @@ const getStructuralState = (editor: Editor): StructuralState => {
       eligible: quote.installed && hasSelection,
     },
   };
-};
-
-const getDetailsPaths = (editor: Editor): Path[] => {
-  const details = editor.plugin(BaseDetailsPlugin);
-
-  if (!details.installed) return [];
-
-  const paths = editor.read.nodes
-    .blocks({ mode: 'highest' })
-    .flatMap(([node, path]) => {
-      if (node.type === details.schema.type) return [path];
-
-      const ancestor = editor.read.nodes.above({
-        at: path,
-        type: BaseDetailsPlugin,
-      });
-
-      return ancestor ? [ancestor[1]] : [];
-    });
-
-  return paths.filter(
-    (path, index) =>
-      paths.findIndex((candidate) => PathApi.equals(candidate, path)) === index
-  );
 };
 
 const getLeafFormat = (editor: Editor, node: Element): LeafFormat => {
@@ -423,10 +471,13 @@ export function TurnIntoToolbarButton() {
             return;
           }
 
-          editor.update((tx) => {
-            if (!tx.blocks.reset({ unset: ['level'] })) return;
-            tx.plugin(BaseListPlugin).clear();
-            tx.plugin(BaseListPlugin).toggle({ type });
+          const summary = editor.plugin(BaseDetailsSummaryPlugin);
+
+          editor.update.command(turnIntoList, {
+            detailsType: details.installed ? details.schema.type : undefined,
+            paragraphType: editor.plugin(BaseParagraphPlugin).schema.type,
+            summaryType: summary.installed ? summary.schema.type : undefined,
+            type,
           });
         },
       });
@@ -471,18 +522,7 @@ export function TurnIntoToolbarButton() {
               if (!portal.installed) return;
 
               if (current.active) {
-                const paths = getDetailsPaths(editor);
-
-                if (paths.length === 0) return;
-
-                const selection = editor.read.selection();
-                const root = selection && SelectionApi.root(selection);
-
-                portal.update.unwrap({
-                  at: SelectionApi.nodes(paths as [Path, ...Path[]], {
-                    ...(root ? { root } : {}),
-                  }),
-                });
+                portal.update.unwrap();
               } else {
                 portal.update.wrap();
               }

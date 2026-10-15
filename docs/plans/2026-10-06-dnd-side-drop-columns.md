@@ -8,30 +8,18 @@ work_kind: implementation
 
 # Side-drop columns
 
-Status: building: uncommitted; 9 of 16 steps partial; the API reference manifest waits on `HistoryApi`, which other owners hold
+Status: executed, 2026-10-07; committed in 002891202b and folded into the dnd subject on 2026-10-15, with its proof gaps in that subject's Open work
 Playbook: plan
 
 ## Brief
 
-### What did you find?
-
-Side drop needed one generic Plite extension point. The build also fixed a shipped `setColumns` crash, a key mismatch between read state and views, and an import cycle the full test partition caught.
-
 ### What will change?
 
-Dropping a block on another block's inline-end strip makes them columns, or adds a column beside a block in a column. A handle menu offers the same as Move beside previous and next.
-
-### What do you need from me?
-
-Run `/setup-pstack` to write the missing models sheet. The Codex seats answer again after your CLI upgrade. You own the left-side approach.
-
-### What happens if I say go?
-
-Once your left-side approach lands and the partial boxes close, I fold this plan into the dnd subject, mark it executed and republish the page. Nothing is committed.
+Drop a block on another block's right edge, or pick Move beside in its handle menu, and the two sit side by side as columns. This shipped on 2026-10-07, but ten steps are only partly tested.
 
 ### What could go wrong?
 
-No cross-family seat reviewed anything, because both Codex seats failed. Most mutation controls ran before the last restructure. The API reference manifest waits on `HistoryApi`.
+No model from another family checked it, because both Codex reviewers failed. Most break-it tests ran before the last rewrite. The missing tests, like the cross-root and x-axis cases, are listed in the drag and drop page's open work.
 
 ## Close
 
@@ -43,7 +31,7 @@ Reversals and deviations come first.
 - **Step 0.** It folded into the platejs changeset and relied on the existing additive repair test instead of the two planned must-still-accept cases.
 - **Build question.** The build question recommended Build now where AGENTS.md said Hold, because round 2's fixes changed public refusals and Column's correction output. The api-build panel then reviewed the diff.
 
-What landed, uncommitted in the working tree:
+What landed, in 002891202b:
 - **Plite.** The side law, made of `TransferSide`, `transfer.side`, `TransferWrap`, `TransferVetoInput.wrap`, `editor.read.transfer.check`, side strips and the indicator, and the `transfer-guard.ts` split.
 - **Plate.** The Column side read with a drop cap of 5, over-full width rescaling, the `setColumns` tolerance fix and the Footnote veto.
 - **Registry and docs.** The copied menu actions, docs in English and Chinese, Vision, two changesets and a registry changelog entry.
@@ -56,7 +44,7 @@ Proof and its limits:
 - **Review.** Two plan panel rounds and one api-build round ran with opus plus fable and sonnet; both Codex seats failed.
 - **`pnpm check`.** `lint`, `test-slow` and `www`'s `api-reference:check` fail the same way at HEAD. `core-audits` passes with the Column chain entry you approved on 2026-10-07. The www `tsc` reports 13 errors in untouched AI route files that a HEAD worktree did not reproduce; their cause is not established.
 
-Counts: 16 steps. 7 done, 9 partial, 0 skipped, 0 blocked, 0 open. Partial:
+Counts: 16 steps. 6 done, 10 partial, 0 skipped, 0 blocked, 0 open; the first count said 7 and 9 but listed these ten. On 2026-10-15 each partial box closed as `skip: partial` so the plan could fold, and its gaps became one item in `docs/plans/topics/dnd.md` Open work. Partial:
 - the two phase parents and the Phase 1 keep box, which rest on partial children;
 - the `landAt` step (no cross-root side test);
 - the strip step (no x-axis case);
@@ -102,13 +90,15 @@ The October 2 landing review read BlockNote `1e26f1c5`, ProseMirror, Tiptap, Lex
 Code, a test or a handle action puts blocks beside another block with the same call the drop makes.
 
 ```ts before
-// apps/www/src/registry/components/editor/dnd.tsx:170
-editor.api.transfer.move({ announce, nodes: nodes(), to });
 ```
 
 ```ts after
-// apps/www/src/registry/components/editor/dnd.tsx (planned)
-editor.api.transfer.move({ announce: 'Moved beside', nodes: nodes(), to: { key, side: 'end' } });
+// apps/www/src/registry/components/editor/dnd.tsx, besideOf
+editor.api.transfer.move({
+  announce: 'Moved beside',
+  nodes: keys,
+  to,
+});
 ```
 
 The Column group plugin owns what "beside" builds, as a contribution to a new `transfer.side` read. Without a contributor, a side target refuses with `policy`, and the DOM driver skips strips.
@@ -117,10 +107,15 @@ The Column group plugin owns what "beside" builds, as a contribution to a new `t
 ```
 
 ```ts after
-// packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts (planned)
-around(editorReads.transfer.side, ({ input, next, state }) =>
-  columnBeside(state, input) ?? next()
-),
+// packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts
+around(editorReads.transfer.side, ({ input, next, state }) => {
+  const {
+    payload,
+    side,
+    target: [target, path],
+  } = input;
+  // … builds a column group, or joins one, else calls next()
+}),
 ```
 
 A veto sees the wrap a side drop builds. Vetoes run once for the payload and, when a new group takes the target's place, once for the target, so Footnote keeps definitions at the root in both roles.
@@ -136,7 +131,7 @@ transferVeto.of(
 ```
 
 ```ts after
-// packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts (planned)
+// packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts
 transferVeto.of(
   ({ payload, target: [, path], wrap }) =>
     payload.kind === 'nodes' &&
@@ -151,9 +146,10 @@ A menu or a custom driver asks the same dry run the hover uses, when the menu op
 ```
 
 ```ts after
-// apps/www/src/registry/components/editor/dnd.tsx, openActions (planned)
-const to = { key: previousKey, side: 'end' } as const;
-if (editor.read.transfer.check({ nodes: nodes(), to }).admitted) actions.push(besideAction(to));
+// apps/www/src/registry/components/editor/dnd.tsx, besideOf
+const to = { key, side };
+
+return editor.read.transfer.check({ nodes: keys, to }).admitted
 ```
 
 The Editable drop passes a resolved block target through unchanged instead of rebuilding an edge.
@@ -166,7 +162,7 @@ The Editable drop passes a resolved block target through unchanged instead of re
 ```
 
 ```ts after
-// packages/plitejs/src/react/editable/clipboard-input-strategy.ts (planned)
+// packages/plitejs/src/react/editable/clipboard-input-strategy.ts
 ? resolved && 'key' in resolved
   ? 'side' in resolved
     ? resolved
@@ -194,7 +190,7 @@ Nothing is deleted. Four types widen, and a caller that reads the old union brea
 
 | Delta | Caller | Breaks because | Change | Source |
 | --- | --- | --- | --- | --- |
-| added | A custom driver that rebuilds `{ edge: target.edge, key: target.key }` from `resolveDropTarget` without `files` | `DOMDropTarget` gains a `{ key, side }` arm | Pass the target through, or narrow with `'edge' in target` | this plan, Public API |
+| added | A custom driver that rebuilds `{ edge: target.edge, key: target.key }` from `resolveDropTarget` without `files` | `DOMDropTarget` gains a `{ key, side }` arm | Pass the target through, or narrow with `'edge' in target` | `side drop plan` Public API |
 | added | Code that switches exhaustively over `TransferTarget` or `TransferLandingTarget` | A new arm | Handle the side arm or pass it through | `transfer-types.ts:15`, `:21` |
 | added | Readers of `TransferCheck.to`, including `landed()` in `dom-drag.ts` | An admitted side reports the requested `{ key, side }` | Narrow with `'side' in to` | `transfer-types.ts:104` |
 | added | A veto that judges depth from `target` alone | A wrap lands deeper than its edge: two levels for a new group, one for an added column | Read `wrap`; every in-tree veto gets a case | `landing.ts:227-229` |
@@ -205,12 +201,12 @@ Nothing is deleted. Four types widen, and a caller that reads the old union brea
 
 | Delta | Behavior | What changes | Proof surface | Source |
 | --- | --- | --- | --- | --- |
-| added | Side drop | A block dropped on the innermost block's side strip lands beside it as a column; a strip that does not admit falls through to today's edges | `dom-drag-geometry.test.ts` and www `dnd.spec.ts`, Playwright Chromium, Firefox and WebKit, five runs each | this plan, Phase 2 |
-| added | Undo after a side drop | One undo entry restores the original blocks and keys | `transfer-contract.test.ts`; www `dnd.spec.ts` | probe P1 |
+| added | Side drop | A block dropped on the innermost block's side strip lands beside it as a column; a strip that does not admit falls through to today's edges | `dom-drag-geometry.test.ts` and www `dnd.spec.ts`, Playwright Chromium, Firefox and WebKit, five runs each | `side drop plan` Phase 2 |
+| added | Undo after a side drop | One undo entry restores the original blocks and keys | `transfer-contract.test.ts`; www `dnd.spec.ts` | `side drop plan` probe P1 |
 | added | Selection after a side drop | The landed blocks are node-selected, as for any move | `transfer-contract.test.ts` | `transfer.ts` `landed` |
-| added | Non-drag beside | "Move beside" handle actions, by click and keyboard | www `dnd.spec.ts`, Playwright Chromium; no screen reader run | this plan, Phase 1 |
-| added | Hover cost with strips | A copy or file drag runs no strip check. A move's strip check refuses fast when nothing builds a side, and the check cache keeps a side slot and an edge slot, so a pointer resting in a strip adds no uncached admission after the first dragover and no rect reads | Benchmark dragover p95 in four cohorts, with and without Column; admissions counted only in the geometry test, not in the browser | this plan, Phase 2 |
-| added | Collaboration | A wrap keeps local keys. Concurrent remote text edits survived in a plain schema for both this commit and a remove-then-insert control, so no test claims the commit shape protects them | none; probe P5 recorded as partial | probe P5 |
+| added | Non-drag beside | "Move beside" handle actions, by click and keyboard | www `dnd.spec.ts`, Playwright Chromium; no screen reader run | `side drop plan` Phase 1 |
+| added | Hover cost with strips | A copy or file drag runs no strip check. A move's strip check refuses fast when nothing builds a side, and the check cache keeps a side slot and an edge slot, so a pointer resting in a strip adds no uncached admission after the first dragover and no rect reads | Benchmark dragover p95 in four cohorts, with and without Column; admissions counted only in the geometry test, not in the browser | `side drop plan` Phase 2 |
+| added | Collaboration | A wrap keeps local keys. Concurrent remote text edits survived in a plain schema for both this commit and a remove-then-insert control, so no test claims the commit shape protects them | none; probe P5 recorded as partial | `side drop plan` probe P5 |
 
 ## Main changes
 
@@ -259,6 +255,8 @@ Every `gate` verdict passes when its phase's proof passes. Phase 2 is scale-sens
 | Emptied source cleanup | Out of this plan; today's padded column stays | A transfer-time `vacated` read | "clean empty columns" |
 | `toggle` keeps `replaceChildren` | Unchanged; P5's control kept concurrent edits with remove-then-insert, so only local keys differ | Rewrite `toggle` as insert plus moves | "toggle as moves" |
 | Shipped width crash | Fixed first as its own Bug fix change, tolerance only | Fold it into Phase 1 | "fold the crash fix" |
+| Plan state after the commit | Marked done and moved onto the drag and drop page, with its test gaps as one open item there (look) | Keep it in progress until every gap closes | "reopen side drop" |
+| Drag and drop page link | A new page at https://claude.ai/artifact/Fo9ckoasEpCPgbVtztPc4j, because the old one at https://claude.ai/artifact/D9VwT52kFmZaxasYC8x4Db no longer opens (look) | Restore the old page and publish there | "drop new dnd page" |
 
 
 ## Challenge delta
@@ -283,23 +281,25 @@ In scope are `plitejs` core transfer, landing and reads; `plitejs` DOM drag geom
 ## Steps
 
 - [x] **Step 0. Fix the width correction cycle** through the Bug fix playbook, as its own change. Replace `sum === 100` in `packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts:195` with `Math.abs(sum - 100) < 0.1` and keep the additive correction. Proof is a `BaseColumnPlugin.spec.ts` case for `setColumns` at 6, 7, 11 and 12 columns that throws at base (control C0) and passes after. A must-still-accept case keeps base widths for a stored `["0%", "50%"]` group and for unparseable widths. Closed by `BaseColumnPlugin.spec.ts` "settles widths that cannot sum to exactly one hundred at %i columns", red 4 of 4 at base; tolerance later tightened to 1e-6 (decision log).
-- [ ] **Phase 1. Side law, Column policy and the handle action.** Closed by its sub-steps below and the Phase 1 keep box.
+- [x] **Phase 1. Side law, Column policy and the handle action.** Closed by its sub-steps below and the Phase 1 keep box. skip: partial, because the landAt and menu steps below are partial; tracked as one item in `docs/plans/topics/dnd.md` Open work.
   - [x] Add `TransferSide`, `TransferWrap` and `TransferVetoInput` to `packages/plitejs/src/core/transfer-types.ts`, and `editorReads.transfer.side` with a default of `null` to `src/core/editor-reads.ts`. Proof is the source-first typecheck in `.agents/rules/verify/references/commands.md`. Closed by `pnpm check typecheck` (scratch `pnpm-check4.log`).
-  - [ ] Teach `landAt` (`src/core/landing.ts`) the side branch and `runTransfer` (`src/core/transfer.ts`) the wrap commit, per Main changes. Proof is new `packages/plitejs/test/transfer-contract.test.ts` cases. A side target with no contributor refuses `policy`; control C1 returns `moved` at base. A wrap of adjacent siblings is admitted and keeps both keys. One undo restores. A copy and a cross-root move on a side refuse `policy`. A shell slot the schema refuses is refused `schema`, once for the payload slot and once for the target slot. A veto sees `wrap` in both runs. A child list item dropped beside its own parent refuses. Each case names a mutation control run during the build: delete the target veto run, the target-slot placement check, the family refusal or the ancestor refusal, and its case must fail. Run `bun test ./packages/plitejs/test/transfer-contract.test.ts`. Closed by `transfer-contract.test.ts` "side landing" cases with mutation controls M1 to M6 and MV (decision log). The cross-root case is covered by the no-slice rule; copy is tested.
+  - [x] Teach `landAt` (`src/core/landing.ts`) the side branch and `runTransfer` (`src/core/transfer.ts`) the wrap commit, per Main changes. Proof is new `packages/plitejs/test/transfer-contract.test.ts` cases. A side target with no contributor refuses `policy`; control C1 returns `moved` at base. A wrap of adjacent siblings is admitted and keeps both keys. One undo restores. A copy and a cross-root move on a side refuse `policy`. A shell slot the schema refuses is refused `schema`, once for the payload slot and once for the target slot. A veto sees `wrap` in both runs. A child list item dropped beside its own parent refuses. Each case names a mutation control run during the build: delete the target veto run, the target-slot placement check, the family refusal or the ancestor refusal, and its case must fail. Run `bun test ./packages/plitejs/test/transfer-contract.test.ts`. Closed by `transfer-contract.test.ts` "side landing" cases with mutation controls M1 to M6 and MV (decision log). The cross-root case is covered by the no-slice rule; copy is tested. skip: partial, no cross-root side test; tracked as one item in `docs/plans/topics/dnd.md` Open work.
   - [x] Publish `editor.read.transfer.check`, which runs the cached `checkTransfer` with `intent: 'move'` unless the input says copy. Proof is a contract case where `check` and `move` agree on a veto refusal and a placement refusal, with the mutation control that `check` skips vetoes. Closed by "checks a transfer against the vetoes its move obeys" with mutation M6. Deviation: no `copy` flag (decision log).
   - [x] Add the Column side read to `BaseColumnPlugin`, with a cap of 5 as a constant. The read wraps a block whose parent is the root, adds a column beside a block inside a column, and gives a new column the mean width. It refuses a column payload, nesting, the cap, a parent other than the root or a column, and a whole-column payload beside the facing side. Make the `columnGroup` correction proportional when a group is over-full. Update the Footnote veto. Proof is new `BaseColumnPlugin.spec.ts` and `BaseFootnotePlugin.spec.ts` cases, each failing at base. A root definition as the target refuses, which the census reproduced as a definition loading inside a column (`census/r1-footnote-in-column.ts`). A definition as the payload refuses. A list item with deeper items as the target refuses. A 70/30 group joined to the cap keeps every width positive and in order. Equal columns stay equal after a join. A stored 7-column group still loads, and a stored under-full group keeps its base widths. Run `bun test` on both spec files. Closed by `BaseColumnPlugin.spec.ts` "column side drop" and `BaseFootnotePlugin.spec.ts` side cases with mutations MC1 to MC5, MW and MF1.
-  - [ ] Add the "Move beside previous" and "Move beside next" actions to the copied `dnd.tsx` handle menu, computed in `openActions` and shown only when `check` admits. Proof is a www `dnd.spec.ts` case in Playwright Chromium. It opens the menu by click and by keyboard, runs the action and undoes it. The action is hidden in an editor without the Column plugin.
-- [ ] **Phase 2. Strips and paint.** Closed by its sub-steps below.
-  - [ ] Add the `{ key, side }` arm to `DOMDropTarget`, a `files` overload of `resolveDropTarget` that returns only edges, the strip test in `resolveDOMDropTarget` (`src/dom/plugin/dom-drag.ts`) per Main changes, and the two-slot check cache in `src/core/transfer.ts`. Publish a side indicator in the existing `DropIndicator` shape with the physical edge. Pass a side target through the Editable drop. Proof is new `packages/plitejs/test/react/dom-drag-geometry.test.ts` cases. A strip hit returns a side. A refused strip returns today's y edge. The top and bottom quarters return y edges, and a container band wins over a strip at a corner. A parent block's edge shared with its child yields the child's side only. An x-axis block never yields a side. In RTL the left strip resolves to `end` and paints at the left edge. A files drag, a copy drag and an editor without a side contributor run no strip check. A refused strip at rest runs no uncached admission on the second dragover. Run `bun run test:react test/react/dom-drag-geometry.test.ts` from `packages/plitejs`. Closed by `dom-drag-geometry.test.ts` "DOM side strips" with mutations MG1, MG3, MG4, MG6, MG7 and MG8. Deviations: end strip only, Upload narrows instead of an overload (decision log).
-  - [ ] Run Benchmark's pre-acceptance probe with the performance pack (`.agents/rules/benchmark/templates/performance-observability.md`). The dragover lane gains two cohorts that rest the pointer in a strip, one admitted on a root paragraph and one refused in a full 5-column group, and both count admissions and rect reads. Proof is dragover p95 at 5,000 blocks within baseline plus 1 ms, with the trunk baseline measured first. Closed by scratch `bench/summary.txt` and `bench/final-summary.txt`; every cohort within the frozen budget (decision log).
+  - [x] Add the "Move beside previous" and "Move beside next" actions to the copied `dnd.tsx` handle menu, computed in `openActions` and shown only when `check` admits. Proof is a www `dnd.spec.ts` case in Playwright Chromium. It opens the menu by click and by keyboard, runs the action and undoes it. The action is hidden in an editor without the Column plugin. Landed in 002891202b. skip: partial, no browser case for an editor without Column; tracked as one item in `docs/plans/topics/dnd.md` Open work.
+- [x] **Phase 2. Strips and paint.** Closed by its sub-steps below. skip: partial, because the strip and Benchmark steps below are partial; tracked as one item in `docs/plans/topics/dnd.md` Open work.
+  - [x] Add the `{ key, side }` arm to `DOMDropTarget`, a `files` overload of `resolveDropTarget` that returns only edges, the strip test in `resolveDOMDropTarget` (`src/dom/plugin/dom-drag.ts`) per Main changes, and the two-slot check cache in `src/core/transfer.ts`. Publish a side indicator in the existing `DropIndicator` shape with the physical edge. Pass a side target through the Editable drop. Proof is new `packages/plitejs/test/react/dom-drag-geometry.test.ts` cases. A strip hit returns a side. A refused strip returns today's y edge. The top and bottom quarters return y edges, and a container band wins over a strip at a corner. A parent block's edge shared with its child yields the child's side only. An x-axis block never yields a side. In RTL the left strip resolves to `end` and paints at the left edge. A files drag, a copy drag and an editor without a side contributor run no strip check. A refused strip at rest runs no uncached admission on the second dragover. Run `bun run test:react test/react/dom-drag-geometry.test.ts` from `packages/plitejs`. Closed by `dom-drag-geometry.test.ts` "DOM side strips" with mutations MG1, MG3, MG4, MG6, MG7 and MG8. Deviations: end strip only, Upload narrows instead of an overload (decision log). skip: partial, no x-axis geometry case; tracked as one item in `docs/plans/topics/dnd.md` Open work.
+  - [x] Run Benchmark's pre-acceptance probe with the performance pack (`.agents/rules/benchmark/templates/performance-observability.md`). The dragover lane gains two cohorts that rest the pointer in a strip, one admitted on a root paragraph and one refused in a full 5-column group, and both count admissions and rect reads. Proof is dragover p95 at 5,000 blocks within baseline plus 1 ms, with the trunk baseline measured first. Closed by scratch `bench/summary.txt` and `bench/final-summary.txt`; every cohort within the frozen budget (decision log). skip: partial, admissions were counted only in the geometry test and only development builds ran; tracked as one item in `docs/plans/topics/dnd.md` Open work.
   - [x] Add www `dnd.spec.ts` cases in Playwright Chromium, Firefox and WebKit, five warm runs each. A paragraph dropped on a heading's right strip lands as a 2-column group. A block dropped beside a block in a column makes 3 columns. A pointer resting at the vertical center of a one-line block, 12px inside its edge, resolves a side. A drop near a block's bottom outside the strip still lands below. A handle drag down a stack of blocks with the pointer at `rect.left + 5` to `rect.left + 20` over the blocks below lands below, not beside; if it fails, apply "end strip only". A drop near the right edge of a narrow table cell creates no column group anywhere. One undo restores. Closed by scratch `final2/pw-*-side.log` and `pw-*-full.log`: 40 of 40 side runs and 28 of 28 full per engine. The drift case applied "end strip only".
   - [x] Keep or revert. Keep when the geometry, Playwright and Benchmark proofs pass. Revert removes the strips and leaves Phase 1 for the owner's call. Kept; decision log verify rows.
-- [ ] **Phase 1 keep or revert**, after Phase 2's. Keep when every Phase 1 proof passes and Phase 2 is kept, or when the owner accepts the menu path alone. Revert deletes the types, the read, `check` and the actions together. Kept, because Phase 2 is kept.
-- [ ] **Docs.** Run `plate-docs` on `content/docs/(plugins)/(functionality)/dnd.mdx`, `content/docs/(plugins)/(elements)/column.mdx` and `content/docs/api/dom.mdx`, with the Chinese twins `dnd.cn.mdx` and `column.cn.mdx`. Proof is its example coverage audit, a side-drop demo, the docs checks and a preview.
-- [ ] **Vision and skills.** Run `best-api repair`. It updates the transfer law in `docs/vision/plite.md:497-503` ("a landing read only redirects an edge" gains the side read) and `docs/vision/plate.md:1095-1104`, and fixes any `plate-plugins`, `plate-ui` or `plate-next` text that teaches the old target union. Proof is its regenerated mirrors and `node .agents/rules/plate-next/scripts/sync-resources.mjs --check`.
-- [ ] **Closeout.** Run `pnpm brl` if exports change, `pnpm --filter www build:registry` for `dnd.tsx`, a changeset and a registry changelog entry through `changeset`, the api-build panel on the diff, the writing passes, and `pnpm lint:fix` on the task's files. Proof is each command's exit status and `pnpm check` once on the settled change.
+- [x] **Phase 1 keep or revert**, after Phase 2's. Keep when every Phase 1 proof passes and Phase 2 is kept, or when the owner accepts the menu path alone. Revert deletes the types, the read, `check` and the actions together. Kept, because Phase 2 is kept. skip: partial, because it rests on the partial Phase 1 steps; tracked as one item in `docs/plans/topics/dnd.md` Open work.
+- [x] **Docs.** Run `plate-docs` on `content/docs/(plugins)/(functionality)/dnd.mdx`, `content/docs/(plugins)/(elements)/column.mdx` and `content/docs/api/dom.mdx`, with the Chinese twins `dnd.cn.mdx` and `column.cn.mdx`. Proof is its example coverage audit, a side-drop demo, the docs checks and a preview. Landed in 002891202b. skip: partial, `check:docs` was red at HEAD then; tracked as one item in `docs/plans/topics/dnd.md` Open work.
+- [x] **Vision and skills.** Run `best-api repair`. It updates the transfer law in `docs/vision/plite.md:497-503` ("a landing read only redirects an edge" gains the side read) and `docs/vision/plate.md:1095-1104`, and fixes any `plate-plugins`, `plate-ui` or `plate-next` text that teaches the old target union. Proof is its regenerated mirrors and `node .agents/rules/plate-next/scripts/sync-resources.mjs --check`. Landed in 002891202b. skip: partial, no forward test; tracked as one item in `docs/plans/topics/dnd.md` Open work.
+- [x] **Closeout.** Run `pnpm brl` if exports change, `pnpm --filter www build:registry` for `dnd.tsx`, a changeset and a registry changelog entry through `changeset`, the api-build panel on the diff, the writing passes, and `pnpm lint:fix` on the task's files. Proof is each command's exit status and `pnpm check` once on the settled change. Landed in 002891202b. skip: partial at close, because the API reference manifest waited on `HistoryApi`; `apps/www/api-reference.config.json` has classified it since, and `apps/www/src/generated/api-reference-manifest.json` lists `TransferWrap`.
 
 ## Open work
+
+On 2026-10-15 the live items below moved to `docs/plans/topics/dnd.md` Open work. The left-side drop landed through `docs/plans/2026-10-07-dnd-side-zones-and-scroll.md` and `docs/plans/2026-10-07-dnd-left-zone-from-drag-origin.md`, the `HistoryApi` item resolved, the horizontal fallback stays under the subject's Open findings, and the Codex seat item is stale now that `~/.claude/pstack-models.md` exists.
 
 - **Emptied-column cleanup.** Dragging the last block out of a column leaves a padded empty column, and a group never drops below two columns. A cleanup at transfer time loses a concurrent remote insert into the removed column. Owner: Plate Column (`layout` review scope), tracked in this plan's decision log until the subject file takes it.
 - **Horizontal fallback.** Unchanged by this plan; it keeps its entry in `docs/plans/topics/dnd.md` Open findings with its Plite DOM owner.

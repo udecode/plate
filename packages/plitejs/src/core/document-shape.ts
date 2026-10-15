@@ -1,4 +1,5 @@
 import type {
+  EditorDocumentRecords,
   EditorDocumentValue,
   EditorSchemaDocumentValue,
   PersistedDocumentInput,
@@ -18,12 +19,15 @@ export type EditorRecordIssue =
 
 export type EditorDocumentShapeIssue =
   | EditorRecordIssue
-  | Readonly<{ kind: 'children' | 'meta' | 'primary-root' | 'roots' }>
+  | Readonly<{
+      kind: 'children' | 'meta' | 'primary-root' | 'records' | 'roots';
+    }>
   | Readonly<{ kind: 'root'; root: string }>;
 
 export type EditorDocumentShape = Readonly<{
   children: readonly unknown[];
   meta?: Readonly<Record<string, unknown>>;
+  records?: EditorDocumentRecords;
   roots?: Readonly<Record<string, readonly unknown[]>>;
 }>;
 
@@ -43,12 +47,14 @@ type DirectSnapshotInput = Exclude<SnapshotInput, PersistedDocumentInput>;
 export const EDITOR_DOCUMENT_FIELDS = Object.freeze({
   children: 'required',
   meta: 'optional',
+  records: 'optional',
   roots: 'optional',
 } satisfies Record<keyof EditorDocumentValue, 'optional' | 'required'>);
 
 export const EDITOR_SNAPSHOT_FIELDS = Object.freeze({
   children: 'required',
   meta: 'optional',
+  records: 'optional',
   roots: 'optional',
   selection: 'optional',
 } satisfies Record<keyof DirectSnapshotInput, 'optional' | 'required'>);
@@ -104,6 +110,9 @@ export const getEditorDocumentShapeIssueMessage = (
     }
     case 'meta': {
       return 'Editor document metadata must be an object.';
+    }
+    case 'records': {
+      return 'Editor document records must map each record set to an object of record objects.';
     }
     case 'roots': {
       return 'Editor document roots must be an object.';
@@ -185,6 +194,15 @@ export function assertEditorDocumentContainers(
   }
   if (input.meta !== undefined && !isRecord(input.meta)) {
     reject({ kind: 'meta' });
+  }
+  if (
+    input.records !== undefined &&
+    (!isRecord(input.records) ||
+      !Object.values(input.records).every(
+        (records) => isRecord(records) && Object.values(records).every(isRecord)
+      ))
+  ) {
+    reject({ kind: 'records' });
   }
   if (input.roots === undefined) return;
   if (!isRecord(input.roots)) reject({ kind: 'roots' });

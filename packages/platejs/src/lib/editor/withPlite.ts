@@ -1,5 +1,6 @@
 import type { EditorStateField } from 'plitejs';
 import {
+  assertEditorOptions,
   cloneEditorJsonValue,
   type CompiledEditorSchema,
   createDetachedEditorSchema,
@@ -977,11 +978,15 @@ const hasOption = (options: object, key: string) => {
 };
 
 /**
- * Call this on the options a caller passed, before any copy drops a key.
+ * Call this on the options a caller passed, before any copy drops a key, and on
+ * any object that reaches the root plugin.
  *
  * @internal
  */
-export const assertConstructorOptions = (options: object) => {
+export const assertConstructorOptions = (
+  options: object,
+  keys: Readonly<Record<string, true>>
+) => {
   if (hasOption(options, 'editor')) {
     throw new Error(
       'Plate editor constructors always create a new editor and take no `editor` option. Pass the document as `initialValue`, and render an existing editor with `EditorRoot`.'
@@ -992,6 +997,7 @@ export const assertConstructorOptions = (options: object) => {
       'Plate editor `migrations` is unsupported. Convert persisted documents with migrateDocument before creating or replacing an editor value.'
     );
   }
+  assertEditorOptions(options, keys);
 };
 
 type BuildEditorOptions<TEditor extends Editor> = EditorOptions<
@@ -1008,9 +1014,9 @@ type BuildEditorOptions<TEditor extends Editor> = EditorOptions<
  * @internal
  */
 export const buildEditor = <TEditor extends Editor = Editor>(
-  options: BuildEditorOptions<TEditor>
+  options: BuildEditorOptions<TEditor>,
+  optionKeys: Readonly<Record<string, true>>
 ): Editor => {
-  assertConstructorOptions(options);
   const {
     affinity,
     autoSelect,
@@ -1028,6 +1034,12 @@ export const buildEditor = <TEditor extends Editor = Editor>(
     userId,
     ...rootPluginConfig
   } = options;
+  // A getter read above can add a key, so check what reaches the root plugin.
+  // `satisfies` fails the build if a BuildEditorOptions key reaches it.
+  assertConstructorOptions(
+    rootPluginConfig satisfies Record<string, never>,
+    optionKeys
+  );
   const editorUserId = resolveEditorUserId(userId);
   const editor = createPliteEditor({
     id,
@@ -1379,6 +1391,29 @@ export type CreateEditorOptions<
     | undefined,
 > = CreateEditorOptionsForValue<V, TPlugins, TSchema>;
 
+/** @internal */
+export const EDITOR_OPTION_KEYS = {
+  affinity: true,
+  api: true,
+  autoSelect: true,
+  decorate: true,
+  id: true,
+  initialSelection: true,
+  initialState: true,
+  initialValue: true,
+  inject: true,
+  lifecycleErrorSink: true,
+  maxLength: true,
+  override: true,
+  plugins: true,
+  readOnly: true,
+  schema: true,
+  selection: true,
+  shouldNormalizeEditor: true,
+  skipInitialization: true,
+  userId: true,
+} satisfies Record<keyof CreateEditorOptions, true>;
+
 export type PlatePluginsFromTuple<TPlugins extends readonly unknown[]> = [
   TPlugins[number],
 ] extends [BasePluginInput]
@@ -1455,6 +1490,12 @@ export type RuntimePluginsFromTuple<TPlugins extends readonly unknown[]> = [
  */
 export function createEditor<
   V extends Value = Value,
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
+>(
+  options?: CreateEditorOptions<V, readonly [], TSchema>
+): Editor<V, readonly [], readonly [], TSchema>;
+export function createEditor<
+  V extends Value = Value,
   const TPlugins extends readonly RuntimePluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
@@ -1465,17 +1506,13 @@ export function createEditor<
   PlatePluginsFromTuple<TPlugins>,
   TSchema
 >;
-export function createEditor<
-  V extends Value = Value,
-  const TSchema extends EditorApplicationSchema | undefined = undefined,
->(
-  options?: CreateEditorOptions<V, readonly [], TSchema>
-): Editor<V, readonly [], readonly [], TSchema>;
 export function createEditor(
   options: CreateEditorOptionsForValue<
     Value,
     readonly RuntimePluginReference[]
   > = {}
 ): unknown {
-  return buildEditor(options);
+  assertConstructorOptions(options, EDITOR_OPTION_KEYS);
+
+  return buildEditor(options, EDITOR_OPTION_KEYS);
 }

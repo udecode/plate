@@ -19,7 +19,8 @@ insertion ownership.
 | A reusable package owns paste/drop import policy     | `domCommands.insertData` interceptor in plugin `commands` | `platejs/dom`                                |
 | A browser MIME representation needs decoding or encoding | Register a `DataTransferFormat` in `dataTransferFormats`     | `platejs/dom`                                |
 | Framework code needs to import a `DataTransfer`      | `editor.api.dom.clipboard.insertData(data)`                    | `platejs/dom` through `platejs/react` |
-| Parsed or structural content is already decoded      | `tx.slice.replace(slice, options?)`                        | `platejs`                                    |
+| Decoded content needs installed paste policy         | `editor.update.slice.replace(slice, options?)`           | `platejs`                                    |
+| A transaction needs raw content fitting               | `tx.slice.replace(slice, options?)`                      | `platejs`                                    |
 | Decoded content must fit a detached parent           | `state.slice.fitContent(slice, { parent, root? })`         | `platejs`                                    |
 | Copy or drag must include hidden model content       | DOM coverage `copyPolicy` plus model-backed clipboard data | `platejs/dom` and `platejs/react`     |
 | The claim depends on real browser clipboard behavior | `@platejs/test` clipboard helpers                       | `@platejs/test`                                  |
@@ -38,7 +39,8 @@ Clipboard data enters Plate through explicit layers.
 | EditorContent handler     | App handlers can handle the event or let Plate continue.                                                               | `platejs/react`                      |
 | Insert-data command  | Typed `domCommands.insertData` interceptors can claim, transform, or delegate the payload.                              | `platejs/dom`                        |
 | DOM clipboard import | Plate reads its internal fragment, then registered DataTransfer formats, then plain text.                                       | `platejs/dom`                        |
-| Transaction          | A parsed slice is fitted at the actual range and applied through one canonical replacement.                            | `platejs`                            |
+| Replacement command | Installed handlers delegate to `editorReads.slice.landing`, which shapes the final slice and can propose whole blocks for an empty target. | `platejs` |
+| Transaction          | The prepared slice is fitted at its target and applied through one canonical replacement.                            | `platejs`                            |
 | Commit and render    | Plate publishes one change; React renders and repairs selection.                                                       | `platejs` and `platejs/react` |
 | Proof                | Browser tests assert model content, DOM/native selection where needed, focus, clipboard payload, and follow-up typing. | `@platejs/test`                          |
 
@@ -54,7 +56,7 @@ rule.
 import { definePlugin } from "platejs";
 import { domCommands } from "platejs/dom";
 
-const pasteTodoPrefix = definePlugin("paste-todo-prefix", {
+const pasteTodoPrefix = definePlugin("pasteTodoPrefix", {
   commands: ({ around }) => [
     around(domCommands.insertData, ({ input, next, state }) => {
       const text = input.getData("text/plain");
@@ -77,6 +79,53 @@ boundary; headless commands start from a `ContentSlice`.
 Use this for package-owned import rules such as custom inline syntax, pasted
 URLs, product fragments, and table-specific paste policy. Do not put those rules
 in Plate core unless the rule is part of Plate's model contract.
+
+### Where a paste lands
+
+After command handlers delegate, `editorReads.slice.landing` decides what the
+paste lands. Its input has the handlers' slice as `source`, what fits
+`maxLength` as `slice`, and the resolved `target`. A caret in an empty block
+gives an `empty` target, and anything else gives a `context` target with the
+block where the paste starts. Return the `slice` to land, and add
+`replaceEmpty` to replace an `empty` target with whole blocks.
+
+A text drag that copies, such as one from another editor or a read-only view,
+lands at its drop point through the same read, without command handlers.
+
+```ts
+import { definePlugin, editorReads } from "platejs";
+
+const calloutPaste = definePlugin("calloutPaste", {
+  readMiddleware: ({ around }) => [
+    around(editorReads.slice.landing, ({ input, next }) => {
+      const landing = next();
+      const { target } = input;
+
+      if (
+        target.kind !== "empty" ||
+        target.block[0].type !== "callout" ||
+        landing.slice.content.length < 2
+      ) {
+        return landing;
+      }
+
+      return {
+        ...landing,
+        replaceEmpty: { omitTargetProperties: ["icon"], slice: landing.slice },
+      };
+    }),
+  ],
+});
+```
+
+With this plugin, two or more pasted blocks replace an empty callout, and one
+line of text still lands inside it. Plate checks the proposal against the schema
+and `maxLength`, and lands `slice` when the proposal does not fit. The first
+replacing block keeps all of the target's properties when its type matches the
+target's. A text block of another type keeps what the schema allows, and an
+object or void block keeps none. `omitTargetProperties` drops more of them, such
+as `icon` when the first pasted block is itself a callout. A middleware that rewrites `slice` must
+rewrite or drop `replaceEmpty` too.
 
 ## DOM clipboard API
 
@@ -319,8 +368,10 @@ plugin's `formats`, or a format for that MIME type.
 
 ## Fragment and slice replacement
 
-Use `tx.fragment.replace(...)` for known-closed content. The compiled schema
-fits the content at the actual target.
+Use `tx.fragment.replace(...)` to fit known-closed content inside an existing
+transaction. It bypasses paste command policy. Use the one-shot
+`editor.update.fragment.replace(...)` when installed List or other paste policy
+must run.
 
 ```ts
 editor.update((tx) => {

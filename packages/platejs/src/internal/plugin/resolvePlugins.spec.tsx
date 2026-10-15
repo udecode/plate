@@ -3,6 +3,8 @@ import { runInNewContext } from 'node:vm';
 import React from 'react';
 
 import { createEditorView, editorCommands, property, schema } from '../../core';
+import { BaseBlockquotePlugin } from '../../features/basic-nodes/lib/BaseBlockPlugins';
+import { BaseCalloutPlugin } from '../../features/callout/lib/BaseCalloutPlugin';
 import { createEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
 import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin/definePlugin';
@@ -563,6 +565,48 @@ describe('resolvePlugins', () => {
     expect(
       getPlateRuntime(editor).pluginCache.useViewElementAttributes
     ).toContain('cachey');
+  });
+
+  it.each(['exit', 'deleteExit'] as const)(
+    'refuses a text block whose empty-line Enter rule %s leaves its container',
+    (action) => {
+      const NoticePlugin = defineHeadlessPlugin('notice', {
+        rules: { break: { emptyLineEnd: action } },
+        schema: { element: schema.element.textBlock() },
+      });
+
+      expect(() => createEditor({ plugins: [NoticePlugin] })).toThrow(
+        /"notice".*Add `ownsExit: true` to its schema element/
+      );
+    }
+  );
+
+  it('accepts exit rules that cannot strand a text block in its container', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseCalloutPlugin,
+        BaseBlockquotePlugin.configure({
+          rules: { break: { emptyLineEnd: 'deleteExit' } },
+        }),
+        defineHeadlessPlugin('captioned', {
+          rules: { break: { emptyLineEnd: 'exit' } },
+          schema: { element: schema.element.textBlock({ object: true }) },
+        }),
+        defineHeadlessPlugin('plainExit', {
+          rules: { break: { empty: 'exit' } },
+          schema: { element: schema.element.textBlock() },
+        }),
+      ],
+    });
+
+    expect(getPlateRuntime(editor).pluginList.map(({ name }) => name)).toEqual(
+      expect.arrayContaining([
+        'blockquote',
+        'callout',
+        'captioned',
+        'plainExit',
+      ])
+    );
   });
 
   it('compiles node-prop injection by node kind', () => {

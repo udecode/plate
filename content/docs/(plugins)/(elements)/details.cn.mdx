@@ -60,6 +60,14 @@ editor.update.blocks.reset({ unset: ['level'] });
 
 ## 使用套件
 
+### 将标题转换为其他块
+
+Heading 和 Text 选项保留 Details 结构。列表选项把选中的标题转换成列表项，正文放在它下面一级。Tab、Shift+Tab、拖动和剪切会把这个列表项和正文一起移动。Code Block 命令把标题转换成代码块，正文作为其后的块保留。这两种转换只取消当前这一层 Details，保留外层 Details。
+
+安装 Code Block 套件后，可以使用 `mod+alt+8` 转换为代码块。选区包含标题和其他块时，Turn into 菜单会禁用 Code。撤销会恢复 Details 及其展开状态。如果某个正文块不能缩进，列表转换不做任何改动，选区中的其他块也不会转换。`IndentKit` 列出可以缩进的块类型；自定义配置需要把正文块类型加入 Indent 的 `targetPlugins`。
+
+从折叠的 Details 标题插入的块，无论来自斜杠菜单、插入命令、粘贴的文件还是 AI，都会放在整个 Details 之后。从展开的标题插入时，块会放在正文开头。Heading 和 Text 斜杠选项则直接修改现有标题格式。
+
 <Steps>
 
 ### 安装

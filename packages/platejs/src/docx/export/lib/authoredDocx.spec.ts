@@ -8,6 +8,7 @@ import {
   definePlugin,
   type Editor,
   type EditorCommit,
+  type EditorDocumentValue,
   property,
   schema,
 } from '../../../core';
@@ -20,6 +21,24 @@ import { BaseParagraphPlugin } from '../../../lib';
 import { EditorStatic, type EditorStaticProps } from '../../../static';
 import { importDocx } from '../../import/lib/importDocx';
 import { exportDocx } from './exportDocx';
+
+// Each editor mints its own token per decision, so two editors that decide
+// alike store verdicts that differ only in it.
+const withoutDecisionTokens = ({ records, ...value }: EditorDocumentValue) => {
+  const verdicts = records?.['authored-verdicts'];
+
+  return verdicts
+    ? {
+        ...value,
+        records: {
+          ...records,
+          'authored-verdicts': Object.values(verdicts)
+            .map(({ decision: _decision, ...verdict }) => JSON.stringify(verdict))
+            .sort(),
+        },
+      }
+    : { ...value, ...(records ? { records } : {}) };
+};
 
 describe('authored DOCX', () => {
   it('writes no revision for a block a rejected replacement gives back', async () => {
@@ -759,8 +778,8 @@ describe('review DOCX round trip', () => {
       }
     }
 
-    expect(imported.ok && restored.read.value()).toEqual(
-      original.read.value()
+    expect(imported.ok && withoutDecisionTokens(restored.read.value())).toEqual(
+      withoutDecisionTokens(original.read.value())
     );
   });
 

@@ -715,6 +715,62 @@ const noSchemaPlacementCopy = {
   },
 };
 
+const POINT_FIELDS = new Set(['anchor', 'focus']);
+const COMPARISONS = new Set(['===', '!==', '==', '!=']);
+
+const noSelectionRootCopy = {
+  create(context) {
+    const equalityOperands = new Set();
+    const isPoint = (node) => POINT_FIELDS.has(memberName(readValue(node)));
+    const reportRoots = (pattern) => {
+      for (const property of pattern.properties) {
+        if (propertyKey(property) === 'root') {
+          context.report({ messageId: 'copy', node: property });
+        }
+      }
+    };
+
+    return {
+      BinaryExpression({ left, operator, right }) {
+        if (!COMPARISONS.has(operator)) return;
+        equalityOperands.add(readValue(left));
+        equalityOperands.add(readValue(right));
+      },
+      MemberExpression(node) {
+        if (
+          memberName(node) === 'root' &&
+          isPoint(node.object) &&
+          !equalityOperands.has(node)
+        ) {
+          context.report({ messageId: 'copy', node });
+        }
+      },
+      VariableDeclarator({ id, init }) {
+        if (id.type !== 'ObjectPattern') return;
+        if (isPoint(init)) reportRoots(id);
+        for (const property of id.properties) {
+          if (
+            POINT_FIELDS.has(propertyKey(property)) &&
+            property.value.type === 'ObjectPattern'
+          ) {
+            reportRoots(property.value);
+          }
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        "Code outside plitejs asks Plite which root a selection edits instead of reading it from the selection's points.",
+    },
+    messages: {
+      copy: "This reads a selection's root from its anchor or focus (baselined in this file: {{baselined}}), which copies Plite's root rule. `SelectionApi.root` in packages/plitejs/src/interfaces/selection.ts owns it: it takes the root either point names and refuses a range whose points name different roots. Call `SelectionApi.root(range)`.",
+    },
+    type: 'problem',
+  },
+};
+
 const STRUCTURAL_MARK_KINDS = new Set(['join', 'split', 'unwrap', 'wrap']);
 
 const noStructuralMarkCopy = {
@@ -1085,6 +1141,10 @@ export default {
       noSchemaPlacementCopy
     ),
     'no-second-name': withBaseline('no-second-name', noSecondName),
+    'no-selection-root-copy': withBaseline(
+      'no-selection-root-copy',
+      noSelectionRootCopy
+    ),
     'no-source-text-test': withBaseline(
       'no-source-text-test',
       noSourceTextTest

@@ -3,7 +3,6 @@ import type { ContentSlice } from '../interfaces/editor';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
-import { isMetadataRootKey } from '../internal/root-location';
 import { factsOf, marksOf } from './facts/facts';
 import { type AuthoredMark, AUTHORED_MARKS_KEY } from './tree/marks';
 import type {
@@ -235,7 +234,7 @@ export const indexAuthoredChanges = (
 
   walk(value.children, [], 'main', { count: 0 });
   for (const [root, children] of Object.entries(value.roots ?? {})) {
-    if (!isMetadataRootKey(root)) walk(children, [], root, { count: 0 });
+    walk(children, [], root, { count: 0 });
   }
 
   const changes = new Map<string, AuthoredChange>();

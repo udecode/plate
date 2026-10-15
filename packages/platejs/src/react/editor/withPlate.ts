@@ -4,6 +4,7 @@ import type { EditorApplicationSchema, EditorValueInput } from '../../lib';
 import {
   assertConstructorOptions,
   buildEditor,
+  EDITOR_OPTION_KEYS,
   type EditorOptions as HeadlessEditorOptions,
   type PlatePluginsFromTuple,
   type RuntimePluginsFromTuple,
@@ -80,6 +81,21 @@ export type CreateEditorOptions<
     | undefined,
 > = CreateEditorOptionsForValue<V, TPlugins, TSchema>;
 
+/** @internal */
+export const REACT_EDITOR_OPTION_KEYS = {
+  ...EDITOR_OPTION_KEYS,
+  navigationFeedback: true,
+  on: true,
+  render: true,
+  shortcuts: true,
+} satisfies Record<keyof CreateEditorOptions, true>;
+
+/** @internal */
+export const USE_CREATE_EDITOR_OPTION_KEYS = {
+  ...REACT_EDITOR_OPTION_KEYS,
+  enabled: true,
+} satisfies Record<keyof CreateEditorOptions | 'enabled', true>;
+
 /**
  * Creates a Plate editor (React version).
  *
@@ -139,6 +155,12 @@ export function createEditor<
 >;
 export function createEditor<
   V extends Value = Value,
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
+>(
+  options?: CreateEditorOptions<V, readonly [], TSchema>
+): Editor<V, readonly [], readonly [], TSchema>;
+export function createEditor<
+  V extends Value = Value,
   const TPlugins extends readonly RuntimePluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
@@ -149,12 +171,6 @@ export function createEditor<
   PlatePluginsFromTuple<TPlugins>,
   TSchema
 >;
-export function createEditor<
-  V extends Value = Value,
-  const TSchema extends EditorApplicationSchema | undefined = undefined,
->(
-  options?: CreateEditorOptions<V, readonly [], TSchema>
-): Editor<V, readonly [], readonly [], TSchema>;
 
 export function createEditor(options: unknown = {}): unknown {
   const resolvedOptions = options as CreateEditorOptionsForValue<
@@ -163,7 +179,7 @@ export function createEditor(options: unknown = {}): unknown {
     EditorApplicationSchema | undefined
   >;
 
-  assertConstructorOptions(resolvedOptions);
+  assertConstructorOptions(resolvedOptions, REACT_EDITOR_OPTION_KEYS);
   // Named reads keep allocation options that the options object inherits.
   const {
     id,
@@ -175,12 +191,15 @@ export function createEditor(options: unknown = {}): unknown {
     ...rest
   } = resolvedOptions;
 
-  return buildEditor({
-    ...rest,
-    id,
-    lifecycleErrorSink,
-    maxLength,
-    plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
-    readOnly,
-  });
+  return buildEditor(
+    {
+      ...rest,
+      id,
+      lifecycleErrorSink,
+      maxLength,
+      plugins: [...getPlateCorePlugins({ navigationFeedback }), ...plugins],
+      readOnly,
+    },
+    REACT_EDITOR_OPTION_KEYS
+  );
 }

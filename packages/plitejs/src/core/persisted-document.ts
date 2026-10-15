@@ -2,6 +2,7 @@ import type {
   EditorDocumentValue,
   EditorStateField,
 } from '../interfaces/editor';
+import { getValueRecords, showValueRecords } from './record-store';
 import { resolveStateFieldInitial } from './state-fields';
 import { snapshotEditorJsonValue } from './value-codec';
 
@@ -58,10 +59,13 @@ export const completePersistedDocumentFields = (
       ];
     })
   );
-  const { meta: _meta, ...content } = document;
+  const { meta: _meta, records: _records, ...content } = document;
 
   return snapshotEditorJsonValue(
-    Object.keys(meta).length ? { ...content, meta } : content,
+    showValueRecords(
+      Object.keys(meta).length ? { ...content, meta } : { ...content },
+      getValueRecords(document)
+    ),
     'Completed persisted document'
   );
 };

@@ -1,6 +1,7 @@
 import * as Y from 'yjs';
 
 import { createInternalRootChangeFromSections as createDocumentChangeFromRootSections } from '../../core/change/document-change';
+import type { NodeList } from '../../core/change/document-index';
 import type { DocumentChangeRelocation } from '../../core/change/mapping';
 import {
   getDocumentChangeRelocations,
@@ -1022,11 +1023,11 @@ class TokenLengthIndex {
     return [fromIndex, Math.max(fromIndex, toIndex)];
   }
 
-  reset(children: readonly Descendant[]): void {
+  reset(children: NodeList<Descendant>): void {
     this.measuredNodes = 0;
     this.root = null;
 
-    for (const child of children) {
+    children.forEach((child) => {
       const measured = measureTokenLength(child);
 
       this.measuredNodes += measured.nodes;
@@ -1034,7 +1035,7 @@ class TokenLengthIndex {
         this.root,
         createTokenLengthNode(measured.length)
       );
-    }
+    });
   }
 
   set(index: number, node: Descendant): number {
@@ -1752,8 +1753,8 @@ const internalDocumentChangeRoot = (root: string | null) => root ?? 'main';
 const sparseLowerRegions = (
   change: DocumentChange,
   rootKey: string,
-  before: readonly Descendant[],
-  after: readonly Descendant[],
+  before: NodeList<Descendant>,
+  after: NodeList<Descendant>,
   lengths: TokenLengthIndex
 ): EventImportRegion[] | null => {
   const ranges: LowerTokenRange[] = [];
@@ -1813,7 +1814,7 @@ const sparseLowerRegions = (
     let measuredLength = 0;
 
     while (afterTo < after.length && measuredLength < requiredLength) {
-      const node = after[afterTo];
+      const node = after.at(afterTo);
 
       if (!node) return null;
 
@@ -1931,9 +1932,16 @@ const eventNormalizationTargets = (batch: CapturedYjsEventBatch) => {
   return { insertedNodes, parents, recursiveRoots, truncatedTextNodes };
 };
 
+const arrayOf = <T>(nodes: NodeList<T>): readonly T[] =>
+  Array.isArray(nodes) ? nodes : nodes.slice();
+
 export class YjsEventChangeBridge {
   private readonly canonicalizeNode: (node: Descendant) => Descendant;
-  private children: readonly Descendant[];
+  // The root's top-level children as the mirror last saw them. A local
+  // commit hands over the editor's node list, so typing reads only the
+  // changed nodes, and a structural lowering builds the array once.
+  private mirror: NodeList<Descendant>;
+  private mirrorArray: readonly Descendant[] | null = null;
   private readonly isSetValued: YjsSetPropertyResolver;
   private readonly lengths: TokenLengthIndex;
   private ready = false;
@@ -1946,12 +1954,12 @@ export class YjsEventChangeBridge {
   constructor(
     root: Y.XmlElement,
     rootKey: string,
-    children: readonly Descendant[],
+    children: NodeList<Descendant>,
     isSetValued: YjsSetPropertyResolver = () => false,
     canonicalizeNode: (node: Descendant) => Descendant = (node) => node
   ) {
     this.canonicalizeNode = canonicalizeNode;
-    this.children = children;
+    this.mirror = children;
     this.isSetValued = isSetValued;
     this.lengths = new TokenLengthIndex([]);
     this.root = root;
@@ -1960,89 +1968,109 @@ export class YjsEventChangeBridge {
     this.reset(children);
   }
 
+  private get children(): readonly Descendant[] {
+    this.mirrorArray ??= arrayOf(this.mirror);
+
+    return this.mirrorArray;
+  }
+
+  private setMirror(children: NodeList<Descendant>) {
+    this.mirror = children;
+    this.mirrorArray = Array.isArray(children) ? children : null;
+  }
+
   lower(
     change: DocumentChange,
-    expected: readonly Descendant[],
+    expected: NodeList<Descendant>,
     options: Readonly<{
       structureChanged: boolean;
     }>
   ): YjsEventLowerResult {
     const result = this.lowerAgainstMirror(change, expected, options);
 
+    // Keep the list the caller passes, so its next commit finds the mirror
+    // by identity.
+    if (result.kind === 'lowered') this.setMirror(expected);
+
     return result;
   }
 
   private lowerAgainstMirror(
     change: DocumentChange,
-    expected: readonly Descendant[],
+    expected: NodeList<Descendant>,
     {
       structureChanged,
     }: Readonly<{
       structureChanged: boolean;
     }>
   ): YjsEventLowerResult {
-    if (!this.ready || this.topNodes.length !== this.children.length) {
+    if (!this.ready || this.topNodes.length !== this.mirror.length) {
       return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
     }
-    const split = structureChanged
-      ? findCanonicalSplit(this.children, expected)
-      : null;
+    if (!structureChanged) return this.lowerRegions(change, expected, []);
+
+    const nodes = arrayOf(expected);
+    const split = findCanonicalSplit(this.children, nodes);
     const splitResult =
-      split === null ? null : this.lowerCanonicalSplit(change, expected, split);
+      split === null ? null : this.lowerCanonicalSplit(change, nodes, split);
 
     if (splitResult !== null) return splitResult;
 
-    const exactMove = structureChanged
-      ? getExactDocumentChangeRelocation(change, this.rootKey, this.children)
+    const exactMove = getExactDocumentChangeRelocation(
+      change,
+      this.rootKey,
+      this.children
+    );
+    const relocationResult = exactMove
+      ? this.lowerExactRelocation(change, nodes, exactMove)
       : null;
-    const exactRelocations: readonly DocumentChangeRelocation[] = exactMove
-      ? [exactMove]
-      : [];
-    const relocationResult =
-      exactRelocations.length === 1
-        ? this.lowerExactRelocation(change, expected, exactRelocations[0])
-        : null;
 
     if (relocationResult !== null) return relocationResult;
 
-    if (structureChanged) {
-      const elementSplit = this.lowerElementBoundarySplit(change, expected);
+    const elementSplit = this.lowerElementBoundarySplit(change, nodes);
 
-      if (elementSplit !== null) return elementSplit;
+    if (elementSplit !== null) return elementSplit;
 
-      const leafSplit = this.lowerTextLeafSplit(change, expected);
+    const leafSplit = this.lowerTextLeafSplit(change, nodes);
 
-      if (leafSplit !== null) return leafSplit;
+    if (leafSplit !== null) return leafSplit;
 
-      const boundaryMerge = this.lowerTextBoundaryMerge(change, expected);
+    const boundaryMerge = this.lowerTextBoundaryMerge(change, nodes);
 
-      if (boundaryMerge !== null) return boundaryMerge;
+    if (boundaryMerge !== null) return boundaryMerge;
 
-      const collapsedLeaves = this.lowerCollapsedTextLeaves(change, expected);
+    const collapsedLeaves = this.lowerCollapsedTextLeaves(change, nodes);
 
-      if (collapsedLeaves !== null) return collapsedLeaves;
+    if (collapsedLeaves !== null) return collapsedLeaves;
 
-      const nestedSplice = this.lowerNestedChildSplice(change, expected);
+    const nestedSplice = this.lowerNestedChildSplice(change, nodes);
 
-      if (nestedSplice !== null) return nestedSplice;
-    }
-    const relocations =
-      exactRelocations.length > 0
-        ? exactRelocations
-        : structureChanged
-          ? getDocumentChangeRelocations(
-              change,
-              valueForRoot(this.rootKey, this.children)
-            ).filter(
-              (relocation) =>
-                internalDocumentChangeRoot(relocation.root) === this.rootKey
-            )
-          : [];
+    if (nestedSplice !== null) return nestedSplice;
 
+    return this.lowerRegions(
+      change,
+      nodes,
+      exactMove
+        ? [exactMove]
+        : getDocumentChangeRelocations(
+            change,
+            valueForRoot(this.rootKey, this.children)
+          ).filter(
+            (relocation) =>
+              internalDocumentChangeRoot(relocation.root) === this.rootKey
+          )
+    );
+  }
+
+  private lowerRegions(
+    change: DocumentChange,
+    expected: NodeList<Descendant>,
+    relocations: readonly DocumentChangeRelocation[]
+  ): YjsEventLowerResult {
     const mergedRegions = sparseLowerRegions(
       change,
       this.rootKey,
-      this.children,
+      this.mirror,
       expected,
       this.lengths
     );
@@ -2052,7 +2080,7 @@ export class YjsEventChangeBridge {
     }
 
     if (mergedRegions.length === 0) {
-      if (expected !== this.children) {
+      if (expected !== this.mirror) {
         return {
           fallback: 'remote-event-mirror-mismatch',
           kind: 'fallback',
@@ -2072,7 +2100,7 @@ export class YjsEventChangeBridge {
 
     if (relocations.length > 0) {
       const relocated = this.lowerCompositeRelocations(
-        expected,
+        arrayOf(expected),
         mergedRegions,
         relocations
       );
@@ -2088,7 +2116,7 @@ export class YjsEventChangeBridge {
         !canReplaceCompatibleYjsChildren(
           this.root,
           touched,
-          this.children.slice(region.beforeFrom, region.beforeTo),
+          this.mirror.slice(region.beforeFrom, region.beforeTo),
           expected.slice(region.afterFrom, region.afterTo),
           0
         )
@@ -2114,7 +2142,7 @@ export class YjsEventChangeBridge {
         continue;
       }
 
-      const before = this.children.slice(region.beforeFrom, region.beforeTo);
+      const before = this.mirror.slice(region.beforeFrom, region.beforeTo);
       const after = expected.slice(region.afterFrom, region.afterTo);
       const touched = this.topNodes.slice(region.beforeFrom, region.beforeTo);
       const compatible = replaceCompatibleYjsChildren(
@@ -2202,7 +2230,7 @@ export class YjsEventChangeBridge {
         region.afterTo - region.afterFrom
       ) {
         for (let index = region.afterFrom; index < region.afterTo; index++) {
-          const node = expected[index];
+          const node = expected.at(index);
 
           if (node) {
             tokenLengthNodes += this.lengths.set(
@@ -2221,7 +2249,6 @@ export class YjsEventChangeBridge {
 
       regionIndex -= 1;
     }
-    this.children = expected;
     this.ready = this.topNodes.length === expected.length;
 
     return {
@@ -2281,7 +2308,6 @@ export class YjsEventChangeBridge {
       split.right,
     ]);
 
-    this.children = expected;
     this.ready = this.topNodes.length === expected.length;
     this.rootProjectionSimple = false;
 
@@ -2429,7 +2455,6 @@ export class YjsEventChangeBridge {
         }
       }
 
-      this.children = expected;
       this.ready = this.topNodes.length === expected.length;
       this.rootProjectionSimple = false;
 
@@ -2523,8 +2548,6 @@ export class YjsEventChangeBridge {
     const child = expected[topIndex];
     const tokenLengthNodes =
       child === undefined ? 0 : this.lengths.set(topIndex, child);
-
-    this.children = expected;
 
     return {
       changedRanges,
@@ -2648,7 +2671,6 @@ export class YjsEventChangeBridge {
     const tokenLengthNodes =
       topNode === undefined ? 0 : this.lengths.set(topIndex, topNode);
 
-    this.children = expected;
     this.ready = this.topNodes.length === expected.length;
     this.rootProjectionSimple = false;
 
@@ -2775,8 +2797,6 @@ export class YjsEventChangeBridge {
 
     const topIndex = split.parentPath[0];
 
-    this.children = expected;
-
     return {
       changedRanges,
       inserted,
@@ -2832,7 +2852,6 @@ export class YjsEventChangeBridge {
         tokenLengthNodes = this.lengths.set(topIndex, changedTopNode);
       }
     }
-    this.children = expected;
     this.ready = this.topNodes.length === expected.length;
 
     return {
@@ -2867,7 +2886,6 @@ export class YjsEventChangeBridge {
 
     this.topNodes.move(from, to);
     this.lengths.move(from, to);
-    this.children = expected;
     this.ready = this.topNodes.length === expected.length;
     this.rootProjectionSimple = false;
 
@@ -3010,7 +3028,6 @@ export class YjsEventChangeBridge {
         expected.slice(entry.region.afterFrom, entry.region.afterTo)
       );
     }
-    this.children = expected;
     this.ready = this.topNodes.length === expected.length;
     this.rootProjectionSimple = false;
 
@@ -3050,10 +3067,10 @@ export class YjsEventChangeBridge {
     };
   }
 
-  reset(children: readonly Descendant[]): number {
+  reset(children: NodeList<Descendant>): number {
     const topNodes = getYjsVisibleChildren(this.root, this.root);
 
-    this.children = children;
+    this.setMirror(children);
     this.lengths.reset(children);
     this.ready = topNodes.length === children.length;
     this.rootProjectionSimple = isSimpleRootProjection(this.root, topNodes);
@@ -3270,7 +3287,7 @@ export class YjsEventChangeBridge {
       import: {
         ...prepared,
         accept: (children) => {
-          this.children = children;
+          this.setMirror(children);
           for (let index = structural.length - 1; index >= 0; index--) {
             const region = structural[index];
 

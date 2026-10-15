@@ -128,9 +128,41 @@ list item after the current block; `replaceEmpty` replaces an empty source in
 the same history step. An explicit `at` keeps node-insertion placement, while
 `after` identifies the block to insert beside.
 
+Tab, Shift+Tab and `outdent` move an item together with the blocks under it,
+such as its nested items and continuation paragraphs, up to the next block at
+its depth or shallower. Drag and Cut take the same blocks through
+`editor.read.transfer.nodes()`. Indent's own commands still move one block.
+List writes each moved block's depth itself, so an override of Indent's
+`increase` or `decrease` does not run for these moves.
+
+`toggle` on a Details title turns the title into an item and puts the body one
+level under it. It returns `false` and changes nothing when a body block cannot
+take an indent or the result would not fit its parent. Other selected blocks
+stay unchanged too.
+
+## Pasting lists
+
+Native paste and the one-shot `editor.update.slice.replace` and
+`editor.update.fragment.replace` methods apply List's depth, numbering and
+empty-target rules. Callback transaction replacements and detached fitting
+bypass this command policy.
+
+At a text caret, an admitted whole-item paste into an empty paragraph or heading
+keeps the copied text properties allowed by the schema. Permitted target properties,
+such as an id or alignment, survive unless the copied item supplies them.
+Object and void items do not inherit those target properties.
+The empty target's explicit start and restart take precedence over copied
+values. The replacement gets its own runtime node key.
+
+Under `maxLength`, a paste lands what fits. When the limit cuts the first copied
+item, the items left land at the caret's depth. A quote-wrapped list pastes
+nothing once its text no longer fits.
+
 ## HTML and Markdown
 
-HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listStyle. Plate HTML names each item's list with `data-list-id` and its level rules with `data-list-levels`. Each paste or parse gives every source list a fresh id, so a pasted list never joins an unrelated list that shares its id. The first top-level pasted list joins the list it lands in when both lists match in kind, style and heading role. A list that lives only inside a pasted table keeps its own id. In other HTML, each ul or ol is one list. An ol whose start continues the previous ol at its depth joins it, and the first nested list under an item joins that item's list. Word HTML keeps Word's list identity. A list drawn inside its block, such as `<h2><ol data-list-id="…"><li>…</li></ol></h2>` from the static kit, reads back as that block with its list fields, and an item's own `data-list-style` wins over its list's marker.
+HTML ul and ol tags map to listType. Explicit CSS list-style-type maps to listStyle. Plate HTML names each item's list with `data-list-id` and its level rules with `data-list-levels`. Each paste or parse gives every source list a fresh id, so a pasted list never joins an unrelated list that shares its id. The first top-level pasted list joins the target list when their kind and heading role match. Its root items take the target marker style. Copied siblings land at the target item's depth, and children keep their depth relative to a copied parent. A list-led paste of multiple blocks or a closed slice keeps the first item's type in an empty paragraph or heading, including inside a quote, table cell or column when the schema allows it. An empty line below a compatible list continues that list. The empty target's own start and restart take precedence over copied values. A list that lives only inside a pasted table keeps its own id. In other HTML, each ul or ol is one list. An ol whose start continues the previous ol at its depth joins it, and the first nested list under an item joins that item's list. Word HTML keeps Word's list identity. A list drawn inside its block, such as `<h2><ol data-list-id="…"><li>…</li></ol></h2>` from the static kit, reads back as that block with its list fields, and an item's own `data-list-style` wins over its list's marker.
+
+A custom object whose body lives in a separate content root needs a whole-object copy to preserve that body. Copying only its caption can omit the body; that partial copy does not guarantee the object type or list numbering.
 
 MDAST `list.ordered` maps to `listType`. Each parsed Markdown list gets a new
 listId, and a start other than 1 parses as `listStart`. The first nested list
@@ -177,7 +209,7 @@ The parse reports either change, so `lossPolicy: 'reject'` refuses it.
 | update.toggle(options) | Set or remove list semantics. |
 | update.restart(options?) | Force the selected numbered item's number; `start` defaults to 1. |
 | update.continue(options?) | Remove the selected item's restart, or join the list to the previous one from its first item. |
-| update.outdent(options) | Decrease indentation and clear list fields at the outer level. |
+| update.outdent(options) | Decrease the indentation of each selected item and the blocks under it, and clear list fields at the outer level. |
 | update.clear(options?) | Remove list semantics from the exact selected list items. |
 | update.insert(input, options?) | Insert a list item with owned construction and placement. |
 | read.ordinal(at) | Derive a numbered item's display ordinal, or `undefined` when `at` is not a numbered item in the editor's root. |

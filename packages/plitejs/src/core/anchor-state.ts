@@ -9,12 +9,15 @@ import {
   type DocumentChange,
   getInternalDocumentChangeEntries,
   mapDocumentRangeReplacement,
+  valueRootIndex,
 } from './change/document-change';
 import { DocumentIndex } from './change/document-index';
+import { copyFields, setLazyRoot } from './change/lazy-root';
 import { getRangeEndpointAssociations } from './change/range-association';
-import type { JsonEditorValue, JsonNode } from './change/tokens';
+import type { JsonNode } from './change/tokens';
 import { reportEditorLifecycleError } from './lifecycle-error';
 import { toPublicRoot } from './public-root';
+import { getValueRecords, withValueRecords } from './record-store';
 
 export const RECOVERY_RECORD_SIZE = 7;
 export const RECOVERY_ID = 0;
@@ -395,9 +398,6 @@ export const hasActiveAnchors = (editor: object) =>
 export const getAnchorStateValue = (editor: Editor) =>
   getActiveAnchorState(editor)?.value;
 
-const rootNodes = (value: JsonEditorValue, root: string) =>
-  root === 'main' ? value.children : (value.roots?.[root] ?? []);
-
 const indexRoot = (
   value: EditorDocumentValue,
   indexes: Map<string, DocumentIndex>,
@@ -406,7 +406,7 @@ const indexRoot = (
   let index = indexes.get(root);
 
   if (!index) {
-    index = DocumentIndex.fromValue(rootNodes(value, root));
+    index = valueRootIndex(value, root);
     indexes.set(root, index);
   }
 
@@ -492,7 +492,7 @@ export const getAnchorRootIndex = (
 
   return state?.value === value
     ? indexRoot(value, state.indexes, root)
-    : DocumentIndex.fromValue(rootNodes(value, root));
+    : valueRootIndex(value, root);
 };
 
 const hasDocumentRoot = (value: EditorDocumentValue, root: string) =>
@@ -600,7 +600,7 @@ export const mapAnchorHistoryRecovery = (
     let document = sourceDocuments.get(root);
 
     if (!document) {
-      document = DocumentIndex.fromValue(rootNodes(before, root));
+      document = valueRootIndex(before, root);
       sourceDocuments.set(root, document);
     }
 
@@ -610,7 +610,7 @@ export const mapAnchorHistoryRecovery = (
     let document = targetDocuments.get(root);
 
     if (!document) {
-      document = DocumentIndex.fromValue(rootNodes(after, root));
+      document = valueRootIndex(after, root);
       targetDocuments.set(root, document);
     }
 
@@ -948,7 +948,7 @@ const applyAnchorChange = (
   const before = state.value;
   const beforeIndexes = new Map(state.indexes);
   const afterIndexes = new Map(beforeIndexes);
-  let { children } = before;
+  let main: DocumentIndex | undefined;
   let roots = before.roots ? { ...before.roots } : undefined;
 
   for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
@@ -959,7 +959,7 @@ const applyAnchorChange = (
     afterIndexes.set(root, next);
 
     if (root === 'main') {
-      children = next.value as EditorDocumentValue['children'];
+      main = next;
     } else {
       roots ??= {};
       roots[root] = next.value as EditorDocumentValue['children'];
@@ -984,11 +984,15 @@ const applyAnchorChange = (
     roots = undefined;
   }
 
-  const { roots: _roots, ...withoutRoots } = before;
-  const after = Object.freeze(
-    roots
-      ? { ...withoutRoots, children, roots: Object.freeze(roots) }
-      : { ...withoutRoots, children }
+  const fields: Readonly<Record<string, unknown>> = before;
+  const next = copyFields({}, fields, ['records', 'roots']);
+
+  if (main) setLazyRoot(next, 'children', main);
+  if (roots) next.roots = Object.freeze(roots);
+
+  const after = withValueRecords(
+    Object.freeze(next),
+    getValueRecords(before)
   ) as EditorDocumentValue;
 
   return { after, afterIndexes, before, beforeIndexes };

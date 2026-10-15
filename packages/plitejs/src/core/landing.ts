@@ -5,8 +5,8 @@ import { type Path, PathApi } from '../interfaces/path';
 import { SelectionApi } from '../interfaces/selection';
 import { editorReads } from './editor-reads';
 import { getEditorRuntimeRoot, getEditorSchema } from './editor-runtime';
-import { getPluginContributions } from './plugin-registry';
 import { definePluginPoint } from './plugin-point';
+import { getPluginContributions } from './plugin-registry';
 import { executeEditorRead } from './read-registry';
 import type {
   TransferEdge,
@@ -195,7 +195,7 @@ const checkPlacement = (
 
 const runVetoes = (editor: AnyEditor, input: TransferVetoInput) => {
   for (const veto of getPluginContributions(editor, transferVeto)) {
-    if ((veto as TransferVeto)(input, editor)) refuse('policy');
+    if (veto(input, editor)) refuse('policy');
   }
 };
 

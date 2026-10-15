@@ -364,6 +364,14 @@
       "export type EditorTestRenderResult = RenderResult;"
     ]
   },
+  "plate/no-selection-root-copy": {
+    "packages/platejs/src/features/table/lib/internal/selection.ts": [
+      "selection.anchor.root ??"
+    ],
+    "packages/test/src/playwright/interaction-performance.ts": [
+      "root: selection?.anchor.root,"
+    ]
+  },
   "plate/no-source-text-test": {
     "apps/www/src/lib/rehype-utils.spec.ts": [
       "expect(await fs.readFile(filePath, 'utf-8')).toContain("

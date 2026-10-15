@@ -12,14 +12,17 @@ type from `platejs` when declaring a public command boundary.
 
 - `at`: an explicit insertion location.
 - `before`: a live block key; omit `at` and `after` when using it.
-- `after`: a live source block target; omit `at` when using it.
+- `after`: a live source block target; omit `at` when using it. Without `at`
+  and `after`, the insert lands after the caret's block, or after the container
+  that hides what follows it, such as a closed Details for its title.
 - `replaceEmpty`: replace the empty, writable source text block when inserting
-  after it. Structural and atomic blocks remain intact.
+  after it. Structural and atomic blocks, and an empty block that is not block
+  content, such as a Details title, remain intact.
 - `select`: select the inserted content.
 
 ### `createEditor`
 
-Creates a new `Editor` with the supplied plugins and configuration. To render an editor you already have, pass it to `EditorRoot`.
+Creates a new `Editor` with the supplied plugins and configuration. To render an editor you already have, pass it to `EditorRoot`. An option this table does not list throws.
 
 <API name="createEditor">
 <APIOptions type="CreateEditorOptions">
@@ -32,7 +35,8 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
   <APIItem name="initialValue" type="EditorValueInput | ((context: { editor: Editor }) => EditorValueInput)" optional>
     Synchronous initial document, persisted
     `{ document, schema, selection? }` envelope, or primary-root array. A
-    document holds only `children`, `roots` and `meta`; pass a selection through
+    document holds only `children`, `roots`, `meta` and `records`; pass a
+    selection through
     `selection`. Use the callback when decoding needs the compiled editor model.
     Load remote data before constructing the editor.
   </APIItem>
@@ -42,6 +46,10 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
     - `true` | 'end': Select the end of the editor
     - `false`: Do not select anything
     - `'start'`: Select the start of the editor
+  </APIItem>
+  <APIItem name="affinity" type="boolean" optional>
+    Enable mark and element affinity.
+    - **Default:** `true`
   </APIItem>
   <APIItem name="maxLength" type="number" optional>
     Maximum character count for user-facing text, fragment, and node insertions.
@@ -58,6 +66,9 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
   <APIItem name="selection" type="TSelection" optional>
     Initial selection for the editor.
   </APIItem>
+  <APIItem name="initialSelection" type="TSelection" optional>
+    Initial model selection, used when `selection` is not set.
+  </APIItem>
   <APIItem name="schema" type="EditorApplicationSchema" optional>
     Application schema policy and optional named persisted lineage. Omit `root`
     for the standard paragraph root. Supply `id` and `version` together.
@@ -65,6 +76,14 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
   <APIItem name="shouldNormalizeEditor" type="boolean" optional>
     When `true`, it normalizes the `initialValue` passed to the editor.
     - **Default:** `false`
+  </APIItem>
+  <APIItem name="skipInitialization" type="boolean" optional>
+    When `true`, skips `initialValue`, selection and normalization, such as
+    when Yjs collaboration manages the document.
+    - **Default:** `false`
+  </APIItem>
+  <APIItem name="lifecycleErrorSink" type="(error: EditorLifecycleError) => void" optional>
+    Receives failures from plugin lifecycle observers.
   </APIItem>
   <APIItem name="api" type="object" optional>
     API methods for the editor.
@@ -79,8 +98,8 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
   <APIItem name="inject" type="object" optional>
     Injection configuration for the editor.
   </APIItem>
-  <APIItem name="options" type="object" optional>
-    Additional options for the editor.
+  <APIItem name="initialState" type="object" optional>
+    Initial state of the editor's root plugin.
   </APIItem>
   <APIItem name="override" type="object" optional>
     Override configuration for the editor.
@@ -94,9 +113,6 @@ Creates a new `Editor` with the supplied plugins and configuration. To render an
   </APIItem>
   <APIItem name="shortcuts" type="object" optional>
     Keyboard shortcuts for the editor.
-  </APIItem>
-  <APIItem name="transforms" type="object" optional>
-    Transform functions for the editor.
   </APIItem>
   <APIItem name="userId" type="string" optional>
     The user this editor writes and comments as, recorded as the author of
@@ -160,8 +176,8 @@ once into the immutable current target used by every step. Plate rejects
 missing intermediate steps and historical identity drift.
 
 Each step receives `{ document, legacy, from, to, target }` and returns
-`{ document, legacy?, mapSelection? }`. `document` holds only `children`, `meta`
-and `roots`, and its type refuses any other key. `legacy` holds the stored
+`{ document, legacy?, mapSelection? }`. `document` holds only `children`, `meta`,
+`roots` and `records`, and its type refuses any other key. `legacy` holds the stored
 document's other top-level fields until a step lifts them; a step that omits
 `legacy` passes it on unchanged.
 

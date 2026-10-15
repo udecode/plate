@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-14-details-block-conversion",
+      "href": "/registry/changelog/2026-10-14-details-block-conversion.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Convert Details titles without losing body content or list hierarchy",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button", "indent", "indent-static"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-14-details-unwrap-targets",
+      "href": "/registry/changelog/2026-10-14-details-unwrap-targets.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep Details removal scoped to the selected section",
+      "change": {
+        "type": "source",
+        "date": "2026-10-14",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["turn-into-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-14-excalidraw-demo-width",
       "href": "/registry/changelog/2026-10-14-excalidraw-demo-width.json",
       "status": "draft",
@@ -145,6 +181,33 @@
       },
       "targets": ["lint", "lint-demo"],
       "entries": 2,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-13-media-caption-preview",
+      "href": "/registry/changelog/2026-10-13-media-caption-preview.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep empty media captions hidden on select, restore image preview and add the media toolbar to file, audio and video",
+      "change": {
+        "type": "source",
+        "date": "2026-10-13",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "caption",
+        "media-image",
+        "media-audio",
+        "media-embed",
+        "media-file",
+        "media-video",
+        "media-preview-dialog",
+        "media-toolbar"
+      ],
+      "entries": 3,
       "diagnostics": []
     },
     {

@@ -1,4 +1,4 @@
-import type { NodeKey } from '../../interfaces/editor';
+import type { EditorDocumentRecords, NodeKey } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
 import {
   preparedNodeKeyAt,
@@ -28,6 +28,7 @@ export type JsonNode = JsonRecord &
 
 export type JsonEditorValue = JsonRecord & {
   children: readonly JsonNode[];
+  records?: EditorDocumentRecords;
   roots?: Readonly<Record<string, readonly JsonNode[]>>;
 };
 
@@ -353,11 +354,10 @@ export const getPreparedDocumentNodeKey = (
 
   for (let depth = 0; depth < path.length; depth++) {
     const index = path[depth];
-    const node = children.children[index];
-    const offset = children.offsets[index];
+    const node = children.at(index);
 
-    if (!node || offset === undefined) return null;
-    position += offset;
+    if (!node) return null;
+    position += children.startOf(index);
 
     if (depth === path.length - 1) {
       return (
@@ -437,7 +437,7 @@ export class PreparedTokenSlice {
     let length = 0;
 
     if (preparedNodes) {
-      ({ length } = preparedNodes.index);
+      length = preparedNodes.index.totalLength;
       DOCUMENT_SLICE_PREPARED_NODES.set(this, preparedNodes);
     } else if (deferredView) {
       length = deferredView.to - deferredView.from;
@@ -564,9 +564,9 @@ export class PreparedTokenSlice {
       path: readonly number[] = [],
       position = 0
     ) => {
-      children.children.forEach((child, childIndex) => {
+      children.forEach(0, (child, childIndex, start) => {
         const childPath = [...path, childIndex];
-        const childPosition = position + children.offsets[childIndex];
+        const childPosition = position + start;
         const nodeKey = nodeKeyAt?.(childPath);
 
         if (nodeKey) runtimeNodeKeys.set(childPosition, nodeKey);
@@ -580,7 +580,7 @@ export class PreparedTokenSlice {
     const prepared = Object.freeze({
       index,
       nodes,
-      nodeKeys: reservePreparedNodeKeyRange(index.length),
+      nodeKeys: reservePreparedNodeKeyRange(index.totalLength),
     });
 
     return new PreparedTokenSlice(
@@ -603,6 +603,16 @@ export class PreparedTokenSlice {
 
   static fromTokens(tokens: readonly JsonToken[]) {
     return new PreparedTokenSlice(tokens);
+  }
+
+  withNodeKeys(nodeKeys: ReadonlyMap<number, NodeKey>) {
+    return new PreparedTokenSlice(
+      DOCUMENT_SLICE_TOKENS.get(this) ?? [],
+      true,
+      DOCUMENT_SLICE_PREPARED_NODES.get(this),
+      DOCUMENT_SLICE_DEFERRED_VIEWS.get(this),
+      nodeKeys
+    );
   }
 
   static text(text: string) {

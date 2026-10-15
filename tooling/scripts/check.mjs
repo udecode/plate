@@ -38,6 +38,10 @@ export const steps = [
     fix: 'node tooling/scripts/check-hook-generics.mjs',
   },
   {
+    name: 'value-records',
+    run: 'node tooling/scripts/check-value-records.mjs',
+  },
+  {
     name: 'entrypoint-graph',
     run: 'pnpm entrypoint:turbo:check',
     write: 'pnpm entrypoint:turbo:generate',

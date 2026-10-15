@@ -328,9 +328,20 @@ export type NamedRootKey<TRoot extends RootKey = RootKey> = TRoot extends 'main'
   ? never
   : TRoot;
 
+/**
+ * Keyed data a plugin keeps beside the document's children, by record set and
+ * then by record id. Records have no position, so no read of `children` or
+ * `roots` meets them, and a set never drops a record while people edit.
+ */
+export type EditorDocumentRecords = Readonly<
+  Record<string, Readonly<Record<string, Readonly<Record<string, unknown>>>>>
+>;
+
 export type EditorDocumentValue<V extends Value = Value> = Readonly<{
   children: V;
   meta?: Readonly<Record<string, unknown>>;
+  /** Omitted when no record set holds a record. */
+  records?: EditorDocumentRecords;
   roots?: Readonly<Record<RootKey, V>>;
 }>;
 
@@ -345,6 +356,7 @@ export type InitialValue<V extends Value = Value> =
   | Readonly<{
       children: V;
       meta?: Readonly<Record<string, unknown>>;
+      records?: EditorDocumentRecords;
       roots?: Readonly<Record<RootKey, V>>;
     }>;
 
@@ -923,6 +935,21 @@ export type EditorTransactionRootsApi<V extends Value = Value> = {
   replace: <TRoot extends RootKey>(
     root: NamedRootKey<TRoot>,
     children: V
+  ) => void;
+};
+
+/** Write keyed records into a record set a plugin declares. */
+export type EditorTransactionRecordsApi = {
+  /** Drop `id` from `set`; a set without `id` stays as it is. */
+  drop: (set: string, id: string) => void;
+  /**
+   * Put `record` under `id` in `set`. Putting equal content again changes
+   * nothing, and an id that holds other content refuses the put.
+   */
+  put: (
+    set: string,
+    id: string,
+    record: Readonly<Record<string, unknown>>
   ) => void;
 };
 
@@ -1611,7 +1638,11 @@ export type EditorElementBehavior = Readonly<{
   isolating: boolean;
   markableVoid: boolean;
   object: boolean;
-  /** Whether the text block declares `ownsExit`; false for voids and objects. */
+  /**
+   * Whether the element owns its exit, which every void and object does, as
+   * does a text block that declares `ownsExit`. `tx.break.exit` treats a
+   * selected block that owns its exit as a structure of its own.
+   */
   ownsExit: boolean;
   readOnly: boolean;
   selectable: boolean;
@@ -1713,6 +1744,7 @@ export type EditorCoreUpdateTransaction<
   fragment: EditorTransactionFragmentApi<V>;
   marks: EditorTransactionMarksApi<V>;
   nodes: EditorTransactionNodesApi<V>;
+  records: EditorTransactionRecordsApi;
   roots: EditorTransactionRootsApi<V>;
   slice: EditorTransactionSliceApi<V>;
   selection: EditorTransactionSelectionApi<TSelection, V>;
@@ -1816,6 +1848,7 @@ export type EditorCoreUpdateMethods<
     >
   > &
     Pick<EditorTransactionNodesApi<V>, 'set' | 'unset'>;
+  records: EditorTransactionRecordsApi;
   roots: EditorBivariantMethods<EditorTransactionRootsApi<V>>;
   slice: EditorBivariantMethods<Pick<EditorTransactionSliceApi<V>, 'replace'>>;
   selection: EditorBivariantMethods<
@@ -2114,6 +2147,8 @@ export type SnapshotInput<V extends Value = Value> =
   | Readonly<{
       children: V | readonly Descendant[];
       meta?: Readonly<Record<string, unknown>>;
+      /** Omitted, the editor's records stay as they are. */
+      records?: EditorDocumentRecords;
       roots?: Readonly<Record<RootKey, V | readonly Descendant[]>>;
       selection?: SnapshotSelectionInput;
     }>;
@@ -3635,7 +3670,10 @@ export type EditorCommitChanged = {
     kind: EditorCommitChangeKind,
     root?: NamedRootKey<TRoot>
   ) => boolean;
-  /** Whether any document root has this change kind. */
+  /**
+   * Whether any document root has this change kind. A record write counts as
+   * a `document` and `snapshot` change too, since records hold no root.
+   */
   hasAny: (kind: EditorCommitChangeKind) => boolean;
   hasNodeKey: (
     nodeKey: NodeKey,

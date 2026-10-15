@@ -1,4 +1,5 @@
 import type { Anchor } from '../core/anchor';
+import { valueRootIndex } from '../core/change/document-change';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
@@ -118,15 +119,6 @@ const isInlineStartSplit = (
   getEditorSchema(editor).isInline(node) &&
   editorIsStart(editor, point, path);
 
-const getActiveDraftRoot = (editor: Editor): Node => {
-  const { value } = getActiveDocumentChangeBuilder(editor);
-  const root = getActiveUpdateRoot(editor) ?? 'main';
-
-  return {
-    children: root === 'main' ? value.children : (value.roots?.[root] ?? []),
-  } as Node;
-};
-
 const getSplitProperties = (
   editor: Editor,
   node: Node,
@@ -145,11 +137,15 @@ const ensureStartPointAfterHighestSplit = (
   editor: Editor,
   path: Path
 ): Point | null => {
-  const draft = getActiveDraftRoot(editor);
-  const target = NodeApi.getIf(draft, path);
+  const [first, ...rest] = path;
+  const top = valueRootIndex(
+    getActiveDocumentChangeBuilder(editor).value,
+    getActiveUpdateRoot(editor) ?? 'main'
+  ).child(getDefined(first)) as Node | undefined;
 
-  if (!target) return null;
-  const [node, textPath] = NodeApi.first(draft, path);
+  if (!top || !NodeApi.getIf(top, rest)) return null;
+  const [node, innerPath] = NodeApi.first(top, rest);
+  const textPath = [getDefined(first), ...innerPath];
 
   if (NodeApi.isText(node)) {
     return { path: textPath, offset: 0 };

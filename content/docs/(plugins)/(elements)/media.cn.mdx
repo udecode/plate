@@ -237,26 +237,27 @@ editor.plugin(ImagePlugin).update.insert({
 }
 ```
 
-渲染组件可以在媒体资源未获得焦点时隐藏空标题。占位符是否可见属于 UI 状态，
+渲染组件会隐藏空标题，直到光标进入标题，因此选中资源时页面不会跳动。占位符是否可见属于 UI 状态，
 不会改变持久化的元素。
 
 资源焦点和标题编辑使用不同的 selection 状态：
 
 | Selection | 行为 |
 | --- | --- |
-| 媒体路径上的 Plate `NodeSelection` | 聚焦资源，显示选中边框和空标题占位符；页面显示标题时，前进方向键或 `ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
+| 媒体路径上的 Plate `NodeSelection` | 聚焦资源并显示选中边框，空标题保持隐藏；页面显示标题时，前进方向键或 `ArrowDown` 进入标题，Delete 删除整个媒体节点。 |
 | 媒体 children 内的 Plate `TextSelection` | 编辑标题；光标位于标题开头时，后退方向键或 `ArrowUp` 返回资源焦点。 |
 
 在从左到右的文本中，从媒体块前面的文本按 `ArrowRight` 会先选中资源，再按一次才
-进入标题。反向移动依次经过标题、选中的资源和前面的文本。反向移动进入空标题时，
-空标题仍保留一个光标停靠点，默认标题组件在获得光标后显示。左右方向键跟随光标所在
+进入标题。反向移动依次经过标题、选中的资源和前面的文本。默认标题组件会隐藏空标题，
+方向键会跳过它，媒体工具栏的 Caption 按钮可以把光标放进空标题。左右方向键跟随光标所在
 块或选中媒体的书写方向，因此即使编辑器是从左到右，在从右到左的段落中方向键也会
 反转。
 
-除了这个反向停靠点，方向键只停在页面实际绘制的标题文本上。界面隐藏标题时，从下方
+方向键只停在页面实际绘制的标题文本上。界面隐藏标题时，从下方
 的块或下方选中的媒体按 `ArrowUp` 会选中该媒体。从选中的资源按前进方向键或
 `ArrowDown` 会越过隐藏的标题，移到下一个块。界面显示空标题时，从下方按 `ArrowUp`
 会进入该标题。
+媒体工具栏的 Caption 按钮会把光标放进空标题。
 
 复制或剪切媒体 `NodeSelection` 会连同标题传输整个资源；只选择标题文本时，
 粘贴不会重建资源。在标题中按 Enter 会把光标后的文本移到资源之后的新块，
@@ -483,6 +484,10 @@ const inserted = await editor.plugin(BaseImagePlugin).api.insertUrl(
 `media-toolbar` 负责 URL 编辑、提交、取消和焦点恢复。
 每个复制的媒体节点直接读取其类型化元素和编辑器原语状态。
 `media-image` 渲染图片并打开 `media-preview-dialog`；预览对话框负责导航、缩放、平移和下载。
+
+在可编辑的编辑器中，单击 `media-file` 会选中文件，双击会在新标签页打开它。只读编辑器中单击即打开文件。
+图片、文件、音频或视频节点被选中时，`media-toolbar` 在 Edit link、Caption 和删除按钮旁显示 Preview 按钮。
+图片的 Preview 打开 `media-preview-dialog`，其他媒体在新标签页打开文件。
 
 <ComponentSource name="media-toolbar" />
 <ComponentSource name="media-image" />

@@ -67,7 +67,7 @@ test('lists a mutated file whose bytes changed after its only mutation run', (t)
   );
 });
 
-test('passes a file once any spec ran on the frozen bytes, older specs beside it', (t) => {
+test('passes a file once any spec targets a commit with the frozen bytes, older specs beside it', (t) => {
   const repo = repository();
   t.after(repo.remove);
   repo.write('src/guard.ts', 'export const caretPath = 1;');
@@ -124,7 +124,7 @@ test('the hook reads a run directory passed as a shell variable assigned in the 
 
   assert.match(
     output?.hookSpecificOutput.additionalContext ?? '',
-    /src\/guard\.ts: no mutation spec ran on these bytes/
+    /src\/guard\.ts: no mutation spec targets a commit with these bytes/
   );
 });
 

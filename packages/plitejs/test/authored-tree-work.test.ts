@@ -2,16 +2,22 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { after, before as beforeAll, describe, it } from 'node:test';
 
-import * as commandProjection from '../src/authored/tree/command-projection';
+import * as ledgerModule from '../src/authored/ledger/ledger';
+import { readLedgerWork } from '../src/authored/ledger/work';
 import * as marks from '../src/authored/tree/marks';
 import * as recordCompletion from '../src/authored/tree/record-completion';
 import * as resolve from '../src/authored/tree/resolve';
 import { DocumentIndex } from '../src/core/change/document-index';
 import * as tokens from '../src/core/change/tokens';
+import {
+  readSequenceWork,
+  resetSequenceWork,
+} from '../src/core/measured-sequence';
 import * as representation from '../src/core/representation';
+import type { EditorDocumentRecords } from '../src/interfaces/editor';
 
 const real = { ...marks };
-const realProjection = { ...commandProjection };
+const realLedger = { ...ledgerModule };
 const realTokens = { ...tokens };
 const realCompletion = { ...recordCompletion };
 const realRepresentation = { ...representation };
@@ -70,27 +76,27 @@ const nodeCount = (
     0
   );
 
-mock.module(
-  join(import.meta.dir, '../src/authored/tree/command-projection.ts'),
-  () => ({
-    ...realProjection,
-    createCommandProjector: (
-      ...args: Parameters<typeof commandProjection.createCommandProjector>
-    ) => {
-      const project = realProjection.createCommandProjector(...args);
+mock.module(join(import.meta.dir, '../src/authored/ledger/ledger.ts'), () => ({
+  ...realLedger,
+  createReviewLedger: (
+    ...args: Parameters<typeof ledgerModule.createReviewLedger>
+  ) => {
+    const ledger = realLedger.createReviewLedger(...args);
+    const frame = ledger.frame.bind(ledger);
 
-      return (...input: Parameters<typeof project>) => {
-        const before = markReads + memberReads;
+    ledger.frame = (...input: Parameters<typeof frame>) => {
+      const before = markReads + memberReads;
 
-        try {
-          return project(...input);
-        } finally {
-          projectorReads += markReads + memberReads - before;
-        }
-      };
-    },
-  })
-);
+      try {
+        return frame(...input);
+      } finally {
+        projectorReads += markReads + memberReads - before;
+      }
+    };
+
+    return ledger;
+  },
+}));
 mock.module(join(import.meta.dir, '../src/authored/tree/resolve.ts'), () => ({
   ...realResolve,
   resolveAuthoredChildren: (
@@ -145,6 +151,7 @@ const { createAuthoredPlugin } = await import('../src/authored/authored');
 const { proposedChildren, proposedHost } =
   await import('../src/authored/tree/proposed');
 const { expandContexts } = await import('../src/authored/facts/compact');
+const { reviewRecords, storedContexts } = await import('./support/authored');
 
 const Inline = defineEditorSchema('work-inline', {
   elements: {
@@ -276,6 +283,7 @@ const workPerEdit = (editor: Editor, edit: (run: number) => void) => {
       recorderMemberReads,
       recorderReads,
       resolvedNodes,
+      visitedNodes: readLedgerWork().visitedNodes,
     };
 
     edit(run);
@@ -297,6 +305,7 @@ const workPerEdit = (editor: Editor, edit: (run: number) => void) => {
         projected,
       recorderReads: recorded,
       resolvedNodes: resolvedNodes - before.resolvedNodes,
+      visitedNodes: readLedgerWork().visitedNodes - before.visitedNodes,
     };
   });
 
@@ -356,6 +365,23 @@ describe('authored review tree work per edit', () => {
       typeAtEnd
     );
 
+    assert.deepEqual(large, small);
+  });
+
+  it('copies as many index slots and allocates as many index nodes for an Editing letter at 5,000 blocks as at 100', () => {
+    const [small, large] = [100, 5000].map((size) => {
+      const editor = editorFor(blocks(size, []), 'edit');
+
+      typeAtEnd(editor, size);
+      resetSequenceWork();
+      typeAtEnd(editor, size);
+
+      return readSequenceWork();
+    });
+
+    if (small.copiedSlots === 0) {
+      throw new Error('The sequence counter saw no copies.');
+    }
     assert.deepEqual(large, small);
   });
 
@@ -456,10 +482,8 @@ describe('authored review tree work per edit', () => {
   for (const intent of ['propose', 'edit'] as const) {
     it(`settles as much for ${intent === 'edit' ? 'an Editing' : 'a Suggesting'} letter, Backspace and Enter at 5,000 blocks holding 50 suggestions and a verdict as at 100, from the first key`, () => {
       const verdict = (change: string, result: 'accept' | 'reject') => ({
-        at: 1,
-        change,
-        children: [{ text: '' }],
-        type: 'authored-verdict',
+        decision: `d:${change}`,
+        member: { at: 1, change },
         verdict: result,
       });
       const [small, large] = atBothSizes(
@@ -476,12 +500,12 @@ describe('authored review tree work per edit', () => {
                   ? struckParagraph(`struck ${index}`, `bob:s${index}`)
                   : paragraph({ text: `plain ${index}` })
               ),
-              roots: {
-                '$authored-verdicts': [
+              records: reviewRecords({
+                verdicts: [
                   verdict('carol:0', 'accept'),
                   verdict('dave:0', 'reject'),
                 ],
-              },
+              }),
             } as never,
             plugins: [
               Inline,
@@ -686,7 +710,7 @@ describe('authored review tree work per edit', () => {
     );
   });
 
-  it('reads through a struck run as far as it goes on the first Suggesting Backspace join, and not again on the next, at 20,000 blocks as at 100', () => {
+  it('reads as much on each Suggesting Backspace join beside a struck run of 1,000 lines as beside 100, at 20,000 blocks as at 100', () => {
     const reads = (run: number, sizes: number[]) =>
       atBothSizes(
         (size) =>
@@ -711,11 +735,10 @@ describe('authored review tree work per edit', () => {
     const [long] = reads(1000, [100]);
 
     assert.deepEqual(shortInLarge, short);
-    assert.ok((long?.[0] ?? 0) - (short?.[0] ?? 0) >= 900);
-    assert.deepEqual(long?.slice(1), short?.slice(1));
+    assert.deepEqual(long, short);
   });
 
-  it('copies as many tokens for an Editing letter typed beside 1,000 struck lines as beside 100, reading each added line once per key', () => {
+  it('copies as many tokens and reads as many marks for an Editing letter typed beside 1,000 struck lines as beside 100', () => {
     const [small, large] = atBothSizes(
       (size) =>
         editorFor(
@@ -739,16 +762,7 @@ describe('authored review tree work per edit', () => {
         }),
       [100, 1000]
     );
-    const without = ({ markReads: _reads, ...work }: Record<string, number>) =>
-      work;
-
-    assert.deepEqual(large?.map(without), small?.map(without));
-    // The first key projects the whole document; each later key reads only
-    // the struck top-level lines after the edit, looking past them for a join.
-    assert.deepEqual(
-      large?.map((work, index) => work.markReads - small[index].markReads),
-      [7200, 900, 900]
-    );
+    assert.deepEqual(large, small);
   });
 
   it('copies as many tokens for each Suggesting letter after the first, which projects the whole document, typed above 1,000 lines that each hold a struck letter as above 100', () => {
@@ -871,7 +885,7 @@ describe('authored review tree storage', () => {
     );
   const storedAt = (value: {
     children: readonly Node[];
-    roots?: Record<string, readonly unknown[]>;
+    records?: EditorDocumentRecords;
   }) => ({
     bytes: JSON.stringify(value).length,
     changes: new Set(
@@ -883,7 +897,7 @@ describe('authored review tree storage', () => {
         .map(({ change }) => change)
     ).size,
     members: members(value.children),
-    records: value.roots?.['$authored-contexts']?.length ?? 0,
+    records: storedContexts(value).length,
   });
 
   it('stores k nested proposals by alternating authors in at most 4k + 1 members and k context records, in bytes linear in k', () => {

@@ -169,6 +169,18 @@ export const setNodeKey = (node: object, editor: Editor, nodeKey: NodeKey) => {
   advanceNextNodeKey(editor, nodeKey);
 };
 
+export const bindNodeKeyOnce = (
+  node: object,
+  editor: Editor,
+  nodeKey: NodeKey
+) => {
+  const currentNodeKey = getNodeKeyForNode(node, editor);
+
+  if (currentNodeKey === null) setNodeKey(node, editor, nodeKey);
+
+  return currentNodeKey === null || currentNodeKey === nodeKey;
+};
+
 export const assignFreshNodeKey = (node: object, editor: Editor): NodeKey => {
   const nodeKey = allocateNodeKey(editor);
 

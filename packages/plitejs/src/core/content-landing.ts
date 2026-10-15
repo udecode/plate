@@ -10,6 +10,7 @@ import {
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import { getDefined } from '../internal/get-defined';
+import { NO_NODES, type NodeList } from './change/document-index';
 import { hasEditorContent, isEditorContent } from './content';
 import { getEditorSchema } from './editor-runtime';
 import { survivalUnder } from './survival';
@@ -18,7 +19,7 @@ type Survives = (node: Node) => boolean;
 type Enters = (element: Node) => boolean;
 type Direction = 'backward' | 'forward';
 type Edge = Point | 'blocked' | null;
-type RootChildren = readonly Descendant[];
+type RootChildren = NodeList<Descendant>;
 
 const contentSurvival = (editor: Editor): Survives =>
   survivalUnder<Node>((node) => !isEditorContent(editor, node)).survives;
@@ -29,9 +30,9 @@ export const nodeAt = (document: RootChildren, path: Path) => {
   let node: Descendant | undefined;
 
   for (const index of path) {
-    node = children[index];
+    node = children.at(index);
     if (!node) return undefined;
-    children = NodeApi.isText(node) ? [] : node.children;
+    children = NodeApi.isText(node) ? NO_NODES : node.children;
   }
 
   return node;

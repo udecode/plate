@@ -159,6 +159,114 @@ describe('generated editor schema contract', () => {
     );
   });
 
+  const Media = defineEditorSchema('schema:media-contract', {
+    elements: {
+      divider: { void: 'block' },
+      image: schema.element.textBlock({ object: true }),
+      paragraph: { content: schema.content.text() },
+    },
+    id: 'media-contract',
+    root: schema.content.types(['paragraph', 'divider', 'image'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const mediaRecords: readonly EditorSchemaContributionRecord[] = [
+    { contribution: Media.schema, pluginName: Media.name },
+  ];
+  const mediaContractJson = () =>
+    JSON.parse(
+      JSON.stringify(
+        createEditorSchemaContract(
+          compileEditorSchemaContributions(mediaRecords)
+        )
+      )
+    );
+
+  it('restores exit ownership of voids and objects from a contract that omits it', () => {
+    const contract = mediaContractJson();
+    const restored = restoreEditorSchemaContract(contract, mediaRecords);
+
+    assert.deepEqual(
+      ['divider', 'image'].flatMap((type) => [
+        'ownsExit' in
+          contract.elements.byType.find(
+            (element: { type: string }) => element.type === type
+          ).behavior,
+        restored.elements.byType.get(type)?.behavior.ownsExit,
+      ]),
+      [false, true, false, true]
+    );
+  });
+
+  it('rejects a contract that adds ownsExit to a void or an object', () => {
+    const readWithOwnsExit = (type: string) => {
+      const contract = mediaContractJson();
+
+      contract.elements.byType.find(
+        (element: { type: string }) => element.type === type
+      ).behavior.ownsExit = true;
+
+      return readEditorSchemaContract(contract);
+    };
+
+    assert.deepEqual(['divider', 'image'].map(readWithOwnsExit), [
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it('reads a contract object whose element behavior holds an undefined ownsExit', () => {
+    const contract = mediaContractJson();
+
+    for (const { behavior } of contract.elements.byType) {
+      behavior.ownsExit = undefined;
+    }
+
+    assert.equal(
+      readEditorSchemaContract(contract)?.fingerprint,
+      contract.fingerprint
+    );
+  });
+
+  it('keeps the stored value and fingerprint of an untyped ownsExit declaration', () => {
+    const compile = (ownsExit: unknown) => {
+      const notes = defineEditorSchema('schema:notes-untyped', {
+        elements: {
+          code: schema.element.textBlock({ ownsExit: ownsExit as boolean }),
+          paragraph: { content: schema.content.text() },
+        },
+        id: 'notes-untyped',
+        root: schema.content.types(['paragraph', 'code'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+      const compiled = compileEditorSchemaContributions([
+        { contribution: notes.schema, pluginName: notes.name },
+      ]);
+
+      return [
+        createEditorSchemaContract(compiled).elements.byType.find(
+          ({ type }) => type === 'code'
+        )?.behavior.ownsExit,
+        compiled.identity.fingerprint,
+      ];
+    };
+
+    assert.deepEqual(
+      ['yes', 1].map((ownsExit) => compile(ownsExit)),
+      [
+        ['yes', 'fnv1a64:2a7cb5456c6303bf'],
+        [1, 'fnv1a64:d28b88d86152dcf9'],
+      ]
+    );
+  });
+
   it('classifies a newly declared ownsExit as a migration-required element change', () => {
     const compile = (ownsExit: boolean) =>
       createEditorSchemaContract(

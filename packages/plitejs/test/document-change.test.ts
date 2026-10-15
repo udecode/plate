@@ -735,17 +735,17 @@ describe('JSON document change algebra', () => {
       insert: PreparedTokenSlice.text('?'),
     });
     const change = RootChange.create(before, changes);
-    const { fromIndexedValue } = DocumentIndex;
+    const { fromTree } = DocumentIndex;
     let publications = 0;
-    DocumentIndex.fromIndexedValue = (indexed) => {
-      if (indexed.value.length === 128) publications += 1;
-      return fromIndexedValue(indexed);
+    DocumentIndex.fromTree = (tree) => {
+      if (tree.size === 128) publications += 1;
+      return fromTree(tree);
     };
     let after: DocumentIndex;
     try {
       after = change.apply(before);
     } finally {
-      DocumentIndex.fromIndexedValue = fromIndexedValue;
+      DocumentIndex.fromTree = fromTree;
     }
     assert.equal(publications, 1);
     assert.deepEqual(after.value[0], paragraph('a!bcd?ef'));
@@ -2311,6 +2311,45 @@ describe('JSON document change algebra', () => {
           offset += parts[index].length;
         }
       }
+    }
+  });
+
+  it('maps every retained character when several text runs regroup into several', () => {
+    const many = [
+      { text: 'cd' },
+      { text: 'a' },
+      { bold: true, text: 'xy' },
+      { text: '' },
+    ];
+    const few = [{ text: 'cda' }, { bold: true, text: 'xy' }];
+    const charactersOf = (leaves: ReadonlyArray<{ text: string }>) =>
+      leaves.flatMap((leaf, index) =>
+        Array.from({ length: leaf.text.length }, (_, offset) => ({
+          offset,
+          path: [0, index],
+        }))
+      );
+
+    for (const [from, to] of [
+      [many, few],
+      [few, many],
+    ]) {
+      const before = DocumentIndex.fromValue([
+        { type: 'paragraph', children: from },
+      ]);
+      const after = DocumentIndex.fromValue([
+        { type: 'paragraph', children: to },
+      ]);
+      const change = RootChange.between(before, after);
+      const target = charactersOf(to).map((point) => after.positionAt(point));
+
+      assert.deepEqual(change.apply(before).value, after.value);
+      assert.deepEqual(
+        charactersOf(from).map((point) =>
+          change.mapPos(before.positionAt(point), 1)
+        ),
+        target
+      );
     }
   });
 

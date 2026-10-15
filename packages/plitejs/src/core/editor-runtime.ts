@@ -40,6 +40,7 @@ import type {
   Value,
 } from '../interfaces/editor';
 import type { DocumentChange } from './change/document-change';
+import type { NodeList } from './change/document-index';
 import type { InternalEditorSchemaApi } from './editor-schema';
 import type { EditorSchemaContract } from './schema-compiler';
 import type { InternalEditorUpdateOptions } from './update-policy';
@@ -110,6 +111,7 @@ export type InternalEditorReadRuntime = RuntimeMethods<
 };
 
 export type InternalEditorSnapshotRuntime<V extends Value = Value> = {
+  getChildList: () => NodeList<Descendant>;
   getChildren: () => V;
   getFragment: () => Array<DescendantIn<V>>;
   getLastCommit: () => EditorCommit<V> | null;

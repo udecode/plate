@@ -20,6 +20,8 @@ export type YjsEditorAdapter = {
     readonly replacement?: EditorDocumentValue;
     readonly change?: DocumentChange;
     readonly effects: readonly PendingYjsEffect[];
+    /** Record writes applied before the content change, in the same commit. */
+    readonly records?: DocumentChange | null;
     readonly selection?: Range | Selection;
   }) => void;
   readonly canonicalize: (
@@ -148,6 +150,7 @@ export const createYjsEditorAdapter = (
     replacement,
     change,
     effects,
+    records,
     selection,
   }) => {
     const currentValue = editor.read.value();
@@ -174,6 +177,7 @@ export const createYjsEditorAdapter = (
       runTrustedUpdate(
         editor,
         (tx) => {
+          if (records) tx.changes.apply(records);
           if (replacement) tx.value.replace(replacement);
           if (change && !change.empty) {
             tx.changes.apply(change);

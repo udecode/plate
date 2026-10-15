@@ -6,6 +6,7 @@ import type {
 import type { Node, NodeEntry } from '../interfaces/node';
 import type { NodeSelection } from '../interfaces/selection';
 import { defineRead } from './read-definition';
+import type { SliceLanding, SliceLandingInput } from './slice-landing-types';
 import type {
   TransferEdge,
   TransferLandingInput,
@@ -45,6 +46,12 @@ export const editorReads = Object.freeze({
     side: defineRead<TransferSideInput, TransferWrap | null>('transfer.side'),
   }),
   slice: Object.freeze({
+    /**
+     * Shape what a paste lands after command handlers delegate, from the target
+     * the editor resolved; the default lands `slice` unchanged. Reads the
+     * current command draft; raw transaction replacement and fitting bypass it.
+     */
+    landing: defineRead<SliceLandingInput, SliceLanding>('slice.landing'),
     export: defineRead<
       Readonly<{
         options: EditorSliceReadOptions;

@@ -153,6 +153,7 @@ const builtInTransactionMembers: Record<
   points: true,
   ranges: true,
   root: true,
+  records: true,
   roots: true,
   runtime: true,
   schema: true,
@@ -609,7 +610,7 @@ export const getRegistryContributions = <TValue>(
 ) =>
   Object.freeze(
     (registry.contributions.get(point) ?? []).map(
-      ({ value }) => value as Readonly<TValue>
+      ({ value }) => value as TValue
     )
   );
 

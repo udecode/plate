@@ -272,7 +272,7 @@ type EditorDocumentValue = {
 ```
 
 Use it for database persistence because it includes the primary document, extra
-roots, and persistent meta fields. Loading refuses any other top-level field.
+roots, persistent meta fields and records. Loading refuses any other top-level field.
 
 ```javascript
 const documentValue = editor.read.value();

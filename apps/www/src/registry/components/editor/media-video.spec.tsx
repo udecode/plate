@@ -27,12 +27,15 @@ mock.module('platejs/react', () => ({
     extension: () => ({ update: { set: () => {} } }),
     read: Object.assign(() => undefined, {
       nodes: { get: () => undefined },
-      selection: () => null,
+      selection: Object.assign(() => null, { nodes: () => [] }),
     }),
   }),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
     selector({
-      read: { nodes: { get: () => undefined }, selection: () => null },
+      read: {
+        nodes: { get: () => undefined },
+        selection: Object.assign(() => null, { nodes: () => [] }),
+      },
     }),
   useElement: () => ({ children: [{ text: '' }], type: 'video' }),
   useEditorMounted: useEditorMountedMock,
@@ -52,6 +55,10 @@ mock.module('react-player', () => ({
 mock.module('@/lib/utils', () => ({
   cn: (...values: Array<string | false | null | undefined>) =>
     values.filter(Boolean).join(' '),
+}));
+
+mock.module('./media-toolbar', () => ({
+  MediaToolbar: ({ children }: React.PropsWithChildren) => children,
 }));
 
 mock.module('./resize-handle', () => ({

@@ -2,6 +2,11 @@ import type { Descendant } from '../interfaces/node';
 import { MAIN_ROOT_KEY } from '../internal/root-location';
 import { isOwnedJsonValue } from './clone';
 import {
+  EMPTY_RECORD_STORE,
+  type RecordStore,
+  recordStoreFromJson,
+} from './record-store';
+import {
   type EditorDocumentShapeIssue,
   readEditorDocument,
 } from './document-shape';
@@ -14,6 +19,7 @@ export type NormalizedInitialValue = {
   children: Descendant[];
   explicit: boolean;
   meta: Record<string, unknown> | undefined;
+  records: RecordStore;
   roots: Record<string, Descendant[]>;
 };
 
@@ -36,6 +42,11 @@ const rejectInitialDocumentShape = (issue: EditorDocumentShapeIssue): never => {
     }
     case 'meta': {
       throw new Error('initialValue.meta is invalid! Expected an object.');
+    }
+    case 'records': {
+      throw new Error(
+        'initialValue.records is invalid! Expected each record set to map record ids to objects.'
+      );
     }
     case 'roots': {
       throw new Error('initialValue.roots is invalid! Expected an object.');
@@ -63,6 +74,7 @@ export const normalizeEditorValue = (
       children,
       explicit: false,
       meta: undefined,
+      records: EMPTY_RECORD_STORE,
       roots: Object.freeze({ [MAIN_ROOT_KEY]: children }),
     };
   }
@@ -77,6 +89,7 @@ export const normalizeEditorValue = (
       children,
       explicit: true,
       meta: undefined,
+      records: EMPTY_RECORD_STORE,
       roots: Object.freeze({ [MAIN_ROOT_KEY]: children }),
     };
   }
@@ -112,6 +125,7 @@ export const normalizeEditorValue = (
     children,
     explicit: true,
     meta,
+    records: recordStoreFromJson(value.records),
     roots: Object.freeze({
       [MAIN_ROOT_KEY]: children,
       ...roots,

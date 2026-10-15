@@ -30,10 +30,16 @@ import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
 import {
   getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
   type DocumentChange,
+  valueRootNodes,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import {
+  DocumentIndex,
+  type NodeList,
+  rootIndexOf,
+} from './change/document-index';
 import type { DocumentPropertyContext, RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import { normalizeSetValues } from './change/transform';
@@ -62,6 +68,7 @@ import {
 import { getPluginRegistry, type PluginRegistry } from './plugin-registry';
 import { profileCoreDuration } from './profiling';
 import { getEditorDocumentValue } from './public-state';
+import { getValueRecords } from './record-store';
 import type {
   CompiledEditorSchema,
   CompiledSchemaContentProgram,
@@ -158,7 +165,8 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       }>
     ) => boolean;
     /**
-     * `canPlaceAt` at a slot path of `root`'s current document. A missing
+     * `canPlaceAt` at a slot path of `root`'s current document, except that a
+     * parent without a compiled content program takes any fit. A missing
      * parent refuses.
      */
     canPlaceAtPath: (
@@ -199,7 +207,7 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       ancestors: readonly Element[],
       dropMisplaced: boolean,
       baseline?: Readonly<{
-        children: readonly Descendant[];
+        document: DocumentIndex;
         path: readonly number[];
         from: number;
       }>
@@ -218,7 +226,7 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       element: Element,
       path: Path,
       root?: RootKey,
-      children?: readonly Descendant[]
+      children?: NodeList<Descendant>
     ) => Readonly<Record<string, unknown>>;
     elementPropertiesForTypeChangeAt: (
       element: Element,
@@ -577,18 +585,21 @@ const getPropertyDefault = (property: CompiledSchemaProperty) =>
 const getDocumentRoot = (value: EditorDocumentValue, root: string) =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
 
+const getDocumentRootNodes = (value: EditorDocumentValue, root: string) =>
+  valueRootNodes(value, root) as NodeList<Descendant>;
+
 const editorRootLabel = (root: string) =>
   root === 'main' ? 'primary root' : `root "${root}"`;
 
 const getDescendant = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   path: readonly number[]
 ): Descendant | null => {
   let descendants = children;
   let node: Descendant | undefined;
 
   for (const index of path) {
-    node = descendants[index];
+    node = descendants.at(index);
     if (!node) return null;
     descendants = ElementApi.isElement(node) ? node.children : [];
   }
@@ -597,7 +608,7 @@ const getDescendant = (
 };
 
 const getElementAncestors = (
-  children: readonly Descendant[],
+  children: NodeList<Descendant>,
   path: readonly number[],
   options: Readonly<{ includeTarget?: boolean }> = {}
 ) => {
@@ -652,6 +663,8 @@ const isDeepFrozenNode = (node: Descendant): boolean => {
 const VALIDATED_ROOT_NODES = new WeakMap<object, WeakMap<object, RootKey>>();
 const SCHEMA_HAS_COPY_TRANSFORMS = new WeakMap<CompiledEditorSchema, boolean>();
 const EMPTY_INDEXED_DOCUMENT = DocumentIndex.fromValue(Object.freeze([]));
+const rootNodes = (document: DocumentIndex) =>
+  document.nodes as NodeList<Descendant>;
 
 /**
  * Resolve the exact compiled artifact behind a candidate schema API.
@@ -667,6 +680,14 @@ export const getInternalEditorSchemaFromApi = (
   schemaApi: EditorStateSchemaApi
 ) => getDefined(INTERNAL_BY_API.get(schemaApi));
 
+/** @internal */
+export const canPlaceBlocksAtPath = (
+  schemaApi: EditorStateSchemaApi,
+  at: Path,
+  fit: readonly Descendant[],
+  options: Readonly<{ removing?: readonly number[]; root?: RootKey }> = {}
+) => getInternalEditorSchemaFromApi(schemaApi).canPlaceAtPath(at, fit, options);
+
 export const createEditorSchema = <V extends Value = Value>(
   getEditor: () => Editor<V>,
   getRegistry: () => PluginRegistry<any> = () => getPluginRegistry(getEditor()),
@@ -677,6 +698,20 @@ export const createEditorSchema = <V extends Value = Value>(
     const registry = getRegistry().schemaContributions;
 
     return registry.compiled;
+  };
+  const assertDeclaredRecordSets = (
+    sets: Iterable<string>,
+    schema: CompiledEditorSchema
+  ) => {
+    for (const set of sets) {
+      if (!schema.recordSets.has(set)) {
+        throw createEditorSchemaValidationError(
+          'invalid-document',
+          `Undeclared record set "${set}" in editor schema.`,
+          toSchemaValidationLocation('main', [])
+        );
+      }
+    }
   };
   const getValidationAuthority = () => {
     const schema = getDeclarativeSchema();
@@ -1485,7 +1520,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const canPlaceIn = (
     ancestors: readonly Element[],
-    children: readonly Descendant[],
+    children: NodeList<Descendant>,
     fit: readonly Descendant[],
     at: number,
     {
@@ -1517,7 +1552,7 @@ export const createEditorSchema = <V extends Value = Value>(
         if (gone <= original) original += 1;
       }
 
-      return children[original];
+      return getDefined(children.at(original));
     };
     const childAt = (position: number) =>
       position < index
@@ -1570,9 +1605,13 @@ export const createEditorSchema = <V extends Value = Value>(
 
     if (index === undefined || !ancestors) return false;
 
+    const [parent] = ancestors;
+
+    if (parent && !getCompiledElement(parent)?.content) return true;
+
     return canPlaceIn(
       ancestors,
-      ancestors[0]?.children ?? getDocumentRoot(getDocument(), root),
+      parent?.children ?? getDocumentRootNodes(getDocument(), root),
       fit,
       index,
       { removing, root }
@@ -1844,7 +1883,7 @@ export const createEditorSchema = <V extends Value = Value>(
   const getSlotAncestors = (at: Path, root: RootKey) => {
     const ancestors =
       at.length > 1
-        ? getElementAncestors(getDocumentRoot(getDocument(), root), at)
+        ? getElementAncestors(getDocumentRootNodes(getDocument(), root), at)
         : [];
 
     return ancestors.length === at.length - 1 ? ancestors : null;
@@ -2369,11 +2408,11 @@ export const createEditorSchema = <V extends Value = Value>(
     root: RootKey,
     ancestors: readonly Element[],
     dropMisplaced: boolean,
-    baseline?: readonly Descendant[],
+    baseline?: NodeList<Descendant>,
     offset = 0
   ): readonly Descendant[] => {
     const canonical = children.map((node, index) => {
-      const previous = baseline?.[index + offset];
+      const previous = baseline?.at(index + offset);
 
       if (node === previous) return node;
       if (NodeApi.isText(node)) {
@@ -2459,16 +2498,16 @@ export const createEditorSchema = <V extends Value = Value>(
     (children, root, ancestors, dropMisplaced, baseline) => {
       const schema = getDeclarativeSchema();
       // Only the validated immutable before-root can prove unchanged properties.
-      let previous =
+      let previous: NodeList<Descendant> | undefined =
         baseline &&
         baseline.path.length === ancestors.length &&
-        isRootValidatedBy(baseline.children, getValidationAuthority())
-          ? baseline.children
+        isRootValidatedBy(baseline.document, getValidationAuthority())
+          ? rootNodes(baseline.document)
           : undefined;
 
       if (baseline) {
         for (let depth = 0; previous && depth < baseline.path.length; depth++) {
-          const parent = previous[baseline.path[depth]];
+          const parent = previous.at(baseline.path[depth]);
           if (
             !parent ||
             NodeApi.isText(parent) ||
@@ -2606,7 +2645,7 @@ export const createEditorSchema = <V extends Value = Value>(
     path,
     root = 'main'
   ) => {
-    const children = getDocumentRoot(getDocument(), root);
+    const children = getDocumentRootNodes(getDocument(), root);
 
     return copyChildren(
       node ? [node] : [],
@@ -2642,7 +2681,7 @@ export const createEditorSchema = <V extends Value = Value>(
     path: Path,
     root: RootKey = 'main'
   ): RuntimeTextTargetOptions => {
-    const children = getDocumentRoot(value, root);
+    const children = getDocumentRootNodes(value, root);
     const ancestors = getElementAncestors(children, path);
 
     return {
@@ -2661,7 +2700,7 @@ export const createEditorSchema = <V extends Value = Value>(
   const getElementTargetOptionsAt = (
     path: Path,
     root: RootKey = 'main',
-    children: readonly Descendant[] = getDocumentRoot(getDocument(), root)
+    children: NodeList<Descendant> = getDocumentRootNodes(getDocument(), root)
   ): RuntimeTargetOptions => ({
     ancestors: getElementAncestors(children, path),
     root,
@@ -2671,7 +2710,7 @@ export const createEditorSchema = <V extends Value = Value>(
     element: Element,
     path: Path,
     root: RootKey = 'main',
-    children?: readonly Descendant[]
+    children?: NodeList<Descendant>
   ) => {
     const schema = getDeclarativeSchema();
 
@@ -3904,31 +3943,34 @@ export const createEditorSchema = <V extends Value = Value>(
     }
   };
 
-  const documentRoots = (
-    value: EditorDocumentValue
-  ): Readonly<Record<string, readonly Descendant[]>> => ({
-    main: value.children,
-    ...value.roots,
-  });
+  const documentRoots = (value: EditorDocumentValue) => {
+    const roots: Record<string, DocumentIndex> = {
+      main: rootIndexOf(value, 'children'),
+    };
+
+    for (const [root, children] of Object.entries(value.roots ?? {})) {
+      roots[root] = DocumentIndex.fromValue(children);
+    }
+
+    return roots;
+  };
   const rememberValidatedDocumentRoots = (
     value: EditorDocumentValue,
     schema?: CompiledEditorSchema | null
   ) => {
     const authority = getValidationAuthority();
 
-    for (const [root, children] of Object.entries(documentRoots(value))) {
+    for (const [root, document] of Object.entries(documentRoots(value))) {
       if (
-        isRootValidatedBy(children, authority) ||
-        (isImmutable(children) &&
-          children.every((node) => isDeepFrozenNode(node)))
+        isRootValidatedBy(document, authority) ||
+        (isImmutable(document.value) &&
+          (document.value as readonly Descendant[]).every((node) =>
+            isDeepFrozenNode(node)
+          ))
       ) {
-        markRootValidatedBy(children, authority);
+        markRootValidatedBy(document, authority);
         if (schema && hasContentRoots()) {
-          sealElementOwnedRootIndex(
-            schema,
-            root,
-            DocumentIndex.fromValue(children)
-          );
+          sealElementOwnedRootIndex(schema, root, document);
         }
       }
     }
@@ -3961,6 +4003,10 @@ export const createEditorSchema = <V extends Value = Value>(
       const declarative = getDeclarativeSchema();
 
       if (declarative) {
+        assertDeclaredRecordSets(
+          Object.keys(getValueRecords(value)),
+          declarative
+        );
         validateDeclarativeDocument(value, declarative);
         if (!hasContentRoots()) {
           let validated = VALIDATED_ROOT_NODES.get(declarative);
@@ -3969,8 +4015,8 @@ export const createEditorSchema = <V extends Value = Value>(
             validated = new WeakMap();
             VALIDATED_ROOT_NODES.set(declarative, validated);
           }
-          for (const [root, children] of Object.entries(documentRoots(value))) {
-            for (const node of children) {
+          for (const [root, document] of Object.entries(documentRoots(value))) {
+            for (const node of document.value) {
               // Owned JSON values are deeply frozen.
               if (isOwnedJsonValue(node)) validated.set(node, root);
             }
@@ -3999,7 +4045,7 @@ export const createEditorSchema = <V extends Value = Value>(
     const authority = getValidationAuthority();
 
     const unvalidatedRoot = Object.entries(beforeRoots).find(
-      ([, children]) => !isRootValidatedBy(children, authority)
+      ([, document]) => !isRootValidatedBy(document, authority)
     )?.[0];
 
     if (unvalidatedRoot) {
@@ -4017,6 +4063,12 @@ export const createEditorSchema = <V extends Value = Value>(
 
     const schema = getDeclarativeSchema();
     profileCoreDuration('schema-validation-incremental-hit', () => undefined);
+    if (schema) {
+      assertDeclaredRecordSets(
+        getInternalDocumentChangeRecords(change).keys(),
+        schema
+      );
+    }
 
     const afterRoots = documentRoots(after);
     const changedRoots = new Set([
@@ -4041,12 +4093,12 @@ export const createEditorSchema = <V extends Value = Value>(
         }>
       > = [];
 
-      for (const [root, children] of Object.entries(afterRoots)) {
-        const afterDocument =
-          indexedAfter.get(root) ?? DocumentIndex.fromValue(children);
-        const beforeChildren = beforeRoots[root] ?? [];
+      for (const [root, document] of Object.entries(afterRoots)) {
+        const afterDocument = indexedAfter.get(root) ?? document;
         const beforeDocument =
-          indexedBefore.get(root) ?? DocumentIndex.fromValue(beforeChildren);
+          indexedBefore.get(root) ??
+          beforeRoots[root] ??
+          EMPTY_INDEXED_DOCUMENT;
         const rootChange = getInternalDocumentRootChange(change, root);
         const index = touchedRoots.has(root)
           ? rebaseElementOwnedRootIndex(
@@ -4075,9 +4127,10 @@ export const createEditorSchema = <V extends Value = Value>(
         );
       }
       for (const root of change.deleteRoots) {
-        const beforeChildren = beforeRoots[root] ?? [];
         const beforeDocument =
-          indexedBefore.get(root) ?? DocumentIndex.fromValue(beforeChildren);
+          indexedBefore.get(root) ??
+          beforeRoots[root] ??
+          EMPTY_INDEXED_DOCUMENT;
         const index = rebaseElementOwnedRootIndex(
           schema,
           root,
@@ -4179,7 +4232,7 @@ export const createEditorSchema = <V extends Value = Value>(
       }
     };
     const validateContentIndexes = (
-      children: readonly Descendant[],
+      children: NodeList<Descendant>,
       content: CompiledSchemaContentProgram,
       indexes: ReadonlySet<number>,
       owner: string,
@@ -4196,7 +4249,7 @@ export const createEditorSchema = <V extends Value = Value>(
         );
       }
       for (const index of indexes) {
-        const child = children[index];
+        const child = children.at(index);
 
         if (
           !child ||
@@ -4227,28 +4280,26 @@ export const createEditorSchema = <V extends Value = Value>(
 
     for (const root of touchedRoots) {
       if (change.deleteRoots.has(root)) continue;
-      const children = afterRoots[root];
+      const document = afterRoots[root];
 
-      if (!children) {
+      if (!document) {
         throw new EditorSchemaValidationError(
           `Changed editor root "${root}" is missing from the document.`
         );
       }
       const afterDocument =
         indexedAfter.get(root) ??
-        (changedRoots.has(root)
-          ? undefined
-          : DocumentIndex.fromValue(children));
+        (changedRoots.has(root) ? undefined : document);
 
-      if (!afterDocument || afterDocument.value !== children) {
+      if (!afterDocument || afterDocument !== document) {
         throw new EditorSchemaValidationError(
           `Changed editor root "${root}" lost its immutable construction index.`
         );
       }
 
-      const beforeChildren = beforeRoots[root] ?? [];
+      const children = rootNodes(afterDocument);
       const beforeDocument =
-        indexedBefore.get(root) ?? DocumentIndex.fromValue(beforeChildren);
+        indexedBefore.get(root) ?? beforeRoots[root] ?? EMPTY_INDEXED_DOCUMENT;
       const rootChange = getInternalDocumentRootChange(change, root);
       const ownPaths = new Map<string, readonly number[]>();
       const recursivePaths = new Map<string, readonly number[]>();
@@ -4485,23 +4536,19 @@ export const createEditorSchema = <V extends Value = Value>(
         );
       }
 
-      markRootValidatedBy(children, authority);
+      markRootValidatedBy(afterDocument, authority);
     }
 
-    for (const [root, children] of Object.entries(afterRoots)) {
-      if (!isRootValidatedBy(children, authority) && !touchedRoots.has(root)) {
+    for (const [root, document] of Object.entries(afterRoots)) {
+      if (!isRootValidatedBy(document, authority) && !touchedRoots.has(root)) {
         throw new EditorSchemaValidationError(
           `Unchanged editor root "${root}" lost validation authority.`
         );
       }
     }
     if (schema) {
-      for (const [root, children] of Object.entries(afterRoots)) {
-        sealElementOwnedRootIndex(
-          schema,
-          root,
-          DocumentIndex.fromValue(children)
-        );
+      for (const [root, document] of Object.entries(afterRoots)) {
+        sealElementOwnedRootIndex(schema, root, document);
       }
     }
   };

@@ -64,17 +64,12 @@ export type HistoryBatchGroup = Readonly<{
 
 const pathKey = (path: readonly number[]) => path.join('.');
 
-const getChangedRoot = (
-  commit: EditorCommit,
-  retained: ReadonlySet<string>
-): RootKey | null => {
-  const roots = new Set<RootKey>(
-    [
-      ...getInternalDocumentChangeRootKeys(commit.changes),
-      ...commit.changes.createRoots,
-      ...commit.changes.deleteRoots,
-    ].filter((root) => !retained.has(root))
-  );
+const getChangedRoot = (commit: EditorCommit): RootKey | null => {
+  const roots = new Set<RootKey>([
+    ...getInternalDocumentChangeRootKeys(commit.changes),
+    ...commit.changes.createRoots,
+    ...commit.changes.deleteRoots,
+  ]);
 
   return roots.size === 1 ? [...roots][0] : null;
 };
@@ -181,10 +176,9 @@ const getChangedSpan = (
 };
 
 export const createHistoryBatchGroup = (
-  commit: EditorCommit,
-  retained: ReadonlySet<string>
+  commit: EditorCommit
 ): HistoryBatchGroup | null => {
-  const root = getChangedRoot(commit, retained);
+  const root = getChangedRoot(commit);
 
   if (!root) return null;
 

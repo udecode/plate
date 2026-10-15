@@ -3550,3 +3550,531 @@ describe('content-conserving slice insertion', () => {
     });
   }
 });
+
+describe('node selection replacement', () => {
+  it('refuses a raw replacement while a node selection is current', () => {
+    const before = [paragraph('aa'), paragraph('b')];
+    const editor = createEditor({
+      initialSelection: SelectionApi.nodes([[0]]),
+      initialValue: before,
+    });
+    let replaced = true;
+
+    editor.update((tx) => {
+      replaced = tx.slice.replace(ContentSlice.closed([paragraph('x')]));
+    });
+
+    assert.equal(replaced, false);
+    assert.deepEqual(editor.read.children(), before);
+  });
+});
+
+describe('closed object placement [EDIT-CLIPBOARD-BLOCK-TYPE-001]', () => {
+  it('replaces a selected nested node with closed blocks', () => {
+    const CodeSchema = defineEditorSchema('schema:nested-code-placement', {
+      elements: {
+        code: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          slice: { preserveContext: true },
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        quote: {
+          content: schema.content.types(['paragraph', 'code'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+      },
+      root: schema.content.type('quote', { min: 1 }),
+      unknown: 'reject',
+    });
+    const before = [{ type: 'quote', children: [paragraph('')] }];
+    const content = [
+      { type: 'code', children: [{ text: 'Head' }] },
+      paragraph('Tail'),
+    ];
+    const editor = createEditor({
+      plugins: [CodeSchema, history()],
+      initialValue: before,
+      initialSelection: SelectionApi.nodes([[0, 0]]),
+    });
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed(content)),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      { type: 'quote', children: content },
+    ]);
+    editor.api.history.undo();
+    assert.deepEqual(editor.read.children(), before);
+  });
+
+  it('replaces an empty nested block with a closed object allowed only by its parent', () => {
+    const ObjectSchema = defineEditorSchema('schema:nested-object-placement', {
+      elements: {
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        quote: {
+          content: schema.content.types(['paragraph', 'media'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+      },
+      root: schema.content.type('quote', { min: 1 }),
+      unknown: 'reject',
+    });
+    const media = { children: [{ text: 'Caption' }], type: 'media' };
+    const editor = createEditor({
+      plugins: [ObjectSchema, history()],
+      initialValue: [
+        {
+          type: 'quote',
+          children: [paragraph('Before'), paragraph(''), paragraph('After')],
+        },
+      ],
+    });
+    const before = editor.read.children();
+
+    assert.equal(
+      editor.update.slice.replace(
+        ContentSlice.closed([media, paragraph('Tail')]),
+        {
+          at: { offset: 0, path: [0, 1, 0] },
+        }
+      ),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'quote',
+        children: [
+          paragraph('Before'),
+          media,
+          paragraph('Tail'),
+          paragraph('After'),
+        ],
+      },
+    ]);
+    assert.equal(editor.read.children()[0].children[0], before[0].children[0]);
+    assert.equal(editor.read.children()[0].children[3], before[0].children[2]);
+    editor.api.history.undo();
+    assert.deepEqual(editor.read.children(), before);
+    editor.api.history.redo();
+    editor.update.text.insert('!');
+    assert.deepEqual(editor.read.children(), [
+      {
+        type: 'quote',
+        children: [
+          paragraph('Before'),
+          media,
+          paragraph('Tail!'),
+          paragraph('After'),
+        ],
+      },
+    ]);
+  });
+
+  it('replaces the sole empty child with a closed object without duplicating its parent', () => {
+    const ObjectSchema = defineEditorSchema('schema:single-object-placement', {
+      elements: {
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+        },
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        slot: {
+          content: schema.content.types(['paragraph', 'media'], {
+            default: { type: 'paragraph' },
+            min: 1,
+            max: 1,
+          }),
+        },
+      },
+      root: schema.content.type('slot', { min: 1 }),
+      unknown: 'reject',
+    });
+    const media = { children: [{ text: 'Caption' }], type: 'media' };
+    const editor = createEditor({
+      plugins: [ObjectSchema],
+      initialValue: [{ type: 'slot', children: [paragraph('')] }],
+    });
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed([media]), {
+        at: { offset: 0, path: [0, 0, 0] },
+      }),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      { type: 'slot', children: [media] },
+    ]);
+  });
+
+  it('merges a closed object caption into an empty object target', () => {
+    const ObjectSchema = defineEditorSchema('schema:object-caption-placement', {
+      elements: {
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+          properties: { id: property.string() },
+        },
+      },
+      root: schema.content.type('media', { min: 1 }),
+      unknown: 'reject',
+    });
+    const editor = createEditor({
+      plugins: [ObjectSchema],
+      initialValue: [{ type: 'media', id: 'target', children: [{ text: '' }] }],
+    });
+
+    assert.equal(
+      editor.update.slice.replace(
+        ContentSlice.closed([
+          { type: 'media', id: 'source', children: [{ text: 'Caption' }] },
+        ]),
+        { at: { offset: 0, path: [0, 0] } }
+      ),
+      true
+    );
+    assert.deepEqual(editor.read.children(), [
+      { type: 'media', id: 'target', children: [{ text: 'Caption' }] },
+    ]);
+  });
+
+  it('preserves an unselected mention when its paragraph has no text', () => {
+    const MentionSchema = defineEditorSchema('schema:mention-protection', {
+      elements: {
+        paragraph: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.type('mention')],
+            { default: 'text', min: 1 }
+          ),
+        },
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+        },
+        mention: { void: 'inline', properties: { ref: property.string() } },
+        quote: {
+          content: schema.content.types(['paragraph', 'media'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+      },
+      root: schema.content.type('quote', { min: 1 }),
+      unknown: 'reject',
+    });
+    const mention = { type: 'mention', ref: 'm', children: [{ text: '' }] };
+    const editor = createEditor({
+      plugins: [MentionSchema],
+      initialValue: [
+        {
+          type: 'quote',
+          children: [paragraph('', [{ text: '' }, mention, { text: '' }])],
+        },
+      ],
+    });
+
+    assert.equal(
+      editor.update.slice.replace(
+        ContentSlice.closed([
+          { type: 'media', children: [{ text: 'Head' }] },
+          paragraph('Tail'),
+        ]),
+        { at: { path: [0, 0, 0], offset: 0 } }
+      ),
+      true
+    );
+    const { children } = editor.read.children()[0];
+    assert.equal(children.length, 2);
+    assert.equal(NodeApi.string(children[0]), 'Head');
+    assert.deepEqual(
+      children[1].children,
+      [{ text: 'Tail' }, mention, { text: '' }],
+      'collapsed paste preserves the unselected mention'
+    );
+  });
+
+  it('preserves the body of a text-empty target during a collapsed paste', () => {
+    const OwnerSchema = defineEditorSchema('schema:empty-target-owner', {
+      elements: {
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+        },
+        'exclusive-portal': {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          contentRoots: {
+            body: {
+              content: schema.content.type('paragraph', {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+        },
+        quote: {
+          content: schema.content.types(
+            ['exclusive-portal', 'paragraph', 'media'],
+            { default: { type: 'paragraph' }, min: 1 }
+          ),
+        },
+      },
+      root: schema.content.type('quote', {
+        default: { type: 'quote' },
+        min: 1,
+      }),
+      unknown: 'reject',
+    });
+    const editor = createEditor({
+      plugins: [OwnerSchema, history()],
+      initialValue: {
+        children: [
+          {
+            type: 'quote',
+            children: [
+              {
+                type: 'exclusive-portal',
+                childRoots: { body: 'body:1' },
+                children: [{ text: '' }],
+              },
+            ],
+          },
+        ],
+        roots: { 'body:1': [paragraph('必须保留的正文')] },
+      },
+    });
+    const initial = editor.read.value();
+    editor.update.text.insert('!', {
+      at: { root: 'body:1', path: [0, 0], offset: 0 },
+    });
+    const before = editor.read.value();
+    let pasted = false;
+
+    try {
+      pasted = editor.update.slice.replace(
+        ContentSlice.closed([
+          { type: 'media', children: [{ text: 'Head' }] },
+          paragraph('Tail'),
+        ]),
+        { at: { path: [0, 0, 0], offset: 0 } }
+      );
+    } catch (error) {
+      assert.ok(error instanceof Error);
+      assert.match(
+        error.message,
+        /Exclusive editor content root.*must have exactly one owner/
+      );
+      assert.deepEqual(editor.read.value(), before, 'rejected paste is atomic');
+    }
+    const after = editor.read.value();
+    assert.deepEqual(
+      after.roots?.['body:1'],
+      before.roots?.['body:1'],
+      'collapsed paste must not remove a target-owned body'
+    );
+    editor.api.history.undo();
+    assert.deepEqual(editor.read.value(), pasted ? before : initial);
+    editor.api.history.redo();
+    assert.deepEqual(editor.read.value(), after);
+  });
+
+  it('replaces an empty line inside an owned body without changing its owner', () => {
+    const OwnedBodySchema = defineEditorSchema('schema:owned-body-paste', {
+      elements: {
+        paragraph: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+        },
+        portal: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          contentRoots: {
+            body: {
+              content: schema.content.types(['paragraph', 'media'], {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+        },
+      },
+      root: schema.content.type('portal', { min: 1 }),
+      unknown: 'reject',
+    });
+    const editor = createEditor({
+      plugins: [OwnedBodySchema, history()],
+      initialValue: {
+        children: [
+          {
+            type: 'portal',
+            childRoots: { body: 'body:1' },
+            children: [{ text: 'Owner' }],
+          },
+        ],
+        roots: { 'body:1': [paragraph('')] },
+      },
+    });
+    const before = editor.read.value();
+    const content = [
+      { type: 'media', children: [{ text: 'Head' }] },
+      paragraph('Tail'),
+    ];
+
+    assert.equal(
+      editor.update.slice.replace(ContentSlice.closed(content), {
+        at: { root: 'body:1', path: [0, 0], offset: 0 },
+      }),
+      true
+    );
+    const after = editor.read.value();
+    assert.deepEqual(after, {
+      children: before.children,
+      roots: { 'body:1': content },
+    });
+    editor.api.history.undo();
+    assert.deepEqual(editor.read.value(), before);
+    editor.api.history.redo();
+    assert.deepEqual(editor.read.value(), after);
+  });
+
+  it('places follow-up typing after a copied inline-void tail', () => {
+    const InlineSchema = defineEditorSchema('schema:object-inline-tail', {
+      elements: {
+        paragraph: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.type('mention')],
+            { default: 'text', min: 1 }
+          ),
+        },
+        media: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          object: true,
+        },
+        mention: { void: 'inline' },
+        quote: {
+          content: schema.content.types(['paragraph', 'media'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+      },
+      root: schema.content.type('quote', { min: 1 }),
+      unknown: 'reject',
+    });
+    const mention = { type: 'mention', children: [{ text: '' }] };
+    const editor = createEditor({
+      plugins: [InlineSchema],
+      initialValue: [{ type: 'quote', children: [paragraph('')] }],
+    });
+
+    assert.equal(
+      editor.update.slice.replace(
+        ContentSlice.closed([
+          { type: 'media', children: [{ text: 'Head' }] },
+          paragraph('', [{ text: 'Tail' }, mention, { text: '' }]),
+        ]),
+        { at: { path: [0, 0, 0], offset: 0 } }
+      ),
+      true
+    );
+    assert.deepEqual(editor.read.selection(), {
+      anchor: { path: [0, 1, 2], offset: 0 },
+      focus: { path: [0, 1, 2], offset: 0 },
+    });
+    editor.update.text.insert('!');
+    assert.deepEqual(
+      editor.read.children()[0].children[1],
+      paragraph('', [{ text: 'Tail' }, mention, { text: '!' }])
+    );
+  });
+
+  for (const namedRoot of [false, true]) {
+    it(`replaces an empty callout with an object in ${namedRoot ? 'a named' : 'the main'} root`, () => {
+      const CalloutSchema = defineEditorSchema('schema:empty-callout', {
+        elements: {
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+          callout: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            properties: { icon: property.string() },
+          },
+          media: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            object: true,
+          },
+          quote: {
+            content: schema.content.types(['paragraph', 'callout', 'media'], {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+          },
+        },
+        root: schema.content.types(['paragraph', 'quote'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        roots: {
+          notes: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+        unknown: 'reject',
+      });
+      const empty = [
+        {
+          type: 'quote',
+          children: [{ type: 'callout', icon: '!', children: [{ text: '' }] }],
+        },
+      ];
+      const untouched = [paragraph('Other')];
+      const editor = createEditor({
+        plugins: [CalloutSchema],
+        initialValue: {
+          children: namedRoot ? untouched : empty,
+          roots: { notes: namedRoot ? empty : untouched },
+        },
+      });
+      const media = { type: 'media', children: [{ text: 'Head' }] };
+      assert.equal(
+        editor.update.slice.replace(ContentSlice.closed([media]), {
+          at: {
+            path: [0, 0, 0],
+            offset: 0,
+            ...(namedRoot ? { root: 'notes' } : {}),
+          },
+        }),
+        true
+      );
+      assert.deepEqual(
+        namedRoot ? editor.read.root('notes') : editor.read.children(),
+        [{ type: 'quote', children: [media] }]
+      );
+      assert.deepEqual(
+        namedRoot ? editor.read.children() : editor.read.root('notes'),
+        untouched
+      );
+    });
+  }
+});

@@ -17,7 +17,6 @@ import {
   type Path,
   type Range,
 } from '../../../core';
-import { isMetadataRootKey } from '../../../facade';
 import type { EditorStaticProps } from '../../../static/components/PlateStatic';
 import { renderStaticHtmlWithOverrides } from '../../../static/internal/renderStaticHtmlWithOverrides';
 import type { StaticHtmlResult } from '../../../static/renderStaticHtml';
@@ -234,7 +233,6 @@ const nativeOnlyDiagnostics = (
   const diagnostics: DocxDiagnostic[] = [];
 
   for (const root of Object.keys(document.roots ?? {})) {
-    if (isMetadataRootKey(root)) continue;
     diagnostics.push({
       code: 'lossy-content',
       feature: 'named-root',

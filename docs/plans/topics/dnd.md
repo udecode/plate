@@ -1,6 +1,6 @@
 # Drag and drop
 
-Page: https://claude.ai/artifact/D9VwT52kFmZaxasYC8x4Db
+Page: https://claude.ai/artifact/Fo9ckoasEpCPgbVtztPc4j
 
 Block drag and drop in Plite and Plate. `node tooling/scripts/review-ledger.mjs show dnd` prints the scope's full review and plan history.
 
@@ -40,6 +40,18 @@ transferVeto.of(({ payload }) => {
 }),
 ```
 
+A veto sees the wrap a side drop builds, so Footnote keeps definitions at the root as payload and as target.
+
+```ts
+// packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts
+transferVeto.of(
+  ({ payload, target: [, path], wrap }) =>
+    payload.kind === 'nodes' &&
+    (path.length > 1 || wrap !== undefined) &&
+    payload.nodes.some((node) => ElementApi.isElementType(node, type))
+),
+```
+
 A landing middleware only redirects an edge; the default keeps it.
 
 ```ts
@@ -48,6 +60,20 @@ around(editorReads.transfer.landing, ({ input, next, state }) =>
     ? { edge: 'after' as const, key: state.key([2])! }
     : next()
 ),
+```
+
+A side read decides what a drop beside a block builds. Column builds or joins a column group; without a contributor a side target refuses with `policy`, and the DOM driver skips strips.
+
+```ts
+// packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts
+around(editorReads.transfer.side, ({ input, next, state }) => {
+  const {
+    payload,
+    side,
+    target: [target, path],
+  } = input;
+  // … builds a column group, or joins one, else calls next()
+}),
 ```
 
 A copied handle asks the schema which blocks it may drag.
@@ -64,6 +90,26 @@ A handle, a keyboard move and Cut read the same blocks.
 ```ts
 const nodes = () => editor.read.transfer.nodes({ node: element });
 editor.api.transfer.move({ announce, nodes: nodes(), to });
+```
+
+A handle menu asks the hover's dry run before it offers Move beside previous or next.
+
+```ts
+// apps/www/src/registry/components/editor/dnd.tsx, besideOf
+const to = { key, side };
+
+return editor.read.transfer.check({ nodes: keys, to }).admitted
+```
+
+The action then moves the blocks beside their sibling with the same call the drop makes.
+
+```ts
+// apps/www/src/registry/components/editor/dnd.tsx, besideOf
+editor.api.transfer.move({
+  announce: 'Moved beside',
+  nodes: keys,
+  to,
+});
 ```
 
 The React Upload plugin owns file drops and lands them at the edge under the pointer, with no option to set. The DnD kit draws the line.
@@ -88,7 +134,18 @@ const outcome = editor.api.transfer.move({
 });
 ```
 
-The Public API pairs in `docs/plans/2026-10-01-dnd-transfer-consolidation.md` and `docs/plans/2026-10-02-dnd-schema-derived-landing.md` show the call each of these replaced.
+The Editable drop passes a resolved block target through, side or edge, instead of rebuilding an edge; a custom driver does the same.
+
+```ts
+// packages/plitejs/src/react/editable/clipboard-input-strategy.ts
+? resolved && 'key' in resolved
+  ? 'side' in resolved
+    ? resolved
+    : { edge: resolved.edge, key: resolved.key }
+  : null
+```
+
+The Public API pairs in `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `docs/plans/2026-10-02-dnd-schema-derived-landing.md` and `docs/plans/2026-10-06-dnd-side-drop-columns.md` show the call each of these replaced or added.
 
 ## What other editors do
 
@@ -122,6 +179,15 @@ The landing review read seven editors in local source at the revisions below, wi
 | CKEditor 5 `14e73cc3` (read, not run) | Before or after the closest `isBlock` element, or inside a container that accepts `$block`, checked by `insertContent` | Widgets, blocks via the block toolbar, text | No table row or column drag | `getComputedStyle` per child in a gap; markers throttled to 40ms | `ckeditor5-clipboard` drag and drop |
 
 Source: `docs/plite/research/2026-10-02-dnd-landing-policy/editors.tsv`.
+
+The same landing review found that only BlockNote builds columns from a side drop. The others have no side target, because their landing is before or after a block.
+
+| Editor | Side drop | Structure it builds | Emptied source | Source |
+| --- | --- | --- | --- | --- |
+| BlockNote `1e26f1c5`, `xl-multi-column` (read, not run) | The left edge or the right 10% of a block | A column list from a block's edge, or a new column with width normalization; a column's whole content dropped on its own edge is a no-op | not recorded | `docs/plite/research/2026-10-02-dnd-landing-policy/editors.tsv:18`, citing `multiColumnDropCursor.ts:18-74` and `multiColumnHandleDropPlugin.ts:45-197` |
+| ProseMirror, Tiptap, ProseKit, Lexical, Slate fork, CKEditor 5 (read, not run) | None | None | not applicable | `docs/plite/research/2026-10-02-dnd-landing-policy/editors.tsv` |
+| Notion (not read) | The side strip of any block, shown as a vertical bar, as in the user's screenshot | Columns around both blocks | not in the sources | The user's screenshot, 2026-10-06 |
+| Plate Plus, `../plate-pro` at `9ecc0bb85` (read, not run) | None. `block-draggable.tsx` drags columns by handle only | None | not applicable | `../plate-pro/src/registry/ui/block-draggable.tsx:32` |
 
 ## Layer and owner
 
@@ -159,6 +225,13 @@ Source: `docs/plite/research/2026-10-02-dnd-landing-policy/editors.tsv`.
 | Column, Table, Details and Footnote vetoes | Plate | `platejs`, `src/features` | Limits the schema cannot state stay with their feature (`landing plan` Feature rules) |
 | Slot-aware Upload `replaceEmpty` | Plate | `platejs`, `src/features/upload` | The drop performs the edit the law admitted (`landing plan` Feature rules) |
 | Handles from `isBlockContent` and `isSelectable` | Plate copied registry | `dnd.tsx` | Handles follow the schema (`landing plan` Public API) |
+| `TransferSide` target and the `transfer.side` read with a `TransferWrap` result | Plite | `plitejs`, `src/core/transfer-types.ts`, `src/core/editor-reads.ts`, `src/core/landing.ts` | A side drop creates structure, which a redirect cannot express; Plite commits a shell the feature describes and never names a column |
+| Wrap commit as an insert of an empty shell plus moves, inside `runTransfer`'s one update | Plite | `plitejs`, `src/core/transfer.ts` | One undo step and kept keys, measured by probe P1 |
+| `editor.read.transfer.check` | Plite | `plitejs`, `src/core/transfer.ts` | A menu and a custom driver need the hover's dry run, so there is no second admission law |
+| Side strips and the `{ key, side }` arm of `DOMDropTarget` | Plite | `plitejs`, `src/dom/plugin/dom-drag.ts` | The mounted view owns geometry; a strip is arithmetic on the anchor rect `edgeOf` already reads |
+| Column side policy, a drop cap of 5 and over-full width rescaling | Plate | `platejs`, `src/features/layout` | Product opinion stays with the feature; the group descriptor owns every group-scoped rule |
+| Footnote veto reads `wrap` | Plate | `platejs`, `src/features/footnote` | A definition must not land inside a new column, as payload or as target |
+| "Move beside" handle actions | Plate copied registry | `apps/www/src/registry/components/editor/dnd.tsx` | WCAG 2.2 SC 2.5.7 single-pointer path, shown only when `check` admits |
 | Scroll refresh of the drop line during a block drag | Plite | `plitejs`, `src/dom/utils/drag-session.ts` for the listener's lifetime, `src/react/editable/clipboard-input-strategy.ts` for the last dragover | The session already owns every transient drag listener and its cleanup |
 | Outside side zones beside top-level blocks | Plite | `plitejs`, `src/dom/plugin/dom-drag.ts` | The mounted view owns geometry; Column still decides what a side builds |
 
@@ -211,6 +284,12 @@ Phase 3 deleted React DnD and `platejs/dnd/react`, and left no backend option. T
 | CSS and tests reading body `.dragging` | The class is no longer set | Read `data-editor-dragging` | `plan` Removed public nouns |
 | A landing middleware returning `{ admit, to }`: Column, List and Table here, and any app middleware | `TransferLanding` is gone | Return an edge or call `next()`; refuse through `transferVeto` | `landing plan` Blast radius |
 | A caller of `editor.read.transfer.source`: copied `dnd.tsx` and the docs | The read is gone | Call `editor.read.transfer.nodes({ node })` | `landing plan` Blast radius |
+| A custom driver that rebuilds `{ edge: target.edge, key: target.key }` from `resolveDropTarget` without `files` | `DOMDropTarget` gains a `{ key, side }` arm | Pass the target through, or narrow with `'edge' in target` | `side drop plan` Public API |
+| Code that switches exhaustively over `TransferTarget` or `TransferLandingTarget` | A new arm | Handle the side arm or pass it through | `transfer-types.ts:15`, `:21` |
+| Readers of `TransferCheck.to`, including `landed()` in `dom-drag.ts` | An admitted side reports the requested `{ key, side }` | Narrow with `'side' in to` | `transfer-types.ts:104` |
+| A veto that judges depth from `target` alone | A wrap lands deeper than its edge: two levels for a new group, one for an added column | Read `wrap`; every in-tree veto gets a case | `landing.ts:227-229` |
+
+The side drop deleted nothing; four types widened. A files drop never resolves to a side, but the return type still includes one, so Upload narrows with `'edge' in target` (`UploadPlugin.tsx:51`). `DropIndicator` keeps its shape. A side publishes `axis: 'x'`, the physical edge, the target's key and a zero-width line at that rect side (`side drop plan` Hard cuts).
 
 Repo callers updated in phase 3: `plate-dnd-cross-editor.tsx`, `lifetime-browser-probe.tsx`, the mocks in `media-image.spec.tsx` and `media-video.spec.tsx`, `plate-dnd-cross-editor.test.ts:116`, `tooling/e2e/homepage-dnd.test.ts:61`, and `dnd.mdx`, `media.mdx`, `table.mdx` with their Chinese twins (`plan` Phase 3).
 
@@ -231,7 +310,7 @@ Repo callers updated in phase 3: `plate-dnd-cross-editor.tsx`, `lifetime-browser
 | Insert after an empty details summary | not in the sources | A command insertion still replaces the summary; a file drop lands beside it | not recorded | `landing plan` Open findings |
 | Details summary placement | not in the sources | Paste and insert can put a summary after the first child; a transfer keeps it first | not recorded | `landing plan` Open findings |
 
-Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md` and `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md`. `dnd-ownership.md` is `docs/research/decisions/dnd-ownership.md`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`.
+Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md` and `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md`. `dnd-ownership.md` is `docs/research/decisions/dnd-ownership.md`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`.
 
 ## Native behavior and proof
 
@@ -261,12 +340,18 @@ Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md` and `la
 | Grab and release | A handle grab and release moves nothing, even where a container's band overlaps the dragged block or its handle's gutter; an Alt-drag onto the dragged block still copies | `dom-drag-geometry.test.ts` payload stop, band overlap and handle gutter; www `dnd.spec.ts` copy onto itself, three engines | `landing plan` Proof |
 | Collapsed details | A closed details takes drops only beside itself; one with only a summary still takes a drop into its hidden body, and a custom driver that computes its own edge can land in a collapsed body (open: `landing plan` Open findings) | www `dnd.spec.ts` closed details, three engines; the summary-only case is an open finding | `landing plan` Proof, Open findings |
 | Handles at any depth | Every selectable block shows a handle on hover, only the innermost one, and a selected table keeps the editor's handles | `dnd.spec.tsx`; www `dnd.spec.ts` single handle and nested drag, three engines | `landing plan` Proof |
+| Side drop | A block dropped on the innermost block's side strip lands beside it as a column; a strip that does not admit falls through to today's edges | `dom-drag-geometry.test.ts` and www `dnd.spec.ts`, Playwright Chromium, Firefox and WebKit, five runs each | `side drop plan` Phase 2 |
+| Undo after a side drop | One undo entry restores the original blocks and keys | `transfer-contract.test.ts`; www `dnd.spec.ts` | `side drop plan` probe P1 |
+| Selection after a side drop | The landed blocks are node-selected, as for any move | `transfer-contract.test.ts` | `transfer.ts` `landed` |
+| Non-drag beside | "Move beside" handle actions, by click and keyboard | www `dnd.spec.ts`, Playwright Chromium; no screen reader run | `side drop plan` Phase 1 |
+| Hover cost with strips | A copy or file drag runs no strip check. A move's strip check refuses fast when nothing builds a side, and the check cache keeps a side slot and an edge slot, so a pointer resting in a strip adds no uncached admission after the first dragover and no rect reads | Benchmark dragover p95 in four cohorts, with and without Column; admissions counted only in the geometry test, not in the browser | `side drop plan` Phase 2 |
+| Collaboration | A wrap keeps local keys. Concurrent remote text edits survived in a plain schema for both this commit and a remove-then-insert control, so no test claims the commit shape protects them | none; probe P5 recorded as partial | `side drop plan` probe P5 |
 | Outside side zones | A block dropped in the padding beside a top-level block lands beside it, once the pointer is 20 px past where the drag started on that side, so a straight drag from a handle in the padding lands above or below | `dom-drag-geometry.test.ts`; www `dnd.spec.ts` in three engines, five runs each | `side zones plan` Step 3; `origin plan` |
 | Marquee beside side zones | A pointerdown in the padding still starts block selection | www `dnd.spec.ts` `dnd:block-selection-from-side-padding`, three engines, five runs each | `side zones plan` Step 3 |
 
 Playwright WebKit is not Safari, and synthetic `DragEvent` cases prove event handling, not OS drag negotiation (`plan` Proof). The www specs, homepage e2e, registry build, create-install and benchmark ran before the round 2 repairs (`repair record`).
 
-Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md`, `side zones plan` is `docs/plans/2026-10-07-dnd-side-zones-and-scroll.md` and `origin plan` is `docs/plans/2026-10-07-dnd-left-zone-from-drag-origin.md`. The records are in `docs/research/review-records/`: `execution record` is `2026-10-02-dnd-transfer-consolidation-execution.json`, `repair record` is `2026-10-02-dnd-transfer-consolidation-review-repair-execution.json` and `ownership record` is `2026-10-01-dnd-native-transfer-ownership.json`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`.
+Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landing plan` is `docs/plans/2026-10-02-dnd-schema-derived-landing.md`, `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md`, `side zones plan` is `docs/plans/2026-10-07-dnd-side-zones-and-scroll.md` and `origin plan` is `docs/plans/2026-10-07-dnd-left-zone-from-drag-origin.md`. The records are in `docs/research/review-records/`: `execution record` is `2026-10-02-dnd-transfer-consolidation-execution.json`, `repair record` is `2026-10-02-dnd-transfer-consolidation-review-repair-execution.json` and `ownership record` is `2026-10-01-dnd-native-transfer-ownership.json`. `README` is `docs/plite/research/2026-10-02-dnd-library-choice/README.md`.
 
 ## Main changes
 
@@ -282,10 +367,19 @@ Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landi
 - **Copied handles follow the schema.** `dnd.tsx` gives every selectable block-content element a handle, shows only the innermost hovered one, keeps the hover flag off React state and keeps a nested gutter out of layout until it is hovered or node-selected. On a device without hover, a selection holding the block also lays it out. A selected table no longer hides the editor's handles.
 - **A keyboard step stays in one parent.** `resolveStep` refuses a payload whose blocks span parents and a landing redirect that leaves their parent.
 - **Upload replaces only an empty block-content block.** A file dropped after an empty details summary lands beside it, because the summary is not block content.
+- **A feature read decides what a side target builds.** `{ key, side }` resolves through the new `editorReads.transfer.side` read to a `TransferWrap` or `null`. Without a contributor the read refuses `policy`. The landing read keeps its redirect-only law and List's middleware does not change.
+- **`TransferWrap` is one of two shapes.** `{ shell, payload, target }` takes the target's place and moves the target into its slot. `{ shell, payload, ancestor, edge }` lands the shell at `edge` of the target's ancestor `ancestor` levels up, as Column does to add a column beside a block's column. A feature never names a key: a read's state keys belong to the runtime owner, and a view editor resolves its own (`side drop plan` decision log, root cause row). `landBeside` resolves the anchor to a live key, and admission carries one tagged landing for an edge, a point or a wrap.
+- **`transfer.ts` keeps the commit; `transfer-guard.ts` holds the draft guard.** The relocate and wrap commits share one move chain, and the file drops below its base size.
+- **Column width correction rescales an over-full group.** When widths sum above 100 beyond float noise (1e-6), which only an inserted column produces, the correction scales every width by `100 / sum`. Below 100 it keeps today's additive rule. A joined column gets the mean width, so it ends at `100 / (n + 1)` and the others keep their ratios.
+- **`landAt` judges every block a wrap moves.** Identity skips the contiguity no-op for a side. The target moves alone. A target whose `editorReads.transfer.source` expansion holds more than itself, such as a list item with deeper items, refuses `policy`. A target that is a payload entry or an ancestor of one refuses `inside-source`. Placement checks the filled shell in the anchor's parent, removing the payload's indices there and, for a new group, the target's index. It then checks each slot's content. Vetoes run once for the payload. For a new group they run again for the target, with `payload` as `{ kind: 'nodes', nodes: [target], parentKeys: [its parent's key] }`, `from` as the view, `intent: 'move'`, `relation: 'document'`, and the anchor's `target` and `edge`. Both runs set `wrap`. The draft guard expects the target and the payload in their slots.
+- **`runTransfer` commits a wrap inside its one update.** It inserts the shell at the anchor edge, moves the target into its slot for a new group, then moves the payload into its slot. A side admits only a payload that relocates by `tx.nodes.move`, the transfer's no-slice case. A copy, a cross-editor drop, a read-only source and a cross-root move on a side refuse `policy`.
+- **The DOM driver finds side strips without schema knowledge.** Only the innermost block under the pointer has a strip, at its inline end only: the drift gate showed a start strip catches a straight drag down. The strip runs only for a move; without a `transfer.side` contributor its check refuses at once. It is the outer `min(24px, width / 4)` of that block's rect, excluding its top and bottom quarters, where y edges and container bands win. The block's computed `direction` decides which physical side is its end.
+- **The check cache keeps two slots.** `checkTransfer` caches one side check and one edge check per editor, so a strip's side check and the edge fallback stop evicting each other.
 - **The drop line re-resolves on scroll.** While a block drag session is active, a capture `scroll` listener on the document re-runs `resolveDOMDropTarget` for the last view that handled a dragover, with that dragover's pointer and copy intent, at most once per animation frame. The session's `release` removes it, and a view drops its repaint on `dragleave`. The repaint runs through the DOM phase scheduler under one key, so a frame resolves once. The resolver hit-tests with `elementFromPoint` on this path, because the old event target may have scrolled away. Autoscroll then needs no reorder, because its scroll fires the same listener.
 - **Block drags pass through interactive elements.** `applyEditableDragOver` and `applyEditableDrop` skip the `isInteractiveInternalTarget` refusal when the session is a block drag. Text and file drags keep it.
 - **Top-level blocks get outside side zones.** When the pointer is outside the root's content column, the resolver tests the anchor's padding zones before the edge loop. The anchor is the root-level block `probeAt` already finds. Each zone covers the block's full height and counts once the pointer is 20 px past where the drag started on that side, so a straight drag from a handle in the padding stays above or below. Its side is `end` or `start` by the block's computed direction. A zone that does not admit falls through to the edge loop, as the inner strip does. Blocks inside a column, cell, quote or details get no outside zone.
 - **A padding side zone is measured from the drag's start.** `drag.start` records the pointer's x, kept until the session settles because `takeDragSession` removes the session before the drop resolves its target. Without a recorded start, as for a custom driver, the whole padding counts.
+- **A copied text drop lands as a paste.** `runTransfer` in `packages/plitejs/src/core/transfer.ts` sends a copy to a `point` through `readAtSliceFitTarget`, `limitSliceToLength`, `landSlice`, the `replaceEmpty` attempt and `withCommandSliceFit`, in the order the `replaceSlice` command runs them, without command handlers. The landing guard checks the content that actually landed, and a copy the length limit cuts reports a `lossy` diagnostic itself. A move to a point and every edge or wrap landing keep their paths.
 
 ## Open findings
 
@@ -310,3 +404,21 @@ Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landi
 - **The 10-01 plan's landing promise.** `docs/plans/2026-10-01-dnd-transfer-consolidation.md:241` says "Middleware only widens or retargets"; this plan's landing read only redirects, so that line is superseded. Owner: the 10-01 plan's owner (zbeyens), tracked in the `landing plan` decision log.
 - **Handle actions inside a containing selection.** `openActions` keeps a node-selected table when a cell block's handle opens its menu. Owner: Plate UI `dnd.tsx`, tracked in the `landing plan` decision log (panel round 1).
 - **RTL handle side.** The copied gutter has no RTL variant, so in right-to-left text the handle may sit inside the block's right edge, and `HANDLE_CLEARANCE` assumes a left handle. No RTL browser case ran. Owner: Plate UI `dnd.tsx`, tracked in this plan's decision log (RTL deferral row).
+
+## Open work
+
+Each item is tracked here; `side drop plan` is `docs/plans/2026-10-06-dnd-side-drop-columns.md` and `list landing plan` is `docs/plans/2026-10-14-transfer-list-landing.md`.
+
+- **Side-drop proof gaps.** The side drop shipped with ten steps only partly proven: no cross-root side test, no x-axis geometry case, no browser count of admissions, no browser case for the menu in an editor without Column, no Vision forward test, and most mutation controls ran on bytes before the last restructure. The docs check was red at HEAD when it closed. From the `side drop plan` Close. owner: zbeyens. stop: each gap gets its case, or zbeyens accepts the gap.
+- **Emptied-column cleanup.** Dragging the last block out of a column leaves a padded empty column, and a group never drops below two columns. A cleanup at transfer time loses a concurrent remote insert into the removed column. In Plate Column, the `layout` review scope. owner: zbeyens. stop: the `layout` review decides the cleanup, or zbeyens drops it.
+- **List's landing redirect returns owner keys.** `BaseListPlugin.ts` returns `state.key(...)`, the mechanism that made the side read refuse from a view editor. Inferred, not reproduced. In Plite transfer read state (`packages/plitejs/src/core/landing.ts`). owner: zbeyens. stop: a view-editor case reproduces or clears it.
+- **Read middleware handlers get no contextual return type.** Column's side read needs `as const` on its edge literals because `PluginReadContext.around` (`packages/plitejs/src/interfaces/editor.ts`) does not type the handler's return. owner: zbeyens. stop: the read typing infers the return, or zbeyens drops it.
+- **Vetoes infer landing depth from `wrap`.** A veto input that named the landing parent would let Footnote read depth directly. In Plite transfer (`packages/plitejs/src/core/transfer-types.ts`). owner: zbeyens. stop: the veto input names the parent, or zbeyens drops it.
+- **Cross-view node identity in Column's no-op check.** `onlyTradesPlaces` compares node objects. In Plate Column (`packages/platejs/src/features/layout`). owner: zbeyens. stop: it compares keys, or a view case shows no defect.
+- **Nested list items as targets.** A nested item without deeper items can be wrapped mid-family, as an edge drop can today. In Plate List (`packages/platejs/src/features/list`). owner: zbeyens. stop: List refuses or accepts it on purpose.
+- **Side-landing veto coverage.** Table, Details and Upload have no side-landing cases. Their vetoes are safe today only because Column's side read admits roots and columns alone. In Plite transfer. owner: zbeyens. stop: each veto gets a side case, or a second side contributor lands first and adds them.
+- **Production-path benchmark.** Rerun the four side-strip dragover cohorts on a production build with a budget sized to the baseline and a planted-slowdown control. owner: zbeyens. stop: the rerun lands in the `side drop plan` decision log.
+- **One landing helper.** Move the read, trim, land, replace and fit steps into `packages/plitejs/src/core/slice-landing.ts`, so the `replaceSlice` command and `runTransfer` call one function, give `editorReads.slice.landing` and `SliceLandingInput.source` their JSDoc, and share the `lossy` message that `landAsPaste` repeats from `transfer-guard.ts`. Tracked as task_db3cd1c2 in `docs/plans/suggested-tasks.decisions.tsv`; from the `list landing plan`. owner: zbeyens. stop: the helper lands, or zbeyens dismisses the task.
+- **Text moves and block copies in one editor.** A text move to a point still inserts the slice raw, so moved list items keep their depths. An Option-drag block copy keeps the source's list id, so the copies renumber with the originals. Tracked as task_46ac463d in `docs/plans/suggested-tasks.decisions.tsv`; from the `list landing plan`. owner: zbeyens. stop: zbeyens decides both, or dismisses the task.
+- **The vision line.** `docs/vision/plite.md` does not yet say that a copied text drop runs the landing read without command handlers. From the `list landing plan`. owner: zbeyens. stop: the line lands, or zbeyens drops it.
+- **A shared drag helper.** The dispatched drag in `apps/www/tests/browser/list-keys.spec.ts` belongs in `packages/test` once a second spec needs it. From the `list landing plan`. owner: zbeyens. stop: a second spec needs it, or zbeyens drops it.

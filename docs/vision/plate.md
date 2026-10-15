@@ -199,7 +199,8 @@ Current priorities:
 - `platejs` and `platejs/react` call the live editor type `Editor`; package and
   entrypoint establish the layer. React creation uses `useCreateEditor(options,
   deps?)`. Every Plate constructor and creation hook allocates a new editor and
-  refuses an `editor` option. Static and server output use the same
+  refuses an `editor` option, and, like Plite's constructors, any other option
+  outside its closed set. Static and server output use the same
   constructors. `platejs/static` adds renderers such as `EditorStatic` and
   `renderStaticHtml`, never a second constructor or creation hook. An app renders an existing editor with
   `EditorRoot` and binds controls to it with `EditorProvider`. `useEditor()`
@@ -430,7 +431,7 @@ Current priorities:
   attributes something to the local user. Plite still requires a non-empty
   author at every write and invents none.
   Comments keeps its independent thread lifecycle. Load existing suggestions
-  through the complete `initialValue`, metadata roots included, preserving
+  through the complete `initialValue`, records included, preserving
   authors and change IDs; initialization never replays edits under switched
   identities. `EditorRoot authored` configures the exact mounted view through
   the native owner. Changed intent or preview inputs reconfigure that view;
@@ -526,7 +527,9 @@ Current priorities:
   call and outcome types, not a generic transport contract. A Files SDK client
   satisfies it structurally; session-local examples and tests may implement only
   that operation. Its authored draft retains the `upload` schema type and
-  persists only the draft kind. Upload validates and inserts a whole batch
+  persists only the draft kind. A submit at the selection follows element
+  `insert`'s source policy, so it replaces an empty editable source block and
+  inserts after content or structure. Upload validates and inserts a whole batch
   atomically, starts transfer after commit, and keeps files, request authority,
   progress, failures, and object URLs local to each live node key. Completion
   rechecks that key and kind before atomically replacing the draft with the
@@ -614,7 +617,7 @@ Current priorities:
   boundary and returns an exact current envelope; missing versions and identity
   drift fail closed before callbacks. Raw documents require an explicit source
   at each conversion, and with one, `migrateDocument` reads any input as raw. A
-  step sees only `children`, `meta` and `roots`; every other stored top-level
+  step sees only `children`, `meta`, `roots` and `records`; every other stored top-level
   field arrives in its `legacy` record, a step lifts it into `meta` or `roots`,
   and completion refuses a field no step lifted. Ordinary editor creation and
   replacement accept current input only. The persistence owner allocates each
@@ -888,7 +891,12 @@ Current priorities:
   inserts after content or structure. `insert` follows the same source policy
   but creates a sibling for a matching empty block. Explicit `at` is an exact
   insertion location, while explicit `replaceEmpty` overrides semantic
-  replacement for `insert`. An authored `insert` must author `upsert` too when
+  replacement for `insert`. An empty block that is not block content, such as a
+  Details title, keeps its slot and key under every option. An insert from the
+  caret in a block that hides what follows it, such as a closed Details title,
+  lands after the container that hides it, and an explicit `after` stays
+  literal. The hiding feature contributes that anchor; inserting features name
+  no container. An authored `insert` must author `upsert` too when
   generic construction cannot preserve its structure or domain identity.
   Default-constructible, schema-compatible text blocks also get `toggle`; text
   blocks with required construction properties and structural plugins author

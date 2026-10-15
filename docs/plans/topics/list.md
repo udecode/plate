@@ -1,6 +1,6 @@
 # Lists and indentation
 
-Page: https://claude.ai/artifact/WiaDRhCCtFsHYbD6nnobtC
+Page: https://claude.ai/artifact/EU91P4qWGsN4UxG5EP5d3f
 
 Plate lists are flat properties on ordinary blocks: `listType` (bulleted, numbered or task), a shared `indent` depth, an optional `listStyle` marker, the `listId` of the item's list, a Word list's `listLevels`, a conditional `listStart`, a forced `listRestart` and a task's `checked`. No list container exists, so split, merge, move, paste, drag and type change work on list items like on any block. Items that share a `listId` form one list whatever blocks sit between them, and an item without one belongs to its root's default list. A numbered item's number is derived from its list and never stored. The ledger question is how list structure, numbering and indentation compose with generic block editing. The 2026-09-24 audit kept the flat model, and the 2026-10-04 audit found that live numbering had no owner in a mounted view. The 2026-10-10 review numbers lists by identity through a per-root index, keeps each mounted list's `start` current after commits, and carries Word list identity through DOCX import and export. The 2026-10-10 import identity iteration counts Word files the way Word does and keeps each list in per-level lanes, so an edit renumbers only the numbers it changes. The 2026-10-11 first-principles pass gives each parsed Markdown list its own id and cuts the identity correction and indent's `change`, `tab` and `untab`. Its AI landing iteration lands pasted and AI-written lists through one rule. The scope's review and plan history prints with `node tooling/scripts/review-ledger.mjs show list`.
 
@@ -155,6 +155,39 @@ for (const [node, path] of tx.nodes.blocks({ at, mode: 'lowest' })) {
 }
 ```
 
+The existing paste call retains its command behavior.
+
+```ts
+// packages/platejs/src/features/table/lib/BaseTablePlugin.clipboard.slow.tsx
+assert.equal(editor.update.slice.replace(slice), true);
+```
+
+A plugin that shapes a paste gets the resolved landing and returns content. List proposes its items for an empty line this way.
+
+```ts
+// packages/platejs/src/features/list/lib/BaseListPlugin.ts
+readMiddleware: ({ around }) => [
+  around(editorReads.slice.landing, ({ editor, input, next, state }) =>
+    landListPaste(state, input, next(), {
+      headingType: getHeadingType(editor),
+      paragraphType: editor.plugin(BaseParagraphPlugin).schema.type,
+    })
+  ),
+],
+```
+
+The read's input and result are paste data.
+
+```ts
+// packages/platejs/type-tests/clipboard-extension-contracts.ts
+around(editorReads.slice.landing, ({ input, next }) => {
+  const exactInput: Assert<
+    Equal<typeof input, Readonly<SliceLandingInput>>
+  > = true;
+  const result = next();
+  const exactResult: Assert<Equal<typeof result, SliceLanding>> = true;
+```
+
 ## Main changes
 
 - Each editor runtime keeps one list index per root, keyed by node key. A commit that changes structure or properties reads its changed and presence keys, and text, mark and selection commits do no list work. The index builds on the first read of a root.
@@ -167,12 +200,19 @@ for (const [node, path] of tx.nodes.blocks({ at, mode: 'lowest' })) {
 - DOCX export writes Word's `decimalZero` level for a `decimal-leading-zero` list, which used to fail the export. It writes a restart, or any number Word would not reach, as a new instance on that item only and returns the items after it to the list's own instance, so it writes no override that a later restart could reapply. An item with `listRestart` gets that instance even when its number already matches, so the restart survives a round trip.
 - Encoders number the content being encoded with the same counting rule. The HTML and plain-text encoders give format mappings the slice itself as the document when they encode a slice.
 - Markdown decode gives each list family a fresh id from `createListId()`, the generator HTML decode uses, and writes a start other than 1 as `listStart`. The serializer groups task and bullet items of one list into one Markdown list, claims a `listStart` only when the written list starts at it, and audits each emitted list against the lists decode will read back, reporting a split or a merge.
-- Inserted content lands through one private function in `features/list`. It groups the content's list items by source id across the whole content, tables included, and lets only the first top-level group join a compatible landing item. Every other group gets a fresh id. The paste middleware keeps pasted depths, starts and restarts; AI callers also take the landing's depth and move a replaced item's start and restart to the joined item. `joinListIdentity` has a backward-only walk for the empty-line landing.
+- Inserted content lands through one private function in `features/list`. Copied roots land at the caret's depth and retain their descendants' offsets. Only the first top-level group can join the target list; the target marker continues and other groups get fresh ids. Paste uses its own style-free join rule, while AI retains its stricter match. The empty target's start and restart win. For an empty paragraph or heading, List proposes the copied items through `editorReads.slice.landing`, and Plite replaces the line with them or fits the plain slice. Plite owns fitting, identity, roots, caret and history.
 - Each AI write path names its landing in `aiOutputLanding.internal.ts`, beside `AIChatPlugin.ts`. `captureTarget` trims a selection at block edges and widens a cross-block selection to the whole lowest blocks it touches, and the prompt and every write read that one range. Whole lowest blocks are replaced as blocks where their parent's schema leaves children's positions free and allows the new count; any other range goes to the slice fitter. Formatting copies the source's properties only onto an answer with no list items, never its list id or starts.
 - A suggestion over whole blocks parses its source's Markdown round trip once per request. An answer that keeps that shape edits the source blocks' text in place, pairing blocks by position, and any other answer lands like a Replace. The draft runs as an unpublished transaction spec.
 - Indent's `update` is `increase` and `decrease`; Tab and Shift+Tab are its shortcut handlers. The list's outdent decreases the indent, then clears the list facts of each block left at the top level.
 - Plate's element renderer subscribes each element to its published attributes by its stable node key instead of the key at its rendered path.
 - A copy or drag of a list item carries its deeper children, and a dropped list family lands after the target's own deeper run.
+- Plite's `replaceSlice` builder resolves the target on the command's current draft and view, computes the remaining length budget once for a caret or range target, limits the slice against it, then runs `slice.landing` once, so List lands what survives the limit on every caret or range paste.
+- The whole-block attempt and the fallback fit use that one budget through a private option, so a caret or range paste in a `maxLength` editor reads the document text once. When a middleware adds text, Plite refuses its replacement and cuts its fallback to the budget. A paste over a node selection keeps its own limits in both of its branches.
+- One private whole-block attempt replaces a resolved empty block with an admitted proposal at exact bounds taken from the fitter's own document index, or falls back to fitting `landing.slice` and keeps nothing from the refused attempt.
+- The builder's empty-target resolution and the fitter's closed object or void route share one lookup and predicate for the empty block that holds the caret. The older ranked whole-ancestor boundary in `compiled-slice-fitter.ts` stays a separate producer, and its mention and owned-body risk stays in Open work.
+- List keeps its forest, identity, style, level and start code in `listIdentity.internal.ts` and sets aside an open quote's wrapper to find the list items inside. It reads none of Plite's placement rules, and neither Plate's internal facade nor `plitejs/internal` exports `limitSliceInsert`.
+- Slice and fragment replacement take a `Location` as `at`, never a node selection, so the CodeBlock and Table command handlers have no node-target guards and the public `fitSliceIntoActiveDraft` has no node-selection branch. A raw `tx.slice.replace` while a node selection is current returns `false`.
+- Reads run against the command's current draft, which also changes what `transfer.source` and `transfer.landing` see inside a transfer.
 
 ## What other editors do
 
@@ -262,6 +302,7 @@ A Markdown list that starts at another number reads its start the way HTML does,
 | Fresh list ids at Markdown decode | Plate | `platejs` (`features/list`) | A decoded id is a durable identity, the same rule HTML decode follows, so no later path has to repair it |
 | Identity for an item `insert` or `upsert` creates | Plate | `platejs` (`features/list`) | The command that creates an item decides its list; a correction cannot tell creation from undo (`packages/plitejs/src/core/correction.ts` lines 30 to 56) |
 | The join rule and the `restart` and `continue` commands | Plate | `platejs` (`features/list`) | Commands own identity; counting never infers it, and no correction guesses it on later edits |
+| Replacing an empty line with pasted content: target, length budget, closing, kept properties, admission and placement | Plite | `plitejs` (`core/slice-landing`, `core/slice-fit`, private) | Plite already owns the length limit, admission and placement; List only proposes the content and the properties the line drops |
 | Landing of inserted lists: identity, depth and starts for pasted and AI content | Plate | `platejs` (`features/list`, private), called by the paste middleware and by `platejs/ai` (`ai/react`) through the existing `ai/react` to `standard/list` edge | One rule decides where inserted lists belong; the AI paths only name where their output lands |
 
 ## Hard cuts and app migration
@@ -370,3 +411,21 @@ Markdown parse output carries `listId` and `listStart` where it carried `listRes
 - A whole-block Replace at the main root's top level assumes the root leaves its children's positions free, because Plite has no public read of the main root's content. There it skips every placement check, so a main root that fixes positions, such as the forced-layout example's title and paragraph, or that limits its child count or child types, can throw where the slice fitter would have fitted or refused the answer. Plite's internal placement check already answers this question. owner: zbeyens. stop: a public placement read or a fitted sibling replace in Plite, or 2026-12-31.
 - A suggestion with as many blocks as its source, which keeps their Markdown shape but adds one block and drops another, pairs blocks by index, so a source block's properties, such as a latent start, move to another block ([5, 6] where [1, 2] is right; `artifacts/2026-10-11-ai-list-landing/panel-diff-3/probe-round2-on-r3fixed-a1.log`, the `round1-c3` lines), as the base does. Round 2's check broke typo fixes whose text equals another block's (`artifacts/2026-10-11-ai-list-landing/panel-diff-3/probe-round3-panel-diff-a3-a1.log`, the `astra-1` lines), so round 3 removed it. A check that tolerates repeated texts and stays linear needs its own plan iteration. owner: zbeyens. stop: that plan, or 2026-12-31.
 - A Replace whose answer would give a parent more children than its schema allows throws in Plite's slice fitter and changes nothing, as the base does (`artifacts/2026-10-11-ai-list-landing/panel-diff-2/probe-round2-slot-a2.log`, the `max` lines); a session task, "Fix Plite slice fitter throw on a parent's max", tracks it. owner: zbeyens. stop: that task lands or is dismissed, or 2026-12-31.
+
+### List paste continuation limits
+
+- A closed heading replaces an empty paragraph at the top level but merges into it inside a container block, on next and on this PR. The probe measured it with its own test schema (`docs/plans/artifacts/2026-10-14-pr-5168-redo/probes/empty-target-next-control-a1.log`). This redo keeps raw fitting as it is. owner: zbeyens. stop: a Plite iteration makes raw closed-slice fitting treat both depths alike, or zbeyens keeps the difference.
+- The PR's change to the editor schema contract waits, because `editor:generate` fails the same way on clean next. The control run is `docs/plans/artifacts/2026-10-14-pr-5168-redo/control-next-generate-a1.log`. owner: zbeyens. stop: next's generator passes and the contract is regenerated with this PR's code, or 2026-12-31.
+- On next and on this PR, a paste over an implicit node selection throws when `maxLength` cuts it, because next's node branch places the caret from the uncut text. The error says the selection's text range points outside document root `main`. Both a single selected block and two disjoint selected blocks throw, on next and on this build alike (`docs/plans/artifacts/2026-10-14-pr-5168-redo/probes/landing-pins-wt-next-control.jsonl`, `docs/plans/artifacts/2026-10-14-pr-5168-redo/probes/landing-pins-wt-5168b.jsonl`). The same branch inserts before it removes, so the insert also gets no credit for the selected text (`packages/plitejs/src/core/editor-commands.ts:999-1002` at `469061ecb6`; inferred from the code). This PR keeps that path as next has it, and no test pins the throw. Tracked as suggested task task_ac6cdf51. owner: zbeyens. stop: that task lands or is dismissed.
+- List items that a transfer copies, such as a drag from another editor or a read-only view or a `transfer.copy` call, likely keep their copied depths, because transfer copies land through `core/transfer.ts` and skip paste's landing step (inferred from the code, not run; next behaves the same). Tracked as suggested task task_f4282a13. owner: zbeyens. stop: that task lands or is dismissed.
+- Over a node selection, the landing read gets an unlimited slice and a hand-built target, and the builder ignores its `replaceEmpty`. The target uses a third root rule, so `SliceLandingInput.slice` documents both cases (`docs/plans/artifacts/2026-10-14-pr-5168-redo/thermo/report.md`, finding 4). Tracked as suggested task task_ac6cdf51 with the next two items. owner: zbeyens. stop: that task lands or is dismissed.
+- A landing middleware runs outside the target's root, so when a paste reaches a named root from the main editor, reading `target.block`'s path through `state` reads the main document. List avoids it by refusing named roots (`docs/plans/artifacts/2026-10-14-pr-5168-redo/thermo/report.md`, finding 6b). Tracked in the same suggested task. owner: zbeyens. stop: that task lands or is dismissed.
+- A paste can take the properties of an empty block that a content rule removed, because Plite resolves the landing target before it lands the paste location. It happens when the landed range reaches the next empty block (`docs/plans/artifacts/2026-10-14-pr-5168-redo/panel-diff-3/seat-opus.md`). Only the authored plugin registers a content rule, and the order predates the last review round; whether the PR head had the same defect was not checked. Next also splits a block on an open paste into a named root and inserts an empty block on a paste at a node key, and this PR keeps both (`docs/plans/artifacts/2026-10-14-pr-5168-redo/panel-diff-2/repro/round2-next.jsonl`, `docs/plans/artifacts/2026-10-14-pr-5168-redo/panel-diff-3/repro/round2-on-final.jsonl`). Tracked in the same suggested task. owner: zbeyens. stop: that task lands or is dismissed.
+
+- An extracted partial rooted object at the trailing edge can throw for missing roots through ordinary open fitting. `artifacts/2026-10-13-list-paste/object-replan/boundaries-tail-intake-a1.log` reproduces it in the intake export and `artifacts/2026-10-13-list-paste/object-replan/boundaries-tail-a1.log` in the prototype. This iteration does not close that boundary or claim to fix the existing tail fitter. Tracked here. owner: natamox. stop: a separate clipboard repair preserves this partial tail without inventing omitted roots, or the owner declines that custom-object case.
+
+- A partial copied rooted head preserves selected text but can lose its first item's list fields in the existing open fallback. The durable test asserts selected content and actual roots, not that numbering loss is desirable. Tracked here. owner: natamox. stop: a separate rooted-copy repair preserves list identity without inventing omitted roots, or the owner declines that case.
+- Top-level closed object paste can delete an unselected mention or the nonempty body of a text-empty root-owning block under the old fitter. `artifacts/2026-10-13-list-paste/object-replan/owner-top-intake-a1.log` and `artifacts/2026-10-13-list-paste/object-replan/owner-top-prototype-a1.log` reproduce the latter in both versions. `artifacts/2026-10-13-list-paste/object-replan/round2-mention-top-intake-a1.log` and `artifacts/2026-10-13-list-paste/object-replan/round2-mention-top-semantic-a1.log` reproduce it before this new candidate. Tracked here. owner: natamox. stop: the existing boundary producer preserves the mention and owned body, or the owner declines those broader clipboard cases.
+- Plate's promotion admission and Plite's structural admission use different contexts. The supplied protected-paragraph override probe did not install a protected behavior, so it establishes no mismatch. Unknown-tail and ancestor-sensitive mismatch remain inferred, outside the current verified schema cases. Tracked here. owner: natamox. stop: a valid public schema reproduces a mismatch and its owner is repaired, or the hypothesis is disproven.
+
+- Accepted-authored-view key retention after exact replacement is unverified. The exact input is in `artifacts/2026-10-13-list-paste/type-replan/build-panel-2/seat-gpt-6.1-sol.md`. owner: Plate and Plite authored-view maintainers. stop: a targeted report confirms or rejects that case.

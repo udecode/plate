@@ -1012,7 +1012,7 @@ const stripCommentMarkers = (
 
 type ReviewBindings = Readonly<{
   bindings: ReadonlyMap<string, ReviewPartBinding>;
-  roots: ReviewPart['roots'];
+  records: ReviewPart['records'];
 }>;
 
 const reviewLoss = (message: string): DocxDiagnostic => ({
@@ -1113,7 +1113,7 @@ const instrumentReviewBindings = (
     );
   });
 
-  return { bindings, roots: part.roots };
+  return { bindings, records: part.records };
 };
 
 const textsOf = (nodes: readonly Descendant[]): string[] =>
@@ -1828,7 +1828,7 @@ const importBoundedDocx = async <V extends Value>(
         );
         const fitted = target.fitReportedDocument({
           children: rootValue(restored.nodes),
-          roots: review.roots,
+          ...(review.records === undefined ? {} : { records: review.records }),
         });
 
         resultDocument = fitted.document;

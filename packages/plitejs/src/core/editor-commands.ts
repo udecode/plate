@@ -43,10 +43,25 @@ import type {
 import { getDefined } from '../internal/get-defined';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
+import { getActiveCommandEditor } from './command-registry';
 import { ContentSlice as ContentSliceValue } from './content-slice';
-import { getInternalEditorSchemaFromApi } from './editor-schema';
-import { limitTextInsert } from './insert-limit';
+import {
+  canPlaceBlocksAtPath,
+  getInternalEditorSchemaFromApi,
+} from './editor-schema';
+import {
+  getInsertRemainingLength,
+  limitSliceToLength,
+  limitTextInsert,
+} from './insert-limit';
 import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
+import { readAtSliceFitTarget, withCommandSliceFit } from './public-state';
+import {
+  landSlice,
+  prepareEmptyBlockReplacement,
+  resolveSliceLandingTarget,
+  rootField,
+} from './slice-landing';
 import { areEditorJsonValuesEqual } from './value-codec';
 
 type CommandStateView = EditorStateView<Value, any>;
@@ -483,25 +498,16 @@ const getNodeSelectionReplacement = (
   const parentPath = PathApi.parent(firstPath);
   const index = getDefined(firstPath.at(-1));
   const publicRoot = toPublicRoot(root);
-  const parent =
-    parentPath.length > 0 ? state.nodes.parent(getDefined(keys[0]))?.[0] : null;
-  const contentless =
-    NodeApi.isElement(parent) && !state.schema.element(parent.type)?.content;
 
   if (
-    !contentless &&
-    !getInternalEditorSchemaFromApi(state.schema).canPlaceAtPath(
-      firstPath,
-      planned.replacements,
-      {
-        removing: blocks.flatMap(([, path]) =>
-          PathApi.equals(PathApi.parent(path), parentPath)
-            ? [getDefined(path.at(-1))]
-            : []
-        ),
-        root,
-      }
-    )
+    !canPlaceBlocksAtPath(state.schema, firstPath, planned.replacements, {
+      removing: blocks.flatMap(([, path]) =>
+        PathApi.equals(PathApi.parent(path), parentPath)
+          ? [getDefined(path.at(-1))]
+          : []
+      ),
+      root,
+    })
   ) {
     return 'refused' as const;
   }
@@ -938,14 +944,25 @@ export const editorCommands: EditorCommands = Object.freeze({
   replaceSlice: defineCommand<ReplaceSliceCommand>('slice.replace', {
     locate: locateOptionsAt,
     build: ({ input, state }) => {
+      const editor = getActiveCommandEditor();
       const nodeSelection = getCurrentNodeSelection(state);
 
       if (input.options?.at === undefined && nodeSelection) {
+        const covered = state.selection();
+        const { slice } = landSlice(editor, {
+          slice: input.slice,
+          source: input.slice,
+          target: {
+            block:
+              (covered && state.nodes.block({ at: RangeApi.start(covered) })) ??
+              null,
+            kind: 'context',
+            ...rootField(SelectionApi.root(nodeSelection) ?? state.view.root()),
+          },
+        });
         const nodeReplacement = getNodeSelectionReplacement(
           state,
           ({ at, root }) => {
-            const { slice } = input;
-
             if (slice.roots !== undefined || slice.content.length === 0) {
               return null;
             }
@@ -1021,7 +1038,7 @@ export const editorCommands: EditorCommands = Object.freeze({
 
         let replaced = false;
         const spec = state.transaction((tx) => {
-          replaced = tx.slice.replace(input.slice, {
+          replaced = tx.slice.replace(slice, {
             ...input.options,
             at: firstRange,
           });
@@ -1036,12 +1053,58 @@ export const editorCommands: EditorCommands = Object.freeze({
       }
 
       const selection = state.selection();
-
-      return state.slice.fit(
-        input.slice,
+      const options =
         input.options?.at === undefined && selection
           ? { ...input.options, at: selection }
-          : input.options
+          : input.options;
+      const viewRoot = state.view.root();
+      const resolved = readAtSliceFitTarget(
+        editor,
+        viewRoot,
+        options,
+        (rootState, at, root) => ({
+          remaining: getInsertRemainingLength(rootState, { at }),
+          target: resolveSliceLandingTarget(rootState, at, root),
+        })
+      );
+
+      if (!resolved) return false;
+      const { remaining, target } = resolved;
+      const slice = limitSliceToLength(input.slice, remaining);
+
+      if (slice.content.length === 0 && input.slice.content.length > 0) {
+        return false;
+      }
+      const landing = landSlice(editor, { slice, source: input.slice, target });
+      const { replaceEmpty } = landing;
+
+      if (target.kind === 'empty' && replaceEmpty) {
+        const replacement = readAtSliceFitTarget(
+          editor,
+          viewRoot,
+          options,
+          (rootState) =>
+            prepareEmptyBlockReplacement(
+              editor,
+              rootState,
+              target,
+              replaceEmpty,
+              remaining
+            )
+        );
+        const spec =
+          replacement &&
+          withCommandSliceFit(
+            editor,
+            { remaining, replaceEmptyBlock: true },
+            () => state.slice.fit(replacement, options)
+          );
+
+        if (spec) return spec;
+      }
+
+      return withCommandSliceFit(editor, { remaining }, () =>
+        state.slice.fit(landing.slice, options)
       );
     },
     prepare: (input) =>

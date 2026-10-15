@@ -7,7 +7,11 @@ import {
   TextApi,
 } from '..';
 import { isEditorContent } from '../core/content';
-import { getEditorSchema, hasEditorRuntime } from '../core/editor-runtime';
+import {
+  getEditorRuntime,
+  getEditorSchema,
+  hasEditorRuntime,
+} from '../core/editor-runtime';
 import { getDefined } from '../internal/get-defined';
 import { formatDebugValue } from '../utils/format-debug-value';
 import type { AnyEditor as EditorType, Value } from './editor';
@@ -416,6 +420,11 @@ const getAncestorChildren = (node: Ancestor): readonly Descendant[] => {
   return node.children;
 };
 
+const childListOf = (node: Ancestor) =>
+  hasEditorRuntime(node)
+    ? getEditorRuntime(node).getChildList()
+    : getAncestorChildren(node);
+
 const getWholeTopLevelChildFragment = (
   root: Ancestor,
   range: Range
@@ -679,7 +688,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       throw new Error('Expected index to be a number');
     }
 
-    const c = getAncestorChildren(root)[index];
+    const c = childListOf(root).at(index);
 
     if (c == null) {
       throw new Error(
@@ -783,12 +792,12 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       if (NodeApi.isText(n)) {
         break;
       }
-      const children = getAncestorChildren(n);
+      const children = childListOf(n);
 
       if (children.length === 0) {
         break;
       }
-      n = children[0];
+      n = getDefined(children.at(0));
       p.push(0);
     }
 
@@ -920,7 +929,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
         return undefined;
       }
 
-      const child = getAncestorChildren(node)[p];
+      const child = childListOf(node).at(p);
 
       if (!child) {
         return undefined;
@@ -944,7 +953,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
         return false;
       }
 
-      const child = getAncestorChildren(node)[p];
+      const child = childListOf(node).at(p);
 
       if (!child) {
         return false;
@@ -1005,13 +1014,13 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       if (NodeApi.isText(n)) {
         break;
       }
-      const children = getAncestorChildren(n);
+      const children = childListOf(n);
 
       if (children.length === 0) {
         break;
       }
       const i = children.length - 1;
-      n = children[i];
+      n = getDefined(children.at(i));
       p.push(i);
     }
 
@@ -1068,11 +1077,11 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       if (
         !visited.has(n) &&
         !NodeApi.isText(n) &&
-        getAncestorChildren(n).length !== 0 &&
+        childListOf(n).length !== 0 &&
         (pass == null || !pass([n, p]))
       ) {
         visited.add(n);
-        const children = getAncestorChildren(n);
+        const children = childListOf(n);
         let nextIndex = reverse ? children.length - 1 : 0;
 
         if (PathApi.isAncestor(p, from)) {

@@ -9,7 +9,11 @@ import {
   type RuntimePluginsFromTuple,
 } from '../../lib/editor/withPlite';
 import type { Editor } from './Editor';
-import { type CreateEditorOptions, createEditor } from './withPlate';
+import {
+  type CreateEditorOptions,
+  createEditor,
+  USE_CREATE_EDITOR_OPTION_KEYS,
+} from './withPlate';
 
 type UseCreateEditorReturn<TEnabled, TEditor> = TEnabled extends false
   ? null
@@ -90,18 +94,6 @@ export function useCreateEditor<
 >;
 export function useCreateEditor<
   V extends Value = Value,
-  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
-  const TSchema extends EditorApplicationSchema | undefined = undefined,
-  TEnabled extends boolean | undefined = undefined,
->(
-  options: CreateEditorOptions<V, TPlugins, TSchema> & {
-    enabled?: TEnabled;
-    plugins: TPlugins;
-  },
-  deps?: React.DependencyList
-): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<V, TPlugins, TSchema>>;
-export function useCreateEditor<
-  V extends Value = Value,
   const TSchema extends EditorApplicationSchema | undefined = undefined,
   TEnabled extends boolean | undefined = undefined,
 >(
@@ -113,11 +105,23 @@ export function useCreateEditor<
   TEnabled,
   UseCreateEditorResult<V, readonly [], TSchema>
 >;
+export function useCreateEditor<
+  V extends Value = Value,
+  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
+  TEnabled extends boolean | undefined = undefined,
+>(
+  options: CreateEditorOptions<V, TPlugins, TSchema> & {
+    enabled?: TEnabled;
+    plugins: TPlugins;
+  },
+  deps?: React.DependencyList
+): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<V, TPlugins, TSchema>>;
 export function useCreateEditor(
   options: object = {},
   deps: React.DependencyList = []
 ): unknown {
-  assertConstructorOptions(options);
+  assertConstructorOptions(options, USE_CREATE_EDITOR_OPTION_KEYS);
   const { enabled, ...editorOptions } = options as CreateEditorOptions & {
     enabled?: boolean;
   };

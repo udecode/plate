@@ -3,15 +3,82 @@ import type {
   EditorDocumentValue,
   Selection,
 } from '../interfaces/editor';
-import type { DocumentChange } from './change/document-change';
-import type { RootChange } from './change/root-change';
+import { getDefined } from '../internal/get-defined';
+import {
+  type DocumentChange,
+  getInternalDocumentChangeEntries,
+  getInternalDocumentRootChange,
+} from './change/document-change';
+import type { DocumentIndex } from './change/document-index';
+import {
+  mapRootChangePositionBackward,
+  type RootChange,
+} from './change/root-change';
 import { getEditorRuntimeOwner } from './editor-runtime';
+import { countFrameWork } from './frame-work';
+
+/**
+ * How positions of the stored document correspond to positions of the
+ * document commands decide on. A root the projection leaves alone maps each
+ * position to itself.
+ *
+ * @internal
+ */
+export type CommandProjectionMap = Readonly<{
+  /**
+   * The projected span of content the projection inserts that strictly holds
+   * a projected position, or `null`.
+   */
+  added: (
+    root: string,
+    position: number
+  ) => Readonly<{ from: number; to: number }> | null;
+  /**
+   * The change from the stored document to the projected one. Work on it
+   * costs the whole document, so each read is counted.
+   */
+  change: () => DocumentChange;
+  /** Whether a stored position lies strictly inside content the projection removes. */
+  hides: (root: string, position: number) => boolean;
+  /** The roots the projection changes. */
+  roots: readonly string[];
+  /**
+   * The projected position of a stored one. `association` picks the side of
+   * content the projection puts there, as `DocumentChange.mapPosition` does.
+   */
+  toProjected: (
+    root: string,
+    position: number,
+    association: 'backward' | 'forward'
+  ) => number;
+  /**
+   * The stored position of a projected one. `assoc` picks the stored edge of
+   * content the projection removed there.
+   */
+  toStored: (root: string, position: number, assoc: -1 | 1) => number;
+}>;
+
+/** @internal */
+export type CommandProjection = Readonly<{
+  /**
+   * The previous projection's main root and the change from it to this one's
+   * main root, when the projector derived one from the other.
+   */
+  carried?: Readonly<{
+    change: RootChange;
+    from: DocumentIndex;
+  }>;
+  /** The projected document's index of each root `map` changes. */
+  indexes: ReadonlyMap<string, DocumentIndex>;
+  map: CommandProjectionMap;
+  /** Frozen, as the stored document is. */
+  value: EditorDocumentValue;
+}>;
 
 /**
  * The document an editing command decides on, when it differs from the stored
- * one: `project` returns that document and the change from the stored value
- * to it, or `null` when they are the same. The document is frozen, as the
- * stored one is.
+ * one: `project` returns that document and how its positions map to the
+ * stored one's, or `null` when they are the same.
  *
  * @internal
  */
@@ -23,14 +90,7 @@ export type EditorCommandDocument = Readonly<{
    * other.
    */
   checkRecorded?: (input: EditorFrameRecording) => void;
-  project: (value: EditorDocumentValue) => Readonly<{
-    change: DocumentChange;
-    carried?: Readonly<{
-      change: RootChange;
-      from: EditorDocumentValue['children'];
-    }>;
-    value: EditorDocumentValue;
-  }> | null;
+  project: (value: EditorDocumentValue) => CommandProjection | null;
 }>;
 
 /** @internal */
@@ -45,6 +105,79 @@ export type EditorDocumentState = Readonly<{
   selection: Selection;
   value: EditorDocumentValue;
 }>;
+
+/**
+ * The projection map of `change`, the change from the stored document to the
+ * projected one.
+ *
+ * @internal
+ */
+export const projectionMapOf = (change: DocumentChange): CommandProjectionMap =>
+  Object.freeze({
+    added: (root: string, position: number) => {
+      const sections =
+        getInternalDocumentRootChange(change, root)?.sections ?? [];
+      let after = 0;
+
+      for (let pair = 0; pair < sections.length; pair += 2) {
+        const inserted = sections[pair + 1];
+        const length = inserted < 0 ? sections[pair] : inserted;
+
+        if (inserted > 0 && after < position && position < after + length) {
+          return { from: after, to: after + length };
+        }
+        after += length;
+        if (after > position) return null;
+      }
+
+      return null;
+    },
+    change: () => {
+      countFrameWork('projectionChanges');
+
+      return change;
+    },
+    hides: (root: string, position: number) => {
+      const sections =
+        getInternalDocumentRootChange(change, root)?.sections ?? [];
+      let before = 0;
+
+      for (let pair = 0; pair < sections.length; pair += 2) {
+        const length = sections[pair];
+
+        if (
+          sections[pair + 1] >= 0 &&
+          before < position &&
+          position < before + length
+        ) {
+          return true;
+        }
+        before += length;
+        if (before > position) return false;
+      }
+
+      return false;
+    },
+    roots: Object.freeze(
+      [...getInternalDocumentChangeEntries(change)].map(([root]) => root)
+    ),
+    toProjected: (root: string, position: number, association) => {
+      const rootChange = getInternalDocumentRootChange(change, root);
+
+      return rootChange
+        ? getDefined(
+            rootChange.mapPos(position, association === 'forward' ? 1 : -1)
+          )
+        : position;
+    },
+    toStored: (root: string, position: number, assoc: -1 | 1) => {
+      const rootChange = getInternalDocumentRootChange(change, root);
+
+      return rootChange
+        ? getDefined(mapRootChangePositionBackward(rootChange, position, assoc))
+        : position;
+    },
+  });
 
 const COMMAND_DOCUMENTS = new WeakMap<object, EditorCommandDocument>();
 

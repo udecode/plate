@@ -928,6 +928,11 @@ export const createPlateModelPublication = (
         pluginCache.rules[key].push(plugin.name);
       }
     }
+    assertEmptyLineEndExitOwned(
+      compiledSchema,
+      plugin,
+      publishedModel.byName[plugin.name]?.elementType
+    );
     if (plugin.decorate) pluginCache.decorate.push(plugin.name);
     if (plugin.render.useViewElementAttributes) {
       pluginCache.useViewElementAttributes.push(plugin.name);
@@ -1008,6 +1013,32 @@ export const createPlateModelPublication = (
     shortcuts: shortcutRuntime.shortcuts,
     updateMethods,
   });
+};
+
+const assertEmptyLineEndExitOwned = (
+  schema: NonNullable<ReturnType<typeof getCompiledEditorSchemaFromApi>>,
+  plugin: AnyBasePlugin,
+  elementType: string | null | undefined
+) => {
+  const action = plugin.rules.break?.emptyLineEnd;
+
+  if (action !== 'exit' && action !== 'deleteExit') return;
+  if (
+    !elementType ||
+    !schema.elements.groups.get('textBlock')?.has(elementType)
+  ) {
+    return;
+  }
+
+  const { behavior } =
+    schema.elements.byType.get(elementType) ??
+    failInvariant('Expected value to be defined');
+
+  if (behavior.ownsExit) return;
+
+  throw new Error(
+    `Plugin "${plugin.name}" exits on break.emptyLineEnd, but its text block "${elementType}" does not declare ownsExit. Add \`ownsExit: true\` to its schema element, and regenerate any generated schema contract that predates it.`
+  );
 };
 
 const isGenericElementToggleEligible = (
@@ -1401,6 +1432,7 @@ export const createPlateRuntimePlugins = (
                 }
 
                 applyBlockInsertion({
+                  editor,
                   insert,
                   matches: (source) =>
                     matchesGeneratedBlockInsertion({

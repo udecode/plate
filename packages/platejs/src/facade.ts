@@ -106,6 +106,7 @@ export type {
   PluginsOf,
   LeafPosition,
   Location,
+  NamedRootKey,
   Node,
   NodeEntry,
   NodeIn,
@@ -179,7 +180,7 @@ export type {
 } from 'plitejs/internal';
 
 export type { AnyEditor as RuntimeAnyEditor } from 'plitejs/internal';
-export { isMetadataRootKey, normalizeSetValues } from 'plitejs/internal';
+export { normalizeSetValues } from 'plitejs/internal';
 export type {
   EditorDirectUpdate,
   EditorGenericMethod,
@@ -199,6 +200,7 @@ export type {
   StructuralPlainTextDiagnostic,
 } from 'plitejs/internal';
 export {
+  canPlaceBlocksAtPath,
   containsCompleteEditorSchema,
   getCompiledEditorSchemaFromApi,
   getEditorCommitSnapshot,

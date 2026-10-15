@@ -198,7 +198,9 @@ describe('authored review tree decisions', () => {
   describe('a line Bob split off a line Alice’s pending join pulls into a quote', () => {
     const piece = {
       ...paragraph({ text: 'd' }),
-      authored: [{ ...mark('split'), follows: `alice:1@${AT}` }],
+      authored: [
+        { ...mark('split'), follows: JSON.stringify(['alice:1', AT]) },
+      ],
     };
     const split = [
       { type: 'quote', children: [paragraph({ text: 'ab' })] },

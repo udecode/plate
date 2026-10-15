@@ -18,10 +18,10 @@ A subject file never holds a `before` or `after` fence.
 
 ## Plan
 
-- Optional frontmatter, then `# Title`, then `Status:`, `Topic:` and `Playbook:` lines. `Playbook:` names the playbook poteto-mode picked. That is the project playbook that writes the plan, or pstack's when no project playbook does, such as `feature`, `bug-fix` or `figure-it-out`.
+- Optional frontmatter, then `# Title`, then `Status:`, `Topic:` and `Playbook:` lines. `Playbook:` names the playbook poteto-mode picked. That is the project playbook that writes the plan, or pstack's when no project playbook does, such as `feature`, `bug-fix` or `figure-it-out`. A PR plan, which the skill's PR mode writes for a PR that carries several plans, adds a `Plans:` line that lists them by path relative to it, separated by commas.
 - `Status:` starts with a state word from `.agents/pstack/status.mjs`, such as `planning`, `building`, `blocked`, `reopened` or `executed`, then says what the plan waits on. The page header shows this sentence, so an ask that is not a decision, such as a commit the owner makes, goes here: `waiting on your answer, then your commit`.
 - `## Brief`: two `###` questions in this order, each answered in at most 40 words: What will change? What could go wrong? The page labels them Changes and Risks. Changes says what the owner gets in at most two sentences, with a short reason when the change needs one. An iteration that a gate opened, not the owner, names in Changes the owner's request it serves and the finding that opened it. Risks says what could hurt the owner. Decisions go in Open questions, and other asks go in `Status:`. An open plan that leads its page needs one.
-- `## Demo`: written once the work does something the owner can try. Numbered steps in the order the owner would try them; each says where to go, what to do and what they should see, in plain words with the exact URL, command or fixture to open. When the step's screen changed, the step ends with its verified frames as `![before](path)` and `![after](path)`, paths relative to the plan file; a new screen has only an after frame. The page shows Demo where the page orders below place it and inlines each frame. A frame missing on the rendering machine shows its path instead. The renderer refuses a Demo with no numbered step.
+- `## Demo`: written once the work does something the owner can try. Numbered steps in the order the owner would try them; each says where to go, what to do and what they should see, in plain words with the exact URL, command or fixture to open. When the step's screen changed, the step ends with its verified frames as `![before](path)` and `![after](path)`, paths relative to the plan file; a new screen has only an after frame. A frame may instead be an `https` link to one already uploaded, such as a video in a PR. The page shows Demo where the page orders below place it and inlines each local image. A frame missing on the rendering machine shows its path instead, and a linked frame shows its link. The renderer refuses a Demo with no numbered step.
 - `## Teach`: the thing the plan changes, explained for someone new to it, written with `pstack:teach`'s method from what the run's `how` and `why` work found. Write at most three short paragraphs with no headers: what the thing is, how it works today, then what changes and why. When the change moves parts around, add one before and after picture, with `![before](path) ![after](path)` on a line of its own and paths relative to the plan file. The page shows both images in that section, and the renderer refuses a picture inside a sentence. The page shows Teach as How it works, where the page orders below place it. An open plan that leads its page writes one; the renderer does not refuse a plan without it, and refuses an open plan whose Teach runs past three paragraphs or 160 words.
   When the user's ask quotes a stakeholder's script, such as a demo outline, `## Demo` copies its beats in order and marks each one covered, deferred with its owner, or out of scope. A failure on a covered beat never closes as outside the change.
 - A plan that continues a subject carries only its delta, under the subject's section titles:
@@ -29,7 +29,7 @@ A subject file never holds a `before` or `after` fence.
   - `## Main changes`: its own changes.
   - Any other subject section: a table whose first column is `Delta`. Each row is `added`, `changed` or `removed`, and its next cell keys it to the subject's row in a table with the same columns. New prose or tables go beside it.
 - A one-off plan carries its own `## Public API` pairs and `## Main changes`.
-- `## Defaults`: a table whose columns start with `Decision | Pick | Alternative | Word`, one row per call made for the owner, in plain words. The word reverses the pick. A pick the lead rates `look` or `answer`, as the Autopilot rule defines them, ends its Pick cell with (look) or (answer) in plain text, so the project's Plan pages rule can publish the page for it mid-run. A row that covers a set gives a reason true of each member, and when the owner's own words name an option, the pick or the alternative is that option in those words. Write each cell in a few plain words. The decision is a short noun phrase, and the pick and the alternative say what the owner gets, never the mechanism behind it. Add a fifth column, `Impact`, holding `big`, `small` or `detail`: big when the pick changes what the owner gets or what it costs, small when it changes a smaller behavior, and detail for something few would notice. The page groups the rows under Big calls, Small calls and Details and shows every row as one line: the decision, the pick, then the alternative with the word that gets it. The renderer refuses any other impact. Leave the section out when no call was made.
+- `## Defaults`: a table whose columns start with `Decision | Pick | Alternative | Word`, one row per call made for the owner, in plain words. The word reverses the pick. A pick the lead rates `look` or `answer`, as the Autopilot rule defines them, ends its Pick cell with (look) or (answer) in plain text, so the project's Plan pages rule can publish the page for it mid-run. A row that covers a set gives a reason true of each member, and when the owner's own words name an option, the pick or the alternative is that option in those words. Write each cell in a few plain words. The decision is a short noun phrase, and the pick and the alternative say what the owner gets, never the mechanism behind it. Add a fifth column, `Impact`, holding `big`, `small` or `detail`: big when the pick changes what the owner gets or what it costs, small when it changes a smaller behavior, and detail for something few would notice, which includes a call about how the run proceeds, such as building now or where to push. The page groups the rows under Big calls, Small calls and Details and shows each decision with its pick in bold below it, then each alternative, separated by semicolons in its cell, marked `(alt)`, the first with the word that gets it. The renderer refuses any other impact. Leave the section out when no call was made.
 - `## Open questions`: one `### <short header>` per decision, unique on the page, written as a decision memo the owner answers in seconds without reading anything else on the page. Write it for the owner, not for another agent. Use plain everyday words and one thought per sentence, and name what the owner sees happen. Leave out file paths, commands, commit hashes and internal tool names; that evidence goes in the decision log. Every part runs at most 15 words, an option's label at most 3, and a memo holds at most 2 facts. The renderer refuses an open plan's question that skips a part or runs past a budget:
   1. The decision in one line that ends in `?`.
   2. `Why it needs you:` and one sentence on why no safe default exists, naming the Autopilot stop it falls under: a production deploy or release, a push to `main`, a force-push to a shared branch, a message to anyone outside the team, deleting data the run did not create, or a standing stop that the project's own rules name outside the block. Any other call is a `## Defaults` row.
@@ -56,6 +56,7 @@ A subject file never holds a `before` or `after` fence.
 
   Attention: safe
   ```
+- `## On top of the PR`: written only for a comment on someone else's PR. It has three list items, Kept, Changed and Dropped, each with sub-items naming what your commits keep, change or drop from the author's version.
 - `## Close`: written at every stop that hands work back after work ran, such as a build, fix or review close. It holds what landed, the proof and its limits, the counts the block's Todo list and close rule requires, reversals and deviations first, open work with owners and stops and, after a decision-trail review, its Attention section. Build the proof part from each decision-log row's own `scope:`, never from one sentence that covers every fix. A pstack playbook's Reply line lists what else it holds.
 - On a page without a brief, Scope, Steps, Evidence, Proof, Claims, Asks, Verification, Notes and Panel gate render under Details, and a one-off plan shows its other sections. A page with a brief leaves them in the plan file.
 
@@ -70,7 +71,7 @@ A subject file never holds a `before` or `after` fence.
 
 ## Page order
 
-Every page opens with a header: the title, the flow rail, the `Status:` sentence, the model and effort of each lead session from the log's `lead` rows, and the latest review round with its seats and their efforts. The rail shows the stages Plan, Design, Plan review, Build, Writing, Code review, Verify, Audit, Ship and Reflect. Hovering a stage shows the pstack step behind it, and once Plan, Design, a review stage, Writing or Audit ran, small badges name the pstack skills behind it. A stage that ran is a filled green badge, a skipped one is dashed grey and the rest are outlined blue. The next stage is an amber ring while work goes on, a filled orange badge when the `Status:` waits on the owner, and a filled red badge when it is held. A plan that ended without landing, such as a superseded one, adds its word in grey after its last stage and shows every stage it never ran as skipped. Plan names the playbook from the `Playbook:` line and, for a project playbook, the pstack playbooks it extends. Design and Writing name the tools that ran, the review stages name `interrogate` and count their rounds, Audit names `show-me-your-work`, and Build counts its checked steps. Build, Verify, Ship and Reflect carry no badge. Phases outside this table never move the rail, so log each stage's rows under its phase:
+Every page opens with a header: the title, the flow rail, the `Status:` sentence, and the model and effort of each lead session from the log's `lead` rows, each followed by the panel seats that session ran, with their efforts and `×N` for the rounds each sat. A plan whose `Plans:` line lists the plans it carries names them in the header, and its rail and seats add theirs. A stage ran when any of the plans ran it, review rounds add up and Build counts every plan's steps. On a subject page, a review round on an iteration that does not lead keeps its own tag. The rail shows the stages Plan, Design, Plan review, Build, Writing, Code review, Verify, Audit, Ship and Reflect. Hovering a stage shows the pstack step behind it, and once Plan, Design, a review stage, Writing or Audit ran, small badges name the pstack skills behind it. A stage that ran is a filled green badge, a skipped one is dashed grey and the rest are outlined blue. The next stage is an amber ring while work goes on, a filled orange badge when the `Status:` waits on the owner, and a filled red badge when it is held. A plan that ended without landing, such as a superseded one, adds its word in grey after its last stage and shows every stage it never ran as skipped. Plan names the playbook from the `Playbook:` line and, for a project playbook, the pstack playbooks it extends. Design and Writing name the tools that ran, the review stages name `interrogate` and count their rounds, Audit names `show-me-your-work`, and Build counts its checked steps. Build, Verify, Ship and Reflect carry no badge. Phases outside this table never move the rail, so log each stage's rows under its phase:
 
 | Stage | Ran when |
 | --- | --- |
@@ -90,14 +91,17 @@ When the leading plan has a brief, the page shows what a reviewer needs to judge
 1. The header.
 2. The brief in one card.
 3. How it works, from Teach.
-4. Demo.
-5. Needs you.
-6. Picked for you, from Defaults, one line per row under Big calls, Small calls and Details.
-7. Public API, from the leading plan.
-8. The `page-lead` sections in their playbook order, each from the leading plan, or from the subject and marked current when the plan has none.
-9. Main changes.
-10. The leading plan's other sections.
-11. One line that names the plan and subject files, which keep the internals: Close, Scope, Steps, Evidence, Proof, Claims, Asks, Verification, Notes, Panel gate, iterations and the review rounds.
+4. On top of the PR.
+5. Demo.
+6. Needs you.
+7. Picked for you, from Defaults, each decision with its pick and alternatives under Big calls, Small calls and Details.
+8. Public API, from the leading plan.
+9. The `page-lead` sections in their playbook order, each from the leading plan, or from the subject and marked current when the plan has none.
+10. Main changes.
+11. The leading plan's other sections, apart from Open work.
+12. Verification, once the plan is done.
+13. Open work.
+14. One line that names the plan, its subject and each plan on its `Plans:` line, whose files keep the internals: Close, Scope, Steps, Evidence, Proof, Claims, Asks, Notes, Panel gate, Verification while work runs, iterations and the review rounds.
 
 Write every sentence the page shows in the `pstack:bro` voice. Say it the way one person talks to another, plainly, briefly and with no jargon. Use short sentences, the active voice and common words. The brief, Teach, Needs you and Defaults also leave out code, file paths and commit hashes, apart from a Teach picture's path, and the renderer refuses an open plan whose brief, Teach, Open questions or Defaults holds code, inline or in a fenced block. Sections for engineers, such as Public API and Main changes, keep their code and tables, and the sentences around them use the same voice. After a build, the Changes and Risks answers also tell the owner what the Close holds: what landed, where the proof stops, any reversal and the warnings of a decision-trail review.
 
@@ -111,11 +115,27 @@ Without a brief, the page shows the whole record, with every section open:
 4. How it works, from the leading plan's Teach.
 5. The leading plan's lead paragraph.
 6. Public API, then the `page-lead` sections, then Main changes.
-7. Picked for you, from Defaults, one line per row under Big calls, Small calls and Details.
+7. Picked for you, from Defaults, each decision with its pick and alternatives under Big calls, Small calls and Details.
 8. The subject's lead paragraph and other sections.
 9. History, newest first.
 10. Details.
-11. Review history, from the decision log's `panel` and `review` rows, with the latest round tagged in the header.
+11. Review history, from the decision log's `panel` and `review` rows.
+
+## PR body
+
+`plan-page.mjs <plan> --pr` writes the page of the plan it is given as GitHub Markdown between `<!-- plan-page:start -->` and `<!-- plan-page:end -->`, in the page order for a plan with a brief, which the renderer walks for both outputs:
+
+1. One list item per lead session, its model and effort in one code span. The first lead's line also names the plans' playbooks in code spans and which of design, plan review, code review, verify and audit did not run, because the rest of the rail is the same for every PR. Under each lead, each panel seat it ran, with its model and effort in code spans, `missing` when the seat did not answer and `×N` for the rounds it sat.
+2. Changes as the opening paragraph, with no label, and Risks in a `[!CAUTION]` alert, whose title already says what it holds.
+3. How it works, then On top of the PR, then Demo, with each step's frames after it. A plan with no Demo shows its first three Main changes items as What changed instead.
+4. The open questions as Open questions, and the big Defaults calls as Decisions, each pick in bold over its alternatives marked `(alt)`.
+5. Public API, with each before and after pair as one `diff` fence.
+6. Each section on the `page-pr` line of a playbook that one of its plans names, in `page-lead` order, a paired one as one `diff` fence per pair. A PR plan without that section shows each carried plan's under a `###` heading with its title. Then the plan's `## Verification`, then its `## Open work` as Out of scope, each item cut to its first sentence, without its owner, stop or run-directory paths. Other `page-lead` sections, Main changes and the plan's other sections stay in the plan, because they are engineer detail.
+7. A Plans list that links the plan at the current commit and each plan on its `Plans:` line, one item each. The body shows no `Status:` line, because the PR shows its own state.
+
+A local frame becomes a `![label](./path)` reference from the repository root, under a `<!-- frame: ./path -->` note, and goes up through `gh --attach`. A later render with `--into` reuses the uploaded link found under that note. The sections the page leaves in the plan file, such as Close, Steps and Evidence, stay there.
+
+`plan-page.mjs <plan> --comment <sha>` writes the same body as a comment about the commits after `<sha>`, into `<name>.comment.md`. Under the lead lines it links GitHub's compare view from `<sha>` to the checkout's head. With `--against <description.md>`, it leaves out each Demo clip the description already shows, and each step whose clips all are.
 
 ## Refusals
 
@@ -128,6 +148,8 @@ Without a brief, the page shows the whole record, with every section open:
 - A subject iteration's `Status:` starts with no state word.
 - A `Topic:` line names a subject with no file.
 - An iteration names a playbook that `.agents/playbooks/` lacks.
+- A playbook's `page-pr` line names a section its `page-lead` line does not.
+- `--comment` names a commit the checkout lacks, or one its HEAD does not contain, because the compare link would not open.
 - `.agents/pstack.json` still sets `pageLead`, `pagePairs` or `pageTopic.require`. sync-pstack's `apply` drops them in the write that installs the renderer once a playbook carries each title, and refuses until then.
 - A subject whose hub exists lacks a required section in both its file and its open plan. The leading plan's playbook sets the required sections, or every playbook does when that plan names none.
 - An open iteration's subject already shows one of its added or changed rows, or no longer has a row it removes, in any section with a Delta table. It also refuses when the subject shows a pair's after fence line for line, indentation and punctuation included, and does not show its before fence. The check skips a pair that deletes a call or changes nothing, a pair whose changed lines another iteration's fences all hold, and any row another iteration also marks. It exempts a plan whose `Status:` starts with `reopened`, and the plan a `--folded` render folds.
@@ -135,5 +157,7 @@ Without a brief, the page shows the whole record, with every section open:
 - An open plan that leads its page, with a state word in its `Status:`, has no `## Brief`.
 - An open iteration's brief skips, adds or reorders a question, leaves an answer empty, or answers in more than 40 words. When a brief asks a question that older briefs asked, the refusal names each one to drop.
 - `--folded` names a plan with no `## Close` or no subject file, or the subject file lacks the plan's Delta rows or after lines, still shows its before lines, or does not show an after fence as one block in order, skipping any row or line another iteration also changes.
+
+- `--pr` or `--comment` names a plan with no `## Brief`, whatever its state, a title or brief that names a PR number, a Changes answer that still says "will", or a `Plans:` line that lists a plan that does not exist. It also runs the brief, Teach and plain-section checks that otherwise apply only to an open plan.
 
 `--check` runs every refusal and writes nothing.

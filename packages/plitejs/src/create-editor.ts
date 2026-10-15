@@ -50,6 +50,7 @@ import {
 } from './core/plugin-registry';
 import { MAIN_ROOT_KEY } from './core/public-root';
 import {
+  getChildList,
   getChildren,
   getCurrentSelectionRoot,
   getEditorDocumentValue,
@@ -110,6 +111,11 @@ import type {
   ValueOf,
   Value,
 } from './interfaces';
+import {
+  assertEditorOptions,
+  type CheckedEditorOptions,
+  EDITOR_OPTION_KEYS,
+} from './internal/editor-options';
 
 let nextEditorId = 0;
 const PENDING_SCHEMA_BOOTSTRAP = new WeakSet<AnyEditor>();
@@ -585,12 +591,22 @@ export const initializePluginEntries = <TEditor extends AnyEditor>(
  * plugin runtime APIs installed.
  */
 export function createEditor<
-  const TOptions extends CreateEditorOptions<any, readonly unknown[]> & {
-    plugins: readonly unknown[];
-  },
+  const TOptions extends Omit<
+    CreateEditorOptions<any, readonly unknown[]>,
+    'lifecycleErrorSink'
+  >,
 >(
-  options: TOptions
+  options: CheckedEditorOptions<
+    TOptions,
+    CreateEditorOptions<any, readonly unknown[]>
+  >
 ): Editor<EditorValueFromOptions<TOptions>, PluginsFromOptions<TOptions>>;
+
+export function createEditor<V extends Value = Value>(
+  options?: Omit<CreateEditorOptions<V>, 'plugins'> & {
+    plugins?: never;
+  }
+): Editor<V>;
 
 export function createEditor<
   V extends Value,
@@ -602,35 +618,11 @@ export function createEditor<
 ): Editor<V, TPlugins>;
 
 export function createEditor<
-  const TOptions extends Omit<CreateEditorOptions<any>, 'plugins'> & {
-    plugins?: never;
-  },
->(options: TOptions): Editor<EditorValueFromOptions<TOptions>>;
-
-export function createEditor<V extends Value = Value>(
-  options?: Omit<CreateEditorOptions<V>, 'plugins'> & {
-    plugins?: never;
-  }
-): Editor<V>;
-
-export function createEditor<
   V extends Value = Value,
   const TPlugins extends readonly unknown[] = readonly [],
 >(options: CreateEditorOptions<V, TPlugins> = {}): Editor<V, TPlugins> {
   return createEditorImplementation(options);
 }
-
-/**
- * Generic construction entrypoint for typed runtime wrappers.
- *
- * @internal
- */
-export const createEditorUnchecked = <
-  V extends Value = Value,
-  const TPlugins extends readonly unknown[] = readonly [],
->(
-  options: CreateEditorOptions<V, TPlugins> = {}
-): Editor<V, TPlugins> => createEditorImplementation(options);
 
 const createEditorImplementation = <
   V extends Value,
@@ -638,6 +630,7 @@ const createEditorImplementation = <
 >(
   options: CreateEditorOptions<V, TPlugins>
 ): Editor<V, TPlugins> => {
+  assertEditorOptions(options, EDITOR_OPTION_KEYS);
   let editor!: Editor<V, TPlugins>;
   const runtimeEditor = () => editor;
   const schema: InternalEditorSchemaApi<V> = createEditorSchema(runtimeEditor);
@@ -651,6 +644,7 @@ const createEditorImplementation = <
   } satisfies InternalPluginRuntime<V>;
 
   const snapshotRuntime = {
+    getChildList: () => getChildList(editor),
     getChildren: () => getChildren(editor),
     getFragment: () => getFragment(editor) as Array<DescendantIn<V>>,
     getLastCommit: () => getLastCommit(editor) as EditorCommit<V> | null,

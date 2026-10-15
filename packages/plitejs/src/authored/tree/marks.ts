@@ -1,3 +1,4 @@
+import type { NodeList } from '../../core/change/document-index';
 import type { JsonNode } from '../../core/change/tokens';
 import { normalizeSetValues } from '../../core/change/transform';
 import { property, schema, target } from '../../core/schema-definition';
@@ -57,21 +58,29 @@ export type AuthoredMark =
       Readonly<{
         cut?: undefined;
         follows?: undefined;
-        kind: Exclude<AuthoredMarkKind, 'format' | 'split'>;
+        kind: Exclude<AuthoredMarkKind, 'format' | 'insert' | 'split'>;
       }>)
   | (MarkBase &
       Readonly<{
         cut?: undefined;
         /**
-         * The incarnation of the pending join the source line carried, or
-         * followed, when this split cut it. Where that join takes the source,
-         * such as into a quote, the piece lands right after it.
+         * The incarnation of a pending join this block goes with: for a split,
+         * the one the source line carried, or followed, when the split cut it;
+         * for an inserted block, the one the block before it carries or goes
+         * with, or else the one whose target and line it was written between.
+         * Where that join takes its line, such as into a quote, the block lands
+         * right after it, in document order among the join's other followers,
+         * and the join never merges into it.
          */
         follows?: string;
-        kind: 'split';
+        kind: 'insert' | 'split';
       }>)
   | CutTag
   | FormatTag;
+
+/** @internal */
+export const isContextInsertion = (mark: AuthoredMark) =>
+  mark.kind === 'insert' && mark.follows === undefined;
 
 const TEXT_KINDS: ReadonlySet<AuthoredMarkKind> = new Set([
   'delete',
@@ -206,7 +215,8 @@ const parseMember = (value: unknown): AuthoredMember | null => {
     return isCutTag(value) ? (value as AuthoredMark) : null;
   }
 
-  const follows = kind === 'split' ? value.follows : undefined;
+  const follows =
+    kind === 'split' || kind === 'insert' ? value.follows : undefined;
 
   if (
     follows !== undefined &&
@@ -280,7 +290,7 @@ export const withRestsOn = <T extends Readonly<Record<string, unknown>>>(
 type MarkOwners = Map<string, string>;
 
 const visitMarks = (
-  nodes: readonly unknown[],
+  nodes: NodeList<unknown>,
   parent: Path,
   owners: MarkOwners,
   checked: WeakSet<object>,
@@ -308,14 +318,21 @@ const visitMarks = (
           restsOn(member.ctx, at);
           continue;
         }
+        const follows =
+          member.kind === 'insert' && member.follows !== undefined;
+
         if (
           isEditingChange(member.change) &&
-          !STORED_EDITING_KINDS.has(member.kind)
+          !STORED_EDITING_KINDS.has(member.kind) &&
+          !follows
         ) {
           throw new AuthoredMarkError(
-            `An Editing mark of kind "${member.kind}" never stays stored; only a join, a split or a deletion does.`,
+            `An Editing mark of kind "${member.kind}" never stays stored; only a join, a split, a deletion or an insertion that follows a join does.`,
             at
           );
+        }
+        if (follows && isText) {
+          throw new AuthoredMarkError('Only a block follows a join.', at);
         }
         const kind = member.kind === 'held' ? 'delete' : member.kind;
 
@@ -358,7 +375,7 @@ export const createAuthoredMarksValidator = () => {
   return {
     authorOf: (change: string) => owners.get(change) ?? null,
     validate: (
-      children: readonly unknown[],
+      children: NodeList<unknown>,
       restsOn: (ctx: string, path: Path) => void
     ) => visitMarks(children, [], owners, checked, restsOn),
   };

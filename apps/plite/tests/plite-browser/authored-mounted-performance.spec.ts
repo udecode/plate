@@ -43,6 +43,22 @@ const cohortId =
   process.env.PLITE_AUTHORED_MOUNTED_PERFORMANCE_COHORT ?? 'views-1';
 const cohort = contract.cohorts.find((item) => item.id === cohortId);
 if (!cohort) throw new Error(`Unknown authored mounted cohort: ${cohortId}`);
+// Review records every arm loads with its seed, such as the contexts and
+// verdicts a long-decided history leaves.
+const recordsPath = process.env.PLITE_AUTHORED_MOUNTED_RECORDS;
+const records = recordsPath
+  ? (JSON.parse(readFileSync(recordsPath, 'utf-8')) as Record<
+      string,
+      Record<string, unknown>
+    >)
+  : undefined;
+const countRecords = (value: unknown) =>
+  Object.fromEntries(
+    Object.entries(
+      (value as { records?: Record<string, Record<string, unknown>> })
+        .records ?? {}
+    ).map(([set, held]) => [set, Object.keys(held).length])
+  );
 
 type Arm = 'matched' | 'struck' | 'zero';
 
@@ -181,9 +197,11 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
             type: 'paragraph',
             children: [{ text: seedText }],
           })),
+          ...(records ? { records } : {}),
         },
       },
     ]);
+    const loadedRecords = countRecords(await proposed.get.modelValue());
     await controls.getByRole('button', { name: 'Suggest', exact: true }).click();
     if (arm === 'struck') {
       await proposed.root.evaluate(
@@ -293,6 +311,7 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
       initialDOM,
       finalDOM,
       initialPendingIds,
+      loadedRecords,
       result,
       runtimeErrors: [...errors],
       summary: {
@@ -308,6 +327,9 @@ const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
           finalDOM.placeholders === 0,
         independent:
           (await independent.get.modelText()) === 'A separate document.',
+        loadedRecords:
+          JSON.stringify(loadedRecords) ===
+          JSON.stringify(countRecords({ records })),
         originalPendingPreserved:
           initialPendingIds.length ===
             (arm === 'zero' ? 0 : cohort.pendingDeletions) &&

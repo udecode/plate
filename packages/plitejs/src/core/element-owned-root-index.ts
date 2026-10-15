@@ -6,6 +6,14 @@ import type { DocumentIndex } from './change/document-index';
 import { getRootChangeRelocations } from './change/mapping';
 import type { RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
+import {
+  persistentMapDelete,
+  persistentMapEntries,
+  persistentMapGet,
+  type PersistentMapNode,
+  persistentMapSet,
+  persistentMapSize,
+} from './persistent-map';
 import { profileCoreDuration } from './profiling';
 import type {
   CompiledEditorSchema,
@@ -18,169 +26,6 @@ import {
   getCanonicalDocumentPathMappingStats,
   mapCanonicalDocumentPath,
 } from './snapshot-index';
-
-type PersistentMapNode<T> = Readonly<{
-  height: number;
-  key: string;
-  left: PersistentMapNode<T> | null;
-  right: PersistentMapNode<T> | null;
-  size: number;
-  value: T;
-}>;
-
-const mapHeight = <T>(node: PersistentMapNode<T> | null) => node?.height ?? 0;
-const mapSize = <T>(node: PersistentMapNode<T> | null) => node?.size ?? 0;
-const mapNode = <T>(
-  key: string,
-  value: T,
-  left: PersistentMapNode<T> | null,
-  right: PersistentMapNode<T> | null
-): PersistentMapNode<T> =>
-  Object.freeze({
-    height: Math.max(mapHeight(left), mapHeight(right)) + 1,
-    key,
-    left,
-    right,
-    size: mapSize(left) + mapSize(right) + 1,
-    value,
-  });
-
-const rotateMapLeft = <T>(node: PersistentMapNode<T>) => {
-  const right = getDefined(node.right);
-
-  return mapNode(
-    right.key,
-    right.value,
-    mapNode(node.key, node.value, node.left, right.left),
-    right.right
-  );
-};
-
-const rotateMapRight = <T>(node: PersistentMapNode<T>) => {
-  const left = getDefined(node.left);
-
-  return mapNode(
-    left.key,
-    left.value,
-    left.left,
-    mapNode(node.key, node.value, left.right, node.right)
-  );
-};
-
-const balanceMap = <T>(node: PersistentMapNode<T>) => {
-  const balance = mapHeight(node.left) - mapHeight(node.right);
-
-  if (balance > 1) {
-    const left = getDefined(node.left);
-
-    return rotateMapRight(
-      mapHeight(left.left) < mapHeight(left.right)
-        ? mapNode(node.key, node.value, rotateMapLeft(left), node.right)
-        : node
-    );
-  }
-  if (balance < -1) {
-    const right = getDefined(node.right);
-
-    return rotateMapLeft(
-      mapHeight(right.right) < mapHeight(right.left)
-        ? mapNode(node.key, node.value, node.left, rotateMapRight(right))
-        : node
-    );
-  }
-
-  return node;
-};
-
-const persistentMapGet = <T>(
-  node: PersistentMapNode<T> | null,
-  key: string
-): T | undefined => {
-  let current = node;
-
-  while (current) {
-    if (key === current.key) return current.value;
-    current = key < current.key ? current.left : current.right;
-  }
-
-  return undefined;
-};
-
-const persistentMapSet = <T>(
-  node: PersistentMapNode<T> | null,
-  key: string,
-  value: T
-): PersistentMapNode<T> => {
-  if (!node) return mapNode(key, value, null, null);
-  if (key === node.key) {
-    return Object.is(value, node.value)
-      ? node
-      : mapNode(key, value, node.left, node.right);
-  }
-
-  return balanceMap(
-    key < node.key
-      ? mapNode(
-          node.key,
-          node.value,
-          persistentMapSet(node.left, key, value),
-          node.right
-        )
-      : mapNode(
-          node.key,
-          node.value,
-          node.left,
-          persistentMapSet(node.right, key, value)
-        )
-  );
-};
-
-const removeSmallestMapNode = <T>(
-  node: PersistentMapNode<T>
-): readonly [PersistentMapNode<T>, PersistentMapNode<T> | null] => {
-  if (!node.left) return [node, node.right];
-  const [smallest, nextLeft] = removeSmallestMapNode(node.left);
-
-  return [
-    smallest,
-    balanceMap(mapNode(node.key, node.value, nextLeft, node.right)),
-  ];
-};
-
-const persistentMapDelete = <T>(
-  node: PersistentMapNode<T> | null,
-  key: string
-): PersistentMapNode<T> | null => {
-  if (!node) return null;
-  if (key < node.key) {
-    const left = persistentMapDelete(node.left, key);
-
-    return left === node.left
-      ? node
-      : balanceMap(mapNode(node.key, node.value, left, node.right));
-  }
-  if (key > node.key) {
-    const right = persistentMapDelete(node.right, key);
-
-    return right === node.right
-      ? node
-      : balanceMap(mapNode(node.key, node.value, node.left, right));
-  }
-  if (!node.left) return node.right;
-  if (!node.right) return node.left;
-  const [successor, right] = removeSmallestMapNode(node.right);
-
-  return balanceMap(mapNode(successor.key, successor.value, node.left, right));
-};
-
-function* persistentMapEntries<T>(
-  node: PersistentMapNode<T> | null
-): Generator<readonly [string, T]> {
-  if (!node) return;
-  yield* persistentMapEntries(node.left);
-  yield [node.key, node.value];
-  yield* persistentMapEntries(node.right);
-}
 
 const stableProgramValue = (value: unknown): unknown => {
   if (Array.isArray(value)) return value.map(stableProgramValue);
@@ -364,7 +209,7 @@ const freezeIndex = (index: MutableIndex): ElementOwnedRootIndex =>
   });
 
 const schemaIndexes = new WeakMap<
-  object,
+  DocumentIndex,
   Map<string, Map<RootKey, ElementOwnedRootIndex>>
 >();
 const schemaIndexKey = (schema: CompiledEditorSchema) =>
@@ -376,11 +221,11 @@ const cacheIndex = (
   document: DocumentIndex,
   index: ElementOwnedRootIndex
 ) => {
-  let bySchema = schemaIndexes.get(document.value);
+  let bySchema = schemaIndexes.get(document);
 
   if (!bySchema) {
     bySchema = new Map();
-    schemaIndexes.set(document.value, bySchema);
+    schemaIndexes.set(document, bySchema);
   }
   const key = schemaIndexKey(schema);
   let byRoot = bySchema.get(key);
@@ -399,8 +244,7 @@ export const getElementOwnedRootIndex = (
   root: RootKey,
   document: DocumentIndex
 ) =>
-  schemaIndexes.get(document.value)?.get(schemaIndexKey(schema))?.get(root) ??
-  null;
+  schemaIndexes.get(document)?.get(schemaIndexKey(schema))?.get(root) ?? null;
 
 const getElementType = (element: { type?: unknown }) =>
   typeof element.type === 'string' && element.type.length > 0
@@ -1020,7 +864,7 @@ export const getElementOwnedRootGrammarBindings = (
   return Object.freeze(
     [...persistentMapEntries(owners.grammars)].map(([, grammar]) => ({
       content: grammar.content,
-      count: mapSize(grammar.bindings),
+      count: persistentMapSize(grammar.bindings),
       ownership: grammar.ownership,
       owner: getDefined(persistentMapEntries(grammar.bindings).next().value)[1],
     }))

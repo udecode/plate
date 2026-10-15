@@ -5,9 +5,7 @@ import * as Y from 'yjs';
 
 import { createAuthoredPlugin } from '../../src/authored/authored';
 import {
-  CONTEXTS_ROOT,
   authoredRecords,
-  contextElementOf,
   contextRecordOf,
 } from '../../src/authored/facts/records';
 import { authoredMarksSchema } from '../../src/authored/tree/marks';
@@ -86,7 +84,7 @@ describe('plitejs/yjs authored context hold', () => {
     const bobSince = Y.encodeStateVector(danaDoc);
 
     bob.update((tx) => {
-      tx.roots.create(CONTEXTS_ROOT, [contextElementOf(inAlice)] as never);
+      tx.records.put('authored-contexts', inAlice.ctx, { member: alice });
       tx.nodes.insert(nested('bob', 'B', 'X') as never, { at: [0, 1] });
     });
     send(bobDoc, carolDoc, Y.encodeStateVector(carolDoc));

@@ -5,6 +5,10 @@ import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
 
 const selectionMock = mock();
+const readSelection = Object.assign(() => selectionMock(), {
+  nodes: () =>
+    selectionMock()?.kind === 'node' ? [[{ type: 'image' }, [0]]] : [],
+});
 const useEditorSelectorMock = mock();
 const usePluginStoreMock = mock();
 
@@ -17,7 +21,7 @@ mock.module('platejs/react', () => ({
     extension: () => ({ update: { set: () => {} } }),
     read: Object.assign(() => undefined, {
       nodes: { get: () => undefined },
-      selection: selectionMock,
+      selection: readSelection,
     }),
   }),
   useEditorMounted: () => true,
@@ -76,7 +80,7 @@ describe('ImageElement', () => {
     useEditorSelectorMock.mockImplementation(
       (selector: (editor: unknown) => unknown) =>
         selector({
-          read: { nodes: { get: () => undefined }, selection: selectionMock },
+          read: { nodes: { get: () => undefined }, selection: readSelection },
         })
     );
   });
@@ -93,7 +97,7 @@ describe('ImageElement', () => {
     return render(
       <ImageElement
         attributes={{}}
-        editor={{ read: { selection: selectionMock } } as any}
+        editor={{ read: { selection: readSelection } } as any}
         element={{ children: [{ text: '' }], type: 'image', url: '/image.png' }}
         path={[0]}
         slots={
@@ -124,6 +128,19 @@ describe('ImageElement', () => {
     expect(view.getByTestId('media-toolbar').dataset.selected).toBe('true');
     expect(view.container.querySelector('figcaption')).toBeTruthy();
     expect(view.getAllByTestId('caption-content')).toHaveLength(1);
+  });
+
+  it('keeps an empty caption hidden while the asset is selected', async () => {
+    selectionMock.mockReturnValue({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+      kind: 'node',
+      paths: [[0]],
+    });
+
+    const view = await renderImage();
+
+    expect(view.container.querySelector('figcaption')?.hidden).toBe(true);
   });
 
   it('disables only the image toolbar while previewing', async () => {

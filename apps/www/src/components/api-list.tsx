@@ -69,7 +69,7 @@ export function APIItem({
     <AccordionItem className="border-none select-text" value={value ?? name}>
       <AccordionTrigger className="group p-0 hover:no-underline">
         <li id={id} className="scroll-mt-20">
-          <h4 className="relative py-2 text-start leading-none font-semibold tracking-tight">
+          <h4 className="relative py-2 text-start leading-none font-semibold tracking-tight wrap-anywhere">
             {id && (
               <a
                 className={cn(
@@ -286,7 +286,7 @@ export function APIList({
             <div className="flex items-center justify-between pb-4">
               <h3
                 id={id}
-                className="group relative scroll-mt-20 text-lg leading-none font-medium tracking-tight"
+                className="group relative scroll-mt-20 text-lg leading-none font-medium tracking-tight wrap-anywhere"
               >
                 {id && (
                   <a
@@ -404,7 +404,7 @@ export function APISubListItem({
 
   return (
     <div className="border-t border-t-border p-3">
-      <h4 className="relative py-2 font-mono font-semibold tracking-tight">
+      <h4 className="relative py-2 font-mono font-semibold tracking-tight wrap-anywhere">
         {id && (
           <a
             className={cn(

@@ -9,6 +9,7 @@ import {
 import { isOwnedJsonValue } from './core/clone';
 import { createCommandDispatch } from './core/command-registry';
 import { getEditorCommitSnapshot } from './core/commit';
+import { ContentSlice } from './core/content-slice';
 import {
   type AdmittedDocument,
   admitEditorDocument,
@@ -24,6 +25,7 @@ import {
   registerDocumentView,
   withDocumentViewRead,
 } from './core/document-view-read';
+import { editorCommands } from './core/editor-commands';
 import {
   createEditorReadApi,
   createEditorUpdateApi,
@@ -68,6 +70,7 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from './core/public-state';
+import { defineSemanticUpdateMethod } from './core/semantic-update-method';
 import type {
   AnyEditor as Editor,
   EditorAnchorApi,
@@ -692,13 +695,15 @@ const withViewTransaction = <V extends Value>(
               : selectionInput
           : selectionInput;
 
+      // A replacement that names no records keeps the editor's.
+      const { records: _records, ...content } = value;
       const scopedInput: SnapshotInput<V> = {
         ...(viewState.root === MAIN_ROOT_KEY
-          ? { ...value, children: input.children }
+          ? { ...content, children: input.children }
           : {
-              ...value,
+              ...content,
               roots: {
-                ...value.roots,
+                ...content.roots,
                 [viewState.root]: input.children,
               },
             }),
@@ -795,13 +800,19 @@ const withViewTransaction = <V extends Value>(
             runImplicitSelectionMutation(options, () => {
               transaction.fragment.delete(options);
             }),
-          replace: (
-            content: Parameters<typeof transaction.fragment.replace>[0],
-            options?: Parameters<typeof transaction.fragment.replace>[1]
-          ) =>
-            runImplicitSelectionMutation(options, () =>
-              transaction.fragment.replace(content, options)
-            ) ?? false,
+          replace: defineSemanticUpdateMethod<
+            typeof transaction.fragment.replace
+          >(
+            (content, options) =>
+              runImplicitSelectionMutation(options, () =>
+                transaction.fragment.replace(content, options)
+              ) ?? false,
+            (command, [content, options]) =>
+              command(editorCommands.replaceSlice, {
+                slice: ContentSlice.closed(content),
+                options,
+              })
+          ),
         }
       )
     ),
@@ -947,13 +958,14 @@ const withViewTransaction = <V extends Value>(
     slice: Object.freeze({
       get: (options?: Parameters<typeof transaction.slice.get>[0]) =>
         state.slice.get(options),
-      replace: (
-        slice: Parameters<typeof transaction.slice.replace>[0],
-        options?: Parameters<typeof transaction.slice.replace>[1]
-      ) =>
-        runImplicitSelectionMutation(options, () =>
-          transaction.slice.replace(slice, options)
-        ) ?? false,
+      replace: defineSemanticUpdateMethod<typeof transaction.slice.replace>(
+        (slice, options) =>
+          runImplicitSelectionMutation(options, () =>
+            transaction.slice.replace(slice, options)
+          ) ?? false,
+        (command, [slice, options]) =>
+          command(editorCommands.replaceSlice, { slice, options })
+      ),
     }),
     text: Object.freeze({
       ...state.text,
@@ -1063,6 +1075,8 @@ const createViewRuntime = <V extends Value>(
       withRootRead(editor, viewState, () => baseRuntime.first(...args)),
     fragment: (...args) =>
       withRootRead(editor, viewState, () => baseRuntime.fragment(...args)),
+    getChildList: () =>
+      withRootRead(editor, viewState, () => baseRuntime.getChildList()),
     getChildren: () =>
       withRootRead(editor, viewState, () => baseRuntime.getChildren()),
     getFragment: () =>
