@@ -38,7 +38,7 @@ const TAKES = {
   offered: ['writes', 'topic', 'kind', 'waits', 'owns', 'card', 'session'],
   updated: ['writes', 'topic', 'kind', 'waits', 'owns'],
   folded: ['writes', 'kind', 'effort', 'waits', 'owns'],
-  started: ['writes'],
+  started: ['writes', 'session'],
   carded: ['card', 'session'],
   uncarded: ['card'],
   'dismissed declined': ['card'],
@@ -165,6 +165,7 @@ export function recordRow(tasks, cells) {
       owns: given.owns ?? [],
       card: given.card ?? null,
       session: given.card ? (given.session ?? null) : null,
+      startedIn: null,
       effort: null,
       findings: [row.why],
       covers: [],
@@ -184,7 +185,10 @@ export function recordRow(tasks, cells) {
     task.owns = joined(task.owns, given.owns ?? []);
     task.findings.push(row.why);
   }
-  if (row.move === 'started') task.status = 'started';
+  if (row.move === 'started') {
+    task.status = 'started';
+    if (given.session) task.startedIn = given.session;
+  }
   if (row.move === 'landed') task.status = 'landed';
   if (row.move === 'carded') {
     task.card = given.card ?? null;
@@ -496,7 +500,7 @@ export function staleReport(tasks, at, probe) {
       });
       const facts = [
         since ? `age ${Math.floor((probe.now - Date.parse(since)) / 86_400_000)}d` : 'age unknown',
-        ...(task.status === 'started' ? ['started'] : []),
+        ...(task.status === 'started' ? [task.startedIn ? `started in session ${task.startedIn}` : 'started'] : []),
         ...(deleted.length ? [`deleted since its offer: ${deleted.join(', ')}`] : []),
         ...(missing.length ? [`missing: ${missing.join(', ')}`] : []),
         ...(commits.length ? [`${commits.length} ${commits.length === 1 ? 'commit' : 'commits'} on its paths since its offer, last "${commits[0]}"`] : []),
@@ -558,6 +562,14 @@ export function board(tasks, git, here = null) {
         text: task.session ? `check session ${task.session}, which holds ${holds}: when the session tool reports it archived or gone, log uncarded with card: ${task.card}` : `check ${holds}, which names no session: when the owner says it is gone, log uncarded with card: ${task.card}`,
       };
     });
+  const runs = started
+    .filter((task) => here !== null && task.startedIn !== here)
+    .map((task) => ({
+      kind: 'check',
+      text: task.startedIn
+        ? `check session ${task.startedIn}, which started ${task.id}: when the session tool reports it archived, log landed when a commit holds its change or its last report says it delivered the change, and dismissed stopped when that report hands back no patch and neither this checkout nor its worktree holds an uncommitted edit on its paths`
+        : `find the session that started ${task.id} with the session tool, archived sessions included, as the one whose transcript opens with its card prompt, and log started with session: <its id>; when the search finds none, ${task.id} stays started`,
+    }));
   const withdrawals = waiting
     .filter(({ task }) => task.card && !elsewhere(task))
     .map(({ task, blockers }) => ({ kind: 'problem', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${blockers[0]}; ${withdrawn(task.card)} once it is withdrawn or its session has ended` }));
@@ -579,7 +591,7 @@ export function board(tasks, git, here = null) {
   ];
   const [pass, items] = passes.find(([, each]) => each.length > 0) ?? [null, []];
   const problem = [...withdrawals, ...rows].some((item) => item.kind === 'problem');
-  return { open, ready, started, waiting, unmigrated, lost, topics: [...topics.values()], todo: [...items, ...checks], pass, problem, here, note: git.note };
+  return { open, ready, started, waiting, unmigrated, lost, topics: [...topics.values()], todo: [...items, ...checks, ...runs], pass, problem, here, note: git.note };
 }
 
 function mergeItem(offered, tasks, git) {
@@ -612,7 +624,7 @@ export function renderBoard(view, ledger, max = null) {
     return capped === effortOf(task, null) ? '' : `  effort ${capped}`;
   };
   section('Ready', view.ready.map((task) => line(task, loweredEffort(task) + (task.card ? card(task) : '  no card'))));
-  section('Started', view.started.map((task) => line(task)));
+  section('Started', view.started.map((task) => line(task, task.startedIn ? `  session ${task.startedIn}` : '')));
   section('Waiting', view.waiting.map(({ task, blockers }) => line(task, `${loweredEffort(task)}  waits on ${blockers.join('; ')}`)));
   section('Unmigrated', view.unmigrated.map((task) => line(task)));
   section('Lost', view.lost.map((task) => line(task)));
@@ -644,7 +656,7 @@ function brief(task, ledger, max) {
   return [
     displayTitle(task),
     '',
-    `Suggested task ${task.id} in ${ledger}. This prompt can be older than the task, so first run node .agents/pstack/decisions-check.mjs chips brief ${task.id} and work from what it prints. Then run node .agents/pstack/decisions-check.mjs chips; when it lists this task as neither Ready nor Started, tell the owner what it waits on. Started means the lead already logged your start. Before you write any file, log a started row for it, with writes: naming any path the list below lacks, as .agents/pstack/rules/chips.md says, then run node .agents/pstack/decisions-check.mjs chips brief ${task.id} again and work from what it prints, because the task can gain work until your started row.`,
+    `Suggested task ${task.id} in ${ledger}. This prompt can be older than the task, so first run node .agents/pstack/decisions-check.mjs chips brief ${task.id} and work from what it prints. Then run node .agents/pstack/decisions-check.mjs chips; when it lists this task as neither Ready nor Started, tell the owner what it waits on. Started means the lead already logged your start. Before you write any file, log a started row for it, with writes: naming any path the list below lacks and session: naming this session's id where the runtime's session tool gives one, as .agents/pstack/rules/chips.md says, then run node .agents/pstack/decisions-check.mjs chips brief ${task.id} again and work from what it prints, because the task can gain work until your started row.`,
     '',
     `Topic: ${task.topic ?? 'none'}. Kind: ${task.kind}. Effort: ${effortOf(task, max)}.`,
     'Findings:',

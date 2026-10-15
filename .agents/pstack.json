@@ -149,10 +149,10 @@
       ".agents/pstack/levels.mjs": "5de83d2f1f7590d1f464137e9a43279246705d60e956b58cc3655fe9621b5498",
       ".agents/pstack/plan-open.mjs": "b379db52274bbf459b2c8909120c5c7ad4ec46a2302016a63d1e3e6e81a08423",
       ".agents/pstack/plan-page.mjs": "92f271e5078a5ea5653fa56dfd6069e16ed2032752e3d9bb49f0f1e5e7085d64",
-      ".agents/pstack/status.mjs": "391eab7f797956f7ca741600851f0aab461a27e07a3b8b6803009ef4d1296a42",
-      ".agents/pstack/tasks.mjs": "f7d3afb612bedc4c6f74f43e8e8264e9a32662bc726a4812e5a9ac71bdfb84a1",
+      ".agents/pstack/status.mjs": "0b41dfdaa20601903ebff046a67208ae0039e27c309c34f26493ed70357d4ea2",
+      ".agents/pstack/tasks.mjs": "a30f08eaf2d14f25dab526446cf92665ffefe22d189016001514adf38b48f2ba",
       ".agents/pstack/rules/browser.md": "bd446f08c4becb8edb7d70efe044a969e0802a78c6e7d5959942e99ddec38e2b",
-      ".agents/pstack/rules/chips.md": "ec64f188513aac05fe7996d05a599ed5f703622c6412c7667cdaaca1e32fb792",
+      ".agents/pstack/rules/chips.md": "79fb5b316a375ceadd19ed41aeca7c5bb23762fd7839a065be09a82aa6a82807",
       ".agents/pstack/rules/close.md": "8d0c0c46467dcac8fa6221ef07082c89e506e16913b0148152e6ffe59d960000",
       ".agents/pstack/rules/long-runs.md": "b9215736b3a004bfdb2e0bf79d93bf540bff84e533abd8fca3cc4661db4a30a9",
       ".agents/pstack/rules/pages.md": "4a437e2db42fe0d01c41777ffb5e9788b23d5bb1bac5f94a4fb58f20f19b5ec9",
@@ -162,6 +162,6 @@
       ".agents/pstack/rules/title.md": "3790bd24dd6a72b615d394823a5ea46e7fc949e2d3d2248a6358c29d1ed19db5",
       ".agents/pstack/rules/trails.md": "df808e0228a76435614d01f349bf7fb810f9e9679ddd6c471b8a337b81931e35"
     },
-    "source": "9b9f8164569275816ae637a28e42d73af1890f03"
+    "source": "7ac402f0c5e8887ee437d90c7a80751316086ae6"
   }
 }
