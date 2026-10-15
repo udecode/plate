@@ -21,13 +21,13 @@ import {
 } from '../../dom/internal';
 import { createTypedText } from '../../transforms-text/insert-text';
 import { getTextHostOwnerKey } from '../hooks/use-plite-node-ref';
+import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   ANDROID_COMPOSITION_END_DELAY,
   hasAndroidComposition,
   openAndroidComposition,
   scheduleAndroidCompositionEnd,
 } from './android-composition';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   getMountedEditableDOMRuntime,
   hasMountedEditableCompositionOwner,
@@ -868,6 +868,7 @@ export const applyEditableCompositionEnd = ({
 
     if (isAndroidDOMHost(event) && hasAndroidComposition(inputController)) {
       scheduleAndroidCompositionEnd({
+        text: getCompositionEventText(event),
         delay: ANDROID_COMPOSITION_END_DELAY,
         editor,
         inputController,

@@ -1,4 +1,5 @@
 import {
+  type EditorMarks,
   type EditorUpdateTransaction,
   type Point,
   type Range,
@@ -49,9 +50,7 @@ import {
 import { canUseCachedCollapsedTextInsert } from './mutation-full-block-editing';
 import { applyModelOwnedHistoryIntent } from './mutation-history';
 import { withProjectedMutationRoot } from './mutation-root-scope';
-import {
-  resolveProjectedSelectionTarget,
-} from './projected-selection-target';
+import { resolveProjectedSelectionTarget } from './projected-selection-target';
 import {
   applyTransactionSpec,
   dispatchCommand,
@@ -805,6 +804,7 @@ export const applyModelOwnedTextInput = ({
   editor,
   inputController,
   inputType,
+  marks,
   mergeHistory = false,
   selection,
 }: {
@@ -812,6 +812,7 @@ export const applyModelOwnedTextInput = ({
   editor: Editor;
   inputController?: EditableInputController;
   inputType: string;
+  marks?: EditorMarks | null;
   mergeHistory?: boolean;
   selection?: Range | Selection;
 }): EditableRepairRequest =>
@@ -849,30 +850,26 @@ export const applyModelOwnedTextInput = ({
         }
 
         const insertAtSelection = (target: Range) => {
-          if (RangeApi.isCollapsed(target)) {
+          if (
+            nativeInput ||
+            marks !== undefined ||
+            RangeApi.isCollapsed(target)
+          ) {
             editor.update(
               mergeHistory ? { tags: ['composition'] } : {},
               (tx) => {
                 if (nativeInput) {
                   tx.annotations.set(nativeGroupingInput, nativeInput);
                 }
-                tx.selection.set(target);
+                const collapsed = RangeApi.isCollapsed(target);
+                if (collapsed) {
+                  tx.selection.set(target);
+                  if (marks !== undefined) tx.marks.set(marks);
+                }
                 tx.command(editorCommands.insertText, {
-                  options: { at: target },
-                  text: data,
-                });
-              }
-            );
-            return;
-          }
-
-          if (nativeInput) {
-            editor.update(
-              mergeHistory ? { tags: ['composition'] } : {},
-              (tx) => {
-                tx.annotations.set(nativeGroupingInput, nativeInput);
-                tx.command(editorCommands.insertText, {
-                  options: { at: target },
+                  ...(collapsed && marks !== undefined
+                    ? {}
+                    : { options: { at: target } }),
                   text: data,
                 });
               }

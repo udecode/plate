@@ -1,6 +1,5 @@
 import { act, fireEvent, render } from '@testing-library/react';
-
-import { TextApi } from 'plitejs';
+import { TextApi, type Value } from 'plitejs';
 import * as Y from 'yjs';
 
 import { definePlugin, editorCommands } from '../../src';
@@ -9,10 +8,13 @@ import {
   createEditor,
   type DecorationSource,
   Editable,
+  type Editor,
   EditorRoot,
+  type EditorRootProps,
 } from '../../src/react';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { getNodeKey } from '../../src/react/editable/runtime-editor-api';
+import { createPliteReactRenderCounter } from '../../src/react/render-profiler';
 import {
   createYjsPeerWithEditor,
   paragraph,
@@ -32,9 +34,11 @@ const wait = (ms: number) =>
 
 type Rendering = 'custom-leaf' | 'retained';
 
-const createParagraphs = (
+const createParagraphs = <
+  const TPlugins extends readonly unknown[] = readonly [],
+>(
   texts: string[],
-  plugins: NonNullable<Parameters<typeof createEditor>[0]>['plugins'] = []
+  plugins?: TPlugins
 ) =>
   createEditor({
     initialValue: texts.map((text) => ({
@@ -44,14 +48,12 @@ const createParagraphs = (
     plugins,
   });
 
-const mount = (
-  texts: string[],
+const mountEditor = <TEditor extends EditorRootProps['editor']>(
+  editor: TEditor,
   {
-    editor = createParagraphs(texts),
     placeholder,
     rendering = 'custom-leaf',
   }: {
-    editor?: ReturnType<typeof createParagraphs>;
     placeholder?: string;
     rendering?: Rendering;
   } = {}
@@ -130,8 +132,13 @@ const mount = (
   };
 };
 
-const blockText = (
-  editor: Pick<ReturnType<typeof createEditor>, 'read'>,
+const mount = (
+  texts: string[],
+  options?: { placeholder?: string; rendering?: Rendering }
+) => mountEditor(createParagraphs(texts), options);
+
+const blockText = <V extends Value, const TPlugins extends readonly unknown[]>(
+  editor: Editor<V, TPlugins>,
   index: number
 ) => editor.read((state) => state.text.string([index]));
 
@@ -159,13 +166,13 @@ const firstTextNode = (
 // event cannot be prevented, the text host goes with the character, a <br>
 // takes its place and the DOM selection lands on the paragraph.
 const backspaceLastCharacter = async (
-  mounted: ReturnType<typeof mount>,
+  mounted: Pick<ReturnType<typeof mount>, 'block' | 'root'>,
   index: number
 ) => {
   const { block, root } = mounted;
   const selection = document.getSelection()!;
-  const paragraph = block(index);
-  const text = firstTextNode(paragraph)!;
+  const line = block(index);
+  const text = firstTextNode(line)!;
   const event = new InputEvent('beforeinput', {
     bubbles: true,
     cancelable: false,
@@ -186,9 +193,9 @@ const backspaceLastCharacter = async (
 
   await act(async () => {
     fireEvent(root, event);
-    paragraph.querySelector('[data-editor-node="text"]')!.remove();
-    paragraph.append(document.createElement('br'));
-    selection.setBaseAndExtent(paragraph, 0, paragraph, 0);
+    line.querySelector('[data-editor-node="text"]')!.remove();
+    line.append(document.createElement('br'));
+    selection.setBaseAndExtent(line, 0, line, 0);
     fireEvent.input(root, { inputType: 'deleteContentBackward' });
     await wait(100);
   });
@@ -197,7 +204,7 @@ const backspaceLastCharacter = async (
 // The user taps the end of the paragraph, so the editor imports the DOM
 // selection.
 const placeCaretAtEnd = async (
-  mounted: ReturnType<typeof mount>,
+  mounted: Pick<ReturnType<typeof mount>, 'block' | 'root'>,
   index: number
 ) => {
   const { block, root } = mounted;
@@ -221,15 +228,25 @@ const spyOnWrites = (text: Text, root: HTMLElement) => {
   const writes: string[] = [];
   let native = false;
 
-  for (let node: Node | null = text; node && node !== root; node = node.parentNode) {
+  for (
+    let node: Node | null = text;
+    node && node !== root;
+    node = node.parentNode
+  ) {
     const target = node;
-    const props = target === text ? ['data', 'nodeValue', 'textContent'] : ['textContent', 'innerHTML'];
+    const props =
+      target === text
+        ? ['data', 'nodeValue', 'textContent']
+        : ['textContent', 'innerHTML'];
 
     for (const prop of props) {
       let proto: object | null = Object.getPrototypeOf(target);
       let descriptor: PropertyDescriptor | undefined;
 
-      while (proto && !(descriptor = Object.getOwnPropertyDescriptor(proto, prop))) {
+      while (
+        proto &&
+        !(descriptor = Object.getOwnPropertyDescriptor(proto, prop))
+      ) {
         proto = Object.getPrototypeOf(proto);
       }
       if (!descriptor?.set) continue;
@@ -246,17 +263,27 @@ const spyOnWrites = (text: Text, root: HTMLElement) => {
         },
       });
     }
-    for (const method of ['appendChild', 'insertBefore', 'remove', 'removeChild', 'replaceChild', 'replaceChildren', 'replaceData', 'replaceWith']) {
+    for (const method of [
+      'appendChild',
+      'insertBefore',
+      'remove',
+      'removeChild',
+      'replaceChild',
+      'replaceChildren',
+      'replaceData',
+      'replaceWith',
+    ]) {
       const original = (target as unknown as Record<string, unknown>)[method];
 
       if (typeof original !== 'function') continue;
-      (target as unknown as Record<string, unknown>)[method] = function (
-        this: Node,
-        ...args: unknown[]
-      ) {
-        if (!native) writes.push(`${method} on ${target.nodeName}`);
-        return (original as (...values: unknown[]) => unknown).apply(this, args);
-      };
+      (target as unknown as Record<string, unknown>)[method] =
+        function recordDOMWrite(this: Node, ...args: unknown[]) {
+          if (!native) writes.push(`${method} on ${target.nodeName}`);
+          return (original as (...values: unknown[]) => unknown).apply(
+            this,
+            args
+          );
+        };
     }
   }
 
@@ -278,7 +305,7 @@ const spyOnWrites = (text: Text, root: HTMLElement) => {
 // beforeinput, and in an empty line it replaces the <br> placeholder with the
 // composed text inside the zero-width span.
 const composeIn = (
-  mounted: ReturnType<typeof mount>,
+  mounted: Pick<ReturnType<typeof mount>, 'block' | 'root'>,
   index: number,
   {
     from,
@@ -295,7 +322,7 @@ const composeIn = (
   const line = block(index);
   const existing = firstTextNode(line, { visible: true });
   const empty = !existing;
-  const text = existing ?? document.createTextNode('');
+  let text = existing ?? document.createTextNode('');
   const caret =
     existing && selection.focusNode === existing
       ? selection.focusOffset
@@ -303,6 +330,7 @@ const composeIn = (
   const base = from ?? caret;
   let composed = text.data.slice(base, caret);
   let spy: ReturnType<typeof spyOnWrites> | null = null;
+  const replacedSpies: Array<ReturnType<typeof spyOnWrites>> = [];
 
   const update = async (next: string) => {
     const event = new InputEvent('beforeinput', {
@@ -340,7 +368,12 @@ const composeIn = (
       if (spy) spy.native(edit);
       else edit();
       composed = next;
-      selection.setBaseAndExtent(text, base + next.length, text, base + next.length);
+      selection.setBaseAndExtent(
+        text,
+        base + next.length,
+        text,
+        base + next.length
+      );
       spy ??= spyOnWrites(text, root);
       fireEvent.input(root, {
         data: next,
@@ -363,9 +396,32 @@ const composeIn = (
         fireEvent.compositionStart(root, { data: '' });
       });
     },
-    text,
+    get text() {
+      return text;
+    },
+    replaceTextNode: async () => {
+      await act(async () => {
+        const replacement = document.createTextNode(text.data);
+        const edit = () => text.replaceWith(replacement);
+        if (spy) spy.native(edit);
+        else edit();
+        text = replacement;
+        if (spy) replacedSpies.push(spy);
+        spy = spyOnWrites(text, root);
+        selection.setBaseAndExtent(
+          text,
+          base + composed.length,
+          text,
+          base + composed.length
+        );
+        await wait(60);
+      });
+    },
     update,
-    writes: () => spy?.writes ?? [],
+    writes: () => [
+      ...replacedSpies.flatMap((previous) => previous.writes),
+      ...(spy?.writes ?? []),
+    ],
   };
 };
 
@@ -378,57 +434,113 @@ describe.each(['custom-leaf', 'retained'] as const)(
     ])('in %s', (_where, initial) => {
       const composeHangul = async () => {
         const mounted = mount([initial, 'second'], { rendering });
+        let commits = 0;
+        const release = mounted.editor.subscribeCommit((commit) => {
+          if (commit.changed.hasAny('document')) commits += 1;
+        });
 
         await placeCaretAtEnd(mounted, 0);
 
         const ime = composeIn(mounted, 0);
 
         await ime.start();
+        const previousProfiler = globalThis.__EDITOR_REACT_RENDER_PROFILER__;
+        const counter = createPliteReactRenderCounter();
+        globalThis.__EDITOR_REACT_RENDER_PROFILER__ = counter.profiler;
+        const selection = document.getSelection()!;
+        const selectionWrites = [
+          'setBaseAndExtent',
+          'collapse',
+          'extend',
+          'addRange',
+          'removeAllRanges',
+        ].map((method) => vi.spyOn(selection, method as 'collapse'));
+        let keyRenders = 0;
         for (const next of ['ㅎ', '하', '한']) {
+          const before = counter.snapshot().byKind.editable ?? 0;
           await ime.update(next);
+          if (next === '하') await ime.replaceTextNode();
+          keyRenders += (counter.snapshot().byKind.editable ?? 0) - before;
           await mounted.renderElsewhere(0, 1);
         }
 
-        return { ime, mounted };
+        return {
+          ime,
+          mounted,
+          commits: () => commits,
+          selectionWrites,
+          fullRenders: () => keyRenders,
+          release: () => {
+            release();
+            globalThis.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
+            selectionWrites.forEach((spy) => spy.mockRestore());
+          },
+        };
       };
 
       test('holds the model still while the draft is open', async () => {
-        const { mounted } = await composeHangul();
+        const { mounted, release } = await composeHangul();
 
         try {
           expect(blockText(mounted.editor, 0)).toBe(initial);
         } finally {
+          release();
           mounted.rendered.unmount();
         }
       });
 
       test('leaves the draft alone through renders it did not cause', async () => {
-        const { ime, mounted } = await composeHangul();
+        const { ime, mounted, commits, selectionWrites, fullRenders, release } =
+          await composeHangul();
 
         try {
           expect({
             connected: ime.text.isConnected,
             text: ime.text.data,
             writes: ime.writes(),
-          }).toEqual({ connected: true, text: `${initial}한`, writes: [] });
+            selectionWrites: selectionWrites.map(
+              (spy) => spy.mock.calls.length
+            ),
+            commits: commits(),
+            fullRenders: fullRenders(),
+          }).toEqual({
+            connected: true,
+            text: `${initial}한`,
+            writes: [],
+            selectionWrites: [4, 0, 0, 0, 0],
+            commits: 3,
+            fullRenders: 0,
+          });
         } finally {
+          release();
           mounted.rendered.unmount();
         }
       });
 
       test('commits the composed word once when the composition ends', async () => {
-        const { ime, mounted } = await composeHangul();
+        const { ime, mounted, commits, release } = await composeHangul();
 
         try {
+          const during = commits();
           await ime.end();
 
           expect({
             dom: mounted.block(0).textContent,
-            hosts: mounted.block(0).querySelectorAll('[data-editor-node="text"]')
-              .length,
+            hosts: mounted
+              .block(0)
+              .querySelectorAll('[data-editor-node="text"]').length,
             model: blockText(mounted.editor, 0),
-          }).toEqual({ dom: `${initial}한`, hosts: 1, model: `${initial}한` });
+            during,
+            commits: commits(),
+          }).toEqual({
+            dom: `${initial}한`,
+            hosts: 1,
+            model: `${initial}한`,
+            during: 3,
+            commits: 4,
+          });
         } finally {
+          release();
           mounted.rendered.unmount();
         }
       });
@@ -639,7 +751,10 @@ describe('Android composition boundaries', () => {
       await ime.update('한');
       await act(async () => {
         fireEvent.compositionEnd(mounted.root, { data: '한' });
-        fireEvent.keyDown(mounted.root, { isComposing: false, key: 'Unidentified' });
+        fireEvent.keyDown(mounted.root, {
+          isComposing: false,
+          key: 'Unidentified',
+        });
       });
 
       expect(blockText(mounted.editor, 0)).toBe('한');
@@ -673,10 +788,15 @@ describe('Android composition boundaries', () => {
     }
   });
 
-  test.each([true, false])(
-    'a replacement of an earlier word keeps its own range while a draft is open (cancelable %s)',
-    async (cancelable) => {
-      const mounted = mount(['teh ', 'second']);
+  test.each([
+    ['custom-leaf', true],
+    ['custom-leaf', false],
+    ['retained', true],
+    ['retained', false],
+  ] as const)(
+    'a replacement of an earlier word keeps its own range while a draft is open (%s, cancelable %s)',
+    async (rendering, cancelable) => {
+      const mounted = mount(['teh ', 'second'], { rendering });
 
       try {
         await placeCaretAtEnd(mounted, 0);
@@ -752,9 +872,7 @@ describe('Android composition boundaries', () => {
       await ime.update('ㅋ');
       await ime.end();
 
-      expect(
-        mounted.editor.read((state) => state.selection())
-      ).toMatchObject({
+      expect(mounted.editor.read((state) => state.selection())).toMatchObject({
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       });
@@ -776,10 +894,14 @@ describe('Android composition boundaries', () => {
       await ime.update('ㅎ');
       await act(async () => {
         // Chrome takes the text host with the last letter.
-        const host = mounted.block(1).querySelector('[data-editor-node="text"]')!;
+        const host = mounted
+          .block(1)
+          .querySelector('[data-editor-node="text"]')!;
 
         host.replaceWith(document.createElement('br'));
-        document.getSelection()!.setBaseAndExtent(mounted.block(1), 0, mounted.block(1), 0);
+        document
+          .getSelection()!
+          .setBaseAndExtent(mounted.block(1), 0, mounted.block(1), 0);
       });
       await ime.end();
       await placeCaretAtEnd(mounted, 1);
@@ -886,22 +1008,49 @@ describe('Android composition boundaries', () => {
     }
   });
 
-  test('a keyboard that reports a wrong range on its final event still commits what it shows', async () => {
-    const mounted = mount(['some ', 'second']);
-
-    try {
-      await placeCaretAtEnd(mounted, 0);
-      const ime = composeIn(mounted, 0, { targetRanges: false });
-
-      await ime.start();
-      await ime.update('text');
-      await ime.end();
-
-      expect(blockText(mounted.editor, 0)).toBe('some text');
-    } finally {
-      mounted.rendered.unmount();
+  test.each(['custom-leaf', 'retained'] as const)(
+    'a keyboard reporting a wrong final range keeps marks, caret and following input (%s)',
+    async (rendering) => {
+      const mounted = mount(['some ', 'second'], { rendering });
+      try {
+        await placeCaretAtEnd(mounted, 0);
+        await act(async () => {
+          mounted.editor.update((tx) => tx.marks.set({ bold: true }));
+        });
+        const ime = composeIn(mounted, 0, { targetRanges: false });
+        await ime.start();
+        await ime.update('text');
+        await ime.end();
+        expect(mounted.block(0).textContent).toBe('some text');
+        expect({
+          line: mounted.editor.read((state) => state.nodes.get([0])?.[0]),
+          selection: mounted.editor.read((state) => state.selection()),
+        }).toMatchObject({
+          line: { children: [{ text: 'some ' }, { bold: true, text: 'text' }] },
+          selection: {
+            anchor: { path: [0, 1], offset: 4 },
+            focus: { path: [0, 1], offset: 4 },
+          },
+        });
+        await nativeInput(mounted.root, {
+          cancelable: true,
+          inputType: 'insertText',
+          data: '!',
+        });
+        expect({
+          dom: mounted.block(0).textContent,
+          line: mounted.editor.read((state) => state.nodes.get([0])?.[0]),
+        }).toMatchObject({
+          dom: 'some text!',
+          line: {
+            children: [{ text: 'some ' }, { bold: true, text: 'text!' }],
+          },
+        });
+      } finally {
+        mounted.rendered.unmount();
+      }
     }
-  });
+  );
 
   test('unmounting the editable during a draft commits it once', async () => {
     const mounted = mount(['', 'second']);
@@ -929,11 +1078,64 @@ describe('Android composition boundaries', () => {
       mounted.rendered.unmount();
     }
   });
+
+  test('a line edit immediately followed by editable teardown commits the pending draft once', async () => {
+    const inputs: string[] = [];
+    const editor = createParagraphs(
+      ['', 'second'],
+      [
+        definePlugin('android-pending-teardown', {
+          commands: ({ around }) => [
+            around(editorCommands.insertText, ({ input, next }) => {
+              inputs.push(input.text);
+              return next();
+            }),
+          ],
+        }),
+      ]
+    );
+    const mounted = mountEditor(editor);
+    let textCommits = 0;
+    const release = editor.subscribeCommit((commit) => {
+      if (commit.changed.nodeKeysAll('text').length > 0) textCommits += 1;
+    });
+
+    try {
+      await placeCaretAtEnd(mounted, 0);
+      const ime = composeIn(mounted, 0);
+      await ime.start();
+      await ime.update('한');
+      act(() => {
+        editor.update((tx) =>
+          tx.nodes.set({ type: 'heading-one' }, { at: [0] })
+        );
+        mounted.hideEditable();
+      });
+      await act(async () => {
+        await wait(100);
+      });
+
+      expect({
+        model: blockText(editor, 0),
+        inputs,
+        textCommits,
+        composing: mounted.runtime.state.isComposing,
+      }).toEqual({
+        model: '한',
+        inputs: ['한'],
+        textCommits: 1,
+        composing: false,
+      });
+    } finally {
+      release();
+      mounted.rendered.unmount();
+    }
+  });
 });
 
 describe('Android composition commits through the editor', () => {
   test('a long line commits the syllable the keyboard shows', async () => {
-    const initial = 'abcdefghij'.repeat(5) + 'kl';
+    const initial = `${'abcdefghij'.repeat(5)}kl`;
     const mounted = mount([initial, 'second'], { rendering: 'retained' });
 
     try {
@@ -973,7 +1175,7 @@ describe('Android composition commits through the editor', () => {
       await ime.end();
 
       const after = firstTextNode(mounted.block(0), { visible: true })!;
-      const offset = after.data.indexOf('cd') === -1 ? 2 : after.data.indexOf('cd');
+      const offset = !after.data.includes('cd') ? 2 : after.data.indexOf('cd');
 
       await act(async () => {
         document.getSelection()!.setBaseAndExtent(after, offset, after, offset);
@@ -1030,14 +1232,17 @@ describe('Android composition commits through the editor', () => {
               if (input.text !== '한') return false;
 
               return state.transaction((tx) => {
-                tx.text.insert('漢', input.options?.at ? { at: input.options.at } : {});
+                tx.text.insert(
+                  '漢',
+                  input.options?.at ? { at: input.options.at } : {}
+                );
               });
             }),
           ],
         }),
       ]
     );
-    const mounted = mount(['', 'second'], { editor });
+    const mounted = mountEditor(editor);
 
     try {
       await placeCaretAtEnd(mounted, 0);
@@ -1071,7 +1276,7 @@ describe('Android composition commits through the editor', () => {
         }),
       ]
     );
-    const mounted = mount(['abc', 'second'], { editor });
+    const mounted = mountEditor(editor);
 
     try {
       await placeCaretAtEnd(mounted, 0);
@@ -1134,33 +1339,1002 @@ describe('Android composition commits through the editor', () => {
   });
 });
 
+describe('Android composition range and recovery', () => {
+  test('composition protection stays in its mounted root and clears after the run', async () => {
+    const mounted = mount(['ab', 'other']);
+    const foreign = document.body.appendChild(document.createElement('div'));
+    try {
+      await placeCaretAtEnd(mounted, 0);
+      const ime = composeIn(mounted, 0);
+      await ime.start();
+      await ime.update('한');
+      expect({
+        own: mounted.runtime.isCompositionDOMNodeProtected(ime.text),
+        other: mounted.runtime.isCompositionDOMNodeProtected(mounted.block(1)),
+        foreign: mounted.runtime.isCompositionDOMNodeProtected(foreign),
+      }).toEqual({ own: true, other: false, foreign: false });
+      await ime.end();
+      expect({
+        model: blockText(mounted.editor, 0),
+        own: mounted.runtime.isCompositionDOMNodeProtected(mounted.block(0)),
+      }).toEqual({ model: 'ab한', own: false });
+      mounted.runtime.inputController.domInputRuntime.beginComposition({
+        anchor: foreign,
+        owner: 'native',
+        phase: 'native-composing',
+      });
+      mounted.runtime.setComposing(true);
+      expect({
+        protected: mounted.runtime.isCompositionDOMNodeProtected(foreign),
+        deferred: mounted.runtime.shouldDeferCompositionSelectionExport(),
+      }).toEqual({ protected: false, deferred: false });
+      mounted.runtime.setComposing(false);
+    } finally {
+      foreign.remove();
+      mounted.rendered.unmount();
+    }
+  });
+
+  const beginReplacement = async (
+    mounted: Pick<ReturnType<typeof mount>, 'block' | 'root'>,
+    topology: string,
+    reverse = false
+  ) => {
+    const first = firstTextNode(mounted.block(0))!;
+    const second =
+      topology === 'blocks'
+        ? firstTextNode(mounted.block(1))!
+        : topology === 'marked leaves'
+          ? [...mounted.block(0).querySelectorAll('[data-editor-string]')].map(
+              (element) => firstTextNode(element)!
+            )[1]
+          : first;
+    const end = second === first ? 5 : 2;
+
+    await act(async () => {
+      mounted.root.focus();
+      document
+        .getSelection()!
+        .setBaseAndExtent(
+          reverse ? second : first,
+          reverse ? end : 1,
+          reverse ? first : second,
+          reverse ? 1 : end
+        );
+      document.dispatchEvent(new Event('selectionchange'));
+      await wait(100);
+    });
+    await act(async () => {
+      fireEvent.compositionStart(mounted.root, { data: '' });
+      first.data = 'af';
+      if (topology === 'blocks') mounted.block(1).remove();
+      else if (topology === 'marked leaves') {
+        second.parentElement!.closest('[data-editor-node="text"]')!.remove();
+      }
+      document.getSelection()!.setBaseAndExtent(first, 1, first, 1);
+    });
+    const ime = composeIn(mounted, 0);
+    await ime.update('한');
+    return { first, ime };
+  };
+
+  test.each(['same leaf', 'marked leaves', 'blocks'])(
+    'rejection restores the original selection, marks and keys across %s',
+    async (topology) => {
+      let reject = true;
+      const editor = createEditor({
+        initialValue:
+          topology === 'blocks'
+            ? [
+                { children: [{ bold: true, text: 'abc' }], type: 'paragraph' },
+                {
+                  children: [{ italic: true, text: 'def' }],
+                  type: 'paragraph',
+                },
+              ]
+            : [
+                {
+                  children:
+                    topology === 'marked leaves'
+                      ? [
+                          { bold: true, text: 'abc' },
+                          { italic: true, text: 'def' },
+                        ]
+                      : [{ bold: true, text: 'abcdef' }],
+                  type: 'paragraph',
+                },
+              ],
+        plugins: [
+          definePlugin('android-terminal-reject', {
+            commands: ({ around }) => [
+              around(editorCommands.insertText, ({ next }) =>
+                reject ? false : next()
+              ),
+            ],
+          }),
+        ],
+      });
+      const mounted = mountEditor(editor);
+      const original = editor.read((state) => state.children());
+      const keys = original.map((_, index) => getNodeKey(editor, [index]));
+      let commits = 0;
+      const release = editor.subscribeCommit((commit) => {
+        if (commit.changed.hasAny('document')) commits += 1;
+      });
+
+      try {
+        const { ime } = await beginReplacement(mounted, topology, true);
+        const selected = editor.read((state) => state.selection());
+        expect({
+          children: editor.read((state) => state.children()),
+          commits,
+        }).toEqual({ children: original, commits: 0 });
+        await ime.end();
+        expect({
+          children: editor.read((state) => state.children()),
+          commits,
+          selection: editor.read((state) => state.selection()),
+          keys: original.map((_, index) => getNodeKey(editor, [index])),
+          dom: original.map((_, index) => mounted.block(index).textContent),
+          composing: mounted.runtime.state.isComposing,
+        }).toEqual({
+          children: original,
+          commits: 0,
+          selection: selected,
+          keys,
+          dom: topology === 'blocks' ? ['abc', 'def'] : ['abcdef'],
+          composing: false,
+        });
+        reject = false;
+        await nativeInput(mounted.root, {
+          cancelable: true,
+          inputType: 'insertText',
+          data: 'x',
+        });
+        expect(blockText(editor, 0)).toBe('axf');
+      } finally {
+        release();
+        mounted.rendered.unmount();
+      }
+    }
+  );
+
+  test.each(['same leaf', 'marked leaves', 'blocks'])(
+    'a restored native draft cancels without losing the original %s',
+    async (topology) => {
+      const editor = createEditor({
+        initialValue:
+          topology === 'blocks'
+            ? [
+                { children: [{ bold: true, text: 'abc' }], type: 'paragraph' },
+                {
+                  children: [{ italic: true, text: 'def' }],
+                  type: 'paragraph',
+                },
+              ]
+            : [
+                {
+                  children:
+                    topology === 'marked leaves'
+                      ? [
+                          { bold: true, text: 'abc' },
+                          { italic: true, text: 'def' },
+                        ]
+                      : [{ bold: true, text: 'abcdef' }],
+                  type: 'paragraph',
+                },
+              ],
+      });
+      const mounted = mountEditor(editor);
+      const original = editor.read((state) => state.children());
+      const lines = original.map((_, index) => mounted.block(index));
+      const keys = original.map((_, index) => getNodeKey(editor, [index]));
+      let commits = 0;
+      const release = editor.subscribeCommit((commit) => {
+        if (commit.changed.hasAny('document')) commits += 1;
+      });
+      try {
+        const { first } = await beginReplacement(mounted, topology);
+        await act(async () => {
+          first.data = topology === 'blocks' ? 'abc' : 'abcdef';
+          if (topology === 'blocks') lines[0].after(lines[1]);
+          fireEvent.compositionEnd(mounted.root, { data: '' });
+          await wait(100);
+        });
+        expect({
+          children: editor.read((state) => state.children()),
+          commits,
+          keys: original.map((_, index) => getNodeKey(editor, [index])),
+          dom: original.map((_, index) => mounted.block(index).textContent),
+          composing: mounted.runtime.state.isComposing,
+        }).toEqual({
+          children: original,
+          commits: 0,
+          keys,
+          dom: topology === 'blocks' ? ['abc', 'def'] : ['abcdef'],
+          composing: false,
+        });
+        await nativeInput(mounted.root, {
+          cancelable: true,
+          inputType: 'insertText',
+          data: 'x',
+        });
+        expect(blockText(editor, 0)).toBe('axf');
+      } finally {
+        release();
+        mounted.rendered.unmount();
+      }
+    }
+  );
+
+  test('a model-owned removal keeps its rendered parent bound to the live view', async () => {
+    const mounted = mount(['abcdef', 'second']);
+    await placeCaretAtEnd(mounted, 0);
+    try {
+      await act(async () => {
+        mounted.runtime.editor.update((tx) =>
+          tx.command(editorCommands.insertText, {
+            options: {
+              at: {
+                anchor: { path: [0, 0], offset: 1 },
+                focus: { path: [0, 0], offset: 5 },
+              },
+            },
+            text: '',
+          })
+        );
+        await wait(100);
+      });
+      expect(blockText(mounted.editor, 0)).toBe('af');
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+  test('an empty compositionend still commits a removal-only replacement', async () => {
+    const mounted = mount(['abcdef', 'second']);
+    try {
+      const { first } = await beginReplacement(mounted, 'same leaf');
+      await act(async () => {
+        first.data = 'af';
+        document.getSelection()!.setBaseAndExtent(first, 1, first, 1);
+        fireEvent.compositionEnd(mounted.root, { data: '' });
+        await wait(100);
+      });
+      expect({
+        model: blockText(mounted.editor, 0),
+        dom: mounted.block(0).textContent,
+        selection: mounted.editor.read((state) => state.selection()),
+      }).toEqual({
+        model: 'af',
+        dom: 'af',
+        selection: {
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 0], offset: 1 },
+        },
+      });
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test('a throwing insert handler releases the run and the next input succeeds', async () => {
+    let fail = true;
+    const editor = createParagraphs(
+      ['abc'],
+      [
+        definePlugin('android-throw', {
+          commands: ({ around }) => [
+            around(editorCommands.insertText, ({ next }) => {
+              if (fail) throw new Error('Rejected composition');
+              return next();
+            }),
+          ],
+        }),
+      ]
+    );
+    const mounted = mountEditor(editor);
+    try {
+      await placeCaretAtEnd(mounted, 0);
+      const ime = composeIn(mounted, 0);
+      await ime.start();
+      await ime.update('한');
+      await act(async () => {
+        expect(() =>
+          mounted.runtime.finishAndroidComposition('settle')
+        ).toThrow('Rejected composition');
+        await wait(60);
+      });
+      expect({
+        model: blockText(editor, 0),
+        dom: mounted.block(0).textContent,
+        composing: mounted.runtime.state.isComposing,
+      }).toEqual({ model: 'abc', dom: 'abc', composing: false });
+      fail = false;
+      const next = composeIn(mounted, 0);
+      await next.start();
+      await next.update('x');
+      await next.end();
+      expect({
+        model: blockText(editor, 0),
+        dom: mounted.block(0).textContent,
+      }).toEqual({ model: 'abcx', dom: 'abcx' });
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test('committing the same selected text still collapses the selection and runs insertion policy', async () => {
+    const inputs: string[] = [];
+    const editor = createParagraphs(
+      ['abc'],
+      [
+        definePlugin('android-same-text', {
+          commands: ({ around }) => [
+            around(editorCommands.insertText, ({ input, next }) => {
+              inputs.push(input.text);
+              return next();
+            }),
+          ],
+        }),
+      ]
+    );
+    const mounted = mountEditor(editor);
+    try {
+      const text = firstTextNode(mounted.block(0))!;
+      await act(async () => {
+        mounted.root.focus();
+        document.getSelection()!.setBaseAndExtent(text, 1, text, 2);
+        document.dispatchEvent(new Event('selectionchange'));
+        await wait(100);
+      });
+      await act(async () => {
+        fireEvent.compositionStart(mounted.root, { data: '' });
+        document.getSelection()!.setBaseAndExtent(text, 2, text, 2);
+        fireEvent.compositionEnd(mounted.root, { data: 'b' });
+        await wait(100);
+      });
+      expect({
+        inputs,
+        model: blockText(editor, 0),
+        selection: editor.read((state) => state.selection()),
+      }).toEqual({
+        inputs: ['b'],
+        model: 'abc',
+        selection: {
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 0], offset: 2 },
+        },
+      });
+      await nativeInput(mounted.root, {
+        cancelable: true,
+        inputType: 'insertText',
+        data: 'x',
+      });
+      expect(blockText(editor, 0)).toBe('abxc');
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test('a deferred line edit keeps its replacement in that line after a preceding block is inserted', async () => {
+    const mounted = mount(['ab', 'second']);
+    try {
+      await placeCaretAtEnd(mounted, 0);
+      const ime = composeIn(mounted, 0);
+      await ime.start();
+      await ime.update('한');
+      await act(async () => {
+        mounted.editor.update((tx) =>
+          tx.nodes.set({ type: 'heading-one' }, { at: [0] })
+        );
+        mounted.editor.update((tx) =>
+          tx.nodes.insert(
+            { type: 'paragraph', children: [{ text: 'before' }] },
+            { at: [0] }
+          )
+        );
+        await wait(100);
+      });
+      expect(
+        mounted.editor.read((state) =>
+          state.nodes.children().map((_, index) => state.text.string([index]))
+        )
+      ).toEqual(['before', 'ab한', 'second']);
+      expect(mounted.block(1).textContent).toBe('ab한');
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test.each(['move', 'type change and move'] as const)(
+    'a %s keeps the queued draft in its composing block',
+    async (change) => {
+      const editor = createParagraphs(['ab', 'second'], [history()]);
+      const mounted = mountEditor(editor);
+      const blocks = () =>
+        editor.read((state) =>
+          state.nodes.children().map((_, index) => state.text.string([index]))
+        );
+
+      try {
+        await placeCaretAtEnd(mounted, 0);
+        const ime = composeIn(mounted, 0);
+        await ime.start();
+        await ime.update('한');
+        await act(async () => {
+          editor.update((tx) => {
+            if (change === 'type change and move') {
+              tx.nodes.set({ type: 'heading-one' }, { at: [0] });
+            }
+            tx.nodes.move({ at: [0], to: [2] });
+          });
+          await wait(100);
+        });
+        expect({
+          blocks: blocks(),
+          dom: mounted.root.textContent,
+          composing: mounted.runtime.state.isComposing,
+          selection: editor.read((state) => state.selection()),
+          domSelection: mounted.runtime.editor.api.dom.resolveRange(
+            document.getSelection()!,
+            { exactMatch: false }
+          ),
+        }).toEqual({
+          blocks: ['second', 'ab한'],
+          dom: 'secondab한',
+          composing: false,
+          selection: {
+            anchor: { path: [1, 0], offset: 3 },
+            focus: { path: [1, 0], offset: 3 },
+          },
+          domSelection: {
+            anchor: { path: [1, 0], offset: 3 },
+            focus: { path: [1, 0], offset: 3 },
+          },
+        });
+        await act(async () => {
+          editor.api.history.undo();
+          await wait(60);
+        });
+        expect({ blocks: blocks(), dom: mounted.root.textContent }).toEqual({
+          blocks: ['second', 'ab'],
+          dom: 'secondab',
+        });
+        await act(async () => {
+          editor.api.history.redo();
+          await wait(60);
+        });
+        expect({ blocks: blocks(), dom: mounted.root.textContent }).toEqual({
+          blocks: ['second', 'ab한'],
+          dom: 'secondab한',
+        });
+        await nativeInput(mounted.root, {
+          cancelable: true,
+          inputType: 'insertText',
+          data: 'x',
+        });
+        expect({ blocks: blocks(), dom: mounted.root.textContent }).toEqual({
+          blocks: ['second', 'ab한x'],
+          dom: 'secondab한x',
+        });
+      } finally {
+        mounted.rendered.unmount();
+      }
+    }
+  );
+
+  test('deleting the composing line drops its queued draft without changing the surviving line', async () => {
+    const mounted = mount(['ab', 'second']);
+    try {
+      await placeCaretAtEnd(mounted, 0);
+      const ime = composeIn(mounted, 0);
+      await ime.start();
+      await ime.update('한');
+      await act(async () => {
+        mounted.editor.update((tx) =>
+          tx.nodes.set({ type: 'heading-one' }, { at: [0] })
+        );
+        mounted.editor.update((tx) => tx.nodes.remove({ at: [0] }));
+        await wait(100);
+      });
+      expect({
+        blocks: mounted.editor.read((state) =>
+          state.nodes.children().map((_, index) => state.text.string([index]))
+        ),
+        dom: mounted.root.textContent,
+        composing: mounted.runtime.state.isComposing,
+        selection: mounted.editor.read((state) => state.selection()),
+        domSelection: mounted.runtime.editor.api.dom.resolveRange(
+          document.getSelection()!,
+          { exactMatch: false }
+        ),
+      }).toEqual({
+        blocks: ['second'],
+        dom: 'second',
+        composing: false,
+        selection: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+        },
+        domSelection: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+        },
+      });
+      await nativeInput(mounted.root, {
+        cancelable: true,
+        inputType: 'insertText',
+        data: 'x',
+      });
+      expect(blockText(mounted.editor, 0)).toBe('xsecond');
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test('a prefix edit maps both ends of a keyboard replacement without removing preceding text', async () => {
+    const mounted = mount(['abcDEFghi']);
+    try {
+      const text = firstTextNode(mounted.block(0))!;
+      await act(async () => {
+        mounted.root.focus();
+        document.getSelection()!.setBaseAndExtent(text, 6, text, 6);
+        document.dispatchEvent(new Event('selectionchange'));
+        await wait(100);
+      });
+      await act(async () => {
+        fireEvent.compositionStart(mounted.root, { data: '' });
+        text.data = 'abc한ghi';
+        document.getSelection()!.setBaseAndExtent(text, 4, text, 4);
+        fireEvent.compositionUpdate(mounted.root, { data: '한' });
+        mounted.editor.update((tx) =>
+          tx.text.insert('X', { at: { path: [0, 0], offset: 0 } })
+        );
+        await wait(100);
+      });
+      expect({
+        model: blockText(mounted.editor, 0),
+        dom: mounted.root.textContent,
+        selection: mounted.editor.read((state) => state.selection()),
+      }).toEqual({
+        model: 'Xabc한ghi',
+        dom: 'Xabc한ghi',
+        selection: {
+          anchor: { path: [0, 0], offset: 5 },
+          focus: { path: [0, 0], offset: 5 },
+        },
+      });
+      await nativeInput(mounted.root, {
+        cancelable: true,
+        inputType: 'insertText',
+        data: 'x',
+      });
+      expect(blockText(mounted.editor, 0)).toBe('Xabc한xghi');
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test.each(['rejected', 'throwing'] as const)(
+    'a %s pending draft finishes once and the next input succeeds',
+    async (outcome) => {
+      let fail = true;
+      const inputs: string[] = [];
+      const editor = createParagraphs(
+        ['abc', 'second'],
+        [
+          definePlugin('android-pending-failure', {
+            commands: ({ around }) => [
+              around(editorCommands.insertText, ({ input, next, state }) => {
+                inputs.push(input.text);
+                if (fail) {
+                  if (outcome === 'throwing') {
+                    throw new Error('Rejected pending composition');
+                  }
+                  return state.transaction(() => {});
+                }
+                return next();
+              }),
+            ],
+          }),
+        ]
+      );
+      const mounted = mountEditor(editor);
+      try {
+        await placeCaretAtEnd(mounted, 0);
+        const ime = composeIn(mounted, 0);
+        await ime.start();
+        await ime.update('한');
+        await act(async () => {
+          editor.update((tx) =>
+            tx.nodes.set({ type: 'heading-one' }, { at: [0] })
+          );
+          if (outcome === 'throwing') {
+            expect(() =>
+              mounted.runtime.finishAndroidComposition('settle')
+            ).toThrow('Rejected pending composition');
+          } else mounted.runtime.finishAndroidComposition('settle');
+          await wait(100);
+        });
+        expect({
+          inputs,
+          model: blockText(editor, 0),
+          dom: mounted.block(0).textContent,
+          composing: mounted.runtime.state.isComposing,
+        }).toEqual({
+          inputs: ['한'],
+          model: 'abc',
+          dom: 'abc',
+          composing: false,
+        });
+        fail = false;
+        const next = composeIn(mounted, 0);
+        await next.start();
+        await next.update('x');
+        await next.end();
+        expect({ inputs, model: blockText(editor, 0) }).toEqual({
+          inputs: ['한', 'x'],
+          model: 'abcx',
+        });
+      } finally {
+        mounted.rendered.unmount();
+      }
+    }
+  );
+
+  test('repeated text replaces both ends of the initial selection', async () => {
+    const inputs: Array<{ text: string; range: unknown }> = [];
+    const editor = createParagraphs(
+      ['aaa'],
+      [
+        definePlugin('android-range', {
+          commands: ({ around }) => [
+            around(editorCommands.insertText, ({ input, next }) => {
+              inputs.push({ text: input.text, range: input.options?.at });
+              return next();
+            }),
+          ],
+        }),
+      ]
+    );
+    const mounted = mountEditor(editor);
+    try {
+      const text = firstTextNode(mounted.block(0))!;
+      await act(async () => {
+        mounted.root.focus();
+        document.getSelection()!.setBaseAndExtent(text, 0, text, 2);
+        document.dispatchEvent(new Event('selectionchange'));
+        await wait(100);
+      });
+      await act(async () => {
+        fireEvent.compositionStart(mounted.root, { data: '' });
+        text.data = 'aa';
+        document.getSelection()!.setBaseAndExtent(text, 1, text, 1);
+        fireEvent.compositionEnd(mounted.root, { data: 'a' });
+        await wait(100);
+      });
+      expect({
+        inputs,
+        model: blockText(editor, 0),
+        selection: editor.read((state) => state.selection()),
+      }).toEqual({
+        inputs: [
+          {
+            text: 'a',
+            range: {
+              anchor: { path: [0, 0], offset: 0 },
+              focus: { path: [0, 0], offset: 2 },
+            },
+          },
+        ],
+        model: 'aa',
+        selection: {
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 0], offset: 1 },
+        },
+      });
+      await nativeInput(mounted.root, {
+        cancelable: true,
+        inputType: 'insertText',
+        data: 'x',
+      });
+      expect(blockText(editor, 0)).toBe('axa');
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test('selectionchange inside the composing line preserves the base selection', async () => {
+    const mounted = mount(['abcd']);
+    try {
+      const text = firstTextNode(mounted.block(0))!;
+      await act(async () => {
+        mounted.root.focus();
+        document.getSelection()!.setBaseAndExtent(text, 2, text, 2);
+        document.dispatchEvent(new Event('selectionchange'));
+        await wait(100);
+      });
+      const ime = composeIn(mounted, 0);
+      await ime.start();
+      await ime.update('한');
+      await act(async () => {
+        document.getSelection()!.setBaseAndExtent(ime.text, 1, ime.text, 1);
+        document.dispatchEvent(new Event('selectionchange'));
+        await wait(100);
+      });
+      expect(
+        {
+          model: blockText(mounted.editor, 0),
+          selection: mounted.editor.read((state) => state.selection()),
+          nativeOffset: document.getSelection()!.focusOffset,
+          nativeText: document.getSelection()!.focusNode?.textContent,
+        },
+        'selectionchange must preserve the base model selection'
+      ).toEqual({
+        model: 'abcd',
+        selection: {
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 0], offset: 2 },
+        },
+        nativeOffset: 1,
+        nativeText: 'ab한cd',
+      });
+      await ime.end();
+      await act(async () => {
+        mounted.runtime.settleInput();
+        await wait(60);
+      });
+      expect(
+        mounted.editor.read((state) => state.selection()),
+        'selectionchange must preserve the committed model caret'
+      ).toEqual({
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      });
+      await nativeInput(mounted.root, {
+        cancelable: true,
+        inputType: 'insertText',
+        data: 'x',
+      });
+      expect(blockText(mounted.editor, 0)).toBe('ab한xcd');
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+});
+
 describe('Android composition over a selection', () => {
-  const markedLine = (plugins: Parameters<typeof createParagraphs>[1] = []) =>
+  test.each(['accepted', 'rejected'] as const)(
+    'a native replacement across a nested block is %s without losing its DOM owner',
+    async (outcome) => {
+      const inputs: string[] = [];
+      const editor = createEditor({
+        initialValue: [
+          { type: 'paragraph', children: [{ text: 'abc' }] },
+          {
+            type: 'blockquote',
+            children: [{ type: 'paragraph', children: [{ text: 'M' }] }],
+          },
+          { type: 'paragraph', children: [{ text: 'def' }] },
+        ],
+        plugins: [
+          history(),
+          definePlugin('android-nested-replacement', {
+            commands: ({ around }) => [
+              around(editorCommands.insertText, ({ input, next, state }) => {
+                inputs.push(input.text);
+                return outcome === 'rejected' && input.text === '한'
+                  ? state.transaction(() => {})
+                  : next();
+              }),
+            ],
+          }),
+        ],
+      });
+      const mounted = mountEditor(editor);
+      const original = editor.read((state) => state.children());
+
+      try {
+        const first = firstTextNode(mounted.block(0))!;
+        const last = firstTextNode(mounted.block(2))!;
+        const nested = mounted.block(1);
+        await act(async () => {
+          mounted.root.focus();
+          document.getSelection()!.setBaseAndExtent(first, 1, last, 2);
+          document.dispatchEvent(new Event('selectionchange'));
+          await wait(100);
+        });
+        await act(async () => {
+          fireEvent.compositionStart(mounted.root, { data: '' });
+          first.data = 'a한f';
+          nested.remove();
+          mounted.block(2).remove();
+          document.getSelection()!.setBaseAndExtent(first, 2, first, 2);
+          fireEvent.compositionUpdate(mounted.root, { data: '한' });
+          await wait(20);
+          fireEvent.compositionEnd(mounted.root, { data: '한' });
+          await wait(100);
+        });
+        expect({
+          inputs,
+          model: editor.read((state) => state.children()),
+          dom: mounted.root.textContent,
+        }).toEqual({
+          inputs: ['한'],
+          model:
+            outcome === 'rejected'
+              ? original
+              : [{ type: 'paragraph', children: [{ text: 'a한f' }] }],
+          dom: outcome === 'rejected' ? 'abcMdef' : 'a한f',
+        });
+        if (outcome === 'rejected') expect(mounted.block(1)).toBe(nested);
+        else {
+          await act(async () => {
+            editor.api.history.undo();
+            await wait(60);
+          });
+          expect({
+            model: editor.read((state) => state.children()),
+            dom: mounted.root.textContent,
+          }).toEqual({ model: original, dom: 'abcMdef' });
+          await act(async () => {
+            editor.api.history.redo();
+            await wait(60);
+          });
+          expect(mounted.root.textContent).toBe('a한f');
+        }
+        await nativeInput(mounted.root, {
+          cancelable: true,
+          inputType: 'insertText',
+          data: 'x',
+        });
+        expect({
+          model: blockText(editor, 0),
+          dom: mounted.root.textContent,
+        }).toEqual({
+          model: outcome === 'rejected' ? 'axf' : 'a한xf',
+          dom: outcome === 'rejected' ? 'axf' : 'a한xf',
+        });
+      } finally {
+        mounted.rendered.unmount();
+      }
+    }
+  );
+
+  test.each([false, true])(
+    'removing only a paragraph boundary commits its directed range once (reverse %s)',
+    async (reverse) => {
+      const inputs: Array<{ range: unknown; text: string }> = [];
+      const editor = createParagraphs(
+        ['abc', 'def'],
+        [
+          history(),
+          definePlugin('android-boundary', {
+            commands: ({ around }) => [
+              around(editorCommands.insertText, ({ input, next }) => {
+                inputs.push({ range: input.options?.at, text: input.text });
+                return next();
+              }),
+            ],
+          }),
+        ]
+      );
+      const mounted = mountEditor(editor);
+      const blocks = () =>
+        editor.read((state) =>
+          state.nodes.children().map((_, index) => state.text.string([index]))
+        );
+
+      try {
+        const first = firstTextNode(mounted.block(0))!;
+        const second = firstTextNode(mounted.block(1))!;
+        await act(async () => {
+          mounted.root.focus();
+          document
+            .getSelection()!
+            .setBaseAndExtent(
+              reverse ? second : first,
+              reverse ? 0 : 3,
+              reverse ? first : second,
+              reverse ? 3 : 0
+            );
+          document.dispatchEvent(new Event('selectionchange'));
+          await wait(100);
+        });
+        await act(async () => {
+          fireEvent.compositionStart(mounted.root, { data: '' });
+          first.data = 'abc한def';
+          mounted.block(1).remove();
+          document.getSelection()!.setBaseAndExtent(first, 4, first, 4);
+          fireEvent.compositionUpdate(mounted.root, { data: '한' });
+          first.data = 'abcdef';
+          document.getSelection()!.setBaseAndExtent(first, 3, first, 3);
+          fireEvent.compositionEnd(mounted.root, { data: '' });
+          await wait(100);
+        });
+        expect({
+          blocks: blocks(),
+          inputs,
+          dom: mounted.block(0).textContent,
+          selection: editor.read((state) => state.selection()),
+        }).toEqual({
+          blocks: ['abcdef'],
+          inputs: [
+            {
+              range: {
+                anchor: {
+                  path: reverse ? [1, 0] : [0, 0],
+                  offset: reverse ? 0 : 3,
+                },
+                focus: {
+                  path: reverse ? [0, 0] : [1, 0],
+                  offset: reverse ? 3 : 0,
+                },
+              },
+              text: '',
+            },
+          ],
+          dom: 'abcdef',
+          selection: {
+            anchor: { path: [0, 0], offset: 3 },
+            focus: { path: [0, 0], offset: 3 },
+          },
+        });
+        await act(async () => {
+          editor.api.history.undo();
+          await wait(60);
+        });
+        expect(blocks()).toEqual(['abc', 'def']);
+        await act(async () => {
+          editor.api.history.redo();
+          await wait(60);
+        });
+        expect(blocks()).toEqual(['abcdef']);
+        await nativeInput(mounted.root, {
+          cancelable: true,
+          inputType: 'insertText',
+          data: 'x',
+        });
+        expect(blocks()).toEqual(['abcxdef']);
+      } finally {
+        mounted.rendered.unmount();
+      }
+    }
+  );
+
+  const markedLine = <const TPlugins extends readonly unknown[] = readonly []>(
+    plugins?: TPlugins
+  ) =>
     createEditor({
       initialValue: [
-        { children: [{ text: 'ab' }, { bold: true, text: 'cd' }], type: 'paragraph' },
+        {
+          children: [{ text: 'ab' }, { bold: true, text: 'cd' }],
+          type: 'paragraph',
+        },
         { children: [{ text: 'second' }], type: 'paragraph' },
       ],
       plugins,
     });
 
   // Chrome deletes the selected text itself, then composes at the caret.
-  const composeOverLeaves = async (mounted: ReturnType<typeof mount>) => {
-    const [first, second] = [...mounted.block(0).querySelectorAll('[data-editor-string]')].map(
-      (element) => firstTextNode(element)!
-    );
+  const composeOverLeaves = async (
+    mounted: Pick<ReturnType<typeof mount>, 'block' | 'root'>
+  ) => {
+    const [first, second] = [
+      ...mounted.block(0).querySelectorAll('[data-editor-string]'),
+    ].map((element) => firstTextNode(element)!);
 
     await act(async () => {
       mounted.root.focus();
-      document.getSelection()!.setBaseAndExtent(first!, 1, second!, 1);
+      document.getSelection()!.setBaseAndExtent(first, 1, second, 1);
       document.dispatchEvent(new Event('selectionchange'));
       await wait(100);
     });
     await act(async () => {
       fireEvent.compositionStart(mounted.root, { data: '' });
-      first!.deleteData(1, 1);
-      second!.deleteData(0, 1);
-      document.getSelection()!.setBaseAndExtent(first!, 1, first!, 1);
+      first.deleteData(1, 1);
+      second.deleteData(0, 1);
+      document.getSelection()!.setBaseAndExtent(first, 1, first, 1);
     });
 
     const ime = composeIn(mounted, 0, { from: 1 });
@@ -1171,7 +2345,7 @@ describe('Android composition over a selection', () => {
 
   test('across two leaves, one command replaces it and the first leaf keeps its marks', async () => {
     const editor = markedLine();
-    const mounted = mount([], { editor });
+    const mounted = mountEditor(editor);
 
     try {
       await composeOverLeaves(mounted);
@@ -1192,11 +2366,13 @@ describe('Android composition over a selection', () => {
     const editor = markedLine([
       definePlugin('android-reject', {
         commands: ({ handle }) => [
-          handle(editorCommands.insertText, ({ state }) => state.transaction(() => {})),
+          handle(editorCommands.insertText, ({ state }) =>
+            state.transaction(() => {})
+          ),
         ],
       }),
     ]);
-    const mounted = mount([], { editor });
+    const mounted = mountEditor(editor);
 
     try {
       await composeOverLeaves(mounted);
@@ -1213,49 +2389,94 @@ describe('Android composition over a selection', () => {
     }
   });
 
-  test('across two blocks, the word replaces the selection and the blocks join', async () => {
-    const mounted = mount(['abc', 'def']);
-
-    try {
-      const first = firstTextNode(mounted.block(0))!;
-      const second = firstTextNode(mounted.block(1))!;
-
-      await act(async () => {
-        mounted.root.focus();
-        document.getSelection()!.setBaseAndExtent(first, 1, second, 2);
-        document.dispatchEvent(new Event('selectionchange'));
-        await wait(100);
+  test.each([false, true])(
+    'across two blocks, the model waits for one replacement and undo restores both blocks (reverse %s)',
+    async (reverse) => {
+      const editor = createParagraphs(['abc', 'def'], [history()]);
+      const mounted = mountEditor(editor);
+      let commits = 0;
+      const release = editor.subscribeCommit((commit) => {
+        if (commit.changed.hasAny('document')) commits += 1;
       });
-      await act(async () => {
-        fireEvent.compositionStart(mounted.root, { data: '' });
-        await wait(60);
-      });
-
-      const joined = firstTextNode(mounted.block(0), { visible: true })!;
-
-      await act(async () => {
-        document.getSelection()!.setBaseAndExtent(joined, 1, joined, 1);
-      });
-
-      const ime = composeIn(mounted, 0);
-
-      await ime.update('한');
-      await ime.end();
-
-      expect({
-        blocks: mounted.editor.read((state) =>
+      const blocks = () =>
+        editor.read((state) =>
           state.nodes.children().map((_, index) => state.text.string([index]))
-        ),
-        dom: mounted.block(0).textContent,
-      }).toEqual({ blocks: ['a한f'], dom: 'a한f' });
-    } finally {
-      mounted.rendered.unmount();
+        );
+
+      try {
+        const first = firstTextNode(mounted.block(0))!;
+        const second = firstTextNode(mounted.block(1))!;
+
+        await act(async () => {
+          mounted.root.focus();
+          document
+            .getSelection()!
+            .setBaseAndExtent(
+              reverse ? second : first,
+              reverse ? 2 : 1,
+              reverse ? first : second,
+              reverse ? 1 : 2
+            );
+          document.dispatchEvent(new Event('selectionchange'));
+          await wait(100);
+        });
+        await act(async () => {
+          fireEvent.compositionStart(mounted.root, { data: '' });
+          await wait(60);
+        });
+        expect({ blocks: blocks(), commits }).toEqual({
+          blocks: ['abc', 'def'],
+          commits: 0,
+        });
+        await act(async () => {
+          first.data = 'af';
+          mounted.block(1).remove();
+          document.getSelection()!.setBaseAndExtent(first, 1, first, 1);
+        });
+        const ime = composeIn(mounted, 0);
+
+        await ime.update('한');
+        expect({ blocks: blocks(), commits }).toEqual({
+          blocks: ['abc', 'def'],
+          commits: 0,
+        });
+        await ime.end();
+        expect({
+          blocks: blocks(),
+          commits,
+          dom: mounted.block(0).textContent,
+          selection: editor.read((state) => state.selection()),
+        }).toEqual({
+          blocks: ['a한f'],
+          commits: 1,
+          dom: 'a한f',
+          selection: {
+            anchor: { path: [0, 0], offset: 2 },
+            focus: { path: [0, 0], offset: 2 },
+          },
+        });
+        await act(async () => {
+          editor.api.history.undo();
+          await wait(60);
+        });
+        expect(blocks()).toEqual(['abc', 'def']);
+        await act(async () => {
+          editor.api.history.redo();
+          await wait(60);
+        });
+        expect(blocks()).toEqual(['a한f']);
+      } finally {
+        release();
+        mounted.rendered.unmount();
+      }
     }
-  });
+  );
 });
 
 describe('Android composition ends when the user leaves the draft', () => {
-  const draftThen = async (leave: (mounted: ReturnType<typeof mount>) => void) => {
+  const draftThen = async (
+    leave: (mounted: ReturnType<typeof mount>) => void
+  ) => {
     const mounted = mount(['', 'second']);
 
     await placeCaretAtEnd(mounted, 0);
@@ -1299,7 +2520,11 @@ describe('Android composition ends when the user leaves the draft', () => {
     } finally {
       delete (document as { visibilityState?: unknown }).visibilityState;
       if (visibility) {
-        Object.defineProperty(Document.prototype, 'visibilityState', visibility);
+        Object.defineProperty(
+          Document.prototype,
+          'visibilityState',
+          visibility
+        );
       }
       mounted.rendered.unmount();
     }
@@ -1352,16 +2577,19 @@ describe('Android composition with a collaborator', () => {
   const connect = (texts: string[]) => {
     const children = texts.map((text) => paragraph(text));
     const editor = createParagraphs(texts, [history()]);
-    const local = createYjsPeerWithEditor(editor as never, {
+    const local = createYjsPeerWithEditor(editor, {
       children,
       clientId: 'local',
     });
-    const remote = createYjsPeerWithEditor(createParagraphs(texts) as never, {
-      children,
-      clientId: 'remote',
-      seedUpdate: Y.encodeStateAsUpdate(local.doc),
-    });
-    const mounted = mount(texts, { editor });
+    const remote = createYjsPeerWithEditor(
+      createParagraphs(texts, [history()]),
+      {
+        children,
+        clientId: 'remote',
+        seedUpdate: Y.encodeStateAsUpdate(local.doc),
+      }
+    );
+    const mounted = mountEditor(editor);
     const sync = async () => {
       await act(async () => {
         syncConnectedPeers([local, remote]);
@@ -1428,18 +2656,23 @@ describe('Android composition with a collaborator', () => {
       await ime.start();
       await ime.update('한');
       remote.editor.update((tx) =>
-        tx.nodes.set({ type: 'heading-one' } as never, { at: [0] })
+        tx.nodes.set({ type: 'heading-one' }, { at: [0] })
       );
       await sync();
       await sync();
 
-      const read = (editor: Pick<typeof mounted.editor, 'read'>) =>
+      const read = <V extends Value, const TPlugins extends readonly unknown[]>(
+        editor: Editor<V, TPlugins>
+      ) =>
         editor.read((state) => [
           (state.nodes.get([0])?.[0] as { type?: string } | undefined)?.type,
           state.text.string([0]),
         ]);
 
-      expect({ local: read(mounted.editor), remote: read(remote.editor) }).toEqual({
+      expect({
+        local: read(mounted.editor),
+        remote: read(remote.editor),
+      }).toEqual({
         local: ['heading-one', '한'],
         remote: ['heading-one', '한'],
       });
@@ -1453,13 +2686,19 @@ describe('Android composition with a collaborator who empties the line', () => {
   test('the word lands in the emptied line on both clients, and undo removes it in one step', async () => {
     const children = ['ab', 'second'].map((text) => paragraph(text));
     const editor = createParagraphs(['ab', 'second'], [history()]);
-    const local = createYjsPeerWithEditor(editor as never, { children, clientId: 'local' });
-    const remote = createYjsPeerWithEditor(createParagraphs(['ab', 'second']) as never, {
+    const local = createYjsPeerWithEditor(editor, {
       children,
-      clientId: 'remote',
-      seedUpdate: Y.encodeStateAsUpdate(local.doc),
+      clientId: 'local',
     });
-    const mounted = mount([], { editor });
+    const remote = createYjsPeerWithEditor(
+      createParagraphs(['ab', 'second'], [history()]),
+      {
+        children,
+        clientId: 'remote',
+        seedUpdate: Y.encodeStateAsUpdate(local.doc),
+      }
+    );
+    const mounted = mountEditor(editor);
     const sync = async () => {
       await act(async () => {
         syncConnectedPeers([local, remote]);
@@ -1475,7 +2714,10 @@ describe('Android composition with a collaborator who empties the line', () => {
       await ime.update('한');
       remote.editor.update((tx) =>
         tx.text.delete({
-          at: { anchor: { offset: 0, path: [0, 0] }, focus: { offset: 2, path: [0, 0] } },
+          at: {
+            anchor: { offset: 0, path: [0, 0] },
+            focus: { offset: 2, path: [0, 0] },
+          },
         })
       );
       await sync();
@@ -1494,7 +2736,10 @@ describe('Android composition with a collaborator who empties the line', () => {
 
       expect({
         merged,
-        undone: { local: blockText(mounted.editor, 0), remote: blockText(remote.editor, 0) },
+        undone: {
+          local: blockText(mounted.editor, 0),
+          remote: blockText(remote.editor, 0),
+        },
       }).toEqual({
         merged: { local: '한', remote: '한' },
         undone: { local: '', remote: '' },
@@ -1516,9 +2761,7 @@ describe('Android Backspace on the last character of a paragraph', () => {
       await placeCaretAtEnd(mounted, 1);
       await backspaceLastCharacter(mounted, 1);
 
-      const host = mounted
-        .block(1)
-        .querySelector('[data-editor-node="text"]');
+      const host = mounted.block(1).querySelector('[data-editor-node="text"]');
 
       expect(host?.isConnected).toBe(true);
     } finally {

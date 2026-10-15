@@ -1,14 +1,20 @@
 import {
+  type Anchor,
   type EditorCommit,
   ElementApi,
   NodeApi,
   type NodeKey,
   type Point,
   type Range,
-  PointApi,
   RangeApi,
+  SelectionApi,
   TextApi,
 } from '../..';
+import {
+  getEditorCommitSnapshot,
+  getEditorCommitValue,
+} from '../../core/commit';
+import { mapSelectionThroughChange } from '../../core/selection-protocol';
 import { EDITOR_TO_PLACEHOLDER_ELEMENT } from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -17,16 +23,10 @@ import {
 } from './input-state';
 import { applyModelOwnedTextInput } from './mutation-controller';
 import {
-  above,
   getEditorCurrentMarks,
   getNodeKey,
   getPathByNodeKey,
-  isBlock,
 } from './runtime-editor-api';
-import {
-  writeRuntimeMarks,
-  writeRuntimeSelection,
-} from './runtime-mutation-state';
 import { readRuntimeSelectionRange } from './runtime-selection-state';
 
 const ZERO_WIDTH_SPACE_RE = /﻿/g;
@@ -36,13 +36,30 @@ export const ANDROID_COMPOSITION_END_DELAY = 25;
 
 type Segment = Readonly<{ end: number; key: NodeKey; start: number }>;
 
+type AndroidCompositionDOMPlacement = Readonly<{
+  element: Element;
+  parent: ParentNode;
+  next: ChildNode | null;
+}>;
+
+type AndroidCompositionLine = Readonly<{
+  key: NodeKey;
+  element: Element;
+  placements: readonly AndroidCompositionDOMPlacement[];
+}>;
+
 /** What the model held when the run opened; the model holds still until it ends. */
 type AndroidCompositionBase = Readonly<{
+  backward: boolean;
+  end: KeyedPoint;
   from: number;
   lineKey: NodeKey;
+  lines: readonly AndroidCompositionLine[];
+  target: Anchor<Range>;
   marks: ReturnType<typeof getEditorCurrentMarks>;
   nodes: ReadonlySet<Text>;
   segments: readonly Segment[];
+  start: KeyedPoint;
   text: string;
   to: number;
 }>;
@@ -50,6 +67,7 @@ type AndroidCompositionBase = Readonly<{
 type AndroidCompositionRun = {
   base: AndroidCompositionBase;
   cancelEnd: (() => void) | null;
+  text: string | null | undefined;
   release: () => void;
   setComposing: (composing: boolean) => void;
 };
@@ -59,11 +77,12 @@ type KeyedPoint = Readonly<{ key: NodeKey; offset: number }>;
 /** The keyboard's draft, read from the line before anything renders over it. */
 type AndroidCompositionDraft = Readonly<{
   lineKey: NodeKey;
+  lineKeys: readonly NodeKey[];
+  textKeys: readonly NodeKey[];
   marks: AndroidCompositionBase['marks'];
   rebuild: boolean;
   replacement: Readonly<{
-    anchor: KeyedPoint;
-    focus: KeyedPoint;
+    target: Anchor<Range>;
     text: string;
   }> | null;
 }>;
@@ -82,7 +101,11 @@ export type AndroidCompositionEndReason =
 const RUNS = new WeakMap<EditableInputController, AndroidCompositionRun>();
 const LINE_REBUILDS = new WeakMap<
   EditableInputController,
-  (lineKey: NodeKey) => void
+  {
+    rebuildLine: (lineKey: NodeKey) => void;
+    runOwnedDOMMutation: (callback: () => void) => void;
+    pending: Set<() => void>;
+  }
 >();
 
 // What an edit to the composing line changes; a path change only moves it.
@@ -100,10 +123,19 @@ export const isAndroidCompositionInputType = (inputType: string) =>
 /** Lets a run give its line back to React when Chrome changed its nodes. */
 export const setAndroidCompositionLineRebuild = (
   inputController: EditableInputController,
-  rebuildLine: ((lineKey: NodeKey) => void) | null
+  rebuildLine: ((lineKey: NodeKey) => void) | null,
+  runOwnedDOMMutation: (callback: () => void) => void = (callback) => callback()
 ) => {
-  if (rebuildLine) LINE_REBUILDS.set(inputController, rebuildLine);
-  else LINE_REBUILDS.delete(inputController);
+  for (const complete of LINE_REBUILDS.get(inputController)?.pending ?? []) {
+    complete();
+  }
+  if (rebuildLine) {
+    LINE_REBUILDS.set(inputController, {
+      rebuildLine,
+      runOwnedDOMMutation,
+      pending: new Set(),
+    });
+  } else LINE_REBUILDS.delete(inputController);
 };
 
 const readLineTextNodes = (line: Element) => {
@@ -141,7 +173,10 @@ const readLineOffset = (line: Element, node: Node, offset: number) => {
 
   for (const text of readLineTextNodes(line)) {
     if (text === node) {
-      return total + text.data.slice(0, offset).replace(ZERO_WIDTH_SPACE_RE, '').length;
+      return (
+        total +
+        text.data.slice(0, offset).replace(ZERO_WIDTH_SPACE_RE, '').length
+      );
     }
     total += text.data.replace(ZERO_WIDTH_SPACE_RE, '').length;
   }
@@ -151,7 +186,8 @@ const readLineOffset = (line: Element, node: Node, offset: number) => {
 
 const readLineSegments = (editor: ReactRuntimeEditor, lineKey: NodeKey) => {
   const linePath = getPathByNodeKey(editor, lineKey);
-  const lineNode = linePath && editor.read((state) => state.nodes.get(linePath))?.[0];
+  const lineNode =
+    linePath && editor.read((state) => state.nodes.get(linePath))?.[0];
 
   if (!linePath || !lineNode || !ElementApi.isElement(lineNode)) return null;
 
@@ -162,58 +198,108 @@ const readLineSegments = (editor: ReactRuntimeEditor, lineKey: NodeKey) => {
     const key = getNodeKey(editor, [...linePath, ...path]);
 
     if (!key) return null;
-    segments.push({ end: text.length + node.text.length, key, start: text.length });
+    segments.push({
+      end: text.length + node.text.length,
+      key,
+      start: text.length,
+    });
     text += node.text;
   }
 
   return { segments, text };
 };
 
-const findLine = (editor: ReactRuntimeEditor, selection: Range) =>
-  above(editor, {
-    at: RangeApi.start(selection),
-    match: (node) => ElementApi.isElement(node) && isBlock(editor, node),
-  });
-
 const captureBase = (
   editor: ReactRuntimeEditor,
   selection: Range
 ): AndroidCompositionBase | null => {
-  const entry = findLine(editor, selection);
+  const entries = editor.read((state) =>
+    state.nodes.blocks({ at: selection, mode: 'lowest' })
+  );
+  const lines: AndroidCompositionLine[] = [];
+  const segments: Segment[] = [];
+  const nodes = new Set<Text>();
+  const root = ReactEditor.assertDOMNode(editor, editor);
+  let text = '';
 
-  if (!entry) return null;
+  for (const [, path] of entries) {
+    const key = getNodeKey(editor, path);
+    const element = key && ReactEditor.resolveDOMNode(editor, key);
+    const read = key && readLineSegments(editor, key);
 
-  const [, linePath] = entry;
-  const lineKey = getNodeKey(editor, linePath);
-  const line = lineKey && ReactEditor.resolveDOMNode(editor, lineKey);
+    if (
+      !key ||
+      !(element instanceof Element) ||
+      !root.contains(element) ||
+      !read
+    ) {
+      return null;
+    }
+    const placements: AndroidCompositionDOMPlacement[] = [];
 
-  if (!lineKey || !(line instanceof Element)) return null;
+    for (
+      let ancestor: Element | null = element;
+      ancestor && ancestor !== root;
+      ancestor = ancestor.parentElement
+    ) {
+      if (!ancestor.parentNode) return null;
+      placements.push({
+        element: ancestor,
+        parent: ancestor.parentNode,
+        next: ancestor.nextSibling,
+      });
+    }
+    lines.push({
+      key,
+      element,
+      placements,
+    });
+    for (const segment of read.segments) {
+      segments.push({
+        ...segment,
+        start: segment.start + text.length,
+        end: segment.end + text.length,
+      });
+    }
+    text += read.text;
+    for (const node of readLineTextNodes(element)) nodes.add(node);
+  }
 
-  const read = readLineSegments(editor, lineKey);
-
-  if (!read) return null;
-
-  const { segments, text } = read;
+  const lineKey = lines[0]?.key;
+  if (!lineKey) return null;
   const [start, end] = RangeApi.edges(selection);
-  const offsetOf = (point: Point) => {
+  const readPoint = (point: Point) => {
     const key = getNodeKey(editor, point.path);
     const segment = segments.find((candidate) => candidate.key === key);
 
-    return segment ? segment.start + point.offset : null;
+    return segment
+      ? {
+          offset: segment.start + point.offset,
+          point: { key: segment.key, offset: point.offset },
+        }
+      : null;
   };
-  const from = offsetOf(start);
-  const to = offsetOf(end);
+  const from = readPoint(start);
+  const to = readPoint(end);
 
   if (from === null || to === null) return null;
 
   return {
-    from,
+    backward: RangeApi.isBackward(selection),
+    end: to.point,
+    from: from.offset,
     lineKey,
+    lines,
+    target: editor.anchor(selection, {
+      association: 'inward',
+      deletion: 'nearest',
+    }),
     marks: getEditorCurrentMarks(editor),
-    nodes: new Set(readLineTextNodes(line)),
+    nodes,
     segments,
+    start: from.point,
     text,
-    to,
+    to: to.offset,
   };
 };
 
@@ -227,7 +313,10 @@ const toKeyedPoint = (
     ) ?? segments.at(-1);
 
   return segment
-    ? { key: segment.key, offset: Math.min(offset, segment.end) - segment.start }
+    ? {
+        key: segment.key,
+        offset: Math.min(offset, segment.end) - segment.start,
+      }
     : null;
 };
 
@@ -250,15 +339,22 @@ const toModelPoint = (
  * lands where the caret was, so the shared prefix stops at the caret and the
  * shared suffix stops at the text after it.
  */
-const diffAtCaret = (before: string, after: string, caret: number) => {
+const diffAtCaret = (
+  before: string,
+  after: string,
+  from: number,
+  to: number,
+  replaceUnchanged: boolean
+) => {
+  if (before === after && !replaceUnchanged) return null;
   let start = 0;
-  const prefixLimit = Math.min(caret, before.length, after.length);
+  const prefixLimit = Math.min(from, before.length, after.length);
 
   while (start < prefixLimit && before[start] === after[start]) start += 1;
 
   let suffix = 0;
   const suffixLimit = Math.min(
-    before.length - Math.max(start, caret),
+    before.length - Math.max(start, to),
     after.length - start
   );
 
@@ -280,21 +376,18 @@ const diffAtCaret = (before: string, after: string, caret: number) => {
 // capture phase so the run ends before the selection import reads the caret.
 const listenForLeave = (
   editor: ReactRuntimeEditor,
-  lineKey: NodeKey,
+  lines: AndroidCompositionBase['lines'],
   end: (reason: AndroidCompositionEndReason) => void
 ) => {
   const root = ReactEditor.assertDOMNode(editor, editor);
   const document = root.ownerDocument;
   const onSelectionChange = () => {
-    const line = ReactEditor.resolveDOMNode(editor, lineKey);
     const selection = document.getSelection();
 
     if (
-      line &&
-      !(
-        selection?.anchorNode &&
-        !(line.contains(selection.anchorNode) && line.contains(selection.focusNode))
-      )
+      selection?.anchorNode &&
+      lines.some(({ element }) => element.contains(selection.anchorNode)) &&
+      lines.some(({ element }) => element.contains(selection.focusNode))
     ) {
       return;
     }
@@ -347,8 +440,9 @@ const hidePlaceholder = (editor: ReactRuntimeEditor) => {
   };
 };
 
-export const hasAndroidComposition = (inputController: EditableInputController) =>
-  RUNS.has(inputController);
+export const hasAndroidComposition = (
+  inputController: EditableInputController
+) => RUNS.has(inputController);
 
 /**
  * Opens an Android composition run, or continues the open one. The model
@@ -358,14 +452,17 @@ export const openAndroidComposition = ({
   editor,
   inputController,
   setComposing,
+  text,
 }: {
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   setComposing: (composing: boolean) => void;
+  text?: string | null;
 }) => {
   const open = RUNS.get(inputController);
 
   if (open) {
+    if (text !== undefined) open.text = text;
     open.cancelEnd?.();
     open.cancelEnd = null;
     return;
@@ -375,39 +472,33 @@ export const openAndroidComposition = ({
 
   const base = selection && captureBase(editor, selection);
 
-  // A base holds one line, so a selection across lines is deleted first, as
-  // desktop composition does at its start. The run opens at the next
-  // composition event, once the joined line has rendered.
-  if (!base) {
-    if (selection && RangeApi.isExpanded(selection)) {
-      editor.update((tx) => tx.text.delete({ at: selection }));
-    }
-    return;
-  }
+  if (!base) return;
 
   const end = (reason: AndroidCompositionEndReason) =>
     finishAndroidComposition({ editor, inputController, reason, setComposing });
   const releaseCommits = editor.subscribeCommit((commit) => {
     if (RUNS.get(inputController) === run && touchesLine(commit, base)) {
-      endOnLineEdit(editor, inputController, run);
+      endOnLineEdit(editor, inputController, run, commit);
     }
   });
-  const releaseLeave = listenForLeave(editor, base.lineKey, end);
+  const releaseLeave = listenForLeave(editor, base.lines, end);
   const showPlaceholder = hidePlaceholder(editor);
   const run: AndroidCompositionRun = {
     base,
     cancelEnd: null,
+    text,
     release: () => {
       releaseCommits();
       releaseLeave();
       showPlaceholder();
+      base.target.release();
     },
     setComposing,
   };
 
   RUNS.set(inputController, run);
   beginEditableCompositionSession(inputController, {
-    nativeAnchor: ReactEditor.resolveDOMNode(editor, base.lineKey),
+    nativeAnchor: base.lines.map(({ element }) => element),
   });
   inputController.state.activeIntent = 'composition';
   setComposing(true);
@@ -420,17 +511,20 @@ export const scheduleAndroidCompositionEnd = ({
   inputController,
   scheduleTask,
   setComposing,
+  text,
 }: {
   delay: number;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
   scheduleTask: EditableInputController['scheduleTask'];
   setComposing: (composing: boolean) => void;
+  text: string | undefined;
 }) => {
   const run = RUNS.get(inputController);
 
   if (!run || !scheduleTask) return;
 
+  run.text = text;
   run.cancelEnd?.();
   run.cancelEnd = scheduleTask(
     'model',
@@ -450,7 +544,10 @@ export const scheduleAndroidCompositionEnd = ({
 
 const touchesLine = (commit: EditorCommit, base: AndroidCompositionBase) =>
   commit.changed.hasAny('replace') ||
-  [base.lineKey, ...base.segments.map((segment) => segment.key)].some((key) =>
+  [
+    ...base.lines.map(({ key }) => key),
+    ...base.segments.map((segment) => segment.key),
+  ].some((key) =>
     LINE_CHANGE_KINDS.some((kind) => commit.changed.hasNodeKey(key, kind))
   );
 
@@ -465,61 +562,133 @@ const closeRun = (
 
 const readDraft = (
   editor: ReactRuntimeEditor,
-  base: AndroidCompositionBase
+  run: AndroidCompositionRun,
+  commit?: EditorCommit
 ): AndroidCompositionDraft => {
-  const line = ReactEditor.resolveDOMNode(editor, base.lineKey);
+  const { base } = run;
+  const root = editor.read.view.root() ?? 'main';
+  const before = commit && getEditorCommitSnapshot(commit, root, 'before');
+  const readPoint = (point: KeyedPoint | null): Point | null => {
+    if (!before) return toModelPoint(editor, point);
 
-  if (!(line instanceof Element)) {
-    return { lineKey: base.lineKey, marks: base.marks, rebuild: true, replacement: null };
-  }
+    const path = point && before.index.pathOf(point.key);
 
-  const diff = diffAtCaret(base.text, readLineText(line), base.to);
-  const anchor = diff && toKeyedPoint(base.segments, diff.start);
-  const focus = diff && toKeyedPoint(base.segments, diff.end);
-  const nodes = readLineTextNodes(line);
+    return point && path ? { offset: point.offset, path } : null;
+  };
+  const liveLines = base.lines.filter(({ element }) => element.isConnected);
+  const removedLine = liveLines.length < base.lines.length;
+  const diff =
+    diffAtCaret(
+      base.text,
+      liveLines.map(({ element }) => readLineText(element)).join(''),
+      base.from,
+      base.to,
+      !!run.text || removedLine
+    ) ?? (removedLine ? { end: base.to, start: base.from, text: '' } : null);
+  const target = commit ? null : base.target.resolve();
+  const edges = before
+    ? [readPoint(base.start), readPoint(base.end)]
+    : target && RangeApi.edges(target);
+  const start =
+    diff &&
+    (diff.start === base.from && edges
+      ? edges[0]
+      : readPoint(toKeyedPoint(base.segments, diff.start)));
+  const end =
+    diff &&
+    (diff.end === base.to && edges
+      ? edges[1]
+      : readPoint(toKeyedPoint(base.segments, diff.end)));
+  const nodes = liveLines.flatMap(({ element }) => readLineTextNodes(element));
+  const range =
+    start && end
+      ? {
+          anchor: base.backward ? end : start,
+          focus: base.backward ? start : end,
+        }
+      : null;
+  const mapped = commit
+    ? mapSelectionThroughChange(
+        editor,
+        range && SelectionApi.text(range),
+        commit.changes,
+        getEditorCommitValue(commit, 'before'),
+        getEditorCommitValue(commit, 'after'),
+        root,
+        {
+          association: 'inward',
+          deletion: 'nearest',
+          runtimeIndexes: {
+            before: getEditorCommitSnapshot(commit, root, 'before').index,
+            after: getEditorCommitSnapshot(commit, root, 'after').index,
+          },
+        }
+      )
+    : range;
 
   return {
     lineKey: base.lineKey,
+    lineKeys: base.lines.map(({ key }) => key),
+    textKeys: base.segments.map(({ key }) => key),
     marks: base.marks,
     // Chrome added, split or removed text nodes or text hosts that React
     // still owns, so the line renders again from the model.
     rebuild:
+      base.lines.length > 1 ||
       nodes.some((node) => !base.nodes.has(node)) ||
       [...base.nodes].some((node) => !node.isConnected) ||
       base.segments.some((segment) => {
         const host = ReactEditor.resolveDOMNode(editor, segment.key);
 
-        return !host || !line.contains(host);
+        return (
+          !host || !liveLines.some(({ element }) => element.contains(host))
+        );
       }),
-    replacement: diff && anchor && focus ? { anchor, focus, text: diff.text } : null,
+    replacement:
+      diff && RangeApi.isRange(mapped)
+        ? {
+            target: editor.anchor(
+              { anchor: mapped.anchor, focus: mapped.focus },
+              { association: 'inward', deletion: 'nearest' }
+            ),
+            text: diff.text,
+          }
+        : null,
   };
+};
+
+const restoreLineElements = (
+  editor: ReactRuntimeEditor,
+  base: AndroidCompositionBase
+) => {
+  for (const { key, placements } of [...base.lines].reverse()) {
+    if (!getPathByNodeKey(editor, key)) continue;
+
+    for (const { element, next, parent } of [...placements].reverse()) {
+      if (!element.isConnected && parent.isConnected) {
+        if (next?.parentNode === parent) next.before(element);
+        else parent.append(element);
+      }
+    }
+  }
 };
 
 const writeDraft = (
   editor: ReactRuntimeEditor,
   inputController: EditableInputController,
-  { marks, replacement }: AndroidCompositionDraft
+  { lineKey, marks, replacement }: AndroidCompositionDraft
 ) => {
-  const anchor = replacement && toModelPoint(editor, replacement.anchor);
-  const focus = replacement && toModelPoint(editor, replacement.focus);
+  const target = replacement?.target.release();
 
-  // An editor root that unmounts makes its view read-only before the
-  // editable's cleanup runs, so that draft goes with the view.
-  if (!replacement || !anchor || !focus || editor.read.view.isReadOnly()) {
+  // A root that unmounts makes its view read-only before editable cleanup.
+  if (
+    !replacement ||
+    !target ||
+    editor.read.view.isReadOnly() ||
+    !getPathByNodeKey(editor, lineKey)
+  ) {
     return;
   }
-  // An insert at an explicit point drops the pending marks, so a collapsed
-  // replacement moves the caret there and inserts at the selection.
-  const collapsed = PointApi.equals(anchor, focus);
-  const selection = readRuntimeSelectionRange(editor);
-
-  if (
-    collapsed &&
-    !(selection && RangeApi.equals(selection, { anchor, focus }))
-  ) {
-    writeRuntimeSelection(editor, { anchor, focus });
-  }
-  if (marks) writeRuntimeMarks(editor, marks);
 
   // The DOM caret sits after the draft, so the insert resolves its target
   // from the model selection, as a replayed Android command does.
@@ -532,7 +701,8 @@ const writeDraft = (
       editor,
       inputController,
       inputType: 'insertFromComposition',
-      selection: collapsed ? undefined : { anchor, focus },
+      marks,
+      selection: target,
     });
   } finally {
     inputController.state.isReplayingAndroidCommand = replaying;
@@ -546,11 +716,28 @@ const rebuildDraftLine = (
   inputController: EditableInputController,
   draft: AndroidCompositionDraft
 ) => {
-  const line = ReactEditor.resolveDOMNode(editor, draft.lineKey);
-  const model = readLineSegments(editor, draft.lineKey)?.text;
+  const lines = draft.lineKeys.map((key) => ({
+    key,
+    model: readLineSegments(editor, key),
+  }));
+  const textKeys = lines.flatMap(
+    ({ model }) => model?.segments.map(({ key }) => key) ?? []
+  );
+  const changedTextKeys =
+    textKeys.length !== draft.textKeys.length ||
+    textKeys.some((key, index) => key !== draft.textKeys[index]);
+  for (const { key, model } of lines) {
+    if (!model) continue;
+    const line = ReactEditor.resolveDOMNode(editor, key);
 
-  if (draft.rebuild || !line || readLineText(line) !== model) {
-    LINE_REBUILDS.get(inputController)?.(draft.lineKey);
+    if (
+      draft.rebuild ||
+      changedTextKeys ||
+      !line ||
+      readLineText(line) !== model.text
+    ) {
+      LINE_REBUILDS.get(inputController)?.rebuildLine(key);
+    }
   }
 };
 
@@ -560,22 +747,39 @@ const rebuildDraftLine = (
 const endOnLineEdit = (
   editor: ReactRuntimeEditor,
   inputController: EditableInputController,
-  run: AndroidCompositionRun
+  run: AndroidCompositionRun,
+  commit: EditorCommit
 ) => {
-  closeRun(inputController, run);
+  const draft = readDraft(editor, run, commit);
 
-  const draft = readDraft(editor, run.base);
+  closeRun(inputController, run);
+  LINE_REBUILDS.get(inputController)?.runOwnedDOMMutation(() =>
+    restoreLineElements(editor, run.base)
+  );
 
   run.setComposing(false);
-  inputController.scheduleTask?.(
+  const registration = LINE_REBUILDS.get(inputController);
+  if (!inputController.scheduleTask || !registration) {
+    draft.replacement?.target.release();
+    return;
+  }
+  const complete = () => {
+    if (!registration.pending.delete(complete)) return;
+
+    cancel();
+    try {
+      writeDraft(editor, inputController, draft);
+    } finally {
+      rebuildDraftLine(editor, inputController, draft);
+    }
+  };
+  const cancel = inputController.scheduleTask(
     'model',
     'android-composition-line-edit',
-    () => {
-      writeDraft(editor, inputController, draft);
-      rebuildDraftLine(editor, inputController, draft);
-    },
+    complete,
     { timing: 'microtask' }
   );
+  registration.pending.add(complete);
 };
 
 /**
@@ -592,17 +796,27 @@ export const finishAndroidComposition = ({
   reason: AndroidCompositionEndReason;
   setComposing: (composing: boolean) => void;
 }) => {
+  for (const complete of LINE_REBUILDS.get(inputController)?.pending ?? []) {
+    complete();
+  }
+
   const run = RUNS.get(inputController);
 
   if (!run) return;
 
+  const draft = readDraft(editor, run);
+
   closeRun(inputController, run);
+  LINE_REBUILDS.get(inputController)?.runOwnedDOMMutation(() =>
+    restoreLineElements(editor, run.base)
+  );
 
-  const draft = readDraft(editor, run.base);
-
-  writeDraft(editor, inputController, draft);
-  setComposing(false);
-  rebuildDraftLine(editor, inputController, draft);
+  try {
+    writeDraft(editor, inputController, draft);
+  } finally {
+    setComposing(false);
+    rebuildDraftLine(editor, inputController, draft);
+  }
 };
 
 /**
@@ -622,7 +836,12 @@ export const settleAndroidCompositionBeforeInput = ({
   setComposing: (composing: boolean) => void;
 }) => {
   if (isAndroidCompositionInputType(event.inputType)) {
-    openAndroidComposition({ editor, inputController, setComposing });
+    openAndroidComposition({
+      editor,
+      inputController,
+      setComposing,
+      text: event.data,
+    });
     return;
   }
 

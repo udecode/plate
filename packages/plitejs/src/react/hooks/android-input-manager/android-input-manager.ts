@@ -38,6 +38,7 @@ import {
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
 } from '../../../dom/internal';
+import { hasAndroidComposition } from '../../editable/android-composition';
 import {
   getInputEventData,
   getInputEventTargetRanges,
@@ -51,7 +52,6 @@ import {
   type EditableInputController,
   shouldMergeEditableCompositionHistory,
 } from '../../editable/input-state';
-import { hasAndroidComposition } from '../../editable/android-composition';
 import {
   applyEditableCommand,
   applyModelOwnedTextInput,
@@ -64,7 +64,6 @@ import {
   range as editorRange,
   leaf as editorLeaf,
   next as editorNext,
-  setEditorComposing,
 } from '../../editable/runtime-editor-api';
 import {
   writeRuntimeMarks,
@@ -753,7 +752,7 @@ export function createAndroidInputManager({
     // for every input event as this can be expensive. However, there are some
     // scenarios where we cannot safely store the text diff and must instead
     // schedule an action to let Plite normalize the editor state.
-    let canStoreDiff = true;
+    let canStoreDiff = compositionTarget === null;
     const commandForTargetRange = () =>
       getEditableCommandFromBeforeInputType({
         data,

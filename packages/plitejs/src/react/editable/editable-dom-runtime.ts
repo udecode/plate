@@ -1,8 +1,4 @@
 import {
-  type AndroidCompositionEndReason,
-  finishAndroidComposition,
-} from './android-composition';
-import {
   type Anchor,
   type EditorCommit,
   type HistoryApi,
@@ -50,6 +46,10 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import { isSelectionViewportBacked } from '../viewport-commands';
+import {
+  type AndroidCompositionEndReason,
+  finishAndroidComposition,
+} from './android-composition';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import { ExternalTextRuntime } from './external-text-runtime';
@@ -784,30 +784,39 @@ export class EditableDOMRuntime {
 
   shouldDeferCompositionSelectionExport() {
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
-    const root = this.rootElement;
+    const anchors = Array.isArray(epoch?.anchor)
+      ? epoch.anchor
+      : [epoch?.anchor];
 
     return !!(
       this.state.isComposing &&
-      isDOMNode(epoch?.anchor) &&
-      root?.contains(epoch.anchor) &&
-      epoch.phase !== 'committing' &&
-      epoch.phase !== 'repairing'
+      anchors.some(
+        (anchor) => isDOMNode(anchor) && this.rootElement?.contains(anchor)
+      ) &&
+      epoch?.phase !== 'committing' &&
+      epoch?.phase !== 'repairing'
     );
   }
 
   isCompositionDOMNodeProtected(node: globalThis.Node) {
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
-    const root = this.rootElement;
+    const anchors = Array.isArray(epoch?.anchor)
+      ? epoch.anchor
+      : [epoch?.anchor];
 
+    if (!this.state.isComposing || !this.rootElement) return false;
     if (
-      !this.state.isComposing ||
-      !isDOMNode(epoch?.anchor) ||
-      !root?.contains(epoch.anchor)
+      !anchors.some(
+        (anchor) => isDOMNode(anchor) && this.rootElement?.contains(anchor)
+      )
     ) {
       return false;
     }
 
-    return node.contains(epoch.anchor) || epoch.anchor.contains(node);
+    return anchors.some(
+      (anchor) =>
+        isDOMNode(anchor) && (node.contains(anchor) || anchor.contains(node))
+    );
   }
 
   deferCompositionDOMWrite(node: globalThis.Node, write: () => void) {
