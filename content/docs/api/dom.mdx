@@ -261,9 +261,10 @@ clear it. `useDropIndicator` reads it.
 
 Scroll one step for a pointer drag at `point`, in client coordinates, and
 return the pixels scrolled, or 0. It scrolls the innermost scroller around the
-editor whose visible top or bottom edge zone holds the point and that can still
-move that way, else the window, at the speed text selection and block dragging
-use: faster nearer the edge. Each zone is 48px, at most half the visible height.
+editor whose horizontal bounds hold the point and that can still move toward
+the pointer, else the window. Scrolling starts within 48px of the visible top
+or bottom edge, at most half the visible height, and gets faster nearer the edge.
+Above or below that area, scrolling continues at the maximum step of 28px per call.
 Call it once per animation frame while a custom drag lasts, and call again on
 the next frame while it returns a value other than 0.
 

@@ -130,16 +130,13 @@ const getDragAutoScrollDelta = (clientY: number, box: VisibleBox) => {
   const topDistance = clientY - box.top;
   const bottomDistance = box.bottom - clientY;
 
-  if (topDistance < edgeSize && topDistance >= -DRAG_AUTOSCROLL_EDGE_SIZE) {
+  if (topDistance < edgeSize) {
     const intensity = 1 - Math.max(0, topDistance) / edgeSize;
 
     return -Math.max(1, Math.ceil(intensity * DRAG_AUTOSCROLL_MAX_DELTA));
   }
 
-  if (
-    bottomDistance < edgeSize &&
-    bottomDistance >= -DRAG_AUTOSCROLL_EDGE_SIZE
-  ) {
+  if (bottomDistance < edgeSize) {
     const intensity = 1 - Math.max(0, bottomDistance) / edgeSize;
 
     return Math.max(1, Math.ceil(intensity * DRAG_AUTOSCROLL_MAX_DELTA));

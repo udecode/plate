@@ -127,7 +127,7 @@ test('block selection scrolls by the text drag step, larger nearer the edge', as
 
 for (const kind of ['text', 'blocks'] as const) {
   for (const direction of ['down', 'up'] as const) {
-    test(`${kind} selection keeps scrolling with a stationary pointer ${direction}`, async ({
+    test(`${kind} selection keeps scrolling with a stationary pointer ${direction}${kind === 'blocks' ? ' outside the viewport' : ''}`, async ({
       page,
     }, testInfo) => {
       const errors = recordBrowserRuntimeErrors(page);
@@ -152,7 +152,14 @@ for (const kind of ['text', 'blocks'] as const) {
       };
       const end = {
         x: box.x + 120,
-        y: direction === 'down' ? bounds.bottom - 2 : bounds.top + 2,
+        y:
+          kind === 'blocks'
+            ? direction === 'down'
+              ? page.viewportSize()!.height + 100
+              : -100
+            : direction === 'down'
+              ? bounds.bottom - 2
+              : bounds.top + 2,
       };
       try {
         await page.mouse.move(start.x, start.y);
@@ -259,6 +266,12 @@ for (const kind of ['text', 'blocks'] as const) {
               : current - atEdge.scrollTop;
           })
           .toBeGreaterThan(50);
+        if (kind === 'blocks') {
+          await page.mouse.move(
+            end.x,
+            direction === 'down' ? -100 : page.viewportSize()!.height + 100
+          );
+        }
         await page.mouse.up();
         await page.waitForTimeout(100);
         const released = await readSelection(root);
@@ -268,6 +281,14 @@ for (const kind of ['text', 'blocks'] as const) {
           await expect(
             page.locator('[data-slot="node-selection-drag"]')
           ).toHaveCount(0);
+          await heading.scrollIntoViewIfNeeded();
+          const headingKey = await heading.getAttribute('data-editor-node-key');
+          await heading.click();
+          await page.keyboard.press('End');
+          await page.keyboard.type('!');
+          await expect(
+            root.locator(`[data-editor-node-key="${headingKey}"]`)
+          ).toContainText('!');
         }
         errors.assertNone();
       } finally {
