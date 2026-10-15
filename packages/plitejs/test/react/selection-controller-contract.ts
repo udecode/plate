@@ -488,7 +488,7 @@ test('forced model export respects a pending Android action', () => {
   }
 });
 
-test('native selection drag keeps DOM selection and scroll under browser ownership', () => {
+test('selection export preserves scroll without overriding native drag or later scrolling', () => {
   vi.useFakeTimers();
 
   const editor = createEditor<Value>();
@@ -524,7 +524,14 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
   vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(domRange);
   const removeAllRanges = vi.spyOn(domSelection, 'removeAllRanges');
   const addRange = vi.spyOn(domSelection, 'addRange');
-  const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
+  const nativeSetBaseAndExtent =
+    domSelection.setBaseAndExtent.bind(domSelection);
+  const setBaseAndExtent = vi
+    .spyOn(domSelection, 'setBaseAndExtent')
+    .mockImplementation((...args) => {
+      nativeSetBaseAndExtent(...args);
+      editorElement.scrollTop += 40;
+    });
   const runtime = new EditableDOMRuntime({ editor });
 
   runtime.setRoot(editorElement);
@@ -570,6 +577,10 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
     expect(removeAllRanges).toHaveBeenCalledTimes(1);
     expect(addRange).toHaveBeenCalledWith(domRange);
     expect(setBaseAndExtent).toHaveBeenCalledWith(textNode, 0, textNode, 1);
+    expect(editorElement.scrollTop).toBe(100);
+    editorElement.scrollTop = 128;
+    runtime.domPhaseScheduler.flush();
+    expect(editorElement.scrollTop).toBe(128);
   } finally {
     editorElement.remove();
     domSelection.removeAllRanges();

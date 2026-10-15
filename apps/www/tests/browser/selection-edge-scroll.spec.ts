@@ -284,13 +284,21 @@ for (const kind of ['text', 'blocks'] as const) {
         await page.waitForTimeout(100);
         const centered = await readSelection(root);
         await page.waitForTimeout(200);
-        expect(await readSelection(root)).toEqual(centered);
+        expect(await readSelection(root)).toMatchObject({
+          scrollTop: centered.scrollTop,
+          selection: centered.selection,
+          native: centered.native,
+        });
         await page.mouse.move(end.x, end.y);
         await page.mouse.up();
         await page.waitForTimeout(100);
         const released = await readSelection(root);
         await page.waitForTimeout(250);
-        expect(await readSelection(root)).toEqual(released);
+        expect(await readSelection(root)).toMatchObject({
+          scrollTop: released.scrollTop,
+          selection: released.selection,
+          native: released.native,
+        });
         if (kind === 'blocks') {
           await expect(
             page.locator('[data-slot="node-selection-drag"]')
@@ -312,6 +320,61 @@ for (const kind of ['text', 'blocks'] as const) {
     });
   }
 }
+
+test('text drag scrolling never restores an older scroll position', async ({
+  page,
+}) => {
+  const errors = recordBrowserRuntimeErrors(page);
+  try {
+    await page.goto('/blocks/playground', { waitUntil: 'domcontentloaded' });
+    const root = editorRoot(page);
+    await createBrowserEditorHarness(page, 'text-scroll-order', root).ready({
+      editor: 'visible',
+      text: 'AI-Powered Editing',
+    });
+    const heading = page.getByRole('heading', {
+      name: 'AI-Powered Editing',
+      exact: true,
+    });
+    const box = await heading.boundingBox();
+    if (!box) throw new Error('Missing text geometry');
+    const scroller = scrollerOf(root);
+    await scroller.evaluate((element: HTMLElement & { rewinds?: number }) => {
+      const descriptor = Object.getOwnPropertyDescriptor(
+        Element.prototype,
+        'scrollTop'
+      )!;
+      element.rewinds = 0;
+      Object.defineProperty(element, 'scrollTop', {
+        configurable: true,
+        get: () => descriptor.get!.call(element),
+        set: (value: number) => {
+          if (value < descriptor.get!.call(element)) {
+            element.rewinds! += 1;
+          }
+          descriptor.set!.call(element, value);
+        },
+      });
+    });
+    await page.mouse.move(box.x + 60, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 120, page.viewportSize()!.height + 100);
+    await expect.poll(() => readScrollerTop(scroller)).toBeGreaterThan(1200);
+    expect(
+      await scroller.evaluate(
+        (element: HTMLElement & { rewinds?: number }) => element.rewinds
+      ),
+      'selection restoration must not undo a newer drag scroll'
+    ).toBe(0);
+    const selected = await readSelection(root);
+    expect(selected.selection?.kind).toBe('text');
+    expect(selected.native!.length).toBeGreaterThan(0);
+    errors.assertNone();
+  } finally {
+    await page.mouse.up();
+    errors.stop();
+  }
+});
 
 test('text drag ownership preserves native word and modified selection', async ({
   page,

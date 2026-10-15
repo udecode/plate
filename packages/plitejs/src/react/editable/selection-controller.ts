@@ -17,7 +17,6 @@ import {
   isDOMText,
 } from '../../dom';
 import {
-  type DOMPhaseScheduler,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
   isAndroidDOMHost,
@@ -341,29 +340,6 @@ const captureScrollOffsets = (startElement: HTMLElement) => {
       window.scrollTo(scrollingElement.scrollLeft, scrollingElement.scrollTop);
     }
   };
-};
-
-const restoreScrollOffsets = (
-  restoreScroll: (() => void) | null,
-  domPhaseScheduler: DOMPhaseScheduler
-) => {
-  if (!restoreScroll) {
-    return;
-  }
-
-  restoreScroll();
-  domPhaseScheduler.schedule(
-    'dom-write',
-    'restore-selection-scroll-microtask',
-    restoreScroll,
-    { timing: 'microtask' }
-  );
-  domPhaseScheduler.schedule(
-    'dom-write',
-    'restore-selection-scroll-frame',
-    restoreScroll,
-    { timing: 'animation-frame' }
-  );
 };
 
 export const isStaleModelOwnedTextInputDOMRange = ({
@@ -1537,7 +1513,7 @@ export const syncEditableDOMSelectionToEditor = ({
         focusNode,
         focusOffset
       );
-      restoreScrollOffsets(restoreScroll, domPhaseScheduler);
+      restoreScroll?.();
       scheduleClearSelectionUpdate('clear-exported-view-range-update');
       return;
     }
@@ -1660,7 +1636,7 @@ export const syncEditableDOMSelectionToEditor = ({
         );
       }
 
-      restoreScrollOffsets(restoreScroll, domPhaseScheduler);
+      restoreScroll?.();
 
       if (!preserveScroll) {
         scrollSelectionIntoView(editor, domRange);
